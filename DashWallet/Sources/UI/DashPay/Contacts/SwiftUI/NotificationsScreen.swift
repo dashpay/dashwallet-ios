@@ -21,6 +21,8 @@ struct NotificationsScreen: View {
     @StateObject private var viewModel = ContactsViewModel()
     @State private var selectedContact: ContactItem? = nil
 
+    let onBack: () -> Void
+
     /// Read-state captured once at screen entry so rows don't jump
     /// between sections while the user is looking at them; the marker
     /// itself advances on exit (`markNotificationsViewed`).
@@ -29,10 +31,20 @@ struct NotificationsScreen: View {
     var body: some View {
         ZStack {
             Color.dash.primaryBackground.ignoresSafeArea()
-            content
+
+            VStack(spacing: 0) {
+                NavigationBar(
+                    leading: { NavigationBarElement.back.button { onBack() } },
+                    central: {
+                        Text(NSLocalizedString("Notifications", comment: "DashPay Notifications"))
+                            .font(.subheadMedium)
+                            .foregroundColor(.dash.primaryText)
+                    }
+                )
+
+                content
+            }
         }
-        .navigationTitle(NSLocalizedString("Notifications", comment: "DashPay Notifications"))
-        .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $selectedContact) { contact in
             ContactProfileSheet(contact: contact)
         }

@@ -24,7 +24,23 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface DWPreviewSeedPhraseModel ()
+
+@property (nullable, nonatomic, copy) NSString *existingSeedPhrase;
+
+@end
+
 @implementation DWPreviewSeedPhraseModel
+
+- (instancetype)initWithExistingSeedPhrase:(NSString *)seedPhrase {
+    NSParameterAssert(seedPhrase.length > 0);
+
+    self = [super init];
+    if (self) {
+        _existingSeedPhrase = [seedPhrase copy];
+    }
+    return self;
+}
 
 - (void)dealloc {
     DWLog(@"☠️ %@", NSStringFromClass(self.class));
@@ -35,6 +51,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (DWSeedPhraseModel *)getOrCreateNewWallet {
+    if (self.existingSeedPhrase.length > 0) {
+        return [[DWSeedPhraseModel alloc] initWithSeed:self.existingSeedPhrase];
+    }
+
     BOOL hasAWallet = DWWalletEnvironment.hasWallet;
     NSString *seedPhrase;
 
@@ -100,7 +120,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)clearAllWallets {
-    [DWSwiftDashSDKWalletWiper wipeWalletRemovingPin:NO];
+    [DWSwiftDashSDKWalletWiper
+        wipeWalletWithAuthorization:DWSwiftDashSDKWalletWipeAuthorizationScreenshotReplacement];
 }
 
 @end

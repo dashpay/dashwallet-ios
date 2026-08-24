@@ -20,6 +20,7 @@ import Combine
 import CoreData
 import SwiftData
 import SwiftDashSDK
+import UIKit
 
 private let kBaseBalanceHeaderHeight: CGFloat = 100
 private let kTimeskewTolerance: TimeInterval = 3600 // 1 hour
@@ -181,6 +182,10 @@ class HomeViewModel: ObservableObject {
     @Published var showCoinJoinMoveFundsSheet: Bool = false
     @Published private(set) var timeSkew: TimeInterval = 0
     @Published private(set) var showJoinDashpay: Bool = false
+    /// Chain still catching up. The Join DashPay banner stays visible
+    /// throughout but presents itself as unavailable: registration cannot be
+    /// started until the chain is synced.
+    @Published private(set) var isSyncing: Bool = false
     /// Selected filter categories (multi-select checkboxes). Defaults to every
     /// category — i.e. "All". Never empty: the dialog blocks unchecking the
     /// last box.
@@ -210,6 +215,14 @@ class HomeViewModel: ObservableObject {
 #endif
     
     private lazy var syncModel = SyncModelImpl()
+
+    // MARK: Evonode epoch blocks
+
+    /// Shared refresh policy for "blocks my evonodes proposed this epoch"
+    /// (the Nodes shortcut icon reads it directly). Home only nudges it on
+    /// appear; the monitor owns throttling, sync/foreground/wallet triggers
+    /// and the privacy-preserving range scan.
+    private let evonodeEpochBlocksMonitor: EvonodeEpochBlocksMonitor
     
     private var reclassifyTransactionsActivatedAt: Date {
         get { DWGlobalOptions.sharedInstance().dateReclassifyYourTransactionsFlowActivated ?? Date() }
@@ -226,8 +239,12 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    init(transactionSource: TransactionSource) {
+    init(
+        transactionSource: TransactionSource,
+        evonodeEpochBlocksMonitor: EvonodeEpochBlocksMonitor = .shared
+    ) {
         self.transactionSource = transactionSource
+        self.evonodeEpochBlocksMonitor = evonodeEpochBlocksMonitor
         syncModel.networkStatusDidChange = { status in
             self.recalculateHeight()
         }
@@ -256,11 +273,21 @@ class HomeViewModel: ObservableObject {
         #endif
     }
 
+    // MARK: - Evonode epoch blocks
+
+    /// Routine refresh trigger (screen appear): throttled by the monitor.
+    @MainActor
+    func refreshEvonodeEpochBlocks() {
+        guard !isPreviewMode else { return }
+        evonodeEpochBlocksMonitor.refresh()
+    }
+
     #if DEBUG
     /// Lightweight init used only by SwiftUI previews.
     /// Skips wallet/sync/coinjoin wiring that depends on the Dash core runtime.
     private init(previewShortcuts: [ShortcutAction]) {
         self.transactionSource = HomeViewModelPreviewTransactionSource()
+        self.evonodeEpochBlocksMonitor = .shared
         self.isPreviewMode = true
         self.shortcutItems = previewShortcuts
     }
@@ -459,6 +486,9 @@ class HomeViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                 guard let self = self else { return }
+                #if DASHPAY
+                self.isSyncing = state != .syncDone
+                #endif
                 if state == .syncing {
                     // Reload once per transition into .syncing — replaces the
                     // legacy sync-will-start notification observer. Goes
@@ -477,9 +507,17 @@ class HomeViewModel: ObservableObject {
     }
     
     /// Entities whose rows the home feed actually renders.
+    ///
+    /// `PersistentShieldedActivity` is included because a shielded operation's
+    /// only history representation is its activity row: the SDK live-records
+    /// it during the spend itself, and without a reload trigger here the row
+    /// stayed invisible until the next shielded resync repainted the list.
+    /// Storm-safe: the Rust scan flushes activity entries only for new
+    /// entries or real status upgrades, never on steady-state passes.
     private static let feedRowEntityNames: Set<String> = [
         "PersistentTransaction",
         "PersistentTxo",
+        "PersistentShieldedActivity",
     ]
 
     /// Whether a SwiftData save touched anything the feed renders.
@@ -1556,6 +1594,7 @@ extension HomeViewModel {
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 let canSwitchWallet = MainActor.assumeIsolated { WalletsViewModel.switchableWalletCount > 1 }
+                let hasEvonodes = MainActor.assumeIsolated { !EvonodeEpochBlocksMonitor.activeEvonodeProTxHashes().isEmpty }
                 let items = customShortcuts.compactMap { number -> ShortcutAction? in
                     guard var type = ShortcutActionType(rawValue: number.intValue) else { return nil }
                     // A faucet shortcut saved on testnet degrades to Spend
@@ -1578,6 +1617,13 @@ extension HomeViewModel {
                     let dashDEXAvailable = !isTestnet && SwapKitConstants.isConfigured
                     if type == .dashDEX && !dashDEXAvailable {
                         type = .spend
+                    }
+                    // A saved Nodes shortcut degrades to Spend (faucet on
+                    // testnet) while the active wallet runs no evonodes — e.g.
+                    // after a wallet switch; the saved config is untouched, so
+                    // it returns with an evonode wallet.
+                    if type == .nodes && !hasEvonodes {
+                        type = isTestnet ? .getTestDash : .spend
                     }
                     return ShortcutAction(type: type)
                 }
@@ -3028,7 +3074,12 @@ extension HomeViewModel {
 
         self.showJoinDashpay = JoinDashPayBannerPolicy.shouldShow(
             contextReady: identityState.contextReady,
-            syncDone: syncModel.state == .syncDone,
+            // Not gated on sync — same as the More entry. Gating made the
+            // banner appear only once the chain had caught up, so the surface
+            // that carries the "Have an invitation?" entry was missing for the
+            // whole of a long sync. It now stays put and renders as
+            // unavailable (`isSyncing`) instead of vanishing.
+            syncDone: true,
             dismissed: UsernamePrefs.shared.joinDashPayDismissed,
             hasRegisteredUsername: hasRegisteredUsername,
             hasRegistrationInProgress: identityScopedRegistrationState)

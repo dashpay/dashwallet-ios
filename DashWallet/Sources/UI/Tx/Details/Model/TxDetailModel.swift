@@ -30,6 +30,10 @@ class TxDetailModel: NSObject {
     private var didComputeRawFee = false
     fileprivate var rawFeeCache: UInt64?
 
+    /// Fee recovered from the block explorer, once `resolveExplorerFee` has
+    /// landed one. Nil while unresolved and when the explorer had no answer.
+    fileprivate(set) var explorerFeeDuffs: UInt64?
+
     var title: String {
         // Identity fundings and balance transfers carry their own identity —
         // the generic direction titles ("Moved to Address") hide what
@@ -42,7 +46,48 @@ class TxDetailModel: NSObject {
         if let route = transaction.internalTransferRoute, route != .coreToCore {
             return NSLocalizedString("Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
         }
+        // A DashPay contact payment keeps the plain "Amount Sent" heading: the
+        // counterparty is carried by the header avatar and named in full by
+        // the Sent to / Received from row, so repeating it here would say the
+        // same thing three times.
         return direction.title
+    }
+
+    /// The DashPay counterparty of this transaction, when it is a recorded
+    /// contact payment. Drives the header avatar and the contact row that
+    /// stands in for the counterparty's raw address.
+    lazy var contactParty: ContactParty? = ContactParty(payment: transaction.dashPayPayment)
+
+    /// Display model for the contact on the other end of a DashPay payment.
+    struct ContactParty: Hashable {
+        let identityId: Data
+        /// Primary line: owner-set alias, else profile display name, else
+        /// the DPNS username.
+        let name: String
+        /// Secondary line: whichever of the profile name / username the
+        /// primary line did not already use. Nil when there is nothing to add.
+        let secondaryName: String?
+        let avatarURL: String?
+        let isOutgoing: Bool
+
+        init?(payment: DashPayPaymentTxLookup.PaymentInfo?) {
+            guard let payment else { return nil }
+            // No cached name at all: an avatar over a truncated identity id
+            // says less than the plain address rows already do, so this stays
+            // a regular transaction until the profile sync catches up.
+            guard let name = payment.titleName else { return nil }
+
+            identityId = payment.counterpartyIdentityId
+            self.name = name
+            // Prefer their real profile name under an owner-set alias, then
+            // the username — never repeat what the primary line says.
+            let candidates = [payment.counterpartyName, payment.counterpartyUsername]
+            secondaryName = candidates
+                .compactMap { $0 }
+                .first { !$0.isEmpty && $0 != name }
+            avatarURL = payment.counterpartyAvatarURL
+            isOutgoing = payment.isOutgoing
+        }
     }
 
     var direction: TransactionDirection {
@@ -233,30 +278,22 @@ extension TxDetailModel {
 }
 
 extension TxDetailModel {
-    // TODO(dashpay-e2e): contact attribution for a tx (source/destination
-    // identity) returns once the DashPay migration models it on SDK rows.
-    // Constant false is today's actual behavior — the legacy reads went
-    // through the DSTransaction escape hatch, which was nil for every
-    // reachable row.
+    /// Contact attribution comes from the SDK's DashPay payment history
+    /// (`DashPayPaymentTxLookup`), which records the counterparty identity
+    /// and the true direction at send/sync time.
     var hasSourceUser: Bool {
-        false
+        contactParty?.isOutgoing == false
     }
 
     var hasDestinationUser: Bool {
-        false
+        contactParty?.isOutgoing == true
     }
 
+    /// A recorded fee on this row. Not gated on direction: the SDK stores a
+    /// fee whenever it could derive one, and an incoming transaction that
+    /// happens to carry one should show it rather than hide it.
     var hasFee: Bool {
-        if direction == .received {
-            return false
-        }
-
-        let feeValue = transaction.feeUsed
-        if feeValue == 0 {
-            return false
-        }
-
-        return true
+        transaction.feeUsed != 0 && transaction.feeUsed != UInt64.max
     }
 
     var hasDate: Bool {
@@ -329,8 +366,10 @@ extension TxDetailModel {
         return models
     }
 
-    // TODO(dashpay-e2e): user rows come back with contact attribution —
-    // unreachable today (`hasSourceUser`/`hasDestinationUser` are false).
+    // The contact itself is not a `DWTitleDetailItem` row: it renders as a
+    // dedicated avatar cell (`TxDetailContactCell`) built straight from
+    // `contactParty`, so these deliberately return nothing and the address
+    // group they would have replaced is simply dropped.
     private func sourceUsers(with title: String, font: UIFont) -> [DWTitleDetailItem] {
         []
     }
@@ -339,6 +378,14 @@ extension TxDetailModel {
         []
     }
 
+
+    /// Row title for the contact row — the same wording the address group
+    /// it replaces would have used.
+    var contactRowTitle: String {
+        contactParty?.isOutgoing == true
+            ? NSLocalizedString("Sent to", comment: "")
+            : NSLocalizedString("Received from", comment: "")
+    }
 
     func inputAddresses(with font: UIFont) -> [DWTitleDetailItem] {
         if !shouldDisplayInputAddresses {
@@ -536,7 +583,7 @@ extension TxDetailModel {
         var supportsRemoval: Bool { statusRaw <= 1 }
     }
 
-    /// True when the "Remove if not on Blockchain" action applies outside
+    /// True when the "Remove if Not on Network" action applies outside
     /// the asset-lock retry route: the local store still has this
     /// transaction in mempool context (`.processing` — never IS-locked,
     /// never mined), which is exactly the state a network-dropped send
@@ -567,39 +614,75 @@ extension TxDetailModel {
             vout: info.vout)
     }
 
-    /// Below this (0.0001 DASH) a fee renders as plain duffs — the
-    /// DASH-formatted form reads as zero at a glance.
-    private static let duffsDisplayThreshold: UInt64 = 10_000
+    /// Fee this wallet can establish from its own data: the value the SDK
+    /// recorded, else the one computed from the stored raw transaction when
+    /// every input's value is known. Incoming rows go through the computed
+    /// path too — their inputs aren't ours, but the wallet may hold the
+    /// parent transactions those inputs spend, which is exactly when the fee
+    /// becomes computable (and is how Android's dashj, through its
+    /// input-to-known-transaction connection, gets one).
+    ///
+    /// Optional on purpose: a fee of zero is a fact about the transaction,
+    /// and conflating it with "we could not work the fee out" is what turns
+    /// an answer into a shrug.
+    private var localFeeDuffs: UInt64? {
+        if hasFee { return transaction.feeUsed }
+        return computedRawFee
+    }
 
     func fee(with font: UIFont, tintColor: UIColor) -> DWTitleDetailItem {
         let title = NSLocalizedString("Network fee", comment: "")
-        var feeValue: UInt64 = 0
+        let feeValue = localFeeDuffs ?? explorerFeeDuffs
 
-        if hasFee {
-            feeValue = transaction.feeUsed
-            feeValue = feeValue == UInt64.max ? 0 : feeValue
-        }
-        if feeValue == 0, direction != .received, let computed = computedRawFee {
-            // Rows without a persisted fee (asset-lock fundings) still have a
-            // real one — recover it from the raw transaction.
-            feeValue = computed
-        }
-
-        if feeValue > 0, feeValue < Self.duffsDisplayThreshold {
-            let detail = String(format: NSLocalizedString("%d duffs", comment: "Network fee in duffs (1 DASH = 100,000,000 duffs)"), feeValue)
+        // Nothing local and nothing from the explorer (yet, or at all): the
+        // sender spent outputs of transactions this wallet has never seen, so
+        // their values — and with them the fee — are not recoverable here.
+        // Say whose fee it was instead of printing a fabricated zero.
+        if feeValue == nil, direction == .received {
+            let detail = NSLocalizedString("Paid by sender", comment: "Network fee on a received transaction")
             return DWTitleDetailCellModel(style: .default, title: title, plainDetail: detail)
         }
 
-        let detail = NSAttributedString.dashAttributedString(for: feeValue, tintColor: tintColor, font: font)
+        // Always DASH, never duffs: the Dash formatter carries all 8 fraction
+        // digits, so a 226-duff fee reads as 0.00000226 rather than rounding
+        // to zero — and every amount on this screen is then in one unit.
+        let detail = NSAttributedString.dashAttributedString(for: feeValue ?? 0, tintColor: tintColor, font: font)
 
         return DWTitleDetailCellModel(style: .default, title: title, attributedDetail: detail)
     }
 
+    // MARK: - Block-explorer fee fallback
+
+    /// Looks the fee up on the network's Insight API for the one case local
+    /// data cannot answer: a received transaction whose inputs spend outputs
+    /// of transactions this wallet does not hold.
+    ///
+    /// This sends the transaction id to a third-party explorer, so it is
+    /// deliberately narrow — nothing is requested for a transaction whose fee
+    /// is already known, for an outgoing row (whose inputs are ours), or on a
+    /// second call. `completion` runs only when a fee actually arrived, so a
+    /// failed lookup rebuilds nothing.
+    func resolveExplorerFee(completion: @escaping () -> Void) {
+        guard direction == .received, localFeeDuffs == nil, explorerFeeDuffs == nil,
+              let network = WalletEnvironment.network else { return }
+        let displayTxid = transactionId
+        Task {
+            guard let result = await InsightExplorerAPI.transaction(displayTxid: displayTxid, network: network),
+                  result.statusCode == 200, let body = result.body,
+                  let duffs = InsightExplorerAPI.feeDuffs(fromTransactionBody: body) else { return }
+            await MainActor.run {
+                self.explorerFeeDuffs = duffs
+                completion()
+            }
+        }
+    }
+
     /// Fee derived from the stored raw transaction as Σ(input values) −
     /// Σ(output values) — the consensus definition, computable exactly when
-    /// every input value is known (all inputs are the wallet's own TXOs,
-    /// which holds for any tx we authored). Nil when any input value is
-    /// unknown, the bytes are unavailable, or the difference is negative
+    /// every input value is known: the input is one of the wallet's own TXOs,
+    /// or the wallet holds the parent transaction it spends (see
+    /// `RawTransactionInspector.parentOutputValue`). Nil when any input value
+    /// is unknown, the bytes are unavailable, or the difference is negative
     /// (mis-matched data — never guessed). Memoized: the detail sheet
     /// reloads on tax-category toggles and the parse isn't free.
     private var computedRawFee: UInt64? {

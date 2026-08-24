@@ -306,6 +306,15 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
             await fullReset(lastError: nil, forWipe: false)
 
+            // A reinstall clears the selected-network UserDefaults key but
+            // preserves SDK mnemonics. If every stored wallet belongs to the
+            // other supported network, select that network instead of replaying
+            // its seed through the current manager.
+            if trigger == .walletMaterialChanged,
+               selectSolePersistedNetworkIfNeeded(currentNetwork: network) {
+                return
+            }
+
             // Gate on SDK presence, not DashSync's hasAWallet (C6-A): the
             // runtime consumes the SDK wallet, and every SDK-wallet writer
             // re-triggers a refresh (the creator's and migrator's
@@ -367,6 +376,20 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             object: nil)
         Self.logger.info(
             "🧭 RUNTIME :: active-wallet change reason=\(reason, privacy: .public) wallet=\(walletId, privacy: .public)")
+    }
+
+    private func selectSolePersistedNetworkIfNeeded(currentNetwork: Network) -> Bool {
+        guard let storedNetworks = try? SwiftDashSDKHost.persistedSDKWalletNetworks(),
+              !storedNetworks.contains(currentNetwork),
+              storedNetworks.count == 1,
+              let storedNetwork = storedNetworks.first else {
+            return false
+        }
+
+        let kind: WalletEnvironment.NetworkKind = storedNetwork == .mainnet ? .mainnet : .testnet
+        Self.logger.info(
+            "🧭 RUNTIME :: selecting sole persisted wallet network \(storedNetwork.networkName, privacy: .public)")
+        return WalletEnvironment.switchToNetwork(kind)
     }
 
     private func shouldSkipRefresh(for network: Network, trigger: RefreshTrigger) -> Bool {

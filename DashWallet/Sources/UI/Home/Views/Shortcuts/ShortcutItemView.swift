@@ -22,6 +22,9 @@ import UIKit
 struct ShortcutItemView: View {
     let title: String
     let iconName: String
+    /// The action rendered, when known — the Nodes shortcut draws a live
+    /// icon (epoch day / blocks proposed) instead of a static asset.
+    var actionType: ShortcutActionType? = nil
     var alpha: CGFloat = 1.0
 
     init(title: String, iconName: String) {
@@ -32,12 +35,17 @@ struct ShortcutItemView: View {
     init(model: ShortcutAction) {
         self.title = model.type.shortTitle
         self.iconName = model.type.iconName
+        self.actionType = model.type
     }
 
     var body: some View {
         VStack(spacing: 5) {
-            Icon(name: .custom(iconName))
-                .frame(width: 46, height: 46, alignment: .center)
+            if actionType == .nodes {
+                NodesShortcutIcon()
+            } else {
+                Icon(name: .custom(iconName))
+                    .frame(width: 46, height: 46, alignment: .center)
+            }
 
             Text(title)
                 .font(.caption2.weight(.semibold))

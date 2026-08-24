@@ -226,20 +226,27 @@ final class WalletSendService: NSObject {
         super.init()
     }
 
-    /// Core sends are blocked until the L1 chain sync completes: before
-    /// `.syncDone` the persisted UTXO set can be stale (already-spent inputs,
-    /// missing recent funds), so a built tx could be rejected — or worse,
-    /// double-spend a UTXO consumed while offline. Gate on
-    /// `SyncingActivityMonitor` per the repo guardrail (never raw SPV state).
-    /// UI entry points disable Continue with the same message; this is the
-    /// boundary backstop for programmatic callers.
-    private static func ensureChainSynced() throws {
-        guard SyncingActivityMonitor.shared.state == .syncDone else {
+    /// A normal foreground catch-up must not delay a payment. Only the first
+    /// historical sync after restoring a wallet blocks new Core spends.
+    static func isBlockedByInitialRestoreSync(
+        isResyncingWallet: Bool,
+        isChainSynced: Bool
+    ) -> Bool {
+        isResyncingWallet && !isChainSynced
+    }
+
+    /// Boundary backstop for programmatic callers. This runs before
+    /// authentication and before inputs are selected or reserved.
+    private static func ensureInitialRestoreSyncCompleted() throws {
+        guard !isBlockedByInitialRestoreSync(
+            isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingWallet,
+            isChainSynced: SyncingActivityMonitor.shared.state == .syncDone
+        ) else {
             throw Self.makeError(
-                code: .chainNotSynced,
+                code: .initialRestoreSync,
                 description: NSLocalizedString(
-                    "Your wallet is still syncing with the Dash network. Sending will be available once syncing completes.",
-                    comment: "Core send blocked until chain sync completes"))
+                    "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
+                    comment: "Core send blocked during a restored wallet's initial sync"))
         }
     }
 
@@ -262,7 +269,7 @@ final class WalletSendService: NSObject {
 
     func prepareStandardSendForConfirmation(address: String, amount: UInt64, sessionAuthSufficient: Bool = false) async throws -> PreparedStandardSend {
         Self.logger.info("💸 TXSEND :: preparing standard send")
-        try Self.ensureChainSynced()
+        try Self.ensureInitialRestoreSyncCompleted()
         try await sendAuthorizer.authorizeSend(spendAmount: amount, sessionAuthSufficient: sessionAuthSufficient)
         let prepared = try buildPreparedStandardSend(address: address, amount: amount)
         Self.logger.info("💸 TXSEND :: standard send prepared")
@@ -278,7 +285,7 @@ final class WalletSendService: NSObject {
         adjustAmountDownwards: Bool = false,
         sessionAuthSufficient: Bool = false
     ) async throws -> Data {
-        try Self.ensureChainSynced()
+        try Self.ensureInitialRestoreSyncCompleted()
         // Also covers the selected-input path below, whose `buildAndSignFromAddress`
         // broadcasts internally and never reaches `PreparedStandardSend.broadcast()`.
         try Self.ensureOnline()
@@ -325,7 +332,7 @@ final class WalletSendService: NSObject {
     /// - Returns: the wire-order txid of the broadcast transaction
     ///   (`Transaction.txHashData` convention).
     func sendSwapDeposit(vaultAddress: String, amount: UInt64, memo: String) async throws -> Data {
-        try Self.ensureChainSynced()
+        try Self.ensureInitialRestoreSyncCompleted()
         try Self.ensureOnline()
         try await sendAuthorizer.authorizeSend(spendAmount: amount)
 
@@ -433,7 +440,7 @@ final class WalletSendService: NSObject {
         memo: String? = nil
     ) async throws -> (txid: Data, feeDuffs: UInt64) {
         Self.logger.info("💸 TXSEND :: pay-to-contact starting — \(amount, privacy: .public) duffs")
-        try Self.ensureChainSynced()
+        try Self.ensureInitialRestoreSyncCompleted()
         // spendAmount engages the biometric spending limit (C7.4) —
         // without it the gate is non-monetary and Face ID alone would
         // authorize a contact payment of any size.
@@ -453,11 +460,16 @@ final class WalletSendService: NSObject {
             )
         }
 
-        let (txid, feeDuffs) = try await context.wallet.sendDashPayPayment(
-            fromIdentityId: context.ourId,
-            toContactIdentityId: contactIdentityId,
-            amountDuffs: amount,
-            memo: memo)
+        let (txid, feeDuffs): (Data, UInt64)
+        do {
+            (txid, feeDuffs) = try await context.wallet.sendDashPayPayment(
+                fromIdentityId: context.ourId,
+                toContactIdentityId: contactIdentityId,
+                amountDuffs: amount,
+                memo: memo)
+        } catch {
+            throw Self.contactPaymentError(from: error)
+        }
         Self.logger.info("💸 TXSEND :: pay-to-contact broadcast, txid \(txid.map { String(format: "%02x", $0) }.joined(), privacy: .public), fee \(feeDuffs, privacy: .public) duffs")
         return (txid: txid, feeDuffs: feeDuffs)
     }
@@ -645,7 +657,7 @@ private extension WalletSendService {
         case coinJoinSweepUnavailable = 4
         case alreadyBroadcast = 5
         case dashPayPaymentUnavailable = 6
-        case chainNotSynced = 7
+        case initialRestoreSync = 7
         case offline = 8
         case broadcastRejected = 9
         case broadcastUnknown = 10
@@ -653,6 +665,35 @@ private extension WalletSendService {
     }
 
     static let errorDomain = "org.dashfoundation.dash.wallet-send-service"
+
+    /// Translate the SDK's internal missing-external-account diagnostic into
+    /// something a user can act on.
+    ///
+    /// A contact's DIP-15 external account is built in the background from the
+    /// counterparty's contact request; until it exists the SDK fails the send
+    /// with "Invalid identity data: No DashpayExternalAccount found for contact
+    /// <id> — call register_external_contact_account first". That reached users
+    /// verbatim in an alert: it names an API only the SDK can call, so it reads
+    /// as an instruction for something they cannot do.
+    ///
+    /// Mapped here rather than at the presentation layer so the diagnostic stops
+    /// at the boundary that owns the SDK call, and every present and future
+    /// caller of `sendToContact` gets the same treatment. Deliberately narrow —
+    /// anything else is returned untouched rather than hidden behind a generic
+    /// message.
+    static func contactPaymentError(from error: Error) -> Error {
+        let description = error.localizedDescription
+        guard description.contains("DashpayExternalAccount")
+            || description.contains("register_external_contact_account")
+        else {
+            return error
+        }
+        return makeError(
+            code: .dashPayPaymentUnavailable,
+            description: NSLocalizedString(
+                "This contact's payment channel isn't ready yet. It's still being set up in the background — please try again in a few minutes.",
+                comment: "DashPay Contacts"))
+    }
 
     static func makeError(code: ErrorCode, description: String) -> NSError {
         NSError(

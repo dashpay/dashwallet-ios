@@ -194,6 +194,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -256,6 +259,9 @@
 
 /* No comment provided by engineer. */
 "Add a New Contact" = "Add a New Contact";
+
+/* Usernames */
+"Add a temporary username" = "Add a temporary username";
 
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
@@ -445,6 +451,9 @@
 
 /* No comment provided by engineer. */
 "Autohide Balance" = "Autohide Balance";
+
+/* DashPay */
+"Available after sync finishes" = "Available after sync finishes";
 
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
@@ -707,6 +716,9 @@
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "Contact request sent to %@";
 
+/* Usernames */
+"Continue without a temporary username" = "Continue without a temporary username";
+
 /* Identity top-up sheet — body */
 "Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates.";
 
@@ -755,6 +767,9 @@
 /* Username marketplace: search row for a contested label with an active vote by others */
 "In a network vote — you can join as a contender" = "In a network vote — you can join as a contender";
 
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames.";
+
 /* Username marketplace: search row for a label a past vote locked */
 "Locked by a network vote — nobody can register it" = "Locked by a network vote — nobody can register it";
 
@@ -788,11 +803,29 @@
 /* Username marketplace: activity overlay while the purchase transition runs */
 "Completing your purchase…" = "Completing your purchase…";
 
+/* Usernames */
+"Register username" = "Register username";
+
 /* Username marketplace: activity overlay while the delist transition runs */
 "Removing the listing…" = "Removing the listing…";
 
 /* Username marketplace: activity overlay while the set-price transition runs */
 "Listing for sale…" = "Listing for sale…";
+
+/* Usernames */
+"Submit both usernames" = "Submit both usernames";
+
+/* Usernames */
+"Temporary username" = "Temporary username";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "The temporary username must not itself require voting.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name.";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "This username would also require voting — try adding a digit between 2 and 9";
 
 /* Username marketplace: activity overlay while the transfer transition runs */
 "Transferring the username…" = "Transferring the username…";
@@ -2561,7 +2594,7 @@
 "Rebroadcast" = "Rebroadcast";
 
 /* Delete a never-accepted transaction from local wallet state */
-"Remove if not on Blockchain" = "Remove if not on Blockchain";
+"Remove if Not on Network" = "Remove if Not on Network";
 
 /* Remove never-accepted transaction: confirmation title */
 "Remove this transaction?" = "Remove this transaction?";
@@ -2597,10 +2630,10 @@
 "Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name.";
 
 /* Remove never-accepted transaction: refused because the explorer found it */
-"Transaction is on the blockchain" = "Transaction is on the blockchain";
+"Transaction is known to the network" = "Transaction is known to the network";
 
 /* Remove never-accepted transaction: refusal body */
-"A block explorer reports this transaction on the Dash network, so it wasn't removed. The wallet will catch up with its confirmation on its own." = "A block explorer reports this transaction on the Dash network, so it wasn't removed. The wallet will catch up with its confirmation on its own.";
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block.";
 
 /* Remove never-accepted transaction: success */
 "Transaction removed" = "Transaction removed";
@@ -2609,7 +2642,7 @@
 "Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status";
 
 /* Remove never-accepted transaction: confirmation body */
-"The wallet first checks a block explorer — a transaction that is on the blockchain is never removed. If it isn't found, the transaction is deleted from this wallet on this device and the coins it was trying to spend become available again. The wallet then rescans recent blocks, so if the transaction does turn out to be on the blockchain, it comes back on its own. Nothing is sent to the network." = "The wallet first checks a block explorer — a transaction that is on the blockchain is never removed. If it isn't found, the transaction is deleted from this wallet on this device and the coins it was trying to spend become available again. The wallet then rescans recent blocks, so if the transaction does turn out to be on the blockchain, it comes back on its own. Nothing is sent to the network.";
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network.";
 
 /* Remove never-accepted transaction: failure title */
 "Couldn't remove the transaction" = "Couldn't remove the transaction";
@@ -2785,6 +2818,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "When will contact requests become private?";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames.";
+
 /* DashPay FAQ */
 "Why do I need to enable it?" = "Why do I need to enable it?";
 
@@ -2796,6 +2832,9 @@
 
 /* Username marketplace: purchase confirmation body with seller clarity */
 "You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately.";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames.";
 
 /* DashPay: body of the enable success sheet */
 "You're all set. Other users can now send you contact requests — and you can send yours." = "You're all set. Other users can now send you contact requests — and you can send yours.";
@@ -4433,6 +4472,12 @@
 "Buy username" = "Buy username";
 
 /* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "Your temporary username “%@” could not be registered. You can register another username later.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames.";
+
+/* Usernames */
 "“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance.";
 
 /* Usernames */
@@ -5511,3 +5556,127 @@
 "Every node votes together. Faster, but it publicly links your masternodes to each other." = "Every node votes together. Faster, but it publicly links your masternodes to each other.";
 "Each tap votes with one more node, so you choose how many to link together." = "Each tap votes with one more node, so you choose how many to link together.";
 "Selecting fewer nodes reveals less about which masternodes you run." = "Selecting fewer nodes reveals less about which masternodes you run.";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "%ld wallets found on this device";
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting.";
+"Couldn’t Delete All Wallets" = "Couldn’t Delete All Wallets";
+"Couldn’t Read Wallets" = "Couldn’t Read Wallets";
+"Delete All" = "Delete All";
+"Delete All Wallets?" = "Delete All Wallets?";
+"Deleting All Wallets…" = "Deleting All Wallets…";
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted.";
+"Keep Wallets" = "Keep Wallets";
+"No stored wallets were found. Nothing was deleted." = "No stored wallets were found. Nothing was deleted.";
+"No Wallets Found" = "No Wallets Found";
+"Not all wallets could be deleted. Please try again." = "Not all wallets could be deleted. Please try again.";
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone.";
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "The wallets stored on this device could not be verified. Nothing was deleted. Please try again.";
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone.";
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting.";
+"Wallets found on this device" = "Wallets found on this device";
+"Wipe All Wallets" = "Wipe All Wallets";
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "A single wallet's recovery phrase cannot authorize deleting multiple different wallets.";
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue.";
+"Enter the recovery phrase to continue." = "Enter the recovery phrase to continue.";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "Choose Wallet";
+"Couldn’t Read Recovery Phrases" = "Couldn’t Read Recovery Phrases";
+"No Recovery Phrase Found" = "No Recovery Phrase Found";
+"No recovery phrase is stored on this device." = "No recovery phrase is stored on this device.";
+"Select the wallet whose recovery phrase you want to view." = "Select the wallet whose recovery phrase you want to view.";
+"The recovery phrases stored on this device could not be read. Please try again." = "The recovery phrases stored on this device could not be read. Please try again.";
+"Not a valid Dash address for this network" = "Not a valid Dash address for this network";
+"The claimable balance is too small to cover the Platform withdrawal fee." = "The claimable balance is too small to cover the Platform withdrawal fee.";
+"You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it." = "You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it.";
+"The minimum withdrawal is %@ DASH." = "The minimum withdrawal is %@ DASH.";
+"Payout address key" = "Payout address key";
+"Owner key (%@)" = "Owner key (%@)";
+"Wallet is not ready. Try again in a moment." = "Wallet is not ready. Try again in a moment.";
+"%@ · Claimable %@ DASH" = "%@ · Claimable %@ DASH";
+"Withdraw to" = "Withdraw to";
+"Enter a Dash address" = "Enter a Dash address";
+"Use the payout address" = "Use the payout address";
+"This is the evonode's registered payout address." = "This is the evonode's registered payout address.";
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address.";
+"Registered payout address" = "Registered payout address";
+"This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key.";
+"How it works" = "How it works";
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it.";
+"Confirm withdrawal" = "Confirm withdrawal";
+"Owner-key withdrawals are always paid to the registered payout address." = "Owner-key withdrawals are always paid to the registered payout address.";
+"Waiting for authorization…" = "Waiting for authorization…";
+"Submitting to Dash Platform…" = "Submitting to Dash Platform…";
+"Withdrawal submitted" = "Withdrawal submitted";
+"Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes.";
+"Remaining claimable balance: %@ DASH" = "Remaining claimable balance: %@ DASH";
+"%@ · Platform balance" = "%@ · Platform balance";
+"Signed with" = "Signed with";
+"Platform fee" = "Platform fee";
+"%@ (payout address)" = "%@ (payout address)";
+"This wallet holds the payout address key, so you can withdraw to any address." = "This wallet holds the payout address key, so you can withdraw to any address.";
+"This wallet holds the owner key, so withdrawals go to the registered payout address." = "This wallet holds the owner key, so withdrawals go to the registered payout address.";
+"This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here.";
+"Couldn't check which keys of this evonode are in the wallet." = "Couldn't check which keys of this evonode are in the wallet.";
+"Result not confirmed" = "Result not confirmed";
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first.";
+"1 block proposed this epoch" = "1 block proposed this epoch";
+"%@ blocks proposed this epoch" = "%@ blocks proposed this epoch";
+"Nodes" = "Nodes";
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "Nodes, epoch day %d, %@ blocks proposed this epoch";
+"an evonode has not proposed a block in 2 days" = "an evonode has not proposed a block in 2 days";
+"an evonode has no blocks this epoch" = "an evonode has no blocks this epoch";
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "This evonode's DAPI address isn't known, so it can't be asked for its status.";
+"Couldn't get the evonode's status." = "Couldn't get the evonode's status.";
+"The evonode didn't answer in time." = "The evonode didn't answer in time.";
+"Couldn't reach the evonode." = "Couldn't reach the evonode.";
+"The evonode's answer couldn't be read." = "The evonode's answer couldn't be read.";
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "The node's own report, unverified — what it says about itself, not what the network has agreed on.";
+"Asked" = "Asked";
+"Software" = "Software";
+"DAPI" = "DAPI";
+"Drive" = "Drive";
+"Tenderdash" = "Tenderdash";
+"Protocol versions" = "Protocol versions";
+"Tenderdash P2P" = "Tenderdash P2P";
+"Tenderdash block" = "Tenderdash block";
+"Drive current" = "Drive current";
+"Drive latest" = "Drive latest";
+"Drive next epoch" = "Drive next epoch";
+"Node ID" = "Node ID";
+"Identity check" = "Identity check";
+"Chain" = "Chain";
+"Catching up" = "Catching up";
+"Latest block height" = "Latest block height";
+"Earliest block height" = "Earliest block height";
+"Max peer block height" = "Max peer block height";
+"Core chain-locked height" = "Core chain-locked height";
+"Latest block hash" = "Latest block hash";
+"Latest app hash" = "Latest app hash";
+"Earliest block hash" = "Earliest block hash";
+"Earliest app hash" = "Earliest app hash";
+"Chain ID" = "Chain ID";
+"Peers" = "Peers";
+"Listening" = "Listening";
+"State sync" = "State sync";
+"Total synced time" = "Total synced time";
+"Remaining time" = "Remaining time";
+"Total snapshots" = "Total snapshots";
+"Chunk process avg time" = "Chunk process avg time";
+"Snapshot height" = "Snapshot height";
+"Snapshot chunks" = "Snapshot chunks";
+"Backfilled blocks" = "Backfilled blocks";
+"Backfill blocks total" = "Backfill blocks total";
+"Time" = "Time";
+"Node clock" = "Node clock";
+"Latest block" = "Latest block";
+"Genesis" = "Genesis";
+"Epoch" = "Epoch";
+"Matches this evonode" = "Matches this evonode";
+"Differs from this evonode" = "Differs from this evonode";
+"Not reported" = "Not reported";
+"%.3f s" = "%.3f s";
+"Node status" = "Node status";
+"Asking the evonode…" = "Asking the evonode…";
+"Request status" = "Request status";

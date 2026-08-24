@@ -13,6 +13,24 @@ import XCTest
 @MainActor
 final class PassiveWalletStateUITailTests: XCTestCase {
 
+    func testInitialRestoreSyncBlocksCoreSpendUntilSyncCompletes() {
+        XCTAssertTrue(
+            WalletSendService.isBlockedByInitialRestoreSync(
+                isResyncingWallet: true,
+                isChainSynced: false))
+        XCTAssertFalse(
+            WalletSendService.isBlockedByInitialRestoreSync(
+                isResyncingWallet: true,
+                isChainSynced: true))
+    }
+
+    func testNormalCatchUpDoesNotBlockCoreSpend() {
+        XCTAssertFalse(
+            WalletSendService.isBlockedByInitialRestoreSync(
+                isResyncingWallet: false,
+                isChainSynced: false))
+    }
+
     func testAlreadyConsumedAssetLockMapsToUnconfirmedResume() {
         let error = PlatformWalletError.assetLockAlreadyConsumed("test outpoint")
 

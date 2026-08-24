@@ -50,6 +50,7 @@ class MainMenuViewModel: ObservableObject {
     let dashPayModel: DWDashPayProtocol?
     let userProfileModel: CurrentUserProfileModel?
     @Published private(set) var showJoinDashpay: Bool = false
+    @Published private(set) var isSyncing: Bool = false
     #endif
 
     weak var delegate: MainMenuViewModelDelegate?
@@ -66,6 +67,10 @@ class MainMenuViewModel: ObservableObject {
         userProfileModel?.$showJoinDashpay
             .receive(on: DispatchQueue.main)
             .assign(to: &$showJoinDashpay)
+
+        userProfileModel?.$isSyncing
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$isSyncing)
     }
 
     func refreshJoinDashPayBanner() {

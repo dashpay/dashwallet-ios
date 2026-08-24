@@ -381,11 +381,37 @@ class MerchantListViewController: ExplorePointOfUseListViewController, Navigatio
                                     with: .none)
             }
 
-            if wSelf.model.showMap {
-                wSelf.mapView.show(merchants: wSelf.model.items)
-            }
+            wSelf.updateMapMerchants()
 
             wSelf.updateEmptyResultsForFilters()
+        }
+    }
+
+    // The map mirrors Android: it shows every physical location inside the search area
+    // (the closest ones to the search center), while the list keeps one row per merchant.
+    private func updateMapMerchants() {
+        guard model.showMap else { return }
+
+        guard let bounds = model.currentMapBounds, let center = model.userCoordinates else {
+            mapView.show(merchants: model.items)
+            return
+        }
+
+        ExploreDash.shared.merchantPhysicalLocations(in: bounds, center: center,
+                                                     paymentMethods: model.filters?.merchantPaymentTypes,
+                                                     denominationType: model.filters?.denominationType) { [weak self] result in
+            DispatchQueue.main.async {
+                // A pan/zoom may have started another fetch; only apply the response
+                // that matches the bounds currently shown.
+                guard let self, self.model.showMap, self.model.currentMapBounds == bounds else { return }
+
+                switch result {
+                case .success(let locations):
+                    self.mapView.show(merchants: locations)
+                case .failure:
+                    self.mapView.show(merchants: self.model.items)
+                }
+            }
         }
     }
 

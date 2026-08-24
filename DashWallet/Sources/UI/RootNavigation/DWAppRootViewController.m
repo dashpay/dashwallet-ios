@@ -51,6 +51,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 @property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
 @property (nullable, nonatomic, strong) NSURL *deferredDeeplinkToProcess;
 @property (nonatomic, assign) BOOL walletWipeInProgress;
+
+- (void)beginWipeWalletWithAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
+- (void)presentWalletWipeFailureForAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
 #if DASHPAY
 @property (null_resettable, nonatomic, strong) DWInvitationSetupState *invitationSetup;
 #endif
@@ -248,6 +251,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
                            selector:@selector(applicationDidEnterBackgroundNotification)
                                name:UIApplicationDidEnterBackgroundNotification
                              object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(windowDidBecomeKeyNotification:)
+                               name:UIWindowDidBecomeKeyNotification
+                             object:nil];
 
     __weak typeof(self) weakSelf = self;
     self.model.currentNetworkDidChangeBlock = ^{
@@ -351,12 +358,20 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     _mainController = nil;
 }
 
-/// Debug Reset's coordinated wipe path. Unlike the legacy `didWipeWallet`
-/// notification, this transitions to the setup screen BEFORE deleting state,
-/// then blocks that screen with a HUD until the SDK wiper's FIFO barrier has
-/// completed. This avoids displaying a tappable-looking onboarding screen
-/// while synchronous SDK deletion still occupies MainActor.
+/// Coordinated path for an already-confirmed Delete All. Unlike the legacy
+/// `didWipeWallet` notification, this transitions to the setup screen BEFORE
+/// deleting state, then blocks that screen with a HUD until the SDK wiper's
+/// FIFO barrier has completed. This avoids displaying a tappable-looking
+/// onboarding screen while synchronous SDK deletion still occupies MainActor.
 - (void)beginWipeWallet {
+    [self beginWipeWalletWithAuthorization:DWSwiftDashSDKWalletWipeAuthorizationConfirmedDeleteAll];
+}
+
+- (void)beginDebugWipeWallet {
+    [self beginWipeWalletWithAuthorization:DWSwiftDashSDKWalletWipeAuthorizationDebugReset];
+}
+
+- (void)beginWipeWalletWithAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization {
     if (self.walletWipeInProgress) {
         return;
     }
@@ -369,7 +384,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     [self.model.homeModel walletDidWipe];
     _mainController = nil;
 
-    [setupController.view dw_showProgressHUDWithMessage:NSLocalizedString(@"Deleting Wallet…", nil)];
+    [setupController.view dw_showProgressHUDWithMessage:NSLocalizedString(@"Deleting All Wallets…", nil)];
 
     __weak typeof(self) weakSelf = self;
     // The SDK delete is synchronous on MainActor. Let UIKit commit the setup
@@ -382,7 +397,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             return;
         }
 
-        [strongSelf.model wipeWallet];
+        [DWSwiftDashSDKWalletWiper wipeWalletWithAuthorization:authorization];
         [DWSwiftDashSDKWalletWiper waitForPendingWipeWithCompletion:^(BOOL wipeSucceeded) {
             typeof(self) completedSelf = weakSelf;
             if (completedSelf == nil) {
@@ -391,23 +406,23 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             [setupController.view dw_hideProgressHUD];
             completedSelf.walletWipeInProgress = NO;
             if (!wipeSucceeded) {
-                [completedSelf presentWalletWipeFailure];
+                [completedSelf presentWalletWipeFailureForAuthorization:authorization];
             }
         }];
     });
 }
 
-- (void)presentWalletWipeFailure {
+- (void)presentWalletWipeFailureForAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization {
     UIAlertController *alert =
-        [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Couldn’t Delete Wallet", nil)
-                                            message:NSLocalizedString(@"The wallet is still stored on this device. Please try again.", nil)
+        [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Couldn’t Delete All Wallets", nil)
+                                            message:NSLocalizedString(@"Not all wallets could be deleted. Please try again.", nil)
                                      preferredStyle:UIAlertControllerStyleAlert];
 
     __weak typeof(self) weakSelf = self;
     [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Retry", nil)
                                               style:UIAlertActionStyleDefault
                                             handler:^(UIAlertAction *_Nonnull action) {
-                                                [weakSelf beginWipeWallet];
+                                                [weakSelf beginWipeWalletWithAuthorization:authorization];
                                             }]];
     [self.currentController presentViewController:alert animated:YES completion:nil];
 }
@@ -458,10 +473,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     self.lockWindow.hidden = YES;
     self.lockWindow.alpha = 1.0;
 
-    // Use the same HUD + FIFO completion gate as Debug Reset. Navigating to
-    // onboarding before the SDK wipe result would let a failed deletion expose
-    // create/recover controls while the old wallet is still present.
-    [self beginWipeWallet];
+    // The support recovery controller reports success only after the serial
+    // wiper has completed. Transition to setup without issuing a second wipe.
+    [self didWipeWallet];
 }
 
 #pragma mark - Notifications
@@ -478,6 +492,45 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 - (void)applicationWillResignActiveNotification {
     [self.model applicationWillResignActiveNotification];
+}
+
+- (void)windowDidBecomeKeyNotification:(NSNotification *)notification {
+    // Keeps the displayed lock window key. The post-onboarding reinstall flow
+    // (Keep Wallet → transitionToAppRoot → deferred
+    // applicationDidBecomeActiveNotification) calls makeKeyAndVisible while the
+    // onboarding container transition and the Keep/Delete alert teardown are
+    // still in flight; their completion can hand key status back to the main
+    // window. The lock screen then stays visible but keyboard/first-responder
+    // input routes to the main window underneath — the failure mode described
+    // by the INFO note in viewDidLoad. Whenever the main window becomes key
+    // while the lock window is displayed, take key (and front) back.
+    UIWindow *mainWindow = (UIWindow *)notification.object;
+    if (mainWindow != self.view.window) {
+        return;
+    }
+    if (self.displayedLockNavigationController == nil || self.lockWindow.hidden) {
+        return;
+    }
+
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (strongSelf == nil) {
+            return;
+        }
+        // Re-validate before acting: only take key back if the main window
+        // still holds it. If key has already moved to another window
+        // (software keyboard, LocalAuthentication prompt), leave it alone —
+        // a later steal by the main window fires this observer again.
+        if (mainWindow != strongSelf.view.window || !mainWindow.isKeyWindow) {
+            return;
+        }
+        if (strongSelf.displayedLockNavigationController != nil &&
+            !strongSelf.lockWindow.hidden &&
+            !strongSelf.lockWindow.isKeyWindow) {
+            [strongSelf.lockWindow makeKeyAndVisible];
+        }
+    });
 }
 
 #pragma mark - Demo Mode

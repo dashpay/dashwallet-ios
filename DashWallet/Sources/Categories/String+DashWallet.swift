@@ -71,7 +71,7 @@ extension String {
         let attributedString = NSMutableAttributedString(string: self)
 
         let locale = Locale.current
-        let decimalSeparator = locale.decimalSeparator!
+        let decimalSeparator = locale.decimalSeparator ?? "."
         let insufficientFractionDigits = decimalSeparator + "00"
         let defaultAttributes = [NSAttributedString.Key.foregroundColor: textColor]
 

@@ -64,6 +64,17 @@ struct PlatformAddressActivityUnitPolicy {
         Int64(clamping: credits / creditsPerDuff)
     }
 
+    /// A first observation is a complete baseline, including zero-balance
+    /// addresses. Omitting zeroes leaves an all-zero wallet looking perpetually
+    /// uninitialized and causes its first payment to be swallowed as seeding.
+    static func initialBaselineBalances(
+        addresses: [DerivedPlatformAddress]
+    ) -> [String: Int64] {
+        Dictionary(
+            addresses.map { ($0.address, duffs(fromCredits: $0.balance)) },
+            uniquingKeysWith: { _, latest in latest })
+    }
+
     /// True when an observed balance increase is explainable by an own
     /// unshield of `creditedAmountCredits`: the delta equals the credited
     /// principal, or is SMALLER — an own follow-on spend (e.g. the
@@ -240,12 +251,48 @@ final class PlatformAddressActivityDAO {
             S.colObservedAt <- Date().timeIntervalSince1970))
     }
 
+    /// Stable append-only position for an attended receive-session snapshot.
+    /// Row IDs are used instead of wall-clock observation timestamps.
+    func latestActivityId(walletId: Data, networkRaw: Int64) -> Int64 {
+        typealias S = PlatformAddressActivitySchema
+        let query = S.activity
+            .select(S.colId)
+            .filter(S.colWalletId == walletId && S.colNetwork == networkRaw)
+            .order(S.colId.desc)
+            .limit(1)
+        return (try? db.pluck(query))?[S.colId] ?? 0
+    }
+
+    /// New activity for one frozen receive address, oldest first so a burst is
+    /// presented deterministically.
+    func activities(
+        walletId: Data,
+        networkRaw: Int64,
+        address: String,
+        afterId: Int64
+    ) -> [PlatformAddressActivityRecord] {
+        typealias S = PlatformAddressActivitySchema
+        let query = S.activity
+            .filter(
+                S.colWalletId == walletId &&
+                    S.colNetwork == networkRaw &&
+                    S.colAddress == address &&
+                    S.colId > afterId)
+            .order(S.colId.asc)
+        return records(for: query)
+    }
+
     /// All received-activity rows for the wallet+network, newest first.
     func activities(walletId: Data, networkRaw: Int64) -> [PlatformAddressActivityRecord] {
         typealias S = PlatformAddressActivitySchema
         let query = S.activity
             .filter(S.colWalletId == walletId && S.colNetwork == networkRaw)
             .order(S.colObservedAt.desc)
+        return records(for: query)
+    }
+
+    private func records(for query: Table) -> [PlatformAddressActivityRecord] {
+        typealias S = PlatformAddressActivitySchema
         guard let rows = try? db.prepare(query) else { return [] }
         return rows.map { row in
             PlatformAddressActivityRecord(
@@ -289,12 +336,12 @@ enum PlatformAddressActivityRecorder {
         // silently. Recording the whole standing balance as "received
         // today" would be fabricated history.
         guard !baseline.isEmpty else {
-            for entry in addresses where entry.balance > 0 {
+            for (address, balanceDuffs) in PlatformAddressActivityUnitPolicy
+                .initialBaselineBalances(addresses: addresses) {
                 dao.upsertBaseline(
                     walletId: walletId, networkRaw: networkRaw,
-                    address: entry.address,
-                    balanceDuffs: PlatformAddressActivityUnitPolicy.duffs(
-                        fromCredits: entry.balance))
+                    address: address,
+                    balanceDuffs: balanceDuffs)
             }
             return
         }

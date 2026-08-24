@@ -77,9 +77,10 @@ final class BalanceModel: ObservableObject {
         // DWEnvironment.sharedInstance().currentWallet.balance. After M6
         // (commit 86ed72706), DashSync's SPV no longer runs and
         // DSWallet.balance is frozen — SwiftDashSDK is the authoritative
-        // source. `WalletBalance.total` = confirmed + unconfirmed + immature,
-        // matching the "everything user-visible" semantic dashwallet's
-        // UI displays. Function #5 of the DashSync migration.
+        // source. `WalletBalance.total` sums every bucket — confirmed,
+        // unconfirmed, immature and locked — matching the "everything
+        // user-visible" semantic dashwallet's UI displays.
+        // Function #5 of the DashSync migration.
         let walletBalance = SwiftDashSDKWalletState.shared.balance
         let balanceValue = walletBalance?.total ?? 0
 

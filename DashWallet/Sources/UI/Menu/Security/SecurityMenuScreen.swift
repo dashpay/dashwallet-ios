@@ -24,7 +24,11 @@ struct SecurityMenuScreen: View {
     private let delegateInternal: DelegateInternal
     
     @StateObject private var viewModel = SecurityMenuViewModel()
+    @StateObject private var recoveryPhraseFlow = RecoveryPhraseFlowViewModel()
     @State private var showBiometricsAlert = false
+    @State private var showMultipleWalletsResetAlert = false
+    @State private var showNoWalletResetAlert = false
+    @State private var showResetWalletInventoryError = false
     @State private var showResetWalletDebugAlert = false
     
     init(vc: UINavigationController, wipeDelegate: DWWipeDelegate? = nil) {
@@ -79,6 +83,12 @@ struct SecurityMenuScreen: View {
         .onReceive(viewModel.$showBiometricsAlert) { show in
             showBiometricsAlert = show
         }
+        .onReceive(viewModel.$resetWalletDestination.compactMap { $0 }) { destination in
+            handleResetWalletDestination(destination)
+        }
+        .onReceive(recoveryPhraseFlow.$navigationEvent.compactMap { $0 }) { event in
+            handleRecoveryPhraseNavigation(event)
+        }
         .alert(NSLocalizedString("Biometrics Access Required", comment: ""), isPresented: $showBiometricsAlert) {
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
             Button(NSLocalizedString("Settings", comment: "")) {
@@ -87,29 +97,71 @@ struct SecurityMenuScreen: View {
         } message: {
             Text(biometricsAlertMessage)
         }
-        .alert("Reset Wallet (Debug)", isPresented: $showResetWalletDebugAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Wipe", role: .destructive) {
-                delegateInternal.beginWipeWallet()
+        .alert(
+            NSLocalizedString("Multiple Wallets Found", comment: "Security — reset wallet"),
+            isPresented: $showMultipleWalletsResetAlert
+        ) {
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+            Button(NSLocalizedString("Open Wallets", comment: "Security — reset wallet")) {
+                openWallets()
             }
         } message: {
-            Text("Wipes the wallet immediately without asking for the recovery phrase.")
+            Text(NSLocalizedString(
+                "Reset Wallet is unavailable while multiple wallets are stored. Open Wallets and remove each wallet individually using its recovery phrase.",
+                comment: "Security — reset wallet"))
+        }
+        .alert(
+            NSLocalizedString("No Wallet Found", comment: "Security — reset wallet"),
+            isPresented: $showNoWalletResetAlert
+        ) {
+            Button(NSLocalizedString("OK", comment: ""), role: .cancel) { }
+        } message: {
+            Text(NSLocalizedString(
+                "There are no wallets stored on this device to reset.",
+                comment: "Security — reset wallet"))
+        }
+        .alert(
+            NSLocalizedString("Could Not Read Wallets", comment: "Security — reset wallet"),
+            isPresented: $showResetWalletInventoryError
+        ) {
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+            Button(NSLocalizedString("Retry", comment: "")) {
+                viewModel.beginResetWallet()
+            }
+        } message: {
+            Text(NSLocalizedString(
+                "The wallets stored on this device could not be verified. Nothing was deleted. Please try again.",
+                comment: "Security — reset wallet"))
+        }
+        .alert("Reset All Wallets (Debug)", isPresented: $showResetWalletDebugAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete All", role: .destructive) {
+                delegateInternal.beginDebugWipeWallet()
+            }
+        } message: {
+            Text("Deletes all SDK wallets without asking for their recovery phrases. Legacy DashSync seed fixtures are preserved.")
+        }
+        .alert(
+            recoveryPhraseFlow.alertState?.title ?? "",
+            isPresented: Binding(
+                get: { recoveryPhraseFlow.alertState != nil },
+                set: { if !$0 { recoveryPhraseFlow.dismissAlert() } })
+        ) {
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+                recoveryPhraseFlow.dismissAlert()
+            }
+            Button(NSLocalizedString("Retry", comment: "")) {
+                recoveryPhraseFlow.retry()
+            }
+        } message: {
+            Text(recoveryPhraseFlow.alertState?.message ?? "")
         }
     }
     
     private func handleNavigation(_ destination: SecurityMenuNavigationDestination?) {
         switch destination {
         case .viewRecoveryPhrase:
-            viewModel.authenticate { authenticated in
-                if authenticated {
-                    let model = DWPreviewSeedPhraseModel()
-                    model.getOrCreateNewWallet()
-                    let controller = DWPreviewSeedPhraseViewController(model: model)
-                    controller.delegate = delegateInternal
-                    controller.hidesBottomBarWhenPushed = true
-                    self.vc.pushViewController(controller, animated: true)
-                }
-            }
+            recoveryPhraseFlow.beginGlobal()
         case .changePin:
             viewModel.authenticate { authenticated in
                 if authenticated {
@@ -141,6 +193,28 @@ struct SecurityMenuScreen: View {
             viewModel.resetNavigation()
         }
     }
+
+    private func handleRecoveryPhraseNavigation(_ event: RecoveryPhraseFlowViewModel.NavigationEvent) {
+        switch event.destination {
+        case .picker(let options):
+            let controller = RecoveryPhraseNavigation.pickerController(
+                options: options,
+                flowModel: recoveryPhraseFlow,
+                onCancel: { [weak vc] in
+                    vc?.popViewController(animated: true)
+                })
+            vc.pushViewController(controller, animated: true)
+        case .phrase(let presentation):
+            RecoveryPhraseNavigation.showPhrase(
+                presentation,
+                in: vc,
+                delegate: delegateInternal)
+        }
+
+        DispatchQueue.main.async {
+            recoveryPhraseFlow.consumeNavigationEvent(id: event.id)
+        }
+    }
     
     private var biometricsAlertMessage: String {
         let displayName = Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? ""
@@ -158,6 +232,31 @@ struct SecurityMenuScreen: View {
            UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url)
         }
+    }
+
+    private func handleResetWalletDestination(_ destination: SecurityMenuResetWalletDestination) {
+        switch destination {
+        case .reset:
+            let controller = DWResetWalletInfoViewController.make()
+            controller.delegate = delegateInternal
+            vc.pushViewController(controller, animated: true)
+        case .multipleWallets:
+            showMultipleWalletsResetAlert = true
+        case .noWallet:
+            showNoWalletResetAlert = true
+        case .readError:
+            showResetWalletInventoryError = true
+        }
+
+        viewModel.resetWalletDestinationHandled()
+    }
+
+    private func openWallets() {
+        let controller = UIHostingController(
+            rootView: WalletsScreen(
+                vc: vc,
+                wipeDelegate: delegateInternal.wipeDelegate))
+        vc.pushViewController(controller, animated: true)
     }
 }
 
@@ -192,14 +291,14 @@ extension SecurityMenuScreen {
         /// Debug Reset must not expose a live onboarding screen while the SDK
         /// wipe is still queued. The root coordinator presents a blocking wipe
         /// gate first, then starts deletion after its HUD is visible.
-        func beginWipeWallet() {
+        func beginDebugWipeWallet() {
             if let wipeDelegate,
-               wipeDelegate.responds(to: #selector(DWWipeDelegate.beginWipeWallet)) {
-                wipeDelegate.beginWipeWallet?()
+               wipeDelegate.responds(to: #selector(DWWipeDelegate.beginDebugWipeWallet)) {
+                wipeDelegate.beginDebugWipeWallet?()
             } else {
                 // This screen can be embedded without the app-root delegate in
-                // previews. Preserve the legacy local behavior in that case.
-                DWRecoverModel(action: .wipe).wipeWallet()
+                // previews. Preserve the local delete-all behavior in that case.
+                SwiftDashSDKWalletWiper.wipeWallet(authorization: .debugReset)
                 onHide()
             }
         }

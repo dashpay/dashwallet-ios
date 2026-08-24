@@ -18,8 +18,8 @@
 //
 //  "Wallets" screen (main menu). Lists the on-device SwiftDashSDK wallets
 //  for the current network, one marked active. Tapping a wallet opens its
-//  per-account breakdown (`WalletAccountsScreen`); switch, rename, and
-//  per-wallet remove live in the row's menu. All logic lives in
+//  per-account breakdown (`WalletAccountsScreen`); switch, rename, recovery
+//  phrase preview, and per-wallet remove live in the row's menu. All logic lives in
 //  `WalletsViewModel`; this view only renders.
 //
 
@@ -32,6 +32,7 @@ struct WalletsScreen: View {
     private let resetDelegate: ResetDelegate
 
     @StateObject private var viewModel = WalletsViewModel()
+    @StateObject private var recoveryPhraseFlow = RecoveryPhraseFlowViewModel()
 
     /// The wallet a confirmation/rename/remove flow is currently targeting.
     @State private var pendingSwitch: WalletRow? = nil
@@ -65,6 +66,16 @@ struct WalletsScreen: View {
                                     renameText = row.displayName
                                     renameTarget = row
                                 },
+                                onViewRecoveryPhrase: {
+                                    recoveryPhraseFlow.beginWallet(
+                                        walletId: row.walletId,
+                                        displayName: row.displayName)
+                                },
+                                onCopySeed: {
+                                    #if DEBUG
+                                    recoveryPhraseFlow.copyWalletMnemonic(walletId: row.walletId)
+                                    #endif
+                                },
                                 onRemove: { beginRemove(row) })
                                 .contentShape(Rectangle())
                                 .onTapGesture { showAccounts(row) }
@@ -82,6 +93,20 @@ struct WalletsScreen: View {
                                     } label: {
                                         Label(NSLocalizedString("Rename", comment: "Wallets"), systemImage: "pencil")
                                     }
+                                    Button {
+                                        recoveryPhraseFlow.beginWallet(
+                                            walletId: row.walletId,
+                                            displayName: row.displayName)
+                                    } label: {
+                                        Label(NSLocalizedString("View Recovery Phrase", comment: ""), systemImage: "key")
+                                    }
+                                    #if DEBUG
+                                    Button {
+                                        recoveryPhraseFlow.copyWalletMnemonic(walletId: row.walletId)
+                                    } label: {
+                                        Label("Copy Seed (Debug)", systemImage: "doc.on.doc")
+                                    }
+                                    #endif
                                     Button(role: .destructive) {
                                         beginRemove(row)
                                     } label: {
@@ -109,6 +134,9 @@ struct WalletsScreen: View {
         }
         .navigationBarHidden(true)
         .onAppear { viewModel.reload() }
+        .onReceive(recoveryPhraseFlow.$navigationEvent.compactMap { $0 }) { event in
+            handleRecoveryPhraseNavigation(event)
+        }
         // Switch confirmation
         .alert(
             NSLocalizedString("Switch Wallet", comment: "Wallets"),
@@ -173,6 +201,21 @@ struct WalletsScreen: View {
             Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage ?? "")
+        }
+        .alert(
+            recoveryPhraseFlow.alertState?.title ?? "",
+            isPresented: Binding(
+                get: { recoveryPhraseFlow.alertState != nil },
+                set: { if !$0 { recoveryPhraseFlow.dismissAlert() } })
+        ) {
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+                recoveryPhraseFlow.dismissAlert()
+            }
+            Button(NSLocalizedString("Retry", comment: "")) {
+                recoveryPhraseFlow.retry()
+            }
+        } message: {
+            Text(recoveryPhraseFlow.alertState?.message ?? "")
         }
     }
 
@@ -244,18 +287,52 @@ struct WalletsScreen: View {
         vc.pushViewController(controller, animated: true)
     }
 
+    // MARK: - Recovery phrase
+
+    private func handleRecoveryPhraseNavigation(_ event: RecoveryPhraseFlowViewModel.NavigationEvent) {
+        switch event.destination {
+        case .picker(let options):
+            let controller = RecoveryPhraseNavigation.pickerController(
+                options: options,
+                flowModel: recoveryPhraseFlow,
+                onCancel: { [weak vc] in
+                    vc?.popViewController(animated: true)
+                })
+            vc.pushViewController(controller, animated: true)
+        case .phrase(let presentation):
+            RecoveryPhraseNavigation.showPhrase(
+                presentation,
+                in: vc,
+                delegate: resetDelegate)
+        }
+
+        DispatchQueue.main.async {
+            recoveryPhraseFlow.consumeNavigationEvent(id: event.id)
+        }
+    }
+
     // MARK: - Remove routing
 
-    /// The last remaining wallet routes to the existing full reset flow
-    /// (`DWResetWalletInfoViewController`), preserving today's reset semantics;
-    /// any other wallet gets the per-wallet recovery-phrase remove sheet.
+    /// A wallet whose recovery phrase provably covers every stored wallet
+    /// (Keychain ground truth) routes to the full reset flow
+    /// (`DWResetWalletInfoViewController`); a wallet with siblings on this
+    /// network gets the per-wallet recovery-phrase remove sheet. A sole
+    /// rendered wallet that can't route to reset — a distinct wallet is
+    /// stored for the other network, or the Keychain couldn't be read — is
+    /// refused up front with an explanation: the per-wallet sheet would
+    /// verify the phrase and then refuse anyway, because removal must leave
+    /// a wallet to switch to.
     private func beginRemove(_ row: WalletRow) {
         if viewModel.removalRoutesToFullReset(walletId: row.walletId) {
             let controller = DWResetWalletInfoViewController.make()
             controller.delegate = resetDelegate
             vc.pushViewController(controller, animated: true)
-        } else {
+        } else if viewModel.rows.contains(where: { $0.walletId != row.walletId }) {
             removeTarget = row
+        } else {
+            viewModel.errorMessage = NSLocalizedString(
+                "This is the only wallet on this network, but other wallet data is stored on this device (or the wallet list could not be read), so it can't be removed here. Remove the other wallet first, or add another wallet on this network.",
+                comment: "Wallets")
         }
     }
 }
@@ -266,6 +343,8 @@ private struct WalletRowView: View {
     let row: WalletRow
     let onSwitch: () -> Void
     let onRename: () -> Void
+    let onViewRecoveryPhrase: () -> Void
+    let onCopySeed: () -> Void
     let onRemove: () -> Void
 
     var body: some View {
@@ -294,7 +373,7 @@ private struct WalletRowView: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.dash.blue)
             }
-            // Visible entry point for switch/rename/remove — the long-press
+            // Visible entry point for switch/rename/recovery phrase/remove — the long-press
             // context menu duplicates these but is undiscoverable on its own.
             Menu {
                 if !row.isActive {
@@ -309,6 +388,18 @@ private struct WalletRowView: View {
                 } label: {
                     Label(NSLocalizedString("Rename", comment: "Wallets"), systemImage: "pencil")
                 }
+                Button {
+                    onViewRecoveryPhrase()
+                } label: {
+                    Label(NSLocalizedString("View Recovery Phrase", comment: ""), systemImage: "key")
+                }
+                #if DEBUG
+                Button {
+                    onCopySeed()
+                } label: {
+                    Label("Copy Seed (Debug)", systemImage: "doc.on.doc")
+                }
+                #endif
                 Button(role: .destructive) {
                     onRemove()
                 } label: {
@@ -359,7 +450,7 @@ private struct RemoveWalletSheet: View {
                             .foregroundColor(.dash.primaryText)
 
                         Text(NSLocalizedString(
-                            "This removes this device's copy of the wallet, including its keys and synced data. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds.",
+                            "This removes this wallet from this device on every network where it is stored, including its private keys and synced data. Other wallets are not affected. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds.",
                             comment: "Wallets"))
                             .font(.subheadline)
                             .foregroundColor(.dash.secondaryText)
@@ -731,7 +822,7 @@ extension WalletsScreen {
     /// DWWipeDelegate chain (MainTabbar → root VC), which transitions to
     /// onboarding and drops the whole main stack. Popping back to this screen
     /// is only the fallback when no chain was provided.
-    final class ResetDelegate: NSObject, DWWipeDelegate {
+    final class ResetDelegate: NSObject, DWSecureWalletDelegate, DWWipeDelegate {
         private let onFinish: () -> Void
         private weak var wipeDelegate: DWWipeDelegate?
 
@@ -747,5 +838,9 @@ extension WalletsScreen {
                 onFinish()
             }
         }
+
+        func secureWalletRoutineDidVerify(_ controller: UIViewController) { }
+        func secureWalletRoutineDidFinish(_ controller: VerifiedSuccessfullyViewController) { }
+        func secureWalletRoutineDidCancel(_ controller: UIViewController) { onFinish() }
     }
 }

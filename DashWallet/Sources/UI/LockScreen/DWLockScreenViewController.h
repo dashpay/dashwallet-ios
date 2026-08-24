@@ -33,6 +33,7 @@ typedef NS_ENUM(NSUInteger, DWLockScreenViewControllerUnlockMode) {
 @protocol DWLockScreenViewControllerDelegate <NSObject>
 
 - (void)lockScreenViewControllerDidUnlock:(DWLockScreenViewController *)controller;
+/// The support-assisted global wipe has already completed successfully.
 - (void)lockScreenViewControllerDidWipe:(DWLockScreenViewController *)controller;
 
 @end

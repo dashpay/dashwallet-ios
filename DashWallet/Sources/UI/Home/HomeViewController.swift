@@ -117,6 +117,9 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        // Evonode epoch-blocks card: cheap no-op inside its refresh throttle.
+        viewModel.refreshEvonodeEpochBlocks()
+
         // Refresh the SDK's local DPNS-names cache from the blockchain
         // so the avatar/profile sheet/Edit Profile see legitimately-
         // owned names that weren't written by registerDpnsName in this
@@ -202,8 +205,13 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
     @objc func notificationAction() {
         // Notifications are backed by the SwiftDashSDK contacts service.
-        let controller = UIHostingController(rootView: NotificationsScreen())
-        navigationController?.pushViewController(controller, animated: true)
+        guard let navigation = navigationController,
+              navigation.topViewController === self else { return }
+        let screen = NotificationsScreen(onBack: { [weak navigation] in
+            navigation?.popViewController(animated: true)
+        })
+        let controller = UIHostingController(rootView: screen)
+        navigation.pushViewController(controller, animated: true)
     }
 
     @objc func profileAction() {
@@ -602,7 +610,9 @@ extension HomeViewController: HomeViewDelegate {
 
     func homeViewShowSyncingStatus() {
         let controller = SyncingAlertViewController()
-        present(controller, animated: true, completion: nil)
+        // Own the popup at the tab-container level so its dimming view also
+        // blocks tab changes while Home's presentation hierarchy is active.
+        (tabBarController ?? self).present(controller, animated: true, completion: nil)
     }
 
     func homeViewDidChangeTopBarVisibility(shouldShow: Bool) {
@@ -626,6 +636,12 @@ extension HomeViewController: HomeViewDelegate {
 
     func homeViewShowSend(network: ChainNetwork) {
         delegate?.showSendLanding(network: network)
+    }
+
+    func homeViewShowMasternodes() {
+        guard let navigation = navigationController,
+              navigation.topViewController === self else { return }
+        navigation.pushViewController(MasternodesScreen.hostingController(popFrom: navigation), animated: true)
     }
     
     #if DASHPAY

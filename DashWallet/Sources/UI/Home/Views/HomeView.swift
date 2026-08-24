@@ -31,6 +31,8 @@ protocol HomeViewDelegate: AnyObject {
     /// The mirror for the balance rows' send (out) arrows: the send sheet
     /// (Send ↔ Internal) pinned to `network` as the source.
     func homeViewShowSend(network: ChainNetwork)
+    /// Opens the wallet's masternode list (the Nodes shortcut).
+    func homeViewShowMasternodes()
     /// Scroll-derived chrome: false at the top of the feed (bar hidden,
     /// balance header owns the space), true once the user scrolls down.
     func homeViewDidChangeTopBarVisibility(shouldShow: Bool)
@@ -325,12 +327,19 @@ struct HomeViewContent<Content: View>: View {
                             .frame(height: viewModel.headerHeight)
                     }
                     
+                    SyncingHeaderView(onFilterTap: {
+                        showFilterDialog = true
+                    }, onSyncTap: {
+                        delegate?.homeViewShowSyncingStatus()
+                    })
+
                     #if DASHPAY
                     if viewModel.showJoinDashpay {
-                        JoinDashPayView(
+                        JoinDashPayMenuItem(
                             viewModel: joinDPViewModel,
-                            onTap: { _ in },
-                            onActionButton: { state in
+                            // The row is the action now — this is what the
+                            // Upgrade/Edit/Retry button used to do.
+                            onTap: { state in
                                 if state == .approved {
                                     delegate?.homeViewEditProfile()
                                     joinDPViewModel.markAsDismissed()
@@ -346,21 +355,16 @@ struct HomeViewContent<Content: View>: View {
                                     // they first looked at DashPay.
                                     self.shouldShowJoinDashPayInfo = true
                                 }
-                            }, onDismissButton: { _ in
+                            }, onDismiss: { _ in
                                 joinDPViewModel.markAsDismissed()
                                 viewModel.checkJoinDashPay()
-                            }
-                        ).padding(.horizontal, 14)
-                         .padding(.bottom, 4)
+                            },
+                            isSyncing: viewModel.isSyncing
+                        )
+                        .padding(.horizontal, 20)
                     }
                     #endif
-                    
-                    SyncingHeaderView(onFilterTap: {
-                        showFilterDialog = true
-                    }, onSyncTap: {
-                        delegate?.homeViewShowSyncingStatus()
-                    })
-                    
+
                     if viewModel.txItems.isEmpty {
                         // An empty feed means "nothing yet" only once the first
                         // load has finished; before that it just means the
@@ -814,7 +818,11 @@ struct HomeViewContent<Content: View>: View {
                     AnyView(Image(uiImage: $0).resizable().scaledToFit().clipShape(Circle()))
                 } ?? contactAvatar ?? routeSymbols.map { transferRouteIcon($0.source) },
                 secondaryIcon: routeSymbols.map { DashIconSource.system($0.destination) }
-                    ?? icons.secondary?.dashIconSource,
+                    ?? icons.secondary?.dashIconSource
+                    // A contact avatar takes the icon slot, so the direction
+                    // moves into the corner badge instead of being dropped —
+                    // matching Android and the tx-detail header.
+                    ?? (contactAvatar == nil ? nil : icons.primary.dashIconSource),
                 title: metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
                 details: txItem.isPendingShieldedTransfer

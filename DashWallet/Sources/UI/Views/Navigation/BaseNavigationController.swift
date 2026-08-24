@@ -232,9 +232,15 @@ extension UINavigationController {
         viewControllers.first(where: { $0 is T })
     }
     
+    /// Replaces the last `n` controllers with `controller`, dropping the whole
+    /// stack when `n` exceeds it. Callers count the screens their own flow
+    /// pushed, but the same screen can be reached with a shallower stack —
+    /// CrowdNode opens on whichever controller matches the account state, so
+    /// its flows can start one or two levels below what the caller assumed —
+    /// and `removeLast` traps rather than throwing when `n` is too large.
     func replaceLast(_ n: Int = 1, with controller: UIViewController, animated: Bool = true) {
         var viewControllers = viewControllers
-        viewControllers.removeLast(n)
+        viewControllers.removeLast(min(n, viewControllers.count))
         viewControllers.append(controller)
         setViewControllers(viewControllers, animated: animated)
     }

@@ -51,13 +51,37 @@ public struct WalletBalance: Equatable, Sendable {
         self.locked = locked
     }
 
-    /// Total user-visible balance: confirmed + unconfirmed + immature.
-    /// `locked` is a subset of `confirmed` (the InstantSend-locked portion
-    /// of the confirmed balance) so it is NOT added separately.
-    public var total: UInt64 { confirmed + unconfirmed + immature }
+    // The four fields are DISJOINT buckets. `key-wallet`'s
+    // `ManagedCoreFundsAccount::update_balance` sorts every UTXO with a single
+    // if / else-if chain — locked first, then immature, then
+    // confirmed-or-InstantSend-locked-or-trusted, else unconfirmed — so a UTXO
+    // contributes to exactly one of them.
+    //
+    // In particular `locked` is NOT the InstantSend-locked part of `confirmed`:
+    // IS-locked funds land in `confirmed`, while `locked` is a separate
+    // reserved bucket (`Utxo.is_locked`, intended for CoinJoin-style coin
+    // locking). Nothing in production sets that flag today, so it reads 0 —
+    // which is why the earlier arithmetic could be wrong here without anyone
+    // noticing.
 
-    /// Spendable balance: confirmed minus the InstantSend-locked subset.
-    public var spendable: UInt64 { confirmed > locked ? confirmed - locked : 0 }
+    /// Total user-visible balance — every bucket, matching
+    /// `WalletCoreBalance::total()`.
+    public var total: UInt64 { confirmed + unconfirmed + immature + locked }
+
+    /// Spendable balance — `confirmed` only.
+    ///
+    /// Deliberately NOT `WalletCoreBalance::spendable()` (confirmed +
+    /// unconfirmed). What gates a real send is the transaction builder's coin
+    /// selection, and that is the stricter set: `Utxo::is_spendable`'s own doc
+    /// tells callers that want "the spendable balance bucket or conservative
+    /// coin selection" to check `is_confirmed || is_instantlocked` — which is
+    /// what the `confirmed` bucket already holds (plus trusted change).
+    /// Reporting untrusted 0-conf here would offer the user money that coin
+    /// selection then refuses, failing the send with "Insufficient funds".
+    ///
+    /// `locked` is absent from the sum rather than subtracted: the buckets are
+    /// disjoint, so it never overlapped `confirmed` to begin with.
+    public var spendable: UInt64 { confirmed }
 
     /// Conservative fee headroom reserved on top of a fixed-amount send so a
     /// "Max"/affordability value stays sendable. Approximate — Core has no
@@ -105,10 +129,10 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// wallet. Reported in credits (1e11 credits per DASH). Refreshed
     /// in lockstep with `balance` updates — every Core-balance event
     /// is treated as a hint that BLAST sync has progressed and a
-    /// platform-address re-tally may be worthwhile. Reads from
-    /// SwiftData synchronously on the main context; the underlying
-    /// table is small (one row per HD-derived platform address) so
-    /// this is cheap.
+    /// platform-address re-tally may be worthwhile. The tally itself
+    /// runs on a background `ModelContext` and is throttled to ~1
+    /// run/second (`refreshPlatformPaymentCredits`), so this property
+    /// updates asynchronously shortly after a refresh is requested.
     ///
     /// Consumed by `CreateUsernameViewModel` to gate the
     /// SwiftDashSDK identity-registration flow's funding-source
@@ -179,11 +203,13 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.balance = snapshot
-            // `refreshPlatformPaymentCredits` is @MainActor (it reads
-            // `SwiftDashSDKHost.shared.wallet/.modelContainer`, both
-            // MainActor-isolated). We're already on the main queue
-            // here, so `assumeIsolated` is the synchronous, zero-hop
-            // way to satisfy the isolation requirement.
+            // Both refresh methods are @MainActor (they read
+            // MainActor-isolated `SwiftDashSDKHost.shared` state).
+            // We're already on the main queue here, so
+            // `assumeIsolated` is the synchronous, zero-hop way to
+            // satisfy the isolation requirement. The credits refresh
+            // only schedules a throttled background tally, so this
+            // stays cheap even during sync-burst balance events.
             MainActor.assumeIsolated {
                 self.refreshPlatformPaymentCredits()
                 self.refreshCoinJoinBalance()
@@ -194,11 +220,31 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         }
     }
 
-    /// Re-tally the Platform Payment credit balance from SwiftData.
-    /// Idempotent — safe to call from any MainActor consumer that
-    /// needs a fresh snapshot (e.g. `CreateUsernameViewModel.observeBalance`
-    /// on view-model init, before the next Core-balance hook fires).
-    /// No-op when the wallet handle or model container isn't ready.
+    /// Non-nil while a Platform-credit tally (plus its 1 s cool-down)
+    /// is in flight. Requests arriving during that window flip
+    /// `platformCreditsRerunRequested` instead of spawning another
+    /// fetch, and replay as a single trailing tally when the window
+    /// closes — so sync-burst balance events (one every ~0.5 s) cost
+    /// at most one SwiftData round trip per second and the final
+    /// event's state is always applied.
+    @MainActor private var platformCreditsTallyTask: Task<Void, Never>?
+    @MainActor private var platformCreditsRerunRequested = false
+
+    /// Request a re-tally of the Platform Payment credit balance from
+    /// SwiftData. Idempotent — safe to call from any MainActor
+    /// consumer that wants a fresh snapshot (e.g.
+    /// `CreateUsernameViewModel.observeBalance` on view-model init,
+    /// before the next Core-balance hook fires). No-op when the wallet
+    /// handle or model container isn't ready.
+    ///
+    /// Asynchronous: the fetch + sum runs on a background
+    /// `ModelContext` and publishes into `platformPaymentCredits` on
+    /// the MainActor when it lands — this method returns before the
+    /// value updates, so consumers observe `$platformPaymentCredits`
+    /// rather than reading it on return. Keeping the SQLite work
+    /// off-main matters because the tally can block on the WAL write
+    /// lock while the background sync persister is committing (every
+    /// ~0.5 s during sync), which used to stall the main thread.
     ///
     /// `@MainActor` is required because the function reads
     /// `SwiftDashSDKHost.shared.wallet/.modelContainer`, both
@@ -208,6 +254,34 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// call this via `MainActor.assumeIsolated`.
     @MainActor
     public func refreshPlatformPaymentCredits() {
+        if platformCreditsTallyTask != nil {
+            platformCreditsRerunRequested = true
+            return
+        }
+        platformCreditsTallyTask = Task { @MainActor [weak self] in
+            await self?.tallyPlatformPaymentCredits()
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            // On cancellation `cancelPlatformCreditsTally` already
+            // reset the throttle state (and may have been replaced by
+            // a newer task) — don't clobber it.
+            guard let self, !Task.isCancelled else { return }
+            let rerun = self.platformCreditsRerunRequested
+            self.platformCreditsRerunRequested = false
+            self.platformCreditsTallyTask = nil
+            if rerun {
+                self.refreshPlatformPaymentCredits()
+            }
+        }
+    }
+
+    /// One Platform-credit tally: fetch the wallet's
+    /// `PersistentPlatformAddress` balances on a background context,
+    /// then publish the sum. Only `refreshPlatformPaymentCredits`
+    /// calls this (inside `platformCreditsTallyTask`), so
+    /// `Task.isCancelled` reflects a wipe/switch cancellation from
+    /// `cancelPlatformCreditsTally` and gates the publish.
+    @MainActor
+    private func tallyPlatformPaymentCredits() async {
         guard
             let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
             let container = SwiftDashSDKHost.shared.modelContainer
@@ -218,30 +292,42 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             return
         }
 
-        let context = container.mainContext
-        // Filter accounts to PlatformPayment (`accountType == 14`) for
-        // this wallet — the only account type that carries
-        // `platformAddresses`. The persister keeps `balance` upserted
-        // by BLAST sync, so a fetch + reduce is sufficient; no live
-        // FFI call needed.
-        let descriptor = FetchDescriptor<PersistentAccount>(
-            predicate: #Predicate { account in
-                account.accountType == 14
-                    && account.wallet.walletId == walletId
+        // Fetch the address rows directly — one indexed SQLite
+        // statement via the denormalized `walletId` column — instead
+        // of traversing `PersistentAccount.platformAddresses`, which
+        // faults every row through its own `performAndWait` fetch.
+        // Platform addresses exist only under PlatformPayment
+        // accounts (`accountType == 14`), so the wallet-scoped
+        // address set equals the account-scoped tally. The persister
+        // keeps `balance` upserted by BLAST sync, so fetch + sum is
+        // sufficient; no live FFI call needed.
+        let total: UInt64? = await Task.detached(priority: .utility) {
+            let descriptor = FetchDescriptor<PersistentPlatformAddress>(
+                predicate: PersistentPlatformAddress.predicate(walletId: walletId))
+            do {
+                let context = ModelContext(container)
+                return try context.fetch(descriptor).reduce(UInt64(0)) { $0 + $1.balance }
+            } catch {
+                Self.logger.warning("💰 WALLET :: platformPaymentCredits fetch failed: \(String(describing: error), privacy: .public)")
+                return nil
             }
-        )
-        do {
-            let accounts = try context.fetch(descriptor)
-            let total = accounts.reduce(UInt64(0)) { acc, account in
-                acc + account.platformAddresses.reduce(UInt64(0)) { $0 + $1.balance }
-            }
-            if platformPaymentCredits != total {
-                platformPaymentCredits = total
-                Self.logger.info("💰 WALLET :: platformPaymentCredits=\(total, privacy: .public) credits")
-            }
-        } catch {
-            Self.logger.warning("💰 WALLET :: platformPaymentCredits fetch failed: \(String(describing: error), privacy: .public)")
+        }.value
+
+        guard let total, !Task.isCancelled else { return }
+        if platformPaymentCredits != total {
+            platformPaymentCredits = total
+            Self.logger.info("💰 WALLET :: platformPaymentCredits=\(total, privacy: .public) credits")
         }
+    }
+
+    /// Drop any in-flight tally so it cannot publish a stale total
+    /// after the clear paths reset `platformPaymentCredits` to 0
+    /// (wipe-then-recover, network switch).
+    @MainActor
+    private func cancelPlatformCreditsTally() {
+        platformCreditsTallyTask?.cancel()
+        platformCreditsTallyTask = nil
+        platformCreditsRerunRequested = false
     }
 
     /// Re-tally the CoinJoin-account spendable balance via
@@ -304,6 +390,9 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         DispatchQueue.main.async { [weak self] in
             Self.logger.info("💰 WALLET :: clearing balance")
             self?.balance = nil
+            MainActor.assumeIsolated {
+                self?.cancelPlatformCreditsTally()
+            }
             self?.platformPaymentCredits = 0
             self?.coinJoinBalanceDuffs = 0
             NotificationCenter.default.post(
@@ -319,6 +408,9 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         let clearBlock = { [weak self] in
             Self.logger.info("💰 WALLET :: clearing all wallet state")
             self?.balance = nil
+            MainActor.assumeIsolated {
+                self?.cancelPlatformCreditsTally()
+            }
             self?.platformPaymentCredits = 0
             self?.coinJoinBalanceDuffs = 0
             NotificationCenter.default.post(

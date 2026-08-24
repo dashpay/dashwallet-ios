@@ -42,18 +42,42 @@ import OSLog
 import SwiftData
 import SwiftDashSDK
 
+/// How many Orchard actions the app may put in one shielded transition.
+///
+/// Consensus allows 16 (`system_limits.max_shielded_transition_actions`), but
+/// the 20 KiB `system_limits.max_state_transition_size` binds first: the Halo 2
+/// proof grows ~2,681 bytes per action. Platform's
+/// `seed_pool_batch_fits_max_state_transition_size` test measures 2 actions →
+/// 8,294 B, 6 → 19,018 B, 7 → 21,699 B — and the 7-action bundle is rejected,
+/// which reaches the app as "State Transition exceeds maximum size of 20480
+/// bytes" from DAPI's broadcast check. Rust's pool seeder pins the same bound
+/// as `MAX_ACTIONS_PER_BATCH` in `rs-platform-wallet/src/wallet/shielded/seed_pool.rs`.
+///
+/// Spending more notes than this needs a second transition, which the sweep
+/// planner reports as `ShieldedSweepPlan.remainingCredits`.
+enum ShieldedActionBudget {
+    static let maxActionsPerTransition = 6
+}
+
 /// A note-aware full-balance spend plan. Unlike the amount screens' normal
 /// affordability reserve, a sweep prices the fee from the notes that will
 /// actually enter the Orchard bundle. That keeps a one-note withdrawal from
-/// reserving the 16-action worst-case fee and returning the difference as a
-/// persistent change note.
+/// reserving the worst-case fee for a full
+/// `ShieldedActionBudget.maxActionsPerTransition` bundle and returning the
+/// difference as a persistent change note.
 struct ShieldedSweepPlan: Equatable {
     let amountCredits: UInt64
     let feeCredits: UInt64
     let inputCredits: UInt64
     /// Funds that necessarily stay in the pool after this bundle. Normally
-    /// zero; non-zero when more than 16 notes require another sweep.
+    /// zero; non-zero when the notes do not all fit, or when some are worth
+    /// less than the fee of the action that would spend them.
     let remainingCredits: UInt64
+    /// What a FOLLOW-UP sweep of the leftover notes could actually pay out,
+    /// once its own fee is deducted. Zero when the leftovers are dust: they
+    /// cost more to spend than they carry, so no later sweep can move them
+    /// and telling the user to retry would loop forever.
+    let followUpCredits: UInt64
 }
 
 struct ShieldedSweepCandidate: Equatable {
@@ -69,7 +93,7 @@ struct ShieldedSweepCandidate: Equatable {
 enum ShieldedSweepPlanner {
     static func bestCandidate(
         noteValues: [UInt64],
-        maxActions: Int = 16,
+        maxActions: Int = ShieldedActionBudget.maxActionsPerTransition,
         feeForActions: (Int) -> UInt64?
     ) -> ShieldedSweepCandidate? {
         guard maxActions > 0 else { return nil }
@@ -114,7 +138,7 @@ enum ShieldedSweepPlanner {
     static func revalidate(
         noteValues: [UInt64],
         amountCredits: UInt64,
-        maxActions: Int = 16,
+        maxActions: Int = ShieldedActionBudget.maxActionsPerTransition,
         feeForActions: (Int) -> UInt64?
     ) -> ShieldedSweepCandidate? {
         let values = noteValues.sorted(by: >)
@@ -238,10 +262,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case noPlatformAddress
         case authCancelled
         case authFailed
-        case amountBelowCoreToShieldedMinimum(UInt64)
+        case shieldedPoolFeeUnavailable
         case platformShieldCapacityChanged(maxShieldableCredits: UInt64?)
         case shieldedSweepWaiting(UInt64)
         case shieldedSweepChanged
+        case shieldedAmountExceedsBundle(UInt64)
         case transferFailed(Error)
 
         var errorDescription: String? {
@@ -264,13 +289,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString("Authentication cancelled", comment: "InternalTransfer")
             case .authFailed:
                 return NSLocalizedString("Authentication failed", comment: "InternalTransfer")
-            case .amountBelowCoreToShieldedMinimum(let minimumDuffs):
-                let formattedMinimum = "\(minimumDuffs.formattedDashAmountWithoutCurrencySymbol) DASH"
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "The minimum amount you can send is %@",
-                        comment: "Core to Shielded minimum amount"),
-                    formattedMinimum)
+            case .shieldedPoolFeeUnavailable:
+                return NSLocalizedString(
+                    "There was an error, please try again later",
+                    comment: "Core to Shielded pool fee estimate unavailable")
             case .platformShieldCapacityChanged(let maxShieldableCredits):
                 guard let maxShieldableCredits else {
                     return NSLocalizedString(
@@ -288,13 +310,20 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
                 return String.localizedStringWithFormat(
                     NSLocalizedString(
-                        "%@ DASH is still confirming. Withdraw again once it settles.",
+                        "%@ DASH is still confirming. Try again once it settles.",
                         comment: "Shielded sweep pending change"),
                     formatted)
             case .shieldedSweepChanged:
                 return NSLocalizedString(
                     "Your Shielded balance changed. Close this confirmation and tap Max again.",
                     comment: "Shielded sweep changed before submit")
+            case .shieldedAmountExceedsBundle(let ceiling):
+                let formatted = (ceiling / 1000).formattedDashAmountWithoutCurrencySymbol
+                return String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "Your Shielded balance is split across notes, and at most %@ DASH of it can be sent in one transaction.",
+                        comment: "Shielded amount above the single-transaction ceiling"),
+                    formatted)
             case .transferFailed(let underlying):
                 return underlying.localizedDescription
             }
@@ -304,10 +333,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
     // MARK: - Full-balance shielded sweep
 
     /// Builds the Max plan from the active wallet's persisted unspent notes.
-    /// The Rust selector is largest-first and a transition is capped at 16
-    /// actions, so the first bundle consumes at most the 16 largest notes.
-    /// Any remainder is reported to the amount screen instead of being left
-    /// behind silently.
+    /// The Rust selector is largest-first and the app caps a transition at
+    /// `ShieldedActionBudget.maxActionsPerTransition` actions, so the first
+    /// bundle consumes at most that many of the largest notes. Any remainder is
+    /// reported to the amount screen instead of being left behind silently.
     static func sweepAvailability(
         feeKind: PlatformWalletManager.ShieldedFeeKind
     ) -> ShieldedSweepAvailability {
@@ -367,12 +396,52 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return .waitingForConfirmation(publishedBalance)
         }
 
+        // What a follow-up sweep of the untouched notes could pay out. The
+        // planner drops a note whose value is below the fee of the action that
+        // would carry it, so a leftover is not automatically sendable later —
+        // price it instead of assuming.
+        let leftovers = Array(noteValues.dropFirst(exact.noteCount))
+        let followUpCredits = ShieldedSweepPlanner.bestCandidate(
+            noteValues: leftovers,
+            feeForActions: feeForActions)?.amountCredits ?? 0
+
         return .ready(
             ShieldedSweepPlan(
                 amountCredits: exact.amountCredits,
                 feeCredits: exact.feeCredits,
                 inputCredits: exact.inputCredits,
-                remainingCredits: allCredits - exact.inputCredits))
+                remainingCredits: allCredits - exact.inputCredits,
+                followUpCredits: followUpCredits))
+    }
+
+    /// Largest amount the pool can fund inside ONE transition — the sweep
+    /// plan's payout, which is by construction the best `ShieldedActionBudget`
+    /// notes can do. A larger amount needs more notes than the 20 KiB
+    /// state-transition limit admits, so it would be rejected at broadcast
+    /// after the proof was built.
+    ///
+    /// `nil` while the note set is mid-reconcile — the caller then has no
+    /// note-aware bound and falls back to its balance envelope.
+    static func spendCeilingCredits(
+        feeKind: PlatformWalletManager.ShieldedFeeKind
+    ) -> UInt64? {
+        guard case .ready(let plan) = sweepAvailability(feeKind: feeKind) else { return nil }
+        return plan.amountCredits
+    }
+
+    /// Fails closed when a non-sweep amount needs more notes than one
+    /// transition can carry. The amount screens check this too, but the guard
+    /// belongs here as well: it is the last point before authorization and
+    /// proof generation, and it covers callers that never ran that check.
+    private func rejectIfAboveSpendCeiling(
+        _ amountCredits: UInt64,
+        feeKind: PlatformWalletManager.ShieldedFeeKind
+    ) -> Bool {
+        guard let ceiling = Self.spendCeilingCredits(feeKind: feeKind),
+              amountCredits > ceiling
+        else { return false }
+        handleFailure(CoordinatorError.shieldedAmountExceedsBundle(ceiling))
+        return true
     }
 
     // MARK: - Public API
@@ -384,9 +453,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
     ///
     /// Which balance funds the asset lock.
     enum AssetLockFundingSource: Equatable {
-        /// Exact amount, coin-selected from the BIP44 spendable balance —
-        /// the historical route behind the internal transfer and Send.
-        case bip44(amountDuffs: UInt64)
+        /// Amount the shielded recipient receives, coin-selected from the
+        /// BIP44 spendable balance — the historical route behind the internal
+        /// transfer and Send. The coordinator locks this plus the Type-18
+        /// pool fee on top.
+        case bip44(recipientAmountDuffs: UInt64)
         /// Whole-balance drain of the CoinJoin account: every mixed-coin
         /// UTXO funds the lock directly (lock value = Σ inputs − L1 fee,
         /// computed SDK-side) — the post-migration "move mixed coins to
@@ -396,35 +467,45 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     /// `recipientRaw43` nil = the wallet's own default Orchard address (the
     /// internal transfer); an external Send passes the recipient's raw
-    /// 43-byte payload. Type 18's remainder semantics apply either way: the
-    /// recipient receives `lock_value − pool_fee`.
-    func performAssetLock(amountDuffs: UInt64, recipientRaw43 recipientOverride: Data? = nil) async {
-        await performAssetLock(funding: .bip44(amountDuffs: amountDuffs), recipientRaw43: recipientOverride)
+    /// 43-byte payload. The recipient receives exactly `recipientAmountDuffs`:
+    /// the coordinator inflates the lock by the Type-18 pool fee, which the
+    /// SDK then subtracts back out (`shield_amount = lock − pool_fee`).
+    func performAssetLock(recipientAmountDuffs: UInt64, recipientRaw43 recipientOverride: Data? = nil) async {
+        await performAssetLock(
+            funding: .bip44(recipientAmountDuffs: recipientAmountDuffs),
+            recipientRaw43: recipientOverride)
     }
 
-    /// Funding-parameterized form of `performAssetLock(amountDuffs:)` — same
-    /// stages, polling, and resume semantics for both funding sources (a
-    /// stuck lock resumes by outpoint regardless of what funded it).
+    /// Funding-parameterized form of `performAssetLock(recipientAmountDuffs:)`
+    /// — same stages, polling, and resume semantics for both funding sources
+    /// (a stuck lock resumes by outpoint regardless of what funded it).
     func performAssetLock(funding: AssetLockFundingSource, recipientRaw43 recipientOverride: Data? = nil) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route funding=\(String(describing: funding), privacy: .public) external=\(recipientOverride != nil)")
 
-        // Backstop both amount screens at the execution boundary. Besides
-        // protecting programmatic callers, this keeps a stale Confirm sheet
-        // from surfacing the Rust SDK's raw ShieldFromAssetLock build error.
-        // Only the BIP44 exact-amount form carries a caller amount; the
+        // The single fee-on-top point: the BIP44 form carries the amount the
+        // recipient must receive, and the lock is inflated by the pool fee
+        // here so the SDK's `shield_amount = lock − pool_fee` lands back on
+        // exactly that amount. Fails closed — a missing fee estimate, a zero
+        // amount, or overflow must never submit an un-inflated lock. The
         // CoinJoin drain's lock value is computed SDK-side, which preflights
         // it against the pool fee before broadcasting.
-        if case .bip44(let amountDuffs) = funding,
-           let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits {
-            let minimumDuffs = CoreToShieldedAmountPolicy.minimumAmountDuffs(
-                poolFeeCredits: poolFeeCredits)
-            guard amountDuffs >= minimumDuffs else {
-                handleFailure(
-                    CoordinatorError.amountBelowCoreToShieldedMinimum(minimumDuffs))
+        let bip44LockValueDuffs: UInt64?
+        if case .bip44(let recipientAmountDuffs) = funding {
+            guard recipientAmountDuffs > 0,
+                  let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
+                  let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
+                      forAmountDuffs: recipientAmountDuffs,
+                      poolFeeCredits: poolFeeCredits)
+            else {
+                handleFailure(CoordinatorError.shieldedPoolFeeUnavailable)
                 return
             }
+            bip44LockValueDuffs = lockDuffs
+            Self.logger.info("🛡️ SHIELD-TX :: fee-on-top lock recipient=\(recipientAmountDuffs) lock=\(lockDuffs)")
+        } else {
+            bip44LockValueDuffs = nil
         }
 
         let env: Environment
@@ -451,11 +532,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 recipientRaw43: recipientOverride ?? env.shieldedRecipient,
                 credits: nil)
             switch funding {
-            case .bip44(let amountDuffs):
+            case .bip44:
+                guard let lockValueDuffs = bip44LockValueDuffs else {
+                    // Unreachable: the entry guard derives it for every .bip44.
+                    throw CoordinatorError.shieldedPoolFeeUnavailable
+                }
                 try await env.manager.shieldedFundFromAssetLock(
                     walletId: env.walletId,
                     fundingAccountIndex: 0,
-                    amountDuffs: amountDuffs,
+                    amountDuffs: lockValueDuffs,
                     recipients: [recipient])
             case .coinJoinDrain:
                 try await env.manager.shieldedFundFromCoinJoinDrain(
@@ -740,6 +825,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return
             }
         } else {
+            if rejectIfAboveSpendCeiling(amountCredits, feeKind: .withdrawal) { return }
             submittedAmount = amountCredits
         }
 
@@ -845,6 +931,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return
             }
         } else {
+            if rejectIfAboveSpendCeiling(amountCredits, feeKind: .unshield) { return }
             submittedAmount = amountCredits
         }
 
@@ -1067,7 +1154,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Orchard address, decoded from their bech32m display form). Stages:
     /// `.signing → .proving → .broadcasting → .success` — same opaque-call
     /// shape as `performWithdraw`/`performUnshield`.
-    func performShieldedTransfer(amountCredits: UInt64, recipientRaw43: Data) async {
+    func performShieldedTransfer(
+        amountCredits: UInt64,
+        sweepAll: Bool = false,
+        recipientRaw43: Data
+    ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: shielded→shielded send amount=\(amountCredits) credits")
 
@@ -1077,6 +1168,27 @@ final class ShieldedTransferCoordinator: ObservableObject {
         } catch {
             handleFailure(error)
             return
+        }
+
+        // Re-price the sweep against the note set as it stands now — same
+        // guard as `performWithdraw`, so a note that was spent or discovered
+        // between Max and confirm fails closed instead of building a bundle
+        // the pool can no longer fund exactly.
+        let submittedAmount: UInt64
+        if sweepAll {
+            switch Self.sweepAvailability(feeKind: .transfer) {
+            case .ready(let plan) where plan.amountCredits == amountCredits:
+                submittedAmount = plan.amountCredits
+            case .waitingForConfirmation(let credits):
+                handleFailure(CoordinatorError.shieldedSweepWaiting(credits))
+                return
+            case .ready, .unavailable:
+                handleFailure(CoordinatorError.shieldedSweepChanged)
+                return
+            }
+        } else {
+            if rejectIfAboveSpendCeiling(amountCredits, feeKind: .transfer) { return }
+            submittedAmount = amountCredits
         }
 
         do {
@@ -1095,7 +1207,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 resolver: MnemonicResolver(),
                 account: 0,
                 recipientRaw43: recipientRaw43,
-                amount: amountCredits)
+                amount: submittedAmount)
         } catch {
             handleSpendError(error, manager: env.manager)
             return
