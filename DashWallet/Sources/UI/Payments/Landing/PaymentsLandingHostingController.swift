@@ -43,8 +43,9 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
                     viewModel: self.embeddedSendViewModel,
                     onSendCompleted: { [weak self] in self?.dismiss(animated: true) })
             },
-            onInternalTransfer: { [weak self] target in self?.pushInternalTransfer(to: target) },
             onSendToAddress: { [weak self] in self?.pushSendToAddress() },
+            onSendToUsername: { [weak self] in self?.showContactBook() },
+            onSwapToCrypto: { [weak self] in self?.presentDashDEX() },
             showsHeader: showsHeader)
         return UIHostingController(rootView: screen)
     }()
@@ -322,11 +323,57 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         viewModel.activeTab = tab
     }
 
-    /// Internal card → the transfer form, on this controller's own navigation
-    /// stack so the user stays inside the payments tab.
-    private func pushInternalTransfer(to destination: TransferDestination) {
-        let controller = InternalTransferHostingController(transferTo: destination)
-        pushWithoutTabBar(controller)
+    #if DASHPAY
+    /// "Send to username" → the contact book. The same screen the Send-to-a-
+    /// contact entry opens (`PayableViewController.performPayToDashPayUser`);
+    /// paying happens from a contact's profile sheet, so this row's whole job
+    /// is getting the user there.
+    ///
+    /// Selects the contacts TAB rather than showing a copy of the screen.
+    ///
+    /// `ContactsScreen` is a tab root and only works as one. It runs its banner
+    /// under the status bar (`ignoresSafeArea(edges: .top)`) and lets the safe
+    /// area place the title inside it, which collapses in a sheet; and it
+    /// carries no dismiss control, because a tab root never needs one — pushing
+    /// it onto this stack left the user with no way back, since the payments
+    /// navigation controller hides its bar.
+    ///
+    /// The tab is there whenever this row is: both appear only with a DashPay
+    /// identity. The tab bar is the way back, and there stays exactly one
+    /// contacts screen in the app.
+    private func showContactBook() {
+        guard let tabBarController = tabBarController as? MainTabbarController,
+              tabBarController.showContacts()
+        else {
+            // No contacts tab means no identity — which is also the condition
+            // that hides the row. Reaching here would be a bug, and silently
+            // doing nothing is how it would stay invisible.
+            assertionFailure("Send to username offered without a contacts tab")
+            return
+        }
+    }
+    #else
+    private func showContactBook() {}
+    #endif
+
+    /// "Swap to other crypto" → the Dash DEX portal.
+    ///
+    /// Behind the same authentication gate the Home shortcut puts it behind:
+    /// the portal is a spending surface, and a destination that asks for a PIN
+    /// from one entry point and not another is not a gate at all.
+    private func presentDashDEX() {
+        AuthenticationService.shared.authenticate(
+            withPrompt: nil,
+            usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
+            alertIfLockout: true
+        ) { [weak self] authenticated, _, _ in
+            guard authenticated, let self else { return }
+            let controller = SwapKitPortalViewController()
+            controller.hidesBottomBarWhenPushed = true
+            let navigationController = BaseNavigationController(rootViewController: controller)
+            navigationController.modalPresentationStyle = .fullScreen
+            self.present(navigationController, animated: true)
+        }
     }
 
     /// Send card → the address-entry form. Pushed rather than embedded: the

@@ -43,12 +43,15 @@ struct PaymentsLandingScreen: View {
     /// The Send tab's address is valid → advance to the amount step. The host
     /// pushes `ExternalSendAmountScreen` onto the landing's navigation stack.
     var onSendContinue: () -> Void = {}
-    /// A destination picked on the Internal tab's card — the host pushes the
-    /// transfer form with that balance preselected as the To endpoint.
-    var onInternalTransfer: (TransferDestination) -> Void = { _ in }
-    /// "Send to address" on the Send tab's card — the host pushes the send
+    /// "Send to Dash address" on the Send tab's card — the host pushes the send
     /// form. (Its sibling row routes through `onScanQR`.)
     var onSendToAddress: () -> Void = {}
+    /// "Send to username" — the host presents the contact book. Offered only
+    /// while `viewModel.canSendToUsername`.
+    var onSendToUsername: () -> Void = {}
+    /// "Swap to other crypto" — the host presents the Dash DEX portal. This
+    /// leaves Dash for another chain and is not an internal transfer.
+    var onSwapToCrypto: () -> Void = {}
     /// False for the balance-row receive/send sheets: their grabber + hero
     /// selector are the top chrome — no X close button or title row.
     var showsHeader: Bool = true
@@ -104,6 +107,16 @@ struct PaymentsLandingScreen: View {
         return false
     }
 
+    /// A horizontal swipe changes tab only where the tab is a card.
+    ///
+    /// Off wherever the content is a whole form with a keypad, because paging
+    /// away mid-entry drops what the user typed. That was the balance-row
+    /// sheets; the landing's Internal tab joins them now that it opens straight
+    /// into the transfer form instead of a destination card.
+    private var allowsTabSwipe: Bool {
+        isPickerMode && viewModel.activeTab != .internalTransfer
+    }
+
     var body: some View {
         VStack(alignment: .center, spacing: 20) {
             if showsHeader {
@@ -136,7 +149,7 @@ struct PaymentsLandingScreen: View {
         // `.gesture` (not `highPriority`) so rows and buttons keep winning
         // their taps. `including:` is how the gesture is switched off — the
         // modifier has no nil overload.
-        .gesture(tabSwipe, including: isPickerMode ? .all : .subviews)
+        .gesture(tabSwipe, including: allowsTabSwipe ? .all : .subviews)
         .navigationBarHidden(true)
         // Keyed on the receipt's id, not on the receipt: a second payment
         // arriving replaces the card rather than cross-fading into itself.
@@ -251,12 +264,15 @@ struct PaymentsLandingScreen: View {
         case .internalTransfer:
             switch mode {
             case .picker:
-                pickerLayout {
-                    PaymentsInternalCard(
-                        onSelect: onInternalTransfer,
-                        showsAdvancedDestinations: viewModel.isAdvancedMode)
-                        .padding(.horizontal, Layout.cardHorizontalPadding)
-                }
+                // No destination card first: the form's own From and To cards
+                // pick the same endpoints, so the card was a step that asked
+                // for something the next screen asked for again.
+                InternalTransferScreen(
+                    viewModel: embeddedTransferViewModel,
+                    onCompleted: onTransferCompleted,
+                    showsHeader: false
+                )
+                .padding(.top, Layout.embeddedFormTopPadding)
 
             case let .sendingFrom(source):
                 InternalTransferScreen(
@@ -282,8 +298,12 @@ struct PaymentsLandingScreen: View {
             case .picker, .receivingInto:
                 pickerLayout {
                     PaymentsSendCard(
+                        showsSendToUsername: viewModel.canSendToUsername,
+                        onSendToUsername: onSendToUsername,
+                        onSendToAddress: onSendToAddress,
                         onScanQR: onScanQR,
-                        onSendToAddress: onSendToAddress
+                        showsSwapToCrypto: viewModel.canSwapToOtherCrypto,
+                        onSwapToCrypto: onSwapToCrypto
                     )
                     .padding(.horizontal, Layout.cardHorizontalPadding)
                 }

@@ -117,6 +117,22 @@ final class PaymentsLandingViewModel: ObservableObject {
     /// the whole landing on every keystroke in the embedded amount field.
     @Published private(set) var isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
 
+    /// Whether the Send tab offers "Send to username".
+    ///
+    /// Both halves are required: the row opens the contact book, which needs an
+    /// identity to hold contacts, and a wallet that cannot name itself has
+    /// nothing to send *from* in that flow. False everywhere DashPay is not
+    /// built.
+    @Published private(set) var canSendToUsername = false
+
+    /// Whether the Send tab offers "Swap to other crypto".
+    ///
+    /// The same gate the Dash DEX shortcut is behind: the portal swaps real
+    /// assets across real chains, which testnet coins cannot do, and it is
+    /// useless without the SwapKit key. Fixed for the lifetime of the screen —
+    /// both inputs need a relaunch to change.
+    let canSwapToOtherCrypto = !WalletEnvironment.isTestnet && SwapKitConstants.isConfigured
+
     @Published private(set) var coreAddress: String? = nil
     @Published private(set) var platformAddress: String? = nil
     @Published private(set) var shieldedAddress: String? = nil
@@ -170,6 +186,20 @@ final class PaymentsLandingViewModel: ObservableObject {
                 self?.isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
             }
             .store(in: &cancellables)
+
+        #if DASHPAY
+        refreshCanSendToUsername()
+
+        // The identity can be adopted while this landing is already up — a
+        // registration finishing, or a recovery resolving one — and the row
+        // has to appear without the user leaving the tab.
+        NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.refreshCanSendToUsername()
+            }
+            .store(in: &cancellables)
+        #endif
 
         PlatformAddressSyncCoordinator.shared.$derivedAddresses
             .receive(on: RunLoop.main)
@@ -347,6 +377,17 @@ final class PaymentsLandingViewModel: ObservableObject {
     private func reloadCoreAddress() {
         coreAddress = SwiftDashSDKReceiveAddressReader.receiveAddress()
     }
+
+    #if DASHPAY
+    /// Reads the network-scoped SDK truth, the same source
+    /// `JoinDashPayRegistrationPolicy` treats as authoritative. The legacy
+    /// `DWGlobalOptions` username mirror is global and cleared on every network
+    /// switch, so it would offer the row on a network with no identity.
+    private func refreshCanSendToUsername() {
+        let identity = DWCurrentUserIdentityInfo.shared
+        canSendToUsername = identity.hasIdentity && identity.username?.isEmpty == false
+    }
+    #endif
 
     /// Resolves the wallet's default Orchard payment address and encodes it
     /// for display. `shieldedDefaultAddress` returns nil until the shielded

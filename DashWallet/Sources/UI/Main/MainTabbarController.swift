@@ -87,6 +87,11 @@ class MainTabbarController: UITabBarController {
     /// the DashPay layout inserts tabs before this one.
     private weak var paymentsTabRootController: PaymentsTabRootController?
     private var paymentsTabIndex: Int?
+    #if DASHPAY
+    /// Nil until an identity exists — the Contacts tab is only built then, and
+    /// its position moves with the rest of the DashPay layout.
+    private var contactsTabIndex: Int?
+    #endif
     weak var menuNavigationController: MainMenuViewController?
 
     #if DASHPAY
@@ -181,6 +186,12 @@ class MainTabbarController: UITabBarController {
 extension MainTabbarController {
     private func configureControllers() {
         var viewControllers: [UIViewController] = []
+        #if DASHPAY
+        // Cleared before the rebuild, not after: this pass may be the one that
+        // drops the Contacts tab (a wallet switch away from an identity), and a
+        // surviving index would then point at whatever took its place.
+        contactsTabIndex = nil
+        #endif
 
         // Home
         var item = UITabBarItem(title: nil, image: MainTabbarTabs.home.icon, selectedImage: MainTabbarTabs.home.selectedIcon)
@@ -207,6 +218,7 @@ extension MainTabbarController {
 
             let contactsVC = UIHostingController(rootView: ContactsScreen())
             contactsVC.tabBarItem = item
+            contactsTabIndex = viewControllers.count
             viewControllers.append(contactsVC)
         }
         #endif
@@ -405,6 +417,18 @@ extension MainTabbarController {
     public func showHome() {
         selectedIndex = MainTabbarTabs.home.rawValue
     }
+
+    #if DASHPAY
+    /// Switch to the contacts tab. Returns false when there is none — the tab
+    /// exists only alongside a DashPay identity — so the caller can say so
+    /// rather than appearing to do nothing.
+    @discardableResult
+    func showContacts() -> Bool {
+        guard let contactsTabIndex else { return false }
+        selectedIndex = contactsTabIndex
+        return true
+    }
+    #endif
 
     @objc
     public func performScanQRCodeAction() {

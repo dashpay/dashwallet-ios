@@ -641,8 +641,6 @@
 		58825FFD2913876CC5D4AA21 /* InternalTransferScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */; };
 		C0172000000000000003A2 /* PaymentsTabRootController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000003A1 /* PaymentsTabRootController.swift */; };
 		C0172000000000000003A3 /* PaymentsTabRootController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000003A1 /* PaymentsTabRootController.swift */; };
-		C0172000000000000005A2 /* PaymentsInternalCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000005A1 /* PaymentsInternalCard.swift */; };
-		C0172000000000000005A3 /* PaymentsInternalCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000005A1 /* PaymentsInternalCard.swift */; };
 		C0172000000000000006A2 /* PaymentsSendCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000006A1 /* PaymentsSendCard.swift */; };
 		C0172000000000000006A3 /* PaymentsSendCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000006A1 /* PaymentsSendCard.swift */; };
 		C0172000000000000007A2 /* PaymentsReceiveContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000007A1 /* PaymentsReceiveContent.swift */; };
@@ -3124,7 +3122,6 @@
 		A59D5720437F8A4137605940 /* PaymentRequestVerifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentRequestVerifier.swift; sourceTree = "<group>"; };
 		A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InternalTransferScreen.swift; sourceTree = "<group>"; };
 		C0172000000000000003A1 /* PaymentsTabRootController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsTabRootController.swift; sourceTree = "<group>"; };
-		C0172000000000000005A1 /* PaymentsInternalCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsInternalCard.swift; sourceTree = "<group>"; };
 		C0172000000000000006A1 /* PaymentsSendCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsSendCard.swift; sourceTree = "<group>"; };
 		C0172000000000000007A1 /* PaymentsReceiveContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsReceiveContent.swift; sourceTree = "<group>"; };
 		C0172000000000000002A1 /* PaymentsActionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsActionCard.swift; sourceTree = "<group>"; };
@@ -6912,7 +6909,6 @@
 				C0172000000000000002A1 /* PaymentsActionCard.swift */,
 				C0172000000000000007A1 /* PaymentsReceiveContent.swift */,
 				C0172000000000000006A1 /* PaymentsSendCard.swift */,
-				C0172000000000000005A1 /* PaymentsInternalCard.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -10387,7 +10383,6 @@
 				C0172000000000000002A2 /* PaymentsActionCard.swift in Sources */,
 				C0172000000000000007A2 /* PaymentsReceiveContent.swift in Sources */,
 				C0172000000000000006A2 /* PaymentsSendCard.swift in Sources */,
-				C0172000000000000005A2 /* PaymentsInternalCard.swift in Sources */,
 				C0172000000000000003A2 /* PaymentsTabRootController.swift in Sources */,
 				C0171F000000000000001A2 /* TransferSourceRow.swift in Sources */,
 				C0172000000000000011A2 /* TransferPrivacyTip.swift in Sources */,
@@ -11429,7 +11424,6 @@
 				C0172000000000000002A3 /* PaymentsActionCard.swift in Sources */,
 				C0172000000000000007A3 /* PaymentsReceiveContent.swift in Sources */,
 				C0172000000000000006A3 /* PaymentsSendCard.swift in Sources */,
-				C0172000000000000005A3 /* PaymentsInternalCard.swift in Sources */,
 				C0172000000000000003A3 /* PaymentsTabRootController.swift in Sources */,
 				C0171F000000000000001A3 /* TransferSourceRow.swift in Sources */,
 				C0172000000000000011A3 /* TransferPrivacyTip.swift in Sources */,
