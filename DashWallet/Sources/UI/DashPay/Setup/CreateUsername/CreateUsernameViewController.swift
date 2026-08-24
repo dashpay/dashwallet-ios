@@ -749,17 +749,43 @@ struct CreateUsernameView: View {
             DWIdentityRegistrationBridge.shared.preferredFundingSource =
                 viewModel.hasPendingRegistrationRecovery ? .core : fundingSource
         }
+        // A plain name reports its progress on Home and this screen steps
+        // aside. The other two keep the blocking flow: a contested submission
+        // ends in the voting explanation, which has nowhere else to live, and an
+        // invitation claim carries the inviter contact request afterwards —
+        // both on this screen, and the invitation path bypasses the bridge the
+        // tile reads.
+        let handsOffToHomeTile = !viewModel.isInvitationMode
+            && !DWContestedNameStatusService.isContestedLabel(
+                viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines))
         Task {
-            // `inProgress` keeps the Continue spinner up — and the screen
-            // alive — across the PIN gate and the whole registration. The
+            // `inProgress` keeps the Continue spinner up across the PIN gate.
+            // Where the screen hands off, that is all it still does; otherwise
+            // it also holds the screen alive for the whole registration and the
             // bridge completion resolves the outcome at the terminal phase.
             inProgress = true
             screenLockedAfterAuth = false
+            var didHandOff = false
             let outcome = await viewModel.submitUsernameRequest(temporaryUsername: temporaryUsername) {
                 isTextInputFocused = false
-                screenLockedAfterAuth = true
+                if handsOffToHomeTile {
+                    // Fires once the registration is actually running — after
+                    // the PIN gate, which `startCreateUsername` passes before
+                    // any phase change. The work itself lives in the
+                    // app-scoped coordinator and outlives this screen.
+                    didHandOff = true
+                    UsernameRegistrationTileModel.markHandedOff(
+                        username: viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines))
+                    finish()
+                } else {
+                    screenLockedAfterAuth = true
+                }
             }
             inProgress = false
+
+            // The tile owns the outcome now; alerts from a dismissed screen
+            // would either be invisible or land on top of Home.
+            guard !didHandOff else { return }
 
             switch outcome {
             case .success:
