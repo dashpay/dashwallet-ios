@@ -55,8 +55,11 @@ class HomeViewModel: ObservableObject {
     /// single follow-up pass, so a burst of N notifications costs two passes
     /// (the one running plus one more that sees all of it), not N.
     private var reloadPassRequestedAgain = false
-    /// Triggers folded into the current pass — logged so the next session's
-    /// numbers say how much this actually absorbs.
+    /// Triggers that arrived while a pass was in flight. They are not served
+    /// by that pass — it is already past reading its inputs — but by the one
+    /// follow-up pass `finishReloadPass()` schedules, however many arrived.
+    /// Logged so the next session's numbers say how much this actually
+    /// absorbs.
     private var reloadPassCoalesced = 0
     private var timeSkewDialogShown: Bool = false
     /// Session guard so the proactive CoinJoin-sweep popup shows at most once
@@ -606,18 +609,22 @@ class HomeViewModel: ObservableObject {
     /// more. Called outside `performReload` so every early return in it — an
     /// unbound host, a nil delta — still releases.
     private func finishReloadPass() {
-        DispatchQueue.main.async { MainActor.assumeIsolated { [weak self] in
-            guard let self else { return }
-            let coalesced = self.reloadPassCoalesced
-            self.reloadPassCoalesced = 0
-            self.reloadPassInFlight = false
-            if coalesced > 0 {
-                DWLogger.log("HomeViewModel: coalesced \(coalesced) reconcile trigger(s) into that pass")
+        DispatchQueue.main.async {
+            MainActor.assumeIsolated { [weak self] in
+                guard let self else { return }
+                let coalesced = self.reloadPassCoalesced
+                self.reloadPassCoalesced = 0
+                self.reloadPassInFlight = false
+                if coalesced > 0 {
+                    DWLogger.log(
+                        "HomeViewModel: coalesced \(coalesced) reconcile trigger(s) into one follow-up pass"
+                    )
+                }
+                guard self.reloadPassRequestedAgain else { return }
+                self.reloadPassRequestedAgain = false
+                self.reloadTxDataSource()
             }
-            guard self.reloadPassRequestedAgain else { return }
-            self.reloadPassRequestedAgain = false
-            self.reloadTxDataSource()
-        } }
+        }
     }
 
     private func performReload(selectedFilters: Set<TransactionFilterCategory>, startedAt: Date) {
