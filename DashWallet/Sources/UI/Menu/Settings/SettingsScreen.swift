@@ -330,17 +330,39 @@ final class NetworkSwitchOverlayPresenter {
 /// Deliberately does NOT wait for peers or chain sync — the runtime flips to
 /// `.idle` the moment the destination runtime is bound and its services
 /// started.
+@MainActor
+final class NetworkSwitchOverlayViewModel: ObservableObject {
+    @Published private(set) var phase: NetworkTransitionState.Phase
+
+    private var phaseCancellable: AnyCancellable?
+
+    init() {
+        let transitionState = NetworkTransitionState.shared
+        phase = transitionState.phase
+        phaseCancellable = transitionState.$phase
+            .sink { [weak self] phase in
+                self?.phase = phase
+            }
+    }
+
+    func retrySwitch(to target: WalletEnvironment.NetworkKind) {
+        Task {
+            try? await SwiftDashSDKWalletRuntime.shared.switchNetwork(to: target)
+        }
+    }
+}
+
 struct NetworkSwitchOverlayView: View {
-    @ObservedObject private var state = NetworkTransitionState.shared
+    @StateObject private var viewModel = NetworkSwitchOverlayViewModel()
 
     var body: some View {
         ZStack {
             Color.black.opacity(0.65).ignoresSafeArea()
 
-            switch state.phase {
+            switch viewModel.phase {
             case .idle:
                 EmptyView()
-            case .switching(_, let to):
+            case let .switching(_, to):
                 card {
                     // Explicit SwiftUI qualifier: the app has its own UIKit
                     // `ProgressView` (UI/Views/ProgressView.swift) shadowing it.
@@ -357,7 +379,7 @@ struct NetworkSwitchOverlayView: View {
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                 }
-            case .failed(let target, let message):
+            case let .failed(target, message):
                 card {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.largeTitle)
@@ -373,9 +395,7 @@ struct NetworkSwitchOverlayView: View {
                             .multilineTextAlignment(.center)
                     }
                     Button {
-                        Task {
-                            try? await SwiftDashSDKWalletRuntime.shared.switchNetwork(to: target)
-                        }
+                        viewModel.retrySwitch(to: target)
                     } label: {
                         Text(NSLocalizedString("Retry", comment: ""))
                             .font(.headline)

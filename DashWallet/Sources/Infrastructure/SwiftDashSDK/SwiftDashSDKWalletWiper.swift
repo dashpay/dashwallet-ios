@@ -498,32 +498,45 @@ final class SwiftDashSDKWalletWiper: NSObject {
             networks.append(current)
         }
 
-        var deletions: [(network: Network, walletId: Data, manager: PlatformWalletManager, isTemporary: Bool)] = []
-        for network in networks {
-            guard let walletId = walletIds[network] else { continue }
-            let (manager, isTemporary) = try host.managerForWipe(network: network)
-            if storedWalletIds.contains(walletId) || manager.wallets[walletId] != nil {
-                deletions.append((network, walletId, manager, isTemporary))
-            } else if isTemporary {
-                // Built a detached manager only to find nothing to delete on
-                // this network — shut it down now rather than leaving it to
-                // the deinit fallback.
-                await manager.shutdown()
-            }
+        struct PendingDeletion {
+            let network: Network
+            let walletId: Data
+            let manager: PlatformWalletManager
+            let isTemporary: Bool
         }
 
+        var deletions: [PendingDeletion] = []
+
         // Detached managers are owned by this function; shut them down
-        // deterministically on both the success and the failure path (a
-        // deletion throw would otherwise leave their teardown to the
-        // fire-and-forget deinit fallback, racing any follow-up rebuild
-        // over the same process-cached ModelContainer).
+        // deterministically on both the success and every failure path (a
+        // manager-preparation or deletion throw would otherwise leave
+        // teardown to the fire-and-forget deinit fallback, racing any
+        // follow-up rebuild over the same process-cached ModelContainer).
         func shutDownTemporaryManagers() async {
             for deletion in deletions where deletion.isTemporary {
                 await deletion.manager.shutdown()
             }
+            deletions.removeAll()
         }
 
         do {
+            for network in networks {
+                guard let walletId = walletIds[network] else { continue }
+                let (manager, isTemporary) = try host.managerForWipe(network: network)
+                if storedWalletIds.contains(walletId) || manager.wallets[walletId] != nil {
+                    deletions.append(PendingDeletion(
+                        network: network,
+                        walletId: walletId,
+                        manager: manager,
+                        isTemporary: isTemporary))
+                } else if isTemporary {
+                    // Built a detached manager only to find nothing to delete on
+                    // this network — shut it down now rather than leaving it to
+                    // the deinit fallback.
+                    await manager.shutdown()
+                }
+            }
+
             for deletion in deletions {
                 try deleteWalletFromSDK(
                     deletion.walletId,
