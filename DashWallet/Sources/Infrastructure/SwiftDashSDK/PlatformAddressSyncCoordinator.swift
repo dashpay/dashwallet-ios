@@ -40,8 +40,9 @@ import UIKit
 struct ShieldedSyncFreshnessPolicy {
     static let watchdogInterval: TimeInterval = 15
     static let maximumFullScanAge: TimeInterval = 90
-    /// Matches the SDK's caught-up cooldown. Requesting a forced pass sooner
-    /// would only produce `cooldownSkip` and leave the external spend unseen.
+    /// The ordinary background loop observes the SDK's caught-up cooldown.
+    /// Explicit `syncShieldedNow()` requests use the SDK's `force=true` path
+    /// and bypass it; attended Receive sessions use that path independently.
     static let foregroundFreshnessGrace: TimeInterval = 30
 
     static func shouldRefreshForWatchdog(
@@ -1146,7 +1147,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         requestShieldedRefresh(using: manager, reason: "stale watchdog")
     }
 
-    private func requestShieldedRefresh(
+    func requestShieldedRefresh(
         using manager: PlatformWalletManager,
         reason: String
     ) {

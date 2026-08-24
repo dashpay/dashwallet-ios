@@ -811,7 +811,11 @@ struct HomeViewContent<Content: View>: View {
                     AnyView(Image(uiImage: $0).resizable().scaledToFit().clipShape(Circle()))
                 } ?? contactAvatar ?? routeSymbols.map { transferRouteIcon($0.source) },
                 secondaryIcon: routeSymbols.map { DashIconSource.system($0.destination) }
-                    ?? icons.secondary?.dashIconSource,
+                    ?? icons.secondary?.dashIconSource
+                    // A contact avatar takes the icon slot, so the direction
+                    // moves into the corner badge instead of being dropped —
+                    // matching Android and the tx-detail header.
+                    ?? (contactAvatar == nil ? nil : icons.primary.dashIconSource),
                 title: metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
                 details: txItem.isPendingShieldedTransfer

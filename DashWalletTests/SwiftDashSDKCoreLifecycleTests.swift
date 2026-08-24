@@ -314,6 +314,81 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(NormalizePlatformAddressActivityUnits().version, 20260727140000)
     }
 
+    func testPlatformActivityInitialBaselineIncludesZeroBalanceAddresses() {
+        let balances = PlatformAddressActivityUnitPolicy.initialBaselineBalances(addresses: [
+            DerivedPlatformAddress(
+                address: "tdash1zero",
+                accountIndex: 0,
+                addressIndex: 0,
+                isUsed: false,
+                balance: 0),
+            DerivedPlatformAddress(
+                address: "tdash1funded",
+                accountIndex: 0,
+                addressIndex: 1,
+                isUsed: true,
+                balance: 5_000),
+        ])
+
+        XCTAssertEqual(balances["tdash1zero"], 0)
+        XCTAssertEqual(balances["tdash1funded"], 5)
+    }
+
+    func testReceiveFilterAcceptsOnlySDKClassifiedExternalReceives() {
+        XCTAssertTrue(ReceivedAtAddressTransactionFilter.matches(
+            direction: .received,
+            ownOutputAddresses: ["yReceive"],
+            address: "yReceive"))
+        XCTAssertFalse(ReceivedAtAddressTransactionFilter.matches(
+            direction: .moved,
+            ownOutputAddresses: ["yReceive"],
+            address: "yReceive"))
+        XCTAssertFalse(ReceivedAtAddressTransactionFilter.matches(
+            direction: .received,
+            ownOutputAddresses: ["yDifferent"],
+            address: "yReceive"))
+    }
+
+    func testReceiveCoreContextMappingAndStatusNeverRegresses() {
+        XCTAssertEqual(ReceiveReceiptPolicy.coreStatus(context: 0), .mempool)
+        XCTAssertEqual(ReceiveReceiptPolicy.coreStatus(context: 1), .instantSend)
+        XCTAssertEqual(ReceiveReceiptPolicy.coreStatus(context: 2), .inBlock)
+        XCTAssertEqual(ReceiveReceiptPolicy.coreStatus(context: 3), .chainLocked)
+        XCTAssertNil(ReceiveReceiptPolicy.coreStatus(context: 4))
+        XCTAssertEqual(
+            ReceiveReceiptPolicy.strongestStatus(
+                current: .inBlock,
+                observed: .mempool),
+            .inBlock)
+    }
+
+    func testReceiveShieldedCooldownSkipIsNotProjected() {
+        XCTAssertFalse(ReceiveReceiptPolicy.shouldProjectShieldedResult(
+            success: true,
+            cooldownSkip: true))
+        XCTAssertFalse(ReceiveReceiptPolicy.shouldProjectShieldedResult(
+            success: false,
+            cooldownSkip: false))
+        XCTAssertTrue(ReceiveReceiptPolicy.shouldProjectShieldedResult(
+            success: true,
+            cooldownSkip: false))
+    }
+
+    func testAttendedPlatformRefreshRequiresRunningAvailableAccount() {
+        XCTAssertFalse(ReceiveReceiptPolicy.canRefreshPlatform(
+            isRunning: false,
+            availability: .available))
+        XCTAssertFalse(ReceiveReceiptPolicy.canRefreshPlatform(
+            isRunning: true,
+            availability: .unknown))
+        XCTAssertFalse(ReceiveReceiptPolicy.canRefreshPlatform(
+            isRunning: true,
+            availability: .unavailable))
+        XCTAssertTrue(ReceiveReceiptPolicy.canRefreshPlatform(
+            isRunning: true,
+            availability: .available))
+    }
+
     func testCoreToShieldedPoolFeeDuffsRoundsUpToCoverTheCreditFee() {
         // A 200-credit remainder rounds up to the next whole duff…
         XCTAssertEqual(

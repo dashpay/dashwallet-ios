@@ -5636,3 +5636,157 @@
 "Nodes, epoch day %d, %@ blocks proposed this epoch" = "Nodes, epoch day %d, %@ blocks proposed this epoch";
 "an evonode has not proposed a block in 2 days" = "an evonode has not proposed a block in 2 days";
 "an evonode has no blocks this epoch" = "an evonode has no blocks this epoch";
+
+"A key doesn't match this masternode — fix or clear it to continue." = "A key doesn't match this masternode — fix or clear it to continue.";
+
+"Add keys" = "Add keys";
+
+"Add masternode" = "Add masternode";
+
+"Add this node's owner key or payout address key to withdraw from here." = "Add this node's owner key or payout address key to withdraw from here.";
+
+"Already one of this wallet's masternodes — it's in the list above." = "Already one of this wallet's masternodes — it's in the list above.";
+
+"Already tracked." = "Already tracked.";
+
+"Any keys you added for it are deleted from this device's keychain too." = "Any keys you added for it are deleted from this device's keychain too.";
+
+"Available" = "Available";
+
+"BLS private key (hex)" = "BLS private key (hex)";
+
+"Can't verify yet" = "Can't verify yet";
+
+"Could not load the node's registration details — owner and payout keys will verify later." = "Could not load the node's registration details — owner and payout keys will verify later.";
+
+"Could not save a key to the keychain. Nothing was lost — try again." = "Could not save a key to the keychain. Nothing was lost — try again.";
+
+"Destination address (optional)" = "Destination address (optional)";
+
+"Doesn't match" = "Doesn't match";
+
+"Find" = "Find";
+
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node.";
+
+"IP address, proTxHash or private key" = "IP address, proTxHash or private key";
+
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "Keys are stored in this device's keychain and never leave it except to sign the action you request.";
+
+"Keys on this device" = "Keys on this device";
+
+"Label (optional)" = "Label (optional)";
+
+"Loading registration details…" = "Loading registration details…";
+
+"Matches" = "Matches";
+
+"Matches this node's %@ key" = "Matches this node's %@ key";
+
+"No masternode on the list matches that." = "No masternode on the list matches that.";
+
+"Node key (base64 or hex)" = "Node key (base64 or hex)";
+
+"Not added" = "Not added";
+
+"On this device" = "On this device";
+
+"Operator payout" = "Operator payout";
+
+"Payout" = "Payout";
+
+"Platform could not be reached, so owner and payout keys were not checked." = "Platform could not be reached, so owner and payout keys were not checked.";
+
+"PoSe banned" = "PoSe banned";
+
+"Private key (WIF or hex)" = "Private key (WIF or hex)";
+
+"Refresh details" = "Refresh details";
+
+"Refreshing…" = "Refreshing…";
+
+"Save keys" = "Save keys";
+
+"Search Platform too" = "Search Platform too";
+
+"Searching…" = "Searching…";
+
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "Signing with the owner key — the withdrawal goes to the registered payout address.";
+
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "Signing with the payout address key. Leave the destination empty to withdraw to the payout address.";
+
+"Stop tracking" = "Stop tracking";
+
+"Stop tracking this masternode?" = "Stop tracking this masternode?";
+
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "That could also be an owner or payout key — turn on “Search Platform too” to check.";
+
+"The signing key is missing from the keychain — re-add it and try again." = "The signing key is missing from the keychain — re-add it and try again.";
+
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles.";
+
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "Track any masternode or evonode on the network — it doesn't have to belong to this wallet.";
+
+"Track this masternode" = "Track this masternode";
+
+"Tracked" = "Tracked";
+
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later.";
+
+"Withdrawing…" = "Withdrawing…";
+
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button.";
+
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "This evonode's DAPI address isn't known, so it can't be asked for its status.";
+"Couldn't get the evonode's status." = "Couldn't get the evonode's status.";
+"The evonode didn't answer in time." = "The evonode didn't answer in time.";
+"Couldn't reach the evonode." = "Couldn't reach the evonode.";
+"The evonode's answer couldn't be read." = "The evonode's answer couldn't be read.";
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "The node's own report, unverified — what it says about itself, not what the network has agreed on.";
+"Asked" = "Asked";
+"Software" = "Software";
+"DAPI" = "DAPI";
+"Drive" = "Drive";
+"Tenderdash" = "Tenderdash";
+"Protocol versions" = "Protocol versions";
+"Tenderdash P2P" = "Tenderdash P2P";
+"Tenderdash block" = "Tenderdash block";
+"Drive current" = "Drive current";
+"Drive latest" = "Drive latest";
+"Drive next epoch" = "Drive next epoch";
+"Node ID" = "Node ID";
+"Identity check" = "Identity check";
+"Chain" = "Chain";
+"Catching up" = "Catching up";
+"Latest block height" = "Latest block height";
+"Earliest block height" = "Earliest block height";
+"Max peer block height" = "Max peer block height";
+"Core chain-locked height" = "Core chain-locked height";
+"Latest block hash" = "Latest block hash";
+"Latest app hash" = "Latest app hash";
+"Earliest block hash" = "Earliest block hash";
+"Earliest app hash" = "Earliest app hash";
+"Chain ID" = "Chain ID";
+"Peers" = "Peers";
+"Listening" = "Listening";
+"State sync" = "State sync";
+"Total synced time" = "Total synced time";
+"Remaining time" = "Remaining time";
+"Total snapshots" = "Total snapshots";
+"Chunk process avg time" = "Chunk process avg time";
+"Snapshot height" = "Snapshot height";
+"Snapshot chunks" = "Snapshot chunks";
+"Backfilled blocks" = "Backfilled blocks";
+"Backfill blocks total" = "Backfill blocks total";
+"Time" = "Time";
+"Node clock" = "Node clock";
+"Latest block" = "Latest block";
+"Genesis" = "Genesis";
+"Epoch" = "Epoch";
+"Matches this evonode" = "Matches this evonode";
+"Differs from this evonode" = "Differs from this evonode";
+"Not reported" = "Not reported";
+"%.3f s" = "%.3f s";
+"Node status" = "Node status";
+"Asking the evonode…" = "Asking the evonode…";
+"Request status" = "Request status";

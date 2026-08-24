@@ -29,6 +29,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             onCopyAddress: { [weak self] in self?.copyCurrentAddress() },
             onShareAddress: { [weak self] in self?.shareCurrentAddress() },
             onSpecifyAmount: { [weak self] in self?.pushSpecifyAmount() },
+            onViewTransaction: { [weak self] txid in self?.showTransaction(txid: txid) },
             onScanQR: { [weak self] in self?.performScanQRCodeAction() },
             embeddedTransferViewModel: embeddedTransferViewModel,
             onTransferCompleted: { [weak self] in self?.dismiss(animated: true) },
@@ -91,9 +92,13 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
          visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
          embedInternalTransfer: Bool = false,
          sendNetwork: ChainNetwork? = nil,
-         showsHeader: Bool = true) {
+         showsHeader: Bool = true,
+         allowsTransactionDetails: Bool = true) {
         self.viewModel = PaymentsLandingViewModel(
-            activeTab: activeTab, network: receiveNetwork, visibleTabs: visibleTabs)
+            activeTab: activeTab,
+            network: receiveNetwork,
+            visibleTabs: visibleTabs,
+            allowsTransactionDetails: allowsTransactionDetails)
         self.showsHeader = showsHeader
         self.embeddedSendViewModel = SendViewModel(pinnedSource: sendNetwork)
         self.transferSendFrom = sendNetwork
@@ -126,7 +131,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         let controller = PaymentsLandingHostingController(
             activeTab: .receive,
             visibleTabs: [.receive],
-            showsHeader: false)
+            showsHeader: false,
+            allowsTransactionDetails: false)
         let navigationController = BaseNavigationController(rootViewController: controller)
         navigationController.isNavigationBarHidden = true
         navigationController.isModalInPresentation = false
@@ -188,10 +194,21 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        // Programmatic dismissal does not call
+        // `presentationControllerDidDismiss`. Clear the explicit sheet pause
+        // here as well so returning from transaction details can resume the
+        // same receive session (or start a fresh "Receive another" session).
+        viewModel.setReceiptWatchingObscured(false)
+        viewModel.setReceiveSurfaceVisible(true)
         if timingSheetPendingAppearance {
             timingSheetPendingAppearance = false
             presentTransferTimingSheetIfNeeded()
         }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        viewModel.setReceiveSurfaceVisible(false)
     }
 
     // MARK: - Actions
@@ -208,7 +225,12 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         // The share control lives in the SwiftUI hierarchy, so there is no
         // sender view to anchor to — the helper's centred default carries the
         // popover anchor iPad requires.
-        dw_presentActivityViewController(activityItems: [address])
+        viewModel.setReceiptWatchingObscured(true)
+        dw_presentActivityViewController(
+            activityItems: [address],
+            dismissal: { [weak self] in
+                self?.viewModel.setReceiptWatchingObscured(false)
+            })
     }
 
     private func pushSpecifyAmount() {
@@ -238,16 +260,37 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         guard !UserDefaults.standard.bool(forKey: Self.shieldedBalanceTimingShownKey),
               presentedViewController == nil
         else { return }
+        viewModel.setReceiptWatchingObscured(true)
         let host = UIHostingController(
             rootView: TransferTimingSheet(onConfirm: { [weak self] in
                 UserDefaults.standard.set(true, forKey: Self.shieldedBalanceTimingShownKey)
-                self?.dismiss(animated: true)
+                self?.dismiss(animated: true) {
+                    self?.viewModel.setReceiptWatchingObscured(false)
+                }
             }))
         if let sheet = host.sheetPresentationController {
             sheet.detents = [.medium()]
             sheet.prefersGrabberVisible = true
         }
-        present(host, animated: true)
+        present(host, animated: true) { [weak self, weak host] in
+            host?.presentationController?.delegate = self
+        }
+    }
+
+    private func showTransaction(txid: Data) {
+        guard viewModel.allowsTransactionDetails,
+              let transaction = SwiftDashSDKWalletSource
+                  .fetch(txids: Set([txid]))?.transactions.first
+        else { return }
+        viewModel.setReceiptWatchingObscured(true)
+        let controller = ReceiptTransactionDetailViewController(model: TxDetailModel(transaction: transaction))
+        controller.onDismiss = { [weak self] in
+            self?.viewModel.setReceiptWatchingObscured(false)
+        }
+        let navigationController = BaseNavigationController(rootViewController: controller)
+        present(navigationController, animated: true) { [weak self, weak navigationController] in
+            navigationController?.presentationController?.delegate = self
+        }
     }
 
     private static func tabRawValue(for objcCase: Int) -> String {
@@ -279,7 +322,10 @@ extension PaymentsLandingHostingController: SpecifyAmountViewControllerDelegate 
 
         let requestController = DWRequestAmountViewController(model: model)
         requestController.delegate = self
-        present(requestController, animated: true)
+        viewModel.setReceiptWatchingObscured(true)
+        present(requestController, animated: true) { [weak self, weak requestController] in
+            requestController?.presentationController?.delegate = self
+        }
     }
 }
 
@@ -288,6 +334,7 @@ extension PaymentsLandingHostingController: SpecifyAmountViewControllerDelegate 
 extension PaymentsLandingHostingController: DWRequestAmountViewControllerDelegate {
     func requestAmountViewController(_ controller: DWRequestAmountViewController, didReceiveAmountWithInfo info: String) {
         controller.dismiss(animated: true) {
+            self.viewModel.setReceiptWatchingObscured(false)
             self.navigationController?.popViewController(animated: true)
 
             let popAnimationDuration = 300
@@ -295,5 +342,25 @@ extension PaymentsLandingHostingController: DWRequestAmountViewControllerDelegat
                 self.navigationController?.view.dw_showInfoHUD(withText: info)
             }
         }
+    }
+}
+
+// MARK: UIAdaptivePresentationControllerDelegate
+
+extension PaymentsLandingHostingController: UIAdaptivePresentationControllerDelegate {
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        viewModel.setReceiptWatchingObscured(false)
+    }
+}
+
+/// `UIAdaptivePresentationControllerDelegate` is only notified for interactive
+/// dismissals. Transaction details close themselves programmatically, so carry
+/// that completion back to the attended receive session explicitly.
+private final class ReceiptTransactionDetailViewController: TXDetailViewController {
+    var onDismiss: (() -> Void)?
+
+    override func closeAction() {
+        let onDismiss = onDismiss
+        dismiss(animated: true, completion: onDismiss)
     }
 }

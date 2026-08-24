@@ -16,6 +16,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 // MARK: - TxDetailHeaderCellDataProvider
 
@@ -24,6 +25,10 @@ protocol TxDetailHeaderCellDataProvider {
     var fiatAmount: String { get }
     var icon: UIImage { get }
     var tintColor: UIColor { get }
+    /// Non-nil for a recorded DashPay payment: the header then shows the
+    /// counterparty's avatar with the direction icon badged into its corner,
+    /// instead of the bare direction icon.
+    var contactParty: TxDetailModel.ContactParty? { get }
 
     func dashAmountString(with font: UIFont) -> NSAttributedString
 }
@@ -37,14 +42,59 @@ class TxDetailHeaderCell: UITableViewCell {
 
     @IBOutlet var iconImageView: UIImageView!
 
+    /// The avatar overlays the nib's icon slot, so the header keeps its
+    /// geometry. Slightly wider than the 50pt avatar because the corner
+    /// badge is drawn outside it.
+    private static let avatarSlotSide: CGFloat = 62
+
+    /// SwiftUI avatar, hosted only for contact payments. `nil` for every
+    /// other transaction, which keeps the nib's plain image view.
+    private var avatarContentView: (UIView & UIContentView)?
+
     func updateView(with data: TxDetailHeaderCellDataProvider) {
         let font = UIFont.preferredFont(forTextStyle: .largeTitle).withWeight(UIFont.Weight.medium.rawValue)
         dashAmountLabel.attributedText = data.dashAmountString(with: font)
         fiatAmountLabel.text = data.fiatAmount;
 
         titleLabel.text = data.title
-        iconImageView.image = data.icon
-        iconImageView.tintColor = data.tintColor
+
+        if let contact = data.contactParty {
+            iconImageView.image = nil
+            updateContactAvatar(contact: contact, directionIcon: data.icon)
+        } else {
+            avatarContentView?.isHidden = true
+            iconImageView.image = data.icon
+            iconImageView.tintColor = data.tintColor
+        }
+    }
+
+    private func updateContactAvatar(contact: TxDetailModel.ContactParty, directionIcon: UIImage) {
+        let configuration = UIHostingConfiguration {
+            TxDetailContactAvatar(contact: contact, directionIcon: directionIcon)
+        }
+        .margins(.all, 0)
+
+        if let existing = avatarContentView {
+            existing.configuration = configuration
+            existing.isHidden = false
+            return
+        }
+
+        // `makeContentView()` hosts SwiftUI without a hosting controller, so
+        // there is no detached view-controller hierarchy to keep alive.
+        let view = configuration.makeContentView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = .clear
+        contentView.addSubview(view)
+
+        NSLayoutConstraint.activate([
+            view.centerXAnchor.constraint(equalTo: iconImageView.centerXAnchor),
+            view.centerYAnchor.constraint(equalTo: iconImageView.centerYAnchor),
+            view.widthAnchor.constraint(equalToConstant: Self.avatarSlotSide),
+            view.heightAnchor.constraint(equalToConstant: Self.avatarSlotSide),
+        ])
+
+        avatarContentView = view
     }
 
     override func awakeFromNib() {
@@ -122,6 +172,18 @@ class TxDetailInfoCell: TxDetailTitleDetailsCell {
         for view in views {
             valueLabelsStack.removeArrangedSubview(view)
             view.removeFromSuperview()
+        }
+    }
+}
+
+// MARK: - TxDetailContactCell
+
+/// "Sent to / Received from <contact>" row — a SwiftUI cell in the
+/// otherwise nib-driven info section.
+class TxDetailContactCell: UITableViewCell {
+    func update(title: String, contact: TxDetailModel.ContactParty) {
+        contentConfiguration = UIHostingConfiguration {
+            TxDetailContactRow(title: title, contact: contact)
         }
     }
 }
