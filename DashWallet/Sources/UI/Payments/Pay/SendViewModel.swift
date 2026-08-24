@@ -40,6 +40,11 @@ final class SendViewModel: ObservableObject {
         case coreToShielded
         case platformToPlatform
         case platformToCore
+        /// Platform Payment credits → Type 15 shield note assigned to the
+        /// recipient's Orchard address (`shieldedShieldToRecipient`). Same
+        /// input selection and flat fee as the internal shield; the note
+        /// funds the RECIPIENT's pool.
+        case platformToShielded
         case shieldedToCore
         case shieldedToPlatform
         case shieldedToShielded
@@ -118,6 +123,17 @@ final class SendViewModel: ObservableObject {
     @Published private(set) var withdrawalPreflight: ManagedPlatformAddressWallet.WithdrawalPreflight?
     private var preflightTask: Task<Void, Never>?
 
+    /// Live result of `preflightShield()` for the Platform → Shielded route —
+    /// the SDK's account/address-aware capacity (the aggregate Platform
+    /// balance is NOT the authority). `nil` while unknown; affordability
+    /// fails closed.
+    @Published private(set) var platformShieldCapacity: PlatformShieldCapacity?
+    /// True when the last shield preflight ATTEMPT failed (threw), as
+    /// opposed to still resolving — distinguishes "checking…" (quiet)
+    /// from "could not check" (explained inline).
+    @Published private(set) var shieldPreflightFailed = false
+    private var shieldPreflightTask: Task<Void, Never>?
+
     /// Drives the one-time restore gate reactively. A normal catch-up may set
     /// this to false, but it only blocks while the recovery marker is active.
     @Published private(set) var isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
@@ -168,6 +184,7 @@ final class SendViewModel: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] credits in
                 self?.platformCredits = credits
+                self?.restartShieldPreflightOnBalanceChange()
             }
             .store(in: &cancellables)
 
@@ -294,15 +311,14 @@ final class SendViewModel: ObservableObject {
     /// Which balances can fund a send to the entered destination.
     /// Core addresses can be paid from any bucket; Platform addresses from
     /// Platform credits or the shielded pool (there is no external
-    /// core → platform funding); shielded addresses from the pool or the
-    /// Core balance (asset-lock shield — `shieldedShield` has no recipient
-    /// parameter, so Platform credits can't pay an external shielded
-    /// address).
+    /// core → platform funding); shielded addresses from any bucket — the
+    /// pool (`shieldedTransfer`), the Core balance (asset-lock shield), or
+    /// Platform credits (`shieldedShieldToRecipient`).
     var validSources: [ChainNetwork] {
         switch destination {
         case .core: return [.core, .platform, .shielded]
         case .platform: return [.platform, .shielded]
-        case .shielded: return [.shielded, .core]
+        case .shielded: return [.shielded, .core, .platform]
         case nil: return []
         }
     }
@@ -314,6 +330,7 @@ final class SendViewModel: ObservableObject {
         case (.core, .shielded): return .coreToShielded
         case (.platform, .platform): return .platformToPlatform
         case (.platform, .core): return .platformToCore
+        case (.platform, .shielded): return .platformToShielded
         case (.shielded, .core): return .shieldedToCore
         case (.shielded, .platform): return .shieldedToPlatform
         case (.shielded, .shielded): return .shieldedToShielded
@@ -322,10 +339,16 @@ final class SendViewModel: ObservableObject {
     }
 
     /// Refreshes route-dependent async state — the Platform → Core route
-    /// needs the withdrawal preflight (fee headroom + full-balance payout).
+    /// needs the withdrawal preflight (fee headroom + full-balance payout),
+    /// Platform → Shielded the shield-capacity preflight.
     private func routeDidChange() {
         clearShieldedMaxSelection()
         refreshShieldedSpendCeiling()
+        refreshWithdrawalPreflight()
+        refreshShieldPreflight()
+    }
+
+    private func refreshWithdrawalPreflight() {
         guard route == .platformToCore else {
             preflightTask?.cancel()
             preflightTask = nil
@@ -338,6 +361,32 @@ final class SendViewModel: ObservableObject {
             self.withdrawalPreflight = result
             self.preflightTask = nil
         }
+    }
+
+    private func refreshShieldPreflight() {
+        guard route == .platformToShielded else {
+            shieldPreflightTask?.cancel()
+            shieldPreflightTask = nil
+            return
+        }
+        guard shieldPreflightTask == nil else { return }
+        shieldPreflightTask = Task { [weak self] in
+            let result = try? await PlatformAddressSyncCoordinator.shared.preflightShield()
+            guard let self, !Task.isCancelled else { return }
+            self.platformShieldCapacity = result.map(PlatformShieldCapacity.init)
+            self.shieldPreflightFailed = result == nil
+            self.shieldPreflightTask = nil
+        }
+    }
+
+    /// A fresh Platform balance can change shield capacity — re-run the
+    /// preflight so validation and Max track it. (The coordinator
+    /// revalidates against a live preflight at confirm time regardless.)
+    private func restartShieldPreflightOnBalanceChange() {
+        guard route == .platformToShielded else { return }
+        shieldPreflightTask?.cancel()
+        shieldPreflightTask = nil
+        refreshShieldPreflight()
     }
 
     // MARK: - Clipboard
@@ -478,12 +527,14 @@ final class SendViewModel: ObservableObject {
     /// amount. `nil` = requirement unavailable → callers fail closed.
     private var feeReserveCredits: UInt64? {
         switch route {
-        case .coreToCore, .coreToShielded, .platformToCore, nil:
+        case .coreToCore, .coreToShielded, .platformToCore, .platformToShielded, nil:
             // L1 send fees are handled by the payment processor; the
             // asset-lock shield's pool fee is duff-denominated and enforced
             // in the route branches (`canContinue`, Max) directly, mirroring
             // the internal transfer; the full-balance platform withdrawal
-            // nets its fee out of the preflighted payout.
+            // nets its fee out of the preflighted payout; the platform
+            // shield's headroom is governed by the SDK preflight
+            // (`platformShieldCapacity`) in its route branches.
             return 0
         case .platformToPlatform:
             return Self.platformTransferFeeReserveCredits
@@ -603,6 +654,24 @@ final class SendViewModel: ObservableObject {
                 balanceCredits: platformCredits,
                 feeReserveCredits: reserve)
 
+        case .platformToShielded:
+            // Stay quiet while the preflight is still resolving: Continue is
+            // disabled, but the amount is not yet known to be unaffordable.
+            // A FAILED preflight is named — never an unexplained dead button.
+            guard let capacity = platformShieldCapacity else {
+                return shieldPreflightFailed
+                    ? InternalTransferViewModel.platformShieldPreflightUnavailableMessage
+                    : nil
+            }
+            guard capacity.canShield else {
+                return InternalTransferViewModel.platformShieldHeadroomUnavailableMessage
+            }
+            return TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: balanceName,
+                requestedCredits: creditsPreview,
+                balanceCredits: capacity.maxShieldableCredits,
+                feeReserveCredits: 0)
+
         case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
             // A Max sweep is planned against the real note set rather than the
             // amount+reserve envelope, so it is affordable by construction.
@@ -699,6 +768,12 @@ final class SendViewModel: ObservableObject {
             guard let reserve = feeReserveCredits else { return false }
             return platformCredits >= reserve
                 && creditsPreview <= platformCredits - reserve
+        case .platformToShielded:
+            // The SDK preflight is the sole affordability authority (the
+            // aggregate Platform balance is not); nil capacity fails closed.
+            return PlatformShieldAmountPolicy.canSubmit(
+                requestedCredits: creditsPreview,
+                capacity: platformShieldCapacity)
         case .platformToCore:
             guard withdrawalPreflight?.canWithdraw == true else { return false }
             if isFullPlatformWithdrawal { return true }
@@ -744,6 +819,20 @@ final class SendViewModel: ObservableObject {
             }
         case .platformToPlatform:
             sourceDuffs = creditsMinusFeeReserve(platformCredits) / 1000
+        case .platformToShielded:
+            // Max = the SDK preflight's executable capacity, floored to
+            // whole duffs (never round a credit ceiling up to an amount the
+            // transition cannot select).
+            guard let capacity = platformShieldCapacity else {
+                shieldedMaxNotice = InternalTransferViewModel.platformShieldPreflightLoadingMessage
+                sourceDuffs = 0
+                break
+            }
+            sourceDuffs = PlatformShieldAmountPolicy.maximumDuffs(capacity: capacity)
+            if sourceDuffs == 0 {
+                shieldedMaxNotice =
+                    InternalTransferViewModel.platformShieldHeadroomUnavailableMessage
+            }
         case .platformToCore:
             sourceDuffs = platformWithdrawableDuffs ?? 0
         case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
