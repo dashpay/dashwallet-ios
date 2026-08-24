@@ -252,11 +252,11 @@ class MerchantListViewController: ExplorePointOfUseListViewController, Navigatio
     }
 
     override func configureModel() {
-        model = PointOfUseListModel(segments: [
+        let segments = [
             MerchantsListSegment.online.pointOfUseListSegment,
             MerchantsListSegment.nearby.pointOfUseListSegment,
             MerchantsListSegment.all.pointOfUseListSegment,
-        ])
+        ]
 
         // Determine which segment should be default based on caller override or location permission
         let defaultSegmentIndex: Int
@@ -283,11 +283,14 @@ class MerchantListViewController: ExplorePointOfUseListViewController, Navigatio
             denominationType: .both // Default to both fixed and flexible
         )
 
-        // Store the default filters BEFORE making the segment current: switching segments
-        // triggers a fetch, and that fetch must already carry the filters — otherwise the
-        // first render shows unfiltered results while the UI claims the defaults are applied.
-        model.setFilters(defaultFilters, for: model.segments[defaultSegmentIndex])
-        model.currentSegment = model.segments[defaultSegmentIndex]
+        // Configure the initial segment and its filters before the model starts its first
+        // fetch. This prevents the Online default from racing an unfiltered constructor
+        // fetch against the filtered request.
+        model = PointOfUseListModel(
+            segments: segments,
+            initialSegment: segments[defaultSegmentIndex],
+            initialFilters: defaultFilters
+        )
     }
 
     override func viewWillAppear(_ animated: Bool) {

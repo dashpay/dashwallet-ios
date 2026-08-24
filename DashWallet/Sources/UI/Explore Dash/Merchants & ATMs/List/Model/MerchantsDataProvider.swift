@@ -27,11 +27,17 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
     /// every ~100m (DWLocationManager.distanceFilter), and each one refetches every
     /// map-showing segment.
     private static let significantMoveDistance: CLLocationDistance = 500
+    private var hasCachedResult = false
+
+    override func clearCache() {
+        super.clearCache()
+        hasCachedResult = false
+    }
 
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                         with filters: PointOfUseListFilters?,
                         completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
-        if lastQuery == query && !items.isEmpty && lastFilters == filters &&
+        if lastQuery == query && hasCachedResult && lastFilters == filters &&
             !Self.movedSignificantly(from: lastUserPoint, to: userPoint) {
             completion(.success(items))
             return
@@ -41,10 +47,14 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
         lastUserPoint = userPoint
         lastBounds = bounds
         lastFilters = filters
+        hasCachedResult = false
 
         // ALL TAB: Never filter by bounds - show ALL merchants regardless of location.
         // userPoint is still passed so each merchant is represented by its closest location.
         fetch(by: query, in: nil, userPoint: userPoint, with: filters, offset: 0) { [weak self] result in
+            if case .success = result {
+                self?.hasCachedResult = true
+            }
             self?.handle(result: result, completion: completion)
         }
     }

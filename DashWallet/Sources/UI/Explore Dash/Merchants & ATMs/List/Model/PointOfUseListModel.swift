@@ -211,13 +211,17 @@ final class PointOfUseListModel {
 
     var territories: [Territory] = []
 
-    init(segments: [PointOfUseListSegment]) {
+    init(segments: [PointOfUseListSegment], initialSegment: PointOfUseListSegment? = nil,
+         initialFilters: PointOfUseListFilters? = nil) {
         self.segments = segments
         for segment in segments {
             dataProviders[segment] = segment.dataProvider
         }
 
-        currentSegment = segments.first!
+        currentSegment = initialSegment ?? segments.first!
+        if let initialFilters {
+            segmentFilters[currentSegment] = initialFilters
+        }
         segmentDidUpdate()
     }
 
