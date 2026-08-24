@@ -149,7 +149,7 @@ class ExploreMapView: UIView {
     var centerRadius: Double = 20
     var contentInset: UIEdgeInsets = .zero {
         didSet {
-            mapView.layoutMargins = contentInset
+            updateMapViewport()
         }
     }
 
@@ -164,6 +164,7 @@ class ExploreMapView: UIView {
     }
 
     private var mapView: MKMapView!
+    private var myLocationButtonTopConstraint: NSLayoutConstraint!
 
     var mapBounds: ExploreMapBounds {
         mapBounds(with: searchRadius)
@@ -172,18 +173,8 @@ class ExploreMapView: UIView {
     // Search radius in meters - defaults to 32km
     var searchRadius: Double = kDefaultRadius
 
-    /// The coordinate in the middle of the portion of the map NOT covered by the list
-    /// sheet (`contentInset.bottom`). The frame center is under the sheet whenever the
-    /// sheet is open, so search areas and reverse-geocoded titles anchor here instead.
-    /// Falls back to the frame center before layout or while the map is fully covered.
-    var visibleCenterCoordinate: CLLocationCoordinate2D {
-        let visibleHeight = bounds.height - contentInset.bottom
-        guard bounds.height > 0, visibleHeight > 0 else { return mapView.centerCoordinate }
-        return mapView.convert(CGPoint(x: bounds.midX, y: visibleHeight / 2), toCoordinateFrom: self)
-    }
-
     func mapBounds(with radius: Double) -> ExploreMapBounds {
-        .init(rect: MKCircle(center: visibleCenterCoordinate, radius: radius).boundingMapRect)
+        .init(rect: MKCircle(center: centerCoordinate, radius: radius).boundingMapRect)
     }
 
     private var shownMerchantsAnnotations: [MerchantAnnotation] = []
@@ -191,7 +182,6 @@ class ExploreMapView: UIView {
     private var hasSetInitialCenter = false
     private var isSettingInitialRegion = false
     private var desiredCenter: CLLocationCoordinate2D?
-    private var lastRequestedCenter: CLLocation?
     private var pendingMerchantsToShow: [ExplorePointOfUse]?
     private var regionStabilizationTimer: Timer?
 
@@ -287,22 +277,13 @@ class ExploreMapView: UIView {
 
     public func setCenter(_ location: CLLocation, animated: Bool) {
         isSettingInitialRegion = true
-        lastRequestedCenter = location
+        desiredCenter = location.coordinate
         let miles: Double = centerRadius
         let scalingFactor: Double = abs(cos(2*Double.pi * location.coordinate.latitude/360.0))
 
         let span = MKCoordinateSpan(latitudeDelta: miles/69.0, longitudeDelta: miles/(scalingFactor*69.0))
 
-        // The list sheet covers the bottom `contentInset.bottom` points of the map, so
-        // shift the frame center south until `location` lands in the middle of the
-        // visible strip instead of the middle of the (partially hidden) full frame.
-        var center = location.coordinate
-        if contentInset.bottom > 0, bounds.height > 0 {
-            center.latitude -= span.latitudeDelta * (contentInset.bottom / (2 * bounds.height))
-        }
-
-        desiredCenter = center
-        let region: MKCoordinateRegion = .init(center: center, span: span)
+        let region: MKCoordinateRegion = .init(center: location.coordinate, span: span)
         mapView.setRegion(region, animated: animated)
         hasSetInitialCenter = true
 
@@ -354,14 +335,6 @@ class ExploreMapView: UIView {
         }
     }
 
-    /// Re-applies the last requested center honoring the current `contentInset`.
-    /// `setCenter` can run before the sheet's covering height is known (e.g. from
-    /// viewWillAppear, before layout) — call this once the inset is established.
-    public func recenterForCurrentInsets() {
-        guard let location = lastRequestedCenter else { return }
-        setCenter(location, animated: false)
-    }
-
     public func setContentInsets(_ inset: UIEdgeInsets, animated: Bool) {
         if animated {
             UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut) {
@@ -379,6 +352,8 @@ class ExploreMapView: UIView {
     }
 
     private func configureHierarchy() {
+        clipsToBounds = true
+
         mapView = MKMapView(frame: bounds)
         mapView.translatesAutoresizingMaskIntoConstraints = false
         mapView.showsUserLocation = true
@@ -397,6 +372,8 @@ class ExploreMapView: UIView {
         myLocationButton.setImage(UIImage(named: "image.explore.dash.wts.map.my-location"), for: .normal)
         myLocationButton.addTarget(self, action: #selector(myLocationButtonAction), for: .touchUpInside)
         addSubview(myLocationButton)
+        myLocationButtonTopConstraint = myLocationButton.topAnchor.constraint(equalTo: topAnchor, constant: 8)
+
         NSLayoutConstraint.activate([
             mapView.topAnchor.constraint(equalTo: topAnchor),
             mapView.bottomAnchor.constraint(equalTo: bottomAnchor),
@@ -405,9 +382,43 @@ class ExploreMapView: UIView {
 
             myLocationButton.widthAnchor.constraint(equalToConstant: 40),
             myLocationButton.heightAnchor.constraint(equalToConstant: 40),
-            myLocationButton.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+            myLocationButtonTopConstraint,
             myLocationButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
         ])
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        updateMapViewport()
+    }
+
+    /// Keeps the map camera centered in the portion of this view that is actually
+    /// visible between the navigation bar and the list sheet. This mirrors Android's
+    /// bottom-sheet behavior: move the rendered map instead of changing coordinates.
+    private func updateMapViewport() {
+        guard mapView != nil, bounds.width > 0, bounds.height > 0 else { return }
+
+        let top = min(max(contentInset.top, 0), bounds.height)
+        let bottom = min(max(contentInset.bottom, 0), bounds.height - top)
+        let left = min(max(contentInset.left, 0), bounds.width)
+        let right = min(max(contentInset.right, 0), bounds.width - left)
+
+        mapView.transform = CGAffineTransform(
+            translationX: (left - right) / 2,
+            y: (top - bottom) / 2
+        )
+        myLocationButtonTopConstraint.constant = top + 8
+
+        // Symmetric margins keep MapKit controls and attribution inside the exposed
+        // viewport without making setRegion shift the requested camera center.
+        let verticalMargin = min((top + bottom) / 2, max(0, (bounds.height - 1) / 2))
+        let horizontalMargin = min((left + right) / 2, max(0, (bounds.width - 1) / 2))
+        mapView.layoutMargins = UIEdgeInsets(
+            top: verticalMargin,
+            left: horizontalMargin,
+            bottom: verticalMargin,
+            right: horizontalMargin
+        )
     }
 }
 
@@ -486,11 +497,6 @@ extension ExploreMapView: MKMapViewDelegate {
             return
         }
 
-        // A region change outside setCenter's setup lock is user-driven (pan/zoom):
-        // stop treating the last programmatic center as current so a later
-        // recenterForCurrentInsets() can't yank the map away from where the user panned.
-        lastRequestedCenter = nil
-
         NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(_mapViewDidChangeVisibleRegion), object: nil)
         perform(#selector(_mapViewDidChangeVisibleRegion), with: nil, afterDelay: 1)
     }
@@ -538,5 +544,3 @@ extension ExploreMapView: MKMapViewDelegate {
         }
     }
 }
-
-

@@ -112,16 +112,11 @@ class ExplorePointOfUseListViewController: UIViewController {
 
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveLinear) {
             self.contentViewTopLayoutConstraint.constant = kDefaultOpenedMapPosition
-            self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - kDefaultOpenedMapPosition,
-                                              right: 0)
+            self.mapView.contentInset = self.mapContentInsets(sheetTop: kDefaultOpenedMapPosition)
             self.view.layoutIfNeeded()
         } completion: { [weak self] _ in
             self?.updateTableViewInsetsForCurrentSheetPosition()
             self?.updateShowMapButtonVisibility()
-            // The pre-reveal setCenter ran with no inset, centering the location in the
-            // full frame — most of which the sheet now covers. Re-center it within the
-            // visible strip.
-            self?.mapView.recenterForCurrentInsets()
         }
     }
 
@@ -130,8 +125,7 @@ class ExplorePointOfUseListViewController: UIViewController {
 
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveLinear) {
             self.contentViewTopLayoutConstraint.constant = kDefaultClosedMapPosition
-            self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - kDefaultClosedMapPosition,
-                                              right: 0)
+            self.mapView.contentInset = self.mapContentInsets(sheetTop: kDefaultClosedMapPosition)
             self.view.layoutIfNeeded()
         } completion: { [weak self] _ in
             self?.updateTableViewInsetsForCurrentSheetPosition()
@@ -144,6 +138,15 @@ class ExplorePointOfUseListViewController: UIViewController {
             .shared.isAuthorized
 
         showMapButton.isHidden = !isVisible
+    }
+
+    private func mapContentInsets(sheetTop: CGFloat) -> UIEdgeInsets {
+        UIEdgeInsets(
+            top: expandedTableTopInset,
+            left: 0,
+            bottom: max(0, mapView.bounds.height - sheetTop),
+            right: 0
+        )
     }
 
     // MARK: life cycle
@@ -359,10 +362,9 @@ extension ExplorePointOfUseListViewController {
         filterCell?.subtitle = subtitleForFilterCell()
 
         if DWLocationManager.shared.isAuthorized && currentSegment.showReversedLocation {
-            let visibleCenter = mapView.visibleCenterCoordinate
             DWLocationManager.shared
-                .reverseGeocodeLocation(CLLocation(latitude: visibleCenter.latitude,
-                                                   longitude: visibleCenter.longitude)) { [weak self] (location, _) in
+                .reverseGeocodeLocation(CLLocation(latitude: mapView.centerCoordinate.latitude,
+                                                   longitude: mapView.centerCoordinate.longitude)) { [weak self] (location, _) in
                     if self?.model.showMap ?? false {
                         self?.filterCell?.title = location
                     }
@@ -658,7 +660,7 @@ extension ExplorePointOfUseListViewController {
             let animationDuration: CGFloat = (abs(velocityY)*0.0002)+0.2;
 
             UIView.animate(withDuration: animationDuration, delay: 0, options: .curveEaseOut) {
-                self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - finalY, right: 0)
+                self.mapView.contentInset = self.mapContentInsets(sheetTop: finalY)
                 self.contentViewTopLayoutConstraint.constant = finalY
                 self.view.layoutIfNeeded()
             } completion: { _ in
@@ -729,9 +731,8 @@ extension ExplorePointOfUseListViewController: ExploreMapViewDelegate {
         // Update the search radius on the map view to match current filter
         mapView.searchRadius = model.currentRadius
 
-        // Update the search center to the center of the visible part of the map
-        // (not the device GPS location, and not the frame center hidden under the sheet)
-        model.searchCenterCoordinate = mapView.visibleCenterCoordinate
+        // Update the search center to the map camera center (not the device GPS location)
+        model.searchCenterCoordinate = mapView.centerCoordinate
 
         // Get bounds based on the current filter radius and new center location
         let newBounds = mapView.mapBounds(with: model.currentRadius)
