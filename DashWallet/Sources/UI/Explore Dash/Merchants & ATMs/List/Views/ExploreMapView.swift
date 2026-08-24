@@ -153,6 +153,20 @@ class ExploreMapView: UIView {
         }
     }
 
+    /// When enabled, contentInset physically shifts the rendered map so the frame
+    /// center — which drives `centerCoordinate` and `mapBounds(with:)` — coincides with
+    /// the center of the exposed strip. The merchant/ATM list screen needs this because
+    /// it searches around `centerCoordinate`. When disabled (the default), contentInset
+    /// only feeds `layoutMargins`: hosts with their own bottom sheets (POI details,
+    /// all-merchant locations) rely on that behavior, where the map always renders
+    /// edge to edge no matter where their sheet currently sits.
+    var movesMapWithContentInset = false {
+        didSet {
+            clipsToBounds = movesMapWithContentInset
+            updateMapViewport()
+        }
+    }
+
     var userRadius: Double? {
         guard mapView.isUserLocationVisible else { return nil }
         guard let userLocation else { return nil }
@@ -352,8 +366,6 @@ class ExploreMapView: UIView {
     }
 
     private func configureHierarchy() {
-        clipsToBounds = true
-
         mapView = MKMapView(frame: bounds)
         mapView.translatesAutoresizingMaskIntoConstraints = false
         mapView.showsUserLocation = true
@@ -398,27 +410,44 @@ class ExploreMapView: UIView {
     private func updateMapViewport() {
         guard mapView != nil, bounds.width > 0, bounds.height > 0 else { return }
 
+        guard movesMapWithContentInset else {
+            mapView.transform = .identity
+            mapView.layoutMargins = contentInset
+            setMyLocationButtonTop(contentInset.top + 8)
+            return
+        }
+
         let top = min(max(contentInset.top, 0), bounds.height)
         let bottom = min(max(contentInset.bottom, 0), bounds.height - top)
         let left = min(max(contentInset.left, 0), bounds.width)
         let right = min(max(contentInset.right, 0), bounds.width - left)
 
+        // With the sheet covering (nearly) the whole map there is no viewport to center
+        // in — keep the last meaningful one rather than collapse MapKit's layout area to
+        // a sliver, which would pin any setRegion issued meanwhile at maximum zoom.
+        guard bounds.height - top - bottom >= 44 else { return }
+
         mapView.transform = CGAffineTransform(
             translationX: (left - right) / 2,
             y: (top - bottom) / 2
         )
-        myLocationButtonTopConstraint.constant = top + 8
+        setMyLocationButtonTop(top + 8)
 
         // Symmetric margins keep MapKit controls and attribution inside the exposed
         // viewport without making setRegion shift the requested camera center.
-        let verticalMargin = min((top + bottom) / 2, max(0, (bounds.height - 1) / 2))
-        let horizontalMargin = min((left + right) / 2, max(0, (bounds.width - 1) / 2))
         mapView.layoutMargins = UIEdgeInsets(
-            top: verticalMargin,
-            left: horizontalMargin,
-            bottom: verticalMargin,
-            right: horizontalMargin
+            top: (top + bottom) / 2,
+            left: (left + right) / 2,
+            bottom: (top + bottom) / 2,
+            right: (left + right) / 2
         )
+    }
+
+    // updateMapViewport runs from layoutSubviews; dirtying the constraint with an
+    // unchanged value there would schedule layout passes forever.
+    private func setMyLocationButtonTop(_ constant: CGFloat) {
+        guard myLocationButtonTopConstraint.constant != constant else { return }
+        myLocationButtonTopConstraint.constant = constant
     }
 }
 

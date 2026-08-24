@@ -219,9 +219,7 @@ final class PointOfUseListModel {
         }
 
         currentSegment = initialSegment ?? segments.first!
-        if let initialFilters {
-            segmentFilters[currentSegment] = initialFilters
-        }
+        setFilters(initialFilters, for: currentSegment)
         segmentDidUpdate()
     }
 

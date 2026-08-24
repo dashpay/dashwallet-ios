@@ -24,6 +24,7 @@ private let kExploreWhereToSpendSectionCount = 5
 private let kHandlerHeight: CGFloat = 24.0
 internal let kDefaultOpenedMapPosition: CGFloat = 260.0
 private let kDefaultClosedMapPosition: CGFloat = -kHandlerHeight
+private let kSignificantLocationChange: CLLocationDistance = 500
 
 // MARK: - ExplorePointOfUseSections
 
@@ -65,6 +66,7 @@ class ExplorePointOfUseListViewController: UIViewController {
     internal var items: [ExplorePointOfUse] { model.items }
 
     internal var radius = 20 // In miles //Move to model
+    private var lastLocationDrivenFetch: CLLocation?
     internal var mapView: ExploreMapView!
     internal var showMapButton: UIButton!
     internal var syncBannerView: ExploreSyncBannerView?
@@ -305,10 +307,15 @@ extension ExplorePointOfUseListViewController: DWLocationObserver {
 
             // Refresh the search with the new location for every map-showing segment.
             // This is what seeds the map when GPS gets its first fix after the screen
-            // is already visible (e.g. entering directly on the merchants All tab, or
-            // any ATM tab — the previous nearby-tag check matched only the ATM "Buy"
-            // segment by accident).
-            model.fetch(query: nil)
+            // is already visible. Later fixes can arrive every ~100 m, which is too
+            // chatty to requery and reload the list for — only refetch once the user
+            // has moved a significant distance.
+            let movedSignificantly = lastLocationDrivenFetch
+                .map { location.distance(from: $0) > kSignificantLocationChange } ?? true
+            if movedSignificantly {
+                lastLocationDrivenFetch = location
+                model.fetch(query: nil)
+            }
         }
     }
 
@@ -418,6 +425,9 @@ extension ExplorePointOfUseListViewController {
 
         mapView = ExploreMapView(frame: .zero)
         mapView.delegate = self
+        // This screen searches around mapView.centerCoordinate, so the rendered map is
+        // shifted to keep the frame center inside the strip exposed by the list sheet.
+        mapView.movesMapWithContentInset = true
         mapView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mapView)
 
@@ -643,6 +653,10 @@ extension ExplorePointOfUseListViewController {
         contentViewTopLayoutConstraint.constant += translatedPoint.y
 
         sender.setTranslation(.zero, in: view)
+
+        // Keep the map viewport in sync while the finger is still down; otherwise the
+        // area uncovered by the sheet renders empty until the gesture ends.
+        mapView.contentInset = mapContentInsets(sheetTop: contentViewTopLayoutConstraint.constant)
 
         if sender.state == .ended {
             let velocityInView = sender.velocity(in: view)

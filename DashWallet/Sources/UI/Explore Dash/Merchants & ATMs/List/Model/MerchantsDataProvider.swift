@@ -23,21 +23,16 @@ import Foundation
 class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
     /// The result set ignores bounds entirely, and userPoint only picks each merchant's
     /// representative closest location — movement below this threshold can't meaningfully
-    /// change the outcome, so it isn't worth a full-catalog refetch. GPS updates arrive
-    /// every ~100m (DWLocationManager.distanceFilter), and each one refetches every
-    /// map-showing segment.
+    /// change the outcome, so it isn't worth a full-catalog refetch.
     private static let significantMoveDistance: CLLocationDistance = 500
-    private var hasCachedResult = false
-
-    override func clearCache() {
-        super.clearCache()
-        hasCachedResult = false
-    }
 
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                         with filters: PointOfUseListFilters?,
                         completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
-        if lastQuery == query && hasCachedResult && lastFilters == filters &&
+        // Guarding on !items.isEmpty (like the sibling providers) keeps the cache honest:
+        // callers that invalidate by emptying `items` force a refetch, and an empty
+        // result is never sticky.
+        if lastQuery == query && !items.isEmpty && lastFilters == filters &&
             !Self.movedSignificantly(from: lastUserPoint, to: userPoint) {
             completion(.success(items))
             return
@@ -47,14 +42,10 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
         lastUserPoint = userPoint
         lastBounds = bounds
         lastFilters = filters
-        hasCachedResult = false
 
         // ALL TAB: Never filter by bounds - show ALL merchants regardless of location.
         // userPoint is still passed so each merchant is represented by its closest location.
         fetch(by: query, in: nil, userPoint: userPoint, with: filters, offset: 0) { [weak self] result in
-            if case .success = result {
-                self?.hasCachedResult = true
-            }
             self?.handle(result: result, completion: completion)
         }
     }
@@ -75,7 +66,7 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
         // ALL TAB: Never filter by bounds - show ALL merchants regardless of location.
         // userPoint is still passed so each merchant is represented by its closest location.
         fetch(by: lastQuery, in: nil, userPoint: lastUserPoint, with: lastFilters, offset: nextOffset) { [weak self] result in
-            self?.handle(result: result, completion: completion)
+            self?.handle(result: result, appending: true, completion: completion)
         }
     }
 
