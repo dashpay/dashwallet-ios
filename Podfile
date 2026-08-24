@@ -11,7 +11,11 @@ target 'dashwallet' do
   pod 'SQLiteMigrationManager.swift', '0.8.3'
   pod 'CloudInAppMessaging', '0.1.0'
   pod 'FirebaseStorage', '8.15.0'
-  pod 'Firebase/DynamicLinks'
+  # CoreOnly provides the `Firebase` umbrella module (Firebase.h + its module
+  # map) that `@import Firebase` / `import Firebase` resolve against. It used to
+  # arrive implicitly as a dependency of Firebase/DynamicLinks; that subspec was
+  # removed, so depend on it directly.
+  pod 'Firebase/CoreOnly'
   pod 'SSZipArchive'
   pod 'KVO-MVVM', '0.5.6'
   pod 'UIViewController-KeyboardAdditions', '1.2.1'
@@ -40,7 +44,11 @@ target 'dashpay' do
   pod 'SQLiteMigrationManager.swift', '0.8.3'
   pod 'CloudInAppMessaging', '0.1.0'
   pod 'FirebaseStorage', '8.15.0'
-  pod 'Firebase/DynamicLinks'
+  # CoreOnly provides the `Firebase` umbrella module (Firebase.h + its module
+  # map) that `@import Firebase` / `import Firebase` resolve against. It used to
+  # arrive implicitly as a dependency of Firebase/DynamicLinks; that subspec was
+  # removed, so depend on it directly.
+  pod 'Firebase/CoreOnly'
   pod 'SSZipArchive'
   pod 'KVO-MVVM', '0.5.6'
   pod 'UIViewController-KeyboardAdditions', '1.2.1'
