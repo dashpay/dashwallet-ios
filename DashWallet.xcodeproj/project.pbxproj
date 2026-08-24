@@ -13408,7 +13408,7 @@
 /* Begin XCLocalSwiftPackageReference section */
 		3F660CFDC68A3BB11096E81F /* XCLocalSwiftPackageReference "swift-sdk" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "/Users/samuelw/Documents/src/platform-tracked-masternodes/packages/swift-sdk";
+			relativePath = "../platform/packages/swift-sdk";
 		};
 /* End XCLocalSwiftPackageReference section */
 
