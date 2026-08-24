@@ -186,6 +186,13 @@ class MainTabbarController: UITabBarController {
 extension MainTabbarController {
     private func configureControllers() {
         var viewControllers: [UIViewController] = []
+        // The bar is hidden by children — the payments landing does it while it
+        // is up — and hiding outlives the child that asked for it. A rebuild
+        // replaces `viewControllers` outright, which can take that child out of
+        // the hierarchy without a `viewWillDisappear` to undo it, leaving a
+        // wallet with no tab bar at all. Whoever wants it hidden after this
+        // will say so again on their next appearance.
+        setTabBarHidden(false, animated: false)
         #if DASHPAY
         // Cleared before the rebuild, not after: this pass may be the one that
         // drops the Contacts tab (a wallet switch away from an identity), and a
