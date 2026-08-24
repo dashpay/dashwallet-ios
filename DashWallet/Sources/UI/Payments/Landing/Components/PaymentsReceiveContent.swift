@@ -43,8 +43,13 @@ struct PaymentsReceiveContent: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: 20) {
-            ChainNetworkToggle(selection: $viewModel.network, options: ChainNetwork.allCases)
-                .padding(.horizontal, 20)
+            // Advanced mode only. Without it the wallet presents one balance,
+            // so there is nothing to choose between — and a toggle with a
+            // single option is a control that cannot be used.
+            if viewModel.isAdvancedMode {
+                ChainNetworkToggle(selection: $viewModel.network, options: ChainNetwork.allCases)
+                    .padding(.horizontal, 20)
+            }
 
             if let receipt = viewModel.receipt {
                 // A payment landed while this screen was being presented. The

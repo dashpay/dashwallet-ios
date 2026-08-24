@@ -28,22 +28,25 @@ enum HomeBalanceViewState: Int {
 // MARK: - HomeBalanceView
 
 /// Home header: the combined total (transparent + platform + shielded)
-/// as the hero amount, then one row per balance with its fiat value and
-/// circular in/out transfer buttons. Every row's in-arrow opens the
-/// receive sheet (Receive ↔ Internal) with that balance pinned as the
-/// destination; every out-arrow opens the mirrored send sheet
-/// (Send ↔ Internal) with that balance pinned as the source.
+/// as the hero amount, and — in Advanced mode only — one row per balance
+/// with its fiat value.
+///
+/// The rows are a readout, not a control surface. They used to carry an
+/// in/out arrow pair opening the pinned receive/send sheets; the transfer
+/// routes those reached are all on the payments tab, and a second, denser
+/// entry to them on the balance header was two taps the header did not need.
 struct HomeBalanceView: View {
     @ObservedObject var viewModel: BalanceModel
     @ObservedObject private var platformSync = PlatformAddressSyncCoordinator.shared
     @ObservedObject private var shieldedSync = ShieldedSyncMonitor.shared
     @State private var opacity: Double = 0.3
     var onLongPress: () -> Void
-    var onReceive: (ChainNetwork) -> Void = { _ in }
-    var onSend: (ChainNetwork) -> Void = { _ in }
-    /// Tap on a row's body (icon/title/amount — not the arrows): opens the
-    /// what-is-this-balance info sheet for that balance.
+    /// Tap on a row: opens the what-is-this-balance info sheet.
     var onInfo: (ChainNetwork) -> Void = { _ in }
+    /// The breakdown is one of the three surfaces Advanced mode unlocks —
+    /// without it the wallet has one balance, and naming its parts invites
+    /// questions the simple mode is there to avoid.
+    var showsBreakdown: Bool = true
 
     // Header nav-bar (SB-11) inputs, threaded in by HomeView from the same
     // app-owned identity snapshot the UIKit nav-bar avatar reads. A nil
@@ -137,7 +140,7 @@ struct HomeBalanceView: View {
                 onLongPress()
             }
 
-            if !viewModel.isBalanceHidden && platformSync.isRunning {
+            if showsBreakdown && !viewModel.isBalanceHidden && platformSync.isRunning {
                 breakdownCard
                     .padding(.horizontal, 16)
                     .padding(.top, 12)
@@ -205,26 +208,20 @@ struct HomeBalanceView: View {
                 icon: "wallet.pass",
                 title: NSLocalizedString("Transparent", comment: "Balance breakdown"),
                 duffs: viewModel.value,
-                infoAction: { onInfo(.core) },
-                inAction: { onReceive(.core) },
-                outAction: { onSend(.core) })
+                infoAction: { onInfo(.core) })
             rowDivider
             balanceRow(
                 icon: "cloud",
                 title: NSLocalizedString("Platform", comment: ""),
                 duffs: platformDuffs,
-                infoAction: { onInfo(.platform) },
-                inAction: { onReceive(.platform) },
-                outAction: { onSend(.platform) })
+                infoAction: { onInfo(.platform) })
             rowDivider
             balanceRow(
                 icon: "shield",
                 title: NSLocalizedString("Shielded", comment: ""),
                 duffs: shieldedDuffs,
                 isSyncing: shieldedSync.isSyncing || platformSync.isShieldedBalanceReconciling,
-                infoAction: { onInfo(.shielded) },
-                inAction: { onReceive(.shielded) },
-                outAction: { onSend(.shielded) })
+                infoAction: { onInfo(.shielded) })
         }
         .padding(.horizontal, 12)
         .background(Color.dash.white.opacity(0.12))
@@ -254,13 +251,9 @@ struct HomeBalanceView: View {
         title: String,
         duffs: UInt64,
         isSyncing: Bool = false,
-        infoAction: @escaping () -> Void,
-        inAction: @escaping () -> Void,
-        outAction: @escaping () -> Void
+        infoAction: @escaping () -> Void
     ) -> some View {
         HStack(spacing: 8) {
-            // The row body is its own tap target (info sheet); keeping it a
-            // sibling of the arrow buttons means it can't swallow their taps.
             HStack(spacing: 8) {
                 Image(systemName: icon)
                     .font(.system(size: 15))
@@ -293,32 +286,8 @@ struct HomeBalanceView: View {
             }
             .contentShape(Rectangle())
             .onTapGesture { infoAction() }
-
-            transferButton(systemName: "arrow.down",
-                           label: NSLocalizedString("Transfer in", comment: "Balance breakdown"),
-                           action: inAction)
-            transferButton(systemName: "arrow.up",
-                           label: NSLocalizedString("Transfer out", comment: "Balance breakdown"),
-                           action: outAction)
         }
         .padding(.vertical, 9)
     }
 
-    private func transferButton(
-        systemName: String,
-        label: String,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Image(systemName: systemName)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(Color.dash.whiteText)
-                .frame(width: 28, height: 28)
-                .background(Circle().fill(Color.dash.white.opacity(0.18)))
-                // Keep the visual small but the tap target comfortable.
-                .contentShape(Rectangle().inset(by: -8))
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(label)
-    }
 }

@@ -198,7 +198,11 @@ class HomeViewModel: ObservableObject {
     @Published private(set) var showReclassifyTransaction: Transaction? = nil
     @Published var shouldShowShortcutBanner: Bool = false
     @Published var giftCardTxId: Data? = nil
-    
+    /// Mirrors `DWGlobalOptions.advancedModeEnabled`. The balance breakdown on
+    /// the header is one of the surfaces the mode unlocks, and it has to appear
+    /// and disappear with the switch rather than on the next launch.
+    @Published private(set) var isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+
 #if DASHPAY
     var joinDashPayState: JoinDashPayState = .callToAction
 #endif
@@ -303,6 +307,13 @@ class HomeViewModel: ObservableObject {
         // wallet). The balance-driven reloads don't cover this — the balance
         // notifications the switch posts can carry the same total, and their
         // observers don't clear the stale per-hash cache.
+        NotificationCenter.default.publisher(for: .advancedModeDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+            }
+            .store(in: &cancellableBag)
+
         NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in

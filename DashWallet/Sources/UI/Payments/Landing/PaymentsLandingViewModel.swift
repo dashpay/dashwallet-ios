@@ -183,7 +183,14 @@ final class PaymentsLandingViewModel: ObservableObject {
         NotificationCenter.default.publisher(for: .advancedModeDidChange)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                self?.isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+                guard let self else { return }
+                self.isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+                // The toggle that chose it is gone now. Left alone, the Receive
+                // tab would keep showing a Platform or Shielded address with no
+                // control on screen to get back to the transparent one.
+                if !self.isAdvancedMode, self.network != .core {
+                    self.network = .core
+                }
             }
             .store(in: &cancellables)
 
