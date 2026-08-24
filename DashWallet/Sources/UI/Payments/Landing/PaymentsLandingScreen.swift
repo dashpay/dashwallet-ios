@@ -52,6 +52,9 @@ struct PaymentsLandingScreen: View {
     /// "Swap to other crypto" — the host presents the Dash DEX portal. This
     /// leaves Dash for another chain and is not an internal transfer.
     var onSwapToCrypto: () -> Void = {}
+    /// Leaves the payments tab entirely — the X above the Internal form. The
+    /// host resolves where that goes; on the tab there is nothing to dismiss.
+    var onCloseLanding: () -> Void = {}
     /// False for the balance-row receive/send sheets: their grabber + hero
     /// selector are the top chrome — no X close button or title row.
     var showsHeader: Bool = true
@@ -70,6 +73,9 @@ struct PaymentsLandingScreen: View {
         static let cardHorizontalPadding: CGFloat = 20
         /// Gap under the (currently unreachable) header.
         static let headerBottomPadding: CGFloat = 20
+        /// Breathing room above the selector where it is the first thing on
+        /// screen — the balance-row sheets, under their grabber.
+        static let selectorTopPadding: CGFloat = 20
         /// Tighter for the balance-row sheets: the form they embed needs the
         /// vertical room for its amount row, endpoint cards and keypad.
         static let embeddedFormTopPadding: CGFloat = 12
@@ -107,42 +113,81 @@ struct PaymentsLandingScreen: View {
         return false
     }
 
-    /// A horizontal swipe changes tab only where the tab is a card.
+    /// A horizontal swipe changes tab anywhere on the payments tab, including
+    /// over the Internal form's keypad.
     ///
-    /// Off wherever the content is a whole form with a keypad, because paging
-    /// away mid-entry drops what the user typed. That was the balance-row
-    /// sheets; the landing's Internal tab joins them now that it opens straight
-    /// into the transfer form instead of a destination card.
+    /// It costs nothing there: `embeddedTransferViewModel` is owned by the
+    /// hosting controller, not by the tab, so a typed amount is still in the
+    /// field on the way back. Off only in the balance-row sheets, which are one
+    /// pinned route each and have no tabs to page between.
     private var allowsTabSwipe: Bool {
-        isPickerMode && viewModel.activeTab != .internalTransfer
+        isPickerMode
+    }
+
+    /// Whether anything is drawn above the tab selector — the back header, or
+    /// the close bar the payments tab carries now that it has no tab bar.
+    private var hasTopChrome: Bool {
+        showsHeader || isPickerMode
+    }
+
+    /// What fills the bottom safe area, under the home indicator — and only
+    /// that strip. The screen's own background is `primaryBackground` on every
+    /// tab; this sits behind it and is visible nowhere else.
+    ///
+    /// The keypad already runs its own panel down into that strip, but the tab
+    /// content is inside a `clipped()` ZStack — the clip is what keeps the two
+    /// tabs from drawing over each other mid-slide, and it cuts that overflow
+    /// off with everything else. Painting it here instead costs nothing: a
+    /// background does not take part in layout, and this sits outside the clip.
+    ///
+    /// It went unnoticed until the tab bar was hidden, because the bar was
+    /// standing in that strip.
+    private var bottomFill: Color {
+        viewModel.activeTab == .internalTransfer
+            ? Color.dash.secondaryBackground
+            : Color.dash.primaryBackground
     }
 
     var body: some View {
-        VStack(alignment: .center, spacing: 20) {
+        VStack(alignment: .center, spacing: 10) {
             if showsHeader {
                 header
+            } else if isPickerMode {
+                closeBar
             }
 
-            PaymentsTabSelector(
-                tabs: viewModel.visibleTabs,
-                selection: tabSelection
-            )
-            .frame(height: 70)
-            .padding(.top, 20)
-            .padding(.horizontal, 16)
+            VStack(alignment: .center, spacing: 20) {
+                PaymentsTabSelector(
+                    tabs: viewModel.visibleTabs,
+                    selection: tabSelection
+                )
+                .frame(height: 70)
+                // Only where the selector is the top of the screen. With chrome
+                // above it this is a second top margin stacked on the VStack's own
+                // spacing, and the two read as one oversized gap.
+                .padding(.top, hasTopChrome ? 0 : Layout.selectorTopPadding)
+                .padding(.horizontal, 16)
 
-            // ZStack, not a plain sibling: during the slide both the outgoing
-            // and incoming tab exist, and they have to share one slot instead
-            // of stacking and shoving the layout.
-            ZStack(alignment: .top) {
-                tabContent
-                    .id(viewModel.activeTab)
-                    .transition(slide)
+                // ZStack, not a plain sibling: during the slide both the outgoing
+                // and incoming tab exist, and they have to share one slot instead
+                // of stacking and shoving the layout.
+                ZStack(alignment: .top) {
+                    tabContent
+                        .id(viewModel.activeTab)
+                        .transition(slide)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipped()
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .clipped()
         }
+
+
+        // Two layers, and the order is the point. The first is bounded by the
+        // safe area and covers the screen the same on every tab; the second is
+        // drawn behind it and reaches further, so it shows through only in the
+        // strip under the home indicator that the first cannot reach.
         .background(Color.dash.primaryBackground)
+        .background(bottomFill.ignoresSafeArea(edges: .bottom))
         // Makes the empty area below the card draggable too, so the swipe
         // works on the whole screen rather than only over the content.
         .contentShape(Rectangle())
@@ -333,6 +378,20 @@ struct PaymentsLandingScreen: View {
         NavigationBar(
             leading: { NavigationBarElement.back.button(action: onClose) })
             .padding(.bottom, Layout.headerBottomPadding)
+    }
+
+    /// The way out of the payments tab once the tab bar is gone from under it.
+    ///
+    /// On every tab, not only the one with the keypad: chrome that appeared and
+    /// disappeared as the user moved between the three would read as the screen
+    /// changing identity rather than the content changing.
+    ///
+    /// Close rather than back: this is the payments tab's own root, so there is
+    /// nothing behind it to go back to — the X leaves the flow. Trailing, where
+    /// a modal's close sits.
+    private var closeBar: some View {
+        NavigationBar(
+            trailing: { NavigationBarElement.close.button(action: onCloseLanding) })
     }
 
 }

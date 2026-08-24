@@ -46,6 +46,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             onSendToAddress: { [weak self] in self?.pushSendToAddress() },
             onSendToUsername: { [weak self] in self?.showContactBook() },
             onSwapToCrypto: { [weak self] in self?.presentDashDEX() },
+            onCloseLanding: { [weak self] in self?.leaveLanding() },
             showsHeader: showsHeader)
         return UIHostingController(rootView: screen)
     }()
@@ -212,6 +213,13 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         }
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // Also on the way back from a pushed step, which restored the bar on
+        // its own way out.
+        applyTabBarVisibility()
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         // Programmatic dismissal does not call
@@ -235,6 +243,11 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         // sleep.
         guard !isPushingReceiveStep else { return }
         viewModel.setReceiveSurfaceVisible(false)
+        // Leaving for another tab, or being dismissed — either way the bar is
+        // not ours to keep hidden. A pushed step hides it for itself.
+        if presentingViewController == nil {
+            tabBarController?.setTabBarHidden(false, animated: false)
+        }
     }
 
     // MARK: - Actions
@@ -355,6 +368,35 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     #else
     private func showContactBook() {}
     #endif
+
+    /// The X above the Internal form. Dismisses where something presented this
+    /// landing, and leaves for the history where nothing did — as the payments
+    /// tab's root, `dismiss` is a no-op, which is the bug the receive receipt's
+    /// Done button had.
+    private func leaveLanding() {
+        if presentingViewController != nil {
+            dismiss(animated: true)
+        } else {
+            (tabBarController as? MainTabbarController)?.showHome()
+        }
+    }
+
+    /// The tab bar goes while the landing is up, and the X above the selector
+    /// takes its place as the way out.
+    ///
+    /// The Internal tab forced the question — it embeds the transfer form now,
+    /// and its keypad and Continue button were sharing the bottom of the screen
+    /// with the bar, which the payments tab's own rule already forbids: the bar
+    /// is gone from the first step that asks for an amount. Hiding it on that
+    /// tab alone, though, would flicker the chrome in and out as the user moved
+    /// between the three, so it goes for the whole landing.
+    ///
+    /// Only meaningful on the tab. The balance-row sheets are presented and
+    /// have no tab bar to hide.
+    private func applyTabBarVisibility() {
+        guard let tabBarController, presentingViewController == nil else { return }
+        tabBarController.setTabBarHidden(true, animated: true)
+    }
 
     /// "Swap to other crypto" → the Dash DEX portal.
     ///
