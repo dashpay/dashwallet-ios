@@ -1123,6 +1123,7 @@
 		B3A1F2C4D5E6078901234569 /* ExtendedPublicKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A1F2C4D5E6078901234567 /* ExtendedPublicKeySheet.swift */; };
 		B420473EF13CB7EE5F339349 /* JoinDashPayReadinessScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97AA6C01B7CED63D37D3652B /* JoinDashPayReadinessScreen.swift */; };
 		B453B34B871E4125607DACDC /* NavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD6615F1246B5935365B05BD /* NavigationBar.swift */; };
+		5E1C0A0100000000000000F2 /* MerchantLogoPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1C0A0100000000000000F1 /* MerchantLogoPlaceholder.swift */; };
 		B56469D438692B0A0B771EA6 /* PinPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AC52AE587802170368F6177 /* PinPromptView.swift */; };
 		B66294BFAF57B052A74EE77D /* CoinJoinRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = B478AD92C1F1C11D09645DF4 /* CoinJoinRecovery.swift */; };
 		B66D25CAD54ABDC1049BDDD5 /* DamerauLevenshtein.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CE60A95629A2883710A75C /* DamerauLevenshtein.swift */; };
@@ -1883,6 +1884,7 @@
 		EE0000042DUMMYID001234567 /* PercentageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000052DUMMYID001234567 /* PercentageFormatter.swift */; };
 		EE0000062DUMMYID001234567 /* PercentageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000052DUMMYID001234567 /* PercentageFormatter.swift */; };
 		EE5F3D5C458E92B69D14BFD8 /* NavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD6615F1246B5935365B05BD /* NavigationBar.swift */; };
+		5E1C0A0100000000000000F3 /* MerchantLogoPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1C0A0100000000000000F1 /* MerchantLogoPlaceholder.swift */; };
 		EF053C0D81A007CC015EB3EE /* InternalTransferViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7249AC40404B20F2AEE590F1 /* InternalTransferViewModel.swift */; };
 		EF8FE439EB96236940DFBDE7 /* SwiftDashSDKTransactionSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31271807D89A63FB9413C936 /* SwiftDashSDKTransactionSender.swift */; };
 		EFCF9D5D6630AD9BD0A62E29 /* InternalTransferScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */; };
@@ -3113,6 +3115,7 @@
 		AA22BB33CC44DD55EE66FF77 /* BuyReceiveFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyReceiveFlowUITests.swift; sourceTree = "<group>"; };
 		AA29A8515217AC4232F794C2 /* Pods-TodayExtension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.testnet.xcconfig"; path = "Target Support Files/Pods-TodayExtension/Pods-TodayExtension.testnet.xcconfig"; sourceTree = "<group>"; };
 		AD6615F1246B5935365B05BD /* NavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBar.swift; sourceTree = "<group>"; };
+		5E1C0A0100000000000000F1 /* MerchantLogoPlaceholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantLogoPlaceholder.swift; sourceTree = "<group>"; };
 		AE3B307E94B354351D4E3D3B /* PaymentProtocolTransport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentProtocolTransport.swift; sourceTree = "<group>"; };
 		B1100000B1100000B1100002 /* BuyEnterAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyEnterAmountView.swift; sourceTree = "<group>"; };
 		B1100000B1100000B1100003 /* BuyEnterAmountViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyEnterAmountViewModel.swift; sourceTree = "<group>"; };
@@ -6891,6 +6894,7 @@
 				75EBAA112BB99B6B004488E3 /* BottomSheet.swift */,
 				96CB7E093E994D2391D36DEC /* SelfSizingSheet.swift */,
 				AD6615F1246B5935365B05BD /* NavigationBar.swift */,
+				5E1C0A0100000000000000F1 /* MerchantLogoPlaceholder.swift */,
 				759ADD562BF3447400767ACD /* Button.swift */,
 				75CDD7852C08D61300F433D2 /* DashAmount.swift */,
 				750CEFA02CCA6EA100E87A32 /* TextInput.swift */,
@@ -10030,6 +10034,7 @@
 				75EBAA122BB99B6B004488E3 /* BottomSheet.swift in Sources */,
 				22E89B6C00B546D294D7F331 /* SelfSizingSheet.swift in Sources */,
 				B453B34B871E4125607DACDC /* NavigationBar.swift in Sources */,
+				5E1C0A0100000000000000F2 /* MerchantLogoPlaceholder.swift in Sources */,
 				75CED09E2ACFD0ED0095F10C /* CoinbaseDepositRequest.swift in Sources */,
 				C94D98212A4CC78F00F3BEE1 /* DashInputField.swift in Sources */,
 				2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */,
@@ -10557,6 +10562,7 @@
 				75EBAA132BB99B6B004488E3 /* BottomSheet.swift in Sources */,
 				39DC037E9CF04CCFA3EFBB53 /* SelfSizingSheet.swift in Sources */,
 				EE5F3D5C458E92B69D14BFD8 /* NavigationBar.swift in Sources */,
+				5E1C0A0100000000000000F3 /* MerchantLogoPlaceholder.swift in Sources */,
 				C9D2C7082A320AA000D15901 /* DWPlaceholderFormCellModel.m in Sources */,
 				C9D2C7092A320AA000D15901 /* DWOverlapControl.m in Sources */,
 				C9D2C70A2A320AA000D15901 /* CoinsToAddressTxFilter.swift in Sources */,
