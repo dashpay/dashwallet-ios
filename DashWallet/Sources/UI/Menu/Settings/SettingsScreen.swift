@@ -256,3 +256,155 @@ extension AboutDashHostingViewController: MFMailComposeViewControllerDelegate {
         controller.dismiss(animated: true)
     }
 }
+
+// MARK: - Network switch overlay (app-wide)
+//
+// Colocated with the settings screen (the user-facing switch trigger) per the
+// repo's append-to-existing-file convention, but app-scoped: the presenter
+// owns a dedicated UIWindow, not a child of any screen.
+
+/// Full-screen blocking overlay for an in-flight network switch, hosted in
+/// its OWN `UIWindow`.
+///
+/// A network switch rebuilds the root UI (`AppDelegate` reassigns
+/// `window.rootViewController`; `DWAppRootViewController` swaps its child on
+/// `DWCurrentNetworkDidChange`), so any overlay mounted as a child view
+/// controller would be torn down mid-switch. A separate window at
+/// `.alert + 1` survives every root swap; it is created lazily when the
+/// transition enters `.switching` and dropped only on `.idle`. The `.failed`
+/// phase keeps the window up — the old runtime is already torn down at that
+/// point, so the app may have no working manager and the only ways forward
+/// are Retry (or force-quit).
+@MainActor
+final class NetworkSwitchOverlayPresenter {
+    static let shared = NetworkSwitchOverlayPresenter()
+
+    private var overlayWindow: UIWindow?
+    private var phaseCancellable: AnyCancellable?
+
+    private init() {}
+
+    /// Idempotent activation: every switch entry point calls this before
+    /// starting the switch; the first call subscribes to the transition
+    /// state for the rest of the process lifetime. If a caller forgets, the
+    /// switch still works — only the overlay is missing.
+    func ensureActive() {
+        guard phaseCancellable == nil else { return }
+        phaseCancellable = NetworkTransitionState.shared.$phase
+            .sink { phase in
+                Task { @MainActor in
+                    NetworkSwitchOverlayPresenter.shared.apply(phase)
+                }
+            }
+    }
+
+    private func apply(_ phase: NetworkTransitionState.Phase) {
+        switch phase {
+        case .idle:
+            overlayWindow?.isHidden = true
+            overlayWindow = nil
+        case .switching, .failed:
+            presentIfNeeded()
+        }
+    }
+
+    private func presentIfNeeded() {
+        guard overlayWindow == nil else { return }
+        let scene = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }
+            ?? UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first
+
+        let window = scene.map { UIWindow(windowScene: $0) } ?? UIWindow(frame: UIScreen.main.bounds)
+        window.windowLevel = .alert + 1
+        window.rootViewController = UIHostingController(rootView: NetworkSwitchOverlayView())
+        window.rootViewController?.view.backgroundColor = .clear
+        window.backgroundColor = .clear
+        window.isHidden = false
+        overlayWindow = window
+    }
+}
+
+/// Content of the network-switch overlay window. Blocks all interaction while
+/// `.switching` (spinner + destination) and while `.failed` (error + Retry).
+/// Deliberately does NOT wait for peers or chain sync — the runtime flips to
+/// `.idle` the moment the destination runtime is bound and its services
+/// started.
+struct NetworkSwitchOverlayView: View {
+    @ObservedObject private var state = NetworkTransitionState.shared
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.65).ignoresSafeArea()
+
+            switch state.phase {
+            case .idle:
+                EmptyView()
+            case .switching(_, let to):
+                card {
+                    // Explicit SwiftUI qualifier: the app has its own UIKit
+                    // `ProgressView` (UI/Views/ProgressView.swift) shadowing it.
+                    SwiftUI.ProgressView()
+                        .controlSize(.large)
+                    Text(String(
+                        format: NSLocalizedString("Switching to %@…", comment: "Network switch overlay"),
+                        Self.displayName(of: to)))
+                        .font(.headline)
+                    Text(NSLocalizedString(
+                        "Preparing the wallet on the selected network…",
+                        comment: "Network switch overlay"))
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+            case .failed(let target, let message):
+                card {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.largeTitle)
+                        .foregroundColor(.orange)
+                    Text(String(
+                        format: NSLocalizedString("Switching to %@ failed", comment: "Network switch overlay"),
+                        Self.displayName(of: target)))
+                        .font(.headline)
+                    if let message, !message.isEmpty {
+                        Text(message)
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    Button {
+                        Task {
+                            try? await SwiftDashSDKWalletRuntime.shared.switchNetwork(to: target)
+                        }
+                    } label: {
+                        Text(NSLocalizedString("Retry", comment: ""))
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func card(@ViewBuilder content: () -> some View) -> some View {
+        VStack(spacing: 16) {
+            content()
+        }
+        .padding(24)
+        .frame(maxWidth: 320)
+        .background(Color(UIColor.systemBackground))
+        .cornerRadius(16)
+        .padding(32)
+    }
+
+    private static func displayName(of kind: WalletEnvironment.NetworkKind) -> String {
+        switch kind {
+        case .mainnet: return "Mainnet"
+        case .testnet: return "Testnet"
+        case .devnet: return "Devnet"
+        }
+    }
+}

@@ -563,7 +563,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         stopAssetLockPolling()
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route completed")
         phase = .success
-        ShieldedTxLookup.shared.refresh()
+        await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-completed")
         NotificationCenter.default.post(
             name: .swiftDashSDKTransactionProjectionDidChange,
             object: nil)
@@ -638,7 +638,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // `performShield`). No intermediate signal exists for this opaque call.
         phase = .broadcasting
         phase = terminalPhase
-        ShieldedTxLookup.shared.refresh()
+        await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-resume-completed")
         NotificationCenter.default.post(
             name: .swiftDashSDKTransactionProjectionDidChange,
             object: nil)
