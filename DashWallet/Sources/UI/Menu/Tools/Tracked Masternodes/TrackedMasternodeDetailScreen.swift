@@ -428,6 +428,8 @@ struct TrackedMasternodeDetailScreen: View {
 
     private var manageSection: some View {
         Section {
+            requestStatusRow
+
             Button {
                 Task {
                     await viewModel.refresh()
@@ -450,6 +452,21 @@ struct TrackedMasternodeDetailScreen: View {
             } label: {
                 Label(NSLocalizedString("Stop tracking", comment: "Tracked masternodes"), systemImage: "eye.slash")
                     .foregroundColor(.red)
+            }
+        }
+    }
+
+    /// Ask the node itself for its DAPI status — the same
+    /// `EvonodeStatusScreen` the wallet-owned detail pushes, keyed off the
+    /// record's DAPI address (evonodes with a routable service address).
+    @ViewBuilder
+    private var requestStatusRow: some View {
+        if viewModel.record.platformDAPIAddress != nil {
+            NavigationLink {
+                EvonodeStatusScreen(masternode: viewModel.record)
+            } label: {
+                Label(NSLocalizedString("Request status", comment: "Evonode status"), systemImage: "antenna.radiowaves.left.and.right")
+                    .foregroundColor(Color.dash.blue)
             }
         }
     }

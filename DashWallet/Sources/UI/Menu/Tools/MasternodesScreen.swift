@@ -556,6 +556,9 @@ struct MasternodeDetailScreen: View {
                 if let service = masternode.serviceAddress {
                     MasternodeDetailRow(label: NSLocalizedString("Service", comment: "Masternodes"), value: service)
                 }
+                if masternode.isEvonode {
+                    requestStatusRow
+                }
             }
 
             Section(NSLocalizedString("Registration", comment: "Masternodes")) {
@@ -676,6 +679,28 @@ struct MasternodeDetailScreen: View {
         }
     }
 
+    /// Entry point to the node's DAPI `getStatus` self-report
+    /// (`EvonodeStatusScreen`). Nothing is requested until the user taps —
+    /// the pushed screen sends the request. Disabled, with the reason, when
+    /// the aggregation doesn't know the node's DAPI address.
+    @ViewBuilder
+    private var requestStatusRow: some View {
+        if masternode.platformDAPIAddress != nil {
+            NavigationLink {
+                EvonodeStatusScreen(masternode: masternode)
+            } label: {
+                Label(NSLocalizedString("Request status", comment: "Evonode status"), systemImage: "antenna.radiowaves.left.and.right")
+                    .foregroundColor(Color.dash.blue)
+            }
+        } else {
+            Label(NSLocalizedString("Request status", comment: "Evonode status"), systemImage: "antenna.radiowaves.left.and.right")
+                .foregroundColor(Color.dash.tertiaryText)
+            Text(NSLocalizedString("This evonode's DAPI address isn't known, so it can't be asked for its status.", comment: "Evonode status"))
+                .font(.caption)
+                .foregroundColor(Color.dash.secondaryText)
+        }
+    }
+
     /// Withdraw entry point + the one-line reason it is / isn't available.
     /// Shown only once the balance is known and positive.
     @ViewBuilder
@@ -730,8 +755,8 @@ struct MasternodeDetailScreen: View {
 
 // MARK: - Rows
 
-/// Label + trailing value row. Internal: the tracked-masternode screens
-/// reuse it.
+/// Label + trailing value row. Internal: `EvonodeStatusScreen` and the
+/// tracked-masternode screens reuse it.
 struct MasternodeDetailRow: View {
     let label: String
     let value: String
@@ -751,7 +776,8 @@ struct MasternodeDetailRow: View {
 }
 
 /// Caption + monospaced, tap-to-copy value block for hashes / addresses.
-/// Internal: the tracked-masternode screens reuse it.
+/// Internal: `EvonodeStatusScreen` and the tracked-masternode screens
+/// reuse it.
 struct MasternodeCopyRow: View {
     let label: String
     let value: String
