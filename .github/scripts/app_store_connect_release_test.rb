@@ -94,6 +94,27 @@ class AppStoreConnectReleaseTest < Minitest::Test
     end
   end
 
+  def test_live_app_store_version_accepts_new_state_attribute
+    attributes = { "appVersionState" => "READY_FOR_DISTRIBUTION" }
+
+    assert AppStoreConnectRelease.live_app_store_version?(attributes)
+  end
+
+  def test_live_app_store_version_accepts_deprecated_state_attribute
+    attributes = { "appStoreState" => "READY_FOR_SALE" }
+
+    assert AppStoreConnectRelease.live_app_store_version?(attributes)
+  end
+
+  def test_live_state_in_either_attribute_wins
+    attributes = {
+      "appVersionState" => "IN_REVIEW",
+      "appStoreState" => "READY_FOR_SALE"
+    }
+
+    assert AppStoreConnectRelease.live_app_store_version?(attributes)
+  end
+
   def test_paginator_collects_all_pages
     pages = {
       "first" => { "data" => [1], "links" => { "next" => "second" } },
@@ -119,5 +140,14 @@ class AppStoreConnectReleaseTest < Minitest::Test
     end
 
     assert_match "HTTP 500", error.message
+  end
+
+  def test_rate_limits_and_server_errors_are_transient
+    assert_raises(AppStoreConnectRelease::TransientError) do
+      AppStoreConnectRelease::Client.parse_response(429, '{"errors":[]}')
+    end
+    assert_raises(AppStoreConnectRelease::TransientError) do
+      AppStoreConnectRelease::Client.parse_response(503, '{"errors":[]}')
+    end
   end
 end

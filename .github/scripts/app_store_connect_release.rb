@@ -10,6 +10,7 @@ require "uri"
 
 module AppStoreConnectRelease
   class Error < StandardError; end
+  class TransientError < Error; end
 
   class MarketingVersion
     include Comparable
@@ -75,6 +76,11 @@ module AppStoreConnectRelease
     raise Error, "External TestFlight group '#{requested_group}' does not exist. Available groups: #{available}"
   end
 
+  def live_app_store_version?(attributes)
+    LIVE_APP_STORE_STATES.include?(attributes["appVersionState"]) ||
+      LIVE_APP_STORE_STATES.include?(attributes["appStoreState"])
+  end
+
   def maximum_version(values)
     values.map { |value| MarketingVersion.new(value) }.max
   end
@@ -124,7 +130,8 @@ module AppStoreConnectRelease
   class Client
     def self.parse_response(status, body)
       unless status.between?(200, 299)
-        raise Error, "App Store Connect API returned HTTP #{status}: #{body}"
+        error_class = status == 429 || status >= 500 ? TransientError : Error
+        raise error_class, "App Store Connect API returned HTTP #{status}: #{body}"
       end
 
       JSON.parse(body)
@@ -162,7 +169,7 @@ module AppStoreConnectRelease
       )
       get_all(url).filter_map do |version|
         attributes = version.fetch("attributes")
-        attributes.fetch("versionString") if LIVE_APP_STORE_STATES.include?(attributes["appStoreState"])
+        attributes.fetch("versionString") if AppStoreConnectRelease.live_app_store_version?(attributes)
       end
     end
 
@@ -189,24 +196,29 @@ module AppStoreConnectRelease
       deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + timeout_seconds
 
       loop do
-        version = pre_release_versions(app_id).find do |candidate|
-          candidate.fetch("attributes").fetch("version") == version_string
-        end
-        if version
-          build = builds_for_pre_release_version(version.fetch("id")).find do |candidate|
-            candidate.fetch("attributes").fetch("version") == build_number
+        begin
+          version = pre_release_versions(app_id).find do |candidate|
+            candidate.fetch("attributes").fetch("version") == version_string
           end
-          if build
-            state = build.fetch("attributes")["processingState"]
-            return build if state == "VALID"
-            raise Error, "Uploaded build #{version_string} (#{build_number}) failed processing." if state == "FAILED"
+          if version
+            build = builds_for_pre_release_version(version.fetch("id")).find do |candidate|
+              candidate.fetch("attributes").fetch("version") == build_number
+            end
+            if build
+              state = build.fetch("attributes")["processingState"]
+              return build if state == "VALID"
+              raise Error, "Uploaded build #{version_string} (#{build_number}) failed processing." if state == "FAILED"
 
-            puts "Build #{version_string} (#{build_number}) is #{state || 'not processed yet'}; waiting..."
+              puts "Build #{version_string} (#{build_number}) is #{state || 'not processed yet'}; waiting..."
+            else
+              puts "Waiting for build #{version_string} (#{build_number}) to appear in App Store Connect..."
+            end
           else
-            puts "Waiting for build #{version_string} (#{build_number}) to appear in App Store Connect..."
+            puts "Waiting for TestFlight version #{version_string} to appear in App Store Connect..."
           end
-        else
-          puts "Waiting for TestFlight version #{version_string} to appear in App Store Connect..."
+        rescue TransientError, IOError, SystemCallError, SocketError,
+               Net::OpenTimeout, Net::ReadTimeout, OpenSSL::SSL::SSLError => e
+          puts "Transient App Store Connect error while polling (#{e.class}: #{e.message}); retrying..."
         end
 
         if Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
