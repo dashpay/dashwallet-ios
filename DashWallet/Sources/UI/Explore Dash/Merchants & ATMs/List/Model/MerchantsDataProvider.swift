@@ -88,43 +88,24 @@ class NearbyMerchantsDataProvider: PointOfUseDataProvider {
                         with filters: PointOfUseListFilters?,
                         completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         guard let bounds, let userLocation = userPoint, DWLocationManager.shared.isAuthorized else {
-            print("🔍 NEARBY: No bounds/location/auth - returning empty")
             items = []
             currentPage = nil
             completion(.success(items))
             return
         }
 
-        print("🔍 NEARBY: Checking cache...")
-        print("🔍 NEARBY: lastBounds == bounds? \(String(describing: lastBounds == bounds))")
-        print("🔍 NEARBY: lastQuery == query? \(lastQuery == query)")
-        print("🔍 NEARBY: !items.isEmpty? \(!items.isEmpty)")
-        print("🔍 NEARBY: lastFilters == filters? \(String(describing: lastFilters == filters))")
 
         if lastBounds == bounds && lastQuery == query && !items.isEmpty && lastFilters == filters {
-            print("🔍 NEARBY: Cache hit - returning \(items.count) cached items")
             completion(.success(items))
             return
         }
 
-        print("🔍 NEARBY: Cache miss - fetching new data")
-        print("🔍 NEARBY: Bounds - NE=(\(bounds.neCoordinate.latitude), \(bounds.neCoordinate.longitude)), SW=(\(bounds.swCoordinate.latitude), \(bounds.swCoordinate.longitude))")
-        print("🔍 NEARBY: User location = \(userLocation.latitude), \(userLocation.longitude)")
         lastQuery = query
         lastUserPoint = userPoint
         lastBounds = bounds
         lastFilters = filters
 
         fetch(by: query, in: bounds, userPoint: userLocation, with: filters, offset: 0) { [weak self] result in
-            switch result {
-            case .success(let page):
-                print("🔍 NEARBY: Fetch succeeded - got \(page.items.count) items")
-                if let firstItem = page.items.first {
-                    print("🔍 NEARBY: First merchant: \(firstItem.name)")
-                }
-            case .failure(let error):
-                print("🔍 NEARBY: Fetch failed - \(error)")
-            }
             self?.handle(result: result, completion: completion)
         }
     }

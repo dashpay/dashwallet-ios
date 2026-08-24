@@ -200,23 +200,15 @@ class ExploreMapView: UIView {
     private var regionStabilizationTimer: Timer?
 
     private lazy var showCurrentLocationOnce: Void = {
-        print("🔍 MAP: showCurrentLocationOnce called")
-        print("🔍 MAP: hasSetInitialCenter = \(hasSetInitialCenter)")
-        print("🔍 MAP: initialCenterLocation = \(initialCenterLocation?.coordinate.latitude ?? 0), \(initialCenterLocation?.coordinate.longitude ?? 0)")
-        print("🔍 MAP: mapView.userLocation.location = \(mapView.userLocation.location?.coordinate.latitude ?? 0), \(mapView.userLocation.location?.coordinate.longitude ?? 0)")
-
         // Only auto-center if we haven't already set a center
         guard !hasSetInitialCenter else {
-            print("🔍 MAP: Skipping auto-center - already set")
             return
         }
 
         if let loc = initialCenterLocation {
-            print("🔍 MAP: Using initialCenterLocation")
             self.setCenter(loc, animated: false)
             hasSetInitialCenter = true
         } else if let loc = mapView.userLocation.location {
-            print("🔍 MAP: Using mapView.userLocation.location")
             self.setCenter(loc, animated: false)
             hasSetInitialCenter = true
         }
@@ -235,11 +227,8 @@ class ExploreMapView: UIView {
     public func reloadAnnotations() { }
 
     public func show(merchants: [ExplorePointOfUse]) {
-        print("🔍 ANNOTATIONS: show() called with \(merchants.count) merchants")
-
         // If we're still setting the initial region, defer adding annotations
         if isSettingInitialRegion {
-            print("🔍 ANNOTATIONS: Deferring annotation updates until initial region is set")
             pendingMerchantsToShow = merchants
             return
         }
@@ -248,16 +237,12 @@ class ExploreMapView: UIView {
     }
 
     private func _showAnnotations(merchants: [ExplorePointOfUse]) {
-        print("🔍 ANNOTATIONS: _showAnnotations called with \(merchants.count) merchants")
-
         // Filter to only merchants with valid coordinates
         let merchantsWithCoords = merchants.filter { $0.latitude != nil && $0.longitude != nil }
-        print("🔍 ANNOTATIONS: \(merchantsWithCoords.count) have coordinates")
 
         if shownMerchantsAnnotations.isEmpty {
             let newAnnotations = merchantsWithCoords
                 .map { MerchantAnnotation(merchant: $0, location: .init(latitude: $0.latitude!, longitude: $0.longitude!)) }
-            print("🔍 ANNOTATIONS: Initial load - adding \(newAnnotations.count) annotations")
             shownMerchantsAnnotations = newAnnotations
             mapView.addAnnotations(newAnnotations)
         } else {
@@ -272,7 +257,6 @@ class ExploreMapView: UIView {
                 let toDelete = currentAnnotations.subtracting(newMerchants)
                 let toKeep = currentAnnotations.subtracting(toDelete)
 
-                print("🔍 ANNOTATIONS: Update - keeping \(toKeep.count), adding \(toAdd.count), removing \(toDelete.count)")
 
                 wSelf.shownMerchantsAnnotations = Array(toKeep.union(toAdd))
 
@@ -303,11 +287,8 @@ class ExploreMapView: UIView {
 
         // Allow region change callbacks after a short delay to ensure map settles
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            print("🔍 MAP: Initial region setup complete, now adding pending merchants")
-
             // Add pending merchants while STILL blocking region changes
             if let pending = self.pendingMerchantsToShow {
-                print("🔍 MAP: Adding \(pending.count) pending merchants now that region is set")
                 self.pendingMerchantsToShow = nil
                 // Call internal method to bypass the isSettingInitialRegion check
                 self._showAnnotations(merchants: pending)
@@ -315,13 +296,11 @@ class ExploreMapView: UIView {
                 // After annotations are added, force the region back and start monitoring for stabilization
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     if let desired = self.desiredCenter {
-                        print("🔍 MAP: Annotations added, forcing region back to \(desired.latitude), \(desired.longitude)")
                         let miles: Double = self.centerRadius
                         let scalingFactor: Double = abs(cos(2*Double.pi * desired.latitude/360.0))
                         let span = MKCoordinateSpan(latitudeDelta: miles/69.0, longitudeDelta: miles/(scalingFactor*69.0))
                         let region = MKCoordinateRegion(center: desired, span: span)
                         self.mapView.setRegion(region, animated: false)
-                        print("🔍 MAP: Region forced back, current center = \(self.mapView.centerCoordinate.latitude), \(self.mapView.centerCoordinate.longitude)")
 
                         // Start monitoring for stabilization - lock will be released when region stabilizes
                         self.regionStabilizationTimer?.invalidate()
@@ -330,13 +309,11 @@ class ExploreMapView: UIView {
                         }
                     } else {
                         // No desired center, just release immediately
-                        print("🔍 MAP: No desired center to maintain, releasing lock")
                         self.isSettingInitialRegion = false
                     }
                 }
             } else {
                 // No pending merchants, just release the lock
-                print("🔍 MAP: No pending merchants, releasing lock")
                 self.isSettingInitialRegion = false
                 self.desiredCenter = nil
             }
@@ -408,7 +385,8 @@ class ExploreMapView: UIView {
     /// visible between the navigation bar and the list sheet. This mirrors Android's
     /// bottom-sheet behavior: move the rendered map instead of changing coordinates.
     private func updateMapViewport() {
-        guard mapView != nil, bounds.width > 0, bounds.height > 0 else { return }
+        guard mapView != nil, myLocationButtonTopConstraint != nil,
+              bounds.width > 0, bounds.height > 0 else { return }
 
         guard movesMapWithContentInset else {
             mapView.transform = .identity
@@ -427,6 +405,10 @@ class ExploreMapView: UIView {
         // a sliver, which would pin any setRegion issued meanwhile at maximum zoom.
         guard bounds.height - top - bottom >= 44 else { return }
 
+        // The map is shifted, not resized, so a strip of height (bottom - top) / 2 along
+        // the bottom edge of this view has no map content. The sheet always hides it:
+        // it overlaps the map by `bottom` points, at least twice the strip's height. The
+        // mirrored overhang past the top edge is hidden by clipsToBounds.
         mapView.transform = CGAffineTransform(
             translationX: (left - right) / 2,
             y: (top - bottom) / 2
@@ -469,7 +451,6 @@ extension ExploreMapView: MKMapViewDelegate {
                                 abs(mapView.centerCoordinate.longitude - desired.longitude)
             // If map has drifted more than 0.01 degrees (~1km), recenter it
             if currentDistance > 0.01 {
-                print("🔍 MAP: Annotations caused drift, recentering to \(desired.latitude), \(desired.longitude)")
                 let miles: Double = centerRadius
                 let scalingFactor: Double = abs(cos(2*Double.pi * desired.latitude/360.0))
                 let span = MKCoordinateSpan(latitudeDelta: miles/69.0, longitudeDelta: miles/(scalingFactor*69.0))
@@ -494,14 +475,11 @@ extension ExploreMapView: MKMapViewDelegate {
     func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
         // Don't respond to region changes during initial setup
         guard !isSettingInitialRegion else {
-            print("🔍 MAP: Ignoring region change during initial setup (center=\(mapView.centerCoordinate.latitude), \(mapView.centerCoordinate.longitude))")
-
             // If we have a desired center and the map has drifted significantly, force it back
             if let desired = desiredCenter {
                 let currentDistance = abs(mapView.centerCoordinate.latitude - desired.latitude) +
                                     abs(mapView.centerCoordinate.longitude - desired.longitude)
                 if currentDistance > 0.01 {
-                    print("🔍 MAP: Map drifted during setup, forcing back to \(desired.latitude), \(desired.longitude)")
                     let miles: Double = centerRadius
                     let scalingFactor: Double = abs(cos(2*Double.pi * desired.latitude/360.0))
                     let span = MKCoordinateSpan(latitudeDelta: miles/69.0, longitudeDelta: miles/(scalingFactor*69.0))
@@ -516,7 +494,6 @@ extension ExploreMapView: MKMapViewDelegate {
                 } else {
                     // Region is close enough to desired, start stabilization check
                     if regionStabilizationTimer == nil {
-                        print("🔍 MAP: Region close to desired, starting stabilization check")
                         regionStabilizationTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { [weak self] _ in
                             self?.checkRegionStabilization()
                         }
@@ -537,12 +514,10 @@ extension ExploreMapView: MKMapViewDelegate {
                             abs(mapView.centerCoordinate.longitude - desired.longitude)
 
         if currentDistance < 0.001 {
-            print("🔍 MAP: Region stabilized at desired center, releasing lock")
             isSettingInitialRegion = false
             desiredCenter = nil
             regionStabilizationTimer = nil
         } else {
-            print("🔍 MAP: Region not yet stable (distance=\(currentDistance)), waiting longer")
             // Not stable yet, force it back and wait again
             let miles: Double = centerRadius
             let scalingFactor: Double = abs(cos(2*Double.pi * desired.latitude/360.0))

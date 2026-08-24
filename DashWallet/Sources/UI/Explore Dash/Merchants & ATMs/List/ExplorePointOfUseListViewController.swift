@@ -543,6 +543,12 @@ extension ExplorePointOfUseListViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         updateTableViewInsetsForCurrentSheetPosition()
+
+        // The inset depends on mapView.bounds.height, so recompute it whenever layout
+        // changes (rotation, split view) — not only in the sheet animations.
+        if mapView != nil, contentViewTopLayoutConstraint != nil {
+            mapView.contentInset = mapContentInsets(sheetTop: contentViewTopLayoutConstraint.constant)
+        }
     }
 
     internal func updateTableViewInsetsForCurrentSheetPosition() {

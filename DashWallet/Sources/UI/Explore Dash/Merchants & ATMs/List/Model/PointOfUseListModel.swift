@@ -168,11 +168,9 @@ final class PointOfUseListModel {
         // Use the search center if available (map center when panning)
         // Otherwise fall back to device's GPS location
         if let searchCenter = searchCenterCoordinate {
-            print("🔍 MODEL: Using searchCenterCoordinate = \(searchCenter.latitude), \(searchCenter.longitude)")
             return searchCenter
         }
         let location = DWLocationManager.shared.currentLocation
-        print("🔍 MODEL: Using device GPS location = \(location?.coordinate.latitude ?? 0), \(location?.coordinate.longitude ?? 0)")
         return location?.coordinate
     }
 

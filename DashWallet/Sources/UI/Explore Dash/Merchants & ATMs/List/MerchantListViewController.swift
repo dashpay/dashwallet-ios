@@ -331,10 +331,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController, Navigatio
         // Clear search center coordinate when actually leaving the screen
         // (not when navigating to a child view like merchant detail)
         if isMovingFromParent || isBeingDismissed {
-            print("🔍 VIEW: viewWillDisappear - leaving screen, clearing searchCenterCoordinate")
             model.searchCenterCoordinate = nil
-        } else {
-            print("🔍 VIEW: viewWillDisappear - navigating to child view, preserving searchCenterCoordinate")
         }
     }
 
