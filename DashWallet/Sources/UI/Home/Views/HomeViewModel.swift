@@ -437,7 +437,7 @@ class HomeViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 Task { @MainActor in
-                    ShieldedTxLookup.shared.refresh()
+                    await ShieldedTxLookup.shared.refresh(reason: "transaction-projection-changed")
                     self?.txReloadRequests.send()
                 }
             }

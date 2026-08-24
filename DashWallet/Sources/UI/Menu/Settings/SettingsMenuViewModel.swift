@@ -192,11 +192,26 @@ class SettingsMenuViewModel: ObservableObject {
     // MARK: - Network Switching
 
     func switchToMainnet() async -> Bool {
-        await WalletEnvironment.switchToNetwork(.mainnet)
+        await switchNetwork(to: .mainnet)
     }
 
     func switchToTestnet() async -> Bool {
-        await WalletEnvironment.switchToNetwork(.testnet)
+        await switchNetwork(to: .testnet)
+    }
+
+    /// Route through the runtime's managed switch: strict teardown → rebuild
+    /// with the blocking overlay window up for the whole transition. A thrown
+    /// failure leaves the overlay in its `.failed` phase (Retry lives there),
+    /// so this only reports the outcome to the settings screen.
+    private func switchNetwork(to kind: WalletEnvironment.NetworkKind) async -> Bool {
+        NetworkSwitchOverlayPresenter.shared.ensureActive()
+        do {
+            try await SwiftDashSDKWalletRuntime.shared.switchNetwork(to: kind)
+            return true
+        } catch {
+            DWLogger.log("SettingsMenuViewModel: network switch failed: \(error)")
+            return false
+        }
     }
 
     // MARK: - CSV Report Generation

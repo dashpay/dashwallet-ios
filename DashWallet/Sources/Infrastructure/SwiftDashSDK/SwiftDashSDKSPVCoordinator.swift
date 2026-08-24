@@ -233,7 +233,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         let manager: PlatformWalletManager
         let wallet: ManagedPlatformWallet
         do {
-            (manager, wallet) = try host.start(network: network)
+            (manager, wallet) = try await host.start(network: network)
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: host.start failed: \(String(describing: error), privacy: .public)")
             return .failure(StartError.walletImport(error))

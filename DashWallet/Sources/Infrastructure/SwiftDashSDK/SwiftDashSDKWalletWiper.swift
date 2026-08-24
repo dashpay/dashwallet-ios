@@ -402,7 +402,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
 
             for network in networks {
                 do {
-                    let manager = try host.managerForWipe(network: network)
+                    let (manager, isTemporary) = try host.managerForWipe(network: network)
                     var walletIds = Set(manager.wallets.keys)
                     walletIds.formUnion(storedWalletIdsByNetwork[network] ?? [])
 
@@ -419,6 +419,15 @@ final class SwiftDashSDKWalletWiper: NSObject {
                             result.recordFailure()
                             logDeletionFailure(error, walletId: walletId, network: network)
                         }
+                    }
+                    // A detached per-network manager is owned by this loop:
+                    // shut it down deterministically before the next network
+                    // (or the post-wipe rebuild) can touch the same
+                    // process-cached ModelContainer. The live published
+                    // manager (isTemporary == false) is the runtime's to
+                    // tear down.
+                    if isTemporary {
+                        await manager.shutdown()
                     }
                 } catch {
                     result.recordFailure()
@@ -489,28 +498,50 @@ final class SwiftDashSDKWalletWiper: NSObject {
             networks.append(current)
         }
 
-        var deletions: [(network: Network, walletId: Data, manager: PlatformWalletManager)] = []
+        var deletions: [(network: Network, walletId: Data, manager: PlatformWalletManager, isTemporary: Bool)] = []
         for network in networks {
             guard let walletId = walletIds[network] else { continue }
-            let manager = try host.managerForWipe(network: network)
+            let (manager, isTemporary) = try host.managerForWipe(network: network)
             if storedWalletIds.contains(walletId) || manager.wallets[walletId] != nil {
-                deletions.append((network, walletId, manager))
+                deletions.append((network, walletId, manager, isTemporary))
+            } else if isTemporary {
+                // Built a detached manager only to find nothing to delete on
+                // this network — shut it down now rather than leaving it to
+                // the deinit fallback.
+                await manager.shutdown()
             }
         }
 
-        for deletion in deletions {
-            try deleteWalletFromSDK(
-                deletion.walletId,
-                deleteWallet: { walletId in
-                    try deletion.manager.deleteWallet(walletId: walletId)
-                })
-
-            let kind: WalletEnvironment.NetworkKind =
-                deletion.network == .mainnet ? .mainnet : .testnet
-            if WalletEnvironment.activeWalletId(for: kind) == deletion.walletId {
-                WalletEnvironment.setActiveWalletId(nil, for: kind)
+        // Detached managers are owned by this function; shut them down
+        // deterministically on both the success and the failure path (a
+        // deletion throw would otherwise leave their teardown to the
+        // fire-and-forget deinit fallback, racing any follow-up rebuild
+        // over the same process-cached ModelContainer).
+        func shutDownTemporaryManagers() async {
+            for deletion in deletions where deletion.isTemporary {
+                await deletion.manager.shutdown()
             }
         }
+
+        do {
+            for deletion in deletions {
+                try deleteWalletFromSDK(
+                    deletion.walletId,
+                    deleteWallet: { walletId in
+                        try deletion.manager.deleteWallet(walletId: walletId)
+                    })
+
+                let kind: WalletEnvironment.NetworkKind =
+                    deletion.network == .mainnet ? .mainnet : .testnet
+                if WalletEnvironment.activeWalletId(for: kind) == deletion.walletId {
+                    WalletEnvironment.setActiveWalletId(nil, for: kind)
+                }
+            }
+        } catch {
+            await shutDownTemporaryManagers()
+            throw error
+        }
+        await shutDownTemporaryManagers()
 
         let remaining = Set(try storage.listWalletIdsWithMnemonic())
         guard walletIds.values.allSatisfy({ !remaining.contains($0) }) else {
