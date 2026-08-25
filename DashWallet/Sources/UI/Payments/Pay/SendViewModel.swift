@@ -569,15 +569,15 @@ final class SendViewModel: ObservableObject {
         case .shieldedToCore:
             // Worst-case note selection for a bundle the size limit actually
             // admits — same reasoning as the internal transfer's reserve.
-            return try? PlatformWalletManager.estimateShieldedFee(
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(
                 kind: .withdrawal,
                 numActions: ShieldedActionBudget.maxActionsPerTransition)
         case .shieldedToPlatform:
-            return try? PlatformWalletManager.estimateShieldedFee(
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(
                 kind: .unshield,
                 numActions: ShieldedActionBudget.maxActionsPerTransition)
         case .shieldedToShielded:
-            return try? PlatformWalletManager.estimateShieldedFee(
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(
                 kind: .transfer,
                 numActions: ShieldedActionBudget.maxActionsPerTransition)
         }

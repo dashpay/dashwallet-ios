@@ -442,7 +442,7 @@ final class IdentityTopUpViewModel: ObservableObject {
     static func estimatedFeeCredits(source: FundingSource) -> UInt64 {
         let unshieldFee: UInt64
         if source == .shielded {
-            unshieldFee = (try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 2)) ?? 0
+            unshieldFee = (try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .unshield, numActions: 2)) ?? 0
         } else {
             unshieldFee = 0
         }
