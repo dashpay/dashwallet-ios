@@ -195,7 +195,7 @@ struct WalletLifecycleOverlayView: View {
                 progressCard(
                     title: title ?? NSLocalizedString("Deleting All Wallets…", comment: ""),
                     subtitle: nil)
-            case let .failedNetworkSwitch(target, message):
+            case let .failedNetworkSwitch(from, target, message):
                 card {
                     failureHeader(
                         title: String(
@@ -204,6 +204,14 @@ struct WalletLifecycleOverlayView: View {
                         message: message)
                     actionButton(NSLocalizedString("Retry", comment: ""), prominent: true) {
                         viewModel.retryNetworkSwitch(to: target)
+                    }
+                    // Escape hatch: the origin network was working when the
+                    // switch began, so a way back must exist even when the
+                    // destination keeps failing.
+                    if from != target {
+                        actionButton(NSLocalizedString("Switch Back", comment: "Wallets"), prominent: false) {
+                            viewModel.retryNetworkSwitch(to: from)
+                        }
                     }
                 }
             case let .failedWalletSwitch(targetId, targetName, previousId, message):

@@ -346,30 +346,30 @@ final class SwiftDashSDKWalletWiper: NSObject {
         SwiftDashSDKWalletRuntime.handleWalletWiped {
             teardownFinished.signal()
         }
-        // Defensive off-main check mirroring `deleteWalletsFromSDK`: this
-        // body always runs on the wipe executor's private background queue,
-        // so the wait cannot starve the MainActor that runs the teardown.
-        // On main the wait WOULD deadlock — skip it and log the gap instead
-        // (the data wipe above already succeeded either way).
-        if Thread.isMainThread {
-            logger.error("performWipe unexpectedly on the main thread; not awaiting runtime teardown")
-        } else {
-            let teardownStarted = CFAbsoluteTimeGetCurrent()
-            // Bounded wait: the worst legitimate case is a wedged native
-            // teardown (~45 s of Rust join budgets) queued behind a stalled
-            // start (~45 s of SDK/DAPI budgets); anything past this deadline
-            // is a hang, not a slow path. On expiry give up on WAITING — the
-            // teardown itself stays queued and still runs — and report
-            // failure rather than success, so no caller treats the wipe as
-            // complete while `fullReset` is unfinished (the wipe body is
-            // idempotent; a Retry re-enters this barrier behind it).
-            if teardownFinished.wait(timeout: .now() + .seconds(180)) == .timedOut {
-                logger.error("runtime teardown did not finish within 180s; reporting wipe failure while it completes in the background")
-                return false
-            }
-            let teardownMs = Int((CFAbsoluteTimeGetCurrent() - teardownStarted) * 1000)
-            DWLogger.log("🧹 WIPE runtime teardown awaited \(teardownMs)ms")
+        // Defensive off-main check mirroring `deleteWalletsFromSDK` (which
+        // already refused main much earlier): waiting here on main would
+        // deadlock — and NOT waiting must not report success, because the
+        // contract is "data wiped AND runtime torn down", so fail as
+        // conservatively as the timeout path below.
+        guard !Thread.isMainThread else {
+            logger.error("performWipe unexpectedly on the main thread; cannot await runtime teardown — reporting failure")
+            return false
         }
+        let teardownStarted = CFAbsoluteTimeGetCurrent()
+        // Bounded wait: the worst legitimate case is a wedged native
+        // teardown (~45 s of Rust join budgets) queued behind a stalled
+        // start (~45 s of SDK/DAPI budgets); anything past this deadline
+        // is a hang, not a slow path. On expiry give up on WAITING — the
+        // teardown itself stays queued and still runs — and report
+        // failure rather than success, so no caller treats the wipe as
+        // complete while `fullReset` is unfinished (the wipe body is
+        // idempotent; a Retry re-enters this barrier behind it).
+        if teardownFinished.wait(timeout: .now() + .seconds(180)) == .timedOut {
+            logger.error("runtime teardown did not finish within 180s; reporting wipe failure while it completes in the background")
+            return false
+        }
+        let teardownMs = Int((CFAbsoluteTimeGetCurrent() - teardownStarted) * 1000)
+        DWLogger.log("🧹 WIPE runtime teardown awaited \(teardownMs)ms")
         return true
     }
 

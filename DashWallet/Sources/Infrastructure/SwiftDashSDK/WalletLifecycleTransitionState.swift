@@ -31,7 +31,7 @@ final class WalletLifecycleTransitionState: ObservableObject {
         /// The network switch failed after the old runtime was already torn
         /// down — the app may have no working manager, so the overlay stays
         /// up, blocking, offering Retry toward `target`.
-        case failedNetworkSwitch(target: WalletEnvironment.NetworkKind, message: String?)
+        case failedNetworkSwitch(from: WalletEnvironment.NetworkKind, target: WalletEnvironment.NetworkKind, message: String?)
         /// Runtime wallet switch in flight (same network: stop → rebind →
         /// start). `targetName` is display-only.
         case switchingWallet(targetName: String?)
@@ -61,7 +61,7 @@ final class WalletLifecycleTransitionState: ObservableObject {
             switch self {
             case .idle: return "idle"
             case .switchingNetwork(_, let to): return "switchingNetwork(\(to))"
-            case .failedNetworkSwitch(let target, _): return "failedNetworkSwitch(\(target))"
+            case .failedNetworkSwitch(_, let target, _): return "failedNetworkSwitch(\(target))"
             case .switchingWallet: return "switchingWallet"
             case .removingWallet: return "removingWallet"
             case .failedWalletSwitch: return "failedWalletSwitch"
@@ -75,13 +75,17 @@ final class WalletLifecycleTransitionState: ObservableObject {
 
     @Published private(set) var phase: Phase = .idle
 
-    private init() {}
+    /// Internal (not private) so the admission-matrix table test can build
+    /// fresh instances; production code uses only `shared`.
+    init() {}
 
     /// Atomically admit `next` as the active operation. Admission rules: any
     /// operation may begin from `.idle`; a network switch may also begin from
-    /// `.failedNetworkSwitch` (the failure card's Retry); a wallet switch may
-    /// also begin from `.failedWalletSwitch` (Retry / Switch Back). Every
-    /// other combination is rejected and the caller surfaces or logs it.
+    /// `.failedNetworkSwitch` (the failure card's Retry / Switch Back); a
+    /// wallet switch may also begin from `.failedWalletSwitch` (Retry /
+    /// Switch Back); a wipe may begin from ANY failure phase, keeping the
+    /// reset route as the universal escape hatch. Every other combination is
+    /// rejected and the caller surfaces or logs it.
     func tryBegin(_ next: Phase) -> Bool {
         switch (phase, next) {
         case (.idle, .switchingNetwork),
@@ -89,7 +93,14 @@ final class WalletLifecycleTransitionState: ObservableObject {
              (.idle, .removingWallet),
              (.idle, .wiping),
              (.failedNetworkSwitch, .switchingNetwork),
-             (.failedWalletSwitch, .switchingWallet):
+             (.failedWalletSwitch, .switchingWallet),
+             // The wipe/reset route stays reachable from EVERY failure card:
+             // without this, a persistently failing switch (destination
+             // network down) would block the whole app behind the overlay
+             // with reinstalling as the only exit.
+             (.failedNetworkSwitch, .wiping),
+             (.failedWalletSwitch, .wiping),
+             (.failedWalletRemoval, .wiping):
             phase = next
             return true
         default:
@@ -102,7 +113,14 @@ final class WalletLifecycleTransitionState: ObservableObject {
     /// removal) WITHOUT passing through `.idle`, so the overlay window never
     /// flickers down mid-operation.
     func advance(to next: Phase) {
-        assert(phase != .idle, "advance(to:) requires an operation in flight")
+        guard phase != .idle else {
+            // Never legal — but in Release a bare assert would present an
+            // overlay phase with no owner left to clear it, so reject
+            // instead. The caller's operation continues without the window.
+            DWLogger.log("🚦 LIFECYCLE advance rejected from idle: next=\(next.logLabel)")
+            assertionFailure("advance(to:) requires an operation in flight")
+            return
+        }
         phase = next
     }
 

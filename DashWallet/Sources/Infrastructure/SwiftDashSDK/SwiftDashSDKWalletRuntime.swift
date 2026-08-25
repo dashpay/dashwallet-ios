@@ -188,7 +188,16 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             return
         }
 
-        let from = WalletEnvironment.networkKind
+        // A Retry / Switch Back begins from the failure card, where the
+        // persisted key already points at the FAILED target — carry the
+        // network that was really active when the saga began, so the card
+        // keeps offering a way back across repeated failed attempts.
+        let from: WalletEnvironment.NetworkKind
+        if case let .failedNetworkSwitch(savedFrom, _, _) = WalletLifecycleTransitionState.shared.phase {
+            from = savedFrom
+        } else {
+            from = WalletEnvironment.networkKind
+        }
         guard WalletLifecycleTransitionState.shared.tryBegin(.switchingNetwork(from: from, to: kind)) else {
             throw SwitchError.switchInProgress
         }
@@ -223,7 +232,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         } else {
             let detail = SwiftDashSDKSPVCoordinator.shared.lastError
                 ?? PlatformAddressSyncCoordinator.shared.lastError
-            WalletLifecycleTransitionState.shared.fail(.failedNetworkSwitch(target: kind, message: detail))
+            WalletLifecycleTransitionState.shared.fail(.failedNetworkSwitch(from: from, target: kind, message: detail))
             DWLogger.log("🔀 NETSWITCH [\(transitionID)] FAILED after \(ms)ms: \(detail ?? "runtime did not become ready")")
             throw SwitchError.startFailed(detail)
         }

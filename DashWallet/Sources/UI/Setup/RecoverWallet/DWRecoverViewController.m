@@ -192,6 +192,10 @@ NS_ASSUME_NONNULL_BEGIN
                                                            // another lifecycle operation is in flight — refuse to
                                                            // start a concurrent wipe.
                                                            if (![DWWalletLifecycleOverlayBridge beginWipingWithTitle:progressMessage]) {
+                                                               // The user just confirmed a destructive action —
+                                                               // never swallow the refusal silently.
+                                                               [self showAlertWithTitle:nil
+                                                                                message:NSLocalizedString(@"Another wallet operation is already in progress.", nil)];
                                                                [self.contentView activateTextView];
                                                                return;
                                                            }

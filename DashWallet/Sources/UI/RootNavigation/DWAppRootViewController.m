@@ -381,6 +381,16 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     // success the app-wide overlay window shows the blocking wipe card
     // (shared with network/wallet switches), replacing the screen-local HUD.
     if (![DWWalletLifecycleOverlayBridge beginWipingWithTitle:nil]) {
+        // A silently swallowed confirm on a destructive action is worse than
+        // a redundant alert — say why nothing happened.
+        UIAlertController *alert =
+            [UIAlertController alertControllerWithTitle:nil
+                                                message:NSLocalizedString(@"Another wallet operation is already in progress.", nil)
+                                         preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
+                                                  style:UIAlertActionStyleCancel
+                                                handler:nil]];
+        [self.currentController presentViewController:alert animated:YES completion:nil];
         return;
     }
     self.walletWipeInProgress = YES;
@@ -400,6 +410,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     dispatch_after(startTime, dispatch_get_main_queue(), ^{
         typeof(self) strongSelf = weakSelf;
         if (strongSelf == nil) {
+            // The gate was already taken above — release it, or `.wiping`
+            // (and its blocking overlay) would outlive a wipe that never
+            // started.
+            [DWWalletLifecycleOverlayBridge finishWiping];
             return;
         }
 
