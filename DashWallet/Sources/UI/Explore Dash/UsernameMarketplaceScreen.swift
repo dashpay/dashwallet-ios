@@ -479,11 +479,24 @@ struct UsernameMarketplaceScreen: View {
         }
         .sheet(item: $registerCandidate) { candidate in
             if candidate.isContested {
-                RegisterNameSheet(label: candidate.label, viewModel: viewModel)
+                DashUIKit.BottomSheet(showBackButton: .constant(false)) {
+                    RegisterNameSheet(
+                        label: candidate.label,
+                        isContested: candidate.isContested,
+                        viewModel: viewModel)
+                }
                     .presentationDetents([.medium, .large])
             } else {
-                RegisterNameSheet(label: candidate.label, viewModel: viewModel)
-                    .presentationDetents([.height(340)])
+                DashUIKit.BottomSheet.selfSizing(
+                    showBackButton: .constant(false),
+                    fallback: 340,
+                    cornerRadius: 24
+                ) {
+                    RegisterNameSheet(
+                        label: candidate.label,
+                        isContested: candidate.isContested,
+                        viewModel: viewModel)
+                }
             }
         }
         .overlay {
@@ -1662,6 +1675,7 @@ private struct TransferNameSheet: View {
 
 private struct RegisterNameSheet: View {
     let label: String
+    let isContested: Bool
     @ObservedObject var viewModel: UsernameMarketplaceViewModel
     @Environment(\.dismiss) private var dismiss
 
@@ -1670,10 +1684,6 @@ private struct RegisterNameSheet: View {
     /// Live vote tallies for an active contest on this label (yours or
     /// anyone's); nil while loading, unavailable, or no contest exists.
     @State private var voteState: ContestVoteState?
-
-    private var isContested: Bool {
-        UsernameMarketplaceService.isContested(label)
-    }
 
     /// This identity already has a request in for this label — the vote
     /// is in progress and a second submission would just fail.
