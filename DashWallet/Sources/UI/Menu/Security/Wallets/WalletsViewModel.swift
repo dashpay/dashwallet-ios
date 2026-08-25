@@ -53,8 +53,10 @@ final class WalletsViewModel: ObservableObject {
         category: "wallets-screen")
 
     @Published private(set) var rows: [WalletRow] = []
-    /// Non-nil while a switch (or an auto-switch before removing the active
-    /// wallet) is in flight — the screen shows a blocking progress overlay.
+    /// True while a switch (or an auto-switch before removing the active
+    /// wallet) is in flight — guards reentry and disables this screen's
+    /// controls. The blocking progress UI itself is the app-wide lifecycle
+    /// overlay (`WalletLifecycleOverlayPresenter`), not a screen-local view.
     @Published private(set) var switchInProgress = false
     /// True while an add-wallet (create or import) is in flight — the add sheet
     /// shows a progress state and disables its controls.
@@ -127,25 +129,88 @@ final class WalletsViewModel: ObservableObject {
 
     // MARK: - Switch
 
-    /// Switch the active wallet to `walletId`, showing a progress overlay while
-    /// the runtime rebuilds. On success `activeWalletDidChangeNotification`
-    /// fires and `reload()` refreshes the list; on failure the error surfaces
-    /// and the list is left unchanged.
+    /// Switch the active wallet to `walletId` behind the app-wide lifecycle
+    /// overlay. On success `activeWalletDidChangeNotification` fires and
+    /// `reload()` refreshes the list; on failure the overlay's blocking card
+    /// owns recovery (Retry / Switch Back) — this screen may already be gone
+    /// by then (the DASHPAY tab rebuild on the wallet change destroys its
+    /// nav stack), so no local error alert is raised.
     func switchWallet(to walletId: Data) {
         guard !switchInProgress, !removeInProgress else { return }
         switchInProgress = true
         Task {
             defer { switchInProgress = false }
             do {
-                try await SwiftDashSDKWalletRuntime.shared.switchWallet(to: walletId)
+                try await Self.gatedSwitchWallet(
+                    targetId: walletId,
+                    targetName: Self.displayName(for: walletId))
                 // reload() also runs from the change notification, but call it
                 // directly so the list is fresh even if delivery order lags.
                 reload()
             } catch {
                 Self.logger.error("switchWallet failed: \(String(describing: error), privacy: .public)")
-                errorMessage = error.localizedDescription
             }
         }
+    }
+
+    /// Overlay-gated wallet switch shared by every interactive entry point:
+    /// the row switch above, the post-add switch, the pre-remove auto-switch,
+    /// and the overlay failure card's Retry / Switch Back
+    /// (`WalletLifecycleOverlayViewModel`). Owns the transition-state
+    /// bookkeeping around `SwiftDashSDKWalletRuntime.switchWallet`:
+    /// tryBegin → run → finish (or stay busy) / fail.
+    ///
+    /// `thenFinish: false` keeps the operation busy on success so a composite
+    /// flow (removing the active wallet) can `advance(to: .removingWallet)`
+    /// without the overlay flickering through idle — that caller then owns
+    /// the eventual `finish()`/`fail(_:)`.
+    ///
+    /// Throws `SwitchError.switchInProgress` when another interactive
+    /// operation holds the admission gate (no failure phase is set then);
+    /// rethrows the runtime's error after setting `.failedWalletSwitch`,
+    /// whose card carries `previousId` — captured HERE, before the runtime
+    /// repoints the active-wallet registry.
+    static func gatedSwitchWallet(
+        targetId: Data,
+        targetName: String?,
+        thenFinish: Bool = true
+    ) async throws {
+        let state = WalletLifecycleTransitionState.shared
+        // A Retry begins from `.failedWalletSwitch`, where the host may hold
+        // no wallet at all (runtime torn down) or an arbitrary fallback — so
+        // carry the failure phase's previousId forward instead of re-sampling
+        // the host: it is the wallet that was really active when this switch
+        // saga began, and re-sampling would silently drop Switch Back.
+        let previousId: Data?
+        if case let .failedWalletSwitch(_, _, savedPrevious, _) = state.phase {
+            previousId = savedPrevious
+        } else {
+            previousId = SwiftDashSDKHost.shared.wallet?.walletId
+        }
+        WalletLifecycleOverlayPresenter.shared.ensureActive()
+        guard state.tryBegin(.switchingWallet(targetName: targetName)) else {
+            throw SwiftDashSDKWalletRuntime.SwitchError.switchInProgress
+        }
+        let opID = String(UUID().uuidString.prefix(8))
+        let started = CFAbsoluteTimeGetCurrent()
+        DWLogger.log("🔁 WALLETOP [\(opID)] switch begin target=\(shortId(targetId)) prev=\(previousId.map(shortId) ?? "none")")
+        do {
+            try await SwiftDashSDKWalletRuntime.shared.switchWallet(to: targetId)
+        } catch {
+            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+            state.fail(.failedWalletSwitch(
+                targetId: targetId,
+                targetName: targetName,
+                previousId: previousId,
+                message: error.localizedDescription))
+            DWLogger.log("🔁 WALLETOP [\(opID)] switch FAILED after \(ms)ms: \(error.localizedDescription)")
+            throw error
+        }
+        if thenFinish {
+            state.finish()
+        }
+        let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+        DWLogger.log("🔁 WALLETOP [\(opID)] switch ready in \(ms)ms\(thenFinish ? "" : " (operation continues)")")
     }
 
     // MARK: - Add Wallet
@@ -217,13 +282,16 @@ final class WalletsViewModel: ObservableObject {
         case .added(let walletId):
             switchInProgress = true
             do {
-                try await SwiftDashSDKWalletRuntime.shared.switchWallet(to: walletId)
+                try await Self.gatedSwitchWallet(
+                    targetId: walletId,
+                    targetName: Self.displayName(for: walletId))
             } catch {
                 switchInProgress = false
                 Self.logger.error("post-add switch failed: \(String(describing: error), privacy: .public)")
-                // The wallet was added but the switch failed; leave it on device
-                // and surface the error. The list still gains the new wallet.
-                errorMessage = error.localizedDescription
+                // The wallet was added but the switch failed; leave it on
+                // device — the overlay's blocking card owns recovery (Retry /
+                // Switch Back). The list still gains the new wallet, and the
+                // sheet stays open (never claims a success that didn't happen).
                 reload()
                 return nil
             }
@@ -334,28 +402,56 @@ final class WalletsViewModel: ObservableObject {
             return
         }
 
+        let state = WalletLifecycleTransitionState.shared
         if walletId == activeWalletId() {
             switchInProgress = true
             do {
-                try await SwiftDashSDKWalletRuntime.shared.switchWallet(to: other)
+                // `thenFinish: false`: the overlay advances straight from
+                // "Switching wallet…" to "Removing wallet…" below without
+                // dropping through idle.
+                try await Self.gatedSwitchWallet(
+                    targetId: other,
+                    targetName: Self.displayName(for: other),
+                    thenFinish: false)
             } catch {
                 switchInProgress = false
                 Self.logger.error("pre-remove auto-switch failed: \(String(describing: error), privacy: .public)")
-                errorMessage = error.localizedDescription
+                // The overlay's blocking card owns recovery, and its Retry
+                // resumes ONLY the switch — the removal never started and is
+                // re-initiated by the user from the Wallets screen.
                 return
             }
             switchInProgress = false
+            state.advance(to: .removingWallet)
+        } else {
+            WalletLifecycleOverlayPresenter.shared.ensureActive()
+            guard state.tryBegin(.removingWallet) else {
+                errorMessage = SwiftDashSDKWalletRuntime.SwitchError.switchInProgress.localizedDescription
+                return
+            }
         }
 
+        let opID = String(UUID().uuidString.prefix(8))
+        let started = CFAbsoluteTimeGetCurrent()
+        DWLogger.log("🔁 WALLETOP [\(opID)] remove begin wallet=\(Self.shortId(walletId))")
         do {
             try await SwiftDashSDKWalletWiper.deleteLogicalWallet(
                 mnemonic: mnemonic)
         } catch {
+            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
             Self.logger.error("removeWallet failed: \(String(describing: error), privacy: .public)")
-            errorMessage = error.localizedDescription
+            // Dismissable overlay card, not a local alert: after an
+            // active-wallet removal the tab rebuild has already destroyed
+            // this screen, so only the overlay window can still surface the
+            // failure. The wiper leaves wallet state retryable by design.
+            state.fail(.failedWalletRemoval(message: error.localizedDescription))
+            DWLogger.log("🔁 WALLETOP [\(opID)] remove FAILED after \(ms)ms: \(error.localizedDescription)")
             reload()
             return
         }
+        state.finish()
+        let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+        DWLogger.log("🔁 WALLETOP [\(opID)] remove done in \(ms)ms")
 
         reload()
     }
@@ -408,10 +504,15 @@ final class WalletsViewModel: ObservableObject {
     }
 
     nonisolated static func fallbackName(for walletId: Data) -> String {
-        let prefix = walletId.prefix(4).map { String(format: "%02x", $0) }.joined()
-        return String(
+        String(
             format: NSLocalizedString("Wallet %@…", comment: "Wallets — placeholder name with short id"),
-            prefix)
+            shortId(walletId))
+    }
+
+    /// First-4-bytes hex label of a walletId — display fallbacks and log
+    /// lines only, never a key.
+    nonisolated static func shortId(_ walletId: Data) -> String {
+        walletId.prefix(4).map { String(format: "%02x", $0) }.joined()
     }
 }
 
