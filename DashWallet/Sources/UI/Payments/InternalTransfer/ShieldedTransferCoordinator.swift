@@ -375,7 +375,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         guard allCredits != UInt64.max else { return .unavailable }
 
         let feeForActions: (Int) -> UInt64? = { actionCount in
-            try? PlatformWalletManager.estimateShieldedFee(
+            try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(
                 kind: feeKind,
                 numActions: actionCount)
         }

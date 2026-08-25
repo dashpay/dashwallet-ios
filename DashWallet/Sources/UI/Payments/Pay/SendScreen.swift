@@ -943,13 +943,13 @@ struct SendConfirmSheet: View {
             // The Type 15 shield is an output-only bundle padded to exactly
             // 2 actions, charged the flat base fee — same number the Rust
             // side reserves on input 0.
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .transfer, numActions: 2)
         case .shieldedToCore:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .withdrawal, numActions: 2)
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .withdrawal, numActions: 2)
         case .shieldedToPlatform:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 2)
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .unshield, numActions: 2)
         case .shieldedToShielded:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .transfer, numActions: 2)
         case .coreToCore:
             // Never presented here — the L1 processor shows the real fee.
             return nil
