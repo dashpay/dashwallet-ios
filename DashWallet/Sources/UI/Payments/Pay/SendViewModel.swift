@@ -183,8 +183,14 @@ final class SendViewModel: ObservableObject {
         PlatformAddressSyncCoordinator.shared.$platformBalance
             .receive(on: RunLoop.main)
             .sink { [weak self] credits in
-                self?.platformCredits = credits
-                self?.restartShieldPreflightOnBalanceChange()
+                guard let self else { return }
+                // Only a CHANGED balance restarts the shield preflight —
+                // the publisher re-emits on every sync pass, and a restart
+                // clears the capacity (fails closed), which would flicker
+                // and could starve the preflight of time to resolve.
+                let changed = self.platformCredits != credits
+                self.platformCredits = credits
+                if changed { self.restartShieldPreflightOnBalanceChange() }
             }
             .store(in: &cancellables)
 
@@ -370,18 +376,40 @@ final class SendViewModel: ObservableObject {
             return
         }
         guard shieldPreflightTask == nil else { return }
+        // Fail closed while resolving: a preflight only starts when the
+        // cached capacity is suspect (route entry, balance change, Max
+        // retry), so clear it rather than let `canContinue` accept a stale
+        // ceiling — the same contract as the internal-transfer sibling.
+        platformShieldCapacity = nil
+        shieldPreflightFailed = false
         shieldPreflightTask = Task { [weak self] in
             let result = try? await PlatformAddressSyncCoordinator.shared.preflightShield()
             guard let self, !Task.isCancelled else { return }
             self.platformShieldCapacity = result.map(PlatformShieldCapacity.init)
             self.shieldPreflightFailed = result == nil
             self.shieldPreflightTask = nil
+            // A Max tapped mid-flight parked a preflight notice; resolve it
+            // rather than leave a "checking…" (or stale failure) up after
+            // the outcome is known. The user re-taps Max for the fresh
+            // ceiling — the amount is never auto-filled from a background
+            // completion.
+            let preflightNotices = [
+                InternalTransferViewModel.platformShieldPreflightLoadingMessage,
+                InternalTransferViewModel.platformShieldPreflightUnavailableMessage,
+            ]
+            if let notice = self.shieldedMaxNotice, preflightNotices.contains(notice) {
+                self.shieldedMaxNotice = result == nil
+                    ? InternalTransferViewModel.platformShieldPreflightUnavailableMessage
+                    : nil
+            }
         }
     }
 
     /// A fresh Platform balance can change shield capacity — re-run the
-    /// preflight so validation and Max track it. (The coordinator
-    /// revalidates against a live preflight at confirm time regardless.)
+    /// preflight (clearing the cached capacity, so validation fails closed
+    /// until the new ceiling lands) so validation and Max track it. (The
+    /// coordinator revalidates against a live preflight at confirm time
+    /// regardless.)
     private func restartShieldPreflightOnBalanceChange() {
         guard route == .platformToShielded else { return }
         shieldPreflightTask?.cancel()
@@ -824,7 +852,14 @@ final class SendViewModel: ObservableObject {
             // whole duffs (never round a credit ceiling up to an amount the
             // transition cannot select).
             guard let capacity = platformShieldCapacity else {
-                shieldedMaxNotice = InternalTransferViewModel.platformShieldPreflightLoadingMessage
+                // Name a FAILED check instead of a perpetual "checking…",
+                // and kick a fresh preflight either way — nothing else
+                // retries until the route or balance changes. Compute the
+                // notice first: the refresh clears `shieldPreflightFailed`.
+                shieldedMaxNotice = shieldPreflightFailed
+                    ? InternalTransferViewModel.platformShieldPreflightUnavailableMessage
+                    : InternalTransferViewModel.platformShieldPreflightLoadingMessage
+                refreshShieldPreflight()
                 sourceDuffs = 0
                 break
             }
