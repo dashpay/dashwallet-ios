@@ -100,12 +100,35 @@ final class RecoveryPhraseLengthPickerModel: ObservableObject {
 
 /// UIKit-hostable wrapper around `RecoveryPhraseLengthPicker`, driven by a
 /// `RecoveryPhraseLengthPickerModel`. Renders nothing once locked.
+///
+/// Onboarding keeps the length choice out of new users' way: all that shows
+/// by default is a small "Advanced" disclosure; tapping it reveals the
+/// 12/24-word picker. Collapsing again doesn't reset the selection.
 struct RecoveryPhraseLengthPickerHost: View {
     @ObservedObject var model: RecoveryPhraseLengthPickerModel
+    @State private var showsAdvanced = false
 
     var body: some View {
         if !model.isLocked {
-            RecoveryPhraseLengthPicker(selection: $model.selection)
+            VStack(alignment: .leading, spacing: 10) {
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.2)) { showsAdvanced.toggle() }
+                }) {
+                    HStack(spacing: 5) {
+                        Text(NSLocalizedString("Advanced", comment: ""))
+                            .font(.system(size: 14, weight: .semibold))
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 11, weight: .semibold))
+                            .rotationEffect(.degrees(showsAdvanced ? 180 : 0))
+                    }
+                    .foregroundColor(.dash.blue)
+                }
+
+                if showsAdvanced {
+                    RecoveryPhraseLengthPicker(selection: $model.selection)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }
