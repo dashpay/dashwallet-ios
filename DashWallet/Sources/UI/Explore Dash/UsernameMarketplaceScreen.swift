@@ -478,7 +478,7 @@ struct UsernameMarketplaceScreen: View {
                 .presentationDetents([.medium, .large])
         }
         .sheet(item: $registerCandidate) { candidate in
-            if UsernameMarketplaceService.isContested(candidate.label) {
+            if candidate.isContested {
                 RegisterNameSheet(label: candidate.label, viewModel: viewModel)
                     .presentationDetents([.medium, .large])
             } else {
@@ -946,7 +946,7 @@ struct UsernameMarketplaceScreen: View {
             subtitle = NSLocalizedString("Available — register it on your identity", comment: "Username marketplace: unregistered name row")
         }
         return Button {
-            registerCandidate = RegisterCandidate(label: label)
+            registerCandidate = RegisterCandidate(label: label, isContested: contested)
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: icon)
@@ -1009,6 +1009,7 @@ struct SelectedMarketplaceLabel: Identifiable {
 
 struct RegisterCandidate: Identifiable {
     let label: String
+    let isContested: Bool
     var id: String { label }
 }
 
