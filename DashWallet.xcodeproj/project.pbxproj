@@ -646,6 +646,7 @@
 		57632D5A61F78ED6E896B1AF /* StorageRecordDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCBA057E553F81F54ACE6E1 /* StorageRecordDetailViews.swift */; };
 		58825FFD2913876CC5D4AA21 /* InternalTransferScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */; };
 		59A140F3992CD2438ADC84CE /* DWPreviewSeedPhraseModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D8BC6623C81DD3F008A668 /* DWPreviewSeedPhraseModel+Mnemonic.swift */; };
+		3F240D45721AF32B81BC447C /* RecoveryPhraseLength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210C818A8AAC76F91676AFF9 /* RecoveryPhraseLength.swift */; };
 		5A1EC0FE2E29A10000000002 /* ShieldedActivityHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */; };
 		5A1EC0FE2E29A10000000003 /* ShieldedActivityHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */; };
 		5A1EC0FE2E29A20000000012 /* PlatformAddressActivityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A20000000011 /* PlatformAddressActivityStore.swift */; };
@@ -970,6 +971,7 @@
 		973AD0F3986AFFDBA78ED560 /* CoinJoinWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B208A9A34D0FFEEC796752C /* CoinJoinWithdrawalStore.swift */; };
 		97C1167F9600BF7E489A8545 /* SwapTransactionStatusHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B5469F5588395FA0668C4B /* SwapTransactionStatusHostingController.swift */; };
 		97E0FFBBAFFB7394F6841B61 /* DWPreviewSeedPhraseModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D8BC6623C81DD3F008A668 /* DWPreviewSeedPhraseModel+Mnemonic.swift */; };
+		926525A3134D15BF737BC355 /* RecoveryPhraseLength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210C818A8AAC76F91676AFF9 /* RecoveryPhraseLength.swift */; };
 		983748715D558F311DF6BFCD /* StorageExplorerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7333F2D05D0DD2D4373FF9B /* StorageExplorerView.swift */; };
 		98BEE600E600F1F88EC3802E /* ScriptAddressCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 080B9ECCDC82A7B7FF4039C6 /* ScriptAddressCodec.swift */; };
 		99FAE80A3A63E073A2EB5209 /* PaymentProtocolWireFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = E66B030D4B574621DA2C5816 /* PaymentProtocolWireFormat.swift */; };
@@ -2792,6 +2794,7 @@
 		47FA3B0129364991008D58DC /* HTTPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
 		487C4C2E6AC61005536FF85E /* NetworkUnavailableStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkUnavailableStateView.swift; sourceTree = "<group>"; };
 		48D8BC6623C81DD3F008A668 /* DWPreviewSeedPhraseModel+Mnemonic.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "DWPreviewSeedPhraseModel+Mnemonic.swift"; sourceTree = "<group>"; };
+		210C818A8AAC76F91676AFF9 /* RecoveryPhraseLength.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecoveryPhraseLength.swift; sourceTree = "<group>"; };
 		4C4833BE986D59F69A555C5F /* PaymentProtocolMessages.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentProtocolMessages.swift; sourceTree = "<group>"; };
 		4E55DD28C4EBE049216291A2 /* HomeUsernameRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeUsernameRow.swift; sourceTree = "<group>"; };
 		4E9C4B39B015CD9D8AD4741D /* SwiftDashSDKWalletRuntime.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletRuntime.swift; sourceTree = "<group>"; };
@@ -4704,6 +4707,7 @@
 				2A36A88C2350A18A0014DC60 /* DWPreviewSeedPhraseViewController+DWProtected.h */,
 				755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */,
 				48D8BC6623C81DD3F008A668 /* DWPreviewSeedPhraseModel+Mnemonic.swift */,
+				210C818A8AAC76F91676AFF9 /* RecoveryPhraseLength.swift */,
 			);
 			path = Seed;
 			sourceTree = "<group>";
@@ -10306,6 +10310,7 @@
 				7B9BBDE902964C57C44F68BD /* PinStore.swift in Sources */,
 				88436E7D9764791AC81AFFB0 /* AuthenticationService.swift in Sources */,
 				97E0FFBBAFFB7394F6841B61 /* DWPreviewSeedPhraseModel+Mnemonic.swift in Sources */,
+				926525A3134D15BF737BC355 /* RecoveryPhraseLength.swift in Sources */,
 				C5745FA476F615D2C1E378F3 /* SwiftDashSDKReceiveAddressReader.swift in Sources */,
 				EF8FE439EB96236940DFBDE7 /* SwiftDashSDKTransactionSender.swift in Sources */,
 				2AB76051F87248AC36AED99B /* NetworkReachability.swift in Sources */,
@@ -11328,6 +11333,7 @@
 				E039AE9F21B1A3BF80B16038 /* PinStore.swift in Sources */,
 				8FCE113ECEA4B9781B24922C /* AuthenticationService.swift in Sources */,
 				59A140F3992CD2438ADC84CE /* DWPreviewSeedPhraseModel+Mnemonic.swift in Sources */,
+				3F240D45721AF32B81BC447C /* RecoveryPhraseLength.swift in Sources */,
 				D0525BF736516E4EB50DF703 /* SwiftDashSDKReceiveAddressReader.swift in Sources */,
 				5BBF50F1EFB3EC99854ECE69 /* SwiftDashSDKTransactionSender.swift in Sources */,
 				43001E4B0F1FD846676FCE1F /* NetworkReachability.swift in Sources */,

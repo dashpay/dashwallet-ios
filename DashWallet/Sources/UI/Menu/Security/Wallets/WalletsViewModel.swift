@@ -159,13 +159,13 @@ final class WalletsViewModel: ObservableObject {
         case alreadyOnDevice(walletId: Data)
     }
 
-    /// Generate a fresh 12-word BIP39 mnemonic via the SDK for the "Create New
-    /// Wallet" flow. Returns nil (and surfaces an error) on FFI failure. Nothing
-    /// is persisted here — creation happens in `addWallet` after the user
-    /// confirms they wrote the phrase down.
-    func generateMnemonic() -> String? {
+    /// Generate a fresh BIP39 mnemonic of `length` words (12 or 24) via the SDK
+    /// for the "Create New Wallet" flow. Returns nil (and surfaces an error) on
+    /// FFI failure. Nothing is persisted here — creation happens in `addWallet`
+    /// after the user confirms they wrote the phrase down.
+    func generateMnemonic(length: RecoveryPhraseLength) -> String? {
         do {
-            return try Mnemonic.generate(wordCount: 12)
+            return try Mnemonic.generate(wordCount: length.wordCount)
         } catch {
             Self.logger.error("mnemonic generation failed: \(String(describing: error), privacy: .public)")
             errorMessage = NSLocalizedString("Could not generate a recovery phrase.", comment: "Wallets")
