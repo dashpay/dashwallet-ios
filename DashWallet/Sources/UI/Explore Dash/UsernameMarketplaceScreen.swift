@@ -478,8 +478,13 @@ struct UsernameMarketplaceScreen: View {
                 .presentationDetents([.medium, .large])
         }
         .sheet(item: $registerCandidate) { candidate in
-            RegisterNameSheet(label: candidate.label, viewModel: viewModel)
-                .presentationDetents([.medium, .large])
+            if UsernameMarketplaceService.isContested(candidate.label) {
+                RegisterNameSheet(label: candidate.label, viewModel: viewModel)
+                    .presentationDetents([.medium, .large])
+            } else {
+                RegisterNameSheet(label: candidate.label, viewModel: viewModel)
+                    .presentationDetents([.height(340)])
+            }
         }
         .overlay {
             // Blocking activity overlay while a trade transition is in
