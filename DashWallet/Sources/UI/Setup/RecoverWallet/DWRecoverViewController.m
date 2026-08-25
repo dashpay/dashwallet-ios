@@ -188,17 +188,26 @@ NS_ASSUME_NONNULL_BEGIN
                                                                                            : NSLocalizedString(@"Deleting Wallet…", nil);
                                                            // Blocking progress renders in the app-wide lifecycle
                                                            // overlay window (shared with network/wallet switches),
-                                                           // not a screen-local HUD.
-                                                           [DWWalletLifecycleOverlayBridge beginWipingWithTitle:progressMessage];
+                                                           // not a screen-local HUD. A rejected admission means
+                                                           // another lifecycle operation is in flight — refuse to
+                                                           // start a concurrent wipe.
+                                                           if (![DWWalletLifecycleOverlayBridge beginWipingWithTitle:progressMessage]) {
+                                                               [self.contentView activateTextView];
+                                                               return;
+                                                           }
                                                            [self.model wipeWallet];
                                                            __weak typeof(self) weakSelf = self;
                                                            [DWSwiftDashSDKWalletWiper
                                                                waitForPendingWipeWithCompletion:^(BOOL wipeSucceeded) {
+                                                                   // Drop the overlay before anything self-dependent:
+                                                                   // the wiping phase must never outlive the barrier,
+                                                                   // even if this controller has gone away by the
+                                                                   // time it completes.
+                                                                   [DWWalletLifecycleOverlayBridge finishWiping];
                                                                    typeof(self) strongSelf = weakSelf;
                                                                    if (strongSelf == nil) {
                                                                        return;
                                                                    }
-                                                                   [DWWalletLifecycleOverlayBridge finishWiping];
                                                                    if (wipeSucceeded) {
                                                                        [strongSelf.delegate recoverViewControllerDidWipe:strongSelf];
                                                                        return;

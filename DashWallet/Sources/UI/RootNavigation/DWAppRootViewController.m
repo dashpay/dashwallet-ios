@@ -375,6 +375,14 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     if (self.walletWipeInProgress) {
         return;
     }
+    // The admission gate rejects while another lifecycle operation (network
+    // or wallet switch, removal) is in flight — a concurrent wipe would
+    // mutate wallet state under that operation's teardown/rebuild. On
+    // success the app-wide overlay window shows the blocking wipe card
+    // (shared with network/wallet switches), replacing the screen-local HUD.
+    if (![DWWalletLifecycleOverlayBridge beginWipingWithTitle:nil]) {
+        return;
+    }
     self.walletWipeInProgress = YES;
 
     UIViewController *setupController = [self setupController];
@@ -383,10 +391,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
     [self.model.homeModel walletDidWipe];
     _mainController = nil;
-
-    // Blocking progress renders in the app-wide lifecycle overlay window
-    // (shared with network/wallet switches), not a screen-local HUD.
-    [DWWalletLifecycleOverlayBridge beginWipingWithTitle:nil];
 
     __weak typeof(self) weakSelf = self;
     // The SDK delete is synchronous on MainActor. Let UIKit commit the setup
@@ -401,11 +405,14 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
         [DWSwiftDashSDKWalletWiper wipeWalletWithAuthorization:authorization];
         [DWSwiftDashSDKWalletWiper waitForPendingWipeWithCompletion:^(BOOL wipeSucceeded) {
+            // Drop the overlay before anything self-dependent: the wiping
+            // phase must never outlive the barrier, even if this controller
+            // has gone away by the time it completes.
+            [DWWalletLifecycleOverlayBridge finishWiping];
             typeof(self) completedSelf = weakSelf;
             if (completedSelf == nil) {
                 return;
             }
-            [DWWalletLifecycleOverlayBridge finishWiping];
             completedSelf.walletWipeInProgress = NO;
             if (!wipeSucceeded) {
                 [completedSelf presentWalletWipeFailureForAuthorization:authorization];

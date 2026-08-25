@@ -339,14 +339,15 @@ final class WalletLifecycleOverlayPresenter {
 @objc(DWWalletLifecycleOverlayBridge)
 @MainActor
 final class WalletLifecycleOverlayBridge: NSObject {
-    /// Show the blocking wipe card; nil `title` falls back to the Delete All
-    /// copy. Admission can be rejected while another interactive operation
-    /// is in flight — the wipe proceeds regardless (the overlay is
-    /// presentation, not a lock), and `finishWiping` is phase-guarded so it
+    /// Begin the wipe phase and show its blocking card; nil `title` falls
+    /// back to the Delete All copy. Returns false when another interactive
+    /// operation holds the admission gate — the caller must NOT start the
+    /// wipe then (a concurrent wipe would mutate wallet state under that
+    /// operation's teardown/rebuild). `finishWiping` is phase-guarded so it
     /// can never clear a phase it does not own.
-    @objc static func beginWiping(title: String?) {
+    @objc @discardableResult static func beginWiping(title: String?) -> Bool {
         WalletLifecycleOverlayPresenter.shared.ensureActive()
-        _ = WalletLifecycleTransitionState.shared.tryBegin(.wiping(title: title))
+        return WalletLifecycleTransitionState.shared.tryBegin(.wiping(title: title))
     }
 
     /// Drop the overlay if (and only if) the wiping phase is still active.

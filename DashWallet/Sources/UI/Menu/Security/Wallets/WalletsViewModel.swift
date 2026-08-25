@@ -175,9 +175,19 @@ final class WalletsViewModel: ObservableObject {
         targetName: String?,
         thenFinish: Bool = true
     ) async throws {
-        let previousId = SwiftDashSDKHost.shared.wallet?.walletId
-        WalletLifecycleOverlayPresenter.shared.ensureActive()
         let state = WalletLifecycleTransitionState.shared
+        // A Retry begins from `.failedWalletSwitch`, where the host may hold
+        // no wallet at all (runtime torn down) or an arbitrary fallback — so
+        // carry the failure phase's previousId forward instead of re-sampling
+        // the host: it is the wallet that was really active when this switch
+        // saga began, and re-sampling would silently drop Switch Back.
+        let previousId: Data?
+        if case let .failedWalletSwitch(_, _, savedPrevious, _) = state.phase {
+            previousId = savedPrevious
+        } else {
+            previousId = SwiftDashSDKHost.shared.wallet?.walletId
+        }
+        WalletLifecycleOverlayPresenter.shared.ensureActive()
         guard state.tryBegin(.switchingWallet(targetName: targetName)) else {
             throw SwiftDashSDKWalletRuntime.SwitchError.switchInProgress
         }
