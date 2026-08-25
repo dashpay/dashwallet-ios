@@ -17,21 +17,20 @@
 
 import UIKit
 
-extension HomeViewController: DWRecoverViewControllerDelegate {
+extension HomeViewController {
+    /// The jailbreak signal is a heuristic, so this only informs — wiping stays
+    /// behind Security → Reset Wallet, which gates it on the recovery phrase.
     func performJailbreakCheck() {
         guard UIApplication.isJailbroken else {
             return
         }
 
         let title = NSLocalizedString("WARNING", comment: "")
-        var message: String?
+        let message: String
         var mainAction: UIAlertAction?
 
         if !model.isWalletEmpty {
-            message = NSLocalizedString("DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.", comment: "")
-            mainAction = UIAlertAction(title: NSLocalizedString("Wipe", comment: ""), style: .destructive) { [weak self] action in
-                self?.wipeWallet()
-            }
+            message = NSLocalizedString("DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu.", comment: "")
         } else {
             message = NSLocalizedString("DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).", comment: "")
             mainAction = UIAlertAction(title: NSLocalizedString("Close App", comment: ""), style: .default) { action in
@@ -40,41 +39,13 @@ extension HomeViewController: DWRecoverViewControllerDelegate {
         }
 
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let ignoreAction = UIAlertAction(title: NSLocalizedString("Ignore", comment: ""), style: .cancel, handler: nil)
-        
         if let mainAction = mainAction {
             alert.addAction(mainAction)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Ignore", comment: ""), style: .cancel, handler: nil))
+        } else {
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel, handler: nil))
         }
-        alert.addAction(ignoreAction)
-        
+
         present(alert, animated: true, completion: nil)
-    }
-
-    func wipeWallet() {
-        let controller = DWRecoverViewController()
-        controller.action = .wipe
-        controller.delegate = self
-        let cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(recoverCancelButtonAction(_:)))
-        controller.navigationItem.leftBarButtonItem = cancelButton
-
-        let navigationController = BaseNavigationController(rootViewController: controller)
-        present(navigationController, animated: true, completion: nil)
-    }
-
-    // MARK: - DWRecoverViewControllerDelegate
-
-    func recoverViewControllerDidRecoverWallet(_ controller: DWRecoverViewController, recover recoverCommand: DWRecoverWalletCommand) {
-        assertionFailure("Inconsistent state")
-        dismiss(animated: true, completion: nil)
-    }
-
-    func recoverViewControllerDidWipe(_ controller: DWRecoverViewController) {
-        dismiss(animated: true) { [weak self] in
-            self?.delegate?.didWipeWallet()
-        }
-    }
-
-    @objc func recoverCancelButtonAction(_ sender: Any) {
-        dismiss(animated: true, completion: nil)
     }
 }
