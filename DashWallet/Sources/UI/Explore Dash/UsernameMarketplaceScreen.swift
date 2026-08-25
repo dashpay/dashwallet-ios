@@ -475,7 +475,7 @@ struct UsernameMarketplaceScreen: View {
         .background(Color.dash.primaryBackground.ignoresSafeArea())
         .onAppear { viewModel.loadMyNames() }
         .sheet(item: $selectedLabel) { selected in
-            MarketplaceNameDetailSheet(label: selected.label, viewModel: viewModel)
+            MarketplaceNameDetailSheet(selection: selected, viewModel: viewModel)
                 .presentationDetents([.medium, .large])
         }
         .sheet(item: $registerCandidate) { candidate in
@@ -739,7 +739,7 @@ struct UsernameMarketplaceScreen: View {
     private func searchRow(_ name: DpnsMarketplaceName) -> some View {
         let isMine = name.isOwned(by: viewModel.ownIdentityId)
         return Button {
-            selectedLabel = SelectedMarketplaceLabel(label: name.label)
+            selectedLabel = SelectedMarketplaceLabel(label: name.label, initialName: name)
         } label: {
             HStack(spacing: 10) {
                 ContactAvatarView(
@@ -796,7 +796,7 @@ struct UsernameMarketplaceScreen: View {
 
     private func stateRow(_ row: DpnsNameStateRow) -> some View {
         Button {
-            selectedLabel = SelectedMarketplaceLabel(label: row.label)
+            selectedLabel = selection(for: row)
         } label: {
             HStack(spacing: 10) {
                 ContactAvatarView(
@@ -836,6 +836,27 @@ struct UsernameMarketplaceScreen: View {
             .opacity({ if case .owned = row.status { return 1 } else { return 0.65 } }())
         }
         .buttonStyle(.plain)
+    }
+
+    private func selection(for row: DpnsNameStateRow) -> SelectedMarketplaceLabel {
+        guard case .owned = row.status else {
+            // A departed row does not know the current owner after a later
+            // transfer, so do not fabricate a live snapshot for it.
+            return SelectedMarketplaceLabel(label: row.label)
+        }
+        let initialName = DpnsMarketplaceName(
+            documentId: row.documentId,
+            ownerId: row.walletIdentityId,
+            recordsIdentityId: row.walletIdentityId,
+            label: row.label,
+            normalizedLabel: row.normalizedLabel,
+            priceCredits: row.priceCredits,
+            createdAtMs: row.createdAtMs,
+            updatedAtMs: row.updatedAtMs,
+            transferredAtMs: row.transferredAtMs)
+        return SelectedMarketplaceLabel(
+            label: row.label,
+            initialName: initialName)
     }
 
     private func stateLine(for row: DpnsNameStateRow) -> String {
@@ -1025,6 +1046,16 @@ private struct MarketplaceActivityOverlay: View {
 /// Identifiable wrappers for `.sheet(item:)`.
 struct SelectedMarketplaceLabel: Identifiable {
     let label: String
+    let initialName: DpnsMarketplaceName?
+
+    init(
+        label: String,
+        initialName: DpnsMarketplaceName? = nil
+    ) {
+        self.label = label
+        self.initialName = initialName
+    }
+
     var id: String { label }
 }
 
@@ -1036,24 +1067,33 @@ struct RegisterCandidate: Identifiable {
 
 // MARK: - MarketplaceNameDetailSheet
 
-/// Authoritative detail for one name: loads the live document state and
-/// the full trade timeline on appear, then offers exactly the actions
-/// the state allows. Works for departed names too (the history query
-/// covers names that already left the wallet).
+/// Detail for one name: renders the caller's snapshot immediately, then
+/// refreshes authoritative live state and the supplementary trade timeline
+/// independently. Works for departed names too (the history query covers names
+/// that already left the wallet).
 private struct MarketplaceNameDetailSheet: View {
-    let label: String
+    let selection: SelectedMarketplaceLabel
     @ObservedObject var viewModel: UsernameMarketplaceViewModel
     @Environment(\.dismiss) private var dismiss
 
     @State private var liveName: DpnsMarketplaceName?
     @State private var history: [DpnsNameHistoryEvent] = []
-    @State private var isLoading = true
+    @State private var isLoadingState: Bool
+    @State private var isLoadingHistory = true
     @State private var showingSetPrice = false
     @State private var showingTransfer = false
     @State private var confirmBuy = false
     @State private var confirmDelist = false
 
+    private var label: String { selection.label }
     private var isMine: Bool { liveName?.isOwned(by: viewModel.ownIdentityId) ?? false }
+
+    init(selection: SelectedMarketplaceLabel, viewModel: UsernameMarketplaceViewModel) {
+        self.selection = selection
+        self.viewModel = viewModel
+        _liveName = State(initialValue: selection.initialName)
+        _isLoadingState = State(initialValue: selection.initialName == nil)
+    }
 
     var body: some View {
         ScrollView {
@@ -1070,7 +1110,7 @@ private struct MarketplaceNameDetailSheet: View {
                     .foregroundColor(.dash.primaryText)
                     .padding(.top, 10)
 
-                if isLoading {
+                if isLoadingState && liveName == nil {
                     SwiftUI.ProgressView().padding(.top, 20)
                 } else if let name = liveName {
                     saleState(name)
@@ -1082,7 +1122,7 @@ private struct MarketplaceNameDetailSheet: View {
                     infoCard(name)
                         .padding(.horizontal, 20)
                         .padding(.top, 14)
-                    if !history.isEmpty {
+                    if isLoadingHistory || !history.isEmpty {
                         historyCard
                             .padding(.horizontal, 20)
                             .padding(.top, 12)
@@ -1101,7 +1141,11 @@ private struct MarketplaceNameDetailSheet: View {
             }
         }
         .background(Color.dash.primaryBackground)
-        .task { await load() }
+        .task {
+            async let state: Void = loadState()
+            async let timeline: Void = loadHistory()
+            _ = await (state, timeline)
+        }
         .interactiveDismissDisabled(viewModel.isPerformingAction)
         .overlay {
             if let activity = viewModel.activityMessage {
@@ -1118,17 +1162,25 @@ private struct MarketplaceNameDetailSheet: View {
         }
     }
 
-    private func load() async {
-        isLoading = true
-        // Live state and timeline are independent reads; a history
-        // failure must not blank the sale state (and vice versa).
+    private func loadState() async {
+        defer { isLoadingState = false }
         do {
-            liveName = try await viewModel.service.nameState(label)
+            let refreshedName = try await viewModel.service.nameState(label)
+            guard !Task.isCancelled else { return }
+            liveName = refreshedName
         } catch {
+            guard !Task.isCancelled else { return }
             viewModel.errorMessage = UsernameMarketplaceService.userFacingMessage(for: error)
         }
-        history = (try? await viewModel.service.history(label)) ?? []
-        isLoading = false
+    }
+
+    private func loadHistory() async {
+        defer { isLoadingHistory = false }
+        let loadedHistory = (try? await viewModel.service.history(label)) ?? []
+        guard !Task.isCancelled else { return }
+        // History is supplementary. A failed timeline read must not hide the
+        // live state or the actions for the selected name.
+        history = loadedHistory
     }
 
     @ViewBuilder
@@ -1211,8 +1263,14 @@ private struct MarketplaceNameDetailSheet: View {
                 .padding(.horizontal, 14)
                 .padding(.top, 12)
                 .padding(.bottom, 4)
-            ForEach(Array(history.enumerated().reversed()), id: \.offset) { _, event in
-                historyRow(event)
+            if isLoadingHistory {
+                SwiftUI.ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+            } else {
+                ForEach(Array(history.enumerated().reversed()), id: \.offset) { _, event in
+                    historyRow(event)
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
