@@ -37,6 +37,11 @@ final class WalletLifecycleTransitionState: ObservableObject {
         case switchingWallet(targetName: String?)
         /// Per-wallet removal in flight (`deleteLogicalWallet`).
         case removingWallet
+        /// Add-wallet provisioning in flight (`SwiftDashSDKHost.addWallet` —
+        /// blocking wallet creation on the current network plus the other
+        /// network's mirror). `isImport` picks the card copy
+        /// (Creating/Importing wallet…).
+        case addingWallet(isImport: Bool)
         /// The wallet switch failed. The previous wallet is NOT guaranteed
         /// active afterwards (the registry is repointed before the rebuild
         /// and the host may have bound a fallback wallet), so the card
@@ -64,6 +69,7 @@ final class WalletLifecycleTransitionState: ObservableObject {
             case .failedNetworkSwitch(_, let target, _): return "failedNetworkSwitch(\(target))"
             case .switchingWallet: return "switchingWallet"
             case .removingWallet: return "removingWallet"
+            case .addingWallet: return "addingWallet"
             case .failedWalletSwitch: return "failedWalletSwitch"
             case .failedWalletRemoval: return "failedWalletRemoval"
             case .wiping: return "wiping"
@@ -91,9 +97,16 @@ final class WalletLifecycleTransitionState: ObservableObject {
         case (.idle, .switchingNetwork),
              (.idle, .switchingWallet),
              (.idle, .removingWallet),
+             (.idle, .addingWallet),
              (.idle, .wiping),
              (.failedNetworkSwitch, .switchingNetwork),
              (.failedWalletSwitch, .switchingWallet),
+             // Composite add → switch: the add flow's own continuation into
+             // its post-add switch, without dropping the window through idle.
+             // Deliberately not owner-scoped — in practice only the add flow
+             // can reach it, because the blocking overlay window covers every
+             // other interactive entry point for `.addingWallet`'s lifetime.
+             (.addingWallet, .switchingWallet),
              // The wipe/reset route stays reachable from EVERY failure card:
              // without this, a persistently failing switch (destination
              // network down) would block the whole app behind the overlay
