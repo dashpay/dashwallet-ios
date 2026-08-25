@@ -117,6 +117,16 @@ final class PaymentsLandingViewModel: ObservableObject {
     /// the whole landing on every keystroke in the embedded amount field.
     @Published private(set) var isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
 
+    /// Which addresses the Receive tab offers.
+    ///
+    /// Core and Shielded are both ordinary destinations — a wallet can be paid
+    /// privately without calling itself advanced. Platform is the one that
+    /// needs the mode: it holds credits rather than spendable Dash, and
+    /// offering it by default invites payments the payer cannot spend back.
+    var receiveNetworks: [ChainNetwork] {
+        isAdvancedMode ? [.core, .shielded, .platform] : [.core, .shielded]
+    }
+
     /// Whether the Send tab offers "Send to username".
     ///
     /// Both halves are required: the row opens the contact book, which needs an
@@ -185,10 +195,10 @@ final class PaymentsLandingViewModel: ObservableObject {
             .sink { [weak self] _ in
                 guard let self else { return }
                 self.isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
-                // The toggle that chose it is gone now. Left alone, the Receive
-                // tab would keep showing a Platform or Shielded address with no
-                // control on screen to get back to the transparent one.
-                if !self.isAdvancedMode, self.network != .core {
+                // Platform is the only segment the mode takes away, and it can
+                // be the selected one at that moment — leaving the tab showing
+                // a Platform address with no segment left to move off it.
+                if !self.isAdvancedMode, !self.receiveNetworks.contains(self.network) {
                     self.network = .core
                 }
             }

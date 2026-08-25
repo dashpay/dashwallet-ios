@@ -41,15 +41,37 @@ struct PaymentsReceiveContent: View {
     /// reads as a broken button.
     var onImportPrivateKey: (() -> Void)? = nil
 
+    /// Which way the last network change moved along `receiveNetworks`, so the
+    /// incoming card slides in from the side it came from — the same rule the
+    /// tab selector above follows.
+    @State private var slidesForward = true
+
+    private enum Layout {
+        /// Matches `SegmentedControlLayout`'s own spring, so the pill and the
+        /// card it selects travel together.
+        static let slideResponse: Double = 0.3
+        static let slideDamping: Double = 0.7
+    }
+
     var body: some View {
         VStack(alignment: .center, spacing: 20) {
-            // Advanced mode only. Without it the wallet presents one balance,
-            // so there is nothing to choose between — and a toggle with a
-            // single option is a control that cannot be used.
-            if viewModel.isAdvancedMode {
-                ChainNetworkToggle(selection: $viewModel.network, options: ChainNetwork.allCases)
-                    .padding(.horizontal, 20)
-            }
+            // The same control the tab selector above it is, so the two rows of
+            // chrome read as one family rather than as a design-system pill
+            // sitting on top of a system segmented picker.
+            //
+            // Always present: Core and Shielded are both ordinary destinations.
+            // Advanced mode adds Platform, and `receiveNetworks` is what decides
+            // that — the control only draws what it is given.
+            SegmentedControl(
+                options: viewModel.receiveNetworks,
+                selection: networkSelection,
+                label: { $0.title })
+                // Negative on purpose. The host already insets this whole tab
+                // by 20 for the card below; -4 pulls the control back out to
+                // the 16 the tab selector directly above it uses. Two
+                // segmented controls stacked at different widths read as a
+                // mistake, and the top one sets the measure.
+                .padding(.horizontal, -4)
 
             if let receipt = viewModel.receipt {
                 // A payment landed while this screen was being presented. The
@@ -69,28 +91,121 @@ struct PaymentsReceiveContent: View {
         }
     }
 
+    // MARK: - Network selection
+
+    /// Everything that changes the network goes through here so the direction
+    /// of travel is known before the change lands — the card has to enter from
+    /// whichever side the new segment sits on, and only this knows which.
+    private var networkSelection: Binding<ChainNetwork> {
+        Binding(
+            get: { viewModel.network },
+            set: { select($0) })
+    }
+
+    private func select(_ network: ChainNetwork) {
+        let options = viewModel.receiveNetworks
+        guard let from = options.firstIndex(of: viewModel.network),
+              let to = options.firstIndex(of: network),
+              from != to
+        else { return }
+
+        slidesForward = to > from
+        withAnimation(.spring(response: Layout.slideResponse,
+                              dampingFraction: Layout.slideDamping)) {
+            viewModel.network = network
+        }
+    }
+
+    /// Matches the direction of travel: moving right, the new card enters from
+    /// the right and the old one leaves to the left.
+    private var slide: AnyTransition {
+        .asymmetric(
+            insertion: .move(edge: slidesForward ? .trailing : .leading),
+            removal: .move(edge: slidesForward ? .leading : .trailing))
+    }
+
     /// The QR, the address and the actions — everything the screen shows while
     /// it is still waiting to be paid.
     private var addressContent: some View {
         VStack(alignment: .center, spacing: 20) {
-            // main content
-            VStack(alignment: .leading, spacing: 0) {
+            // The card itself holds still — only what is inside it travels.
+            // ZStack so the outgoing and incoming contents share one slot
+            // instead of stacking; keyed on the network so a change reads as a
+            // replacement to animate rather than an in-place edit of the QR and
+            // the address.
+            ZStack(alignment: .top) {
+                cardBody
+                    .id(viewModel.network)
+                    .transition(slide)
+            }
+            // Keeps the travelling contents inside the card's edges. Square
+            // rather than the card's 20pt radius: nothing is drawn near the
+            // corners (40pt of top padding, 20 at the bottom), so the rounding
+            // would cost a mask for no visible difference.
+            .clipped()
+            .modifier(MenuViewModifier(innerPadding: 0))
+
+            // import private key - if needed
+
+            if onImportPrivateKey != nil {
+                Button {
+                    onImportPrivateKey?()
+                } label: {
+                    DashUIKit.MenuItem(
+                        leadingIcon: .custom(DashIcon.Menu.importPrivateKey.rawValue, bundle: .dashUIKit),
+                        title: NSLocalizedString("Import private key", comment: "Payments"),
+                        accessory: .none
+                    )
+                    .modifier(MenuViewModifier())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    /// What the card shows for the selected network: the QR, the address and
+    /// the actions on it.
+    private var cardBody: some View {
+        VStack(alignment: .leading, spacing: 0) {
 
                 VStack(alignment: .center, spacing: 20) {
                     qrCard
 
-                    HStack(spacing: 40) {
+                    // 12, not 40: the address needs every point it can get to
+                    // stay on one line, and the gap was spending them on
+                    // nothing. `maxWidth: .infinity` on the text column is what
+                    // keeps the copy button on the trailing edge now that the
+                    // gap no longer pushes it there.
+                    HStack(spacing: 12) {
                         if let address = viewModel.currentAddress {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(NSLocalizedString("Your DASH address", comment: "Payments"))
                                     .dashFont(.footnote)
                                     .foregroundStyle(Color.dash.secondaryText)
 
+                                // One line, and cut in the middle when it does
+                                // not fit. A Dash address is a single token the
+                                // user reads across to check; broken over two
+                                // lines it reads as two. Cutting the tail hides
+                                // the half people actually check — the last
+                                // characters are what gets compared against the
+                                // sender's screen — so both ends stay.
                                 Text(address)
                                     .dashFont(.subhead)
                                     .foregroundColor(.dash.primaryText)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
                                     .multilineTextAlignment(.leading)
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            // The address is the thing the user is reaching
+                            // for; the button beside it is the affordance, not
+                            // the only target. Tapping the text copies too.
+                            .contentShape(Rectangle())
+                            .onTapGesture { onCopyAddress() }
+                            .accessibilityElement(children: .combine)
+                            .accessibilityAddTraits(.isButton)
+                            .accessibilityHint(Text(NSLocalizedString("Copy", comment: "")))
                         } else {
                             Text(NSLocalizedString("No address available", comment: "Payments"))
                                 .font(.footnote)
@@ -108,6 +223,11 @@ struct PaymentsReceiveContent: View {
                     }
                     .padding(.vertical, 6)
                 }
+                // Stretches the QR/address block across the card. Without it
+                // the block sizes to its content and the leading-aligned card
+                // pins it left, which is what happened when the row's spacing
+                // stopped being wide enough to fill the width on its own.
+                .frame(maxWidth: .infinity)
                 .padding(.horizontal, 20)
                 .padding(.top, 40)
                 .padding(.bottom, 10)
@@ -140,24 +260,6 @@ struct PaymentsReceiveContent: View {
                 watchingForPayment
                     .padding(.top, 14)
                     .padding(.bottom, 20)
-            }
-            .modifier(MenuViewModifier(innerPadding: 0))
-
-            // import private key - if needed
-
-            if onImportPrivateKey != nil {
-                Button {
-                    onImportPrivateKey?()
-                } label: {
-                    DashUIKit.MenuItem(
-                        leadingIcon: .custom(DashIcon.Menu.importPrivateKey.rawValue, bundle: .dashUIKit),
-                        title: NSLocalizedString("Import private key", comment: "Payments"),
-                        accessory: .none
-                    )
-                    .modifier(MenuViewModifier())
-                }
-                .buttonStyle(.plain)
-            }
         }
     }
 
@@ -183,7 +285,13 @@ struct PaymentsReceiveContent: View {
                     .interpolation(.none)
                     .resizable()
                     .frame(width: 200, height: 200)
+                    // White in both themes, not `secondaryBackground`: this is
+                    // the code's quiet zone, and a scanner needs the contrast
+                    // whatever the app is wearing. Without it the dark card ran
+                    // straight up to the modules.
                     .padding(10)
+                    .background(Color.dash.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             } else if viewModel.network == .platform && !viewModel.platformIsReady {
                 placeholder(NSLocalizedString("Platform sync starting…", comment: ""))
             } else if viewModel.network == .shielded {
@@ -283,7 +391,7 @@ private struct ReceiveReceiptCard: View {
             Text(value)
                 .dashFont(.caption1Medium)
                 .foregroundColor(.dash.primaryText)
-                .multilineTextAlignment(.trailing)
+                .multilineTextAlignment(.center)
                 .lineLimit(2)
         }
     }
