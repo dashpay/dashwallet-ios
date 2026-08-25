@@ -23,6 +23,7 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         ("switchingNetwork", .switchingNetwork(from: .mainnet, to: .testnet)),
         ("switchingWallet", .switchingWallet(targetName: "A")),
         ("removingWallet", .removingWallet),
+        ("addingWallet", .addingWallet(isImport: false)),
         ("wiping", .wiping(title: nil)),
     ]
 
@@ -56,16 +57,26 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         }
     }
 
-    /// No begin is admitted while any operation is busy.
+    /// No begin is admitted while any operation is busy — except the add
+    /// flow's own composite continuation into its post-add switch.
     func testBusyPhasesRejectEveryBegin() {
         for (busyLabel, busy) in Self.begins {
             for (nextLabel, next) in Self.begins {
                 let state = makeState(in: busy)
-                XCTAssertFalse(
-                    state.tryBegin(next),
-                    "\(nextLabel) must be rejected while \(busyLabel) is in flight")
+                let expected = busyLabel == "addingWallet" && nextLabel == "switchingWallet"
+                XCTAssertEqual(
+                    state.tryBegin(next), expected,
+                    "\(busyLabel) → \(nextLabel): expected admitted=\(expected)")
             }
         }
+    }
+
+    /// The add flow's window advances Creating → Switching without dropping
+    /// through idle.
+    func testAddFlowCompositeAdvancesToSwitch() {
+        let state = makeState(in: .addingWallet(isImport: false))
+        XCTAssertTrue(state.tryBegin(.switchingWallet(targetName: "A")))
+        XCTAssertEqual(state.phase, .switchingWallet(targetName: "A"))
     }
 
     /// Failure phases admit exactly their own retry — and a wipe.

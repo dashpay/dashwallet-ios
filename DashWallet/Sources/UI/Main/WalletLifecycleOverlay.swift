@@ -56,7 +56,7 @@ final class WalletLifecycleOverlayPresenter {
             overlayWindow?.isHidden = true
             overlayWindow = nil
         case .switchingNetwork, .failedNetworkSwitch,
-             .switchingWallet, .removingWallet,
+             .switchingWallet, .removingWallet, .addingWallet,
              .failedWalletSwitch, .failedWalletRemoval,
              .wiping:
             presentIfNeeded()
@@ -189,6 +189,14 @@ struct WalletLifecycleOverlayView: View {
                 progressCard(
                     title: NSLocalizedString("Removing wallet…", comment: "Wallets"),
                     subtitle: nil)
+            case let .addingWallet(isImport):
+                progressCard(
+                    title: isImport
+                        ? NSLocalizedString("Importing wallet…", comment: "Wallets")
+                        : NSLocalizedString("Creating wallet…", comment: "Wallets"),
+                    subtitle: NSLocalizedString(
+                        "Preparing your wallet. This may take a few seconds.",
+                        comment: "Wallets"))
             case let .wiping(title):
                 // Falls back to the Delete All copy — the same key the root
                 // controller's HUD used, so translations carry over.

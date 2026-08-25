@@ -265,28 +265,66 @@ final class WalletsViewModel: ObservableObject {
         addInProgress = true
         defer { addInProgress = false }
 
+        // Blocking overlay from the FIRST moment: provisioning is seconds of
+        // blocking MainActor work (wallet creation FFI on both networks, plus
+        // the other network's SDK build), and without this phase the app
+        // looked frozen until the post-add switch finally raised the window.
+        WalletLifecycleOverlayPresenter.shared.ensureActive()
+        let state = WalletLifecycleTransitionState.shared
+        guard state.tryBegin(.addingWallet(isImport: isImported)) else {
+            errorMessage = SwiftDashSDKWalletRuntime.SwitchError.switchInProgress.localizedDescription
+            return nil
+        }
+        // Give UIKit one runloop turn to commit the overlay window before the
+        // blocking provisioning starts (the Obj-C wipe's 0.1 s dispatch_after
+        // trick): the phase-apply Task was already enqueued by the sink, and
+        // both it and the CoreAnimation commit run while this sleeps.
+        try? await Task.sleep(for: .milliseconds(100))
+
+        let opID = String(UUID().uuidString.prefix(8))
+        let started = CFAbsoluteTimeGetCurrent()
+        DWLogger.log("🔁 WALLETOP [\(opID)] add begin import=\(isImported)")
+
         let result: SwiftDashSDKHost.AddWalletResult
         do {
             result = try await SwiftDashSDKHost.shared.addWallet(
                 mnemonic: normalized,
                 isImported: isImported)
         } catch {
+            // The ONE exit where a forgotten finish() would strand the
+            // blocking overlay with no owner.
+            state.finish()
+            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+            DWLogger.log("🔁 WALLETOP [\(opID)] add FAILED after \(ms)ms: \(error.localizedDescription)")
             Self.logger.error("addWallet failed: \(String(describing: error), privacy: .public)")
             errorMessage = error.localizedDescription
             return nil
         }
+        let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+        DWLogger.log("🔁 WALLETOP [\(opID)] add done in \(ms)ms")
 
         switch result {
         case .alreadyExists(let walletId):
+            state.finish()
             return .alreadyOnDevice(walletId: walletId)
         case .added(let walletId):
             switchInProgress = true
             do {
+                // Admitted from `.addingWallet` by the composite rule — the
+                // window advances Creating → Switching without dropping
+                // through idle; from here the helper owns finish/fail.
                 try await Self.gatedSwitchWallet(
                     targetId: walletId,
                     targetName: Self.displayName(for: walletId))
             } catch {
                 switchInProgress = false
+                // Defense in depth: a rejected admission (throws BEFORE any
+                // fail-phase is set) must not strand `.addingWallet`; a real
+                // switch failure has already moved to `.failedWalletSwitch`,
+                // which this deliberately leaves alone.
+                if case .addingWallet = state.phase {
+                    state.finish()
+                }
                 Self.logger.error("post-add switch failed: \(String(describing: error), privacy: .public)")
                 // The wallet was added but the switch failed; leave it on
                 // device — the overlay's blocking card owns recovery (Retry /
