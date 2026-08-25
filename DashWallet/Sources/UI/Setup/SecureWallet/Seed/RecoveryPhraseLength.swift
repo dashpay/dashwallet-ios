@@ -74,7 +74,7 @@ struct RecoveryPhraseLengthPicker: View {
             .pickerStyle(.segmented)
 
             Text(NSLocalizedString(
-                "12 words is the standard. 24 words is longer to write down and restore, but harder to guess.",
+                "12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break.",
                 comment: "Recovery phrase length"))
                 .font(.system(size: 12))
                 .foregroundColor(.dash.tertiaryText)

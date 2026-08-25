@@ -897,7 +897,7 @@
 "%d votes" = "%d votes";
 
 /* Recovery phrase length */
-"12 words is the standard. 24 words is longer to write down and restore, but harder to guess." = "12 words is the standard. 24 words is longer to write down and restore, but harder to guess.";
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break.";
 
 /* Username marketplace: unresolvable transfer recipient */
 "No identity owns that username." = "No identity owns that username.";
