@@ -228,7 +228,7 @@ class HTTPClient<ResponseType: Codable> {
 ```
 
 ### Image Processing
-**Libraries**: `SDWebImage`, `SDWebImageSwiftUI`, `TOCropViewController`, `CocoaImageHashing`
+**Libraries**: `SDWebImage`, `SDWebImageSwiftUI`, `TOCropViewController`
 
 **SDWebImage Integration:**
 ```swift
@@ -328,35 +328,8 @@ class JWTManager {
 ```
 
 ### Animation and UI
-**Libraries**: `lottie-ios`, `MBProgressHUD`
+**Libraries**: `MBProgressHUD`
 
-**Lottie Integration:**
-```swift
-import Lottie
-
-class AnimatedLoadingView: UIView {
-    private let animationView = LottieAnimationView()
-    
-    func setupAnimation() {
-        if let animation = LottieAnimation.named("loading_animation") {
-            animationView.animation = animation
-            animationView.loopMode = .loop
-            animationView.contentMode = .scaleAspectFit
-            
-            addSubview(animationView)
-            // Setup constraints...
-        }
-    }
-    
-    func startAnimating() {
-        animationView.play()
-    }
-    
-    func stopAnimating() {
-        animationView.stop()
-    }
-}
-```
 
 ## API Integration Patterns
 
