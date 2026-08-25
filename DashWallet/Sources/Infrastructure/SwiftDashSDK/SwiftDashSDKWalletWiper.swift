@@ -325,7 +325,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // deletion, not a full reset (owner decision 2026-08-24). Runs
         // SYNCHRONOUSLY before the runtime teardown below: the cleanup
         // needs the host's manager and model container, which
-        // `handleWalletWiped()` tears down. This body runs on the wipe
+        // `handleWalletWiped(completion:)` tears down. This body runs on the wipe
         // executor's background queue, so the main hop cannot deadlock.
         DispatchQueue.main.sync {
             MainActor.assumeIsolated {
@@ -334,11 +334,31 @@ final class SwiftDashSDKWalletWiper: NSObject {
         }
 
         // Tear down the app-owned runtime now that all wallet material is
-        // gone. This stops BLAST/SPV, drops the host-owned manager/wallet, and
-        // clears published wallet state. We do NOT delete public chain data;
-        // leaving it lets the next wallet on the same device skip an expensive
-        // resync.
-        SwiftDashSDKWalletRuntime.handleWalletWiped()
+        // gone (stops BLAST/SPV, drops the host-owned manager/wallet, clears
+        // published wallet state; public chain data is kept so the next
+        // wallet on this device skips an expensive resync) — and WAIT for
+        // that teardown. Blocking here keeps the wipe executor's queue
+        // occupied until the runtime is really down, so `waitForPendingWipe`
+        // means "data wiped AND runtime torn down": the wipe HUDs stay up
+        // through the teardown, and a wallet created right after their
+        // completion can no longer interleave with a still-queued fullReset.
+        let teardownFinished = DispatchSemaphore(value: 0)
+        SwiftDashSDKWalletRuntime.handleWalletWiped {
+            teardownFinished.signal()
+        }
+        // Defensive off-main check mirroring `deleteWalletsFromSDK`: this
+        // body always runs on the wipe executor's private background queue,
+        // so the wait cannot starve the MainActor that runs the teardown.
+        // On main the wait WOULD deadlock — skip it and log the gap instead
+        // (the data wipe above already succeeded either way).
+        if Thread.isMainThread {
+            logger.error("performWipe unexpectedly on the main thread; not awaiting runtime teardown")
+        } else {
+            let teardownStarted = CFAbsoluteTimeGetCurrent()
+            teardownFinished.wait()
+            let teardownMs = Int((CFAbsoluteTimeGetCurrent() - teardownStarted) * 1000)
+            DWLogger.log("🧹 WIPE runtime teardown awaited \(teardownMs)ms")
+        }
         return true
     }
 

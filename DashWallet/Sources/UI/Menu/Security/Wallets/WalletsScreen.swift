@@ -128,9 +128,10 @@ struct WalletsScreen: View {
                 Spacer(minLength: 0)
             }
 
-            if viewModel.switchInProgress || viewModel.removeInProgress {
-                progressOverlay
-            }
+            // Switch/remove progress renders in the app-wide lifecycle
+            // overlay window (WalletLifecycleOverlayPresenter), which
+            // survives the tab rebuild that destroys this screen mid-flow —
+            // a screen-local overlay could not.
         }
         .navigationBarHidden(true)
         .onAppear { viewModel.reload() }
@@ -254,26 +255,6 @@ struct WalletsScreen: View {
             .padding(.horizontal, 20)
             .padding(.top, 30)
             .padding(.bottom, 10)
-        }
-    }
-
-    private var progressOverlay: some View {
-        ZStack {
-            Color.dash.backgroundOverlay.ignoresSafeArea()
-            VStack(spacing: 14) {
-                // Fully qualified: the app has a UIKit `ProgressView: UIView`
-                // that otherwise shadows SwiftUI's.
-                SwiftUI.ProgressView()
-                    .tint(Color.dash.whiteText)
-                Text(viewModel.removeInProgress
-                    ? NSLocalizedString("Removing wallet…", comment: "Wallets")
-                    : NSLocalizedString("Switching wallet…", comment: "Wallets"))
-                    .font(.subheadline)
-                    .foregroundColor(Color.dash.whiteText)
-            }
-            .padding(24)
-            .background(Color.dash.backgroundOverlay)
-            .cornerRadius(14)
         }
     }
 

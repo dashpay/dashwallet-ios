@@ -186,7 +186,10 @@ NS_ASSUME_NONNULL_BEGIN
                                                            NSString *progressMessage = isSupportWipe
                                                                                            ? NSLocalizedString(@"Deleting All Wallets…", nil)
                                                                                            : NSLocalizedString(@"Deleting Wallet…", nil);
-                                                           [self.view dw_showProgressHUDWithMessage:progressMessage];
+                                                           // Blocking progress renders in the app-wide lifecycle
+                                                           // overlay window (shared with network/wallet switches),
+                                                           // not a screen-local HUD.
+                                                           [DWWalletLifecycleOverlayBridge beginWipingWithTitle:progressMessage];
                                                            [self.model wipeWallet];
                                                            __weak typeof(self) weakSelf = self;
                                                            [DWSwiftDashSDKWalletWiper
@@ -195,7 +198,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                                    if (strongSelf == nil) {
                                                                        return;
                                                                    }
-                                                                   [strongSelf.view dw_hideProgressHUD];
+                                                                   [DWWalletLifecycleOverlayBridge finishWiping];
                                                                    if (wipeSucceeded) {
                                                                        [strongSelf.delegate recoverViewControllerDidWipe:strongSelf];
                                                                        return;
@@ -214,16 +217,16 @@ NS_ASSUME_NONNULL_BEGIN
                                                                                                         preferredStyle:UIAlertControllerStyleAlert];
                                                                        [failureAlert addAction:
                                                                                          [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil)
-                                                                                                                   style:UIAlertActionStyleCancel
-                                                                                                                 handler:^(UIAlertAction *action) {
-                                                                                                                     [strongSelf.contentView activateTextView];
-                                                                                                                 }]];
+                                                                                                                  style:UIAlertActionStyleCancel
+                                                                                                                handler:^(UIAlertAction *action) {
+                                                                                                                    [strongSelf.contentView activateTextView];
+                                                                                                                }]];
                                                                        [failureAlert addAction:
                                                                                          [UIAlertAction actionWithTitle:NSLocalizedString(@"Retry", nil)
-                                                                                                                   style:UIAlertActionStyleDefault
-                                                                                                                 handler:^(UIAlertAction *action) {
-                                                                                                                     [strongSelf recoverContentViewPerformWipe:view];
-                                                                                                                 }]];
+                                                                                                                  style:UIAlertActionStyleDefault
+                                                                                                                handler:^(UIAlertAction *action) {
+                                                                                                                    [strongSelf recoverContentViewPerformWipe:view];
+                                                                                                                }]];
                                                                        [strongSelf presentViewController:failureAlert animated:YES completion:nil];
                                                                        return;
                                                                    }

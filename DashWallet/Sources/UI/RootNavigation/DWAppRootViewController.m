@@ -384,12 +384,14 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     [self.model.homeModel walletDidWipe];
     _mainController = nil;
 
-    [setupController.view dw_showProgressHUDWithMessage:NSLocalizedString(@"Deleting All Wallets…", nil)];
+    // Blocking progress renders in the app-wide lifecycle overlay window
+    // (shared with network/wallet switches), not a screen-local HUD.
+    [DWWalletLifecycleOverlayBridge beginWipingWithTitle:nil];
 
     __weak typeof(self) weakSelf = self;
     // The SDK delete is synchronous on MainActor. Let UIKit commit the setup
-    // screen and HUD first; otherwise the first visible frame is only drawn
-    // after the blocking deletion has already finished.
+    // screen and the overlay first; otherwise the first visible frame is only
+    // drawn after the blocking deletion has already finished.
     dispatch_time_t startTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC));
     dispatch_after(startTime, dispatch_get_main_queue(), ^{
         typeof(self) strongSelf = weakSelf;
@@ -403,7 +405,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             if (completedSelf == nil) {
                 return;
             }
-            [setupController.view dw_hideProgressHUD];
+            [DWWalletLifecycleOverlayBridge finishWiping];
             completedSelf.walletWipeInProgress = NO;
             if (!wipeSucceeded) {
                 [completedSelf presentWalletWipeFailureForAuthorization:authorization];

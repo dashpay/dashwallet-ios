@@ -117,9 +117,20 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         dispatchOnPipeline { shared.enqueueRefresh(trigger: .walletMaterialChanged) }
     }
 
-    @objc(handleWalletWiped)
-    nonisolated static func handleWalletWiped() {
-        dispatchOnPipeline { shared.enqueueFullReset(lastError: nil, forWipe: true) }
+    /// Tear down the runtime after a completed wipe and report when that
+    /// teardown has actually finished: `completion` fires (on the MainActor)
+    /// only after the enqueued `fullReset(forWipe: true)` — BLAST stop, SPV
+    /// stop, cleared wallet state, and the host's native shutdown — has
+    /// returned. The wiper blocks its serial queue on this completion, so
+    /// `waitForPendingWipe`'s barrier means "data wiped AND runtime torn
+    /// down", not "teardown merely scheduled".
+    nonisolated static func handleWalletWiped(completion: @escaping @Sendable () -> Void) {
+        dispatchOnPipeline {
+            shared.enqueue {
+                await shared.fullReset(lastError: nil, forWipe: true)
+                completion()
+            }
+        }
     }
 
     /// Rebuild the shared runtime through the same serialized lifecycle used
@@ -167,19 +178,22 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     @MainActor
     func switchNetwork(to kind: WalletEnvironment.NetworkKind) async throws {
         guard kind != .devnet else { throw SwitchError.unsupportedNetwork }
-        if case .switching = NetworkTransitionState.shared.phase {
-            throw SwitchError.switchInProgress
-        }
         let targetNetwork: Network = kind == .mainnet ? .mainnet : .testnet
+        // No-op check stays BEFORE the admission gate (read-only, never
+        // consumes the gate); the gate itself rejects when ANY interactive
+        // lifecycle operation — network switch, wallet switch, or removal —
+        // is in flight, replacing the old network-only `.switching` guard.
         if WalletEnvironment.networkKind == kind, isRuntimeReady(for: targetNetwork) {
             Self.logger.info("🧭 RUNTIME :: switchNetwork — already on \(String(describing: kind), privacy: .public) with a ready runtime; no-op")
             return
         }
 
-        let transitionID = String(UUID().uuidString.prefix(8))
         let from = WalletEnvironment.networkKind
+        guard WalletLifecycleTransitionState.shared.tryBegin(.switchingNetwork(from: from, to: kind)) else {
+            throw SwitchError.switchInProgress
+        }
+        let transitionID = String(UUID().uuidString.prefix(8))
         let started = CFAbsoluteTimeGetCurrent()
-        NetworkTransitionState.shared.begin(from: from, to: kind)
         // Thread stamp deliberately absent: this method is MainActor-bound
         // (always main); the off-main proof for the blocking teardown is the
         // shutdown metrics' `ranOffMainThread` in the HOST shutdown line.
@@ -204,12 +218,12 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
         let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
         if isRuntimeReady(for: targetNetwork) {
-            NetworkTransitionState.shared.finish()
+            WalletLifecycleTransitionState.shared.finish()
             DWLogger.log("🔀 NETSWITCH [\(transitionID)] ready in \(ms)ms")
         } else {
             let detail = SwiftDashSDKSPVCoordinator.shared.lastError
                 ?? PlatformAddressSyncCoordinator.shared.lastError
-            NetworkTransitionState.shared.fail(target: kind, message: detail)
+            WalletLifecycleTransitionState.shared.fail(.failedNetworkSwitch(target: kind, message: detail))
             DWLogger.log("🔀 NETSWITCH [\(transitionID)] FAILED after \(ms)ms: \(detail ?? "runtime did not become ready")")
             throw SwitchError.startFailed(detail)
         }
@@ -605,8 +619,9 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         /// The stop/clear/load/start sequence ran but the host did not bind the
         /// requested wallet (e.g. its rows failed to load).
         case bindFailed
-        /// A network switch is already in flight; the transition state
-        /// machine admits one at a time.
+        /// Another interactive lifecycle operation (network switch, wallet
+        /// switch, or removal) already holds the admission gate; the
+        /// transition state machine admits one at a time.
         case switchInProgress
         /// The switch's teardown+rebuild ran but the destination runtime did
         /// not come up ready; carries the coordinators' last error when one
@@ -622,7 +637,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             case .bindFailed:
                 return "Switching wallet failed: the new wallet could not be loaded."
             case .switchInProgress:
-                return "A network switch is already in progress."
+                return "Another wallet operation is already in progress."
             case .startFailed(let detail):
                 let base = "Switching networks failed: the runtime did not start."
                 guard let detail, !detail.isEmpty else { return base }
@@ -632,43 +647,113 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     }
 }
 
-// MARK: - Network transition state
+// MARK: - Wallet lifecycle transition state
 
-/// Central published state of an interactive network switch, driven solely by
-/// `SwiftDashSDKWalletRuntime.switchNetwork(to:)`. The full-screen switch
-/// overlay observes it; wallet operations are hard-blocked independently (the
-/// old manager's handle is taken at shutdown, so every FFI entry fails fast
-/// until the new runtime binds).
+/// Central published state of an interactive wallet-lifecycle operation —
+/// a network switch, a runtime wallet switch, or a per-wallet removal. Two
+/// explicit roles, and deliberately nothing more:
 ///
-/// Non-interactive network writers (recovery, sole-network selection) do not
-/// set `.switching` — deliberately, matching their pre-existing silent
-/// behavior.
+/// 1. **Presentation**: `phase` drives the app-wide blocking overlay
+///    (`WalletLifecycleOverlayPresenter`), hosted in its own UIWindow so it
+///    survives the root/tab rebuilds these operations trigger.
+/// 2. **Admission gate for INTERACTIVE operations**: `tryBegin` is an atomic
+///    MainActor check-and-set — every interactive entry point calls it
+///    synchronously (no suspension between check and set), so at most one
+///    interactive operation is admitted at a time.
+///
+/// What this type does NOT do: it does not serialize execution — the
+/// runtime's `SerialAsyncLifecycleQueue` and the wiper's
+/// `WalletWipeSerialExecutor` own that — and non-interactive network writers
+/// (reinstall recovery, sole-network selection) bypass it entirely, matching
+/// their pre-existing silent behavior.
 @MainActor
-final class NetworkTransitionState: ObservableObject {
+final class WalletLifecycleTransitionState: ObservableObject {
     enum Phase: Equatable {
         case idle
-        case switching(from: WalletEnvironment.NetworkKind, to: WalletEnvironment.NetworkKind)
-        /// The switch failed after the old runtime was already torn down —
-        /// the app may have no working manager, so the overlay stays up,
-        /// blocking, offering Retry toward `target`.
-        case failed(target: WalletEnvironment.NetworkKind, message: String?)
+        case switchingNetwork(from: WalletEnvironment.NetworkKind, to: WalletEnvironment.NetworkKind)
+        /// The network switch failed after the old runtime was already torn
+        /// down — the app may have no working manager, so the overlay stays
+        /// up, blocking, offering Retry toward `target`.
+        case failedNetworkSwitch(target: WalletEnvironment.NetworkKind, message: String?)
+        /// Runtime wallet switch in flight (same network: stop → rebind →
+        /// start). `targetName` is display-only.
+        case switchingWallet(targetName: String?)
+        /// Per-wallet removal in flight (`deleteLogicalWallet`).
+        case removingWallet
+        /// The wallet switch failed. The previous wallet is NOT guaranteed
+        /// active afterwards (the registry is repointed before the rebuild
+        /// and the host may have bound a fallback wallet), so the card
+        /// blocks, offering Retry toward `targetId` and Switch Back toward
+        /// `previousId`.
+        case failedWalletSwitch(targetId: Data, targetName: String?, previousId: Data?, message: String?)
+        /// A removal failed with the runtime alive — dismissable (OK → idle);
+        /// the wiper leaves wallet state retryable by design.
+        case failedWalletRemoval(message: String?)
+        /// A full wallet wipe in flight — until the wiper's barrier reports
+        /// data deleted AND runtime torn down. Owned by the Obj-C wipe flows
+        /// (`DWAppRootViewController` Delete All, `DWRecoverViewController`
+        /// phrase-authorized wipe) through `WalletLifecycleOverlayBridge`;
+        /// `title` is the flow's progress copy ("Deleting All Wallets…" /
+        /// "Deleting Wallet…"). Failure alerts stay UIKit (shown after
+        /// `finish()`), so there is no failed-wipe phase.
+        case wiping(title: String?)
+
+        /// Compact form for gate/telemetry log lines (no wallet ids beyond
+        /// what the operation logs themselves already include).
+        var logLabel: String {
+            switch self {
+            case .idle: return "idle"
+            case .switchingNetwork(_, let to): return "switchingNetwork(\(to))"
+            case .failedNetworkSwitch(let target, _): return "failedNetworkSwitch(\(target))"
+            case .switchingWallet: return "switchingWallet"
+            case .removingWallet: return "removingWallet"
+            case .failedWalletSwitch: return "failedWalletSwitch"
+            case .failedWalletRemoval: return "failedWalletRemoval"
+            case .wiping: return "wiping"
+            }
+        }
     }
 
-    static let shared = NetworkTransitionState()
+    static let shared = WalletLifecycleTransitionState()
 
     @Published private(set) var phase: Phase = .idle
 
     private init() {}
 
-    func begin(from: WalletEnvironment.NetworkKind, to: WalletEnvironment.NetworkKind) {
-        phase = .switching(from: from, to: to)
+    /// Atomically admit `next` as the active operation. Admission rules: any
+    /// operation may begin from `.idle`; a network switch may also begin from
+    /// `.failedNetworkSwitch` (the failure card's Retry); a wallet switch may
+    /// also begin from `.failedWalletSwitch` (Retry / Switch Back). Every
+    /// other combination is rejected and the caller surfaces or logs it.
+    func tryBegin(_ next: Phase) -> Bool {
+        switch (phase, next) {
+        case (.idle, .switchingNetwork),
+             (.idle, .switchingWallet),
+             (.idle, .removingWallet),
+             (.idle, .wiping),
+             (.failedNetworkSwitch, .switchingNetwork),
+             (.failedWalletSwitch, .switchingWallet):
+            phase = next
+            return true
+        default:
+            DWLogger.log("🚦 LIFECYCLE tryBegin rejected: phase=\(phase.logLabel) next=\(next.logLabel)")
+            return false
+        }
+    }
+
+    /// Move a busy operation to its next in-flight phase (wallet switch →
+    /// removal) WITHOUT passing through `.idle`, so the overlay window never
+    /// flickers down mid-operation.
+    func advance(to next: Phase) {
+        assert(phase != .idle, "advance(to:) requires an operation in flight")
+        phase = next
     }
 
     func finish() {
         phase = .idle
     }
 
-    func fail(target: WalletEnvironment.NetworkKind, message: String?) {
-        phase = .failed(target: target, message: message)
+    func fail(_ failure: Phase) {
+        phase = failure
     }
 }

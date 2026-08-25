@@ -40,12 +40,12 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
             break
         case .switchToTestnet:
             Task { @MainActor in
-                NetworkSwitchOverlayPresenter.shared.ensureActive()
+                WalletLifecycleOverlayPresenter.shared.ensureActive()
                 try? await SwiftDashSDKWalletRuntime.shared.switchNetwork(to: .testnet)
             }
         case .switchToMainnet:
             Task { @MainActor in
-                NetworkSwitchOverlayPresenter.shared.ensureActive()
+                WalletLifecycleOverlayPresenter.shared.ensureActive()
                 try? await SwiftDashSDKWalletRuntime.shared.switchNetwork(to: .mainnet)
             }
         case .reportAnIssue:

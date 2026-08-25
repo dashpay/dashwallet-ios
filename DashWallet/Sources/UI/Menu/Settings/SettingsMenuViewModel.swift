@@ -204,7 +204,7 @@ class SettingsMenuViewModel: ObservableObject {
     /// failure leaves the overlay in its `.failed` phase (Retry lives there),
     /// so this only reports the outcome to the settings screen.
     private func switchNetwork(to kind: WalletEnvironment.NetworkKind) async -> Bool {
-        NetworkSwitchOverlayPresenter.shared.ensureActive()
+        WalletLifecycleOverlayPresenter.shared.ensureActive()
         do {
             try await SwiftDashSDKWalletRuntime.shared.switchNetwork(to: kind)
             return true
