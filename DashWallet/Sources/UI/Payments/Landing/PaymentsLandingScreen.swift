@@ -130,24 +130,6 @@ struct PaymentsLandingScreen: View {
         showsHeader || isPickerMode
     }
 
-    /// What fills the bottom safe area, under the home indicator — and only
-    /// that strip. The screen's own background is `primaryBackground` on every
-    /// tab; this sits behind it and is visible nowhere else.
-    ///
-    /// The keypad already runs its own panel down into that strip, but the tab
-    /// content is inside a `clipped()` ZStack — the clip is what keeps the two
-    /// tabs from drawing over each other mid-slide, and it cuts that overflow
-    /// off with everything else. Painting it here instead costs nothing: a
-    /// background does not take part in layout, and this sits outside the clip.
-    ///
-    /// It went unnoticed until the tab bar was hidden, because the bar was
-    /// standing in that strip.
-    private var bottomFill: Color {
-        viewModel.activeTab == .internalTransfer
-            ? Color.dash.secondaryBackground
-            : Color.dash.primaryBackground
-    }
-
     var body: some View {
         VStack(alignment: .center, spacing: 10) {
             if showsHeader {
@@ -163,31 +145,30 @@ struct PaymentsLandingScreen: View {
                 )
                 .frame(height: 70)
                 // Only where the selector is the top of the screen. With chrome
-                // above it this is a second top margin stacked on the VStack's own
-                // spacing, and the two read as one oversized gap.
+                // above it this is a second top margin stacked on the VStack's
+                // own spacing, and the two read as one oversized gap.
                 .padding(.top, hasTopChrome ? 0 : Layout.selectorTopPadding)
                 .padding(.horizontal, 16)
 
-                // ZStack, not a plain sibling: during the slide both the outgoing
-                // and incoming tab exist, and they have to share one slot instead
-                // of stacking and shoving the layout.
+                // ZStack, not a plain sibling: during the slide both the
+                // outgoing and incoming tab exist, and they have to share one
+                // slot instead of stacking and shoving the layout.
                 ZStack(alignment: .top) {
                     tabContent
                         .id(viewModel.activeTab)
                         .transition(slide)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .clipped()
+                // A mask rather than `clipped()`, and one that reaches into the
+                // bottom safe area. The clip is here to stop the outgoing and
+                // incoming tabs drawing over each other as they slide, which is
+                // a horizontal job; clipping the bottom as well cut off the
+                // keypad panel's own run into that strip, leaving it to end in
+                // mid-air above the home indicator.
+                .mask(Rectangle().ignoresSafeArea(edges: .bottom))
             }
         }
-
-
-        // Two layers, and the order is the point. The first is bounded by the
-        // safe area and covers the screen the same on every tab; the second is
-        // drawn behind it and reaches further, so it shows through only in the
-        // strip under the home indicator that the first cannot reach.
         .background(Color.dash.primaryBackground)
-        .background(bottomFill.ignoresSafeArea(edges: .bottom))
         // Makes the empty area below the card draggable too, so the swipe
         // works on the whole screen rather than only over the content.
         .contentShape(Rectangle())
