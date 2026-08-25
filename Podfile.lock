@@ -4,7 +4,6 @@ PODS:
   - BlueECC (1.2.5)
   - BlueRSA (1.0.200)
   - CloudInAppMessaging (0.1.0)
-  - CocoaImageHashing (1.9.0)
   - CocoaLumberjack (3.7.2):
     - CocoaLumberjack/Core (= 3.7.2)
   - CocoaLumberjack/Core (3.7.2)
@@ -47,7 +46,6 @@ PODS:
   - LoggerAPI (1.9.200):
     - Logging (~> 1.1)
   - Logging (1.4.0)
-  - lottie-ios (4.5.2)
   - MBProgressHUD (1.1.0)
   - MMSegmentSlider (1.0.3)
   - Moya (15.0.0):
@@ -84,14 +82,12 @@ PODS:
 
 DEPENDENCIES:
   - CloudInAppMessaging (= 0.1.0)
-  - CocoaImageHashing (from `https://github.com/ameingast/cocoaimagehashing.git`, commit `ad01eee`)
   - CocoaLumberjack (= 3.7.2)
   - DSDynamicOptions (= 0.1.2)
   - DWAlertController (= 0.2.1)
   - Firebase/DynamicLinks
   - FirebaseStorage (= 8.15.0)
   - KVO-MVVM (= 0.5.6)
-  - lottie-ios (= 4.5.2)
   - MBProgressHUD (= 1.1.0)
   - MMSegmentSlider (from `https://github.com/podkovyrin/MMSegmentSlider`, commit `2d91366`)
   - Moya (~> 15.0)
@@ -126,7 +122,6 @@ SPEC REPOS:
     - KVO-MVVM
     - LoggerAPI
     - Logging
-    - lottie-ios
     - MBProgressHUD
     - Moya
     - nanopb
@@ -141,17 +136,11 @@ SPEC REPOS:
     - UIViewController-KeyboardAdditions
 
 EXTERNAL SOURCES:
-  CocoaImageHashing:
-    :commit: ad01eee
-    :git: https://github.com/ameingast/cocoaimagehashing.git
   MMSegmentSlider:
     :commit: 2d91366
     :git: https://github.com/podkovyrin/MMSegmentSlider
 
 CHECKOUT OPTIONS:
-  CocoaImageHashing:
-    :commit: ad01eee
-    :git: https://github.com/ameingast/cocoaimagehashing.git
   MMSegmentSlider:
     :commit: 2d91366
     :git: https://github.com/podkovyrin/MMSegmentSlider
@@ -162,7 +151,6 @@ SPEC CHECKSUMS:
   BlueECC: 0d18e93347d3ec6d41416de21c1ffa4d4cd3c2cc
   BlueRSA: dfeef51db96bcc4edec654956c1581adbda4e6a3
   CloudInAppMessaging: 5dde21e2e67e173e3803ca7532eacaa77e19d744
-  CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
@@ -178,7 +166,6 @@ SPEC CHECKSUMS:
   KVO-MVVM: 756673a8e837d7f27ff904fe2883e225e261d8ac
   LoggerAPI: ad9c4a6f1e32f518fdb43a1347ac14d765ab5e3d
   Logging: beeb016c9c80cf77042d62e83495816847ef108b
-  lottie-ios: 96784afc26ea031d3e2b6cae342a4b8915072489
   MBProgressHUD: e7baa36a220447d8aeb12769bf0585582f3866d9
   MMSegmentSlider: db7ee0d6eb2eefbd511179195bf288ff2cebac0a
   Moya: 138f0573e53411fb3dc17016add0b748dfbd78ee
@@ -193,6 +180,6 @@ SPEC CHECKSUMS:
   TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: 68169346e88e87af59e69b5ecb632ce884f050a9
+PODFILE CHECKSUM: 84531d88878e65f6868b95dff3cc1ce6aa4b22d8
 
 COCOAPODS: 1.15.2

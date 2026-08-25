@@ -17,13 +17,11 @@ target 'dashwallet' do
   pod 'UIViewController-KeyboardAdditions', '1.2.1'
   pod 'MBProgressHUD', '1.1.0'
   pod 'MMSegmentSlider', :git => 'https://github.com/podkovyrin/MMSegmentSlider', :commit => '2d91366'
-  pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
   pod 'SDWebImage', '5.21.0', :modular_headers => true
   pod 'SDWebImageSwiftUI', '3.1.3', :modular_headers => true
   pod 'Moya', '~> 15.0'
   pod 'SwiftJWT', '3.6.200'
   pod 'TOCropViewController', '2.6.1'
-  pod 'lottie-ios', '4.5.2'
   # Debugging purposes
   #  pod 'Reveal-SDK', :configurations => ['Debug']
   
@@ -46,13 +44,11 @@ target 'dashpay' do
   pod 'UIViewController-KeyboardAdditions', '1.2.1'
   pod 'MBProgressHUD', '1.1.0'
   pod 'MMSegmentSlider', :git => 'https://github.com/podkovyrin/MMSegmentSlider', :commit => '2d91366'
-  pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
   pod 'SDWebImage', '5.21.0', :modular_headers => true
   pod 'SDWebImageSwiftUI', '3.1.3', :modular_headers => true
   pod 'Moya', '~> 15.0'
   pod 'SwiftJWT', '3.6.200'
   pod 'TOCropViewController', '2.6.1'
-  pod 'lottie-ios', '4.5.2'
 
   # Debugging purposes
   #  pod 'Reveal-SDK', :configurations => ['Debug']

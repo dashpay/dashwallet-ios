@@ -729,8 +729,6 @@
 		753261B22CBC157F003CDE00 /* GetStartedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261B12CBC157F003CDE00 /* GetStartedViewController.swift */; };
 		75387B4A2E0400C300BCCC72 /* MerchantDenominations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75387B492E0400C300BCCC72 /* MerchantDenominations.swift */; };
 		75387B4B2E0400C300BCCC72 /* MerchantDenominations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75387B492E0400C300BCCC72 /* MerchantDenominations.swift */; };
-		753CD8792E2E218800BCF070 /* mixing_anim.json in Resources */ = {isa = PBXBuildFile; fileRef = 753CD8782E2E218800BCF070 /* mixing_anim.json */; };
-		753CD87A2E2E218800BCF070 /* mixing_anim.json in Resources */ = {isa = PBXBuildFile; fileRef = 753CD8782E2E218800BCF070 /* mixing_anim.json */; };
 		753E46E82DE1E24300A3FF2A /* CTXSpendModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753E46E72DE1E24300A3FF2A /* CTXSpendModels.swift */; };
 		753E46E92DE1E24300A3FF2A /* CTXSpendModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753E46E72DE1E24300A3FF2A /* CTXSpendModels.swift */; };
 		753F75342DD0D42300D40DFE /* DashSpendPayScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753F75332DD0D41900D40DFE /* DashSpendPayScreen.swift */; };
@@ -2905,7 +2903,6 @@
 		753261AF2CBC11BF003CDE00 /* WelcomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
 		753261B12CBC157F003CDE00 /* GetStartedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetStartedViewController.swift; sourceTree = "<group>"; };
 		75387B492E0400C300BCCC72 /* MerchantDenominations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantDenominations.swift; sourceTree = "<group>"; };
-		753CD8782E2E218800BCF070 /* mixing_anim.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = mixing_anim.json; sourceTree = "<group>"; };
 		753E46E72DE1E24300A3FF2A /* CTXSpendModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTXSpendModels.swift; sourceTree = "<group>"; };
 		753F75332DD0D41900D40DFE /* DashSpendPayScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendPayScreen.swift; sourceTree = "<group>"; };
 		753F75362DD0D75F00D40DFE /* DashSpendPayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendPayViewModel.swift; sourceTree = "<group>"; };
@@ -4503,7 +4500,6 @@
 			children = (
 				2A4430F122CBD57A009BAF7F /* AppAssets.xcassets */,
 				75E83CF51B5F997A0038FB70 /* coinflip.aiff */,
-				753CD8782E2E218800BCF070 /* mixing_anim.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -9020,7 +9016,6 @@
 				5151C8CD2F913BF100F0A604 /* Topper-Info.plist in Resources */,
 				51646C723006263C00BE3070 /* Uphold-Info.plist in Resources */,
 				75E2F3C82AA4CF1900C3B458 /* Topper-Info.plist in Resources */,
-				753CD8792E2E218800BCF070 /* mixing_anim.json in Resources */,
 				2A2CD71822F99CAE008C7BC9 /* ShortcutsView.xib in Resources */,
 				474C7213298A1EFC00475CA6 /* TxDetailInfoCell.xib in Resources */,
 				2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */,
@@ -9134,7 +9129,6 @@
 				5151C8C92F913BF100F0A604 /* Topper-Info.plist in Resources */,
 				C9D2C92F2A320AA000D15901 /* ReceiveContentView.xib in Resources */,
 				C9D2C9302A320AA000D15901 /* VerifySeedPhrase.storyboard in Resources */,
-				753CD87A2E2E218800BCF070 /* mixing_anim.json in Resources */,
 				758CE59D2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */,
 				C9D2C9312A320AA000D15901 /* DWSecurityStatusView.xib in Resources */,
 				C9D2C9332A320AA000D15901 /* SetPin.storyboard in Resources */,
@@ -9357,7 +9351,6 @@
 				"${PODS_CONFIGURATION_BUILD_DIR}/SDWebImageSwiftUI/SDWebImageSwiftUI.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.swift.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/TOCropViewController/TOCropViewControllerBundle.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/lottie-ios/LottiePrivacyInfo.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
@@ -9369,7 +9362,6 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SDWebImageSwiftUI.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SQLite.swift.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/TOCropViewControllerBundle.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/LottiePrivacyInfo.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -9391,7 +9383,6 @@
 				"${PODS_CONFIGURATION_BUILD_DIR}/SDWebImageSwiftUI/SDWebImageSwiftUI.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.swift.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/TOCropViewController/TOCropViewControllerBundle.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/lottie-ios/LottiePrivacyInfo.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
@@ -9403,7 +9394,6 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SDWebImageSwiftUI.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SQLite.swift.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/TOCropViewControllerBundle.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/LottiePrivacyInfo.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -11803,7 +11793,6 @@
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
 					"-l\"CloudInAppMessaging\"",
-					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DWAlertController\"",
 					"-l\"FirebaseCore\"",
@@ -11934,7 +11923,6 @@
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
 					"-l\"CloudInAppMessaging\"",
-					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DWAlertController\"",
 					"-l\"FirebaseCore\"",
@@ -12274,7 +12262,6 @@
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
 					"-l\"CloudInAppMessaging\"",
-					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DWAlertController\"",
 					"-l\"FirebaseCore\"",
@@ -12394,7 +12381,6 @@
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
 					"-l\"CloudInAppMessaging\"",
-					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DWAlertController\"",
 					"-l\"FirebaseCore\"",
@@ -12525,7 +12511,6 @@
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
 					"-l\"CloudInAppMessaging\"",
-					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DWAlertController\"",
 					"-l\"FirebaseCore\"",
@@ -12655,7 +12640,6 @@
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
 					"-l\"CloudInAppMessaging\"",
-					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DWAlertController\"",
 					"-l\"FirebaseCore\"",
@@ -12847,7 +12831,6 @@
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
 					"-l\"CloudInAppMessaging\"",
-					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DWAlertController\"",
 					"-l\"FirebaseCore\"",
@@ -13145,7 +13128,6 @@
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
 					"-l\"CloudInAppMessaging\"",
-					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DWAlertController\"",
 					"-l\"FirebaseCore\"",
