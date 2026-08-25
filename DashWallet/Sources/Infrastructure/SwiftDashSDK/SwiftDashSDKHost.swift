@@ -541,7 +541,7 @@ final class SwiftDashSDKHost {
                     // published runtime, so `managerForStoredWalletOperation`
                     // can never hand back a live manager — but keep the
                     // guard so this call site stays correct if that changes.
-                    let (targetManager, isTemporary) = try managerForStoredWalletOperation(
+                    let (targetManager, isTemporary) = try await managerForStoredWalletOperation(
                         network: targetNetwork)
                     do {
                         _ = try createAndPersist(
@@ -666,7 +666,7 @@ final class SwiftDashSDKHost {
                 targetManager = manager
                 isTemporary = false
             } else {
-                (targetManager, isTemporary) = try managerForStoredWalletOperation(
+                (targetManager, isTemporary) = try await managerForStoredWalletOperation(
                     network: targetNetwork)
             }
             do {
@@ -920,8 +920,8 @@ final class SwiftDashSDKHost {
     /// `await manager.shutdown()` when done), avoiding a second open of the
     /// same SQLite store and leaving the published runtime unchanged until
     /// the wipe commits.
-    func managerForWipe(network: Network) throws -> (manager: PlatformWalletManager, isTemporary: Bool) {
-        try managerForStoredWalletOperation(network: network)
+    func managerForWipe(network: Network) async throws -> (manager: PlatformWalletManager, isTemporary: Bool) {
+        try await managerForStoredWalletOperation(network: network)
     }
 
     /// Returns a manager over the network's persisted store without changing
@@ -931,13 +931,23 @@ final class SwiftDashSDKHost {
     /// after use) or borrowed the live published one (hands off).
     private func managerForStoredWalletOperation(
         network: Network
-    ) throws -> (manager: PlatformWalletManager, isTemporary: Bool) {
+    ) async throws -> (manager: PlatformWalletManager, isTemporary: Bool) {
         if runningNetwork == network, let manager {
             return (manager, false)
         }
 
         let handles = try makeRuntime(for: network)
-        _ = try handles.manager.loadFromPersistor()
+        do {
+            _ = try handles.manager.loadFromPersistor()
+        } catch {
+            // The detached manager is already fully configured; rethrowing
+            // without an explicit shutdown would leave its native teardown to
+            // the fire-and-forget deinit fallback, racing a follow-up rebuild
+            // over the same process-cached ModelContainer — exactly what the
+            // isTemporary ownership contract exists to prevent.
+            await handles.manager.shutdown()
+            throw error
+        }
         return (handles.manager, true)
     }
 

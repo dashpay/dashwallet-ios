@@ -355,7 +355,18 @@ final class SwiftDashSDKWalletWiper: NSObject {
             logger.error("performWipe unexpectedly on the main thread; not awaiting runtime teardown")
         } else {
             let teardownStarted = CFAbsoluteTimeGetCurrent()
-            teardownFinished.wait()
+            // Bounded wait: the worst legitimate case is a wedged native
+            // teardown (~45 s of Rust join budgets) queued behind a stalled
+            // start (~45 s of SDK/DAPI budgets); anything past this deadline
+            // is a hang, not a slow path. On expiry give up on WAITING — the
+            // teardown itself stays queued and still runs — and report
+            // failure rather than success, so no caller treats the wipe as
+            // complete while `fullReset` is unfinished (the wipe body is
+            // idempotent; a Retry re-enters this barrier behind it).
+            if teardownFinished.wait(timeout: .now() + .seconds(180)) == .timedOut {
+                logger.error("runtime teardown did not finish within 180s; reporting wipe failure while it completes in the background")
+                return false
+            }
             let teardownMs = Int((CFAbsoluteTimeGetCurrent() - teardownStarted) * 1000)
             DWLogger.log("🧹 WIPE runtime teardown awaited \(teardownMs)ms")
         }
@@ -422,7 +433,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
 
             for network in networks {
                 do {
-                    let (manager, isTemporary) = try host.managerForWipe(network: network)
+                    let (manager, isTemporary) = try await host.managerForWipe(network: network)
                     var walletIds = Set(manager.wallets.keys)
                     walletIds.formUnion(storedWalletIdsByNetwork[network] ?? [])
 
@@ -542,7 +553,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         do {
             for network in networks {
                 guard let walletId = walletIds[network] else { continue }
-                let (manager, isTemporary) = try host.managerForWipe(network: network)
+                let (manager, isTemporary) = try await host.managerForWipe(network: network)
                 if storedWalletIds.contains(walletId) || manager.wallets[walletId] != nil {
                     deletions.append(PendingDeletion(
                         network: network,
