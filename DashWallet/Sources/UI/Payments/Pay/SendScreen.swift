@@ -416,6 +416,8 @@ struct ExternalSendAmountScreen: View {
                     dashDuffs: viewModel.dashDuffs,
                     creditsAmount: viewModel.creditsPreview,
                     fiatText: viewModel.fiatAmountString,
+                    networkFeeCredits: viewModel.confirmNetworkFeeCredits,
+                    totalDuffs: viewModel.confirmTotalDuffs,
                     withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
                     isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
                     isFullShieldedSweep: viewModel.isFullShieldedSweep,
@@ -716,6 +718,13 @@ struct SendConfirmSheet: View {
     let dashDuffs: Int64
     let creditsAmount: UInt64
     let fiatText: String
+    /// Route fee estimate (credits) for the Network fee row, computed by
+    /// `SendViewModel.confirmNetworkFeeCredits`. `nil` → the row shows "—".
+    let networkFeeCredits: UInt64?
+    /// What actually leaves the source balance (duffs) for the Total row,
+    /// computed by `SendViewModel.confirmTotalDuffs`. `nil` → the row
+    /// shows "—".
+    let totalDuffs: Int64?
     /// Preflighted withdrawal fee — only meaningful for `.platformToCore`.
     var withdrawalFeeCredits: UInt64? = nil
     var isFullPlatformWithdrawal: Bool = false
@@ -925,60 +934,19 @@ struct SendConfirmSheet: View {
     /// Platform credits per DASH (1e11).
     private static let creditsPerDash: Decimal = 100_000_000_000
 
-    /// Flat fee estimate (credits) for the active route — same estimators as
-    /// the internal transfer's confirm sheet. `nil` → the row shows "—".
-    private var networkFeeCredits: UInt64? {
-        switch route {
-        case .coreToShielded:
-            // The lock charges the fee rounded UP to a whole duff — display
-            // that, so Amount + Network fee equals Total exactly.
-            return CoreToShieldedAmountPolicy.currentPoolFeeDuffs.map { $0 * 1000 }
-        case .platformToPlatform:
-            // Credit transfer: the metered transition fee. The executor
-            // states ~0.001 DASH as the conservative max.
-            return 100_000_000
-        case .platformToCore:
-            return withdrawalFeeCredits
-        case .platformToShielded:
-            // The Type 15 shield is an output-only bundle padded to exactly
-            // 2 actions, charged the flat base fee — same number the Rust
-            // side reserves on input 0.
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
-        case .shieldedToCore:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .withdrawal, numActions: 2)
-        case .shieldedToPlatform:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 2)
-        case .shieldedToShielded:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
-        case .coreToCore:
-            // Never presented here — the L1 processor shows the real fee.
-            return nil
-        }
-    }
-
+    /// The view-model-computed fee estimate as fiat (e.g. "~ $0.08"), or "—"
+    /// if unavailable.
     private var networkFeeString: String {
         guard let credits = networkFeeCredits else { return "—" }
         let dash = Decimal(credits) / Self.creditsPerDash
         return "~ " + CurrencyExchanger.shared.fiatAmountString(for: dash)
     }
 
-    /// What actually leaves the source balance. Core→Shielded charges the
-    /// pool fee on top of the amount (the executed lock value); every other
-    /// route's total is the amount itself. "—" when the fee estimate is
-    /// unavailable — `canContinue` fails closed before that can be confirmed,
-    /// but the row must never show the un-inflated number.
+    /// The view-model-computed total as DASH, or "—" when the fee estimate
+    /// backing it is unavailable.
     private var totalString: String {
-        guard route == .coreToShielded else {
-            return dashDuffs.formattedDashAmount
-        }
-        guard let amountDuffs = UInt64(exactly: dashDuffs),
-              let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
-              let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
-                  forAmountDuffs: amountDuffs,
-                  poolFeeCredits: poolFeeCredits),
-              let signedLockDuffs = Int64(exactly: lockDuffs)
-        else { return "—" }
-        return signedLockDuffs.formattedDashAmount
+        guard let totalDuffs else { return "—" }
+        return totalDuffs.formattedDashAmount
     }
 
     // MARK: - Info card

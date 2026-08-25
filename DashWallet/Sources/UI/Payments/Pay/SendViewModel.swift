@@ -819,6 +819,58 @@ final class SendViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Confirm sheet fee display
+
+    /// Flat network-fee estimate (credits) for the active route — feeds the
+    /// confirm sheet's Network fee row, same estimators as the internal
+    /// transfer's confirm sheet. `nil` → the row shows "—".
+    var confirmNetworkFeeCredits: UInt64? {
+        switch route {
+        case .coreToShielded:
+            // The lock charges the fee rounded UP to a whole duff — display
+            // that, so Amount + Network fee equals Total exactly.
+            return CoreToShieldedAmountPolicy.currentPoolFeeDuffs.map { $0 * 1000 }
+        case .platformToPlatform:
+            // Credit transfer: the metered transition fee. The executor
+            // states ~0.001 DASH as the conservative max.
+            return Self.platformTransferFeeReserveCredits
+        case .platformToCore:
+            // The exact transition fee the preflight nets out of the payout.
+            return withdrawalPreflight?.estimatedFee
+        case .platformToShielded:
+            // The Type 15 shield is an output-only bundle padded to exactly
+            // 2 actions, charged the flat base fee — same number the Rust
+            // side reserves on input 0.
+            return try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
+        case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
+            // Two-action estimate — the common bundle shape. Worst-case note
+            // selection stays `feeReserveCredits`'s concern.
+            guard let feeKind = shieldedFeeKind(for: route) else { return nil }
+            return try? PlatformWalletManager.estimateShieldedFee(kind: feeKind, numActions: 2)
+        case .coreToCore, nil:
+            // Never presented in the confirm sheet — Core → Core rides the L1
+            // payment processor, which shows the real fee.
+            return nil
+        }
+    }
+
+    /// What actually leaves the source balance (duffs) — feeds the confirm
+    /// sheet's Total row. Core → Shielded charges the pool fee on top of the
+    /// amount (the executed lock value); every other route's total is the
+    /// amount itself. `nil` when the fee estimate is unavailable —
+    /// `canContinue` fails closed before that can be confirmed, but the row
+    /// must never show the un-inflated number.
+    var confirmTotalDuffs: Int64? {
+        guard route == .coreToShielded else { return dashDuffs }
+        guard let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
+              let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
+                  forAmountDuffs: dashDuffsUnsigned,
+                  poolFeeCredits: poolFeeCredits),
+              let signedLockDuffs = Int64(exactly: lockDuffs)
+        else { return nil }
+        return signedLockDuffs
+    }
+
     // MARK: - Max
 
     /// Source-aware Max fill — same envelopes as the internal transfer.
