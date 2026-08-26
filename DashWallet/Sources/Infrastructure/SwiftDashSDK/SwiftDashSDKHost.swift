@@ -677,8 +677,13 @@ final class SwiftDashSDKHost {
                 targetManager = manager
                 isTemporary = false
             } else {
+                // Wall-clock only (this line always runs on the MainActor);
+                // per-stage thread attribution lives in the stage 1-4 logs.
+                let prepStarted = CFAbsoluteTimeGetCurrent()
                 (targetManager, isTemporary) = try await managerForStoredWalletOperation(
                     network: targetNetwork)
+                let prepMs = Int((CFAbsoluteTimeGetCurrent() - prepStarted) * 1000)
+                DWLogger.log("HOST mirror-prep for \(targetNetwork.rawValue) total \(prepMs)ms")
             }
             do {
                 _ = try await createAndPersist(
@@ -930,11 +935,18 @@ final class SwiftDashSDKHost {
         let container: ModelContainer
         do {
             Self.logger.info("🪺 HOST :: stage 2/4 obtaining ModelContainer for \(network.rawValue, privacy: .public)")
+            // Timed for the same reason as stage 1: main-thread work whose
+            // real cost decides whether it ever needs to move off-main. The
+            // cached (reused) path should be ~0ms; only the first build of a
+            // network's container in the process pays the store-open cost.
+            let started = CFAbsoluteTimeGetCurrent()
             let cached = try modelContainerCache.value(for: network.networkName) {
                 try buildModelContainer(for: network)
             }
+            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
             container = cached.value
             Self.logger.info("🪺 HOST :: stage 2/4 ModelContainer \(cached.reused ? "reused" : "created", privacy: .public) for \(network.rawValue, privacy: .public)")
+            DWLogger.log("HOST stage 2/4 ModelContainer \(cached.reused ? "reused" : "created") for \(network.rawValue) in \(ms)ms")
         } catch {
             Self.logger.error("🪺 HOST :: ModelContainer build failed: \(String(describing: error), privacy: .public)")
             throw HostError.modelContainerFailed(error)
@@ -943,9 +955,11 @@ final class SwiftDashSDKHost {
         let newManager = PlatformWalletManager()
         do {
             Self.logger.info("🪺 HOST :: stage 3/4 configuring manager for \(network.rawValue, privacy: .public)")
+            let started = CFAbsoluteTimeGetCurrent()
             try newManager.configure(sdk: newSDK, modelContainer: container)
+            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
             Self.logger.info("🪺 HOST :: stage 3/4 manager configured for \(network.rawValue, privacy: .public)")
-            DWLogger.log("HOST stage 3/4 manager configured for \(network.rawValue)")
+            DWLogger.log("HOST stage 3/4 manager configured for \(network.rawValue) in \(ms)ms")
         } catch {
             Self.logger.error("🪺 HOST :: configure failed: \(String(describing: error), privacy: .public)")
             throw HostError.configureFailed(error)
@@ -985,7 +999,13 @@ final class SwiftDashSDKHost {
 
         let handles = try makeRuntime(for: network)
         do {
-            _ = try handles.manager.loadFromPersistor()
+            // Stage 4 of the detached-manager bootstrap: cost scales with the
+            // number of persisted wallets on `network` (bulk FFI + per-wallet
+            // FFI + keychain unlock), all currently on the main thread.
+            let started = CFAbsoluteTimeGetCurrent()
+            let restored = try handles.manager.loadFromPersistor()
+            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+            DWLogger.log("HOST stage 4/4 loadFromPersistor for \(network.rawValue) restored=\(restored.count) in \(ms)ms")
         } catch {
             // The detached manager is already fully configured; rethrowing
             // without an explicit shutdown would leave its native teardown to
@@ -1002,7 +1022,10 @@ final class SwiftDashSDKHost {
         manager: PlatformWalletManager,
         network: Network
     ) throws -> ManagedPlatformWallet {
+        let loadStarted = CFAbsoluteTimeGetCurrent()
         let restored = try manager.loadFromPersistor()
+        let loadMs = Int((CFAbsoluteTimeGetCurrent() - loadStarted) * 1000)
+        DWLogger.log("HOST stage 4/4 loadFromPersistor for \(network.rawValue) restored=\(restored.count) in \(loadMs)ms")
         if let resolved = resolveActiveWallet(in: manager, network: network) {
             Self.logger.info("🪺 HOST :: reusing persisted wallet; restored=\(restored.count, privacy: .public)")
             // Off the load path. `PlatformWalletManager` is `@MainActor`, so
