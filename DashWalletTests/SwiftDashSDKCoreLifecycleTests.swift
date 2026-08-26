@@ -112,6 +112,13 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(events, ["before", "awaitable", "after", "throwing", "tail"])
     }
 
+    func testStallMonitorClassifiesLatenciesAroundTheMicrohangFloor() {
+        XCTAssertNil(MainThreadStallMonitor.stallMilliseconds(forLatency: 0.0001))
+        XCTAssertNil(MainThreadStallMonitor.stallMilliseconds(forLatency: 0.249))
+        XCTAssertEqual(MainThreadStallMonitor.stallMilliseconds(forLatency: 0.25), 250)
+        XCTAssertEqual(MainThreadStallMonitor.stallMilliseconds(forLatency: 1.512), 1512)
+    }
+
     func testProcessCacheReusesValuesPerNetworkAndSeparatesNetworks() {
         final class Token {}
 
