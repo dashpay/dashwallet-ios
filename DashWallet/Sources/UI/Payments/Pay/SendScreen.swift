@@ -651,11 +651,8 @@ private func sourceIconName(_ network: ChainNetwork) -> String {
 }
 
 private func sourceTitle(_ network: ChainNetwork) -> String {
-    switch network {
-    case .core: return NSLocalizedString("Transparent", comment: "Balance breakdown")
-    case .platform: return NSLocalizedString("Platform", comment: "Dash Platform chain")
-    case .shielded: return NSLocalizedString("Shielded", comment: "")
-    }
+    // One source of truth: simple mode calls the Core balance "Dash Wallet".
+    network.balanceName
 }
 
 private func destinationBadge(_ destination: SendViewModel.DestinationKind) -> some View {

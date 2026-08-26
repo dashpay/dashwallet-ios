@@ -337,14 +337,10 @@ final class SendViewModel: ObservableObject {
 
     /// Localized name of the pinned source balance, for the mismatch label.
     var pinnedSourceTitle: String {
-        switch pinnedSource {
-        case .core, nil:
-            return NSLocalizedString("Transparent", comment: "Balance breakdown")
-        case .platform:
-            return NSLocalizedString("Platform", comment: "Dash Platform chain")
-        case .shielded:
-            return NSLocalizedString("Shielded", comment: "")
-        }
+        // `balanceName` rather than a second copy of the same three strings:
+        // simple mode renames the Core balance, and one of these lists would
+        // have been forgotten.
+        (pinnedSource ?? .core).balanceName
     }
 
     private func sourceDidChange() {
