@@ -283,13 +283,11 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
         vc.actionButtonText = viewModel.buyDashButtonText
         let nvc = BaseNavigationController(rootViewController: vc)
 
+        // No auth gate — the Buy & Sell portal is a service picker; auth sits on the
+        // actions that move money inside each integration.
         vc.mainAction = {
-            Task {
-                if await self.viewModel.authenticate() {
-                    let controller = BuySellPortalViewController.controller()
-                    nvc.pushViewController(controller, animated: true)
-                }
-            }
+            let controller = BuySellPortalViewController.controller()
+            nvc.pushViewController(controller, animated: true)
         }
 
         present(nvc, animated: true)

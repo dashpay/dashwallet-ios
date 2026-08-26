@@ -182,6 +182,8 @@ final class TransferAmountViewModel: ObservableObject, TransferAmountViewModelPr
     func transfer() {
         isProcessing = true
         if model.direction == .toCoinbase {
+            // Spends from the wallet, which routes through the standard payment flow —
+            // `WalletSendService` prompts there, so a gate here would double-prompt.
             performLeftoverCheck { [weak self] canProceed in
                 guard canProceed, let self else {
                     self?.isProcessing = false
@@ -190,7 +192,19 @@ final class TransferAmountViewModel: ObservableObject, TransferAmountViewModelPr
                 self.model.initializeTransfer()
             }
         } else {
-            model.initializeTransfer()
+            // Coinbase → wallet moves funds out of the linked account on the stored
+            // OAuth token alone; nothing downstream authenticates it, so gate it here.
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+
+                guard await AuthenticationGate.authenticate(
+                    biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled) == .ok else {
+                    self.isProcessing = false
+                    return
+                }
+
+                self.model.initializeTransfer()
+            }
         }
     }
 

@@ -193,15 +193,9 @@ extension GettingStartedViewController: BackupInfoViewControllerDelegate {
 }
 
 extension GettingStartedViewController {
+    /// No auth gate — the Buy & Sell portal is a service picker; auth sits on the
+    /// actions that move money inside each integration.
     private func buyDash() {
-        Task {
-            if await viewModel.authenticate() {
-                buyDashAuthenticated()
-            }
-        }
-    }
-
-    private func buyDashAuthenticated() {
         let controller = BuySellPortalViewController.controller()
         let navigationController = BaseNavigationController(rootViewController: controller)
         self.navigationController?.present(navigationController, animated: true)

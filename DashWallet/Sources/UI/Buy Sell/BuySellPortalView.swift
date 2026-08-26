@@ -157,7 +157,14 @@ struct BuySellPortalView: View {
         let isConnected = item?.status == .authorized
             && (service == .uphold || service == .coinbase)
 
-        let dashAmount: Int64? = isConnected
+        // The balance privacy toggle covers linked-account balances too, so a user
+        // who hides their wallet balance doesn't have their Coinbase/Uphold holdings
+        // on screen either. Masked rows keep the connected state (no "Link your
+        // account" subtitle) — only the number is withheld.
+        let isMasked = isConnected && model.isBalanceHidden
+        let showsBalance = isConnected && !isMasked
+
+        let dashAmount: Int64? = showsBalance
             ? Int64(item?.dashBalance ?? 0)
             : nil
 
@@ -173,10 +180,21 @@ struct BuySellPortalView: View {
             icon: .custom(service.icon),
             dashAmount: dashAmount,
             showDashAmountDirection: false,
-            overrideFiatAmount: isConnected ? item?.fiatBalanceFormatted : nil,
+            overrideFiatAmount: showsBalance ? item?.fiatBalanceFormatted : nil,
+            trailingView: isMasked ? AnyView(hiddenBalanceBadge) : nil,
             action: action
         )
         .buttonStyle(MenuItemButtonStyle())
+    }
+
+    /// Mirrors the home balance's hidden state (`HomeBalanceView`) so the two
+    /// surfaces read the same when the privacy toggle is on.
+    private var hiddenBalanceBadge: some View {
+        Image(systemName: "eye.slash.fill")
+            .imageScale(.small)
+            .foregroundColor(.dash.secondaryText)
+            .padding(.trailing, 4)
+            .accessibilityLabel(NSLocalizedString("Balance hidden", comment: "Buy Sell Portal"))
     }
 
     // MARK: - Subviews

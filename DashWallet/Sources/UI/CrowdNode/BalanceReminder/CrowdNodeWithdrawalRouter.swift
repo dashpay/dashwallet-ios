@@ -90,13 +90,11 @@ enum CrowdNodeWithdrawalRouter {
         controller.actionButtonText = CrowdNodeModel.shared.buyDashButtonText
 
         let navigationController = BaseNavigationController(rootViewController: controller)
+        // No auth gate — the Buy & Sell portal is a service picker; auth sits on the
+        // actions that move money inside each integration.
         controller.mainAction = { [weak navigationController] in
-            Task {
-                if await CrowdNodeModel.shared.authenticate() {
-                    let buySellController = BuySellPortalViewController.controller()
-                    navigationController?.pushViewController(buySellController, animated: true)
-                }
-            }
+            let buySellController = BuySellPortalViewController.controller()
+            navigationController?.pushViewController(buySellController, animated: true)
         }
 
         presenter.present(navigationController, animated: true)

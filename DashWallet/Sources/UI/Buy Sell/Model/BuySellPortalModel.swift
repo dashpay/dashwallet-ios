@@ -94,6 +94,11 @@ class BuySellPortalModel: ObservableObject, NetworkReachabilityHandling {
 
     @Published var items: [ServiceItem] = []
 
+    /// Mirrors the home-screen balance privacy toggle (`DWGlobalOptions.balanceHidden`,
+    /// read by `BalanceModel`). Linked-account balances in the portal are masked
+    /// whenever the wallet balance is, so one switch covers both surfaces.
+    @Published var isBalanceHidden: Bool = DWGlobalOptions.sharedInstance().balanceHidden
+
     private var upholdDashCard: DWUpholdCardObject?
 
     private var serviceItemDataProvider: ServiceDataProvider
@@ -113,6 +118,7 @@ class BuySellPortalModel: ObservableObject, NetworkReachabilityHandling {
     }
 
     public func refreshData() {
+        isBalanceHidden = DWGlobalOptions.sharedInstance().balanceHidden
         serviceItemDataProvider.refresh()
     }
 

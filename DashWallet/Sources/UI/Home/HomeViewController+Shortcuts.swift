@@ -151,14 +151,12 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         present(navigationController, animated: true, completion: nil)
     }
 
+    /// No auth gate: the portal itself is a service picker. An unlinked account
+    /// renders `.idle` with no balance, and a linked one shows an amount that
+    /// respects the same `balanceHidden` flag as the home balance. Auth now sits
+    /// on the actions that move money (Coinbase order confirm / transfer-out,
+    /// Uphold transfer confirm), not on reaching the screen.
     private func buySellDashAction() {
-        AuthenticationService.shared.authenticate(withPrompt: nil, usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled, alertIfLockout: true) { [weak self] authenticated, usedBiometrics, cancelled in
-            guard authenticated else { return }
-            self?.buySellDashActionAuthenticated()
-        }
-    }
-
-    private func buySellDashActionAuthenticated() {
         let controller = BuySellPortalViewController.controller()
         controller.showCloseButton = true
 

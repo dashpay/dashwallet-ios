@@ -45,6 +45,12 @@ class OrderPreviewViewController: BaseViewController, NetworkReachabilityHandlin
     }()
 
     // MARK: Actions
+
+    /// Placing the order moves real money — a fiat debit on a buy, Dash sold on a
+    /// sell, a swap on a convert — so it takes the same PIN/biometric gate as a
+    /// wallet spend. The gate sits on the confirm rather than on the screen so
+    /// browsing the preview stays free. Inherited by `ConfirmOrderController` and
+    /// `ConvertCryptoOrderPreviewController`, which don't override it.
     @objc
     func confirmAction() {
         stopCounting()
@@ -52,12 +58,29 @@ class OrderPreviewViewController: BaseViewController, NetworkReachabilityHandlin
         actionButton.showActivityIndicator()
         actionButton.isEnabled = false
 
-        Task {
+        Task { @MainActor in
+            guard await AuthenticationGate.authenticate(
+                biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled) == .ok else {
+                restoreAfterUnconfirmedOrder()
+                return
+            }
+
             do {
                 try await model.placeOrder()
             } catch {
                 transferFromCoinbaseToWalletDidFail(with: error)
             }
+        }
+    }
+
+    /// Re-arm the confirm button after the user backs out of the auth prompt, so a
+    /// cancelled Face ID leaves the preview usable instead of stuck spinning.
+    private func restoreAfterUnconfirmedOrder() {
+        actionButton.hideActivityIndicator()
+        actionButton.isEnabled = true
+
+        if model.showCountdown {
+            startCounting()
         }
     }
 

@@ -89,9 +89,26 @@ extension UpholdConfirmViewController: ConfirmPaymentViewControllerDelegate {
         resultDelegate?.upholdConfirmViewControllerDidCancelTransaction(self)
     }
 
+    /// Confirming moves funds out of the linked Uphold account on the stored
+    /// authorization alone — nothing downstream authenticates it — so it takes the
+    /// same PIN/biometric gate as a wallet spend. Authenticate before dismissing:
+    /// once this controller is gone the prompt has no presentation anchor.
     func confirmPaymentViewControllerDidConfirm(_ controller: ConfirmPaymentViewController) {
-        controller.dismiss(animated: true) { [weak self] in
-            self?.upholdModel.confirm(withOTPToken: nil)
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+
+            guard await AuthenticationGate.authenticate(
+                biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled) == .ok else {
+                // The confirm button set this false before delegating; restoring it
+                // also runs `model.stopPayment()` via the setter, which clears the
+                // "Sending…" title animation the button press started.
+                self.isSendingEnabled = true
+                return
+            }
+
+            controller.dismiss(animated: true) { [weak self] in
+                self?.upholdModel.confirm(withOTPToken: nil)
+            }
         }
     }
 }

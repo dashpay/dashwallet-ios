@@ -211,20 +211,14 @@ struct ExploreMenuScreen: View {
         vc.pushViewController(merchantVC, animated: true)
     }
 
-    /// Same auth gate the row carried in the More menu — the portal
-    /// exposes account-linked balances (Coinbase/Uphold), so it stays
-    /// behind PIN/biometrics wherever it is reached from.
+    /// No auth gate: the portal is a service picker. An unlinked account renders
+    /// `.idle` with no balance, and a linked one shows an amount that respects the
+    /// same `balanceHidden` flag as the home balance. Auth sits on the actions that
+    /// move money (Coinbase order confirm / transfer-out, Uphold transfer confirm).
     private func showBuySellPortal() {
-        AuthenticationService.shared.authenticate(
-            withPrompt: nil,
-            usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
-            alertIfLockout: true
-        ) { authenticated, _, _ in
-            guard authenticated else { return }
-            let controller = BuySellPortalViewController.controller()
-            controller.hidesBottomBarWhenPushed = true
-            vc.pushViewController(controller, animated: true)
-        }
+        let controller = BuySellPortalViewController.controller()
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
     }
 
     private func showUsernameMarketplace() {
