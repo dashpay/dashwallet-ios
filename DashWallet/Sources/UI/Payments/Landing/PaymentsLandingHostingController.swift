@@ -210,6 +210,22 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
                     }
                 }
                 .store(in: &cancellables)
+
+            // The endpoints move after the tab opens — the form starts on one
+            // route and the user picks another — and the sheet is gated on a
+            // shielded end. Watching the tab alone would mean anyone who
+            // arrived on a transparent route never saw it at all.
+            //
+            // `objectWillChange` fires before the value lands, so the check is
+            // deferred a turn to read the new endpoints. It is cheap and
+            // self-limiting: the first thing it does is consult the flag.
+            embeddedTransferViewModel.objectWillChange
+                .receive(on: RunLoop.main)
+                .sink { [weak self] _ in
+                    guard let self, self.view.window != nil else { return }
+                    self.presentTransferTimingSheetIfNeeded()
+                }
+                .store(in: &cancellables)
         }
     }
 
@@ -482,14 +498,30 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         navigationController?.pushViewController(controller, animated: true)
     }
 
+    /// Whether a shielded balance is one of the transfer's two ends.
+    ///
+    /// The sheet explains why a shielded transfer takes longer, so it has
+    /// nothing to say about a route that does not touch one.
+    private var transferTouchesShieldedBalance: Bool {
+        embeddedTransferViewModel.source == .shielded
+            || embeddedTransferViewModel.destination == .balance(.shielded)
+    }
+
     private func presentTransferTimingSheetIfNeeded() {
         guard !UserDefaults.standard.bool(forKey: Self.shieldedBalanceTimingShownKey),
+              viewModel.activeTab == .internalTransfer,
+              transferTouchesShieldedBalance,
               presentedViewController == nil
         else { return }
+        // Written on presentation, not on the confirm button. The sheet is a
+        // `pageSheet` and can be swiped away; recording it only when the button
+        // is tapped meant anyone who dismisses that way was told again, and
+        // again, every time they opened the tab. "Shown once" is the rule, and
+        // showing it is what satisfies it.
+        UserDefaults.standard.set(true, forKey: Self.shieldedBalanceTimingShownKey)
         viewModel.setReceiptWatchingObscured(true)
         let host = UIHostingController(
             rootView: TransferTimingSheet(onConfirm: { [weak self] in
-                UserDefaults.standard.set(true, forKey: Self.shieldedBalanceTimingShownKey)
                 self?.dismiss(animated: true) {
                     self?.viewModel.setReceiptWatchingObscured(false)
                 }
