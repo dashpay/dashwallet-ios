@@ -109,9 +109,20 @@ final class UsernameMarketplaceViewModel: ObservableObject {
     @Published var browseFeed: BrowseFeed = .priceChanges
     @Published var browsePriceChanges: [BrowseEventRow] = []
     @Published var browsePurchases: [BrowseEventRow] = []
-    @Published var isBrowseLoading = false
     @Published var browsePriceChangesExhausted = false
     @Published var browsePurchasesExhausted = false
+    /// Feeds with a load in flight. Per-feed, not one shared flag:
+    /// switching feeds starts a second load while the first is still
+    /// running, and a shared busy guard would drop it on the floor —
+    /// leaving the switched-to feed empty with nothing to retry it.
+    @Published private var browseLoadingFeeds: Set<BrowseFeed> = []
+    /// Feeds whose last load attempt COMPLETED (successfully). Only a
+    /// feed in here may claim the network holds nothing.
+    @Published private var browseLoadedFeeds: Set<BrowseFeed> = []
+    /// Feeds whose last load attempt FAILED, with the message. A failed
+    /// read is not an empty network, so the feed says so and offers a
+    /// retry instead of rendering the empty copy.
+    @Published private var browseFailures: [BrowseFeed: String] = [:]
 
     /// Per-feed pagination cursors: oldest $createdAt fetched so far.
     /// The service pages with "<=" (a timestamp can span many events),
@@ -123,12 +134,12 @@ final class UsernameMarketplaceViewModel: ObservableObject {
     /// filled by ONE batched read per page — a page costs exactly two
     /// platform queries (events + batched $id lookup) regardless of size.
     private var browseNameCache: [String: UsernameMarketplaceService.LiveDomainName] = [:]
-    /// In-flight load — cancelled by a reset so pull-to-refresh can
-    /// always restart, never silently bounce off the busy guard. The
-    /// generation counter keeps a cancelled task's cleanup from clearing
-    /// the loading flag of the load that replaced it.
-    private var browseTask: Task<Void, Never>?
-    private var browseLoadGeneration = 0
+    /// In-flight load per feed — cancelled by a reset so pull-to-refresh
+    /// can always restart, never silently bounce off the busy guard. The
+    /// per-feed generation counter keeps a cancelled task's cleanup from
+    /// clearing the loading flag of the load that replaced it.
+    private var browseTasks: [BrowseFeed: Task<Void, Never>] = [:]
+    private var browseLoadGenerations: [BrowseFeed: Int] = [:]
     private static let browseEventsPerPage: UInt32 = 25
 
     var browseRows: [BrowseEventRow] {
@@ -139,12 +150,48 @@ final class UsernameMarketplaceViewModel: ObservableObject {
         browseFeed == .priceChanges ? browsePriceChangesExhausted : browsePurchasesExhausted
     }
 
+    var isBrowseLoading: Bool { browseLoadingFeeds.contains(browseFeed) }
+
+    /// What the visible feed can honestly say when it has no rows.
+    enum BrowseEmptyState {
+        /// The read failed — message, and the feed offers a retry.
+        case failed(String)
+        /// Nothing has been read yet (a cancelled load, or a feed the
+        /// user reached before its first load finished).
+        case notLoaded
+        /// A completed read genuinely found nothing to show.
+        case loaded
+    }
+
+    var browseEmptyState: BrowseEmptyState {
+        if let failure = browseFailures[browseFeed] { return .failed(failure) }
+        return browseLoadedFeeds.contains(browseFeed) ? .loaded : .notLoaded
+    }
+
+    /// First load of the visible feed — on appearing, and on every feed
+    /// switch. Never re-runs a feed that already loaded, is loading, or
+    /// failed (the failed one offers its own retry), so switching back
+    /// and forth costs nothing.
+    func loadBrowseIfNeeded() {
+        let feed = browseFeed
+        guard browseRows.isEmpty,
+              !browseLoadingFeeds.contains(feed),
+              !browseLoadedFeeds.contains(feed),
+              browseFailures[feed] == nil else { return }
+        loadBrowse()
+    }
+
     /// Load the next page of the CURRENT feed. `reset` cancels any
     /// in-flight load and restarts both feeds from the newest event
     /// (pull-to-refresh) so live states and prices re-read fresh.
     func loadBrowse(reset: Bool = false) {
+        let feed = browseFeed
         if reset {
-            browseTask?.cancel()
+            browseTasks.values.forEach { $0.cancel() }
+            browseTasks = [:]
+            browseLoadingFeeds = []
+            browseLoadedFeeds = []
+            browseFailures = [:]
             browsePriceChanges = []
             browsePurchases = []
             priceChangesCursorMs = nil
@@ -154,18 +201,21 @@ final class UsernameMarketplaceViewModel: ObservableObject {
             browseSeenEventIds = []
             browseNameCache = [:]
         } else {
-            guard !isBrowseLoading else { return }
+            // Per-feed guard: a load already running for THIS feed is
+            // the one to wait on; a load running for the other feed
+            // must not block this one from ever starting.
+            guard !browseLoadingFeeds.contains(feed) else { return }
         }
-        let feed = browseFeed
         guard !browseFeedExhausted else { return }
-        isBrowseLoading = true
-        browseLoadGeneration += 1
-        let generation = browseLoadGeneration
-        browseTask = Task { [weak self] in
+        browseFailures[feed] = nil
+        browseLoadingFeeds.insert(feed)
+        let generation = (browseLoadGenerations[feed] ?? 0) + 1
+        browseLoadGenerations[feed] = generation
+        browseTasks[feed] = Task { [weak self] in
             guard let self else { return }
             defer {
-                if self.browseLoadGeneration == generation {
-                    self.isBrowseLoading = false
+                if self.browseLoadGenerations[feed] == generation {
+                    self.browseLoadingFeeds.remove(feed)
                 }
             }
             do {
@@ -231,9 +281,16 @@ final class UsernameMarketplaceViewModel: ObservableObject {
                     }
                     if exhausted || !rows.isEmpty { break }
                 }
+                // Only a completed pass earns the right to say the
+                // network holds nothing for this feed.
+                browseLoadedFeeds.insert(feed)
             } catch {
                 guard !Task.isCancelled else { return }
-                errorMessage = UsernameMarketplaceService.userFacingMessage(for: error)
+                // Feed-load failures stay inside the feed (with a retry)
+                // rather than firing the screen-wide alert: an alert the
+                // user dismisses would leave the empty copy behind,
+                // claiming a network fact the read never established.
+                browseFailures[feed] = UsernameMarketplaceService.userFacingMessage(for: error)
             }
         }
     }
@@ -242,7 +299,7 @@ final class UsernameMarketplaceViewModel: ObservableObject {
     /// the restarted load actually finishes.
     func refreshBrowse() async {
         loadBrowse(reset: true)
-        await browseTask?.value
+        await browseTasks[browseFeed]?.value
     }
 
     let service = UsernameMarketplaceService()
@@ -584,20 +641,13 @@ struct UsernameMarketplaceScreen: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 8)
             .onChange(of: viewModel.browseFeed) { _, _ in
-                if viewModel.browseRows.isEmpty {
-                    viewModel.loadBrowse()
-                }
+                viewModel.loadBrowseIfNeeded()
             }
 
             ScrollView {
                 LazyVStack(spacing: 6) {
                     ForEach(viewModel.browseRows) { row in
                         browseEventRow(row)
-                    }
-                    if viewModel.browseRows.isEmpty && !viewModel.isBrowseLoading {
-                        emptyHint(viewModel.browseFeed == .priceChanges
-                            ? NSLocalizedString("No names are for sale in the recent listing activity. Show more reaches further back.", comment: "Username marketplace: price-changes feed found no live listings yet")
-                            : NSLocalizedString("No purchases on the network yet.", comment: "Username marketplace: empty purchases feed"))
                     }
                     if viewModel.isBrowseLoading {
                         HStack(spacing: 8) {
@@ -608,17 +658,8 @@ struct UsernameMarketplaceScreen: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                    } else if !viewModel.browseFeedExhausted && !viewModel.browseRows.isEmpty {
-                        Button {
-                            viewModel.loadBrowse()
-                        } label: {
-                            Text(NSLocalizedString("Show more", comment: "Username marketplace: load older browse activity"))
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.dash.blue)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                        }
-                        .buttonStyle(.plain)
+                    } else {
+                        browseFooter
                     }
                 }
                 .padding(.horizontal, 15)
@@ -630,9 +671,81 @@ struct UsernameMarketplaceScreen: View {
             }
         }
         .onAppear {
-            if viewModel.browseRows.isEmpty {
-                viewModel.loadBrowse()
+            viewModel.loadBrowseIfNeeded()
+        }
+    }
+
+    /// What the feed says under its rows once a load has settled. A read
+    /// that failed or never ran must not render as "the network has none
+    /// of these" — it says what happened and offers the retry. A
+    /// completed read that simply found nothing keeps its "Show more",
+    /// so a feed thinned by filtering is never a dead end.
+    @ViewBuilder
+    private var browseFooter: some View {
+        switch viewModel.browseEmptyState {
+        case let .failed(message):
+            VStack(spacing: 8) {
+                Text(NSLocalizedString("Couldn't load this activity feed.", comment: "Username marketplace: browse feed load failed"))
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.dash.primaryText)
+                Text(message)
+                    .font(.system(size: 12))
+                    .foregroundColor(.dash.secondaryText)
+                    .multilineTextAlignment(.center)
+                Button {
+                    viewModel.loadBrowse()
+                } label: {
+                    Text(NSLocalizedString("Try again", comment: "Username marketplace: retry a failed browse feed load"))
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.dash.blue)
+                }
+                .buttonStyle(.plain)
             }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 24)
+        case .notLoaded:
+            // Nothing has been read yet — a cancelled load, or a feed
+            // reached before its first pass finished.
+            browseActionButton(
+                NSLocalizedString("Load recent activity", comment: "Username marketplace: start a browse feed load that hasn't run"))
+        case .loaded:
+            if viewModel.browseRows.isEmpty {
+                emptyHint(browseEmptyCopy)
+            }
+            if !viewModel.browseFeedExhausted {
+                browseActionButton(
+                    NSLocalizedString("Show more", comment: "Username marketplace: load older browse activity"))
+            }
+        }
+    }
+
+    private func browseActionButton(_ title: String) -> some View {
+        Button {
+            viewModel.loadBrowse()
+        } label: {
+            Text(title)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.dash.blue)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Copy for a feed that DID load and found nothing. "Recent" is the
+    /// honest scope while more pages remain — only an exhausted trail
+    /// can speak for the whole network.
+    private var browseEmptyCopy: String {
+        switch (viewModel.browseFeed, viewModel.browseFeedExhausted) {
+        case (.priceChanges, false):
+            return NSLocalizedString("No names are for sale in the recent listing activity. Show more reaches further back.", comment: "Username marketplace: price-changes feed found no live listings yet")
+        case (.priceChanges, true):
+            return NSLocalizedString("No names are for sale anywhere in the listing history.", comment: "Username marketplace: price-changes feed reached the end of the trail with no live listings")
+        case (.purchases, false):
+            return NSLocalizedString("No purchases in the recent network activity. Show more reaches further back.", comment: "Username marketplace: purchases feed found nothing in the pages read so far")
+        case (.purchases, true):
+            return NSLocalizedString("No username purchases in the network's recorded sale history.", comment: "Username marketplace: purchases feed reached the end of the recorded trail")
         }
     }
 

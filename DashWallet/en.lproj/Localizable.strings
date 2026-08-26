@@ -863,8 +863,23 @@
 /* Username marketplace: price-changes feed found no live listings yet */
 "No names are for sale in the recent listing activity. Show more reaches further back." = "No names are for sale in the recent listing activity. Show more reaches further back.";
 
-/* Username marketplace: empty purchases feed */
-"No purchases on the network yet." = "No purchases on the network yet.";
+/* Username marketplace: purchases feed found nothing in the pages read so far */
+"No purchases in the recent network activity. Show more reaches further back." = "No purchases in the recent network activity. Show more reaches further back.";
+
+/* Username marketplace: price-changes feed reached the end of the trail with no live listings */
+"No names are for sale anywhere in the listing history." = "No names are for sale anywhere in the listing history.";
+
+/* Username marketplace: purchases feed reached the end of the recorded trail */
+"No username purchases in the network's recorded sale history." = "No username purchases in the network's recorded sale history.";
+
+/* Username marketplace: browse feed load failed */
+"Couldn't load this activity feed." = "Couldn't load this activity feed.";
+
+/* Username marketplace: start a browse feed load that hasn't run */
+"Load recent activity" = "Load recent activity";
+
+/* Username marketplace: SDK handle not available for a network read */
+"The Dash Platform connection isn't ready yet. Try again in a moment." = "The Dash Platform connection isn't ready yet. Try again in a moment.";
 
 /* Username marketplace: browse feed loading */
 "Loading activity…" = "Loading activity…";

@@ -63,6 +63,7 @@ struct UsernameMarketplaceService {
 
     enum ServiceError: LocalizedError {
         case noIdentity
+        case sdkUnavailable
         case contestedName
         case invalidRecipient
         case invalidPrice
@@ -73,6 +74,10 @@ struct UsernameMarketplaceService {
             switch self {
             case .noIdentity:
                 return NSLocalizedString("No DashPay identity is registered", comment: "DashPay")
+            case .sdkUnavailable:
+                return NSLocalizedString(
+                    "The Dash Platform connection isn't ready yet. Try again in a moment.",
+                    comment: "Username marketplace: SDK handle not available for a network read")
             case .contestedName:
                 return NSLocalizedString("Short names are decided by a network vote — use Request Username instead.", comment: "Username marketplace")
             case .invalidRecipient:
@@ -135,7 +140,10 @@ struct UsernameMarketplaceService {
     }
 
     private func eventsPage(documentType: String, beforeMs: UInt64?, limit: UInt32) async throws -> [MarketplaceEvent] {
-        guard let sdk = SwiftDashSDKHost.shared.sdk else { return [] }
+        // A missing SDK handle is a failed read, not an empty trail —
+        // returning [] here would let the caller render "nothing on the
+        // network" for a query that never ran.
+        guard let sdk = SwiftDashSDKHost.shared.sdk else { throw ServiceError.sdkUnavailable }
         var conditions = "[[\"dataContractId\",\"==\",\"\(DPNSVotePoll.contractId)\"]"
         if let beforeMs {
             // "<=", not "<": several events can share one block's
@@ -162,7 +170,7 @@ struct UsernameMarketplaceService {
         } else {
             docs = result.values.compactMap { $0 as? [String: Any] }
         }
-        return docs.compactMap { doc in
+        let events: [MarketplaceEvent] = docs.compactMap { doc in
             guard let rawEventId = doc["$id"] as? String,
                   let eventId = Self.identifier32(rawEventId),
                   let raw = doc["documentId"] as? String,
@@ -179,6 +187,13 @@ struct UsernameMarketplaceService {
                 buyerIdBase58: documentType == "purchase" ? buyer?.toBase58String() : nil,
                 sellerIdBase58: documentType == "purchase" ? seller?.toBase58String() : nil)
         }
+        // Raw vs parsed counts separate the two ways a feed can look
+        // empty: the trail really holds nothing for this contract, or
+        // every row came back in a shape this parser drops.
+        let cursorLabel = beforeMs.map(String.init) ?? "newest"
+        let summary = "\(documentType) cursor=\(cursorLabel) documents=\(docs.count) parsed=\(events.count)"
+        Self.logger.info("🏷️ MARKET :: history page \(summary, privacy: .public)")
+        return events
     }
 
     /// Identifier-typed CUSTOM properties serialize as base64 in this
