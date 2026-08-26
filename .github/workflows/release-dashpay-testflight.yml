@@ -1,8 +1,8 @@
 name: Release dashpay to TestFlight
 
 run-name: >-
-  dashpay ${{ inputs.release_channel }} TestFlight from ${{ inputs.wallet_ref }}
-  → ${{ inputs.app_version }} (platform ${{ inputs.platform_ref }})
+  dashpay TestFlight from ${{ inputs.wallet_ref }}
+  → ${{ inputs.testflight_group }} (platform ${{ inputs.platform_ref }})
 
 on:
   workflow_dispatch:
@@ -17,26 +17,8 @@ on:
         required: true
         default: v4.2-dev
         type: string
-      dashuikit_ref:
-        description: "dashpay/DashUIKit branch, tag, or commit SHA — blank uses the pin committed in Package.resolved"
-        required: false
-        default: ""
-        type: string
-      release_channel:
-        description: "TestFlight distribution channel"
-        required: true
-        default: internal
-        type: choice
-        options:
-          - internal
-          - external
-      app_version:
-        description: "App version, or 'auto' to follow the latest TestFlight/App Store version"
-        required: true
-        default: auto
-        type: string
       testflight_group:
-        description: "Exact external TestFlight group name (ignored for internal releases)"
+        description: "Exact external TestFlight group name, or 'Upload only'"
         required: true
         default: Public Beta v9.0
         type: string
@@ -83,64 +65,6 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      # DashUIKit is a remote Swift package, so a branch of it cannot be tested
-      # by checking it out beside the wallet the way platform is. The archive
-      # runs with `-onlyUsePackageVersionsFromResolvedFile`, which makes
-      # `Package.resolved` the authority — so pointing that (and the project's
-      # branch requirement, which must agree) at another ref is what selects it.
-      #
-      # Left blank, nothing is touched and the committed pin is used.
-      - name: Override the DashUIKit pin
-        if: inputs.dashuikit_ref != ''
-        working-directory: ${{ github.workspace }}/dashwallet-ios
-        env:
-          DASHUIKIT_REF: ${{ inputs.dashuikit_ref }}
-        run: |
-          set -euo pipefail
-
-          # A branch or tag resolves to its tip; anything else is taken as a
-          # commit SHA already, and `Package.resolved` wants both a name and a
-          # revision either way.
-          sha="$(git ls-remote https://github.com/dashpay/DashUIKit "$DASHUIKIT_REF" | cut -f1 | head -1)"
-          if [ -z "$sha" ]; then
-            sha="$DASHUIKIT_REF"
-          fi
-          echo "DashUIKit → $DASHUIKIT_REF ($sha)"
-
-          python3 - "$DASHUIKIT_REF" "$sha" <<'PY'
-          import json, re, sys
-
-          ref, sha = sys.argv[1], sys.argv[2]
-
-          resolved = "DashWallet.xcworkspace/xcshareddata/swiftpm/Package.resolved"
-          with open(resolved) as handle:
-              document = json.load(handle)
-          pins = [p for p in document["pins"] if p["identity"].lower() == "dashuikit"]
-          if not pins:
-              sys.exit("no DashUIKit pin in Package.resolved")
-          pins[0]["state"] = {"branch": ref, "revision": sha}
-          with open(resolved, "w") as handle:
-              json.dump(document, handle, indent=2)
-              handle.write("\n")
-
-          # The project pins a branch too, and `-onlyUsePackageVersionsFromResolvedFile`
-          # still checks the resolved revision against it. Rewrites only the
-          # requirement inside DashUIKit's own reference block.
-          project = "DashWallet.xcodeproj/project.pbxproj"
-          with open(project) as handle:
-              text = handle.read()
-          pattern = re.compile(
-              r'(XCRemoteSwiftPackageReference "DashUIKit" \*/ = \{.*?branch = )[^;]+(;)',
-              re.DOTALL)
-          # Quoted: a branch name carries slashes, and pbxproj only leaves bare
-          # tokens unquoted. Quoting a plain name too is harmless.
-          text, count = pattern.subn(rf'\g<1>"{ref}"\g<2>', text, count=1)
-          if count != 1:
-              sys.exit("could not rewrite the DashUIKit branch requirement")
-          with open(project, "w") as handle:
-              handle.write(text)
-          PY
-
       - name: Checkout platform
         uses: actions/checkout@v6
         with:
@@ -160,8 +84,6 @@ jobs:
         env:
           APPLE_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }}
           APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
-          APPLE_DEVELOPMENT_CERTIFICATE_BASE64: ${{ secrets.APPLE_DEVELOPMENT_CERTIFICATE_BASE64 }}
-          APPLE_DEVELOPMENT_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DEVELOPMENT_CERTIFICATE_PASSWORD }}
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
           APP_STORE_CONNECT_API_PRIVATE_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY_BASE64 }}
@@ -195,23 +117,6 @@ jobs:
               missing=1
             fi
           done
-
-          # The development certificate pair is optional, but must be set
-          # together. Without it, automatic signing mints a brand-new Apple
-          # Development certificate on every run (the runner keychain is
-          # ephemeral) until the team hits Apple's certificate limit and
-          # archiving fails with "Choose a certificate to revoke".
-          if [[ -n "${APPLE_DEVELOPMENT_CERTIFICATE_BASE64:-}" && -z "${APPLE_DEVELOPMENT_CERTIFICATE_PASSWORD:-}" ]]; then
-            echo "::error::APPLE_DEVELOPMENT_CERTIFICATE_BASE64 is set but APPLE_DEVELOPMENT_CERTIFICATE_PASSWORD is missing."
-            missing=1
-          fi
-          if [[ -z "${APPLE_DEVELOPMENT_CERTIFICATE_BASE64:-}" && -n "${APPLE_DEVELOPMENT_CERTIFICATE_PASSWORD:-}" ]]; then
-            echo "::error::APPLE_DEVELOPMENT_CERTIFICATE_PASSWORD is set but APPLE_DEVELOPMENT_CERTIFICATE_BASE64 is missing."
-            missing=1
-          fi
-          if [[ -z "${APPLE_DEVELOPMENT_CERTIFICATE_BASE64:-}" ]]; then
-            echo "::warning::APPLE_DEVELOPMENT_CERTIFICATE_BASE64 is not set. Automatic signing will create a new Apple Development certificate for this run, which eventually exhausts the team's certificate quota."
-          fi
 
           if [[ "$missing" -ne 0 ]]; then
             exit 1
@@ -263,18 +168,113 @@ jobs:
           chmod 600 "$fastlane_api_key_path"
           echo "FASTLANE_API_KEY_PATH=$fastlane_api_key_path" >> "$GITHUB_ENV"
 
-      - name: Resolve TestFlight release version
-        id: release-version
+      - name: Validate TestFlight group
+        if: inputs.testflight_group != 'Upload only'
         env:
           API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
           BUNDLE_ID: ${{ env.DASHPAY_BUNDLE_ID }}
-          RELEASE_CHANNEL: ${{ inputs.release_channel }}
-          REQUESTED_VERSION: ${{ inputs.app_version }}
           TESTFLIGHT_GROUP: ${{ inputs.testflight_group }}
         run: |
           set -euo pipefail
-          ruby .github/scripts/app_store_connect_release.rb resolve-version
+
+          ruby <<'RUBY'
+          require "base64"
+          require "json"
+          require "net/http"
+          require "openssl"
+          require "uri"
+
+          def base64url(value)
+            Base64.urlsafe_encode64(value, padding: false)
+          end
+
+          def jwt_signature(private_key_path, signing_input)
+            private_key = OpenSSL::PKey.read(File.binread(private_key_path))
+            unless private_key.is_a?(OpenSSL::PKey::EC) && private_key.group.curve_name == "prime256v1"
+              warn "::error::App Store Connect API key is not a P-256 EC key."
+              exit 1
+            end
+            der_signature = private_key.sign(OpenSSL::Digest::SHA256.new, signing_input)
+            sequence = OpenSSL::ASN1.decode(der_signature)
+            sequence.value.map do |integer|
+              [integer.value.to_i.to_s(16).rjust(64, "0")].pack("H*")
+            end.join
+          end
+
+          issued_at = Time.now.to_i
+          header = { alg: "ES256", kid: ENV.fetch("API_KEY_ID"), typ: "JWT" }
+          payload = {
+            iss: ENV.fetch("API_ISSUER_ID"),
+            iat: issued_at,
+            exp: issued_at + 1_200,
+            aud: "appstoreconnect-v1"
+          }
+          signing_input = [header, payload].map { |part| base64url(JSON.generate(part)) }.join(".")
+          token = "#{signing_input}.#{base64url(jwt_signature(ENV.fetch("APP_STORE_CONNECT_API_KEY_PATH"), signing_input))}"
+
+          def get_json(url, token)
+            uri = URI(url)
+            request = Net::HTTP::Get.new(uri)
+            request["Authorization"] = "Bearer #{token}"
+            request["Content-Type"] = "application/json"
+            response = Net::HTTP.start(
+              uri.hostname,
+              uri.port,
+              use_ssl: true,
+              open_timeout: 15,
+              read_timeout: 30
+            ) do |http|
+              http.request(request)
+            end
+            unless response.is_a?(Net::HTTPSuccess)
+              warn "::error::App Store Connect API returned HTTP #{response.code}: #{response.body}"
+              exit 1
+            end
+            JSON.parse(response.body)
+          end
+
+          bundle_id = ENV.fetch("BUNDLE_ID")
+          apps_url = URI("https://api.appstoreconnect.apple.com/v1/apps")
+          apps_url.query = URI.encode_www_form("filter[bundleId]" => bundle_id, "limit" => 1)
+          app = get_json(apps_url.to_s, token).fetch("data").first
+          unless app
+            warn "::error::No App Store Connect app found for bundle ID #{bundle_id}."
+            exit 1
+          end
+
+          groups_url = URI("https://api.appstoreconnect.apple.com/v1/betaGroups")
+          groups_url.query = URI.encode_www_form("filter[app]" => app.fetch("id"), "limit" => 200)
+          groups = []
+          next_url = groups_url.to_s
+          page_count = 0
+          max_pages = 20
+          while next_url
+            page_count += 1
+            if page_count > max_pages
+              warn "::error::App Store Connect beta group pagination exceeded #{max_pages} pages."
+              exit 1
+            end
+            page = get_json(next_url, token)
+            groups.concat(page.fetch("data"))
+            next_url = page.dig("links", "next")
+          end
+
+          external_group_names = groups.map do |group|
+            attributes = group.fetch("attributes")
+            attributes.fetch("name") unless attributes["isInternalGroup"]
+          end.compact.sort
+          requested_group = ENV.fetch("TESTFLIGHT_GROUP")
+
+          unless external_group_names.include?(requested_group)
+            warn "::error::External TestFlight group '#{requested_group}' does not exist."
+            warn "Available external TestFlight groups:"
+            external_group_names.each { |name| warn "  - #{name}" }
+            exit 1
+          end
+
+          puts "Validated external TestFlight group: #{requested_group}"
+          RUBY
 
       - name: Select Xcode 26.6
         uses: maxim-lobanov/setup-xcode@v1
@@ -410,23 +410,10 @@ jobs:
             DashWallet/Uphold-Info.plist \
             DashWallet/SwapKit-Info.plist
 
-      - name: Resolve next TestFlight build number
-        id: release-build
-        env:
-          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
-          BUNDLE_ID: ${{ env.DASHPAY_BUNDLE_ID }}
-          EFFECTIVE_VERSION: ${{ steps.release-version.outputs.effective_version }}
-        run: |
-          set -euo pipefail
-          ruby .github/scripts/app_store_connect_release.rb resolve-build
-
-      - name: Install Apple signing certificates
+      - name: Install Apple distribution certificate
         env:
           CERTIFICATE_BASE64: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }}
           CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
-          DEVELOPMENT_CERTIFICATE_BASE64: ${{ secrets.APPLE_DEVELOPMENT_CERTIFICATE_BASE64 }}
-          DEVELOPMENT_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DEVELOPMENT_CERTIFICATE_PASSWORD }}
         run: |
           set -euo pipefail
 
@@ -465,23 +452,6 @@ jobs:
             -t cert \
             -f pkcs12 \
             -k "$keychain_path"
-
-          # A persistent development certificate lets automatic signing sign
-          # the archive without minting a new Apple Development certificate
-          # on every run.
-          if [[ -n "${DEVELOPMENT_CERTIFICATE_BASE64:-}" ]]; then
-            development_certificate_path="$RUNNER_TEMP/apple-development.p12"
-            printf '%s' "$DEVELOPMENT_CERTIFICATE_BASE64" | base64 --decode -o "$development_certificate_path"
-            security import "$development_certificate_path" \
-              -P "$DEVELOPMENT_CERTIFICATE_PASSWORD" \
-              -T /usr/bin/codesign \
-              -T /usr/bin/security \
-              -t cert \
-              -f pkcs12 \
-              -k "$keychain_path"
-            rm -f "$development_certificate_path"
-          fi
-
           security set-key-partition-list \
             -S apple-tool:,apple:,codesign: \
             -s \
@@ -497,8 +467,6 @@ jobs:
         env:
           API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
-          EFFECTIVE_VERSION: ${{ steps.release-version.outputs.effective_version }}
-          BUILD_NUMBER: ${{ steps.release-build.outputs.build_number }}
         run: |
           set -euo pipefail
 
@@ -516,16 +484,12 @@ jobs:
             -authenticationKeyID "$API_KEY_ID" \
             -authenticationKeyIssuerID "$API_ISSUER_ID" \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            CODE_SIGN_STYLE=Automatic \
-            MARKETING_VERSION="$EFFECTIVE_VERSION" \
-            CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
+            CODE_SIGN_STYLE=Automatic
 
       - name: Read archived app version
         id: app-version
         env:
           EXPECTED_BUNDLE_ID: ${{ env.DASHPAY_BUNDLE_ID }}
-          EXPECTED_VERSION: ${{ steps.release-version.outputs.effective_version }}
-          EXPECTED_BUILD: ${{ steps.release-build.outputs.build_number }}
         run: |
           set -euo pipefail
 
@@ -536,25 +500,15 @@ jobs:
           fi
 
           version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app_path/Info.plist")
-          build=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app_path/Info.plist")
           bundle_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_path/Info.plist")
 
           if [[ "$bundle_id" != "$EXPECTED_BUNDLE_ID" ]]; then
             echo "::error::Archived bundle ID '$bundle_id' does not match expected '$EXPECTED_BUNDLE_ID'."
             exit 1
           fi
-          if [[ "$version" != "$EXPECTED_VERSION" ]]; then
-            echo "::error::Archived version '$version' does not match planned version '$EXPECTED_VERSION'."
-            exit 1
-          fi
-          if [[ "$build" != "$EXPECTED_BUILD" ]]; then
-            echo "::error::Archived build '$build' does not match planned build '$EXPECTED_BUILD'."
-            exit 1
-          fi
 
           {
             echo "version=$version"
-            echo "build=$build"
             echo "bundle_id=$bundle_id"
           } >> "$GITHUB_OUTPUT"
 
@@ -584,18 +538,40 @@ jobs:
           GEM_PATH="$fastlane_gem_home" \
             "$fastlane_gem_home/bin/fastlane" "_${FASTLANE_VERSION}_" --version
 
-      - name: Verify TestFlight build number is still available
+      - name: Snapshot existing TestFlight builds
+        id: existing-builds
         env:
-          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
           BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
-          EFFECTIVE_VERSION: ${{ steps.app-version.outputs.version }}
-          BUILD_NUMBER: ${{ steps.app-version.outputs.build }}
+          VERSION: ${{ steps.app-version.outputs.version }}
         run: |
           set -euo pipefail
-          ruby .github/scripts/app_store_connect_release.rb assert-build-free
+          cd "$RUNNER_TEMP"
+
+          "$FASTLANE_RUBY" <<'RUBY'
+          require "spaceship"
+
+          Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.from_json_file(
+            ENV.fetch("FASTLANE_API_KEY_PATH")
+          )
+          app = Spaceship::ConnectAPI::App.find(ENV.fetch("BUNDLE_ID"))
+          unless app
+            warn "::error::App Store Connect app not found for #{ENV.fetch('BUNDLE_ID')}."
+            exit 1
+          end
+
+          builds = Spaceship::ConnectAPI::Build.all(
+            app_id: app.id,
+            version: ENV.fetch("VERSION"),
+            platform: "IOS",
+            limit: 30
+          )
+          File.open(ENV.fetch("GITHUB_OUTPUT"), "a") do |output|
+            output.puts "ids=#{builds.map(&:id).join(',')}"
+          end
+          RUBY
 
       - name: Upload archive to TestFlight
+        id: upload
         env:
           API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
@@ -607,8 +583,10 @@ jobs:
           /usr/libexec/PlistBuddy -c 'Add :method string app-store-connect' "$export_options"
           /usr/libexec/PlistBuddy -c 'Add :signingStyle string automatic' "$export_options"
           /usr/libexec/PlistBuddy -c "Add :teamID string $APPLE_TEAM_ID" "$export_options"
-          /usr/libexec/PlistBuddy -c 'Add :manageAppVersionAndBuildNumber bool false' "$export_options"
+          /usr/libexec/PlistBuddy -c 'Add :manageAppVersionAndBuildNumber bool true' "$export_options"
           /usr/libexec/PlistBuddy -c 'Add :uploadSymbols bool true' "$export_options"
+
+          echo "started_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
 
           xcodebuild -exportArchive \
             -archivePath "$ARCHIVE_PATH" \
@@ -619,44 +597,74 @@ jobs:
             -authenticationKeyID "$API_KEY_ID" \
             -authenticationKeyIssuerID "$API_ISSUER_ID"
 
-      - name: Wait for uploaded TestFlight build
+      - name: Resolve App Store Connect build number
         id: uploaded-build
         env:
-          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
           BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
-          EFFECTIVE_VERSION: ${{ steps.app-version.outputs.version }}
-          BUILD_NUMBER: ${{ steps.app-version.outputs.build }}
-        run: |
-          set -euo pipefail
-          ruby .github/scripts/app_store_connect_release.rb wait-build
-
-      - name: Finalize internal TestFlight build
-        if: inputs.release_channel == 'internal'
-        env:
-          WHAT_TO_TEST: ${{ inputs.what_to_test }}
           VERSION: ${{ steps.app-version.outputs.version }}
-          BUILD: ${{ steps.uploaded-build.outputs.number }}
-          BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
+          EXISTING_BUILD_IDS: ${{ steps.existing-builds.outputs.ids }}
+          UPLOAD_STARTED_AT: ${{ steps.upload.outputs.started_at }}
         run: |
           set -euo pipefail
+          cd "$RUNNER_TEMP"
 
-          "$FASTLANE_BIN" "_${FASTLANE_VERSION}_" run upload_to_testflight \
-            api_key_path:"$FASTLANE_API_KEY_PATH" \
-            app_identifier:"$BUNDLE_ID" \
-            app_platform:ios \
-            app_version:"$VERSION" \
-            build_number:"$BUILD" \
-            distribute_only:true \
-            distribute_external:false \
-            notify_external_testers:false \
-            submit_beta_review:false \
-            changelog:"$WHAT_TO_TEST" \
-            wait_processing_interval:30 \
-            wait_processing_timeout_duration:7200
+          "$FASTLANE_RUBY" <<'RUBY'
+          require "spaceship"
+          require "set"
+          require "time"
+
+          Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.from_json_file(
+            ENV.fetch("FASTLANE_API_KEY_PATH")
+          )
+
+          app = Spaceship::ConnectAPI::App.find(ENV.fetch("BUNDLE_ID"))
+          unless app
+            warn "::error::App Store Connect app not found for #{ENV.fetch('BUNDLE_ID')}."
+            exit 1
+          end
+
+          upload_started_at = Time.iso8601(ENV.fetch("UPLOAD_STARTED_AT"))
+          existing_build_ids = ENV.fetch("EXISTING_BUILD_IDS").split(",").to_set
+          deadline = Time.now + 1_800
+          uploaded_build = nil
+
+          loop do
+            builds = Spaceship::ConnectAPI::Build.all(
+              app_id: app.id,
+              version: ENV.fetch("VERSION"),
+              platform: "IOS",
+              limit: 30
+            )
+            new_builds = builds
+              .reject { |build| existing_build_ids.include?(build.id) }
+              .select { |build| Time.parse(build.uploaded_date.to_s) >= upload_started_at }
+            if new_builds.size > 1
+              candidates = new_builds.map { |build| "#{build.version} (#{build.id})" }.join(", ")
+              warn "::error::Multiple builds appeared after this upload: #{candidates}. Refusing to distribute an ambiguous build."
+              exit 1
+            end
+
+            uploaded_build = new_builds.first
+            break if uploaded_build
+
+            if Time.now >= deadline
+              warn "::error::Timed out waiting for the uploaded build to appear in App Store Connect."
+              exit 1
+            end
+
+            puts "Waiting for App Store Connect to expose the uploaded build number..."
+            sleep 15
+          end
+
+          puts "Apple assigned build number #{uploaded_build.version}."
+          File.open(ENV.fetch("GITHUB_OUTPUT"), "a") do |output|
+            output.puts "number=#{uploaded_build.version}"
+            output.puts "id=#{uploaded_build.id}"
+          end
+          RUBY
 
       - name: Distribute build to external TestFlight group
-        if: inputs.release_channel == 'external'
+        if: inputs.testflight_group != 'Upload only'
         env:
           TESTFLIGHT_GROUP: ${{ inputs.testflight_group }}
           WHAT_TO_TEST: ${{ inputs.what_to_test }}
@@ -687,36 +695,26 @@ jobs:
           PLATFORM_SHA: ${{ steps.release-info.outputs.platform_sha }}
           REQUESTED_WALLET_REF: ${{ inputs.wallet_ref }}
           REQUESTED_PLATFORM_REF: ${{ inputs.platform_ref }}
-          REQUESTED_VERSION: ${{ steps.release-version.outputs.requested_version }}
-          LATEST_TESTFLIGHT_VERSION: ${{ steps.release-version.outputs.latest_testflight_version }}
-          LATEST_PRODUCTION_VERSION: ${{ steps.release-version.outputs.latest_production_version }}
           VERSION: ${{ steps.app-version.outputs.version }}
           BUILD: ${{ steps.uploaded-build.outputs.number }}
           BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
-          RELEASE_CHANNEL: ${{ inputs.release_channel }}
           TESTFLIGHT_GROUP: ${{ inputs.testflight_group }}
         run: |
           {
             echo '## dashpay uploaded to TestFlight'
             echo
             echo "- App: ${VERSION} (${BUILD})"
-            echo "- Requested version: \`${REQUESTED_VERSION}\`"
-            echo "- Latest TestFlight version: \`${LATEST_TESTFLIGHT_VERSION}\`"
-            echo "- Latest production version: \`${LATEST_PRODUCTION_VERSION}\`"
             echo "- Bundle ID: \`${BUNDLE_ID}\`"
             echo "- dashwallet-ios: \`${WALLET_SHA}\` (requested: \`${REQUESTED_WALLET_REF}\`)"
             echo "- platform: \`${PLATFORM_SHA}\` (requested: \`${REQUESTED_PLATFORM_REF}\`)"
-            echo "- Channel: \`${RELEASE_CHANNEL}\`"
-            if [[ "$RELEASE_CHANNEL" == 'internal' ]]; then
-              echo '- Internal group: `App Store Connect Users`'
-              echo '- External distribution: disabled'
-              echo '- Beta App Review: not submitted'
+            if [[ "$TESTFLIGHT_GROUP" == 'Upload only' ]]; then
+              echo '- Distribution: upload only'
             else
               echo "- External group: \`${TESTFLIGHT_GROUP}\`"
               echo '- External tester notifications: enabled'
             fi
             echo
-            echo 'The uploaded build is processed and ready for TestFlight.'
+            echo 'App Store Connect may need additional time to process the uploaded build.'
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Remove temporary signing material
@@ -748,7 +746,6 @@ jobs:
             "${FASTLANE_API_KEY_PATH:-}" \
             "${ORIGINAL_KEYCHAINS_PATH:-}" \
             "$RUNNER_TEMP/apple-distribution.p12" \
-            "$RUNNER_TEMP/apple-development.p12" \
             DashWallet/GoogleService-Info.plist \
             DashWallet/Coinbase-Info.plist \
             DashWallet/Topper-Info.plist \
