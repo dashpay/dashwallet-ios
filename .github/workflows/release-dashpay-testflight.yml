@@ -141,6 +141,32 @@ jobs:
               handle.write(text)
           PY
 
+      # The release scripts come from the ref this workflow was dispatched
+      # from, not from the branch being built. Every step runs inside the
+      # `dashwallet-ios` checkout, so `.github/scripts` there is whatever
+      # `wallet_ref` happens to carry — and a branch cut before those scripts
+      # existed cannot be released at all, which is the opposite of what a
+      # release pipeline is for. Sparse: only the scripts are needed.
+      - name: Checkout release tooling
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+          path: release-tooling
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Locate release tooling
+        run: |
+          set -euo pipefail
+          script="$GITHUB_WORKSPACE/release-tooling/.github/scripts/app_store_connect_release.rb"
+          if [[ ! -f "$script" ]]; then
+            echo "::error::release tooling missing at $script"
+            exit 1
+          fi
+          echo "RELEASE_SCRIPT=$script" >> "$GITHUB_ENV"
+
       - name: Checkout platform
         uses: actions/checkout@v6
         with:
@@ -274,7 +300,7 @@ jobs:
           TESTFLIGHT_GROUP: ${{ inputs.testflight_group }}
         run: |
           set -euo pipefail
-          ruby .github/scripts/app_store_connect_release.rb resolve-version
+          ruby "$RELEASE_SCRIPT" resolve-version
 
       - name: Select Xcode 26.6
         uses: maxim-lobanov/setup-xcode@v1
@@ -419,7 +445,7 @@ jobs:
           EFFECTIVE_VERSION: ${{ steps.release-version.outputs.effective_version }}
         run: |
           set -euo pipefail
-          ruby .github/scripts/app_store_connect_release.rb resolve-build
+          ruby "$RELEASE_SCRIPT" resolve-build
 
       - name: Install Apple signing certificates
         env:
@@ -593,7 +619,7 @@ jobs:
           BUILD_NUMBER: ${{ steps.app-version.outputs.build }}
         run: |
           set -euo pipefail
-          ruby .github/scripts/app_store_connect_release.rb assert-build-free
+          ruby "$RELEASE_SCRIPT" assert-build-free
 
       - name: Upload archive to TestFlight
         env:
@@ -629,7 +655,7 @@ jobs:
           BUILD_NUMBER: ${{ steps.app-version.outputs.build }}
         run: |
           set -euo pipefail
-          ruby .github/scripts/app_store_connect_release.rb wait-build
+          ruby "$RELEASE_SCRIPT" wait-build
 
       - name: Finalize internal TestFlight build
         if: inputs.release_channel == 'internal'
