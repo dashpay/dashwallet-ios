@@ -348,19 +348,12 @@ struct EvonodeWithdrawalConfirmSheet: View {
     let onUnconfirmedAcknowledged: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            Rectangle()
-                .fill(Color.dash.grabberFill)
-                .frame(width: 36, height: 5)
-                .cornerRadius(2.5)
-                .padding(.top, 8)
-
-            Text(NSLocalizedString("Confirm withdrawal", comment: "Evonode withdrawal"))
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(.dash.primaryText)
-                .padding(.top, 20)
-
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Confirm withdrawal", comment: "Evonode withdrawal"),
+            showBackButton: .constant(false),
+            isDismissalEnabled: .constant(!(isInFlight || isUnconfirmed)),
+            onClose: onCancel
+        ) {
             switch viewModel.phase {
             case let .success(remaining):
                 successBody(remainingCredits: remaining)
@@ -370,8 +363,6 @@ struct EvonodeWithdrawalConfirmSheet: View {
                 detailsBody
             }
         }
-        .background(Color.dash.primaryBackground)
-        .interactiveDismissDisabled(isInFlight || isUnconfirmed)
     }
 
     private var isUnconfirmed: Bool {

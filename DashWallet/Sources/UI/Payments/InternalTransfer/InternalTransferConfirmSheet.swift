@@ -12,7 +12,7 @@ import SwiftDashSDK
 /// `ShieldedTransferCoordinator.phase`:
 ///   - `.idle`           → summary card + Cancel/Confirm buttons.
 ///   - in-flight phases  → step checklist (Signing / Locking / Proving /
-///                         Broadcasting). Drag-dismiss is disabled.
+///                         Broadcasting). Sheet dismissal is disabled.
 ///   - `.success`        → green check + amount + Done.
 ///   - `.failed(msg)`    → summary card with red error + Try again / Close.
 ///
@@ -51,16 +51,12 @@ struct InternalTransferConfirmSheet: View {
     @State private var handledPlatformShieldCapacityChange = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            dragHandle
-                .padding(.top, 8)
-
-            Text(NSLocalizedString("Confirm", comment: ""))
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(.dash.primaryText)
-                .padding(.top, 20)
-
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Confirm", comment: ""),
+            showBackButton: .constant(false),
+            isDismissalEnabled: .constant(!isInFlight),
+            onClose: onCancel
+        ) {
             switch coordinator.phase {
             case .success:
                 successBody
@@ -70,8 +66,6 @@ struct InternalTransferConfirmSheet: View {
                 detailsBody
             }
         }
-        .background(Color.dash.primaryBackground)
-        .interactiveDismissDisabled(isInFlight)
         .onChange(of: coordinator.phase) { phase in
             handlePlatformShieldCapacityChange(phase)
         }
@@ -191,13 +185,6 @@ struct InternalTransferConfirmSheet: View {
     }
 
     // MARK: - Pieces
-
-    private var dragHandle: some View {
-        Rectangle()
-            .fill(Color.dash.grabberFill)
-            .frame(width: 36, height: 5)
-            .cornerRadius(2.5)
-    }
 
     private var secondaryLine: some View {
         Text(fiatText)
@@ -553,16 +540,12 @@ struct ShieldedRecoverySheet: View {
     @State private var alreadyComplete = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            dragHandle
-                .padding(.top, 8)
-
-            Text(NSLocalizedString("Finish shielded transfer", comment: "InternalTransfer recovery"))
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(.dash.primaryText)
-                .padding(.top, 20)
-
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Finish shielded transfer", comment: "InternalTransfer recovery"),
+            showBackButton: .constant(false),
+            isDismissalEnabled: .constant(!isInFlight),
+            onClose: onDismiss
+        ) {
             switch coordinator.phase {
             case .success:
                 successBody
@@ -578,8 +561,6 @@ struct ShieldedRecoverySheet: View {
                 }
             }
         }
-        .background(Color.dash.primaryBackground)
-        .interactiveDismissDisabled(isInFlight)
     }
 
     private var isInFlight: Bool {
@@ -691,13 +672,6 @@ struct ShieldedRecoverySheet: View {
     }
 
     // MARK: - Pieces
-
-    private var dragHandle: some View {
-        Rectangle()
-            .fill(Color.dash.grabberFill)
-            .frame(width: 36, height: 5)
-            .cornerRadius(2.5)
-    }
 
     private var infoCard: some View {
         HStack(alignment: .top, spacing: 12) {

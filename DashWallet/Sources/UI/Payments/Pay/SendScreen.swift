@@ -726,16 +726,12 @@ struct SendConfirmSheet: View {
     @StateObject private var coordinator = ShieldedTransferCoordinator()
 
     var body: some View {
-        VStack(spacing: 0) {
-            dragHandle
-                .padding(.top, 8)
-
-            Text(NSLocalizedString("Confirm", comment: ""))
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(.dash.primaryText)
-                .padding(.top, 20)
-
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Confirm", comment: ""),
+            showBackButton: .constant(false),
+            isDismissalEnabled: .constant(!isInFlight),
+            onClose: onCancel
+        ) {
             switch coordinator.phase {
             case .success:
                 successBody
@@ -745,8 +741,6 @@ struct SendConfirmSheet: View {
                 detailsBody
             }
         }
-        .background(Color.dash.primaryBackground)
-        .interactiveDismissDisabled(isInFlight)
     }
 
     private var isInFlight: Bool {
@@ -849,13 +843,6 @@ struct SendConfirmSheet: View {
     }
 
     // MARK: - Pieces
-
-    private var dragHandle: some View {
-        Rectangle()
-            .fill(Color.dash.grabberFill)
-            .frame(width: 36, height: 5)
-            .cornerRadius(2.5)
-    }
 
     private var summaryCard: some View {
         VStack(spacing: 0) {

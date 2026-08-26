@@ -182,16 +182,12 @@ struct CoinJoinMoveFundsSheet: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            dragHandle
-                .padding(.top, 8)
-
-            Text(NSLocalizedString("Move your mixed coins", comment: "CoinJoin"))
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(.dash.primaryText)
-                .padding(.top, 20)
-
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Move your mixed coins", comment: "CoinJoin"),
+            showBackButton: .constant(false),
+            isDismissalEnabled: .constant(!viewModel.isInFlight),
+            onClose: onDismiss
+        ) {
             switch viewModel.stage {
             case .choice:
                 choiceBody
@@ -207,8 +203,6 @@ struct CoinJoinMoveFundsSheet: View {
                 failedBody(message: message, destination: destination)
             }
         }
-        .background(Color.dash.primaryBackground)
-        .interactiveDismissDisabled(viewModel.isInFlight)
     }
 
     // MARK: Choice
@@ -421,10 +415,4 @@ struct CoinJoinMoveFundsSheet: View {
 
     // MARK: Pieces
 
-    private var dragHandle: some View {
-        Rectangle()
-            .fill(Color.dash.grabberFill)
-            .frame(width: 36, height: 5)
-            .cornerRadius(2.5)
-    }
 }
