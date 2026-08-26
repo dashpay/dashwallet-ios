@@ -85,8 +85,7 @@ struct CrowdNodeBalanceReminderSheet: View {
         .ignoresSafeArea()
         .sheet(isPresented: .constant(true)) {
             // Use the lib's qualified factory: it sets `fillsHeight: false`, self-sizes to content,
-            // and (via `cornerRadius`) fills the sheet background + rounds the corners. Being fully
-            // qualified by type, it also avoids the ambiguity with the project's `selfSizingSheet`.
+            // and (via `cornerRadius`) fills the sheet background + rounds the corners.
             // `fallback` avoids the `.medium` flash before the first measurement.
             DashUIKit.BottomSheet.selfSizing(
                 showBackButton: .constant(false),
