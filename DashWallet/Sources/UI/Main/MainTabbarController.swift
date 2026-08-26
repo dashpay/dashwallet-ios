@@ -544,14 +544,27 @@ extension MainTabbarController: HomeViewControllerDelegate {
         }
     }
 
-    /// Every shortcut and menu entry into payments lands on the payments tab
-    /// rather than presenting a copy of it. Unwinds whatever that tab was left
-    /// showing, so an entry point always starts at the destination picker.
+    /// Payments open as a large-detent sheet over whatever the user was
+    /// looking at, not as a tab switched to.
+    ///
+    /// The tab bar item stays — it is still how you get here — but selecting
+    /// its index is intercepted in `shouldSelect`. A sheet keeps the screen
+    /// underneath visible at the top and brings its own grabber and
+    /// swipe-to-dismiss, which is what "not full screen" means here.
+    ///
+    /// Every shortcut and menu entry comes through this one path, so they all
+    /// start at the destination picker rather than wherever a long-lived tab
+    /// was last left.
     private func selectPaymentsTab(activeTab: PaymentsLandingTab) {
-        guard let paymentsTabIndex, let root = paymentsTabRootController else { return }
-        root.navigationController?.popToRootViewController(animated: false)
-        root.select(tab: activeTab)
-        selectedIndex = paymentsTabIndex
+        // Re-entering while it is already up would either fail silently or
+        // stack a second copy; put the open one on the requested tab instead.
+        if let presented = presentedViewController as? BaseNavigationController,
+           let landing = presented.viewControllers.first as? PaymentsLandingHostingController {
+            presented.popToRootViewController(animated: false)
+            landing.select(tab: activeTab)
+            return
+        }
+        presentPaymentsLandingScreen(activeTab: activeTab, showsHeader: false, asSheet: true)
     }
 
     /// The "Send to Address" shortcut skips the payments landing: straight
@@ -632,7 +645,15 @@ extension MainTabbarController: HomeViewControllerDelegate {
 
 extension MainTabbarController: UITabBarControllerDelegate {
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
-        true
+        // Payments is a sheet, not a destination. Its tab item is kept because
+        // it is the button everyone reaches for, but selecting the index would
+        // put the landing full screen — the presentation it was moved off.
+        if let paymentsTabIndex,
+           viewControllers?.firstIndex(of: viewController) == paymentsTabIndex {
+            selectPaymentsTab(activeTab: .send)
+            return false
+        }
+        return true
     }
 }
 

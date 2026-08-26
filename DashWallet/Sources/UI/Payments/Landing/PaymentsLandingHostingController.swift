@@ -371,9 +371,23 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// identity. The tab bar is the way back, and there stays exactly one
     /// contacts screen in the app.
     private func showContactBook() {
-        guard let tabBarController = tabBarController as? MainTabbarController,
-              tabBarController.showContacts()
-        else {
+        guard let tabBarController = mainTabBarController else {
+            assertionFailure("Payments landing outside the tab bar hierarchy")
+            return
+        }
+        // The landing is a sheet now, and the contacts tab would open behind
+        // it. Close first, switch after.
+        guard presentingViewController != nil else {
+            switchToContacts(on: tabBarController)
+            return
+        }
+        dismiss(animated: true) { [weak self] in
+            self?.switchToContacts(on: tabBarController)
+        }
+    }
+
+    private func switchToContacts(on tabBarController: MainTabbarController) {
+        guard tabBarController.showContacts() else {
             // No contacts tab means no identity — which is also the condition
             // that hides the row. Reaching here would be a bug, and silently
             // doing nothing is how it would stay invisible.
@@ -384,6 +398,22 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     #else
     private func showContactBook() {}
     #endif
+
+    /// The tab bar controller this landing belongs to.
+    ///
+    /// `tabBarController` alone is not enough any more: the landing is
+    /// presented as a sheet, and a presented controller is outside the tab
+    /// bar's hierarchy, so that property is nil. Walking the presenter chain
+    /// finds it whether this was pushed inside a tab or shown over one.
+    private var mainTabBarController: MainTabbarController? {
+        if let tabBarController = tabBarController as? MainTabbarController {
+            return tabBarController
+        }
+        // Searched down from the window's root, not up the presenter chain:
+        // the presenter is whichever screen happened to call `present`, and
+        // the window root is a container rather than the tab bar itself.
+        return view.window?.rootViewController?.dw_firstTabBarController() as? MainTabbarController
+    }
 
     /// The X above the Internal form. Dismisses where something presented this
     /// landing, and leaves for the history where nothing did — as the payments
