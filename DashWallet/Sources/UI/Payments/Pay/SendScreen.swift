@@ -938,11 +938,11 @@ struct SendConfirmSheet: View {
         case .platformToCore:
             return withdrawalFeeCredits
         case .shieldedToCore:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .withdrawal, numActions: 2)
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .withdrawal, numActions: 2)
         case .shieldedToPlatform:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 2)
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .unshield, numActions: 2)
         case .shieldedToShielded:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .transfer, numActions: 2)
         case .coreToCore:
             // Never presented here — the L1 processor shows the real fee.
             return nil

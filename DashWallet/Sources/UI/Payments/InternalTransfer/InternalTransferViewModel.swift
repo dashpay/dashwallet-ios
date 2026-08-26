@@ -121,7 +121,7 @@ enum CoreToShieldedAmountPolicy {
     static let assetLockBaseCostCredits: UInt64 = 50_000_000
 
     static var poolFeeCredits: UInt64? {
-        guard let shieldedFee = try? PlatformWalletManager.estimateShieldedFee(
+        guard let shieldedFee = try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(
             kind: .transfer,
             numActions: 2)
         else { return nil }
@@ -1527,7 +1527,7 @@ final class InternalTransferViewModel: ObservableObject {
                 // The funding unshield's fee scales with the spent notes —
                 // reserve the worst case, same as the Shielded → Platform
                 // route below.
-                return try? PlatformWalletManager.estimateShieldedFee(
+                return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(
                     kind: .unshield,
                     numActions: ShieldedActionBudget.maxActionsPerTransition)
             }
@@ -1549,11 +1549,11 @@ final class InternalTransferViewModel: ObservableObject {
             // (`ShieldedActionBudget.maxActionsPerTransition`) so a fragmented
             // wallet can't pass the affordability check and then fail SDK note
             // selection.
-            return try? PlatformWalletManager.estimateShieldedFee(
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(
                 kind: .withdrawal,
                 numActions: ShieldedActionBudget.maxActionsPerTransition)
         case .shieldedToPlatform:
-            return try? PlatformWalletManager.estimateShieldedFee(
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(
                 kind: .unshield,
                 numActions: ShieldedActionBudget.maxActionsPerTransition)
         case .platformToCore:
