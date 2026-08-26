@@ -267,23 +267,18 @@ final class WalletsViewModel: ObservableObject {
 
         // Blocking overlay from the FIRST moment: without this phase the app
         // looked frozen until the post-add switch finally raised the window.
-        // The create FFI itself now runs off-main (async SDK createWallet),
-        // but the mirror-network leg still blocks the MainActor for its
-        // SDK build + loadFromPersistor — TODO(etap-C).
+        // No paint-a-frame sleep needed anymore: on EVERY add path the first
+        // provisioning work after the cheap duplicate guard is an await into
+        // off-main work (the async create, or the mirror leg's off-main SDK
+        // build), so the overlay window commits during that suspension —
+        // confirmed by the stall monitor showing no >=250ms gap between the
+        // add beginning and its first suspension.
         WalletLifecycleOverlayPresenter.shared.ensureActive()
         let state = WalletLifecycleTransitionState.shared
         guard state.tryBegin(.addingWallet(isImport: isImported)) else {
             errorMessage = SwiftDashSDKWalletRuntime.SwitchError.switchInProgress.localizedDescription
             return nil
         }
-        // Give UIKit one runloop turn to commit the overlay window before the
-        // provisioning starts (the Obj-C wipe's 0.1 s dispatch_after trick).
-        // Still required even with the off-main create: on the mirror-repair
-        // path the FIRST provisioning work is the other network's synchronous
-        // SDK build on the MainActor, with no suspension point before it —
-        // without this sleep the window would not be committed until that
-        // block ends. Remove together with etap C.
-        try? await Task.sleep(for: .milliseconds(100))
 
         let opID = String(UUID().uuidString.prefix(8))
         let started = CFAbsoluteTimeGetCurrent()

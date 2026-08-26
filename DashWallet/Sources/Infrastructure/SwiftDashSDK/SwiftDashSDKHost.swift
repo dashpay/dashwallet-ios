@@ -456,7 +456,7 @@ final class SwiftDashSDKHost {
         let resolvedWallet: ManagedPlatformWallet
         Self.logger.info("🪺 HOST :: stage 4/4 restoring wallet for \(network.rawValue, privacy: .public)")
         do {
-            resolvedWallet = try loadPersistedWallet(manager: handles.manager, network: network)
+            resolvedWallet = try await loadPersistedWallet(manager: handles.manager, network: network)
         } catch HostError.walletNotFound {
             // Reinstall recovery (C6-C): the SwiftData store dies with the app
             // but WalletStorage mnemonics live in the keychain — rebuild the
@@ -677,8 +677,13 @@ final class SwiftDashSDKHost {
                 targetManager = manager
                 isTemporary = false
             } else {
+                // Wall-clock only (this line always runs on the MainActor);
+                // per-stage thread attribution lives in the stage 1-4 logs.
+                let prepStarted = CFAbsoluteTimeGetCurrent()
                 (targetManager, isTemporary) = try await managerForStoredWalletOperation(
                     network: targetNetwork)
+                let prepMs = Int((CFAbsoluteTimeGetCurrent() - prepStarted) * 1000)
+                DWLogger.log("HOST mirror-prep for \(targetNetwork.rawValue) total \(prepMs)ms")
             }
             do {
                 _ = try await createAndPersist(
@@ -894,14 +899,59 @@ final class SwiftDashSDKHost {
             await stopAsync()
         }
 
-        return try makeRuntime(for: network)
+        return try await makeRuntime(for: network)
+    }
+
+    /// Dedicated queue parking the blocking SDK construction
+    /// (`dash_sdk_create_trusted`: tokio runtime + TLS + DapiClient build,
+    /// ~1-2s). A plain GCD queue, never `Task.detached` — the blocking FFI
+    /// would park a cooperative-pool thread. Serial on purpose: runtime
+    /// bootstraps are already serialized by the lifecycle queue, so
+    /// concurrency here would buy nothing.
+    private nonisolated static let sdkBuildQueue = DispatchQueue(
+        label: "org.dashfoundation.dash.sdk-build",
+        qos: .userInitiated)
+
+    /// Build the `SDK` off the main thread and hand it back at the
+    /// suspension point. Safe because `SDK` is `@unchecked Sendable`, its
+    /// init touches nothing main-bound (one blocking FFI plus thread-safe
+    /// UserDefaults reads), and after the continuation resumes the instance
+    /// is only ever used from the MainActor. A thrown init constructs no
+    /// object; once built, `SDK.deinit` releases the native handle if a
+    /// later bootstrap stage throws.
+    private nonisolated static func buildSDKOffMain(
+        network: Network,
+        platformVersion: UInt32
+    ) async throws -> SDK {
+        try await withCheckedThrowingContinuation { continuation in
+            sdkBuildQueue.async {
+                let started = CFAbsoluteTimeGetCurrent()
+                do {
+                    let sdk = try SDK(network: network, platformVersion: platformVersion)
+                    let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+                    // Logged HERE, on the build queue, so offMain= is
+                    // evidence of where the work actually ran — a log after
+                    // the await would always print from the MainActor.
+                    DWLogger.log("HOST stage 1/4 SDK created for \(network.rawValue) in \(ms)ms offMain=\(!Thread.isMainThread)")
+                    continuation.resume(returning: sdk)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
     /// Build a configured manager/container pair without replacing the
     /// published app runtime. Full-device wipe uses this for the inactive
     /// network so each network-scoped SwiftData store is deleted through a
     /// manager configured for that same network.
-    private func makeRuntime(for network: Network) throws -> RuntimeHandles {
+    ///
+    /// Async since etap C: stage 1 (SDK construction) runs on
+    /// [`sdkBuildQueue`] instead of blocking the MainActor; stages 2-4
+    /// (ModelContainer, configure, and the caller's loadFromPersistor)
+    /// stay on the MainActor — their measured cost decides whether they
+    /// ever follow (see the stage timing logs).
+    private func makeRuntime(for network: Network) async throws -> RuntimeHandles {
         guard network != .regtest else {
             throw HostError.unsupportedNetwork(network)
         }
@@ -912,16 +962,11 @@ final class SwiftDashSDKHost {
         let newSDK: SDK
         do {
             let platformVersion = Self.platformVersion(for: network)
-            // Timed because it is main-thread work: SDK creation prefetches
-            // quorums over the network (~1-2s observed). Known stage-1
-            // limitation — the switch overlay covers it; the measurement is
-            // the data for deciding whether to move it off-main later.
-            let started = CFAbsoluteTimeGetCurrent()
-            newSDK = try SDK(network: network, platformVersion: platformVersion)
-            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+            newSDK = try await Self.buildSDKOffMain(
+                network: network,
+                platformVersion: platformVersion)
             Self.logger.info(
                 "🪺 HOST :: stage 1/4 SDK created for \(network.rawValue, privacy: .public), protocol \(platformVersion == 0 ? "auto-detect" : "pinned v\(platformVersion)", privacy: .public)")
-            DWLogger.log("HOST stage 1/4 SDK created for \(network.rawValue) in \(ms)ms")
         } catch {
             Self.logger.error("🪺 HOST :: SDK init failed: \(String(describing: error), privacy: .public)")
             throw HostError.sdkInitFailed(error)
@@ -930,11 +975,18 @@ final class SwiftDashSDKHost {
         let container: ModelContainer
         do {
             Self.logger.info("🪺 HOST :: stage 2/4 obtaining ModelContainer for \(network.rawValue, privacy: .public)")
+            // Timed for the same reason as stage 1: main-thread work whose
+            // real cost decides whether it ever needs to move off-main. The
+            // cached (reused) path should be ~0ms; only the first build of a
+            // network's container in the process pays the store-open cost.
+            let started = CFAbsoluteTimeGetCurrent()
             let cached = try modelContainerCache.value(for: network.networkName) {
                 try buildModelContainer(for: network)
             }
+            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
             container = cached.value
             Self.logger.info("🪺 HOST :: stage 2/4 ModelContainer \(cached.reused ? "reused" : "created", privacy: .public) for \(network.rawValue, privacy: .public)")
+            DWLogger.log("HOST stage 2/4 ModelContainer \(cached.reused ? "reused" : "created") for \(network.rawValue) in \(ms)ms")
         } catch {
             Self.logger.error("🪺 HOST :: ModelContainer build failed: \(String(describing: error), privacy: .public)")
             throw HostError.modelContainerFailed(error)
@@ -943,9 +995,11 @@ final class SwiftDashSDKHost {
         let newManager = PlatformWalletManager()
         do {
             Self.logger.info("🪺 HOST :: stage 3/4 configuring manager for \(network.rawValue, privacy: .public)")
+            let started = CFAbsoluteTimeGetCurrent()
             try newManager.configure(sdk: newSDK, modelContainer: container)
+            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
             Self.logger.info("🪺 HOST :: stage 3/4 manager configured for \(network.rawValue, privacy: .public)")
-            DWLogger.log("HOST stage 3/4 manager configured for \(network.rawValue)")
+            DWLogger.log("HOST stage 3/4 manager configured for \(network.rawValue) in \(ms)ms")
         } catch {
             Self.logger.error("🪺 HOST :: configure failed: \(String(describing: error), privacy: .public)")
             throw HostError.configureFailed(error)
@@ -983,9 +1037,17 @@ final class SwiftDashSDKHost {
             return (manager, false)
         }
 
-        let handles = try makeRuntime(for: network)
+        let handles = try await makeRuntime(for: network)
         do {
-            _ = try handles.manager.loadFromPersistor()
+            // Stage 4 of the detached-manager bootstrap: cost scales with the
+            // number of persisted wallets on `network` (~400ms per wallet
+            // measured). The async SDK overload runs the bulk restore and
+            // per-wallet lookups off-main; only the keychain-unlock epilogue
+            // remains on the MainActor (timed separately by the SDK).
+            let started = CFAbsoluteTimeGetCurrent()
+            let restored = try await handles.manager.loadFromPersistor()
+            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+            DWLogger.log("HOST stage 4/4 loadFromPersistor for \(network.rawValue) restored=\(restored.count) in \(ms)ms")
         } catch {
             // The detached manager is already fully configured; rethrowing
             // without an explicit shutdown would leave its native teardown to
@@ -998,11 +1060,19 @@ final class SwiftDashSDKHost {
         return (handles.manager, true)
     }
 
+    /// Async since etap C: the launch/switch/refresh bootstrap awaits the
+    /// SDK's off-main load (same overload the mirror leg uses), so the
+    /// ~400ms-per-wallet restore no longer stalls the MainActor. The
+    /// caller (`start`) is a lifecycle-queue op, so the added suspension
+    /// cannot interleave with other lifecycle operations.
     private func loadPersistedWallet(
         manager: PlatformWalletManager,
         network: Network
-    ) throws -> ManagedPlatformWallet {
-        let restored = try manager.loadFromPersistor()
+    ) async throws -> ManagedPlatformWallet {
+        let loadStarted = CFAbsoluteTimeGetCurrent()
+        let restored = try await manager.loadFromPersistor()
+        let loadMs = Int((CFAbsoluteTimeGetCurrent() - loadStarted) * 1000)
+        DWLogger.log("HOST stage 4/4 loadFromPersistor for \(network.rawValue) restored=\(restored.count) in \(loadMs)ms")
         if let resolved = resolveActiveWallet(in: manager, network: network) {
             Self.logger.info("🪺 HOST :: reusing persisted wallet; restored=\(restored.count, privacy: .public)")
             // Off the load path. `PlatformWalletManager` is `@MainActor`, so

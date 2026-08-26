@@ -11,6 +11,7 @@
 		026B0383557D0181E034B64E /* SDKIdentityProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E62262597A8B22870184A36 /* SDKIdentityProfileSheet.swift */; };
 		02EDCC7635BCD84768554D9C /* StorageModelListViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A762BDA473947F1A7EF199 /* StorageModelListViews.swift */; };
 		02EED2FC7EAC55B96ECEAAD6 /* DWLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 59C18FCF827D815007BAEF29 /* DWLogger.m */; };
+		02EED2FC7EAC55B96ECEAB01 /* MainThreadStallMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C18FCF827D815007BAEB01 /* MainThreadStallMonitor.swift */; };
 		0308E777B29CC6DE1DB30FDD /* PlatformSyncStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A58BF094C42E410DD1A71B6 /* PlatformSyncStatusScreen.swift */; };
 		06132521E7B4D21B4A1597E7 /* PlatformSendExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DCDC3A2B92601BB1E61FD9 /* PlatformSendExecutor.swift */; };
 		06E16A070A3C48883BBDA137 /* BIP70InteractiveCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36BCF99A4D30077C9C9B0EB /* BIP70InteractiveCoordinator.swift */; };
@@ -665,6 +666,7 @@
 		630227C0414D5C74BA95BB8F /* BIP70Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94606903417F75BE99D4B31C /* BIP70Error.swift */; };
 		63869E343191C55BDBBEED72 /* SwiftDashSDKInsightClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7BE8E4519203200CDFB460 /* SwiftDashSDKInsightClient.swift */; };
 		66B50619EC898EEE8C8FE13E /* DWLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 59C18FCF827D815007BAEF29 /* DWLogger.m */; };
+		66B50619EC898EEE8C8FEB01 /* MainThreadStallMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C18FCF827D815007BAEB01 /* MainThreadStallMonitor.swift */; };
 		6715F4CB33E5F472FEC43B7E /* DWParsedPaymentURI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24DC91C11E382E22D1C17F05 /* DWParsedPaymentURI.swift */; };
 		6C4AA7FD67FEE5A9E5CF9781 /* WalletsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76AB0835FF44EA88F36991E0 /* WalletsViewModel.swift */; };
 		6D5D6EFD5F40D11B2FB6E8A1 /* PaymentsLandingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E735446F9E918618E97EDD38 /* PaymentsLandingScreen.swift */; };
@@ -2853,6 +2855,7 @@
 		52B5469F5588395FA0668C4B /* SwapTransactionStatusHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapTransactionStatusHostingController.swift; sourceTree = "<group>"; };
 		5822AAB9B5EA605FF82B009A /* BIP70PaymentOutputFactory.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BIP70PaymentOutputFactory.swift; sourceTree = "<group>"; };
 		59C18FCF827D815007BAEF29 /* DWLogger.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = DWLogger.m; sourceTree = "<group>"; };
+		59C18FCF827D815007BAEB01 /* MainThreadStallMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainThreadStallMonitor.swift; sourceTree = "<group>"; };
 		59C9D64AB542D03FE3704D02 /* ShieldedWithdrawalStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalStore.swift; sourceTree = "<group>"; };
 		5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedActivityHistory.swift; sourceTree = "<group>"; };
 		5A1EC0FE2E29A20000000011 /* PlatformAddressActivityStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformAddressActivityStore.swift; sourceTree = "<group>"; };
@@ -6177,6 +6180,7 @@
 				B1700000B1700000B1700001 /* NetworkStatusService.swift */,
 				7E31813A79237F4E037063AA /* SwiftDashSDK */,
 				59C18FCF827D815007BAEF29 /* DWLogger.m */,
+				59C18FCF827D815007BAEB01 /* MainThreadStallMonitor.swift */,
 				E70A780D1543343311C16402 /* Authentication */,
 				7FA744C4A6023E26A3B5B860 /* DWLogger.h */,
 				0448A6769BCF20987BE9960C /* DiagnosticLogExporter.swift */,
@@ -10304,6 +10308,7 @@
 				E5B6555D068FA44028784652 /* SwiftDashSDKWalletState.swift in Sources */,
 				DABF195F497554C7CFE816CA /* WalletEnvironment.swift in Sources */,
 				02EED2FC7EAC55B96ECEAAD6 /* DWLogger.m in Sources */,
+				02EED2FC7EAC55B96ECEAB01 /* MainThreadStallMonitor.swift in Sources */,
 				4B8A9492829B622FCDAF4F19 /* SecureTimeService.swift in Sources */,
 				B56469D438692B0A0B771EA6 /* PinPromptView.swift in Sources */,
 				A6AAB271A1ADA69C272DA1D4 /* PinPromptPresenter.swift in Sources */,
@@ -11329,6 +11334,7 @@
 				BCBED608CAAABA10839A0ADE /* SwiftDashSDKWalletState.swift in Sources */,
 				BB779AE4D9B43803EAF0CB6F /* WalletEnvironment.swift in Sources */,
 				66B50619EC898EEE8C8FE13E /* DWLogger.m in Sources */,
+				66B50619EC898EEE8C8FEB01 /* MainThreadStallMonitor.swift in Sources */,
 				94CE86155CB8D4DBCB18F6F7 /* SecureTimeService.swift in Sources */,
 				EB070F38F6A474B4A1A7489F /* PinPromptView.swift in Sources */,
 				3116F910F54D310002090CBB /* PinPromptPresenter.swift in Sources */,
