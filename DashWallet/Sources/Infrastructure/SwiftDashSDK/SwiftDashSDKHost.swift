@@ -68,8 +68,8 @@ enum MnemonicFirstWalletCreation {
         persistMnemonic: () throws -> Void,
         retrieveMnemonic: () throws -> String,
         rollbackMnemonic: () -> Void,
-        createWallet: () throws -> Wallet
-    ) throws -> Wallet {
+        createWallet: () async throws -> Wallet
+    ) async throws -> Wallet {
         do {
             try persistMnemonic()
             guard try retrieveMnemonic() == mnemonic else {
@@ -84,7 +84,7 @@ enum MnemonicFirstWalletCreation {
         }
 
         do {
-            return try createWallet()
+            return try await createWallet()
         } catch {
             rollbackMnemonic()
             throw MnemonicFirstWalletCreationError.walletCreation(error)
@@ -515,7 +515,7 @@ final class SwiftDashSDKHost {
         let handles = try await buildRuntime(for: network)
         let createdWallet: ManagedPlatformWallet
         do {
-            createdWallet = try createAndPersist(
+            createdWallet = try await createAndPersist(
                 mnemonic: mnemonic,
                 manager: handles.manager,
                 network: handles.network,
@@ -527,7 +527,10 @@ final class SwiftDashSDKHost {
                 // the scan anchors at the tip.
                 birthHeight: isImported
                     ? Self.importedWalletBirthHeight(for: handles.network)
-                    : nil)
+                    : nil,
+                // Onboarding is not lifecycle-queue-serialized: keep the
+                // persist→create critical section MainActor-atomic.
+                offMainCreate: false)
 
             if provisionAcrossSupportedNetworks {
                 let persistedWalletIds = Set(try WalletStorage().listWalletIdsWithMnemonic())
@@ -544,13 +547,14 @@ final class SwiftDashSDKHost {
                     let (targetManager, isTemporary) = try await managerForStoredWalletOperation(
                         network: targetNetwork)
                     do {
-                        _ = try createAndPersist(
+                        _ = try await createAndPersist(
                             mnemonic: mnemonic,
                             manager: targetManager,
                             network: targetNetwork,
                             birthHeight: isImported
                                 ? Self.importedWalletBirthHeight(for: targetNetwork)
-                                : nil)
+                                : nil,
+                            offMainCreate: false)
                     } catch {
                         if isTemporary { await targetManager.shutdown() }
                         throw error
@@ -580,8 +584,10 @@ final class SwiftDashSDKHost {
         return createdWallet
     }
 
-    /// Outcome of `addWallet(mnemonic:isImported:)`.
-    enum AddWalletResult {
+    /// Outcome of `addWallet(mnemonic:isImported:)`. `Sendable` because it
+    /// crosses the lifecycle queue's awaitable seam
+    /// (`SwiftDashSDKWalletRuntime.performAddWallet`).
+    enum AddWalletResult: Sendable {
         /// The wallet was created and its mnemonic persisted; the running
         /// runtime is unchanged (the caller switches to it explicitly).
         case added(walletId: Data)
@@ -635,6 +641,11 @@ final class SwiftDashSDKHost {
     /// Shares the persist-then-create transaction with
     /// `createOrImportWallet` (`createAndPersist`); differs only in that it
     /// uses the LIVE manager and does not publish or set-active.
+    ///
+    /// Interactive callers route through
+    /// `SwiftDashSDKWalletRuntime.performAddWallet`, which runs this method
+    /// as one link of the serial lifecycle chain so queued refresh/reset
+    /// operations cannot interleave with the multi-network provisioning.
     @discardableResult
     func addWallet(mnemonic: String, isImported: Bool) async throws -> AddWalletResult {
         let mnemonic = Mnemonic.normalizePhrase(mnemonic)
@@ -670,7 +681,7 @@ final class SwiftDashSDKHost {
                     network: targetNetwork)
             }
             do {
-                _ = try createAndPersist(
+                _ = try await createAndPersist(
                     mnemonic: mnemonic,
                     manager: targetManager,
                     network: targetNetwork,
@@ -679,7 +690,11 @@ final class SwiftDashSDKHost {
                     // wallets from that network's tip.
                     birthHeight: isImported
                         ? Self.importedWalletBirthHeight(for: targetNetwork)
-                        : nil)
+                        : nil,
+                    // The interactive add runs as one lifecycle-queue op
+                    // (`performAddWallet`), so refreshes cannot observe the
+                    // suspension the off-main create introduces.
+                    offMainCreate: true)
             } catch {
                 if isTemporary { await targetManager.shutdown() }
                 throw error
@@ -708,12 +723,25 @@ final class SwiftDashSDKHost {
     /// unsynced headers the SDK falls back to the network's newest
     /// hardcoded checkpoint), `0` scans from genesis (imported mnemonic
     /// whose history predates this device).
+    /// `offMainCreate` picks the SDK create overload. `true` (interactive
+    /// add): the async overload — the blocking FFI leaves the MainActor,
+    /// but the transaction gains a REAL suspension point between the
+    /// mnemonic persist and the wallet rows appearing; safe only when the
+    /// caller is serialized against runtime refreshes (the add flow runs on
+    /// the lifecycle queue). `false` (onboarding/migration): the sync
+    /// overload — no suspension between persist and create, so a
+    /// concurrently scheduled `startIfReady`/refresh can never observe the
+    /// half-state (mnemonic present, no wallet rows) and build a competing
+    /// runtime; `createOrImportWallet` is NOT queue-serialized (the
+    /// migrator is awaited by refresh itself — enqueueing would deadlock),
+    /// so it must keep the MainActor-atomic critical section.
     private func createAndPersist(
         mnemonic: String,
         manager: PlatformWalletManager,
         network: Network,
-        birthHeight: UInt32?
-    ) throws -> ManagedPlatformWallet {
+        birthHeight: UInt32?,
+        offMainCreate: Bool
+    ) async throws -> ManagedPlatformWallet {
         let walletId: Data
         do {
             // This is the same deterministic id contract used by addWallet's
@@ -736,7 +764,7 @@ final class SwiftDashSDKHost {
         }
 
         do {
-            return try MnemonicFirstWalletCreation.run(
+            return try await MnemonicFirstWalletCreation.run(
                 mnemonic: mnemonic,
                 persistMnemonic: {
                     try storage.storeMnemonic(mnemonic, for: walletId)
@@ -752,12 +780,31 @@ final class SwiftDashSDKHost {
                     }
                 },
                 createWallet: {
-                    try manager.createWallet(
-                        mnemonic: mnemonic,
-                        network: network,
-                        name: "dashwallet",
-                        createDefaultAccounts: true,
-                        birthHeight: birthHeight)
+                    if offMainCreate {
+                        // Async SDK overload: the blocking native create
+                        // runs on the SDK's dedicated queue, not the main
+                        // thread.
+                        return try await manager.createWallet(
+                            mnemonic: mnemonic,
+                            network: network,
+                            name: "dashwallet",
+                            createDefaultAccounts: true,
+                            birthHeight: birthHeight)
+                    }
+                    // Sync SDK overload, forced by the explicit non-async
+                    // function type (an async context would otherwise
+                    // prefer the async one): blocks the MainActor for the
+                    // whole create, keeping persist→create atomic for the
+                    // unserialized onboarding path.
+                    let syncCreate: () throws -> ManagedPlatformWallet = {
+                        try manager.createWallet(
+                            mnemonic: mnemonic,
+                            network: network,
+                            name: "dashwallet",
+                            createDefaultAccounts: true,
+                            birthHeight: birthHeight)
+                    }
+                    return try syncCreate()
                 })
         } catch MnemonicFirstWalletCreationError.mnemonicRoundTripMismatch {
             Self.logger.error("🪺 HOST :: mnemonic persistence round-trip mismatch")

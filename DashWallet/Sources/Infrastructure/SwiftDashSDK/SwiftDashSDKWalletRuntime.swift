@@ -37,6 +37,24 @@ final class SerialAsyncLifecycleQueue {
         currentTask = task
         return task
     }
+
+    /// Value-returning variant: the operation is one link of the same serial
+    /// chain (full barrier semantics — everything enqueued later waits for
+    /// it), and its result or error is handed back to the caller through a
+    /// continuation. The chain itself stays `Task<Void, Never>`.
+    func enqueueAwaitable<T: Sendable>(
+        _ operation: @escaping @MainActor () async throws -> T
+    ) async throws -> T {
+        try await withCheckedThrowingContinuation { continuation in
+            enqueue {
+                do {
+                    continuation.resume(returning: try await operation())
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
 }
 
 @objc(DWSwiftDashSDKWalletRuntime)
@@ -280,6 +298,24 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         }
 
         publishActiveWalletDidChange(reason: "wallet-switch")
+    }
+
+    /// Additive wallet provisioning (`SwiftDashSDKHost.addWallet`) as ONE
+    /// link of the serial lifecycle chain, so a queued `refresh`/`fullReset`
+    /// can never interleave with the multi-network create. Like
+    /// `switchNetwork(to:)`, this MUST NOT be called from within a lifecycle
+    /// operation already running on the chain — it awaits its own enqueued
+    /// op and would self-await-deadlock the queue. The add flow's post-add
+    /// `switchWallet` is deliberately a SECOND, sequential chain op (the
+    /// caller awaits this method first), never nested inside it.
+    @MainActor
+    func performAddWallet(mnemonic: String, isImported: Bool) async throws
+        -> SwiftDashSDKHost.AddWalletResult {
+        try await lifecycleQueue.enqueueAwaitable {
+            try await SwiftDashSDKHost.shared.addWallet(
+                mnemonic: mnemonic,
+                isImported: isImported)
+        }
     }
 
     /// Validate that `walletId` is a switchable target on the current network:

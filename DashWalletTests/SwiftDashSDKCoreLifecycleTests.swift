@@ -78,6 +78,40 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         ])
     }
 
+    /// The value-returning variant is one link of the same serial chain:
+    /// its result comes back to the caller, its error propagates, and ops
+    /// enqueued around it stay strictly ordered.
+    func testEnqueueAwaitableReturnsValueThrowsAndKeepsChainOrder() async throws {
+        let queue = SerialAsyncLifecycleQueue()
+        var events: [String] = []
+
+        queue.enqueue { events.append("before") }
+        let value = try await queue.enqueueAwaitable { () async throws -> Int in
+            events.append("awaitable")
+            return 41
+        }
+        queue.enqueue { events.append("after") }
+
+        XCTAssertEqual(value, 41)
+        XCTAssertEqual(events, ["before", "awaitable"])
+
+        do {
+            _ = try await queue.enqueueAwaitable { () async throws -> Int in
+                events.append("throwing")
+                throw CoreLifecycleTestError.start
+            }
+            XCTFail("Expected the enqueued error to propagate")
+        } catch CoreLifecycleTestError.start {
+            // Expected — and the chain must survive a thrown link.
+        }
+
+        _ = try await queue.enqueueAwaitable { () async throws -> Int in
+            events.append("tail")
+            return 0
+        }
+        XCTAssertEqual(events, ["before", "awaitable", "after", "throwing", "tail"])
+    }
+
     func testProcessCacheReusesValuesPerNetworkAndSeparatesNetworks() {
         final class Token {}
 

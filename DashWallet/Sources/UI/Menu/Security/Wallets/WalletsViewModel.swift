@@ -265,10 +265,11 @@ final class WalletsViewModel: ObservableObject {
         addInProgress = true
         defer { addInProgress = false }
 
-        // Blocking overlay from the FIRST moment: provisioning is seconds of
-        // blocking MainActor work (wallet creation FFI on both networks, plus
-        // the other network's SDK build), and without this phase the app
+        // Blocking overlay from the FIRST moment: without this phase the app
         // looked frozen until the post-add switch finally raised the window.
+        // The create FFI itself now runs off-main (async SDK createWallet),
+        // but the mirror-network leg still blocks the MainActor for its
+        // SDK build + loadFromPersistor — TODO(etap-C).
         WalletLifecycleOverlayPresenter.shared.ensureActive()
         let state = WalletLifecycleTransitionState.shared
         guard state.tryBegin(.addingWallet(isImport: isImported)) else {
@@ -276,9 +277,12 @@ final class WalletsViewModel: ObservableObject {
             return nil
         }
         // Give UIKit one runloop turn to commit the overlay window before the
-        // blocking provisioning starts (the Obj-C wipe's 0.1 s dispatch_after
-        // trick): the phase-apply Task was already enqueued by the sink, and
-        // both it and the CoreAnimation commit run while this sleeps.
+        // provisioning starts (the Obj-C wipe's 0.1 s dispatch_after trick).
+        // Still required even with the off-main create: on the mirror-repair
+        // path the FIRST provisioning work is the other network's synchronous
+        // SDK build on the MainActor, with no suspension point before it —
+        // without this sleep the window would not be committed until that
+        // block ends. Remove together with etap C.
         try? await Task.sleep(for: .milliseconds(100))
 
         let opID = String(UUID().uuidString.prefix(8))
@@ -287,7 +291,12 @@ final class WalletsViewModel: ObservableObject {
 
         let result: SwiftDashSDKHost.AddWalletResult
         do {
-            result = try await SwiftDashSDKHost.shared.addWallet(
+            // Through the runtime's serial lifecycle chain: a queued
+            // refresh/fullReset can no longer interleave with the
+            // multi-network provisioning. The post-add switch below stays
+            // OUTSIDE the chain (its own sequential op — nesting it here
+            // would self-await-deadlock the queue).
+            result = try await SwiftDashSDKWalletRuntime.shared.performAddWallet(
                 mnemonic: normalized,
                 isImported: isImported)
         } catch {
