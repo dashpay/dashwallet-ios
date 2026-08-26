@@ -2857,8 +2857,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds.";
 
+/* DashSpend */
+"Could not load your gift card" = "Could not load your gift card";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "Your mixed coins were moved to your Dash Wallet balance.";
+
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again.";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed.";
 
 /* No comment provided by engineer. */
 "Moved from" = "Moved from";

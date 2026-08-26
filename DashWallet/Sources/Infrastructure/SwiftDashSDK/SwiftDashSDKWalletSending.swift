@@ -30,7 +30,17 @@ final class SwiftDashSDKWalletSending: WalletSending {
                 "PreparedSend carries no SDK transaction handle")
         }
         let outcome = try SwiftDashSDKTransactionSender.broadcast(tx)
-        _ = try SwiftDashSDKTransactionSender.requireAccepted(outcome)
+        do {
+            _ = try SwiftDashSDKTransactionSender.requireAccepted(outcome)
+        } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(_, let reason) {
+            // "Unknown" is not "failed": the SDK's acceptance detector only watches for a
+            // relay-back from the withheld peer, so a transaction that is already in the
+            // mempool (and even InstantLocked) lands here whenever no peer echoes it back in
+            // time. Carry the app-computed tx hash out with the error so the caller can
+            // record the spend it just made instead of losing it. Rejections keep throwing
+            // `SendError.transactionRejected` unchanged.
+            throw BIP70Error.broadcastOutcomeUnknown(txHashDisplay: prepared.txHashDisplay, reason: reason)
+        }
         // Return contract is the display-order txid hex; keep the deterministic
         // app-computed value (the sender logs the SDK-reported txid alongside).
         return prepared.txHashDisplay.map { String(format: "%02x", $0) }.joined()

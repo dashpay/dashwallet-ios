@@ -35,6 +35,14 @@ enum DashSpendError: Error, LocalizedError {
     case previousSwapPending
     case swapAwaitingInstantLock
     case authenticationCancelled
+    /// The Dash payment was broadcast but the network returned no acceptance verdict in time.
+    /// The order is NOT lost: the merchant holds the signed transaction and the gift card is
+    /// recorded against `txIdWire` so the details poller can pick it up once it fulfils.
+    case paymentStatusUnknown(txIdWire: Data, reason: String)
+    /// CTX never acknowledged the payment, so it is unknown whether the order was received at
+    /// all. The purchase is still recorded against `txIdWire`: if CTX did receive the signed
+    /// transaction it broadcasts it and fulfils the order, and the card must not be lost.
+    case paymentNotAcknowledged(txIdWire: Data, reason: String)
 
     var errorDescription: String? {
         switch self {
@@ -68,6 +76,16 @@ enum DashSpendError: Error, LocalizedError {
             return message
         case .unknown:
             return NSLocalizedString("An unknown error occurred. Please try again later.", comment: "DashSpend")
+        case .paymentNotAcknowledged:
+            return NSLocalizedString(
+                "We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again.",
+                comment: "DashSpend"
+            )
+        case .paymentStatusUnknown:
+            return NSLocalizedString(
+                "Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed.",
+                comment: "DashSpend"
+            )
         case .paymentProcessingError(let details):
             return String(format: NSLocalizedString("Payment processing error: %@", comment: "DashSpend"), details)
         case .previousSwapPending:
