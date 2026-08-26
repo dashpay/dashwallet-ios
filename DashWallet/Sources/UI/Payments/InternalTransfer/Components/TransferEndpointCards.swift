@@ -134,27 +134,41 @@ struct TransferEndpointCards: View {
         return .standalone
     }
 
+    /// Whether a row opens a picker — and so whether it draws a chevron.
+    ///
+    /// Simple mode offers two balances and a badge between them that swaps
+    /// which is which, so a picker would only ever offer the row the user is
+    /// already looking at or the one directly opposite. The chevron promised a
+    /// choice that did not exist.
+    private var rowsArePickers: Bool {
+        viewModel.isAdvancedMode
+    }
+
+    private func pickerTap(_ target: TransferEndpointSide) -> (() -> Void)? {
+        rowsArePickers ? { picker = target } : nil
+    }
+
     private var fromItem: DashUIKit.ConverterCardItem {
         viewModel.isIdentitySource
-            ? identityConverterItem(onTap: { picker = .source })
-            : converterItem(viewModel.source, onTap: { picker = .source })
+            ? identityConverterItem(onTap: pickerTap(.source))
+            : converterItem(viewModel.source, onTap: pickerTap(.source))
     }
 
     private var toItem: DashUIKit.ConverterCardItem {
         if viewModel.isIdentityDestination {
-            return identityConverterItem(onTap: { picker = .destination })
+            return identityConverterItem(onTap: pickerTap(.destination))
         }
         // With the identity on the FROM side the TO side is the withdrawal's
         // payout balance, which is a narrower set than `resolvedSendTarget`.
         let network = viewModel.isIdentitySource
             ? viewModel.resolvedWithdrawalTarget.network
             : viewModel.resolvedSendTarget
-        return converterItem(network, onTap: { picker = .destination })
+        return converterItem(network, onTap: pickerTap(.destination))
     }
 
     /// The identity's own credit balance, rendered in DASH like the balance
     /// rows — the same persisted number the profile sheet shows.
-    private func identityConverterItem(onTap: @escaping () -> Void) -> DashUIKit.ConverterCardItem {
+    private func identityConverterItem(onTap: (() -> Void)?) -> DashUIKit.ConverterCardItem {
         let display = TransferEndpointDisplay.identity(in: viewModel)
         return DashUIKit.ConverterCardItem(
             id: "identity",
