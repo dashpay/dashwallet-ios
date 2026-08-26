@@ -86,7 +86,7 @@ struct AssetLockRecoveryService {
         default:
             throw RecoveryError.unsupportedRoute
         }
-        ShieldedTxLookup.shared.refresh()
+        await ShieldedTxLookup.shared.refresh(reason: "asset-lock-recovery-completed")
         Self.logger.info("🔁 LOCK-RETRY :: completed type=\(fundingTypeRaw, privacy: .public)")
     }
 

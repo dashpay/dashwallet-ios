@@ -454,6 +454,9 @@ final class IdentityTopUpViewModel: ObservableObject {
     static func estimatedFeeCredits(source: FundingSource) -> UInt64? {
         let unshieldFee: UInt64
         if source == .shielded {
+            // `nil`, not `0`, when there is no estimate — see the doc above.
+            // Reporting a zero fee for an unknown one is a number the user
+            // would act on.
             guard let estimate = try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .unshield, numActions: 2) else {
                 return nil
             }

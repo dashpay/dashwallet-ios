@@ -563,7 +563,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         stopAssetLockPolling()
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route completed")
         phase = .success
-        ShieldedTxLookup.shared.refresh()
+        await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-completed")
         NotificationCenter.default.post(
             name: .swiftDashSDKTransactionProjectionDidChange,
             object: nil)
@@ -638,7 +638,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // `performShield`). No intermediate signal exists for this opaque call.
         phase = .broadcasting
         phase = terminalPhase
-        ShieldedTxLookup.shared.refresh()
+        await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-resume-completed")
         NotificationCenter.default.post(
             name: .swiftDashSDKTransactionProjectionDidChange,
             object: nil)
@@ -709,9 +709,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Stages: `.signing → .proving → .broadcasting → .success`. No
     /// intermediate signals from the FFI — `.proving` covers the whole opaque
     /// ~30 s call; on return we jump to `.success`.
-    func performShield(amountCredits: UInt64) async {
+    ///
+    /// `recipientRaw43` nil = the wallet's own pool (the internal
+    /// transfer); an external Send passes the recipient's raw 43-byte
+    /// Orchard address and the note funds THAT wallet's pool instead
+    /// (`shieldedShieldToRecipient`). Capacity preflight and fees are
+    /// identical — the recipient does not change input selection.
+    func performShield(amountCredits: UInt64, recipientRaw43: Data? = nil) async {
         guard beginTransfer() else { return }
-        Self.logger.info("🛡️ SHIELD-TX :: shield route amount=\(amountCredits) credits")
+        Self.logger.info("🛡️ SHIELD-TX :: shield route amount=\(amountCredits) credits external=\(recipientRaw43 != nil)")
 
         let env: Environment
         do {
@@ -755,12 +761,22 @@ final class ShieldedTransferCoordinator: ObservableObject {
             network: env.network)
 
         do {
-            try await env.manager.shieldedShield(
-                walletId: env.walletId,
-                shieldedAccount: 0,
-                paymentAccount: 0,
-                amount: amountCredits,
-                addressSigner: signer)
+            if let recipientRaw43 {
+                try await env.manager.shieldedShieldToRecipient(
+                    walletId: env.walletId,
+                    shieldedAccount: 0,
+                    paymentAccount: 0,
+                    recipientRaw43: recipientRaw43,
+                    amount: amountCredits,
+                    addressSigner: signer)
+            } else {
+                try await env.manager.shieldedShield(
+                    walletId: env.walletId,
+                    shieldedAccount: 0,
+                    paymentAccount: 0,
+                    amount: amountCredits,
+                    addressSigner: signer)
+            }
         } catch {
             if case PlatformWalletError.shieldedInsufficientBalance = error {
                 handleFailure(CoordinatorError.platformShieldCapacityChanged(

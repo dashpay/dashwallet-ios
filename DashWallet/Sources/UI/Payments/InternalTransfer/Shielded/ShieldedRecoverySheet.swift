@@ -95,7 +95,7 @@ final class ShieldedRecoveryViewModel: ObservableObject {
         guard let outPoint else { return false }
 
         Task { @MainActor in
-            ShieldedTxLookup.shared.refresh()
+            await ShieldedTxLookup.shared.refresh(reason: "shield-recovery-preflight")
 
             if Self.status(ofOutPoint: outPoint.txidWire) == .consumed {
                 alreadyComplete = true
@@ -114,7 +114,7 @@ final class ShieldedRecoveryViewModel: ObservableObject {
             // The shield consumed the lock; refresh so the history row flips
             // pending → completed without waiting for the next sync pass.
             if case .success = coordinator.phase {
-                ShieldedTxLookup.shared.refresh()
+                await ShieldedTxLookup.shared.refresh(reason: "shield-recovery-completed")
             }
         }
         return true

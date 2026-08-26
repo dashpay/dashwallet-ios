@@ -205,6 +205,14 @@ extension ExploreDash {
         merchantDAO.allMerchants(by: query, in: bounds, userPoint: userPoint, paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, denominationType: denominationType, offset: offset, completion: completion)
     }
 
+    func merchantPhysicalLocations(in bounds: ExploreMapBounds, center: CLLocationCoordinate2D,
+                                   paymentMethods: [PointOfUseListFilters.SpendingOptions]?,
+                                   denominationType: PointOfUseListFilters.DenominationType?,
+                                   completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
+        merchantDAO.physicalLocations(in: bounds, center: center, paymentMethods: paymentMethods,
+                                      denominationType: denominationType, completion: completion)
+    }
+
     func allLocations(for merchantId: String, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, offset: Int = 0,
                       completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         merchantDAO.allLocations(for: merchantId, in: bounds, userPoint: userPoint, offset: offset, completion: completion)

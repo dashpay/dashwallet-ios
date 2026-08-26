@@ -2093,11 +2093,13 @@ final class InternalTransferViewModel: ObservableObject {
         return feeReserveExceedsBalanceMessage(.core)
     }
 
-    private static let platformShieldPreflightLoadingMessage = NSLocalizedString(
+    // Shared with `SendViewModel`'s Platform → external Shielded route,
+    // which runs the same preflight — hence `internal`, not `private`.
+    static let platformShieldPreflightLoadingMessage = NSLocalizedString(
         "Checking how much of your Platform balance can be moved…",
         comment: "Platform to Shielded preflight in progress")
 
-    private static let platformShieldPreflightUnavailableMessage = NSLocalizedString(
+    static let platformShieldPreflightUnavailableMessage = NSLocalizedString(
         "Could not check the available Platform balance. Sync and try again.",
         comment: "Platform to Shielded preflight failed")
 
@@ -2109,7 +2111,8 @@ final class InternalTransferViewModel: ObservableObject {
         "Refreshing your Platform balance before checking the new maximum…",
         comment: "Platform Shield manual resync in progress")
 
-    private static let platformShieldHeadroomUnavailableMessage = NSLocalizedString(
+    // Shared with `SendViewModel` — see the note above.
+    static let platformShieldHeadroomUnavailableMessage = NSLocalizedString(
         "Your Platform balance cannot currently cover the Shield transfer selection headroom.",
         comment: "Platform balance cannot fund shield selection headroom")
 
