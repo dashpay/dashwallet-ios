@@ -56,7 +56,7 @@ struct BuyEnterAmountView: View {
         }
         .dexOfflineToast(isOnline: viewModel.isOnline)
         .sheet(isPresented: $showLocalCurrency) {
-            let dialog = BottomSheet(
+            let dialog = DashUIKit.BottomSheet(
                 showBackButton: Binding<Bool>.constant(false)
             ) {
                 LocalCurrencyView { code in

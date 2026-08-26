@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct DashSpendLoginInfoView: View {
     let provider: GiftCardProvider
@@ -25,7 +26,7 @@ struct DashSpendLoginInfoView: View {
     @State private var inProgress: Bool = false
     
     var body: some View {
-        BottomSheet(showBackButton: .constant(false)) {
+        DashUIKit.BottomSheet(showBackButton: .constant(false)) {
             VStack {
                 TextIntro(
                     icon: .custom(provider.logoName, maxHeight: 60),

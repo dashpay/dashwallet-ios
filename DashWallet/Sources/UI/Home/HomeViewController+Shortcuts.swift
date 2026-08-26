@@ -466,7 +466,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
 
     private func shortcutSelectionSheetView(for position: Int) -> AnyView {
         let usedTypes = Set(HomeViewModel.shared.shortcutItems.map { $0.type })
-        let sheet = BottomSheet(title: NSLocalizedString("Select option", comment: ""),
+        let sheet = DashUIKit.BottomSheet(title: NSLocalizedString("Select option", comment: ""),
                                 showBackButton: .constant(false)) {
             ShortcutSelectionView(usedTypes: usedTypes) { [weak self] selectedType in
                 self?.applyShortcutCustomization(type: selectedType, at: position)

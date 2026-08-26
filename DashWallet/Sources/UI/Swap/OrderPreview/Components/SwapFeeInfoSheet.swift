@@ -99,7 +99,7 @@ private struct SwapFeeInfoSheetPreviewHost: View {
         Color.dash.primaryBackground
             .ignoresSafeArea()
             .sheet(isPresented: $isPresented) {
-//                let sheet = BottomSheet(showBackButton: .constant(false)) {
+//                let sheet = DashUIKit.BottomSheet(showBackButton: .constant(false)) {
 //                        SwapFeeInfoSheet(onDismiss: {})
 //                    }
 //
@@ -109,7 +109,7 @@ private struct SwapFeeInfoSheetPreviewHost: View {
 //                    sheet
 //                }
 
-                BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
+                DashUIKit.BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
                     SwapFeeInfoSheet(usesGenericFeeInfo: false, onDismiss: {})
                 }
                 .selfSizingSheet()

@@ -81,7 +81,7 @@ struct TransferAmountView<ViewModel: TransferAmountViewModelProtocol>: View {
             }
         }
         .sheet(isPresented: $showLocalCurrency) {
-            let dialog = BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
+            let dialog = DashUIKit.BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
                 LocalCurrencyView { code in
                     viewModel.selectFiatCurrency(code)
                     showLocalCurrency = false
