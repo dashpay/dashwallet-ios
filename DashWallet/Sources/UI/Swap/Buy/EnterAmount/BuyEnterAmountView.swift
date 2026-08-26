@@ -82,7 +82,7 @@ struct BuyEnterAmountView: View {
                 selectedCurrency: $viewModel.selectedCurrency,
                 options: viewModel.currencyOptions,
                 onCurrencyTap: { showLocalCurrency = true },
-                hidesSelectedOption: true
+                hidesSelectedOption: false
             )
             .frame(height: 70)
 
