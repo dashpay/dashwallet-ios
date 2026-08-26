@@ -456,7 +456,7 @@ final class SwiftDashSDKHost {
         let resolvedWallet: ManagedPlatformWallet
         Self.logger.info("🪺 HOST :: stage 4/4 restoring wallet for \(network.rawValue, privacy: .public)")
         do {
-            resolvedWallet = try loadPersistedWallet(manager: handles.manager, network: network)
+            resolvedWallet = try await loadPersistedWallet(manager: handles.manager, network: network)
         } catch HostError.walletNotFound {
             // Reinstall recovery (C6-C): the SwiftData store dies with the app
             // but WalletStorage mnemonics live in the keychain — rebuild the
@@ -1040,10 +1040,12 @@ final class SwiftDashSDKHost {
         let handles = try await makeRuntime(for: network)
         do {
             // Stage 4 of the detached-manager bootstrap: cost scales with the
-            // number of persisted wallets on `network` (bulk FFI + per-wallet
-            // FFI + keychain unlock), all currently on the main thread.
+            // number of persisted wallets on `network` (~400ms per wallet
+            // measured). The async SDK overload runs the bulk restore and
+            // per-wallet lookups off-main; only the keychain-unlock epilogue
+            // remains on the MainActor (timed separately by the SDK).
             let started = CFAbsoluteTimeGetCurrent()
-            let restored = try handles.manager.loadFromPersistor()
+            let restored = try await handles.manager.loadFromPersistor()
             let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
             DWLogger.log("HOST stage 4/4 loadFromPersistor for \(network.rawValue) restored=\(restored.count) in \(ms)ms")
         } catch {
@@ -1058,12 +1060,17 @@ final class SwiftDashSDKHost {
         return (handles.manager, true)
     }
 
+    /// Async since etap C: the launch/switch/refresh bootstrap awaits the
+    /// SDK's off-main load (same overload the mirror leg uses), so the
+    /// ~400ms-per-wallet restore no longer stalls the MainActor. The
+    /// caller (`start`) is a lifecycle-queue op, so the added suspension
+    /// cannot interleave with other lifecycle operations.
     private func loadPersistedWallet(
         manager: PlatformWalletManager,
         network: Network
-    ) throws -> ManagedPlatformWallet {
+    ) async throws -> ManagedPlatformWallet {
         let loadStarted = CFAbsoluteTimeGetCurrent()
-        let restored = try manager.loadFromPersistor()
+        let restored = try await manager.loadFromPersistor()
         let loadMs = Int((CFAbsoluteTimeGetCurrent() - loadStarted) * 1000)
         DWLogger.log("HOST stage 4/4 loadFromPersistor for \(network.rawValue) restored=\(restored.count) in \(loadMs)ms")
         if let resolved = resolveActiveWallet(in: manager, network: network) {
