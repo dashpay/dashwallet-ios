@@ -475,10 +475,8 @@ struct UsernameMarketplaceScreen: View {
         .background(Color.dash.primaryBackground.ignoresSafeArea())
         .onAppear { viewModel.loadMyNames() }
         .sheet(item: $selectedLabel) { selected in
-            DashUIKit.BottomSheet(showBackButton: .constant(false)) {
-                MarketplaceNameDetailSheet(selection: selected, viewModel: viewModel)
-            }
-            .presentationDetents([.medium, .large])
+            MarketplaceNameDetailSheet(selection: selected, viewModel: viewModel)
+                .presentationDetents([.medium, .large])
         }
         .sheet(item: $registerCandidate) { candidate in
             if candidate.isContested {
@@ -1155,16 +1153,12 @@ private struct MarketplaceNameDetailSheet: View {
             }
         }
         .sheet(isPresented: $showingSetPrice) {
-            DashUIKit.BottomSheet(showBackButton: .constant(false)) {
-                SetNamePriceSheet(label: label, viewModel: viewModel, onDone: { dismiss() })
-            }
-            .presentationDetents([.medium, .large])
+            SetNamePriceSheet(label: label, viewModel: viewModel, onDone: { dismiss() })
+                .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showingTransfer) {
-            DashUIKit.BottomSheet(showBackButton: .constant(false)) {
-                TransferNameSheet(label: label, viewModel: viewModel, onDone: { dismiss() })
-            }
-            .presentationDetents([.medium, .large])
+            TransferNameSheet(label: label, viewModel: viewModel, onDone: { dismiss() })
+                .presentationDetents([.medium, .large])
         }
     }
 
