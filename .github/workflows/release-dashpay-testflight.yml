@@ -17,6 +17,11 @@ on:
         required: true
         default: v4.2-dev
         type: string
+      dashuikit_ref:
+        description: "dashpay/DashUIKit branch, tag, or commit SHA — blank uses the pin committed in Package.resolved"
+        required: false
+        default: ""
+        type: string
       release_channel:
         description: "TestFlight distribution channel"
         required: true
@@ -77,6 +82,64 @@ jobs:
           path: dashwallet-ios
           fetch-depth: 1
           persist-credentials: false
+
+      # DashUIKit is a remote Swift package, so a branch of it cannot be tested
+      # by checking it out beside the wallet the way platform is. The archive
+      # runs with `-onlyUsePackageVersionsFromResolvedFile`, which makes
+      # `Package.resolved` the authority — so pointing that (and the project's
+      # branch requirement, which must agree) at another ref is what selects it.
+      #
+      # Left blank, nothing is touched and the committed pin is used.
+      - name: Override the DashUIKit pin
+        if: inputs.dashuikit_ref != ''
+        working-directory: ${{ github.workspace }}/dashwallet-ios
+        env:
+          DASHUIKIT_REF: ${{ inputs.dashuikit_ref }}
+        run: |
+          set -euo pipefail
+
+          # A branch or tag resolves to its tip; anything else is taken as a
+          # commit SHA already, and `Package.resolved` wants both a name and a
+          # revision either way.
+          sha="$(git ls-remote https://github.com/dashpay/DashUIKit "$DASHUIKIT_REF" | cut -f1 | head -1)"
+          if [ -z "$sha" ]; then
+            sha="$DASHUIKIT_REF"
+          fi
+          echo "DashUIKit → $DASHUIKIT_REF ($sha)"
+
+          python3 - "$DASHUIKIT_REF" "$sha" <<'PY'
+          import json, re, sys
+
+          ref, sha = sys.argv[1], sys.argv[2]
+
+          resolved = "DashWallet.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+          with open(resolved) as handle:
+              document = json.load(handle)
+          pins = [p for p in document["pins"] if p["identity"].lower() == "dashuikit"]
+          if not pins:
+              sys.exit("no DashUIKit pin in Package.resolved")
+          pins[0]["state"] = {"branch": ref, "revision": sha}
+          with open(resolved, "w") as handle:
+              json.dump(document, handle, indent=2)
+              handle.write("\n")
+
+          # The project pins a branch too, and `-onlyUsePackageVersionsFromResolvedFile`
+          # still checks the resolved revision against it. Rewrites only the
+          # requirement inside DashUIKit's own reference block.
+          project = "DashWallet.xcodeproj/project.pbxproj"
+          with open(project) as handle:
+              text = handle.read()
+          pattern = re.compile(
+              r'(XCRemoteSwiftPackageReference "DashUIKit" \*/ = \{.*?branch = )[^;]+(;)',
+              re.DOTALL)
+          # Quoted: a branch name carries slashes, and pbxproj only leaves bare
+          # tokens unquoted. Quoting a plain name too is harmless.
+          text, count = pattern.subn(rf'\g<1>"{ref}"\g<2>', text, count=1)
+          if count != 1:
+              sys.exit("could not rewrite the DashUIKit branch requirement")
+          with open(project, "w") as handle:
+              handle.write(text)
+          PY
 
       - name: Checkout platform
         uses: actions/checkout@v6
