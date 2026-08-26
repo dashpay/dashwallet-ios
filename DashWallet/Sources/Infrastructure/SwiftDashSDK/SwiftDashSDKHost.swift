@@ -68,8 +68,8 @@ enum MnemonicFirstWalletCreation {
         persistMnemonic: () throws -> Void,
         retrieveMnemonic: () throws -> String,
         rollbackMnemonic: () -> Void,
-        createWallet: () throws -> Wallet
-    ) throws -> Wallet {
+        createWallet: () async throws -> Wallet
+    ) async throws -> Wallet {
         do {
             try persistMnemonic()
             guard try retrieveMnemonic() == mnemonic else {
@@ -84,7 +84,7 @@ enum MnemonicFirstWalletCreation {
         }
 
         do {
-            return try createWallet()
+            return try await createWallet()
         } catch {
             rollbackMnemonic()
             throw MnemonicFirstWalletCreationError.walletCreation(error)
@@ -515,7 +515,7 @@ final class SwiftDashSDKHost {
         let handles = try await buildRuntime(for: network)
         let createdWallet: ManagedPlatformWallet
         do {
-            createdWallet = try createAndPersist(
+            createdWallet = try await createAndPersist(
                 mnemonic: mnemonic,
                 manager: handles.manager,
                 network: handles.network,
@@ -544,7 +544,7 @@ final class SwiftDashSDKHost {
                     let (targetManager, isTemporary) = try await managerForStoredWalletOperation(
                         network: targetNetwork)
                     do {
-                        _ = try createAndPersist(
+                        _ = try await createAndPersist(
                             mnemonic: mnemonic,
                             manager: targetManager,
                             network: targetNetwork,
@@ -580,8 +580,10 @@ final class SwiftDashSDKHost {
         return createdWallet
     }
 
-    /// Outcome of `addWallet(mnemonic:isImported:)`.
-    enum AddWalletResult {
+    /// Outcome of `addWallet(mnemonic:isImported:)`. `Sendable` because it
+    /// crosses the lifecycle queue's awaitable seam
+    /// (`SwiftDashSDKWalletRuntime.performAddWallet`).
+    enum AddWalletResult: Sendable {
         /// The wallet was created and its mnemonic persisted; the running
         /// runtime is unchanged (the caller switches to it explicitly).
         case added(walletId: Data)
@@ -635,6 +637,11 @@ final class SwiftDashSDKHost {
     /// Shares the persist-then-create transaction with
     /// `createOrImportWallet` (`createAndPersist`); differs only in that it
     /// uses the LIVE manager and does not publish or set-active.
+    ///
+    /// Interactive callers route through
+    /// `SwiftDashSDKWalletRuntime.performAddWallet`, which runs this method
+    /// as one link of the serial lifecycle chain so queued refresh/reset
+    /// operations cannot interleave with the multi-network provisioning.
     @discardableResult
     func addWallet(mnemonic: String, isImported: Bool) async throws -> AddWalletResult {
         let mnemonic = Mnemonic.normalizePhrase(mnemonic)
@@ -670,7 +677,7 @@ final class SwiftDashSDKHost {
                     network: targetNetwork)
             }
             do {
-                _ = try createAndPersist(
+                _ = try await createAndPersist(
                     mnemonic: mnemonic,
                     manager: targetManager,
                     network: targetNetwork,
@@ -713,7 +720,7 @@ final class SwiftDashSDKHost {
         manager: PlatformWalletManager,
         network: Network,
         birthHeight: UInt32?
-    ) throws -> ManagedPlatformWallet {
+    ) async throws -> ManagedPlatformWallet {
         let walletId: Data
         do {
             // This is the same deterministic id contract used by addWallet's
@@ -736,7 +743,7 @@ final class SwiftDashSDKHost {
         }
 
         do {
-            return try MnemonicFirstWalletCreation.run(
+            return try await MnemonicFirstWalletCreation.run(
                 mnemonic: mnemonic,
                 persistMnemonic: {
                     try storage.storeMnemonic(mnemonic, for: walletId)
@@ -752,7 +759,9 @@ final class SwiftDashSDKHost {
                     }
                 },
                 createWallet: {
-                    try manager.createWallet(
+                    // Async SDK overload: the blocking native create runs on
+                    // the SDK's dedicated queue, not the main thread.
+                    try await manager.createWallet(
                         mnemonic: mnemonic,
                         network: network,
                         name: "dashwallet",
