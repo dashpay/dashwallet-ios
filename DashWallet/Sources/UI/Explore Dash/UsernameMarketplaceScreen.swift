@@ -478,8 +478,26 @@ struct UsernameMarketplaceScreen: View {
                 .presentationDetents([.medium, .large])
         }
         .sheet(item: $registerCandidate) { candidate in
-            RegisterNameSheet(label: candidate.label, viewModel: viewModel)
-                .presentationDetents([.medium, .large])
+            if candidate.isContested {
+                DashUIKit.BottomSheet(showBackButton: .constant(false)) {
+                    RegisterNameSheet(
+                        label: candidate.label,
+                        isContested: candidate.isContested,
+                        viewModel: viewModel)
+                }
+                    .presentationDetents([.medium, .large])
+            } else {
+                DashUIKit.BottomSheet.selfSizing(
+                    showBackButton: .constant(false),
+                    fallback: 340,
+                    cornerRadius: 24
+                ) {
+                    RegisterNameSheet(
+                        label: candidate.label,
+                        isContested: candidate.isContested,
+                        viewModel: viewModel)
+                }
+            }
         }
         .overlay {
             // Blocking activity overlay while a trade transition is in
@@ -941,7 +959,7 @@ struct UsernameMarketplaceScreen: View {
             subtitle = NSLocalizedString("Available — register it on your identity", comment: "Username marketplace: unregistered name row")
         }
         return Button {
-            registerCandidate = RegisterCandidate(label: label)
+            registerCandidate = RegisterCandidate(label: label, isContested: contested)
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: icon)
@@ -1004,6 +1022,7 @@ struct SelectedMarketplaceLabel: Identifiable {
 
 struct RegisterCandidate: Identifiable {
     let label: String
+    let isContested: Bool
     var id: String { label }
 }
 
@@ -1656,6 +1675,7 @@ private struct TransferNameSheet: View {
 
 private struct RegisterNameSheet: View {
     let label: String
+    let isContested: Bool
     @ObservedObject var viewModel: UsernameMarketplaceViewModel
     @Environment(\.dismiss) private var dismiss
 
@@ -1664,10 +1684,6 @@ private struct RegisterNameSheet: View {
     /// Live vote tallies for an active contest on this label (yours or
     /// anyone's); nil while loading, unavailable, or no contest exists.
     @State private var voteState: ContestVoteState?
-
-    private var isContested: Bool {
-        UsernameMarketplaceService.isContested(label)
-    }
 
     /// This identity already has a request in for this label — the vote
     /// is in progress and a second submission would just fail.
