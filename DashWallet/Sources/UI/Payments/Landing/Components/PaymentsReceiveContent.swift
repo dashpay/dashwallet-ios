@@ -55,24 +55,6 @@ struct PaymentsReceiveContent: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: 20) {
-            // The same control the tab selector above it is, so the two rows of
-            // chrome read as one family rather than as a design-system pill
-            // sitting on top of a system segmented picker.
-            //
-            // Always present: Core and Shielded are both ordinary destinations.
-            // Advanced mode adds Platform, and `receiveNetworks` is what decides
-            // that — the control only draws what it is given.
-            SegmentedControl(
-                options: viewModel.receiveNetworks,
-                selection: networkSelection,
-                label: { $0.title })
-                // Negative on purpose. The host already insets this whole tab
-                // by 20 for the card below; -4 pulls the control back out to
-                // the 16 the tab selector directly above it uses. Two
-                // segmented controls stacked at different widths read as a
-                // mistake, and the top one sets the measure.
-                .padding(.horizontal, -4)
-
             if let receipt = viewModel.receipt {
                 // A payment landed while this screen was being presented. The
                 // receipt takes the whole surface: the address it was paid to
@@ -92,6 +74,30 @@ struct PaymentsReceiveContent: View {
     }
 
     // MARK: - Network selection
+
+    /// Which address the card shows, as a row of buttons rather than a
+    /// `SegmentedControl` — the design puts this inside the card, where the
+    /// pill control's own background would be a second surface on top of the
+    /// card's.
+    ///
+    /// `fillsWidth` on each so the three divide the row evenly; without it,
+    /// zero spacing would clump them at the leading edge. The selected one
+    /// carries the tint and the others are plain, because three identical
+    /// buttons would leave the screen unable to say which address is on it.
+    private var networkRow: some View {
+        HStack(spacing: 0) {
+            ForEach(viewModel.receiveNetworks) { network in
+                DashUIKit.DashButton(
+                    text: network.title,
+                    fillsWidth: true,
+                    size: .medium,
+                    style: network == viewModel.network ? .tintedGray : .plainBlack,
+                    action: { select(network) }
+                )
+            }
+        }
+        .padding(20)
+    }
 
     /// Everything that changes the network goes through here so the direction
     /// of travel is known before the change lands — the card has to enter from
@@ -128,21 +134,28 @@ struct PaymentsReceiveContent: View {
     /// it is still waiting to be paid.
     private var addressContent: some View {
         VStack(alignment: .center, spacing: 20) {
-            // The card itself holds still — only what is inside it travels.
-            // ZStack so the outgoing and incoming contents share one slot
-            // instead of stacking; keyed on the network so a change reads as a
-            // replacement to animate rather than an in-place edit of the QR and
-            // the address.
-            ZStack(alignment: .top) {
-                cardBody
-                    .id(viewModel.network)
-                    .transition(slide)
+            VStack(spacing: 0) {
+                // Inside the card, and outside the animated block below it:
+                // the control that causes the change must not travel with what
+                // it changes.
+                networkRow
+
+                // The card itself holds still — only what is inside it travels.
+                // ZStack so the outgoing and incoming contents share one slot
+                // instead of stacking; keyed on the network so a change reads
+                // as a replacement to animate rather than an in-place edit of
+                // the QR and the address.
+                ZStack(alignment: .top) {
+                    cardBody
+                        .id(viewModel.network)
+                        .transition(slide)
+                }
+                // Keeps the travelling contents inside the card's edges. Square
+                // rather than the card's 20pt radius: nothing is drawn near the
+                // corners, so the rounding would cost a mask for no visible
+                // difference.
+                .clipped()
             }
-            // Keeps the travelling contents inside the card's edges. Square
-            // rather than the card's 20pt radius: nothing is drawn near the
-            // corners (40pt of top padding, 20 at the bottom), so the rounding
-            // would cost a mask for no visible difference.
-            .clipped()
             .modifier(MenuViewModifier(innerPadding: 0))
 
             // import private key - if needed
