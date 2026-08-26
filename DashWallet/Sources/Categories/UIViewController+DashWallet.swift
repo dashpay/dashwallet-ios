@@ -21,6 +21,28 @@ import SwiftDashSDK
 
 @objc
 extension UIViewController {
+    /// The tab bar controller somewhere at or under this one, searching
+    /// children and then anything presented.
+    ///
+    /// Downwards, not upwards: a controller shown as a sheet sits outside the
+    /// tab bar's hierarchy, so `tabBarController` is nil for it and walking
+    /// presenters only finds whoever called `present`. Started from the
+    /// window's root this finds the tab bar from anywhere.
+    ///
+    /// Two private copies of this already exist (`SwapTransactionStatus…`,
+    /// `BuyReceive…`); this is the shared one they should collapse into.
+    @objc
+    func dw_firstTabBarController() -> UITabBarController? {
+        if let tabBarController = self as? UITabBarController { return tabBarController }
+        for child in children {
+            if let tabBarController = child.dw_firstTabBarController() { return tabBarController }
+        }
+        if let presented = presentedViewController {
+            return presented.dw_firstTabBarController()
+        }
+        return nil
+    }
+
     @objc
     func topController() -> UIViewController {
         if let vc = self as? UITabBarController {
