@@ -4,6 +4,7 @@
 //
 
 import Combine
+import DashUIKit
 import SwiftUI
 import UIKit
 
@@ -262,15 +263,17 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         else { return }
         viewModel.setReceiptWatchingObscured(true)
         let host = UIHostingController(
-            rootView: TransferTimingSheet(onConfirm: { [weak self] in
-                UserDefaults.standard.set(true, forKey: Self.shieldedBalanceTimingShownKey)
-                self?.dismiss(animated: true) {
-                    self?.viewModel.setReceiptWatchingObscured(false)
-                }
-            }))
+            rootView: DashUIKit.BottomSheet(showBackButton: .constant(false)) {
+                TransferTimingSheet(onConfirm: { [weak self] in
+                    UserDefaults.standard.set(true, forKey: Self.shieldedBalanceTimingShownKey)
+                    self?.dismiss(animated: true) {
+                        self?.viewModel.setReceiptWatchingObscured(false)
+                    }
+                })
+            })
         if let sheet = host.sheetPresentationController {
             sheet.detents = [.medium()]
-            sheet.prefersGrabberVisible = true
+            sheet.prefersGrabberVisible = false
         }
         present(host, animated: true) { [weak self, weak host] in
             host?.presentationController?.delegate = self

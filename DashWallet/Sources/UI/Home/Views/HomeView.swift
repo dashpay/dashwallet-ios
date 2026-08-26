@@ -305,11 +305,13 @@ struct HomeViewContent<Content: View>: View {
                     .padding(.top, 5)
                     .padding(.bottom, -12)
                     .sheet(item: $balanceInfoNetwork) { network in
-                        BalanceInfoSheet(network: network) {
-                            balanceInfoNetwork = nil
+                        DashUIKit.BottomSheet(showBackButton: .constant(false)) {
+                            BalanceInfoSheet(network: network) {
+                                balanceInfoNetwork = nil
+                            }
                         }
                         .presentationDetents([.medium, .large])
-                        .presentationDragIndicator(.visible)
+                        .presentationDragIndicator(.hidden)
                     }
 
                     VStack(spacing: 0) {

@@ -24,24 +24,11 @@ struct ZenLedgerInfoSheet: View {
     @State private var errorAlert: Bool = false
     @State private var inProgress: Bool = false
     @Environment(\.presentationMode) private var presentationMode
-    @Environment(\.colorScheme) private var colorScheme
 
     @Binding var safariLink: String?
 
     var body: some View {
         VStack(spacing: 0) {
-            // Grabber
-            Capsule()
-                .fill(colorScheme == .dark ? Color.dash.whiteAlpha20 : Color.dash.gray300Alpha50)
-                .frame(width: 36, height: 5)
-                .padding(.top, 6)
-                .padding(.bottom, 6)
-
-            // Close button
-            NavBarClose {
-                presentationMode.wrappedValue.dismiss()
-            }
-
             // Content
             VStack(spacing: 0) {
                 // Icon
@@ -101,7 +88,6 @@ struct ZenLedgerInfoSheet: View {
             .padding(.top, 20)
             .padding(.bottom, 20)
         }
-        .background(Color.dash.secondaryBackground)
         .alert(isPresented: $showAlert) {
             resolveAlert()
         }

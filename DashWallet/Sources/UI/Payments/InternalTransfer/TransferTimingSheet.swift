@@ -7,23 +7,10 @@ import SwiftUI
 import DashUIKit
 
 struct TransferTimingSheet: View {
-    @Environment(\.dismiss) private var dismiss
-
     var onConfirm: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            HStack {
-                Spacer()
-                Button(action: { dismiss() }) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.dash.primaryText)
-                        .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
-                }
-            }
-
             Text(NSLocalizedString("Transfers take different times", comment: ""))
                 .font(.system(size: 24, weight: .bold))
                 .foregroundColor(.dash.primaryText)
@@ -55,7 +42,7 @@ struct TransferTimingSheet: View {
                 })
         }
         .padding(.horizontal, 24)
-        .padding(.top, 14)
+        .padding(.top, 24)
         .padding(.bottom, 24)
         .background(Color.dash.primaryBackground)
     }
