@@ -299,7 +299,7 @@ struct UnconfirmedTransactionRemover {
         }
 
         // App caches that mirror the deleted rows.
-        ShieldedTxLookup.shared.refresh()
+        await ShieldedTxLookup.shared.refresh(reason: "transaction-removal-completed")
         return rescanArmed
     }
 

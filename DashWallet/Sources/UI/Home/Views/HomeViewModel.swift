@@ -211,6 +211,10 @@ class HomeViewModel: ObservableObject {
     @Published private(set) var headerHeight: CGFloat = kBaseBalanceHeaderHeight // TDOO: move back to HomeView when fully transitioned to SwiftUI
     @Published private(set) var showReclassifyTransaction: Transaction? = nil
     @Published var shouldShowShortcutBanner: Bool = false
+    /// Drives the gift-card details sheet on the home screen — the single source of truth for
+    /// both entry points: a tap on a gift-card transaction row, and a completed DashSpend
+    /// purchase routed here by `HomeViewController.showGiftCardDetails(txId:)`. A local
+    /// `@State` copy in the view would leave the controller's setter observed by nobody.
     @Published var giftCardTxId: Data? = nil
     
 #if DASHPAY
@@ -281,7 +285,9 @@ class HomeViewModel: ObservableObject {
     /// Routine refresh trigger (screen appear): throttled by the monitor.
     @MainActor
     func refreshEvonodeEpochBlocks() {
+        #if DEBUG
         guard !isPreviewMode else { return }
+        #endif
         evonodeEpochBlocksMonitor.refresh()
     }
 
@@ -457,7 +463,7 @@ class HomeViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 Task { @MainActor in
-                    ShieldedTxLookup.shared.refresh()
+                    await ShieldedTxLookup.shared.refresh(reason: "transaction-projection-changed")
                     self?.txReloadRequests.send()
                 }
             }

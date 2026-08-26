@@ -340,6 +340,7 @@
 		35BFE3D1C0B8999FBC8AB180 /* PaymentRequestVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59D5720437F8A4137605940 /* PaymentRequestVerifier.swift */; };
 		3705C73F15BCD91AF70940B9 /* PlatformCreditsFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43C830DD6D63115525925F75 /* PlatformCreditsFormatter.swift */; };
 		371ADBAC635CEB63CA0A4A1E /* SwiftDashSDKWalletRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9C4B39B015CD9D8AD4741D /* SwiftDashSDKWalletRuntime.swift */; };
+		FBA8AC3BF5464D0E85240A56 /* WalletLifecycleTransitionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81F0D6EBA27F471A9FC46E49 /* WalletLifecycleTransitionState.swift */; };
 		39DC037E9CF04CCFA3EFBB53 /* SelfSizingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96CB7E093E994D2391D36DEC /* SelfSizingSheet.swift */; };
 		3A377045AA5C10F3FD63A7C2 /* DWContestedNameStatusService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E950113F9E258B2F1CC0D50C /* DWContestedNameStatusService.swift */; };
 		3A958F915CDACC6FE30923BA /* DarkCoinMessageFraming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C25F44380CDB841AF55D3FF /* DarkCoinMessageFraming.swift */; };
@@ -622,6 +623,14 @@
 		5AEDE0012F9B000000000004 /* EvonodeWithdrawalViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEDE0012F9B000000000001 /* EvonodeWithdrawalViewModel.swift */; };
 		5AEDE0012F9B000000000005 /* EvonodeWithdrawalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEDE0012F9B000000000002 /* EvonodeWithdrawalScreen.swift */; };
 		5AEDE0012F9B000000000006 /* EvonodeWithdrawalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEDE0012F9B000000000002 /* EvonodeWithdrawalScreen.swift */; };
+		5AFDE1012FA1000000000011 /* TrackedMasternodeKeyVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFDE1012FA1000000000001 /* TrackedMasternodeKeyVault.swift */; };
+		5AFDE1012FA1000000000012 /* TrackedMasternodeKeyVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFDE1012FA1000000000001 /* TrackedMasternodeKeyVault.swift */; };
+		5AFDE1012FA1000000000013 /* AddMasternodeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFDE1012FA1000000000002 /* AddMasternodeViewModel.swift */; };
+		5AFDE1012FA1000000000014 /* AddMasternodeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFDE1012FA1000000000002 /* AddMasternodeViewModel.swift */; };
+		5AFDE1012FA1000000000015 /* AddMasternodeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFDE1012FA1000000000003 /* AddMasternodeScreen.swift */; };
+		5AFDE1012FA1000000000016 /* AddMasternodeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFDE1012FA1000000000003 /* AddMasternodeScreen.swift */; };
+		5AFDE1012FA1000000000017 /* TrackedMasternodeDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFDE1012FA1000000000004 /* TrackedMasternodeDetailScreen.swift */; };
+		5AFDE1012FA1000000000018 /* TrackedMasternodeDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFDE1012FA1000000000004 /* TrackedMasternodeDetailScreen.swift */; };
 		5AE5700E2F9C000000000003 /* EvonodeStatusViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE5700E2F9C000000000001 /* EvonodeStatusViewModel.swift */; };
 		5AE5700E2F9C000000000004 /* EvonodeStatusViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE5700E2F9C000000000001 /* EvonodeStatusViewModel.swift */; };
 		5AE5700E2F9C000000000005 /* EvonodeStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE5700E2F9C000000000002 /* EvonodeStatusScreen.swift */; };
@@ -638,6 +647,7 @@
 		57632D5A61F78ED6E896B1AF /* StorageRecordDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCBA057E553F81F54ACE6E1 /* StorageRecordDetailViews.swift */; };
 		58825FFD2913876CC5D4AA21 /* InternalTransferScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */; };
 		59A140F3992CD2438ADC84CE /* DWPreviewSeedPhraseModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D8BC6623C81DD3F008A668 /* DWPreviewSeedPhraseModel+Mnemonic.swift */; };
+		3F240D45721AF32B81BC447C /* RecoveryPhraseLength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210C818A8AAC76F91676AFF9 /* RecoveryPhraseLength.swift */; };
 		5A1EC0FE2E29A10000000002 /* ShieldedActivityHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */; };
 		5A1EC0FE2E29A10000000003 /* ShieldedActivityHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */; };
 		5A1EC0FE2E29A20000000012 /* PlatformAddressActivityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A20000000011 /* PlatformAddressActivityStore.swift */; };
@@ -721,8 +731,6 @@
 		753261B22CBC157F003CDE00 /* GetStartedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261B12CBC157F003CDE00 /* GetStartedViewController.swift */; };
 		75387B4A2E0400C300BCCC72 /* MerchantDenominations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75387B492E0400C300BCCC72 /* MerchantDenominations.swift */; };
 		75387B4B2E0400C300BCCC72 /* MerchantDenominations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75387B492E0400C300BCCC72 /* MerchantDenominations.swift */; };
-		753CD8792E2E218800BCF070 /* mixing_anim.json in Resources */ = {isa = PBXBuildFile; fileRef = 753CD8782E2E218800BCF070 /* mixing_anim.json */; };
-		753CD87A2E2E218800BCF070 /* mixing_anim.json in Resources */ = {isa = PBXBuildFile; fileRef = 753CD8782E2E218800BCF070 /* mixing_anim.json */; };
 		753E46E82DE1E24300A3FF2A /* CTXSpendModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753E46E72DE1E24300A3FF2A /* CTXSpendModels.swift */; };
 		753E46E92DE1E24300A3FF2A /* CTXSpendModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753E46E72DE1E24300A3FF2A /* CTXSpendModels.swift */; };
 		753F75342DD0D42300D40DFE /* DashSpendPayScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753F75332DD0D41900D40DFE /* DashSpendPayScreen.swift */; };
@@ -962,6 +970,7 @@
 		973AD0F3986AFFDBA78ED560 /* CoinJoinWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B208A9A34D0FFEEC796752C /* CoinJoinWithdrawalStore.swift */; };
 		97C1167F9600BF7E489A8545 /* SwapTransactionStatusHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B5469F5588395FA0668C4B /* SwapTransactionStatusHostingController.swift */; };
 		97E0FFBBAFFB7394F6841B61 /* DWPreviewSeedPhraseModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D8BC6623C81DD3F008A668 /* DWPreviewSeedPhraseModel+Mnemonic.swift */; };
+		926525A3134D15BF737BC355 /* RecoveryPhraseLength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210C818A8AAC76F91676AFF9 /* RecoveryPhraseLength.swift */; };
 		983748715D558F311DF6BFCD /* StorageExplorerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7333F2D05D0DD2D4373FF9B /* StorageExplorerView.swift */; };
 		98BEE600E600F1F88EC3802E /* ScriptAddressCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 080B9ECCDC82A7B7FF4039C6 /* ScriptAddressCodec.swift */; };
 		99FAE80A3A63E073A2EB5209 /* PaymentProtocolWireFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = E66B030D4B574621DA2C5816 /* PaymentProtocolWireFormat.swift */; };
@@ -1579,6 +1588,7 @@
 		C9D2C8072A320AA000D15901 /* PointOfUseListFiltersCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C0428C1F74A00490F5E /* PointOfUseListFiltersCell.swift */; };
 		C9D2C80C2A320AA000D15901 /* AllMerchantLocationsDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1928C6A21A00490F5E /* AllMerchantLocationsDataProvider.swift */; };
 		C9D2C80D2A320AA000D15901 /* MainTabbarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451E42A0B986E00825057 /* MainTabbarController.swift */; };
+		D6AFA6FAFF1346319AABA03B /* WalletLifecycleOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9D803992EA742E0A34208A6 /* WalletLifecycleOverlay.swift */; };
 		C9D2C80E2A320AA000D15901 /* NumberFormatter+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B30D77290BFCA60080C326 /* NumberFormatter+DashWallet.swift */; };
 		C9D2C8102A320AA000D15901 /* BaseAmountModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AF18072907B7880025803E /* BaseAmountModel.swift */; };
 		C9D2C8132A320AA000D15901 /* DWPinField.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD8EF231ECDE000A96B62 /* DWPinField.m */; };
@@ -1795,6 +1805,7 @@
 		C9F42FB429DD86FB001BC549 /* BackupInfoItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FB329DD86FB001BC549 /* BackupInfoItemView.swift */; };
 		C9F42FB629DD8702001BC549 /* BackupInfoItemView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9F42FB529DD8702001BC549 /* BackupInfoItemView.xib */; };
 		C9F451E52A0B986E00825057 /* MainTabbarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451E42A0B986E00825057 /* MainTabbarController.swift */; };
+		3354559950624DC6877867BF /* WalletLifecycleOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9D803992EA742E0A34208A6 /* WalletLifecycleOverlay.swift */; };
 		C9F451E72A0BA16400825057 /* PaymentButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451E62A0BA16400825057 /* PaymentButton.swift */; };
 		C9F451E92A0BDAE700825057 /* UIApplication+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451E82A0BDAE700825057 /* UIApplication+DashWallet.swift */; };
 		C9F451EB2A0BF10B00825057 /* SyncingAlertViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451EA2A0BF10B00825057 /* SyncingAlertViewController.swift */; };
@@ -1879,6 +1890,7 @@
 		EC5D47238700BFBE0CB8FE6F /* DWParsedPaymentURI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24DC91C11E382E22D1C17F05 /* DWParsedPaymentURI.swift */; };
 		ECF67981D8BA06E1323B0818 /* NetworkUnavailableStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487C4C2E6AC61005536FF85E /* NetworkUnavailableStateView.swift */; };
 		EDA94EDDBAB5D5E1DEC635D9 /* SwiftDashSDKWalletRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9C4B39B015CD9D8AD4741D /* SwiftDashSDKWalletRuntime.swift */; };
+		CCB87402238B4324A72EB0B4 /* WalletLifecycleTransitionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81F0D6EBA27F471A9FC46E49 /* WalletLifecycleTransitionState.swift */; };
 		EE0000012DUMMYID001234567 /* POIDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000032DUMMYID001234567 /* POIDetailsViewModel.swift */; };
 		EE0000022DUMMYID001234567 /* POIDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000032DUMMYID001234567 /* POIDetailsViewModel.swift */; };
 		EE0000042DUMMYID001234567 /* PercentageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000052DUMMYID001234567 /* PercentageFormatter.swift */; };
@@ -2784,9 +2796,11 @@
 		47FA3B0129364991008D58DC /* HTTPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
 		487C4C2E6AC61005536FF85E /* NetworkUnavailableStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkUnavailableStateView.swift; sourceTree = "<group>"; };
 		48D8BC6623C81DD3F008A668 /* DWPreviewSeedPhraseModel+Mnemonic.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "DWPreviewSeedPhraseModel+Mnemonic.swift"; sourceTree = "<group>"; };
+		210C818A8AAC76F91676AFF9 /* RecoveryPhraseLength.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecoveryPhraseLength.swift; sourceTree = "<group>"; };
 		4C4833BE986D59F69A555C5F /* PaymentProtocolMessages.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentProtocolMessages.swift; sourceTree = "<group>"; };
 		4E55DD28C4EBE049216291A2 /* HomeUsernameRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeUsernameRow.swift; sourceTree = "<group>"; };
 		4E9C4B39B015CD9D8AD4741D /* SwiftDashSDKWalletRuntime.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletRuntime.swift; sourceTree = "<group>"; };
+		81F0D6EBA27F471A9FC46E49 /* WalletLifecycleTransitionState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletLifecycleTransitionState.swift; sourceTree = "<group>"; };
 		514AEA122FB324FA00F9B54C /* SwapConvertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertView.swift; sourceTree = "<group>"; };
 		514AEA4A2FB33B4300F9B54C /* SwapConvertHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertHostingController.swift; sourceTree = "<group>"; };
 		514AEAD42FB34F8600F9B54C /* OrderPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderPreviewView.swift; sourceTree = "<group>"; };
@@ -2825,6 +2839,10 @@
 		51AA00202F970020005A0020 /* MasternodesScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MasternodesScreen.swift; sourceTree = "<group>"; };
 		5AEDE0012F9B000000000001 /* EvonodeWithdrawalViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeWithdrawalViewModel.swift; sourceTree = "<group>"; };
 		5AEDE0012F9B000000000002 /* EvonodeWithdrawalScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeWithdrawalScreen.swift; sourceTree = "<group>"; };
+		5AFDE1012FA1000000000001 /* TrackedMasternodeKeyVault.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrackedMasternodeKeyVault.swift; sourceTree = "<group>"; };
+		5AFDE1012FA1000000000002 /* AddMasternodeViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AddMasternodeViewModel.swift; sourceTree = "<group>"; };
+		5AFDE1012FA1000000000003 /* AddMasternodeScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AddMasternodeScreen.swift; sourceTree = "<group>"; };
+		5AFDE1012FA1000000000004 /* TrackedMasternodeDetailScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrackedMasternodeDetailScreen.swift; sourceTree = "<group>"; };
 		5AE5700E2F9C000000000001 /* EvonodeStatusViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeStatusViewModel.swift; sourceTree = "<group>"; };
 		5AE5700E2F9C000000000002 /* EvonodeStatusScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeStatusScreen.swift; sourceTree = "<group>"; };
 		51BA2E9F2F0B2E0100A1B201 /* SwapPendingGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapPendingGate.swift; sourceTree = "<group>"; };
@@ -2893,7 +2911,6 @@
 		753261AF2CBC11BF003CDE00 /* WelcomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
 		753261B12CBC157F003CDE00 /* GetStartedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetStartedViewController.swift; sourceTree = "<group>"; };
 		75387B492E0400C300BCCC72 /* MerchantDenominations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantDenominations.swift; sourceTree = "<group>"; };
-		753CD8782E2E218800BCF070 /* mixing_anim.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = mixing_anim.json; sourceTree = "<group>"; };
 		753E46E72DE1E24300A3FF2A /* CTXSpendModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTXSpendModels.swift; sourceTree = "<group>"; };
 		753F75332DD0D41900D40DFE /* DashSpendPayScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendPayScreen.swift; sourceTree = "<group>"; };
 		753F75362DD0D75F00D40DFE /* DashSpendPayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendPayViewModel.swift; sourceTree = "<group>"; };
@@ -3553,6 +3570,7 @@
 		C9F42FB529DD8702001BC549 /* BackupInfoItemView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BackupInfoItemView.xib; sourceTree = "<group>"; };
 		C9F42FB729DFC506001BC549 /* SpendableTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpendableTransaction.swift; sourceTree = "<group>"; };
 		C9F451E42A0B986E00825057 /* MainTabbarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabbarController.swift; sourceTree = "<group>"; };
+		A9D803992EA742E0A34208A6 /* WalletLifecycleOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLifecycleOverlay.swift; sourceTree = "<group>"; };
 		C9F451E62A0BA16400825057 /* PaymentButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentButton.swift; sourceTree = "<group>"; };
 		C9F451E82A0BDAE700825057 /* UIApplication+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+DashWallet.swift"; sourceTree = "<group>"; };
 		C9F451EA2A0BF10B00825057 /* SyncingAlertViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncingAlertViewController.swift; sourceTree = "<group>"; };
@@ -3784,6 +3802,7 @@
 				5AEEB0012F9C000000000001 /* EvonodeEpochBlocksService.swift */,
 				5AEEB0012F9C000000000005 /* EvonodeEpochBlocksMonitor.swift */,
 				5AEEB0012F9C00000000000B /* EvonodeProposalActivity.swift */,
+				5AFDE1012FA1000000000001 /* TrackedMasternodeKeyVault.swift */,
 			);
 			path = Masternodes;
 			sourceTree = "<group>";
@@ -3795,6 +3814,16 @@
 				5AEDE0012F9B000000000002 /* EvonodeWithdrawalScreen.swift */,
 			);
 			path = "Masternode Withdrawal";
+			sourceTree = "<group>";
+		};
+		5AFDE1012FA1000000000005 /* Tracked Masternodes */ = {
+			isa = PBXGroup;
+			children = (
+				5AFDE1012FA1000000000002 /* AddMasternodeViewModel.swift */,
+				5AFDE1012FA1000000000003 /* AddMasternodeScreen.swift */,
+				5AFDE1012FA1000000000004 /* TrackedMasternodeDetailScreen.swift */,
+			);
+			path = "Tracked Masternodes";
 			sourceTree = "<group>";
 		};
 		5AE5700E2F9C000000000007 /* Evonode Status */ = {
@@ -4480,7 +4509,6 @@
 			children = (
 				2A4430F122CBD57A009BAF7F /* AppAssets.xcassets */,
 				75E83CF51B5F997A0038FB70 /* coinflip.aiff */,
-				753CD8782E2E218800BCF070 /* mixing_anim.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -4681,6 +4709,7 @@
 				2A36A88C2350A18A0014DC60 /* DWPreviewSeedPhraseViewController+DWProtected.h */,
 				755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */,
 				48D8BC6623C81DD3F008A668 /* DWPreviewSeedPhraseModel+Mnemonic.swift */,
+				210C818A8AAC76F91676AFF9 /* RecoveryPhraseLength.swift */,
 			);
 			path = Seed;
 			sourceTree = "<group>";
@@ -4850,6 +4879,7 @@
 				FB3FF0B0222641210059A9A5 /* Masternode Keys */,
 				51AA00202F970020005A0020 /* MasternodesScreen.swift */,
 				5AEDE0012F9B000000000007 /* Masternode Withdrawal */,
+				5AFDE1012FA1000000000005 /* Tracked Masternodes */,
 				5AE5700E2F9C000000000007 /* Evonode Status */,
 				7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */,
 				RC00C0032FA0000000000001 /* CSVExportSheet.swift */,
@@ -5189,6 +5219,7 @@
 			children = (
 				2A9CEBB222E1EAAA00A50237 /* Views */,
 				C9F451E42A0B986E00825057 /* MainTabbarController.swift */,
+				A9D803992EA742E0A34208A6 /* WalletLifecycleOverlay.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -7191,6 +7222,7 @@
 				1A7BE8E4519203200CDFB460 /* SwiftDashSDKInsightClient.swift */,
 				C4CE60A95629A2883710A75C /* DamerauLevenshtein.swift */,
 				4E9C4B39B015CD9D8AD4741D /* SwiftDashSDKWalletRuntime.swift */,
+				81F0D6EBA27F471A9FC46E49 /* WalletLifecycleTransitionState.swift */,
 				E181EB71C8803101EA789AA4 /* SwiftDashSDKHost.swift */,
 				35F37C177039C76661FA2DB2 /* SwiftDashSDKSPVCoordinator.swift */,
 				E6E56673B2BFED8EC0181A1F /* PlatformAddressSyncCoordinator.swift */,
@@ -8996,7 +9028,6 @@
 				5151C8CD2F913BF100F0A604 /* Topper-Info.plist in Resources */,
 				51646C723006263C00BE3070 /* Uphold-Info.plist in Resources */,
 				75E2F3C82AA4CF1900C3B458 /* Topper-Info.plist in Resources */,
-				753CD8792E2E218800BCF070 /* mixing_anim.json in Resources */,
 				2A2CD71822F99CAE008C7BC9 /* ShortcutsView.xib in Resources */,
 				474C7213298A1EFC00475CA6 /* TxDetailInfoCell.xib in Resources */,
 				2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */,
@@ -9110,7 +9141,6 @@
 				5151C8C92F913BF100F0A604 /* Topper-Info.plist in Resources */,
 				C9D2C92F2A320AA000D15901 /* ReceiveContentView.xib in Resources */,
 				C9D2C9302A320AA000D15901 /* VerifySeedPhrase.storyboard in Resources */,
-				753CD87A2E2E218800BCF070 /* mixing_anim.json in Resources */,
 				758CE59D2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */,
 				C9D2C9312A320AA000D15901 /* DWSecurityStatusView.xib in Resources */,
 				C9D2C9332A320AA000D15901 /* SetPin.storyboard in Resources */,
@@ -9333,7 +9363,6 @@
 				"${PODS_CONFIGURATION_BUILD_DIR}/SDWebImageSwiftUI/SDWebImageSwiftUI.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.swift.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/TOCropViewController/TOCropViewControllerBundle.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/lottie-ios/LottiePrivacyInfo.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
@@ -9345,7 +9374,6 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SDWebImageSwiftUI.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SQLite.swift.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/TOCropViewControllerBundle.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/LottiePrivacyInfo.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -9367,7 +9395,6 @@
 				"${PODS_CONFIGURATION_BUILD_DIR}/SDWebImageSwiftUI/SDWebImageSwiftUI.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.swift.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/TOCropViewController/TOCropViewControllerBundle.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/lottie-ios/LottiePrivacyInfo.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
@@ -9379,7 +9406,6 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SDWebImageSwiftUI.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SQLite.swift.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/TOCropViewControllerBundle.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/LottiePrivacyInfo.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -9927,6 +9953,7 @@
 				754565CE2DAA52A000DA4E8E /* CTXSpendRepository.swift in Sources */,
 				754565CF2DAA52A000DA4E8E /* CTXSpendEndpoint.swift in Sources */,
 				C9F451E52A0B986E00825057 /* MainTabbarController.swift in Sources */,
+				3354559950624DC6877867BF /* WalletLifecycleOverlay.swift in Sources */,
 				47B30D78290BFCA60080C326 /* NumberFormatter+DashWallet.swift in Sources */,
 				47AF18082907B7880025803E /* BaseAmountModel.swift in Sources */,
 				2ACCD8F0231ECDE000A96B62 /* DWPinField.m in Sources */,
@@ -10225,6 +10252,7 @@
 				63869E343191C55BDBBEED72 /* SwiftDashSDKInsightClient.swift in Sources */,
 				A3ED42ED80F32AA5CA530A40 /* DamerauLevenshtein.swift in Sources */,
 				EDA94EDDBAB5D5E1DEC635D9 /* SwiftDashSDKWalletRuntime.swift in Sources */,
+				CCB87402238B4324A72EB0B4 /* WalletLifecycleTransitionState.swift in Sources */,
 				16AA1B384A9758C1DA97676A /* SwiftDashSDKHost.swift in Sources */,
 				DA5A00000000000000000001 /* DWDashPayIdentityKeys.swift in Sources */,
 				19CF9D60B276558AA48380C2 /* SwiftDashSDKSPVCoordinator.swift in Sources */,
@@ -10237,6 +10265,10 @@
 				51AA00222F970022005A0022 /* MasternodesScreen.swift in Sources */,
 				5AEDE0012F9B000000000004 /* EvonodeWithdrawalViewModel.swift in Sources */,
 				5AEDE0012F9B000000000006 /* EvonodeWithdrawalScreen.swift in Sources */,
+				5AFDE1012FA1000000000012 /* TrackedMasternodeKeyVault.swift in Sources */,
+				5AFDE1012FA1000000000014 /* AddMasternodeViewModel.swift in Sources */,
+				5AFDE1012FA1000000000016 /* AddMasternodeScreen.swift in Sources */,
+				5AFDE1012FA1000000000018 /* TrackedMasternodeDetailScreen.swift in Sources */,
 				5AE5700E2F9C000000000004 /* EvonodeStatusViewModel.swift in Sources */,
 				5AE5700E2F9C000000000006 /* EvonodeStatusScreen.swift in Sources */,
 				51AA00022F970002005A0002 /* SyncInfoMenuScreen.swift in Sources */,
@@ -10278,6 +10310,7 @@
 				7B9BBDE902964C57C44F68BD /* PinStore.swift in Sources */,
 				88436E7D9764791AC81AFFB0 /* AuthenticationService.swift in Sources */,
 				97E0FFBBAFFB7394F6841B61 /* DWPreviewSeedPhraseModel+Mnemonic.swift in Sources */,
+				926525A3134D15BF737BC355 /* RecoveryPhraseLength.swift in Sources */,
 				C5745FA476F615D2C1E378F3 /* SwiftDashSDKReceiveAddressReader.swift in Sources */,
 				EF8FE439EB96236940DFBDE7 /* SwiftDashSDKTransactionSender.swift in Sources */,
 				2AB76051F87248AC36AED99B /* NetworkReachability.swift in Sources */,
@@ -10914,6 +10947,7 @@
 				75AA33D02BF9D44A00F12465 /* ButtonsGroup.swift in Sources */,
 				C9D2C80C2A320AA000D15901 /* AllMerchantLocationsDataProvider.swift in Sources */,
 				C9D2C80D2A320AA000D15901 /* MainTabbarController.swift in Sources */,
+				D6AFA6FAFF1346319AABA03B /* WalletLifecycleOverlay.swift in Sources */,
 				751C05DB2D3D0E8C00475E52 /* JoinDashPayViewModel.swift in Sources */,
 				C9D2C80E2A320AA000D15901 /* NumberFormatter+DashWallet.swift in Sources */,
 				C9D2C8102A320AA000D15901 /* BaseAmountModel.swift in Sources */,
@@ -11221,6 +11255,7 @@
 				D418FB2322596505DA54DB79 /* SwiftDashSDKInsightClient.swift in Sources */,
 				B66D25CAD54ABDC1049BDDD5 /* DamerauLevenshtein.swift in Sources */,
 				371ADBAC635CEB63CA0A4A1E /* SwiftDashSDKWalletRuntime.swift in Sources */,
+				FBA8AC3BF5464D0E85240A56 /* WalletLifecycleTransitionState.swift in Sources */,
 				915115B56A2B097590AE3797 /* SwiftDashSDKHost.swift in Sources */,
 				DA5A00000000000000000002 /* DWDashPayIdentityKeys.swift in Sources */,
 				ACAB47BF67F9E00D253166D4 /* DWRegistrationPhaseAdapter.swift in Sources */,
@@ -11256,6 +11291,10 @@
 				51AA00212F970021005A0021 /* MasternodesScreen.swift in Sources */,
 				5AEDE0012F9B000000000003 /* EvonodeWithdrawalViewModel.swift in Sources */,
 				5AEDE0012F9B000000000005 /* EvonodeWithdrawalScreen.swift in Sources */,
+				5AFDE1012FA1000000000011 /* TrackedMasternodeKeyVault.swift in Sources */,
+				5AFDE1012FA1000000000013 /* AddMasternodeViewModel.swift in Sources */,
+				5AFDE1012FA1000000000015 /* AddMasternodeScreen.swift in Sources */,
+				5AFDE1012FA1000000000017 /* TrackedMasternodeDetailScreen.swift in Sources */,
 				5AE5700E2F9C000000000003 /* EvonodeStatusViewModel.swift in Sources */,
 				5AE5700E2F9C000000000005 /* EvonodeStatusScreen.swift in Sources */,
 				51AA00032F970003005A0003 /* SyncInfoMenuScreen.swift in Sources */,
@@ -11296,6 +11335,7 @@
 				E039AE9F21B1A3BF80B16038 /* PinStore.swift in Sources */,
 				8FCE113ECEA4B9781B24922C /* AuthenticationService.swift in Sources */,
 				59A140F3992CD2438ADC84CE /* DWPreviewSeedPhraseModel+Mnemonic.swift in Sources */,
+				3F240D45721AF32B81BC447C /* RecoveryPhraseLength.swift in Sources */,
 				D0525BF736516E4EB50DF703 /* SwiftDashSDKReceiveAddressReader.swift in Sources */,
 				5BBF50F1EFB3EC99854ECE69 /* SwiftDashSDKTransactionSender.swift in Sources */,
 				43001E4B0F1FD846676FCE1F /* NetworkReachability.swift in Sources */,
@@ -11771,12 +11811,10 @@
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
 					"-l\"CloudInAppMessaging\"",
-					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DWAlertController\"",
 					"-l\"FirebaseCore\"",
 					"-l\"FirebaseCoreDiagnostics\"",
-					"-l\"FirebaseDynamicLinks\"",
 					"-l\"FirebaseStorage\"",
 					"-l\"GTMSessionFetcher\"",
 					"-l\"GoogleDataTransport\"",
@@ -11902,12 +11940,10 @@
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
 					"-l\"CloudInAppMessaging\"",
-					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DWAlertController\"",
 					"-l\"FirebaseCore\"",
 					"-l\"FirebaseCoreDiagnostics\"",
-					"-l\"FirebaseDynamicLinks\"",
 					"-l\"FirebaseStorage\"",
 					"-l\"GTMSessionFetcher\"",
 					"-l\"GoogleDataTransport\"",
@@ -12242,12 +12278,10 @@
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
 					"-l\"CloudInAppMessaging\"",
-					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DWAlertController\"",
 					"-l\"FirebaseCore\"",
 					"-l\"FirebaseCoreDiagnostics\"",
-					"-l\"FirebaseDynamicLinks\"",
 					"-l\"FirebaseStorage\"",
 					"-l\"GTMSessionFetcher\"",
 					"-l\"GoogleDataTransport\"",
@@ -12362,12 +12396,10 @@
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
 					"-l\"CloudInAppMessaging\"",
-					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DWAlertController\"",
 					"-l\"FirebaseCore\"",
 					"-l\"FirebaseCoreDiagnostics\"",
-					"-l\"FirebaseDynamicLinks\"",
 					"-l\"FirebaseStorage\"",
 					"-l\"GTMSessionFetcher\"",
 					"-l\"GoogleDataTransport\"",
@@ -12493,12 +12525,10 @@
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
 					"-l\"CloudInAppMessaging\"",
-					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DWAlertController\"",
 					"-l\"FirebaseCore\"",
 					"-l\"FirebaseCoreDiagnostics\"",
-					"-l\"FirebaseDynamicLinks\"",
 					"-l\"FirebaseStorage\"",
 					"-l\"GTMSessionFetcher\"",
 					"-l\"GoogleDataTransport\"",
@@ -12623,12 +12653,10 @@
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
 					"-l\"CloudInAppMessaging\"",
-					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DWAlertController\"",
 					"-l\"FirebaseCore\"",
 					"-l\"FirebaseCoreDiagnostics\"",
-					"-l\"FirebaseDynamicLinks\"",
 					"-l\"FirebaseStorage\"",
 					"-l\"GTMSessionFetcher\"",
 					"-l\"GoogleDataTransport\"",
@@ -12815,12 +12843,10 @@
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
 					"-l\"CloudInAppMessaging\"",
-					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DWAlertController\"",
 					"-l\"FirebaseCore\"",
 					"-l\"FirebaseCoreDiagnostics\"",
-					"-l\"FirebaseDynamicLinks\"",
 					"-l\"FirebaseStorage\"",
 					"-l\"GTMSessionFetcher\"",
 					"-l\"GoogleDataTransport\"",
@@ -13113,12 +13139,10 @@
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
 					"-l\"CloudInAppMessaging\"",
-					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DWAlertController\"",
 					"-l\"FirebaseCore\"",
 					"-l\"FirebaseCoreDiagnostics\"",
-					"-l\"FirebaseDynamicLinks\"",
 					"-l\"FirebaseStorage\"",
 					"-l\"GTMSessionFetcher\"",
 					"-l\"GoogleDataTransport\"",

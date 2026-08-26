@@ -228,7 +228,6 @@ struct HomeViewContent<Content: View>: View {
     @State private var shouldShowJoinDashPayInfo: Bool = false
     @State private var navigateToDashPayFlow: Bool = false
     @State private var navigateToClaimInvitation: Bool = false
-    @State private var giftCardTxId: Data? = nil
     @State private var pendingShieldedRecovery: Transaction? = nil
     /// Balance whose explainer sheet is up (tap on a breakdown row's body).
     @State private var balanceInfoNetwork: ChainNetwork? = nil
@@ -496,7 +495,7 @@ struct HomeViewContent<Content: View>: View {
         .sheet(item: $selectedTxDataItem) { item in
             TransactionDetailsSheet(item: item)
         }
-        .sheet(item: $giftCardTxId) { txId in
+        .sheet(item: $viewModel.giftCardTxId) { txId in
             GiftCardDetailsSheet(txId: txId)
         }
         .sheet(item: $pendingShieldedRecovery) { tx in
@@ -858,7 +857,7 @@ struct HomeViewContent<Content: View>: View {
                     #endif
                 } else if GiftCardMetadataProvider.shared.availableMetadata[txItem.txHashData] != nil {
                     // Check if this is a gift card transaction
-                    self.giftCardTxId = txItem.txHashData
+                    viewModel.giftCardTxId = txItem.txHashData
                 } else {
                     self.selectedTxDataItem = txDataItem
                 }
@@ -956,6 +955,8 @@ struct GiftCardDetailsSheet: View {
                     cards: viewModel.uiState.cards,
                     isLoadingCardDetails: viewModel.uiState.isLoadingCardDetails,
                     hasBeenPollingForLongTime: viewModel.uiState.hasBeenPollingForLongTime,
+                    loadingError: viewModel.uiState.loadingError,
+                    onRetryLoading: viewModel.uiState.canRetryLoading ? { viewModel.retryLoadingCardDetails() } : nil,
                     onSelectCard: { index in
                         selectedCardIndex = index
                         showBackButton = true

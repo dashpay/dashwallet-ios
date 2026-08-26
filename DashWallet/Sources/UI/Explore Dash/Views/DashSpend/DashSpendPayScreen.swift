@@ -219,6 +219,15 @@ struct DashSpendPayScreen: View {
                 showConfirmationDialog = false
                 presentationMode.wrappedValue.dismiss()
                 onPurchaseSuccess?(txId)
+            } catch DashSpendError.paymentStatusUnknown(let txId, let reason) {
+                // Paid, order placed, acceptance verdict missing. The purchase is already
+                // recorded, so route to the card details exactly like a confirmed purchase —
+                // its poller is what turns the pending order into a card. Reporting "Purchase
+                // Failed" here is what previously left customers paying for an invisible card.
+                DWLogger.log("Gift card purchase pending network confirmation: \(reason)")
+                showConfirmationDialog = false
+                presentationMode.wrappedValue.dismiss()
+                onPurchaseSuccess?(txId)
             } catch let error as DashSpendError {
                 showConfirmationDialog = false
                 errorTitle = NSLocalizedString("Purchase Failed", comment: "DashSpend")

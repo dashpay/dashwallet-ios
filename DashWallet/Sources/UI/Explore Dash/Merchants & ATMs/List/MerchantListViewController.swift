@@ -252,11 +252,11 @@ class MerchantListViewController: ExplorePointOfUseListViewController, Navigatio
     }
 
     override func configureModel() {
-        model = PointOfUseListModel(segments: [
+        let segments = [
             MerchantsListSegment.online.pointOfUseListSegment,
             MerchantsListSegment.nearby.pointOfUseListSegment,
             MerchantsListSegment.all.pointOfUseListSegment,
-        ])
+        ]
 
         // Determine which segment should be default based on caller override or location permission
         let defaultSegmentIndex: Int
@@ -268,10 +268,6 @@ class MerchantListViewController: ExplorePointOfUseListViewController, Navigatio
             defaultSegmentIndex = MerchantsListSegment.online.rawValue
         }
 
-        // Set the current segment FIRST, then apply defaults based on that segment
-        model.currentSegment = model.segments[defaultSegmentIndex]
-
-        // Now set defaults based on the ACTUAL current segment
         let defaultSortBy: PointOfUseListFilters.SortBy = defaultSegmentIndex == MerchantsListSegment.nearby.rawValue ? .distance : .name
 
         var defaultPaymentTypes: [PointOfUseListFilters.SpendingOptions] = [.dash, .ctx]
@@ -287,49 +283,42 @@ class MerchantListViewController: ExplorePointOfUseListViewController, Navigatio
             denominationType: .both // Default to both fixed and flexible
         )
 
-        // Set filters but don't fetch yet - wait for map bounds to be set
-        model.filters = defaultFilters
+        // Configure the initial segment and its filters before the model starts its first
+        // fetch. This prevents the Online default from racing an unfiltered constructor
+        // fetch against the filtered request.
+        model = PointOfUseListModel(
+            segments: segments,
+            initialSegment: segments[defaultSegmentIndex],
+            initialFilters: defaultFilters
+        )
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        print("🔍 VIEW: viewWillAppear called")
-        print("🔍 VIEW: Current GPS location = \(DWLocationManager.shared.currentLocation?.coordinate.latitude ?? 0), \(DWLocationManager.shared.currentLocation?.coordinate.longitude ?? 0)")
-        print("🔍 VIEW: Current searchCenterCoordinate = \(model.searchCenterCoordinate?.latitude ?? 0), \(model.searchCenterCoordinate?.longitude ?? 0)")
-
         // Check if we're coming from within the same screen (e.g., returning from merchant detail)
         // vs. entering the screen fresh (e.g., switching from home screen or another tab)
         let isReturningFromWithinFlow = model.searchCenterCoordinate != nil
 
-        // Only recenter to GPS if entering the screen fresh
+        // Only recenter to GPS if entering the screen fresh.
+        // Applies to every map-showing segment (Nearby and All): without seeding the
+        // bounds here, the All tab's map stays empty until the user pans it.
         if !isReturningFromWithinFlow {
-            print("🔍 VIEW: No search center set, will recenter to GPS")
-            // If we have a GPS location and are on Nearby tab, update map center and fetch
             if let gpsLocation = DWLocationManager.shared.currentLocation,
-               currentSegment.tag == MerchantsListSegment.nearby.rawValue,
                model.showMap {
-                print("🔍 VIEW: Setting map center to GPS location: \(gpsLocation.coordinate.latitude), \(gpsLocation.coordinate.longitude)")
-
                 // Set initialCenterLocation so mapViewDidFinishLoadingMap will use the correct location
                 mapView.initialCenterLocation = gpsLocation
                 mapView.setCenter(gpsLocation, animated: false)
-
-                print("🔍 VIEW: After setCenter, mapView.centerCoordinate = \(mapView.centerCoordinate.latitude), \(mapView.centerCoordinate.longitude)")
 
                 let radiusToUse = model.filters?.currentRadius ?? kDefaultRadius
                 mapView.searchRadius = radiusToUse
 
                 // Use GPS location directly instead of relying on mapView.centerCoordinate
                 let newBounds = ExploreMapBounds(rect: MKCircle(center: gpsLocation.coordinate, radius: radiusToUse).boundingMapRect)
-                print("🔍 VIEW: Created bounds from GPS location - NE=(\(newBounds.neCoordinate.latitude), \(newBounds.neCoordinate.longitude)), SW=(\(newBounds.swCoordinate.latitude), \(newBounds.swCoordinate.longitude))")
                 model.currentMapBounds = newBounds
 
-                print("🔍 VIEW: Refreshing items with GPS location")
                 model.fetch(query: nil)
             }
-        } else {
-            print("🔍 VIEW: Returning from within flow, preserving panned location at (\(model.searchCenterCoordinate!.latitude), \(model.searchCenterCoordinate!.longitude))")
         }
 
         // Ensure filter status is visible on initial load
@@ -342,10 +331,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController, Navigatio
         // Clear search center coordinate when actually leaving the screen
         // (not when navigating to a child view like merchant detail)
         if isMovingFromParent || isBeingDismissed {
-            print("🔍 VIEW: viewWillDisappear - leaving screen, clearing searchCenterCoordinate")
             model.searchCenterCoordinate = nil
-        } else {
-            print("🔍 VIEW: viewWillDisappear - navigating to child view, preserving searchCenterCoordinate")
         }
     }
 
@@ -393,7 +379,10 @@ class MerchantListViewController: ExplorePointOfUseListViewController, Navigatio
         guard model.showMap else { return }
 
         guard let bounds = model.currentMapBounds, let center = model.userCoordinates else {
-            mapView.show(merchants: model.items)
+            // No search area yet — only physical items are meaningful on the map. On the
+            // All tab the list also contains online merchants from anywhere, which must
+            // not be plotted.
+            mapView.show(merchants: model.items.filter { $0.isPhysical })
             return
         }
 
@@ -409,7 +398,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController, Navigatio
                 case .success(let locations):
                     self.mapView.show(merchants: locations)
                 case .failure:
-                    self.mapView.show(merchants: self.model.items)
+                    self.mapView.show(merchants: self.model.items.filter { $0.isPhysical })
                 }
             }
         }
