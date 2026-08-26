@@ -68,6 +68,8 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case keyRegistrationWrongIdentity
     case keyRegistrationUnexpectedMutation
     case keyRegistrationMismatchedDerivedKey(KeyPurpose)
+    case ephemeralKeyGenerationFailed
+    case ambiguousKeyRegistrationConnection
 
     var errorDescription: String? {
         switch self {
@@ -101,6 +103,10 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
             return "The scanned key-registration transition targets a different identity."
         case .keyRegistrationUnexpectedMutation:
             return "The scanned key-registration transition does more than add the expected login keys."
+        case .ephemeralKeyGenerationFailed:
+            return "Could not generate an ephemeral DashConnect key."
+        case .ambiguousKeyRegistrationConnection:
+            return "Could not tell which approved app this login belongs to. Scan the app's QR code again."
         case .keyRegistrationMismatchedDerivedKey(let purpose):
             return "The scanned key-registration transition adds a \(purpose.name) key we did not derive."
         }
@@ -369,43 +375,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let signer = KeychainSigner(modelContainer: context.modelContainer)
         let propertiesJSON = try Self.makeJSONObjectString(from: draft.properties)
 
-        do {
-            _ = try await context.wallet.createDocument(
-                ownerIdentityId: context.identityId,
-                contractId: Self.loginKeyExchangeContractId,
-                documentType: Self.loginKeyExchangeDocumentType,
-                propertiesJSON: propertiesJSON,
-                signer: signer
-            )
-        } catch {
-            let errorText = String(describing: error).lowercased()
-            let shouldReplace = errorText.contains("duplicate unique")
-                || errorText.contains("already exists")
-                || errorText.contains("duplicate")
-            guard shouldReplace else {
-                throw error
-            }
-
-            let existingDocumentId = try await findExistingLoginKeyResponseDocumentId(
-                ownerIdentityId: context.identityId,
-                appContractId: request.contractId,
-                sdk: context.sdk
-            )
-            let signingKeyId = try selectDocumentSigningKeyId(
-                wallet: context.wallet,
-                identityId: context.identityId
-            )
-
-            _ = try await context.wallet.replaceDocument(
-                ownerIdentityId: context.identityId,
-                contractId: Self.loginKeyExchangeContractId,
-                documentType: Self.loginKeyExchangeDocumentType,
-                documentId: existingDocumentId,
-                propertiesJSON: propertiesJSON,
-                signingKeyId: signingKeyId,
-                signer: signer
-            )
-        }
+        // Whether this identity already published a login-key response for this
+        // app is a question about state, so it is answered by asking. Matching
+        // substrings in the error text instead would break the moment the SDK
+        // rewords or localizes a message, and "duplicate" also matches unique-
+        // index failures that have nothing to do with this document.
+        try await writeLoginKeyResponseDocument(
+            context: context,
+            appContractId: request.contractId,
+            propertiesJSON: propertiesJSON,
+            signer: signer
+        )
 
         let preview = await makeConnectionRequest(from: request)
         let connection: DAppConnection
@@ -455,15 +435,23 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     func completeKeyRegistration(_ request: DashStRequest) async throws {
         try validateNetwork(request.network)
         let context = try await requireContext()
-        let pendingConnection = try pendingApprovedConnectionForKeyRegistration()
-        guard let pendingAppContractId = Self.decodeIdentifier(pendingConnection.id) else {
-            throw DashConnectPlatformError.noApprovedConnectionAwaitingKeyRegistration
-        }
         // Chosen approach: (a) deserialize the scanned IdentityUpdateTransition,
         // verify it only adds the exact derived login keys for our identity,
         // then rebuild the equivalent `updateIdentity(...)` call through the SDK.
+        //
+        // Parsed before the connection is chosen: `DashStRequest` carries no app
+        // identifier, but the transition's keys usually do, in their contract
+        // bounds. Picking the most recently approved connection instead would
+        // derive app B's keys for a QR scanned from app A.
         let transition = try await MainActor.run {
             try keyRegistrationParser.parse(request.transitionBytes)
+        }
+
+        let pendingConnection = try pendingApprovedConnectionForKeyRegistration(
+            boundContractId: Self.boundAppContractId(in: transition)
+        )
+        guard let pendingAppContractId = Self.decodeIdentifier(pendingConnection.id) else {
+            throw DashConnectPlatformError.noApprovedConnectionAwaitingKeyRegistration
         }
 
         // `deriveIdentityAuthKeyAtSlot` is main-actor isolated in the SDK.
@@ -588,7 +576,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     ) throws -> DashConnectLoginKeyResponseDraft {
         defer { zero(&walletEphemeralPrivateKey) }
 
-        let appEphemeralPubKeyHash = KeyExchangeCrypto.hash160(appEphemeralPubKey)
+        let appEphemeralPubKeyHash = try KeyExchangeCrypto.hash160(appEphemeralPubKey)
         guard appEphemeralPubKeyHash.count == 20 else {
             throw DashConnectPlatformError.invalidHash160
         }
@@ -655,7 +643,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             let authenticationPublicKey = try Secp256k1.compressedPublicKey(
                 privateKey: authenticationPrivateKey
             )
-            let authenticationPublicKeyHash160 = KeyExchangeCrypto.hash160(authenticationPublicKey)
+            let authenticationPublicKeyHash160 = try KeyExchangeCrypto.hash160(authenticationPublicKey)
 
             encryptionPrivateKey = try KeyExchangeCrypto.deriveEncryptionPrivateKey(
                 loginKey: loginKey,
@@ -820,19 +808,65 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         subject.value.first { $0.id == contractId }
     }
 
-    private func pendingApprovedConnectionForKeyRegistration() throws -> DAppConnection {
-        try Self.pendingApprovedConnectionForKeyRegistration(in: subject.value)
+    private func pendingApprovedConnectionForKeyRegistration(
+        boundContractId: Data?
+    ) throws -> DAppConnection {
+        try Self.pendingApprovedConnectionForKeyRegistration(
+            in: subject.value,
+            boundContractId: boundContractId
+        )
+    }
+
+    /// The contract every bounded key in the transition points at, or `nil`
+    /// when the transition carries no bounds — or carries bounds that disagree,
+    /// which names no single app and so identifies nothing.
+    static func boundAppContractId(
+        in transition: DashConnectKeyRegistrationTransition
+    ) -> Data? {
+        let boundIds = transition.addPublicKeys.compactMap { key -> Data? in
+            switch key.contractBounds {
+            case .singleContract(let id):
+                return id
+            case .singleContractDocumentType(let id, _):
+                return id
+            case nil:
+                return nil
+            }
+        }
+
+        guard let first = boundIds.first, boundIds.allSatisfy({ $0 == first }) else {
+            return nil
+        }
+        return first
     }
 
     static func pendingApprovedConnectionForKeyRegistration(
-        in connections: [DAppConnection]
+        in connections: [DAppConnection],
+        boundContractId: Data?
     ) throws -> DAppConnection {
-        guard let connection = connections
-            .filter({ $0.status == .approved })
-            .max(by: { $0.updatedAt < $1.updatedAt }) else {
+        let approved = connections.filter { $0.status == .approved }
+        guard !approved.isEmpty else {
             throw DashConnectPlatformError.noApprovedConnectionAwaitingKeyRegistration
         }
-        return connection
+
+        // The transition names its app whenever its keys are bounded. That is
+        // an exact answer, so it wins over any ordering heuristic.
+        if let boundContractId {
+            guard let match = approved.first(where: {
+                Self.decodeIdentifier($0.id) == boundContractId
+            }) else {
+                throw DashConnectPlatformError.noApprovedConnectionAwaitingKeyRegistration
+            }
+            return match
+        }
+
+        // Unbounded transitions are valid but anonymous. Recency is only safe
+        // when there is nothing to confuse it with: with two apps approved,
+        // guessing wrong derives the wrong keys and rejects a legitimate scan.
+        guard approved.count == 1 else {
+            throw DashConnectPlatformError.ambiguousKeyRegistrationConnection
+        }
+        return approved[0]
     }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {
@@ -940,11 +974,72 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return context.storedUsername
     }
 
-    private func findExistingLoginKeyResponseDocumentId(
+    /// Publishes the login-key response, replacing the existing document when
+    /// this identity already has one for this app.
+    private func writeLoginKeyResponseDocument(
+        context: Context,
+        appContractId: Data,
+        propertiesJSON: String,
+        signer: KeychainSigner
+    ) async throws {
+        func replace(documentId: Data) async throws {
+            let signingKeyId = try selectDocumentSigningKeyId(
+                wallet: context.wallet,
+                identityId: context.identityId
+            )
+            _ = try await context.wallet.replaceDocument(
+                ownerIdentityId: context.identityId,
+                contractId: Self.loginKeyExchangeContractId,
+                documentType: Self.loginKeyExchangeDocumentType,
+                documentId: documentId,
+                propertiesJSON: propertiesJSON,
+                signingKeyId: signingKeyId,
+                signer: signer
+            )
+        }
+
+        if let existingDocumentId = try await findLoginKeyResponseDocumentId(
+            ownerIdentityId: context.identityId,
+            appContractId: appContractId,
+            sdk: context.sdk
+        ) {
+            try await replace(documentId: existingDocumentId)
+            return
+        }
+
+        do {
+            _ = try await context.wallet.createDocument(
+                ownerIdentityId: context.identityId,
+                contractId: Self.loginKeyExchangeContractId,
+                documentType: Self.loginKeyExchangeDocumentType,
+                propertiesJSON: propertiesJSON,
+                signer: signer
+            )
+        } catch {
+            // The document can appear between the lookup and the create. Ask
+            // once more: if it is there now, the create lost that race and a
+            // replace is correct; if it is not, this failure is something else
+            // and has to surface.
+            guard let racedDocumentId = try? await findLoginKeyResponseDocumentId(
+                ownerIdentityId: context.identityId,
+                appContractId: appContractId,
+                sdk: context.sdk
+            ) else {
+                throw error
+            }
+
+            try await replace(documentId: racedDocumentId)
+        }
+    }
+
+    /// `nil` means no such document exists; a failed lookup throws. The
+    /// create-or-replace branch is decided on this result, so "absent" and
+    /// "could not tell" must not collapse into the same value.
+    private func findLoginKeyResponseDocumentId(
         ownerIdentityId: Data,
         appContractId: Data,
         sdk: SDK
-    ) async throws -> Data {
+    ) async throws -> Data? {
         let whereClause = """
         [["$ownerId","==","\(ownerIdentityId.toBase58String())"],["contractId","==","\(appContractId.toBase58String())"]]
         """
@@ -956,10 +1051,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             limit: 1
         )
 
-        guard let documents = response["documents"] as? [[String: Any]],
-              let id = documents.first?["$id"] as? String,
-              let identifier = Self.decodeIdentifier(id),
-              identifier.count == 32 else {
+        guard let documents = response["documents"] as? [[String: Any]] else {
+            throw DashConnectPlatformError.existingDocumentLookupFailed
+        }
+
+        guard let id = documents.first?["$id"] as? String else { return nil }
+
+        guard let identifier = Self.decodeIdentifier(id), identifier.count == 32 else {
             throw DashConnectPlatformError.existingDocumentLookupFailed
         }
 
@@ -1042,14 +1140,23 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         )
     }
 
+    /// A random 32-byte value is a valid secp256k1 scalar with overwhelming
+    /// probability, so this exits on the first pass in practice. The bound is
+    /// for the other failure mode: if `Secp256k1` is failing for a reason that
+    /// has nothing to do with the candidate, an unbounded loop would hang
+    /// `approveLogin` forever instead of surfacing an error.
+    private static let ephemeralKeyGenerationAttempts = 8
+
     private static func generateEphemeralPrivateKey() throws -> Data {
-        while true {
+        for _ in 0 ..< ephemeralKeyGenerationAttempts {
             var candidate = try randomBytes(count: 32)
             if (try? Secp256k1.compressedPublicKey(privateKey: candidate)) != nil {
                 return candidate
             }
             zero(&candidate)
         }
+
+        throw DashConnectPlatformError.ephemeralKeyGenerationFailed
     }
 
     private static func randomBytes(count: Int) throws -> Data {

@@ -38,87 +38,94 @@ struct ApproveConnectionSheet: View {
                 .padding(.top, 6)
                 .padding(.bottom, 20)
 
-            VStack(alignment: .leading, spacing: 20) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(
-                        String(format: titleFormat, resolvedAppLabel)
-                    )
-                    .font(.title2)
-                    .foregroundColor(.primaryText)
+            // The permission list and the app label both grow with Dynamic
+            // Type; without a scroll container the actions can be pushed below
+            // the bottom of the sheet, leaving the user unable to approve or
+            // deny. The actions stay pinned under the scroll area.
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(
+                            String(format: titleFormat, resolvedAppLabel)
+                        )
+                        .font(.title2)
+                        .foregroundColor(.primaryText)
 
-                    Text(resolvedSubtitle)
-                        .font(.subhead)
-                        .foregroundColor(.secondaryText)
-                }
-
-                if let existingConnection = request.existingConnection {
-                    reloginNotice(existingConnection)
-                }
-
-                if isRelogin {
-                    reloginPermissionsSummary
-                } else {
-                    fullPermissions
-                }
-
-                if request.walletUsername != nil || request.walletIdentityId != nil {
-                    VStack(spacing: 4) {
-                        if let walletUsername = request.walletUsername {
-                            DetailRow(
-                                label: NSLocalizedString("Username", comment: "DashConnect"),
-                                value: walletUsername
-                            )
-                        }
-                        if let walletIdentityId = request.walletIdentityId {
-                            DetailRow(
-                                label: NSLocalizedString("Identity", comment: "DashConnect"),
-                                value: truncateMiddle(walletIdentityId)
-                            )
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .stroke(Color.gray300, lineWidth: 1.5)
-                    )
-                }
-
-                Spacer(minLength: 0)
-
-                VStack(spacing: 8) {
-                    if let errorText {
-                        Text(errorText)
-                            .font(.footnote)
-                            .foregroundColor(Color.dash.errorText)
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .padding(.bottom, 4)
+                        Text(resolvedSubtitle)
+                            .font(.subhead)
+                            .foregroundColor(.secondaryText)
                     }
 
-                    DashButton(
-                        text: NSLocalizedString("Approve", comment: "DashConnect"),
-                        style: .filledBlue,
-                        size: .large,
-                        stretch: true,
-                        isEnabled: !isLoading,
-                        isLoading: isLoading,
-                        action: onApprove
-                    )
+                    if let existingConnection = request.existingConnection {
+                        reloginNotice(existingConnection)
+                    }
 
-                    DashButton(
-                        text: NSLocalizedString("Deny", comment: "DashConnect"),
-                        style: .tintedBlue,
-                        size: .large,
-                        stretch: true,
-                        isEnabled: !isLoading,
-                        action: onDeny
-                    )
+                    if isRelogin {
+                        reloginPermissionsSummary
+                    } else {
+                        fullPermissions
+                    }
+
+                    if request.walletUsername != nil || request.walletIdentityId != nil {
+                        VStack(spacing: 4) {
+                            if let walletUsername = request.walletUsername {
+                                DetailRow(
+                                    label: NSLocalizedString("Username", comment: "DashConnect"),
+                                    value: walletUsername
+                                )
+                            }
+                            if let walletIdentityId = request.walletIdentityId {
+                                DetailRow(
+                                    label: NSLocalizedString("Identity", comment: "DashConnect"),
+                                    value: truncateMiddle(walletIdentityId)
+                                )
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .stroke(Color.gray300, lineWidth: 1.5)
+                        )
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                // Figma uses a much wider horizontal inset here; 20pt matches the
+                // phone sheets already used in this iOS app and avoids over-compressing the content.
+                .padding(.horizontal, 20)
             }
-            // Figma uses a much wider horizontal inset here; 20pt matches the
-            // phone sheets already used in this iOS app and avoids over-compressing the content.
+
+            VStack(spacing: 8) {
+                if let errorText {
+                    Text(errorText)
+                        .font(.footnote)
+                        .foregroundColor(Color.dash.errorText)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.bottom, 4)
+                }
+
+                DashButton(
+                    text: NSLocalizedString("Approve", comment: "DashConnect"),
+                    style: .filledBlue,
+                    size: .large,
+                    stretch: true,
+                    isEnabled: !isLoading,
+                    isLoading: isLoading,
+                    action: onApprove
+                )
+
+                DashButton(
+                    text: NSLocalizedString("Deny", comment: "DashConnect"),
+                    style: .tintedBlue,
+                    size: .large,
+                    stretch: true,
+                    isEnabled: !isLoading,
+                    action: onDeny
+                )
+            }
             .padding(.horizontal, 20)
+            .padding(.top, 12)
             .padding(.bottom, 20)
         }
         .background(Color.primaryBackground)

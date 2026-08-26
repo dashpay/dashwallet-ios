@@ -17,6 +17,7 @@ enum DashConnectUriError: LocalizedError, Equatable {
     case keyLabelLengthOverrunsPayload
     case invalidEphemeralPublicKey
     case emptyTransitionPayload
+    case invalidKeyLabelEncoding
 
     var errorDescription: String? {
         switch self {
@@ -50,6 +51,8 @@ enum DashConnectUriError: LocalizedError, Equatable {
             return "The dash-key payload label length overruns the payload."
         case .invalidEphemeralPublicKey:
             return "The dash-key payload contains an invalid compressed secp256k1 point."
+        case .invalidKeyLabelEncoding:
+            return "The dash-key application label is not valid UTF-8."
         case .emptyTransitionPayload:
             return "The dash-st payload must be non-empty."
         }
@@ -117,7 +120,12 @@ enum DashConnectUri {
         }
 
         let labelEnd = payload.index(labelStart, offsetBy: labelLength)
-        let label = String(decoding: payload[labelStart ..< labelEnd], as: UTF8.self)
+        // `String(decoding:as:)` would substitute U+FFFD for malformed bytes and
+        // hand back a label that no app actually sent; the payload spec requires
+        // valid UTF-8, so a failure to decode is a malformed URI.
+        guard let label = String(data: Data(payload[labelStart ..< labelEnd]), encoding: .utf8) else {
+            throw DashConnectUriError.invalidKeyLabelEncoding
+        }
 
         return DashKeyRequest(
             appEphemeralPubKey: appEphemeralPubKey,

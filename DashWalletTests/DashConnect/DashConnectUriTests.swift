@@ -7,7 +7,7 @@ final class DashConnectUriTests: XCTestCase {
     private let label = "Login to Yappr"
 
     func testParsesValidDashKeyRequest() throws {
-        let request = try DashConnectUri.parseKeyRequest(validKeyUri())
+        let request = try DashConnectUri.parseKeyRequest(try validKeyUri())
 
         XCTAssertEqual(request.network, .testnet)
         XCTAssertEqual(
@@ -24,17 +24,17 @@ final class DashConnectUriTests: XCTestCase {
         XCTAssertEqual(request.transitionBytes, Data([0x01, 0x02, 0x03, 0x04]))
     }
 
-    func testRecognizesUriKinds() {
-        XCTAssertTrue(DashConnectUri.isKeyUri(validKeyUri()))
+    func testRecognizesUriKinds() throws {
+        XCTAssertTrue(DashConnectUri.isKeyUri(try validKeyUri()))
         XCTAssertFalse(DashConnectUri.isKeyUri(validStUri()))
         XCTAssertTrue(DashConnectUri.isStUri(validStUri()))
-        XCTAssertFalse(DashConnectUri.isStUri(validKeyUri()))
+        XCTAssertFalse(DashConnectUri.isStUri(try validKeyUri()))
     }
 
     func testParsesAllSupportedNetworks() throws {
-        XCTAssertEqual(try DashConnectUri.parseKeyRequest(validKeyUri(network: .mainnet)).network, .mainnet)
-        XCTAssertEqual(try DashConnectUri.parseKeyRequest(validKeyUri(network: .testnet)).network, .testnet)
-        XCTAssertEqual(try DashConnectUri.parseKeyRequest(validKeyUri(network: .devnet)).network, .devnet)
+        XCTAssertEqual(try DashConnectUri.parseKeyRequest(try validKeyUri(network: .mainnet)).network, .mainnet)
+        XCTAssertEqual(try DashConnectUri.parseKeyRequest(try validKeyUri(network: .testnet)).network, .testnet)
+        XCTAssertEqual(try DashConnectUri.parseKeyRequest(try validKeyUri(network: .devnet)).network, .devnet)
     }
 
     func testRejectsWrongScheme() {
@@ -54,16 +54,16 @@ final class DashConnectUriTests: XCTestCase {
         assertStError("dash-st:?n=t&v=1", .emptyBody)
     }
 
-    func testRejectsMissingNetworkAndMissingVersion() {
-        assertKeyError(validKeyUri(query: "v=1"), .missingNetwork)
-        assertKeyError(validKeyUri(query: "n=t"), .missingVersion)
+    func testRejectsMissingNetworkAndMissingVersion() throws {
+        assertKeyError(try validKeyUri(query: "v=1"), .missingNetwork)
+        assertKeyError(try validKeyUri(query: "n=t"), .missingVersion)
         assertStError(validStUri(query: "v=1"), .missingNetwork)
         assertStError(validStUri(query: "n=t"), .missingVersion)
     }
 
-    func testRejectsUnsupportedVersionAndUnknownNetwork() {
-        assertKeyError(validKeyUri(query: "n=t&v=2"), .unsupportedVersion)
-        assertKeyError(validKeyUri(query: "n=x&v=1"), .unknownNetwork)
+    func testRejectsUnsupportedVersionAndUnknownNetwork() throws {
+        assertKeyError(try validKeyUri(query: "n=t&v=2"), .unsupportedVersion)
+        assertKeyError(try validKeyUri(query: "n=x&v=1"), .unknownNetwork)
         assertStError(validStUri(query: "n=t&v=2"), .unsupportedVersion)
         assertStError(validStUri(query: "n=x&v=1"), .unknownNetwork)
     }
@@ -73,26 +73,26 @@ final class DashConnectUriTests: XCTestCase {
         assertStError("dash-st:0OIl?n=t&v=1", .invalidBase58)
     }
 
-    func testRejectsShortKeyPayloadAndWrongPayloadVersion() {
+    func testRejectsShortKeyPayloadAndWrongPayloadVersion() throws {
         assertKeyError(keyUri(payload: Data(repeating: 0x00, count: 66)), .keyPayloadTooShort)
 
-        var payload = validKeyPayload()
+        var payload = try validKeyPayload()
         payload[0] = 0x02
         assertKeyError(keyUri(payload: payload), .invalidKeyPayloadVersion)
     }
 
-    func testRejectsTooLongAndOverrunningLabelLengths() {
-        var tooLong = validKeyPayload()
+    func testRejectsTooLongAndOverrunningLabelLengths() throws {
+        var tooLong = try validKeyPayload()
         tooLong[66] = 65
         assertKeyError(keyUri(payload: tooLong), .keyLabelTooLong)
 
-        var overrunning = validKeyPayload()
+        var overrunning = try validKeyPayload()
         overrunning[66] = UInt8(label.utf8.count + 1)
         assertKeyError(keyUri(payload: overrunning), .keyLabelLengthOverrunsPayload)
     }
 
-    func testRejectsInvalidEphemeralPoint() {
-        var payload = validKeyPayload()
+    func testRejectsInvalidEphemeralPoint() throws {
+        var payload = try validKeyPayload()
         payload.replaceSubrange(1 ..< 34, with: data([Data([0x02]), Data(repeating: 0x00, count: 32)]))
         assertKeyError(keyUri(payload: payload), .invalidEphemeralPublicKey)
     }
@@ -120,8 +120,8 @@ final class DashConnectUriTests: XCTestCase {
         }
     }
 
-    private func validKeyUri(network: DashConnectNetwork = .testnet, query: String? = nil) -> String {
-        keyUri(payload: validKeyPayload(), network: network, query: query)
+    private func validKeyUri(network: DashConnectNetwork = .testnet, query: String? = nil) throws -> String {
+        keyUri(payload: try validKeyPayload(), network: network, query: query)
     }
 
     private func validStUri(network: DashConnectNetwork = .testnet, query: String? = nil) -> String {
@@ -140,11 +140,11 @@ final class DashConnectUriTests: XCTestCase {
         "dash-st:\(base58Encode(payload))?\(query ?? "n=\(network.rawValue)&v=1")"
     }
 
-    private func validKeyPayload() -> Data {
+    private func validKeyPayload() throws -> Data {
         let labelData = Data(label.utf8)
         return data([
             Data([0x01]),
-            try! validEphemeralPublicKey(),
+            try validEphemeralPublicKey(),
             contractId,
             Data([UInt8(labelData.count)]),
             labelData,

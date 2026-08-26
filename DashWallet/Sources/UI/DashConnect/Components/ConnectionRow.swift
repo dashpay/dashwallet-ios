@@ -41,6 +41,10 @@ struct ConnectionRow: View {
         static let switchScale: CGFloat = 0.75
         static let switchWidth: CGFloat = 64 * switchScale
         static let switchHeight: CGFloat = 28 * switchScale
+        /// The scaled switch draws at 48×21, and the tap gesture lives on that
+        /// shape alone — under the 44pt minimum. The hit area is grown around
+        /// the control without changing what is drawn.
+        static let minimumTouchTarget: CGFloat = 44
     }
 
     var body: some View {
@@ -93,6 +97,7 @@ struct ConnectionRow: View {
                 .scaleEffect(Layout.switchScale)
         }
         .frame(width: Layout.switchWidth, height: Layout.switchHeight)
+        .frame(minWidth: Layout.minimumTouchTarget, minHeight: Layout.minimumTouchTarget)
         .contentShape(Rectangle())
         .onTapGesture(perform: onDisconnect)
         .accessibilityElement()

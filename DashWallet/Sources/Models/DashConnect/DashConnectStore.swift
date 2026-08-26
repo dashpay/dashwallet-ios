@@ -18,6 +18,7 @@
 //
 
 import Foundation
+import os
 
 protocol DashConnectStore {
     func load() -> [DAppConnection]
@@ -51,13 +52,23 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         self.decoder = decoder
     }
 
-    var storageKey: String {
-        let walletScope = walletIdHexProvider()?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let walletSuffix = (walletScope?.isEmpty == false) ? walletScope! : "no-wallet"
-        return "dashconnect.connections.v1.\(network.rawValue).\(walletSuffix)"
+    private static let logger = Logger(
+        subsystem: "org.dashfoundation.dash",
+        category: "dashconnect.store")
+
+    /// `nil` until a wallet identifier exists. Connections are wallet-scoped,
+    /// so a shared placeholder scope would let one wallet's rows be saved and
+    /// then loaded back in a different wallet context — reporting a connection
+    /// status that belongs to someone else.
+    var storageKey: String? {
+        guard let walletScope = walletIdHexProvider()?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+            !walletScope.isEmpty else { return nil }
+        return "dashconnect.connections.v1.\(network.rawValue).\(walletScope)"
     }
 
     func load() -> [DAppConnection] {
+        guard let storageKey else { return [] }
         guard let data = defaults.data(forKey: storageKey) else { return [] }
         guard let rawRows = (try? JSONSerialization.jsonObject(with: data)) as? [Any] else {
             logDrop("stored value is not a JSON array")
@@ -96,6 +107,10 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
     }
 
     func save(_ connections: [DAppConnection]) {
+        // No wallet scope means there is no key this state may be written
+        // under; dropping the write is correct, not a silent failure.
+        guard let storageKey else { return }
+
         guard !connections.isEmpty else {
             defaults.removeObject(forKey: storageKey)
             return
@@ -114,12 +129,17 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         do {
             defaults.set(try encoder.encode(rows), forKey: storageKey)
         } catch {
-            NSLog("DashConnectStore: failed to encode connections for %@: %@", storageKey, error.localizedDescription)
+            Self.logger.error(
+                "DashConnectStore: failed to encode connections on \(self.network.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
         }
     }
 
+    /// The storage key embeds the wallet id, a persistent user identifier, so
+    /// it stays out of the log; the network and the reason are what diagnose a
+    /// dropped row anyway.
     private func logDrop(_ reason: String) {
-        NSLog("DashConnectStore: dropping stored row for %@: %@", storageKey, reason)
+        Self.logger.warning(
+            "DashConnectStore: dropping stored row on \(self.network.rawValue, privacy: .public): \(reason, privacy: .public)")
     }
 
     private struct StoredConnection: Codable {

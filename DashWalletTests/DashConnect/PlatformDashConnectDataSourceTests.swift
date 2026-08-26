@@ -471,7 +471,8 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
                         status: .active,
                         updatedAt: Date(timeIntervalSince1970: 20)
                     ),
-                ]
+                ],
+                boundContractId: nil
             )
         ) { error in
             XCTAssertEqual(error as? DashConnectPlatformError, .noApprovedConnectionAwaitingKeyRegistration)
@@ -480,7 +481,7 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
 
     func testPendingApprovedConnectionErrorTellsUserToScanLoginQrFirst() {
         XCTAssertThrowsError(
-            try PlatformDashConnectDataSource.pendingApprovedConnectionForKeyRegistration(in: [])
+            try PlatformDashConnectDataSource.pendingApprovedConnectionForKeyRegistration(in: [], boundContractId: nil)
         ) { error in
             XCTAssertEqual(
                 error.localizedDescription,
@@ -489,34 +490,88 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         }
     }
 
-    func testPendingApprovedConnectionPrefersMostRecentApproved() throws {
-        let olderApproved = DAppConnection(
-            id: "older",
-            name: "Older Approved",
-            url: "older.app",
-            status: .approved,
-            updatedAt: Date(timeIntervalSince1970: 10)
+    private static let appAId = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+    private static let appBId = "7W6u4NgW63FPUuW8EnTbYzD4KybNQD5n7CUDWydJY234"
+
+    private func approvedPair() -> (appA: DAppConnection, appB: DAppConnection, active: DAppConnection) {
+        (
+            DAppConnection(
+                id: Self.appAId,
+                name: "App A",
+                url: "a.app",
+                status: .approved,
+                updatedAt: Date(timeIntervalSince1970: 10)
+            ),
+            DAppConnection(
+                id: Self.appBId,
+                name: "App B",
+                url: "b.app",
+                status: .approved,
+                // Approved after A, so recency alone would always pick B.
+                updatedAt: Date(timeIntervalSince1970: 30)
+            ),
+            DAppConnection(
+                id: "active",
+                name: "Active",
+                url: "active.app",
+                status: .active,
+                updatedAt: Date(timeIntervalSince1970: 40)
+            )
         )
-        let newestApproved = DAppConnection(
-            id: "newest",
-            name: "Newest Approved",
-            url: "newest.app",
-            status: .approved,
-            updatedAt: Date(timeIntervalSince1970: 30)
-        )
-        let active = DAppConnection(
-            id: "active",
-            name: "Active",
-            url: "active.app",
-            status: .active,
-            updatedAt: Date(timeIntervalSince1970: 40)
-        )
+    }
+
+    /// Scanning app A's transition while app B is the newer approval used to
+    /// derive B's keys and reject A. The contract bounds name A, so A wins.
+    func testPendingApprovedConnectionFollowsContractBoundsNotRecency() throws {
+        let (appA, appB, active) = approvedPair()
+        let boundToA = try XCTUnwrap(Data.identifier(fromBase58: Self.appAId))
 
         let selected = try PlatformDashConnectDataSource.pendingApprovedConnectionForKeyRegistration(
-            in: [olderApproved, active, newestApproved]
+            in: [appA, active, appB],
+            boundContractId: boundToA
         )
 
-        XCTAssertEqual(selected, newestApproved)
+        XCTAssertEqual(selected, appA)
+    }
+
+    func testPendingApprovedConnectionRejectsBoundsMatchingNoApprovedConnection() throws {
+        let (appA, appB, _) = approvedPair()
+        let unrelated = Data(repeating: 0x77, count: 32)
+
+        XCTAssertThrowsError(
+            try PlatformDashConnectDataSource.pendingApprovedConnectionForKeyRegistration(
+                in: [appA, appB],
+                boundContractId: unrelated
+            )
+        ) { error in
+            XCTAssertEqual(error as? DashConnectPlatformError, .noApprovedConnectionAwaitingKeyRegistration)
+        }
+    }
+
+    /// An unbounded transition identifies no app, so with two approvals there is
+    /// nothing to choose on — guessing is what produced the wrong-key failure.
+    func testPendingApprovedConnectionRejectsAmbiguousUnboundedTransition() throws {
+        let (appA, appB, active) = approvedPair()
+
+        XCTAssertThrowsError(
+            try PlatformDashConnectDataSource.pendingApprovedConnectionForKeyRegistration(
+                in: [appA, active, appB],
+                boundContractId: nil
+            )
+        ) { error in
+            XCTAssertEqual(error as? DashConnectPlatformError, .ambiguousKeyRegistrationConnection)
+        }
+    }
+
+    func testPendingApprovedConnectionTakesTheOnlyApprovalWhenUnbounded() throws {
+        let (appA, _, active) = approvedPair()
+
+        let selected = try PlatformDashConnectDataSource.pendingApprovedConnectionForKeyRegistration(
+            in: [appA, active],
+            boundContractId: nil
+        )
+
+        XCTAssertEqual(selected, appA)
     }
 
     func testMissingKeyRegistrationKeysReturnsEmptyWhenBothKeysAlreadyRegistered() throws {

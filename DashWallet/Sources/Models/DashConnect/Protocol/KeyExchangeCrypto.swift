@@ -49,11 +49,14 @@ enum KeyExchangeCrypto {
     ///
     /// This deliberately duplicates the direct `platform_wallet_hash160` call pattern from
     /// `KeychainManager.computePublicKeyHashHex` so we reuse the same primitive without
-    /// adding a Swift-side RIPEMD-160 implementation. Empty input or FFI failure returns
-    /// an empty Data sentinel, mirroring the existing KeychainManager helper.
-    static func hash160(_ data: Data) -> Data {
+    /// adding a Swift-side RIPEMD-160 implementation.
+    ///
+    /// Throws rather than returning an empty sentinel: callers compare two hashes,
+    /// and an empty result would read as a legitimate mismatch instead of a
+    /// computation that never happened.
+    static func hash160(_ data: Data) throws -> Data {
         guard !data.isEmpty else {
-            return Data()
+            throw CryptoError.hash160Failed
         }
 
         var out = [UInt8](repeating: 0, count: hash160Length)
@@ -73,7 +76,7 @@ enum KeyExchangeCrypto {
 
         guard rc == 0 else {
             zero(&out)
-            return Data()
+            throw CryptoError.hash160Failed
         }
 
         let result = Data(out)

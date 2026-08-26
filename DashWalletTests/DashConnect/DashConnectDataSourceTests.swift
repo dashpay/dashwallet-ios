@@ -9,7 +9,7 @@ final class DashConnectDataSourceTests: XCTestCase {
     func testParseQRRoutesValidDashKeyUriToLoginRequest() async throws {
         let dataSource = MockDashConnectDataSource()
 
-        let result = try await dataSource.parseQR(validKeyUri())
+        let result = try await dataSource.parseQR(try validKeyUri())
 
         guard case let .login(request) = result else {
             return XCTFail("Expected a login request")
@@ -50,11 +50,14 @@ final class DashConnectDataSourceTests: XCTestCase {
         }
     }
 
-    func testParseQRRejectsWrongNetwork() async {
+    func testParseQRRejectsWrongNetwork() async throws {
         let dataSource = MockDashConnectDataSource(supportedNetwork: .testnet)
+        // Built outside the asserted closure: a fixture failure must not be
+        // mistaken for the rejection this test is asserting.
+        let uri = try validKeyUri(network: .mainnet)
 
         await XCTAssertThrowsErrorAsync({
-            try await dataSource.parseQR(validKeyUri(network: .mainnet))
+            try await dataSource.parseQR(uri)
         }) { error in
             XCTAssertEqual(
                 error as? DashConnectMockError,
@@ -66,7 +69,7 @@ final class DashConnectDataSourceTests: XCTestCase {
     func testParseQRToleratesLeadingAndTrailingWhitespace() async throws {
         let dataSource = MockDashConnectDataSource()
 
-        let result = try await dataSource.parseQR("  \n\(validKeyUri())\n\t ")
+        let result = try await dataSource.parseQR("  \n\(try validKeyUri())\n\t ")
 
         guard case let .login(request) = result else {
             return XCTFail("Expected a login request")
@@ -107,7 +110,9 @@ final class DashConnectDataSourceTests: XCTestCase {
     }
 
     func testApprovingSameAppTwiceReplacesExistingRow() async throws {
-        let initialDate = Date(timeIntervalSince1970: 1_773_132_300)
+        // Captured relative to now rather than hard-coded: a fixed 2026 date
+        // makes the assertion fail on any machine whose clock is set earlier.
+        let initialDate = Date().addingTimeInterval(-60)
         let existing = DAppConnection(
             id: MockDashConnectDataSource.sample(.approved).id,
             name: "Yappr",
@@ -124,11 +129,11 @@ final class DashConnectDataSourceTests: XCTestCase {
         XCTAssertTrue((dataSource.connectionsSnapshot.first?.updatedAt ?? .distantPast) > initialDate)
     }
 
-    private func validKeyUri(network: DashConnectNetwork = .testnet) -> String {
+    private func validKeyUri(network: DashConnectNetwork = .testnet) throws -> String {
         let labelData = Data(label.utf8)
         let payload = data([
             Data([0x01]),
-            try! validEphemeralPublicKey(),
+            try validEphemeralPublicKey(),
             contractId,
             Data([UInt8(labelData.count)]),
             labelData,

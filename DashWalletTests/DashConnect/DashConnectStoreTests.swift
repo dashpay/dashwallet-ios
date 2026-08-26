@@ -51,7 +51,7 @@ final class DashConnectStoreTests: XCTestCase {
             ],
         ]
 
-        defaults.set(try JSONSerialization.data(withJSONObject: payload), forKey: store.storageKey)
+        defaults.set(try JSONSerialization.data(withJSONObject: payload), forKey: try XCTUnwrap(store.storageKey))
 
         XCTAssertEqual(
             store.load(),
@@ -77,7 +77,7 @@ final class DashConnectStoreTests: XCTestCase {
             ],
         ]
 
-        defaults.set(try JSONSerialization.data(withJSONObject: payload), forKey: store.storageKey)
+        defaults.set(try JSONSerialization.data(withJSONObject: payload), forKey: try XCTUnwrap(store.storageKey))
 
         XCTAssertEqual(store.load().count, 1)
         XCTAssertEqual(store.load().first?.id, "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F")
@@ -93,7 +93,7 @@ final class DashConnectStoreTests: XCTestCase {
             "updatedAt": 1_773_132_300_000
         ]]
 
-        defaults.set(try JSONSerialization.data(withJSONObject: payload), forKey: store.storageKey)
+        defaults.set(try JSONSerialization.data(withJSONObject: payload), forKey: try XCTUnwrap(store.storageKey))
 
         XCTAssertEqual(store.load(), [])
     }
@@ -103,17 +103,17 @@ final class DashConnectStoreTests: XCTestCase {
         XCTAssertEqual(store.load(), [])
     }
 
-    func testSavingEmptyArrayClearsStore() {
+    func testSavingEmptyArrayClearsStore() throws {
         let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
         store.save([sampleConnection(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", status: .approved, updatedAt: Date(timeIntervalSince1970: 10))])
 
         store.save([])
 
-        XCTAssertNil(defaults.data(forKey: store.storageKey))
+        XCTAssertNil(defaults.data(forKey: try XCTUnwrap(store.storageKey)))
         XCTAssertEqual(store.load(), [])
     }
 
-    func testNetworksAreIsolated() {
+    func testNetworksAreIsolated() throws {
         let testnetStore = makeStore(network: .testnet, walletIdHex: "wallet-a")
         let mainnetStore = makeStore(network: .mainnet, walletIdHex: "wallet-a")
         let testnetConnection = sampleConnection(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", status: .approved, updatedAt: Date(timeIntervalSince1970: 10))
@@ -125,8 +125,8 @@ final class DashConnectStoreTests: XCTestCase {
         XCTAssertEqual(testnetStore.load(), [testnetConnection])
         XCTAssertEqual(mainnetStore.load(), [mainnetConnection])
         XCTAssertNotEqual(testnetStore.storageKey, mainnetStore.storageKey)
-        XCTAssertTrue(testnetStore.storageKey.contains(".t."))
-        XCTAssertTrue(mainnetStore.storageKey.contains(".m."))
+        XCTAssertTrue(try XCTUnwrap(testnetStore.storageKey).contains(".t."))
+        XCTAssertTrue(try XCTUnwrap(mainnetStore.storageKey).contains(".m."))
     }
 
     func testWalletIdsAreIsolated() {
