@@ -1029,8 +1029,19 @@ final class InternalTransferViewModel: ObservableObject {
                 maxNotice = Self.feeReserveExceedsBalanceMessage(route.source)
             } else {
                 // The balance card shows the total, so a Max that lands below
-                // it reads as a bug unless the held-back part is accounted for.
-                maxNotice = Self.coreHeldBackMessage(coreBalanceDuffs - sourceDuffs)
+                // it reads as a bug unless the gap is accounted for. Unlike
+                // coreToPlatform, most of that gap here is the shield pool
+                // fee — money the transfer spends, not money left behind —
+                // so it gets its own sentence instead of being folded into
+                // "held back". Any true remainder (unconfirmed coins) keeps
+                // the held-back wording.
+                var notice = Self.coreToShieldedFeeMessage(feeDuffs)
+                let idleRemainder = coreBalanceDuffs > coreSpendableDuffs
+                    ? coreBalanceDuffs - coreSpendableDuffs : 0
+                if idleRemainder > 0 {
+                    notice += " " + Self.coreHeldBackMessage(idleRemainder)
+                }
+                maxNotice = notice
             }
         case .coreToPlatform:
             // Fee-aware max: spendable minus the send fee reserve (mirrors
@@ -1349,6 +1360,21 @@ final class InternalTransferViewModel: ObservableObject {
             isPlatformShieldPreflightLoading = false
             awaitingPlatformShieldResync = true
         }
+    }
+
+    /// Core → Shielded Max's dominant gap term: the shield pool fee
+    /// (`CoreToShieldedAmountPolicy.currentPoolFeeDuffs` — the consensus
+    /// `compute_minimum_shielded_fee` plus the asset-lock processing cost).
+    /// This money is spent by the transfer, not withheld from it, so it gets
+    /// its own sentence rather than the `coreHeldBackMessage` wording, which
+    /// implies funds staying in the wallet.
+    private static func coreToShieldedFeeMessage(_ duffs: UInt64) -> String {
+        let formatted = duffs.formattedDashAmountWithoutCurrencySymbol
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "%@ DASH is the shield transfer fee, deducted from this amount.",
+                comment: "Core to Shielded Max: the shield pool fee, spent by the transfer (not withheld)"),
+            formatted)
     }
 
     /// The part of the Core balance Max cannot offer: unconfirmed/immature
