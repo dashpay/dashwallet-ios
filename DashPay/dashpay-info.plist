@@ -110,12 +110,6 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>FirebaseDeepLinkPasteboardRetrievalEnabled</key>
-	<false/>
-	<key>FirebaseDynamicLinksCustomDomains</key>
-	<array>
-		<string>https://invitations.dashpay.io/link</string>
-	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>

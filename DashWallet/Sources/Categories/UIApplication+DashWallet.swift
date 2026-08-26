@@ -17,11 +17,23 @@
 
 import Darwin
 import MachO.dyld
+import UIKit
 
 @objc
 extension UIApplication {
+    /// Advisory only: it runs in-process on the device it judges, so anything
+    /// able to read the keychain can also make it return `false`.
     @objc
     static var isJailbroken: Bool {
+        // macOS lets a sandboxed app stat system paths, so the probe below flags
+        // every Mac; "Designed for iPad" is neither simulator nor macCatalyst
+        #if targetEnvironment(simulator) || targetEnvironment(macCatalyst)
+        return false
+        #else
+        if ProcessInfo.processInfo.isiOSAppOnMac {
+            return false
+        }
+
         var s = stat()
         let jailbroken = stat("/bin/sh", &s) == 0 // if we can see /bin/sh, the app isn't sandboxed
 
@@ -33,9 +45,6 @@ extension UIApplication {
             }
         }
 
-        #if targetEnvironment(simulator)
-        return false
-        #else
         return jailbroken
         #endif
     }

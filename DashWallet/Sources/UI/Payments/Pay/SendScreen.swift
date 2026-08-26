@@ -709,8 +709,9 @@ struct SendConfirmSheet: View {
 
     let route: SendViewModel.Route
     let destinationAddress: String
-    /// The recipient's raw 43-byte Orchard payload — required for
-    /// `.shieldedToShielded`, nil otherwise.
+    /// The recipient's raw 43-byte Orchard payload — required for the
+    /// shielded-destination routes (`.coreToShielded`,
+    /// `.platformToShielded`, `.shieldedToShielded`), nil otherwise.
     let destinationRaw43: Data?
     let dashDuffs: Int64
     let creditsAmount: UInt64
@@ -889,7 +890,7 @@ struct SendConfirmSheet: View {
 
     private var fromLabel: String {
         switch route {
-        case .platformToPlatform, .platformToCore:
+        case .platformToPlatform, .platformToCore, .platformToShielded:
             return NSLocalizedString("Platform balance", comment: "The Dash Platform credits balance")
         case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
             return NSLocalizedString("Shielded balance", comment: "")
@@ -938,12 +939,17 @@ struct SendConfirmSheet: View {
             return 100_000_000
         case .platformToCore:
             return withdrawalFeeCredits
+        case .platformToShielded:
+            // The Type 15 shield is an output-only bundle padded to exactly
+            // 2 actions, charged the flat base fee — same number the Rust
+            // side reserves on input 0.
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .transfer, numActions: 2)
         case .shieldedToCore:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .withdrawal, numActions: 2)
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .withdrawal, numActions: 2)
         case .shieldedToPlatform:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 2)
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .unshield, numActions: 2)
         case .shieldedToShielded:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .transfer, numActions: 2)
         case .coreToCore:
             // Never presented here — the L1 processor shows the real fee.
             return nil
@@ -1054,7 +1060,8 @@ struct SendConfirmSheet: View {
         }
         // Only shielded legs build an Orchard proof.
         switch route {
-        case .coreToShielded, .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
+        case .coreToShielded, .platformToShielded, .shieldedToCore, .shieldedToPlatform,
+             .shieldedToShielded:
             steps.append(.init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving))
         case .platformToPlatform, .platformToCore, .coreToCore:
             break
@@ -1080,6 +1087,14 @@ struct SendConfirmSheet: View {
                 await coordinator.performPlatformSend(
                     destination: destinationAddress,
                     amountCredits: creditsAmount)
+            case .platformToShielded:
+                guard let destinationRaw43 else {
+                    coordinator.reset()
+                    return
+                }
+                await coordinator.performShield(
+                    amountCredits: creditsAmount,
+                    recipientRaw43: destinationRaw43)
             case .platformToCore:
                 await coordinator.performPlatformWithdraw(
                     amountCredits: creditsAmount,

@@ -44,6 +44,8 @@ struct GiftCardDetailsUIState {
     var transaction: Transaction? = nil
     var isClaimLink: Bool = false
     var hasBeenPollingForLongTime: Bool = false
+    /// The poller stopped on a run of failures and the sheet may offer to start it again.
+    var canRetryLoading: Bool = false
     var provider: String? = nil
     var cards: [GiftCardDetailsCardItem] = []
 }
@@ -73,9 +75,19 @@ class GiftCardDetailsViewModel: ObservableObject {
     private lazy var customIconDAO = IconBitmapDAOImpl.shared
     private lazy var txMetadataDAO = TransactionMetadataDAOImpl.shared
     private var tickerTimer: Timer?
-    private var retryCount = 0
-    private let maxRetries = 40
+    /// Polls served since the ticker started, successful or not — drives the "still working on
+    /// it" copy. Counting failures alone (as this once did) never reached the threshold while
+    /// CTX was healthily answering "not fulfilled yet", so the hint never appeared.
+    private var pollCount = 0
+    /// Consecutive failed polls. Reset by any answered poll; drives the backoff and the give-up.
+    private var errorStreak = 0
+    /// Give up after this many consecutive failures. With the backoff below that is ~2 minutes
+    /// of a CTX outage before the retry affordance is offered, instead of hammering it.
+    private let maxErrorStreak = 8
     private let longPollingThreshold = 27
+    private let basePollInterval: TimeInterval = 1.5
+    private let maxPollInterval: TimeInterval = 30
+    private var pollInterval: TimeInterval = 1.5
 
     let txId: Data
     @Published private(set) var uiState = GiftCardDetailsUIState()
@@ -194,20 +206,48 @@ class GiftCardDetailsViewModel: ObservableObject {
     }
 
     private func startTicker() {
-        guard tickerTimer == nil else { return }
+        // `isLoadingCardDetails` is the synchronous claim: the first poll is awaited before a
+        // timer exists, so guarding on `tickerTimer` alone would let a second `loadGiftCard`
+        // (the DAO publisher fires on every write) start a parallel poller in that window.
+        guard tickerTimer == nil, !uiState.isLoadingCardDetails else { return }
 
         uiState.isLoadingCardDetails = true
         uiState.loadingError = nil
+        uiState.canRetryLoading = false
 
         Task {
             await fetchGiftCardInfo()
+            scheduleNextPoll()
         }
+    }
 
-        tickerTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true) { [weak self] _ in
-            Task { [weak self] in
+    /// Re-arms a single-shot timer at the current interval. Single-shot rather than repeating so
+    /// a failing CTX backs off (doubling up to `maxPollInterval`) instead of being polled every
+    /// 1.5 s for as long as the sheet is open.
+    private func scheduleNextPoll() {
+        guard uiState.isLoadingCardDetails else { return }
+
+        tickerTimer?.invalidate()
+        tickerTimer = Timer.scheduledTimer(withTimeInterval: pollInterval, repeats: false) { [weak self] _ in
+            Task { @MainActor [weak self] in
                 await self?.fetchGiftCardInfo()
+                self?.scheduleNextPoll()
             }
         }
+    }
+
+    private func noteSuccessfulPoll() {
+        errorStreak = 0
+        pollInterval = basePollInterval
+    }
+
+    /// Resume polling after the ticker gave up on a run of failures (the "Retry" affordance).
+    func retryLoadingCardDetails() {
+        guard tickerTimer == nil else { return }
+
+        errorStreak = 0
+        pollInterval = basePollInterval
+        startTicker()
     }
 
     private func stopTicker() {
@@ -215,7 +255,9 @@ class GiftCardDetailsViewModel: ObservableObject {
         tickerTimer = nil
         uiState.isLoadingCardDetails = false
         uiState.hasBeenPollingForLongTime = false
-        retryCount = 0
+        pollCount = 0
+        errorStreak = 0
+        pollInterval = basePollInterval
     }
 
     private func fetchGiftCardInfo() async {
@@ -225,7 +267,8 @@ class GiftCardDetailsViewModel: ObservableObject {
             return
         }
 
-        if retryCount >= longPollingThreshold {
+        pollCount += 1
+        if pollCount >= longPollingThreshold {
             await MainActor.run {
                 self.uiState.hasBeenPollingForLongTime = true
             }
@@ -261,6 +304,10 @@ class GiftCardDetailsViewModel: ObservableObject {
                 DWLogger.log("DashSpend: Calling CTX API - Base58TxId: \(base58TxId)")
                 response = try await ctxSpendRepository.getGiftCardByTxid(txid: base58TxId)
             }
+
+            // An answered poll — whatever the order status — ends the failure streak and
+            // returns the ticker to its base cadence.
+            noteSuccessfulPoll()
 
             switch response.status {
             case "fulfilled":
@@ -304,14 +351,20 @@ class GiftCardDetailsViewModel: ObservableObject {
                 break
             }
         } catch {
-            retryCount += 1
-            if retryCount >= maxRetries {
+            errorStreak += 1
+            // Read before the give-up path: `stopTicker` resets the streak, so logging it
+            // afterwards reported the last failure as attempt 0.
+            let attempt = errorStreak
+            if errorStreak >= maxErrorStreak {
                 await MainActor.run {
                     self.uiState.loadingError = error
+                    self.uiState.canRetryLoading = true
                 }
                 stopTicker()
+            } else {
+                pollInterval = min(pollInterval * 2, maxPollInterval)
             }
-            DWLogger.log("DashSpend: Failed to fetch gift card info: \(error)")
+            DWLogger.log("DashSpend: Failed to fetch gift card info (attempt \(attempt)): \(error)")
         }
     }
 
@@ -328,6 +381,7 @@ class GiftCardDetailsViewModel: ObservableObject {
         do {
             DWLogger.log("DashSpend: Calling PiggyCards API - OrderId: \(metadata.orderId)")
             let orderStatus = try await piggyCardsRepository.getOrderStatus(orderId: metadata.orderId)
+            noteSuccessfulPoll()
 
             switch orderStatus.data.status.lowercased() {
             case "complete", "completed":
@@ -384,12 +438,15 @@ class GiftCardDetailsViewModel: ObservableObject {
                 break
             }
         } catch {
-            retryCount += 1
-            if retryCount >= maxRetries {
+            errorStreak += 1
+            if errorStreak >= maxErrorStreak {
                 await MainActor.run {
                     self.uiState.loadingError = error
+                    self.uiState.canRetryLoading = true
                 }
                 stopTicker()
+            } else {
+                pollInterval = min(pollInterval * 2, maxPollInterval)
             }
         }
     }

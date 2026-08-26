@@ -556,7 +556,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             signer: signer)
 
         applyUpdatedBalances(updated, context: container.mainContext)
-        ShieldedTxLookup.shared.refresh()
+        await ShieldedTxLookup.shared.refresh(reason: "platform-fund-completed")
         Task { await self.syncNow() }
     }
 
@@ -580,7 +580,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             signer: signer)
 
         applyUpdatedBalances(updated, context: container.mainContext)
-        ShieldedTxLookup.shared.refresh()
+        await ShieldedTxLookup.shared.refresh(reason: "platform-fund-resume-completed")
         Task { await self.syncNow() }
     }
 
@@ -770,7 +770,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         let manager: PlatformWalletManager
         let resolvedWallet: ManagedPlatformWallet
         do {
-            (manager, resolvedWallet) = try SwiftDashSDKHost.shared.start(network: network)
+            (manager, resolvedWallet) = try await SwiftDashSDKHost.shared.start(network: network)
         } catch {
             Self.logger.error("🛰️ PLATFORM-ADDR :: host.start failed: \(String(describing: error), privacy: .public)")
             lastError = error.localizedDescription
@@ -888,7 +888,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         self.addressWalletStartupError = addressWalletError
         self.lastError = addressWalletError
 
-        subscribeToManager(manager: manager, walletId: resolvedWallet.walletId)
+        await subscribeToManager(manager: manager, walletId: resolvedWallet.walletId)
         refreshDerivedAddresses()
 
         // Hand the shielded diagnostics monitor the new manager generation.
@@ -1047,7 +1047,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     // MARK: - Combine subscriptions
 
-    private func subscribeToManager(manager: PlatformWalletManager, walletId: Data) {
+    private func subscribeToManager(manager: PlatformWalletManager, walletId: Data) async {
         shieldedMonitoringStartedAt = Date()
         lastFullShieldedSyncAt = nil
 
@@ -1075,12 +1075,10 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             latestObservedShieldedBalance = result.balance
             lastFullShieldedSyncAt = Date()
         }
-        // Seed the shielded funding-tx → locked-amount map (for the home tx
-        // list's "Shielded transfer" rows) from whatever is already
-        // persisted, then refresh it after each completed shielded sync pass
-        // below — a new "to Shielded" transfer's asset lock lands around the
-        // same time its note shows up in the balance.
-        ShieldedTxLookup.shared.refresh()
+        // Install the completion subscription before awaiting the initial
+        // worker-context read. `await` yields the main actor, so doing the
+        // initial read first could let a fast first shielded pass publish in
+        // the gap between the seed check above and this subscription.
         shieldedEventCancellable = manager.$lastShieldedSyncEvent
             .receive(on: RunLoop.main)
             .sink { [weak self] event in
@@ -1090,8 +1088,17 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                       !result.cooldownSkip else { return }
                 self.lastFullShieldedSyncAt = Date()
                 self.handleShieldedBalanceResult(result, manager: manager)
-                ShieldedTxLookup.shared.refresh()
+                Task { @MainActor in
+                    await ShieldedTxLookup.shared.refresh(reason: "shielded-sync-completed")
+                }
             }
+
+        // Seed the shielded funding-tx → locked-amount map (for the home tx
+        // list's "Shielded transfer" rows) from whatever is already
+        // persisted. Each completed pass above refreshes it again — a new
+        // "to Shielded" transfer's asset lock lands around the same time its
+        // note shows up in the balance.
+        await ShieldedTxLookup.shared.refresh(reason: "manager-subscribe")
 
         // A suspended app cannot run the SDK's 60-second timer. Force one pass
         // after returning to the foreground when the last real scan is no
@@ -1507,13 +1514,14 @@ extension PlatformAddressSyncCoordinator {
 /// shielded variant is funding type 5
 /// (`FundingType.assetLockShieldedAddressTopUp`).
 ///
-/// Snapshot design: `refresh()` (main actor, SwiftData `mainContext`)
-/// rebuilds an immutable `[txid: ShieldedLockInfo]` map (amount + status +
-/// vout); `amountDuffs(forTxidHex:)` / `info(forTxidHex:)` read it under a
-/// lock so the (possibly background) transaction-list builder in
-/// `Transaction` can call in from any thread without touching SwiftData.
-/// Refreshed by `PlatformAddressSyncCoordinator` on wallet start and on each
-/// completed shielded sync pass.
+/// Snapshot design: `refresh()` captures the active `ModelContainer` on the
+/// main actor, then rebuilds an immutable `[txid: ShieldedLockInfo]` map
+/// (amount + status + vout) in a private, worker-thread `ModelContext`.
+/// `amountDuffs(forTxidHex:)` / `info(forTxidHex:)` read the finished map under
+/// a lock, so the (possibly background) transaction-list builder in
+/// `Transaction` never touches SwiftData. Refreshed by
+/// `PlatformAddressSyncCoordinator` on wallet start and on each completed
+/// shielded sync pass.
 final class ShieldedTxLookup {
     static let shared = ShieldedTxLookup()
 
@@ -1548,9 +1556,25 @@ final class ShieldedTxLookup {
         let fundingTypeRaw: Int
     }
 
+    /// Value-only result crossing from the detached SwiftData reader back to
+    /// the main actor. Persistent models and `ModelContext` never cross that
+    /// boundary.
+    private struct SnapshotBuildResult: Sendable {
+        let map: [String: ShieldedLockInfo]?
+        let assetLockCount: Int
+        let typesSeen: [Int]
+        let uncoveredTxids: [String]
+        let errorDescription: String?
+        let workerRanOffMain: Bool
+    }
+
     private let lock = NSLock()
     /// txid (display-order hex, lowercased) → locked amount + status + vout.
     private var infoByTxid: [String: ShieldedLockInfo] = [:]
+
+    /// Main-actor generation prevents a slow read from an old container (or
+    /// an earlier refresh of the same container) from replacing newer state.
+    @MainActor private var refreshGeneration: UInt64 = 0
 
     private init() {}
 
@@ -1599,32 +1623,86 @@ final class ShieldedTxLookup {
     }
 
     /// Rebuild the snapshot from the active container's shielded asset-lock
-    /// rows. Main actor: reads the SwiftData `mainContext`, matching the rest
-    /// of the wallet's SDK access. A nil container (no wallet running) clears
-    /// the snapshot; a transient fetch error leaves the previous one in place.
+    /// rows. Only container capture and final publication run on the main
+    /// actor; all SQLite reads use a private `ModelContext` in a detached task.
+    /// A nil container (no wallet running) clears the snapshot; a transient
+    /// fetch error leaves the previous one in place.
     @MainActor
-    func refresh() {
+    func refresh(reason: String = "explicit") async {
+        refreshGeneration &+= 1
+        let generation = refreshGeneration
+        let refreshID = String(UUID().uuidString.prefix(8))
+
         guard let container = SwiftDashSDKHost.shared.modelContainer else {
             store([:])
+            DWLogger.log(
+                "🛡️ SHIELD-TX-REFRESH [\(refreshID)] skipped reason=\(reason) — no model container")
             return
         }
+
+        let started = CFAbsoluteTimeGetCurrent()
+        DWLogger.log(
+            "🛡️ SHIELD-TX-REFRESH [\(refreshID)] start reason=\(reason) generation=\(generation)")
+
+        let result = await Task.detached(priority: .utility) {
+            Self.buildSnapshot(in: container)
+        }.value
+        let elapsedMS = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+
+        guard generation == refreshGeneration,
+              SwiftDashSDKHost.shared.modelContainer === container else {
+            DWLogger.log(
+                "🛡️ SHIELD-TX-REFRESH [\(refreshID)] stale after \(elapsedMS)ms reason=\(reason) offMain=\(result.workerRanOffMain)")
+            return
+        }
+
+        if let errorDescription = result.errorDescription {
+            Self.logger.error(
+                "🛡️ SHIELD-TX :: refresh failed: \(errorDescription, privacy: .public)")
+            DWLogger.log(
+                "🛡️ SHIELD-TX-REFRESH [\(refreshID)] failed in \(elapsedMS)ms reason=\(reason) offMain=\(result.workerRanOffMain): \(errorDescription)")
+            return
+        }
+
+        guard let map = result.map else { return }
+        store(map)
+        Self.logger.info(
+            "🛡️ SHIELD-TX :: snapshot \(map.count, privacy: .public) funding tx(s) (shielded + platform)")
+        DWLogger.log(
+            "🛡️ SHIELD-TX-REFRESH [\(refreshID)] finish in \(elapsedMS)ms reason=\(reason) offMain=\(result.workerRanOffMain) rows=\(result.assetLockCount) snapshot=\(map.count) uncovered=\(result.uncoveredTxids.count)")
+
+        if !result.uncoveredTxids.isEmpty {
+            Self.logger.error(
+                "🛡️ SHIELD-TX :: \(result.uncoveredTxids.count, privacy: .public) asset-lock tx(s) have no PersistentAssetLock row (SDK reconstruction gap?): \(result.uncoveredTxids.joined(separator: ","), privacy: .public)")
+        }
+        // Diagnostic: if asset locks exist but none matched the shielded
+        // funding type, surface the types actually present so a single test
+        // run reveals whether the discriminant assumption is wrong.
+        if map.isEmpty && result.assetLockCount > 0 {
+            Self.logger.info(
+                "🛡️ SHIELD-TX :: \(result.assetLockCount, privacy: .public) asset lock(s) present, none funding-type \(Self.shieldedFundingType, privacy: .public); types=\(result.typesSeen, privacy: .public)")
+        }
+    }
+
+    /// Worker-thread SwiftData pass. Asset locks are a tiny table; fetch all
+    /// and filter in Swift rather than fighting `#Predicate` local-capture
+    /// rules. The coverage query preserves the former launch diagnostic while
+    /// keeping its SQLite work off the main actor as well.
+    private static func buildSnapshot(in container: ModelContainer) -> SnapshotBuildResult {
+        let workerRanOffMain = !Thread.isMainThread
         do {
-            // Asset locks are a tiny table; fetch all and filter in Swift
-            // rather than fighting `#Predicate` local-capture rules.
-            let rows = try container.mainContext.fetch(FetchDescriptor<PersistentAssetLock>())
+            let context = ModelContext(container)
+            context.autosaveEnabled = false
+            let rows = try context.fetch(FetchDescriptor<PersistentAssetLock>())
             var map: [String: ShieldedLockInfo] = [:]
-            let trackedTypes = Array(Self.identityFundingTypes) + [Self.platformFundingType, Self.shieldedFundingType]
+            let trackedTypes = Array(identityFundingTypes) + [platformFundingType, shieldedFundingType]
             for row in rows where trackedTypes.contains(row.fundingTypeRaw) && row.amountDuffs > 0 {
                 // outPointHex == "<txid display hex>:<vout>"; key on the txid,
-                // parse the vout after the colon. One shielded asset-lock row
-                // per funding txid in practice; if one ever recurs, prefer the
-                // most informative status: consumed (4, consumption known)
-                // over recovered-from-chain (5, consumption unknown) over the
-                // live pending window (0…3).
+                // parse the vout after the colon. If one recurs, prefer the
+                // most informative status: consumed (4) over recovered (5)
+                // over the live pending window (0…3).
                 guard let colon = row.outPointHex.firstIndex(of: ":") else { continue }
                 let txid = row.outPointHex[..<colon].lowercased()
-                // Skip rows whose vout doesn't parse rather than inventing vout 0 —
-                // a wrong vout would feed a bad outpoint into a recovery resume.
                 guard let vout = UInt32(row.outPointHex[row.outPointHex.index(after: colon)...]) else { continue }
                 let info = ShieldedLockInfo(
                     amountDuffs: UInt64(row.amountDuffs),
@@ -1635,44 +1713,34 @@ final class ShieldedTxLookup {
                 if let existing = map[txid], rank(existing.statusRaw) >= rank(info.statusRaw) { continue }
                 map[txid] = info
             }
-            logUnclassifiedAssetLocks(coveredTxids: Set(map.keys), context: container.mainContext)
-            store(map)
-            Self.logger.info("🛡️ SHIELD-TX :: snapshot \(map.count, privacy: .public) funding tx(s) (shielded + platform)")
-            // Diagnostic: if asset locks exist but none matched the shielded
-            // funding type, surface the types actually present so a single
-            // test run reveals whether the discriminant assumption is wrong.
-            if map.isEmpty && !rows.isEmpty {
-                let typesSeen = Set(rows.map { $0.fundingTypeRaw }).sorted()
-                Self.logger.info("🛡️ SHIELD-TX :: \(rows.count, privacy: .public) asset lock(s) present, none funding-type \(Self.shieldedFundingType, privacy: .public); types=\(typesSeen, privacy: .public)")
-            }
-        } catch {
-            Self.logger.error("🛡️ SHIELD-TX :: refresh failed: \(String(describing: error), privacy: .public)")
-        }
-    }
 
-    /// Coverage diagnostic. Every wallet-own asset-lock funding tx is
-    /// expected to have a store row: recorded live at build time, or —
-    /// after a wipe & recover — rewritten by the SDK's restore-scan
-    /// reconstruction (platform #4342; verified on a restored testnet
-    /// wallet 2026-08-09: 9/9 funding txs classified. The rows currently
-    /// arrive at `statusRaw` 1/3 rather than the intended 5 — an SDK-side
-    /// enrichment gap tracked for a platform follow-up).
-    /// An asset-lock tx with no row therefore indicates a reconstruction
-    /// gap (it renders "Internal Transfer — 0 DASH"); log it so a single
-    /// test run surfaces the txid. This replaced an app-side fallback that
-    /// re-parsed raw tx bytes into synthetic map entries — dead weight once
-    /// the SDK rows exist, since store-backed entries always beat it.
-    @MainActor
-    private func logUnclassifiedAssetLocks(coveredTxids: Set<String>, context: ModelContext) {
-        let assetLockKind = TransactionTypeKind.assetLock.rawValue
-        let descriptor = FetchDescriptor<PersistentTransaction>(
-            predicate: #Predicate { $0.transactionTypeKind == assetLockKind })
-        guard let rows = try? context.fetch(descriptor), !rows.isEmpty else { return }
-        let uncovered = rows
-            .map { Transaction.displayHex($0.txid).lowercased() }
-            .filter { !coveredTxids.contains($0) }
-        guard !uncovered.isEmpty else { return }
-        Self.logger.error("🛡️ SHIELD-TX :: \(uncovered.count, privacy: .public) asset-lock tx(s) have no PersistentAssetLock row (SDK reconstruction gap?): \(uncovered.joined(separator: ","), privacy: .public)")
+            // Coverage diagnostic. Every wallet-own asset-lock funding tx is
+            // expected to have a store row; uncovered rows indicate an SDK
+            // reconstruction gap and render as "Internal Transfer — 0 DASH".
+            let assetLockKind = TransactionTypeKind.assetLock.rawValue
+            let descriptor = FetchDescriptor<PersistentTransaction>(
+                predicate: #Predicate { $0.transactionTypeKind == assetLockKind })
+            let coveredTxids = Set(map.keys)
+            let uncoveredTxids = try context.fetch(descriptor)
+                .map { Transaction.displayHex($0.txid).lowercased() }
+                .filter { !coveredTxids.contains($0) }
+
+            return SnapshotBuildResult(
+                map: map,
+                assetLockCount: rows.count,
+                typesSeen: Set(rows.map { $0.fundingTypeRaw }).sorted(),
+                uncoveredTxids: uncoveredTxids,
+                errorDescription: nil,
+                workerRanOffMain: workerRanOffMain)
+        } catch {
+            return SnapshotBuildResult(
+                map: nil,
+                assetLockCount: 0,
+                typesSeen: [],
+                uncoveredTxids: [],
+                errorDescription: String(describing: error),
+                workerRanOffMain: workerRanOffMain)
+        }
     }
 
     private func store(_ map: [String: ShieldedLockInfo]) {

@@ -320,12 +320,56 @@ final class SwiftDashSDKWalletWiper: NSObject {
         logger.info(
             "wiped SwiftDashSDK wallets across mainnet/testnet in \(String(describing: elapsed), privacy: .public); authorization=\(authorization.logLabel, privacy: .public)")
 
+        // Reset-all also drops the user's TRACKED (wallet-independent)
+        // masternodes and their vaulted keys — they survive single-wallet
+        // deletion, not a full reset (owner decision 2026-08-24). Runs
+        // SYNCHRONOUSLY before the runtime teardown below: the cleanup
+        // needs the host's manager and model container, which
+        // `handleWalletWiped(completion:)` tears down. This body runs on the wipe
+        // executor's background queue, so the main hop cannot deadlock.
+        DispatchQueue.main.sync {
+            MainActor.assumeIsolated {
+                TrackedMasternodeKeyVault.wipeAllTrackedState()
+            }
+        }
+
         // Tear down the app-owned runtime now that all wallet material is
-        // gone. This stops BLAST/SPV, drops the host-owned manager/wallet, and
-        // clears published wallet state. We do NOT delete public chain data;
-        // leaving it lets the next wallet on the same device skip an expensive
-        // resync.
-        SwiftDashSDKWalletRuntime.handleWalletWiped()
+        // gone (stops BLAST/SPV, drops the host-owned manager/wallet, clears
+        // published wallet state; public chain data is kept so the next
+        // wallet on this device skips an expensive resync) — and WAIT for
+        // that teardown. Blocking here keeps the wipe executor's queue
+        // occupied until the runtime is really down, so `waitForPendingWipe`
+        // means "data wiped AND runtime torn down": the wipe HUDs stay up
+        // through the teardown, and a wallet created right after their
+        // completion can no longer interleave with a still-queued fullReset.
+        let teardownFinished = DispatchSemaphore(value: 0)
+        SwiftDashSDKWalletRuntime.handleWalletWiped {
+            teardownFinished.signal()
+        }
+        // Defensive off-main check mirroring `deleteWalletsFromSDK` (which
+        // already refused main much earlier): waiting here on main would
+        // deadlock — and NOT waiting must not report success, because the
+        // contract is "data wiped AND runtime torn down", so fail as
+        // conservatively as the timeout path below.
+        guard !Thread.isMainThread else {
+            logger.error("performWipe unexpectedly on the main thread; cannot await runtime teardown — reporting failure")
+            return false
+        }
+        let teardownStarted = CFAbsoluteTimeGetCurrent()
+        // Bounded wait: the worst legitimate case is a wedged native
+        // teardown (~45 s of Rust join budgets) queued behind a stalled
+        // start (~45 s of SDK/DAPI budgets); anything past this deadline
+        // is a hang, not a slow path. On expiry give up on WAITING — the
+        // teardown itself stays queued and still runs — and report
+        // failure rather than success, so no caller treats the wipe as
+        // complete while `fullReset` is unfinished (the wipe body is
+        // idempotent; a Retry re-enters this barrier behind it).
+        if teardownFinished.wait(timeout: .now() + .seconds(180)) == .timedOut {
+            logger.error("runtime teardown did not finish within 180s; reporting wipe failure while it completes in the background")
+            return false
+        }
+        let teardownMs = Int((CFAbsoluteTimeGetCurrent() - teardownStarted) * 1000)
+        DWLogger.log("🧹 WIPE runtime teardown awaited \(teardownMs)ms")
         return true
     }
 
@@ -389,7 +433,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
 
             for network in networks {
                 do {
-                    let manager = try host.managerForWipe(network: network)
+                    let (manager, isTemporary) = try await host.managerForWipe(network: network)
                     var walletIds = Set(manager.wallets.keys)
                     walletIds.formUnion(storedWalletIdsByNetwork[network] ?? [])
 
@@ -406,6 +450,15 @@ final class SwiftDashSDKWalletWiper: NSObject {
                             result.recordFailure()
                             logDeletionFailure(error, walletId: walletId, network: network)
                         }
+                    }
+                    // A detached per-network manager is owned by this loop:
+                    // shut it down deterministically before the next network
+                    // (or the post-wipe rebuild) can touch the same
+                    // process-cached ModelContainer. The live published
+                    // manager (isTemporary == false) is the runtime's to
+                    // tear down.
+                    if isTemporary {
+                        await manager.shutdown()
                     }
                 } catch {
                     result.recordFailure()
@@ -476,28 +529,63 @@ final class SwiftDashSDKWalletWiper: NSObject {
             networks.append(current)
         }
 
-        var deletions: [(network: Network, walletId: Data, manager: PlatformWalletManager)] = []
-        for network in networks {
-            guard let walletId = walletIds[network] else { continue }
-            let manager = try host.managerForWipe(network: network)
-            if storedWalletIds.contains(walletId) || manager.wallets[walletId] != nil {
-                deletions.append((network, walletId, manager))
-            }
+        struct PendingDeletion {
+            let network: Network
+            let walletId: Data
+            let manager: PlatformWalletManager
+            let isTemporary: Bool
         }
 
-        for deletion in deletions {
-            try deleteWalletFromSDK(
-                deletion.walletId,
-                deleteWallet: { walletId in
-                    try deletion.manager.deleteWallet(walletId: walletId)
-                })
+        var deletions: [PendingDeletion] = []
 
-            let kind: WalletEnvironment.NetworkKind =
-                deletion.network == .mainnet ? .mainnet : .testnet
-            if WalletEnvironment.activeWalletId(for: kind) == deletion.walletId {
-                WalletEnvironment.setActiveWalletId(nil, for: kind)
+        // Detached managers are owned by this function; shut them down
+        // deterministically on both the success and every failure path (a
+        // manager-preparation or deletion throw would otherwise leave
+        // teardown to the fire-and-forget deinit fallback, racing any
+        // follow-up rebuild over the same process-cached ModelContainer).
+        func shutDownTemporaryManagers() async {
+            for deletion in deletions where deletion.isTemporary {
+                await deletion.manager.shutdown()
             }
+            deletions.removeAll()
         }
+
+        do {
+            for network in networks {
+                guard let walletId = walletIds[network] else { continue }
+                let (manager, isTemporary) = try await host.managerForWipe(network: network)
+                if storedWalletIds.contains(walletId) || manager.wallets[walletId] != nil {
+                    deletions.append(PendingDeletion(
+                        network: network,
+                        walletId: walletId,
+                        manager: manager,
+                        isTemporary: isTemporary))
+                } else if isTemporary {
+                    // Built a detached manager only to find nothing to delete on
+                    // this network — shut it down now rather than leaving it to
+                    // the deinit fallback.
+                    await manager.shutdown()
+                }
+            }
+
+            for deletion in deletions {
+                try deleteWalletFromSDK(
+                    deletion.walletId,
+                    deleteWallet: { walletId in
+                        try deletion.manager.deleteWallet(walletId: walletId)
+                    })
+
+                let kind: WalletEnvironment.NetworkKind =
+                    deletion.network == .mainnet ? .mainnet : .testnet
+                if WalletEnvironment.activeWalletId(for: kind) == deletion.walletId {
+                    WalletEnvironment.setActiveWalletId(nil, for: kind)
+                }
+            }
+        } catch {
+            await shutDownTemporaryManagers()
+            throw error
+        }
+        await shutDownTemporaryManagers()
 
         let remaining = Set(try storage.listWalletIdsWithMnemonic())
         guard walletIds.values.allSatisfy({ !remaining.contains($0) }) else {
