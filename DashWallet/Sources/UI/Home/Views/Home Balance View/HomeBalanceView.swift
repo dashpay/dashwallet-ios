@@ -28,8 +28,8 @@ enum HomeBalanceViewState: Int {
 // MARK: - HomeBalanceView
 
 /// Home header: the combined total (transparent + platform + shielded)
-/// as the hero amount, and — in Advanced mode only — one row per balance
-/// with its fiat value.
+/// as the hero amount, and a row per balance with its fiat value. Advanced
+/// mode decides how many rows, not whether there are any.
 ///
 /// The rows are a readout, not a control surface. They used to carry an
 /// in/out arrow pair opening the pinned receive/send sheets; the transfer
@@ -43,10 +43,12 @@ struct HomeBalanceView: View {
     var onLongPress: () -> Void
     /// Tap on a row: opens the what-is-this-balance info sheet.
     var onInfo: (ChainNetwork) -> Void = { _ in }
-    /// The breakdown is one of the three surfaces Advanced mode unlocks —
-    /// without it the wallet has one balance, and naming its parts invites
-    /// questions the simple mode is there to avoid.
-    var showsBreakdown: Bool = true
+    /// Advanced mode adds the Platform row. The other two are shown either
+    /// way: a wallet that can hold shielded funds has to be able to say how
+    /// much of the total is shielded, whatever mode it is in. Platform holds
+    /// credits rather than spendable Dash, which is the part simple mode has
+    /// no vocabulary for.
+    var showsPlatformBalance: Bool = true
 
     // Header nav-bar (SB-11) inputs, threaded in by HomeView from the same
     // app-owned identity snapshot the UIKit nav-bar avatar reads. A nil
@@ -140,7 +142,7 @@ struct HomeBalanceView: View {
                 onLongPress()
             }
 
-            if showsBreakdown && !viewModel.isBalanceHidden && platformSync.isRunning {
+            if !viewModel.isBalanceHidden && platformSync.isRunning {
                 breakdownCard
                     .padding(.horizontal, 16)
                     .padding(.top, 12)
@@ -204,21 +206,26 @@ struct HomeBalanceView: View {
 
     private var breakdownCard: some View {
         VStack(spacing: 0) {
+            // Titles from `balanceName` rather than spelled out here: simple
+            // mode calls the Core balance "Dash Wallet", and that decision
+            // belongs in one place.
             balanceRow(
                 icon: "wallet.pass",
-                title: NSLocalizedString("Transparent", comment: "Balance breakdown"),
+                title: ChainNetwork.core.balanceName,
                 duffs: viewModel.value,
                 infoAction: { onInfo(.core) })
-            rowDivider
-            balanceRow(
-                icon: "cloud",
-                title: NSLocalizedString("Platform", comment: ""),
-                duffs: platformDuffs,
-                infoAction: { onInfo(.platform) })
+            if showsPlatformBalance {
+                rowDivider
+                balanceRow(
+                    icon: "cloud",
+                    title: ChainNetwork.platform.balanceName,
+                    duffs: platformDuffs,
+                    infoAction: { onInfo(.platform) })
+            }
             rowDivider
             balanceRow(
                 icon: "shield",
-                title: NSLocalizedString("Shielded", comment: ""),
+                title: ChainNetwork.shielded.balanceName,
                 duffs: shieldedDuffs,
                 isSyncing: shieldedSync.isSyncing || platformSync.isShieldedBalanceReconciling,
                 infoAction: { onInfo(.shielded) })

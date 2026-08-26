@@ -293,7 +293,7 @@ struct HomeViewContent<Content: View>: View {
                         onInfo: { network in
                             balanceInfoNetwork = network
                         },
-                        showsBreakdown: viewModel.isAdvancedMode,
+                        showsPlatformBalance: viewModel.isAdvancedMode,
                         username: navUsername,
                         avatarURL: navAvatarURL,
                         identitySeed: navIdentitySeed,
