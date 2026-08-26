@@ -899,14 +899,59 @@ final class SwiftDashSDKHost {
             await stopAsync()
         }
 
-        return try makeRuntime(for: network)
+        return try await makeRuntime(for: network)
+    }
+
+    /// Dedicated queue parking the blocking SDK construction
+    /// (`dash_sdk_create_trusted`: tokio runtime + TLS + DapiClient build,
+    /// ~1-2s). A plain GCD queue, never `Task.detached` — the blocking FFI
+    /// would park a cooperative-pool thread. Serial on purpose: runtime
+    /// bootstraps are already serialized by the lifecycle queue, so
+    /// concurrency here would buy nothing.
+    private nonisolated static let sdkBuildQueue = DispatchQueue(
+        label: "org.dashfoundation.dash.sdk-build",
+        qos: .userInitiated)
+
+    /// Build the `SDK` off the main thread and hand it back at the
+    /// suspension point. Safe because `SDK` is `@unchecked Sendable`, its
+    /// init touches nothing main-bound (one blocking FFI plus thread-safe
+    /// UserDefaults reads), and after the continuation resumes the instance
+    /// is only ever used from the MainActor. A thrown init constructs no
+    /// object; once built, `SDK.deinit` releases the native handle if a
+    /// later bootstrap stage throws.
+    private nonisolated static func buildSDKOffMain(
+        network: Network,
+        platformVersion: UInt32
+    ) async throws -> SDK {
+        try await withCheckedThrowingContinuation { continuation in
+            sdkBuildQueue.async {
+                let started = CFAbsoluteTimeGetCurrent()
+                do {
+                    let sdk = try SDK(network: network, platformVersion: platformVersion)
+                    let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+                    // Logged HERE, on the build queue, so offMain= is
+                    // evidence of where the work actually ran — a log after
+                    // the await would always print from the MainActor.
+                    DWLogger.log("HOST stage 1/4 SDK created for \(network.rawValue) in \(ms)ms offMain=\(!Thread.isMainThread)")
+                    continuation.resume(returning: sdk)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
     /// Build a configured manager/container pair without replacing the
     /// published app runtime. Full-device wipe uses this for the inactive
     /// network so each network-scoped SwiftData store is deleted through a
     /// manager configured for that same network.
-    private func makeRuntime(for network: Network) throws -> RuntimeHandles {
+    ///
+    /// Async since etap C: stage 1 (SDK construction) runs on
+    /// [`sdkBuildQueue`] instead of blocking the MainActor; stages 2-4
+    /// (ModelContainer, configure, and the caller's loadFromPersistor)
+    /// stay on the MainActor — their measured cost decides whether they
+    /// ever follow (see the stage timing logs).
+    private func makeRuntime(for network: Network) async throws -> RuntimeHandles {
         guard network != .regtest else {
             throw HostError.unsupportedNetwork(network)
         }
@@ -917,16 +962,11 @@ final class SwiftDashSDKHost {
         let newSDK: SDK
         do {
             let platformVersion = Self.platformVersion(for: network)
-            // Timed because it is main-thread work: SDK creation prefetches
-            // quorums over the network (~1-2s observed). Known stage-1
-            // limitation — the switch overlay covers it; the measurement is
-            // the data for deciding whether to move it off-main later.
-            let started = CFAbsoluteTimeGetCurrent()
-            newSDK = try SDK(network: network, platformVersion: platformVersion)
-            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+            newSDK = try await Self.buildSDKOffMain(
+                network: network,
+                platformVersion: platformVersion)
             Self.logger.info(
                 "🪺 HOST :: stage 1/4 SDK created for \(network.rawValue, privacy: .public), protocol \(platformVersion == 0 ? "auto-detect" : "pinned v\(platformVersion)", privacy: .public)")
-            DWLogger.log("HOST stage 1/4 SDK created for \(network.rawValue) in \(ms)ms")
         } catch {
             Self.logger.error("🪺 HOST :: SDK init failed: \(String(describing: error), privacy: .public)")
             throw HostError.sdkInitFailed(error)
@@ -997,7 +1037,7 @@ final class SwiftDashSDKHost {
             return (manager, false)
         }
 
-        let handles = try makeRuntime(for: network)
+        let handles = try await makeRuntime(for: network)
         do {
             // Stage 4 of the detached-manager bootstrap: cost scales with the
             // number of persisted wallets on `network` (bulk FFI + per-wallet
