@@ -5793,7 +5793,7 @@
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
 
 /* Wallets */
-"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Запишіть ці %d слів по порядку і зберігайте в надійному місці. Це ЄДИНИЙ спосіб відновити цей гаманець. Будь-хто, у кого вони є, може витратити ваші кошти.";
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Запишіть ці слова по порядку і зберігайте в надійному місці. Усього слів: %d. Це ЄДИНИЙ спосіб відновити цей гаманець. Будь-хто, у кого вони є, може витратити ваші кошти.";
 
 /* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";

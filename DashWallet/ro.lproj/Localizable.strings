@@ -5795,7 +5795,7 @@
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
 
 /* Wallets */
-"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Notează aceste %d cuvinte în ordine și păstrează-le într-un loc sigur. Sunt SINGURA modalitate de a recupera acest portofel. Oricine le are îți poate cheltui fondurile.";
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Notează aceste cuvinte în ordine și păstrează-le într-un loc sigur. Număr de cuvinte: %d. Sunt SINGURA modalitate de a recupera acest portofel. Oricine le are îți poate cheltui fondurile.";
 
 /* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
