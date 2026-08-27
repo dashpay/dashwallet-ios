@@ -9,6 +9,9 @@
 /* CrowdNode */
 " Terms of Use " = " Terms of Use ";
 
+/* Username marketplace: listing success — name, then price */
+"%1$@ listed for %2$@ DASH" = "%1$@ je oglašeno za %2$@ DASH";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -20,6 +23,12 @@
 
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "%@ ni bilo mogoče najti v omrežju Dash, da bi mu poslali zahtevo za stik.";
+
+/* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
+"%@ couldn't be verified on the Dash network. The QR code may be outdated." = "%@ ni bilo mogoče preveriti v omrežju Dash. Koda QR je morda zastarela.";
+
+/* Username marketplace: contested request cost value — the vote-resolution fund amount */
+"%@ DASH + network fee" = "%@ DASH + omrežna provizija";
 
 /* Usernames */
 "%@ Dash available" = "%@ Dash na voljo";
@@ -42,6 +51,9 @@
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@ has sent you a contact request";
 
+/* Username marketplace: delist success */
+"%@ is no longer for sale" = "%@ ni več naprodaj";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
@@ -51,8 +63,17 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
+/* Username marketplace: purchase success */
+"%@ is now yours" = "%@ je zdaj vaše";
+
+/* Username marketplace: registration success */
+"%@ registered" = "%@ je registrirano";
+
 /* Testnet faucet */
 "%@ tDash requested — it will arrive shortly" = "%@ tDash requested — it will arrive shortly";
+
+/* Username marketplace: transfer success */
+"%@ transferred" = "%@ je preneseno";
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
@@ -171,6 +192,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Za to ime že poteka glasovanje — vaša zahteva se mu bo pridružila kot kandidat. Provizija za tekmovanje se porabi ob oddaji in se ne vrne, tudi če imena ne osvojite.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -182,6 +206,9 @@
 
 /* No comment provided by engineer. */
 "About me" = "About me";
+
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "O stanju računa identitete";
 
 "Abstain" = "Vzdrži se";
 
@@ -235,6 +262,9 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "Add a New Contact";
 
+/* Usernames */
+"Add a temporary username" = "Dodaj začasno uporabniško ime";
+
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
 
@@ -259,6 +289,9 @@
 /* Maya
    SwapKit */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+
+/* No comment provided by engineer. */
+"Advanced" = "Napredno";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Advanced Security";
@@ -315,6 +348,9 @@
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Amount in Dash";
 
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "Znesek v DASH";
+
 /* No comment provided by engineer. */
 "Amount received" = "Amount received";
 
@@ -350,6 +386,9 @@
 
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Kdorkoli pozna naslov, si lahko ogleda njegovo zgodovino";
+
+/* Username marketplace: set price sheet body */
+"Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance." = "Vsakdo bo lahko kupil ime točno po tej ceni. Izkupiček prispe kot dobropisi na stanje vaše identitete.";
 
 /* AboutDash */
 "App version" = "App version";
@@ -430,8 +469,17 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "Autohide Balance";
 
+/* DashPay */
+"Available after sync finishes" = "Na voljo, ko se sinhronizacija konča";
+
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
+
+/* Username marketplace: unregistered name row */
+"Available — register it on your identity" = "Na voljo — registrirajte ga na svojo identiteto";
+
+/* Username marketplace: unregistered contested-eligible name row */
+"Available — short names are decided by a network vote" = "Na voljo — o kratkih imenih odloča glasovanje omrežja";
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
@@ -525,6 +573,9 @@
 /* Voting */
 "Blocked '%@' username" = "Blocked '%@' username";
 
+/* Username marketplace: history — purchase with buyer, seller, price */
+"Bought by %1$@ from %2$@ for %3$@ DASH" = "Kupil %1$@ od %2$@ za %3$@ DASH";
+
 /* Identities: this key only signs for one data contract */
 "Bound to contract" = "Vezan na pogodbo";
 
@@ -573,6 +624,9 @@
 /* Swap */
 "Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
 
+/* Username marketplace: purchase button */
+"Buy for %@ DASH" = "Kupi za %@ DASH";
+
 /* DashSpend */
 "Buy gift card" = "Buy gift card";
 
@@ -581,6 +635,12 @@
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+
+/* Username marketplace: purchase confirmation title */
+"Buy “%@”?" = "Kupiti „%@“?";
+
+/* Username marketplace: Explore row subtitle */
+"Buy, sell and transfer DashPay usernames" = "Kupujte, prodajajte in prenašajte uporabniška imena DashPay";
 
 /* Buy/Sell */
 "Buy/Sell" = "Buy/Sell";
@@ -631,6 +691,9 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
+
+/* Username marketplace */
+"Change Price" = "Spremeni ceno";
 
 /* TimeSkew */
 "Check date & time settings" = "Check date & time settings";
@@ -713,6 +776,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "Kmalu";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "Dokončaj prenos";
+
 /* Shielded transfer status */
 "Completed" = "Zaključeno";
 
@@ -782,6 +848,18 @@
 
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "Zahteva za stik je bila poslana uporabniku %@";
+
+/* Usernames */
+"Continue without a temporary username" = "Nadaljuj brez začasnega uporabniškega imena";
+
+/* Identity top-up sheet — body */
+"Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Pretvorite Dash v dobropise identitete, da boste plačevali dejanja na Platform, kot so zahteve za stik in posodobitve profila.";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "Prenosa ni bilo mogoče dokončati";
+
+/* Identity top-up sheet — free amount chip */
+"Custom" = "Po meri";
 
 /* No comment provided by engineer. */
 "Contact Requests" = "Zahteve za stik";
@@ -1042,6 +1120,27 @@
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "DashPay je omogočen";
 
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "Vnesite vsaj %@ DASH";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "Ocenjene provizije";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "Provizije se odštejejo od zneska; pri plačilu iz Shielded lahko majhen ostanek ostane na vašem stanju Platform.";
+
+/* Username marketplace: search segment */
+"Find Names" = "Poišči imena";
+
+/* Username marketplace: listed badge */
+"For sale" = "Naprodaj";
+
+/* Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app */
+"For sale by an independent user" = "Naprodaj od neodvisnega uporabnika";
+
+/* Identity top-up sheet — linkability warning for transparent-side sources */
+"Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Financiranje iz transparentnega stanja javno poveže te kovance z vašo identiteto v verigi Dash. Zaradi zasebnosti plačajte iz svojega stanja Shielded.";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "DashPay Invitation";
 
@@ -1062,6 +1161,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "Date";
+
+/* History group header for restored shielded operations whose original date is not recoverable */
+"Date unknown" = "Datum neznan";
 
 /* Voting */
 "Date: New to old" = "Date: New to old";
@@ -1085,6 +1187,9 @@
 
 /* No comment provided by engineer. */
 "Delete Wallet?" = "Delete Wallet?";
+
+/* SPV diagnostics */
+"Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network." = "Izbriše nepotrjene transakcije te denarnice samo iz te naprave in sprosti kovance, ki so jih poskušale porabiti. Ponovni pregled filtrov obnovi tiste, ki dejansko obstajajo na blockchainu. V omrežje se ne pošlje nič.";
 
 /* Location Service Status */
 "Denied" = "Denied";
@@ -1116,6 +1221,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu." = "VARNOST NAPRAVE JE OGROŽENA\nVsaka aplikacija z 'jailbreakom' lahko dostopa do podatkov keychain katere koli druge aplikacije (in ukrade vaš Dash). Prenesite sredstva v denarnico na varni napravi, nato pa to denarnico ponastavite z „Ponastavi denarnico“ v meniju Varnost.";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.";
@@ -1169,6 +1277,27 @@
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
 "DPNS Names" = "DPNS Names";
+
+/* SPV diagnostics */
+"Drop & rescan" = "Zavrzi in ponovno preglej";
+
+/* SPV diagnostics */
+"Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network." = "Iz te naprave zavrže transakcije te denarnice, ki še čakajo na omrežje (nikoli zaklenjene ali izrudarjene), znova omogoči kovance, ki so jih poskušale porabiti, in ponovno pregleda nedavne filtre. Zavržena transakcija, ki dejansko obstaja na blockchainu, se med ponovnim pregledom vrne sama. V omrežje se ne pošlje nič.";
+
+/* SPV diagnostics */
+"Drop Unconfirmed & Rescan" = "Zavrzi nepotrjene in ponovno preglej";
+
+/* SPV diagnostics */
+"Drop unconfirmed transactions?" = "Zavreči nepotrjene transakcije?";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row." = "Zavrženih nepotrjenih transakcij: %d — filtri se ponovno pregledujejo, spremljajte vrstico „Filtri“.";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above." = "Zavrženih nepotrjenih transakcij: %d, a ponovnega pregleda filtrov ni bilo mogoče zagnati — zaženite „Ponovno preglej filtre“ zgoraj.";
+
+/* SPV diagnostics */
+"Dropping…" = "Zavračamo…";
 
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Due to CrowdNode’s terms of service users can withdraw no more than:";
@@ -1280,6 +1409,9 @@
 
 /* No comment provided by engineer. */
 "Enter your recovery phrase to reset your PIN" = "Enter your recovery phrase to reset your PIN";
+
+/* No comment provided by engineer. */
+"Enter your recovery phrase to set a new PIN" = "Vnesite frazo za obnovitev, da nastavite nov PIN";
 
 /* Voting */
 "Enter your voting key" = "Enter your voting key";
@@ -1665,6 +1797,42 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "Kako se to glede zasebnosti primerja z računi Ethereum?";
 
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "Stanje računa identitete";
+
+/* Username marketplace: section of contested-name requests awaiting the masternode vote */
+"In network vote" = "V glasovanju omrežja";
+
+/* Username marketplace: search row for a contested label with an active vote by others */
+"In a network vote — you can join as a contender" = "V glasovanju omrežja — pridružite se lahko kot kandidat";
+
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "Medtem ste dosegljivi na „%1$@“, ki ostane vaše. Če vam glasovanje dodeli „%2$@“, boste dosegljivi pod obema uporabniškima imenoma.";
+
+/* Username marketplace: search row for a label a past vote locked */
+"Locked by a network vote — nobody can register it" = "Zaklenjeno z glasovanjem omrežja — nihče ga ne more registrirati";
+
+/* Username marketplace: latest ownership change */
+"Last transferred" = "Zadnji prenos";
+
+/* Username marketplace: confirm listing button */
+"List For Sale" = "Oglasi naprodaj";
+
+/* Username marketplace: own listed name */
+"Listed by you" = "Oglasili ste vi";
+
+/* Username marketplace: history — price set */
+"Listed for %@ DASH" = "Oglašeno za %@ DASH";
+
+/* Username marketplace: set price fee note */
+"Listing is a network transaction with a small fee, paid from your identity balance." = "Oglaševanje naprodaj je omrežna transakcija z majhno provizijo, ki se plača s stanja vaše identitete.";
+
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "Moja identiteta";
+
+/* Username marketplace: owned names segment */
+"My Names" = "Moja imena";
+
 /* DashPay FAQ */
 "How private is DashPay?" = "Kako zaseben je DashPay?";
 
@@ -2027,6 +2195,9 @@
 /* CrowdNode */
 "Leaving the pool" = "Leaving the pool";
 
+/* DashPay Contacts: caption under the user's own QR code */
+"Let another Dash Wallet user scan this code to add you as a contact." = "Naj drug uporabnik Dash Wallet skenira to kodo, da vas doda med stike.";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Let me know when it’s done";
 
@@ -2099,6 +2270,51 @@
 "Lock" = "Zakleni";
 
 "Lock the name" = "Zakleni ime";
+
+/* Username marketplace: contest voting deadline row */
+"Vote ends" = "Glasovanje se konča";
+
+/* Username marketplace: until when other identities can join the contest */
+"New contenders" = "Novi kandidati";
+
+/* Username marketplace: join deadline still open — value of the New contenders row */
+"can join until %@" = "se lahko pridružijo do %@";
+
+/* Username marketplace: the contest's join window has passed — value of the New contenders row */
+"joining closed" = "prijave zaprte";
+
+/* Username marketplace: masternode vote tally for one contest row */
+"%d votes" = "%d glasov";
+
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "12 besed je standard. 24 besed je dlje zapisovati in obnavljati, a jih je bistveno teže zlomiti naprednim računalniškim sistemom daljne prihodnosti.";
+
+/* Username marketplace: unresolvable transfer recipient */
+"No identity owns that username." = "Nobena identiteta ne poseduje tega uporabniškega imena.";
+
+/* Username marketplace: names that were sold or transferred away */
+"No longer yours" = "Niso več vaša";
+
+/* Identity top-up sheet — missing unshield destination */
+"No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "Naslov za prejem na Platform še ni na voljo — počakajte, da se sinhronizacija s Platform konča, in poskusite znova.";
+
+/* Username marketplace: empty owned list */
+"No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "Na tej identiteti še ni uporabniških imen. Poiščite ime za nakup ali registracijo na zavihku „Poišči imena“.";
+
+/* Identity top-up sheet — insufficient funding source */
+"Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Na tem stanju ni dovolj sredstev: potrebnih %@ DASH, na voljo %@ DASH.";
+
+/* Username marketplace: insufficient balance hint */
+"Not enough identity credits for this purchase — top up from My Profile first." = "Za ta nakup ni dovolj dobropisov identitete — najprej dopolnite prek „Moj profil“.";
+
+/* Username marketplace: insufficient balance hint for a contested request */
+"Not enough identity credits for this request — top up from My Profile first." = "Za to zahtevo ni dovolj dobropisov identitete — najprej dopolnite prek „Moj profil“.";
+
+/* Username marketplace: someone else's unlisted name */
+"Not for sale" = "Ni naprodaj";
+
+/* Username marketplace: own unlisted name */
+"Not listed for sale" = "Ni oglašeno naprodaj";
 
 "Lock “%@” so nobody gets it" = "Zakleni »%@«, da ga nihče ne dobi";
 
@@ -2342,11 +2558,92 @@
 /* SDK identity profile sheet — title */
 "My Profile" = "My Profile";
 
+/* DashPay Contacts: shows the user's own contact QR code */
+"My QR" = "Moja koda QR";
+
 /* No comment provided by engineer. */
 "Name" = "Name";
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Storitve imen, kot je Unstoppable Domains, povežejo berljivo ime s fiksnim javnim naslovom v verigi. Kdorkoli lahko razreši to ime in vidi vsako plačilo, ki je bilo kdaj nanj poslano. Uporabniško ime DashPay se nikoli javno ne razreši v plačilni naslov — naslovi se razkrijejo samo znotraj šifrirane izmenjave z vsakim stikom, tako da vaše ime in vaš denar za zunanje opazovalce ostaneta nepovezana.";
+
+/* Username marketplace: contested request line — voting deadline */
+"Network vote ends %@" = "Glasovanje omrežja se konča %@";
+
+/* Username marketplace: activity overlay while the purchase transition runs */
+"Completing your purchase…" = "Dokončujemo vaš nakup…";
+
+/* Usernames */
+"Register username" = "Registriraj uporabniško ime";
+
+/* Username marketplace: activity overlay while the delist transition runs */
+"Removing the listing…" = "Odstranjujemo oglas…";
+
+/* Username marketplace: activity overlay while the set-price transition runs */
+"Listing for sale…" = "Oglašujemo naprodaj…";
+
+/* Usernames */
+"Submit both usernames" = "Pošlji obe uporabniški imeni";
+
+/* Usernames */
+"Temporary username" = "Začasno uporabniško ime";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "Začasno uporabniško ime samo po sebi ne sme zahtevati glasovanja.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "To ime zahteva glasovanje masternodov. Provizija za tekmovanje se porabi ob oddaji in se ne vrne, tudi če imena ne osvojite.";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "Tudi to uporabniško ime bi zahtevalo glasovanje — poskusite dodati števko med 2 in 9";
+
+/* Username marketplace: activity overlay while the transfer transition runs */
+"Transferring the username…" = "Prenašamo uporabniško ime…";
+
+/* Username marketplace: activity overlay while the registration transition runs */
+"Registering the username…" = "Registriramo uporabniško ime…";
+
+/* Username marketplace: activity overlay while the contested request transition runs */
+"Submitting your username request…" = "Pošiljamo vašo zahtevo za uporabniško ime…";
+
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "Prebrskaj";
+
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "Spremembe cen";
+
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "Nakupi";
+
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "Oglašeno za %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "Prodano za %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "Prodano za %1$@ DASH · %2$@ · %3$@ → %4$@";
+
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "Trenutno ni naprodaj";
+
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "V nedavni dejavnosti oglasov ni imen naprodaj. „Pokaži več“ sega dlje nazaj.";
+
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "V omrežju še ni nakupov.";
+
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "Nalagamo dejavnost…";
+
+/* Username marketplace: load older browse activity */
+"Show more" = "Pokaži več";
+
+/* Username marketplace: contest tallies card title */
+"Network vote so far" = "Glasovanje omrežja doslej";
+
+/* Username marketplace: contest with zero masternode votes so far */
+"No votes cast yet" = "Oddanih glasov še ni";
 
 /* Swap route provider
    Swap route provider short */
@@ -2381,6 +2678,9 @@
 
 /* (List of) New (notifications) */
 "New" = "New";
+
+/* SPV diagnostics */
+"No unconfirmed transactions to drop." = "Ni nepotrjenih transakcij za zavrženje.";
 
 /* CrowdNode */
 "New CrowdNode Account" = "New CrowdNode Account";
@@ -2563,6 +2863,15 @@
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "Pri Bitcoinu ni plasti imen, zato ljudje naslove odkrito delijo in znova uporabljajo — ko je naslov enkrat znan, je vse, kar je kdaj prejel, mogoče povezati z njegovim lastnikom. Pri DashPay je vaše uporabniško ime javno, a nikoli ne kaže na plačilni naslov: naslovi se zasebno izmenjujejo z vsakim stikom in se menjajo, zato plačilo po imenu ne razkrije, kam gre vaš denar. Obe sta transparentni verigi, zato analiza verige še vedno velja za same kovance.";
 
+/* DashPay Contacts: search results from DPNS, not the local contact list */
+"On the Dash network" = "V omrežju Dash";
+
+/* Username marketplace */
+"Owned by you" = "V vaši lasti";
+
+/* Identity top-up sheet — funding source picker label */
+"Pay from" = "Plačaj z";
+
 /* Identities */
 "On Network" = "V omrežju";
 
@@ -2731,6 +3040,9 @@
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Plačila so zasebna: naslovi, ki jih izmenjate s stikom, potujejo znotraj šifrirane vsebine, ki jo lahko prebereta samo vidva, in nikoli niso objavljeni — zato vaših plačil ni mogoče preprosto povezati z vašim uporabniškim imenom. Kljub temu gre še vedno za običajna plačila na transparentni verigi: napredna analiza verige lahko razkrije informacije. Shielded DashPay (kmalu) bo to vrzel zaprl. Same zahteve za stik trenutno NISO zasebne: kdorkoli lahko vidi, da sta dve identiteti povezani. Zasebne zahteve za stik so funkcija, ki prihaja kmalu. Vaše uporabniško ime in profil sta na Dash Platform prav tako javna.";
 
+/* Username marketplace: price placeholder */
+"Price in DASH" = "Cena v DASH";
+
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "Plačila se z InstantSend potrdijo v nekaj sekundah";
 
@@ -2788,6 +3100,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN is always required to make a payment";
+
+/* No comment provided by engineer. */
+"PIN Not Set" = "PIN ni nastavljen";
 
 /* Dash Platform chain */
 "Platform" = "Platform";
@@ -2993,6 +3308,9 @@
 /* Identities: what a public key is used for */
 "Purpose" = "Namen";
 
+/* Username marketplace */
+"Put Up For Sale" = "Ponudi naprodaj";
+
 /* DashSpend */
 "Quantity" = "Quantity";
 
@@ -3028,6 +3346,96 @@
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Samo za branje";
+
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "Ponovno oddaj";
+
+/* Delete a never-accepted transaction from local wallet state */
+"Remove if Not on Network" = "Odstrani, če ni v omrežju";
+
+/* Remove never-accepted transaction: confirmation title */
+"Remove this transaction?" = "Odstraniti to transakcijo?";
+
+/* Remove never-accepted transaction: destructive confirm button */
+"Remove Transaction" = "Odstrani transakcijo";
+
+/* Username marketplace: transfer recipient placeholder */
+"Recipient username or identity ID" = "Uporabniško ime ali ID identitete prejemnika";
+
+/* Identity top-up sheet — shielded source note */
+"Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Priporočeno: dvostopenjski prenos prek vašega lastnega naslova na Platform ohrani vašo identiteto nepovezano z vašimi transparentnimi kovanci.";
+
+/* Username marketplace: register sheet title */
+"Register “%@”" = "Registriraj „%@“";
+
+/* Username marketplace: registration date */
+"Registered" = "Registrirano";
+
+/* Username marketplace */
+"Remove From Sale" = "Umakni iz prodaje";
+
+/* Remove never-accepted transaction: progress */
+"Removing transaction…" = "Odstranjujemo transakcijo…";
+
+/* Username marketplace: delist confirmation title */
+"Remove “%@” from sale?" = "Umakniti „%@“ iz prodaje?";
+
+/* Username marketplace: history — delist (transfer to self) */
+"Removed from sale" = "Umaknjeno iz prodaje";
+
+/* Username marketplace: delist confirmation body */
+"Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "Odstranitev oglasa je omrežna transakcija z majhno provizijo, ki se plača s stanja vaše identitete. Ime ostane vaše.";
+
+/* Remove never-accepted transaction: refused because the explorer found it */
+"Transaction is known to the network" = "Transakcija je omrežju znana";
+
+/* Remove never-accepted transaction: refusal body */
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "Raziskovalec blokov poroča, da je ta transakcija znana omrežju Dash. Morda še čaka v mempoolu ali pa je že vključena v blok, zato ni bila odstranjena. Denarnica bo njeno potrditev samodejno posodobila, takoj ko bo vključena v sinhroniziran blok.";
+
+/* Remove never-accepted transaction: success */
+"Transaction removed" = "Transakcija je odstranjena";
+
+/* Remove never-accepted transaction: removed but the recovery rescan did not arm */
+"Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "Transakcija je odstranjena — ponovnega pregleda ni bilo mogoče zagnati, zaženite „Ponovno preglej filtre“ v Stanju sinhronizacije Core";
+
+/* Remove never-accepted transaction: confirmation body */
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "Denarnica najprej preveri raziskovalca blokov. Transakcija, ki je znana omrežju — najsi čaka v mempoolu ali je že v bloku — se nikoli ne odstrani. Če transakcije ni mogoče najti, se izbriše iz te denarnice na tej napravi, kovanci, ki jih je poskušala porabiti, pa znova postanejo na voljo. Denarnica nato zaradi varnosti ponovno pregleda nedavne bloke. V omrežje se ne pošlje nič.";
+
+/* Remove never-accepted transaction: failure title */
+"Couldn't remove the transaction" = "Transakcije ni bilo mogoče odstraniti";
+
+/* Remove never-accepted transaction: no local row */
+"This transaction is not in the local wallet." = "Te transakcije ni v lokalni denarnici.";
+
+/* Remove never-accepted transaction: local state says it's on-chain */
+"This transaction is confirmed and can't be removed." = "Ta transakcija je potrjena in je ni mogoče odstraniti.";
+
+/* Remove never-accepted transaction: explorer unreachable */
+"Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "Do raziskovalca blokov ni bilo mogoče dostopati, da bi potrdili, da transakcije ni na blockchainu. Preverite povezavo in poskusite znova.";
+
+/* Username marketplace: contested request cost row */
+"Request cost" = "Cena zahteve";
+
+/* Username marketplace: contested request success */
+"Request for %@ submitted — masternodes now vote on it" = "Zahteva za %@ je poslana — masternodi zdaj glasujejo";
+
+/* Username marketplace: confirm contested request button */
+"Request Username" = "Zahtevaj uporabniško ime";
+
+/* Username marketplace: contested register sheet title */
+"Request “%@”" = "Zahtevaj „%@“";
+
+/* Username marketplace: contested request not yet indexed by Platform */
+"Requested — waiting for the network vote" = "Zahtevano — čaka se na glasovanje omrežja";
+
+/* Username marketplace: search row for a contested label this identity already requested */
+"Requested by you — the network vote is in progress" = "Zahtevali ste vi — glasovanje omrežja poteka";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "Ponavljamo prenos…";
+
+/* Username marketplace: screen subtitle */
+"Search usernames, buy ones that are for sale, and sell or transfer your own." = "Iščite uporabniška imena, kupujte tista, ki so naprodaj, in prodajajte ali prenašajte svoja.";
 
 /* Usernames */
 "Ready around %@" = "Pripravljeno okoli %@";
@@ -3082,6 +3490,9 @@
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase length */
+"Recovery phrase length" = "Dolžina fraze za obnovitev";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -3195,6 +3606,9 @@
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
+
+/* No comment provided by engineer. */
+"Completion unknown" = "Dokončanje neznano";
 
 /* Location Service Status */
 "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "Obnovljene denarnice ne morejo vedno obnoviti vrste operacije. Ta vnos je bil rekonstruiran iz podatkov zaznamka v verigi.";
@@ -3322,6 +3736,9 @@
 /* Identities: DPP security level of a public key */
 "Security level" = "Raven varnosti";
 
+/* Username marketplace: transfer sheet body */
+"Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "Pošljite to ime drugi identiteti brezplačno. Prenos odstrani tudi vsak oglas za prodajo. Tega ni mogoče razveljaviti — novi lastnik bi ga moral prenesti nazaj.";
+
 /* DashSpend */
 "See card details" = "See card details";
 
@@ -3370,7 +3787,520 @@
 /* Coinbase */
 "Select the coin" = "Select the coin";
 
+/* Identities */
+"Select the username to display for this identity." = "Izberite uporabniško ime, ki naj se prikazuje za to identiteto.";
+
 "Selecting fewer nodes reveals less about which masternodes you run." = "Izbira manj vozlišč razkrije manj o tem, katere masternode upravljate.";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "Najdenih denarnic na tej napravi: %ld";
+
+/* No comment provided by engineer. */
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "Na tej napravi je shranjenih %ld denarnic iz prejšnje namestitve. „Izbriši vse“ odstrani vsako denarnico. Pred brisanjem varnostno kopirajte vsako frazo za obnovitev.";
+
+/* No comment provided by engineer. */
+"Couldn’t Delete All Wallets" = "Vseh denarnic ni bilo mogoče izbrisati";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Wallets" = "Denarnic ni bilo mogoče prebrati";
+
+/* No comment provided by engineer. */
+"Delete All" = "Izbriši vse";
+
+/* No comment provided by engineer. */
+"Delete All Wallets?" = "Izbrisati vse denarnice?";
+
+/* No comment provided by engineer. */
+"Deleting All Wallets…" = "Brišemo vse denarnice…";
+
+/* No comment provided by engineer. */
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "Števila denarnic, shranjenih na tej napravi, ni bilo mogoče preveriti. Za nadaljevanje je potrebna potrditvena fraza, ki jo zagotovi podpora Dash, preden se izbriše katera koli denarnica.";
+
+/* No comment provided by engineer. */
+"Keep Wallets" = "Obdrži denarnice";
+
+/* No comment provided by engineer. */
+"No stored wallets were found. Nothing was deleted." = "Shranjenih denarnic ni bilo mogoče najti. Nič ni bilo izbrisano.";
+
+/* No comment provided by engineer. */
+"No Wallets Found" = "Denarnic ni bilo mogoče najti";
+
+/* No comment provided by engineer. */
+"Not all wallets could be deleted. Please try again." = "Vseh denarnic ni bilo mogoče izbrisati. Poskusite znova.";
+
+/* No comment provided by engineer. */
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "To trajno odstrani vse denarnice, zasebne ključe in fraze za obnovitev, ki jih ta aplikacija hrani na tej napravi. Obnoviti jih je mogoče samo iz varnostnih kopij. Tega ni mogoče razveljaviti.";
+
+/* No comment provided by engineer. */
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "Denarnic, shranjenih na tej napravi, ni bilo mogoče preveriti. Nič ni bilo izbrisano. Poskusite znova.";
+
+/* No comment provided by engineer. */
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "To bo izbrisalo vseh %ld denarnic, shranjenih na tej napravi. Obnoviti jih je mogoče samo z njihovimi frazami za obnovitev. Njihovega brisanja s te naprave ni mogoče razveljaviti.";
+
+/* No comment provided by engineer. */
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "Na tej napravi so še shranjeni podatki denarnic iz prejšnje namestitve. Želite te denarnice še naprej uporabljati ali izbrisati vse podatke in začeti znova? Pred brisanjem se prepričajte, da je vsaka fraza za obnovitev varnostno kopirana.";
+
+/* No comment provided by engineer. */
+"Wallets found on this device" = "Denarnice, najdene na tej napravi";
+
+/* No comment provided by engineer. */
+"Wipe All Wallets" = "Izbriši vse denarnice";
+
+/* No comment provided by engineer. */
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "Fraza za obnovitev ene denarnice ne more odobriti brisanja več različnih denarnic.";
+
+/* No comment provided by engineer. */
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "Ničelno stanje na testnetu ne dokazuje, da je ta denarnica prazna na mainnetu. Za nadaljevanje vnesite frazo za obnovitev.";
+
+/* No comment provided by engineer. */
+"Enter the recovery phrase to continue." = "Za nadaljevanje vnesite frazo za obnovitev.";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "Izberi denarnico";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Recovery Phrases" = "Fraz za obnovitev ni bilo mogoče prebrati";
+
+/* No comment provided by engineer. */
+"No Recovery Phrase Found" = "Fraze za obnovitev ni bilo mogoče najti";
+
+/* No comment provided by engineer. */
+"No recovery phrase is stored on this device." = "Na tej napravi ni shranjena nobena fraza za obnovitev.";
+
+/* No comment provided by engineer. */
+"Select the wallet whose recovery phrase you want to view." = "Izberite denarnico, katere frazo za obnovitev želite videti.";
+
+/* No comment provided by engineer. */
+"The recovery phrases stored on this device could not be read. Please try again." = "Fraz za obnovitev, shranjenih na tej napravi, ni bilo mogoče prebrati. Poskusite znova.";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address for this network" = "Ni veljaven naslov Dash za to omrežje";
+
+/* No comment provided by engineer. */
+"The claimable balance is too small to cover the Platform withdrawal fee." = "Stanje za prevzem je premajhno, da bi pokrilo provizijo Platform za dvig.";
+
+/* No comment provided by engineer. */
+"You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it." = "Dvignete lahko do %@ DASH — ostanek ostane za kritje provizije Platform. Tapnite „Maks“, da ga uporabite.";
+
+/* No comment provided by engineer. */
+"The minimum withdrawal is %@ DASH." = "Najmanjši dvig je %@ DASH.";
+
+/* No comment provided by engineer. */
+"Payout address key" = "Ključ naslova za izplačilo";
+
+/* No comment provided by engineer. */
+"Owner key (%@)" = "Ključ lastnika (%@)";
+
+/* No comment provided by engineer. */
+"Wallet is not ready. Try again in a moment." = "Denarnica ni pripravljena. Poskusite znova čez trenutek.";
+
+/* No comment provided by engineer. */
+"%@ · Claimable %@ DASH" = "%@ · Za prevzem %@ DASH";
+
+/* No comment provided by engineer. */
+"Withdraw to" = "Dvigni na";
+
+/* No comment provided by engineer. */
+"Enter a Dash address" = "Vnesite naslov Dash";
+
+/* No comment provided by engineer. */
+"Use the payout address" = "Uporabi naslov za izplačilo";
+
+/* No comment provided by engineer. */
+"This is the evonode's registered payout address." = "To je registriran naslov za izplačilo tega evonoda.";
+
+/* No comment provided by engineer. */
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "Ta denarnica ima ključ naslova za izplačilo evonoda, zato je stanje mogoče dvigniti na kateri koli naslov Dash.";
+
+/* No comment provided by engineer. */
+"Registered payout address" = "Registriran naslov za izplačilo";
+
+/* No comment provided by engineer. */
+"This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "Ta dvig se podpiše s ključem lastnika evonoda. Dash Platform ključu lastnika dovoljuje dvig samo na registriran naslov za izplačilo, zato cilja tukaj ni mogoče spremeniti. Za dvig na drug naslov uporabite denarnico, ki ima ključ naslova za izplačilo.";
+
+/* No comment provided by engineer. */
+"How it works" = "Kako deluje";
+
+/* No comment provided by engineer. */
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "Dash Platform izplača dvig v verigi Dash — običajno v nekaj minutah. Provizija Platform v višini približno %@ DASH se odšteje s stanja evonoda poleg zneska, zato „Maks“ pusti nekaj za njeno kritje.";
+
+/* No comment provided by engineer. */
+"Confirm withdrawal" = "Potrdi dvig";
+
+/* No comment provided by engineer. */
+"Owner-key withdrawals are always paid to the registered payout address." = "Dvigi s ključem lastnika se vedno izplačajo na registriran naslov za izplačilo.";
+
+/* No comment provided by engineer. */
+"Waiting for authorization…" = "Čakamo na avtorizacijo…";
+
+/* No comment provided by engineer. */
+"Submitting to Dash Platform…" = "Pošiljamo na Dash Platform…";
+
+/* No comment provided by engineer. */
+"Withdrawal submitted" = "Dvig je poslan";
+
+/* No comment provided by engineer. */
+"Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "Dash Platform ga bo kmalu izplačal v verigi Dash — običajno prispe v nekaj minutah.";
+
+/* No comment provided by engineer. */
+"Remaining claimable balance: %@ DASH" = "Preostalo stanje za prevzem: %@ DASH";
+
+/* No comment provided by engineer. */
+"%@ · Platform balance" = "%@ · Stanje Platform";
+
+/* No comment provided by engineer. */
+"Signed with" = "Podpisano s ključem";
+
+/* No comment provided by engineer. */
+"Platform fee" = "Provizija Platform";
+
+/* No comment provided by engineer. */
+"%@ (payout address)" = "%@ (naslov za izplačilo)";
+
+/* No comment provided by engineer. */
+"This wallet holds the payout address key, so you can withdraw to any address." = "Ta denarnica ima ključ naslova za izplačilo, zato lahko dvignete na kateri koli naslov.";
+
+/* No comment provided by engineer. */
+"This wallet holds the owner key, so withdrawals go to the registered payout address." = "Ta denarnica ima ključ lastnika, zato dvigi gredo na registriran naslov za izplačilo.";
+
+/* No comment provided by engineer. */
+"This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "Ta denarnica nima niti ključa lastnika niti ključa naslova za izplačilo tega evonoda, zato njegovega stanja od tu ni mogoče dvigniti.";
+
+/* No comment provided by engineer. */
+"Couldn't check which keys of this evonode are in the wallet." = "Ni bilo mogoče preveriti, kateri ključi tega evonoda so v denarnici.";
+
+/* No comment provided by engineer. */
+"Result not confirmed" = "Izid ni potrjen";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "Dvig je bil poslan na Dash Platform, a njegovega izida ni bilo mogoče potrditi. Morda je uspel. Ne pošiljajte ga znova — najprej preverite stanje za prevzem in naslov za izplačilo.";
+
+/* No comment provided by engineer. */
+"1 block proposed this epoch" = "V tej epohi predlagan 1 blok";
+
+/* No comment provided by engineer. */
+"%@ blocks proposed this epoch" = "V tej epohi predlaganih blokov: %@";
+
+/* No comment provided by engineer. */
+"Nodes" = "Vozlišča";
+
+/* No comment provided by engineer. */
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "Vozlišča, dan epohe %d, v tej epohi predlaganih blokov: %@";
+
+/* No comment provided by engineer. */
+"an evonode has not proposed a block in 2 days" = "evonode že 2 dni ni predlagal bloka";
+
+/* No comment provided by engineer. */
+"an evonode has no blocks this epoch" = "evonode v tej epohi nima blokov";
+
+/* No comment provided by engineer. */
+"A key doesn't match this masternode — fix or clear it to continue." = "En ključ ne ustreza temu masternodu — popravite ga ali izbrišite, da nadaljujete.";
+
+/* No comment provided by engineer. */
+"Add keys" = "Dodaj ključe";
+
+/* No comment provided by engineer. */
+"Add masternode" = "Dodaj masternode";
+
+/* No comment provided by engineer. */
+"Add this node's owner key or payout address key to withdraw from here." = "Dodajte ključ lastnika ali ključ naslova za izplačilo tega vozlišča, da boste dvigovali od tu.";
+
+/* No comment provided by engineer. */
+"Already one of this wallet's masternodes — it's in the list above." = "Je že eden od masternodov te denarnice — na seznamu zgoraj.";
+
+/* No comment provided by engineer. */
+"Already tracked." = "Se že spremlja.";
+
+/* No comment provided by engineer. */
+"Any keys you added for it are deleted from this device's keychain too." = "Vsi ključi, ki ste jih dodali zanj, se izbrišejo tudi iz keychaina te naprave.";
+
+/* No comment provided by engineer. */
+"Available" = "Na voljo";
+
+/* No comment provided by engineer. */
+"BLS private key (hex)" = "Zasebni ključ BLS (hex)";
+
+/* No comment provided by engineer. */
+"Can't verify yet" = "Še ni mogoče preveriti";
+
+/* No comment provided by engineer. */
+"Could not load the node's registration details — owner and payout keys will verify later." = "Podatkov o registraciji vozlišča ni bilo mogoče naložiti — ključa lastnika in izplačila bosta preverjena pozneje.";
+
+/* No comment provided by engineer. */
+"Could not save a key to the keychain. Nothing was lost — try again." = "Ključa ni bilo mogoče shraniti v keychain. Nič ni izgubljeno — poskusite znova.";
+
+/* No comment provided by engineer. */
+"Destination address (optional)" = "Ciljni naslov (izbirno)";
+
+/* No comment provided by engineer. */
+"Doesn't match" = "Ne ustreza";
+
+/* No comment provided by engineer. */
+"Find" = "Poišči";
+
+/* No comment provided by engineer. */
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "Poišče ključa lastnika in izplačila, ki ju ni na seznamu masternodov. Javni prstni odtis ključa pošlje vozlišču Platform.";
+
+/* No comment provided by engineer. */
+"IP address, proTxHash or private key" = "Naslov IP, proTxHash ali zasebni ključ";
+
+/* No comment provided by engineer. */
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "Ključi so shranjeni v keychainu te naprave in je nikoli ne zapustijo, razen da podpišejo dejanje, ki ga zahtevate.";
+
+/* No comment provided by engineer. */
+"Keys on this device" = "Ključi na tej napravi";
+
+/* No comment provided by engineer. */
+"Label (optional)" = "Oznaka (izbirno)";
+
+/* No comment provided by engineer. */
+"Loading registration details…" = "Nalagamo podatke o registraciji…";
+
+/* No comment provided by engineer. */
+"Matches" = "Ustreza";
+
+/* No comment provided by engineer. */
+"Matches this node's %@ key" = "Ustreza ključu %@ tega vozlišča";
+
+/* No comment provided by engineer. */
+"No masternode on the list matches that." = "Noben masternode s seznama temu ne ustreza.";
+
+/* No comment provided by engineer. */
+"Node key (base64 or hex)" = "Ključ vozlišča (base64 ali hex)";
+
+/* No comment provided by engineer. */
+"Not added" = "Ni dodano";
+
+/* No comment provided by engineer. */
+"On this device" = "Na tej napravi";
+
+/* No comment provided by engineer. */
+"Operator payout" = "Izplačilo upravitelja";
+
+/* No comment provided by engineer. */
+"Payout" = "Izplačilo";
+
+/* No comment provided by engineer. */
+"Platform could not be reached, so owner and payout keys were not checked." = "Platform ni bil dosegljiv, zato ključa lastnika in izplačila nista bila preverjena.";
+
+/* No comment provided by engineer. */
+"PoSe banned" = "Prepovedan po PoSe";
+
+/* No comment provided by engineer. */
+"Private key (WIF or hex)" = "Zasebni ključ (WIF ali hex)";
+
+/* No comment provided by engineer. */
+"Refresh details" = "Osveži podatke";
+
+/* No comment provided by engineer. */
+"Refreshing…" = "Osvežujemo…";
+
+/* No comment provided by engineer. */
+"Save keys" = "Shrani ključe";
+
+/* No comment provided by engineer. */
+"Search Platform too" = "Išči tudi na Platform";
+
+/* No comment provided by engineer. */
+"Searching…" = "Iščemo…";
+
+/* No comment provided by engineer. */
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "Podpisovanje s ključem lastnika — dvig gre na registriran naslov za izplačilo.";
+
+/* No comment provided by engineer. */
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "Podpisovanje s ključem naslova za izplačilo. Pustite cilj prazen, da dvignete na naslov za izplačilo.";
+
+/* No comment provided by engineer. */
+"Stop tracking" = "Prenehaj spremljati";
+
+/* No comment provided by engineer. */
+"Stop tracking this masternode?" = "Prenehati spremljati ta masternode?";
+
+/* No comment provided by engineer. */
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "To je lahko tudi ključ lastnika ali izplačila — vklopite „Išči tudi na Platform“, da preverite.";
+
+/* No comment provided by engineer. */
+"The signing key is missing from the keychain — re-add it and try again." = "Podpisni ključ manjka v keychainu — dodajte ga znova in poskusite ponovno.";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "Dvig je bil poslan, a njegovega izida ni bilo mogoče potrditi. Stanje se znova preverja — ne poskušajte znova, dokler se ne ustali.";
+
+/* No comment provided by engineer. */
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "Spremljajte kateri koli masternode ali evonode v omrežju — ni nujno, da pripada tej denarnici.";
+
+/* No comment provided by engineer. */
+"Track this masternode" = "Spremljaj ta masternode";
+
+/* No comment provided by engineer. */
+"Tracked" = "Se spremlja";
+
+/* No comment provided by engineer. */
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "Se spremlja. Spodaj dodajte ključe tega vozlišča, da omogočite dejanja, kot sta dvig in glasovanje, ali pa zdaj zaključite in jih dodajte pozneje.";
+
+/* No comment provided by engineer. */
+"Withdrawing…" = "Dvigujemo…";
+
+/* No comment provided by engineer. */
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "Z gumbom „+“ lahko spremljate tudi kateri koli masternode v omrežju — po IP, proTxHash ali enem od njegovih ključev.";
+
+/* No comment provided by engineer. */
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "Naslov DAPI tega evonoda ni znan, zato ga ni mogoče vprašati za stanje.";
+
+/* No comment provided by engineer. */
+"Couldn't get the evonode's status." = "Stanja evonoda ni bilo mogoče pridobiti.";
+
+/* No comment provided by engineer. */
+"The evonode didn't answer in time." = "Evonode ni odgovoril pravočasno.";
+
+/* No comment provided by engineer. */
+"Couldn't reach the evonode." = "Do evonoda ni bilo mogoče dostopati.";
+
+/* No comment provided by engineer. */
+"The evonode's answer couldn't be read." = "Odgovora evonoda ni bilo mogoče prebrati.";
+
+/* No comment provided by engineer. */
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "Lastno, nepreverjeno poročilo vozlišča — kar pravi o sebi, ne to, o čemer se je omrežje sporazumelo.";
+
+/* No comment provided by engineer. */
+"Asked" = "Vprašano";
+
+/* No comment provided by engineer. */
+"Software" = "Programska oprema";
+
+/* No comment provided by engineer. */
+"DAPI" = "DAPI";
+
+/* No comment provided by engineer. */
+"Drive" = "Drive";
+
+/* No comment provided by engineer. */
+"Tenderdash" = "Tenderdash";
+
+/* No comment provided by engineer. */
+"Protocol versions" = "Različice protokola";
+
+/* No comment provided by engineer. */
+"Tenderdash P2P" = "Tenderdash P2P";
+
+/* No comment provided by engineer. */
+"Tenderdash block" = "Blok Tenderdash";
+
+/* No comment provided by engineer. */
+"Drive current" = "Drive trenutna";
+
+/* No comment provided by engineer. */
+"Drive latest" = "Drive najnovejša";
+
+/* No comment provided by engineer. */
+"Drive next epoch" = "Drive naslednja epoha";
+
+/* No comment provided by engineer. */
+"Node ID" = "ID vozlišča";
+
+/* No comment provided by engineer. */
+"Identity check" = "Preverjanje identitete";
+
+/* No comment provided by engineer. */
+"Chain" = "Veriga";
+
+/* No comment provided by engineer. */
+"Catching up" = "Dohiteva";
+
+/* No comment provided by engineer. */
+"Latest block height" = "Višina najnovejšega bloka";
+
+/* No comment provided by engineer. */
+"Earliest block height" = "Višina najstarejšega bloka";
+
+/* No comment provided by engineer. */
+"Max peer block height" = "Najv. višina bloka pri soležnikih";
+
+/* No comment provided by engineer. */
+"Core chain-locked height" = "Višina chain-locked v Core";
+
+/* No comment provided by engineer. */
+"Latest block hash" = "Zgoščena vrednost najnovejšega bloka";
+
+/* No comment provided by engineer. */
+"Latest app hash" = "Zgoščena vrednost najnovejše aplikacije";
+
+/* No comment provided by engineer. */
+"Earliest block hash" = "Zgoščena vrednost najstarejšega bloka";
+
+/* No comment provided by engineer. */
+"Earliest app hash" = "Zgoščena vrednost najstarejše aplikacije";
+
+/* No comment provided by engineer. */
+"Chain ID" = "ID verige";
+
+/* No comment provided by engineer. */
+"Peers" = "Soležniki";
+
+/* No comment provided by engineer. */
+"Listening" = "Posluša";
+
+/* No comment provided by engineer. */
+"State sync" = "Sinhronizacija stanja";
+
+/* No comment provided by engineer. */
+"Total synced time" = "Skupni čas sinhronizacije";
+
+/* No comment provided by engineer. */
+"Remaining time" = "Preostali čas";
+
+/* No comment provided by engineer. */
+"Total snapshots" = "Skupaj posnetkov";
+
+/* No comment provided by engineer. */
+"Chunk process avg time" = "Povpr. čas obdelave dela";
+
+/* No comment provided by engineer. */
+"Snapshot height" = "Višina posnetka";
+
+/* No comment provided by engineer. */
+"Snapshot chunks" = "Deli posnetka";
+
+/* No comment provided by engineer. */
+"Backfilled blocks" = "Dopolnjeni bloki";
+
+/* No comment provided by engineer. */
+"Backfill blocks total" = "Skupaj blokov za dopolnitev";
+
+/* No comment provided by engineer. */
+"Time" = "Čas";
+
+/* No comment provided by engineer. */
+"Node clock" = "Ura vozlišča";
+
+/* No comment provided by engineer. */
+"Latest block" = "Najnovejši blok";
+
+/* No comment provided by engineer. */
+"Genesis" = "Genesis";
+
+/* No comment provided by engineer. */
+"Epoch" = "Epoha";
+
+/* No comment provided by engineer. */
+"Matches this evonode" = "Ustreza temu evonodu";
+
+/* No comment provided by engineer. */
+"Differs from this evonode" = "Se razlikuje od tega evonoda";
+
+/* No comment provided by engineer. */
+"Not reported" = "Ni sporočeno";
+
+/* No comment provided by engineer. */
+"%.3f s" = "%.3f s";
+
+/* No comment provided by engineer. */
+"Node status" = "Stanje vozlišča";
+
+/* No comment provided by engineer. */
+"Asking the evonode…" = "Sprašujemo evonode…";
+
+/* No comment provided by engineer. */
+"Request status" = "Zahtevaj stanje";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "Self-checkout";
@@ -3444,6 +4374,42 @@
 
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "Pošljite svojo prvo zahtevo za stik";
+
+/* Username marketplace: set price sheet title */
+"Set a price for “%@”" = "Nastavi ceno za „%@“";
+
+/* Username marketplace */
+"Short names are decided by a network vote — use Request Username instead." = "O kratkih imenih odloča glasovanje omrežja — namesto tega uporabite „Zahtevaj uporabniško ime“.";
+
+/* Username marketplace: contested request explainer, paragraph 1 */
+"Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them." = "Kratka imena — 19 znakov ali manj, samo črke in številke — se ne registrirajo takoj. Omrežje Dash glasuje o tem, kdo jih dobi.";
+
+/* DashPay Contacts: expands the network search into the full add-contact flow */
+"Show more results" = "Pokaži več rezultatov";
+
+/* Username marketplace: departed-name line — buyer identity */
+"Sold to %@" = "Prodano uporabniku %@";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 1 of 2 — moving Dash out of your Shielded balance…" = "Korak 1 od 2 — prenašamo Dash s stanja Shielded…";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 2 of 2 — topping up your identity…" = "Korak 2 od 2 — dopolnjujemo vašo identiteto…";
+
+/* Username marketplace: contested request cost footnote */
+"The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "Cena se plača s stanja vaše identitete. Financira glasovanje omrežja in se ne vrne, če zmaga drug kandidat.";
+
+/* Username marketplace: register sheet body */
+"The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "Ime se registrira neposredno na vašo identiteto. Registracija je omrežna transakcija, ki se plača s stanja vaše identitete.";
+
+/* Username marketplace: contested label locked by a past vote */
+"The network voted to lock this name, so nobody can register it. Choose a different name." = "Omrežje je glasovalo, da se to ime zaklene, zato ga nihče ne more registrirati. Izberite drugo ime.";
+
+/* Username marketplace */
+"The recipient identity couldn't be resolved." = "Identitete prejemnika ni bilo mogoče razrešiti.";
+
+/* Username marketplace */
+"The seller changed the price before your purchase was accepted. Review the new price and try again." = "Prodajalec je spremenil ceno, preden je bil vaš nakup sprejet. Preglejte novo ceno in poskusite znova.";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Sending";
@@ -3965,6 +4931,66 @@
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "S tem se vaši identiteti dodata dva ključa, da vam lahko drugi uporabniki pošiljajo zahteve za stik in da lahko vi sprejmete njihove. To se zgodi samo enkrat.";
 
+/* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
+"This isn't a DashPay user QR code." = "To ni koda QR uporabnika DashPay.";
+
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "To stanje plačuje omrežne provizije Dash Platform — uporabniška imena, zahteve za stik, posodobitve profila. Pripada vaši identiteti, ne denarnici: za razliko od transparentnega stanja, stanja Platform in Shielded ga ni mogoče porabiti kot običajen Dash. Dopolnitev pretvori Dash s stanja, ki ga izberete — privzeto Shielded — v dobropise identitete.";
+
+/* Username marketplace: contested label already has an active vote */
+"This name is already in an active network vote. Your request joins it as another contender." = "Za to ime že poteka aktivno glasovanje omrežja. Vaša zahteva se mu pridruži kot še en kandidat.";
+
+/* Username marketplace */
+"This name is in an active network vote and can't be traded until the contest ends." = "To ime je v aktivnem glasovanju omrežja in z njim ni mogoče trgovati, dokler se tekmovanje ne konča.";
+
+/* Username marketplace: detail for an unregistered name */
+"This name is not registered." = "To ime ni registrirano.";
+
+/* Username marketplace: seller-clarity callout on the detail sheet */
+"This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "To ime ponuja neodvisni uporabnik v omrežju Dash — ne Dash niti ta aplikacija. Ceno določa prodajalec.";
+
+/* Username marketplace: listing price exceeds the representable maximum */
+"This price is too high to list." = "Ta cena je previsoka za oglaševanje.";
+
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "Tega prenosa od tu ni mogoče ponoviti.";
+
+/* Username marketplace */
+"This username is not for sale." = "To uporabniško ime ni naprodaj.";
+
+/* Username marketplace */
+"This username's record couldn't be read from the network." = "Zapisa tega uporabniškega imena ni bilo mogoče prebrati iz omrežja.";
+
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "Ta denarnica nima identitete za dopolnitev.";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "Dopolni";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "Dopolni stanje identitete";
+
+/* Username marketplace: timeline card title */
+"Trade history" = "Zgodovina trgovanja";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "Prenos je dokončan";
+
+/* Username marketplace */
+"Transfer to Another Identity" = "Prenesi na drugo identiteto";
+
+/* Username marketplace: transfer sheet title */
+"Transfer “%@”" = "Prenesi „%@“";
+
+/* Username marketplace: history — transfer with both identities */
+"Transferred from %1$@ to %2$@" = "Preneseno od %1$@ k %2$@";
+
+/* Username marketplace: departed-name line — recipient identity */
+"Transferred to %@" = "Preneseno uporabniku %@";
+
+/* Username marketplace */
+"Username Marketplace" = "Tržnica uporabniških imen";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
@@ -4014,6 +5040,60 @@
 
 /* Usernames */
 "This name requires voting. Your Dash will be locked until voting completes." = "This name requires voting. Your Dash will be locked until voting completes.";
+
+/* Usernames */
+"Vote in progress" = "Glasovanje poteka";
+
+/* Usernames */
+"Vote ended" = "Glasovanje se je končalo";
+
+/* Usernames */
+"A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender." = "Za to ime že poteka glasovanje masternodov. Z oddajo zahteve se glasovanju pridružite kot kandidat.";
+
+/* Usernames */
+"A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender." = "Za to ime že poteka glasovanje masternodov — glasovanje se konča okoli %@. Z oddajo zahteve se glasovanju pridružite kot kandidat.";
+
+/* Usernames */
+"A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote." = "Za to ime poteka glasovanje masternodov — glasovanje se konča okoli %@. Novi kandidati se temu glasovanju ne morejo več pridružiti.";
+
+/* Usernames */
+"Username is in a network vote — new contenders can no longer join" = "Uporabniško ime je v glasovanju omrežja — novi kandidati se ne morejo več pridružiti";
+
+/* Usernames */
+"The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "Lastnik tega uporabniškega imena ga je oglasil na Tržnici uporabniških imen za %@ Dash. Kupite ga lahko tam.";
+
+/* Usernames */
+"The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance." = "Lastnik tega uporabniškega imena ga je oglasil za %@ Dash. Kupite ga lahko takoj — cena se plača s stanja vaše denarnice.";
+
+/* Usernames */
+"The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "Lastnik tega uporabniškega imena ga je oglasil za %1$@ Dash. Nakupi nad %2$@ Dash morajo potekati prek Tržnice uporabniških imen — zaenkrat izberite drugo uporabniško ime; o nakupu tega se lahko odločite pozneje.";
+
+/* Usernames */
+"Buy for %@ Dash" = "Kupi za %@ Dash";
+
+/* Usernames */
+"Buy username" = "Kupi uporabniško ime";
+
+/* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "Vašega začasnega uporabniškega imena „%@“ ni bilo mogoče registrirati. Drugo uporabniško ime lahko registrirate pozneje.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "„%1$@“ je zdaj vaše uporabniško ime. Če vam glasovanje dodeli „%2$@“, boste dosegljivi pod obema uporabniškima imenoma.";
+
+/* Usernames */
+"“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "„%1$@“ bo kupljeno za %2$@ Dash. Cena se plača s stanja vaše denarnice.";
+
+/* Usernames */
+"Username purchased" = "Uporabniško ime je kupljeno";
+
+/* Usernames */
+"“%@” is now your username." = "„%@“ je zdaj vaše uporabniško ime.";
+
+/* Usernames */
+"The masternode vote for this name has ended and the result is being finalized. Check back soon." = "Glasovanje masternodov o tem imenu se je končalo in izid se dokončuje. Preverite znova kmalu.";
+
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes." = "Za to ime že poteka glasovanje — vaša zahteva se mu bo pridružila kot kandidat. Vaš Dash bo zaklenjen, dokler se glasovanje ne konča.";
 
 /* No comment provided by engineer. */
 "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone." = "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.";
@@ -4256,6 +5336,12 @@
 /* Voting */
 "Unblocked '%@' username" = "Unblocked '%@' username";
 
+/* SPV diagnostics */
+"Unconfirmed now" = "Trenutno nepotrjene";
+
+/* SPV diagnostics */
+"Unconfirmed Transactions" = "Nepotrjene transakcije";
+
 /* DashPay Contacts */
 "Unhide Contact" = "Unhide Contact";
 
@@ -4369,6 +5455,9 @@
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Uporabniška imena, ne naslovi";
 
+/* DashPay: banner identity row subtitle */
+"View profile" = "Poglej profil";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Uporabniki, ki se ujemajo z %@ in trenutno niso med vašimi stiki";
 
@@ -4399,11 +5488,17 @@
 /* No comment provided by engineer. */
 "Verified Successfully" = "Verified Successfully";
 
+/* DashPay Contacts: spinner after scanning a user QR code */
+"Verifying user…" = "Preverjamo uporabnika…";
+
 /* No comment provided by engineer. */
 "Verify" = "Verify";
 
 /* CrowdNode */
 "Verify your API Dash address" = "Verify your API Dash address";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "Potrdite frazo za obnovitev, da nastavite nov PIN.";
 
 /* Usernames */
 "Verify your identity" = "Verify your identity";
@@ -4618,6 +5713,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "Kdaj bodo zahteve za stik postale zasebne?";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "Dokler traja glasovanje, „%@“ še ni vaše in drugi uporabniki vas prek njega ne morejo najti. Dodajte neizpodbijano uporabniško ime, da boste DashPay uporabljali takoj. Ostane vaše trajno — in če vam glasovanje dodeli izpodbijano ime, boste dosegljivi pod obema uporabniškima imenoma.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "Where to Spend";
 
@@ -4628,6 +5726,18 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "Zakaj ga moram omogočiti?";
+
+/* Username marketplace: history participant is the current user */
+"you" = "vi";
+
+/* Username marketplace: contested request already submitted by this identity */
+"You already requested this name — the network vote is in progress. You'll find it under My Names." = "To ime ste že zahtevali — glasovanje omrežja poteka. Našli ga boste pod „Moja imena“.";
+
+/* Username marketplace: purchase confirmation body with seller clarity */
+"You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "Kupujete od neodvisnega uporabnika, ne od Dasha ali te aplikacije. Cena in majhna omrežna provizija se plačata s stanja vaše identitete, ime pa takoj preide na vašo identiteto.";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "Dokler traja glasovanje, nimate uporabniškega imena. Zdaj registrirajte neizpodbijano uporabniško ime — ostane vaše, in če vam glasovanje dodeli „%@“, boste dosegljivi pod obema uporabniškima imenoma.";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "Why do I see all these transactions?";
@@ -4683,6 +5793,9 @@
 
 /* Wallets */
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
+
+/* Wallets */
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Zapišite teh %d besed po vrsti in jih hranite na varnem mestu. So EDINI način za obnovitev te denarnice. Kdor koli jih ima, lahko porabi vaša sredstva.";
 
 /* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
@@ -4934,6 +6047,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Vaša zgodovina, urejena";
 
+/* Username marketplace */
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Stanje vaše identitete ne pokriva tega nakupa: potrebnih %1$@ DASH (vključno z rezervo za provizije), na voljo %2$@ DASH. Dopolnite stanje identitete in poskusite znova.";
+
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "Vaša identiteta potrebuje dva dodatna ključa, da je zahteve za stik mogoče šifrirati med vami in drugimi uporabniki. Omogočanje ju doda z eno samo omrežno transakcijo. To se zgodi samo enkrat.";
 
@@ -4958,8 +6074,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "Vaši pomešani kovanci so bili premaknjeni v stanje vaše denarnice Dash.";
 
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "Tega nakupa nismo mogli potrditi pri CTX. Če je plačilo uspelo, se bo darilna kartica kmalu prikazala na vašem seznamu transakcij — preverite tam, preden znova kupite.";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "Vaše plačilo je bilo poslano, a ga omrežje še ni potrdilo. Vaša darilna kartica se bo prikazala takoj po potrditvi.";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Vaši pomešani kovanci so bili premaknjeni v zaščiteno stanje. Za najboljšo zasebnost počakajte vsaj 2 uri, preden ta sredstva uporabite.";
+
+/* DashSpend */
+"Could not load your gift card" = "Vaše darilne kartice ni bilo mogoče naložiti";
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
@@ -4975,6 +6100,9 @@
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "Vaše zasebno stanje. Zneski in naslovi so v verigi šifrirani, zato vaša sredstva in zgodovina ostanejo zaupni.";
+
+/* Username marketplace: contested request explainer, paragraph 2 */
+"Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "Vaša zahteva vstopi v javno glasovanje masternodov za približno dva tedna. Isto ime lahko zahtevajo tudi drugi; ko se glasovanje konča, ime pripade zmagovalcu — ali nikomur, če omrežje glasuje za zaklep.";
 
 /* Usernames */
 "Your request was cancelled" = "Your request was cancelled";

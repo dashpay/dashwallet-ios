@@ -422,5 +422,25 @@
 			<string>%d žiadostí</string>
 		</dict>
 	</dict>
+	<key>%d words</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d slovo</string>
+			<key>few</key>
+			<string>%d slová</string>
+			<key>many</key>
+			<string>%d slova</string>
+			<key>other</key>
+			<string>%d slov</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

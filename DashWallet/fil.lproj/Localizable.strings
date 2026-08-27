@@ -9,6 +9,9 @@
 /* CrowdNode */
 " Terms of Use " = "Mga Tuntunin ng Paggamit";
 
+/* Username marketplace: listing success — name, then price */
+"%1$@ listed for %2$@ DASH" = "Nakalista ang %1$@ sa halagang %2$@ DASH";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -20,6 +23,12 @@
 
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "Hindi mahanap si %@ sa Dash network para makapagpadala ng kahilingan sa pakikipag-ugnay.";
+
+/* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
+"%@ couldn't be verified on the Dash network. The QR code may be outdated." = "Hindi ma-verify ang %@ sa Dash network. Maaaring luma na ang QR code.";
+
+/* Username marketplace: contested request cost value — the vote-resolution fund amount */
+"%@ DASH + network fee" = "%@ DASH + network fee";
 
 /* Usernames */
 "%@ Dash available" = "%@ Dash ang available";
@@ -42,6 +51,9 @@
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@ ay nagpadala sa iyo ng isang kahilingan sa pakikipag-ugnay";
 
+/* Username marketplace: delist success */
+"%@ is no longer for sale" = "Hindi na ibinebenta ang %@";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ ay hindi pinapayagang i-access ang Face ID. Payagan ang pag-access ng Face ID sa Mga Setting";
 
@@ -51,8 +63,17 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ ay hindi pinapayagang ma-access ang Touch ID. Payagan ang pag-access ng Touch ID sa Mga Setting";
 
+/* Username marketplace: purchase success */
+"%@ is now yours" = "Sa iyo na ang %@";
+
+/* Username marketplace: registration success */
+"%@ registered" = "Nairehistro ang %@";
+
 /* Testnet faucet */
 "%@ tDash requested — it will arrive shortly" = "%@ tDash requested — it will arrive shortly";
+
+/* Username marketplace: transfer success */
+"%@ transferred" = "Nailipat ang %@";
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
@@ -171,6 +192,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "May isinasagawa nang pagboto para sa pangalang ito — sasali ang iyong kahilingan bilang kalahok. Nagagastos ang contest fee kapag nagsumite ka at hindi ito ibinabalik, kahit hindi mo makuha ang pangalan.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -182,6 +206,9 @@
 
 /* No comment provided by engineer. */
 "About me" = "Tungkol sa Akin";
+
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "Tungkol sa balanse ng identity account";
 
 "Abstain" = "Umabstain";
 
@@ -235,6 +262,9 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "Magdagdag ng Bagong Contact";
 
+/* Usernames */
+"Add a temporary username" = "Magdagdag ng pansamantalang username";
+
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
 
@@ -259,6 +289,9 @@
 /* Maya
    SwapKit */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+
+/* No comment provided by engineer. */
+"Advanced" = "Advanced";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Masusing seguridad";
@@ -315,6 +348,9 @@
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Halaga sa Dash";
 
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "Halaga sa DASH";
+
 /* No comment provided by engineer. */
 "Amount received" = "Halagang natanggap";
 
@@ -350,6 +386,9 @@
 
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Makikita ninuman ang kasaysayan ng isang address kung alam niya ito";
+
+/* Username marketplace: set price sheet body */
+"Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance." = "Mabibili ng kahit sino ang pangalan sa eksaktong presyong ito. Darating ang kita bilang mga kredito sa balanse ng iyong pagkakakilanlan.";
 
 /* AboutDash */
 "App version" = "App version";
@@ -430,8 +469,17 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "Awtimatikong Pagtago ng Balanse";
 
+/* DashPay */
+"Available after sync finishes" = "Available kapag tapos na ang pag-sync";
+
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
+
+/* Username marketplace: unregistered name row */
+"Available — register it on your identity" = "Available — irehistro ito sa iyong pagkakakilanlan";
+
+/* Username marketplace: unregistered contested-eligible name row */
+"Available — short names are decided by a network vote" = "Available — ang maiikling pangalan ay pinagdedesisyunan sa pagboto ng network";
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
@@ -525,6 +573,9 @@
 /* Voting */
 "Blocked '%@' username" = "Naka-block '%@' na username";
 
+/* Username marketplace: history — purchase with buyer, seller, price */
+"Bought by %1$@ from %2$@ for %3$@ DASH" = "Binili ni %1$@ kay %2$@ sa halagang %3$@ DASH";
+
 /* Identities: this key only signs for one data contract */
 "Bound to contract" = "Nakatali sa kontrata";
 
@@ -573,6 +624,9 @@
 /* Swap */
 "Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
 
+/* Username marketplace: purchase button */
+"Buy for %@ DASH" = "Bilhin sa %@ DASH";
+
 /* DashSpend */
 "Buy gift card" = "Bumili ng gift card";
 
@@ -581,6 +635,12 @@
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash for the exact amount of your purchase." = "Bumili ng mga gift card gamit ang iyong Dash para sa eksaktong halaga ng iyong binili.";
+
+/* Username marketplace: purchase confirmation title */
+"Buy “%@”?" = "Bilhin ang “%@”?";
+
+/* Username marketplace: Explore row subtitle */
+"Buy, sell and transfer DashPay usernames" = "Bumili, magbenta, at maglipat ng mga DashPay username";
 
 /* Buy/Sell */
 "Buy/Sell" = "Bili/Benta";
@@ -631,6 +691,9 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "Baguhin ang PIN";
+
+/* Username marketplace */
+"Change Price" = "Baguhin ang Presyo";
 
 /* TimeSkew */
 "Check date & time settings" = "Suriin ang mga setting ng petsa at oras";
@@ -713,6 +776,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "Malapit nang dumating";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "Tapusin ang Paglilipat";
+
 /* Shielded transfer status */
 "Completed" = "Tapos na";
 
@@ -782,6 +848,18 @@
 
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "Naipadala ang kahilingan sa pakikipag-ugnay kay %@";
+
+/* Usernames */
+"Continue without a temporary username" = "Magpatuloy nang walang pansamantalang username";
+
+/* Identity top-up sheet — body */
+"Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Palitan ang Dash ng mga identity credit para bayaran ang mga aksyon sa Platform tulad ng contact request at pag-update ng profile.";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "Hindi natapos ang paglilipat";
+
+/* Identity top-up sheet — free amount chip */
+"Custom" = "Custom";
 
 /* No comment provided by engineer. */
 "Contact Requests" = "Mga Kahilingan sa Pakikipag-ugnay";
@@ -1042,6 +1120,27 @@
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "Naka-enable na ang DashPay";
 
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "Maglagay ng hindi bababa sa %@ DASH";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "Tinatayang mga bayarin";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "Kinukuha ang mga bayarin mula sa halaga; mula sa Shielded, maaaring may maliit na natira sa iyong balanse sa Platform.";
+
+/* Username marketplace: search segment */
+"Find Names" = "Maghanap ng Pangalan";
+
+/* Username marketplace: listed badge */
+"For sale" = "Ibinebenta";
+
+/* Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app */
+"For sale by an independent user" = "Ibinebenta ng isang independiyenteng user";
+
+/* Identity top-up sheet — linkability warning for transparent-side sources */
+"Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Ang pagpondo mula sa transparent na balanse ay hayagang iniuugnay ang mga barya na iyon sa iyong pagkakakilanlan sa Dash chain. Para sa privacy, magbayad mula sa iyong balanseng Shielded.";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "Imbitasyon sa DashPay";
 
@@ -1062,6 +1161,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "Petsa";
+
+/* History group header for restored shielded operations whose original date is not recoverable */
+"Date unknown" = "Hindi alam ang petsa";
 
 /* Voting */
 "Date: New to old" = "Petsa: Bago sa luma";
@@ -1085,6 +1187,9 @@
 
 /* No comment provided by engineer. */
 "Delete Wallet?" = "Delete Wallet?";
+
+/* SPV diagnostics */
+"Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network." = "Binubura ang mga hindi pa nakumpirmang transaksyon ng wallet na ito sa device na ito lang at pinalalaya ang mga baryang sinubukan nitong gastusin. Ibinabalik ng filter rescan ang alinman sa mga ito na talagang nasa blockchain. Walang ipinapadala sa network.";
 
 /* Location Service Status */
 "Denied" = "Tinanggihan";
@@ -1116,6 +1221,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "DEVICE SECURITY COMPROMISED\nAnumang 'jailbreak' app ay maaaring maka-access ng ibang app's keychain data (at nakawin ang iyong Dash).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu." = "NAKOMPROMISO ANG SEGURIDAD NG DEVICE\nKayang buksan ng kahit anong 'jailbreak' app ang keychain data ng ibang app (at nakawin ang iyong Dash). Ilipat ang iyong pondo sa isang wallet sa ligtas na device, pagkatapos ay i-reset ang wallet na ito gamit ang “I-reset ang Wallet” sa menu ng Seguridad.";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAnumang 'jailbreak' app ay maaaring maka-access ng app's keychain data (at nakawin ang iyong Dash). I-wipe kaagad itong pitaka at i-restore sa ligtas na device.";
@@ -1169,6 +1277,27 @@
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
 "DPNS Names" = "DPNS Names";
+
+/* SPV diagnostics */
+"Drop & rescan" = "I-drop at i-rescan";
+
+/* SPV diagnostics */
+"Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network." = "Ide-drop mula sa device na ito ang mga transaksyon ng wallet na ito na naghihintay pa sa network (hindi kailanman na-lock o na-mine), muling gagawing available ang mga baryang sinubukan nitong gastusin, at ire-rescan ang mga kamakailang filter. Ang na-drop na transaksyon na talagang nasa blockchain ay kusang babalik habang nagre-rescan. Walang ipinapadala sa network.";
+
+/* SPV diagnostics */
+"Drop Unconfirmed & Rescan" = "I-drop ang Hindi Nakumpirma at I-rescan";
+
+/* SPV diagnostics */
+"Drop unconfirmed transactions?" = "I-drop ang mga hindi pa nakumpirmang transaksyon?";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row." = "Na-drop ang %d hindi pa nakumpirmang transaksyon — nire-rescan ang mga filter, bantayan ang row na Mga Filter.";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above." = "Na-drop ang %d hindi pa nakumpirmang transaksyon, pero hindi nasimulan ang filter rescan — patakbuhin ang “I-rescan ang mga Filter” sa itaas.";
+
+/* SPV diagnostics */
+"Dropping…" = "Dinodrop…";
 
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Dahil sa mga tuntunin ng serbisyo ng CrowdNode, ang mga user ay maaaring mag-withdraw ng hindi hihigit sa:";
@@ -1280,6 +1409,9 @@
 
 /* No comment provided by engineer. */
 "Enter your recovery phrase to reset your PIN" = "Enter your recovery phrase to reset your PIN";
+
+/* No comment provided by engineer. */
+"Enter your recovery phrase to set a new PIN" = "Ilagay ang iyong recovery phrase para magtakda ng bagong PIN";
 
 /* Voting */
 "Enter your voting key" = "Ilagay ang iyong voting key";
@@ -1665,6 +1797,42 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "Paano ito ikinukumpara sa mga Ethereum account pagdating sa privacy?";
 
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "Balanse ng Identity Account";
+
+/* Username marketplace: section of contested-name requests awaiting the masternode vote */
+"In network vote" = "Nasa pagboto ng network";
+
+/* Username marketplace: search row for a contested label with an active vote by others */
+"In a network vote — you can join as a contender" = "Nasa pagboto ng network — puwede kang sumali bilang kalahok";
+
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "Samantala, maaabot ka sa “%1$@”, na mananatiling sa iyo. Kung ipagkaloob sa iyo ng pagboto ang “%2$@”, maaabot ka sa parehong username.";
+
+/* Username marketplace: search row for a label a past vote locked */
+"Locked by a network vote — nobody can register it" = "Naka-lock dahil sa pagboto ng network — walang makakapagrehistro nito";
+
+/* Username marketplace: latest ownership change */
+"Last transferred" = "Huling inilipat";
+
+/* Username marketplace: confirm listing button */
+"List For Sale" = "Ilista Para Ibenta";
+
+/* Username marketplace: own listed name */
+"Listed by you" = "Nilista mo";
+
+/* Username marketplace: history — price set */
+"Listed for %@ DASH" = "Nakalista sa %@ DASH";
+
+/* Username marketplace: set price fee note */
+"Listing is a network transaction with a small fee, paid from your identity balance." = "Ang paglilista ay isang network transaction na may maliit na bayarin, na binabayaran mula sa balanse ng iyong pagkakakilanlan.";
+
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "Ang aking pagkakakilanlan";
+
+/* Username marketplace: owned names segment */
+"My Names" = "Mga Pangalan Ko";
+
 /* DashPay FAQ */
 "How private is DashPay?" = "Gaano kapribado ang DashPay?";
 
@@ -2027,6 +2195,9 @@
 /* CrowdNode */
 "Leaving the pool" = "Umalis sa Pool";
 
+/* DashPay Contacts: caption under the user's own QR code */
+"Let another Dash Wallet user scan this code to add you as a contact." = "Pa-scan ang code na ito sa ibang user ng Dash Wallet para maidagdag ka bilang contact.";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Ipaalam sa akin kung kailan ito tapos";
 
@@ -2099,6 +2270,51 @@
 "Lock" = "I-lock";
 
 "Lock the name" = "I-lock ang pangalan";
+
+/* Username marketplace: contest voting deadline row */
+"Vote ends" = "Magtatapos ang pagboto";
+
+/* Username marketplace: until when other identities can join the contest */
+"New contenders" = "Mga bagong kalahok";
+
+/* Username marketplace: join deadline still open — value of the New contenders row */
+"can join until %@" = "puwedeng sumali hanggang %@";
+
+/* Username marketplace: the contest's join window has passed — value of the New contenders row */
+"joining closed" = "sarado na ang pagsali";
+
+/* Username marketplace: masternode vote tally for one contest row */
+"%d votes" = "%d boto";
+
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "Ang 12 salita ang pamantayan. Mas matagal isulat at ibalik ang 24 na salita, pero mas mahirap itong basagin ng mga advanced na computer system sa malayong hinaharap.";
+
+/* Username marketplace: unresolvable transfer recipient */
+"No identity owns that username." = "Walang pagkakakilanlan na nagmamay-ari ng username na iyon.";
+
+/* Username marketplace: names that were sold or transferred away */
+"No longer yours" = "Hindi na sa iyo";
+
+/* Identity top-up sheet — missing unshield destination */
+"No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "Wala pang available na Platform receive address — hintayin munang matapos ang pag-sync ng Platform at subukan ulit.";
+
+/* Username marketplace: empty owned list */
+"No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "Wala pang username sa pagkakakilanlang ito. Maghanap ng bibilhin o irerehistro sa tab na “Maghanap ng Pangalan”.";
+
+/* Identity top-up sheet — insufficient funding source */
+"Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Kulang ang pondo sa balanseng ito: %@ DASH ang kailangan, %@ DASH ang available.";
+
+/* Username marketplace: insufficient balance hint */
+"Not enough identity credits for this purchase — top up from My Profile first." = "Kulang ang identity credit para sa pagbiling ito — mag-top up muna mula sa “Profile Ko”.";
+
+/* Username marketplace: insufficient balance hint for a contested request */
+"Not enough identity credits for this request — top up from My Profile first." = "Kulang ang identity credit para sa kahilingang ito — mag-top up muna mula sa “Profile Ko”.";
+
+/* Username marketplace: someone else's unlisted name */
+"Not for sale" = "Hindi ibinebenta";
+
+/* Username marketplace: own unlisted name */
+"Not listed for sale" = "Hindi nakalista para ibenta";
 
 "Lock “%@” so nobody gets it" = "I-lock ang “%@” para walang makakuha nito";
 
@@ -2342,11 +2558,92 @@
 /* SDK identity profile sheet — title */
 "My Profile" = "My Profile";
 
+/* DashPay Contacts: shows the user's own contact QR code */
+"My QR" = "QR Ko";
+
 /* No comment provided by engineer. */
 "Name" = "Pangalan";
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Ang mga serbisyo ng pangalan gaya ng Unstoppable Domains ay nag-uugnay ng nababasang pangalan sa isang nakapirming pampublikong address sa chain. Matutunton ninuman ang pangalan at makikita ang bawat bayad na naipadala doon. Ang username sa DashPay ay hindi kailanman pampublikong tumuturo sa address ng bayad — inilalantad lang ang mga address sa loob ng naka-encrypt na palitan sa bawat kontak, kaya nananatiling hindi magkaugnay ang pangalan at pera mo sa paningin ng mga tagalabas.";
+
+/* Username marketplace: contested request line — voting deadline */
+"Network vote ends %@" = "Magtatapos ang pagboto ng network sa %@";
+
+/* Username marketplace: activity overlay while the purchase transition runs */
+"Completing your purchase…" = "Tinatapos ang iyong pagbili…";
+
+/* Usernames */
+"Register username" = "Irehistro ang username";
+
+/* Username marketplace: activity overlay while the delist transition runs */
+"Removing the listing…" = "Inaalis ang listing…";
+
+/* Username marketplace: activity overlay while the set-price transition runs */
+"Listing for sale…" = "Inililista para ibenta…";
+
+/* Usernames */
+"Submit both usernames" = "Isumite ang parehong username";
+
+/* Usernames */
+"Temporary username" = "Pansamantalang username";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "Ang pansamantalang username mismo ay hindi dapat mangailangan ng pagboto.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Kailangan ng pangalang ito ng pagboto ng masternode. Nagagastos ang contest fee kapag nagsumite ka at hindi ito ibinabalik, kahit hindi mo makuha ang pangalan.";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "Mangangailangan din ng pagboto ang username na ito — subukang magdagdag ng numero mula 2 hanggang 9";
+
+/* Username marketplace: activity overlay while the transfer transition runs */
+"Transferring the username…" = "Inililipat ang username…";
+
+/* Username marketplace: activity overlay while the registration transition runs */
+"Registering the username…" = "Irerehistro ang username…";
+
+/* Username marketplace: activity overlay while the contested request transition runs */
+"Submitting your username request…" = "Isinusumite ang iyong kahilingan sa username…";
+
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "Mag-browse";
+
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "Mga pagbabago sa presyo";
+
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "Mga pagbili";
+
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "Nakalista sa %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "Naibenta sa %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "Naibenta sa %1$@ DASH · %2$@ · %3$@ → %4$@";
+
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "Hindi ibinebenta ngayon";
+
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "Walang pangalang ibinebenta sa mga kamakailang listing. Mas malayong nakaraan ang aabutin ng “Magpakita pa”.";
+
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "Wala pang pagbili sa network.";
+
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "Nilo-load ang aktibidad…";
+
+/* Username marketplace: load older browse activity */
+"Show more" = "Magpakita pa";
+
+/* Username marketplace: contest tallies card title */
+"Network vote so far" = "Pagboto ng network sa ngayon";
+
+/* Username marketplace: contest with zero masternode votes so far */
+"No votes cast yet" = "Wala pang naitatalang boto";
 
 /* Swap route provider
    Swap route provider short */
@@ -2381,6 +2678,9 @@
 
 /* (List of) New (notifications) */
 "New" = "Bago";
+
+/* SPV diagnostics */
+"No unconfirmed transactions to drop." = "Walang hindi nakumpirmang transaksyon na puwedeng i-drop.";
 
 /* CrowdNode */
 "New CrowdNode Account" = "Bagong CrowdNode Account";
@@ -2563,6 +2863,15 @@
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "Walang layer ng pangalan sa Bitcoin, kaya hayagang ibinabahagi at inuulit ng mga tao ang paggamit ng mga address — kapag nalaman na ang isang address, maiuugnay na sa may-ari nito ang lahat ng natanggap nito. Sa DashPay, pampubliko ang iyong username pero hindi ito kailanman tumuturo sa address ng bayad: pribadong ipinapalitan ang mga address sa bawat kontak at nagpapalit-palit ito, kaya hindi inilalantad ng pagbabayad sa pangalan kung saan napupunta ang pera mo. Parehong transparent na chain ang dalawa, kaya nananatiling nakaaapekto sa mismong barya ang chain analysis.";
 
+/* DashPay Contacts: search results from DPNS, not the local contact list */
+"On the Dash network" = "Sa Dash network";
+
+/* Username marketplace */
+"Owned by you" = "Pag-aari mo";
+
+/* Identity top-up sheet — funding source picker label */
+"Pay from" = "Bayaran mula sa";
+
 /* Identities */
 "On Network" = "Nasa Network";
 
@@ -2731,6 +3040,9 @@
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Pribado ang mga bayad: ang mga address na ipinapalitan mo sa isang kontak ay dumadaan sa loob ng naka-encrypt na payload na kayong dalawa lang ang makakabasa, at hindi ito kailanman inilalathala — kaya hindi basta-basta maiuugnay sa username mo ang mga bayad mo. Gayunpaman, karaniwang bayad pa rin ito sa transparent na chain: maaaring makapaglabas ng impormasyon ang masinsinang chain analysis. Isasara ng Shielded DashPay (malapit nang dumating) ang puwang na iyon. Ang mismong mga kahilingan sa pakikipag-ugnay ay HINDI pribado sa ngayon: makikita ninuman na magkaugnay ang dalawang pagkakakilanlan. Malapit nang dumating na tampok ang pribadong kahilingan sa pakikipag-ugnay. Pampubliko rin sa Dash Platform ang iyong username at profile.";
 
+/* Username marketplace: price placeholder */
+"Price in DASH" = "Presyo sa DASH";
+
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "Nakukumpirma ang mga bayad sa loob ng ilang segundo gamit ang InstantSend";
 
@@ -2788,6 +3100,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Ang PIN ay laging kailangan sa pagbabayad.";
+
+/* No comment provided by engineer. */
+"PIN Not Set" = "Hindi Nakatakda ang PIN";
 
 /* Dash Platform chain */
 "Platform" = "Platform";
@@ -2992,6 +3307,9 @@
 /* Identities: what a public key is used for */
 "Purpose" = "Layunin";
 
+/* Username marketplace */
+"Put Up For Sale" = "Ilagay Para Ibenta";
+
 /* DashSpend */
 "Quantity" = "Quantity";
 
@@ -3027,6 +3345,96 @@
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Basahin lamang";
+
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "I-rebroadcast";
+
+/* Delete a never-accepted transaction from local wallet state */
+"Remove if Not on Network" = "Alisin kung wala sa network";
+
+/* Remove never-accepted transaction: confirmation title */
+"Remove this transaction?" = "Alisin ang transaksyong ito?";
+
+/* Remove never-accepted transaction: destructive confirm button */
+"Remove Transaction" = "Alisin ang Transaksyon";
+
+/* Username marketplace: transfer recipient placeholder */
+"Recipient username or identity ID" = "Username o identity ID ng tatanggap";
+
+/* Identity top-up sheet — shielded source note */
+"Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Inirerekomenda: ang dalawang hakbang na paglilipat sa pamamagitan ng sarili mong Platform address ay pinananatiling hindi naiuugnay ang iyong pagkakakilanlan sa iyong transparent na mga barya.";
+
+/* Username marketplace: register sheet title */
+"Register “%@”" = "Irehistro ang “%@”";
+
+/* Username marketplace: registration date */
+"Registered" = "Nakarehistro";
+
+/* Username marketplace */
+"Remove From Sale" = "Alisin Sa Pagbebenta";
+
+/* Remove never-accepted transaction: progress */
+"Removing transaction…" = "Inaalis ang transaksyon…";
+
+/* Username marketplace: delist confirmation title */
+"Remove “%@” from sale?" = "Alisin ang “%@” sa pagbebenta?";
+
+/* Username marketplace: history — delist (transfer to self) */
+"Removed from sale" = "Inalis sa pagbebenta";
+
+/* Username marketplace: delist confirmation body */
+"Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "Ang pag-alis ng listing ay isang network transaction na may maliit na bayarin, na binabayaran mula sa balanse ng iyong pagkakakilanlan. Mananatili sa iyo ang pangalan.";
+
+/* Remove never-accepted transaction: refused because the explorer found it */
+"Transaction is known to the network" = "Kilala ng network ang transaksyon";
+
+/* Remove never-accepted transaction: refusal body */
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "Iniulat ng isang block explorer na kilala ng Dash network ang transaksyong ito. Maaaring naghihintay pa ito sa mempool o kasama na sa isang block, kaya hindi ito inalis. Awtomatikong ia-update ng wallet ang kumpirmasyon nito kapag naisama na ito sa isang naka-sync na block.";
+
+/* Remove never-accepted transaction: success */
+"Transaction removed" = "Inalis ang transaksyon";
+
+/* Remove never-accepted transaction: removed but the recovery rescan did not arm */
+"Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "Inalis ang transaksyon — hindi nasimulan ang rescan, patakbuhin ang “I-rescan ang mga Filter” sa Core Sync Status";
+
+/* Remove never-accepted transaction: confirmation body */
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "Titingnan muna ng wallet ang isang block explorer. Ang transaksyong kilala ng network — naghihintay man sa mempool o kasama na sa isang block — ay hindi kailanman inaalis. Kung hindi matagpuan ang transaksyon, buburahin ito sa wallet na ito sa device na ito, at magiging available muli ang mga baryang sinubukan nitong gastusin. Pagkatapos ay ire-rescan ng wallet ang mga kamakailang block bilang pang-siguro. Walang ipinapadala sa network.";
+
+/* Remove never-accepted transaction: failure title */
+"Couldn't remove the transaction" = "Hindi naalis ang transaksyon";
+
+/* Remove never-accepted transaction: no local row */
+"This transaction is not in the local wallet." = "Wala ang transaksyong ito sa lokal na wallet.";
+
+/* Remove never-accepted transaction: local state says it's on-chain */
+"This transaction is confirmed and can't be removed." = "Nakumpirma na ang transaksyong ito kaya hindi ito maaalis.";
+
+/* Remove never-accepted transaction: explorer unreachable */
+"Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "Hindi maabot ang isang block explorer para patunayang wala ang transaksyon sa blockchain. Tingnan ang iyong koneksyon at subukan ulit.";
+
+/* Username marketplace: contested request cost row */
+"Request cost" = "Halaga ng kahilingan";
+
+/* Username marketplace: contested request success */
+"Request for %@ submitted — masternodes now vote on it" = "Naisumite ang kahilingan para sa %@ — bumoboto na ngayon ang mga masternode";
+
+/* Username marketplace: confirm contested request button */
+"Request Username" = "Humiling ng Username";
+
+/* Username marketplace: contested register sheet title */
+"Request “%@”" = "Humiling ng “%@”";
+
+/* Username marketplace: contested request not yet indexed by Platform */
+"Requested — waiting for the network vote" = "Hiniling na — naghihintay sa pagboto ng network";
+
+/* Username marketplace: search row for a contested label this identity already requested */
+"Requested by you — the network vote is in progress" = "Hiniling mo — isinasagawa ang pagboto ng network";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "Sinusubukan ulit ang paglilipat…";
+
+/* Username marketplace: screen subtitle */
+"Search usernames, buy ones that are for sale, and sell or transfer your own." = "Maghanap ng mga username, bumili ng mga ibinebenta, at ibenta o ilipat ang sa iyo.";
 
 /* Usernames */
 "Ready around %@" = "Handa nang mga %@";
@@ -3081,6 +3489,9 @@
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery phrase";
+
+/* Recovery phrase length */
+"Recovery phrase length" = "Haba ng recovery phrase";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Hindi nagtutugma ang recovery phrase";
@@ -3194,6 +3605,9 @@
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
+
+/* No comment provided by engineer. */
+"Completion unknown" = "Hindi alam kung natapos";
 
 /* Location Service Status */
 "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "Hindi laging nababawi ng mga naibalik na wallet ang uri ng operasyon. Muling binuo ang entry na ito mula sa on-chain na datos ng tala.";
@@ -3321,6 +3735,9 @@
 /* Identities: DPP security level of a public key */
 "Security level" = "Antas ng seguridad";
 
+/* Username marketplace: transfer sheet body */
+"Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "Ipadala ang pangalang ito sa ibang pagkakakilanlan nang libre. Inaalis din ng paglilipat ang anumang listing na ibinebenta. Hindi ito maibabalik — kailangang ilipat itong muli ng bagong may-ari.";
+
 /* DashSpend */
 "See card details" = "See card details";
 
@@ -3368,7 +3785,520 @@
 /* Coinbase */
 "Select the coin" = "Piliin ang barya";
 
+/* Identities */
+"Select the username to display for this identity." = "Piliin ang username na ipapakita para sa pagkakakilanlang ito.";
+
 "Selecting fewer nodes reveals less about which masternodes you run." = "Kapag mas kaunting node ang pinili, mas kaunti ang naibubunyag tungkol sa kung anong masternode ang pinapatakbo mo.";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "May %ld wallet na natagpuan sa device na ito";
+
+/* No comment provided by engineer. */
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "May %ld wallet mula sa nakaraang pag-install na nakaimbak sa device na ito. Inaalis ng “Burahin Lahat” ang bawat wallet. I-back up ang bawat recovery phrase bago magbura.";
+
+/* No comment provided by engineer. */
+"Couldn’t Delete All Wallets" = "Hindi Nabura Lahat ng Wallet";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Wallets" = "Hindi Nabasa ang mga Wallet";
+
+/* No comment provided by engineer. */
+"Delete All" = "Burahin Lahat";
+
+/* No comment provided by engineer. */
+"Delete All Wallets?" = "Burahin Lahat ng Wallet?";
+
+/* No comment provided by engineer. */
+"Deleting All Wallets…" = "Binubura Lahat ng Wallet…";
+
+/* No comment provided by engineer. */
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "Hindi na-verify ang bilang ng mga wallet na nakaimbak sa device na ito. Para magpatuloy, kailangan ng confirmation phrase mula sa Dash Support bago mabura ang kahit anong wallet.";
+
+/* No comment provided by engineer. */
+"Keep Wallets" = "Panatilihin ang mga Wallet";
+
+/* No comment provided by engineer. */
+"No stored wallets were found. Nothing was deleted." = "Walang natagpuang nakaimbak na wallet. Walang binura.";
+
+/* No comment provided by engineer. */
+"No Wallets Found" = "Walang Natagpuang Wallet";
+
+/* No comment provided by engineer. */
+"Not all wallets could be deleted. Please try again." = "Hindi nabura lahat ng wallet. Pakisubukan ulit.";
+
+/* No comment provided by engineer. */
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "Permanenteng inaalis nito lahat ng wallet, private key, at recovery phrase na iniimbak ng app na ito sa device na ito. Maibabalik lang ang mga ito mula sa backup. Hindi ito maibabalik.";
+
+/* No comment provided by engineer. */
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "Hindi na-verify ang mga wallet na nakaimbak sa device na ito. Walang binura. Pakisubukan ulit.";
+
+/* No comment provided by engineer. */
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "Buburahin nito lahat ng %ld wallet na nakaimbak sa device na ito. Maibabalik lang ang mga ito gamit ang kanilang recovery phrase. Hindi maibabalik ang pagbura sa mga ito mula sa device na ito.";
+
+/* No comment provided by engineer. */
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "May data ng wallet mula sa nakaraang pag-install na nakaimbak pa rin sa device na ito. Ipagpapatuloy ba ang paggamit sa mga wallet na ito, o buburahin lahat ng data ng wallet at magsisimula sa bago? Siguraduhing naka-back up ang bawat recovery phrase bago magbura.";
+
+/* No comment provided by engineer. */
+"Wallets found on this device" = "Mga wallet na natagpuan sa device na ito";
+
+/* No comment provided by engineer. */
+"Wipe All Wallets" = "Burahin Lahat ng Wallet";
+
+/* No comment provided by engineer. */
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "Hindi puwedeng pahintulutan ng recovery phrase ng iisang wallet ang pagbura ng maraming magkakaibang wallet.";
+
+/* No comment provided by engineer. */
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "Hindi napapatunayan ng zero na balanse sa testnet na walang laman ang wallet na ito sa mainnet. Ilagay ang recovery phrase para magpatuloy.";
+
+/* No comment provided by engineer. */
+"Enter the recovery phrase to continue." = "Ilagay ang recovery phrase para magpatuloy.";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "Pumili ng Wallet";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Recovery Phrases" = "Hindi Nabasa ang mga Recovery Phrase";
+
+/* No comment provided by engineer. */
+"No Recovery Phrase Found" = "Walang Natagpuang Recovery Phrase";
+
+/* No comment provided by engineer. */
+"No recovery phrase is stored on this device." = "Walang recovery phrase na nakaimbak sa device na ito.";
+
+/* No comment provided by engineer. */
+"Select the wallet whose recovery phrase you want to view." = "Piliin ang wallet na gusto mong makita ang recovery phrase.";
+
+/* No comment provided by engineer. */
+"The recovery phrases stored on this device could not be read. Please try again." = "Hindi nabasa ang mga recovery phrase na nakaimbak sa device na ito. Pakisubukan ulit.";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address for this network" = "Hindi wastong Dash address para sa network na ito";
+
+/* No comment provided by engineer. */
+"The claimable balance is too small to cover the Platform withdrawal fee." = "Masyadong maliit ang maaaring i-claim na balanse para sagutin ang withdrawal fee ng Platform.";
+
+/* No comment provided by engineer. */
+"You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it." = "Puwede kang mag-withdraw ng hanggang %@ DASH — ang natitira ay nakalaan para sa Platform fee. I-tap ang “Max” para gamitin ito.";
+
+/* No comment provided by engineer. */
+"The minimum withdrawal is %@ DASH." = "Ang pinakamababang withdrawal ay %@ DASH.";
+
+/* No comment provided by engineer. */
+"Payout address key" = "Key ng payout address";
+
+/* No comment provided by engineer. */
+"Owner key (%@)" = "Owner key (%@)";
+
+/* No comment provided by engineer. */
+"Wallet is not ready. Try again in a moment." = "Hindi pa handa ang wallet. Subukan ulit maya-maya.";
+
+/* No comment provided by engineer. */
+"%@ · Claimable %@ DASH" = "%@ · Maa-claim na %@ DASH";
+
+/* No comment provided by engineer. */
+"Withdraw to" = "I-withdraw sa";
+
+/* No comment provided by engineer. */
+"Enter a Dash address" = "Maglagay ng Dash address";
+
+/* No comment provided by engineer. */
+"Use the payout address" = "Gamitin ang payout address";
+
+/* No comment provided by engineer. */
+"This is the evonode's registered payout address." = "Ito ang nakarehistrong payout address ng evonode.";
+
+/* No comment provided by engineer. */
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "Hawak ng wallet na ito ang key ng payout address ng evonode, kaya puwedeng i-withdraw ang balanse sa kahit anong Dash address.";
+
+/* No comment provided by engineer. */
+"Registered payout address" = "Nakarehistrong payout address";
+
+/* No comment provided by engineer. */
+"This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "Nilalagdaan ang withdrawal na ito gamit ang owner key ng evonode. Pinapayagan lang ng Dash Platform ang owner key na mag-withdraw sa nakarehistrong payout address, kaya hindi mababago rito ang destinasyon. Para mag-withdraw sa ibang address, gamitin ang wallet na hawak ang key ng payout address.";
+
+/* No comment provided by engineer. */
+"How it works" = "Paano ito gumagana";
+
+/* No comment provided by engineer. */
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "Binabayaran ng Dash Platform ang withdrawal sa Dash chain — kadalasan sa loob ng ilang minuto. May Platform fee na mga %@ DASH na kinukuha sa balanse ng evonode bukod sa halaga, kaya may itinitirang kaunti ang “Max” para sagutin ito.";
+
+/* No comment provided by engineer. */
+"Confirm withdrawal" = "Kumpirmahin ang withdrawal";
+
+/* No comment provided by engineer. */
+"Owner-key withdrawals are always paid to the registered payout address." = "Ang mga withdrawal gamit ang owner key ay palaging ibinabayad sa nakarehistrong payout address.";
+
+/* No comment provided by engineer. */
+"Waiting for authorization…" = "Naghihintay ng awtorisasyon…";
+
+/* No comment provided by engineer. */
+"Submitting to Dash Platform…" = "Isinusumite sa Dash Platform…";
+
+/* No comment provided by engineer. */
+"Withdrawal submitted" = "Naisumite ang withdrawal";
+
+/* No comment provided by engineer. */
+"Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "Babayaran ito ng Dash Platform sa Dash chain sa lalong madaling panahon — kadalasang dumarating sa loob ng ilang minuto.";
+
+/* No comment provided by engineer. */
+"Remaining claimable balance: %@ DASH" = "Natitirang maa-claim na balanse: %@ DASH";
+
+/* No comment provided by engineer. */
+"%@ · Platform balance" = "%@ · Balanse sa Platform";
+
+/* No comment provided by engineer. */
+"Signed with" = "Nilagdaan gamit ang";
+
+/* No comment provided by engineer. */
+"Platform fee" = "Platform fee";
+
+/* No comment provided by engineer. */
+"%@ (payout address)" = "%@ (payout address)";
+
+/* No comment provided by engineer. */
+"This wallet holds the payout address key, so you can withdraw to any address." = "Hawak ng wallet na ito ang key ng payout address, kaya puwede kang mag-withdraw sa kahit anong address.";
+
+/* No comment provided by engineer. */
+"This wallet holds the owner key, so withdrawals go to the registered payout address." = "Hawak ng wallet na ito ang owner key, kaya napupunta ang mga withdrawal sa nakarehistrong payout address.";
+
+/* No comment provided by engineer. */
+"This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "Hindi hawak ng wallet na ito ang owner key o ang key ng payout address ng evonode na ito, kaya hindi mai-withdraw mula rito ang balanse nito.";
+
+/* No comment provided by engineer. */
+"Couldn't check which keys of this evonode are in the wallet." = "Hindi nasuri kung aling mga key ng evonode na ito ang nasa wallet.";
+
+/* No comment provided by engineer. */
+"Result not confirmed" = "Hindi nakumpirma ang resulta";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "Naipadala ang withdrawal sa Dash Platform, pero hindi nakumpirma ang resulta nito. Maaaring natuloy ito. Huwag itong isumite ulit — tingnan muna ang maa-claim na balanse at ang payout address.";
+
+/* No comment provided by engineer. */
+"1 block proposed this epoch" = "1 block ang iminungkahi sa epoch na ito";
+
+/* No comment provided by engineer. */
+"%@ blocks proposed this epoch" = "%@ block ang iminungkahi sa epoch na ito";
+
+/* No comment provided by engineer. */
+"Nodes" = "Mga Node";
+
+/* No comment provided by engineer. */
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "Mga Node, araw %d ng epoch, %@ block ang iminungkahi sa epoch na ito";
+
+/* No comment provided by engineer. */
+"an evonode has not proposed a block in 2 days" = "may evonode na 2 araw nang walang iminumungkahing block";
+
+/* No comment provided by engineer. */
+"an evonode has no blocks this epoch" = "may evonode na walang block sa epoch na ito";
+
+/* No comment provided by engineer. */
+"A key doesn't match this masternode — fix or clear it to continue." = "May key na hindi tugma sa masternode na ito — itama o burahin ito para magpatuloy.";
+
+/* No comment provided by engineer. */
+"Add keys" = "Magdagdag ng key";
+
+/* No comment provided by engineer. */
+"Add masternode" = "Magdagdag ng masternode";
+
+/* No comment provided by engineer. */
+"Add this node's owner key or payout address key to withdraw from here." = "Idagdag ang owner key o ang key ng payout address ng node na ito para makapag-withdraw mula rito.";
+
+/* No comment provided by engineer. */
+"Already one of this wallet's masternodes — it's in the list above." = "Isa na ito sa mga masternode ng wallet na ito — nasa listahan sa itaas.";
+
+/* No comment provided by engineer. */
+"Already tracked." = "Sinusubaybayan na.";
+
+/* No comment provided by engineer. */
+"Any keys you added for it are deleted from this device's keychain too." = "Buburahin din sa keychain ng device na ito ang anumang key na idinagdag mo para rito.";
+
+/* No comment provided by engineer. */
+"Available" = "Available";
+
+/* No comment provided by engineer. */
+"BLS private key (hex)" = "BLS private key (hex)";
+
+/* No comment provided by engineer. */
+"Can't verify yet" = "Hindi pa ma-verify";
+
+/* No comment provided by engineer. */
+"Could not load the node's registration details — owner and payout keys will verify later." = "Hindi na-load ang mga detalye ng pagpaparehistro ng node — mamaya na ive-verify ang owner at payout key.";
+
+/* No comment provided by engineer. */
+"Could not save a key to the keychain. Nothing was lost — try again." = "Hindi na-save ang isang key sa keychain. Walang nawala — subukan ulit.";
+
+/* No comment provided by engineer. */
+"Destination address (optional)" = "Destination address (opsyonal)";
+
+/* No comment provided by engineer. */
+"Doesn't match" = "Hindi tugma";
+
+/* No comment provided by engineer. */
+"Find" = "Hanapin";
+
+/* No comment provided by engineer. */
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "Naghahanap ng owner at payout key, na wala sa listahan ng masternode. Ipinapadala ang public fingerprint ng key sa isang Platform node.";
+
+/* No comment provided by engineer. */
+"IP address, proTxHash or private key" = "IP address, proTxHash, o private key";
+
+/* No comment provided by engineer. */
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "Nakaimbak ang mga key sa keychain ng device na ito at hindi kailanman umaalis dito maliban para lagdaan ang aksyong hinihiling mo.";
+
+/* No comment provided by engineer. */
+"Keys on this device" = "Mga key sa device na ito";
+
+/* No comment provided by engineer. */
+"Label (optional)" = "Label (opsyonal)";
+
+/* No comment provided by engineer. */
+"Loading registration details…" = "Nilo-load ang mga detalye ng pagpaparehistro…";
+
+/* No comment provided by engineer. */
+"Matches" = "Tugma";
+
+/* No comment provided by engineer. */
+"Matches this node's %@ key" = "Tugma sa %@ key ng node na ito";
+
+/* No comment provided by engineer. */
+"No masternode on the list matches that." = "Walang masternode sa listahan na tugma roon.";
+
+/* No comment provided by engineer. */
+"Node key (base64 or hex)" = "Node key (base64 o hex)";
+
+/* No comment provided by engineer. */
+"Not added" = "Hindi naidagdag";
+
+/* No comment provided by engineer. */
+"On this device" = "Sa device na ito";
+
+/* No comment provided by engineer. */
+"Operator payout" = "Payout ng operator";
+
+/* No comment provided by engineer. */
+"Payout" = "Payout";
+
+/* No comment provided by engineer. */
+"Platform could not be reached, so owner and payout keys were not checked." = "Hindi naabot ang Platform, kaya hindi nasuri ang owner at payout key.";
+
+/* No comment provided by engineer. */
+"PoSe banned" = "Naka-ban dahil sa PoSe";
+
+/* No comment provided by engineer. */
+"Private key (WIF or hex)" = "Private key (WIF o hex)";
+
+/* No comment provided by engineer. */
+"Refresh details" = "I-refresh ang mga detalye";
+
+/* No comment provided by engineer. */
+"Refreshing…" = "Nire-refresh…";
+
+/* No comment provided by engineer. */
+"Save keys" = "I-save ang mga key";
+
+/* No comment provided by engineer. */
+"Search Platform too" = "Maghanap din sa Platform";
+
+/* No comment provided by engineer. */
+"Searching…" = "Naghahanap…";
+
+/* No comment provided by engineer. */
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "Nilalagdaan gamit ang owner key — mapupunta ang withdrawal sa nakarehistrong payout address.";
+
+/* No comment provided by engineer. */
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "Nilalagdaan gamit ang key ng payout address. Iwanang blangko ang destinasyon para mag-withdraw sa payout address.";
+
+/* No comment provided by engineer. */
+"Stop tracking" = "Itigil ang pagsubaybay";
+
+/* No comment provided by engineer. */
+"Stop tracking this masternode?" = "Itigil ang pagsubaybay sa masternode na ito?";
+
+/* No comment provided by engineer. */
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "Puwede rin iyang owner o payout key — i-on ang “Maghanap din sa Platform” para suriin.";
+
+/* No comment provided by engineer. */
+"The signing key is missing from the keychain — re-add it and try again." = "Wala sa keychain ang signing key — idagdag ulit ito at subukan muli.";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "Naipadala ang withdrawal pero hindi nakumpirma ang resulta nito. Muling sinusuri ang balanse — huwag ulitin hanggang hindi ito tumitino.";
+
+/* No comment provided by engineer. */
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "Subaybayan ang kahit anong masternode o evonode sa network — hindi kailangang pag-aari ito ng wallet na ito.";
+
+/* No comment provided by engineer. */
+"Track this masternode" = "Subaybayan ang masternode na ito";
+
+/* No comment provided by engineer. */
+"Tracked" = "Sinusubaybayan";
+
+/* No comment provided by engineer. */
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "Sinusubaybayan. Idagdag sa ibaba ang mga key ng node na ito para paganahin ang mga aksyon tulad ng withdrawal at pagboto, o tapusin na ngayon at idagdag ang mga ito mamaya.";
+
+/* No comment provided by engineer. */
+"Withdrawing…" = "Nagwi-withdraw…";
+
+/* No comment provided by engineer. */
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "Puwede mo ring subaybayan ang kahit anong masternode sa network — sa pamamagitan ng IP, proTxHash, o isa sa mga key nito — gamit ang “+” na button.";
+
+/* No comment provided by engineer. */
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "Hindi alam ang DAPI address ng evonode na ito, kaya hindi ito matanong tungkol sa status nito.";
+
+/* No comment provided by engineer. */
+"Couldn't get the evonode's status." = "Hindi nakuha ang status ng evonode.";
+
+/* No comment provided by engineer. */
+"The evonode didn't answer in time." = "Hindi sumagot sa oras ang evonode.";
+
+/* No comment provided by engineer. */
+"Couldn't reach the evonode." = "Hindi naabot ang evonode.";
+
+/* No comment provided by engineer. */
+"The evonode's answer couldn't be read." = "Hindi nabasa ang sagot ng evonode.";
+
+/* No comment provided by engineer. */
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "Sariling ulat ng node, hindi pa na-verify — ang sinasabi nito tungkol sa sarili, hindi ang napagkasunduan ng network.";
+
+/* No comment provided by engineer. */
+"Asked" = "Tinanong";
+
+/* No comment provided by engineer. */
+"Software" = "Software";
+
+/* No comment provided by engineer. */
+"DAPI" = "DAPI";
+
+/* No comment provided by engineer. */
+"Drive" = "Drive";
+
+/* No comment provided by engineer. */
+"Tenderdash" = "Tenderdash";
+
+/* No comment provided by engineer. */
+"Protocol versions" = "Mga bersyon ng protocol";
+
+/* No comment provided by engineer. */
+"Tenderdash P2P" = "Tenderdash P2P";
+
+/* No comment provided by engineer. */
+"Tenderdash block" = "Tenderdash block";
+
+/* No comment provided by engineer. */
+"Drive current" = "Drive kasalukuyan";
+
+/* No comment provided by engineer. */
+"Drive latest" = "Drive pinakabago";
+
+/* No comment provided by engineer. */
+"Drive next epoch" = "Drive susunod na epoch";
+
+/* No comment provided by engineer. */
+"Node ID" = "Node ID";
+
+/* No comment provided by engineer. */
+"Identity check" = "Pagsusuri ng pagkakakilanlan";
+
+/* No comment provided by engineer. */
+"Chain" = "Chain";
+
+/* No comment provided by engineer. */
+"Catching up" = "Nakikihabol";
+
+/* No comment provided by engineer. */
+"Latest block height" = "Taas ng pinakabagong block";
+
+/* No comment provided by engineer. */
+"Earliest block height" = "Taas ng pinakaunang block";
+
+/* No comment provided by engineer. */
+"Max peer block height" = "Pinakamataas na block height ng peer";
+
+/* No comment provided by engineer. */
+"Core chain-locked height" = "Core chain-locked height";
+
+/* No comment provided by engineer. */
+"Latest block hash" = "Hash ng pinakabagong block";
+
+/* No comment provided by engineer. */
+"Latest app hash" = "Hash ng pinakabagong app";
+
+/* No comment provided by engineer. */
+"Earliest block hash" = "Hash ng pinakaunang block";
+
+/* No comment provided by engineer. */
+"Earliest app hash" = "Hash ng pinakaunang app";
+
+/* No comment provided by engineer. */
+"Chain ID" = "Chain ID";
+
+/* No comment provided by engineer. */
+"Peers" = "Mga Peer";
+
+/* No comment provided by engineer. */
+"Listening" = "Nakikinig";
+
+/* No comment provided by engineer. */
+"State sync" = "State sync";
+
+/* No comment provided by engineer. */
+"Total synced time" = "Kabuuang oras na naka-sync";
+
+/* No comment provided by engineer. */
+"Remaining time" = "Natitirang oras";
+
+/* No comment provided by engineer. */
+"Total snapshots" = "Kabuuang snapshot";
+
+/* No comment provided by engineer. */
+"Chunk process avg time" = "Karaniwang oras ng pagproseso ng chunk";
+
+/* No comment provided by engineer. */
+"Snapshot height" = "Taas ng snapshot";
+
+/* No comment provided by engineer. */
+"Snapshot chunks" = "Mga chunk ng snapshot";
+
+/* No comment provided by engineer. */
+"Backfilled blocks" = "Mga napunang block";
+
+/* No comment provided by engineer. */
+"Backfill blocks total" = "Kabuuang block na pupunan";
+
+/* No comment provided by engineer. */
+"Time" = "Oras";
+
+/* No comment provided by engineer. */
+"Node clock" = "Orasan ng node";
+
+/* No comment provided by engineer. */
+"Latest block" = "Pinakabagong block";
+
+/* No comment provided by engineer. */
+"Genesis" = "Genesis";
+
+/* No comment provided by engineer. */
+"Epoch" = "Epoch";
+
+/* No comment provided by engineer. */
+"Matches this evonode" = "Tugma sa evonode na ito";
+
+/* No comment provided by engineer. */
+"Differs from this evonode" = "Iba sa evonode na ito";
+
+/* No comment provided by engineer. */
+"Not reported" = "Hindi iniulat";
+
+/* No comment provided by engineer. */
+"%.3f s" = "%.3f s";
+
+/* No comment provided by engineer. */
+"Node status" = "Status ng node";
+
+/* No comment provided by engineer. */
+"Asking the evonode…" = "Tinatanong ang evonode…";
+
+/* No comment provided by engineer. */
+"Request status" = "Humiling ng status";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "Self-checkout";
@@ -3442,6 +4372,42 @@
 
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "Ipadala ang iyong unang kahilingan sa pakikipag-ugnay";
+
+/* Username marketplace: set price sheet title */
+"Set a price for “%@”" = "Magtakda ng presyo para sa “%@”";
+
+/* Username marketplace */
+"Short names are decided by a network vote — use Request Username instead." = "Ang maiikling pangalan ay pinagdedesisyunan sa pagboto ng network — gamitin ang “Humiling ng Username” sa halip.";
+
+/* Username marketplace: contested request explainer, paragraph 1 */
+"Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them." = "Ang maiikling pangalan — 19 karakter pababa, mga titik at numero lang — ay hindi agad nairerehistro. Bumoboto ang Dash network kung sino ang makakakuha ng mga ito.";
+
+/* DashPay Contacts: expands the network search into the full add-contact flow */
+"Show more results" = "Magpakita pa ng resulta";
+
+/* Username marketplace: departed-name line — buyer identity */
+"Sold to %@" = "Naibenta kay %@";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 1 of 2 — moving Dash out of your Shielded balance…" = "Hakbang 1 ng 2 — inilalabas ang Dash mula sa iyong balanseng Shielded…";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 2 of 2 — topping up your identity…" = "Hakbang 2 ng 2 — nagto-top up sa iyong pagkakakilanlan…";
+
+/* Username marketplace: contested request cost footnote */
+"The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "Binabayaran ang halaga mula sa balanse ng iyong pagkakakilanlan. Pinopondohan nito ang pagboto ng network at hindi ito ibinabalik kung ibang kalahok ang mananalo.";
+
+/* Username marketplace: register sheet body */
+"The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "Direktang nairerehistro ang pangalan sa iyong pagkakakilanlan. Ang pagrehistro ay isang network transaction na binabayaran mula sa balanse ng iyong pagkakakilanlan.";
+
+/* Username marketplace: contested label locked by a past vote */
+"The network voted to lock this name, so nobody can register it. Choose a different name." = "Bumoto ang network na i-lock ang pangalang ito, kaya walang makakapagrehistro nito. Pumili ng ibang pangalan.";
+
+/* Username marketplace */
+"The recipient identity couldn't be resolved." = "Hindi natukoy ang pagkakakilanlan ng tatanggap.";
+
+/* Username marketplace */
+"The seller changed the price before your purchase was accepted. Review the new price and try again." = "Binago ng nagbebenta ang presyo bago tanggapin ang iyong pagbili. Suriin ang bagong presyo at subukan ulit.";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Ipinapadala";
@@ -3963,6 +4929,66 @@
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "Nagdaragdag ito ng dalawang key sa iyong pagkakakilanlan para makapagpadala sa iyo ng kahilingan sa pakikipag-ugnay ang ibang user, at para matanggap mo ang sa kanila. Isang beses lang ito nangyayari.";
 
+/* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
+"This isn't a DashPay user QR code." = "Hindi ito QR code ng isang DashPay user.";
+
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "Binabayaran ng balanseng ito ang mga network fee ng Dash Platform — mga username, contact request, pag-update ng profile. Pag-aari ito ng iyong pagkakakilanlan, hindi ng iyong wallet: hindi tulad ng iyong balanseng Transparent, Platform, at Shielded, hindi ito magagastos bilang karaniwang Dash. Kapag nag-top up, pinapalitan ng identity credit ang Dash mula sa balanseng pipiliin mo — Shielded bilang default.";
+
+/* Username marketplace: contested label already has an active vote */
+"This name is already in an active network vote. Your request joins it as another contender." = "Nasa aktibong pagboto na ng network ang pangalang ito. Sasali ang iyong kahilingan bilang isa pang kalahok.";
+
+/* Username marketplace */
+"This name is in an active network vote and can't be traded until the contest ends." = "Nasa aktibong pagboto ng network ang pangalang ito at hindi ito maipagbibili hanggang matapos ang kompetisyon.";
+
+/* Username marketplace: detail for an unregistered name */
+"This name is not registered." = "Hindi nakarehistro ang pangalang ito.";
+
+/* Username marketplace: seller-clarity callout on the detail sheet */
+"This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "Inaalok ang pangalang ito ng isang independiyenteng user sa Dash network — hindi ng Dash o ng app na ito. Ang nagbebenta ang nagtatakda ng presyo.";
+
+/* Username marketplace: listing price exceeds the representable maximum */
+"This price is too high to list." = "Masyadong mataas ang presyong ito para ilista.";
+
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "Hindi masusubukan ulit ang paglilipat na ito mula rito.";
+
+/* Username marketplace */
+"This username is not for sale." = "Hindi ibinebenta ang username na ito.";
+
+/* Username marketplace */
+"This username's record couldn't be read from the network." = "Hindi nabasa mula sa network ang record ng username na ito.";
+
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "Walang pagkakakilanlan ang wallet na ito na puwedeng i-top up.";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "Mag-top Up";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "I-top Up ang Balanse ng Pagkakakilanlan";
+
+/* Username marketplace: timeline card title */
+"Trade history" = "Kasaysayan ng kalakalan";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "Natapos ang paglilipat";
+
+/* Username marketplace */
+"Transfer to Another Identity" = "Ilipat sa Ibang Pagkakakilanlan";
+
+/* Username marketplace: transfer sheet title */
+"Transfer “%@”" = "Ilipat ang “%@”";
+
+/* Username marketplace: history — transfer with both identities */
+"Transferred from %1$@ to %2$@" = "Inilipat mula kay %1$@ kay %2$@";
+
+/* Username marketplace: departed-name line — recipient identity */
+"Transferred to %@" = "Inilipat kay %@";
+
+/* Username marketplace */
+"Username Marketplace" = "Marketplace ng Username";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
@@ -4012,6 +5038,60 @@
 
 /* Usernames */
 "This name requires voting. Your Dash will be locked until voting completes." = "This name requires voting. Your Dash will be locked until voting completes.";
+
+/* Usernames */
+"Vote in progress" = "Isinasagawa ang pagboto";
+
+/* Usernames */
+"Vote ended" = "Tapos na ang pagboto";
+
+/* Usernames */
+"A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender." = "May isinasagawa nang pagboto ng masternode para sa pangalang ito. Kapag nagsumite ka ng kahilingan, sasali ka sa pagboto bilang kalahok.";
+
+/* Usernames */
+"A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender." = "May isinasagawa nang pagboto ng masternode para sa pangalang ito — magtatapos ang pagboto sa mga %@. Kapag nagsumite ka ng kahilingan, sasali ka sa pagboto bilang kalahok.";
+
+/* Usernames */
+"A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote." = "May isinasagawang pagboto ng masternode para sa pangalang ito — magtatapos ang pagboto sa mga %@. Hindi na makakasali ang mga bagong kalahok sa pagbotong ito.";
+
+/* Usernames */
+"Username is in a network vote — new contenders can no longer join" = "Nasa pagboto ng network ang username — hindi na makakasali ang mga bagong kalahok";
+
+/* Usernames */
+"The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "Inilista ng may-ari ng username na ito sa Marketplace ng Username sa halagang %@ Dash. Puwede mo itong bilhin doon.";
+
+/* Usernames */
+"The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance." = "Inilista ng may-ari ng username na ito sa halagang %@ Dash. Puwede mo itong bilhin ngayon din — binabayaran ang presyo mula sa balanse ng iyong wallet.";
+
+/* Usernames */
+"The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "Inilista ng may-ari ng username na ito sa halagang %1$@ Dash. Ang mga pagbiling higit sa %2$@ Dash ay dapat gawin sa Marketplace ng Username — pumili muna ng ibang username; puwede mong pagdesisyunan mamaya ang pagbili nito.";
+
+/* Usernames */
+"Buy for %@ Dash" = "Bilhin sa %@ Dash";
+
+/* Usernames */
+"Buy username" = "Bumili ng username";
+
+/* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "Hindi nairehistro ang iyong pansamantalang username na “%@”. Puwede kang magrehistro ng ibang username mamaya.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "“%1$@” na ang iyong username. Kung ipagkaloob sa iyo ng pagboto ang “%2$@”, maaabot ka sa parehong username.";
+
+/* Usernames */
+"“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "Bibilhin ang “%1$@” sa halagang %2$@ Dash. Binabayaran ang presyo mula sa balanse ng iyong wallet.";
+
+/* Usernames */
+"Username purchased" = "Nabili ang username";
+
+/* Usernames */
+"“%@” is now your username." = "“%@” na ang iyong username.";
+
+/* Usernames */
+"The masternode vote for this name has ended and the result is being finalized. Check back soon." = "Tapos na ang pagboto ng masternode para sa pangalang ito at tinatapos na ang resulta. Bumalik ka mamaya.";
+
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes." = "May isinasagawa nang pagboto para sa pangalang ito — sasali ang iyong kahilingan bilang kalahok. Mananatiling naka-lock ang iyong Dash hanggang matapos ang pagboto.";
 
 /* No comment provided by engineer. */
 "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone." = "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.";
@@ -4254,6 +5334,12 @@
 /* Voting */
 "Unblocked '%@' username" = "Na-unblock '%@' na username";
 
+/* SPV diagnostics */
+"Unconfirmed now" = "Hindi nakumpirma ngayon";
+
+/* SPV diagnostics */
+"Unconfirmed Transactions" = "Mga Hindi Nakumpirmang Transaksyon";
+
 /* DashPay Contacts */
 "Unhide Contact" = "Unhide Contact";
 
@@ -4367,6 +5453,9 @@
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Username, hindi address";
 
+/* DashPay: banner identity row subtitle */
+"View profile" = "Tingnan ang profile";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Mga user na tumutugma kay %@ na kasalukuyang wala sa iyong mga kontak";
 
@@ -4397,11 +5486,17 @@
 /* No comment provided by engineer. */
 "Verified Successfully" = "Matagumpay na na-beripika";
 
+/* DashPay Contacts: spinner after scanning a user QR code */
+"Verifying user…" = "Bine-verify ang user…";
+
 /* No comment provided by engineer. */
 "Verify" = "Kumpirmahin";
 
 /* CrowdNode */
 "Verify your API Dash address" = "I-verify ang iyong API Dash address";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "I-verify ang iyong recovery phrase para magtakda ng bagong PIN.";
 
 /* Usernames */
 "Verify your identity" = "I-verify ang iyong pagkakakilanlan";
@@ -4616,6 +5711,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "Kailan magiging pribado ang mga kahilingan sa pakikipag-ugnay?";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "Habang isinasagawa ang pagboto, hindi pa sa iyo ang “%@” at hindi ka mahahanap ng ibang user sa pamamagitan nito. Magdagdag ng username na walang katunggali para magamit agad ang DashPay. Mananatili itong sa iyo nang permanente — at kung ipagkaloob sa iyo ng pagboto ang pangalang may katunggali, maaabot ka sa parehong username.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "Saan Gagastos";
 
@@ -4626,6 +5724,18 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "Bakit ko kailangang i-enable ito?";
+
+/* Username marketplace: history participant is the current user */
+"you" = "ikaw";
+
+/* Username marketplace: contested request already submitted by this identity */
+"You already requested this name — the network vote is in progress. You'll find it under My Names." = "Hiniling mo na ang pangalang ito — isinasagawa ang pagboto ng network. Makikita mo ito sa ilalim ng “Mga Pangalan Ko”.";
+
+/* Username marketplace: purchase confirmation body with seller clarity */
+"You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "Bumibili ka mula sa isang independiyenteng user, hindi mula sa Dash o sa app na ito. Ang presyo kasama ang maliit na network fee ay binabayaran mula sa balanse ng iyong pagkakakilanlan, at agad na lilipat ang pangalan sa iyong pagkakakilanlan.";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "Wala kang username habang isinasagawa ang pagboto. Magrehistro na ngayon ng username na walang katunggali — mananatili itong sa iyo, at kung ipagkaloob sa iyo ng pagboto ang “%@”, maaabot ka sa parehong username.";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "Bakit ko nakikita ang lahat ng mga transaksyong ito?";
@@ -4681,6 +5791,9 @@
 
 /* Wallets */
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
+
+/* Wallets */
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Isulat ang %d salitang ito ayon sa pagkakasunod-sunod at itago sa ligtas na lugar. Ito lang ang PARAAN para mabawi ang wallet na ito. Kayang gastusin ng sinumang may hawak nito ang iyong pondo.";
 
 /* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
@@ -4932,6 +6045,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Ang iyong kasaysayan, nakaayos";
 
+/* Username marketplace */
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Hindi sapat ang balanse ng iyong pagkakakilanlan para sa pagbiling ito: %1$@ DASH ang kailangan (kasama ang reserba para sa bayarin), %2$@ DASH ang available. I-top up ang balanse ng iyong pagkakakilanlan at subukan ulit.";
+
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "Kailangan ng iyong pagkakakilanlan ng dalawang dagdag na key para ma-encrypt ang mga kahilingan sa pakikipag-ugnay sa pagitan mo at ng ibang user. Idinaragdag ito ng pag-enable sa iisang transaksyon sa network. Isang beses lang ito nangyayari.";
 
@@ -4956,8 +6072,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "Nailipat sa balanse ng iyong Dash Wallet ang pinaghalo mong barya.";
 
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "Hindi namin nakumpirma ang pagbiling ito sa CTX. Kung natuloy ang bayad, lalabas sa iyong listahan ng transaksyon ang gift card sa lalong madaling panahon — pakitingnan doon bago bumili ulit.";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "Naipadala ang iyong bayad, pero hindi pa ito nakukumpirma ng network. Lalabas ang iyong gift card sa oras na makumpirma ito.";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Nailipat sa iyong protektadong balanse ang pinaghalo mong barya. Para sa pinakamahusay na privacy, maghintay nang hindi bababa sa 2 oras bago gamitin ang pondong ito.";
+
+/* DashSpend */
+"Could not load your gift card" = "Hindi na-load ang iyong gift card";
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
@@ -4973,6 +6098,9 @@
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "Ang iyong pribadong balanse. Naka-encrypt on-chain ang mga halaga at address, kaya nananatiling kumpidensyal ang hawak at kasaysayan mo.";
+
+/* Username marketplace: contested request explainer, paragraph 2 */
+"Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "Papasok ang iyong kahilingan sa isang pampublikong pagboto ng mga masternode sa loob ng mga dalawang linggo. Puwedeng humiling ng parehong pangalan ang iba; kapag natapos ang pagboto, mapupunta ang pangalan sa nanalo — o sa wala, kung bumoto ang network na i-lock ito.";
 
 /* Usernames */
 "Your request was cancelled" = "Kinansela ang iyong kahilingan";

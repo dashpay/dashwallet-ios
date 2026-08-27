@@ -9,6 +9,9 @@
 /* CrowdNode */
 " Terms of Use " = " Terms of Use ";
 
+/* Username marketplace: listing success — name, then price */
+"%1$@ listed for %2$@ DASH" = "%1$@ pandi müüki hinnaga %2$@ DASH";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -20,6 +23,12 @@
 
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "Kasutajat %@ ei leitud Dashi võrgust, seega ei saa talle kontaktitaotlust saata.";
+
+/* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
+"%@ couldn't be verified on the Dash network. The QR code may be outdated." = "%@ kinnitamine Dashi võrgus ebaõnnestus. QR-kood võib olla aegunud.";
+
+/* Username marketplace: contested request cost value — the vote-resolution fund amount */
+"%@ DASH + network fee" = "%@ DASH + võrgutasu";
 
 /* Usernames */
 "%@ Dash available" = "%@ Dash saadaval";
@@ -42,6 +51,9 @@
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@ has sent you a contact request";
 
+/* Username marketplace: delist success */
+"%@ is no longer for sale" = "%@ ei ole enam müügis";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
@@ -51,8 +63,17 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
+/* Username marketplace: purchase success */
+"%@ is now yours" = "%@ on nüüd sinu oma";
+
+/* Username marketplace: registration success */
+"%@ registered" = "%@ registreeritud";
+
 /* Testnet faucet */
 "%@ tDash requested — it will arrive shortly" = "%@ tDash requested — it will arrive shortly";
+
+/* Username marketplace: transfer success */
+"%@ transferred" = "%@ üle antud";
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
@@ -171,6 +192,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Selle nime kohta käib juba hääletus — sinu taotlus liitub sellega kandidaadina. Konkursitasu kulub esitamisel ega kuulu tagastamisele, isegi kui sa nime ei võida.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -182,6 +206,9 @@
 
 /* No comment provided by engineer. */
 "About me" = "About me";
+
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "Identiteedikonto jäägist";
 
 "Abstain" = "Jää erapooletuks";
 
@@ -235,6 +262,9 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "Add a New Contact";
 
+/* Usernames */
+"Add a temporary username" = "Lisa ajutine kasutajanimi";
+
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
 
@@ -259,6 +289,9 @@
 /* Maya
    SwapKit */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+
+/* No comment provided by engineer. */
+"Advanced" = "Täpsem";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Advanced Security";
@@ -315,6 +348,9 @@
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Amount in Dash";
 
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "Summa DASH-ides";
+
 /* No comment provided by engineer. */
 "Amount received" = "Amount received";
 
@@ -350,6 +386,9 @@
 
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Igaüks, kes aadressi teab, saab vaadata selle ajalugu";
+
+/* Username marketplace: set price sheet body */
+"Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance." = "Igaüks saab nime osta täpselt selle hinnaga. Tulu laekub krediidina sinu identiteedi jäägile.";
 
 /* AboutDash */
 "App version" = "App version";
@@ -430,8 +469,17 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "Autohide Balance";
 
+/* DashPay */
+"Available after sync finishes" = "Saadaval pärast sünkroonimise lõppu";
+
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
+
+/* Username marketplace: unregistered name row */
+"Available — register it on your identity" = "Vaba — registreeri see oma identiteedile";
+
+/* Username marketplace: unregistered contested-eligible name row */
+"Available — short names are decided by a network vote" = "Vaba — lühikeste nimede üle otsustab võrgu hääletus";
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
@@ -525,6 +573,9 @@
 /* Voting */
 "Blocked '%@' username" = "Blocked '%@' username";
 
+/* Username marketplace: history — purchase with buyer, seller, price */
+"Bought by %1$@ from %2$@ for %3$@ DASH" = "Ostja %1$@, müüja %2$@, hind %3$@ DASH";
+
 /* Identities: this key only signs for one data contract */
 "Bound to contract" = "Seotud lepinguga";
 
@@ -573,6 +624,9 @@
 /* Swap */
 "Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
 
+/* Username marketplace: purchase button */
+"Buy for %@ DASH" = "Osta %@ DASH eest";
+
 /* DashSpend */
 "Buy gift card" = "Buy gift card";
 
@@ -581,6 +635,12 @@
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+
+/* Username marketplace: purchase confirmation title */
+"Buy “%@”?" = "Kas osta „%@“?";
+
+/* Username marketplace: Explore row subtitle */
+"Buy, sell and transfer DashPay usernames" = "Osta, müü ja anna üle DashPay kasutajanimesid";
 
 /* Buy/Sell */
 "Buy/Sell" = "Buy/Sell";
@@ -631,6 +691,9 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
+
+/* Username marketplace */
+"Change Price" = "Muuda hinda";
 
 /* TimeSkew */
 "Check date & time settings" = "Check date & time settings";
@@ -713,6 +776,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "Tulekul";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "Lõpeta ülekanne";
+
 /* Shielded transfer status */
 "Completed" = "Lõpetatud";
 
@@ -782,6 +848,18 @@
 
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "Kontaktitaotlus saadetud kasutajale %@";
+
+/* Usernames */
+"Continue without a temporary username" = "Jätka ilma ajutise kasutajanimeta";
+
+/* Identity top-up sheet — body */
+"Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Vaheta Dash identiteedikrediidiks, et maksta Platformi toimingute eest, näiteks kontaktipäringute ja profiiliuuenduste eest.";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "Ülekannet ei õnnestunud lõpetada";
+
+/* Identity top-up sheet — free amount chip */
+"Custom" = "Kohandatud";
 
 /* No comment provided by engineer. */
 "Contact Requests" = "Kontaktitaotlused";
@@ -1042,6 +1120,27 @@
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "DashPay on lubatud";
 
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "Sisesta vähemalt %@ DASH";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "Hinnangulised tasud";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "Tasud arvestatakse summast maha; Shieldedilt makstes võib väike jääk jääda sinu Platformi jäägile.";
+
+/* Username marketplace: search segment */
+"Find Names" = "Otsi nimesid";
+
+/* Username marketplace: listed badge */
+"For sale" = "Müügis";
+
+/* Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app */
+"For sale by an independent user" = "Müügis sõltumatult kasutajalt";
+
+/* Identity top-up sheet — linkability warning for transparent-side sources */
+"Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Läbipaistvalt jäägilt rahastamine seob need mündid avalikult sinu identiteediga Dashi ahelas. Privaatsuse huvides maksa oma Shielded jäägilt.";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "DashPay Invitation";
 
@@ -1062,6 +1161,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "Date";
+
+/* History group header for restored shielded operations whose original date is not recoverable */
+"Date unknown" = "Kuupäev teadmata";
 
 /* Voting */
 "Date: New to old" = "Date: New to old";
@@ -1085,6 +1187,9 @@
 
 /* No comment provided by engineer. */
 "Delete Wallet?" = "Delete Wallet?";
+
+/* SPV diagnostics */
+"Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network." = "Kustutab selle rahakoti kinnitamata tehingud ainult sellest seadmest ja vabastab mündid, mida need püüdsid kulutada. Filtrite uuesti skannimine taastab need, mis tegelikult on plokiahelas. Võrku ei saadeta midagi.";
 
 /* Location Service Status */
 "Denied" = "Denied";
@@ -1116,6 +1221,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu." = "SEADME TURVALISUS ON OHUSTATUD\nIga „jailbreak“ rakendus pääseb ligi mis tahes teise rakenduse võtmehoidja andmetele (ja võib varastada sinu Dashi). Vii oma vahendid turvalises seadmes olevasse rahakotti ja lähtesta seejärel see rahakott turvamenüü valikuga „Lähtesta rahakott“.";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.";
@@ -1169,6 +1277,27 @@
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
 "DPNS Names" = "DPNS Names";
+
+/* SPV diagnostics */
+"Drop & rescan" = "Loobu ja skanni uuesti";
+
+/* SPV diagnostics */
+"Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network." = "Loobub sellest seadmest nendest rahakoti tehingutest, mis endiselt ootavad võrku (kunagi lukustamata ega kaevandamata), teeb mündid, mida need püüdsid kulutada, taas kättesaadavaks ja skannib hiljutised filtrid uuesti. Loobutud tehing, mis tegelikult on plokiahelas, naaseb uuesti skannimise käigus iseenesest. Võrku ei saadeta midagi.";
+
+/* SPV diagnostics */
+"Drop Unconfirmed & Rescan" = "Loobu kinnitamata tehingutest ja skanni uuesti";
+
+/* SPV diagnostics */
+"Drop unconfirmed transactions?" = "Kas loobuda kinnitamata tehingutest?";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row." = "Loobuti %d kinnitamata tehingust — filtreid skannitakse uuesti, jälgi rida „Filtrid“.";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above." = "Loobuti %d kinnitamata tehingust, kuid filtrite uuesti skannimine ei käivitunud — käivita ülal „Skanni filtrid uuesti“.";
+
+/* SPV diagnostics */
+"Dropping…" = "Loobume…";
 
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Due to CrowdNode’s terms of service users can withdraw no more than:";
@@ -1280,6 +1409,9 @@
 
 /* No comment provided by engineer. */
 "Enter your recovery phrase to reset your PIN" = "Enter your recovery phrase to reset your PIN";
+
+/* No comment provided by engineer. */
+"Enter your recovery phrase to set a new PIN" = "Sisesta oma taastefraas, et määrata uus PIN";
 
 /* Voting */
 "Enter your voting key" = "Enter your voting key";
@@ -1665,6 +1797,42 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "Kuidas see privaatsuse poolest Ethereumi kontodega võrdleb?";
 
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "Identiteedikonto jääk";
+
+/* Username marketplace: section of contested-name requests awaiting the masternode vote */
+"In network vote" = "Võrgu hääletusel";
+
+/* Username marketplace: search row for a contested label with an active vote by others */
+"In a network vote — you can join as a contender" = "Võrgu hääletusel — saad liituda kandidaadina";
+
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "Seniks oled kättesaadav nimega „%1$@“, mis jääb sinu omaks. Kui hääletus annab sulle „%2$@“, oled kättesaadav mõlema kasutajanimega.";
+
+/* Username marketplace: search row for a label a past vote locked */
+"Locked by a network vote — nobody can register it" = "Võrgu hääletusega lukustatud — keegi ei saa seda registreerida";
+
+/* Username marketplace: latest ownership change */
+"Last transferred" = "Viimati üle antud";
+
+/* Username marketplace: confirm listing button */
+"List For Sale" = "Pane müüki";
+
+/* Username marketplace: own listed name */
+"Listed by you" = "Sinu poolt müüki pandud";
+
+/* Username marketplace: history — price set */
+"Listed for %@ DASH" = "Müügis hinnaga %@ DASH";
+
+/* Username marketplace: set price fee note */
+"Listing is a network transaction with a small fee, paid from your identity balance." = "Müüki panek on võrgutehing väikese tasuga, mis makstakse sinu identiteedi jäägilt.";
+
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "Minu identiteet";
+
+/* Username marketplace: owned names segment */
+"My Names" = "Minu nimed";
+
 /* DashPay FAQ */
 "How private is DashPay?" = "Kui privaatne on DashPay?";
 
@@ -2027,6 +2195,9 @@
 /* CrowdNode */
 "Leaving the pool" = "Leaving the pool";
 
+/* DashPay Contacts: caption under the user's own QR code */
+"Let another Dash Wallet user scan this code to add you as a contact." = "Lase teisel Dash Walleti kasutajal see kood skannida, et lisada sind kontaktiks.";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Let me know when it’s done";
 
@@ -2099,6 +2270,51 @@
 "Lock" = "Lukusta";
 
 "Lock the name" = "Lukusta nimi";
+
+/* Username marketplace: contest voting deadline row */
+"Vote ends" = "Hääletamine lõpeb";
+
+/* Username marketplace: until when other identities can join the contest */
+"New contenders" = "Uued kandidaadid";
+
+/* Username marketplace: join deadline still open — value of the New contenders row */
+"can join until %@" = "saavad liituda kuni %@";
+
+/* Username marketplace: the contest's join window has passed — value of the New contenders row */
+"joining closed" = "registreerimine suletud";
+
+/* Username marketplace: masternode vote tally for one contest row */
+"%d votes" = "%d häält";
+
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "12 sõna on standard. 24 sõna üleskirjutamine ja taastamine võtab kauem aega, kuid on kaugema tuleviku arenenud arvutisüsteemidele oluliselt raskem murda.";
+
+/* Username marketplace: unresolvable transfer recipient */
+"No identity owns that username." = "Ükski identiteet ei oma seda kasutajanime.";
+
+/* Username marketplace: names that were sold or transferred away */
+"No longer yours" = "Ei ole enam sinu omad";
+
+/* Identity top-up sheet — missing unshield destination */
+"No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "Platformi vastuvõtuaadress pole veel saadaval — oota Platformi sünkroonimise lõppu ja proovi uuesti.";
+
+/* Username marketplace: empty owned list */
+"No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "Sellel identiteedil pole veel kasutajanimesid. Leia vahekaardilt „Otsi nimesid“ mõni ostmiseks või registreerimiseks.";
+
+/* Identity top-up sheet — insufficient funding source */
+"Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Sellel jäägil pole piisavalt vahendeid: vaja on %@ DASH, saadaval on %@ DASH.";
+
+/* Username marketplace: insufficient balance hint */
+"Not enough identity credits for this purchase — top up from My Profile first." = "Selle ostu jaoks pole piisavalt identiteedikrediiti — täienda esmalt jaotisest „Minu profiil“.";
+
+/* Username marketplace: insufficient balance hint for a contested request */
+"Not enough identity credits for this request — top up from My Profile first." = "Selle taotluse jaoks pole piisavalt identiteedikrediiti — täienda esmalt jaotisest „Minu profiil“.";
+
+/* Username marketplace: someone else's unlisted name */
+"Not for sale" = "Ei ole müügis";
+
+/* Username marketplace: own unlisted name */
+"Not listed for sale" = "Ei ole müüki pandud";
 
 "Lock “%@” so nobody gets it" = "Lukusta „%@“, et keegi seda ei saaks";
 
@@ -2342,11 +2558,92 @@
 /* SDK identity profile sheet — title */
 "My Profile" = "My Profile";
 
+/* DashPay Contacts: shows the user's own contact QR code */
+"My QR" = "Minu QR";
+
 /* No comment provided by engineer. */
 "Name" = "Name";
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Nimeteenused nagu Unstoppable Domains seovad loetava nime ahelas oleva püsiva avaliku aadressiga. Igaüks saab nime lahendada ja näha iga makset, mis sellele kunagi tehtud on. DashPay kasutajanimi ei lahendu kunagi avalikult makseaadressiks — aadressid avaldatakse ainult krüptitud vahetuses iga kontaktiga, seega jäävad su nimi ja raha kõrvalseisjate jaoks sidumata.";
+
+/* Username marketplace: contested request line — voting deadline */
+"Network vote ends %@" = "Võrgu hääletus lõpeb %@";
+
+/* Username marketplace: activity overlay while the purchase transition runs */
+"Completing your purchase…" = "Lõpetame sinu ostu…";
+
+/* Usernames */
+"Register username" = "Registreeri kasutajanimi";
+
+/* Username marketplace: activity overlay while the delist transition runs */
+"Removing the listing…" = "Eemaldame kuulutuse…";
+
+/* Username marketplace: activity overlay while the set-price transition runs */
+"Listing for sale…" = "Paneme müüki…";
+
+/* Usernames */
+"Submit both usernames" = "Saada mõlemad kasutajanimed";
+
+/* Usernames */
+"Temporary username" = "Ajutine kasutajanimi";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "Ajutine kasutajanimi ise ei tohi nõuda hääletust.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "See nimi nõuab masternode'ide hääletust. Konkursitasu kulub esitamisel ega kuulu tagastamisele, isegi kui sa nime ei võida.";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "Ka see kasutajanimi nõuaks hääletust — proovi lisada number vahemikus 2 kuni 9";
+
+/* Username marketplace: activity overlay while the transfer transition runs */
+"Transferring the username…" = "Anname kasutajanime üle…";
+
+/* Username marketplace: activity overlay while the registration transition runs */
+"Registering the username…" = "Registreerime kasutajanime…";
+
+/* Username marketplace: activity overlay while the contested request transition runs */
+"Submitting your username request…" = "Saadame sinu kasutajanime taotluse…";
+
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "Sirvi";
+
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "Hinnamuutused";
+
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "Ostud";
+
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "Müügis hinnaga %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "Müüdud hinnaga %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "Müüdud hinnaga %1$@ DASH · %2$@ · %3$@ → %4$@";
+
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "Praegu ei ole müügis";
+
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "Hiljutises kuulutustegevuses pole ühtegi nime müügis. „Näita rohkem“ ulatub kaugemale tagasi.";
+
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "Võrgus pole veel oste.";
+
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "Laadime tegevust…";
+
+/* Username marketplace: load older browse activity */
+"Show more" = "Näita rohkem";
+
+/* Username marketplace: contest tallies card title */
+"Network vote so far" = "Võrgu hääletus seni";
+
+/* Username marketplace: contest with zero masternode votes so far */
+"No votes cast yet" = "Hääli pole veel antud";
 
 /* Swap route provider
    Swap route provider short */
@@ -2381,6 +2678,9 @@
 
 /* (List of) New (notifications) */
 "New" = "New";
+
+/* SPV diagnostics */
+"No unconfirmed transactions to drop." = "Kinnitamata tehinguid, millest loobuda, ei ole.";
 
 /* CrowdNode */
 "New CrowdNode Account" = "New CrowdNode Account";
@@ -2563,6 +2863,15 @@
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "Bitcoinis pole nimekihti, nii et inimesed jagavad ja kasutavad aadresse avalikult korduvalt — kui aadress on kord teada, saab kõik, mida see kunagi vastu on võtnud, siduda selle omanikuga. DashPays on su kasutajanimi avalik, kuid see ei osuta kunagi makseaadressile: aadresse vahetatakse iga kontaktiga privaatselt ja need vahelduvad, nii et nimele maksmine ei avalda, kuhu su raha läheb. Mõlemad on läbipaistvad ahelad, seega ahelaanalüüs kehtib endiselt müntide endi kohta.";
 
+/* DashPay Contacts: search results from DPNS, not the local contact list */
+"On the Dash network" = "Dashi võrgus";
+
+/* Username marketplace */
+"Owned by you" = "Sinu omanduses";
+
+/* Identity top-up sheet — funding source picker label */
+"Pay from" = "Maksa jäägilt";
+
 /* Identities */
 "On Network" = "Võrgus";
 
@@ -2731,6 +3040,9 @@
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Maksed on privaatsed: aadressid, mida kontaktiga vahetad, liiguvad krüptitud sisu sees, mida saate lugeda ainult teie kaks, ja neid ei avaldata kunagi — seega ei saa su makseid kergesti kasutajanimega siduda. Siiski on need endiselt tavalised maksed läbipaistvas ahelas: keerukas ahelaanalüüs võib infot lekitada. Shielded DashPay (tulekul) sulgeb selle lünga. Kontaktitaotlused ise EI ole praegu privaatsed: igaüks näeb, et kaks identiteeti on seotud. Privaatsed kontaktitaotlused on peagi tulev funktsioon. Su kasutajanimi ja profiil on Dash Platformil samuti avalikud.";
 
+/* Username marketplace: price placeholder */
+"Price in DASH" = "Hind DASH-ides";
+
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "Maksed kinnitatakse sekunditega InstantSendi abil";
 
@@ -2788,6 +3100,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN is always required to make a payment";
+
+/* No comment provided by engineer. */
+"PIN Not Set" = "PIN pole määratud";
 
 /* Dash Platform chain */
 "Platform" = "Platform";
@@ -2993,6 +3308,9 @@
 /* Identities: what a public key is used for */
 "Purpose" = "Otstarve";
 
+/* Username marketplace */
+"Put Up For Sale" = "Paku müügiks";
+
 /* DashSpend */
 "Quantity" = "Quantity";
 
@@ -3028,6 +3346,96 @@
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Ainult lugemiseks";
+
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "Saada uuesti";
+
+/* Delete a never-accepted transaction from local wallet state */
+"Remove if Not on Network" = "Eemalda, kui seda pole võrgus";
+
+/* Remove never-accepted transaction: confirmation title */
+"Remove this transaction?" = "Kas eemaldada see tehing?";
+
+/* Remove never-accepted transaction: destructive confirm button */
+"Remove Transaction" = "Eemalda tehing";
+
+/* Username marketplace: transfer recipient placeholder */
+"Recipient username or identity ID" = "Saaja kasutajanimi või identiteedi ID";
+
+/* Identity top-up sheet — shielded source note */
+"Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Soovitatav: kaheastmeline ülekanne läbi sinu enda Platformi aadressi hoiab sinu identiteedi sinu läbipaistvate müntidega sidumata.";
+
+/* Username marketplace: register sheet title */
+"Register “%@”" = "Registreeri „%@“";
+
+/* Username marketplace: registration date */
+"Registered" = "Registreeritud";
+
+/* Username marketplace */
+"Remove From Sale" = "Võta müügist maha";
+
+/* Remove never-accepted transaction: progress */
+"Removing transaction…" = "Eemaldame tehingut…";
+
+/* Username marketplace: delist confirmation title */
+"Remove “%@” from sale?" = "Kas võtta „%@“ müügist maha?";
+
+/* Username marketplace: history — delist (transfer to self) */
+"Removed from sale" = "Võetud müügist maha";
+
+/* Username marketplace: delist confirmation body */
+"Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "Kuulutuse eemaldamine on võrgutehing väikese tasuga, mis makstakse sinu identiteedi jäägilt. Nimi jääb sulle.";
+
+/* Remove never-accepted transaction: refused because the explorer found it */
+"Transaction is known to the network" = "Võrk tunneb seda tehingut";
+
+/* Remove never-accepted transaction: refusal body */
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "Plokiuurija teatab, et Dashi võrk tunneb seda tehingut. See võib endiselt oodata mempoolis või olla juba plokki lisatud, seega seda ei eemaldatud. Rahakott uuendab selle kinnitust automaatselt kohe, kui see satub sünkroonitud plokki.";
+
+/* Remove never-accepted transaction: success */
+"Transaction removed" = "Tehing eemaldatud";
+
+/* Remove never-accepted transaction: removed but the recovery rescan did not arm */
+"Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "Tehing eemaldatud — uuesti skannimine ei käivitunud, käivita „Skanni filtrid uuesti“ Core'i sünkroonimise olekus";
+
+/* Remove never-accepted transaction: confirmation body */
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "Rahakott kontrollib kõigepealt plokiuurijat. Võrgule teadaolevat tehingut — kas see ootab mempoolis või on juba plokis — ei eemaldata kunagi. Kui tehingut ei leita, kustutatakse see sellest rahakotist selles seadmes ja mündid, mida see püüdis kulutada, muutuvad taas kättesaadavaks. Seejärel skannib rahakott ohutuse mõttes hiljutised plokid uuesti. Võrku ei saadeta midagi.";
+
+/* Remove never-accepted transaction: failure title */
+"Couldn't remove the transaction" = "Tehingut ei õnnestunud eemaldada";
+
+/* Remove never-accepted transaction: no local row */
+"This transaction is not in the local wallet." = "Seda tehingut pole kohalikus rahakotis.";
+
+/* Remove never-accepted transaction: local state says it's on-chain */
+"This transaction is confirmed and can't be removed." = "See tehing on kinnitatud ja seda ei saa eemaldada.";
+
+/* Remove never-accepted transaction: explorer unreachable */
+"Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "Plokiuurijaga ei õnnestunud ühendust saada, et kontrollida, kas tehingut pole plokiahelas. Kontrolli ühendust ja proovi uuesti.";
+
+/* Username marketplace: contested request cost row */
+"Request cost" = "Taotluse maksumus";
+
+/* Username marketplace: contested request success */
+"Request for %@ submitted — masternodes now vote on it" = "Taotlus nimele %@ on esitatud — masternode'id hääletavad selle üle";
+
+/* Username marketplace: confirm contested request button */
+"Request Username" = "Taotle kasutajanime";
+
+/* Username marketplace: contested register sheet title */
+"Request “%@”" = "Taotle nime „%@“";
+
+/* Username marketplace: contested request not yet indexed by Platform */
+"Requested — waiting for the network vote" = "Taotletud — ootab võrgu hääletust";
+
+/* Username marketplace: search row for a contested label this identity already requested */
+"Requested by you — the network vote is in progress" = "Sinu taotletud — võrgu hääletus on käimas";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "Proovime ülekannet uuesti…";
+
+/* Username marketplace: screen subtitle */
+"Search usernames, buy ones that are for sale, and sell or transfer your own." = "Otsi kasutajanimesid, osta müügis olevaid ning müü või anna üle enda omi.";
 
 /* Usernames */
 "Ready around %@" = "Valmis umbes %@";
@@ -3082,6 +3490,9 @@
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase length */
+"Recovery phrase length" = "Taastefraasi pikkus";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -3195,6 +3606,9 @@
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
+
+/* No comment provided by engineer. */
+"Completion unknown" = "Lõpetamine teadmata";
 
 /* Location Service Status */
 "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "Taastatud rahakotid ei suuda alati toimingu tüüpi taastada. See kirje on rekonstrueeritud ahelas olevatest märkmeandmetest.";
@@ -3322,6 +3736,9 @@
 /* Identities: DPP security level of a public key */
 "Security level" = "Turvatase";
 
+/* Username marketplace: transfer sheet body */
+"Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "Saada see nimi teisele identiteedile tasuta. Üleandmine eemaldab ka kõik müügikuulutused. Seda ei saa tagasi võtta — uus omanik peaks selle tagasi andma.";
+
 /* DashSpend */
 "See card details" = "See card details";
 
@@ -3370,7 +3787,520 @@
 /* Coinbase */
 "Select the coin" = "Select the coin";
 
+/* Identities */
+"Select the username to display for this identity." = "Vali kasutajanimi, mida selle identiteedi jaoks kuvada.";
+
 "Selecting fewer nodes reveals less about which masternodes you run." = "Vähemate sõlmede valimine paljastab vähem selle kohta, milliseid masternode'e sa haldad.";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "Sellest seadmest leiti %ld rahakotti";
+
+/* No comment provided by engineer. */
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "Sellesse seadmesse on salvestatud %ld rahakotti varasemast paigaldusest. „Kustuta kõik“ eemaldab kõik rahakotid. Varunda enne kustutamist iga taastefraas.";
+
+/* No comment provided by engineer. */
+"Couldn’t Delete All Wallets" = "Kõiki rahakotte ei õnnestunud kustutada";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Wallets" = "Rahakotte ei õnnestunud lugeda";
+
+/* No comment provided by engineer. */
+"Delete All" = "Kustuta kõik";
+
+/* No comment provided by engineer. */
+"Delete All Wallets?" = "Kas kustutada kõik rahakotid?";
+
+/* No comment provided by engineer. */
+"Deleting All Wallets…" = "Kustutame kõiki rahakotte…";
+
+/* No comment provided by engineer. */
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "Sellesse seadmesse salvestatud rahakottide arvu ei õnnestunud kontrollida. Jätkamiseks on vaja Dashi toe antud kinnitusfraasi, enne kui ühtegi rahakotti kustutatakse.";
+
+/* No comment provided by engineer. */
+"Keep Wallets" = "Säilita rahakotid";
+
+/* No comment provided by engineer. */
+"No stored wallets were found. Nothing was deleted." = "Salvestatud rahakotte ei leitud. Midagi ei kustutatud.";
+
+/* No comment provided by engineer. */
+"No Wallets Found" = "Rahakotte ei leitud";
+
+/* No comment provided by engineer. */
+"Not all wallets could be deleted. Please try again." = "Kõiki rahakotte ei õnnestunud kustutada. Palun proovi uuesti.";
+
+/* No comment provided by engineer. */
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "See eemaldab jäädavalt kõik rahakotid, privaatvõtmed ja taastefraasid, mida see rakendus selles seadmes hoiab. Neid saab taastada ainult varukoopiatest. Seda ei saa tagasi võtta.";
+
+/* No comment provided by engineer. */
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "Sellesse seadmesse salvestatud rahakotte ei õnnestunud kontrollida. Midagi ei kustutatud. Palun proovi uuesti.";
+
+/* No comment provided by engineer. */
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "See kustutab kõik %ld sellesse seadmesse salvestatud rahakotti. Neid saab taastada ainult nende taastefraasidega. Nende kustutamist sellest seadmest ei saa tagasi võtta.";
+
+/* No comment provided by engineer. */
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "Selles seadmes on endiselt varasema paigalduse rahakotiandmed. Kas jätkata nende rahakottide kasutamist või kustutada kõik rahakotiandmed ja alustada nullist? Veendu enne kustutamist, et iga taastefraas on varundatud.";
+
+/* No comment provided by engineer. */
+"Wallets found on this device" = "Sellest seadmest leitud rahakotid";
+
+/* No comment provided by engineer. */
+"Wipe All Wallets" = "Kustuta kõik rahakotid jäädavalt";
+
+/* No comment provided by engineer. */
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "Ühe rahakoti taastefraas ei saa lubada mitme erineva rahakoti kustutamist.";
+
+/* No comment provided by engineer. */
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "Nulljääk testnetis ei tõesta, et see rahakott on mainnetis tühi. Jätkamiseks sisesta taastefraas.";
+
+/* No comment provided by engineer. */
+"Enter the recovery phrase to continue." = "Jätkamiseks sisesta taastefraas.";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "Vali rahakott";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Recovery Phrases" = "Taastefraase ei õnnestunud lugeda";
+
+/* No comment provided by engineer. */
+"No Recovery Phrase Found" = "Taastefraasi ei leitud";
+
+/* No comment provided by engineer. */
+"No recovery phrase is stored on this device." = "Sellesse seadmesse pole salvestatud ühtegi taastefraasi.";
+
+/* No comment provided by engineer. */
+"Select the wallet whose recovery phrase you want to view." = "Vali rahakott, mille taastefraasi soovid vaadata.";
+
+/* No comment provided by engineer. */
+"The recovery phrases stored on this device could not be read. Please try again." = "Sellesse seadmesse salvestatud taastefraase ei õnnestunud lugeda. Palun proovi uuesti.";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address for this network" = "Ei ole selle võrgu jaoks kehtiv Dashi aadress";
+
+/* No comment provided by engineer. */
+"The claimable balance is too small to cover the Platform withdrawal fee." = "Nõutav jääk on liiga väike, et katta Platformi väljamakse tasu.";
+
+/* No comment provided by engineer. */
+"You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it." = "Saad välja võtta kuni %@ DASH — ülejäänu jääb Platformi tasu katteks. Selle kasutamiseks puuduta „Maks“.";
+
+/* No comment provided by engineer. */
+"The minimum withdrawal is %@ DASH." = "Minimaalne väljavõtmine on %@ DASH.";
+
+/* No comment provided by engineer. */
+"Payout address key" = "Väljamakseaadressi võti";
+
+/* No comment provided by engineer. */
+"Owner key (%@)" = "Omaniku võti (%@)";
+
+/* No comment provided by engineer. */
+"Wallet is not ready. Try again in a moment." = "Rahakott pole valmis. Proovi hetke pärast uuesti.";
+
+/* No comment provided by engineer. */
+"%@ · Claimable %@ DASH" = "%@ · Nõutav %@ DASH";
+
+/* No comment provided by engineer. */
+"Withdraw to" = "Võta välja aadressile";
+
+/* No comment provided by engineer. */
+"Enter a Dash address" = "Sisesta Dashi aadress";
+
+/* No comment provided by engineer. */
+"Use the payout address" = "Kasuta väljamakseaadressi";
+
+/* No comment provided by engineer. */
+"This is the evonode's registered payout address." = "See on evonode'i registreeritud väljamakseaadress.";
+
+/* No comment provided by engineer. */
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "Sellel rahakotil on evonode'i väljamakseaadressi võti, seega saab jäägi välja võtta mis tahes Dashi aadressile.";
+
+/* No comment provided by engineer. */
+"Registered payout address" = "Registreeritud väljamakseaadress";
+
+/* No comment provided by engineer. */
+"This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "See väljavõtmine allkirjastatakse evonode'i omaniku võtmega. Dash Platform lubab omaniku võtmega välja võtta ainult registreeritud väljamakseaadressile, seega ei saa sihtkohta siin muuta. Teisele aadressile väljavõtmiseks kasuta rahakotti, milles on väljamakseaadressi võti.";
+
+/* No comment provided by engineer. */
+"How it works" = "Kuidas see toimib";
+
+/* No comment provided by engineer. */
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "Dash Platform maksab väljavõtmise välja Dashi ahelas — tavaliselt mõne minuti jooksul. Umbes %@ DASH suurune Platformi tasu võetakse evonode'i jäägilt summale lisaks, seega „Maks“ jätab pisut selle katteks.";
+
+/* No comment provided by engineer. */
+"Confirm withdrawal" = "Kinnita väljavõtmine";
+
+/* No comment provided by engineer. */
+"Owner-key withdrawals are always paid to the registered payout address." = "Omaniku võtmega tehtud väljavõtmised makstakse alati registreeritud väljamakseaadressile.";
+
+/* No comment provided by engineer. */
+"Waiting for authorization…" = "Ootame volitust…";
+
+/* No comment provided by engineer. */
+"Submitting to Dash Platform…" = "Saadame Dash Platformile…";
+
+/* No comment provided by engineer. */
+"Withdrawal submitted" = "Väljavõtmine saadetud";
+
+/* No comment provided by engineer. */
+"Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "Dash Platform maksab selle peagi välja Dashi ahelas — tavaliselt jõuab kohale mõne minuti jooksul.";
+
+/* No comment provided by engineer. */
+"Remaining claimable balance: %@ DASH" = "Järelejäänud nõutav jääk: %@ DASH";
+
+/* No comment provided by engineer. */
+"%@ · Platform balance" = "%@ · Platformi jääk";
+
+/* No comment provided by engineer. */
+"Signed with" = "Allkirjastatud võtmega";
+
+/* No comment provided by engineer. */
+"Platform fee" = "Platformi tasu";
+
+/* No comment provided by engineer. */
+"%@ (payout address)" = "%@ (väljamakseaadress)";
+
+/* No comment provided by engineer. */
+"This wallet holds the payout address key, so you can withdraw to any address." = "Sellel rahakotil on väljamakseaadressi võti, seega saad välja võtta mis tahes aadressile.";
+
+/* No comment provided by engineer. */
+"This wallet holds the owner key, so withdrawals go to the registered payout address." = "Sellel rahakotil on omaniku võti, seega lähevad väljavõtmised registreeritud väljamakseaadressile.";
+
+/* No comment provided by engineer. */
+"This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "Sellel rahakotil pole ei selle evonode'i omaniku võtit ega väljamakseaadressi võtit, seega ei saa selle jääki siit välja võtta.";
+
+/* No comment provided by engineer. */
+"Couldn't check which keys of this evonode are in the wallet." = "Ei õnnestunud kontrollida, millised selle evonode'i võtmed on rahakotis.";
+
+/* No comment provided by engineer. */
+"Result not confirmed" = "Tulemus kinnitamata";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "Väljavõtmine saadeti Dash Platformile, kuid selle tulemust ei õnnestunud kinnitada. See võis läbi minna. Ära saada seda uuesti — kontrolli kõigepealt nõutavat jääki ja väljamakseaadressi.";
+
+/* No comment provided by engineer. */
+"1 block proposed this epoch" = "Sellel ajastul pakuti välja 1 plokk";
+
+/* No comment provided by engineer. */
+"%@ blocks proposed this epoch" = "Sellel ajastul pakuti välja %@ plokki";
+
+/* No comment provided by engineer. */
+"Nodes" = "Sõlmed";
+
+/* No comment provided by engineer. */
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "Sõlmed, ajastu %d. päev, sellel ajastul pakuti välja %@ plokki";
+
+/* No comment provided by engineer. */
+"an evonode has not proposed a block in 2 days" = "evonode pole 2 päeva plokki välja pakkunud";
+
+/* No comment provided by engineer. */
+"an evonode has no blocks this epoch" = "evonode'il pole sellel ajastul plokke";
+
+/* No comment provided by engineer. */
+"A key doesn't match this masternode — fix or clear it to continue." = "Üks võti ei sobi selle masternode'iga — jätkamiseks paranda või tühjenda see.";
+
+/* No comment provided by engineer. */
+"Add keys" = "Lisa võtmed";
+
+/* No comment provided by engineer. */
+"Add masternode" = "Lisa masternode";
+
+/* No comment provided by engineer. */
+"Add this node's owner key or payout address key to withdraw from here." = "Lisa selle sõlme omaniku võti või väljamakseaadressi võti, et siit välja võtta.";
+
+/* No comment provided by engineer. */
+"Already one of this wallet's masternodes — it's in the list above." = "Juba üks selle rahakoti masternode'idest — see on ülal olevas loendis.";
+
+/* No comment provided by engineer. */
+"Already tracked." = "Juba jälgitav.";
+
+/* No comment provided by engineer. */
+"Any keys you added for it are deleted from this device's keychain too." = "Kõik võtmed, mille sa selle jaoks lisasid, kustutatakse ka selle seadme võtmehoidjast.";
+
+/* No comment provided by engineer. */
+"Available" = "Saadaval";
+
+/* No comment provided by engineer. */
+"BLS private key (hex)" = "BLS-privaatvõti (hex)";
+
+/* No comment provided by engineer. */
+"Can't verify yet" = "Ei saa veel kontrollida";
+
+/* No comment provided by engineer. */
+"Could not load the node's registration details — owner and payout keys will verify later." = "Sõlme registreerimisandmeid ei õnnestunud laadida — omaniku ja väljamakse võtmed kontrollitakse hiljem.";
+
+/* No comment provided by engineer. */
+"Could not save a key to the keychain. Nothing was lost — try again." = "Võtit ei õnnestunud võtmehoidjasse salvestada. Midagi ei läinud kaotsi — proovi uuesti.";
+
+/* No comment provided by engineer. */
+"Destination address (optional)" = "Sihtaadress (valikuline)";
+
+/* No comment provided by engineer. */
+"Doesn't match" = "Ei sobi";
+
+/* No comment provided by engineer. */
+"Find" = "Leia";
+
+/* No comment provided by engineer. */
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "Leiab omaniku ja väljamakse võtmed, mida masternode'ide loendis pole. Saadab võtme avaliku sõrmejälje Platformi sõlmele.";
+
+/* No comment provided by engineer. */
+"IP address, proTxHash or private key" = "IP-aadress, proTxHash või privaatvõti";
+
+/* No comment provided by engineer. */
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "Võtmeid hoitakse selle seadme võtmehoidjas ja need ei lahku sealt kunagi, välja arvatud sinu soovitud toimingu allkirjastamiseks.";
+
+/* No comment provided by engineer. */
+"Keys on this device" = "Võtmed selles seadmes";
+
+/* No comment provided by engineer. */
+"Label (optional)" = "Silt (valikuline)";
+
+/* No comment provided by engineer. */
+"Loading registration details…" = "Laadime registreerimisandmeid…";
+
+/* No comment provided by engineer. */
+"Matches" = "Sobib";
+
+/* No comment provided by engineer. */
+"Matches this node's %@ key" = "Sobib selle sõlme %@-võtmega";
+
+/* No comment provided by engineer. */
+"No masternode on the list matches that." = "Ükski loendis olev masternode ei vasta sellele.";
+
+/* No comment provided by engineer. */
+"Node key (base64 or hex)" = "Sõlme võti (base64 või hex)";
+
+/* No comment provided by engineer. */
+"Not added" = "Pole lisatud";
+
+/* No comment provided by engineer. */
+"On this device" = "Selles seadmes";
+
+/* No comment provided by engineer. */
+"Operator payout" = "Operaatori väljamakse";
+
+/* No comment provided by engineer. */
+"Payout" = "Väljamakse";
+
+/* No comment provided by engineer. */
+"Platform could not be reached, so owner and payout keys were not checked." = "Platformiga ei saadud ühendust, seega omaniku ja väljamakse võtmeid ei kontrollitud.";
+
+/* No comment provided by engineer. */
+"PoSe banned" = "PoSe-keelatud";
+
+/* No comment provided by engineer. */
+"Private key (WIF or hex)" = "Privaatvõti (WIF või hex)";
+
+/* No comment provided by engineer. */
+"Refresh details" = "Värskenda andmeid";
+
+/* No comment provided by engineer. */
+"Refreshing…" = "Värskendame…";
+
+/* No comment provided by engineer. */
+"Save keys" = "Salvesta võtmed";
+
+/* No comment provided by engineer. */
+"Search Platform too" = "Otsi ka Platformist";
+
+/* No comment provided by engineer. */
+"Searching…" = "Otsime…";
+
+/* No comment provided by engineer. */
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "Allkirjastame omaniku võtmega — väljavõtmine läheb registreeritud väljamakseaadressile.";
+
+/* No comment provided by engineer. */
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "Allkirjastame väljamakseaadressi võtmega. Jäta sihtkoht tühjaks, et võtta välja väljamakseaadressile.";
+
+/* No comment provided by engineer. */
+"Stop tracking" = "Lõpeta jälgimine";
+
+/* No comment provided by engineer. */
+"Stop tracking this masternode?" = "Kas lõpetada selle masternode'i jälgimine?";
+
+/* No comment provided by engineer. */
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "See võib olla ka omaniku või väljamakse võti — kontrollimiseks lülita sisse „Otsi ka Platformist“.";
+
+/* No comment provided by engineer. */
+"The signing key is missing from the keychain — re-add it and try again." = "Allkirjastamisvõti puudub võtmehoidjast — lisa see uuesti ja proovi veel kord.";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "Väljavõtmine saadeti, kuid selle tulemust ei õnnestunud kinnitada. Jääki kontrollitakse uuesti — ära proovi uuesti, enne kui see on paigas.";
+
+/* No comment provided by engineer. */
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "Jälgi mis tahes masternode'i või evonode'i võrgus — see ei pea kuuluma sellele rahakotile.";
+
+/* No comment provided by engineer. */
+"Track this masternode" = "Jälgi seda masternode'i";
+
+/* No comment provided by engineer. */
+"Tracked" = "Jälgitav";
+
+/* No comment provided by engineer. */
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "Jälgitav. Lisa allpool selle sõlme võtmed, et lubada toiminguid nagu väljavõtmine ja hääletamine, või lõpeta praegu ja lisa need hiljem.";
+
+/* No comment provided by engineer. */
+"Withdrawing…" = "Võtame välja…";
+
+/* No comment provided by engineer. */
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "Nupuga „+“ saad jälgida ka mis tahes masternode'i võrgus — IP, proTxHashi või mõne selle võtme järgi.";
+
+/* No comment provided by engineer. */
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "Selle evonode'i DAPI aadress pole teada, seega ei saa temalt olekut küsida.";
+
+/* No comment provided by engineer. */
+"Couldn't get the evonode's status." = "Evonode'i olekut ei õnnestunud saada.";
+
+/* No comment provided by engineer. */
+"The evonode didn't answer in time." = "Evonode ei vastanud õigeaegselt.";
+
+/* No comment provided by engineer. */
+"Couldn't reach the evonode." = "Evonode'iga ei saadud ühendust.";
+
+/* No comment provided by engineer. */
+"The evonode's answer couldn't be read." = "Evonode'i vastust ei õnnestunud lugeda.";
+
+/* No comment provided by engineer. */
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "Sõlme enda kontrollimata aruanne — see, mida ta enda kohta ütleb, mitte see, milles võrk on kokku leppinud.";
+
+/* No comment provided by engineer. */
+"Asked" = "Küsitud";
+
+/* No comment provided by engineer. */
+"Software" = "Tarkvara";
+
+/* No comment provided by engineer. */
+"DAPI" = "DAPI";
+
+/* No comment provided by engineer. */
+"Drive" = "Drive";
+
+/* No comment provided by engineer. */
+"Tenderdash" = "Tenderdash";
+
+/* No comment provided by engineer. */
+"Protocol versions" = "Protokolli versioonid";
+
+/* No comment provided by engineer. */
+"Tenderdash P2P" = "Tenderdash P2P";
+
+/* No comment provided by engineer. */
+"Tenderdash block" = "Tenderdashi plokk";
+
+/* No comment provided by engineer. */
+"Drive current" = "Drive praegune";
+
+/* No comment provided by engineer. */
+"Drive latest" = "Drive uusim";
+
+/* No comment provided by engineer. */
+"Drive next epoch" = "Drive järgmine ajastu";
+
+/* No comment provided by engineer. */
+"Node ID" = "Sõlme ID";
+
+/* No comment provided by engineer. */
+"Identity check" = "Identiteedi kontroll";
+
+/* No comment provided by engineer. */
+"Chain" = "Ahel";
+
+/* No comment provided by engineer. */
+"Catching up" = "Jõuab järele";
+
+/* No comment provided by engineer. */
+"Latest block height" = "Uusima ploki kõrgus";
+
+/* No comment provided by engineer. */
+"Earliest block height" = "Vanima ploki kõrgus";
+
+/* No comment provided by engineer. */
+"Max peer block height" = "Partnerite maks. ploki kõrgus";
+
+/* No comment provided by engineer. */
+"Core chain-locked height" = "Core'i chain-locked kõrgus";
+
+/* No comment provided by engineer. */
+"Latest block hash" = "Uusima ploki räsi";
+
+/* No comment provided by engineer. */
+"Latest app hash" = "Uusima rakenduse räsi";
+
+/* No comment provided by engineer. */
+"Earliest block hash" = "Vanima ploki räsi";
+
+/* No comment provided by engineer. */
+"Earliest app hash" = "Vanima rakenduse räsi";
+
+/* No comment provided by engineer. */
+"Chain ID" = "Ahela ID";
+
+/* No comment provided by engineer. */
+"Peers" = "Partnerid";
+
+/* No comment provided by engineer. */
+"Listening" = "Kuulab";
+
+/* No comment provided by engineer. */
+"State sync" = "Oleku sünkroonimine";
+
+/* No comment provided by engineer. */
+"Total synced time" = "Kogu sünkroonitud aeg";
+
+/* No comment provided by engineer. */
+"Remaining time" = "Järelejäänud aeg";
+
+/* No comment provided by engineer. */
+"Total snapshots" = "Hetktõmmiseid kokku";
+
+/* No comment provided by engineer. */
+"Chunk process avg time" = "Keskm. tüki töötlemise aeg";
+
+/* No comment provided by engineer. */
+"Snapshot height" = "Hetktõmmise kõrgus";
+
+/* No comment provided by engineer. */
+"Snapshot chunks" = "Hetktõmmise tükid";
+
+/* No comment provided by engineer. */
+"Backfilled blocks" = "Täidetud plokid";
+
+/* No comment provided by engineer. */
+"Backfill blocks total" = "Täitmist vajavaid plokke kokku";
+
+/* No comment provided by engineer. */
+"Time" = "Aeg";
+
+/* No comment provided by engineer. */
+"Node clock" = "Sõlme kell";
+
+/* No comment provided by engineer. */
+"Latest block" = "Uusim plokk";
+
+/* No comment provided by engineer. */
+"Genesis" = "Genesis";
+
+/* No comment provided by engineer. */
+"Epoch" = "Ajastu";
+
+/* No comment provided by engineer. */
+"Matches this evonode" = "Sobib selle evonode'iga";
+
+/* No comment provided by engineer. */
+"Differs from this evonode" = "Erineb sellest evonode'ist";
+
+/* No comment provided by engineer. */
+"Not reported" = "Pole teatatud";
+
+/* No comment provided by engineer. */
+"%.3f s" = "%.3f s";
+
+/* No comment provided by engineer. */
+"Node status" = "Sõlme olek";
+
+/* No comment provided by engineer. */
+"Asking the evonode…" = "Küsime evonode'ilt…";
+
+/* No comment provided by engineer. */
+"Request status" = "Küsi olekut";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "Self-checkout";
@@ -3444,6 +4374,42 @@
 
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "Saada oma esimene kontaktitaotlus";
+
+/* Username marketplace: set price sheet title */
+"Set a price for “%@”" = "Määra hind nimele „%@“";
+
+/* Username marketplace */
+"Short names are decided by a network vote — use Request Username instead." = "Lühikeste nimede üle otsustab võrgu hääletus — kasuta selle asemel valikut „Taotle kasutajanime“.";
+
+/* Username marketplace: contested request explainer, paragraph 1 */
+"Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them." = "Lühikesi nimesid — kuni 19 tähemärki, ainult tähed ja numbrid — ei registreerita kohe. Dashi võrk hääletab selle üle, kes need saab.";
+
+/* DashPay Contacts: expands the network search into the full add-contact flow */
+"Show more results" = "Näita rohkem tulemusi";
+
+/* Username marketplace: departed-name line — buyer identity */
+"Sold to %@" = "Müüdud kasutajale %@";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 1 of 2 — moving Dash out of your Shielded balance…" = "Samm 1/2 — liigutame Dashi sinu Shielded jäägilt välja…";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 2 of 2 — topping up your identity…" = "Samm 2/2 — täiendame sinu identiteeti…";
+
+/* Username marketplace: contested request cost footnote */
+"The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "Maksumus tasutakse sinu identiteedi jäägilt. See rahastab võrgu hääletust ega kuulu tagastamisele, kui võidab teine kandidaat.";
+
+/* Username marketplace: register sheet body */
+"The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "Nimi registreeritakse otse sinu identiteedile. Registreerimine on võrgutehing, mis makstakse sinu identiteedi jäägilt.";
+
+/* Username marketplace: contested label locked by a past vote */
+"The network voted to lock this name, so nobody can register it. Choose a different name." = "Võrk hääletas selle nime lukustamise poolt, seega ei saa keegi seda registreerida. Vali teine nimi.";
+
+/* Username marketplace */
+"The recipient identity couldn't be resolved." = "Saaja identiteeti ei õnnestunud tuvastada.";
+
+/* Username marketplace */
+"The seller changed the price before your purchase was accepted. Review the new price and try again." = "Müüja muutis hinda enne, kui sinu ost vastu võeti. Vaata uus hind üle ja proovi uuesti.";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Sending";
@@ -3965,6 +4931,66 @@
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "See lisab su identiteedile kaks võtit, et teised kasutajad saaksid sulle kontaktitaotlusi saata ja et sina saaksid nende omi vastu võtta. See toimub ainult üks kord.";
 
+/* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
+"This isn't a DashPay user QR code." = "See ei ole DashPay kasutaja QR-kood.";
+
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "See jääk maksab Dash Platformi võrgutasusid — kasutajanimed, kontaktipäringud, profiiliuuendused. See kuulub sinu identiteedile, mitte rahakotile: erinevalt läbipaistvast, Platformi ja Shielded jäägist ei saa seda kulutada tavalise Dashina. Täiendamine vahetab Dashi sinu valitud jäägilt — vaikimisi Shielded — identiteedikrediidiks.";
+
+/* Username marketplace: contested label already has an active vote */
+"This name is already in an active network vote. Your request joins it as another contender." = "Selle nime kohta käib juba aktiivne võrgu hääletus. Sinu taotlus liitub sellega veel ühe kandidaadina.";
+
+/* Username marketplace */
+"This name is in an active network vote and can't be traded until the contest ends." = "See nimi on aktiivsel võrgu hääletusel ja sellega ei saa kaubelda enne konkursi lõppu.";
+
+/* Username marketplace: detail for an unregistered name */
+"This name is not registered." = "See nimi ei ole registreeritud.";
+
+/* Username marketplace: seller-clarity callout on the detail sheet */
+"This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "Seda nime pakub sõltumatu kasutaja Dashi võrgus — mitte Dash ega see rakendus. Hinna määrab müüja.";
+
+/* Username marketplace: listing price exceeds the representable maximum */
+"This price is too high to list." = "See hind on müüki panemiseks liiga kõrge.";
+
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "Seda ülekannet ei saa siit uuesti proovida.";
+
+/* Username marketplace */
+"This username is not for sale." = "See kasutajanimi ei ole müügis.";
+
+/* Username marketplace */
+"This username's record couldn't be read from the network." = "Selle kasutajanime kirjet ei õnnestunud võrgust lugeda.";
+
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "Sellel rahakotil pole täiendatavat identiteeti.";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "Täienda";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "Täienda identiteedi jääki";
+
+/* Username marketplace: timeline card title */
+"Trade history" = "Kauplemise ajalugu";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "Ülekanne lõpetatud";
+
+/* Username marketplace */
+"Transfer to Another Identity" = "Anna üle teisele identiteedile";
+
+/* Username marketplace: transfer sheet title */
+"Transfer “%@”" = "Anna üle „%@“";
+
+/* Username marketplace: history — transfer with both identities */
+"Transferred from %1$@ to %2$@" = "Üle antud kasutajalt %1$@ kasutajale %2$@";
+
+/* Username marketplace: departed-name line — recipient identity */
+"Transferred to %@" = "Üle antud kasutajale %@";
+
+/* Username marketplace */
+"Username Marketplace" = "Kasutajanimede turg";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
@@ -4014,6 +5040,60 @@
 
 /* Usernames */
 "This name requires voting. Your Dash will be locked until voting completes." = "This name requires voting. Your Dash will be locked until voting completes.";
+
+/* Usernames */
+"Vote in progress" = "Hääletus käimas";
+
+/* Usernames */
+"Vote ended" = "Hääletus lõppes";
+
+/* Usernames */
+"A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender." = "Selle nime kohta käib juba masternode'ide hääletus. Taotluse esitamine liidab sind hääletusega kandidaadina.";
+
+/* Usernames */
+"A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender." = "Selle nime kohta käib juba masternode'ide hääletus — hääletus lõpeb umbes %@. Taotluse esitamine liidab sind hääletusega kandidaadina.";
+
+/* Usernames */
+"A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote." = "Selle nime kohta käib masternode'ide hääletus — hääletus lõpeb umbes %@. Uued kandidaadid ei saa selle hääletusega enam liituda.";
+
+/* Usernames */
+"Username is in a network vote — new contenders can no longer join" = "Kasutajanimi on võrgu hääletusel — uued kandidaadid ei saa enam liituda";
+
+/* Usernames */
+"The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "Selle kasutajanime omanik on pannud selle Kasutajanimede turul müüki hinnaga %@ Dash. Saad selle sealt osta.";
+
+/* Usernames */
+"The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance." = "Selle kasutajanime omanik on pannud selle müüki hinnaga %@ Dash. Saad selle kohe osta — hind makstakse sinu rahakoti jäägilt.";
+
+/* Usernames */
+"The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "Selle kasutajanime omanik on pannud selle müüki hinnaga %1$@ Dash. Üle %2$@ Dashi ostud tuleb teha Kasutajanimede turul — vali praegu mõni teine kasutajanimi; selle ostmise saad hiljem otsustada.";
+
+/* Usernames */
+"Buy for %@ Dash" = "Osta %@ Dashi eest";
+
+/* Usernames */
+"Buy username" = "Osta kasutajanimi";
+
+/* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "Sinu ajutist kasutajanime „%@“ ei õnnestunud registreerida. Saad hiljem registreerida mõne teise kasutajanime.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "„%1$@“ on nüüd sinu kasutajanimi. Kui hääletus annab sulle „%2$@“, oled kättesaadav mõlema kasutajanimega.";
+
+/* Usernames */
+"“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "„%1$@“ ostetakse hinnaga %2$@ Dash. Hind makstakse sinu rahakoti jäägilt.";
+
+/* Usernames */
+"Username purchased" = "Kasutajanimi ostetud";
+
+/* Usernames */
+"“%@” is now your username." = "„%@“ on nüüd sinu kasutajanimi.";
+
+/* Usernames */
+"The masternode vote for this name has ended and the result is being finalized. Check back soon." = "Selle nime masternode'ide hääletus on lõppenud ja tulemust vormistatakse. Vaata peagi uuesti.";
+
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes." = "Selle nime kohta käib juba hääletus — sinu taotlus liitub sellega kandidaadina. Sinu Dash lukustatakse kuni hääletuse lõpuni.";
 
 /* No comment provided by engineer. */
 "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone." = "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.";
@@ -4256,6 +5336,12 @@
 /* Voting */
 "Unblocked '%@' username" = "Unblocked '%@' username";
 
+/* SPV diagnostics */
+"Unconfirmed now" = "Praegu kinnitamata";
+
+/* SPV diagnostics */
+"Unconfirmed Transactions" = "Kinnitamata tehingud";
+
 /* DashPay Contacts */
 "Unhide Contact" = "Unhide Contact";
 
@@ -4369,6 +5455,9 @@
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Kasutajanimed, mitte aadressid";
 
+/* DashPay: banner identity row subtitle */
+"View profile" = "Vaata profiili";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Kasutajad, kes vastavad päringule %@ ja keda praegu su kontaktides pole";
 
@@ -4399,11 +5488,17 @@
 /* No comment provided by engineer. */
 "Verified Successfully" = "Verified Successfully";
 
+/* DashPay Contacts: spinner after scanning a user QR code */
+"Verifying user…" = "Kontrollime kasutajat…";
+
 /* No comment provided by engineer. */
 "Verify" = "Verify";
 
 /* CrowdNode */
 "Verify your API Dash address" = "Verify your API Dash address";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "Kinnita oma taastefraas, et määrata uus PIN.";
 
 /* Usernames */
 "Verify your identity" = "Verify your identity";
@@ -4618,6 +5713,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "Millal muutuvad kontaktitaotlused privaatseks?";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "Kuni hääletus kestab, ei kuulu „%@“ veel sulle ja teised kasutajad ei leia sind selle järgi. Lisa vaidlustamata kasutajanimi, et kasutada DashPayd kohe. See jääb sulle püsivalt — ja kui hääletus annab sulle vaidlustatud nime, oled kättesaadav mõlema kasutajanimega.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "Where to Spend";
 
@@ -4628,6 +5726,18 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "Miks pean selle lubama?";
+
+/* Username marketplace: history participant is the current user */
+"you" = "sina";
+
+/* Username marketplace: contested request already submitted by this identity */
+"You already requested this name — the network vote is in progress. You'll find it under My Names." = "Oled seda nime juba taotlenud — võrgu hääletus on käimas. Leiad selle jaotisest „Minu nimed“.";
+
+/* Username marketplace: purchase confirmation body with seller clarity */
+"You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "Ostad sõltumatult kasutajalt, mitte Dashilt ega sellelt rakenduselt. Hind koos väikese võrgutasuga makstakse sinu identiteedi jäägilt ja nimi läheb kohe sinu identiteedile.";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "Sul ei ole kasutajanime, kuni hääletus kestab. Registreeri kohe vaidlustamata kasutajanimi — see jääb sulle ja kui hääletus annab sulle „%@“, oled kättesaadav mõlema kasutajanimega.";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "Why do I see all these transactions?";
@@ -4683,6 +5793,9 @@
 
 /* Wallets */
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
+
+/* Wallets */
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Kirjuta need %d sõna järjekorras üles ja hoia neid turvalises kohas. Need on AINUS viis selle rahakoti taastamiseks. Igaüks, kellel need on, saab sinu vahendeid kulutada.";
 
 /* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
@@ -4934,6 +6047,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Su ajalugu, korrastatult";
 
+/* Username marketplace */
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Sinu identiteedi jääk ei kata seda ostu: vaja on %1$@ DASH (koos tasureserviga), saadaval on %2$@ DASH. Täienda oma identiteedi jääki ja proovi uuesti.";
+
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "Su identiteet vajab kahte lisavõtit, et kontaktitaotlusi saaks sinu ja teiste kasutajate vahel krüptida. Lubamine lisab need ühe võrgutehinguga. See toimub ainult üks kord.";
 
@@ -4958,8 +6074,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "Su segatud mündid liigutati Dashi rahakoti jääki.";
 
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "Me ei suutnud seda ostu CTX-is kinnitada. Kui makse läks läbi, ilmub kinkekaart peagi sinu tehingute loendisse — vaata sealt, enne kui uuesti ostad.";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "Sinu makse on saadetud, kuid võrk pole seda veel kinnitanud. Sinu kinkekaart ilmub kohe, kui see on kinnitatud.";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Su segatud mündid liigutati varjatud jääki. Parima privaatsuse huvides oota enne nende vahendite kasutamist vähemalt 2 tundi.";
+
+/* DashSpend */
+"Could not load your gift card" = "Sinu kinkekaarti ei õnnestunud laadida";
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
@@ -4975,6 +6100,9 @@
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "Su privaatne jääk. Summad ja aadressid on ahelas krüptitud, nii et su varad ja ajalugu jäävad konfidentsiaalseks.";
+
+/* Username marketplace: contested request explainer, paragraph 2 */
+"Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "Sinu taotlus läheb umbes kaheks nädalaks masternode'ide avalikule hääletusele. Teised võivad taotleda sama nime; hääletuse lõppedes läheb nimi võitjale — või mitte kellelegi, kui võrk hääletab selle lukustamise poolt.";
 
 /* Usernames */
 "Your request was cancelled" = "Your request was cancelled";

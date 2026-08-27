@@ -9,6 +9,9 @@
 /* CrowdNode */
 " Terms of Use " = "'Οροι χρήσης";
 
+/* Username marketplace: listing success — name, then price */
+"%1$@ listed for %2$@ DASH" = "Το %1$@ καταχωρήθηκε προς πώληση για %2$@ DASH";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -20,6 +23,12 @@
 
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "Ο χρήστης %@ δεν βρέθηκε στο δίκτυο Dash για να του σταλεί αίτημα επαφής.";
+
+/* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
+"%@ couldn't be verified on the Dash network. The QR code may be outdated." = "Το %@ δεν ήταν δυνατό να επαληθευτεί στο δίκτυο Dash. Ο κωδικός QR μπορεί να είναι παλιός.";
+
+/* Username marketplace: contested request cost value — the vote-resolution fund amount */
+"%@ DASH + network fee" = "%@ DASH + τέλος δικτύου";
 
 /* Usernames */
 "%@ Dash available" = "%@ Dash διαθέσιμα";
@@ -42,6 +51,9 @@
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@ σας έστειλε αίτημα επαφής";
 
+/* Username marketplace: delist success */
+"%@ is no longer for sale" = "Το %@ δεν πωλείται πλέον";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ δεν επιτρέπεται η πρόσβαση στο Face ID. Επιτρέψτε την πρόσβαση στο Face ID στις Ρυθμίσεις";
 
@@ -51,8 +63,17 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ δεν επιτρέπεται η πρόσβαση στο Touch ID. Επιτρέψτε την πρόσβαση στο Touch ID στις Ρυθμίσεις";
 
+/* Username marketplace: purchase success */
+"%@ is now yours" = "Το %@ είναι πλέον δικό σας";
+
+/* Username marketplace: registration success */
+"%@ registered" = "Το %@ καταχωρήθηκε";
+
 /* Testnet faucet */
 "%@ tDash requested — it will arrive shortly" = "%@ tDash requested — it will arrive shortly";
+
+/* Username marketplace: transfer success */
+"%@ transferred" = "Το %@ μεταβιβάστηκε";
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
@@ -171,6 +192,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Για αυτό το όνομα βρίσκεται ήδη σε εξέλιξη ψηφοφορία — το αίτημά σας θα συμμετάσχει ως διεκδικητής. Το τέλος διεκδίκησης δαπανάται κατά την υποβολή και δεν επιστρέφεται, ακόμη κι αν δεν κερδίσετε το όνομα.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -182,6 +206,9 @@
 
 /* No comment provided by engineer. */
 "About me" = "Σχετικά με εμένα";
+
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "Σχετικά με το υπόλοιπο λογαριασμού ταυτότητας";
 
 "Abstain" = "Αποχή";
 
@@ -235,6 +262,9 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "Προσθήκη Νέας Επαφής";
 
+/* Usernames */
+"Add a temporary username" = "Προσθήκη προσωρινού ονόματος χρήστη";
+
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
 
@@ -259,6 +289,9 @@
 /* Maya
    SwapKit */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+
+/* No comment provided by engineer. */
+"Advanced" = "Για προχωρημένους";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Ενισχυμένη Ασφάλεια";
@@ -315,6 +348,9 @@
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Ποσό σε Dash";
 
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "Ποσό σε DASH";
+
 /* No comment provided by engineer. */
 "Amount received" = "Ποσοστό Ληφθέντων";
 
@@ -350,6 +386,9 @@
 
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Όποιος γνωρίζει μια διεύθυνση μπορεί να δει το ιστορικό της";
+
+/* Username marketplace: set price sheet body */
+"Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance." = "Οποιοσδήποτε θα μπορεί να αγοράσει το όνομα ακριβώς σε αυτή την τιμή. Τα έσοδα φτάνουν ως credits στο υπόλοιπο της ταυτότητάς σας.";
 
 /* AboutDash */
 "App version" = "App version";
@@ -430,8 +469,17 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "Αυτόματη απόκρυψη Υπολοίπου";
 
+/* DashPay */
+"Available after sync finishes" = "Διαθέσιμο μόλις ολοκληρωθεί ο συγχρονισμός";
+
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
+
+/* Username marketplace: unregistered name row */
+"Available — register it on your identity" = "Διαθέσιμο — καταχωρήστε το στην ταυτότητά σας";
+
+/* Username marketplace: unregistered contested-eligible name row */
+"Available — short names are decided by a network vote" = "Διαθέσιμο — τα σύντομα ονόματα κρίνονται με ψηφοφορία του δικτύου";
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
@@ -525,6 +573,9 @@
 /* Voting */
 "Blocked '%@' username" = "Αποκλείστηκε το όνομα χρήστη %@";
 
+/* Username marketplace: history — purchase with buyer, seller, price */
+"Bought by %1$@ from %2$@ for %3$@ DASH" = "Αγοράστηκε από τον %1$@ από τον %2$@ για %3$@ DASH";
+
 /* Identities: this key only signs for one data contract */
 "Bound to contract" = "Δεσμευμένο σε συμβόλαιο";
 
@@ -573,6 +624,9 @@
 /* Swap */
 "Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
 
+/* Username marketplace: purchase button */
+"Buy for %@ DASH" = "Αγορά για %@ DASH";
+
 /* DashSpend */
 "Buy gift card" = "Αγορά δωροκάρτας";
 
@@ -581,6 +635,12 @@
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash for the exact amount of your purchase." = "Αγοράστε δωροκάρτες με το Dash σας για το ακριβές ποσό της αγοράς σας.";
+
+/* Username marketplace: purchase confirmation title */
+"Buy “%@”?" = "Αγορά του «%@»;";
+
+/* Username marketplace: Explore row subtitle */
+"Buy, sell and transfer DashPay usernames" = "Αγοράστε, πουλήστε και μεταβιβάστε ονόματα χρήστη DashPay";
 
 /* Buy/Sell */
 "Buy/Sell" = "Αγορά/Πώληση";
@@ -631,6 +691,9 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "Αλλαγή PIN";
+
+/* Username marketplace */
+"Change Price" = "Αλλαγή τιμής";
 
 /* TimeSkew */
 "Check date & time settings" = "Ελέγξτε ρυθμίσεις ημερομηνίας και ώρας";
@@ -713,6 +776,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "Έρχεται σύντομα";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "Ολοκλήρωση μεταφοράς";
+
 /* Shielded transfer status */
 "Completed" = "Ολοκληρώθηκε";
 
@@ -782,6 +848,18 @@
 
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "Το αίτημα επαφής στάλθηκε στον %@";
+
+/* Usernames */
+"Continue without a temporary username" = "Συνέχεια χωρίς προσωρινό όνομα χρήστη";
+
+/* Identity top-up sheet — body */
+"Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Μετατρέψτε Dash σε credits ταυτότητας για να πληρώνετε ενέργειες στο Platform, όπως αιτήματα επαφής και ενημερώσεις προφίλ.";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "Δεν ήταν δυνατή η ολοκλήρωση της μεταφοράς";
+
+/* Identity top-up sheet — free amount chip */
+"Custom" = "Προσαρμοσμένο";
 
 /* No comment provided by engineer. */
 "Contact Requests" = "Αιτήματα Επαφής";
@@ -1042,6 +1120,27 @@
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "Το DashPay ενεργοποιήθηκε";
 
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "Εισαγάγετε τουλάχιστον %@ DASH";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "Εκτιμώμενα τέλη";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "Τα τέλη αφαιρούνται από το ποσό· από το Shielded, ένα μικρό υπόλοιπο μπορεί να παραμείνει στο υπόλοιπό σας στο Platform.";
+
+/* Username marketplace: search segment */
+"Find Names" = "Εύρεση ονομάτων";
+
+/* Username marketplace: listed badge */
+"For sale" = "Προς πώληση";
+
+/* Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app */
+"For sale by an independent user" = "Προς πώληση από ανεξάρτητο χρήστη";
+
+/* Identity top-up sheet — linkability warning for transparent-side sources */
+"Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Η χρηματοδότηση από διαφανές υπόλοιπο συνδέει δημόσια αυτά τα νομίσματα με την ταυτότητά σας στην αλυσίδα Dash. Για λόγους απορρήτου, πληρώστε από το υπόλοιπό σας Shielded.";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "Πρόσκληση DashPay";
 
@@ -1062,6 +1161,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "Ημερομηνία";
+
+/* History group header for restored shielded operations whose original date is not recoverable */
+"Date unknown" = "Άγνωστη ημερομηνία";
 
 /* Voting */
 "Date: New to old" = "Ημερομηνία: Νέα προς παλαιά";
@@ -1085,6 +1187,9 @@
 
 /* No comment provided by engineer. */
 "Delete Wallet?" = "Delete Wallet?";
+
+/* SPV diagnostics */
+"Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network." = "Διαγράφει τις ανεπιβεβαίωτες συναλλαγές αυτού του πορτοφολιού μόνο από αυτή τη συσκευή και αποδεσμεύει τα νομίσματα που προσπαθούσαν να ξοδέψουν. Η επανασάρωση φίλτρων επαναφέρει όσες υπάρχουν πράγματι στο blockchain. Τίποτα δεν αποστέλλεται στο δίκτυο.";
 
 /* Location Service Status */
 "Denied" = "Απορρίφθηκε";
@@ -1116,6 +1221,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "Η ΑΣΦΑΛΕΙΑ ΤΗΣ ΣΥΣΚΕΥΗΣ ΕΧΕΙ ΤΕΘΕΙ ΣΕ ΚΙΝΔΥΝΟ\nΟποιαδήποτε 'σπασμένη' εφαρμογή μπορεί να έχει πρόσβαση σε οποιαδήποτε άλλης εφαρμογής τα δεδομένα (και να κλέψει τα Dash σας).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu." = "Η ΑΣΦΑΛΕΙΑ ΤΗΣ ΣΥΣΚΕΥΗΣ ΕΧΕΙ ΠΑΡΑΒΙΑΣΤΕΙ\nΟποιαδήποτε εφαρμογή 'jailbreak' μπορεί να έχει πρόσβαση στα δεδομένα keychain κάθε άλλης εφαρμογής (και να κλέψει τα Dash σας). Μεταφέρετε τα κεφάλαιά σας σε πορτοφόλι σε ασφαλή συσκευή και έπειτα επαναφέρετε αυτό το πορτοφόλι με το «Επαναφορά πορτοφολιού» στο μενού Ασφάλεια.";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "Η ΑΣΦΑΛΕΙΑ ΤΗΣ ΣΥΣΚΕΥΗΣ ΕΧΕΙ ΤΕΘΕΙ ΣΕ ΚΙΝΔΥΝΟ\nΟποιαδήποτε 'σπασμένη' εφαρμογή μπορεί να έχει πρόσβαση σε οποιαδήποτε άλλης εφαρμογής τα δεδομένα (και να κλέψει τα Dash σας). Καθαρίστε το πορτοφόλι σας άμεσα και επαναφέρετε το σε μια ασφαλή συσκευή.";
@@ -1169,6 +1277,27 @@
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
 "DPNS Names" = "DPNS Names";
+
+/* SPV diagnostics */
+"Drop & rescan" = "Απόρριψη και επανασάρωση";
+
+/* SPV diagnostics */
+"Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network." = "Απορρίπτει από αυτή τη συσκευή τις συναλλαγές αυτού του πορτοφολιού που περιμένουν ακόμη το δίκτυο (χωρίς ποτέ να κλειδωθούν ή να εξορυχθούν), κάνει ξανά διαθέσιμα τα νομίσματα που προσπαθούσαν να ξοδέψουν και επανασαρώνει τα πρόσφατα φίλτρα. Μια απορριφθείσα συναλλαγή που υπάρχει πράγματι στο blockchain επανέρχεται από μόνη της κατά την επανασάρωση. Τίποτα δεν αποστέλλεται στο δίκτυο.";
+
+/* SPV diagnostics */
+"Drop Unconfirmed & Rescan" = "Απόρριψη ανεπιβεβαίωτων και επανασάρωση";
+
+/* SPV diagnostics */
+"Drop unconfirmed transactions?" = "Απόρριψη ανεπιβεβαίωτων συναλλαγών;";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row." = "Απορρίφθηκαν %d ανεπιβεβαίωτες συναλλαγές — γίνεται επανασάρωση φίλτρων, παρακολουθήστε τη γραμμή «Φίλτρα».";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above." = "Απορρίφθηκαν %d ανεπιβεβαίωτες συναλλαγές, αλλά η επανασάρωση φίλτρων δεν ξεκίνησε — εκτελέστε το «Επανασάρωση φίλτρων» παραπάνω.";
+
+/* SPV diagnostics */
+"Dropping…" = "Απόρριψη…";
 
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Σύμφωνα με τους όρους παροχής υπηρεσιών της CrowdNode οι χρήστες δεν μπορούν να αποσύρουν περισσότερα από:";
@@ -1280,6 +1409,9 @@
 
 /* No comment provided by engineer. */
 "Enter your recovery phrase to reset your PIN" = "Enter your recovery phrase to reset your PIN";
+
+/* No comment provided by engineer. */
+"Enter your recovery phrase to set a new PIN" = "Εισαγάγετε τη φράση ανάκτησης για να ορίσετε νέο PIN";
 
 /* Voting */
 "Enter your voting key" = "Εισάγετε το κλειδί ψήφου σας";
@@ -1665,6 +1797,42 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "Πώς συγκρίνεται με τους λογαριασμούς Ethereum ως προς την ιδιωτικότητα;";
 
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "Υπόλοιπο λογαριασμού ταυτότητας";
+
+/* Username marketplace: section of contested-name requests awaiting the masternode vote */
+"In network vote" = "Σε ψηφοφορία δικτύου";
+
+/* Username marketplace: search row for a contested label with an active vote by others */
+"In a network vote — you can join as a contender" = "Σε ψηφοφορία δικτύου — μπορείτε να συμμετάσχετε ως διεκδικητής";
+
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "Στο μεταξύ είστε προσβάσιμοι στο «%1$@», το οποίο παραμένει δικό σας. Αν η ψηφοφορία σας αποδώσει το «%2$@», θα είστε προσβάσιμοι και με τα δύο ονόματα χρήστη.";
+
+/* Username marketplace: search row for a label a past vote locked */
+"Locked by a network vote — nobody can register it" = "Κλειδωμένο από ψηφοφορία του δικτύου — κανείς δεν μπορεί να το καταχωρήσει";
+
+/* Username marketplace: latest ownership change */
+"Last transferred" = "Τελευταία μεταβίβαση";
+
+/* Username marketplace: confirm listing button */
+"List For Sale" = "Καταχώρηση προς πώληση";
+
+/* Username marketplace: own listed name */
+"Listed by you" = "Καταχωρήθηκε από εσάς";
+
+/* Username marketplace: history — price set */
+"Listed for %@ DASH" = "Προς πώληση για %@ DASH";
+
+/* Username marketplace: set price fee note */
+"Listing is a network transaction with a small fee, paid from your identity balance." = "Η καταχώρηση προς πώληση είναι μια συναλλαγή δικτύου με μικρό τέλος, που πληρώνεται από το υπόλοιπο της ταυτότητάς σας.";
+
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "Η ταυτότητά μου";
+
+/* Username marketplace: owned names segment */
+"My Names" = "Τα ονόματά μου";
+
 /* DashPay FAQ */
 "How private is DashPay?" = "Πόσο ιδιωτικό είναι το DashPay;";
 
@@ -2027,6 +2195,9 @@
 /* CrowdNode */
 "Leaving the pool" = "Αφήνοντας την δεξαμενή";
 
+/* DashPay Contacts: caption under the user's own QR code */
+"Let another Dash Wallet user scan this code to add you as a contact." = "Αφήστε έναν άλλο χρήστη του Dash Wallet να σαρώσει αυτόν τον κωδικό για να σας προσθέσει ως επαφή.";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Ενημερώστε με όταν ολοκληρωθεί";
 
@@ -2099,6 +2270,51 @@
 "Lock" = "Κλείδωμα";
 
 "Lock the name" = "Κλείδωμα του ονόματος";
+
+/* Username marketplace: contest voting deadline row */
+"Vote ends" = "Η ψηφοφορία λήγει";
+
+/* Username marketplace: until when other identities can join the contest */
+"New contenders" = "Νέοι διεκδικητές";
+
+/* Username marketplace: join deadline still open — value of the New contenders row */
+"can join until %@" = "μπορούν να συμμετάσχουν έως τις %@";
+
+/* Username marketplace: the contest's join window has passed — value of the New contenders row */
+"joining closed" = "οι συμμετοχές έκλεισαν";
+
+/* Username marketplace: masternode vote tally for one contest row */
+"%d votes" = "%d ψήφοι";
+
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "Οι 12 λέξεις είναι το πρότυπο. Οι 24 λέξεις χρειάζονται περισσότερο χρόνο για καταγραφή και επαναφορά, αλλά είναι σημαντικά δυσκολότερο να σπάσουν από προηγμένα υπολογιστικά συστήματα του μακρινού μέλλοντος.";
+
+/* Username marketplace: unresolvable transfer recipient */
+"No identity owns that username." = "Καμία ταυτότητα δεν κατέχει αυτό το όνομα χρήστη.";
+
+/* Username marketplace: names that were sold or transferred away */
+"No longer yours" = "Δεν σας ανήκουν πλέον";
+
+/* Identity top-up sheet — missing unshield destination */
+"No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "Δεν υπάρχει ακόμη διαθέσιμη διεύθυνση λήψης Platform — περιμένετε να ολοκληρωθεί ο συγχρονισμός Platform και δοκιμάστε ξανά.";
+
+/* Username marketplace: empty owned list */
+"No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "Δεν υπάρχουν ακόμη ονόματα χρήστη σε αυτή την ταυτότητα. Βρείτε ένα για αγορά ή καταχώρηση στην καρτέλα «Εύρεση ονομάτων».";
+
+/* Identity top-up sheet — insufficient funding source */
+"Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Ανεπαρκή κεφάλαια σε αυτό το υπόλοιπο: απαιτούνται %@ DASH, διαθέσιμα %@ DASH.";
+
+/* Username marketplace: insufficient balance hint */
+"Not enough identity credits for this purchase — top up from My Profile first." = "Δεν υπάρχουν αρκετά credits ταυτότητας για αυτή την αγορά — γεμίστε πρώτα από το «Το προφίλ μου».";
+
+/* Username marketplace: insufficient balance hint for a contested request */
+"Not enough identity credits for this request — top up from My Profile first." = "Δεν υπάρχουν αρκετά credits ταυτότητας για αυτό το αίτημα — γεμίστε πρώτα από το «Το προφίλ μου».";
+
+/* Username marketplace: someone else's unlisted name */
+"Not for sale" = "Δεν πωλείται";
+
+/* Username marketplace: own unlisted name */
+"Not listed for sale" = "Δεν έχει καταχωρηθεί προς πώληση";
 
 "Lock “%@” so nobody gets it" = "Κλείδωμα του «%@» ώστε να μην το πάρει κανείς";
 
@@ -2342,11 +2558,92 @@
 /* SDK identity profile sheet — title */
 "My Profile" = "My Profile";
 
+/* DashPay Contacts: shows the user's own contact QR code */
+"My QR" = "Το QR μου";
+
 /* No comment provided by engineer. */
 "Name" = "Όνομα";
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Υπηρεσίες ονομάτων όπως το Unstoppable Domains αντιστοιχίζουν ένα αναγνώσιμο όνομα σε μια σταθερή δημόσια διεύθυνση στην αλυσίδα. Οποιοσδήποτε μπορεί να επιλύσει το όνομα και να δει κάθε πληρωμή που έγινε ποτέ σε αυτό. Ένα όνομα χρήστη DashPay δεν οδηγεί ποτέ δημόσια σε διεύθυνση πληρωμής — οι διευθύνσεις αποκαλύπτονται μόνο μέσα στην κρυπτογραφημένη ανταλλαγή με κάθε επαφή, ώστε το όνομα και τα χρήματά σας να παραμένουν ασύνδετα για τους εξωτερικούς παρατηρητές.";
+
+/* Username marketplace: contested request line — voting deadline */
+"Network vote ends %@" = "Η ψηφοφορία του δικτύου λήγει στις %@";
+
+/* Username marketplace: activity overlay while the purchase transition runs */
+"Completing your purchase…" = "Ολοκλήρωση της αγοράς σας…";
+
+/* Usernames */
+"Register username" = "Καταχώρηση ονόματος χρήστη";
+
+/* Username marketplace: activity overlay while the delist transition runs */
+"Removing the listing…" = "Αφαίρεση της καταχώρησης…";
+
+/* Username marketplace: activity overlay while the set-price transition runs */
+"Listing for sale…" = "Καταχώρηση προς πώληση…";
+
+/* Usernames */
+"Submit both usernames" = "Υποβολή και των δύο ονομάτων χρήστη";
+
+/* Usernames */
+"Temporary username" = "Προσωρινό όνομα χρήστη";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "Το προσωρινό όνομα χρήστη δεν πρέπει να απαιτεί το ίδιο ψηφοφορία.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Αυτό το όνομα απαιτεί ψηφοφορία masternode. Το τέλος διεκδίκησης δαπανάται κατά την υποβολή και δεν επιστρέφεται, ακόμη κι αν δεν κερδίσετε το όνομα.";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "Και αυτό το όνομα χρήστη θα απαιτούσε ψηφοφορία — δοκιμάστε να προσθέσετε ένα ψηφίο από 2 έως 9";
+
+/* Username marketplace: activity overlay while the transfer transition runs */
+"Transferring the username…" = "Μεταβίβαση του ονόματος χρήστη…";
+
+/* Username marketplace: activity overlay while the registration transition runs */
+"Registering the username…" = "Καταχώρηση του ονόματος χρήστη…";
+
+/* Username marketplace: activity overlay while the contested request transition runs */
+"Submitting your username request…" = "Υποβολή του αιτήματός σας για όνομα χρήστη…";
+
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "Περιήγηση";
+
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "Αλλαγές τιμών";
+
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "Αγορές";
+
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "Προς πώληση για %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "Πουλήθηκε για %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "Πουλήθηκε για %1$@ DASH · %2$@ · %3$@ → %4$@";
+
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "Δεν πωλείται τώρα";
+
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "Κανένα όνομα δεν πωλείται στην πρόσφατη δραστηριότητα καταχωρήσεων. Το «Εμφάνιση περισσότερων» φτάνει πιο πίσω.";
+
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "Δεν υπάρχουν ακόμη αγορές στο δίκτυο.";
+
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "Φόρτωση δραστηριότητας…";
+
+/* Username marketplace: load older browse activity */
+"Show more" = "Εμφάνιση περισσότερων";
+
+/* Username marketplace: contest tallies card title */
+"Network vote so far" = "Ψηφοφορία δικτύου έως τώρα";
+
+/* Username marketplace: contest with zero masternode votes so far */
+"No votes cast yet" = "Δεν έχουν καταγραφεί ψήφοι ακόμη";
 
 /* Swap route provider
    Swap route provider short */
@@ -2381,6 +2678,9 @@
 
 /* (List of) New (notifications) */
 "New" = "Νέο";
+
+/* SPV diagnostics */
+"No unconfirmed transactions to drop." = "Δεν υπάρχουν ανεπιβεβαίωτες συναλλαγές για απόρριψη.";
 
 /* CrowdNode */
 "New CrowdNode Account" = "Νέος λογαριασμός CrowdNode";
@@ -2563,6 +2863,15 @@
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "Στο Bitcoin δεν υπάρχει επίπεδο ονομάτων, οπότε οι άνθρωποι μοιράζονται και επαναχρησιμοποιούν διευθύνσεις ανοιχτά — μόλις γίνει γνωστή μια διεύθυνση, ό,τι έλαβε ποτέ μπορεί να συνδεθεί με τον κάτοχό της. Με το DashPay το όνομα χρήστη σας είναι δημόσιο, αλλά δεν δείχνει ποτέ σε διεύθυνση πληρωμής: οι διευθύνσεις ανταλλάσσονται ιδιωτικά ανά επαφή και εναλλάσσονται, οπότε η πληρωμή με όνομα δεν δημοσιοποιεί πού πηγαίνουν τα χρήματά σας. Και οι δύο είναι διαφανείς αλυσίδες, οπότε η ανάλυση αλυσίδας εξακολουθεί να ισχύει για τα ίδια τα νομίσματα.";
 
+/* DashPay Contacts: search results from DPNS, not the local contact list */
+"On the Dash network" = "Στο δίκτυο Dash";
+
+/* Username marketplace */
+"Owned by you" = "Σας ανήκει";
+
+/* Identity top-up sheet — funding source picker label */
+"Pay from" = "Πληρωμή από";
+
 /* Identities */
 "On Network" = "Στο Δίκτυο";
 
@@ -2731,6 +3040,9 @@
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Οι πληρωμές είναι ιδιωτικές: οι διευθύνσεις που ανταλλάσσετε με μια επαφή ταξιδεύουν μέσα σε κρυπτογραφημένο φορτίο που μόνο εσείς οι δύο μπορείτε να διαβάσετε και δεν δημοσιεύονται ποτέ — έτσι οι πληρωμές σας δεν συνδέονται εύκολα με το όνομα χρήστη σας. Παραμένουν ωστόσο κανονικές πληρωμές σε διαφανή αλυσίδα: εξελιγμένη ανάλυση αλυσίδας ενδέχεται να διαρρεύσει πληροφορίες. Το Shielded DashPay (έρχεται σύντομα) θα καλύψει αυτό το κενό. Τα ίδια τα αιτήματα επαφής ΔΕΝ είναι προς το παρόν ιδιωτικά: οποιοσδήποτε μπορεί να δει ότι δύο ταυτότητες συνδέονται. Τα ιδιωτικά αιτήματα επαφής είναι λειτουργία που έρχεται σύντομα. Το όνομα χρήστη και το προφίλ σας είναι επίσης δημόσια στο Dash Platform.";
 
+/* Username marketplace: price placeholder */
+"Price in DASH" = "Τιμή σε DASH";
+
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "Οι πληρωμές επιβεβαιώνονται σε δευτερόλεπτα με το InstantSend";
 
@@ -2788,6 +3100,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Το PIN είναι πάντα απαραίτητο για να πραγματοποιήσετε μια πληρωμή";
+
+/* No comment provided by engineer. */
+"PIN Not Set" = "Το PIN δεν έχει οριστεί";
 
 /* Dash Platform chain */
 "Platform" = "Platform";
@@ -2992,6 +3307,9 @@
 /* Identities: what a public key is used for */
 "Purpose" = "Σκοπός";
 
+/* Username marketplace */
+"Put Up For Sale" = "Διάθεση προς πώληση";
+
 /* DashSpend */
 "Quantity" = "Quantity";
 
@@ -3027,6 +3345,96 @@
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Μόνο για ανάγνωση";
+
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "Εκ νέου μετάδοση";
+
+/* Delete a never-accepted transaction from local wallet state */
+"Remove if Not on Network" = "Αφαίρεση αν δεν υπάρχει στο δίκτυο";
+
+/* Remove never-accepted transaction: confirmation title */
+"Remove this transaction?" = "Αφαίρεση αυτής της συναλλαγής;";
+
+/* Remove never-accepted transaction: destructive confirm button */
+"Remove Transaction" = "Αφαίρεση συναλλαγής";
+
+/* Username marketplace: transfer recipient placeholder */
+"Recipient username or identity ID" = "Όνομα χρήστη ή αναγνωριστικό ταυτότητας παραλήπτη";
+
+/* Identity top-up sheet — shielded source note */
+"Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Συνιστάται: μια μεταφορά δύο βημάτων μέσω της δικής σας διεύθυνσης Platform κρατά την ταυτότητά σας ασύνδετη από τα διαφανή νομίσματά σας.";
+
+/* Username marketplace: register sheet title */
+"Register “%@”" = "Καταχώρηση του «%@»";
+
+/* Username marketplace: registration date */
+"Registered" = "Καταχωρήθηκε";
+
+/* Username marketplace */
+"Remove From Sale" = "Απόσυρση από την πώληση";
+
+/* Remove never-accepted transaction: progress */
+"Removing transaction…" = "Αφαίρεση συναλλαγής…";
+
+/* Username marketplace: delist confirmation title */
+"Remove “%@” from sale?" = "Απόσυρση του «%@» από την πώληση;";
+
+/* Username marketplace: history — delist (transfer to self) */
+"Removed from sale" = "Αποσύρθηκε από την πώληση";
+
+/* Username marketplace: delist confirmation body */
+"Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "Η αφαίρεση της καταχώρησης είναι μια συναλλαγή δικτύου με μικρό τέλος, που πληρώνεται από το υπόλοιπο της ταυτότητάς σας. Κρατάτε το όνομα.";
+
+/* Remove never-accepted transaction: refused because the explorer found it */
+"Transaction is known to the network" = "Η συναλλαγή είναι γνωστή στο δίκτυο";
+
+/* Remove never-accepted transaction: refusal body */
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "Ένας block explorer αναφέρει ότι αυτή η συναλλαγή είναι γνωστή στο δίκτυο Dash. Μπορεί να περιμένει ακόμη στο mempool ή να έχει ήδη συμπεριληφθεί σε μπλοκ, γι' αυτό δεν αφαιρέθηκε. Το πορτοφόλι θα ενημερώσει αυτόματα την επιβεβαίωσή της μόλις συμπεριληφθεί σε συγχρονισμένο μπλοκ.";
+
+/* Remove never-accepted transaction: success */
+"Transaction removed" = "Η συναλλαγή αφαιρέθηκε";
+
+/* Remove never-accepted transaction: removed but the recovery rescan did not arm */
+"Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "Η συναλλαγή αφαιρέθηκε — η επανασάρωση δεν ξεκίνησε, εκτελέστε το «Επανασάρωση φίλτρων» στην Κατάσταση συγχρονισμού Core";
+
+/* Remove never-accepted transaction: confirmation body */
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "Το πορτοφόλι ελέγχει πρώτα έναν block explorer. Μια συναλλαγή γνωστή στο δίκτυο — είτε περιμένει στο mempool είτε έχει ήδη συμπεριληφθεί σε μπλοκ — δεν αφαιρείται ποτέ. Αν η συναλλαγή δεν βρεθεί, διαγράφεται από αυτό το πορτοφόλι σε αυτή τη συσκευή και τα νομίσματα που προσπαθούσε να ξοδέψει γίνονται ξανά διαθέσιμα. Στη συνέχεια το πορτοφόλι επανασαρώνει τα πρόσφατα μπλοκ ως έλεγχο ασφαλείας. Τίποτα δεν αποστέλλεται στο δίκτυο.";
+
+/* Remove never-accepted transaction: failure title */
+"Couldn't remove the transaction" = "Δεν ήταν δυνατή η αφαίρεση της συναλλαγής";
+
+/* Remove never-accepted transaction: no local row */
+"This transaction is not in the local wallet." = "Αυτή η συναλλαγή δεν βρίσκεται στο τοπικό πορτοφόλι.";
+
+/* Remove never-accepted transaction: local state says it's on-chain */
+"This transaction is confirmed and can't be removed." = "Αυτή η συναλλαγή είναι επιβεβαιωμένη και δεν μπορεί να αφαιρεθεί.";
+
+/* Remove never-accepted transaction: explorer unreachable */
+"Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "Δεν ήταν δυνατή η σύνδεση με block explorer για επαλήθευση ότι η συναλλαγή δεν βρίσκεται στο blockchain. Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά.";
+
+/* Username marketplace: contested request cost row */
+"Request cost" = "Κόστος αιτήματος";
+
+/* Username marketplace: contested request success */
+"Request for %@ submitted — masternodes now vote on it" = "Το αίτημα για το %@ υποβλήθηκε — τα masternodes ψηφίζουν τώρα";
+
+/* Username marketplace: confirm contested request button */
+"Request Username" = "Αίτημα ονόματος χρήστη";
+
+/* Username marketplace: contested register sheet title */
+"Request “%@”" = "Αίτημα για «%@»";
+
+/* Username marketplace: contested request not yet indexed by Platform */
+"Requested — waiting for the network vote" = "Ζητήθηκε — αναμονή για την ψηφοφορία του δικτύου";
+
+/* Username marketplace: search row for a contested label this identity already requested */
+"Requested by you — the network vote is in progress" = "Ζητήθηκε από εσάς — η ψηφοφορία του δικτύου βρίσκεται σε εξέλιξη";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "Επανάληψη μεταφοράς…";
+
+/* Username marketplace: screen subtitle */
+"Search usernames, buy ones that are for sale, and sell or transfer your own." = "Αναζητήστε ονόματα χρήστη, αγοράστε όσα πωλούνται και πουλήστε ή μεταβιβάστε τα δικά σας.";
 
 /* Usernames */
 "Ready around %@" = "Έτοιμο γύρω στις %@";
@@ -3081,6 +3489,9 @@
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Φράση Ανάκτησης";
+
+/* Recovery phrase length */
+"Recovery phrase length" = "Μήκος φράσης ανάκτησης";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Δεν ταιριάζει η φράση ανάκτησης";
@@ -3194,6 +3605,9 @@
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
+
+/* No comment provided by engineer. */
+"Completion unknown" = "Άγνωστη ολοκλήρωση";
 
 /* Location Service Status */
 "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "Τα αποκατεστημένα πορτοφόλια δεν μπορούν πάντα να ανακτήσουν τον τύπο της λειτουργίας. Αυτή η καταχώριση ανακατασκευάστηκε από δεδομένα σημείωσης στην αλυσίδα.";
@@ -3321,6 +3735,9 @@
 /* Identities: DPP security level of a public key */
 "Security level" = "Επίπεδο ασφαλείας";
 
+/* Username marketplace: transfer sheet body */
+"Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "Στείλτε αυτό το όνομα σε άλλη ταυτότητα δωρεάν. Η μεταβίβαση αφαιρεί επίσης κάθε καταχώρηση πώλησης. Δεν αναιρείται — ο νέος κάτοχος θα έπρεπε να το μεταβιβάσει πίσω.";
+
 /* DashSpend */
 "See card details" = "See card details";
 
@@ -3368,7 +3785,520 @@
 /* Coinbase */
 "Select the coin" = "Επιλέξτε το νόμισμα";
 
+/* Identities */
+"Select the username to display for this identity." = "Επιλέξτε το όνομα χρήστη που θα εμφανίζεται για αυτή την ταυτότητα.";
+
 "Selecting fewer nodes reveals less about which masternodes you run." = "Επιλέγοντας λιγότερους κόμβους αποκαλύπτετε λιγότερα για το ποια masternodes λειτουργείτε.";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "Βρέθηκαν %ld πορτοφόλια σε αυτή τη συσκευή";
+
+/* No comment provided by engineer. */
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "%ld πορτοφόλια από προηγούμενη εγκατάσταση είναι αποθηκευμένα σε αυτή τη συσκευή. Η «Διαγραφή όλων» αφαιρεί κάθε πορτοφόλι. Δημιουργήστε αντίγραφο ασφαλείας κάθε φράσης ανάκτησης πριν τη διαγραφή.";
+
+/* No comment provided by engineer. */
+"Couldn’t Delete All Wallets" = "Δεν ήταν δυνατή η διαγραφή όλων των πορτοφολιών";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Wallets" = "Δεν ήταν δυνατή η ανάγνωση των πορτοφολιών";
+
+/* No comment provided by engineer. */
+"Delete All" = "Διαγραφή όλων";
+
+/* No comment provided by engineer. */
+"Delete All Wallets?" = "Διαγραφή όλων των πορτοφολιών;";
+
+/* No comment provided by engineer. */
+"Deleting All Wallets…" = "Διαγραφή όλων των πορτοφολιών…";
+
+/* No comment provided by engineer. */
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "Δεν ήταν δυνατή η επαλήθευση του πλήθους των πορτοφολιών που είναι αποθηκευμένα σε αυτή τη συσκευή. Για να συνεχίσετε απαιτείται φράση επιβεβαίωσης από την Υποστήριξη Dash πριν διαγραφεί οποιοδήποτε πορτοφόλι.";
+
+/* No comment provided by engineer. */
+"Keep Wallets" = "Διατήρηση πορτοφολιών";
+
+/* No comment provided by engineer. */
+"No stored wallets were found. Nothing was deleted." = "Δεν βρέθηκαν αποθηκευμένα πορτοφόλια. Δεν διαγράφηκε τίποτα.";
+
+/* No comment provided by engineer. */
+"No Wallets Found" = "Δεν βρέθηκαν πορτοφόλια";
+
+/* No comment provided by engineer. */
+"Not all wallets could be deleted. Please try again." = "Δεν ήταν δυνατή η διαγραφή όλων των πορτοφολιών. Δοκιμάστε ξανά.";
+
+/* No comment provided by engineer. */
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "Αυτό αφαιρεί οριστικά όλα τα πορτοφόλια, τα ιδιωτικά κλειδιά και τις φράσεις ανάκτησης που αποθηκεύει αυτή η εφαρμογή σε αυτή τη συσκευή. Μπορούν να επαναφερθούν μόνο από αντίγραφα ασφαλείας. Δεν αναιρείται.";
+
+/* No comment provided by engineer. */
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "Δεν ήταν δυνατή η επαλήθευση των πορτοφολιών που είναι αποθηκευμένα σε αυτή τη συσκευή. Δεν διαγράφηκε τίποτα. Δοκιμάστε ξανά.";
+
+/* No comment provided by engineer. */
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "Αυτό θα διαγράψει και τα %ld πορτοφόλια που είναι αποθηκευμένα σε αυτή τη συσκευή. Μπορούν να επαναφερθούν μόνο με τις φράσεις ανάκτησής τους. Η διαγραφή τους από αυτή τη συσκευή δεν αναιρείται.";
+
+/* No comment provided by engineer. */
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "Σε αυτή τη συσκευή υπάρχουν ακόμη δεδομένα πορτοφολιών από προηγούμενη εγκατάσταση. Να συνεχίσετε να χρησιμοποιείτε αυτά τα πορτοφόλια ή να διαγράψετε όλα τα δεδομένα και να ξεκινήσετε από την αρχή; Βεβαιωθείτε ότι κάθε φράση ανάκτησης έχει αντίγραφο ασφαλείας πριν τη διαγραφή.";
+
+/* No comment provided by engineer. */
+"Wallets found on this device" = "Πορτοφόλια που βρέθηκαν σε αυτή τη συσκευή";
+
+/* No comment provided by engineer. */
+"Wipe All Wallets" = "Πλήρης διαγραφή όλων των πορτοφολιών";
+
+/* No comment provided by engineer. */
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "Η φράση ανάκτησης ενός μόνο πορτοφολιού δεν μπορεί να εξουσιοδοτήσει τη διαγραφή πολλών διαφορετικών πορτοφολιών.";
+
+/* No comment provided by engineer. */
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "Ένα μηδενικό υπόλοιπο στο testnet δεν αποδεικνύει ότι αυτό το πορτοφόλι είναι άδειο στο mainnet. Εισαγάγετε τη φράση ανάκτησης για να συνεχίσετε.";
+
+/* No comment provided by engineer. */
+"Enter the recovery phrase to continue." = "Εισαγάγετε τη φράση ανάκτησης για να συνεχίσετε.";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "Επιλογή πορτοφολιού";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Recovery Phrases" = "Δεν ήταν δυνατή η ανάγνωση των φράσεων ανάκτησης";
+
+/* No comment provided by engineer. */
+"No Recovery Phrase Found" = "Δεν βρέθηκε φράση ανάκτησης";
+
+/* No comment provided by engineer. */
+"No recovery phrase is stored on this device." = "Δεν υπάρχει αποθηκευμένη φράση ανάκτησης σε αυτή τη συσκευή.";
+
+/* No comment provided by engineer. */
+"Select the wallet whose recovery phrase you want to view." = "Επιλέξτε το πορτοφόλι του οποίου τη φράση ανάκτησης θέλετε να δείτε.";
+
+/* No comment provided by engineer. */
+"The recovery phrases stored on this device could not be read. Please try again." = "Δεν ήταν δυνατή η ανάγνωση των φράσεων ανάκτησης που είναι αποθηκευμένες σε αυτή τη συσκευή. Δοκιμάστε ξανά.";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address for this network" = "Μη έγκυρη διεύθυνση Dash για αυτό το δίκτυο";
+
+/* No comment provided by engineer. */
+"The claimable balance is too small to cover the Platform withdrawal fee." = "Το διεκδικήσιμο υπόλοιπο είναι πολύ μικρό για να καλύψει το τέλος ανάληψης του Platform.";
+
+/* No comment provided by engineer. */
+"You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it." = "Μπορείτε να αποσύρετε έως %@ DASH — τα υπόλοιπα μένουν για να καλύψουν το τέλος του Platform. Πατήστε «Μέγ.» για να τα χρησιμοποιήσετε.";
+
+/* No comment provided by engineer. */
+"The minimum withdrawal is %@ DASH." = "Η ελάχιστη ανάληψη είναι %@ DASH.";
+
+/* No comment provided by engineer. */
+"Payout address key" = "Κλειδί διεύθυνσης πληρωμής";
+
+/* No comment provided by engineer. */
+"Owner key (%@)" = "Κλειδί ιδιοκτήτη (%@)";
+
+/* No comment provided by engineer. */
+"Wallet is not ready. Try again in a moment." = "Το πορτοφόλι δεν είναι έτοιμο. Δοκιμάστε ξανά σε λίγο.";
+
+/* No comment provided by engineer. */
+"%@ · Claimable %@ DASH" = "%@ · Διεκδικήσιμα %@ DASH";
+
+/* No comment provided by engineer. */
+"Withdraw to" = "Ανάληψη προς";
+
+/* No comment provided by engineer. */
+"Enter a Dash address" = "Εισαγάγετε μια διεύθυνση Dash";
+
+/* No comment provided by engineer. */
+"Use the payout address" = "Χρήση της διεύθυνσης πληρωμής";
+
+/* No comment provided by engineer. */
+"This is the evonode's registered payout address." = "Αυτή είναι η καταχωρημένη διεύθυνση πληρωμής του evonode.";
+
+/* No comment provided by engineer. */
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "Αυτό το πορτοφόλι κατέχει το κλειδί της διεύθυνσης πληρωμής του evonode, οπότε το υπόλοιπο μπορεί να αποσυρθεί σε οποιαδήποτε διεύθυνση Dash.";
+
+/* No comment provided by engineer. */
+"Registered payout address" = "Καταχωρημένη διεύθυνση πληρωμής";
+
+/* No comment provided by engineer. */
+"This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "Αυτή η ανάληψη υπογράφεται με το κλειδί ιδιοκτήτη του evonode. Το Dash Platform επιτρέπει στο κλειδί ιδιοκτήτη ανάληψη μόνο προς την καταχωρημένη διεύθυνση πληρωμής, οπότε ο προορισμός δεν μπορεί να αλλάξει εδώ. Για ανάληψη σε άλλη διεύθυνση, χρησιμοποιήστε το πορτοφόλι που κατέχει το κλειδί της διεύθυνσης πληρωμής.";
+
+/* No comment provided by engineer. */
+"How it works" = "Πώς λειτουργεί";
+
+/* No comment provided by engineer. */
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "Το Dash Platform πληρώνει την ανάληψη στην αλυσίδα Dash — συνήθως μέσα σε λίγα λεπτά. Ένα τέλος Platform περίπου %@ DASH αφαιρείται από το υπόλοιπο του evonode επιπλέον του ποσού, οπότε το «Μέγ.» αφήνει λίγο για να το καλύψει.";
+
+/* No comment provided by engineer. */
+"Confirm withdrawal" = "Επιβεβαίωση ανάληψης";
+
+/* No comment provided by engineer. */
+"Owner-key withdrawals are always paid to the registered payout address." = "Οι αναλήψεις με κλειδί ιδιοκτήτη πληρώνονται πάντα στην καταχωρημένη διεύθυνση πληρωμής.";
+
+/* No comment provided by engineer. */
+"Waiting for authorization…" = "Αναμονή για εξουσιοδότηση…";
+
+/* No comment provided by engineer. */
+"Submitting to Dash Platform…" = "Υποβολή στο Dash Platform…";
+
+/* No comment provided by engineer. */
+"Withdrawal submitted" = "Η ανάληψη υποβλήθηκε";
+
+/* No comment provided by engineer. */
+"Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "Το Dash Platform θα την πληρώσει σύντομα στην αλυσίδα Dash — συνήθως φτάνει μέσα σε λίγα λεπτά.";
+
+/* No comment provided by engineer. */
+"Remaining claimable balance: %@ DASH" = "Υπόλοιπο διεκδικήσιμο ποσό: %@ DASH";
+
+/* No comment provided by engineer. */
+"%@ · Platform balance" = "%@ · Υπόλοιπο Platform";
+
+/* No comment provided by engineer. */
+"Signed with" = "Υπογράφηκε με";
+
+/* No comment provided by engineer. */
+"Platform fee" = "Τέλος Platform";
+
+/* No comment provided by engineer. */
+"%@ (payout address)" = "%@ (διεύθυνση πληρωμής)";
+
+/* No comment provided by engineer. */
+"This wallet holds the payout address key, so you can withdraw to any address." = "Αυτό το πορτοφόλι κατέχει το κλειδί της διεύθυνσης πληρωμής, οπότε μπορείτε να κάνετε ανάληψη σε οποιαδήποτε διεύθυνση.";
+
+/* No comment provided by engineer. */
+"This wallet holds the owner key, so withdrawals go to the registered payout address." = "Αυτό το πορτοφόλι κατέχει το κλειδί ιδιοκτήτη, οπότε οι αναλήψεις πηγαίνουν στην καταχωρημένη διεύθυνση πληρωμής.";
+
+/* No comment provided by engineer. */
+"This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "Αυτό το πορτοφόλι δεν κατέχει ούτε το κλειδί ιδιοκτήτη ούτε το κλειδί της διεύθυνσης πληρωμής αυτού του evonode, οπότε το υπόλοιπό του δεν μπορεί να αποσυρθεί από εδώ.";
+
+/* No comment provided by engineer. */
+"Couldn't check which keys of this evonode are in the wallet." = "Δεν ήταν δυνατός ο έλεγχος για το ποια κλειδιά αυτού του evonode βρίσκονται στο πορτοφόλι.";
+
+/* No comment provided by engineer. */
+"Result not confirmed" = "Το αποτέλεσμα δεν επιβεβαιώθηκε";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "Η ανάληψη στάλθηκε στο Dash Platform, αλλά το αποτέλεσμά της δεν ήταν δυνατό να επιβεβαιωθεί. Μπορεί να ολοκληρώθηκε. Μην την υποβάλετε ξανά — ελέγξτε πρώτα το διεκδικήσιμο υπόλοιπο και τη διεύθυνση πληρωμής.";
+
+/* No comment provided by engineer. */
+"1 block proposed this epoch" = "1 μπλοκ προτάθηκε αυτή την εποχή";
+
+/* No comment provided by engineer. */
+"%@ blocks proposed this epoch" = "%@ μπλοκ προτάθηκαν αυτή την εποχή";
+
+/* No comment provided by engineer. */
+"Nodes" = "Κόμβοι";
+
+/* No comment provided by engineer. */
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "Κόμβοι, ημέρα εποχής %d, %@ μπλοκ προτάθηκαν αυτή την εποχή";
+
+/* No comment provided by engineer. */
+"an evonode has not proposed a block in 2 days" = "ένας evonode δεν έχει προτείνει μπλοκ εδώ και 2 ημέρες";
+
+/* No comment provided by engineer. */
+"an evonode has no blocks this epoch" = "ένας evonode δεν έχει μπλοκ αυτή την εποχή";
+
+/* No comment provided by engineer. */
+"A key doesn't match this masternode — fix or clear it to continue." = "Ένα κλειδί δεν ταιριάζει με αυτό το masternode — διορθώστε το ή σβήστε το για να συνεχίσετε.";
+
+/* No comment provided by engineer. */
+"Add keys" = "Προσθήκη κλειδιών";
+
+/* No comment provided by engineer. */
+"Add masternode" = "Προσθήκη masternode";
+
+/* No comment provided by engineer. */
+"Add this node's owner key or payout address key to withdraw from here." = "Προσθέστε το κλειδί ιδιοκτήτη ή το κλειδί διεύθυνσης πληρωμής αυτού του κόμβου για ανάληψη από εδώ.";
+
+/* No comment provided by engineer. */
+"Already one of this wallet's masternodes — it's in the list above." = "Είναι ήδη ένα από τα masternodes αυτού του πορτοφολιού — βρίσκεται στη λίστα παραπάνω.";
+
+/* No comment provided by engineer. */
+"Already tracked." = "Παρακολουθείται ήδη.";
+
+/* No comment provided by engineer. */
+"Any keys you added for it are deleted from this device's keychain too." = "Όσα κλειδιά προσθέσατε γι' αυτό διαγράφονται επίσης από το keychain αυτής της συσκευής.";
+
+/* No comment provided by engineer. */
+"Available" = "Διαθέσιμο";
+
+/* No comment provided by engineer. */
+"BLS private key (hex)" = "Ιδιωτικό κλειδί BLS (hex)";
+
+/* No comment provided by engineer. */
+"Can't verify yet" = "Δεν μπορεί να επαληθευτεί ακόμη";
+
+/* No comment provided by engineer. */
+"Could not load the node's registration details — owner and payout keys will verify later." = "Δεν ήταν δυνατή η φόρτωση των στοιχείων καταχώρησης του κόμβου — τα κλειδιά ιδιοκτήτη και πληρωμής θα επαληθευτούν αργότερα.";
+
+/* No comment provided by engineer. */
+"Could not save a key to the keychain. Nothing was lost — try again." = "Δεν ήταν δυνατή η αποθήκευση ενός κλειδιού στο keychain. Δεν χάθηκε τίποτα — δοκιμάστε ξανά.";
+
+/* No comment provided by engineer. */
+"Destination address (optional)" = "Διεύθυνση προορισμού (προαιρετικό)";
+
+/* No comment provided by engineer. */
+"Doesn't match" = "Δεν ταιριάζει";
+
+/* No comment provided by engineer. */
+"Find" = "Εύρεση";
+
+/* No comment provided by engineer. */
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "Βρίσκει κλειδιά ιδιοκτήτη και πληρωμής που δεν υπάρχουν στη λίστα masternode. Στέλνει το δημόσιο αποτύπωμα του κλειδιού σε έναν κόμβο Platform.";
+
+/* No comment provided by engineer. */
+"IP address, proTxHash or private key" = "Διεύθυνση IP, proTxHash ή ιδιωτικό κλειδί";
+
+/* No comment provided by engineer. */
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "Τα κλειδιά αποθηκεύονται στο keychain αυτής της συσκευής και δεν το εγκαταλείπουν ποτέ, παρά μόνο για να υπογράψουν την ενέργεια που ζητάτε.";
+
+/* No comment provided by engineer. */
+"Keys on this device" = "Κλειδιά σε αυτή τη συσκευή";
+
+/* No comment provided by engineer. */
+"Label (optional)" = "Ετικέτα (προαιρετικό)";
+
+/* No comment provided by engineer. */
+"Loading registration details…" = "Φόρτωση στοιχείων καταχώρησης…";
+
+/* No comment provided by engineer. */
+"Matches" = "Ταιριάζει";
+
+/* No comment provided by engineer. */
+"Matches this node's %@ key" = "Ταιριάζει με το κλειδί %@ αυτού του κόμβου";
+
+/* No comment provided by engineer. */
+"No masternode on the list matches that." = "Κανένα masternode στη λίστα δεν ταιριάζει με αυτό.";
+
+/* No comment provided by engineer. */
+"Node key (base64 or hex)" = "Κλειδί κόμβου (base64 ή hex)";
+
+/* No comment provided by engineer. */
+"Not added" = "Δεν προστέθηκε";
+
+/* No comment provided by engineer. */
+"On this device" = "Σε αυτή τη συσκευή";
+
+/* No comment provided by engineer. */
+"Operator payout" = "Πληρωμή διαχειριστή";
+
+/* No comment provided by engineer. */
+"Payout" = "Πληρωμή";
+
+/* No comment provided by engineer. */
+"Platform could not be reached, so owner and payout keys were not checked." = "Δεν ήταν δυνατή η σύνδεση με το Platform, οπότε τα κλειδιά ιδιοκτήτη και πληρωμής δεν ελέγχθηκαν.";
+
+/* No comment provided by engineer. */
+"PoSe banned" = "Αποκλεισμένο από PoSe";
+
+/* No comment provided by engineer. */
+"Private key (WIF or hex)" = "Ιδιωτικό κλειδί (WIF ή hex)";
+
+/* No comment provided by engineer. */
+"Refresh details" = "Ανανέωση στοιχείων";
+
+/* No comment provided by engineer. */
+"Refreshing…" = "Ανανέωση…";
+
+/* No comment provided by engineer. */
+"Save keys" = "Αποθήκευση κλειδιών";
+
+/* No comment provided by engineer. */
+"Search Platform too" = "Αναζήτηση και στο Platform";
+
+/* No comment provided by engineer. */
+"Searching…" = "Αναζήτηση…";
+
+/* No comment provided by engineer. */
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "Υπογραφή με το κλειδί ιδιοκτήτη — η ανάληψη πηγαίνει στην καταχωρημένη διεύθυνση πληρωμής.";
+
+/* No comment provided by engineer. */
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "Υπογραφή με το κλειδί της διεύθυνσης πληρωμής. Αφήστε τον προορισμό κενό για ανάληψη στη διεύθυνση πληρωμής.";
+
+/* No comment provided by engineer. */
+"Stop tracking" = "Διακοπή παρακολούθησης";
+
+/* No comment provided by engineer. */
+"Stop tracking this masternode?" = "Διακοπή παρακολούθησης αυτού του masternode;";
+
+/* No comment provided by engineer. */
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "Αυτό θα μπορούσε επίσης να είναι κλειδί ιδιοκτήτη ή πληρωμής — ενεργοποιήστε την «Αναζήτηση και στο Platform» για να ελέγξετε.";
+
+/* No comment provided by engineer. */
+"The signing key is missing from the keychain — re-add it and try again." = "Το κλειδί υπογραφής λείπει από το keychain — προσθέστε το ξανά και δοκιμάστε πάλι.";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "Η ανάληψη στάλθηκε αλλά το αποτέλεσμά της δεν επιβεβαιώθηκε. Το υπόλοιπο ελέγχεται ξανά — μην επαναλάβετε μέχρι να σταθεροποιηθεί.";
+
+/* No comment provided by engineer. */
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "Παρακολουθήστε οποιοδήποτε masternode ή evonode στο δίκτυο — δεν χρειάζεται να ανήκει σε αυτό το πορτοφόλι.";
+
+/* No comment provided by engineer. */
+"Track this masternode" = "Παρακολούθηση αυτού του masternode";
+
+/* No comment provided by engineer. */
+"Tracked" = "Παρακολουθείται";
+
+/* No comment provided by engineer. */
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "Παρακολουθείται. Προσθέστε παρακάτω τα κλειδιά αυτού του κόμβου για να ενεργοποιήσετε ενέργειες όπως ανάληψη και ψηφοφορία, ή ολοκληρώστε τώρα και προσθέστε τα αργότερα.";
+
+/* No comment provided by engineer. */
+"Withdrawing…" = "Ανάληψη…";
+
+/* No comment provided by engineer. */
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "Μπορείτε επίσης να παρακολουθήσετε οποιοδήποτε masternode στο δίκτυο — μέσω IP, proTxHash ή ενός από τα κλειδιά του — με το κουμπί «+».";
+
+/* No comment provided by engineer. */
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "Η διεύθυνση DAPI αυτού του evonode δεν είναι γνωστή, οπότε δεν μπορεί να ερωτηθεί για την κατάστασή του.";
+
+/* No comment provided by engineer. */
+"Couldn't get the evonode's status." = "Δεν ήταν δυνατή η λήψη της κατάστασης του evonode.";
+
+/* No comment provided by engineer. */
+"The evonode didn't answer in time." = "Ο evonode δεν απάντησε εγκαίρως.";
+
+/* No comment provided by engineer. */
+"Couldn't reach the evonode." = "Δεν ήταν δυνατή η σύνδεση με τον evonode.";
+
+/* No comment provided by engineer. */
+"The evonode's answer couldn't be read." = "Δεν ήταν δυνατή η ανάγνωση της απάντησης του evonode.";
+
+/* No comment provided by engineer. */
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "Η δική του, μη επαληθευμένη αναφορά του κόμβου — τι λέει για τον εαυτό του, όχι τι έχει συμφωνήσει το δίκτυο.";
+
+/* No comment provided by engineer. */
+"Asked" = "Ερωτήθηκε";
+
+/* No comment provided by engineer. */
+"Software" = "Λογισμικό";
+
+/* No comment provided by engineer. */
+"DAPI" = "DAPI";
+
+/* No comment provided by engineer. */
+"Drive" = "Drive";
+
+/* No comment provided by engineer. */
+"Tenderdash" = "Tenderdash";
+
+/* No comment provided by engineer. */
+"Protocol versions" = "Εκδόσεις πρωτοκόλλου";
+
+/* No comment provided by engineer. */
+"Tenderdash P2P" = "Tenderdash P2P";
+
+/* No comment provided by engineer. */
+"Tenderdash block" = "Μπλοκ Tenderdash";
+
+/* No comment provided by engineer. */
+"Drive current" = "Drive τρέχον";
+
+/* No comment provided by engineer. */
+"Drive latest" = "Drive τελευταίο";
+
+/* No comment provided by engineer. */
+"Drive next epoch" = "Drive επόμενη εποχή";
+
+/* No comment provided by engineer. */
+"Node ID" = "Αναγνωριστικό κόμβου";
+
+/* No comment provided by engineer. */
+"Identity check" = "Έλεγχος ταυτότητας";
+
+/* No comment provided by engineer. */
+"Chain" = "Αλυσίδα";
+
+/* No comment provided by engineer. */
+"Catching up" = "Ανακτά καθυστέρηση";
+
+/* No comment provided by engineer. */
+"Latest block height" = "Ύψος τελευταίου μπλοκ";
+
+/* No comment provided by engineer. */
+"Earliest block height" = "Ύψος παλαιότερου μπλοκ";
+
+/* No comment provided by engineer. */
+"Max peer block height" = "Μέγ. ύψος μπλοκ ομότιμων";
+
+/* No comment provided by engineer. */
+"Core chain-locked height" = "Ύψος chain-lock του Core";
+
+/* No comment provided by engineer. */
+"Latest block hash" = "Hash τελευταίου μπλοκ";
+
+/* No comment provided by engineer. */
+"Latest app hash" = "Hash τελευταίας εφαρμογής";
+
+/* No comment provided by engineer. */
+"Earliest block hash" = "Hash παλαιότερου μπλοκ";
+
+/* No comment provided by engineer. */
+"Earliest app hash" = "Hash παλαιότερης εφαρμογής";
+
+/* No comment provided by engineer. */
+"Chain ID" = "Αναγνωριστικό αλυσίδας";
+
+/* No comment provided by engineer. */
+"Peers" = "Ομότιμοι";
+
+/* No comment provided by engineer. */
+"Listening" = "Ακούει";
+
+/* No comment provided by engineer. */
+"State sync" = "Συγχρονισμός κατάστασης";
+
+/* No comment provided by engineer. */
+"Total synced time" = "Συνολικός χρόνος συγχρονισμού";
+
+/* No comment provided by engineer. */
+"Remaining time" = "Υπολειπόμενος χρόνος";
+
+/* No comment provided by engineer. */
+"Total snapshots" = "Σύνολο στιγμιοτύπων";
+
+/* No comment provided by engineer. */
+"Chunk process avg time" = "Μέσος χρόνος επεξεργασίας τμήματος";
+
+/* No comment provided by engineer. */
+"Snapshot height" = "Ύψος στιγμιοτύπου";
+
+/* No comment provided by engineer. */
+"Snapshot chunks" = "Τμήματα στιγμιοτύπου";
+
+/* No comment provided by engineer. */
+"Backfilled blocks" = "Συμπληρωμένα μπλοκ";
+
+/* No comment provided by engineer. */
+"Backfill blocks total" = "Σύνολο μπλοκ προς συμπλήρωση";
+
+/* No comment provided by engineer. */
+"Time" = "Ώρα";
+
+/* No comment provided by engineer. */
+"Node clock" = "Ρολόι κόμβου";
+
+/* No comment provided by engineer. */
+"Latest block" = "Τελευταίο μπλοκ";
+
+/* No comment provided by engineer. */
+"Genesis" = "Genesis";
+
+/* No comment provided by engineer. */
+"Epoch" = "Εποχή";
+
+/* No comment provided by engineer. */
+"Matches this evonode" = "Ταιριάζει με αυτόν τον evonode";
+
+/* No comment provided by engineer. */
+"Differs from this evonode" = "Διαφέρει από αυτόν τον evonode";
+
+/* No comment provided by engineer. */
+"Not reported" = "Δεν αναφέρθηκε";
+
+/* No comment provided by engineer. */
+"%.3f s" = "%.3f δευτ.";
+
+/* No comment provided by engineer. */
+"Node status" = "Κατάσταση κόμβου";
+
+/* No comment provided by engineer. */
+"Asking the evonode…" = "Ερώτηση στον evonode…";
+
+/* No comment provided by engineer. */
+"Request status" = "Ερώτηση κατάστασης";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "Self-checkout";
@@ -3442,6 +4372,42 @@
 
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "Στείλτε το πρώτο σας αίτημα επαφής";
+
+/* Username marketplace: set price sheet title */
+"Set a price for “%@”" = "Ορισμός τιμής για το «%@»";
+
+/* Username marketplace */
+"Short names are decided by a network vote — use Request Username instead." = "Τα σύντομα ονόματα κρίνονται με ψηφοφορία του δικτύου — χρησιμοποιήστε το «Αίτημα ονόματος χρήστη».";
+
+/* Username marketplace: contested request explainer, paragraph 1 */
+"Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them." = "Τα σύντομα ονόματα — 19 χαρακτήρες ή λιγότεροι, μόνο γράμματα και αριθμοί — δεν καταχωρούνται αμέσως. Το δίκτυο Dash ψηφίζει ποιος θα τα πάρει.";
+
+/* DashPay Contacts: expands the network search into the full add-contact flow */
+"Show more results" = "Εμφάνιση περισσότερων αποτελεσμάτων";
+
+/* Username marketplace: departed-name line — buyer identity */
+"Sold to %@" = "Πουλήθηκε στον %@";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 1 of 2 — moving Dash out of your Shielded balance…" = "Βήμα 1 από 2 — μεταφορά Dash εκτός του υπολοίπου σας Shielded…";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 2 of 2 — topping up your identity…" = "Βήμα 2 από 2 — γέμισμα της ταυτότητάς σας…";
+
+/* Username marketplace: contested request cost footnote */
+"The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "Το κόστος πληρώνεται από το υπόλοιπο της ταυτότητάς σας. Χρηματοδοτεί την ψηφοφορία του δικτύου και δεν επιστρέφεται αν κερδίσει άλλος διεκδικητής.";
+
+/* Username marketplace: register sheet body */
+"The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "Το όνομα καταχωρείται απευθείας στην ταυτότητά σας. Η καταχώρηση είναι συναλλαγή δικτύου που πληρώνεται από το υπόλοιπο της ταυτότητάς σας.";
+
+/* Username marketplace: contested label locked by a past vote */
+"The network voted to lock this name, so nobody can register it. Choose a different name." = "Το δίκτυο ψήφισε να κλειδώσει αυτό το όνομα, επομένως κανείς δεν μπορεί να το καταχωρήσει. Επιλέξτε άλλο όνομα.";
+
+/* Username marketplace */
+"The recipient identity couldn't be resolved." = "Δεν ήταν δυνατή η επίλυση της ταυτότητας του παραλήπτη.";
+
+/* Username marketplace */
+"The seller changed the price before your purchase was accepted. Review the new price and try again." = "Ο πωλητής άλλαξε την τιμή πριν γίνει δεκτή η αγορά σας. Ελέγξτε τη νέα τιμή και δοκιμάστε ξανά.";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Αποστολή";
@@ -3963,6 +4929,66 @@
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "Αυτό προσθέτει δύο κλειδιά στην ταυτότητά σας ώστε άλλοι χρήστες να μπορούν να σας στέλνουν αιτήματα επαφής και εσείς να μπορείτε να αποδέχεστε τα δικά τους. Γίνεται μία μόνο φορά.";
 
+/* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
+"This isn't a DashPay user QR code." = "Αυτός δεν είναι κωδικός QR χρήστη DashPay.";
+
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "Αυτό το υπόλοιπο πληρώνει τα τέλη δικτύου του Dash Platform — ονόματα χρήστη, αιτήματα επαφής, ενημερώσεις προφίλ. Ανήκει στην ταυτότητά σας, όχι στο πορτοφόλι σας: σε αντίθεση με τα υπόλοιπά σας Διαφανές, Platform και Shielded, δεν μπορεί να ξοδευτεί ως κανονικά Dash. Το γέμισμα μετατρέπει Dash από ένα υπόλοιπο της επιλογής σας — από προεπιλογή το Shielded — σε credits ταυτότητας.";
+
+/* Username marketplace: contested label already has an active vote */
+"This name is already in an active network vote. Your request joins it as another contender." = "Αυτό το όνομα βρίσκεται ήδη σε ενεργή ψηφοφορία του δικτύου. Το αίτημά σας συμμετέχει ως ακόμη ένας διεκδικητής.";
+
+/* Username marketplace */
+"This name is in an active network vote and can't be traded until the contest ends." = "Αυτό το όνομα βρίσκεται σε ενεργή ψηφοφορία του δικτύου και δεν μπορεί να μεταβιβαστεί έως ότου λήξει η διεκδίκηση.";
+
+/* Username marketplace: detail for an unregistered name */
+"This name is not registered." = "Αυτό το όνομα δεν είναι καταχωρημένο.";
+
+/* Username marketplace: seller-clarity callout on the detail sheet */
+"This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "Αυτό το όνομα προσφέρεται από ανεξάρτητο χρήστη στο δίκτυο Dash — όχι από την Dash ή από αυτή την εφαρμογή. Την τιμή την ορίζει ο πωλητής.";
+
+/* Username marketplace: listing price exceeds the representable maximum */
+"This price is too high to list." = "Αυτή η τιμή είναι πολύ υψηλή για καταχώρηση.";
+
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "Αυτή η μεταφορά δεν μπορεί να επαναληφθεί από εδώ.";
+
+/* Username marketplace */
+"This username is not for sale." = "Αυτό το όνομα χρήστη δεν πωλείται.";
+
+/* Username marketplace */
+"This username's record couldn't be read from the network." = "Δεν ήταν δυνατή η ανάγνωση της εγγραφής αυτού του ονόματος χρήστη από το δίκτυο.";
+
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "Αυτό το πορτοφόλι δεν έχει ταυτότητα για γέμισμα.";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "Γέμισμα";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "Γέμισμα υπολοίπου ταυτότητας";
+
+/* Username marketplace: timeline card title */
+"Trade history" = "Ιστορικό συναλλαγών";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "Η μεταφορά ολοκληρώθηκε";
+
+/* Username marketplace */
+"Transfer to Another Identity" = "Μεταβίβαση σε άλλη ταυτότητα";
+
+/* Username marketplace: transfer sheet title */
+"Transfer “%@”" = "Μεταβίβαση του «%@»";
+
+/* Username marketplace: history — transfer with both identities */
+"Transferred from %1$@ to %2$@" = "Μεταβιβάστηκε από %1$@ σε %2$@";
+
+/* Username marketplace: departed-name line — recipient identity */
+"Transferred to %@" = "Μεταβιβάστηκε στον %@";
+
+/* Username marketplace */
+"Username Marketplace" = "Αγορά ονομάτων χρήστη";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
@@ -4012,6 +5038,60 @@
 
 /* Usernames */
 "This name requires voting. Your Dash will be locked until voting completes." = "This name requires voting. Your Dash will be locked until voting completes.";
+
+/* Usernames */
+"Vote in progress" = "Ψηφοφορία σε εξέλιξη";
+
+/* Usernames */
+"Vote ended" = "Η ψηφοφορία έληξε";
+
+/* Usernames */
+"A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender." = "Για αυτό το όνομα βρίσκεται ήδη σε εξέλιξη ψηφοφορία masternode. Η υποβολή αιτήματος σας εντάσσει στην ψηφοφορία ως διεκδικητή.";
+
+/* Usernames */
+"A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender." = "Για αυτό το όνομα βρίσκεται ήδη σε εξέλιξη ψηφοφορία masternode — η ψηφοφορία λήγει γύρω στις %@. Η υποβολή αιτήματος σας εντάσσει στην ψηφοφορία ως διεκδικητή.";
+
+/* Usernames */
+"A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote." = "Για αυτό το όνομα βρίσκεται σε εξέλιξη ψηφοφορία masternode — η ψηφοφορία λήγει γύρω στις %@. Νέοι διεκδικητές δεν μπορούν πλέον να συμμετάσχουν σε αυτή την ψηφοφορία.";
+
+/* Usernames */
+"Username is in a network vote — new contenders can no longer join" = "Το όνομα χρήστη βρίσκεται σε ψηφοφορία δικτύου — νέοι διεκδικητές δεν μπορούν πλέον να συμμετάσχουν";
+
+/* Usernames */
+"The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "Ο κάτοχος αυτού του ονόματος χρήστη το έχει καταχωρήσει στην Αγορά ονομάτων χρήστη για %@ Dash. Μπορείτε να το αγοράσετε εκεί.";
+
+/* Usernames */
+"The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance." = "Ο κάτοχος αυτού του ονόματος χρήστη το έχει καταχωρήσει για %@ Dash. Μπορείτε να το αγοράσετε αμέσως — η τιμή πληρώνεται από το υπόλοιπο του πορτοφολιού σας.";
+
+/* Usernames */
+"The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "Ο κάτοχος αυτού του ονόματος χρήστη το έχει καταχωρήσει για %1$@ Dash. Οι αγορές άνω των %2$@ Dash πρέπει να γίνονται από την Αγορά ονομάτων χρήστη — επιλέξτε άλλο όνομα χρήστη προς το παρόν· μπορείτε να αποφασίσετε αργότερα για την αγορά αυτού.";
+
+/* Usernames */
+"Buy for %@ Dash" = "Αγορά για %@ Dash";
+
+/* Usernames */
+"Buy username" = "Αγορά ονόματος χρήστη";
+
+/* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "Δεν ήταν δυνατή η καταχώρηση του προσωρινού ονόματος χρήστη «%@». Μπορείτε να καταχωρήσετε άλλο όνομα χρήστη αργότερα.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "Το «%1$@» είναι πλέον το όνομα χρήστη σας. Αν η ψηφοφορία σας αποδώσει το «%2$@», θα είστε προσβάσιμοι και με τα δύο ονόματα χρήστη.";
+
+/* Usernames */
+"“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "Το «%1$@» θα αγοραστεί για %2$@ Dash. Η τιμή πληρώνεται από το υπόλοιπο του πορτοφολιού σας.";
+
+/* Usernames */
+"Username purchased" = "Το όνομα χρήστη αγοράστηκε";
+
+/* Usernames */
+"“%@” is now your username." = "Το «%@» είναι πλέον το όνομα χρήστη σας.";
+
+/* Usernames */
+"The masternode vote for this name has ended and the result is being finalized. Check back soon." = "Η ψηφοφορία masternode για αυτό το όνομα έληξε και το αποτέλεσμα οριστικοποιείται. Ελέγξτε ξανά σύντομα.";
+
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes." = "Για αυτό το όνομα βρίσκεται ήδη σε εξέλιξη ψηφοφορία — το αίτημά σας θα συμμετάσχει ως διεκδικητής. Τα Dash σας θα παραμείνουν κλειδωμένα μέχρι να ολοκληρωθεί η ψηφοφορία.";
 
 /* No comment provided by engineer. */
 "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone." = "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.";
@@ -4254,6 +5334,12 @@
 /* Voting */
 "Unblocked '%@' username" = "Ξεμπλοκαρισμένο όνομα χρήστη %@";
 
+/* SPV diagnostics */
+"Unconfirmed now" = "Ανεπιβεβαίωτες τώρα";
+
+/* SPV diagnostics */
+"Unconfirmed Transactions" = "Ανεπιβεβαίωτες συναλλαγές";
+
 /* DashPay Contacts */
 "Unhide Contact" = "Unhide Contact";
 
@@ -4367,6 +5453,9 @@
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Ονόματα χρήστη, όχι διευθύνσεις";
 
+/* DashPay: banner identity row subtitle */
+"View profile" = "Προβολή προφίλ";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Χρήστες που ταιριάζουν με %@ και δεν βρίσκονται αυτή τη στιγμή στις επαφές σας";
 
@@ -4397,11 +5486,17 @@
 /* No comment provided by engineer. */
 "Verified Successfully" = "Επιβεβαιώθηκε με επιτυχία";
 
+/* DashPay Contacts: spinner after scanning a user QR code */
+"Verifying user…" = "Επαλήθευση χρήστη…";
+
 /* No comment provided by engineer. */
 "Verify" = "Επιβεβαίωση";
 
 /* CrowdNode */
 "Verify your API Dash address" = "Επαληθεύστε τη διεύθυνση API Dash";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "Επαληθεύστε τη φράση ανάκτησης για να ορίσετε νέο PIN.";
 
 /* Usernames */
 "Verify your identity" = "Επαληθεύστε την ταυτότητά σας";
@@ -4616,6 +5711,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "Πότε θα γίνουν ιδιωτικά τα αιτήματα επαφής;";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "Όσο βρίσκεται σε εξέλιξη η ψηφοφορία, το «%@» δεν σας ανήκει ακόμη και οι άλλοι χρήστες δεν μπορούν να σας βρουν με αυτό. Προσθέστε ένα μη διεκδικούμενο όνομα χρήστη για να χρησιμοποιήσετε αμέσως το DashPay. Παραμένει μόνιμα δικό σας — και αν η ψηφοφορία σας αποδώσει το διεκδικούμενο όνομα, θα είστε προσβάσιμοι και με τα δύο ονόματα χρήστη.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "Πού να ξοδέψετε";
 
@@ -4626,6 +5724,18 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "Γιατί πρέπει να το ενεργοποιήσω;";
+
+/* Username marketplace: history participant is the current user */
+"you" = "εσείς";
+
+/* Username marketplace: contested request already submitted by this identity */
+"You already requested this name — the network vote is in progress. You'll find it under My Names." = "Έχετε ήδη ζητήσει αυτό το όνομα — η ψηφοφορία του δικτύου βρίσκεται σε εξέλιξη. Θα το βρείτε στα «Τα ονόματά μου».";
+
+/* Username marketplace: purchase confirmation body with seller clarity */
+"You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "Αγοράζετε από ανεξάρτητο χρήστη, όχι από την Dash ή από αυτή την εφαρμογή. Η τιμή συν ένα μικρό τέλος δικτύου πληρώνεται από το υπόλοιπο της ταυτότητάς σας και το όνομα περνά αμέσως στην ταυτότητά σας.";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "Δεν έχετε όνομα χρήστη όσο βρίσκεται σε εξέλιξη η ψηφοφορία. Καταχωρήστε τώρα ένα μη διεκδικούμενο όνομα χρήστη — παραμένει δικό σας και, αν η ψηφοφορία σας αποδώσει το «%@», θα είστε προσβάσιμοι και με τα δύο ονόματα χρήστη.";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "Γιατί βλέπω όλες αυτές τις συναλλαγές;";
@@ -4681,6 +5791,9 @@
 
 /* Wallets */
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
+
+/* Wallets */
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Γράψτε αυτές τις %d λέξεις με τη σειρά και φυλάξτε τις σε ασφαλές μέρος. Είναι ο ΜΟΝΑΔΙΚΟΣ τρόπος ανάκτησης αυτού του πορτοφολιού. Όποιος τις έχει μπορεί να ξοδέψει τα κεφάλαιά σας.";
 
 /* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
@@ -4932,6 +6045,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Το ιστορικό σας, οργανωμένο";
 
+/* Username marketplace */
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Το υπόλοιπο της ταυτότητάς σας δεν καλύπτει αυτή την αγορά: απαιτούνται %1$@ DASH (συμπεριλαμβανομένου αποθέματος για τέλη), διαθέσιμα %2$@ DASH. Γεμίστε το υπόλοιπο της ταυτότητάς σας και δοκιμάστε ξανά.";
+
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "Η ταυτότητά σας χρειάζεται δύο επιπλέον κλειδιά ώστε τα αιτήματα επαφής να μπορούν να κρυπτογραφούνται ανάμεσα σε εσάς και άλλους χρήστες. Η ενεργοποίηση τα προσθέτει με μία μόνο συναλλαγή δικτύου. Γίνεται μία μόνο φορά.";
 
@@ -4956,8 +6072,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "Τα αναμειγμένα νομίσματά σας μεταφέρθηκαν στο υπόλοιπο του πορτοφολιού Dash.";
 
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "Δεν μπορέσαμε να επιβεβαιώσουμε αυτή την αγορά με την CTX. Αν η πληρωμή ολοκληρώθηκε, η δωροκάρτα θα εμφανιστεί σύντομα στη λίστα συναλλαγών σας — ελέγξτε εκεί πριν αγοράσετε ξανά.";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "Η πληρωμή σας στάλθηκε, αλλά το δίκτυο δεν την έχει επιβεβαιώσει ακόμη. Η δωροκάρτα σας θα εμφανιστεί μόλις επιβεβαιωθεί.";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Τα αναμειγμένα νομίσματά σας μεταφέρθηκαν στο θωρακισμένο υπόλοιπο. Για καλύτερη ιδιωτικότητα, περιμένετε τουλάχιστον 2 ώρες πριν χρησιμοποιήσετε αυτά τα κεφάλαια.";
+
+/* DashSpend */
+"Could not load your gift card" = "Δεν ήταν δυνατή η φόρτωση της δωροκάρτας σας";
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
@@ -4973,6 +6098,9 @@
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "Το ιδιωτικό σας υπόλοιπο. Τα ποσά και οι διευθύνσεις είναι κρυπτογραφημένα στην αλυσίδα, ώστε τα διαθέσιμα και το ιστορικό σας να παραμένουν εμπιστευτικά.";
+
+/* Username marketplace: contested request explainer, paragraph 2 */
+"Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "Το αίτημά σας μπαίνει σε δημόσια ψηφοφορία των masternodes για περίπου δύο εβδομάδες. Άλλοι μπορούν να ζητήσουν το ίδιο όνομα· όταν λήξει η ψηφοφορία, το όνομα πηγαίνει στον νικητή — ή σε κανέναν, αν το δίκτυο ψηφίσει να το κλειδώσει.";
 
 /* Usernames */
 "Your request was cancelled" = "Το αίτημά σας ακυρώθηκε";
