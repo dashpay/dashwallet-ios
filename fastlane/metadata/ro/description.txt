@@ -1,0 +1,20 @@
+Dash Wallet is the first iPhone wallet for Dash - Digital Cash - a better innovative alternative to bitcoin which is focused on payments.
+
+Dash is a cryptocurrency that seeks to fix the flaws that other cryptocurrencies suffer from. It relies on a network of Masternodes to allow such things as instant transactions, optional privacy features, and a direct funding mechanism to kickstart innovative ideas.
+
+Intuitiv și sigur, Dash Wallet vă oferă un control complet asupra numerarului tău digital. Trimite și primește plăți dash instantaneu, cu cel mai sigur portofel mobil disponibil.
+
+Dash Wallet este primul și singurul portofel pentru iPhone care se conectează direct la rețeaua Dash. Acest lucru înseamnă că nu există servere care pot fi hack-uite sau să cadă - fondurile tale sunt întotdeauna în siguranță. Chiar dacă telefonul tău este pierdut, deteriorat sau furat, poți recupera cu ușurință fondurile folosind fraza de recuperare personală.
+
+Caracteristici:
+
+* Trimite și primeşte plăți Dash în câteva secunde, online sau personal
+* Plăți one button pentru comercianți și site-uri web care acceptă Dash
+* Plătește rapid cu Face ID
+* Sweeping pentru portofelele de hârtie (de exemplu, cele utilizate pentru depozitarea la rece)
+* 3rd party integrations to allow users to buy and sell Dash
+* Fraza de recuperare simplă îți permite să recuperezi fonduri atunci când dispozitivul tău este pierdut sau spart
+* Flexible settings to meet a range of custom security preferences
+* Direct Dash network client - no central server to get hacked or go down
+
+Dash Wallet este open source și gratuit. Nu există taxe sau costuri de tranzacție suplimentare. Trimiți orice sumă de bani oricui din lume instantaneu. Așa ar trebui să fie banii.

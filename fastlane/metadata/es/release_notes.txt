@@ -1,0 +1,7 @@
+# Actualización menor:
+
+En esta última versión se han corregido varios errores y realizado mejoras en el rendimiento.
+
+# Actualización mayor:
+
+La versión <RELEASE_VERSION> trae la introducción de <FEATURE> a iOS. 

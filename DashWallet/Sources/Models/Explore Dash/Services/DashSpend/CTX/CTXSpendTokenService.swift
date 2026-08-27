@@ -1,0 +1,75 @@
+//
+//  Created by Andrei Ashikhmin
+//  Copyright © 2025 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+import Foundation
+
+protocol CTXSpendTokenProvider: AnyObject {
+    var accessToken: String? { get }
+    var refreshToken: String? { get }
+    func updateTokens(accessToken: String, refreshToken: String)
+    func clearTokensOnRefreshFailure()
+}
+
+// MARK: - CTXSpendTokenService
+
+class CTXSpendTokenService {
+    static let shared = CTXSpendTokenService()
+    
+    private let tokenRefreshActor = TokenRefreshActor()
+    private weak var tokenProvider: CTXSpendTokenProvider?
+    
+    private init() {}
+    
+    func configure(with tokenProvider: CTXSpendTokenProvider) {
+        self.tokenProvider = tokenProvider
+    }
+    
+    func refreshAccessToken() async throws {
+        guard let tokenProvider = tokenProvider else {
+            return
+        }
+
+        guard let refreshToken = tokenProvider.refreshToken, !refreshToken.isEmpty else {
+            return
+        }
+
+        // The actor both serializes concurrent callers — `CTXSpendAPI.request`
+        // funnels every 401 here, and gift-card screens issue several requests
+        // at once — and owns the in-flight task, which a plain property on this
+        // non-isolated class could not do safely.
+        try await tokenRefreshActor.refreshToken(label: "CTXSpend") {
+            DWLogger.log("CTXSpend: Attempting to refresh access token")
+
+            do {
+                let request = RefreshTokenRequest(refreshToken: refreshToken)
+                let response: RefreshTokenResponse = try await CTXSpendAPI.shared.requestDirectly(.refreshToken(request))
+
+                // Update tokens through the service
+                tokenProvider.updateTokens(accessToken: response.accessToken, refreshToken: response.refreshToken)
+
+                DWLogger.log("CTXSpend: Token refresh successful")
+            } catch {
+                DWLogger.log("CTXSpend: Token refresh failed: \(error)")
+
+                // Clear tokens on refresh failure
+                tokenProvider.clearTokensOnRefreshFailure()
+
+                throw DashSpendError.tokenRefreshFailed
+            }
+        }
+    }
+} 

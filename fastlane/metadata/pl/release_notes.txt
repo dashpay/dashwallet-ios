@@ -1,0 +1,7 @@
+# Drobna Aktualizacja:
+
+Najnowsza wersja zawiera ulepszenia stabilności i wydajności.
+
+# Główne wydanie:
+
+Wersja <RELEASE_VERSION> zawiera <FEATURE> na iOS. <CONCISE_DESC>

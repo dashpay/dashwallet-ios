@@ -1,0 +1,35 @@
+[update]
+tasks = ["interfaces", "code", "normalize"]
+
+# `.claude` holds agent worktrees: full copies of the project. Left alone, BartyCrouch
+# walks that duplicate source and imports keys from whatever branch is checked out
+# there into this branch's catalog. The other entries are BartyCrouch's own defaults,
+# repeated because setting this key replaces the default list rather than extending it.
+
+[update.interfaces]
+path = "."
+defaultToBase = true
+ignoreEmptyStrings = false
+unstripped = false
+subpathsToIgnore = [".git", "build", "carthage", "docs", "pods", ".claude"]
+
+[update.code]
+codePath = "."
+localizablePath = "."
+defaultToKeys = true
+additive = false
+unstripped = false
+subpathsToIgnore = [".git", "build", "carthage", "docs", "pods", ".claude"]
+
+[update.normalize]
+path = "."
+sourceLocale = "en"
+harmonizeWithSource = true
+sortByKeys = true
+subpathsToIgnore = [".git", "build", "carthage", "docs", "pods", ".claude"]
+
+[lint]
+path = "."
+duplicateKeys = true
+emptyValues = true
+subpathsToIgnore = [".git", "build", "carthage", "docs", "pods", ".claude"]

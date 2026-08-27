@@ -1,0 +1,7 @@
+# Mise à jour mineure :
+
+Cette toute dernière version contient des correctifs et des améliorations des performances.
+
+# Mise à jour importante :
+
+La version <RELEASE_VERSION> inaugure <FEATURE> sur iOS. <CONCISE_DESC>

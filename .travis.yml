@@ -1,0 +1,13 @@
+osx_image: xcode11.2
+language: objective-c
+
+cache: cocoapods
+
+before_install:
+  - set -o pipefail
+  - travis_wait 55 pod install --repo-update
+
+install: true # disable automatic `pod install`
+
+script:
+  - fastlane test

@@ -1,0 +1,14 @@
+# gitleaks fingerprints to ignore (format: <commit>:<path>:<rule>:<line>).
+# Add ONLY reviewed false positives or already-rotated historical leaks here.
+
+# Uphold mainnet clientID/clientSecret, hardcoded in DWUpholdMainnetConstants.m by the
+# DashDEX branch and pushed to this public repo. The credentials have since been rotated,
+# so the values still sitting in history are dead. chore/secrets-hardening moved the
+# constants to the gitignored Uphold-Info.plist so it cannot happen again.
+#
+# Both hashes are the same change: the first is the commit as it landed on
+# feat/dash-dex-impr, the second is that commit as rewritten into feat/release-8.7.0.
+7381075f16bd4d8ea8a36bae54510c4f166a1d0c:DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m:hardcoded-hex-secret-literal:33
+7381075f16bd4d8ea8a36bae54510c4f166a1d0c:DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m:hardcoded-hex-secret-literal:37
+f383b7a8aac5bf7aeb29c4a2a7f7cec54832e2de:DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m:hardcoded-hex-secret-literal:33
+f383b7a8aac5bf7aeb29c4a2a7f7cec54832e2de:DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m:hardcoded-hex-secret-literal:37

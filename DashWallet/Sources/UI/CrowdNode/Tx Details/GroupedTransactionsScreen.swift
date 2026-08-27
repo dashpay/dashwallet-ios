@@ -1,0 +1,132 @@
+//  
+//  Created by Andrei Ashikhmin
+//  Copyright © 2024 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+import SwiftUI
+import DashUIKit
+
+struct GroupedTransactionsScreen: View {
+    @State private var currentTag: String?
+    
+    let model: GroupedTransactions!
+    @Binding var backNavigationRequested: Bool
+    var onShowBackButton: (Bool) -> Void
+    
+    var body: some View {
+        ScrollView {
+            LazyVStack(spacing: 0) {
+                Section {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(model.title)
+                                .font(.subheadline)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            DashAmount(amount: model.amount, font: .largeTitle, dashSymbolFactor: 0.7)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Text(model.fiatAmount)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .font(.caption)
+                                .foregroundColor(.dash.tertiaryText)
+
+                            if let summary = model.summaryText {
+                                Text(summary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .font(.caption)
+                                    .foregroundColor(.dash.tertiaryText)
+                                    .padding(.top, 2)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        
+                        Spacer()
+                        
+                        Icon(name: .custom(model.iconName))
+                            .padding(10)
+                            .frame(width: 50, height: 50)
+                            .background(Color.dash.secondaryBackground)
+                            .clipShape(.circle)
+                    }
+                    .padding(.horizontal, 25)
+                    .padding(.bottom, 5)
+                }
+                    
+                Section {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(NSLocalizedString("Why do I see all these transactions?", comment: "Grouped Transactions"))
+                            .font(.footnote)
+                            .fontWeight(.medium)
+                            .foregroundStyle(Color.dash.tertiaryText)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                        Text(model.infoText)
+                            .font(.subheadline)
+                            .foregroundColor(Color.dash.primaryText)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(15)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.dash.secondaryBackground)
+                    .cornerRadius(10)
+                    .padding()
+                }
+    
+                Section {
+                    LazyVStack(spacing: 0) {
+                        ForEach(model.transactions, id: \.txHashHexString) { txItem in
+                            ZStack {
+                                NavigationLink(
+                                    destination:
+                                        TXDetailVCWrapper(
+                                            tx: txItem,
+                                            navigateBack: $backNavigationRequested,
+                                            onDismissed: {
+                                                onShowBackButton(false)
+                                            }
+                                        ).navigationBarHidden(true),
+                                    tag: txItem.txHashHexString,
+                                    selection: self.$currentTag
+                                ) {
+                                    SwiftUI.EmptyView()
+                                }.opacity(0)
+
+                                TransactionPreview(
+                                    title: txItem.stateTitle,
+                                    subtitle: txItem.shortTimeString,
+                                    icon: .custom(txItem.iconName),
+                                    dashAmount: txItem.signedDashAmount,
+                                    overrideFiatAmount: txItem.fiatAmount
+                                ) {
+                                    self.currentTag = txItem.txHashHexString
+                                    onShowBackButton(true)
+                                }
+                                .frame(minHeight: 66)
+                            }
+                        }
+                    }
+                    .padding(5)
+                    .background(Color.dash.secondaryBackground)
+                    .cornerRadius(10)
+                    .padding(.horizontal, 15)
+                    .shadow(color: .shadow, radius: 10, x: 0, y: 5)
+                }
+            }
+        }
+        .frame(maxHeight: .infinity)
+        .background(Color.dash.primaryBackground)
+    }
+}

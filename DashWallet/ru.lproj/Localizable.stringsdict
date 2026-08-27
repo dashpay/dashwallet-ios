@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>%ld used</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@used@</string>
+		<key>used</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld использован</string>
+			<key>few</key>
+			<string>%ld использовано</string>
+			<key>many</key>
+			<string>%ld использовано</string>
+			<key>other</key>
+			<string>%ld использовано</string>
+		</dict>
+	</dict>
+	<key>%d ATM(s) in %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@atms@</string>
+		<key>atms</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%1$d ATM in %2$@</string>
+			<key>other</key>
+			<string>%1$d ATMs in %2$@</string>
+			<key>few</key>
+			<string>%1$d ATMs in %2$@</string>
+			<key>many</key>
+			<string>%1$d ATMs in %2$@</string>
+		</dict>
+	</dict>
+	<key>%d merchant(s) in %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d продавец в %@</string>
+			<key>few</key>
+			<string>%d продавцов в %@</string>
+			<key>many</key>
+			<string>%d продавцов в %@</string>
+			<key>other</key>
+			<string>%d продавцы в %@</string>
+		</dict>
+	</dict>
+	<key>%d merchant(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d продавец</string>
+			<key>few</key>
+			<string>%d продавцов</string>
+			<key>many</key>
+			<string>%d продавцов</string>
+			<key>other</key>
+			<string>%d продавцы</string>
+		</dict>
+	</dict>
+	<key>%d transaction(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@transactions@</string>
+		<key>transactions</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d транзакция</string>
+			<key>few</key>
+			<string>%d транзакций</string>
+			<key>many</key>
+			<string>%d транзакций</string>
+			<key>other</key>
+			<string>%d транзакций</string>
+		</dict>
+	</dict>
+	<key>%d key(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@keys@</string>
+		<key>keys</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>ключ</string>
+			<key>few</key>
+			<string>ключей</string>
+			<key>many</key>
+			<string>ключей</string>
+			<key>other</key>
+			<string>ключи</string>
+		</dict>
+	</dict>
+	<key>%u votes counted for “%@”</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@votes@ за «%2$@»</string>
+		<key>votes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>%1$u голос</string>
+			<key>few</key>
+			<string>%1$u голоса</string>
+			<key>many</key>
+			<string>%1$u голосов</string>
+			<key>other</key>
+			<string>%1$u голоса</string>
+		</dict>
+	</dict>
+	<key>%d of %d usernames voted on</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>Проголосовано за %1$d из %#@names@</string>
+		<key>names</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$d имени пользователя</string>
+			<key>few</key>
+			<string>%2$d имён пользователей</string>
+			<key>many</key>
+			<string>%2$d имён пользователей</string>
+			<key>other</key>
+			<string>%2$d имён пользователей</string>
+		</dict>
+	</dict>
+	<key>Cast %u votes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>Отдать %u голос</string>
+			<key>few</key>
+			<string>Отдать %u голоса</string>
+			<key>many</key>
+			<string>Отдать %u голосов</string>
+			<key>other</key>
+			<string>Отдать %u голоса</string>
+		</dict>
+	</dict>
+	<key>%d of %d masternodes voted</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>Голосование: %1$d из %#@nodes@</string>
+		<key>nodes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$d мастерноды</string>
+			<key>few</key>
+			<string>%2$d мастернод</string>
+			<key>many</key>
+			<string>%2$d мастернод</string>
+			<key>other</key>
+			<string>%2$d мастернод</string>
+		</dict>
+	</dict>
+	<key>%d of %d nodes voted</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>Голосование: %1$d из %#@nodes@</string>
+		<key>nodes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$d узла</string>
+			<key>few</key>
+			<string>%2$d узлов</string>
+			<key>many</key>
+			<string>%2$d узлов</string>
+			<key>other</key>
+			<string>%2$d узлов</string>
+		</dict>
+	</dict>
+	<key>%d evonodes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d evonode</string>
+			<key>few</key>
+			<string>%d evonode</string>
+			<key>many</key>
+			<string>%d evonode</string>
+			<key>other</key>
+			<string>%d evonode</string>
+		</dict>
+	</dict>
+	<key>%u votes in total</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>всего %u голос</string>
+			<key>few</key>
+			<string>всего %u голоса</string>
+			<key>many</key>
+			<string>всего %u голосов</string>
+			<key>other</key>
+			<string>всего %u голоса</string>
+		</dict>
+	</dict>
+	<key>%d masternodes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d мастернода</string>
+			<key>few</key>
+			<string>%d мастерноды</string>
+			<key>many</key>
+			<string>%d мастернод</string>
+			<key>other</key>
+			<string>%d мастерноды</string>
+		</dict>
+	</dict>
+	<key>%d selected</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d выбран</string>
+			<key>few</key>
+			<string>%d выбрано</string>
+			<key>many</key>
+			<string>%d выбрано</string>
+			<key>other</key>
+			<string>%d выбрано</string>
+		</dict>
+	</dict>
+	<key>%d of your nodes already voted here and are not listed.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d ваш узел уже проголосовал здесь и не показан.</string>
+			<key>few</key>
+			<string>%d ваших узла уже проголосовали здесь и не показаны.</string>
+			<key>many</key>
+			<string>%d ваших узлов уже проголосовали здесь и не показаны.</string>
+			<key>other</key>
+			<string>%d ваших узлов уже проголосовали здесь и не показаны.</string>
+		</dict>
+	</dict>
+	<key>%u votes per contest — evonodes count as 4, masternodes as 1</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>%u голос за спор — evonode считаются как 4, мастерноды как 1</string>
+			<key>few</key>
+			<string>%u голоса за спор — evonode считаются как 4, мастерноды как 1</string>
+			<key>many</key>
+			<string>%u голосов за спор — evonode считаются как 4, мастерноды как 1</string>
+			<key>other</key>
+			<string>%u голосов за спор — evonode считаются как 4, мастерноды как 1</string>
+		</dict>
+	</dict>
+	<key>Vote on %d usernames</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Голосовать за %d имя пользователя</string>
+			<key>few</key>
+			<string>Голосовать за %d имени пользователя</string>
+			<key>many</key>
+			<string>Голосовать за %d имён пользователей</string>
+			<key>other</key>
+			<string>Голосовать за %d имён пользователей</string>
+		</dict>
+	</dict>
+	<key>%u votes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>%u голос</string>
+			<key>few</key>
+			<string>%u голоса</string>
+			<key>many</key>
+			<string>%u голосов</string>
+			<key>other</key>
+			<string>%u голоса</string>
+		</dict>
+	</dict>
+	<key>Vote ×%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Голосовать ×%d</string>
+			<key>few</key>
+			<string>Голосовать ×%d</string>
+			<key>many</key>
+			<string>Голосовать ×%d</string>
+			<key>other</key>
+			<string>Голосовать ×%d</string>
+		</dict>
+	</dict>
+	<key>%d requests</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d запрос</string>
+			<key>few</key>
+			<string>%d запроса</string>
+			<key>many</key>
+			<string>%d запросов</string>
+			<key>other</key>
+			<string>%d запроса</string>
+		</dict>
+	</dict>
+	<key>%d words</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d слово</string>
+			<key>few</key>
+			<string>%d слова</string>
+			<key>many</key>
+			<string>%d слов</string>
+			<key>other</key>
+			<string>%d слова</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

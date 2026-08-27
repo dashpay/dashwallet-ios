@@ -1,0 +1,7 @@
+# 次要更新:
+
+最新版本包含稳定性和性能提升.
+
+# 主要更新:
+
+版本<RELEASE_VERSION> 在 iOS 上引入了 <FEATURE> 版本.<CONCISE_DESC>

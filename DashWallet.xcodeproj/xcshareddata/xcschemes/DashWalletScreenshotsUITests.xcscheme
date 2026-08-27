@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "1430"
+   version = "1.7">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "2A4662FF2279DC2F0027533B"
+               BuildableName = "DashWalletScreenshotsUITests.xctest"
+               BlueprintName = "DashWalletScreenshotsUITests"
+               ReferencedContainer = "container:DashWallet.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "YES">
+      <PreActions>
+         <ExecutionAction
+            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
+            <ActionContent
+               title = "Simulator Status Bar Override"
+               scriptText = "function version {&#10;    echo &quot;$@&quot; | awk -F. &apos;{ printf(&quot;%d%03d%03d%03d\n&quot;, $1,$2,$3,$4); }&apos;;&#10;}&#10;&#10;# Don&#x2019;t run on iOS devices.&#10;if [[ &quot;${SDKROOT}&quot; != *&quot;simulator&quot;* ]]; then&#10;    exit 0&#10;fi&#10;&#10;# Don&#x2019;t run on iOS versions before 13.&#10;if [ $(version &quot;${TARGET_DEVICE_OS_VERSION}&quot;) -ge $(version &quot;13&quot;) ]; then&#10;    xcrun simctl boot &quot;${TARGET_DEVICE_IDENTIFIER}&quot;&#10;&#10;    xcrun simctl status_bar &quot;${TARGET_DEVICE_IDENTIFIER}&quot; override \&#10;        --time &quot;9:41&quot; \&#10;        --dataNetwork wifi \&#10;        --wifiMode active \&#10;        --wifiBars 3 \&#10;        --cellularMode active \&#10;        --cellularBars 4 \&#10;        --batteryState charged \&#10;        --batteryLevel 100&#10;fi&#10;">
+               <EnvironmentBuildable>
+                  <BuildableReference
+                     BuildableIdentifier = "primary"
+                     BlueprintIdentifier = "2A4662FF2279DC2F0027533B"
+                     BuildableName = "DashWalletScreenshotsUITests.xctest"
+                     BlueprintName = "DashWalletScreenshotsUITests"
+                     ReferencedContainer = "container:DashWallet.xcodeproj">
+                  </BuildableReference>
+               </EnvironmentBuildable>
+            </ActionContent>
+         </ExecutionAction>
+      </PreActions>
+      <PostActions>
+         <ExecutionAction
+            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
+            <ActionContent
+               title = "Simulator Status Bar Disable Override"
+               scriptText = "function version {&#10;    echo &quot;$@&quot; | awk -F. &apos;{ printf(&quot;%d%03d%03d%03d\n&quot;, $1,$2,$3,$4); }&apos;;&#10;}&#10;&#10;# Don&#x2019;t run on iOS devices.&#10;if [[ &quot;${SDKROOT}&quot; != *&quot;simulator&quot;* ]]; then&#10;    exit 0&#10;fi&#10;&#10;# Don&#x2019;t run on iOS versions before 13.&#10;if [ $(version &quot;${TARGET_DEVICE_OS_VERSION}&quot;) -ge $(version &quot;13&quot;) ]; then&#10;    xcrun simctl boot &quot;${TARGET_DEVICE_IDENTIFIER}&quot;&#10;    xcrun simctl status_bar &quot;${TARGET_DEVICE_IDENTIFIER}&quot; clear&#10;fi&#10;">
+               <EnvironmentBuildable>
+                  <BuildableReference
+                     BuildableIdentifier = "primary"
+                     BlueprintIdentifier = "2A4662FF2279DC2F0027533B"
+                     BuildableName = "DashWalletScreenshotsUITests.xctest"
+                     BlueprintName = "DashWalletScreenshotsUITests"
+                     ReferencedContainer = "container:DashWallet.xcodeproj">
+                  </BuildableReference>
+               </EnvironmentBuildable>
+            </ActionContent>
+         </ExecutionAction>
+      </PostActions>
+      <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "2A4662FF2279DC2F0027533B"
+               BuildableName = "DashWalletScreenshotsUITests.xctest"
+               BlueprintName = "DashWalletScreenshotsUITests"
+               ReferencedContainer = "container:DashWallet.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
+   </TestAction>
+   <LaunchAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "2A4662FF2279DC2F0027533B"
+            BuildableName = "DashWalletScreenshotsUITests.xctest"
+            BlueprintName = "DashWalletScreenshotsUITests"
+            ReferencedContainer = "container:DashWallet.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+   </LaunchAction>
+   <ProfileAction
+      buildConfiguration = "Release"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      debugDocumentVersioning = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "2A4662FF2279DC2F0027533B"
+            BuildableName = "DashWalletScreenshotsUITests.xctest"
+            BlueprintName = "DashWalletScreenshotsUITests"
+            ReferencedContainer = "container:DashWallet.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Debug">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>

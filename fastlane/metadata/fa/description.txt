@@ -1,0 +1,20 @@
+Dash Wallet is the first iPhone wallet for Dash - Digital Cash - a better innovative alternative to bitcoin which is focused on payments.
+
+Dash is a cryptocurrency that seeks to fix the flaws that other cryptocurrencies suffer from. It relies on a network of Masternodes to allow such things as instant transactions, optional privacy features, and a direct funding mechanism to kickstart innovative ideas.
+
+دش والت یک کیف پول امن و با کاربری ساده است که به شما امکان می‌دهد کنترل کاملی روی پول دیجیتال‌تان داشته باشید. با امن‌ترین کیف پول موبایل موجود، دش را به شکلی آنی دریافت و ارسال کنید. 
+
+Dash Wallet is the first and only iPhone wallet that connects directly to the Dash network. This means that there are no servers to get hacked or go down - your funds are always safe. Even if your phone is lost, damaged or stolen, you can easily recover your funds using your personal recovery phrase.
+
+قابلیت‌ها: 
+
+*دش را به صورت آنلاین یا حضوری، طی چند ثانیه بفرستید یا دریافت کنید
+دریافت دش فقط با فشار یک دگمه برای صاحبان کسب‌وکار و وب‌سایت‌های پذیرنده دش
+* Pay quickly with Face ID recognition
+* خالی کردن موجودی کیف پول کاغذی (کیف پول کاغذی برای ذخیره سرد رمزارزها به کار می‌رود)
+درهم‌آمیزی طرف سوم برای ایجاد امکان خرید و فروش دش توسط کاربران
+* Simple recovery phrase enables you to recover funds when your device is lost or broken
+* تنظیمات انعطاف‌پذیر برای دسترسی به طیف متنوعی از گزینه‌های امنیتی
+* Direct Dash network client - no central server to get hacked or go down
+
+Dash Wallet is open source and free. There are no extra transaction fees or costs. Send any amount of money to anyone in the world instantly. This is how money should be.

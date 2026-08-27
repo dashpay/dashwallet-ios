@@ -1,0 +1,44 @@
+//
+//  Prefix header
+//
+//  The contents of this file are implicitly included at the beginning of every source file.
+//
+
+#ifndef DashWallet_PrefixHeader_pch
+#define DashWallet_PrefixHeader_pch
+
+#ifdef __OBJC__
+
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
+#import "DWLogger.h"
+
+// Compile-time check for keypaths
+// More info: https://pspdfkit.com/blog/2017/even-swiftier-objective-c/
+#if DEBUG
+#define DW_KEYPATH(object, property) ((void)(NO && ((void)object.property, NO)), @ #property)
+#else
+#define DW_KEYPATH(object, property) @ #property
+#endif /* DEBUG */
+
+#endif /* __OBJC__ */
+
+// Uncomment this before running `fastlane snapshot`
+//#define SNAPSHOT 1
+
+#ifndef DASH_TESTNET
+#define DASH_TESTNET 0
+#endif /* DASH_TESTNET */
+
+#define PEER_LOGGING    1
+#define EVENT_LOGGING   1
+#define MESSAGE_LOGGING 0
+#define DROP_MESSAGE_LOGGING (0 & DEBUG)
+#define EXCHANGE_RATES_LOGGING 0
+
+#if ! DEBUG
+#define NSLog(...)
+#endif /* ! DEBUG */
+
+#endif /* DashWallet_PrefixHeader_pch */

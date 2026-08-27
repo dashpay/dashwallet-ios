@@ -1,0 +1,667 @@
+//
+//  Created by Andrew Podkovyrin
+//  Copyright © 2019 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#import "DWAppRootViewController.h"
+
+#import "DWLockScreenViewController.h"
+#import "DWRootModel.h"
+#import "DWSetupViewController.h"
+#import "DWUIKit.h"
+#import "DWURLParser.h"
+#import "DWURLRequestHandler.h"
+#import "dashwallet-Swift.h"
+
+#if DASHPAY
+#import "DWInvitationSetupState.h"
+#endif
+
+NS_ASSUME_NONNULL_BEGIN
+
+NSNotificationName const DWAppDidUnlockNotification = @"DWAppDidUnlockNotification";
+
+static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
+
+@interface DWAppRootViewController () <DWSetupViewControllerDelegate,
+                                       DWWipeDelegate,
+                                       DWLockScreenViewControllerDelegate>
+
+@property (readonly, nonatomic, strong) id<DWRootProtocol> model;
+
+@property (null_resettable, nonatomic, strong) MainTabbarController *mainController;
+
+@property (nullable, nonatomic, strong) UIImageView *overlayImageView;
+@property (nonatomic, strong) UIWindow *lockWindow;
+@property (nullable, nonatomic, weak) DWLockScreenViewController *lockController;
+@property (nullable, nonatomic, weak) UIViewController *displayedLockNavigationController;
+
+@property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
+@property (nullable, nonatomic, strong) NSURL *deferredDeeplinkToProcess;
+@property (nonatomic, assign) BOOL walletWipeInProgress;
+
+- (void)beginWipeWalletWithAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
+- (void)presentWalletWipeFailureForAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
+#if DASHPAY
+@property (null_resettable, nonatomic, strong) DWInvitationSetupState *invitationSetup;
+#endif
+
+@property (nonatomic, assign) BOOL launchingWasDeferred;
+
+@end
+
+@implementation DWAppRootViewController
+
+- (instancetype)init {
+    return [self initWithModel:[[DWRootModel alloc] init]];
+}
+
+- (instancetype)initWithModel:(id<DWRootProtocol>)model {
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        _model = model;
+    }
+    return self;
+}
+
+#pragma mark - Public
+
++ (Class)mainControllerClass {
+    return [MainTabbarController class];
+}
+
+- (void)setLaunchingAsDeferredController {
+    self.launchingWasDeferred = YES;
+}
+
+#if DASHPAY
+- (void)handleDeeplink:(NSURL *)url {
+    if (self.model.hasAWallet == NO) {
+        self.invitationSetup.invitation = url;
+        return;
+    }
+
+    // Defer URL until unlocked.
+    // This also prevents an issue with too fast unlocking via Face ID.
+    BOOL isLocked = [self.model shouldShowLockScreen] || self.lockController;
+    if (isLocked && self.deferredDeeplinkToProcess == nil) {
+        self.deferredDeeplinkToProcess = url;
+        return;
+    }
+
+    [self.mainController handleDeeplink:url definedUsername:nil];
+}
+#endif
+
+- (void)handleURL:(NSURL *)url {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+    // Defer URL until unlocked.
+    // This also prevents an issue with too fast unlocking via Face ID.
+    BOOL isLocked = [self.model shouldShowLockScreen] || self.lockController;
+    if (isLocked && self.deferredURLToProcess == nil) {
+        self.deferredURLToProcess = url;
+        return;
+    }
+
+    DWURLAction *action = [DWURLParser actionForURL:url];
+    if (!action) {
+        UIAlertController *alert = [UIAlertController
+            alertControllerWithTitle:NSLocalizedString(@"Unsupported URL", nil)
+                             message:url.absoluteString
+                      preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *okAction = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"OK", nil)
+                      style:UIAlertActionStyleCancel
+                    handler:nil];
+
+        [alert addAction:okAction];
+
+        UIApplication *application = [UIApplication sharedApplication];
+        UIViewController *presentingController = [application.keyWindow.rootViewController topController];
+        [presentingController presentViewController:alert animated:YES completion:nil];
+
+        return;
+    }
+
+    if ([action isKindOfClass:DWURLScanQRAction.class]) {
+        [self.mainController performScanQRCodeAction];
+    }
+    else if ([action isKindOfClass:DWURLIntegrationAction.class]) {
+        NSURL *url = [(DWURLIntegrationAction *)action url];
+        [[NSNotificationCenter defaultCenter] postNotificationName:NSNotification.authURLReceived object:url];
+    }
+    else if ([action isKindOfClass:DWURLRequestAction.class]) {
+        [DWURLRequestHandler handleURLRequest:(DWURLRequestAction *)action];
+    }
+    else if ([action isKindOfClass:DWURLPayAction.class]) {
+        NSURL *paymentURL = [(DWURLPayAction *)action paymentURL];
+        [self.mainController performPayTo:paymentURL];
+    }
+    else {
+        NSAssert(NO, @"Unhandled action", action);
+    }
+}
+
+- (void)openPaymentsScreen {
+    // This method is used to simulate user action in onboarding
+    // Root controller configured to be non-lockable, so these controllers should be nil
+    NSAssert(self.lockController == nil, @"Inconsistent state");
+    NSAssert(self.displayedLockNavigationController == nil, @"Inconsistent state");
+    NSAssert([self.model shouldShowLockScreen] == NO, @"Iconsistent state");
+
+    [self.mainController openPaymentsScreen];
+}
+
+- (void)closePaymentsScreen {
+    // This method is used to simulate user action in onboarding
+    // Root controller configured to be non-lockable, so these controllers should be nil
+    NSAssert(self.lockController == nil, @"Inconsistent state");
+    NSAssert(self.displayedLockNavigationController == nil, @"Inconsistent state");
+    NSAssert([self.model shouldShowLockScreen] == NO, @"Iconsistent state");
+
+    [self.mainController closePaymentsScreen];
+}
+
+#pragma mark - Life Cycle
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    self.view.backgroundColor = [UIColor dw_backgroundColor];
+
+    const CGRect screenBounds = [UIScreen mainScreen].bounds;
+    UIWindow *lockWindow = [[UIWindow alloc] initWithFrame:screenBounds];
+    lockWindow.backgroundColor = [UIColor blackColor];
+    lockWindow.windowLevel = UIWindowLevelNormal;
+    self.lockWindow = lockWindow;
+
+    // Display main controller initially if there is a wallet and lock screen is disabled
+    // Otherwise main controller will be set as current in `lockScreenViewControllerDidUnlock:`
+    const BOOL hasAWallet = self.model.hasAWallet;
+    UIViewController *controller = nil;
+    if (hasAWallet) {
+        if (![self.model shouldShowLockScreen]) {
+            controller = [self mainController];
+        }
+    }
+    // A DashSync-era wallet in the keychain with the async key migrator
+    // still running means "no wallet" is a lie about to become true.
+    // Deciding now would show Create/Recover to an upgrading user whose
+    // wallet is milliseconds from appearing — and route their typed
+    // phrase into the recover screen's wipe branch. Hold the launch
+    // background and decide once the migrator settles (typically well
+    // under a second; bounded fallback in the poller).
+    const BOOL keyMigrationPending =
+        !hasAWallet && [DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration];
+    if (!hasAWallet && !keyMigrationPending) {
+        controller = [self setupController];
+    }
+
+    if (controller) {
+        [self transitionToController:controller];
+    }
+
+    if (keyMigrationPending) {
+        [self presentInitialControllerWhenKeyMigrationSettles:
+                  [NSDate dateWithTimeIntervalSinceNow:10.0]];
+    }
+
+    if (hasAWallet) {
+        // Lock controller will be shown in applicationDidBecomeActiveNotification.
+        // INFO: If we make the lockWindow key and visisble before our main window gets properly initialized
+        // it will lead to weird bugs with keyboard (lockWindow will be visible, but main window remain key).
+        //
+        // Temporary cover root controller with overlay. It will be hidden after unlocking or
+        // when unlocking is not needed
+        UIImageView *overlayImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"image_bg"]];
+        overlayImageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        overlayImageView.frame = screenBounds;
+        overlayImageView.contentMode = UIViewContentModeScaleAspectFill;
+        [self.view addSubview:overlayImageView];
+        self.overlayImageView = overlayImageView;
+    }
+
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationDidBecomeActiveNotification)
+                               name:UIApplicationDidBecomeActiveNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationWillResignActiveNotification)
+                               name:UIApplicationWillResignActiveNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationWillEnterForegroundNotification)
+                               name:UIApplicationWillEnterForegroundNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationDidEnterBackgroundNotification)
+                               name:UIApplicationDidEnterBackgroundNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(windowDidBecomeKeyNotification:)
+                               name:UIWindowDidBecomeKeyNotification
+                             object:nil];
+
+    __weak typeof(self) weakSelf = self;
+    self.model.currentNetworkDidChangeBlock = ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        // reset main controller stack
+        strongSelf->_mainController = nil;
+
+        UIViewController *controller = [strongSelf mainController];
+        [strongSelf transitionToController:controller
+                            transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
+    };
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    if (!self.model.walletOperationAllowed) {
+        [self showDevicePasscodeAlert];
+    }
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    // If this controller was installed after launch (post-onboarding
+    // setLaunchingAsDeferredController chain), perform the missed
+    // UIApplicationDidBecomeActiveNotification notification action
+    if (self.launchingWasDeferred) {
+        self.launchingWasDeferred = NO;
+
+        [self applicationDidBecomeActiveNotification];
+    }
+}
+
+#pragma mark - Key migration launch hold
+
+/// Poll the key migrator's terminal state, then present the initial
+/// controller the normal launch decision would have picked: main (behind
+/// the lock screen — `PinStore` reads DashSync's PIN records in place, so
+/// the migrated wallet keeps its old PIN) when the wallet landed, setup
+/// otherwise. Bounded by `deadline` so a wedged migrator degrades to the
+/// old behavior instead of a blank screen.
+- (void)presentInitialControllerWhenKeyMigrationSettles:(NSDate *)deadline {
+    if (![DWSwiftDashSDKKeyMigrator migrationSettled] && [deadline timeIntervalSinceNow] > 0) {
+        __weak typeof(self) weakSelf = self;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)),
+                       dispatch_get_main_queue(), ^{
+                           [weakSelf presentInitialControllerWhenKeyMigrationSettles:deadline];
+                       });
+        return;
+    }
+
+    const BOOL hasAWallet = self.model.hasAWallet;
+    if (hasAWallet) {
+        if ([self.model shouldShowLockScreen]) {
+            [self showLockControllerIfNeeded];
+        }
+        else {
+            [self transitionToController:[self mainController]];
+        }
+    }
+    else {
+        [self transitionToController:[self setupController]];
+    }
+}
+
+#pragma mark - DWSetupViewControllerDelegate
+
+- (void)setupViewControllerDidFinish:(DWSetupViewController *)controller {
+    [self.model setupDidFinish];
+
+    UIViewController *mainController = self.mainController;
+    [self transitionToController:mainController
+                  transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
+
+#if DASHPAY
+    if (self.invitationSetup.invitation != nil) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self.mainController handleDeeplink:self.invitationSetup.invitation
+                                definedUsername:self.invitationSetup.chosenUsername];
+            self.invitationSetup = nil;
+        });
+    }
+#endif
+}
+
+#pragma mark - DWWipeDelegate
+
+- (void)didWipeWallet {
+    UIViewController *setupController = [self setupController];
+    [self transitionToController:setupController
+                  transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
+
+
+    [self.model.homeModel walletDidWipe];
+    // reset main controller stack
+    _mainController = nil;
+}
+
+/// Coordinated path for an already-confirmed Delete All. Unlike the legacy
+/// `didWipeWallet` notification, this transitions to the setup screen BEFORE
+/// deleting state, then blocks that screen with a HUD until the SDK wiper's
+/// FIFO barrier has completed. This avoids displaying a tappable-looking
+/// onboarding screen while synchronous SDK deletion still occupies MainActor.
+- (void)beginWipeWallet {
+    [self beginWipeWalletWithAuthorization:DWSwiftDashSDKWalletWipeAuthorizationConfirmedDeleteAll];
+}
+
+- (void)beginDebugWipeWallet {
+    [self beginWipeWalletWithAuthorization:DWSwiftDashSDKWalletWipeAuthorizationDebugReset];
+}
+
+- (void)beginWipeWalletWithAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization {
+    if (self.walletWipeInProgress) {
+        return;
+    }
+    // The admission gate rejects while another lifecycle operation (network
+    // or wallet switch, removal) is in flight — a concurrent wipe would
+    // mutate wallet state under that operation's teardown/rebuild. On
+    // success the app-wide overlay window shows the blocking wipe card
+    // (shared with network/wallet switches), replacing the screen-local HUD.
+    if (![DWWalletLifecycleOverlayBridge beginWipingWithTitle:nil]) {
+        // A silently swallowed confirm on a destructive action is worse than
+        // a redundant alert — say why nothing happened.
+        UIAlertController *alert =
+            [UIAlertController alertControllerWithTitle:nil
+                                                message:NSLocalizedString(@"Another wallet operation is already in progress.", nil)
+                                         preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
+                                                  style:UIAlertActionStyleCancel
+                                                handler:nil]];
+        [self.currentController presentViewController:alert animated:YES completion:nil];
+        return;
+    }
+    self.walletWipeInProgress = YES;
+
+    UIViewController *setupController = [self setupController];
+    [self transitionToController:setupController
+                  transitionType:DWContainerTransitionType_WithoutAnimation];
+
+    [self.model.homeModel walletDidWipe];
+    _mainController = nil;
+
+    __weak typeof(self) weakSelf = self;
+    // The SDK delete is synchronous on MainActor. Let UIKit commit the setup
+    // screen and the overlay first; otherwise the first visible frame is only
+    // drawn after the blocking deletion has already finished.
+    dispatch_time_t startTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC));
+    dispatch_after(startTime, dispatch_get_main_queue(), ^{
+        typeof(self) strongSelf = weakSelf;
+        if (strongSelf == nil) {
+            // The gate was already taken above — release it, or `.wiping`
+            // (and its blocking overlay) would outlive a wipe that never
+            // started.
+            [DWWalletLifecycleOverlayBridge finishWiping];
+            return;
+        }
+
+        [DWSwiftDashSDKWalletWiper wipeWalletWithAuthorization:authorization];
+        [DWSwiftDashSDKWalletWiper waitForPendingWipeWithCompletion:^(BOOL wipeSucceeded) {
+            // Drop the overlay before anything self-dependent: the wiping
+            // phase must never outlive the barrier, even if this controller
+            // has gone away by the time it completes.
+            [DWWalletLifecycleOverlayBridge finishWiping];
+            typeof(self) completedSelf = weakSelf;
+            if (completedSelf == nil) {
+                return;
+            }
+            completedSelf.walletWipeInProgress = NO;
+            if (!wipeSucceeded) {
+                [completedSelf presentWalletWipeFailureForAuthorization:authorization];
+            }
+        }];
+    });
+}
+
+- (void)presentWalletWipeFailureForAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization {
+    UIAlertController *alert =
+        [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Couldn’t Delete All Wallets", nil)
+                                            message:NSLocalizedString(@"Not all wallets could be deleted. Please try again.", nil)
+                                     preferredStyle:UIAlertControllerStyleAlert];
+
+    __weak typeof(self) weakSelf = self;
+    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Retry", nil)
+                                              style:UIAlertActionStyleDefault
+                                            handler:^(UIAlertAction *_Nonnull action) {
+                                                [weakSelf beginWipeWalletWithAuthorization:authorization];
+                                            }]];
+    [self.currentController presentViewController:alert animated:YES completion:nil];
+}
+
+#pragma mark - DWLockScreenViewControllerDelegate
+
+- (void)lockScreenViewControllerDidUnlock:(DWLockScreenViewController *)controller {
+    NSParameterAssert(self.displayedLockNavigationController);
+
+    [self hideAndRemoveOverlayImageView];
+
+    if (self.currentController == nil) {
+        UIViewController *controller = [self mainController];
+        [self transitionToController:controller];
+    }
+
+    [UIView animateWithDuration:UNLOCK_ANIMATION_DURATION
+        animations:^{
+            self.lockWindow.alpha = 0.0;
+        }
+        completion:^(BOOL finished) {
+            self.lockWindow.rootViewController = nil;
+            self.lockWindow.hidden = YES;
+            self.lockWindow.alpha = 1.0;
+
+            if (self.deferredDeeplinkToProcess) {
+#if DASHPAY
+                [self handleDeeplink:self.deferredDeeplinkToProcess];
+#endif
+            }
+            else if (self.deferredURLToProcess) {
+                [self handleURL:self.deferredURLToProcess];
+            }
+            self.deferredDeeplinkToProcess = nil;
+            self.deferredURLToProcess = nil;
+
+            [[NSNotificationCenter defaultCenter] postNotificationName:DWAppDidUnlockNotification
+                                                                object:nil];
+        }];
+}
+
+- (void)lockScreenViewControllerDidWipe:(DWLockScreenViewController *)controller {
+    NSParameterAssert(self.displayedLockNavigationController);
+
+    [self hideAndRemoveOverlayImageView];
+
+    self.lockWindow.rootViewController = nil;
+    self.lockWindow.hidden = YES;
+    self.lockWindow.alpha = 1.0;
+
+    // The support recovery controller reports success only after the serial
+    // wiper has completed. Transition to setup without issuing a second wipe.
+    [self didWipeWallet];
+}
+
+#pragma mark - Notifications
+
+- (void)applicationDidBecomeActiveNotification {
+    [self showLockControllerIfNeeded];
+}
+
+- (void)applicationDidEnterBackgroundNotification {
+}
+
+- (void)applicationWillEnterForegroundNotification {
+}
+
+- (void)applicationWillResignActiveNotification {
+    [self.model applicationWillResignActiveNotification];
+}
+
+- (void)windowDidBecomeKeyNotification:(NSNotification *)notification {
+    // Keeps the displayed lock window key. The post-onboarding reinstall flow
+    // (Keep Wallet → transitionToAppRoot → deferred
+    // applicationDidBecomeActiveNotification) calls makeKeyAndVisible while the
+    // onboarding container transition and the Keep/Delete alert teardown are
+    // still in flight; their completion can hand key status back to the main
+    // window. The lock screen then stays visible but keyboard/first-responder
+    // input routes to the main window underneath — the failure mode described
+    // by the INFO note in viewDidLoad. Whenever the main window becomes key
+    // while the lock window is displayed, take key (and front) back.
+    UIWindow *mainWindow = (UIWindow *)notification.object;
+    if (mainWindow != self.view.window) {
+        return;
+    }
+    if (self.displayedLockNavigationController == nil || self.lockWindow.hidden) {
+        return;
+    }
+
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (strongSelf == nil) {
+            return;
+        }
+        // Re-validate before acting: only take key back if the main window
+        // still holds it. If key has already moved to another window
+        // (software keyboard, LocalAuthentication prompt), leave it alone —
+        // a later steal by the main window fires this observer again.
+        if (mainWindow != strongSelf.view.window || !mainWindow.isKeyWindow) {
+            return;
+        }
+        if (strongSelf.displayedLockNavigationController != nil &&
+            !strongSelf.lockWindow.hidden &&
+            !strongSelf.lockWindow.isKeyWindow) {
+            [strongSelf.lockWindow makeKeyAndVisible];
+        }
+    });
+}
+
+#pragma mark - Demo Mode
+
+- (BOOL)demoMode {
+    return NO;
+}
+
+- (void)setDemoDelegate:(nullable id<DWDemoDelegate>)demoDelegate {
+    NSAssert(self.demoMode, @"Invalid usage. Demo delegate is to be used in the onboarding");
+
+    _demoDelegate = demoDelegate;
+}
+
+#pragma mark - Private
+
+- (void)showLockControllerIfNeeded {
+    if (self.displayedLockNavigationController) {
+        return;
+    }
+
+    if (![self.model shouldShowLockScreen]) {
+        [self hideAndRemoveOverlayImageView];
+
+        return;
+    }
+
+    [self showLockControllerWithMode:DWLockScreenViewControllerUnlockMode_Instantly];
+}
+
+- (void)hideAndRemoveOverlayImageView {
+    self.overlayImageView.hidden = YES;
+    [self.overlayImageView removeFromSuperview];
+    self.overlayImageView = nil;
+}
+
+- (void)showDevicePasscodeAlert {
+    UIAlertController *alert = [UIAlertController
+        alertControllerWithTitle:NSLocalizedString(@"Turn device passcode on", @"Alert title")
+                         message:NSLocalizedString(@"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.", nil)
+                  preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *closeButton = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Close App", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *action) {
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DWApp.applicationTerminationRequestNotification
+                                                                        object:nil];
+                }];
+    [alert addAction:closeButton];
+    [self presentViewController:alert animated:NO completion:nil];
+}
+
+- (UIViewController *)setupController {
+    DWSetupViewController *controller = [DWSetupViewController controller];
+    controller.delegate = self;
+
+    if (self.launchingWasDeferred) {
+        [controller setLaunchingAsDeferredController];
+    }
+
+    DWNavigationController *navigationController = [[DWNavigationController alloc] initWithRootViewController:controller];
+
+    return navigationController;
+}
+
+- (MainTabbarController *)mainController {
+    if (_mainController == nil) {
+        id<DWHomeProtocol> homeModel = self.model.homeModel;
+        MainTabbarController *controller = [[MainTabbarController alloc] initWithHomeModel:self.model.homeModel];
+        controller.wipeDelegate = self;
+        controller.isDemoMode = self.demoMode;
+        controller.demoDelegate = self.demoDelegate;
+
+        _mainController = controller;
+    }
+
+    return _mainController;
+}
+
+- (void)showLockControllerWithMode:(DWLockScreenViewControllerUnlockMode)mode {
+    NSAssert(self.displayedLockNavigationController == nil, @"Inconsistent state");
+
+    id<DWHomeProtocol> homeModel = self.model.homeModel;
+    id<DWPayModelProtocol> payModel = homeModel.payModel;
+    DWLockScreenViewController *controller = [DWLockScreenViewController lockScreenWithUnlockMode:mode
+                                                                                         payModel:payModel];
+    controller.delegate = self;
+
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
+    navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
+
+    self.lockWindow.rootViewController = navigationController;
+    [self.lockWindow makeKeyAndVisible];
+
+    self.lockController = controller;
+    self.displayedLockNavigationController = navigationController;
+}
+
+#if DASHPAY
+- (DWInvitationSetupState *)invitationSetup {
+    if (_invitationSetup == nil) {
+        _invitationSetup = [[DWInvitationSetupState alloc] init];
+    }
+    return _invitationSetup;
+}
+#endif
+
+@end
+
+NS_ASSUME_NONNULL_END

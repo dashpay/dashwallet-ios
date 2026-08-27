@@ -1,0 +1,7 @@
+# Minor Update:
+
+Ang pinakabagong bersyon ay naglalaman ng katatagan at mga pagpapahusay sa pagganap.
+
+# Major release:
+
+Ang bersyon <RELEASE_VERSION> nagdadala ng pagpapakilala ng <FEATURE> sa iOS. <CONCISE_DESC>

@@ -1,0 +1,1 @@
+App behaves the same as in previous versions. Just minor bug fixes.

@@ -1,0 +1,122 @@
+//
+//  Created by Pavel Tikhonenko
+//  Copyright © 2022 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+import AuthenticationServices
+import Foundation
+
+// MARK: - Service
+
+enum Service: CaseIterable {
+    case coinbase
+    case uphold
+    case topper
+    case maya
+    case swapKit
+}
+
+// MARK: - BuySellPortalModel.Section
+
+extension BuySellPortalModel {
+    enum Section: Int {
+        case main
+    }
+}
+
+extension Service {
+    var title: String {
+        switch self {
+        case .coinbase: return NSLocalizedString("Coinbase", comment: "Dash Portal")
+        case .uphold: return NSLocalizedString("Uphold", comment: "Dash Portal")
+        case .topper: return NSLocalizedString("Topper", comment: "Dash Portal")
+        case .maya: return NSLocalizedString("Maya", comment: "Dash Portal")
+        case .swapKit: return NSLocalizedString("SwapKit", comment: "Dash Portal")
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .coinbase: return NSLocalizedString("Link your account", comment: "Dash Portal")
+        case .uphold: return NSLocalizedString("Link your account", comment: "Dash Portal")
+        case .topper: return NSLocalizedString("Buy Dash · No account needed", comment: "Dash Portal")
+        case .maya: return NSLocalizedString("Swap Dash · No account needed", comment: "Dash Portal")
+        case .swapKit: return NSLocalizedString("Sell Dash · Best price across networks", comment: "Dash Portal")
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .coinbase: return "menu-coinbase"
+        case .uphold: return "menu-uphold"
+        case .topper: return "menu-topper"
+        case .maya: return "menu-maya"
+        case .swapKit: return "menu-swapkit"
+        }
+    }
+
+    var status: Bool {
+        switch self {
+        case .coinbase: return false
+        case .uphold: return true
+        case .topper: return true
+        case .maya: return true
+        case .swapKit: return SwapKitConstants.isConfigured
+        }
+    }
+
+    var usageCount: Int {
+        UserDefaults.standard.integer(forKey: kServiceUsageCount)
+    }
+
+    func increaseUsageCount() {
+        UserDefaults.standard.set(usageCount + 1, forKey: kServiceUsageCount)
+    }
+}
+
+// MARK: - BuySellPortalModel
+
+class BuySellPortalModel: ObservableObject, NetworkReachabilityHandling {
+    var networkStatusDidChange: ((NetworkStatus) -> ())?
+    internal var reachabilityObserver: Any!
+
+    @Published var items: [ServiceItem] = []
+
+    private var upholdDashCard: DWUpholdCardObject?
+
+    private var serviceItemDataProvider: ServiceDataProvider
+
+    init() {
+        serviceItemDataProvider = ServiceDataProviderImpl()
+        serviceItemDataProvider.listenForData { [weak self] items in
+            DispatchQueue.main.async {
+                self?.items = items
+            }
+        }
+
+        networkStatusDidChange = { [weak self] _ in
+            self?.refreshData()
+        }
+        startNetworkMonitoring()
+    }
+
+    public func refreshData() {
+        serviceItemDataProvider.refresh()
+    }
+
+    deinit {
+        stopNetworkMonitoring()
+    }
+}

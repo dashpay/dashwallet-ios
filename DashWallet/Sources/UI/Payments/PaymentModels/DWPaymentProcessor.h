@@ -1,0 +1,80 @@
+//
+//  Created by Andrew Podkovyrin
+//  Copyright © 2019 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#import <Foundation/Foundation.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+@class DWPaymentInput;
+@class DWPaymentProcessor;
+@class DWPaymentOutput;
+
+@protocol DWPaymentProcessorDelegate <NSObject>
+
+// User Actions
+
+// `amount` is the pre-fill for the amount screen in duffs (0 ⇒ empty). Replaces the old
+// `DSPaymentProtocolDetails` carrier — the only thing the UI read from it was the output-amount sum.
+- (void)paymentProcessor:(DWPaymentProcessor *)processor
+    requestAmountWithDestination:(NSString *)sendingDestination
+                          amount:(uint64_t)amount;
+
+// Confirmation
+
+- (void)paymentProcessor:(DWPaymentProcessor *)processor
+    confirmPaymentOutput:(DWPaymentOutput *)paymentOutput;
+
+- (void)paymentProcessorDidCancelTransactionSigning:(DWPaymentProcessor *)processor;
+
+// Result
+
+- (void)paymentProcessor:(DWPaymentProcessor *)processor
+        didFailWithError:(nullable NSError *)error
+                   title:(nullable NSString *)title
+                 message:(nullable NSString *)message;
+
+// `txidWire` is the broadcast transaction's wire-order txid (`Transaction.txHashData`
+// convention) — the only datum consumers ever read off the old DSTransaction courier;
+// the success screen resolves it to the persisted SDK row.
+- (void)paymentProcessor:(DWPaymentProcessor *)processor
+     didSendWithTxidWire:(NSData *)txidWire;
+
+// Progress HUD
+
+- (void)paymentProcessor:(DWPaymentProcessor *)processor
+    showProgressHUDWithMessage:(nullable NSString *)message;
+- (void)paymentInputProcessorHideProgressHUD:(DWPaymentProcessor *)processor;
+
+@end
+
+// Refactored version of old DWSendViewController logic
+
+@interface DWPaymentProcessor : NSObject
+
+@property (nullable, nonatomic, weak) id<DWPaymentProcessorDelegate> delegate;
+
+- (void)processPaymentInput:(DWPaymentInput *)paymentInput;
+
+- (void)provideAmount:(uint64_t)amount;
+
+- (void)confirmPaymentOutput:(DWPaymentOutput *)paymentOutput;
+
+- (void)reset;
+
+@end
+
+NS_ASSUME_NONNULL_END

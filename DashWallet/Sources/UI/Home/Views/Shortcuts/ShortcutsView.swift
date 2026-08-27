@@ -1,0 +1,289 @@
+//
+//  Created by PT
+//  Copyright © 2023 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+import UIKit
+import Combine
+
+func cellSize(for contentSizeCategory: UIContentSizeCategory, viewWidth: CGFloat) -> CGSize {
+    let margin: CGFloat = 20.0       // Outer spacing to the screen edges
+    let spacing: CGFloat = 4.0       // Figma: shortcut-bar/gap
+    let visibleCells: CGFloat = 4.0
+    let cellWidth = floor((viewWidth - margin * 2.0 - spacing * (visibleCells - 1)) / visibleCells)
+    let cellHeight: CGFloat = 68.0   // Figma: icon(46) + gap(4) + text(16) + bottomPad(2)
+
+    if UIDevice.isIpad {
+        return CGSize(width: cellWidth * 2.0, height: cellHeight)
+    }
+
+    return CGSize(width: cellWidth, height: cellHeight)
+}
+
+
+// MARK: - ShortcutsActionDelegate
+
+protocol ShortcutsActionDelegate: AnyObject {
+    func shortcutsView(didSelectAction action: ShortcutAction, sender: UIView?)
+    func shortcutsView(didLongPressPosition position: Int, currentAction: ShortcutAction)
+}
+
+// MARK: - ShortcutsViewDelegate
+
+protocol ShortcutsViewDelegate: AnyObject {
+    func shortcutsViewDidUpdateContentSize(_ shortcutsView: ShortcutsView)
+}
+
+// MARK: - ShortcutsView
+
+class ShortcutsView: UIView {
+    private static let verticalPadding: CGFloat = 4.0
+
+    private var cancellableBag = Set<AnyCancellable>()
+    private let viewModel: HomeViewModel
+    private var lastLayoutWidth: CGFloat = 0
+
+    weak var actionDelegate: ShortcutsActionDelegate?
+
+    weak var delegate: ShortcutsViewDelegate?
+
+    @IBOutlet
+    weak var contentView: UIView!
+
+    @IBOutlet
+    weak var collectionView: UICollectionView!
+
+    @IBOutlet
+    var collectionViewHeightConstraint: NSLayoutConstraint!
+
+    init(frame: CGRect, viewModel: HomeViewModel) {
+        self.viewModel = viewModel
+        super.init(frame: frame)
+        commonInit()
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func commonInit() {
+        viewModel.$shortcutItems
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] text in
+                self?.collectionView.reloadData()
+            }
+            .store(in: &cancellableBag)
+        
+        Bundle.main.loadNibNamed(String(describing: type(of: self)), owner: self, options: nil)
+
+        backgroundColor = .dw_secondaryBackground()
+
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(contentView)
+
+        NSLayoutConstraint.activate([
+            contentView.topAnchor.constraint(equalTo: topAnchor),
+            contentView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            contentView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            contentView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            contentView.widthAnchor.constraint(equalTo: widthAnchor),
+        ])
+
+        collectionView.layer.cornerRadius = 20
+        collectionView.layer.masksToBounds = true
+
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            collectionView.contentInset = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 0)
+        }
+
+        collectionView.register(UINib(nibName: "DWShortcutCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: ShortcutCell.reuseIdentifier)
+
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+        collectionView.addGestureRecognizer(longPress)
+
+        NotificationCenter.default.addObserver(self, selector: #selector(contentSizeCategoryDidChangeNotification(notification:)),
+                                               name: UIContentSizeCategory.didChangeNotification, object: nil)
+
+        updateCellSizeForContentSizeCategory(UIApplication.shared.preferredContentSizeCategory, initialSetup: true)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let currentWidth = bounds.width
+        guard currentWidth != lastLayoutWidth else { return }
+        lastLayoutWidth = currentWidth
+        updateCellSizeForContentSizeCategory(UIApplication.shared.preferredContentSizeCategory, initialSetup: false)
+    }
+
+    @objc
+    func contentSizeCategoryDidChangeNotification(notification: Notification) {
+        guard let category = notification.userInfo?[UIContentSizeCategory.newValueUserInfoKey] as? UIContentSizeCategory else {
+            return
+        }
+        updateCellSizeForContentSizeCategory(category, initialSetup: false)
+    }
+
+    private func updateCellSizeForContentSizeCategory(_ contentSizeCategory: UIContentSizeCategory, initialSetup: Bool) {
+        let fallbackWidth = window?.windowScene?.screen.bounds.width ?? UIScreen.main.bounds.size.width
+        let width = bounds.width > 0 ? bounds.width : fallbackWidth
+        var cellSize = cellSize(for: contentSizeCategory, viewWidth: width)
+        cellSize.height = ceil(cellSize.height) // This fixes the autolayout issue when the size of the cell is higher than the collection view itself
+
+        collectionViewHeightConstraint.constant = cellSize.height + ShortcutsView.verticalPadding * 2
+        setNeedsUpdateConstraints()
+
+        if let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+            layout.itemSize = cellSize
+            if !initialSetup {
+                layout.invalidateLayout()
+            }
+        }
+        collectionView.reloadData()
+
+        if !initialSetup {
+            delegate?.shortcutsViewDidUpdateContentSize(self)
+        }
+    }
+
+    @objc
+    private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else { return }
+
+        let point = gesture.location(in: collectionView)
+        guard let indexPath = collectionView.indexPathForItem(at: point) else { return }
+
+        let position = indexPath.item
+        guard position < viewModel.shortcutItems.count else { return }
+
+        let action = viewModel.shortcutItems[position]
+        actionDelegate?.shortcutsView(didLongPressPosition: position, currentAction: action)
+    }
+}
+
+// MARK: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout
+
+extension ShortcutsView: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let action = viewModel.shortcutItems[indexPath.item]
+
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ShortcutCell.reuseIdentifier, for: indexPath) as! ShortcutCell
+        cell.model = action
+
+        #if SNAPSHOT
+        if action.type == .secureWallet {
+            cell.accessibilityIdentifier = "shortcut_secure_wallet"
+        }
+        #endif // SNAPSHOT
+
+        return cell
+    }
+
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        viewModel.shortcutItems.count
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.deselectItem(at: indexPath, animated: true)
+
+        let action = viewModel.shortcutItems[indexPath.item]
+        guard action.enabled else { return }
+        guard let cell = collectionView.cellForItem(at: indexPath) else { return }
+
+        actionDelegate?.shortcutsView(didSelectAction: action, sender: cell)
+    }
+
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        guard let collectionViewLayout = collectionViewLayout as? UICollectionViewFlowLayout else { return UIEdgeInsets.zero }
+
+        let cellSpacing = collectionViewLayout.minimumLineSpacing
+        let cellWidth = collectionViewLayout.itemSize.width
+
+        let cellCount = CGFloat(collectionView.numberOfItems(inSection: section))
+        var inset = (collectionView.bounds.size.width - (cellCount * cellWidth) - ((cellCount - 1) * cellSpacing)) * 0.5
+        inset = max(inset, 0.0)
+        return UIEdgeInsets(top: ShortcutsView.verticalPadding, left: inset, bottom: ShortcutsView.verticalPadding, right: inset)
+    }
+}
+
+// MARK: ShortcutsModelDataSource, ShortcutsModelDelegate
+
+extension ShortcutsView {
+    // TODO: DashPay
+    func shouldShowCreateUserNameButton() -> Bool {
+        false
+    }
+}
+
+// MARK: - Xcode Canvas Previews
+
+#if DEBUG
+import SwiftUI
+
+// Thin UIViewRepresentable that hosts the UIKit ShortcutsView in SwiftUI Canvas.
+private struct ShortcutsViewRepresentable: UIViewRepresentable {
+    let items: [ShortcutAction]
+
+    func makeUIView(context: Context) -> ShortcutsView {
+        ShortcutsView(frame: .zero, viewModel: .makeForPreview(shortcuts: items))
+    }
+
+    func updateUIView(_ uiView: ShortcutsView, context: Context) {}
+}
+
+// Helper to keep #Preview bodies one-liners.
+private func shortcutsPreview(_ items: [ShortcutAction]) -> some View {
+    ShortcutsViewRepresentable(items: items)
+        .frame(width: 375, height: 92) // 68 cell + 8×2 vertical padding
+}
+
+private let previewState1: [ShortcutAction] = [ // zero balance + backup needed
+    .init(type: .secureWallet),
+    .init(type: .receive),
+    .init(type: .buySellDash),
+    .init(type: .spend)
+]
+private let previewState2: [ShortcutAction] = [ // zero balance + verified
+    .init(type: .receive),
+    .init(type: .send),
+    .init(type: .buySellDash),
+    .init(type: .spend)
+]
+private let previewState3: [ShortcutAction] = [ // has balance + verified
+    .init(type: .receive),
+    .init(type: .send),
+    .init(type: .sendToContact),
+    .init(type: .payToAddress)
+]
+private let previewState4: [ShortcutAction] = [ // has balance + backup needed
+    .init(type: .secureWallet),
+    .init(type: .receive),
+    .init(type: .send),
+    .init(type: .spend)
+]
+
+#Preview("Zero bal · backup needed") {
+    shortcutsPreview(previewState1)
+}
+#Preview("Zero bal · verified") {
+    shortcutsPreview(previewState2)
+}
+#Preview("Has balance · verified") {
+    shortcutsPreview(previewState3)
+}
+#Preview("Has balance · backup needed") {
+    shortcutsPreview(previewState4)
+}
+#endif

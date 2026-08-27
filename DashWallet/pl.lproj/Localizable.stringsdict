@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>%ld used</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@used@</string>
+		<key>used</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%Id użyty</string>
+			<key>few</key>
+			<string>%Id użyty</string>
+			<key>many</key>
+			<string>%Id użyty</string>
+			<key>other</key>
+			<string>%Id użyty</string>
+		</dict>
+	</dict>
+	<key>%d ATM(s) in %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@atms@</string>
+		<key>atms</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%1$d ATM in %2$@</string>
+			<key>other</key>
+			<string>%1$d ATMs in %2$@</string>
+			<key>few</key>
+			<string>%1$d ATMs in %2$@</string>
+			<key>many</key>
+			<string>%1$d ATMs in %2$@</string>
+		</dict>
+	</dict>
+	<key>%d merchant(s) in %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d handlowiec w %@</string>
+			<key>few</key>
+			<string>%d handlowców w %@</string>
+			<key>many</key>
+			<string>%d handlowców w %@</string>
+			<key>other</key>
+			<string>%d handlowców w %@</string>
+		</dict>
+	</dict>
+	<key>%d merchant(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d handlowiec</string>
+			<key>few</key>
+			<string>%d handlowców</string>
+			<key>many</key>
+			<string>%d handlowców</string>
+			<key>other</key>
+			<string>%d handlowcy</string>
+		</dict>
+	</dict>
+	<key>%d transaction(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@transactions@</string>
+		<key>transactions</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d transakcja</string>
+			<key>few</key>
+			<string>%d transakcje</string>
+			<key>many</key>
+			<string>%d transakcji</string>
+			<key>other</key>
+			<string>%d transakcji</string>
+		</dict>
+	</dict>
+	<key>%d key(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@keys@</string>
+		<key>keys</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d klucz</string>
+			<key>few</key>
+			<string>d% klucze</string>
+			<key>many</key>
+			<string>%d kluczy</string>
+			<key>other</key>
+			<string>%d kluczy</string>
+		</dict>
+	</dict>
+	<key>%u votes counted for “%@”</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@votes@ dla „%2$@”</string>
+		<key>votes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>%1$u policzony głos</string>
+			<key>few</key>
+			<string>%1$u policzone głosy</string>
+			<key>many</key>
+			<string>%1$u policzonych głosów</string>
+			<key>other</key>
+			<string>%1$u policzonego głosu</string>
+		</dict>
+	</dict>
+	<key>%d of %d usernames voted on</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>Zagłosowano nad %1$d z %#@names@</string>
+		<key>names</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$d nazwy użytkownika</string>
+			<key>few</key>
+			<string>%2$d nazw użytkowników</string>
+			<key>many</key>
+			<string>%2$d nazw użytkowników</string>
+			<key>other</key>
+			<string>%2$d nazw użytkowników</string>
+		</dict>
+	</dict>
+	<key>Cast %u votes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>Oddaj %u głos</string>
+			<key>few</key>
+			<string>Oddaj %u głosy</string>
+			<key>many</key>
+			<string>Oddaj %u głosów</string>
+			<key>other</key>
+			<string>Oddaj %u głosu</string>
+		</dict>
+	</dict>
+	<key>%d of %d masternodes voted</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>Głosowanie: %1$d z %#@nodes@</string>
+		<key>nodes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$d masternoda</string>
+			<key>few</key>
+			<string>%2$d masternodów</string>
+			<key>many</key>
+			<string>%2$d masternodów</string>
+			<key>other</key>
+			<string>%2$d masternodów</string>
+		</dict>
+	</dict>
+	<key>%d of %d nodes voted</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>Głosowanie: %1$d z %#@nodes@</string>
+		<key>nodes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$d węzła</string>
+			<key>few</key>
+			<string>%2$d węzłów</string>
+			<key>many</key>
+			<string>%2$d węzłów</string>
+			<key>other</key>
+			<string>%2$d węzłów</string>
+		</dict>
+	</dict>
+	<key>%d evonodes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d evonode</string>
+			<key>few</key>
+			<string>%d evonody</string>
+			<key>many</key>
+			<string>%d evonodów</string>
+			<key>other</key>
+			<string>%d evonoda</string>
+		</dict>
+	</dict>
+	<key>%u votes in total</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>łącznie %u głos</string>
+			<key>few</key>
+			<string>łącznie %u głosy</string>
+			<key>many</key>
+			<string>łącznie %u głosów</string>
+			<key>other</key>
+			<string>łącznie %u głosu</string>
+		</dict>
+	</dict>
+	<key>%d masternodes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d masternod</string>
+			<key>few</key>
+			<string>%d masternody</string>
+			<key>many</key>
+			<string>%d masternodów</string>
+			<key>other</key>
+			<string>%d masternoda</string>
+		</dict>
+	</dict>
+	<key>%d selected</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d wybrany</string>
+			<key>few</key>
+			<string>%d wybrane</string>
+			<key>many</key>
+			<string>%d wybranych</string>
+			<key>other</key>
+			<string>%d wybranego</string>
+		</dict>
+	</dict>
+	<key>%d of your nodes already voted here and are not listed.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d Twój węzeł już tu zagłosował i nie jest wymieniony.</string>
+			<key>few</key>
+			<string>%d Twoje węzły już tu zagłosowały i nie są wymienione.</string>
+			<key>many</key>
+			<string>%d Twoich węzłów już tu zagłosowało i nie są wymienione.</string>
+			<key>other</key>
+			<string>%d Twoich węzłów już tu zagłosowało i nie są wymienione.</string>
+		</dict>
+	</dict>
+	<key>%u votes per contest — evonodes count as 4, masternodes as 1</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>%u głos na spór — evonody liczą się jako 4, masternody jako 1</string>
+			<key>few</key>
+			<string>%u głosy na spór — evonody liczą się jako 4, masternody jako 1</string>
+			<key>many</key>
+			<string>%u głosów na spór — evonody liczą się jako 4, masternody jako 1</string>
+			<key>other</key>
+			<string>%u głosu na spór — evonody liczą się jako 4, masternody jako 1</string>
+		</dict>
+	</dict>
+	<key>Vote on %d usernames</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Głosuj nad %d nazwą użytkownika</string>
+			<key>few</key>
+			<string>Głosuj nad %d nazwami użytkowników</string>
+			<key>many</key>
+			<string>Głosuj nad %d nazwami użytkowników</string>
+			<key>other</key>
+			<string>Głosuj nad %d nazwami użytkowników</string>
+		</dict>
+	</dict>
+	<key>%u votes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>%u głos</string>
+			<key>few</key>
+			<string>%u głosy</string>
+			<key>many</key>
+			<string>%u głosów</string>
+			<key>other</key>
+			<string>%u głosu</string>
+		</dict>
+	</dict>
+	<key>Vote ×%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Głosuj ×%d</string>
+			<key>few</key>
+			<string>Głosuj ×%d</string>
+			<key>many</key>
+			<string>Głosuj ×%d</string>
+			<key>other</key>
+			<string>Głosuj ×%d</string>
+		</dict>
+	</dict>
+	<key>%d requests</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d prośba</string>
+			<key>few</key>
+			<string>%d prośby</string>
+			<key>many</key>
+			<string>%d próśb</string>
+			<key>other</key>
+			<string>%d prośby</string>
+		</dict>
+	</dict>
+	<key>%d words</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d słowo</string>
+			<key>few</key>
+			<string>%d słowa</string>
+			<key>many</key>
+			<string>%d słów</string>
+			<key>other</key>
+			<string>%d słowa</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

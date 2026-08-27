@@ -1,0 +1,41 @@
+devices([
+  "iPhone 8 Plus",
+  "iPhone 14 Plus",
+
+  "iPad Pro (12.9-inch) (6th generation)",
+])
+
+languages([
+  "en-US",
+  "es-ES",
+  "fr",
+  "de",
+  "ru",
+  "ko",
+  # "ja",
+  # "nl-NL",
+  # "zh-Hans",
+  # "it",
+  # "tr",
+  # "pl",
+  # "el",
+  # "pt-PT",
+  # "vi",
+  # "th",
+  # "zh-Hant",
+  # "id",
+])
+
+scheme("DashWalletScreenshotsUITests")
+
+output_directory("./fastlane/screenshots")
+
+clear_previous_screenshots(false)
+
+number_of_retries 3
+reinstall_app true
+clean true
+erase_simulator true
+
+# For more information about all available options run
+# fastlane action snapshot

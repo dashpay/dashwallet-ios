@@ -1,0 +1,1088 @@
+import SwiftUI
+import DashUIKit
+import SwiftData
+import SwiftDashSDK
+
+// MARK: - Shared Helpers
+
+private struct FieldRow: View {
+    let label: String
+    let value: String
+    @State private var didCopy: Bool = false
+
+    var body: some View {
+        HStack {
+            Text(label).foregroundColor(Color.dash.secondaryText)
+            Spacer()
+            Text(value).lineLimit(1).truncationMode(.middle).textSelection(.enabled)
+            if didCopy {
+                Image(systemName: "checkmark")
+                    .font(.caption)
+                    .foregroundColor(.green)
+            } else {
+                Image(systemName: "doc.on.doc")
+                    .font(.caption)
+                    .foregroundColor(Color.dash.secondaryText)
+            }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            UIPasteboard.general.string = value
+            didCopy = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                didCopy = false
+            }
+        }
+    }
+}
+
+private func hexString(_ data: Data) -> String {
+    data.map { String(format: "%02x", $0) }.joined()
+}
+
+private func dateString(_ date: Date?) -> String {
+    guard let date = date else { return "None" }
+    return date.formatted(date: .abbreviated, time: .shortened)
+}
+
+private func jsonString(_ data: Data?) -> String? {
+    guard let data = data,
+          let json = try? JSONSerialization.jsonObject(with: data),
+          let pretty = try? JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted, .sortedKeys]),
+          let str = String(data: pretty, encoding: .utf8) else { return nil }
+    return str
+}
+
+// MARK: - PersistentIdentity
+
+struct IdentityStorageDetailView: View {
+    let record: PersistentIdentity
+
+    #if DASHPAY
+    @StateObject private var reloadModel = StorageIdentityReloadModel()
+    #endif
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "ID (Base58)", value: record.identityIdBase58)
+                FieldRow(label: "ID (Hex)", value: record.identityIdString)
+                FieldRow(label: "Balance", value: record.formattedBalance)
+                FieldRow(label: "Revision", value: "\(record.revision)")
+                FieldRow(label: "Is Local", value: record.isLocal ? "Yes" : "No")
+                FieldRow(label: "Network", value: record.network.networkName)
+            }
+            Section("Names") {
+                FieldRow(label: "Alias", value: record.alias ?? "None")
+                FieldRow(label: "DPNS Name", value: record.dpnsName ?? "None")
+                FieldRow(label: "Main DPNS Name", value: record.mainDpnsName ?? "None")
+            }
+            Section("Keys") {
+                FieldRow(label: "Owner Key", value: record.ownerPrivateKeyIdentifier != nil ? "Present" : "Not set")
+                FieldRow(label: "Voting Key", value: record.votingPrivateKeyIdentifier != nil ? "Present" : "Not set")
+                FieldRow(label: "Payout Key", value: record.payoutPrivateKeyIdentifier != nil ? "Present" : "Not set")
+            }
+            Section("Relationships") {
+                FieldRow(label: "Public Keys", value: "\(record.publicKeys.count)")
+                FieldRow(label: "Documents", value: "\(record.documents.count)")
+                FieldRow(label: "Token Balances", value: "\(record.tokenBalances.count)")
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+                FieldRow(label: "Synced", value: dateString(record.lastSyncedAt))
+            }
+        }
+        .navigationTitle("Identity")
+        .navigationBarTitleDisplayMode(.inline)
+        #if DASHPAY
+        // Pull-to-refresh re-fetches this identity from Platform — the
+        // local rows (public keys especially) lag keys added on another
+        // device. @Query keeps the form live as the reload persists. The
+        // toolbar button is the same action with a visible affordance.
+        .refreshable { await reloadModel.reload(identityIndex: record.identityIndex) }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Task { await reloadModel.reload(identityIndex: record.identityIndex) }
+                } label: {
+                    if reloadModel.isReloading {
+                        SwiftUI.ProgressView()
+                    } else {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                }
+                .disabled(reloadModel.isReloading)
+                .accessibilityLabel(Text("Refresh from Platform"))
+            }
+        }
+        #endif
+    }
+}
+
+// MARK: - PersistentDocument
+
+struct DocumentStorageDetailView: View {
+    let record: PersistentDocument
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Document ID", value: record.documentId)
+                FieldRow(label: "Type", value: record.documentType)
+                FieldRow(label: "Revision", value: "\(record.revision)")
+                FieldRow(label: "Contract ID", value: record.contractId)
+                FieldRow(label: "Owner ID", value: record.ownerId)
+                FieldRow(label: "Network", value: record.network.networkName)
+                FieldRow(label: "Deleted", value: record.isDeleted ? "Yes" : "No")
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.localCreatedAt))
+                FieldRow(label: "Updated", value: dateString(record.localUpdatedAt))
+            }
+            if let json = jsonString(record.data) {
+                Section("Data") {
+                    Text(json).font(.system(.caption, design: .monospaced)).textSelection(.enabled)
+                }
+            }
+        }
+        .navigationTitle("Document")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentDataContract
+
+struct DataContractStorageDetailView: View {
+    let record: PersistentDataContract
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "ID (Base58)", value: record.idBase58)
+                FieldRow(label: "Name", value: record.name)
+                FieldRow(label: "Version", value: record.version.map { "\($0)" } ?? "None")
+                FieldRow(label: "Owner (Base58)", value: record.ownerIdBase58 ?? "None")
+                FieldRow(label: "Network", value: record.network.networkName)
+                FieldRow(label: "Has Tokens", value: record.hasTokens ? "Yes" : "No")
+            }
+            Section("Flags") {
+                FieldRow(label: "Can Be Deleted", value: record.canBeDeleted ? "Yes" : "No")
+                FieldRow(label: "Read Only", value: record.readonly ? "Yes" : "No")
+                FieldRow(label: "Keeps History", value: record.keepsHistory ? "Yes" : "No")
+            }
+            Section("Relationships") {
+                FieldRow(label: "Document Types", value: "\(record.documentTypes?.count ?? 0)")
+                FieldRow(label: "Tokens", value: "\(record.tokens?.count ?? 0)")
+                FieldRow(label: "Documents", value: "\(record.documents.count)")
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+                FieldRow(label: "Accessed", value: dateString(record.lastAccessedAt))
+                FieldRow(label: "Synced", value: dateString(record.lastSyncedAt))
+            }
+            Section("Serialized") {
+                FieldRow(label: "Contract Size", value: "\(record.serializedContract.count) bytes")
+            }
+        }
+        .navigationTitle("Data Contract")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentPublicKey
+
+struct PublicKeyStorageDetailView: View {
+    let record: PersistentPublicKey
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Key ID", value: "\(record.keyId)")
+                FieldRow(label: "Purpose", value: record.purpose)
+                FieldRow(label: "Security Level", value: record.securityLevel)
+                FieldRow(label: "Key Type", value: record.keyType)
+                FieldRow(label: "Read Only", value: record.readOnly ? "Yes" : "No")
+                FieldRow(label: "Disabled At", value: record.disabledAt.map { "\($0)" } ?? "No")
+            }
+            Section("Data") {
+                FieldRow(label: "Public Key", value: hexString(record.publicKeyData))
+                FieldRow(label: "Private Key", value: record.hasPrivateKeyIdentifier ? "Present" : "Not set")
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Accessed", value: dateString(record.lastAccessed))
+            }
+        }
+        .navigationTitle("Public Key")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentToken
+
+struct TokenStorageDetailView: View {
+    let record: PersistentToken
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "ID", value: hexString(record.id))
+                FieldRow(label: "Contract (Base58)", value: record.contractIdBase58)
+                FieldRow(label: "Name", value: record.name)
+                FieldRow(label: "Position", value: "\(record.position)")
+                FieldRow(label: "Decimals", value: "\(record.decimals)")
+                FieldRow(label: "Base Supply", value: record.formattedBaseSupply)
+                FieldRow(label: "Paused", value: record.isPaused ? "Yes" : "No")
+            }
+            Section("Relationships") {
+                FieldRow(label: "Balances", value: "\(record.balances?.count ?? 0)")
+                FieldRow(label: "History Events", value: "\(record.historyEvents?.count ?? 0)")
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdatedAt))
+            }
+        }
+        .navigationTitle("Token")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentTokenBalance
+
+struct TokenBalanceStorageDetailView: View {
+    let record: PersistentTokenBalance
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Token ID", value: record.tokenId)
+                FieldRow(label: "Identity ID", value: hexString(record.identityId))
+                FieldRow(label: "Balance", value: "\(record.balance)")
+                FieldRow(label: "Frozen", value: record.frozen ? "Yes" : "No")
+                FieldRow(label: "Network", value: record.network.networkName)
+            }
+            Section("Token Info") {
+                FieldRow(label: "Name", value: record.tokenName ?? "None")
+                FieldRow(label: "Symbol", value: record.tokenSymbol ?? "None")
+                FieldRow(label: "Decimals", value: record.tokenDecimals.map { "\($0)" } ?? "None")
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+                FieldRow(label: "Synced", value: dateString(record.lastSyncedAt))
+            }
+        }
+        .navigationTitle("Token Balance")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentTokenHistoryEvent
+
+struct TokenHistoryStorageDetailView: View {
+    let record: PersistentTokenHistoryEvent
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Event Type", value: record.eventType)
+                FieldRow(label: "Transaction ID", value: record.transactionId.map { hexString($0) } ?? "None")
+                FieldRow(label: "Block Height", value: record.blockHeight.map { "\($0)" } ?? "None")
+                FieldRow(label: "Amount", value: record.amount.map { "\($0)" } ?? "None")
+            }
+            Section("Parties") {
+                FieldRow(label: "From", value: record.fromIdentity.map { hexString($0) } ?? "None")
+                FieldRow(label: "To", value: record.toIdentity.map { hexString($0) } ?? "None")
+                FieldRow(label: "Performed By", value: hexString(record.performedByIdentity))
+            }
+            Section("Balance") {
+                FieldRow(label: "Before", value: record.balanceBefore.map { "\($0)" } ?? "None")
+                FieldRow(label: "After", value: record.balanceAfter.map { "\($0)" } ?? "None")
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Event", value: dateString(record.eventTimestamp))
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+            }
+        }
+        .navigationTitle("Token History Event")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentDocumentType
+
+struct DocumentTypeStorageDetailView: View {
+    let record: PersistentDocumentType
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Name", value: record.name)
+                FieldRow(label: "Contract (Base58)", value: record.contractIdBase58)
+            }
+            Section("Flags") {
+                FieldRow(label: "Keeps History", value: record.documentsKeepHistory ? "Yes" : "No")
+                FieldRow(label: "Mutable", value: record.documentsMutable ? "Yes" : "No")
+                FieldRow(label: "Can Be Deleted", value: record.documentsCanBeDeleted ? "Yes" : "No")
+            }
+            Section("Relationships") {
+                FieldRow(label: "Properties", value: "\(record.propertiesList?.count ?? 0)")
+                FieldRow(label: "Indices", value: "\(record.indices?.count ?? 0)")
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Accessed", value: dateString(record.lastAccessedAt))
+            }
+        }
+        .navigationTitle("Document Type")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentIndex
+
+struct IndexStorageDetailView: View {
+    let record: PersistentIndex
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Name", value: record.name)
+                FieldRow(label: "Document Type", value: record.documentTypeName)
+                FieldRow(label: "Unique", value: record.unique ? "Yes" : "No")
+                FieldRow(label: "Null Searchable", value: record.nullSearchable ? "Yes" : "No")
+                FieldRow(label: "Contested", value: record.contested ? "Yes" : "No")
+            }
+            if let props = record.properties, !props.isEmpty {
+                Section("Properties") {
+                    ForEach(props, id: \.self) { prop in
+                        Text(prop).font(.system(.caption, design: .monospaced))
+                    }
+                }
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+            }
+        }
+        .navigationTitle("Index")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentProperty
+
+struct PropertyStorageDetailView: View {
+    let record: PersistentProperty
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Name", value: record.name)
+                FieldRow(label: "Type", value: record.type)
+                FieldRow(label: "Document Type", value: record.documentTypeName)
+                FieldRow(label: "Required", value: record.isRequired ? "Yes" : "No")
+            }
+            Section("Constraints") {
+                if let v = record.minLength { FieldRow(label: "Min Length", value: "\(v)") }
+                if let v = record.maxLength { FieldRow(label: "Max Length", value: "\(v)") }
+                if let v = record.pattern { FieldRow(label: "Pattern", value: v) }
+                if let v = record.format { FieldRow(label: "Format", value: v) }
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+            }
+        }
+        .navigationTitle("Property")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentKeyword
+
+struct KeywordStorageDetailView: View {
+    let record: PersistentKeyword
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Keyword", value: record.keyword)
+                if let contract = record.dataContract {
+                    FieldRow(label: "Contract", value: contract.name)
+                }
+            }
+        }
+        .navigationTitle("Keyword")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentPlatformAddressesSyncState
+
+struct SyncStateStorageDetailView: View {
+    let record: PersistentPlatformAddressesSyncState
+
+    private var blockDate: Date? {
+        record.syncTimestamp > 0
+            ? Date(timeIntervalSince1970: TimeInterval(record.syncTimestamp))
+            : nil
+    }
+
+    var body: some View {
+        Form {
+            Section("Sync Watermark") {
+                FieldRow(label: "Network", value: record.network.networkName)
+                FieldRow(label: "Sync Height", value: "\(record.syncHeight)")
+                FieldRow(label: "Sync Timestamp", value: "\(record.syncTimestamp)")
+                if let date = blockDate {
+                    FieldRow(label: "Local Time", value: date.formatted(date: .abbreviated, time: .standard))
+                    FieldRow(label: "UTC", value: {
+                        let f = DateFormatter()
+                        f.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                        f.timeZone = TimeZone(identifier: "UTC")
+                        return f.string(from: date) + " UTC"
+                    }())
+                }
+                FieldRow(label: "Last Known Recent Block", value: record.lastKnownRecentBlock > 0
+                    ? "\(record.lastKnownRecentBlock)"
+                    : "0 (no recent address activity)")
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Record Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("Sync State")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentPlatformAddress
+
+struct PlatformAddressDetailView: View {
+    let record: PersistentPlatformAddress
+
+    @State private var didCopyAddress: Bool = false
+
+    var body: some View {
+        Form {
+            Section("Address") {
+                // Tap-to-copy: writes the full address to UIPasteboard and
+                // fires a success haptic. The row's value flashes "Copied!"
+                // briefly so the action is discoverable without an icon
+                // (textSelection still works for partial copies via long-press).
+                FieldRow(
+                    label: "Address",
+                    value: didCopyAddress ? "Copied!" : record.address
+                )
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    UIPasteboard.general.string = record.address
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    withAnimation { didCopyAddress = true }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        withAnimation { didCopyAddress = false }
+                    }
+                }
+                FieldRow(
+                    label: "Type",
+                    value: record.addressType == 0 ? "P2PKH" : "P2SH"
+                )
+                FieldRow(label: "Hash", value: hexString(record.addressHash))
+                FieldRow(label: "Account Index", value: "\(record.accountIndex)")
+                FieldRow(label: "Index", value: "\(record.addressIndex)")
+                FieldRow(label: "Derivation Path", value: record.derivationPath)
+                FieldRow(label: "Used", value: record.isUsed ? "Yes" : "No")
+            }
+            Section("Public Key") {
+                FieldRow(
+                    label: "Bytes (hex)",
+                    value: record.publicKey.isEmpty
+                        ? "—"
+                        : record.publicKey.map { String(format: "%02x", $0) }.joined()
+                )
+            }
+            Section("Balance / Activity") {
+                FieldRow(label: "Balance", value: "\(record.balance) credits")
+                FieldRow(label: "Nonce", value: "\(record.nonce)")
+                FieldRow(
+                    label: "First Seen Height",
+                    value: record.firstSeenHeight == 0 ? "—" : "\(record.firstSeenHeight)"
+                )
+                FieldRow(
+                    label: "Last Seen Height",
+                    value: record.lastSeenHeight == 0 ? "—" : "\(record.lastSeenHeight)"
+                )
+            }
+            Section("Ownership") {
+                FieldRow(label: "Wallet ID", value: hexString(record.walletId))
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("Platform Address")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentWallet
+
+struct WalletStorageDetailView: View {
+    let record: PersistentWallet
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Wallet ID", value: hexString(record.walletId))
+                FieldRow(label: "Network", value: record.network?.networkName ?? "—")
+                FieldRow(label: "Name", value: record.name ?? "None")
+                FieldRow(label: "Birth Height", value: "\(record.birthHeight)")
+                FieldRow(label: "Synced Height", value: "\(record.syncedHeight)")
+            }
+            // Wallet-level cached balance fields were removed from
+            // `PersistentWallet` (SDK comment: "Per-account totals continue
+            // to live on `PersistentAccount`"). Sum the per-account fields
+            // for display in the storage explorer; the canonical live total
+            // lives in `PlatformWalletManager.accountBalances(for:)`.
+            Section("Balance (summed across accounts)") {
+                FieldRow(label: "Confirmed", value: "\(record.accounts.reduce(UInt64(0)) { $0 + $1.balanceConfirmed })")
+                FieldRow(label: "Unconfirmed", value: "\(record.accounts.reduce(UInt64(0)) { $0 + $1.balanceUnconfirmed })")
+            }
+            Section("Relationships") {
+                FieldRow(label: "Accounts", value: "\(record.accounts.count)")
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("Wallet")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentAccount
+
+struct AccountStorageDetailView: View {
+    let record: PersistentAccount
+
+    /// Base58check-encoded xpub/tpub for this account, derived from
+    /// the stored ExtendedPubKey bytes. `nil` when the bytes are empty
+    /// (account created before the xpub-persistence path landed) or
+    /// decode fails.
+    private var accountXpubString: String? {
+        // `accountExtendedPubKeyBytes` is now `Data?` (`@Attribute(.unique)`,
+        // nil for accounts created before the xpub-persistence path).
+        guard let bytes = record.accountExtendedPubKeyBytes else { return nil }
+        return PlatformWalletManager.accountExtendedPubKeyString(bytes: bytes)
+    }
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Type", value: record.accountTypeName)
+                FieldRow(label: "Type ID", value: "\(record.accountType)")
+                FieldRow(label: "Index", value: "\(record.accountIndex)")
+                FieldRow(
+                    label: "Extended Public Key",
+                    value: accountXpubString ?? "—"
+                )
+            }
+            Section("Balance") {
+                FieldRow(label: "Confirmed", value: "\(record.balanceConfirmed)")
+                FieldRow(label: "Unconfirmed", value: "\(record.balanceUnconfirmed)")
+            }
+            Section("Address Pools") {
+                FieldRow(label: "External Highest Used", value: "\(record.externalHighestUsed)")
+                FieldRow(label: "Internal Highest Used", value: "\(record.internalHighestUsed)")
+            }
+            Section("Relationships") {
+                FieldRow(label: "Addresses", value: "\(record.coreAddresses.count)")
+                FieldRow(label: "Wallet", value: record.wallet.name ?? hexString(record.wallet.walletId))
+            }
+            ForEach(addressSections(), id: \.0) { poolName, addresses in
+                Section("\(poolName) Addresses (\(addresses.count))") {
+                    ForEach(addresses) { addr in
+                        NavigationLink(destination: CoreAddressDetailView(record: addr)) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(addr.address)
+                                    .font(.system(.caption, design: .monospaced))
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                                HStack(spacing: 8) {
+                                    Text("Index \(addr.addressIndex)")
+                                    if addr.isUsed {
+                                        Text("• used")
+                                    }
+                                    if addr.balance > 0 {
+                                        Text("• \(addr.balance)")
+                                    }
+                                }
+                                .font(.caption2)
+                                .foregroundColor(Color.dash.secondaryText)
+                            }
+                        }
+                    }
+                }
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("Account")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    /// Group the account's addresses by pool-type tag and present in
+    /// a stable order: External, Internal, Absent, Absent (Hardened).
+    /// Empty sections are skipped.
+    private func addressSections() -> [(String, [PersistentCoreAddress])] {
+        let grouped = Dictionary(grouping: record.coreAddresses) { $0.poolTypeTag }
+        let order: [(UInt8, String)] = [
+            (0, "External"),
+            (1, "Internal"),
+            (2, "Absent"),
+            (3, "Absent (Hardened)"),
+        ]
+        return order.compactMap { tag, name in
+            guard let bucket = grouped[tag], !bucket.isEmpty else { return nil }
+            let sorted = bucket.sorted { $0.addressIndex < $1.addressIndex }
+            return (name, sorted)
+        }
+    }
+}
+
+// MARK: - PersistentCoreAddress
+
+struct CoreAddressDetailView: View {
+    let record: PersistentCoreAddress
+    @State private var showCopiedToast = false
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            Form {
+                Section("Address") {
+                    HStack {
+                        Text("Address").foregroundColor(Color.dash.secondaryText)
+                        Spacer()
+                        Text(record.address).lineLimit(1).truncationMode(.middle)
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        UIPasteboard.general.string = record.address
+                        showCopiedToast = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            showCopiedToast = false
+                        }
+                    }
+                    FieldRow(label: "Pool", value: record.poolTypeName)
+                    FieldRow(label: "Index", value: "\(record.addressIndex)")
+                    FieldRow(label: "Derivation Path", value: record.derivationPath)
+                    FieldRow(label: "Used", value: record.isUsed ? "Yes" : "No")
+                }
+                Section("Public Key") {
+                    FieldRow(
+                        label: "Bytes (hex)",
+                        value: record.publicKey.isEmpty
+                            ? "—"
+                            : record.publicKey.map { String(format: "%02x", $0) }.joined()
+                    )
+                }
+                Section("Balance / Activity") {
+                    FieldRow(label: "Balance", value: "\(record.balance)")
+                    FieldRow(
+                        label: "First Seen Height",
+                        value: record.firstSeenHeight == 0 ? "—" : "\(record.firstSeenHeight)"
+                    )
+                    FieldRow(
+                        label: "Last Seen Height",
+                        value: record.lastSeenHeight == 0 ? "—" : "\(record.lastSeenHeight)"
+                    )
+                }
+                Section("Timestamps") {
+                    FieldRow(label: "Created", value: dateString(record.createdAt))
+                    FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+                }
+            }
+
+            if showCopiedToast {
+                ToastView(text: NSLocalizedString("Copied", comment: ""))
+                    .padding(.bottom, 20)
+            }
+        }
+        .navigationTitle("Address")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentTransaction
+
+struct TransactionStorageDetailView: View {
+    let record: PersistentTransaction
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "TXID", value: record.txidHex)
+                FieldRow(label: "Direction", value: record.directionName)
+                FieldRow(label: "Type", value: record.transactionType)
+                FieldRow(label: "Net Amount", value: record.formattedAmount)
+                if let fee = record.fee {
+                    FieldRow(label: "Fee", value: "\(fee) duffs")
+                }
+            }
+            Section("Block") {
+                FieldRow(label: "Context", value: record.contextName)
+                FieldRow(label: "Height", value: "\(record.blockHeight)")
+                FieldRow(label: "Timestamp", value: "\(record.blockTimestamp)")
+                if let hash = record.blockHash {
+                    FieldRow(label: "Block Hash", value: hexString(hash))
+                }
+            }
+            Section("Metadata") {
+                FieldRow(label: "Label", value: record.label.isEmpty ? "None" : record.label)
+                FieldRow(label: "First Seen", value: "\(record.firstSeen)")
+                FieldRow(label: "TX Size", value: "\(record.transactionData.count) bytes")
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("Transaction")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentTxo
+
+struct UtxoStorageDetailView: View {
+    let record: PersistentTxo
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Outpoint", value: record.outpointHex)
+                FieldRow(label: "TXID", value: record.txidHex)
+                FieldRow(label: "Vout", value: "\(record.vout)")
+                FieldRow(label: "Amount", value: record.formattedAmount)
+                FieldRow(label: "Address", value: record.address)
+            }
+            Section("Status") {
+                FieldRow(label: "Height", value: "\(record.height)")
+                FieldRow(label: "Confirmed", value: record.isConfirmed ? "Yes" : "No")
+                FieldRow(label: "InstantLocked", value: record.isInstantLocked ? "Yes" : "No")
+                FieldRow(label: "Coinbase", value: record.isCoinbase ? "Yes" : "No")
+                FieldRow(label: "Locked", value: record.isLocked ? "Yes" : "No")
+                FieldRow(label: "Spent", value: record.isSpent ? "Yes" : "No")
+            }
+            Section("Relationships") {
+                FieldRow(label: "Account", value: record.account?.accountTypeName ?? "None")
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("UTXO")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentWalletManagerMetadata
+
+struct WalletManagerMetadataStorageDetailView: View {
+    let record: PersistentWalletManagerMetadata
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Network", value: record.network.networkName)
+                FieldRow(label: "Combined Sync Height", value: "\(record.combinedSyncHeight)")
+                FieldRow(label: "Wallet Count", value: "\(record.walletCount)")
+                if let hash = record.combinedSyncBlockHash {
+                    FieldRow(label: "Block Hash", value: hexString(hash))
+                }
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("Manager Metadata")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - DashPay family (ported from SwiftExampleApp's storage explorer)
+
+// MARK: - PersistentDPNSName
+
+struct DPNSNameStorageDetailView: View {
+    let record: PersistentDPNSName
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Label", value: record.label)
+                FieldRow(label: "Normalized Label", value: record.normalizedLabel)
+                FieldRow(label: "Parent Domain", value: record.parentDomainName)
+                FieldRow(label: "Normalized Parent Domain", value: record.normalizedParentDomainName)
+            }
+            Section("Status") {
+                // `acquiredAt` is Unix-millis from `DpnsNameInfo.acquired_at`;
+                // zero when the FFI changeset didn't carry a timestamp.
+                FieldRow(label: "Acquired At (ms)", value: record.acquiredAt == 0 ? "—" : "\(record.acquiredAt)")
+                if record.acquiredAt > 0 {
+                    let date = Date(timeIntervalSince1970: TimeInterval(record.acquiredAt) / 1000.0)
+                    FieldRow(label: "Acquired", value: dateString(date))
+                }
+            }
+            Section("Relationships") {
+                NavigationLink(destination: IdentityStorageDetailView(record: record.identity)) {
+                    FieldRow(label: "Owner Identity", value: record.identity.identityIdBase58)
+                }
+                FieldRow(label: "Owner ID (Hex)", value: record.identity.identityIdString)
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("DPNS Name")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentDashpayProfile
+
+/// Every stored own-profile field; optional ones render as "—" so partial
+/// profiles are obvious rather than fields silently disappearing.
+struct DashpayProfileStorageDetailView: View {
+    let record: PersistentDashpayProfile
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Display Name", value: record.displayName ?? "—")
+                FieldRow(label: "Public Message", value: record.publicMessage ?? "—")
+                // Reserved for future DashPay contract revisions; v3 doesn't
+                // populate it — surfaced so it isn't invisible if lit up later.
+                FieldRow(label: "Bio", value: record.bio ?? "—")
+            }
+            Section("Avatar") {
+                FieldRow(label: "URL", value: record.avatarUrl ?? "—")
+                FieldRow(label: "Hash (32 B)", value: record.avatarHash.map { hexString($0) } ?? "—")
+                FieldRow(label: "Fingerprint (8 B)", value: record.avatarFingerprint.map { hexString($0) } ?? "—")
+            }
+            Section("Relationships") {
+                NavigationLink(destination: IdentityStorageDetailView(record: record.identity)) {
+                    FieldRow(label: "Owner Identity", value: record.identity.identityIdBase58)
+                }
+                FieldRow(label: "Owner ID (Hex)", value: record.identity.identityIdString)
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("DashPay Profile")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentDashpayContactProfile
+
+/// A counterparty's DashPay profile as seen by an owner identity — one
+/// row per (owner, contact).
+struct DashpayContactProfileStorageDetailView: View {
+    let record: PersistentDashpayContactProfile
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Display Name", value: record.displayName ?? "—")
+                FieldRow(label: "Public Message", value: record.publicMessage ?? "—")
+                FieldRow(label: "Bio", value: record.bio ?? "—")
+            }
+            Section("Avatar") {
+                FieldRow(label: "URL", value: record.avatarUrl ?? "—")
+                FieldRow(label: "Hash (32 B)", value: record.avatarHash.map { hexString($0) } ?? "—")
+                FieldRow(label: "Fingerprint (8 B)", value: record.avatarFingerprint.map { hexString($0) } ?? "—")
+            }
+            Section("Relationships") {
+                NavigationLink(destination: IdentityStorageDetailView(record: record.owner)) {
+                    FieldRow(label: "Owner Identity", value: record.owner.identityIdBase58)
+                }
+                FieldRow(label: "Owner ID (Hex)", value: hexString(record.ownerIdentityId))
+                FieldRow(label: "Contact ID (Hex)", value: hexString(record.contactIdentityId))
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Checked At (ms)", value: String(record.checkedAtMs))
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("Contact Profile")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentDashpayContactRequest
+
+/// Every payload field plus the relationship pair. The `ownerIdentityId`
+/// denorm shadow is redundant with `owner.identityId` but query-friendly.
+/// The owner-private alias/note (decrypted contact meta) are included —
+/// they back the contacts list titles and the payment-row aliases.
+struct DashpayContactRequestStorageDetailView: View {
+    let record: PersistentDashpayContactRequest
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Direction", value: record.isOutgoing ? "Outgoing" : "Incoming")
+                FieldRow(label: "Sender Key Index", value: "\(record.senderKeyIndex)")
+                FieldRow(label: "Recipient Key Index", value: "\(record.recipientKeyIndex)")
+                FieldRow(label: "Account Reference", value: "\(record.accountReference)")
+                FieldRow(label: "Core Height Created At", value: "\(record.coreHeightCreatedAt)")
+                FieldRow(label: "Created At (ms)", value: record.createdAtMillis == 0 ? "—" : "\(record.createdAtMillis)")
+            }
+            Section("Payload") {
+                FieldRow(label: "Encrypted Public Key", value: "\(record.encryptedPublicKey.count) bytes")
+                FieldRow(label: "Encrypted Account Label", value: record.encryptedAccountLabel.map { "\($0.count) bytes" } ?? "—")
+                FieldRow(label: "Account Label (decrypted)", value: record.contactAccountLabel ?? "—")
+                FieldRow(label: "Auto-Accept Proof", value: record.autoAcceptProof.map { "\($0.count) bytes" } ?? "—")
+                FieldRow(label: "Alias (owner-private)", value: record.contactAlias ?? "—")
+                FieldRow(label: "Note (owner-private)", value: record.contactNote ?? "—")
+            }
+            Section("Relationships") {
+                NavigationLink(destination: IdentityStorageDetailView(record: record.owner)) {
+                    FieldRow(label: "Owner Identity", value: record.owner.identityIdBase58)
+                }
+                FieldRow(label: "Owner ID (Hex, denorm)", value: hexString(record.ownerIdentityId))
+                FieldRow(label: "Contact ID (Hex)", value: hexString(record.contactIdentityId))
+            }
+            Section("Timestamps") {
+                if record.createdAtMillis > 0 {
+                    let date = Date(timeIntervalSince1970: TimeInterval(record.createdAtMillis) / 1000.0)
+                    FieldRow(label: "Document Created", value: dateString(date))
+                }
+                FieldRow(label: "Row Created", value: dateString(record.createdAt))
+                FieldRow(label: "Row Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("Contact Request")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentDashpayPayment
+
+struct DashpayPaymentStorageDetailView: View {
+    let record: PersistentDashpayPayment
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Direction", value: record.direction == .sent ? "Sent" : "Received")
+                FieldRow(label: "Status", value: statusText)
+                FieldRow(label: "Amount", value: String(format: "%.8f DASH", Double(record.amountDuffs) / 100_000_000))
+                FieldRow(label: "Amount (duffs)", value: "\(record.amountDuffs)")
+                FieldRow(label: "Memo", value: record.memo ?? "—")
+            }
+            Section("Transaction") {
+                FieldRow(label: "Txid", value: record.txid)
+            }
+            Section("Identities") {
+                FieldRow(label: "Owner", value: hexString(record.ownerIdentityId))
+                FieldRow(label: "Counterparty", value: hexString(record.counterpartyIdentityId))
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("DashPay Payment")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var statusText: String {
+        switch record.status {
+        case .pending: return "Pending"
+        case .confirmed: return "Confirmed"
+        case .failed: return "Failed"
+        }
+    }
+}
+
+// MARK: - PersistentInvitation
+
+/// Human label for a `PersistentInvitation.statusRaw` discriminant
+/// (0 = Created, 1 = Claimed, 2 = Reclaimed). Shared with the list view;
+/// an unmapped value renders as "Unknown (n)" rather than being hidden.
+func invitationStatusLabel(_ raw: Int) -> String {
+    switch raw {
+    case 0: return "Created"
+    case 1: return "Claimed"
+    case 2: return "Reclaimed"
+    default: return "Unknown (\(raw))"
+    }
+}
+
+/// One created DashPay invitation (DIP-13). No secret column — the
+/// one-time voucher key is never stored.
+struct InvitationStorageDetailView: View {
+    let record: PersistentInvitation
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Status", value: invitationStatusLabel(record.statusRaw))
+                FieldRow(label: "Amount", value: String(format: "%.8f DASH", Double(record.amountDuffs) / 100_000_000))
+                FieldRow(label: "Amount (duffs)", value: "\(record.amountDuffs)")
+                FieldRow(label: "Funding index", value: "\(record.fundingIndexRaw)")
+                FieldRow(label: "Has inviter", value: record.hasInviter ? "Yes" : "No")
+            }
+            Section("Outpoint") {
+                FieldRow(label: "Outpoint", value: record.outPointHex)
+                FieldRow(label: "Raw outpoint", value: hexString(record.rawOutPoint))
+            }
+            Section("Wallet") {
+                FieldRow(label: "Wallet id", value: hexString(record.walletId))
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Expiry (unix)", value: "\(record.expiryUnix)")
+                FieldRow(label: "Created (unix)", value: "\(record.createdAtSecs)")
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.updatedAt))
+            }
+        }
+        .navigationTitle("Invitation")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentDashpayIgnoredSender
+
+/// One DashPay ignored sender (per-sender mute, local-only).
+struct DashpayIgnoredSenderStorageDetailView: View {
+    let record: PersistentDashpayIgnoredSender
+
+    var body: some View {
+        Form {
+            Section("Suppression key") {
+                FieldRow(label: "Owner", value: hexString(record.ownerIdentityId))
+                FieldRow(label: "Ignored sender", value: hexString(record.ignoredSenderId))
+            }
+            Section("Audit") {
+                FieldRow(label: "Ignored", value: dateString(record.ignoredAt))
+            }
+        }
+        .navigationTitle("Ignored Sender")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}

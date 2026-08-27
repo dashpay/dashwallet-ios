@@ -1,0 +1,366 @@
+//
+//  Created by Pavel Tikhonenko
+//  Copyright © 2022 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+import Foundation
+import SQLite
+
+// MARK: - ExploreDatabaseConnectionError
+
+enum ExploreDatabaseConnectionError: Error {
+    case fileNotFound
+}
+
+// MARK: - ExploreDatabaseConnection
+
+let kExploreDashDatabaseName = "explore.db"
+
+// MARK: - ExploreDatabaseConnection
+
+class ExploreDatabaseConnection {
+    var db: Connection!
+
+    #if DEBUG || Testflight
+    /// Guards the test-merchant seeding so it runs at most once per session.
+    /// Seeding drops and recreates the FTS sync triggers; doing that repeatedly
+    /// (on every connect + every sync notification) transiently invalidates the
+    /// schema, making merchant SELECTs fail with
+    /// "malformed database schema ... trigger ... already exists" → "No Results Found".
+    private var didInsertTestMerchants = false
+    #endif
+
+    init() {
+        // Release the file before the sync manager overwrites it — SQLite corrupts a database that
+        // is replaced on disk underneath a live connection. Queries return [] while db is nil.
+        NotificationCenter.default.addObserver(forName: ExploreDatabaseSyncManager.databaseWillBeUpdatedNotification,
+                                               object: nil, queue: .main) { [weak self] _ in
+            self?.db = nil
+        }
+
+        NotificationCenter.default.addObserver(forName: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification,
+                                               object: nil, queue: .main) { [weak self] _ in
+            try? self?.connect()
+
+            // Add test merchant after database sync for TestFlight builds
+            #if DEBUG || Testflight
+            // The database was just replaced on disk (a version update, or a re-download
+            // forced by a mainnet/testnet switch), so the file may no longer contain the
+            // test merchants even though they were seeded earlier this session. Clear the
+            // once-per-session guard so seeding re-evaluates against the new file; the
+            // count check inside `addPiggyCardsTestMerchants` still avoids redundant
+            // trigger churn when they are already present.
+            self?.didInsertTestMerchants = false
+            self?.addTestMerchantAfterSync()
+            #endif
+        }
+    }
+    
+    static func hasOldMerchantIdSchema(at url: URL) -> Bool {
+        do {
+            let db = try Connection(url.path)
+            // Query the sqlite_master table to get the schema
+            let query = "SELECT sql FROM sqlite_master WHERE type='table' AND name='merchant'"
+            
+            if let row = try db.prepare(query).makeIterator().next(),
+               let sql = row[0] as? String {
+                // Check if merchantId is defined as INTEGER (old schema)
+                // New schema should have it as TEXT
+                return sql.contains("merchantId` INTEGER") || sql.contains("merchantId INTEGER")
+            }
+        } catch {
+            // If we can't check, assume it might be old to be safe
+            return true
+        }
+        return false
+    }
+
+    func connect() throws {
+        db = nil
+
+        guard let dbPath = dbPath() else {
+            // No database found - this is expected if we're waiting for v3 download
+            // Create an in-memory database to prevent crashes
+            db = try Connection(.inMemory)
+            return
+        }
+
+        do {
+            db = try Connection(dbPath)
+
+            // Add test merchant on initial connection for TestFlight builds
+            #if DEBUG || Testflight
+            // Use a small delay to ensure database is fully connected
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.insertTestMerchant()
+            }
+            #endif
+        } catch {
+            print(error)
+            // Fallback to in-memory database if connection fails
+            db = try Connection(.inMemory)
+        }
+    }
+
+    private func dbPath() -> String? {
+        let downloadedPath = FileManager.documentsDirectoryURL.appendingPathComponent(kExploreDashDatabaseName).path
+
+        return FileManager.default.fileExists(atPath: downloadedPath) ? downloadedPath : nil
+    }
+
+    func execute<Item: RowDecodable>(query: QueryType) throws -> [Item] {
+        guard db != nil else { return [] }
+        
+        do {
+            let items = try db.prepare(query)
+
+            var resultItems: [Item] = []
+
+            for item in items {
+                resultItems.append(Item(row: item))
+            }
+
+            return resultItems
+        } catch {
+            // If query fails (e.g., table doesn't exist in in-memory db), return empty array
+            print("Database query failed: \(error)")
+            return []
+        }
+    }
+
+    func execute<Item: RowDecodable>(query: String) throws -> [Item] {
+        guard db != nil else { return [] }
+
+        do {
+            return try db.prepareRowIterator(query).map { Item(row: $0) }
+        } catch {
+            // If query fails (e.g., table doesn't exist in in-memory db), return empty array
+            print("Database query failed: \(error)")
+            return []
+        }
+    }
+
+    #if DEBUG || Testflight
+    private func addTestMerchantAfterSync() {
+        // Wait a bit to ensure database is fully ready after sync
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            self?.insertTestMerchant()
+        }
+    }
+
+    private func insertTestMerchant() {
+        print("🎯 ExploreDatabaseConnection: Adding test merchants...")
+
+        guard let db = self.db else {
+            print("🎯 ExploreDatabaseConnection: Database not ready yet")
+            return
+        }
+
+        addPiggyCardsTestMerchants(db: db)
+    }
+
+    private struct PiggyCardsTestMerchant {
+        let merchantId: String
+        let name: String
+        let sourceId: String
+        let merchantSavings: Int
+        let merchantDenomType: String
+        let providerSavings: Int
+        let providerDenomType: String
+        let logo: String
+        let website: String
+        let territory: String?
+        let city: String?
+    }
+
+    // Matches Android PiggyCardsTestMerchants data
+    private let piggyCardsTestMerchants: [PiggyCardsTestMerchant] = [
+        PiggyCardsTestMerchant(
+            merchantId: "2e393eee-4508-47fe-954d-66209333fc96",
+            name: "Piggy Cards Test Merchant",
+            sourceId: "177",
+            merchantSavings: -250,
+            merchantDenomType: "Fixed",
+            providerSavings: 100,
+            providerDenomType: "fixed",
+            logo: "https://piggy.cards/image/catalog/piggycards/logo2023_mobile.png",
+            website: "https://piggy.cards",
+            territory: "MA",
+            city: "Boston"
+        ),
+        PiggyCardsTestMerchant(
+            merchantId: "2e393fff-4508-47fe-954d-66209333fc96",
+            name: "Piggy Cards Flexible Test Merchant",
+            sourceId: "177",
+            merchantSavings: -250,
+            merchantDenomType: "min-max",
+            providerSavings: -250,
+            providerDenomType: "min-max",
+            logo: "https://piggy.cards/image/catalog/piggycards/logo2023_mobile.png",
+            website: "https://piggy.cards",
+            territory: "MA",
+            city: "Boston"
+        ),
+        PiggyCardsTestMerchant(
+            merchantId: "2e393aaa-4508-47fe-954d-66209333fc96",
+            name: "Home Depot [Flexible]",
+            sourceId: "74",
+            merchantSavings: 100,
+            merchantDenomType: "min-max",
+            providerSavings: -50,
+            providerDenomType: "min-max",
+            logo: "https://piggy.cards/image/catalog/piggycards/Home_Depot_Copy.jpg",
+            website: "https://www.homedepot.com",
+            territory: nil,
+            city: nil
+        ),
+        PiggyCardsTestMerchant(
+            merchantId: "2e393ddd-4508-47fe-954d-66209333fc96",
+            name: "Apple [Flexible]",
+            sourceId: "13",
+            merchantSavings: 100,
+            merchantDenomType: "min-max",
+            providerSavings: 100,
+            providerDenomType: "min-max",
+            logo: "https://piggy.cards/image/catalog/incenti/8aaa3d5d-logo.png",
+            website: "https://www.apple.com",
+            territory: nil,
+            city: nil
+        ),
+        PiggyCardsTestMerchant(
+            merchantId: "2e393ccc-4508-47fe-954d-66209333fc96",
+            name: "Dominos [Flexible]",
+            sourceId: "45",
+            merchantSavings: 100,
+            merchantDenomType: "min-max",
+            providerSavings: 150,
+            providerDenomType: "min-max",
+            logo: "https://piggy.cards/image/catalog/incenti/68ea431c-logo.png",
+            website: "https://www.dominos.com",
+            territory: nil,
+            city: nil
+        ),
+    ]
+
+    private func addPiggyCardsTestMerchants(db: Connection) {
+        // Run at most once per session: avoid repeatedly dropping/recreating the FTS
+        // triggers, which transiently invalidates the schema and breaks merchant queries.
+        guard !didInsertTestMerchants else { return }
+
+        do {
+            let allIds = piggyCardsTestMerchants.map { "'\($0.merchantId)'" }.joined(separator: ", ")
+
+            // Already seeded (e.g. from a previous launch)? Skip the trigger churn entirely.
+            if let count = try? db.scalar(
+                "SELECT COUNT(*) FROM merchant WHERE source = 'PiggyCards' AND merchantId IN (\(allIds))"
+            ) as? Int64, count >= Int64(piggyCardsTestMerchants.count) {
+                didInsertTestMerchants = true
+                return
+            }
+
+            try db.transaction {
+                // Drop FTS triggers to allow merchant table modifications
+                try db.run("DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_AFTER_INSERT")
+                try db.run("DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_AFTER_UPDATE")
+                try db.run("DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_BEFORE_UPDATE")
+                try db.run("DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_BEFORE_DELETE")
+
+                // Delete existing test merchants (matches Android delete+re-insert pattern)
+                try db.run("""
+                    DELETE FROM merchant_fts
+                    WHERE docid IN (
+                        SELECT rowid
+                        FROM merchant
+                        WHERE source = 'PiggyCards' AND merchantId IN (\(allIds))
+                    )
+                """)
+                try db.run("""
+                    DELETE FROM gift_card_providers
+                    WHERE provider = 'PiggyCards' AND merchantId IN (\(allIds))
+                """)
+                try db.run("""
+                    DELETE FROM merchant
+                    WHERE source = 'PiggyCards' AND merchantId IN (\(allIds))
+                """)
+
+                // Insert all test merchants
+                for m in piggyCardsTestMerchants {
+                    let territory = "'\(m.territory ?? "")'"
+                    let city = "'\(m.city ?? "")'"
+
+                    try db.run("""
+                        INSERT INTO merchant (
+                            merchantId, name, source, sourceId, logoLocation, active, paymentMethod,
+                            savingsPercentage, denominationsType, type, redeemType, territory, city,
+                            website, addDate, updateDate
+                        ) VALUES (
+                            '\(m.merchantId)', '\(m.name)', 'PiggyCards', '\(m.sourceId)',
+                            '\(m.logo)', 1, 'gift card', \(m.merchantSavings),
+                            '\(m.merchantDenomType)', 'online', 'online',
+                            \(territory), \(city), '\(m.website)',
+                            datetime('now'), datetime('now')
+                        )
+                    """)
+
+                    let rowId = db.lastInsertRowid
+
+                    try db.run("""
+                        INSERT INTO gift_card_providers (
+                            merchantId, provider, sourceId, savingsPercentage,
+                            denominationsType, active, redeemType
+                        ) VALUES (
+                            '\(m.merchantId)', 'PiggyCards', '\(m.sourceId)',
+                            \(m.providerSavings), '\(m.providerDenomType)', 1, 'online'
+                        )
+                    """)
+
+                    try db.run("INSERT INTO merchant_fts(docid, name) VALUES (\(rowId), '\(m.name)')")
+                }
+
+                // Recreate FTS triggers
+                try db.run("""
+                    CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_merchant_fts_BEFORE_UPDATE
+                    BEFORE UPDATE ON merchant BEGIN
+                        DELETE FROM merchant_fts WHERE docid=OLD.rowid;
+                    END
+                """)
+                try db.run("""
+                    CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_merchant_fts_BEFORE_DELETE
+                    BEFORE DELETE ON merchant BEGIN
+                        DELETE FROM merchant_fts WHERE docid=OLD.rowid;
+                    END
+                """)
+                try db.run("""
+                    CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_merchant_fts_AFTER_UPDATE
+                    AFTER UPDATE ON merchant BEGIN
+                        INSERT INTO merchant_fts(docid, name) VALUES (NEW.rowid, NEW.name);
+                    END
+                """)
+                try db.run("""
+                    CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_merchant_fts_AFTER_INSERT
+                    AFTER INSERT ON merchant BEGIN
+                        INSERT INTO merchant_fts(docid, name) VALUES (NEW.rowid, NEW.name);
+                    END
+                """)
+            }
+
+            didInsertTestMerchants = true
+            print("✅ PiggyCards test merchants added successfully (\(piggyCardsTestMerchants.count) merchants)")
+        } catch {
+            print("🎯 Error adding PiggyCards test merchants: \(error)")
+        }
+    }
+    #endif
+}

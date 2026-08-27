@@ -1,0 +1,20 @@
+Dash Wallet je prvá iPhone peňaženka pre Dash - digitálnu hotovosť - lepšia a inovačná alternatíva k bitcoínu, zameraná na platby.
+
+Dash je kryptomena, ktorá sa snaží napraviť nedostatky, ktorým trpia iné kryptomeny. Spolieha sa na sieť masternódov, aby umožnila  veci ako napríklad okamžité transakcie, voliteľné funkcie pre anonymitu, a mechanizmus priameho financovania k naštartovaniu inovačných nápadov.
+
+Intuitívne a bezpečne, Dash Wallet vám poskytuje úplnú kontrolu nad vašou digitálnou hotovosťou. Okamžite odosielajte a prijímajte Dash platby s najbezpečnejšou mobilnou peňaženkou, ktorá je k dispozícii.
+
+Dash Wallet je prvá a jediná peňaženka pre iPhone, ktorá sa pripája priamo sieti Dash. To znamená, že neexistujú žiadne servery, ktoré by sa mohli hacknúť alebo vypnúť - vaše prostriedky sú vždy v bezpečí. Aj keď dôjde k strate, poškodeniu alebo krádeži telefónu, môžete svoje prostriedky ľahko získať späť pomocou osobnej frázy na obnovenie účtu.
+
+Vlastnosti:
+
+* Odosielajte a prijímajte Dash platby v priebehu niekoľkých sekúnd, online alebo osobne
+* Platby pomocou jedného tlačidla obchodníkom a webovým stránkam prijímajúcim Dash
+* Plaťte rýchlo pomocou rozpoznávania tváre
+* Výber z papierových peňaženiek (napr. tých, ktoré sú uložené offline).
+* Integrácie tretích strán, ktoré používateľom umožňujú kupovať a predávať Dash
+* Jednoduchá fráza pre obnovenie vám umožňuje získať prostriedky späť v prípade straty alebo poškodenia zariadenia
+* Flexibilné nastavenia, aby spĺňali celý rad vlastných preferencií zabezpečenia
+* Priamy sieťový Dash klient - žiadny centrálny server, ktorý by mohol byť napadnutý alebo znefunkčnený
+
+Dash Wallet má otvorený zdrojový kód a je zadarmo. Neexistujú žiadne ďalšie transakčné poplatky ani náklady. Okamžite pošlite akékoľvek množstvo peňazí komukoľvek na svete. Takto by mali vyzerať skutočné peniaze.

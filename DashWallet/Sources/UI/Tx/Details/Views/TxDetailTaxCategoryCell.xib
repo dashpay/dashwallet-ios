@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="dark"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="TxDetailTaxCategoryCell" rowHeight="52" id="J4F-HM-1vV" customClass="TxDetailTaxCategoryCell" customModule="dashwallet" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="374" height="52"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="J4F-HM-1vV" id="SB9-be-vIx">
+                <rect key="frame" x="0.0" y="0.0" width="374" height="52"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZgP-3s-Atv">
+                        <rect key="frame" x="0.0" y="0.0" width="374" height="52"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="52" id="gfD-gA-QzW"/>
+                        </constraints>
+                    </view>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3yL-We-hxk">
+                        <rect key="frame" x="13.999999999999996" y="17" width="38.666666666666657" height="18"/>
+                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="15"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="caf-r8-xCB">
+                        <rect key="frame" x="285.66666666666669" y="15.666666666666666" width="41.333333333333314" height="20.666666666666671"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="repeat" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="fd0-mQ-x1y">
+                        <rect key="frame" x="340" y="15.666666666666666" width="14" height="20.666666666666671"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="14" id="HvV-qb-aT3"/>
+                            <constraint firstAttribute="height" constant="24" id="cmH-I3-Bib"/>
+                        </constraints>
+                    </imageView>
+                </subviews>
+                <color key="backgroundColor" name="BackgroundColor"/>
+                <constraints>
+                    <constraint firstItem="caf-r8-xCB" firstAttribute="centerY" secondItem="SB9-be-vIx" secondAttribute="centerY" id="7JQ-fQ-14A"/>
+                    <constraint firstItem="3yL-We-hxk" firstAttribute="centerY" secondItem="SB9-be-vIx" secondAttribute="centerY" id="AKb-vk-JZU"/>
+                    <constraint firstAttribute="bottom" secondItem="ZgP-3s-Atv" secondAttribute="bottom" id="F3z-Z6-dfa"/>
+                    <constraint firstAttribute="trailing" secondItem="fd0-mQ-x1y" secondAttribute="trailing" constant="20" id="NBr-QF-Pau"/>
+                    <constraint firstItem="3yL-We-hxk" firstAttribute="leading" secondItem="SB9-be-vIx" secondAttribute="leading" constant="14" id="RFo-tD-HkV"/>
+                    <constraint firstItem="fd0-mQ-x1y" firstAttribute="centerY" secondItem="SB9-be-vIx" secondAttribute="centerY" id="TtP-zk-wnv"/>
+                    <constraint firstItem="ZgP-3s-Atv" firstAttribute="leading" secondItem="SB9-be-vIx" secondAttribute="leading" id="YRW-dR-T2l"/>
+                    <constraint firstAttribute="trailing" secondItem="ZgP-3s-Atv" secondAttribute="trailing" id="ZWs-Lw-QXj"/>
+                    <constraint firstItem="fd0-mQ-x1y" firstAttribute="leading" secondItem="caf-r8-xCB" secondAttribute="trailing" constant="13" id="avn-2V-wRo"/>
+                    <constraint firstItem="ZgP-3s-Atv" firstAttribute="top" secondItem="SB9-be-vIx" secondAttribute="top" id="lTO-PJ-zVF"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="categoryLabel" destination="caf-r8-xCB" id="Pao-52-8qc"/>
+                <outlet property="titleLabel" destination="3yL-We-hxk" id="arI-YN-sTX"/>
+            </connections>
+            <point key="canvasLocation" x="92" y="41"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="repeat" catalog="system" width="128" height="98"/>
+        <namedColor name="BackgroundColor">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

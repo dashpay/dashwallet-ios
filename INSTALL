@@ -1,0 +1,19 @@
+build and install breadwallet
+-----------------------------
+
+1. clone the breadwallet git repository: 
+
+   `git clone https://github.com/voisine/breadwallet.git`
+
+2. open breadwallet/BreadWallet.xcodeproj in XCode 5.0 or later
+
+3. select Product->Run
+
+
+**WARNING:** installation on jailbroken devices is strongly discouraged
+
+Any jailbreak app can grant itself access to every other app's keychain data
+and rob you by self-signing as described [here](http://www.saurik.com/id/8)
+and including `<key>application-identifier</key><string>*</string>` in its
+.entitlements file.
+
