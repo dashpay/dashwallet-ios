@@ -318,6 +318,7 @@ extension SyncingActivityMonitor {
         applyProgressWithPeakSmoothing(sdkProgress)
         isSyncing = (mapped == .syncing)
         let wasDone = state == .syncDone
+        let wasSyncing = state == .syncing
         state = mapped
 
         // `syncDone` is derived purely from the SPV network phases — it knows
@@ -329,7 +330,12 @@ extension SyncingActivityMonitor {
         // Logged at the transition rather than gated on, because whether the
         // watermark reliably reaches the tip is exactly what is unproven. One
         // line per completion answers it from an ordinary session.
-        if mapped == .syncing && syncCycleWalletId == nil {
+        // Every entry into `.syncing` opens a new cycle, so the id is replaced
+        // rather than only filled: a cycle that ended in `.syncFailed` or
+        // `.noConnection` never reaches the `.syncDone` branch that clears it,
+        // and a stale id would make the next cycle's completion look like it
+        // belonged to a wallet that is no longer active.
+        if mapped == .syncing && !wasSyncing {
             syncCycleWalletId = SwiftDashSDKWalletSource.activeWalletId
         }
 
