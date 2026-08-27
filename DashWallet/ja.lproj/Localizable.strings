@@ -384,6 +384,9 @@
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "ユーザー名は2〜9の数字を含み、20文字を超えるもので、ハイフンを含むものが自動的に承認されます。";
 
+/* Recovery phrase backup: security warning body — anyone with the phrase can spend the funds */
+"Anyone that has your recovery phrase can access your funds." = "復元フレーズを持っている人は誰でもあなたの資金にアクセスできます。";
+
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "アドレスを知っている人は誰でもその履歴を閲覧できます";
 
@@ -1082,6 +1085,9 @@
 
 /* Uphold Entry Point */
 "Dash balance on Uphold" = "Uphold上のDash残高";
+
+/* Recovery phrase backup: security warning title — Dash Core Group does not store the phrase */
+"Dash Core Group does NOT store this recovery phrase" = "Dash Core Group はこの復元フレーズを保存しません";
 
 /* Dash DEX Portal
    Translate it as short as possible! (24 symbols max) */
@@ -5798,6 +5804,9 @@
 /* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
 
+/* Recovery phrase backup: security warning body — keep the phrase written down and private */
+"Write it in a safe place and don’t show it to anyone." = "安全な場所に書き留め、誰にも見せないでください。";
+
 /* No comment provided by engineer. */
 "XpEBa5... or BIP21 URI" = "XpEBa5... or BIP21 URI";
 
@@ -5961,6 +5970,9 @@
 
 /* Back up wallet */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "このデバイスを紛失したり破損した場合、またはDash Walletがこのデバイスからアンインストールされた場合は、資金にアクセスするためにこのリカバリーフレーズが必要です。";
+
+/* Recovery phrase backup: security warning title — the phrase is required to restore the wallet */
+"You will NOT be able to restore the wallet without a recovery phrase" = "復元フレーズがなければウォレットを復元できません";
 
 /* Coinbase */
 "You will receive" = "You will receive";

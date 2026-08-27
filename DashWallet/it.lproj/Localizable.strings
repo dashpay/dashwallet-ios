@@ -384,6 +384,9 @@
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Qualsiasi nome utente che contenga un numero compreso tra 2 e 9, che abbia più di 20 caratteri o che contenga un trattino verrà automaticamente approvato";
 
+/* Recovery phrase backup: security warning body — anyone with the phrase can spend the funds */
+"Anyone that has your recovery phrase can access your funds." = "Chiunque abbia la tua frase di recupero può accedere ai tuoi fondi.";
+
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Chiunque conosca un indirizzo può vederne la cronologia";
 
@@ -1082,6 +1085,9 @@
 
 /* Uphold Entry Point */
 "Dash balance on Uphold" = "Bilancia del saldo su Uphold";
+
+/* Recovery phrase backup: security warning title — Dash Core Group does not store the phrase */
+"Dash Core Group does NOT store this recovery phrase" = "Dash Core Group NON conserva questa frase di recupero";
 
 /* Dash DEX Portal
    Translate it as short as possible! (24 symbols max) */
@@ -5798,6 +5804,9 @@
 /* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
 
+/* Recovery phrase backup: security warning body — keep the phrase written down and private */
+"Write it in a safe place and don’t show it to anyone." = "Annotala in un posto sicuro e non mostrarla a nessuno.";
+
 /* No comment provided by engineer. */
 "XpEBa5... or BIP21 URI" = "XpEBa5... or BIP21 URI";
 
@@ -5961,6 +5970,9 @@
 
 /* Back up wallet */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "Avrai bisogno di questa frase di recupero per accedere ai tuoi fondi se questo dispositivo viene smarrito, danneggiato o se il Portafoglio Dash viene disinstallato da questo dispositivo.";
+
+/* Recovery phrase backup: security warning title — the phrase is required to restore the wallet */
+"You will NOT be able to restore the wallet without a recovery phrase" = "NON potrai recuperare il portafoglio senza una frase di recupero";
 
 /* Coinbase */
 "You will receive" = "You will receive";
