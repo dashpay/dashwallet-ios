@@ -20,6 +20,12 @@ import DashUIKit
 import SDWebImageSwiftUI
 
 struct DashSpendConfirmationDialog: View {
+    /// Detent used before `selfSizingSheet` has measured the sheet, so it doesn't
+    /// present short and then jump. Covers this dialog's own natural height plus
+    /// `DashUIKit.BottomSheet`'s chrome — an 18pt grabber and a 64pt navigation bar.
+    /// Both presenters share this value; keep it here so they can't drift apart.
+    static let sheetFallbackHeight: CGFloat = 582
+
     let merchantName: String
     let merchantIconUrl: String
     let originalPrice: Decimal
@@ -195,7 +201,7 @@ private struct DashSpendConfirmationDialogPreview: View {
             DashUIKit.BottomSheet.selfSizing(
                 title: NSLocalizedString("Confirm", comment: "DashSpend"),
                 showBackButton: .constant(false),
-                fallback: 500,
+                fallback: DashSpendConfirmationDialog.sheetFallbackHeight,
                 cornerRadius: 32
             ) {
                 DashSpendConfirmationDialog(

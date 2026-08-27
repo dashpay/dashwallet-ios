@@ -271,7 +271,7 @@ private struct DashSpendPayConfirmationSheet: View {
         DashUIKit.BottomSheet.selfSizing(
             title: NSLocalizedString("Confirm", comment: "DashSpend"),
             showBackButton: .constant(false),
-            fallback: 500,
+            fallback: DashSpendConfirmationDialog.sheetFallbackHeight,
             cornerRadius: 32
         ) {
             DashSpendConfirmationDialog(

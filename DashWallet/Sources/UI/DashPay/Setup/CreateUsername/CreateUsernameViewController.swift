@@ -981,6 +981,11 @@ private struct ContestedNameConfirmationSheet: View {
                         .padding(.top, 16)
                 }
             }
+            // The buttons below sit outside this ScrollView, and `BottomSheet`'s
+            // `edgesIgnoringSafeArea(.bottom)` swallows the keyboard region as well as the
+            // home indicator, so nothing moves when the keyboard appears. Let a drag put it
+            // away; the toolbar below gives an explicit way out too.
+            .scrollDismissesKeyboard(.interactively)
 
             DashButton(
                 text: NSLocalizedString("Submit both usernames", comment: "Usernames"),
@@ -1008,6 +1013,15 @@ private struct ContestedNameConfirmationSheet: View {
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 20)
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button(NSLocalizedString("Done", comment: "")) {
+                    UIApplication.shared.sendAction(
+                        #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                }
+            }
+        }
         .onAppear {
             temporaryField.seedSuggestion(from: viewModel.username)
         }
