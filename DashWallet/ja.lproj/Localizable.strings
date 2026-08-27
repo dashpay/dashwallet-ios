@@ -4160,7 +4160,7 @@
 "The node's own report, unverified — what it says about itself, not what the network has agreed on." = "ノード自身による未検証の申告 — ネットワークが合意した内容ではなく、ノードが自分について述べている内容です。";
 
 /* No comment provided by engineer. */
-"Asked" = "問い合わせ日時";
+"Asked" = "問い合わせ先";
 
 /* No comment provided by engineer. */
 "Software" = "ソフトウェア";

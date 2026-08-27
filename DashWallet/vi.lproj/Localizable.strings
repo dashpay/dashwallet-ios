@@ -4162,7 +4162,7 @@
 "The node's own report, unverified — what it says about itself, not what the network has agreed on." = "Báo cáo của chính nút, chưa được kiểm chứng — là điều nút tự nói về mình, không phải điều mạng đã thống nhất.";
 
 /* No comment provided by engineer. */
-"Asked" = "Thời điểm hỏi";
+"Asked" = "Địa chỉ đã hỏi";
 
 /* No comment provided by engineer. */
 "Software" = "Phần mềm";

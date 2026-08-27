@@ -4162,7 +4162,7 @@
 "The node's own report, unverified — what it says about itself, not what the network has agreed on." = "تقرير العقدة عن نفسها، غير مُتحقَّق منه — ما تقوله عن نفسها، لا ما اتفقت عليه الشبكة.";
 
 /* No comment provided by engineer. */
-"Asked" = "وقت السؤال";
+"Asked" = "عنوان الطلب";
 
 /* No comment provided by engineer. */
 "Software" = "البرنامج";

@@ -4160,7 +4160,7 @@
 "The node's own report, unverified — what it says about itself, not what the network has agreed on." = "节点自报的未经验证的信息——是它对自己的说法，而非网络已达成一致的结果。";
 
 /* No comment provided by engineer. */
-"Asked" = "询问时间";
+"Asked" = "询问地址";
 
 /* No comment provided by engineer. */
 "Software" = "软件";

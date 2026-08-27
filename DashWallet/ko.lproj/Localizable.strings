@@ -4160,7 +4160,7 @@
 "The node's own report, unverified — what it says about itself, not what the network has agreed on." = "노드가 스스로 보고한 미검증 정보 — 네트워크가 합의한 내용이 아니라 노드가 자신에 대해 말하는 내용입니다.";
 
 /* No comment provided by engineer. */
-"Asked" = "요청 시각";
+"Asked" = "요청 주소";
 
 /* No comment provided by engineer. */
 "Software" = "소프트웨어";

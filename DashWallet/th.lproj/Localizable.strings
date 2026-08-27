@@ -4160,7 +4160,7 @@
 "The node's own report, unverified — what it says about itself, not what the network has agreed on." = "รายงานของโหนดเอง ยังไม่ผ่านการตรวจสอบ — คือสิ่งที่โหนดบอกเกี่ยวกับตัวเอง ไม่ใช่สิ่งที่เครือข่ายเห็นพ้อง";
 
 /* No comment provided by engineer. */
-"Asked" = "เวลาที่สอบถาม";
+"Asked" = "ที่อยู่ที่สอบถาม";
 
 /* No comment provided by engineer. */
 "Software" = "ซอฟต์แวร์";

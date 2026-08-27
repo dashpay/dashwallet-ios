@@ -4160,7 +4160,7 @@
 "The node's own report, unverified — what it says about itself, not what the network has agreed on." = "節點自報的未經驗證資訊——是它對自己的說法，而非網絡已達成共識的結果。";
 
 /* No comment provided by engineer. */
-"Asked" = "詢問時間";
+"Asked" = "詢問位址";
 
 /* No comment provided by engineer. */
 "Software" = "軟體";

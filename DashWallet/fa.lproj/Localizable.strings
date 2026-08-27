@@ -4160,7 +4160,7 @@
 "The node's own report, unverified — what it says about itself, not what the network has agreed on." = "گزارش خودِ گره، تأییدنشده — آنچه درباره خود می‌گوید، نه آنچه شبکه بر آن توافق کرده است.";
 
 /* No comment provided by engineer. */
-"Asked" = "زمان پرسش";
+"Asked" = "نشانی پرسش";
 
 /* No comment provided by engineer. */
 "Software" = "نرم‌افزار";
