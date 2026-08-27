@@ -5807,7 +5807,7 @@
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
 
 /* Recovery phrase backup: security warning body — keep the phrase written down and private */
-"Write it in a safe place and don’t show it to anyone." = "Írd le egy biztonságos helyre, és ne mutasd meg senkinek.";
+"Write it in a safe place and don’t show it to anyone." = "Írd le, tartsd biztonságos helyen, és ne mutasd meg senkinek.";
 
 /* No comment provided by engineer. */
 "XpEBa5... or BIP21 URI" = "XpEBa5... or BIP21 URI";

@@ -385,7 +385,7 @@
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "任何超过20个字符且包含数字2-9, 或含有连字符的用户名将被自动批准";
 
 /* Recovery phrase backup: security warning body — anyone with the phrase can spend the funds */
-"Anyone that has your recovery phrase can access your funds." = "任何拥有你助记词的人都能访问你的资金。";
+"Anyone that has your recovery phrase can access your funds." = "任何拥有你的助记词的人都能访问你的资金。";
 
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "任何知道地址的人都可以查看它的历史记录";

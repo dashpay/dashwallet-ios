@@ -1087,7 +1087,7 @@
 "Dash balance on Uphold" = "업홀드 내 대시 잔고";
 
 /* Recovery phrase backup: security warning title — Dash Core Group does not store the phrase */
-"Dash Core Group does NOT store this recovery phrase" = "Dash Core Group는 이 복구 문구를 저장하지 않습니다";
+"Dash Core Group does NOT store this recovery phrase" = "Dash Core Group은 이 복구 문구를 저장하지 않습니다";
 
 /* Dash DEX Portal
    Translate it as short as possible! (24 symbols max) */

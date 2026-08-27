@@ -385,7 +385,7 @@
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved";
 
 /* Recovery phrase backup: security warning body — anyone with the phrase can spend the funds */
-"Anyone that has your recovery phrase can access your funds." = "Iu ajn, kiu havas vian reakiran frazon, povas aliri viajn rimedojn.";
+"Anyone that has your recovery phrase can access your funds." = "Iu ajn, kiu havas vian reakiran frazon, povas aliri viajn monrimedojn.";
 
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Iu ajn kiu konas adreson povas vidi ĝian historion";
