@@ -29,15 +29,23 @@ private enum BackupInfoItem {
 extension BackupInfoItem {
     var title: String {
         switch self {
-        case .notStoredByDash: return "Dash Core Group does NOT store this recovery phrase"
-        case .unableToRestore: return "You will NOT be able to restore the wallet without a recovery phrase"
+        case .notStoredByDash:
+            return NSLocalizedString("Dash Core Group does NOT store this recovery phrase",
+                                     comment: "Recovery phrase backup: security warning title — Dash Core Group does not store the phrase")
+        case .unableToRestore:
+            return NSLocalizedString("You will NOT be able to restore the wallet without a recovery phrase",
+                                     comment: "Recovery phrase backup: security warning title — the phrase is required to restore the wallet")
         }
     }
 
     var description: String {
         switch self {
-        case .notStoredByDash: return "Anyone that has your recovery phrase can access your funds."
-        case .unableToRestore: return "Write it in a safe place and don’t show it to anyone."
+        case .notStoredByDash:
+            return NSLocalizedString("Anyone that has your recovery phrase can access your funds.",
+                                     comment: "Recovery phrase backup: security warning body — anyone with the phrase can spend the funds")
+        case .unableToRestore:
+            return NSLocalizedString("Write it in a safe place and don’t show it to anyone.",
+                                     comment: "Recovery phrase backup: security warning body — keep the phrase written down and private")
         }
     }
 

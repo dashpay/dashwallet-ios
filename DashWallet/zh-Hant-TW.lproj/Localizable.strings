@@ -384,6 +384,9 @@
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved";
 
+/* Recovery phrase backup: security warning body — anyone with the phrase can spend the funds */
+"Anyone that has your recovery phrase can access your funds." = "任何擁有你助記詞的人都能存取你的資金。";
+
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "任何知道位址的人都可以查看它的歷史紀錄";
 
@@ -1082,6 +1085,9 @@
 
 /* Uphold Entry Point */
 "Dash balance on Uphold" = "Dash balance on Uphold";
+
+/* Recovery phrase backup: security warning title — Dash Core Group does not store the phrase */
+"Dash Core Group does NOT store this recovery phrase" = "Dash Core Group 不會儲存此助記詞";
 
 /* Dash DEX Portal
    Translate it as short as possible! (24 symbols max) */
@@ -5800,6 +5806,9 @@
 /* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
 
+/* Recovery phrase backup: security warning body — keep the phrase written down and private */
+"Write it in a safe place and don’t show it to anyone." = "把它寫在安全的地方，不要給任何人看。";
+
 /* No comment provided by engineer. */
 "XpEBa5... or BIP21 URI" = "XpEBa5... or BIP21 URI";
 
@@ -5963,6 +5972,9 @@
 
 /* Back up wallet */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device.";
+
+/* Recovery phrase backup: security warning title — the phrase is required to restore the wallet */
+"You will NOT be able to restore the wallet without a recovery phrase" = "沒有助記詞，你將無法復原此錢包";
 
 /* Coinbase */
 "You will receive" = "You will receive";

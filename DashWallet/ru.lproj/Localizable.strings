@@ -384,6 +384,9 @@
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Любое имя пользователя, содержащее цифры от 2-9, больше 20 символов или дефис, будет автоматически одобрено";
 
+/* Recovery phrase backup: security warning body — anyone with the phrase can spend the funds */
+"Anyone that has your recovery phrase can access your funds." = "Любой, у кого есть ваша фраза восстановления, может получить доступ к вашим средствам.";
+
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Любой, кто знает адрес, может посмотреть его историю";
 
@@ -1082,6 +1085,9 @@
 
 /* Uphold Entry Point */
 "Dash balance on Uphold" = "Баланс Dash на Uphold";
+
+/* Recovery phrase backup: security warning title — Dash Core Group does not store the phrase */
+"Dash Core Group does NOT store this recovery phrase" = "Dash Core Group НЕ хранит эту фразу восстановления";
 
 /* Dash DEX Portal
    Translate it as short as possible! (24 symbols max) */
@@ -5798,6 +5804,9 @@
 /* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
 
+/* Recovery phrase backup: security warning body — keep the phrase written down and private */
+"Write it in a safe place and don’t show it to anyone." = "Запишите её в надёжном месте и никому не показывайте.";
+
 /* No comment provided by engineer. */
 "XpEBa5... or BIP21 URI" = "XpEBa5... or BIP21 URI";
 
@@ -5961,6 +5970,9 @@
 
 /* Back up wallet */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "Вам понадобится эта фраза восстановления для доступа к Вашим средствам, если это устройство будет утеряно, повреждено или приложение Dash Wallet будет случайно удалено.";
+
+/* Recovery phrase backup: security warning title — the phrase is required to restore the wallet */
+"You will NOT be able to restore the wallet without a recovery phrase" = "Без фразы восстановления вы НЕ сможете восстановить кошелёк";
 
 /* Coinbase */
 "You will receive" = "You will receive";
