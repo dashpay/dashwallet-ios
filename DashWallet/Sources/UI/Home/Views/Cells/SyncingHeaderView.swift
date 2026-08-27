@@ -21,7 +21,16 @@ import DashUIKit
 // MARK: - SyncingHeaderView
 
 struct SyncingHeaderView: View {
-    @ObservedObject private var model = SyncModelImpl()
+    // `@StateObject`, not `@ObservedObject`: this is the transaction list's
+    // section header, so SwiftUI re-initializes the struct on every list
+    // update — and during a sync those never stop. `@ObservedObject` does not
+    // own its value, so each re-init built another `SyncModelImpl`, whose
+    // `init` registers with `SyncingActivityMonitor.shared` and with
+    // `NotificationCenter`. Both hold it, `deinit` never ran, and the monitor
+    // then called every accumulated instance on each progress tick — each one
+    // republishing and invalidating this view again. A large-wallet scan
+    // reached 3321 live instances that way.
+    @StateObject private var model = SyncModelImpl()
     var onFilterTap: () -> Void
     var onSyncTap: () -> Void
     

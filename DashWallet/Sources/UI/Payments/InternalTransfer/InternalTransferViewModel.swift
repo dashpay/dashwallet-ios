@@ -59,14 +59,28 @@ enum CoreToShieldedAmountPolicy {
     /// (50_000 duffs) × 1000 credits/duff.
     static let assetLockBaseCostCredits: UInt64 = 50_000_000
 
+    /// Cached: this is read from `amountValidationMessage` and `canContinue`,
+    /// both of which a SwiftUI `body` evaluates — so an uncached property
+    /// crosses into Rust on every render and every keystroke. The value is a
+    /// pure function of the protocol version and the fixed `(transfer, 2)`
+    /// shape, so it cannot change within a launch.
+    private static var cachedPoolFeeCredits: UInt64??
+
     static var poolFeeCredits: UInt64? {
+        if let cached = cachedPoolFeeCredits { return cached }
         guard let shieldedFee = try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(
             kind: .transfer,
             numActions: 2)
-        else { return nil }
+        else {
+            // Not cached: a failed estimate is a transient FFI condition, and
+            // caching it would keep the screen permanently unusable.
+            return nil
+        }
 
         let (total, overflow) = shieldedFee.addingReportingOverflow(assetLockBaseCostCredits)
-        return overflow ? nil : total
+        let value: UInt64? = overflow ? nil : total
+        cachedPoolFeeCredits = .some(value)
+        return value
     }
 
     /// Pool fee in whole duffs, rounded UP so a duff-denominated lock always
