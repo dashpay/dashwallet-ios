@@ -5,19 +5,19 @@ full implementation head.
 
 | Role | Dash Wallet revision | DashUIKit revision | Simulator |
 | --- | --- | --- | --- |
-| Before — exact base | `b5273c479814e10966ff0c3903174ad158f2e819` | `5b373b141054438e94903af52b9ec324f1efbdb2` | DashUIKit PR4 Before b5273c479 (`1CC0EAEE-F9FE-436E-803D-2ACF6F2C4480`) |
-| After — full head | `a0e4c38a260a7706c8fac504929b52c235ba3670` | `e8d92434bfc28fbf933b896cd40a01dd61835b5f` | DashUIKit PR4 After a0e4c38a2 (`A25BCE13-1653-4D7D-98E8-67486B81F20D`) |
+| Before — exact base | `bb34895b65769d5849b97aea56adb39dcf3c6982` | `5b373b141054438e94903af52b9ec324f1efbdb2` | DashUIKit PR4 Before bb34895b6 (`0F16A692-078C-4EAC-B806-A103F6F8F73F`) |
+| After — full head | `9198db97fe6f58f69efcfa5d7062d59530800463` | `e8d92434bfc28fbf933b896cd40a01dd61835b5f` | DashUIKit PR4 After 9198db97f (`8D562FC5-9636-4896-A5C0-D3746904EA21`) |
 
-Both devices are clones of the same shut-down DashUIKit PR2 wallet fixture
-(`0F16A692-078C-4EAC-B806-A103F6F8F73F`), run iOS 26.5, and use bundle identifier
-`org.dashfoundation.dash`. Each revision was built independently with normal Simulator
-signing and separate DerivedData. The app built, installed, launched, and remained alive on
-both devices.
+The after device is a clone of the same shut-down wallet fixture represented by the before
+device. Both run iOS 26.5 and use bundle identifier `org.dashfoundation.dash`. Each revision
+was built independently with normal Simulator signing and separate DerivedData. The app
+built, installed, launched, and remained alive on both devices.
 
-The two testnet transfers use the same transparent-to-shielded route. The idle pair uses
-0.1 tDASH; the fiat quote changed by $0.02 between capture times. The protected pair uses
-0.02 tDASH and captures the same locking phase. These transactions share the same testnet
-wallet and therefore become visible to both clones after broadcast.
+Both testnet transfers use the same transparent-to-shielded route, 0.1 tDASH amount,
+0.10212852 DASH total, and approximately $0.08 network fee. The fiat quote changed by $0.01
+between capture times. The protected pair captures the same locking phase. These
+transactions share the same testnet wallet and therefore become visible to both devices
+after broadcast.
 
 ## Idle confirmation
 
@@ -40,9 +40,10 @@ has no close control.
 | ![Before protected transfer](comparison/before/internal-transfer-protected.png) | ![After protected transfer](comparison/after/internal-transfer-protected.png) |
 
 The same API wiring is compiled into send confirmation, shielded recovery, CoinJoin move
-funds, evonode withdrawal, and username marketplace actions. DashUIKit's focused tests in
-PR 14 cover disabled/default/custom close routing; this wallet evidence demonstrates the
-representative host integration.
+funds, evonode withdrawal, and username registration sheets. Marketplace name detail,
+set-price, and transfer remain native detented sheets with native interactive-dismissal
+protection. DashUIKit's focused tests cover disabled/default/custom close routing; this
+wallet evidence demonstrates the representative host integration.
 
 ## Files
 
@@ -50,7 +51,7 @@ All images are unmodified 1206×2622 PNG screenshots inspected at original resol
 
 | File | SHA-256 |
 | --- | --- |
-| `comparison/before/internal-transfer-idle.png` | `f9ecfacf02c799ac4fa16027979a5985f08f60215da2e3c0830ee2c7183de2ec` |
-| `comparison/after/internal-transfer-idle.png` | `0072287cd58604c87e8ba8c5014ff599f02bd53e692a9ca87cd4a2449f7bfc24` |
-| `comparison/before/internal-transfer-protected.png` | `906a57dfe8564b1faddb2d14a6ffc44a68271fab11c67bc3cd905698a53504e7` |
-| `comparison/after/internal-transfer-protected.png` | `bf18d5233a47f838dc147dfc32b25d3a9e6dc5cbf87a0c159911fcf42cd2c943` |
+| `comparison/before/internal-transfer-idle.png` | `052a574c7a469529230ba7a78cd0605238ff9053fbed039095d6daf5b38b74fd` |
+| `comparison/after/internal-transfer-idle.png` | `c5b9f390ec6ef1107806813b4bccf6256673fb1736e973f9c08c1dd1cd6980c4` |
+| `comparison/before/internal-transfer-protected.png` | `c5b96567e8d6fee017f272af0604a62e549775ed6844740a42ba73c816adacb8` |
+| `comparison/after/internal-transfer-protected.png` | `32bf866d09497f9523a46579c87915f1343312a38d042d1bdba9878d81b9c3e0` |
