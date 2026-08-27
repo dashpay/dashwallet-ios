@@ -9,6 +9,9 @@
 /* CrowdNode */
 " Terms of Use " = "이용약관";
 
+/* Username marketplace: listing success — name, then price */
+"%1$@ listed for %2$@ DASH" = "%1$@ 을(를) %2$@ DASH에 등록했습니다";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -20,6 +23,12 @@
 
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "연락처 요청을 보낼 %@ 님을 Dash 네트워크에서 찾을 수 없습니다.";
+
+/* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
+"%@ couldn't be verified on the Dash network. The QR code may be outdated." = "Dash 네트워크에서 %@ 을(를) 확인할 수 없습니다. QR 코드가 오래된 것일 수 있습니다.";
+
+/* Username marketplace: contested request cost value — the vote-resolution fund amount */
+"%@ DASH + network fee" = "%@ DASH + 네트워크 수수료";
 
 /* Usernames */
 "%@ Dash available" = "%@ Dash 사용 가능";
@@ -42,6 +51,9 @@
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@ 님이 당신에게 연락처 요청을 보냈습니다";
 
+/* Username marketplace: delist success */
+"%@ is no longer for sale" = "%@ 은(는) 더 이상 판매하지 않습니다";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@은 페이스 ID 접근이 허용되지 않습니다. 설정에서 페이스 ID를 허용하십시오";
 
@@ -51,8 +63,17 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@은 터치 ID 접근이 허용되지 않습니다. 설정에서 터치 ID를 허용하십시오";
 
+/* Username marketplace: purchase success */
+"%@ is now yours" = "%@ 은(는) 이제 회원님의 것입니다";
+
+/* Username marketplace: registration success */
+"%@ registered" = "%@ 등록됨";
+
 /* Testnet faucet */
 "%@ tDash requested — it will arrive shortly" = "%@ tDash requested — it will arrive shortly";
+
+/* Username marketplace: transfer success */
+"%@ transferred" = "%@ 이전됨";
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
@@ -171,6 +192,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "이 이름은 이미 투표가 진행 중입니다 — 신청하면 경쟁자로 투표에 참여합니다. 경쟁 수수료는 제출 시 소모되며, 이름을 얻지 못해도 반환되지 않습니다.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -182,6 +206,9 @@
 
 /* No comment provided by engineer. */
 "About me" = "나에 관하여";
+
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "아이덴티티 계정 잔액 안내";
 
 "Abstain" = "기권";
 
@@ -235,6 +262,9 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "새로운 연락처 추가하기";
 
+/* Usernames */
+"Add a temporary username" = "임시 사용자 이름 추가";
+
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
 
@@ -259,6 +289,9 @@
 /* Maya
    SwapKit */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+
+/* No comment provided by engineer. */
+"Advanced" = "고급";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "향상된 보안";
@@ -315,6 +348,9 @@
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "대시 금액";
 
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "DASH 금액";
+
 /* No comment provided by engineer. */
 "Amount received" = "받은 금액";
 
@@ -350,6 +386,9 @@
 
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "주소를 아는 사람은 누구나 그 내역을 볼 수 있습니다";
+
+/* Username marketplace: set price sheet body */
+"Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance." = "누구나 정확히 이 가격으로 이름을 구매할 수 있습니다. 판매 대금은 크레딧으로 아이덴티티 잔액에 들어옵니다.";
 
 /* AboutDash */
 "App version" = "App version";
@@ -430,8 +469,17 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "잔고 자동숨김";
 
+/* DashPay */
+"Available after sync finishes" = "동기화가 끝나면 사용할 수 있습니다";
+
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
+
+/* Username marketplace: unregistered name row */
+"Available — register it on your identity" = "사용 가능 — 회원님의 아이덴티티에 등록하세요";
+
+/* Username marketplace: unregistered contested-eligible name row */
+"Available — short names are decided by a network vote" = "사용 가능 — 짧은 이름은 네트워크 투표로 결정됩니다";
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
@@ -525,6 +573,9 @@
 /* Voting */
 "Blocked '%@' username" = "사용자 이름 '%@' 차단 됨";
 
+/* Username marketplace: history — purchase with buyer, seller, price */
+"Bought by %1$@ from %2$@ for %3$@ DASH" = "%1$@ 님이 %2$@ 님에게서 %3$@ DASH에 구매";
+
 /* Identities: this key only signs for one data contract */
 "Bound to contract" = "컨트랙트에 연결됨";
 
@@ -573,6 +624,9 @@
 /* Swap */
 "Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
 
+/* Username marketplace: purchase button */
+"Buy for %@ DASH" = "%@ DASH에 구매";
+
 /* DashSpend */
 "Buy gift card" = "기프트 카드 구매하기";
 
@@ -581,6 +635,12 @@
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash for the exact amount of your purchase." = "정확히 당신의 구매 금액만큼 기프트 카드를 구매하세요.";
+
+/* Username marketplace: purchase confirmation title */
+"Buy “%@”?" = "‘%@’ 을(를) 구매할까요?";
+
+/* Username marketplace: Explore row subtitle */
+"Buy, sell and transfer DashPay usernames" = "DashPay 사용자 이름을 사고팔고 이전하세요";
 
 /* Buy/Sell */
 "Buy/Sell" = "매수/매도";
@@ -631,6 +691,9 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "PIN 변경";
+
+/* Username marketplace */
+"Change Price" = "가격 변경";
 
 /* TimeSkew */
 "Check date & time settings" = "날짜 & 시간 설정 확인";
@@ -713,6 +776,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "곧 제공";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "이전 완료하기";
+
 /* Shielded transfer status */
 "Completed" = "완료됨";
 
@@ -782,6 +848,18 @@
 
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "%@ 님에게 연락처 요청을 보냈습니다";
+
+/* Usernames */
+"Continue without a temporary username" = "임시 사용자 이름 없이 계속하기";
+
+/* Identity top-up sheet — body */
+"Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "연락처 요청, 프로필 업데이트 같은 Platform 작업 비용을 내려면 Dash를 아이덴티티 크레딧으로 전환하세요.";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "이전을 완료하지 못했습니다";
+
+/* Identity top-up sheet — free amount chip */
+"Custom" = "직접 입력";
 
 /* No comment provided by engineer. */
 "Contact Requests" = "연락처 요청";
@@ -1042,6 +1120,27 @@
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "DashPay 활성화됨";
 
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "최소 %@ DASH 이상 입력하세요";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "예상 수수료";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "수수료는 금액에서 차감됩니다. Shielded에서 보내면 소액의 잔여분이 Platform 잔액에 남을 수 있습니다.";
+
+/* Username marketplace: search segment */
+"Find Names" = "이름 찾기";
+
+/* Username marketplace: listed badge */
+"For sale" = "판매 중";
+
+/* Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app */
+"For sale by an independent user" = "독립 사용자가 판매 중";
+
+/* Identity top-up sheet — linkability warning for transparent-side sources */
+"Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "투명 잔액에서 자금을 대면 해당 코인이 Dash 체인에서 회원님의 아이덴티티와 공개적으로 연결됩니다. 프라이버시를 위해 Shielded 잔액에서 결제하세요.";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "대시페이 초대";
 
@@ -1062,6 +1161,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "날짜";
+
+/* History group header for restored shielded operations whose original date is not recoverable */
+"Date unknown" = "날짜 불명";
 
 /* Voting */
 "Date: New to old" = "날짜: 현재부터 과거";
@@ -1085,6 +1187,9 @@
 
 /* No comment provided by engineer. */
 "Delete Wallet?" = "Delete Wallet?";
+
+/* SPV diagnostics */
+"Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network." = "이 지갑의 미확인 트랜잭션을 이 기기에서만 삭제하고, 해당 트랜잭션이 사용하려던 코인을 해제합니다. 필터 재검색을 통해 실제로 블록체인에 있는 트랜잭션은 복원됩니다. 네트워크로는 아무것도 전송되지 않습니다.";
 
 /* Location Service Status */
 "Denied" = "거절됨";
@@ -1116,6 +1221,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "기기 보안이 손상되었습니다\n어떤 '탈옥' 어플이든 다른 어플의 주요 체인 데이터에 접근할 수 있습니다 (당신의 대시가 도난당할 수 있습니다).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu." = "기기 보안이 손상되었습니다\n모든 '탈옥' 앱은 다른 앱의 키체인 데이터에 접근할 수 있습니다(회원님의 Dash를 훔칠 수도 있습니다). 자금을 안전한 기기의 지갑으로 옮긴 다음, 보안 메뉴의 ‘지갑 재설정’으로 이 지갑을 재설정하세요.";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "기기 보안이 손상되었습니다\n어떤 '탈옥' 어플이든 다른 어플의 주요 체인 데이터에 접근할 수 있습니다 (당신의 대시가 도난당할 수 있습니다). 이 지갑을 즉시 삭제하시고 안전한 기기에서 지갑을 복구하십시오.";
@@ -1169,6 +1277,27 @@
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
 "DPNS Names" = "DPNS Names";
+
+/* SPV diagnostics */
+"Drop & rescan" = "버리고 재검색";
+
+/* SPV diagnostics */
+"Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network." = "아직 네트워크를 기다리는(잠긴 적도 채굴된 적도 없는) 이 지갑의 트랜잭션을 이 기기에서 버리고, 해당 트랜잭션이 사용하려던 코인을 다시 사용할 수 있게 한 뒤 최근 필터를 재검색합니다. 실제로 블록체인에 있는 트랜잭션은 재검색 중에 저절로 돌아옵니다. 네트워크로는 아무것도 전송되지 않습니다.";
+
+/* SPV diagnostics */
+"Drop Unconfirmed & Rescan" = "미확인 버리고 재검색";
+
+/* SPV diagnostics */
+"Drop unconfirmed transactions?" = "미확인 트랜잭션을 버릴까요?";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row." = "미확인 트랜잭션 %d건을 버렸습니다 — 필터를 재검색 중입니다. 필터 행을 확인하세요.";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above." = "미확인 트랜잭션 %d건을 버렸지만 필터 재검색을 시작하지 못했습니다 — 위의 ‘필터 재검색’을 실행하세요.";
+
+/* SPV diagnostics */
+"Dropping…" = "버리는 중…";
 
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "크라우드노드의 서비스 이용 약관에 따라, 사용자들은 다음의 금액 이상을 출금할 수 없습니다:";
@@ -1280,6 +1409,9 @@
 
 /* No comment provided by engineer. */
 "Enter your recovery phrase to reset your PIN" = "Enter your recovery phrase to reset your PIN";
+
+/* No comment provided by engineer. */
+"Enter your recovery phrase to set a new PIN" = "새 PIN을 설정하려면 복원 문구를 입력하세요";
 
 /* Voting */
 "Enter your voting key" = "투표 키를 입력하세요";
@@ -1665,6 +1797,42 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "프라이버시 측면에서 Ethereum 계정과 비교하면 어떤가요?";
 
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "아이덴티티 계정 잔액";
+
+/* Username marketplace: section of contested-name requests awaiting the masternode vote */
+"In network vote" = "네트워크 투표 중";
+
+/* Username marketplace: search row for a contested label with an active vote by others */
+"In a network vote — you can join as a contender" = "네트워크 투표 중 — 경쟁자로 참여할 수 있습니다";
+
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "그동안에는 ‘%1$@’ 으(로) 연락받을 수 있으며, 이 이름은 계속 회원님의 것입니다. 투표에서 ‘%2$@’ 을(를) 얻으면 두 사용자 이름 모두로 연락받을 수 있습니다.";
+
+/* Username marketplace: search row for a label a past vote locked */
+"Locked by a network vote — nobody can register it" = "네트워크 투표로 잠김 — 아무도 등록할 수 없습니다";
+
+/* Username marketplace: latest ownership change */
+"Last transferred" = "최근 이전";
+
+/* Username marketplace: confirm listing button */
+"List For Sale" = "판매 등록";
+
+/* Username marketplace: own listed name */
+"Listed by you" = "회원님이 등록함";
+
+/* Username marketplace: history — price set */
+"Listed for %@ DASH" = "%@ DASH에 등록됨";
+
+/* Username marketplace: set price fee note */
+"Listing is a network transaction with a small fee, paid from your identity balance." = "판매 등록은 네트워크 트랜잭션이며, 소액의 수수료가 아이덴티티 잔액에서 지불됩니다.";
+
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "내 아이덴티티";
+
+/* Username marketplace: owned names segment */
+"My Names" = "내 이름";
+
 /* DashPay FAQ */
 "How private is DashPay?" = "DashPay의 프라이버시 수준은 어느 정도인가요?";
 
@@ -2027,6 +2195,9 @@
 /* CrowdNode */
 "Leaving the pool" = "풀 떠나기";
 
+/* DashPay Contacts: caption under the user's own QR code */
+"Let another Dash Wallet user scan this code to add you as a contact." = "다른 Dash Wallet 사용자가 이 코드를 스캔하면 회원님을 연락처로 추가할 수 있습니다.";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "완료되면 알려주세요";
 
@@ -2099,6 +2270,51 @@
 "Lock" = "잠금";
 
 "Lock the name" = "이름 잠그기";
+
+/* Username marketplace: contest voting deadline row */
+"Vote ends" = "투표 종료";
+
+/* Username marketplace: until when other identities can join the contest */
+"New contenders" = "새 경쟁자";
+
+/* Username marketplace: join deadline still open — value of the New contenders row */
+"can join until %@" = "%@ 까지 참여 가능";
+
+/* Username marketplace: the contest's join window has passed — value of the New contenders row */
+"joining closed" = "참여 마감";
+
+/* Username marketplace: masternode vote tally for one contest row */
+"%d votes" = "%d표";
+
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "12단어가 표준입니다. 24단어는 적어 두고 복원하는 데 시간이 더 걸리지만, 먼 미래의 고성능 컴퓨터 시스템이 뚫기에는 훨씬 어렵습니다.";
+
+/* Username marketplace: unresolvable transfer recipient */
+"No identity owns that username." = "그 사용자 이름을 소유한 아이덴티티가 없습니다.";
+
+/* Username marketplace: names that were sold or transferred away */
+"No longer yours" = "더 이상 회원님의 것이 아님";
+
+/* Identity top-up sheet — missing unshield destination */
+"No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "아직 사용할 수 있는 Platform 수신 주소가 없습니다 — Platform 동기화가 끝날 때까지 기다린 후 다시 시도하세요.";
+
+/* Username marketplace: empty owned list */
+"No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "이 아이덴티티에는 아직 사용자 이름이 없습니다. ‘이름 찾기’ 탭에서 구매하거나 등록할 이름을 찾아보세요.";
+
+/* Identity top-up sheet — insufficient funding source */
+"Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "이 잔액으로는 자금이 부족합니다: %@ DASH 필요, %@ DASH 사용 가능.";
+
+/* Username marketplace: insufficient balance hint */
+"Not enough identity credits for this purchase — top up from My Profile first." = "이 구매에 필요한 아이덴티티 크레딧이 부족합니다 — 먼저 ‘내 프로필’에서 충전하세요.";
+
+/* Username marketplace: insufficient balance hint for a contested request */
+"Not enough identity credits for this request — top up from My Profile first." = "이 신청에 필요한 아이덴티티 크레딧이 부족합니다 — 먼저 ‘내 프로필’에서 충전하세요.";
+
+/* Username marketplace: someone else's unlisted name */
+"Not for sale" = "판매하지 않음";
+
+/* Username marketplace: own unlisted name */
+"Not listed for sale" = "판매 등록되지 않음";
 
 "Lock “%@” so nobody gets it" = "아무도 가져갈 수 없도록 “%@” 잠그기";
 
@@ -2342,11 +2558,92 @@
 /* SDK identity profile sheet — title */
 "My Profile" = "My Profile";
 
+/* DashPay Contacts: shows the user's own contact QR code */
+"My QR" = "내 QR";
+
 /* No comment provided by engineer. */
 "Name" = "이름";
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Unstoppable Domains 같은 이름 서비스는 사람이 읽을 수 있는 이름을 체인상의 고정된 공개 주소에 연결합니다. 누구나 그 이름을 조회해 지금까지의 모든 결제를 볼 수 있습니다. DashPay 사용자 이름은 결코 공개적으로 결제 주소로 연결되지 않습니다. 주소는 각 연락처와의 암호화된 교환 안에서만 공개되므로, 회원님의 이름과 자금은 외부 관찰자에게 연결되지 않습니다.";
+
+/* Username marketplace: contested request line — voting deadline */
+"Network vote ends %@" = "네트워크 투표는 %@ 에 종료됩니다";
+
+/* Username marketplace: activity overlay while the purchase transition runs */
+"Completing your purchase…" = "구매를 완료하는 중…";
+
+/* Usernames */
+"Register username" = "사용자 이름 등록";
+
+/* Username marketplace: activity overlay while the delist transition runs */
+"Removing the listing…" = "판매 등록을 해제하는 중…";
+
+/* Username marketplace: activity overlay while the set-price transition runs */
+"Listing for sale…" = "판매 등록 중…";
+
+/* Usernames */
+"Submit both usernames" = "두 사용자 이름 모두 제출";
+
+/* Usernames */
+"Temporary username" = "임시 사용자 이름";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "임시 사용자 이름 자체가 투표를 필요로 해서는 안 됩니다.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "이 이름은 마스터노드 투표가 필요합니다. 경쟁 수수료는 제출 시 소모되며, 이름을 얻지 못해도 반환되지 않습니다.";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "이 사용자 이름도 투표가 필요합니다 — 2에서 9 사이의 숫자를 추가해 보세요";
+
+/* Username marketplace: activity overlay while the transfer transition runs */
+"Transferring the username…" = "사용자 이름을 이전하는 중…";
+
+/* Username marketplace: activity overlay while the registration transition runs */
+"Registering the username…" = "사용자 이름을 등록하는 중…";
+
+/* Username marketplace: activity overlay while the contested request transition runs */
+"Submitting your username request…" = "사용자 이름 신청을 제출하는 중…";
+
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "둘러보기";
+
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "가격 변동";
+
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "구매 내역";
+
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "%1$@ DASH에 등록 · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "%1$@ DASH에 판매 · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "%1$@ DASH에 판매 · %2$@ · %3$@ → %4$@";
+
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "현재 판매하지 않음";
+
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "최근 등록 활동에는 판매 중인 이름이 없습니다. ‘더 보기’로 더 이전 기록까지 확인할 수 있습니다.";
+
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "아직 네트워크에 구매 기록이 없습니다.";
+
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "활동을 불러오는 중…";
+
+/* Username marketplace: load older browse activity */
+"Show more" = "더 보기";
+
+/* Username marketplace: contest tallies card title */
+"Network vote so far" = "현재까지의 네트워크 투표";
+
+/* Username marketplace: contest with zero masternode votes so far */
+"No votes cast yet" = "아직 투표가 없습니다";
 
 /* Swap route provider
    Swap route provider short */
@@ -2381,6 +2678,9 @@
 
 /* (List of) New (notifications) */
 "New" = "새로운 알림";
+
+/* SPV diagnostics */
+"No unconfirmed transactions to drop." = "버릴 미확인 트랜잭션이 없습니다.";
 
 /* CrowdNode */
 "New CrowdNode Account" = "새로운 크라우드노드 계정";
@@ -2563,6 +2863,15 @@
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "Bitcoin에는 이름 계층이 없어 사람들이 주소를 공개적으로 공유하고 재사용합니다. 주소가 한 번 알려지면 그 주소가 받은 모든 것을 소유자와 연결할 수 있습니다. DashPay에서는 사용자 이름이 공개되지만 결제 주소를 가리키지는 않습니다. 주소는 연락처별로 비공개로 교환되고 계속 바뀌므로, 이름으로 결제해도 자금의 행선지가 공개되지 않습니다. 둘 다 투명한 체인이므로 코인 자체에는 체인 분석이 여전히 적용됩니다.";
 
+/* DashPay Contacts: search results from DPNS, not the local contact list */
+"On the Dash network" = "Dash 네트워크에서";
+
+/* Username marketplace */
+"Owned by you" = "회원님이 소유";
+
+/* Identity top-up sheet — funding source picker label */
+"Pay from" = "결제 수단";
+
 /* Identities */
 "On Network" = "네트워크상";
 
@@ -2731,6 +3040,9 @@
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "결제는 비공개입니다. 연락처와 교환하는 주소는 두 사람만 읽을 수 있는 암호화된 페이로드 안에서 오가며 결코 공개되지 않으므로, 결제를 사용자 이름과 쉽게 연결할 수 없습니다. 다만 이는 여전히 투명한 체인상의 일반 결제이므로 정교한 체인 분석으로 정보가 드러날 수 있습니다. Shielded DashPay(곧 제공)가 이 간극을 메울 예정입니다. 연락처 요청 자체는 현재 비공개가 아닙니다. 두 아이덴티티가 연결되어 있다는 사실은 누구나 볼 수 있습니다. 비공개 연락처 요청은 곧 제공될 기능입니다. 사용자 이름과 프로필도 Dash Platform에 공개됩니다.";
 
+/* Username marketplace: price placeholder */
+"Price in DASH" = "DASH 가격";
+
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "InstantSend로 결제가 몇 초 만에 확인됩니다";
 
@@ -2788,6 +3100,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "지불을 처리하기 위해서는 언제나 PIN이 필요합니다";
+
+/* No comment provided by engineer. */
+"PIN Not Set" = "PIN 미설정";
 
 /* Dash Platform chain */
 "Platform" = "Platform";
@@ -2992,6 +3307,9 @@
 /* Identities: what a public key is used for */
 "Purpose" = "용도";
 
+/* Username marketplace */
+"Put Up For Sale" = "판매 등록하기";
+
 /* DashSpend */
 "Quantity" = "Quantity";
 
@@ -3027,6 +3345,96 @@
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "읽기 전용";
+
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "재전송";
+
+/* Delete a never-accepted transaction from local wallet state */
+"Remove if Not on Network" = "네트워크에 없으면 삭제";
+
+/* Remove never-accepted transaction: confirmation title */
+"Remove this transaction?" = "이 트랜잭션을 삭제할까요?";
+
+/* Remove never-accepted transaction: destructive confirm button */
+"Remove Transaction" = "트랜잭션 삭제";
+
+/* Username marketplace: transfer recipient placeholder */
+"Recipient username or identity ID" = "수신자 사용자 이름 또는 아이덴티티 ID";
+
+/* Identity top-up sheet — shielded source note */
+"Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "권장: 본인의 Platform 주소를 거치는 2단계 이전을 사용하면 아이덴티티가 투명 코인과 연결되지 않습니다.";
+
+/* Username marketplace: register sheet title */
+"Register “%@”" = "‘%@’ 등록";
+
+/* Username marketplace: registration date */
+"Registered" = "등록됨";
+
+/* Username marketplace */
+"Remove From Sale" = "판매 해제";
+
+/* Remove never-accepted transaction: progress */
+"Removing transaction…" = "트랜잭션을 삭제하는 중…";
+
+/* Username marketplace: delist confirmation title */
+"Remove “%@” from sale?" = "‘%@’ 의 판매를 해제할까요?";
+
+/* Username marketplace: history — delist (transfer to self) */
+"Removed from sale" = "판매 해제됨";
+
+/* Username marketplace: delist confirmation body */
+"Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "판매 등록 해제는 네트워크 트랜잭션이며, 소액의 수수료가 아이덴티티 잔액에서 지불됩니다. 이름은 계속 회원님의 것입니다.";
+
+/* Remove never-accepted transaction: refused because the explorer found it */
+"Transaction is known to the network" = "네트워크가 이 트랜잭션을 알고 있습니다";
+
+/* Remove never-accepted transaction: refusal body */
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "블록 탐색기에 따르면 이 트랜잭션은 Dash 네트워크에 알려져 있습니다. 아직 멤풀에서 대기 중이거나 이미 블록에 포함되었을 수 있어 삭제되지 않았습니다. 동기화된 블록에 포함되면 지갑이 확인 상태를 자동으로 업데이트합니다.";
+
+/* Remove never-accepted transaction: success */
+"Transaction removed" = "트랜잭션 삭제됨";
+
+/* Remove never-accepted transaction: removed but the recovery rescan did not arm */
+"Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "트랜잭션 삭제됨 — 재검색을 시작하지 못했습니다. Core 동기화 상태에서 ‘필터 재검색’을 실행하세요";
+
+/* Remove never-accepted transaction: confirmation body */
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "지갑은 먼저 블록 탐색기를 확인합니다. 네트워크에 알려진 트랜잭션은 멤풀에서 대기 중이든 이미 블록에 포함되었든 절대 삭제되지 않습니다. 트랜잭션을 찾지 못하면 이 기기의 이 지갑에서 삭제되고, 사용하려던 코인이 다시 사용 가능해집니다. 그런 다음 지갑이 안전 확인 차원에서 최근 블록을 재검색합니다. 네트워크로는 아무것도 전송되지 않습니다.";
+
+/* Remove never-accepted transaction: failure title */
+"Couldn't remove the transaction" = "트랜잭션을 삭제하지 못했습니다";
+
+/* Remove never-accepted transaction: no local row */
+"This transaction is not in the local wallet." = "이 트랜잭션은 로컬 지갑에 없습니다.";
+
+/* Remove never-accepted transaction: local state says it's on-chain */
+"This transaction is confirmed and can't be removed." = "이 트랜잭션은 확인되어 삭제할 수 없습니다.";
+
+/* Remove never-accepted transaction: explorer unreachable */
+"Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "트랜잭션이 블록체인에 없는지 확인할 블록 탐색기에 연결하지 못했습니다. 연결 상태를 확인하고 다시 시도하세요.";
+
+/* Username marketplace: contested request cost row */
+"Request cost" = "신청 비용";
+
+/* Username marketplace: contested request success */
+"Request for %@ submitted — masternodes now vote on it" = "%@ 신청을 제출했습니다 — 이제 마스터노드가 투표합니다";
+
+/* Username marketplace: confirm contested request button */
+"Request Username" = "사용자 이름 신청";
+
+/* Username marketplace: contested register sheet title */
+"Request “%@”" = "‘%@’ 신청";
+
+/* Username marketplace: contested request not yet indexed by Platform */
+"Requested — waiting for the network vote" = "신청됨 — 네트워크 투표 대기 중";
+
+/* Username marketplace: search row for a contested label this identity already requested */
+"Requested by you — the network vote is in progress" = "회원님이 신청함 — 네트워크 투표가 진행 중입니다";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "이전을 다시 시도하는 중…";
+
+/* Username marketplace: screen subtitle */
+"Search usernames, buy ones that are for sale, and sell or transfer your own." = "사용자 이름을 검색하고, 판매 중인 이름을 구매하고, 보유한 이름을 판매하거나 이전하세요.";
 
 /* Usernames */
 "Ready around %@" = "%@경 준비 완료";
@@ -3081,6 +3489,9 @@
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "복원 문구";
+
+/* Recovery phrase length */
+"Recovery phrase length" = "복원 문구 길이";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "복원 문구가 일치하지 않습니다";
@@ -3194,6 +3605,9 @@
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
+
+/* No comment provided by engineer. */
+"Completion unknown" = "완료 여부 불명";
 
 /* Location Service Status */
 "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "복구한 지갑은 작업 유형을 항상 복원하지는 못합니다. 이 항목은 온체인 메모 데이터로부터 재구성되었습니다.";
@@ -3321,6 +3735,9 @@
 /* Identities: DPP security level of a public key */
 "Security level" = "보안 수준";
 
+/* Username marketplace: transfer sheet body */
+"Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "이 이름을 다른 아이덴티티로 무료로 보냅니다. 이전하면 판매 등록도 해제됩니다. 되돌릴 수 없습니다 — 새 소유자가 다시 이전해 주어야 합니다.";
+
 /* DashSpend */
 "See card details" = "See card details";
 
@@ -3368,7 +3785,520 @@
 /* Coinbase */
 "Select the coin" = "코인 선택";
 
+/* Identities */
+"Select the username to display for this identity." = "이 아이덴티티에 표시할 사용자 이름을 선택하세요.";
+
 "Selecting fewer nodes reveals less about which masternodes you run." = "선택하는 노드가 적을수록 어떤 마스터노드를 운영하는지 덜 드러납니다.";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "이 기기에서 지갑 %ld개를 찾았습니다";
+
+/* No comment provided by engineer. */
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "이전 설치의 지갑 %ld개가 이 기기에 저장되어 있습니다. ‘모두 삭제’는 모든 지갑을 제거합니다. 삭제하기 전에 모든 복원 문구를 백업하세요.";
+
+/* No comment provided by engineer. */
+"Couldn’t Delete All Wallets" = "모든 지갑을 삭제하지 못했습니다";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Wallets" = "지갑을 읽지 못했습니다";
+
+/* No comment provided by engineer. */
+"Delete All" = "모두 삭제";
+
+/* No comment provided by engineer. */
+"Delete All Wallets?" = "모든 지갑을 삭제할까요?";
+
+/* No comment provided by engineer. */
+"Deleting All Wallets…" = "모든 지갑을 삭제하는 중…";
+
+/* No comment provided by engineer. */
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "이 기기에 저장된 지갑 수를 확인하지 못했습니다. 계속하려면 지갑을 삭제하기 전에 Dash 지원팀이 제공하는 확인 문구가 필요합니다.";
+
+/* No comment provided by engineer. */
+"Keep Wallets" = "지갑 유지";
+
+/* No comment provided by engineer. */
+"No stored wallets were found. Nothing was deleted." = "저장된 지갑을 찾지 못했습니다. 아무것도 삭제되지 않았습니다.";
+
+/* No comment provided by engineer. */
+"No Wallets Found" = "지갑을 찾을 수 없음";
+
+/* No comment provided by engineer. */
+"Not all wallets could be deleted. Please try again." = "모든 지갑을 삭제하지 못했습니다. 다시 시도해 주세요.";
+
+/* No comment provided by engineer. */
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "이 작업은 이 앱이 이 기기에 저장한 모든 지갑, 개인 키, 복원 문구를 영구적으로 제거합니다. 백업에서만 복원할 수 있습니다. 되돌릴 수 없습니다.";
+
+/* No comment provided by engineer. */
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "이 기기에 저장된 지갑을 확인하지 못했습니다. 아무것도 삭제되지 않았습니다. 다시 시도해 주세요.";
+
+/* No comment provided by engineer. */
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "이 작업은 이 기기에 저장된 지갑 %ld개를 모두 지웁니다. 복원 문구가 있어야만 복원할 수 있습니다. 이 기기에서 삭제하면 되돌릴 수 없습니다.";
+
+/* No comment provided by engineer. */
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "이전 설치의 지갑 데이터가 아직 이 기기에 저장되어 있습니다. 이 지갑들을 계속 사용할까요, 아니면 모든 지갑 데이터를 삭제하고 새로 시작할까요? 삭제하기 전에 모든 복원 문구가 백업되었는지 확인하세요.";
+
+/* No comment provided by engineer. */
+"Wallets found on this device" = "이 기기에서 찾은 지갑";
+
+/* No comment provided by engineer. */
+"Wipe All Wallets" = "모든 지갑 지우기";
+
+/* No comment provided by engineer. */
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "지갑 하나의 복원 문구로는 여러 다른 지갑의 삭제를 승인할 수 없습니다.";
+
+/* No comment provided by engineer. */
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "테스트넷 잔액이 0이라는 사실만으로 이 지갑이 메인넷에서 비어 있다고 증명할 수는 없습니다. 계속하려면 복원 문구를 입력하세요.";
+
+/* No comment provided by engineer. */
+"Enter the recovery phrase to continue." = "계속하려면 복원 문구를 입력하세요.";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "지갑 선택";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Recovery Phrases" = "복원 문구를 읽지 못했습니다";
+
+/* No comment provided by engineer. */
+"No Recovery Phrase Found" = "복원 문구를 찾을 수 없음";
+
+/* No comment provided by engineer. */
+"No recovery phrase is stored on this device." = "이 기기에는 저장된 복원 문구가 없습니다.";
+
+/* No comment provided by engineer. */
+"Select the wallet whose recovery phrase you want to view." = "복원 문구를 보려는 지갑을 선택하세요.";
+
+/* No comment provided by engineer. */
+"The recovery phrases stored on this device could not be read. Please try again." = "이 기기에 저장된 복원 문구를 읽지 못했습니다. 다시 시도해 주세요.";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address for this network" = "이 네트워크에서 유효한 Dash 주소가 아닙니다";
+
+/* No comment provided by engineer. */
+"The claimable balance is too small to cover the Platform withdrawal fee." = "청구 가능한 잔액이 너무 적어 Platform 출금 수수료를 감당할 수 없습니다.";
+
+/* No comment provided by engineer. */
+"You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it." = "최대 %@ DASH까지 출금할 수 있습니다 — 나머지는 Platform 수수료로 남습니다. ‘최대’를 탭하면 사용할 수 있습니다.";
+
+/* No comment provided by engineer. */
+"The minimum withdrawal is %@ DASH." = "최소 출금액은 %@ DASH입니다.";
+
+/* No comment provided by engineer. */
+"Payout address key" = "지급 주소 키";
+
+/* No comment provided by engineer. */
+"Owner key (%@)" = "소유자 키(%@)";
+
+/* No comment provided by engineer. */
+"Wallet is not ready. Try again in a moment." = "지갑이 준비되지 않았습니다. 잠시 후 다시 시도하세요.";
+
+/* No comment provided by engineer. */
+"%@ · Claimable %@ DASH" = "%@ · 청구 가능 %@ DASH";
+
+/* No comment provided by engineer. */
+"Withdraw to" = "출금 대상";
+
+/* No comment provided by engineer. */
+"Enter a Dash address" = "Dash 주소를 입력하세요";
+
+/* No comment provided by engineer. */
+"Use the payout address" = "지급 주소 사용";
+
+/* No comment provided by engineer. */
+"This is the evonode's registered payout address." = "이는 evonode의 등록된 지급 주소입니다.";
+
+/* No comment provided by engineer. */
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "이 지갑은 evonode의 지급 주소 키를 보유하고 있어 잔액을 어떤 Dash 주소로든 출금할 수 있습니다.";
+
+/* No comment provided by engineer. */
+"Registered payout address" = "등록된 지급 주소";
+
+/* No comment provided by engineer. */
+"This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "이 출금은 evonode의 소유자 키로 서명됩니다. Dash Platform은 소유자 키의 출금을 등록된 지급 주소로만 허용하므로 여기서는 대상을 변경할 수 없습니다. 다른 주소로 출금하려면 지급 주소 키를 보유한 지갑을 사용하세요.";
+
+/* No comment provided by engineer. */
+"How it works" = "작동 방식";
+
+/* No comment provided by engineer. */
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "Dash Platform이 Dash 체인에서 출금을 지급합니다 — 보통 몇 분 이내입니다. 금액 외에 약 %@ DASH의 Platform 수수료가 evonode 잔액에서 차감되므로 ‘최대’는 이를 감당할 만큼 조금 남겨 둡니다.";
+
+/* No comment provided by engineer. */
+"Confirm withdrawal" = "출금 확인";
+
+/* No comment provided by engineer. */
+"Owner-key withdrawals are always paid to the registered payout address." = "소유자 키 출금은 항상 등록된 지급 주소로 지급됩니다.";
+
+/* No comment provided by engineer. */
+"Waiting for authorization…" = "승인을 기다리는 중…";
+
+/* No comment provided by engineer. */
+"Submitting to Dash Platform…" = "Dash Platform에 제출하는 중…";
+
+/* No comment provided by engineer. */
+"Withdrawal submitted" = "출금 제출됨";
+
+/* No comment provided by engineer. */
+"Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "Dash Platform이 곧 Dash 체인에서 지급합니다 — 보통 몇 분 이내에 도착합니다.";
+
+/* No comment provided by engineer. */
+"Remaining claimable balance: %@ DASH" = "남은 청구 가능 잔액: %@ DASH";
+
+/* No comment provided by engineer. */
+"%@ · Platform balance" = "%@ · Platform 잔액";
+
+/* No comment provided by engineer. */
+"Signed with" = "서명 키";
+
+/* No comment provided by engineer. */
+"Platform fee" = "Platform 수수료";
+
+/* No comment provided by engineer. */
+"%@ (payout address)" = "%@ (지급 주소)";
+
+/* No comment provided by engineer. */
+"This wallet holds the payout address key, so you can withdraw to any address." = "이 지갑은 지급 주소 키를 보유하고 있어 어떤 주소로든 출금할 수 있습니다.";
+
+/* No comment provided by engineer. */
+"This wallet holds the owner key, so withdrawals go to the registered payout address." = "이 지갑은 소유자 키를 보유하고 있어 출금은 등록된 지급 주소로 갑니다.";
+
+/* No comment provided by engineer. */
+"This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "이 지갑은 이 evonode의 소유자 키도 지급 주소 키도 보유하고 있지 않아 여기서는 잔액을 출금할 수 없습니다.";
+
+/* No comment provided by engineer. */
+"Couldn't check which keys of this evonode are in the wallet." = "이 evonode의 어떤 키가 지갑에 있는지 확인하지 못했습니다.";
+
+/* No comment provided by engineer. */
+"Result not confirmed" = "결과 미확인";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "출금이 Dash Platform에 전송되었지만 결과를 확인하지 못했습니다. 처리되었을 수도 있습니다. 다시 제출하지 마세요 — 먼저 청구 가능 잔액과 지급 주소를 확인하세요.";
+
+/* No comment provided by engineer. */
+"1 block proposed this epoch" = "이번 에포크에 1개 블록 제안";
+
+/* No comment provided by engineer. */
+"%@ blocks proposed this epoch" = "이번 에포크에 %@개 블록 제안";
+
+/* No comment provided by engineer. */
+"Nodes" = "노드";
+
+/* No comment provided by engineer. */
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "노드, 에포크 %d일차, 이번 에포크에 %@개 블록 제안";
+
+/* No comment provided by engineer. */
+"an evonode has not proposed a block in 2 days" = "evonode가 2일 동안 블록을 제안하지 않았습니다";
+
+/* No comment provided by engineer. */
+"an evonode has no blocks this epoch" = "evonode가 이번 에포크에 블록이 없습니다";
+
+/* No comment provided by engineer. */
+"A key doesn't match this masternode — fix or clear it to continue." = "이 마스터노드와 일치하지 않는 키가 있습니다 — 수정하거나 지우고 계속하세요.";
+
+/* No comment provided by engineer. */
+"Add keys" = "키 추가";
+
+/* No comment provided by engineer. */
+"Add masternode" = "마스터노드 추가";
+
+/* No comment provided by engineer. */
+"Add this node's owner key or payout address key to withdraw from here." = "여기서 출금하려면 이 노드의 소유자 키 또는 지급 주소 키를 추가하세요.";
+
+/* No comment provided by engineer. */
+"Already one of this wallet's masternodes — it's in the list above." = "이미 이 지갑의 마스터노드입니다 — 위 목록에 있습니다.";
+
+/* No comment provided by engineer. */
+"Already tracked." = "이미 추적 중입니다.";
+
+/* No comment provided by engineer. */
+"Any keys you added for it are deleted from this device's keychain too." = "이를 위해 추가한 키도 이 기기의 키체인에서 삭제됩니다.";
+
+/* No comment provided by engineer. */
+"Available" = "사용 가능";
+
+/* No comment provided by engineer. */
+"BLS private key (hex)" = "BLS 개인 키(16진수)";
+
+/* No comment provided by engineer. */
+"Can't verify yet" = "아직 확인할 수 없음";
+
+/* No comment provided by engineer. */
+"Could not load the node's registration details — owner and payout keys will verify later." = "노드의 등록 정보를 불러오지 못했습니다 — 소유자 키와 지급 키는 나중에 확인됩니다.";
+
+/* No comment provided by engineer. */
+"Could not save a key to the keychain. Nothing was lost — try again." = "키를 키체인에 저장하지 못했습니다. 손실된 것은 없습니다 — 다시 시도하세요.";
+
+/* No comment provided by engineer. */
+"Destination address (optional)" = "대상 주소(선택 사항)";
+
+/* No comment provided by engineer. */
+"Doesn't match" = "일치하지 않음";
+
+/* No comment provided by engineer. */
+"Find" = "찾기";
+
+/* No comment provided by engineer. */
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "마스터노드 목록에 없는 소유자 키와 지급 키를 찾습니다. 키의 공개 지문을 Platform 노드로 전송합니다.";
+
+/* No comment provided by engineer. */
+"IP address, proTxHash or private key" = "IP 주소, proTxHash 또는 개인 키";
+
+/* No comment provided by engineer. */
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "키는 이 기기의 키체인에 저장되며, 회원님이 요청한 작업에 서명할 때를 제외하고는 기기를 벗어나지 않습니다.";
+
+/* No comment provided by engineer. */
+"Keys on this device" = "이 기기의 키";
+
+/* No comment provided by engineer. */
+"Label (optional)" = "레이블(선택 사항)";
+
+/* No comment provided by engineer. */
+"Loading registration details…" = "등록 정보를 불러오는 중…";
+
+/* No comment provided by engineer. */
+"Matches" = "일치";
+
+/* No comment provided by engineer. */
+"Matches this node's %@ key" = "이 노드의 %@ 키와 일치";
+
+/* No comment provided by engineer. */
+"No masternode on the list matches that." = "목록에 일치하는 마스터노드가 없습니다.";
+
+/* No comment provided by engineer. */
+"Node key (base64 or hex)" = "노드 키(base64 또는 16진수)";
+
+/* No comment provided by engineer. */
+"Not added" = "추가되지 않음";
+
+/* No comment provided by engineer. */
+"On this device" = "이 기기";
+
+/* No comment provided by engineer. */
+"Operator payout" = "운영자 지급";
+
+/* No comment provided by engineer. */
+"Payout" = "지급";
+
+/* No comment provided by engineer. */
+"Platform could not be reached, so owner and payout keys were not checked." = "Platform에 연결할 수 없어 소유자 키와 지급 키를 확인하지 못했습니다.";
+
+/* No comment provided by engineer. */
+"PoSe banned" = "PoSe 차단됨";
+
+/* No comment provided by engineer. */
+"Private key (WIF or hex)" = "개인 키(WIF 또는 16진수)";
+
+/* No comment provided by engineer. */
+"Refresh details" = "세부 정보 새로 고침";
+
+/* No comment provided by engineer. */
+"Refreshing…" = "새로 고치는 중…";
+
+/* No comment provided by engineer. */
+"Save keys" = "키 저장";
+
+/* No comment provided by engineer. */
+"Search Platform too" = "Platform도 검색";
+
+/* No comment provided by engineer. */
+"Searching…" = "검색 중…";
+
+/* No comment provided by engineer. */
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "소유자 키로 서명합니다 — 출금은 등록된 지급 주소로 갑니다.";
+
+/* No comment provided by engineer. */
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "지급 주소 키로 서명합니다. 지급 주소로 출금하려면 대상을 비워 두세요.";
+
+/* No comment provided by engineer. */
+"Stop tracking" = "추적 중지";
+
+/* No comment provided by engineer. */
+"Stop tracking this masternode?" = "이 마스터노드 추적을 중지할까요?";
+
+/* No comment provided by engineer. */
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "소유자 키나 지급 키일 수도 있습니다 — ‘Platform도 검색’을 켜서 확인하세요.";
+
+/* No comment provided by engineer. */
+"The signing key is missing from the keychain — re-add it and try again." = "서명 키가 키체인에 없습니다 — 다시 추가한 후 시도하세요.";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "출금이 전송되었지만 결과를 확인하지 못했습니다. 잔액을 다시 확인하는 중입니다 — 확정될 때까지 재시도하지 마세요.";
+
+/* No comment provided by engineer. */
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "네트워크의 어떤 마스터노드나 evonode든 추적할 수 있습니다 — 이 지갑에 속할 필요는 없습니다.";
+
+/* No comment provided by engineer. */
+"Track this masternode" = "이 마스터노드 추적";
+
+/* No comment provided by engineer. */
+"Tracked" = "추적 중";
+
+/* No comment provided by engineer. */
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "추적 중입니다. 출금과 투표 같은 작업을 사용하려면 아래에서 이 노드의 키를 추가하세요. 지금 마치고 나중에 추가해도 됩니다.";
+
+/* No comment provided by engineer. */
+"Withdrawing…" = "출금하는 중…";
+
+/* No comment provided by engineer. */
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "‘+’ 버튼으로 IP, proTxHash 또는 키 중 하나를 사용해 네트워크의 어떤 마스터노드든 추적할 수 있습니다.";
+
+/* No comment provided by engineer. */
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "이 evonode의 DAPI 주소를 알 수 없어 상태를 요청할 수 없습니다.";
+
+/* No comment provided by engineer. */
+"Couldn't get the evonode's status." = "evonode의 상태를 가져오지 못했습니다.";
+
+/* No comment provided by engineer. */
+"The evonode didn't answer in time." = "evonode가 제때 응답하지 않았습니다.";
+
+/* No comment provided by engineer. */
+"Couldn't reach the evonode." = "evonode에 연결하지 못했습니다.";
+
+/* No comment provided by engineer. */
+"The evonode's answer couldn't be read." = "evonode의 응답을 읽지 못했습니다.";
+
+/* No comment provided by engineer. */
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "노드가 스스로 보고한 미검증 정보 — 네트워크가 합의한 내용이 아니라 노드가 자신에 대해 말하는 내용입니다.";
+
+/* No comment provided by engineer. */
+"Asked" = "요청 시각";
+
+/* No comment provided by engineer. */
+"Software" = "소프트웨어";
+
+/* No comment provided by engineer. */
+"DAPI" = "DAPI";
+
+/* No comment provided by engineer. */
+"Drive" = "Drive";
+
+/* No comment provided by engineer. */
+"Tenderdash" = "Tenderdash";
+
+/* No comment provided by engineer. */
+"Protocol versions" = "프로토콜 버전";
+
+/* No comment provided by engineer. */
+"Tenderdash P2P" = "Tenderdash P2P";
+
+/* No comment provided by engineer. */
+"Tenderdash block" = "Tenderdash 블록";
+
+/* No comment provided by engineer. */
+"Drive current" = "Drive 현재";
+
+/* No comment provided by engineer. */
+"Drive latest" = "Drive 최신";
+
+/* No comment provided by engineer. */
+"Drive next epoch" = "Drive 다음 에포크";
+
+/* No comment provided by engineer. */
+"Node ID" = "노드 ID";
+
+/* No comment provided by engineer. */
+"Identity check" = "아이덴티티 확인";
+
+/* No comment provided by engineer. */
+"Chain" = "체인";
+
+/* No comment provided by engineer. */
+"Catching up" = "따라잡는 중";
+
+/* No comment provided by engineer. */
+"Latest block height" = "최신 블록 높이";
+
+/* No comment provided by engineer. */
+"Earliest block height" = "최초 블록 높이";
+
+/* No comment provided by engineer. */
+"Max peer block height" = "피어 최대 블록 높이";
+
+/* No comment provided by engineer. */
+"Core chain-locked height" = "Core 체인 잠금 높이";
+
+/* No comment provided by engineer. */
+"Latest block hash" = "최신 블록 해시";
+
+/* No comment provided by engineer. */
+"Latest app hash" = "최신 앱 해시";
+
+/* No comment provided by engineer. */
+"Earliest block hash" = "최초 블록 해시";
+
+/* No comment provided by engineer. */
+"Earliest app hash" = "최초 앱 해시";
+
+/* No comment provided by engineer. */
+"Chain ID" = "체인 ID";
+
+/* No comment provided by engineer. */
+"Peers" = "피어";
+
+/* No comment provided by engineer. */
+"Listening" = "수신 대기 중";
+
+/* No comment provided by engineer. */
+"State sync" = "상태 동기화";
+
+/* No comment provided by engineer. */
+"Total synced time" = "총 동기화 시간";
+
+/* No comment provided by engineer. */
+"Remaining time" = "남은 시간";
+
+/* No comment provided by engineer. */
+"Total snapshots" = "총 스냅샷 수";
+
+/* No comment provided by engineer. */
+"Chunk process avg time" = "청크 처리 평균 시간";
+
+/* No comment provided by engineer. */
+"Snapshot height" = "스냅샷 높이";
+
+/* No comment provided by engineer. */
+"Snapshot chunks" = "스냅샷 청크";
+
+/* No comment provided by engineer. */
+"Backfilled blocks" = "보충된 블록";
+
+/* No comment provided by engineer. */
+"Backfill blocks total" = "보충 대상 블록 총수";
+
+/* No comment provided by engineer. */
+"Time" = "시간";
+
+/* No comment provided by engineer. */
+"Node clock" = "노드 시계";
+
+/* No comment provided by engineer. */
+"Latest block" = "최신 블록";
+
+/* No comment provided by engineer. */
+"Genesis" = "제네시스";
+
+/* No comment provided by engineer. */
+"Epoch" = "에포크";
+
+/* No comment provided by engineer. */
+"Matches this evonode" = "이 evonode와 일치";
+
+/* No comment provided by engineer. */
+"Differs from this evonode" = "이 evonode와 다름";
+
+/* No comment provided by engineer. */
+"Not reported" = "보고되지 않음";
+
+/* No comment provided by engineer. */
+"%.3f s" = "%.3f초";
+
+/* No comment provided by engineer. */
+"Node status" = "노드 상태";
+
+/* No comment provided by engineer. */
+"Asking the evonode…" = "evonode에 요청하는 중…";
+
+/* No comment provided by engineer. */
+"Request status" = "상태 요청";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "셀프 계산";
@@ -3442,6 +4372,42 @@
 
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "첫 연락처 요청 보내기";
+
+/* Username marketplace: set price sheet title */
+"Set a price for “%@”" = "‘%@’ 의 가격 설정";
+
+/* Username marketplace */
+"Short names are decided by a network vote — use Request Username instead." = "짧은 이름은 네트워크 투표로 결정됩니다 — 대신 ‘사용자 이름 신청’을 이용하세요.";
+
+/* Username marketplace: contested request explainer, paragraph 1 */
+"Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them." = "짧은 이름(19자 이하, 영문자와 숫자만)은 즉시 등록되지 않습니다. 누가 가질지는 Dash 네트워크가 투표로 정합니다.";
+
+/* DashPay Contacts: expands the network search into the full add-contact flow */
+"Show more results" = "검색 결과 더 보기";
+
+/* Username marketplace: departed-name line — buyer identity */
+"Sold to %@" = "%@ 님에게 판매";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 1 of 2 — moving Dash out of your Shielded balance…" = "1/2단계 — Shielded 잔액에서 Dash를 옮기는 중…";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 2 of 2 — topping up your identity…" = "2/2단계 — 아이덴티티를 충전하는 중…";
+
+/* Username marketplace: contested request cost footnote */
+"The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "비용은 아이덴티티 잔액에서 지불됩니다. 네트워크 투표 재원으로 쓰이며, 다른 경쟁자가 이기더라도 반환되지 않습니다.";
+
+/* Username marketplace: register sheet body */
+"The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "이름은 회원님의 아이덴티티에 직접 등록됩니다. 등록은 아이덴티티 잔액에서 지불되는 네트워크 트랜잭션입니다.";
+
+/* Username marketplace: contested label locked by a past vote */
+"The network voted to lock this name, so nobody can register it. Choose a different name." = "네트워크가 이 이름을 잠그기로 투표했으므로 아무도 등록할 수 없습니다. 다른 이름을 선택하세요.";
+
+/* Username marketplace */
+"The recipient identity couldn't be resolved." = "수신자 아이덴티티를 확인할 수 없습니다.";
+
+/* Username marketplace */
+"The seller changed the price before your purchase was accepted. Review the new price and try again." = "구매가 수락되기 전에 판매자가 가격을 변경했습니다. 새 가격을 확인하고 다시 시도하세요.";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "보내는 중";
@@ -3963,6 +4929,66 @@
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "다른 사용자가 회원님에게 연락처 요청을 보낼 수 있고 회원님이 그 요청을 수락할 수 있도록, 아이덴티티에 키 2개를 추가합니다. 이 작업은 한 번만 진행됩니다.";
 
+/* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
+"This isn't a DashPay user QR code." = "DashPay 사용자 QR 코드가 아닙니다.";
+
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "이 잔액은 Dash Platform 네트워크 수수료(사용자 이름, 연락처 요청, 프로필 업데이트)를 지불합니다. 지갑이 아니라 아이덴티티에 속하며, 투명·Platform·Shielded 잔액과 달리 일반 Dash처럼 사용할 수 없습니다. 충전하면 선택한 잔액(기본값 Shielded)의 Dash가 아이덴티티 크레딧으로 전환됩니다.";
+
+/* Username marketplace: contested label already has an active vote */
+"This name is already in an active network vote. Your request joins it as another contender." = "이 이름은 이미 네트워크 투표가 진행 중입니다. 회원님의 신청은 또 다른 경쟁자로 참여합니다.";
+
+/* Username marketplace */
+"This name is in an active network vote and can't be traded until the contest ends." = "이 이름은 네트워크 투표가 진행 중이어서 경쟁이 끝날 때까지 거래할 수 없습니다.";
+
+/* Username marketplace: detail for an unregistered name */
+"This name is not registered." = "이 이름은 등록되어 있지 않습니다.";
+
+/* Username marketplace: seller-clarity callout on the detail sheet */
+"This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "이 이름은 Dash 네트워크의 독립 사용자가 제공하며, Dash나 이 앱이 제공하는 것이 아닙니다. 가격은 판매자가 정합니다.";
+
+/* Username marketplace: listing price exceeds the representable maximum */
+"This price is too high to list." = "이 가격은 너무 높아 등록할 수 없습니다.";
+
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "이 이전은 여기서 다시 시도할 수 없습니다.";
+
+/* Username marketplace */
+"This username is not for sale." = "이 사용자 이름은 판매 중이 아닙니다.";
+
+/* Username marketplace */
+"This username's record couldn't be read from the network." = "네트워크에서 이 사용자 이름의 레코드를 읽을 수 없습니다.";
+
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "이 지갑에는 충전할 아이덴티티가 없습니다.";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "충전";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "아이덴티티 잔액 충전";
+
+/* Username marketplace: timeline card title */
+"Trade history" = "거래 내역";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "이전 완료";
+
+/* Username marketplace */
+"Transfer to Another Identity" = "다른 아이덴티티로 이전";
+
+/* Username marketplace: transfer sheet title */
+"Transfer “%@”" = "‘%@’ 이전";
+
+/* Username marketplace: history — transfer with both identities */
+"Transferred from %1$@ to %2$@" = "%1$@ 에서 %2$@ (으)로 이전";
+
+/* Username marketplace: departed-name line — recipient identity */
+"Transferred to %@" = "%@ (으)로 이전";
+
+/* Username marketplace */
+"Username Marketplace" = "사용자 이름 마켓플레이스";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
@@ -4012,6 +5038,60 @@
 
 /* Usernames */
 "This name requires voting. Your Dash will be locked until voting completes." = "This name requires voting. Your Dash will be locked until voting completes.";
+
+/* Usernames */
+"Vote in progress" = "투표 진행 중";
+
+/* Usernames */
+"Vote ended" = "투표 종료됨";
+
+/* Usernames */
+"A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender." = "이 이름은 이미 마스터노드 투표가 진행 중입니다. 신청을 제출하면 경쟁자로 투표에 참여합니다.";
+
+/* Usernames */
+"A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender." = "이 이름은 이미 마스터노드 투표가 진행 중입니다 — 투표는 %@ 무렵에 종료됩니다. 신청을 제출하면 경쟁자로 투표에 참여합니다.";
+
+/* Usernames */
+"A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote." = "이 이름은 마스터노드 투표가 진행 중입니다 — 투표는 %@ 무렵에 종료됩니다. 새 경쟁자는 더 이상 이 투표에 참여할 수 없습니다.";
+
+/* Usernames */
+"Username is in a network vote — new contenders can no longer join" = "이 사용자 이름은 네트워크 투표 중입니다 — 새 경쟁자는 더 이상 참여할 수 없습니다";
+
+/* Usernames */
+"The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "이 사용자 이름의 소유자가 사용자 이름 마켓플레이스에 %@ Dash로 등록했습니다. 그곳에서 구매할 수 있습니다.";
+
+/* Usernames */
+"The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance." = "이 사용자 이름의 소유자가 %@ Dash로 등록했습니다. 지금 바로 구매할 수 있으며, 가격은 지갑 잔액에서 지불됩니다.";
+
+/* Usernames */
+"The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "이 사용자 이름의 소유자가 %1$@ Dash로 등록했습니다. %2$@ Dash를 넘는 구매는 사용자 이름 마켓플레이스에서 해야 합니다 — 지금은 다른 사용자 이름을 선택하세요. 이 이름의 구매는 나중에 결정할 수 있습니다.";
+
+/* Usernames */
+"Buy for %@ Dash" = "%@ Dash에 구매";
+
+/* Usernames */
+"Buy username" = "사용자 이름 구매";
+
+/* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "임시 사용자 이름 ‘%@’ 을(를) 등록하지 못했습니다. 나중에 다른 사용자 이름을 등록할 수 있습니다.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "이제 ‘%1$@’ 이(가) 회원님의 사용자 이름입니다. 투표에서 ‘%2$@’ 을(를) 얻으면 두 사용자 이름 모두로 연락받을 수 있습니다.";
+
+/* Usernames */
+"“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "‘%1$@’ 을(를) %2$@ Dash에 구매합니다. 가격은 지갑 잔액에서 지불됩니다.";
+
+/* Usernames */
+"Username purchased" = "사용자 이름 구매 완료";
+
+/* Usernames */
+"“%@” is now your username." = "이제 ‘%@’ 이(가) 회원님의 사용자 이름입니다.";
+
+/* Usernames */
+"The masternode vote for this name has ended and the result is being finalized. Check back soon." = "이 이름에 대한 마스터노드 투표가 끝났고 결과를 확정하는 중입니다. 잠시 후 다시 확인해 주세요.";
+
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes." = "이 이름은 이미 투표가 진행 중입니다 — 신청하면 경쟁자로 투표에 참여합니다. 투표가 끝날 때까지 회원님의 Dash가 잠깁니다.";
 
 /* No comment provided by engineer. */
 "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone." = "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.";
@@ -4254,6 +5334,12 @@
 /* Voting */
 "Unblocked '%@' username" = "사용자 이름 '%@' 차단 해제함";
 
+/* SPV diagnostics */
+"Unconfirmed now" = "현재 미확인";
+
+/* SPV diagnostics */
+"Unconfirmed Transactions" = "미확인 트랜잭션";
+
 /* DashPay Contacts */
 "Unhide Contact" = "Unhide Contact";
 
@@ -4367,6 +5453,9 @@
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "주소가 아닌 사용자 이름";
 
+/* DashPay: banner identity row subtitle */
+"View profile" = "프로필 보기";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "%@과(와) 일치하며 현재 연락처에 없는 사용자";
 
@@ -4397,11 +5486,17 @@
 /* No comment provided by engineer. */
 "Verified Successfully" = "성공적으로 인증되었습니다";
 
+/* DashPay Contacts: spinner after scanning a user QR code */
+"Verifying user…" = "사용자를 확인하는 중…";
+
 /* No comment provided by engineer. */
 "Verify" = "인증하기";
 
 /* CrowdNode */
 "Verify your API Dash address" = "API 대시 주소 인증하기";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "새 PIN을 설정하려면 복원 문구를 확인하세요.";
 
 /* Usernames */
 "Verify your identity" = "당신의 신원을 인증하세요";
@@ -4616,6 +5711,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "연락처 요청은 언제 비공개가 되나요?";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "투표가 진행되는 동안 ‘%@’ 은(는) 아직 회원님의 것이 아니며, 다른 사용자가 그 이름으로 회원님을 찾을 수 없습니다. 경쟁이 없는 사용자 이름을 추가하면 DashPay를 바로 사용할 수 있습니다. 그 이름은 영구히 회원님의 것이며, 투표에서 경쟁 중인 이름을 얻으면 두 사용자 이름 모두로 연락받을 수 있습니다.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "사용 장소";
 
@@ -4626,6 +5724,18 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "왜 활성화해야 하나요?";
+
+/* Username marketplace: history participant is the current user */
+"you" = "회원님";
+
+/* Username marketplace: contested request already submitted by this identity */
+"You already requested this name — the network vote is in progress. You'll find it under My Names." = "이미 이 이름을 신청했습니다 — 네트워크 투표가 진행 중입니다. ‘내 이름’에서 확인할 수 있습니다.";
+
+/* Username marketplace: purchase confirmation body with seller clarity */
+"You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "회원님은 Dash나 이 앱이 아니라 독립 사용자에게서 구매하고 있습니다. 가격에 소액의 네트워크 수수료를 더한 금액이 아이덴티티 잔액에서 지불되고, 이름은 즉시 회원님의 아이덴티티로 옮겨집니다.";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "투표가 진행되는 동안에는 사용자 이름이 없습니다. 지금 경쟁이 없는 사용자 이름을 등록하세요 — 계속 회원님의 것이며, 투표에서 ‘%@’ 을(를) 얻으면 두 사용자 이름 모두로 연락받을 수 있습니다.";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "왜 모든 거래 내역을 보게 되나요?";
@@ -4681,6 +5791,9 @@
 
 /* Wallets */
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
+
+/* Wallets */
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "이 %d개 단어를 순서대로 적어 안전한 곳에 보관하세요. 이 지갑을 복원할 수 있는 유일한 방법입니다. 이를 가진 사람은 누구나 회원님의 자금을 사용할 수 있습니다.";
 
 /* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
@@ -4932,6 +6045,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "정리된 내역";
 
+/* Username marketplace */
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "아이덴티티 잔액으로 이 구매를 감당할 수 없습니다: %1$@ DASH 필요(수수료 예비분 포함), %2$@ DASH 사용 가능. 아이덴티티 잔액을 충전하고 다시 시도하세요.";
+
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "회원님과 다른 사용자 사이의 연락처 요청을 암호화할 수 있도록 아이덴티티에 키 2개가 더 필요합니다. 활성화하면 네트워크 거래 한 번으로 추가됩니다. 이 작업은 한 번만 진행됩니다.";
 
@@ -4956,8 +6072,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "믹싱한 코인을 Dash 지갑 잔액으로 옮겼습니다.";
 
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "이 구매를 CTX에서 확인하지 못했습니다. 결제가 완료되었다면 곧 기프트 카드가 거래 목록에 표시됩니다 — 다시 구매하기 전에 그곳을 확인하세요.";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "결제가 전송되었지만 네트워크가 아직 확인하지 않았습니다. 확인되는 즉시 기프트 카드가 표시됩니다.";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "믹싱한 코인을 보호 잔액으로 옮겼습니다. 프라이버시를 위해 이 자금을 사용하기 전에 최소 2시간 기다리세요.";
+
+/* DashSpend */
+"Could not load your gift card" = "기프트 카드를 불러올 수 없습니다";
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
@@ -4973,6 +6098,9 @@
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "비공개 잔액입니다. 금액과 주소가 온체인에서 암호화되어 보유액과 내역이 비밀로 유지됩니다.";
+
+/* Username marketplace: contested request explainer, paragraph 2 */
+"Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "신청은 약 2주 동안 마스터노드의 공개 투표에 들어갑니다. 다른 사람도 같은 이름을 신청할 수 있으며, 투표가 끝나면 이름은 승자에게 돌아갑니다 — 네트워크가 잠그기로 투표하면 아무에게도 돌아가지 않습니다.";
 
 /* Usernames */
 "Your request was cancelled" = "당신의 요청이 취소되었습니다";

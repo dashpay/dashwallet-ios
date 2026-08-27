@@ -296,5 +296,19 @@
 			<string>%d 個請求</string>
 		</dict>
 	</dict>
+	<key>%d words</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d個詞</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

@@ -9,6 +9,9 @@
 /* CrowdNode */
 " Terms of Use " = " Terms of Use ";
 
+/* Username marketplace: listing success — name, then price */
+"%1$@ listed for %2$@ DASH" = "‏%1$@ به قیمت %2$@ DASH برای فروش گذاشته شد";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -20,6 +23,12 @@
 
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "‏%@ در شبکه دش پیدا نشد تا بتوان برایش درخواست تماس فرستاد.";
+
+/* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
+"%@ couldn't be verified on the Dash network. The QR code may be outdated." = "‏%@ در شبکه Dash تأیید نشد. ممکن است کد QR قدیمی باشد.";
+
+/* Username marketplace: contested request cost value — the vote-resolution fund amount */
+"%@ DASH + network fee" = "‏%@ DASH + کارمزد شبکه";
 
 /* Usernames */
 "%@ Dash available" = "‏%@ دش در دسترس";
@@ -42,6 +51,9 @@
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@درخواستی برایتان برای ارتباط فرستاد";
 
+/* Username marketplace: delist success */
+"%@ is no longer for sale" = "‏%@ دیگر برای فروش نیست";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
@@ -51,8 +63,17 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
+/* Username marketplace: purchase success */
+"%@ is now yours" = "‏%@ اکنون مال شماست";
+
+/* Username marketplace: registration success */
+"%@ registered" = "‏%@ ثبت شد";
+
 /* Testnet faucet */
 "%@ tDash requested — it will arrive shortly" = "%@ tDash requested — it will arrive shortly";
+
+/* Username marketplace: transfer success */
+"%@ transferred" = "‏%@ منتقل شد";
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
@@ -171,6 +192,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "برای این نام هم‌اکنون رأی‌گیری در جریان است — درخواست شما به‌عنوان مدعی به آن می‌پیوندد. کارمزد رقابت هنگام ارسال کسر می‌شود و بازگردانده نمی‌شود، حتی اگر نام را به دست نیاورید.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -182,6 +206,9 @@
 
 /* No comment provided by engineer. */
 "About me" = "درباره م";
+
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "درباره موجودی حساب هویت";
 
 "Abstain" = "رأی ممتنع";
 
@@ -235,6 +262,9 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "یک تماس جدید اضافه کنید";
 
+/* Usernames */
+"Add a temporary username" = "افزودن نام کاربری موقت";
+
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
 
@@ -259,6 +289,9 @@
 /* Maya
    SwapKit */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+
+/* No comment provided by engineer. */
+"Advanced" = "پیشرفته";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "گزینه‌های پیشرفته امنیتی";
@@ -315,6 +348,9 @@
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "مبلغ بر حسب دش";
 
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "مبلغ به DASH";
+
 /* No comment provided by engineer. */
 "Amount received" = "Amount received";
 
@@ -350,6 +386,9 @@
 
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "هر کسی که یک نشانی را بداند می‌تواند تاریخچه‌اش را ببیند";
+
+/* Username marketplace: set price sheet body */
+"Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance." = "هر کسی می‌تواند این نام را دقیقاً به همین قیمت بخرد. درآمد آن به‌صورت اعتبار به موجودی هویت شما می‌رسد.";
 
 /* AboutDash */
 "App version" = "App version";
@@ -430,8 +469,17 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "پنهان کردن موجودی";
 
+/* DashPay */
+"Available after sync finishes" = "پس از پایان همگام‌سازی در دسترس است";
+
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
+
+/* Username marketplace: unregistered name row */
+"Available — register it on your identity" = "در دسترس — آن را روی هویت خود ثبت کنید";
+
+/* Username marketplace: unregistered contested-eligible name row */
+"Available — short names are decided by a network vote" = "در دسترس — نام‌های کوتاه با رأی‌گیری شبکه تعیین می‌شوند";
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
@@ -525,6 +573,9 @@
 /* Voting */
 "Blocked '%@' username" = "Blocked '%@' username";
 
+/* Username marketplace: history — purchase with buyer, seller, price */
+"Bought by %1$@ from %2$@ for %3$@ DASH" = "‏%1$@ از %2$@ به قیمت %3$@ DASH خرید";
+
 /* Identities: this key only signs for one data contract */
 "Bound to contract" = "مقیدشده به قرارداد";
 
@@ -573,6 +624,9 @@
 /* Swap */
 "Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
 
+/* Username marketplace: purchase button */
+"Buy for %@ DASH" = "خرید به قیمت %@ DASH";
+
 /* DashSpend */
 "Buy gift card" = "Buy gift card";
 
@@ -581,6 +635,12 @@
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash for the exact amount of your purchase." = "با دش‌تان کارت هدیه دقیقا به اندازه خریدتان بخرید";
+
+/* Username marketplace: purchase confirmation title */
+"Buy “%@”?" = "«%@» خریداری شود؟";
+
+/* Username marketplace: Explore row subtitle */
+"Buy, sell and transfer DashPay usernames" = "نام‌های کاربری DashPay را بخرید، بفروشید و منتقل کنید";
 
 /* Buy/Sell */
 "Buy/Sell" = "خرید/فروش";
@@ -631,6 +691,9 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "تغییر پین کد";
+
+/* Username marketplace */
+"Change Price" = "تغییر قیمت";
 
 /* TimeSkew */
 "Check date & time settings" = "Check date & time settings";
@@ -713,6 +776,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "به‌زودی";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "تکمیل انتقال";
+
 /* Shielded transfer status */
 "Completed" = "تکمیل شد";
 
@@ -782,6 +848,18 @@
 
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "درخواست تماس برای %@ فرستاده شد";
+
+/* Usernames */
+"Continue without a temporary username" = "ادامه بدون نام کاربری موقت";
+
+/* Identity top-up sheet — body */
+"Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "‏Dash را به اعتبار هویت تبدیل کنید تا هزینه اقدام‌های Platform مانند درخواست‌های مخاطب و به‌روزرسانی نمایه را بپردازید.";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "انتقال تکمیل نشد";
+
+/* Identity top-up sheet — free amount chip */
+"Custom" = "دلخواه";
 
 /* No comment provided by engineer. */
 "Contact Requests" = "درخواست‌های تماس";
@@ -1042,6 +1120,27 @@
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "‏DashPay فعال شد";
 
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "دست‌کم %@ DASH وارد کنید";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "کارمزدهای تخمینی";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "کارمزدها از مبلغ کسر می‌شوند؛ در پرداخت از Shielded ممکن است باقیمانده کوچکی در موجودی Platform شما بماند.";
+
+/* Username marketplace: search segment */
+"Find Names" = "یافتن نام‌ها";
+
+/* Username marketplace: listed badge */
+"For sale" = "برای فروش";
+
+/* Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app */
+"For sale by an independent user" = "برای فروش توسط یک کاربر مستقل";
+
+/* Identity top-up sheet — linkability warning for transparent-side sources */
+"Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "تأمین مالی از موجودی شفاف، آن سکه‌ها را به‌طور عمومی در زنجیره Dash به هویت شما پیوند می‌زند. برای حفظ حریم خصوصی، از موجودی Shielded خود بپردازید.";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "DashPay Invitation";
 
@@ -1062,6 +1161,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "تاریخ";
+
+/* History group header for restored shielded operations whose original date is not recoverable */
+"Date unknown" = "تاریخ نامعلوم";
 
 /* Voting */
 "Date: New to old" = "Date: New to old";
@@ -1085,6 +1187,9 @@
 
 /* No comment provided by engineer. */
 "Delete Wallet?" = "Delete Wallet?";
+
+/* SPV diagnostics */
+"Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network." = "تراکنش‌های تأییدنشده این کیف پول را فقط از این دستگاه حذف می‌کند و سکه‌هایی را که قصد خرج‌کردنشان را داشتند آزاد می‌کند. پویش دوباره فیلترها هر تراکنشی را که واقعاً روی بلاکچین باشد بازمی‌گرداند. چیزی به شبکه ارسال نمی‌شود.";
 
 /* Location Service Status */
 "Denied" = "غیرمجاز";
@@ -1116,6 +1221,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu." = "امنیت دستگاه به خطر افتاده است\nهر برنامه «جیلبریک» می‌تواند به داده‌های کی‌چین هر برنامه دیگری دسترسی پیدا کند (و Dash شما را بدزدد). دارایی خود را به کیف پولی روی دستگاهی امن منتقل کنید و سپس این کیف پول را با «بازنشانی کیف پول» در منوی امنیت بازنشانی کنید.";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.";
@@ -1169,6 +1277,27 @@
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
 "DPNS Names" = "DPNS Names";
+
+/* SPV diagnostics */
+"Drop & rescan" = "دورانداختن و پویش دوباره";
+
+/* SPV diagnostics */
+"Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network." = "تراکنش‌های این کیف پول را که هنوز منتظر شبکه‌اند (هرگز قفل یا استخراج نشده‌اند) از این دستگاه دور می‌اندازد، سکه‌هایی را که قصد خرج‌کردنشان را داشتند دوباره در دسترس می‌کند و فیلترهای اخیر را دوباره پویش می‌کند. تراکنش دورانداخته‌ای که واقعاً روی بلاکچین باشد، هنگام پویش دوباره خودبه‌خود بازمی‌گردد. چیزی به شبکه ارسال نمی‌شود.";
+
+/* SPV diagnostics */
+"Drop Unconfirmed & Rescan" = "دورانداختن تأییدنشده‌ها و پویش دوباره";
+
+/* SPV diagnostics */
+"Drop unconfirmed transactions?" = "تراکنش‌های تأییدنشده دور انداخته شوند؟";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row." = "‏%d تراکنش تأییدنشده دور انداخته شد — فیلترها در حال پویش دوباره‌اند، ردیف «فیلترها» را ببینید.";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above." = "‏%d تراکنش تأییدنشده دور انداخته شد، اما پویش دوباره فیلترها آغاز نشد — «پویش دوباره فیلترها» را در بالا اجرا کنید.";
+
+/* SPV diagnostics */
+"Dropping…" = "در حال دورانداختن…";
 
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "با توجه به شرایط استفاده از کراودنود کاربران نمی‌توانند بیشتر از این میزان برداشت کنند: ";
@@ -1280,6 +1409,9 @@
 
 /* No comment provided by engineer. */
 "Enter your recovery phrase to reset your PIN" = "Enter your recovery phrase to reset your PIN";
+
+/* No comment provided by engineer. */
+"Enter your recovery phrase to set a new PIN" = "برای تعیین PIN جدید، عبارت بازیابی خود را وارد کنید";
 
 /* Voting */
 "Enter your voting key" = "کلید رای‌گیری‌تان را وارد کنید";
@@ -1665,6 +1797,42 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "از نظر حریم خصوصی در مقایسه با حساب‌های اتریوم چگونه است؟";
 
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "موجودی حساب هویت";
+
+/* Username marketplace: section of contested-name requests awaiting the masternode vote */
+"In network vote" = "در رأی‌گیری شبکه";
+
+/* Username marketplace: search row for a contested label with an active vote by others */
+"In a network vote — you can join as a contender" = "در رأی‌گیری شبکه — می‌توانید به‌عنوان مدعی بپیوندید";
+
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "در این مدت با «%1$@» در دسترس هستید و این نام برای شما باقی می‌ماند. اگر رأی‌گیری «%2$@» را به شما بدهد، با هر دو نام کاربری در دسترس خواهید بود.";
+
+/* Username marketplace: search row for a label a past vote locked */
+"Locked by a network vote — nobody can register it" = "با رأی‌گیری شبکه قفل شده — هیچ‌کس نمی‌تواند آن را ثبت کند";
+
+/* Username marketplace: latest ownership change */
+"Last transferred" = "آخرین انتقال";
+
+/* Username marketplace: confirm listing button */
+"List For Sale" = "گذاشتن برای فروش";
+
+/* Username marketplace: own listed name */
+"Listed by you" = "توسط شما برای فروش گذاشته شد";
+
+/* Username marketplace: history — price set */
+"Listed for %@ DASH" = "به قیمت %@ DASH برای فروش";
+
+/* Username marketplace: set price fee note */
+"Listing is a network transaction with a small fee, paid from your identity balance." = "گذاشتن برای فروش یک تراکنش شبکه با کارمزد اندک است که از موجودی هویت شما پرداخت می‌شود.";
+
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "هویت من";
+
+/* Username marketplace: owned names segment */
+"My Names" = "نام‌های من";
+
 /* DashPay FAQ */
 "How private is DashPay?" = "‏DashPay چقدر خصوصی است؟";
 
@@ -2027,6 +2195,9 @@
 /* CrowdNode */
 "Leaving the pool" = "Leaving the pool";
 
+/* DashPay Contacts: caption under the user's own QR code */
+"Let another Dash Wallet user scan this code to add you as a contact." = "بگذارید کاربر دیگر Dash Wallet این کد را اسکن کند تا شما را به‌عنوان مخاطب اضافه کند.";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Let me know when it’s done";
 
@@ -2099,6 +2270,51 @@
 "Lock" = "قفل";
 
 "Lock the name" = "قفل کردن نام";
+
+/* Username marketplace: contest voting deadline row */
+"Vote ends" = "پایان رأی‌گیری";
+
+/* Username marketplace: until when other identities can join the contest */
+"New contenders" = "مدعیان جدید";
+
+/* Username marketplace: join deadline still open — value of the New contenders row */
+"can join until %@" = "می‌توانند تا %@ بپیوندند";
+
+/* Username marketplace: the contest's join window has passed — value of the New contenders row */
+"joining closed" = "پذیرش بسته شد";
+
+/* Username marketplace: masternode vote tally for one contest row */
+"%d votes" = "‏%d رأی";
+
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "۱۲ کلمه استاندارد است. ۲۴ کلمه نوشتن و بازیابی‌اش زمان‌برتر است، اما شکستن آن برای سامانه‌های رایانه‌ای پیشرفته در آینده دور به‌مراتب دشوارتر است.";
+
+/* Username marketplace: unresolvable transfer recipient */
+"No identity owns that username." = "هیچ هویتی مالک این نام کاربری نیست.";
+
+/* Username marketplace: names that were sold or transferred away */
+"No longer yours" = "دیگر مال شما نیست";
+
+/* Identity top-up sheet — missing unshield destination */
+"No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "هنوز نشانی دریافت Platform در دسترس نیست — تا پایان همگام‌سازی Platform صبر کنید و دوباره تلاش کنید.";
+
+/* Username marketplace: empty owned list */
+"No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "هنوز نام کاربری‌ای روی این هویت نیست. در زبانه «یافتن نام‌ها» نامی برای خرید یا ثبت پیدا کنید.";
+
+/* Identity top-up sheet — insufficient funding source */
+"Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "موجودی این حساب کافی نیست: %@ DASH لازم است، %@ DASH در دسترس است.";
+
+/* Username marketplace: insufficient balance hint */
+"Not enough identity credits for this purchase — top up from My Profile first." = "اعتبار هویت برای این خرید کافی نیست — ابتدا از «نمایه من» شارژ کنید.";
+
+/* Username marketplace: insufficient balance hint for a contested request */
+"Not enough identity credits for this request — top up from My Profile first." = "اعتبار هویت برای این درخواست کافی نیست — ابتدا از «نمایه من» شارژ کنید.";
+
+/* Username marketplace: someone else's unlisted name */
+"Not for sale" = "برای فروش نیست";
+
+/* Username marketplace: own unlisted name */
+"Not listed for sale" = "برای فروش گذاشته نشده";
 
 "Lock “%@” so nobody gets it" = "«%@» را قفل کن تا هیچ‌کس آن را نگیرد";
 
@@ -2342,11 +2558,92 @@
 /* SDK identity profile sheet — title */
 "My Profile" = "My Profile";
 
+/* DashPay Contacts: shows the user's own contact QR code */
+"My QR" = "‏QR من";
+
 /* No comment provided by engineer. */
 "Name" = "نام";
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "سرویس‌های نام مانند Unstoppable Domains یک نام خوانا را به یک نشانی عمومی ثابت روی زنجیره نگاشت می‌کنند. هر کسی می‌تواند آن نام را بازگشایی کند و همه پرداخت‌هایی را که تا کنون به آن انجام شده ببیند. نام کاربری DashPay هرگز به‌صورت عمومی به نشانی پرداخت بازگشایی نمی‌شود — نشانی‌ها فقط درون تبادل رمزگذاری‌شده با هر مخاطب فاش می‌شوند، بنابراین نام و پول شما برای ناظران بیرونی بی‌ارتباط می‌ماند.";
+
+/* Username marketplace: contested request line — voting deadline */
+"Network vote ends %@" = "رأی‌گیری شبکه در %@ پایان می‌یابد";
+
+/* Username marketplace: activity overlay while the purchase transition runs */
+"Completing your purchase…" = "در حال تکمیل خرید شما…";
+
+/* Usernames */
+"Register username" = "ثبت نام کاربری";
+
+/* Username marketplace: activity overlay while the delist transition runs */
+"Removing the listing…" = "در حال برداشتن آگهی…";
+
+/* Username marketplace: activity overlay while the set-price transition runs */
+"Listing for sale…" = "در حال گذاشتن برای فروش…";
+
+/* Usernames */
+"Submit both usernames" = "ارسال هر دو نام کاربری";
+
+/* Usernames */
+"Temporary username" = "نام کاربری موقت";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "نام کاربری موقت خودش نباید نیازمند رأی‌گیری باشد.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "این نام نیازمند رأی‌گیری مسترنودها است. کارمزد رقابت هنگام ارسال کسر می‌شود و بازگردانده نمی‌شود، حتی اگر نام را به دست نیاورید.";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "این نام کاربری هم نیازمند رأی‌گیری خواهد بود — رقمی بین ۲ تا ۹ اضافه کنید";
+
+/* Username marketplace: activity overlay while the transfer transition runs */
+"Transferring the username…" = "در حال انتقال نام کاربری…";
+
+/* Username marketplace: activity overlay while the registration transition runs */
+"Registering the username…" = "در حال ثبت نام کاربری…";
+
+/* Username marketplace: activity overlay while the contested request transition runs */
+"Submitting your username request…" = "در حال ارسال درخواست نام کاربری شما…";
+
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "مرور";
+
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "تغییرات قیمت";
+
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "خریدها";
+
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "به قیمت %1$@ DASH برای فروش · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "به قیمت %1$@ DASH فروخته شد · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "به قیمت %1$@ DASH فروخته شد · %2$@ · %3$@ ← %4$@";
+
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "اکنون برای فروش نیست";
+
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "در فعالیت اخیر آگهی‌ها هیچ نامی برای فروش نیست. «نمایش بیشتر» به گذشته دورتر می‌رود.";
+
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "هنوز خریدی در شبکه انجام نشده است.";
+
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "در حال بارگیری فعالیت…";
+
+/* Username marketplace: load older browse activity */
+"Show more" = "نمایش بیشتر";
+
+/* Username marketplace: contest tallies card title */
+"Network vote so far" = "رأی‌گیری شبکه تاکنون";
+
+/* Username marketplace: contest with zero masternode votes so far */
+"No votes cast yet" = "هنوز رأیی داده نشده است";
 
 /* Swap route provider
    Swap route provider short */
@@ -2381,6 +2678,9 @@
 
 /* (List of) New (notifications) */
 "New" = "جدید";
+
+/* SPV diagnostics */
+"No unconfirmed transactions to drop." = "تراکنش تأییدنشده‌ای برای دورانداختن وجود ندارد.";
 
 /* CrowdNode */
 "New CrowdNode Account" = "ایجاد حساب جدید کراودنود";
@@ -2563,6 +2863,15 @@
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "در بیت‌کوین لایه نام وجود ندارد، پس مردم نشانی‌ها را آشکارا به اشتراک می‌گذارند و دوباره به کار می‌برند — همین‌که نشانی‌ای شناخته شود، هر چه تا کنون دریافت کرده به مالکش قابل پیوند است. در DashPay نام کاربری شما عمومی است اما هرگز به نشانی پرداخت اشاره نمی‌کند: نشانی‌ها به‌صورت خصوصی برای هر مخاطب تبادل می‌شوند و می‌چرخند، پس پرداخت با نام آشکار نمی‌کند پول شما کجا می‌رود. هر دو زنجیره شفاف‌اند، پس تحلیل زنجیره همچنان درباره خود سکه‌ها برقرار است.";
 
+/* DashPay Contacts: search results from DPNS, not the local contact list */
+"On the Dash network" = "در شبکه Dash";
+
+/* Username marketplace */
+"Owned by you" = "متعلق به شما";
+
+/* Identity top-up sheet — funding source picker label */
+"Pay from" = "پرداخت از";
+
 /* Identities */
 "On Network" = "روی شبکه";
 
@@ -2731,6 +3040,9 @@
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "پرداخت‌ها خصوصی هستند: نشانی‌هایی که با یک مخاطب تبادل می‌کنید درون بار رمزگذاری‌شده‌ای جابه‌جا می‌شوند که تنها شما دو نفر می‌توانید بخوانید و هرگز منتشر نمی‌شوند — پس پرداخت‌هایتان به‌سادگی به نام کاربری‌تان پیوند نمی‌خورد. با این حال اینها همچنان پرداخت‌های معمولی روی زنجیره‌ای شفاف‌اند: تحلیل پیشرفته زنجیره ممکن است اطلاعاتی را فاش کند. Shielded DashPay (به‌زودی) این شکاف را خواهد بست. خودِ درخواست‌های تماس در حال حاضر خصوصی نیستند: هر کسی می‌تواند ببیند دو هویت به هم متصل‌اند. درخواست‌های تماس خصوصی قابلیتی است که به‌زودی می‌آید. نام کاربری و نمایه شما نیز روی Dash Platform عمومی است.";
 
+/* Username marketplace: price placeholder */
+"Price in DASH" = "قیمت به DASH";
+
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "پرداخت‌ها با InstantSend در چند ثانیه تأیید می‌شوند";
 
@@ -2788,6 +3100,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "برای پرداخت، همیشه باید پین کد را وارد کنید";
+
+/* No comment provided by engineer. */
+"PIN Not Set" = "‏PIN تعیین نشده است";
 
 /* Dash Platform chain */
 "Platform" = "Platform";
@@ -2992,6 +3307,9 @@
 /* Identities: what a public key is used for */
 "Purpose" = "هدف";
 
+/* Username marketplace */
+"Put Up For Sale" = "عرضه برای فروش";
+
 /* DashSpend */
 "Quantity" = "Quantity";
 
@@ -3027,6 +3345,96 @@
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "فقط‌خواندنی";
+
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "پخش دوباره";
+
+/* Delete a never-accepted transaction from local wallet state */
+"Remove if Not on Network" = "حذف در صورت نبودن در شبکه";
+
+/* Remove never-accepted transaction: confirmation title */
+"Remove this transaction?" = "این تراکنش حذف شود؟";
+
+/* Remove never-accepted transaction: destructive confirm button */
+"Remove Transaction" = "حذف تراکنش";
+
+/* Username marketplace: transfer recipient placeholder */
+"Recipient username or identity ID" = "نام کاربری یا شناسه هویت گیرنده";
+
+/* Identity top-up sheet — shielded source note */
+"Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "توصیه می‌شود: انتقال دومرحله‌ای از طریق نشانی Platform خودتان، هویت شما را از سکه‌های شفافتان جدا نگه می‌دارد.";
+
+/* Username marketplace: register sheet title */
+"Register “%@”" = "ثبت «%@»";
+
+/* Username marketplace: registration date */
+"Registered" = "ثبت‌شده";
+
+/* Username marketplace */
+"Remove From Sale" = "برداشتن از فروش";
+
+/* Remove never-accepted transaction: progress */
+"Removing transaction…" = "در حال حذف تراکنش…";
+
+/* Username marketplace: delist confirmation title */
+"Remove “%@” from sale?" = "«%@» از فروش برداشته شود؟";
+
+/* Username marketplace: history — delist (transfer to self) */
+"Removed from sale" = "از فروش برداشته شد";
+
+/* Username marketplace: delist confirmation body */
+"Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "برداشتن آگهی یک تراکنش شبکه با کارمزد اندک است که از موجودی هویت شما پرداخت می‌شود. نام نزد شما می‌ماند.";
+
+/* Remove never-accepted transaction: refused because the explorer found it */
+"Transaction is known to the network" = "تراکنش برای شبکه شناخته‌شده است";
+
+/* Remove never-accepted transaction: refusal body */
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "یک کاوشگر بلاک گزارش می‌دهد که این تراکنش برای شبکه Dash شناخته‌شده است. ممکن است هنوز در مِم‌پول منتظر باشد یا پیش‌تر در بلاکی گنجانده شده باشد، بنابراین حذف نشد. کیف پول به‌محض گنجانده‌شدن آن در بلاکی همگام‌شده، تأییدش را به‌طور خودکار به‌روز می‌کند.";
+
+/* Remove never-accepted transaction: success */
+"Transaction removed" = "تراکنش حذف شد";
+
+/* Remove never-accepted transaction: removed but the recovery rescan did not arm */
+"Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "تراکنش حذف شد — پویش دوباره آغاز نشد، «پویش دوباره فیلترها» را در وضعیت همگام‌سازی Core اجرا کنید";
+
+/* Remove never-accepted transaction: confirmation body */
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "کیف پول ابتدا یک کاوشگر بلاک را بررسی می‌کند. تراکنشی که برای شبکه شناخته‌شده باشد — چه در مِم‌پول منتظر باشد و چه پیش‌تر در بلاکی گنجانده شده باشد — هرگز حذف نمی‌شود. اگر تراکنش پیدا نشود، از این کیف پول روی این دستگاه پاک می‌شود و سکه‌هایی که قصد خرج‌کردنشان را داشت دوباره در دسترس می‌شوند. سپس کیف پول برای اطمینان بلاک‌های اخیر را دوباره پویش می‌کند. چیزی به شبکه ارسال نمی‌شود.";
+
+/* Remove never-accepted transaction: failure title */
+"Couldn't remove the transaction" = "تراکنش حذف نشد";
+
+/* Remove never-accepted transaction: no local row */
+"This transaction is not in the local wallet." = "این تراکنش در کیف پول محلی نیست.";
+
+/* Remove never-accepted transaction: local state says it's on-chain */
+"This transaction is confirmed and can't be removed." = "این تراکنش تأیید شده است و نمی‌توان آن را حذف کرد.";
+
+/* Remove never-accepted transaction: explorer unreachable */
+"Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "برای تأیید اینکه تراکنش روی بلاکچین نیست، دسترسی به کاوشگر بلاک ممکن نشد. اتصال خود را بررسی و دوباره تلاش کنید.";
+
+/* Username marketplace: contested request cost row */
+"Request cost" = "هزینه درخواست";
+
+/* Username marketplace: contested request success */
+"Request for %@ submitted — masternodes now vote on it" = "درخواست %@ ارسال شد — اکنون مسترنودها به آن رأی می‌دهند";
+
+/* Username marketplace: confirm contested request button */
+"Request Username" = "درخواست نام کاربری";
+
+/* Username marketplace: contested register sheet title */
+"Request “%@”" = "درخواست «%@»";
+
+/* Username marketplace: contested request not yet indexed by Platform */
+"Requested — waiting for the network vote" = "درخواست‌شده — در انتظار رأی‌گیری شبکه";
+
+/* Username marketplace: search row for a contested label this identity already requested */
+"Requested by you — the network vote is in progress" = "درخواست‌شده توسط شما — رأی‌گیری شبکه در جریان است";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "در حال تلاش دوباره برای انتقال…";
+
+/* Username marketplace: screen subtitle */
+"Search usernames, buy ones that are for sale, and sell or transfer your own." = "نام‌های کاربری را جست‌وجو کنید، نام‌های عرضه‌شده را بخرید و نام‌های خود را بفروشید یا منتقل کنید.";
 
 /* Usernames */
 "Ready around %@" = "حدود %@ آماده می‌شود";
@@ -3081,6 +3489,9 @@
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "عبارت بازیابی";
+
+/* Recovery phrase length */
+"Recovery phrase length" = "طول عبارت بازیابی";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -3194,6 +3605,9 @@
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
+
+/* No comment provided by engineer. */
+"Completion unknown" = "تکمیل نامعلوم";
 
 /* Location Service Status */
 "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "کیف پول‌های بازیابی‌شده همیشه نمی‌توانند نوع عملیات را بازیابی کنند. این مورد از داده‌های یادداشت روی زنجیره بازسازی شده است.";
@@ -3321,6 +3735,9 @@
 /* Identities: DPP security level of a public key */
 "Security level" = "سطح امنیت";
 
+/* Username marketplace: transfer sheet body */
+"Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "این نام را رایگان به هویتی دیگر بفرستید. انتقال، هر آگهی فروش را نیز برمی‌دارد. این کار برگشت‌پذیر نیست — مالک جدید باید آن را دوباره به شما منتقل کند.";
+
 /* DashSpend */
 "See card details" = "See card details";
 
@@ -3368,7 +3785,520 @@
 /* Coinbase */
 "Select the coin" = "یک رمزارز انتخاب کنید";
 
+/* Identities */
+"Select the username to display for this identity." = "نام کاربری‌ای را که برای این هویت نمایش داده شود انتخاب کنید.";
+
 "Selecting fewer nodes reveals less about which masternodes you run." = "انتخاب گره‌های کمتر، کمتر آشکار می‌کند که چه مسترنودهایی را اداره می‌کنید.";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "‏%ld کیف پول روی این دستگاه پیدا شد";
+
+/* No comment provided by engineer. */
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "‏%ld کیف پول از نصب پیشین روی این دستگاه ذخیره شده است. «حذف همه» هر کیف پول را پاک می‌کند. پیش از حذف از هر عبارت بازیابی نسخه پشتیبان بگیرید.";
+
+/* No comment provided by engineer. */
+"Couldn’t Delete All Wallets" = "همه کیف پول‌ها حذف نشدند";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Wallets" = "کیف پول‌ها خوانده نشدند";
+
+/* No comment provided by engineer. */
+"Delete All" = "حذف همه";
+
+/* No comment provided by engineer. */
+"Delete All Wallets?" = "همه کیف پول‌ها حذف شوند؟";
+
+/* No comment provided by engineer. */
+"Deleting All Wallets…" = "در حال حذف همه کیف پول‌ها…";
+
+/* No comment provided by engineer. */
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "تعداد کیف پول‌های ذخیره‌شده روی این دستگاه تأیید نشد. برای ادامه، پیش از حذف هر کیف پولی، به عبارت تأییدی از پشتیبانی Dash نیاز است.";
+
+/* No comment provided by engineer. */
+"Keep Wallets" = "نگه‌داشتن کیف پول‌ها";
+
+/* No comment provided by engineer. */
+"No stored wallets were found. Nothing was deleted." = "هیچ کیف پول ذخیره‌شده‌ای پیدا نشد. چیزی حذف نشد.";
+
+/* No comment provided by engineer. */
+"No Wallets Found" = "کیف پولی پیدا نشد";
+
+/* No comment provided by engineer. */
+"Not all wallets could be deleted. Please try again." = "همه کیف پول‌ها حذف نشدند. لطفاً دوباره تلاش کنید.";
+
+/* No comment provided by engineer. */
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "این کار همه کیف پول‌ها، کلیدهای خصوصی و عبارت‌های بازیابی ذخیره‌شده توسط این برنامه روی این دستگاه را برای همیشه پاک می‌کند. آن‌ها فقط از نسخه‌های پشتیبان قابل بازیابی‌اند. این کار برگشت‌پذیر نیست.";
+
+/* No comment provided by engineer. */
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "کیف پول‌های ذخیره‌شده روی این دستگاه تأیید نشدند. چیزی حذف نشد. لطفاً دوباره تلاش کنید.";
+
+/* No comment provided by engineer. */
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "این کار هر %ld کیف پول ذخیره‌شده روی این دستگاه را پاک می‌کند. آن‌ها فقط با عبارت‌های بازیابی‌شان قابل بازیابی‌اند. حذف آن‌ها از این دستگاه برگشت‌پذیر نیست.";
+
+/* No comment provided by engineer. */
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "داده‌های کیف پول از نصب پیشین هنوز روی این دستگاه ذخیره است. این کیف پول‌ها را نگه می‌دارید یا همه داده‌ها را حذف می‌کنید و از نو شروع می‌کنید؟ پیش از حذف مطمئن شوید از هر عبارت بازیابی نسخه پشتیبان دارید.";
+
+/* No comment provided by engineer. */
+"Wallets found on this device" = "کیف پول‌های یافت‌شده روی این دستگاه";
+
+/* No comment provided by engineer. */
+"Wipe All Wallets" = "پاک‌کردن همه کیف پول‌ها";
+
+/* No comment provided by engineer. */
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "عبارت بازیابی یک کیف پول نمی‌تواند حذف چند کیف پول متفاوت را مجاز کند.";
+
+/* No comment provided by engineer. */
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "موجودی صفر در تست‌نت ثابت نمی‌کند که این کیف پول در مِین‌نت خالی است. برای ادامه عبارت بازیابی را وارد کنید.";
+
+/* No comment provided by engineer. */
+"Enter the recovery phrase to continue." = "برای ادامه عبارت بازیابی را وارد کنید.";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "انتخاب کیف پول";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Recovery Phrases" = "عبارت‌های بازیابی خوانده نشدند";
+
+/* No comment provided by engineer. */
+"No Recovery Phrase Found" = "عبارت بازیابی پیدا نشد";
+
+/* No comment provided by engineer. */
+"No recovery phrase is stored on this device." = "هیچ عبارت بازیابی‌ای روی این دستگاه ذخیره نشده است.";
+
+/* No comment provided by engineer. */
+"Select the wallet whose recovery phrase you want to view." = "کیف پولی را که می‌خواهید عبارت بازیابی‌اش را ببینید انتخاب کنید.";
+
+/* No comment provided by engineer. */
+"The recovery phrases stored on this device could not be read. Please try again." = "عبارت‌های بازیابی ذخیره‌شده روی این دستگاه خوانده نشدند. لطفاً دوباره تلاش کنید.";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address for this network" = "برای این شبکه نشانی Dash معتبری نیست";
+
+/* No comment provided by engineer. */
+"The claimable balance is too small to cover the Platform withdrawal fee." = "موجودی قابل مطالبه کمتر از آن است که کارمزد برداشت Platform را پوشش دهد.";
+
+/* No comment provided by engineer. */
+"You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it." = "می‌توانید تا %@ DASH برداشت کنید — باقیمانده برای پوشش کارمزد Platform می‌ماند. برای استفاده از آن روی «حداکثر» ضربه بزنید.";
+
+/* No comment provided by engineer. */
+"The minimum withdrawal is %@ DASH." = "حداقل برداشت %@ DASH است.";
+
+/* No comment provided by engineer. */
+"Payout address key" = "کلید نشانی پرداخت";
+
+/* No comment provided by engineer. */
+"Owner key (%@)" = "کلید مالک (%@)";
+
+/* No comment provided by engineer. */
+"Wallet is not ready. Try again in a moment." = "کیف پول آماده نیست. لحظاتی دیگر دوباره تلاش کنید.";
+
+/* No comment provided by engineer. */
+"%@ · Claimable %@ DASH" = "‏%@ · قابل مطالبه %@ DASH";
+
+/* No comment provided by engineer. */
+"Withdraw to" = "برداشت به";
+
+/* No comment provided by engineer. */
+"Enter a Dash address" = "یک نشانی Dash وارد کنید";
+
+/* No comment provided by engineer. */
+"Use the payout address" = "استفاده از نشانی پرداخت";
+
+/* No comment provided by engineer. */
+"This is the evonode's registered payout address." = "این نشانی پرداخت ثبت‌شده این evonode است.";
+
+/* No comment provided by engineer. */
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "این کیف پول کلید نشانی پرداخت evonode را دارد، بنابراین موجودی را می‌توان به هر نشانی Dash برداشت کرد.";
+
+/* No comment provided by engineer. */
+"Registered payout address" = "نشانی پرداخت ثبت‌شده";
+
+/* No comment provided by engineer. */
+"This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "این برداشت با کلید مالک evonode امضا می‌شود. Dash Platform تنها اجازه برداشت با کلید مالک به نشانی پرداخت ثبت‌شده را می‌دهد، بنابراین مقصد را نمی‌توان اینجا تغییر داد. برای برداشت به نشانی دیگر، از کیف پولی استفاده کنید که کلید نشانی پرداخت را دارد.";
+
+/* No comment provided by engineer. */
+"How it works" = "چگونه کار می‌کند";
+
+/* No comment provided by engineer. */
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "‏Dash Platform برداشت را روی زنجیره Dash می‌پردازد — معمولاً ظرف چند دقیقه. کارمزد Platform حدود %@ DASH افزون بر مبلغ از موجودی evonode کسر می‌شود، بنابراین «حداکثر» اندکی را برای پوشش آن باقی می‌گذارد.";
+
+/* No comment provided by engineer. */
+"Confirm withdrawal" = "تأیید برداشت";
+
+/* No comment provided by engineer. */
+"Owner-key withdrawals are always paid to the registered payout address." = "برداشت‌های با کلید مالک همیشه به نشانی پرداخت ثبت‌شده پرداخت می‌شوند.";
+
+/* No comment provided by engineer. */
+"Waiting for authorization…" = "در انتظار مجوز…";
+
+/* No comment provided by engineer. */
+"Submitting to Dash Platform…" = "در حال ارسال به Dash Platform…";
+
+/* No comment provided by engineer. */
+"Withdrawal submitted" = "برداشت ارسال شد";
+
+/* No comment provided by engineer. */
+"Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "‏Dash Platform به‌زودی آن را روی زنجیره Dash می‌پردازد — معمولاً ظرف چند دقیقه می‌رسد.";
+
+/* No comment provided by engineer. */
+"Remaining claimable balance: %@ DASH" = "موجودی قابل مطالبه باقیمانده: %@ DASH";
+
+/* No comment provided by engineer. */
+"%@ · Platform balance" = "‏%@ · موجودی Platform";
+
+/* No comment provided by engineer. */
+"Signed with" = "امضاشده با";
+
+/* No comment provided by engineer. */
+"Platform fee" = "کارمزد Platform";
+
+/* No comment provided by engineer. */
+"%@ (payout address)" = "‏%@ (نشانی پرداخت)";
+
+/* No comment provided by engineer. */
+"This wallet holds the payout address key, so you can withdraw to any address." = "این کیف پول کلید نشانی پرداخت را دارد، بنابراین می‌توانید به هر نشانی برداشت کنید.";
+
+/* No comment provided by engineer. */
+"This wallet holds the owner key, so withdrawals go to the registered payout address." = "این کیف پول کلید مالک را دارد، بنابراین برداشت‌ها به نشانی پرداخت ثبت‌شده می‌روند.";
+
+/* No comment provided by engineer. */
+"This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "این کیف پول نه کلید مالک و نه کلید نشانی پرداخت این evonode را دارد، بنابراین موجودی آن را نمی‌توان از اینجا برداشت کرد.";
+
+/* No comment provided by engineer. */
+"Couldn't check which keys of this evonode are in the wallet." = "بررسی اینکه کدام کلیدهای این evonode در کیف پول است ممکن نشد.";
+
+/* No comment provided by engineer. */
+"Result not confirmed" = "نتیجه تأیید نشد";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "برداشت به Dash Platform ارسال شد، اما نتیجه‌اش تأیید نشد. ممکن است انجام شده باشد. آن را دوباره ارسال نکنید — ابتدا موجودی قابل مطالبه و نشانی پرداخت را بررسی کنید.";
+
+/* No comment provided by engineer. */
+"1 block proposed this epoch" = "۱ بلاک در این دوره پیشنهاد شد";
+
+/* No comment provided by engineer. */
+"%@ blocks proposed this epoch" = "‏%@ بلاک در این دوره پیشنهاد شد";
+
+/* No comment provided by engineer. */
+"Nodes" = "گره‌ها";
+
+/* No comment provided by engineer. */
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "گره‌ها، روز %d دوره، %@ بلاک در این دوره پیشنهاد شد";
+
+/* No comment provided by engineer. */
+"an evonode has not proposed a block in 2 days" = "یک evonode ۲ روز است بلاکی پیشنهاد نکرده";
+
+/* No comment provided by engineer. */
+"an evonode has no blocks this epoch" = "یک evonode در این دوره بلاکی ندارد";
+
+/* No comment provided by engineer. */
+"A key doesn't match this masternode — fix or clear it to continue." = "یک کلید با این مسترنود مطابقت ندارد — برای ادامه آن را اصلاح یا پاک کنید.";
+
+/* No comment provided by engineer. */
+"Add keys" = "افزودن کلیدها";
+
+/* No comment provided by engineer. */
+"Add masternode" = "افزودن مسترنود";
+
+/* No comment provided by engineer. */
+"Add this node's owner key or payout address key to withdraw from here." = "برای برداشت از اینجا، کلید مالک یا کلید نشانی پرداخت این گره را اضافه کنید.";
+
+/* No comment provided by engineer. */
+"Already one of this wallet's masternodes — it's in the list above." = "هم‌اکنون یکی از مسترنودهای این کیف پول است — در فهرست بالا قرار دارد.";
+
+/* No comment provided by engineer. */
+"Already tracked." = "هم‌اکنون پیگیری می‌شود.";
+
+/* No comment provided by engineer. */
+"Any keys you added for it are deleted from this device's keychain too." = "هر کلیدی که برای آن اضافه کرده‌اید نیز از کی‌چین این دستگاه حذف می‌شود.";
+
+/* No comment provided by engineer. */
+"Available" = "در دسترس";
+
+/* No comment provided by engineer. */
+"BLS private key (hex)" = "کلید خصوصی BLS (hex)";
+
+/* No comment provided by engineer. */
+"Can't verify yet" = "هنوز قابل تأیید نیست";
+
+/* No comment provided by engineer. */
+"Could not load the node's registration details — owner and payout keys will verify later." = "جزئیات ثبت گره بارگیری نشد — کلیدهای مالک و پرداخت بعداً تأیید می‌شوند.";
+
+/* No comment provided by engineer. */
+"Could not save a key to the keychain. Nothing was lost — try again." = "ذخیره کلید در کی‌چین ممکن نشد. چیزی از دست نرفت — دوباره تلاش کنید.";
+
+/* No comment provided by engineer. */
+"Destination address (optional)" = "نشانی مقصد (اختیاری)";
+
+/* No comment provided by engineer. */
+"Doesn't match" = "مطابقت ندارد";
+
+/* No comment provided by engineer. */
+"Find" = "یافتن";
+
+/* No comment provided by engineer. */
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "کلیدهای مالک و پرداخت را که در فهرست مسترنودها نیستند پیدا می‌کند. اثر انگشت عمومی کلید را به یک گره Platform می‌فرستد.";
+
+/* No comment provided by engineer. */
+"IP address, proTxHash or private key" = "نشانی IP، proTxHash یا کلید خصوصی";
+
+/* No comment provided by engineer. */
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "کلیدها در کی‌چین این دستگاه ذخیره می‌شوند و جز برای امضای کاری که درخواست می‌کنید هرگز از آن خارج نمی‌شوند.";
+
+/* No comment provided by engineer. */
+"Keys on this device" = "کلیدهای روی این دستگاه";
+
+/* No comment provided by engineer. */
+"Label (optional)" = "برچسب (اختیاری)";
+
+/* No comment provided by engineer. */
+"Loading registration details…" = "در حال بارگیری جزئیات ثبت…";
+
+/* No comment provided by engineer. */
+"Matches" = "مطابقت دارد";
+
+/* No comment provided by engineer. */
+"Matches this node's %@ key" = "با کلید %@ این گره مطابقت دارد";
+
+/* No comment provided by engineer. */
+"No masternode on the list matches that." = "هیچ مسترنودی در فهرست با آن مطابقت ندارد.";
+
+/* No comment provided by engineer. */
+"Node key (base64 or hex)" = "کلید گره (base64 یا hex)";
+
+/* No comment provided by engineer. */
+"Not added" = "اضافه نشده";
+
+/* No comment provided by engineer. */
+"On this device" = "روی این دستگاه";
+
+/* No comment provided by engineer. */
+"Operator payout" = "پرداخت اپراتور";
+
+/* No comment provided by engineer. */
+"Payout" = "پرداخت";
+
+/* No comment provided by engineer. */
+"Platform could not be reached, so owner and payout keys were not checked." = "دسترسی به Platform ممکن نشد، بنابراین کلیدهای مالک و پرداخت بررسی نشدند.";
+
+/* No comment provided by engineer. */
+"PoSe banned" = "مسدودشده با PoSe";
+
+/* No comment provided by engineer. */
+"Private key (WIF or hex)" = "کلید خصوصی (WIF یا hex)";
+
+/* No comment provided by engineer. */
+"Refresh details" = "تازه‌سازی جزئیات";
+
+/* No comment provided by engineer. */
+"Refreshing…" = "در حال تازه‌سازی…";
+
+/* No comment provided by engineer. */
+"Save keys" = "ذخیره کلیدها";
+
+/* No comment provided by engineer. */
+"Search Platform too" = "جست‌وجو در Platform نیز";
+
+/* No comment provided by engineer. */
+"Searching…" = "در حال جست‌وجو…";
+
+/* No comment provided by engineer. */
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "امضا با کلید مالک — برداشت به نشانی پرداخت ثبت‌شده می‌رود.";
+
+/* No comment provided by engineer. */
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "امضا با کلید نشانی پرداخت. برای برداشت به نشانی پرداخت، مقصد را خالی بگذارید.";
+
+/* No comment provided by engineer. */
+"Stop tracking" = "توقف پیگیری";
+
+/* No comment provided by engineer. */
+"Stop tracking this masternode?" = "پیگیری این مسترنود متوقف شود؟";
+
+/* No comment provided by engineer. */
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "آن می‌تواند کلید مالک یا پرداخت هم باشد — برای بررسی «جست‌وجو در Platform نیز» را روشن کنید.";
+
+/* No comment provided by engineer. */
+"The signing key is missing from the keychain — re-add it and try again." = "کلید امضا در کی‌چین نیست — دوباره اضافه‌اش کنید و تلاش کنید.";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "برداشت ارسال شد اما نتیجه‌اش تأیید نشد. موجودی دوباره بررسی می‌شود — تا تثبیت‌شدن آن دوباره تلاش نکنید.";
+
+/* No comment provided by engineer. */
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "هر مسترنود یا evonode در شبکه را پیگیری کنید — لازم نیست به این کیف پول تعلق داشته باشد.";
+
+/* No comment provided by engineer. */
+"Track this masternode" = "پیگیری این مسترنود";
+
+/* No comment provided by engineer. */
+"Tracked" = "پیگیری‌شده";
+
+/* No comment provided by engineer. */
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "پیگیری‌شده. برای فعال‌کردن کارهایی مانند برداشت و رأی‌دادن، کلیدهای این گره را در پایین اضافه کنید، یا اکنون تمام کنید و بعداً اضافه کنید.";
+
+/* No comment provided by engineer. */
+"Withdrawing…" = "در حال برداشت…";
+
+/* No comment provided by engineer. */
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "با دکمه «+» می‌توانید هر مسترنود در شبکه را نیز پیگیری کنید — با IP، proTxHash یا یکی از کلیدهایش.";
+
+/* No comment provided by engineer. */
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "نشانی DAPI این evonode معلوم نیست، بنابراین نمی‌توان وضعیتش را از آن پرسید.";
+
+/* No comment provided by engineer. */
+"Couldn't get the evonode's status." = "وضعیت evonode دریافت نشد.";
+
+/* No comment provided by engineer. */
+"The evonode didn't answer in time." = "‏evonode به‌موقع پاسخ نداد.";
+
+/* No comment provided by engineer. */
+"Couldn't reach the evonode." = "دسترسی به evonode ممکن نشد.";
+
+/* No comment provided by engineer. */
+"The evonode's answer couldn't be read." = "پاسخ evonode خوانده نشد.";
+
+/* No comment provided by engineer. */
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "گزارش خودِ گره، تأییدنشده — آنچه درباره خود می‌گوید، نه آنچه شبکه بر آن توافق کرده است.";
+
+/* No comment provided by engineer. */
+"Asked" = "زمان پرسش";
+
+/* No comment provided by engineer. */
+"Software" = "نرم‌افزار";
+
+/* No comment provided by engineer. */
+"DAPI" = "‏DAPI";
+
+/* No comment provided by engineer. */
+"Drive" = "‏Drive";
+
+/* No comment provided by engineer. */
+"Tenderdash" = "‏Tenderdash";
+
+/* No comment provided by engineer. */
+"Protocol versions" = "نسخه‌های پروتکل";
+
+/* No comment provided by engineer. */
+"Tenderdash P2P" = "‏Tenderdash P2P";
+
+/* No comment provided by engineer. */
+"Tenderdash block" = "بلاک Tenderdash";
+
+/* No comment provided by engineer. */
+"Drive current" = "‏Drive کنونی";
+
+/* No comment provided by engineer. */
+"Drive latest" = "‏Drive جدیدترین";
+
+/* No comment provided by engineer. */
+"Drive next epoch" = "‏Drive دوره بعدی";
+
+/* No comment provided by engineer. */
+"Node ID" = "شناسه گره";
+
+/* No comment provided by engineer. */
+"Identity check" = "بررسی هویت";
+
+/* No comment provided by engineer. */
+"Chain" = "زنجیره";
+
+/* No comment provided by engineer. */
+"Catching up" = "در حال جبران عقب‌ماندگی";
+
+/* No comment provided by engineer. */
+"Latest block height" = "ارتفاع جدیدترین بلاک";
+
+/* No comment provided by engineer. */
+"Earliest block height" = "ارتفاع قدیمی‌ترین بلاک";
+
+/* No comment provided by engineer. */
+"Max peer block height" = "بیشترین ارتفاع بلاک نزد همتایان";
+
+/* No comment provided by engineer. */
+"Core chain-locked height" = "ارتفاع chain-lock در Core";
+
+/* No comment provided by engineer. */
+"Latest block hash" = "هش جدیدترین بلاک";
+
+/* No comment provided by engineer. */
+"Latest app hash" = "هش جدیدترین برنامه";
+
+/* No comment provided by engineer. */
+"Earliest block hash" = "هش قدیمی‌ترین بلاک";
+
+/* No comment provided by engineer. */
+"Earliest app hash" = "هش قدیمی‌ترین برنامه";
+
+/* No comment provided by engineer. */
+"Chain ID" = "شناسه زنجیره";
+
+/* No comment provided by engineer. */
+"Peers" = "همتایان";
+
+/* No comment provided by engineer. */
+"Listening" = "در حال شنیدن";
+
+/* No comment provided by engineer. */
+"State sync" = "همگام‌سازی وضعیت";
+
+/* No comment provided by engineer. */
+"Total synced time" = "مجموع زمان همگام‌سازی";
+
+/* No comment provided by engineer. */
+"Remaining time" = "زمان باقیمانده";
+
+/* No comment provided by engineer. */
+"Total snapshots" = "مجموع تصویرهای لحظه‌ای";
+
+/* No comment provided by engineer. */
+"Chunk process avg time" = "میانگین زمان پردازش قطعه";
+
+/* No comment provided by engineer. */
+"Snapshot height" = "ارتفاع تصویر لحظه‌ای";
+
+/* No comment provided by engineer. */
+"Snapshot chunks" = "قطعه‌های تصویر لحظه‌ای";
+
+/* No comment provided by engineer. */
+"Backfilled blocks" = "بلاک‌های تکمیل‌شده";
+
+/* No comment provided by engineer. */
+"Backfill blocks total" = "مجموع بلاک‌های نیازمند تکمیل";
+
+/* No comment provided by engineer. */
+"Time" = "زمان";
+
+/* No comment provided by engineer. */
+"Node clock" = "ساعت گره";
+
+/* No comment provided by engineer. */
+"Latest block" = "جدیدترین بلاک";
+
+/* No comment provided by engineer. */
+"Genesis" = "جنسیس";
+
+/* No comment provided by engineer. */
+"Epoch" = "دوره";
+
+/* No comment provided by engineer. */
+"Matches this evonode" = "با این evonode مطابقت دارد";
+
+/* No comment provided by engineer. */
+"Differs from this evonode" = "با این evonode تفاوت دارد";
+
+/* No comment provided by engineer. */
+"Not reported" = "گزارش نشده";
+
+/* No comment provided by engineer. */
+"%.3f s" = "‏%.3f ثانیه";
+
+/* No comment provided by engineer. */
+"Node status" = "وضعیت گره";
+
+/* No comment provided by engineer. */
+"Asking the evonode…" = "در حال پرسش از evonode…";
+
+/* No comment provided by engineer. */
+"Request status" = "درخواست وضعیت";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "خرید نهایی خودکار";
@@ -3442,6 +4372,42 @@
 
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "نخستین درخواست تماس‌تان را بفرستید";
+
+/* Username marketplace: set price sheet title */
+"Set a price for “%@”" = "تعیین قیمت برای «%@»";
+
+/* Username marketplace */
+"Short names are decided by a network vote — use Request Username instead." = "نام‌های کوتاه با رأی‌گیری شبکه تعیین می‌شوند — به‌جای آن از «درخواست نام کاربری» استفاده کنید.";
+
+/* Username marketplace: contested request explainer, paragraph 1 */
+"Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them." = "نام‌های کوتاه — ۱۹ نویسه یا کمتر، فقط حروف و اعداد — بی‌درنگ ثبت نمی‌شوند. شبکه Dash رأی می‌دهد که آن‌ها به چه کسی برسند.";
+
+/* DashPay Contacts: expands the network search into the full add-contact flow */
+"Show more results" = "نمایش نتایج بیشتر";
+
+/* Username marketplace: departed-name line — buyer identity */
+"Sold to %@" = "فروخته‌شده به %@";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 1 of 2 — moving Dash out of your Shielded balance…" = "گام ۱ از ۲ — در حال انتقال Dash از موجودی Shielded شما…";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 2 of 2 — topping up your identity…" = "گام ۲ از ۲ — در حال شارژ هویت شما…";
+
+/* Username marketplace: contested request cost footnote */
+"The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "هزینه از موجودی هویت شما پرداخت می‌شود. این هزینه رأی‌گیری شبکه را تأمین می‌کند و اگر مدعی دیگری برنده شود بازگردانده نمی‌شود.";
+
+/* Username marketplace: register sheet body */
+"The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "نام مستقیماً روی هویت شما ثبت می‌شود. ثبت یک تراکنش شبکه است که از موجودی هویت شما پرداخت می‌شود.";
+
+/* Username marketplace: contested label locked by a past vote */
+"The network voted to lock this name, so nobody can register it. Choose a different name." = "شبکه به قفل‌کردن این نام رأی داد، بنابراین هیچ‌کس نمی‌تواند آن را ثبت کند. نام دیگری انتخاب کنید.";
+
+/* Username marketplace */
+"The recipient identity couldn't be resolved." = "هویت گیرنده تشخیص داده نشد.";
+
+/* Username marketplace */
+"The seller changed the price before your purchase was accepted. Review the new price and try again." = "فروشنده پیش از پذیرفته‌شدن خرید شما قیمت را تغییر داد. قیمت جدید را بررسی و دوباره تلاش کنید.";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "در حال ارسال";
@@ -3963,6 +4929,66 @@
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "این کار دو کلید به هویت شما می‌افزاید تا کاربران دیگر بتوانند برایتان درخواست تماس بفرستند و شما هم بتوانید درخواست‌های آنها را بپذیرید. این تنها یک بار رخ می‌دهد.";
 
+/* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
+"This isn't a DashPay user QR code." = "این کد QR کاربر DashPay نیست.";
+
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "این موجودی کارمزدهای شبکه Dash Platform را می‌پردازد — نام‌های کاربری، درخواست‌های مخاطب، به‌روزرسانی نمایه. این موجودی به هویت شما تعلق دارد، نه به کیف پولتان: برخلاف موجودی‌های شفاف، Platform و Shielded نمی‌توان آن را مانند Dash معمولی خرج کرد. شارژ‌کردن، Dash را از موجودی انتخابی شما — به‌طور پیش‌فرض Shielded — به اعتبار هویت تبدیل می‌کند.";
+
+/* Username marketplace: contested label already has an active vote */
+"This name is already in an active network vote. Your request joins it as another contender." = "این نام هم‌اکنون در رأی‌گیری فعال شبکه است. درخواست شما به‌عنوان مدعی دیگری به آن می‌پیوندد.";
+
+/* Username marketplace */
+"This name is in an active network vote and can't be traded until the contest ends." = "این نام در رأی‌گیری فعال شبکه است و تا پایان رقابت قابل معامله نیست.";
+
+/* Username marketplace: detail for an unregistered name */
+"This name is not registered." = "این نام ثبت نشده است.";
+
+/* Username marketplace: seller-clarity callout on the detail sheet */
+"This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "این نام را کاربری مستقل در شبکه Dash عرضه کرده است — نه Dash و نه این برنامه. قیمت را فروشنده تعیین می‌کند.";
+
+/* Username marketplace: listing price exceeds the representable maximum */
+"This price is too high to list." = "این قیمت برای عرضه بسیار بالاست.";
+
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "این انتقال را نمی‌توان از اینجا دوباره انجام داد.";
+
+/* Username marketplace */
+"This username is not for sale." = "این نام کاربری برای فروش نیست.";
+
+/* Username marketplace */
+"This username's record couldn't be read from the network." = "رکورد این نام کاربری از شبکه خوانده نشد.";
+
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "این کیف پول هویتی برای شارژ ندارد.";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "شارژ";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "شارژ موجودی هویت";
+
+/* Username marketplace: timeline card title */
+"Trade history" = "تاریخچه معاملات";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "انتقال کامل شد";
+
+/* Username marketplace */
+"Transfer to Another Identity" = "انتقال به هویتی دیگر";
+
+/* Username marketplace: transfer sheet title */
+"Transfer “%@”" = "انتقال «%@»";
+
+/* Username marketplace: history — transfer with both identities */
+"Transferred from %1$@ to %2$@" = "از %1$@ به %2$@ منتقل شد";
+
+/* Username marketplace: departed-name line — recipient identity */
+"Transferred to %@" = "به %@ منتقل شد";
+
+/* Username marketplace */
+"Username Marketplace" = "بازار نام‌های کاربری";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
@@ -4012,6 +5038,60 @@
 
 /* Usernames */
 "This name requires voting. Your Dash will be locked until voting completes." = "This name requires voting. Your Dash will be locked until voting completes.";
+
+/* Usernames */
+"Vote in progress" = "رأی‌گیری در جریان";
+
+/* Usernames */
+"Vote ended" = "رأی‌گیری پایان یافت";
+
+/* Usernames */
+"A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender." = "برای این نام هم‌اکنون رأی‌گیری مسترنودها در جریان است. ارسال درخواست شما را به‌عنوان مدعی وارد رأی‌گیری می‌کند.";
+
+/* Usernames */
+"A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender." = "برای این نام هم‌اکنون رأی‌گیری مسترنودها در جریان است — رأی‌گیری حدود %@ پایان می‌یابد. ارسال درخواست شما را به‌عنوان مدعی وارد رأی‌گیری می‌کند.";
+
+/* Usernames */
+"A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote." = "برای این نام رأی‌گیری مسترنودها در جریان است — رأی‌گیری حدود %@ پایان می‌یابد. مدعیان جدید دیگر نمی‌توانند به این رأی‌گیری بپیوندند.";
+
+/* Usernames */
+"Username is in a network vote — new contenders can no longer join" = "نام کاربری در رأی‌گیری شبکه است — مدعیان جدید دیگر نمی‌توانند بپیوندند";
+
+/* Usernames */
+"The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "مالک این نام کاربری آن را در بازار نام‌های کاربری به قیمت %@ Dash عرضه کرده است. می‌توانید آن را از آنجا بخرید.";
+
+/* Usernames */
+"The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance." = "مالک این نام کاربری آن را به قیمت %@ Dash عرضه کرده است. می‌توانید همین حالا آن را بخرید — قیمت از موجودی کیف پول شما پرداخت می‌شود.";
+
+/* Usernames */
+"The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "مالک این نام کاربری آن را به قیمت %1$@ Dash عرضه کرده است. خریدهای بالاتر از %2$@ Dash باید از بازار نام‌های کاربری انجام شوند — فعلاً نام کاربری دیگری انتخاب کنید؛ درباره خرید این یکی می‌توانید بعداً تصمیم بگیرید.";
+
+/* Usernames */
+"Buy for %@ Dash" = "خرید به قیمت %@ Dash";
+
+/* Usernames */
+"Buy username" = "خرید نام کاربری";
+
+/* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "نام کاربری موقت شما «%@» ثبت نشد. می‌توانید بعداً نام کاربری دیگری ثبت کنید.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "«%1$@» اکنون نام کاربری شماست. اگر رأی‌گیری «%2$@» را به شما بدهد، با هر دو نام کاربری در دسترس خواهید بود.";
+
+/* Usernames */
+"“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "«%1$@» به قیمت %2$@ Dash خریداری می‌شود. قیمت از موجودی کیف پول شما پرداخت می‌شود.";
+
+/* Usernames */
+"Username purchased" = "نام کاربری خریداری شد";
+
+/* Usernames */
+"“%@” is now your username." = "«%@» اکنون نام کاربری شماست.";
+
+/* Usernames */
+"The masternode vote for this name has ended and the result is being finalized. Check back soon." = "رأی‌گیری مسترنودها برای این نام پایان یافته و نتیجه در حال نهایی‌شدن است. به‌زودی دوباره سر بزنید.";
+
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes." = "برای این نام هم‌اکنون رأی‌گیری در جریان است — درخواست شما به‌عنوان مدعی به آن می‌پیوندد. Dash شما تا پایان رأی‌گیری قفل می‌ماند.";
 
 /* No comment provided by engineer. */
 "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone." = "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.";
@@ -4254,6 +5334,12 @@
 /* Voting */
 "Unblocked '%@' username" = "Unblocked '%@' username";
 
+/* SPV diagnostics */
+"Unconfirmed now" = "اکنون تأییدنشده";
+
+/* SPV diagnostics */
+"Unconfirmed Transactions" = "تراکنش‌های تأییدنشده";
+
 /* DashPay Contacts */
 "Unhide Contact" = "Unhide Contact";
 
@@ -4367,6 +5453,9 @@
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "نام کاربری، نه نشانی";
 
+/* DashPay: banner identity row subtitle */
+"View profile" = "دیدن نمایه";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "کاربرانی که با %@ مطابقت دارند و هم‌اکنون در مخاطبان شما نیستند";
 
@@ -4397,11 +5486,17 @@
 /* No comment provided by engineer. */
 "Verified Successfully" = "با موفقیت تائید شد";
 
+/* DashPay Contacts: spinner after scanning a user QR code */
+"Verifying user…" = "در حال تأیید کاربر…";
+
 /* No comment provided by engineer. */
 "Verify" = "تائید";
 
 /* CrowdNode */
 "Verify your API Dash address" = "نشانی ای‌پی‌آی دش‌تان را تائید کنید. ";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "برای تعیین PIN جدید، عبارت بازیابی خود را تأیید کنید.";
 
 /* Usernames */
 "Verify your identity" = "احراز هویت کنید";
@@ -4616,6 +5711,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "درخواست‌های تماس کِی خصوصی می‌شوند؟";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "تا زمانی که رأی‌گیری در جریان است، «%@» هنوز مال شما نیست و کاربران دیگر نمی‌توانند شما را با آن پیدا کنند. برای استفاده فوری از DashPay یک نام کاربری بدون رقابت اضافه کنید. آن نام برای همیشه مال شما می‌ماند — و اگر رأی‌گیری نام مورد رقابت را به شما بدهد، با هر دو نام کاربری در دسترس خواهید بود.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "کجا خرج کنیم؟ ";
 
@@ -4626,6 +5724,18 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "چرا باید آن را فعال کنم؟";
+
+/* Username marketplace: history participant is the current user */
+"you" = "شما";
+
+/* Username marketplace: contested request already submitted by this identity */
+"You already requested this name — the network vote is in progress. You'll find it under My Names." = "شما پیش‌تر این نام را درخواست کرده‌اید — رأی‌گیری شبکه در جریان است. آن را در «نام‌های من» می‌یابید.";
+
+/* Username marketplace: purchase confirmation body with seller clarity */
+"You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "شما از یک کاربر مستقل خرید می‌کنید، نه از Dash یا این برنامه. قیمت به‌علاوه کارمزد اندک شبکه از موجودی هویت شما پرداخت می‌شود و نام بی‌درنگ به هویت شما منتقل می‌شود.";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "تا زمانی که رأی‌گیری در جریان است نام کاربری ندارید. همین حالا یک نام کاربری بدون رقابت ثبت کنید — آن نام مال شما می‌ماند و اگر رأی‌گیری «%@» را به شما بدهد، با هر دو نام کاربری در دسترس خواهید بود.";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "چرا همه این تراکنش‌ها را می‌بینم؟ ";
@@ -4681,6 +5791,9 @@
 
 /* Wallets */
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
+
+/* Wallets */
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "این %d کلمه را به‌ترتیب بنویسید و جایی امن نگه دارید. آن‌ها تنها راه بازیابی این کیف پول هستند. هر کسی که آن‌ها را داشته باشد می‌تواند دارایی شما را خرج کند.";
 
 /* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
@@ -4932,6 +6045,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "تاریخچه شما، مرتب‌شده";
 
+/* Username marketplace */
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "موجودی هویت شما این خرید را پوشش نمی‌دهد: %1$@ DASH لازم است (شامل ذخیره کارمزد)، %2$@ DASH در دسترس است. موجودی هویت خود را شارژ کنید و دوباره تلاش کنید.";
+
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "هویت شما به دو کلید اضافی نیاز دارد تا درخواست‌های تماس میان شما و کاربران دیگر رمزگذاری شود. فعال‌سازی آنها را با یک تراکنش شبکه می‌افزاید. این تنها یک بار رخ می‌دهد.";
 
@@ -4956,8 +6072,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "سکه‌های ترکیب‌شده شما به موجودی کیف پول دش منتقل شد.";
 
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "نتوانستیم این خرید را با CTX تأیید کنیم. اگر پرداخت انجام شده باشد، کارت هدیه به‌زودی در فهرست تراکنش‌های شما ظاهر می‌شود — پیش از خرید دوباره، آنجا را بررسی کنید.";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "پرداخت شما ارسال شد، اما شبکه هنوز آن را تأیید نکرده است. کارت هدیه شما به‌محض تأیید ظاهر می‌شود.";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "سکه‌های ترکیب‌شده شما به موجودی محافظت‌شده منتقل شد. برای بهترین حریم خصوصی، دست‌کم ۲ ساعت پیش از استفاده از این وجوه صبر کنید.";
+
+/* DashSpend */
+"Could not load your gift card" = "کارت هدیه شما بارگیری نشد";
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
@@ -4973,6 +6098,9 @@
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "موجودی خصوصی شما. مبالغ و نشانی‌ها روی زنجیره رمزگذاری می‌شوند، پس دارایی‌ها و تاریخچه شما محرمانه می‌مانند.";
+
+/* Username marketplace: contested request explainer, paragraph 2 */
+"Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "درخواست شما حدود دو هفته وارد رأی‌گیری عمومی مسترنودها می‌شود. دیگران هم می‌توانند همان نام را درخواست کنند؛ با پایان رأی‌گیری، نام به برنده می‌رسد — یا به هیچ‌کس، اگر شبکه به قفل‌کردن آن رأی دهد.";
 
 /* Usernames */
 "Your request was cancelled" = "Your request was cancelled";

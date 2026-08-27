@@ -9,6 +9,9 @@
 /* CrowdNode */
 " Terms of Use " = "使用条款";
 
+/* Username marketplace: listing success — name, then price */
+"%1$@ listed for %2$@ DASH" = "%1$@ 已以 %2$@ DASH 挂牌";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -20,6 +23,12 @@
 
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "无法在 Dash 网络上找到 %@，因此无法向其发送联系人请求。";
+
+/* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
+"%@ couldn't be verified on the Dash network. The QR code may be outdated." = "无法在 Dash 网络上验证 %@。二维码可能已过期。";
+
+/* Username marketplace: contested request cost value — the vote-resolution fund amount */
+"%@ DASH + network fee" = "%@ DASH + 网络手续费";
 
 /* Usernames */
 "%@ Dash available" = "%@ Dash 可用";
@@ -42,6 +51,9 @@
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@向您发送了朋友申请";
 
+/* Username marketplace: delist success */
+"%@ is no longer for sale" = "%@ 已不再出售";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@不被允许访问 Face ID. 请在设置中授权允许";
 
@@ -51,8 +63,17 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ 不被允许访问 Touch ID. 请在设置中授权允许";
 
+/* Username marketplace: purchase success */
+"%@ is now yours" = "%@ 现在归你所有";
+
+/* Username marketplace: registration success */
+"%@ registered" = "%@ 已注册";
+
 /* Testnet faucet */
 "%@ tDash requested — it will arrive shortly" = "%@ tDash requested — it will arrive shortly";
+
+/* Username marketplace: transfer success */
+"%@ transferred" = "%@ 已转移";
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
@@ -171,6 +192,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "该名称已在投票中——你的申请将作为竞争者加入。竞争费用在提交时扣除，即使未能赢得该名称也不退还。";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -182,6 +206,9 @@
 
 /* No comment provided by engineer. */
 "About me" = "关于我";
+
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "关于身份账户余额";
 
 "Abstain" = "弃权";
 
@@ -235,6 +262,9 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "添加新朋友";
 
+/* Usernames */
+"Add a temporary username" = "添加临时用户名";
+
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
 
@@ -259,6 +289,9 @@
 /* Maya
    SwapKit */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+
+/* No comment provided by engineer. */
+"Advanced" = "高级";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "高级安全";
@@ -315,6 +348,9 @@
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Dash 金额";
 
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "金额（DASH）";
+
 /* No comment provided by engineer. */
 "Amount received" = "收到的金额";
 
@@ -350,6 +386,9 @@
 
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "任何知道地址的人都可以查看它的历史记录";
+
+/* Username marketplace: set price sheet body */
+"Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance." = "任何人都可以按这个价格购买该名称。所得款项将以积分形式进入你的身份余额。";
 
 /* AboutDash */
 "App version" = "App version";
@@ -430,8 +469,17 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "自动隐藏余额";
 
+/* DashPay */
+"Available after sync finishes" = "同步完成后可用";
+
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
+
+/* Username marketplace: unregistered name row */
+"Available — register it on your identity" = "可用——在你的身份上注册它";
+
+/* Username marketplace: unregistered contested-eligible name row */
+"Available — short names are decided by a network vote" = "可用——短名称由网络投票决定";
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
@@ -525,6 +573,9 @@
 /* Voting */
 "Blocked '%@' username" = "禁止了 '%@' 用户名";
 
+/* Username marketplace: history — purchase with buyer, seller, price */
+"Bought by %1$@ from %2$@ for %3$@ DASH" = "%1$@ 以 %3$@ DASH 从 %2$@ 处购得";
+
 /* Identities: this key only signs for one data contract */
 "Bound to contract" = "绑定到合约";
 
@@ -573,6 +624,9 @@
 /* Swap */
 "Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
 
+/* Username marketplace: purchase button */
+"Buy for %@ DASH" = "以 %@ DASH 购买";
+
 /* DashSpend */
 "Buy gift card" = "购买礼品卡";
 
@@ -581,6 +635,12 @@
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash for the exact amount of your purchase." = "使用Dash购买与您购物金额相等的礼品卡.";
+
+/* Username marketplace: purchase confirmation title */
+"Buy “%@”?" = "购买“%@”？";
+
+/* Username marketplace: Explore row subtitle */
+"Buy, sell and transfer DashPay usernames" = "买卖并转移 DashPay 用户名";
 
 /* Buy/Sell */
 "Buy/Sell" = "购买/出售";
@@ -631,6 +691,9 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "更改PIN";
+
+/* Username marketplace */
+"Change Price" = "修改价格";
 
 /* TimeSkew */
 "Check date & time settings" = "检查日期和时间设定";
@@ -713,6 +776,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "即将推出";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "完成转移";
+
 /* Shielded transfer status */
 "Completed" = "已完成";
 
@@ -782,6 +848,18 @@
 
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "已向 %@ 发送联系人请求";
+
+/* Usernames */
+"Continue without a temporary username" = "不使用临时用户名继续";
+
+/* Identity top-up sheet — body */
+"Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "将 Dash 兑换为身份积分，用于支付联系人请求、资料更新等 Platform 操作。";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "无法完成转移";
+
+/* Identity top-up sheet — free amount chip */
+"Custom" = "自定义";
 
 /* No comment provided by engineer. */
 "Contact Requests" = "联系人请求";
@@ -1042,6 +1120,27 @@
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "DashPay 已启用";
 
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "请至少输入 %@ DASH";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "预估手续费";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "手续费从金额中扣除；从 Shielded 支付时，可能会有少量余额留在你的 Platform 余额中。";
+
+/* Username marketplace: search segment */
+"Find Names" = "查找名称";
+
+/* Username marketplace: listed badge */
+"For sale" = "出售中";
+
+/* Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app */
+"For sale by an independent user" = "由独立用户出售";
+
+/* Identity top-up sheet — linkability warning for transparent-side sources */
+"Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "从透明余额出资会在 Dash 链上将这些币与你的身份公开关联。为保护隐私，请从 Shielded 余额支付。";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "DashPay邀请";
 
@@ -1062,6 +1161,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "日期";
+
+/* History group header for restored shielded operations whose original date is not recoverable */
+"Date unknown" = "日期未知";
 
 /* Voting */
 "Date: New to old" = "日期: 从新到旧";
@@ -1085,6 +1187,9 @@
 
 /* No comment provided by engineer. */
 "Delete Wallet?" = "Delete Wallet?";
+
+/* SPV diagnostics */
+"Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network." = "仅从本设备删除该钱包的未确认交易，并释放它们试图花费的币。过滤器重新扫描会恢复其中确实存在于区块链上的交易。不会向网络发送任何内容。";
 
 /* Location Service Status */
 "Denied" = "拒绝";
@@ -1116,6 +1221,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "该设备的安全性受到威胁\n任何'越狱'的应用程序都可以访问任何其他应用程序的钥匙链数据(并窃取您的Dash).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu." = "设备安全已受损\n任何“越狱”应用都能访问其他应用的钥匙串数据（并窃取你的 Dash）。请将资金转移到安全设备上的钱包，然后在安全菜单中使用“重置钱包”重置此钱包。";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "该设备的安全性受到威胁\n任何'越狱'的应用程序都可以访问任何其他应用程序的钥匙链数据(并窃取您的Dash). 请立即清除该钱包并在安全设备上将其恢复.";
@@ -1169,6 +1277,27 @@
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
 "DPNS Names" = "DPNS Names";
+
+/* SPV diagnostics */
+"Drop & rescan" = "丢弃并重新扫描";
+
+/* SPV diagnostics */
+"Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network." = "从本设备丢弃该钱包中仍在等待网络（从未被锁定或打包）的交易，让它们试图花费的币重新可用，并重新扫描最近的过滤器。若被丢弃的交易确实存在于区块链上，会在重新扫描时自动恢复。不会向网络发送任何内容。";
+
+/* SPV diagnostics */
+"Drop Unconfirmed & Rescan" = "丢弃未确认交易并重新扫描";
+
+/* SPV diagnostics */
+"Drop unconfirmed transactions?" = "要丢弃未确认交易吗？";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row." = "已丢弃 %d 笔未确认交易——正在重新扫描过滤器，请留意“过滤器”这一行。";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above." = "已丢弃 %d 笔未确认交易，但过滤器重新扫描未能启动——请运行上方的“重新扫描过滤器”。";
+
+/* SPV diagnostics */
+"Dropping…" = "正在丢弃…";
 
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "由于 CrowdNode的服务条款, 用户的提款额不能超过:";
@@ -1280,6 +1409,9 @@
 
 /* No comment provided by engineer. */
 "Enter your recovery phrase to reset your PIN" = "Enter your recovery phrase to reset your PIN";
+
+/* No comment provided by engineer. */
+"Enter your recovery phrase to set a new PIN" = "输入助记词以设置新的 PIN 码";
 
 /* Voting */
 "Enter your voting key" = "输入您的投票私钥";
@@ -1665,6 +1797,42 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "在隐私方面，这与以太坊账户相比如何？";
 
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "身份账户余额";
+
+/* Username marketplace: section of contested-name requests awaiting the masternode vote */
+"In network vote" = "网络投票中";
+
+/* Username marketplace: search row for a contested label with an active vote by others */
+"In a network vote — you can join as a contender" = "网络投票中——你可以作为竞争者加入";
+
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "在此期间，你可以通过“%1$@”被联系到，该名称将一直归你所有。若投票将“%2$@”判给你，两个用户名都可以联系到你。";
+
+/* Username marketplace: search row for a label a past vote locked */
+"Locked by a network vote — nobody can register it" = "已被网络投票锁定——任何人都无法注册";
+
+/* Username marketplace: latest ownership change */
+"Last transferred" = "最近一次转移";
+
+/* Username marketplace: confirm listing button */
+"List For Sale" = "挂牌出售";
+
+/* Username marketplace: own listed name */
+"Listed by you" = "由你挂牌";
+
+/* Username marketplace: history — price set */
+"Listed for %@ DASH" = "已以 %@ DASH 挂牌";
+
+/* Username marketplace: set price fee note */
+"Listing is a network transaction with a small fee, paid from your identity balance." = "挂牌是一笔网络交易，需从你的身份余额支付少量手续费。";
+
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "我的身份";
+
+/* Username marketplace: owned names segment */
+"My Names" = "我的名称";
+
 /* DashPay FAQ */
 "How private is DashPay?" = "DashPay 的隐私性如何？";
 
@@ -2027,6 +2195,9 @@
 /* CrowdNode */
 "Leaving the pool" = "离开资金池";
 
+/* DashPay Contacts: caption under the user's own QR code */
+"Let another Dash Wallet user scan this code to add you as a contact." = "让另一位 Dash Wallet 用户扫描此二维码，即可把你加为联系人。";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "完成后通知我";
 
@@ -2099,6 +2270,51 @@
 "Lock" = "锁定";
 
 "Lock the name" = "锁定该名称";
+
+/* Username marketplace: contest voting deadline row */
+"Vote ends" = "投票结束";
+
+/* Username marketplace: until when other identities can join the contest */
+"New contenders" = "新竞争者";
+
+/* Username marketplace: join deadline still open — value of the New contenders row */
+"can join until %@" = "可在 %@ 前加入";
+
+/* Username marketplace: the contest's join window has passed — value of the New contenders row */
+"joining closed" = "报名已截止";
+
+/* Username marketplace: masternode vote tally for one contest row */
+"%d votes" = "%d 票";
+
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "12 个词是标准做法。24 个词抄写和恢复起来更费事，但对遥远未来的高级计算机系统而言要难破解得多。";
+
+/* Username marketplace: unresolvable transfer recipient */
+"No identity owns that username." = "没有任何身份拥有该用户名。";
+
+/* Username marketplace: names that were sold or transferred away */
+"No longer yours" = "已不再属于你";
+
+/* Identity top-up sheet — missing unshield destination */
+"No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "目前还没有可用的 Platform 接收地址——请等待 Platform 同步完成后重试。";
+
+/* Username marketplace: empty owned list */
+"No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "该身份尚无用户名。请在“查找名称”标签页中找一个购买或注册。";
+
+/* Identity top-up sheet — insufficient funding source */
+"Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "该余额资金不足：需要 %@ DASH，可用 %@ DASH。";
+
+/* Username marketplace: insufficient balance hint */
+"Not enough identity credits for this purchase — top up from My Profile first." = "身份积分不足以完成此次购买——请先在“我的资料”中充值。";
+
+/* Username marketplace: insufficient balance hint for a contested request */
+"Not enough identity credits for this request — top up from My Profile first." = "身份积分不足以提交此申请——请先在“我的资料”中充值。";
+
+/* Username marketplace: someone else's unlisted name */
+"Not for sale" = "不出售";
+
+/* Username marketplace: own unlisted name */
+"Not listed for sale" = "未挂牌出售";
 
 "Lock “%@” so nobody gets it" = "锁定“%@”，使任何人都无法获得";
 
@@ -2342,11 +2558,92 @@
 /* SDK identity profile sheet — title */
 "My Profile" = "My Profile";
 
+/* DashPay Contacts: shows the user's own contact QR code */
+"My QR" = "我的二维码";
+
 /* No comment provided by engineer. */
 "Name" = "名称";
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Unstoppable Domains 之类的域名服务，会把一个便于阅读的名称映射到链上一个固定的公开地址。任何人都可以解析该名称并查看曾向它支付的每一笔款项。DashPay 用户名绝不会公开解析到支付地址——地址仅在与每位联系人的加密交换中披露，因此您的名称和资金在外部观察者看来始终是不关联的。";
+
+/* Username marketplace: contested request line — voting deadline */
+"Network vote ends %@" = "网络投票将于 %@ 结束";
+
+/* Username marketplace: activity overlay while the purchase transition runs */
+"Completing your purchase…" = "正在完成购买…";
+
+/* Usernames */
+"Register username" = "注册用户名";
+
+/* Username marketplace: activity overlay while the delist transition runs */
+"Removing the listing…" = "正在撤下挂牌…";
+
+/* Username marketplace: activity overlay while the set-price transition runs */
+"Listing for sale…" = "正在挂牌出售…";
+
+/* Usernames */
+"Submit both usernames" = "提交两个用户名";
+
+/* Usernames */
+"Temporary username" = "临时用户名";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "临时用户名本身不得需要投票。";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "该名称需要主节点投票。竞争费用在提交时扣除，即使未能赢得该名称也不退还。";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "该用户名同样需要投票——试试添加一个 2 到 9 之间的数字";
+
+/* Username marketplace: activity overlay while the transfer transition runs */
+"Transferring the username…" = "正在转移用户名…";
+
+/* Username marketplace: activity overlay while the registration transition runs */
+"Registering the username…" = "正在注册用户名…";
+
+/* Username marketplace: activity overlay while the contested request transition runs */
+"Submitting your username request…" = "正在提交你的用户名申请…";
+
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "浏览";
+
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "价格变动";
+
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "成交记录";
+
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "已以 %1$@ DASH 挂牌 · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "以 %1$@ DASH 售出 · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "以 %1$@ DASH 售出 · %2$@ · %3$@ → %4$@";
+
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "目前不出售";
+
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "最近的挂牌活动中没有出售中的名称。“显示更多”可查看更早的记录。";
+
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "网络上暂无成交记录。";
+
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "正在加载活动…";
+
+/* Username marketplace: load older browse activity */
+"Show more" = "显示更多";
+
+/* Username marketplace: contest tallies card title */
+"Network vote so far" = "目前的网络投票";
+
+/* Username marketplace: contest with zero masternode votes so far */
+"No votes cast yet" = "尚无投票";
 
 /* Swap route provider
    Swap route provider short */
@@ -2381,6 +2678,9 @@
 
 /* (List of) New (notifications) */
 "New" = "新的";
+
+/* SPV diagnostics */
+"No unconfirmed transactions to drop." = "没有可丢弃的未确认交易。";
 
 /* CrowdNode */
 "New CrowdNode Account" = "新的CrowdNode账户";
@@ -2563,6 +2863,15 @@
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "比特币没有名称层，所以人们公开地共享和重复使用地址——一旦某个地址为人所知，它曾收到的一切都可以与其所有者关联起来。在 DashPay 中，您的用户名是公开的，但它绝不会指向支付地址：地址按联系人私下交换并会轮换，因此按名称付款不会公开您的资金去向。两者都是透明链，因此链上分析仍然适用于币本身。";
 
+/* DashPay Contacts: search results from DPNS, not the local contact list */
+"On the Dash network" = "在 Dash 网络上";
+
+/* Username marketplace */
+"Owned by you" = "归你所有";
+
+/* Identity top-up sheet — funding source picker label */
+"Pay from" = "支付来源";
+
 /* Identities */
 "On Network" = "在网络上";
 
@@ -2731,6 +3040,9 @@
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "支付是私密的：您与联系人交换的地址包含在只有你们两人能读取的加密载荷中，且从不公开——因此您的支付无法被轻易关联到您的用户名。不过它们仍是透明链上的普通支付：高级链上分析仍可能泄露信息。Shielded DashPay（即将推出）将弥补这一缺口。联系人请求本身目前并不私密：任何人都能看到两个身份之间存在关联。私密联系人请求是即将推出的功能。您的用户名和资料在 Dash Platform 上同样是公开的。";
 
+/* Username marketplace: price placeholder */
+"Price in DASH" = "价格（DASH）";
+
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "使用 InstantSend，支付几秒内即可确认";
 
@@ -2788,6 +3100,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "付款时始终需要输入PIN";
+
+/* No comment provided by engineer. */
+"PIN Not Set" = "未设置 PIN 码";
 
 /* Dash Platform chain */
 "Platform" = "Platform";
@@ -2992,6 +3307,9 @@
 /* Identities: what a public key is used for */
 "Purpose" = "用途";
 
+/* Username marketplace */
+"Put Up For Sale" = "挂牌出售";
+
 /* DashSpend */
 "Quantity" = "Quantity";
 
@@ -3027,6 +3345,96 @@
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "只读";
+
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "重新广播";
+
+/* Delete a never-accepted transaction from local wallet state */
+"Remove if Not on Network" = "若不在网络上则删除";
+
+/* Remove never-accepted transaction: confirmation title */
+"Remove this transaction?" = "要删除这笔交易吗？";
+
+/* Remove never-accepted transaction: destructive confirm button */
+"Remove Transaction" = "删除交易";
+
+/* Username marketplace: transfer recipient placeholder */
+"Recipient username or identity ID" = "收款方用户名或身份 ID";
+
+/* Identity top-up sheet — shielded source note */
+"Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "建议：通过你自己的 Platform 地址进行两步转账，可让你的身份与透明币不产生关联。";
+
+/* Username marketplace: register sheet title */
+"Register “%@”" = "注册“%@”";
+
+/* Username marketplace: registration date */
+"Registered" = "已注册";
+
+/* Username marketplace */
+"Remove From Sale" = "撤下出售";
+
+/* Remove never-accepted transaction: progress */
+"Removing transaction…" = "正在删除交易…";
+
+/* Username marketplace: delist confirmation title */
+"Remove “%@” from sale?" = "要将“%@”撤下出售吗？";
+
+/* Username marketplace: history — delist (transfer to self) */
+"Removed from sale" = "已撤下出售";
+
+/* Username marketplace: delist confirmation body */
+"Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "撤下挂牌是一笔网络交易，需从你的身份余额支付少量手续费。该名称仍归你所有。";
+
+/* Remove never-accepted transaction: refused because the explorer found it */
+"Transaction is known to the network" = "网络已知晓该交易";
+
+/* Remove never-accepted transaction: refusal body */
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "区块浏览器显示，Dash 网络已知晓这笔交易。它可能仍在内存池中等待，也可能已被打包进区块，因此未被删除。一旦它进入已同步的区块，钱包会自动更新其确认状态。";
+
+/* Remove never-accepted transaction: success */
+"Transaction removed" = "交易已删除";
+
+/* Remove never-accepted transaction: removed but the recovery rescan did not arm */
+"Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "交易已删除——重新扫描未能启动，请在“Core 同步状态”中运行“重新扫描过滤器”";
+
+/* Remove never-accepted transaction: confirmation body */
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "钱包会先查询区块浏览器。网络已知晓的交易——无论是在内存池中等待还是已被打包进区块——都绝不会被删除。若未找到该交易，则会从本设备上的这个钱包中删除，它试图花费的币会重新可用。随后钱包会重新扫描最近的区块作为安全检查。不会向网络发送任何内容。";
+
+/* Remove never-accepted transaction: failure title */
+"Couldn't remove the transaction" = "无法删除该交易";
+
+/* Remove never-accepted transaction: no local row */
+"This transaction is not in the local wallet." = "该交易不在本地钱包中。";
+
+/* Remove never-accepted transaction: local state says it's on-chain */
+"This transaction is confirmed and can't be removed." = "该交易已确认，无法删除。";
+
+/* Remove never-accepted transaction: explorer unreachable */
+"Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "无法连接区块浏览器以确认该交易不在区块链上。请检查网络连接后重试。";
+
+/* Username marketplace: contested request cost row */
+"Request cost" = "申请费用";
+
+/* Username marketplace: contested request success */
+"Request for %@ submitted — masternodes now vote on it" = "%@ 的申请已提交——主节点现在开始投票";
+
+/* Username marketplace: confirm contested request button */
+"Request Username" = "申请用户名";
+
+/* Username marketplace: contested register sheet title */
+"Request “%@”" = "申请“%@”";
+
+/* Username marketplace: contested request not yet indexed by Platform */
+"Requested — waiting for the network vote" = "已申请——等待网络投票";
+
+/* Username marketplace: search row for a contested label this identity already requested */
+"Requested by you — the network vote is in progress" = "由你申请——网络投票进行中";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "正在重试转移…";
+
+/* Username marketplace: screen subtitle */
+"Search usernames, buy ones that are for sale, and sell or transfer your own." = "搜索用户名，购买正在出售的名称，出售或转移你自己的名称。";
 
 /* Usernames */
 "Ready around %@" = "约在 %@ 就绪";
@@ -3081,6 +3489,9 @@
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "助记词";
+
+/* Recovery phrase length */
+"Recovery phrase length" = "助记词长度";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "助记词不匹配";
@@ -3194,6 +3605,9 @@
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
+
+/* No comment provided by engineer. */
+"Completion unknown" = "完成情况未知";
 
 /* Location Service Status */
 "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "已恢复的钱包并不总能还原操作类型。此条目是根据链上备注数据重建的。";
@@ -3321,6 +3735,9 @@
 /* Identities: DPP security level of a public key */
 "Security level" = "安全级别";
 
+/* Username marketplace: transfer sheet body */
+"Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "免费将该名称发送给另一个身份。转移同时会撤下所有出售挂牌。此操作无法撤销——需由新持有者转回。";
+
 /* DashSpend */
 "See card details" = "See card details";
 
@@ -3368,7 +3785,520 @@
 /* Coinbase */
 "Select the coin" = "选择币种";
 
+/* Identities */
+"Select the username to display for this identity." = "选择要为该身份显示的用户名。";
+
 "Selecting fewer nodes reveals less about which masternodes you run." = "选择的节点越少，越不容易暴露您运行的是哪些主节点。";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "在本设备上找到 %ld 个钱包";
+
+/* No comment provided by engineer. */
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "本设备上存有来自先前安装的 %ld 个钱包。“删除全部”会移除每一个钱包。删除前请备份好每一份助记词。";
+
+/* No comment provided by engineer. */
+"Couldn’t Delete All Wallets" = "无法删除全部钱包";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Wallets" = "无法读取钱包";
+
+/* No comment provided by engineer. */
+"Delete All" = "删除全部";
+
+/* No comment provided by engineer. */
+"Delete All Wallets?" = "要删除全部钱包吗？";
+
+/* No comment provided by engineer. */
+"Deleting All Wallets…" = "正在删除全部钱包…";
+
+/* No comment provided by engineer. */
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "无法核实本设备上存储的钱包数量。继续操作需要 Dash 支持团队提供的确认短语，之后才会删除任何钱包。";
+
+/* No comment provided by engineer. */
+"Keep Wallets" = "保留钱包";
+
+/* No comment provided by engineer. */
+"No stored wallets were found. Nothing was deleted." = "未找到已存储的钱包。未删除任何内容。";
+
+/* No comment provided by engineer. */
+"No Wallets Found" = "未找到钱包";
+
+/* No comment provided by engineer. */
+"Not all wallets could be deleted. Please try again." = "未能删除全部钱包。请重试。";
+
+/* No comment provided by engineer. */
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "此操作会永久移除本应用在本设备上存储的所有钱包、私钥和助记词。它们只能从备份中恢复。此操作无法撤销。";
+
+/* No comment provided by engineer. */
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "无法核实本设备上存储的钱包。未删除任何内容。请重试。";
+
+/* No comment provided by engineer. */
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "此操作会抹除本设备上存储的全部 %ld 个钱包。它们只能凭助记词恢复。从本设备删除后无法撤销。";
+
+/* No comment provided by engineer. */
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "本设备上仍存有来自先前安装的钱包数据。是继续使用这些钱包，还是删除所有钱包数据重新开始？删除前请确认每一份助记词都已备份。";
+
+/* No comment provided by engineer. */
+"Wallets found on this device" = "在本设备上找到的钱包";
+
+/* No comment provided by engineer. */
+"Wipe All Wallets" = "抹除全部钱包";
+
+/* No comment provided by engineer. */
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "单个钱包的助记词无法授权删除多个不同的钱包。";
+
+/* No comment provided by engineer. */
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "测试网余额为零并不能证明该钱包在主网上也是空的。请输入助记词以继续。";
+
+/* No comment provided by engineer. */
+"Enter the recovery phrase to continue." = "请输入助记词以继续。";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "选择钱包";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Recovery Phrases" = "无法读取助记词";
+
+/* No comment provided by engineer. */
+"No Recovery Phrase Found" = "未找到助记词";
+
+/* No comment provided by engineer. */
+"No recovery phrase is stored on this device." = "本设备上未存储任何助记词。";
+
+/* No comment provided by engineer. */
+"Select the wallet whose recovery phrase you want to view." = "选择你想查看助记词的钱包。";
+
+/* No comment provided by engineer. */
+"The recovery phrases stored on this device could not be read. Please try again." = "无法读取本设备上存储的助记词。请重试。";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address for this network" = "这不是适用于该网络的有效 Dash 地址";
+
+/* No comment provided by engineer. */
+"The claimable balance is too small to cover the Platform withdrawal fee." = "可领取余额太少，不足以支付 Platform 提款手续费。";
+
+/* No comment provided by engineer. */
+"You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it." = "你最多可提取 %@ DASH——其余部分用于支付 Platform 手续费。点按“最大”即可使用该金额。";
+
+/* No comment provided by engineer. */
+"The minimum withdrawal is %@ DASH." = "最低提款金额为 %@ DASH。";
+
+/* No comment provided by engineer. */
+"Payout address key" = "付款地址密钥";
+
+/* No comment provided by engineer. */
+"Owner key (%@)" = "所有者密钥（%@）";
+
+/* No comment provided by engineer. */
+"Wallet is not ready. Try again in a moment." = "钱包尚未就绪。请稍后重试。";
+
+/* No comment provided by engineer. */
+"%@ · Claimable %@ DASH" = "%@ · 可领取 %@ DASH";
+
+/* No comment provided by engineer. */
+"Withdraw to" = "提款至";
+
+/* No comment provided by engineer. */
+"Enter a Dash address" = "输入 Dash 地址";
+
+/* No comment provided by engineer. */
+"Use the payout address" = "使用付款地址";
+
+/* No comment provided by engineer. */
+"This is the evonode's registered payout address." = "这是该 evonode 已登记的付款地址。";
+
+/* No comment provided by engineer. */
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "该钱包持有此 evonode 的付款地址密钥，因此余额可以提取到任意 Dash 地址。";
+
+/* No comment provided by engineer. */
+"Registered payout address" = "已登记的付款地址";
+
+/* No comment provided by engineer. */
+"This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "此次提款使用该 evonode 的所有者密钥签名。Dash Platform 只允许所有者密钥提款至已登记的付款地址，因此这里无法更改收款地址。若要提取到其他地址，请使用持有付款地址密钥的钱包。";
+
+/* No comment provided by engineer. */
+"How it works" = "运作方式";
+
+/* No comment provided by engineer. */
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "Dash Platform 会在 Dash 链上支付这笔提款——通常在几分钟内完成。除提款金额外，还会从该 evonode 的余额中扣除约 %@ DASH 的 Platform 手续费，因此“最大”会留出一点用于支付该费用。";
+
+/* No comment provided by engineer. */
+"Confirm withdrawal" = "确认提款";
+
+/* No comment provided by engineer. */
+"Owner-key withdrawals are always paid to the registered payout address." = "使用所有者密钥的提款始终支付到已登记的付款地址。";
+
+/* No comment provided by engineer. */
+"Waiting for authorization…" = "正在等待授权…";
+
+/* No comment provided by engineer. */
+"Submitting to Dash Platform…" = "正在提交至 Dash Platform…";
+
+/* No comment provided by engineer. */
+"Withdrawal submitted" = "提款已提交";
+
+/* No comment provided by engineer. */
+"Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "Dash Platform 稍后会在 Dash 链上支付——通常在几分钟内到账。";
+
+/* No comment provided by engineer. */
+"Remaining claimable balance: %@ DASH" = "剩余可领取余额：%@ DASH";
+
+/* No comment provided by engineer. */
+"%@ · Platform balance" = "%@ · Platform 余额";
+
+/* No comment provided by engineer. */
+"Signed with" = "签名密钥";
+
+/* No comment provided by engineer. */
+"Platform fee" = "Platform 手续费";
+
+/* No comment provided by engineer. */
+"%@ (payout address)" = "%@（付款地址）";
+
+/* No comment provided by engineer. */
+"This wallet holds the payout address key, so you can withdraw to any address." = "该钱包持有付款地址密钥，因此你可以提取到任意地址。";
+
+/* No comment provided by engineer. */
+"This wallet holds the owner key, so withdrawals go to the registered payout address." = "该钱包持有所有者密钥，因此提款会发送至已登记的付款地址。";
+
+/* No comment provided by engineer. */
+"This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "该钱包既不持有此 evonode 的所有者密钥，也不持有其付款地址密钥，因此无法从这里提取其余额。";
+
+/* No comment provided by engineer. */
+"Couldn't check which keys of this evonode are in the wallet." = "无法确认此 evonode 的哪些密钥在钱包中。";
+
+/* No comment provided by engineer. */
+"Result not confirmed" = "结果未确认";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "提款已发送至 Dash Platform，但无法确认结果。它可能已经成功。请勿重复提交——请先查看可领取余额和付款地址。";
+
+/* No comment provided by engineer. */
+"1 block proposed this epoch" = "本纪元提议了 1 个区块";
+
+/* No comment provided by engineer. */
+"%@ blocks proposed this epoch" = "本纪元提议了 %@ 个区块";
+
+/* No comment provided by engineer. */
+"Nodes" = "节点";
+
+/* No comment provided by engineer. */
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "节点，纪元第 %d 天，本纪元提议了 %@ 个区块";
+
+/* No comment provided by engineer. */
+"an evonode has not proposed a block in 2 days" = "某个 evonode 已有 2 天未提议区块";
+
+/* No comment provided by engineer. */
+"an evonode has no blocks this epoch" = "某个 evonode 本纪元没有区块";
+
+/* No comment provided by engineer. */
+"A key doesn't match this masternode — fix or clear it to continue." = "有密钥与该主节点不匹配——请更正或清除后继续。";
+
+/* No comment provided by engineer. */
+"Add keys" = "添加密钥";
+
+/* No comment provided by engineer. */
+"Add masternode" = "添加主节点";
+
+/* No comment provided by engineer. */
+"Add this node's owner key or payout address key to withdraw from here." = "添加该节点的所有者密钥或付款地址密钥，即可从这里提款。";
+
+/* No comment provided by engineer. */
+"Already one of this wallet's masternodes — it's in the list above." = "已是该钱包的主节点之一——它就在上方列表中。";
+
+/* No comment provided by engineer. */
+"Already tracked." = "已在追踪。";
+
+/* No comment provided by engineer. */
+"Any keys you added for it are deleted from this device's keychain too." = "你为它添加的所有密钥也会从本设备的钥匙串中删除。";
+
+/* No comment provided by engineer. */
+"Available" = "可用";
+
+/* No comment provided by engineer. */
+"BLS private key (hex)" = "BLS 私钥（十六进制）";
+
+/* No comment provided by engineer. */
+"Can't verify yet" = "暂时无法验证";
+
+/* No comment provided by engineer. */
+"Could not load the node's registration details — owner and payout keys will verify later." = "无法加载该节点的登记信息——所有者密钥和付款密钥稍后再验证。";
+
+/* No comment provided by engineer. */
+"Could not save a key to the keychain. Nothing was lost — try again." = "无法将密钥保存到钥匙串。没有丢失任何内容——请重试。";
+
+/* No comment provided by engineer. */
+"Destination address (optional)" = "目标地址（可选）";
+
+/* No comment provided by engineer. */
+"Doesn't match" = "不匹配";
+
+/* No comment provided by engineer. */
+"Find" = "查找";
+
+/* No comment provided by engineer. */
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "查找不在主节点列表中的所有者密钥和付款密钥。会将密钥的公开指纹发送给一个 Platform 节点。";
+
+/* No comment provided by engineer. */
+"IP address, proTxHash or private key" = "IP 地址、proTxHash 或私钥";
+
+/* No comment provided by engineer. */
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "密钥存储在本设备的钥匙串中，除了为你请求的操作签名外，绝不会离开设备。";
+
+/* No comment provided by engineer. */
+"Keys on this device" = "本设备上的密钥";
+
+/* No comment provided by engineer. */
+"Label (optional)" = "标签（可选）";
+
+/* No comment provided by engineer. */
+"Loading registration details…" = "正在加载登记信息…";
+
+/* No comment provided by engineer. */
+"Matches" = "匹配";
+
+/* No comment provided by engineer. */
+"Matches this node's %@ key" = "与该节点的 %@ 密钥匹配";
+
+/* No comment provided by engineer. */
+"No masternode on the list matches that." = "列表中没有与之匹配的主节点。";
+
+/* No comment provided by engineer. */
+"Node key (base64 or hex)" = "节点密钥（base64 或十六进制）";
+
+/* No comment provided by engineer. */
+"Not added" = "未添加";
+
+/* No comment provided by engineer. */
+"On this device" = "本设备上";
+
+/* No comment provided by engineer. */
+"Operator payout" = "运营者付款";
+
+/* No comment provided by engineer. */
+"Payout" = "付款";
+
+/* No comment provided by engineer. */
+"Platform could not be reached, so owner and payout keys were not checked." = "无法连接 Platform，因此未检查所有者密钥和付款密钥。";
+
+/* No comment provided by engineer. */
+"PoSe banned" = "因 PoSe 被封禁";
+
+/* No comment provided by engineer. */
+"Private key (WIF or hex)" = "私钥（WIF 或十六进制）";
+
+/* No comment provided by engineer. */
+"Refresh details" = "刷新详情";
+
+/* No comment provided by engineer. */
+"Refreshing…" = "正在刷新…";
+
+/* No comment provided by engineer. */
+"Save keys" = "保存密钥";
+
+/* No comment provided by engineer. */
+"Search Platform too" = "同时搜索 Platform";
+
+/* No comment provided by engineer. */
+"Searching…" = "正在搜索…";
+
+/* No comment provided by engineer. */
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "使用所有者密钥签名——提款将发送至已登记的付款地址。";
+
+/* No comment provided by engineer. */
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "使用付款地址密钥签名。将目标地址留空即可提取到付款地址。";
+
+/* No comment provided by engineer. */
+"Stop tracking" = "停止追踪";
+
+/* No comment provided by engineer. */
+"Stop tracking this masternode?" = "要停止追踪该主节点吗？";
+
+/* No comment provided by engineer. */
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "那也可能是所有者密钥或付款密钥——请打开“同时搜索 Platform”进行检查。";
+
+/* No comment provided by engineer. */
+"The signing key is missing from the keychain — re-add it and try again." = "钥匙串中缺少签名密钥——请重新添加后再试。";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "提款已发送，但无法确认结果。正在重新核对余额——在结果确定前请勿重试。";
+
+/* No comment provided by engineer. */
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "你可以追踪网络上的任何主节点或 evonode——它不必属于该钱包。";
+
+/* No comment provided by engineer. */
+"Track this masternode" = "追踪该主节点";
+
+/* No comment provided by engineer. */
+"Tracked" = "追踪中";
+
+/* No comment provided by engineer. */
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "已在追踪。请在下方添加该节点的密钥以启用提款、投票等操作，或现在结束、稍后再添加。";
+
+/* No comment provided by engineer. */
+"Withdrawing…" = "正在提款…";
+
+/* No comment provided by engineer. */
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "你也可以通过“+”按钮，用 IP、proTxHash 或它的某个密钥追踪网络上的任何主节点。";
+
+/* No comment provided by engineer. */
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "未知该 evonode 的 DAPI 地址，因此无法向它询问状态。";
+
+/* No comment provided by engineer. */
+"Couldn't get the evonode's status." = "无法获取该 evonode 的状态。";
+
+/* No comment provided by engineer. */
+"The evonode didn't answer in time." = "该 evonode 未能及时回应。";
+
+/* No comment provided by engineer. */
+"Couldn't reach the evonode." = "无法连接该 evonode。";
+
+/* No comment provided by engineer. */
+"The evonode's answer couldn't be read." = "无法读取该 evonode 的回应。";
+
+/* No comment provided by engineer. */
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "节点自报的未经验证的信息——是它对自己的说法，而非网络已达成一致的结果。";
+
+/* No comment provided by engineer. */
+"Asked" = "询问时间";
+
+/* No comment provided by engineer. */
+"Software" = "软件";
+
+/* No comment provided by engineer. */
+"DAPI" = "DAPI";
+
+/* No comment provided by engineer. */
+"Drive" = "Drive";
+
+/* No comment provided by engineer. */
+"Tenderdash" = "Tenderdash";
+
+/* No comment provided by engineer. */
+"Protocol versions" = "协议版本";
+
+/* No comment provided by engineer. */
+"Tenderdash P2P" = "Tenderdash P2P";
+
+/* No comment provided by engineer. */
+"Tenderdash block" = "Tenderdash 区块";
+
+/* No comment provided by engineer. */
+"Drive current" = "Drive 当前";
+
+/* No comment provided by engineer. */
+"Drive latest" = "Drive 最新";
+
+/* No comment provided by engineer. */
+"Drive next epoch" = "Drive 下一纪元";
+
+/* No comment provided by engineer. */
+"Node ID" = "节点 ID";
+
+/* No comment provided by engineer. */
+"Identity check" = "身份校验";
+
+/* No comment provided by engineer. */
+"Chain" = "链";
+
+/* No comment provided by engineer. */
+"Catching up" = "追赶中";
+
+/* No comment provided by engineer. */
+"Latest block height" = "最新区块高度";
+
+/* No comment provided by engineer. */
+"Earliest block height" = "最早区块高度";
+
+/* No comment provided by engineer. */
+"Max peer block height" = "对等节点最大区块高度";
+
+/* No comment provided by engineer. */
+"Core chain-locked height" = "Core 链锁定高度";
+
+/* No comment provided by engineer. */
+"Latest block hash" = "最新区块哈希";
+
+/* No comment provided by engineer. */
+"Latest app hash" = "最新应用哈希";
+
+/* No comment provided by engineer. */
+"Earliest block hash" = "最早区块哈希";
+
+/* No comment provided by engineer. */
+"Earliest app hash" = "最早应用哈希";
+
+/* No comment provided by engineer. */
+"Chain ID" = "链 ID";
+
+/* No comment provided by engineer. */
+"Peers" = "对等节点";
+
+/* No comment provided by engineer. */
+"Listening" = "正在监听";
+
+/* No comment provided by engineer. */
+"State sync" = "状态同步";
+
+/* No comment provided by engineer. */
+"Total synced time" = "累计同步时间";
+
+/* No comment provided by engineer. */
+"Remaining time" = "剩余时间";
+
+/* No comment provided by engineer. */
+"Total snapshots" = "快照总数";
+
+/* No comment provided by engineer. */
+"Chunk process avg time" = "分块处理平均耗时";
+
+/* No comment provided by engineer. */
+"Snapshot height" = "快照高度";
+
+/* No comment provided by engineer. */
+"Snapshot chunks" = "快照分块";
+
+/* No comment provided by engineer. */
+"Backfilled blocks" = "已回补区块";
+
+/* No comment provided by engineer. */
+"Backfill blocks total" = "待回补区块总数";
+
+/* No comment provided by engineer. */
+"Time" = "时间";
+
+/* No comment provided by engineer. */
+"Node clock" = "节点时钟";
+
+/* No comment provided by engineer. */
+"Latest block" = "最新区块";
+
+/* No comment provided by engineer. */
+"Genesis" = "创世";
+
+/* No comment provided by engineer. */
+"Epoch" = "纪元";
+
+/* No comment provided by engineer. */
+"Matches this evonode" = "与该 evonode 一致";
+
+/* No comment provided by engineer. */
+"Differs from this evonode" = "与该 evonode 不一致";
+
+/* No comment provided by engineer. */
+"Not reported" = "未报告";
+
+/* No comment provided by engineer. */
+"%.3f s" = "%.3f 秒";
+
+/* No comment provided by engineer. */
+"Node status" = "节点状态";
+
+/* No comment provided by engineer. */
+"Asking the evonode…" = "正在询问该 evonode…";
+
+/* No comment provided by engineer. */
+"Request status" = "查询状态";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "自助结账";
@@ -3442,6 +4372,42 @@
 
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "发送您的第一个联系人请求";
+
+/* Username marketplace: set price sheet title */
+"Set a price for “%@”" = "为“%@”设定价格";
+
+/* Username marketplace */
+"Short names are decided by a network vote — use Request Username instead." = "短名称由网络投票决定——请改用“申请用户名”。";
+
+/* Username marketplace: contested request explainer, paragraph 1 */
+"Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them." = "短名称（19 个字符及以下，仅限字母和数字）不会立即注册。由 Dash 网络投票决定归属。";
+
+/* DashPay Contacts: expands the network search into the full add-contact flow */
+"Show more results" = "显示更多结果";
+
+/* Username marketplace: departed-name line — buyer identity */
+"Sold to %@" = "已售予 %@";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 1 of 2 — moving Dash out of your Shielded balance…" = "第 1 步（共 2 步）——正在从你的 Shielded 余额转出 Dash…";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 2 of 2 — topping up your identity…" = "第 2 步（共 2 步）——正在为你的身份充值…";
+
+/* Username marketplace: contested request cost footnote */
+"The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "该费用从你的身份余额支付，用于资助网络投票；若其他竞争者获胜，费用不予退还。";
+
+/* Username marketplace: register sheet body */
+"The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "该名称将直接注册到你的身份上。注册是一笔网络交易，从你的身份余额支付。";
+
+/* Username marketplace: contested label locked by a past vote */
+"The network voted to lock this name, so nobody can register it. Choose a different name." = "网络已投票锁定该名称，因此任何人都无法注册。请另选一个名称。";
+
+/* Username marketplace */
+"The recipient identity couldn't be resolved." = "无法解析收款方身份。";
+
+/* Username marketplace */
+"The seller changed the price before your purchase was accepted. Review the new price and try again." = "在你的购买被接受之前，卖家更改了价格。请查看新价格后重试。";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "正在发送";
@@ -3963,6 +4929,66 @@
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "这会为您的身份添加两个密钥，让其他用户能够向您发送联系人请求，也让您能够接受他们的请求。此操作只需进行一次。";
 
+/* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
+"This isn't a DashPay user QR code." = "这不是 DashPay 用户二维码。";
+
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "该余额用于支付 Dash Platform 的网络手续费——用户名、联系人请求、资料更新。它属于你的身份，而非你的钱包：与透明余额、Platform 余额和 Shielded 余额不同，它不能作为普通 Dash 花费。充值会把你所选余额（默认为 Shielded）中的 Dash 转换为身份积分。";
+
+/* Username marketplace: contested label already has an active vote */
+"This name is already in an active network vote. Your request joins it as another contender." = "该名称已处于进行中的网络投票。你的申请将作为另一名竞争者加入。";
+
+/* Username marketplace */
+"This name is in an active network vote and can't be traded until the contest ends." = "该名称正处于网络投票中，在竞争结束前无法交易。";
+
+/* Username marketplace: detail for an unregistered name */
+"This name is not registered." = "该名称尚未注册。";
+
+/* Username marketplace: seller-clarity callout on the detail sheet */
+"This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "该名称由 Dash 网络上的独立用户出售，并非由 Dash 或本应用出售。价格由卖家设定。";
+
+/* Username marketplace: listing price exceeds the representable maximum */
+"This price is too high to list." = "该价格过高，无法挂牌。";
+
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "无法从此处重试该转移。";
+
+/* Username marketplace */
+"This username is not for sale." = "该用户名不出售。";
+
+/* Username marketplace */
+"This username's record couldn't be read from the network." = "无法从网络读取该用户名的记录。";
+
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "该钱包没有可充值的身份。";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "充值";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "为身份余额充值";
+
+/* Username marketplace: timeline card title */
+"Trade history" = "交易历史";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "转移已完成";
+
+/* Username marketplace */
+"Transfer to Another Identity" = "转移到另一个身份";
+
+/* Username marketplace: transfer sheet title */
+"Transfer “%@”" = "转移“%@”";
+
+/* Username marketplace: history — transfer with both identities */
+"Transferred from %1$@ to %2$@" = "由 %1$@ 转移至 %2$@";
+
+/* Username marketplace: departed-name line — recipient identity */
+"Transferred to %@" = "已转移至 %@";
+
+/* Username marketplace */
+"Username Marketplace" = "用户名市场";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
@@ -4012,6 +5038,60 @@
 
 /* Usernames */
 "This name requires voting. Your Dash will be locked until voting completes." = "This name requires voting. Your Dash will be locked until voting completes.";
+
+/* Usernames */
+"Vote in progress" = "投票进行中";
+
+/* Usernames */
+"Vote ended" = "投票已结束";
+
+/* Usernames */
+"A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender." = "该名称已在主节点投票中。提交申请即可作为竞争者加入投票。";
+
+/* Usernames */
+"A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender." = "该名称已在主节点投票中——投票将于 %@ 前后结束。提交申请即可作为竞争者加入投票。";
+
+/* Usernames */
+"A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote." = "该名称正在主节点投票中——投票将于 %@ 前后结束。新的竞争者已无法加入本次投票。";
+
+/* Usernames */
+"Username is in a network vote — new contenders can no longer join" = "该用户名正处于网络投票中——新的竞争者已无法加入";
+
+/* Usernames */
+"The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "该用户名的持有者已在用户名市场以 %@ Dash 挂牌。你可以改在那里购买。";
+
+/* Usernames */
+"The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance." = "该用户名的持有者已以 %@ Dash 挂牌。你现在就可以购买——价格从你的钱包余额支付。";
+
+/* Usernames */
+"The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "该用户名的持有者已以 %1$@ Dash 挂牌。超过 %2$@ Dash 的购买必须在用户名市场完成——请先选择其他用户名；是否购买这个名称可以稍后再决定。";
+
+/* Usernames */
+"Buy for %@ Dash" = "以 %@ Dash 购买";
+
+/* Usernames */
+"Buy username" = "购买用户名";
+
+/* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "无法注册你的临时用户名“%@”。你可以稍后注册其他用户名。";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "“%1$@”现在是你的用户名。若投票将“%2$@”判给你，两个用户名都可以联系到你。";
+
+/* Usernames */
+"“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "将以 %2$@ Dash 购买“%1$@”。价格从你的钱包余额支付。";
+
+/* Usernames */
+"Username purchased" = "用户名已购买";
+
+/* Usernames */
+"“%@” is now your username." = "“%@”现在是你的用户名。";
+
+/* Usernames */
+"The masternode vote for this name has ended and the result is being finalized. Check back soon." = "该名称的主节点投票已结束，正在确定结果。请稍后再查看。";
+
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes." = "该名称已在投票中——你的申请将作为竞争者加入。在投票完成前，你的 Dash 会被锁定。";
 
 /* No comment provided by engineer. */
 "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone." = "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.";
@@ -4254,6 +5334,12 @@
 /* Voting */
 "Unblocked '%@' username" = "解禁了 '%@' 用户名";
 
+/* SPV diagnostics */
+"Unconfirmed now" = "当前未确认";
+
+/* SPV diagnostics */
+"Unconfirmed Transactions" = "未确认交易";
+
 /* DashPay Contacts */
 "Unhide Contact" = "Unhide Contact";
 
@@ -4367,6 +5453,9 @@
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "用户名，而非地址";
 
+/* DashPay: banner identity row subtitle */
+"View profile" = "查看资料";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "与 %@ 匹配且当前不在您联系人中的用户";
 
@@ -4397,11 +5486,17 @@
 /* No comment provided by engineer. */
 "Verified Successfully" = "验证成功";
 
+/* DashPay Contacts: spinner after scanning a user QR code */
+"Verifying user…" = "正在验证用户…";
+
 /* No comment provided by engineer. */
 "Verify" = "验证";
 
 /* CrowdNode */
 "Verify your API Dash address" = "验证您的API Dash地址";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "验证你的助记词以设置新的 PIN 码。";
 
 /* Usernames */
 "Verify your identity" = "验证您的身份";
@@ -4616,6 +5711,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "联系人请求何时会变为私密？";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "投票进行期间，“%@”尚不属于你，其他用户也无法通过它找到你。添加一个无争议的用户名即可立即使用 DashPay。该名称将永久归你所有——若投票把有争议的名称判给你，两个用户名都可以联系到你。";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "在哪里消费";
 
@@ -4626,6 +5724,18 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "为什么我需要启用它？";
+
+/* Username marketplace: history participant is the current user */
+"you" = "你";
+
+/* Username marketplace: contested request already submitted by this identity */
+"You already requested this name — the network vote is in progress. You'll find it under My Names." = "你已申请过该名称——网络投票进行中。可在“我的名称”中查看。";
+
+/* Username marketplace: purchase confirmation body with seller clarity */
+"You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "你是在向一位独立用户购买，而非向 Dash 或本应用购买。价格加上少量网络手续费将从你的身份余额支付，该名称会立即转入你的身份。";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "投票进行期间你没有用户名。请立即注册一个无争议的用户名——它将一直归你所有；若投票把“%@”判给你，两个用户名都可以联系到你。";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "为什么我看到所有这些交易?";
@@ -4681,6 +5791,9 @@
 
 /* Wallets */
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
+
+/* Wallets */
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "请按顺序抄下这 %d 个词并妥善保管。它们是恢复此钱包的唯一途径。任何掌握它们的人都能花费你的资金。";
 
 /* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
@@ -4932,6 +6045,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "井然有序的记录";
 
+/* Username marketplace */
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "你的身份余额不足以完成此次购买：需要 %1$@ DASH（含手续费预留），可用 %2$@ DASH。请为身份余额充值后重试。";
+
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "您的身份需要两个额外的密钥，才能在您与其他用户之间加密联系人请求。启用时会通过一笔网络交易添加它们。此操作只需进行一次。";
 
@@ -4956,8 +6072,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "您的已混币资金已转入 Dash 钱包余额。";
 
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "我们无法通过 CTX 确认此次购买。若付款已完成，礼品卡稍后会出现在你的交易列表中——请先在那里查看，再决定是否重新购买。";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "你的付款已发送，但网络尚未确认。确认后礼品卡就会出现。";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "您的已混币资金已转入屏蔽余额。为获得最佳隐私效果，请至少等待 2 小时后再使用这些资金。";
+
+/* DashSpend */
+"Could not load your gift card" = "无法加载你的礼品卡";
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
@@ -4973,6 +6098,9 @@
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "您的私密余额。金额和地址在链上均已加密，因此您的持有量和记录都保持机密。";
+
+/* Username marketplace: contested request explainer, paragraph 2 */
+"Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "你的申请将进入主节点公开投票，为期约两周。其他人也可以申请同一名称；投票结束后，该名称归获胜者所有——若网络投票锁定，则归属于无人。";
 
 /* Usernames */
 "Your request was cancelled" = "您的申请已被取消";
