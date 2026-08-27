@@ -859,7 +859,7 @@
 "Couldn't complete the transfer" = "Не удалось завершить перевод";
 
 /* Identity top-up sheet — free amount chip */
-"Custom" = "Своя сумма";
+"Custom" = "Другая";
 
 /* No comment provided by engineer. */
 "Contact Requests" = "Запросы на добавление в контакты";
@@ -4160,7 +4160,7 @@
 "The node's own report, unverified — what it says about itself, not what the network has agreed on." = "Собственный непроверенный отчёт ноды — то, что она сообщает о себе, а не то, о чём договорилась сеть.";
 
 /* No comment provided by engineer. */
-"Asked" = "Запрошено";
+"Asked" = "Адрес запроса";
 
 /* No comment provided by engineer. */
 "Software" = "Программное обеспечение";
