@@ -9,6 +9,9 @@
 /* CrowdNode */
 " Terms of Use " = "Termos de uso";
 
+/* Username marketplace: listing success — name, then price */
+"%1$@ listed for %2$@ DASH" = "%1$@ anunciado por %2$@ DASH";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -20,6 +23,12 @@
 
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "Não foi possível encontrar %@ na rede Dash para enviar uma solicitação de contato.";
+
+/* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
+"%@ couldn't be verified on the Dash network. The QR code may be outdated." = "Não foi possível verificar %@ na rede Dash. O código QR pode estar desatualizado.";
+
+/* Username marketplace: contested request cost value — the vote-resolution fund amount */
+"%@ DASH + network fee" = "%@ DASH + taxa de rede";
 
 /* Usernames */
 "%@ Dash available" = "%@ Dash disponíveis";
@@ -42,6 +51,9 @@
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@ lhe enviou uma solicitação de contato";
 
+/* Username marketplace: delist success */
+"%@ is no longer for sale" = "%@ não está mais à venda";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ não tem permissão para acessar o Face ID. Permita o acesso ao Face ID nas Configurações.";
 
@@ -51,8 +63,17 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ não tem permissão para acessar o Touch ID. Permita o acesso ao Touch ID nas Configurações.";
 
+/* Username marketplace: purchase success */
+"%@ is now yours" = "%@ agora é seu";
+
+/* Username marketplace: registration success */
+"%@ registered" = "%@ registrado";
+
 /* Testnet faucet */
 "%@ tDash requested — it will arrive shortly" = "%@ tDash requested — it will arrive shortly";
+
+/* Username marketplace: transfer success */
+"%@ transferred" = "%@ transferido";
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
@@ -171,6 +192,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Já há uma votação em andamento para este nome — sua solicitação entrará nela como concorrente. A taxa de disputa é gasta ao enviar e não é devolvida, mesmo que você não ganhe o nome.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -182,6 +206,9 @@
 
 /* No comment provided by engineer. */
 "About me" = "Sobre mim";
+
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "Sobre o saldo da conta de identidade";
 
 "Abstain" = "Abster-se";
 
@@ -235,6 +262,9 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "Adicione um Novo Contato";
 
+/* Usernames */
+"Add a temporary username" = "Adicionar um nome de usuário temporário";
+
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
 
@@ -259,6 +289,9 @@
 /* Maya
    SwapKit */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+
+/* No comment provided by engineer. */
+"Advanced" = "Avançado";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Segurança Avançada";
@@ -315,6 +348,9 @@
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Quantidade em Dash";
 
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "Valor em DASH";
+
 /* No comment provided by engineer. */
 "Amount received" = "Quantidade recebida";
 
@@ -350,6 +386,9 @@
 
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Qualquer pessoa que saiba um endereço pode ver seu histórico";
+
+/* Username marketplace: set price sheet body */
+"Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance." = "Qualquer pessoa poderá comprar o nome exatamente por este preço. O valor recebido chega como créditos no seu saldo de identidade.";
 
 /* AboutDash */
 "App version" = "App version";
@@ -430,8 +469,17 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "Auto-esconder Saldo";
 
+/* DashPay */
+"Available after sync finishes" = "Disponível quando a sincronização terminar";
+
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
+
+/* Username marketplace: unregistered name row */
+"Available — register it on your identity" = "Disponível — registre-o na sua identidade";
+
+/* Username marketplace: unregistered contested-eligible name row */
+"Available — short names are decided by a network vote" = "Disponível — nomes curtos são decididos por uma votação da rede";
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
@@ -525,6 +573,9 @@
 /* Voting */
 "Blocked '%@' username" = "Usuário '%@' bloqueado";
 
+/* Username marketplace: history — purchase with buyer, seller, price */
+"Bought by %1$@ from %2$@ for %3$@ DASH" = "Comprado por %1$@ de %2$@ por %3$@ DASH";
+
 /* Identities: this key only signs for one data contract */
 "Bound to contract" = "Vinculada a um contrato";
 
@@ -573,6 +624,9 @@
 /* Swap */
 "Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
 
+/* Username marketplace: purchase button */
+"Buy for %@ DASH" = "Comprar por %@ DASH";
+
 /* DashSpend */
 "Buy gift card" = "Comprar cartão-presente";
 
@@ -581,6 +635,12 @@
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash for the exact amount of your purchase." = "Compre cartões presente com seu Dash pelo valor exato de sua compra.";
+
+/* Username marketplace: purchase confirmation title */
+"Buy “%@”?" = "Comprar “%@”?";
+
+/* Username marketplace: Explore row subtitle */
+"Buy, sell and transfer DashPay usernames" = "Compre, venda e transfira nomes de usuário do DashPay";
 
 /* Buy/Sell */
 "Buy/Sell" = "Comprar/Vender";
@@ -631,6 +691,9 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "Mudar PIN";
+
+/* Username marketplace */
+"Change Price" = "Alterar preço";
 
 /* TimeSkew */
 "Check date & time settings" = "Verifique as configurações de data e hora";
@@ -713,6 +776,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "Em breve";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "Concluir transferência";
+
 /* Shielded transfer status */
 "Completed" = "Concluída";
 
@@ -782,6 +848,18 @@
 
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "Solicitação de contato enviada para %@";
+
+/* Usernames */
+"Continue without a temporary username" = "Continuar sem um nome de usuário temporário";
+
+/* Identity top-up sheet — body */
+"Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Converta Dash em créditos de identidade para pagar ações da Platform, como solicitações de contato e atualizações de perfil.";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "Não foi possível concluir a transferência";
+
+/* Identity top-up sheet — free amount chip */
+"Custom" = "Personalizado";
 
 /* No comment provided by engineer. */
 "Contact Requests" = "Solicitações de contato";
@@ -1042,6 +1120,27 @@
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "DashPay ativado";
 
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "Digite pelo menos %@ DASH";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "Taxas estimadas";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "As taxas são descontadas do valor; a partir do Shielded, um pequeno resto pode permanecer no seu saldo da Platform.";
+
+/* Username marketplace: search segment */
+"Find Names" = "Encontrar nomes";
+
+/* Username marketplace: listed badge */
+"For sale" = "À venda";
+
+/* Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app */
+"For sale by an independent user" = "À venda por um usuário independente";
+
+/* Identity top-up sheet — linkability warning for transparent-side sources */
+"Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Financiar a partir de um saldo transparente vincula publicamente essas moedas à sua identidade na cadeia Dash. Por privacidade, pague pelo seu saldo Shielded.";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "Convite DashPay";
 
@@ -1062,6 +1161,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "Data";
+
+/* History group header for restored shielded operations whose original date is not recoverable */
+"Date unknown" = "Data desconhecida";
 
 /* Voting */
 "Date: New to old" = "Data: Da mais recente para a mais antiga";
@@ -1085,6 +1187,9 @@
 
 /* No comment provided by engineer. */
 "Delete Wallet?" = "Delete Wallet?";
+
+/* SPV diagnostics */
+"Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network." = "Exclui as transações não confirmadas desta carteira somente deste dispositivo e libera as moedas que elas tentavam gastar. A reverificação de filtros restaura as que realmente estão na blockchain. Nada é enviado à rede.";
 
 /* Location Service Status */
 "Denied" = "Negado";
@@ -1116,6 +1221,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "SEGURANÇA DO DISPOSITIVO COMPROMETIDA\nQualquer aplicativo \"jailbreak\" consegue acessar os dados de outros aplicativos (e roubar seus Dash).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu." = "SEGURANÇA DO DISPOSITIVO COMPROMETIDA\nQualquer app de 'jailbreak' pode acessar os dados do chaveiro de qualquer outro app (e roubar seus Dash). Mova seus fundos para uma carteira em um dispositivo seguro e depois redefina esta carteira usando “Redefinir carteira” no menu Segurança.";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "SEGURANÇA DO DISPOSITIVO COMPROMETIDA\nQualquer aplicativo \"jailbreak\" consegue acessar os dados de outros aplicativos (e roubar seus Dash). Limpe essa carteira imediatamente e restaure em um dispositivo seguro.";
@@ -1169,6 +1277,27 @@
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
 "DPNS Names" = "DPNS Names";
+
+/* SPV diagnostics */
+"Drop & rescan" = "Descartar e reverificar";
+
+/* SPV diagnostics */
+"Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network." = "Descarta deste dispositivo as transações desta carteira que ainda aguardam a rede (nunca travadas nem mineradas), torna novamente disponíveis as moedas que elas tentavam gastar e reverifica os filtros recentes. Uma transação descartada que realmente está na blockchain volta sozinha durante a reverificação. Nada é enviado à rede.";
+
+/* SPV diagnostics */
+"Drop Unconfirmed & Rescan" = "Descartar não confirmadas e reverificar";
+
+/* SPV diagnostics */
+"Drop unconfirmed transactions?" = "Descartar as transações não confirmadas?";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row." = "%d transação(ões) não confirmada(s) descartada(s) — reverificando filtros, observe a linha Filtros.";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above." = "%d transação(ões) não confirmada(s) descartada(s), mas a reverificação de filtros não pôde iniciar — execute “Reverificar filtros” acima.";
+
+/* SPV diagnostics */
+"Dropping…" = "Descartando…";
 
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Devido aos termos de serviço do CrowdNode, os usuários não podem retirar mais do que:";
@@ -1280,6 +1409,9 @@
 
 /* No comment provided by engineer. */
 "Enter your recovery phrase to reset your PIN" = "Enter your recovery phrase to reset your PIN";
+
+/* No comment provided by engineer. */
+"Enter your recovery phrase to set a new PIN" = "Digite sua frase de recuperação para definir um novo PIN";
 
 /* Voting */
 "Enter your voting key" = "Digite sua chave de votação";
@@ -1665,6 +1797,42 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "Como isso se compara às contas Ethereum em termos de privacidade?";
 
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "Saldo da conta de identidade";
+
+/* Username marketplace: section of contested-name requests awaiting the masternode vote */
+"In network vote" = "Em votação da rede";
+
+/* Username marketplace: search row for a contested label with an active vote by others */
+"In a network vote — you can join as a contender" = "Em uma votação da rede — você pode entrar como concorrente";
+
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "Enquanto isso, você pode ser encontrado em “%1$@”, que continua sendo seu. Se a votação lhe conceder “%2$@”, você poderá ser encontrado pelos dois nomes de usuário.";
+
+/* Username marketplace: search row for a label a past vote locked */
+"Locked by a network vote — nobody can register it" = "Bloqueado por uma votação da rede — ninguém pode registrá-lo";
+
+/* Username marketplace: latest ownership change */
+"Last transferred" = "Última transferência";
+
+/* Username marketplace: confirm listing button */
+"List For Sale" = "Colocar à venda";
+
+/* Username marketplace: own listed name */
+"Listed by you" = "Anunciado por você";
+
+/* Username marketplace: history — price set */
+"Listed for %@ DASH" = "Anunciado por %@ DASH";
+
+/* Username marketplace: set price fee note */
+"Listing is a network transaction with a small fee, paid from your identity balance." = "Anunciar é uma transação de rede com uma pequena taxa, paga pelo seu saldo de identidade.";
+
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "Minha identidade";
+
+/* Username marketplace: owned names segment */
+"My Names" = "Meus nomes";
+
 /* DashPay FAQ */
 "How private is DashPay?" = "Quão privado é o DashPay?";
 
@@ -2027,6 +2195,9 @@
 /* CrowdNode */
 "Leaving the pool" = "Saindo do \"pool\"";
 
+/* DashPay Contacts: caption under the user's own QR code */
+"Let another Dash Wallet user scan this code to add you as a contact." = "Deixe outro usuário do Dash Wallet escanear este código para adicionar você como contato.";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Me avise quando estiver pronto";
 
@@ -2099,6 +2270,51 @@
 "Lock" = "Bloquear";
 
 "Lock the name" = "Bloquear o nome";
+
+/* Username marketplace: contest voting deadline row */
+"Vote ends" = "A votação termina";
+
+/* Username marketplace: until when other identities can join the contest */
+"New contenders" = "Novos concorrentes";
+
+/* Username marketplace: join deadline still open — value of the New contenders row */
+"can join until %@" = "podem entrar até %@";
+
+/* Username marketplace: the contest's join window has passed — value of the New contenders row */
+"joining closed" = "entrada encerrada";
+
+/* Username marketplace: masternode vote tally for one contest row */
+"%d votes" = "%d votos";
+
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "12 palavras é o padrão. 24 palavras dão mais trabalho para anotar e restaurar, mas são muito mais difíceis de quebrar por sistemas de computação avançados em um futuro distante.";
+
+/* Username marketplace: unresolvable transfer recipient */
+"No identity owns that username." = "Nenhuma identidade possui esse nome de usuário.";
+
+/* Username marketplace: names that were sold or transferred away */
+"No longer yours" = "Não são mais seus";
+
+/* Identity top-up sheet — missing unshield destination */
+"No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "Ainda não há um endereço de recebimento da Platform disponível — aguarde o fim da sincronização da Platform e tente novamente.";
+
+/* Username marketplace: empty owned list */
+"No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "Ainda não há nomes de usuário nesta identidade. Encontre um para comprar ou registrar na aba “Encontrar nomes”.";
+
+/* Identity top-up sheet — insufficient funding source */
+"Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Fundos insuficientes neste saldo: são necessários %@ DASH, há %@ DASH disponíveis.";
+
+/* Username marketplace: insufficient balance hint */
+"Not enough identity credits for this purchase — top up from My Profile first." = "Créditos de identidade insuficientes para esta compra — recarregue primeiro em “Meu perfil”.";
+
+/* Username marketplace: insufficient balance hint for a contested request */
+"Not enough identity credits for this request — top up from My Profile first." = "Créditos de identidade insuficientes para esta solicitação — recarregue primeiro em “Meu perfil”.";
+
+/* Username marketplace: someone else's unlisted name */
+"Not for sale" = "Não está à venda";
+
+/* Username marketplace: own unlisted name */
+"Not listed for sale" = "Não está anunciado à venda";
 
 "Lock “%@” so nobody gets it" = "Bloquear “%@” para que ninguém fique com ele";
 
@@ -2342,11 +2558,92 @@
 /* SDK identity profile sheet — title */
 "My Profile" = "My Profile";
 
+/* DashPay Contacts: shows the user's own contact QR code */
+"My QR" = "Meu QR";
+
 /* No comment provided by engineer. */
 "Name" = "Nome";
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Serviços de nomes como o Unstoppable Domains associam um nome legível a um endereço público fixo na cadeia. Qualquer pessoa pode resolver o nome e ver todos os pagamentos já feitos a ele. Um nome de usuário do DashPay nunca resolve publicamente para um endereço de pagamento — os endereços só são revelados dentro da troca criptografada com cada contato, então seu nome e seu dinheiro permanecem desvinculados para observadores externos.";
+
+/* Username marketplace: contested request line — voting deadline */
+"Network vote ends %@" = "A votação da rede termina em %@";
+
+/* Username marketplace: activity overlay while the purchase transition runs */
+"Completing your purchase…" = "Concluindo sua compra…";
+
+/* Usernames */
+"Register username" = "Registrar nome de usuário";
+
+/* Username marketplace: activity overlay while the delist transition runs */
+"Removing the listing…" = "Removendo o anúncio…";
+
+/* Username marketplace: activity overlay while the set-price transition runs */
+"Listing for sale…" = "Colocando à venda…";
+
+/* Usernames */
+"Submit both usernames" = "Enviar os dois nomes de usuário";
+
+/* Usernames */
+"Temporary username" = "Nome de usuário temporário";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "O nome de usuário temporário não pode exigir votação por si só.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Este nome exige uma votação de masternodes. A taxa de disputa é gasta ao enviar e não é devolvida, mesmo que você não ganhe o nome.";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "Este nome de usuário também exigiria votação — tente adicionar um dígito entre 2 e 9";
+
+/* Username marketplace: activity overlay while the transfer transition runs */
+"Transferring the username…" = "Transferindo o nome de usuário…";
+
+/* Username marketplace: activity overlay while the registration transition runs */
+"Registering the username…" = "Registrando o nome de usuário…";
+
+/* Username marketplace: activity overlay while the contested request transition runs */
+"Submitting your username request…" = "Enviando sua solicitação de nome de usuário…";
+
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "Explorar";
+
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "Alterações de preço";
+
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "Compras";
+
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "Anunciado por %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "Vendido por %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "Vendido por %1$@ DASH · %2$@ · %3$@ → %4$@";
+
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "Não está à venda agora";
+
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "Nenhum nome está à venda na atividade recente de anúncios. “Mostrar mais” alcança períodos anteriores.";
+
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "Ainda não há compras na rede.";
+
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "Carregando atividade…";
+
+/* Username marketplace: load older browse activity */
+"Show more" = "Mostrar mais";
+
+/* Username marketplace: contest tallies card title */
+"Network vote so far" = "Votação da rede até agora";
+
+/* Username marketplace: contest with zero masternode votes so far */
+"No votes cast yet" = "Nenhum voto registrado ainda";
 
 /* Swap route provider
    Swap route provider short */
@@ -2381,6 +2678,9 @@
 
 /* (List of) New (notifications) */
 "New" = "Novo";
+
+/* SPV diagnostics */
+"No unconfirmed transactions to drop." = "Não há transações não confirmadas para descartar.";
 
 /* CrowdNode */
 "New CrowdNode Account" = "Nova conta CrowdNode";
@@ -2563,6 +2863,15 @@
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "No Bitcoin não há uma camada de nomes, então as pessoas compartilham e reutilizam endereços abertamente — uma vez que um endereço é conhecido, tudo o que ele já recebeu pode ser vinculado ao seu dono. Com o DashPay seu nome de usuário é público, mas nunca aponta para um endereço de pagamento: os endereços são trocados de forma privada com cada contato e são rotacionados, então pagar por nome não publica para onde vai o seu dinheiro. Ambas são cadeias transparentes, portanto a análise de cadeia ainda se aplica às moedas em si.";
 
+/* DashPay Contacts: search results from DPNS, not the local contact list */
+"On the Dash network" = "Na rede Dash";
+
+/* Username marketplace */
+"Owned by you" = "Pertence a você";
+
+/* Identity top-up sheet — funding source picker label */
+"Pay from" = "Pagar com";
+
 /* Identities */
 "On Network" = "Na rede";
 
@@ -2731,6 +3040,9 @@
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Os pagamentos são privados: os endereços que você troca com um contato viajam dentro de uma carga criptografada que só vocês dois podem ler, e nunca são publicados — então seus pagamentos não são facilmente vinculáveis ao seu nome de usuário. Ainda assim, são pagamentos comuns em uma cadeia transparente: uma análise de cadeia sofisticada pode vazar informações. O Shielded DashPay (em breve) vai fechar essa lacuna. As próprias solicitações de contato atualmente NÃO são privadas: qualquer um pode ver que duas identidades estão conectadas. Solicitações de contato privadas são um recurso que virá em breve. Seu nome de usuário e seu perfil também são públicos na Dash Platform.";
 
+/* Username marketplace: price placeholder */
+"Price in DASH" = "Preço em DASH";
+
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "Os pagamentos são confirmados em segundos com o InstantSend";
 
@@ -2788,6 +3100,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN é sempre necessário para realizar um pagamento";
+
+/* No comment provided by engineer. */
+"PIN Not Set" = "PIN não definido";
 
 /* Dash Platform chain */
 "Platform" = "Platform";
@@ -2992,6 +3307,9 @@
 /* Identities: what a public key is used for */
 "Purpose" = "Finalidade";
 
+/* Username marketplace */
+"Put Up For Sale" = "Colocar à venda";
+
 /* DashSpend */
 "Quantity" = "Quantity";
 
@@ -3027,6 +3345,96 @@
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Somente leitura";
+
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "Retransmitir";
+
+/* Delete a never-accepted transaction from local wallet state */
+"Remove if Not on Network" = "Remover se não estiver na rede";
+
+/* Remove never-accepted transaction: confirmation title */
+"Remove this transaction?" = "Remover esta transação?";
+
+/* Remove never-accepted transaction: destructive confirm button */
+"Remove Transaction" = "Remover transação";
+
+/* Username marketplace: transfer recipient placeholder */
+"Recipient username or identity ID" = "Nome de usuário ou ID de identidade do destinatário";
+
+/* Identity top-up sheet — shielded source note */
+"Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Recomendado: uma transferência em duas etapas pelo seu próprio endereço da Platform mantém sua identidade desvinculada das suas moedas transparentes.";
+
+/* Username marketplace: register sheet title */
+"Register “%@”" = "Registrar “%@”";
+
+/* Username marketplace: registration date */
+"Registered" = "Registrado";
+
+/* Username marketplace */
+"Remove From Sale" = "Retirar da venda";
+
+/* Remove never-accepted transaction: progress */
+"Removing transaction…" = "Removendo a transação…";
+
+/* Username marketplace: delist confirmation title */
+"Remove “%@” from sale?" = "Retirar “%@” da venda?";
+
+/* Username marketplace: history — delist (transfer to self) */
+"Removed from sale" = "Retirado da venda";
+
+/* Username marketplace: delist confirmation body */
+"Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "Remover o anúncio é uma transação de rede com uma pequena taxa, paga pelo seu saldo de identidade. Você continua com o nome.";
+
+/* Remove never-accepted transaction: refused because the explorer found it */
+"Transaction is known to the network" = "A transação é conhecida pela rede";
+
+/* Remove never-accepted transaction: refusal body */
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "Um explorador de blocos informa que esta transação é conhecida pela rede Dash. Ela pode ainda estar aguardando no mempool ou já estar incluída em um bloco, por isso não foi removida. A carteira atualizará a confirmação automaticamente assim que ela for incluída em um bloco sincronizado.";
+
+/* Remove never-accepted transaction: success */
+"Transaction removed" = "Transação removida";
+
+/* Remove never-accepted transaction: removed but the recovery rescan did not arm */
+"Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "Transação removida — a reverificação não pôde iniciar, execute “Reverificar filtros” no Status de sincronização do Core";
+
+/* Remove never-accepted transaction: confirmation body */
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "A carteira consulta primeiro um explorador de blocos. Uma transação conhecida pela rede — esteja ela aguardando no mempool ou já incluída em um bloco — nunca é removida. Se a transação não for encontrada, ela é excluída desta carteira neste dispositivo, e as moedas que ela tentava gastar ficam disponíveis novamente. Em seguida, a carteira reverifica os blocos recentes como conferência de segurança. Nada é enviado à rede.";
+
+/* Remove never-accepted transaction: failure title */
+"Couldn't remove the transaction" = "Não foi possível remover a transação";
+
+/* Remove never-accepted transaction: no local row */
+"This transaction is not in the local wallet." = "Esta transação não está na carteira local.";
+
+/* Remove never-accepted transaction: local state says it's on-chain */
+"This transaction is confirmed and can't be removed." = "Esta transação está confirmada e não pode ser removida.";
+
+/* Remove never-accepted transaction: explorer unreachable */
+"Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "Não foi possível acessar um explorador de blocos para verificar se a transação não está na blockchain. Verifique sua conexão e tente novamente.";
+
+/* Username marketplace: contested request cost row */
+"Request cost" = "Custo da solicitação";
+
+/* Username marketplace: contested request success */
+"Request for %@ submitted — masternodes now vote on it" = "Solicitação de %@ enviada — os masternodes votam agora";
+
+/* Username marketplace: confirm contested request button */
+"Request Username" = "Solicitar nome de usuário";
+
+/* Username marketplace: contested register sheet title */
+"Request “%@”" = "Solicitar “%@”";
+
+/* Username marketplace: contested request not yet indexed by Platform */
+"Requested — waiting for the network vote" = "Solicitado — aguardando a votação da rede";
+
+/* Username marketplace: search row for a contested label this identity already requested */
+"Requested by you — the network vote is in progress" = "Solicitado por você — a votação da rede está em andamento";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "Tentando a transferência novamente…";
+
+/* Username marketplace: screen subtitle */
+"Search usernames, buy ones that are for sale, and sell or transfer your own." = "Pesquise nomes de usuário, compre os que estão à venda e venda ou transfira os seus.";
 
 /* Usernames */
 "Ready around %@" = "Pronto por volta de %@";
@@ -3081,6 +3489,9 @@
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Frase de Recuperação";
+
+/* Recovery phrase length */
+"Recovery phrase length" = "Tamanho da frase de recuperação";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Frase de recuperação não corresponde";
@@ -3194,6 +3605,9 @@
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
+
+/* No comment provided by engineer. */
+"Completion unknown" = "Conclusão desconhecida";
 
 /* Location Service Status */
 "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "Carteiras restauradas nem sempre conseguem recuperar o tipo de operação. Esta entrada foi reconstruída a partir dos dados de nota on-chain.";
@@ -3321,6 +3735,9 @@
 /* Identities: DPP security level of a public key */
 "Security level" = "Nível de segurança";
 
+/* Username marketplace: transfer sheet body */
+"Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "Envie este nome para outra identidade gratuitamente. A transferência também remove qualquer anúncio de venda. Isso não pode ser desfeito — o novo dono teria que transferi-lo de volta.";
+
 /* DashSpend */
 "See card details" = "See card details";
 
@@ -3368,7 +3785,520 @@
 /* Coinbase */
 "Select the coin" = "Selecione a moeda";
 
+/* Identities */
+"Select the username to display for this identity." = "Escolha o nome de usuário a ser exibido para esta identidade.";
+
 "Selecting fewer nodes reveals less about which masternodes you run." = "Selecionar menos nós revela menos sobre quais masternodes você opera.";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "%ld carteiras encontradas neste dispositivo";
+
+/* No comment provided by engineer. */
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "%ld carteiras de uma instalação anterior estão armazenadas neste dispositivo. “Excluir todas” remove todas as carteiras. Faça backup de cada frase de recuperação antes de excluir.";
+
+/* No comment provided by engineer. */
+"Couldn’t Delete All Wallets" = "Não foi possível excluir todas as carteiras";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Wallets" = "Não foi possível ler as carteiras";
+
+/* No comment provided by engineer. */
+"Delete All" = "Excluir todas";
+
+/* No comment provided by engineer. */
+"Delete All Wallets?" = "Excluir todas as carteiras?";
+
+/* No comment provided by engineer. */
+"Deleting All Wallets…" = "Excluindo todas as carteiras…";
+
+/* No comment provided by engineer. */
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "Não foi possível verificar o número de carteiras armazenadas neste dispositivo. Para continuar, é necessária uma frase de confirmação fornecida pelo Suporte da Dash antes que qualquer carteira seja excluída.";
+
+/* No comment provided by engineer. */
+"Keep Wallets" = "Manter as carteiras";
+
+/* No comment provided by engineer. */
+"No stored wallets were found. Nothing was deleted." = "Nenhuma carteira armazenada foi encontrada. Nada foi excluído.";
+
+/* No comment provided by engineer. */
+"No Wallets Found" = "Nenhuma carteira encontrada";
+
+/* No comment provided by engineer. */
+"Not all wallets could be deleted. Please try again." = "Não foi possível excluir todas as carteiras. Tente novamente.";
+
+/* No comment provided by engineer. */
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "Isto remove permanentemente todas as carteiras, chaves privadas e frases de recuperação armazenadas por este app neste dispositivo. Elas só poderão ser restauradas a partir de backups. Isso não pode ser desfeito.";
+
+/* No comment provided by engineer. */
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "Não foi possível verificar as carteiras armazenadas neste dispositivo. Nada foi excluído. Tente novamente.";
+
+/* No comment provided by engineer. */
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "Isto apagará todas as %ld carteiras armazenadas neste dispositivo. Elas só poderão ser restauradas com suas frases de recuperação. Excluí-las deste dispositivo não pode ser desfeito.";
+
+/* No comment provided by engineer. */
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "Ainda há dados de carteira de uma instalação anterior armazenados neste dispositivo. Continuar usando essas carteiras ou excluir todos os dados e começar do zero? Verifique se cada frase de recuperação está salva antes de excluir.";
+
+/* No comment provided by engineer. */
+"Wallets found on this device" = "Carteiras encontradas neste dispositivo";
+
+/* No comment provided by engineer. */
+"Wipe All Wallets" = "Apagar todas as carteiras";
+
+/* No comment provided by engineer. */
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "A frase de recuperação de uma única carteira não pode autorizar a exclusão de várias carteiras diferentes.";
+
+/* No comment provided by engineer. */
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "Um saldo zero na testnet não prova que esta carteira está vazia na mainnet. Digite a frase de recuperação para continuar.";
+
+/* No comment provided by engineer. */
+"Enter the recovery phrase to continue." = "Digite a frase de recuperação para continuar.";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "Escolher carteira";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Recovery Phrases" = "Não foi possível ler as frases de recuperação";
+
+/* No comment provided by engineer. */
+"No Recovery Phrase Found" = "Nenhuma frase de recuperação encontrada";
+
+/* No comment provided by engineer. */
+"No recovery phrase is stored on this device." = "Não há frase de recuperação armazenada neste dispositivo.";
+
+/* No comment provided by engineer. */
+"Select the wallet whose recovery phrase you want to view." = "Escolha a carteira cuja frase de recuperação você quer ver.";
+
+/* No comment provided by engineer. */
+"The recovery phrases stored on this device could not be read. Please try again." = "Não foi possível ler as frases de recuperação armazenadas neste dispositivo. Tente novamente.";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address for this network" = "Não é um endereço Dash válido para esta rede";
+
+/* No comment provided by engineer. */
+"The claimable balance is too small to cover the Platform withdrawal fee." = "O saldo resgatável é pequeno demais para cobrir a taxa de saque da Platform.";
+
+/* No comment provided by engineer. */
+"You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it." = "Você pode sacar até %@ DASH — o restante fica para cobrir a taxa da Platform. Toque em “Máx.” para usá-lo.";
+
+/* No comment provided by engineer. */
+"The minimum withdrawal is %@ DASH." = "O saque mínimo é de %@ DASH.";
+
+/* No comment provided by engineer. */
+"Payout address key" = "Chave do endereço de pagamento";
+
+/* No comment provided by engineer. */
+"Owner key (%@)" = "Chave de proprietário (%@)";
+
+/* No comment provided by engineer. */
+"Wallet is not ready. Try again in a moment." = "A carteira não está pronta. Tente novamente daqui a pouco.";
+
+/* No comment provided by engineer. */
+"%@ · Claimable %@ DASH" = "%@ · Resgatável %@ DASH";
+
+/* No comment provided by engineer. */
+"Withdraw to" = "Sacar para";
+
+/* No comment provided by engineer. */
+"Enter a Dash address" = "Digite um endereço Dash";
+
+/* No comment provided by engineer. */
+"Use the payout address" = "Usar o endereço de pagamento";
+
+/* No comment provided by engineer. */
+"This is the evonode's registered payout address." = "Este é o endereço de pagamento registrado do evonode.";
+
+/* No comment provided by engineer. */
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "Esta carteira tem a chave do endereço de pagamento do evonode, então o saldo pode ser sacado para qualquer endereço Dash.";
+
+/* No comment provided by engineer. */
+"Registered payout address" = "Endereço de pagamento registrado";
+
+/* No comment provided by engineer. */
+"This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "Este saque é assinado com a chave de proprietário do evonode. A Dash Platform só permite que a chave de proprietário saque para o endereço de pagamento registrado, então o destino não pode ser alterado aqui. Para sacar para outro endereço, use a carteira que tem a chave do endereço de pagamento.";
+
+/* No comment provided by engineer. */
+"How it works" = "Como funciona";
+
+/* No comment provided by engineer. */
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "A Dash Platform paga o saque na cadeia Dash — normalmente em alguns minutos. Uma taxa da Platform de cerca de %@ DASH é retirada do saldo do evonode além do valor, por isso “Máx.” deixa um pouco de folga para cobri-la.";
+
+/* No comment provided by engineer. */
+"Confirm withdrawal" = "Confirmar saque";
+
+/* No comment provided by engineer. */
+"Owner-key withdrawals are always paid to the registered payout address." = "Saques com chave de proprietário são sempre pagos ao endereço de pagamento registrado.";
+
+/* No comment provided by engineer. */
+"Waiting for authorization…" = "Aguardando autorização…";
+
+/* No comment provided by engineer. */
+"Submitting to Dash Platform…" = "Enviando à Dash Platform…";
+
+/* No comment provided by engineer. */
+"Withdrawal submitted" = "Saque enviado";
+
+/* No comment provided by engineer. */
+"Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "A Dash Platform vai pagá-lo na cadeia Dash em breve — normalmente chega em alguns minutos.";
+
+/* No comment provided by engineer. */
+"Remaining claimable balance: %@ DASH" = "Saldo resgatável restante: %@ DASH";
+
+/* No comment provided by engineer. */
+"%@ · Platform balance" = "%@ · Saldo da Platform";
+
+/* No comment provided by engineer. */
+"Signed with" = "Assinado com";
+
+/* No comment provided by engineer. */
+"Platform fee" = "Taxa da Platform";
+
+/* No comment provided by engineer. */
+"%@ (payout address)" = "%@ (endereço de pagamento)";
+
+/* No comment provided by engineer. */
+"This wallet holds the payout address key, so you can withdraw to any address." = "Esta carteira tem a chave do endereço de pagamento, então você pode sacar para qualquer endereço.";
+
+/* No comment provided by engineer. */
+"This wallet holds the owner key, so withdrawals go to the registered payout address." = "Esta carteira tem a chave de proprietário, então os saques vão para o endereço de pagamento registrado.";
+
+/* No comment provided by engineer. */
+"This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "Esta carteira não tem nem a chave de proprietário nem a chave do endereço de pagamento deste evonode, então o saldo dele não pode ser sacado daqui.";
+
+/* No comment provided by engineer. */
+"Couldn't check which keys of this evonode are in the wallet." = "Não foi possível verificar quais chaves deste evonode estão na carteira.";
+
+/* No comment provided by engineer. */
+"Result not confirmed" = "Resultado não confirmado";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "O saque foi enviado à Dash Platform, mas não foi possível confirmar o resultado. Ele pode ter sido concluído. Não envie de novo — confira antes o saldo resgatável e o endereço de pagamento.";
+
+/* No comment provided by engineer. */
+"1 block proposed this epoch" = "1 bloco proposto nesta época";
+
+/* No comment provided by engineer. */
+"%@ blocks proposed this epoch" = "%@ blocos propostos nesta época";
+
+/* No comment provided by engineer. */
+"Nodes" = "Nós";
+
+/* No comment provided by engineer. */
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "Nós, dia %d da época, %@ blocos propostos nesta época";
+
+/* No comment provided by engineer. */
+"an evonode has not proposed a block in 2 days" = "um evonode não propõe um bloco há 2 dias";
+
+/* No comment provided by engineer. */
+"an evonode has no blocks this epoch" = "um evonode não tem blocos nesta época";
+
+/* No comment provided by engineer. */
+"A key doesn't match this masternode — fix or clear it to continue." = "Uma chave não corresponde a este masternode — corrija-a ou apague-a para continuar.";
+
+/* No comment provided by engineer. */
+"Add keys" = "Adicionar chaves";
+
+/* No comment provided by engineer. */
+"Add masternode" = "Adicionar masternode";
+
+/* No comment provided by engineer. */
+"Add this node's owner key or payout address key to withdraw from here." = "Adicione a chave de proprietário ou a chave do endereço de pagamento deste nó para sacar daqui.";
+
+/* No comment provided by engineer. */
+"Already one of this wallet's masternodes — it's in the list above." = "Já é um dos masternodes desta carteira — está na lista acima.";
+
+/* No comment provided by engineer. */
+"Already tracked." = "Já monitorado.";
+
+/* No comment provided by engineer. */
+"Any keys you added for it are deleted from this device's keychain too." = "Todas as chaves que você adicionou para ele também são excluídas do chaveiro deste dispositivo.";
+
+/* No comment provided by engineer. */
+"Available" = "Disponível";
+
+/* No comment provided by engineer. */
+"BLS private key (hex)" = "Chave privada BLS (hex)";
+
+/* No comment provided by engineer. */
+"Can't verify yet" = "Ainda não é possível verificar";
+
+/* No comment provided by engineer. */
+"Could not load the node's registration details — owner and payout keys will verify later." = "Não foi possível carregar os detalhes de registro do nó — as chaves de proprietário e de pagamento serão verificadas depois.";
+
+/* No comment provided by engineer. */
+"Could not save a key to the keychain. Nothing was lost — try again." = "Não foi possível salvar uma chave no chaveiro. Nada foi perdido — tente novamente.";
+
+/* No comment provided by engineer. */
+"Destination address (optional)" = "Endereço de destino (opcional)";
+
+/* No comment provided by engineer. */
+"Doesn't match" = "Não corresponde";
+
+/* No comment provided by engineer. */
+"Find" = "Procurar";
+
+/* No comment provided by engineer. */
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "Encontra as chaves de proprietário e de pagamento, que não estão na lista de masternodes. Envia a impressão digital pública da chave a um nó da Platform.";
+
+/* No comment provided by engineer. */
+"IP address, proTxHash or private key" = "Endereço IP, proTxHash ou chave privada";
+
+/* No comment provided by engineer. */
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "As chaves são guardadas no chaveiro deste dispositivo e nunca saem dele, exceto para assinar a ação que você solicitar.";
+
+/* No comment provided by engineer. */
+"Keys on this device" = "Chaves neste dispositivo";
+
+/* No comment provided by engineer. */
+"Label (optional)" = "Rótulo (opcional)";
+
+/* No comment provided by engineer. */
+"Loading registration details…" = "Carregando detalhes de registro…";
+
+/* No comment provided by engineer. */
+"Matches" = "Corresponde";
+
+/* No comment provided by engineer. */
+"Matches this node's %@ key" = "Corresponde à chave %@ deste nó";
+
+/* No comment provided by engineer. */
+"No masternode on the list matches that." = "Nenhum masternode da lista corresponde a isso.";
+
+/* No comment provided by engineer. */
+"Node key (base64 or hex)" = "Chave do nó (base64 ou hex)";
+
+/* No comment provided by engineer. */
+"Not added" = "Não adicionada";
+
+/* No comment provided by engineer. */
+"On this device" = "Neste dispositivo";
+
+/* No comment provided by engineer. */
+"Operator payout" = "Pagamento do operador";
+
+/* No comment provided by engineer. */
+"Payout" = "Pagamento";
+
+/* No comment provided by engineer. */
+"Platform could not be reached, so owner and payout keys were not checked." = "Não foi possível acessar a Platform, então as chaves de proprietário e de pagamento não foram verificadas.";
+
+/* No comment provided by engineer. */
+"PoSe banned" = "Banido por PoSe";
+
+/* No comment provided by engineer. */
+"Private key (WIF or hex)" = "Chave privada (WIF ou hex)";
+
+/* No comment provided by engineer. */
+"Refresh details" = "Atualizar detalhes";
+
+/* No comment provided by engineer. */
+"Refreshing…" = "Atualizando…";
+
+/* No comment provided by engineer. */
+"Save keys" = "Salvar chaves";
+
+/* No comment provided by engineer. */
+"Search Platform too" = "Buscar também na Platform";
+
+/* No comment provided by engineer. */
+"Searching…" = "Procurando…";
+
+/* No comment provided by engineer. */
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "Assinando com a chave de proprietário — o saque vai para o endereço de pagamento registrado.";
+
+/* No comment provided by engineer. */
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "Assinando com a chave do endereço de pagamento. Deixe o destino vazio para sacar para o endereço de pagamento.";
+
+/* No comment provided by engineer. */
+"Stop tracking" = "Parar de monitorar";
+
+/* No comment provided by engineer. */
+"Stop tracking this masternode?" = "Parar de monitorar este masternode?";
+
+/* No comment provided by engineer. */
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "Isso também pode ser uma chave de proprietário ou de pagamento — ative “Buscar também na Platform” para verificar.";
+
+/* No comment provided by engineer. */
+"The signing key is missing from the keychain — re-add it and try again." = "A chave de assinatura está faltando no chaveiro — adicione-a novamente e tente de novo.";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "O saque foi enviado, mas não foi possível confirmar o resultado. O saldo está sendo verificado novamente — não tente de novo até que ele estabilize.";
+
+/* No comment provided by engineer. */
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "Monitore qualquer masternode ou evonode da rede — ele não precisa pertencer a esta carteira.";
+
+/* No comment provided by engineer. */
+"Track this masternode" = "Monitorar este masternode";
+
+/* No comment provided by engineer. */
+"Tracked" = "Monitorado";
+
+/* No comment provided by engineer. */
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "Monitorado. Adicione abaixo as chaves deste nó para habilitar ações como saque e votação, ou conclua agora e adicione-as depois.";
+
+/* No comment provided by engineer. */
+"Withdrawing…" = "Sacando…";
+
+/* No comment provided by engineer. */
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "Você também pode monitorar qualquer masternode da rede — por IP, proTxHash ou uma de suas chaves — com o botão “+”.";
+
+/* No comment provided by engineer. */
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "O endereço DAPI deste evonode não é conhecido, então não é possível perguntar o status dele.";
+
+/* No comment provided by engineer. */
+"Couldn't get the evonode's status." = "Não foi possível obter o status do evonode.";
+
+/* No comment provided by engineer. */
+"The evonode didn't answer in time." = "O evonode não respondeu a tempo.";
+
+/* No comment provided by engineer. */
+"Couldn't reach the evonode." = "Não foi possível acessar o evonode.";
+
+/* No comment provided by engineer. */
+"The evonode's answer couldn't be read." = "Não foi possível ler a resposta do evonode.";
+
+/* No comment provided by engineer. */
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "O relato do próprio nó, não verificado — o que ele diz sobre si mesmo, não o que a rede acordou.";
+
+/* No comment provided by engineer. */
+"Asked" = "Consultado";
+
+/* No comment provided by engineer. */
+"Software" = "Software";
+
+/* No comment provided by engineer. */
+"DAPI" = "DAPI";
+
+/* No comment provided by engineer. */
+"Drive" = "Drive";
+
+/* No comment provided by engineer. */
+"Tenderdash" = "Tenderdash";
+
+/* No comment provided by engineer. */
+"Protocol versions" = "Versões de protocolo";
+
+/* No comment provided by engineer. */
+"Tenderdash P2P" = "Tenderdash P2P";
+
+/* No comment provided by engineer. */
+"Tenderdash block" = "Bloco do Tenderdash";
+
+/* No comment provided by engineer. */
+"Drive current" = "Drive atual";
+
+/* No comment provided by engineer. */
+"Drive latest" = "Drive mais recente";
+
+/* No comment provided by engineer. */
+"Drive next epoch" = "Drive próxima época";
+
+/* No comment provided by engineer. */
+"Node ID" = "ID do nó";
+
+/* No comment provided by engineer. */
+"Identity check" = "Verificação de identidade";
+
+/* No comment provided by engineer. */
+"Chain" = "Cadeia";
+
+/* No comment provided by engineer. */
+"Catching up" = "Se atualizando";
+
+/* No comment provided by engineer. */
+"Latest block height" = "Altura do último bloco";
+
+/* No comment provided by engineer. */
+"Earliest block height" = "Altura do primeiro bloco";
+
+/* No comment provided by engineer. */
+"Max peer block height" = "Altura máxima de bloco dos pares";
+
+/* No comment provided by engineer. */
+"Core chain-locked height" = "Altura com chain lock do Core";
+
+/* No comment provided by engineer. */
+"Latest block hash" = "Hash do último bloco";
+
+/* No comment provided by engineer. */
+"Latest app hash" = "Hash do último app";
+
+/* No comment provided by engineer. */
+"Earliest block hash" = "Hash do primeiro bloco";
+
+/* No comment provided by engineer. */
+"Earliest app hash" = "Hash do primeiro app";
+
+/* No comment provided by engineer. */
+"Chain ID" = "ID da cadeia";
+
+/* No comment provided by engineer. */
+"Peers" = "Pares";
+
+/* No comment provided by engineer. */
+"Listening" = "Escutando";
+
+/* No comment provided by engineer. */
+"State sync" = "Sincronização de estado";
+
+/* No comment provided by engineer. */
+"Total synced time" = "Tempo total sincronizado";
+
+/* No comment provided by engineer. */
+"Remaining time" = "Tempo restante";
+
+/* No comment provided by engineer. */
+"Total snapshots" = "Total de snapshots";
+
+/* No comment provided by engineer. */
+"Chunk process avg time" = "Tempo médio de processamento por bloco de dados";
+
+/* No comment provided by engineer. */
+"Snapshot height" = "Altura do snapshot";
+
+/* No comment provided by engineer. */
+"Snapshot chunks" = "Blocos de dados do snapshot";
+
+/* No comment provided by engineer. */
+"Backfilled blocks" = "Blocos preenchidos";
+
+/* No comment provided by engineer. */
+"Backfill blocks total" = "Total de blocos a preencher";
+
+/* No comment provided by engineer. */
+"Time" = "Hora";
+
+/* No comment provided by engineer. */
+"Node clock" = "Relógio do nó";
+
+/* No comment provided by engineer. */
+"Latest block" = "Último bloco";
+
+/* No comment provided by engineer. */
+"Genesis" = "Gênese";
+
+/* No comment provided by engineer. */
+"Epoch" = "Época";
+
+/* No comment provided by engineer. */
+"Matches this evonode" = "Corresponde a este evonode";
+
+/* No comment provided by engineer. */
+"Differs from this evonode" = "Difere deste evonode";
+
+/* No comment provided by engineer. */
+"Not reported" = "Não informado";
+
+/* No comment provided by engineer. */
+"%.3f s" = "%.3f s";
+
+/* No comment provided by engineer. */
+"Node status" = "Status do nó";
+
+/* No comment provided by engineer. */
+"Asking the evonode…" = "Consultando o evonode…";
+
+/* No comment provided by engineer. */
+"Request status" = "Consultar status";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "Pagamento automático";
@@ -3442,6 +4372,42 @@
 
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "Envie sua primeira solicitação de contato";
+
+/* Username marketplace: set price sheet title */
+"Set a price for “%@”" = "Definir um preço para “%@”";
+
+/* Username marketplace */
+"Short names are decided by a network vote — use Request Username instead." = "Nomes curtos são decididos por uma votação da rede — use “Solicitar nome de usuário”.";
+
+/* Username marketplace: contested request explainer, paragraph 1 */
+"Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them." = "Nomes curtos — 19 caracteres ou menos, apenas letras e números — não são registrados na hora. A rede Dash vota em quem fica com eles.";
+
+/* DashPay Contacts: expands the network search into the full add-contact flow */
+"Show more results" = "Mostrar mais resultados";
+
+/* Username marketplace: departed-name line — buyer identity */
+"Sold to %@" = "Vendido para %@";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 1 of 2 — moving Dash out of your Shielded balance…" = "Etapa 1 de 2 — retirando Dash do seu saldo Shielded…";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 2 of 2 — topping up your identity…" = "Etapa 2 de 2 — recarregando sua identidade…";
+
+/* Username marketplace: contested request cost footnote */
+"The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "O custo é pago pelo seu saldo de identidade. Ele financia a votação da rede e não é devolvido se outro concorrente vencer.";
+
+/* Username marketplace: register sheet body */
+"The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "O nome é registrado diretamente na sua identidade. O registro é uma transação de rede paga pelo seu saldo de identidade.";
+
+/* Username marketplace: contested label locked by a past vote */
+"The network voted to lock this name, so nobody can register it. Choose a different name." = "A rede votou por bloquear este nome, então ninguém pode registrá-lo. Escolha outro nome.";
+
+/* Username marketplace */
+"The recipient identity couldn't be resolved." = "Não foi possível resolver a identidade do destinatário.";
+
+/* Username marketplace */
+"The seller changed the price before your purchase was accepted. Review the new price and try again." = "O vendedor alterou o preço antes de sua compra ser aceita. Revise o novo preço e tente novamente.";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Enviando";
@@ -3963,6 +4929,66 @@
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "Isso adiciona duas chaves à sua identidade para que outros usuários possam lhe enviar solicitações de contato e para que você possa aceitar as deles. Isso acontece uma única vez.";
 
+/* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
+"This isn't a DashPay user QR code." = "Este não é um código QR de usuário do DashPay.";
+
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "Este saldo paga as taxas de rede da Dash Platform — nomes de usuário, solicitações de contato, atualizações de perfil. Ele pertence à sua identidade, não à sua carteira: ao contrário dos saldos Transparente, Platform e Shielded, não pode ser gasto como Dash comum. A recarga converte Dash de um saldo que você escolher — Shielded por padrão — em créditos de identidade.";
+
+/* Username marketplace: contested label already has an active vote */
+"This name is already in an active network vote. Your request joins it as another contender." = "Este nome já está em uma votação ativa da rede. Sua solicitação entra nela como mais um concorrente.";
+
+/* Username marketplace */
+"This name is in an active network vote and can't be traded until the contest ends." = "Este nome está em uma votação ativa da rede e não pode ser negociado até a disputa terminar.";
+
+/* Username marketplace: detail for an unregistered name */
+"This name is not registered." = "Este nome não está registrado.";
+
+/* Username marketplace: seller-clarity callout on the detail sheet */
+"This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "Este nome é oferecido por um usuário independente na rede Dash — não pela Dash nem por este app. O vendedor define o preço.";
+
+/* Username marketplace: listing price exceeds the representable maximum */
+"This price is too high to list." = "Este preço é alto demais para ser anunciado.";
+
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "Esta transferência não pode ser repetida a partir daqui.";
+
+/* Username marketplace */
+"This username is not for sale." = "Este nome de usuário não está à venda.";
+
+/* Username marketplace */
+"This username's record couldn't be read from the network." = "Não foi possível ler o registro deste nome de usuário na rede.";
+
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "Esta carteira não tem identidade para recarregar.";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "Recarregar";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "Recarregar saldo de identidade";
+
+/* Username marketplace: timeline card title */
+"Trade history" = "Histórico de negociações";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "Transferência concluída";
+
+/* Username marketplace */
+"Transfer to Another Identity" = "Transferir para outra identidade";
+
+/* Username marketplace: transfer sheet title */
+"Transfer “%@”" = "Transferir “%@”";
+
+/* Username marketplace: history — transfer with both identities */
+"Transferred from %1$@ to %2$@" = "Transferido de %1$@ para %2$@";
+
+/* Username marketplace: departed-name line — recipient identity */
+"Transferred to %@" = "Transferido para %@";
+
+/* Username marketplace */
+"Username Marketplace" = "Mercado de nomes de usuário";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
@@ -4012,6 +5038,60 @@
 
 /* Usernames */
 "This name requires voting. Your Dash will be locked until voting completes." = "This name requires voting. Your Dash will be locked until voting completes.";
+
+/* Usernames */
+"Vote in progress" = "Votação em andamento";
+
+/* Usernames */
+"Vote ended" = "Votação encerrada";
+
+/* Usernames */
+"A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender." = "Já há uma votação de masternodes em andamento para este nome. Enviar uma solicitação faz você entrar na votação como concorrente.";
+
+/* Usernames */
+"A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender." = "Já há uma votação de masternodes em andamento para este nome — a votação termina por volta de %@. Enviar uma solicitação faz você entrar na votação como concorrente.";
+
+/* Usernames */
+"A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote." = "Há uma votação de masternodes em andamento para este nome — a votação termina por volta de %@. Novos concorrentes não podem mais entrar nesta votação.";
+
+/* Usernames */
+"Username is in a network vote — new contenders can no longer join" = "O nome de usuário está em uma votação da rede — novos concorrentes não podem mais entrar";
+
+/* Usernames */
+"The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "O dono deste nome de usuário o anunciou no Mercado de nomes de usuário por %@ Dash. Você pode comprá-lo lá.";
+
+/* Usernames */
+"The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance." = "O dono deste nome de usuário o anunciou por %@ Dash. Você pode comprá-lo agora mesmo — o preço é pago pelo saldo da sua carteira.";
+
+/* Usernames */
+"The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "O dono deste nome de usuário o anunciou por %1$@ Dash. Compras acima de %2$@ Dash devem ser feitas pelo Mercado de nomes de usuário — escolha outro nome de usuário por enquanto; você pode decidir depois se compra este.";
+
+/* Usernames */
+"Buy for %@ Dash" = "Comprar por %@ Dash";
+
+/* Usernames */
+"Buy username" = "Comprar nome de usuário";
+
+/* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "Não foi possível registrar seu nome de usuário temporário “%@”. Você pode registrar outro nome de usuário mais tarde.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "“%1$@” agora é seu nome de usuário. Se a votação lhe conceder “%2$@”, você poderá ser encontrado pelos dois nomes de usuário.";
+
+/* Usernames */
+"“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "“%1$@” será comprado por %2$@ Dash. O preço é pago pelo saldo da sua carteira.";
+
+/* Usernames */
+"Username purchased" = "Nome de usuário comprado";
+
+/* Usernames */
+"“%@” is now your username." = "“%@” agora é seu nome de usuário.";
+
+/* Usernames */
+"The masternode vote for this name has ended and the result is being finalized. Check back soon." = "A votação de masternodes para este nome terminou e o resultado está sendo finalizado. Volte em breve.";
+
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes." = "Já há uma votação em andamento para este nome — sua solicitação entrará nela como concorrente. Seus Dash ficarão bloqueados até a votação terminar.";
 
 /* No comment provided by engineer. */
 "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone." = "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.";
@@ -4254,6 +5334,12 @@
 /* Voting */
 "Unblocked '%@' username" = "Usuário '%@' desbloqueado";
 
+/* SPV diagnostics */
+"Unconfirmed now" = "Não confirmadas agora";
+
+/* SPV diagnostics */
+"Unconfirmed Transactions" = "Transações não confirmadas";
+
 /* DashPay Contacts */
 "Unhide Contact" = "Unhide Contact";
 
@@ -4367,6 +5453,9 @@
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Nomes de usuário, não endereços";
 
+/* DashPay: banner identity row subtitle */
+"View profile" = "Ver perfil";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Usuários que correspondem a %@ e que atualmente não estão nos seus contatos";
 
@@ -4397,11 +5486,17 @@
 /* No comment provided by engineer. */
 "Verified Successfully" = "Verificado com Sucesso";
 
+/* DashPay Contacts: spinner after scanning a user QR code */
+"Verifying user…" = "Verificando usuário…";
+
 /* No comment provided by engineer. */
 "Verify" = "Verificar";
 
 /* CrowdNode */
 "Verify your API Dash address" = "Verifique seu endereço de API Dash";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "Verifique sua frase de recuperação para definir um novo PIN.";
 
 /* Usernames */
 "Verify your identity" = "Verifique sua identidade";
@@ -4616,6 +5711,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "Quando as solicitações de contato se tornarão privadas?";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "Enquanto a votação está em andamento, “%@” ainda não pertence a você e outros usuários não conseguem encontrá-lo por esse nome. Adicione um nome de usuário não disputado para usar o DashPay agora mesmo. Ele continua sendo seu permanentemente — e se a votação lhe conceder o nome disputado, você poderá ser encontrado pelos dois nomes de usuário.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "Onde Gastar";
 
@@ -4626,6 +5724,18 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "Por que preciso ativá-lo?";
+
+/* Username marketplace: history participant is the current user */
+"you" = "você";
+
+/* Username marketplace: contested request already submitted by this identity */
+"You already requested this name — the network vote is in progress. You'll find it under My Names." = "Você já solicitou este nome — a votação da rede está em andamento. Você o encontra em “Meus nomes”.";
+
+/* Username marketplace: purchase confirmation body with seller clarity */
+"You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "Você está comprando de um usuário independente, não da Dash nem deste app. O preço mais uma pequena taxa de rede é pago pelo seu saldo de identidade, e o nome passa para a sua identidade imediatamente.";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "Você não tem nome de usuário enquanto a votação está em andamento. Registre agora um nome de usuário não disputado — ele fica sendo seu e, se a votação lhe conceder “%@”, você poderá ser encontrado pelos dois nomes de usuário.";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "Por que vejo todas essas transações?";
@@ -4681,6 +5791,9 @@
 
 /* Wallets */
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
+
+/* Wallets */
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Anote estas %d palavras em ordem e guarde-as em um lugar seguro. Elas são a ÚNICA forma de recuperar esta carteira. Qualquer pessoa com elas pode gastar seus fundos.";
 
 /* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
@@ -4932,6 +6045,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Seu histórico, organizado";
 
+/* Username marketplace */
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Seu saldo de identidade não cobre esta compra: são necessários %1$@ DASH (incluindo uma reserva para taxas), há %2$@ DASH disponíveis. Recarregue seu saldo de identidade e tente novamente.";
+
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "Sua identidade precisa de duas chaves extras para que as solicitações de contato possam ser criptografadas entre você e outros usuários. A ativação as adiciona com uma única transação de rede. Isso acontece uma única vez.";
 
@@ -4956,8 +6072,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "Suas moedas misturadas foram movidas para o saldo da sua carteira Dash.";
 
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "Não conseguimos confirmar esta compra com a CTX. Se o pagamento foi concluído, o cartão-presente aparecerá em breve na sua lista de transações — verifique lá antes de comprar de novo.";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "Seu pagamento foi enviado, mas a rede ainda não o confirmou. Seu cartão-presente aparecerá assim que for confirmado.";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Suas moedas misturadas foram movidas para o seu saldo blindado. Para uma privacidade melhor, espere pelo menos 2 horas antes de usar estes fundos.";
+
+/* DashSpend */
+"Could not load your gift card" = "Não foi possível carregar seu cartão-presente";
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
@@ -4973,6 +6098,9 @@
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "Seu saldo privado. Os valores e endereços são criptografados on-chain, então seus fundos e seu histórico permanecem confidenciais.";
+
+/* Username marketplace: contested request explainer, paragraph 2 */
+"Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "Sua solicitação entra em uma votação pública dos masternodes por cerca de duas semanas. Outras pessoas podem solicitar o mesmo nome; quando a votação terminar, o nome vai para o vencedor — ou para ninguém, se a rede votar por bloqueá-lo.";
 
 /* Usernames */
 "Your request was cancelled" = "Sua solicitação foi cancelada";

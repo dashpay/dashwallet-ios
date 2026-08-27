@@ -512,27 +512,29 @@ final class RecoveryPhraseRoutingTests: XCTestCase {
 }
 
 final class MnemonicFirstWalletCreationTests: XCTestCase {
-    func testPersistenceFailureDoesNotCreateWallet() {
+    func testPersistenceFailureDoesNotCreateWallet() async {
         var storedMnemonic: String?
         var createCalled = false
 
-        XCTAssertThrowsError(try MnemonicFirstWalletCreation.run(
-            mnemonic: "test mnemonic",
-            persistMnemonic: {
-                storedMnemonic = "partially written"
-                throw WalletLifecycleTestError.mnemonicPersistence
-            },
-            retrieveMnemonic: {
-                storedMnemonic ?? ""
-            },
-            rollbackMnemonic: {
-                storedMnemonic = nil
-            },
-            createWallet: {
-                createCalled = true
-                return 1
-            }
-        )) { error in
+        do {
+            _ = try await MnemonicFirstWalletCreation.run(
+                mnemonic: "test mnemonic",
+                persistMnemonic: {
+                    storedMnemonic = "partially written"
+                    throw WalletLifecycleTestError.mnemonicPersistence
+                },
+                retrieveMnemonic: {
+                    storedMnemonic ?? ""
+                },
+                rollbackMnemonic: {
+                    storedMnemonic = nil
+                },
+                createWallet: {
+                    createCalled = true
+                    return 1
+                })
+            XCTFail("expected mnemonicPersistence")
+        } catch {
             guard case MnemonicFirstWalletCreationError.mnemonicPersistence = error else {
                 return XCTFail("unexpected error: \(error)")
             }
@@ -542,11 +544,11 @@ final class MnemonicFirstWalletCreationTests: XCTestCase {
         XCTAssertNil(storedMnemonic)
     }
 
-    func testMnemonicIsAvailableBeforeWalletCreation() throws {
+    func testMnemonicIsAvailableBeforeWalletCreation() async throws {
         let mnemonic = "test mnemonic"
         var storedMnemonic: String?
 
-        let wallet = try MnemonicFirstWalletCreation.run(
+        let wallet = try await MnemonicFirstWalletCreation.run(
             mnemonic: mnemonic,
             persistMnemonic: {
                 storedMnemonic = mnemonic
@@ -566,25 +568,27 @@ final class MnemonicFirstWalletCreationTests: XCTestCase {
         XCTAssertEqual(storedMnemonic, mnemonic)
     }
 
-    func testCreationFailureRemovesProvisionalMnemonicAndPropagatesError() {
+    func testCreationFailureRemovesProvisionalMnemonicAndPropagatesError() async {
         let mnemonic = "test mnemonic"
         var storedMnemonic: String?
 
-        XCTAssertThrowsError(try MnemonicFirstWalletCreation.run(
-            mnemonic: mnemonic,
-            persistMnemonic: {
-                storedMnemonic = mnemonic
-            },
-            retrieveMnemonic: {
-                storedMnemonic ?? ""
-            },
-            rollbackMnemonic: {
-                storedMnemonic = nil
-            },
-            createWallet: { () throws -> Int in
-                throw WalletLifecycleTestError.walletCreation
-            }
-        )) { error in
+        do {
+            _ = try await MnemonicFirstWalletCreation.run(
+                mnemonic: mnemonic,
+                persistMnemonic: {
+                    storedMnemonic = mnemonic
+                },
+                retrieveMnemonic: {
+                    storedMnemonic ?? ""
+                },
+                rollbackMnemonic: {
+                    storedMnemonic = nil
+                },
+                createWallet: { () async throws -> Int in
+                    throw WalletLifecycleTestError.walletCreation
+                })
+            XCTFail("expected walletCreation")
+        } catch {
             guard case MnemonicFirstWalletCreationError.walletCreation = error else {
                 return XCTFail("unexpected error: \(error)")
             }
@@ -593,25 +597,36 @@ final class MnemonicFirstWalletCreationTests: XCTestCase {
         XCTAssertNil(storedMnemonic)
     }
 
-    func testCreationFailureRestoresPreviousMnemonic() {
+    /// The rollback must also run when the failure happens AFTER the async
+    /// create closure suspended (the off-main SDK create) — same transaction
+    /// semantics as the old synchronous closure.
+    func testCreationFailureAfterSuspensionRestoresPreviousMnemonic() async {
         let previousMnemonic = "previous mnemonic"
         let replacementMnemonic = "replacement mnemonic"
         var storedMnemonic: String? = previousMnemonic
 
-        XCTAssertThrowsError(try MnemonicFirstWalletCreation.run(
-            mnemonic: replacementMnemonic,
-            persistMnemonic: {
-                storedMnemonic = replacementMnemonic
-            },
-            retrieveMnemonic: {
-                storedMnemonic ?? ""
-            },
-            rollbackMnemonic: {
-                storedMnemonic = previousMnemonic
-            },
-            createWallet: { () throws -> Int in
-                throw WalletLifecycleTestError.walletCreation
-            }))
+        do {
+            _ = try await MnemonicFirstWalletCreation.run(
+                mnemonic: replacementMnemonic,
+                persistMnemonic: {
+                    storedMnemonic = replacementMnemonic
+                },
+                retrieveMnemonic: {
+                    storedMnemonic ?? ""
+                },
+                rollbackMnemonic: {
+                    storedMnemonic = previousMnemonic
+                },
+                createWallet: { () async throws -> Int in
+                    await Task.yield()
+                    throw WalletLifecycleTestError.walletCreation
+                })
+            XCTFail("expected walletCreation")
+        } catch {
+            guard case MnemonicFirstWalletCreationError.walletCreation = error else {
+                return XCTFail("unexpected error: \(error)")
+            }
+        }
 
         XCTAssertEqual(storedMnemonic, previousMnemonic)
     }

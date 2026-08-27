@@ -110,6 +110,11 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     [DWLogger sharedInstance];
+#if DEBUG
+    // Etap-C diagnostic: logs main-runloop stalls >=250ms through DWLogger
+    // so hangs can be attributed to bootstrap stages by timestamp.
+    [DWMainThreadStallMonitor start];
+#endif /* DEBUG */
     [FIRApp configure];
     [ExploreDashObjcWrapper configure];
     [CurrencyExchangerObjcWrapper startExchangeRateFetching];

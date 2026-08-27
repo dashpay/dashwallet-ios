@@ -9,6 +9,9 @@
 /* CrowdNode */
 " Terms of Use " = " Terms of Use ";
 
+/* Username marketplace: listing success — name, then price */
+"%1$@ listed for %2$@ DASH" = "%1$@ a fost listat la %2$@ DASH";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -20,6 +23,12 @@
 
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "%@ nu a putut fi găsit în rețeaua Dash pentru a-i trimite o cerere de contact.";
+
+/* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
+"%@ couldn't be verified on the Dash network. The QR code may be outdated." = "%@ nu a putut fi verificat în rețeaua Dash. Codul QR ar putea fi învechit.";
+
+/* Username marketplace: contested request cost value — the vote-resolution fund amount */
+"%@ DASH + network fee" = "%@ DASH + taxă de rețea";
 
 /* Usernames */
 "%@ Dash available" = "%@ Dash disponibili";
@@ -42,6 +51,9 @@
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@ has sent you a contact request";
 
+/* Username marketplace: delist success */
+"%@ is no longer for sale" = "%@ nu mai este de vânzare";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
@@ -51,8 +63,17 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
+/* Username marketplace: purchase success */
+"%@ is now yours" = "%@ este acum al tău";
+
+/* Username marketplace: registration success */
+"%@ registered" = "%@ a fost înregistrat";
+
 /* Testnet faucet */
 "%@ tDash requested — it will arrive shortly" = "%@ tDash requested — it will arrive shortly";
+
+/* Username marketplace: transfer success */
+"%@ transferred" = "%@ a fost transferat";
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
@@ -171,6 +192,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Pentru acest nume există deja un vot în desfășurare — cererea ta i se va alătura ca pretendent. Taxa de competiție se consumă la trimitere și nu se restituie, chiar dacă nu câștigi numele.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -182,6 +206,9 @@
 
 /* No comment provided by engineer. */
 "About me" = "About me";
+
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "Despre soldul contului de identitate";
 
 "Abstain" = "Abține-te";
 
@@ -235,6 +262,9 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "Add a New Contact";
 
+/* Usernames */
+"Add a temporary username" = "Adaugă un nume de utilizator temporar";
+
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
 
@@ -259,6 +289,9 @@
 /* Maya
    SwapKit */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+
+/* No comment provided by engineer. */
+"Advanced" = "Avansat";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Advanced Security";
@@ -315,6 +348,9 @@
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Amount in Dash";
 
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "Sumă în DASH";
+
 /* No comment provided by engineer. */
 "Amount received" = "Amount received";
 
@@ -350,6 +386,9 @@
 
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Oricine cunoaște o adresă îi poate vedea istoricul";
+
+/* Username marketplace: set price sheet body */
+"Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance." = "Oricine va putea cumpăra numele exact la acest preț. Încasările ajung ca credite în soldul identității tale.";
 
 /* AboutDash */
 "App version" = "App version";
@@ -430,8 +469,17 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "Autohide Balance";
 
+/* DashPay */
+"Available after sync finishes" = "Disponibil după finalizarea sincronizării";
+
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
+
+/* Username marketplace: unregistered name row */
+"Available — register it on your identity" = "Disponibil — înregistrează-l pe identitatea ta";
+
+/* Username marketplace: unregistered contested-eligible name row */
+"Available — short names are decided by a network vote" = "Disponibil — numele scurte se decid printr-un vot al rețelei";
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
@@ -525,6 +573,9 @@
 /* Voting */
 "Blocked '%@' username" = "Blocked '%@' username";
 
+/* Username marketplace: history — purchase with buyer, seller, price */
+"Bought by %1$@ from %2$@ for %3$@ DASH" = "Cumpărat de %1$@ de la %2$@ cu %3$@ DASH";
+
 /* Identities: this key only signs for one data contract */
 "Bound to contract" = "Legat de un contract";
 
@@ -573,6 +624,9 @@
 /* Swap */
 "Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
 
+/* Username marketplace: purchase button */
+"Buy for %@ DASH" = "Cumpără cu %@ DASH";
+
 /* DashSpend */
 "Buy gift card" = "Buy gift card";
 
@@ -581,6 +635,12 @@
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+
+/* Username marketplace: purchase confirmation title */
+"Buy “%@”?" = "Cumperi „%@”?";
+
+/* Username marketplace: Explore row subtitle */
+"Buy, sell and transfer DashPay usernames" = "Cumpără, vinde și transferă nume de utilizator DashPay";
 
 /* Buy/Sell */
 "Buy/Sell" = "Buy/Sell";
@@ -631,6 +691,9 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
+
+/* Username marketplace */
+"Change Price" = "Schimbă prețul";
 
 /* TimeSkew */
 "Check date & time settings" = "Check date & time settings";
@@ -713,6 +776,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "În curând";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "Finalizează transferul";
+
 /* Shielded transfer status */
 "Completed" = "Finalizat";
 
@@ -782,6 +848,18 @@
 
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "Cerere de contact trimisă către %@";
+
+/* Usernames */
+"Continue without a temporary username" = "Continuă fără un nume de utilizator temporar";
+
+/* Identity top-up sheet — body */
+"Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Transformă Dash în credite de identitate pentru a plăti acțiuni pe Platform, precum cererile de contact și actualizările de profil.";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "Transferul nu a putut fi finalizat";
+
+/* Identity top-up sheet — free amount chip */
+"Custom" = "Personalizat";
 
 /* No comment provided by engineer. */
 "Contact Requests" = "Cereri de contact";
@@ -1042,6 +1120,27 @@
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "DashPay a fost activat";
 
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "Introdu cel puțin %@ DASH";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "Taxe estimate";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "Taxele se scad din sumă; plătind din Shielded, un rest mic poate rămâne în soldul tău Platform.";
+
+/* Username marketplace: search segment */
+"Find Names" = "Caută nume";
+
+/* Username marketplace: listed badge */
+"For sale" = "De vânzare";
+
+/* Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app */
+"For sale by an independent user" = "De vânzare de la un utilizator independent";
+
+/* Identity top-up sheet — linkability warning for transparent-side sources */
+"Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Finanțarea dintr-un sold transparent leagă public acele monede de identitatea ta pe lanțul Dash. Pentru confidențialitate, plătește din soldul tău Shielded.";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "DashPay Invitation";
 
@@ -1062,6 +1161,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "Date";
+
+/* History group header for restored shielded operations whose original date is not recoverable */
+"Date unknown" = "Dată necunoscută";
 
 /* Voting */
 "Date: New to old" = "Date: New to old";
@@ -1085,6 +1187,9 @@
 
 /* No comment provided by engineer. */
 "Delete Wallet?" = "Delete Wallet?";
+
+/* SPV diagnostics */
+"Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network." = "Șterge tranzacțiile neconfirmate ale acestui portofel doar de pe acest dispozitiv și eliberează monedele pe care încercau să le cheltuie. Rescanarea filtrelor le restaurează pe cele care chiar există pe blockchain. Nu se trimite nimic în rețea.";
 
 /* Location Service Status */
 "Denied" = "Denied";
@@ -1116,6 +1221,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "SECURITATEA DISPOZITIVULUI ESTE COMPROMISĂ\nOrice aplicație \"jailbreak\" poate accesa datele keychain ale oricărei alte aplicații (și îți poate fura Dash).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu." = "SECURITATEA DISPOZITIVULUI ESTE COMPROMISĂ\nOrice aplicație „jailbreak” poate accesa datele din keychain ale oricărei alte aplicații (și îți poate fura Dash-ul). Mută-ți fondurile într-un portofel de pe un dispozitiv sigur, apoi resetează acest portofel cu „Resetează portofelul” din meniul Securitate.";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "SECURITATEA DISPOZITIVULUI ESTE COMPROMISĂ\nOrice aplicație \"jailbreak\" poate accesa datele keychain ale oricărei alte aplicații (și îți poate fura Dash). Șterge imediat portofelul și restaurează-l pe un dispozitiv securizat.";
@@ -1169,6 +1277,27 @@
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
 "DPNS Names" = "DPNS Names";
+
+/* SPV diagnostics */
+"Drop & rescan" = "Renunță și rescanează";
+
+/* SPV diagnostics */
+"Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network." = "Renunță de pe acest dispozitiv la tranzacțiile acestui portofel care încă așteaptă rețeaua (niciodată blocate sau minate), face din nou disponibile monedele pe care încercau să le cheltuie și rescanează filtrele recente. O tranzacție abandonată care chiar există pe blockchain revine de la sine în timpul rescanării. Nu se trimite nimic în rețea.";
+
+/* SPV diagnostics */
+"Drop Unconfirmed & Rescan" = "Renunță la cele neconfirmate și rescanează";
+
+/* SPV diagnostics */
+"Drop unconfirmed transactions?" = "Renunți la tranzacțiile neconfirmate?";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row." = "S-a renunțat la %d tranzacții neconfirmate — se rescanează filtrele, urmărește rândul „Filtre”.";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above." = "S-a renunțat la %d tranzacții neconfirmate, dar rescanarea filtrelor nu a putut porni — rulează „Rescanează filtrele” de mai sus.";
+
+/* SPV diagnostics */
+"Dropping…" = "Se renunță…";
 
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Due to CrowdNode’s terms of service users can withdraw no more than:";
@@ -1280,6 +1409,9 @@
 
 /* No comment provided by engineer. */
 "Enter your recovery phrase to reset your PIN" = "Enter your recovery phrase to reset your PIN";
+
+/* No comment provided by engineer. */
+"Enter your recovery phrase to set a new PIN" = "Introdu fraza de recuperare pentru a seta un PIN nou";
 
 /* Voting */
 "Enter your voting key" = "Enter your voting key";
@@ -1665,6 +1797,42 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "Cum se compară asta cu conturile Ethereum din punctul de vedere al confidențialității?";
 
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "Soldul contului de identitate";
+
+/* Username marketplace: section of contested-name requests awaiting the masternode vote */
+"In network vote" = "În votul rețelei";
+
+/* Username marketplace: search row for a contested label with an active vote by others */
+"In a network vote — you can join as a contender" = "În votul rețelei — te poți alătura ca pretendent";
+
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "Între timp poți fi găsit la „%1$@”, care rămâne al tău. Dacă votul îți acordă „%2$@”, vei putea fi găsit sub ambele nume de utilizator.";
+
+/* Username marketplace: search row for a label a past vote locked */
+"Locked by a network vote — nobody can register it" = "Blocat printr-un vot al rețelei — nimeni nu îl poate înregistra";
+
+/* Username marketplace: latest ownership change */
+"Last transferred" = "Ultimul transfer";
+
+/* Username marketplace: confirm listing button */
+"List For Sale" = "Listează spre vânzare";
+
+/* Username marketplace: own listed name */
+"Listed by you" = "Listat de tine";
+
+/* Username marketplace: history — price set */
+"Listed for %@ DASH" = "Listat la %@ DASH";
+
+/* Username marketplace: set price fee note */
+"Listing is a network transaction with a small fee, paid from your identity balance." = "Listarea spre vânzare este o tranzacție de rețea cu o taxă mică, plătită din soldul identității tale.";
+
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "Identitatea mea";
+
+/* Username marketplace: owned names segment */
+"My Names" = "Numele mele";
+
 /* DashPay FAQ */
 "How private is DashPay?" = "Cât de privat este DashPay?";
 
@@ -2027,6 +2195,9 @@
 /* CrowdNode */
 "Leaving the pool" = "Leaving the pool";
 
+/* DashPay Contacts: caption under the user's own QR code */
+"Let another Dash Wallet user scan this code to add you as a contact." = "Lasă un alt utilizator Dash Wallet să scaneze acest cod pentru a te adăuga ca persoană de contact.";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Let me know when it’s done";
 
@@ -2099,6 +2270,51 @@
 "Lock" = "Blochează";
 
 "Lock the name" = "Blochează numele";
+
+/* Username marketplace: contest voting deadline row */
+"Vote ends" = "Votul se încheie";
+
+/* Username marketplace: until when other identities can join the contest */
+"New contenders" = "Pretendenți noi";
+
+/* Username marketplace: join deadline still open — value of the New contenders row */
+"can join until %@" = "se pot alătura până la %@";
+
+/* Username marketplace: the contest's join window has passed — value of the New contenders row */
+"joining closed" = "înscrierile s-au încheiat";
+
+/* Username marketplace: masternode vote tally for one contest row */
+"%d votes" = "%d voturi";
+
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "12 cuvinte este standardul. 24 de cuvinte durează mai mult de notat și de restaurat, dar sunt semnificativ mai greu de spart de sistemele informatice avansate din viitorul îndepărtat.";
+
+/* Username marketplace: unresolvable transfer recipient */
+"No identity owns that username." = "Nicio identitate nu deține acel nume de utilizator.";
+
+/* Username marketplace: names that were sold or transferred away */
+"No longer yours" = "Nu mai sunt ale tale";
+
+/* Identity top-up sheet — missing unshield destination */
+"No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "Nu există încă o adresă de primire Platform disponibilă — așteaptă finalizarea sincronizării Platform și încearcă din nou.";
+
+/* Username marketplace: empty owned list */
+"No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "Această identitate nu are încă nume de utilizator. Găsește unul de cumpărat sau de înregistrat în fila „Caută nume”.";
+
+/* Identity top-up sheet — insufficient funding source */
+"Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Fonduri insuficiente în acest sold: sunt necesari %@ DASH, disponibili %@ DASH.";
+
+/* Username marketplace: insufficient balance hint */
+"Not enough identity credits for this purchase — top up from My Profile first." = "Nu ai suficiente credite de identitate pentru această cumpărare — alimentează mai întâi din „Profilul meu”.";
+
+/* Username marketplace: insufficient balance hint for a contested request */
+"Not enough identity credits for this request — top up from My Profile first." = "Nu ai suficiente credite de identitate pentru această cerere — alimentează mai întâi din „Profilul meu”.";
+
+/* Username marketplace: someone else's unlisted name */
+"Not for sale" = "Nu este de vânzare";
+
+/* Username marketplace: own unlisted name */
+"Not listed for sale" = "Nu este listat spre vânzare";
 
 "Lock “%@” so nobody gets it" = "Blochează „%@” ca să nu îl primească nimeni";
 
@@ -2342,11 +2558,92 @@
 /* SDK identity profile sheet — title */
 "My Profile" = "My Profile";
 
+/* DashPay Contacts: shows the user's own contact QR code */
+"My QR" = "QR-ul meu";
+
 /* No comment provided by engineer. */
 "Name" = "Name";
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Serviciile de nume precum Unstoppable Domains asociază un nume lizibil unei adrese publice fixe din lanț. Oricine poate rezolva numele și poate vedea fiecare plată făcută vreodată către el. Un nume de utilizator DashPay nu se rezolvă niciodată public către o adresă de plată — adresele sunt dezvăluite doar în cadrul schimbului criptat cu fiecare contact, așa că numele și banii tăi rămân nelegați pentru observatorii din exterior.";
+
+/* Username marketplace: contested request line — voting deadline */
+"Network vote ends %@" = "Votul rețelei se încheie pe %@";
+
+/* Username marketplace: activity overlay while the purchase transition runs */
+"Completing your purchase…" = "Finalizăm cumpărarea ta…";
+
+/* Usernames */
+"Register username" = "Înregistrează numele de utilizator";
+
+/* Username marketplace: activity overlay while the delist transition runs */
+"Removing the listing…" = "Retragem anunțul…";
+
+/* Username marketplace: activity overlay while the set-price transition runs */
+"Listing for sale…" = "Listăm spre vânzare…";
+
+/* Usernames */
+"Submit both usernames" = "Trimite ambele nume de utilizator";
+
+/* Usernames */
+"Temporary username" = "Nume de utilizator temporar";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "Numele de utilizator temporar nu trebuie să necesite el însuși un vot.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Acest nume necesită un vot al masternodurilor. Taxa de competiție se consumă la trimitere și nu se restituie, chiar dacă nu câștigi numele.";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "Și acest nume de utilizator ar necesita un vot — încearcă să adaugi o cifră între 2 și 9";
+
+/* Username marketplace: activity overlay while the transfer transition runs */
+"Transferring the username…" = "Transferăm numele de utilizator…";
+
+/* Username marketplace: activity overlay while the registration transition runs */
+"Registering the username…" = "Înregistrăm numele de utilizator…";
+
+/* Username marketplace: activity overlay while the contested request transition runs */
+"Submitting your username request…" = "Trimitem cererea ta de nume de utilizator…";
+
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "Explorează";
+
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "Modificări de preț";
+
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "Cumpărări";
+
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "Listat la %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "Vândut cu %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "Vândut cu %1$@ DASH · %2$@ · %3$@ → %4$@";
+
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "Momentan nu este de vânzare";
+
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "Niciun nume nu este de vânzare în activitatea recentă de listare. „Arată mai multe” ajunge mai departe în trecut.";
+
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "Încă nu există cumpărări în rețea.";
+
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "Se încarcă activitatea…";
+
+/* Username marketplace: load older browse activity */
+"Show more" = "Arată mai multe";
+
+/* Username marketplace: contest tallies card title */
+"Network vote so far" = "Votul rețelei până acum";
+
+/* Username marketplace: contest with zero masternode votes so far */
+"No votes cast yet" = "Nu s-a exprimat încă niciun vot";
 
 /* Swap route provider
    Swap route provider short */
@@ -2381,6 +2678,9 @@
 
 /* (List of) New (notifications) */
 "New" = "New";
+
+/* SPV diagnostics */
+"No unconfirmed transactions to drop." = "Nu există tranzacții neconfirmate la care să se renunțe.";
 
 /* CrowdNode */
 "New CrowdNode Account" = "New CrowdNode Account";
@@ -2563,6 +2863,15 @@
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "Pe Bitcoin nu există un strat de nume, așa că oamenii împart și refolosesc adresele la vedere — odată ce o adresă este cunoscută, tot ce a primit vreodată poate fi legat de proprietarul ei. Cu DashPay numele tău de utilizator este public, dar nu indică niciodată o adresă de plată: adresele sunt schimbate privat cu fiecare contact și se rotesc, așa că plata pe nume nu publică unde îți merg banii. Ambele sunt lanțuri transparente, deci analiza lanțului se aplică în continuare monedelor în sine.";
 
+/* DashPay Contacts: search results from DPNS, not the local contact list */
+"On the Dash network" = "În rețeaua Dash";
+
+/* Username marketplace */
+"Owned by you" = "Deținut de tine";
+
+/* Identity top-up sheet — funding source picker label */
+"Pay from" = "Plătește din";
+
 /* Identities */
 "On Network" = "În rețea";
 
@@ -2731,6 +3040,9 @@
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Plățile sunt private: adresele pe care le schimbi cu un contact circulă într-un conținut criptat pe care doar voi doi îl puteți citi și nu sunt publicate niciodată — așa că plățile tale nu pot fi legate ușor de numele tău de utilizator. Cu toate acestea, rămân plăți obișnuite pe un lanț transparent: o analiză sofisticată a lanțului ar putea dezvălui informații. Shielded DashPay (în curând) va acoperi acest gol. Cererile de contact în sine NU sunt private momentan: oricine poate vedea că două identități sunt conectate. Cererile de contact private sunt o funcție care urmează în curând. Numele tău de utilizator și profilul tău sunt de asemenea publice pe Dash Platform.";
 
+/* Username marketplace: price placeholder */
+"Price in DASH" = "Preț în DASH";
+
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "Plățile se confirmă în câteva secunde cu InstantSend";
 
@@ -2788,6 +3100,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN is always required to make a payment";
+
+/* No comment provided by engineer. */
+"PIN Not Set" = "PIN-ul nu este setat";
 
 /* Dash Platform chain */
 "Platform" = "Platform";
@@ -2993,6 +3308,9 @@
 /* Identities: what a public key is used for */
 "Purpose" = "Scop";
 
+/* Username marketplace */
+"Put Up For Sale" = "Pune spre vânzare";
+
 /* DashSpend */
 "Quantity" = "Quantity";
 
@@ -3028,6 +3346,96 @@
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Doar citire";
+
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "Retransmite";
+
+/* Delete a never-accepted transaction from local wallet state */
+"Remove if Not on Network" = "Șterge dacă nu este în rețea";
+
+/* Remove never-accepted transaction: confirmation title */
+"Remove this transaction?" = "Ștergi această tranzacție?";
+
+/* Remove never-accepted transaction: destructive confirm button */
+"Remove Transaction" = "Șterge tranzacția";
+
+/* Username marketplace: transfer recipient placeholder */
+"Recipient username or identity ID" = "Numele de utilizator sau ID-ul de identitate al destinatarului";
+
+/* Identity top-up sheet — shielded source note */
+"Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Recomandat: un transfer în doi pași prin propria ta adresă Platform îți menține identitatea nelegată de monedele tale transparente.";
+
+/* Username marketplace: register sheet title */
+"Register “%@”" = "Înregistrează „%@”";
+
+/* Username marketplace: registration date */
+"Registered" = "Înregistrat";
+
+/* Username marketplace */
+"Remove From Sale" = "Retrage de la vânzare";
+
+/* Remove never-accepted transaction: progress */
+"Removing transaction…" = "Se șterge tranzacția…";
+
+/* Username marketplace: delist confirmation title */
+"Remove “%@” from sale?" = "Retragi „%@” de la vânzare?";
+
+/* Username marketplace: history — delist (transfer to self) */
+"Removed from sale" = "Retras de la vânzare";
+
+/* Username marketplace: delist confirmation body */
+"Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "Retragerea anunțului este o tranzacție de rețea cu o taxă mică, plătită din soldul identității tale. Numele rămâne al tău.";
+
+/* Remove never-accepted transaction: refused because the explorer found it */
+"Transaction is known to the network" = "Tranzacția este cunoscută rețelei";
+
+/* Remove never-accepted transaction: refusal body */
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "Un explorator de blocuri raportează că această tranzacție este cunoscută rețelei Dash. Este posibil să aștepte încă în mempool sau să fie deja inclusă într-un bloc, așa că nu a fost ștearsă. Portofelul îi va actualiza confirmarea automat, imediat ce va fi inclusă într-un bloc sincronizat.";
+
+/* Remove never-accepted transaction: success */
+"Transaction removed" = "Tranzacție ștearsă";
+
+/* Remove never-accepted transaction: removed but the recovery rescan did not arm */
+"Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "Tranzacție ștearsă — rescanarea nu a putut porni, rulează „Rescanează filtrele” din Starea sincronizării Core";
+
+/* Remove never-accepted transaction: confirmation body */
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "Portofelul verifică mai întâi un explorator de blocuri. O tranzacție cunoscută rețelei — fie că așteaptă în mempool, fie că este deja într-un bloc — nu este niciodată ștearsă. Dacă tranzacția nu este găsită, este ștearsă din acest portofel de pe acest dispozitiv, iar monedele pe care încerca să le cheltuie devin din nou disponibile. Apoi portofelul rescanează blocurile recente ca verificare de siguranță. Nu se trimite nimic în rețea.";
+
+/* Remove never-accepted transaction: failure title */
+"Couldn't remove the transaction" = "Tranzacția nu a putut fi ștearsă";
+
+/* Remove never-accepted transaction: no local row */
+"This transaction is not in the local wallet." = "Această tranzacție nu se află în portofelul local.";
+
+/* Remove never-accepted transaction: local state says it's on-chain */
+"This transaction is confirmed and can't be removed." = "Această tranzacție este confirmată și nu poate fi ștearsă.";
+
+/* Remove never-accepted transaction: explorer unreachable */
+"Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "Nu s-a putut contacta un explorator de blocuri pentru a verifica dacă tranzacția nu este pe blockchain. Verifică-ți conexiunea și încearcă din nou.";
+
+/* Username marketplace: contested request cost row */
+"Request cost" = "Costul cererii";
+
+/* Username marketplace: contested request success */
+"Request for %@ submitted — masternodes now vote on it" = "Cererea pentru %@ a fost trimisă — masternodurile votează acum";
+
+/* Username marketplace: confirm contested request button */
+"Request Username" = "Solicită un nume de utilizator";
+
+/* Username marketplace: contested register sheet title */
+"Request “%@”" = "Solicită „%@”";
+
+/* Username marketplace: contested request not yet indexed by Platform */
+"Requested — waiting for the network vote" = "Solicitat — se așteaptă votul rețelei";
+
+/* Username marketplace: search row for a contested label this identity already requested */
+"Requested by you — the network vote is in progress" = "Solicitat de tine — votul rețelei este în desfășurare";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "Reîncercăm transferul…";
+
+/* Username marketplace: screen subtitle */
+"Search usernames, buy ones that are for sale, and sell or transfer your own." = "Caută nume de utilizator, cumpără-le pe cele de vânzare și vinde sau transferă-le pe ale tale.";
 
 /* Usernames */
 "Ready around %@" = "Gata în jurul orei %@";
@@ -3082,6 +3490,9 @@
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase length */
+"Recovery phrase length" = "Lungimea frazei de recuperare";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Fraza de recuperare nu se potrivește";
@@ -3195,6 +3606,9 @@
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
+
+/* No comment provided by engineer. */
+"Completion unknown" = "Finalizare necunoscută";
 
 /* Location Service Status */
 "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "Portofelele restaurate nu pot recupera întotdeauna tipul operațiunii. Această intrare a fost reconstruită din datele notei de pe lanț.";
@@ -3322,6 +3736,9 @@
 /* Identities: DPP security level of a public key */
 "Security level" = "Nivel de securitate";
 
+/* Username marketplace: transfer sheet body */
+"Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "Trimite gratuit acest nume unei alte identități. Transferul elimină și orice anunț de vânzare. Această acțiune nu poate fi anulată — noul proprietar ar trebui să îl transfere înapoi.";
+
 /* DashSpend */
 "See card details" = "See card details";
 
@@ -3370,7 +3787,520 @@
 /* Coinbase */
 "Select the coin" = "Select the coin";
 
+/* Identities */
+"Select the username to display for this identity." = "Alege numele de utilizator care va fi afișat pentru această identitate.";
+
 "Selecting fewer nodes reveals less about which masternodes you run." = "Selectarea mai puținor noduri dezvăluie mai puțin despre ce masternode-uri administrezi.";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "S-au găsit %ld portofele pe acest dispozitiv";
+
+/* No comment provided by engineer. */
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "Pe acest dispozitiv sunt stocate %ld portofele dintr-o instalare anterioară. „Șterge tot” elimină fiecare portofel. Fă o copie de rezervă a fiecărei fraze de recuperare înainte de ștergere.";
+
+/* No comment provided by engineer. */
+"Couldn’t Delete All Wallets" = "Nu s-au putut șterge toate portofelele";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Wallets" = "Portofelele nu au putut fi citite";
+
+/* No comment provided by engineer. */
+"Delete All" = "Șterge tot";
+
+/* No comment provided by engineer. */
+"Delete All Wallets?" = "Ștergi toate portofelele?";
+
+/* No comment provided by engineer. */
+"Deleting All Wallets…" = "Se șterg toate portofelele…";
+
+/* No comment provided by engineer. */
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "Numărul portofelelor stocate pe acest dispozitiv nu a putut fi verificat. Pentru a continua este necesară o frază de confirmare furnizată de Suportul Dash, înainte de ștergerea oricărui portofel.";
+
+/* No comment provided by engineer. */
+"Keep Wallets" = "Păstrează portofelele";
+
+/* No comment provided by engineer. */
+"No stored wallets were found. Nothing was deleted." = "Nu s-au găsit portofele stocate. Nu s-a șters nimic.";
+
+/* No comment provided by engineer. */
+"No Wallets Found" = "Nu s-au găsit portofele";
+
+/* No comment provided by engineer. */
+"Not all wallets could be deleted. Please try again." = "Nu au putut fi șterse toate portofelele. Încearcă din nou.";
+
+/* No comment provided by engineer. */
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "Această acțiune elimină definitiv toate portofelele, cheile private și frazele de recuperare stocate de această aplicație pe acest dispozitiv. Pot fi restaurate doar din copii de rezervă. Acțiunea nu poate fi anulată.";
+
+/* No comment provided by engineer. */
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "Portofelele stocate pe acest dispozitiv nu au putut fi verificate. Nu s-a șters nimic. Încearcă din nou.";
+
+/* No comment provided by engineer. */
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "Această acțiune va șterge toate cele %ld portofele stocate pe acest dispozitiv. Pot fi restaurate doar cu frazele lor de recuperare. Ștergerea lor de pe acest dispozitiv nu poate fi anulată.";
+
+/* No comment provided by engineer. */
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "Pe acest dispozitiv sunt încă stocate date de portofel dintr-o instalare anterioară. Continui să folosești aceste portofele sau ștergi toate datele și o iei de la capăt? Asigură-te că fiecare frază de recuperare are o copie de rezervă înainte de ștergere.";
+
+/* No comment provided by engineer. */
+"Wallets found on this device" = "Portofele găsite pe acest dispozitiv";
+
+/* No comment provided by engineer. */
+"Wipe All Wallets" = "Șterge complet toate portofelele";
+
+/* No comment provided by engineer. */
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "Fraza de recuperare a unui singur portofel nu poate autoriza ștergerea mai multor portofele diferite.";
+
+/* No comment provided by engineer. */
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "Un sold zero pe testnet nu dovedește că acest portofel este gol pe mainnet. Introdu fraza de recuperare pentru a continua.";
+
+/* No comment provided by engineer. */
+"Enter the recovery phrase to continue." = "Introdu fraza de recuperare pentru a continua.";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "Alege portofelul";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Recovery Phrases" = "Frazele de recuperare nu au putut fi citite";
+
+/* No comment provided by engineer. */
+"No Recovery Phrase Found" = "Nu s-a găsit nicio frază de recuperare";
+
+/* No comment provided by engineer. */
+"No recovery phrase is stored on this device." = "Pe acest dispozitiv nu este stocată nicio frază de recuperare.";
+
+/* No comment provided by engineer. */
+"Select the wallet whose recovery phrase you want to view." = "Alege portofelul a cărui frază de recuperare vrei să o vezi.";
+
+/* No comment provided by engineer. */
+"The recovery phrases stored on this device could not be read. Please try again." = "Frazele de recuperare stocate pe acest dispozitiv nu au putut fi citite. Încearcă din nou.";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address for this network" = "Nu este o adresă Dash validă pentru această rețea";
+
+/* No comment provided by engineer. */
+"The claimable balance is too small to cover the Platform withdrawal fee." = "Soldul revendicabil este prea mic pentru a acoperi taxa de retragere Platform.";
+
+/* No comment provided by engineer. */
+"You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it." = "Poți retrage până la %@ DASH — restul rămâne pentru acoperirea taxei Platform. Atinge „Max” pentru a-l folosi.";
+
+/* No comment provided by engineer. */
+"The minimum withdrawal is %@ DASH." = "Retragerea minimă este de %@ DASH.";
+
+/* No comment provided by engineer. */
+"Payout address key" = "Cheia adresei de plată";
+
+/* No comment provided by engineer. */
+"Owner key (%@)" = "Cheia proprietarului (%@)";
+
+/* No comment provided by engineer. */
+"Wallet is not ready. Try again in a moment." = "Portofelul nu este pregătit. Încearcă din nou într-o clipă.";
+
+/* No comment provided by engineer. */
+"%@ · Claimable %@ DASH" = "%@ · Revendicabil %@ DASH";
+
+/* No comment provided by engineer. */
+"Withdraw to" = "Retrage către";
+
+/* No comment provided by engineer. */
+"Enter a Dash address" = "Introdu o adresă Dash";
+
+/* No comment provided by engineer. */
+"Use the payout address" = "Folosește adresa de plată";
+
+/* No comment provided by engineer. */
+"This is the evonode's registered payout address." = "Aceasta este adresa de plată înregistrată a evonodului.";
+
+/* No comment provided by engineer. */
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "Acest portofel deține cheia adresei de plată a evonodului, deci soldul poate fi retras către orice adresă Dash.";
+
+/* No comment provided by engineer. */
+"Registered payout address" = "Adresă de plată înregistrată";
+
+/* No comment provided by engineer. */
+"This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "Această retragere este semnată cu cheia de proprietar a evonodului. Dash Platform permite cheii de proprietar retragerea doar către adresa de plată înregistrată, deci destinația nu poate fi modificată aici. Pentru retragere către altă adresă, folosește portofelul care deține cheia adresei de plată.";
+
+/* No comment provided by engineer. */
+"How it works" = "Cum funcționează";
+
+/* No comment provided by engineer. */
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "Dash Platform plătește retragerea pe lanțul Dash — de obicei în câteva minute. O taxă Platform de aproximativ %@ DASH este luată din soldul evonodului peste sumă, așa că „Max” lasă puțin pentru a o acoperi.";
+
+/* No comment provided by engineer. */
+"Confirm withdrawal" = "Confirmă retragerea";
+
+/* No comment provided by engineer. */
+"Owner-key withdrawals are always paid to the registered payout address." = "Retragerile cu cheia de proprietar se plătesc întotdeauna către adresa de plată înregistrată.";
+
+/* No comment provided by engineer. */
+"Waiting for authorization…" = "Se așteaptă autorizarea…";
+
+/* No comment provided by engineer. */
+"Submitting to Dash Platform…" = "Se trimite către Dash Platform…";
+
+/* No comment provided by engineer. */
+"Withdrawal submitted" = "Retragere trimisă";
+
+/* No comment provided by engineer. */
+"Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "Dash Platform o va plăti în curând pe lanțul Dash — de obicei ajunge în câteva minute.";
+
+/* No comment provided by engineer. */
+"Remaining claimable balance: %@ DASH" = "Sold revendicabil rămas: %@ DASH";
+
+/* No comment provided by engineer. */
+"%@ · Platform balance" = "%@ · Sold Platform";
+
+/* No comment provided by engineer. */
+"Signed with" = "Semnat cu";
+
+/* No comment provided by engineer. */
+"Platform fee" = "Taxă Platform";
+
+/* No comment provided by engineer. */
+"%@ (payout address)" = "%@ (adresă de plată)";
+
+/* No comment provided by engineer. */
+"This wallet holds the payout address key, so you can withdraw to any address." = "Acest portofel deține cheia adresei de plată, deci poți retrage către orice adresă.";
+
+/* No comment provided by engineer. */
+"This wallet holds the owner key, so withdrawals go to the registered payout address." = "Acest portofel deține cheia de proprietar, deci retragerile merg către adresa de plată înregistrată.";
+
+/* No comment provided by engineer. */
+"This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "Acest portofel nu deține nici cheia de proprietar, nici cheia adresei de plată a acestui evonod, deci soldul lui nu poate fi retras de aici.";
+
+/* No comment provided by engineer. */
+"Couldn't check which keys of this evonode are in the wallet." = "Nu s-a putut verifica ce chei ale acestui evonod se află în portofel.";
+
+/* No comment provided by engineer. */
+"Result not confirmed" = "Rezultat neconfirmat";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "Retragerea a fost trimisă către Dash Platform, dar rezultatul ei nu a putut fi confirmat. S-ar putea să fi reușit. Nu o trimite din nou — verifică mai întâi soldul revendicabil și adresa de plată.";
+
+/* No comment provided by engineer. */
+"1 block proposed this epoch" = "1 bloc propus în această epocă";
+
+/* No comment provided by engineer. */
+"%@ blocks proposed this epoch" = "%@ blocuri propuse în această epocă";
+
+/* No comment provided by engineer. */
+"Nodes" = "Noduri";
+
+/* No comment provided by engineer. */
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "Noduri, ziua %d a epocii, %@ blocuri propuse în această epocă";
+
+/* No comment provided by engineer. */
+"an evonode has not proposed a block in 2 days" = "un evonod nu a mai propus un bloc de 2 zile";
+
+/* No comment provided by engineer. */
+"an evonode has no blocks this epoch" = "un evonod nu are blocuri în această epocă";
+
+/* No comment provided by engineer. */
+"A key doesn't match this masternode — fix or clear it to continue." = "O cheie nu se potrivește cu acest masternod — corecteaz-o sau șterge-o pentru a continua.";
+
+/* No comment provided by engineer. */
+"Add keys" = "Adaugă chei";
+
+/* No comment provided by engineer. */
+"Add masternode" = "Adaugă masternod";
+
+/* No comment provided by engineer. */
+"Add this node's owner key or payout address key to withdraw from here." = "Adaugă cheia de proprietar sau cheia adresei de plată a acestui nod pentru a retrage de aici.";
+
+/* No comment provided by engineer. */
+"Already one of this wallet's masternodes — it's in the list above." = "Este deja unul dintre masternodurile acestui portofel — se află în lista de mai sus.";
+
+/* No comment provided by engineer. */
+"Already tracked." = "Deja urmărit.";
+
+/* No comment provided by engineer. */
+"Any keys you added for it are deleted from this device's keychain too." = "Toate cheile pe care le-ai adăugat pentru el se șterg și din keychain-ul acestui dispozitiv.";
+
+/* No comment provided by engineer. */
+"Available" = "Disponibil";
+
+/* No comment provided by engineer. */
+"BLS private key (hex)" = "Cheie privată BLS (hex)";
+
+/* No comment provided by engineer. */
+"Can't verify yet" = "Nu poate fi verificat încă";
+
+/* No comment provided by engineer. */
+"Could not load the node's registration details — owner and payout keys will verify later." = "Detaliile de înregistrare ale nodului nu au putut fi încărcate — cheile de proprietar și de plată vor fi verificate mai târziu.";
+
+/* No comment provided by engineer. */
+"Could not save a key to the keychain. Nothing was lost — try again." = "O cheie nu a putut fi salvată în keychain. Nu s-a pierdut nimic — încearcă din nou.";
+
+/* No comment provided by engineer. */
+"Destination address (optional)" = "Adresă de destinație (opțional)";
+
+/* No comment provided by engineer. */
+"Doesn't match" = "Nu se potrivește";
+
+/* No comment provided by engineer. */
+"Find" = "Găsește";
+
+/* No comment provided by engineer. */
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "Găsește cheile de proprietar și de plată, care nu se află în lista de masternoduri. Trimite amprenta publică a cheii către un nod Platform.";
+
+/* No comment provided by engineer. */
+"IP address, proTxHash or private key" = "Adresă IP, proTxHash sau cheie privată";
+
+/* No comment provided by engineer. */
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "Cheile sunt păstrate în keychain-ul acestui dispozitiv și nu îl părăsesc niciodată, decât pentru a semna acțiunea pe care o soliciți.";
+
+/* No comment provided by engineer. */
+"Keys on this device" = "Chei pe acest dispozitiv";
+
+/* No comment provided by engineer. */
+"Label (optional)" = "Etichetă (opțional)";
+
+/* No comment provided by engineer. */
+"Loading registration details…" = "Se încarcă detaliile de înregistrare…";
+
+/* No comment provided by engineer. */
+"Matches" = "Se potrivește";
+
+/* No comment provided by engineer. */
+"Matches this node's %@ key" = "Se potrivește cu cheia %@ a acestui nod";
+
+/* No comment provided by engineer. */
+"No masternode on the list matches that." = "Niciun masternod din listă nu se potrivește cu asta.";
+
+/* No comment provided by engineer. */
+"Node key (base64 or hex)" = "Cheia nodului (base64 sau hex)";
+
+/* No comment provided by engineer. */
+"Not added" = "Neadăugat";
+
+/* No comment provided by engineer. */
+"On this device" = "Pe acest dispozitiv";
+
+/* No comment provided by engineer. */
+"Operator payout" = "Plata operatorului";
+
+/* No comment provided by engineer. */
+"Payout" = "Plată";
+
+/* No comment provided by engineer. */
+"Platform could not be reached, so owner and payout keys were not checked." = "Platform nu a putut fi contactat, deci cheile de proprietar și de plată nu au fost verificate.";
+
+/* No comment provided by engineer. */
+"PoSe banned" = "Interzis prin PoSe";
+
+/* No comment provided by engineer. */
+"Private key (WIF or hex)" = "Cheie privată (WIF sau hex)";
+
+/* No comment provided by engineer. */
+"Refresh details" = "Reîmprospătează detaliile";
+
+/* No comment provided by engineer. */
+"Refreshing…" = "Se reîmprospătează…";
+
+/* No comment provided by engineer. */
+"Save keys" = "Salvează cheile";
+
+/* No comment provided by engineer. */
+"Search Platform too" = "Caută și pe Platform";
+
+/* No comment provided by engineer. */
+"Searching…" = "Se caută…";
+
+/* No comment provided by engineer. */
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "Se semnează cu cheia de proprietar — retragerea merge către adresa de plată înregistrată.";
+
+/* No comment provided by engineer. */
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "Se semnează cu cheia adresei de plată. Lasă destinația goală pentru a retrage către adresa de plată.";
+
+/* No comment provided by engineer. */
+"Stop tracking" = "Oprește urmărirea";
+
+/* No comment provided by engineer. */
+"Stop tracking this masternode?" = "Oprești urmărirea acestui masternod?";
+
+/* No comment provided by engineer. */
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "Aceea ar putea fi și o cheie de proprietar sau de plată — activează „Caută și pe Platform” pentru a verifica.";
+
+/* No comment provided by engineer. */
+"The signing key is missing from the keychain — re-add it and try again." = "Cheia de semnare lipsește din keychain — adaug-o din nou și încearcă iar.";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "Retragerea a fost trimisă, dar rezultatul ei nu a putut fi confirmat. Soldul se verifică din nou — nu reîncerca până când nu se stabilizează.";
+
+/* No comment provided by engineer. */
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "Urmărește orice masternod sau evonod din rețea — nu trebuie să aparțină acestui portofel.";
+
+/* No comment provided by engineer. */
+"Track this masternode" = "Urmărește acest masternod";
+
+/* No comment provided by engineer. */
+"Tracked" = "Urmărit";
+
+/* No comment provided by engineer. */
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "Urmărit. Adaugă mai jos cheile acestui nod pentru a activa acțiuni precum retragerea și votul, sau încheie acum și adaugă-le mai târziu.";
+
+/* No comment provided by engineer. */
+"Withdrawing…" = "Se retrage…";
+
+/* No comment provided by engineer. */
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "Poți urmări și orice masternod din rețea — după IP, proTxHash sau una dintre cheile lui — cu butonul „+”.";
+
+/* No comment provided by engineer. */
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "Adresa DAPI a acestui evonod nu este cunoscută, deci nu i se poate cere starea.";
+
+/* No comment provided by engineer. */
+"Couldn't get the evonode's status." = "Starea evonodului nu a putut fi obținută.";
+
+/* No comment provided by engineer. */
+"The evonode didn't answer in time." = "Evonodul nu a răspuns la timp.";
+
+/* No comment provided by engineer. */
+"Couldn't reach the evonode." = "Evonodul nu a putut fi contactat.";
+
+/* No comment provided by engineer. */
+"The evonode's answer couldn't be read." = "Răspunsul evonodului nu a putut fi citit.";
+
+/* No comment provided by engineer. */
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "Raportul propriu al nodului, neverificat — ce spune despre sine, nu ceea ce a stabilit rețeaua.";
+
+/* No comment provided by engineer. */
+"Asked" = "Interogat";
+
+/* No comment provided by engineer. */
+"Software" = "Software";
+
+/* No comment provided by engineer. */
+"DAPI" = "DAPI";
+
+/* No comment provided by engineer. */
+"Drive" = "Drive";
+
+/* No comment provided by engineer. */
+"Tenderdash" = "Tenderdash";
+
+/* No comment provided by engineer. */
+"Protocol versions" = "Versiuni de protocol";
+
+/* No comment provided by engineer. */
+"Tenderdash P2P" = "Tenderdash P2P";
+
+/* No comment provided by engineer. */
+"Tenderdash block" = "Bloc Tenderdash";
+
+/* No comment provided by engineer. */
+"Drive current" = "Drive curentă";
+
+/* No comment provided by engineer. */
+"Drive latest" = "Drive cea mai recentă";
+
+/* No comment provided by engineer. */
+"Drive next epoch" = "Drive epoca următoare";
+
+/* No comment provided by engineer. */
+"Node ID" = "ID-ul nodului";
+
+/* No comment provided by engineer. */
+"Identity check" = "Verificarea identității";
+
+/* No comment provided by engineer. */
+"Chain" = "Lanț";
+
+/* No comment provided by engineer. */
+"Catching up" = "Recuperează";
+
+/* No comment provided by engineer. */
+"Latest block height" = "Înălțimea celui mai recent bloc";
+
+/* No comment provided by engineer. */
+"Earliest block height" = "Înălțimea celui mai vechi bloc";
+
+/* No comment provided by engineer. */
+"Max peer block height" = "Înălțimea max. de bloc la parteneri";
+
+/* No comment provided by engineer. */
+"Core chain-locked height" = "Înălțimea chain-locked Core";
+
+/* No comment provided by engineer. */
+"Latest block hash" = "Hash-ul celui mai recent bloc";
+
+/* No comment provided by engineer. */
+"Latest app hash" = "Hash-ul celei mai recente aplicații";
+
+/* No comment provided by engineer. */
+"Earliest block hash" = "Hash-ul celui mai vechi bloc";
+
+/* No comment provided by engineer. */
+"Earliest app hash" = "Hash-ul celei mai vechi aplicații";
+
+/* No comment provided by engineer. */
+"Chain ID" = "ID-ul lanțului";
+
+/* No comment provided by engineer. */
+"Peers" = "Parteneri";
+
+/* No comment provided by engineer. */
+"Listening" = "Ascultă";
+
+/* No comment provided by engineer. */
+"State sync" = "Sincronizarea stării";
+
+/* No comment provided by engineer. */
+"Total synced time" = "Timp total sincronizat";
+
+/* No comment provided by engineer. */
+"Remaining time" = "Timp rămas";
+
+/* No comment provided by engineer. */
+"Total snapshots" = "Total instantanee";
+
+/* No comment provided by engineer. */
+"Chunk process avg time" = "Timp mediu de procesare a unui fragment";
+
+/* No comment provided by engineer. */
+"Snapshot height" = "Înălțimea instantaneului";
+
+/* No comment provided by engineer. */
+"Snapshot chunks" = "Fragmentele instantaneului";
+
+/* No comment provided by engineer. */
+"Backfilled blocks" = "Blocuri completate";
+
+/* No comment provided by engineer. */
+"Backfill blocks total" = "Total blocuri de completat";
+
+/* No comment provided by engineer. */
+"Time" = "Ora";
+
+/* No comment provided by engineer. */
+"Node clock" = "Ceasul nodului";
+
+/* No comment provided by engineer. */
+"Latest block" = "Cel mai recent bloc";
+
+/* No comment provided by engineer. */
+"Genesis" = "Genesis";
+
+/* No comment provided by engineer. */
+"Epoch" = "Epocă";
+
+/* No comment provided by engineer. */
+"Matches this evonode" = "Se potrivește cu acest evonod";
+
+/* No comment provided by engineer. */
+"Differs from this evonode" = "Diferă de acest evonod";
+
+/* No comment provided by engineer. */
+"Not reported" = "Neraportat";
+
+/* No comment provided by engineer. */
+"%.3f s" = "%.3f s";
+
+/* No comment provided by engineer. */
+"Node status" = "Starea nodului";
+
+/* No comment provided by engineer. */
+"Asking the evonode…" = "Se interoghează evonodul…";
+
+/* No comment provided by engineer. */
+"Request status" = "Solicită starea";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "Self-checkout";
@@ -3444,6 +4374,42 @@
 
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "Trimite prima ta cerere de contact";
+
+/* Username marketplace: set price sheet title */
+"Set a price for “%@”" = "Stabilește un preț pentru „%@”";
+
+/* Username marketplace */
+"Short names are decided by a network vote — use Request Username instead." = "Numele scurte se decid printr-un vot al rețelei — folosește în schimb „Solicită un nume de utilizator”.";
+
+/* Username marketplace: contested request explainer, paragraph 1 */
+"Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them." = "Numele scurte — de cel mult 19 caractere, doar litere și cifre — nu se înregistrează instantaneu. Rețeaua Dash votează cine le primește.";
+
+/* DashPay Contacts: expands the network search into the full add-contact flow */
+"Show more results" = "Arată mai multe rezultate";
+
+/* Username marketplace: departed-name line — buyer identity */
+"Sold to %@" = "Vândut către %@";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 1 of 2 — moving Dash out of your Shielded balance…" = "Pasul 1 din 2 — mutăm Dash din soldul tău Shielded…";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 2 of 2 — topping up your identity…" = "Pasul 2 din 2 — alimentăm identitatea ta…";
+
+/* Username marketplace: contested request cost footnote */
+"The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "Costul se plătește din soldul identității tale. El finanțează votul rețelei și nu se restituie dacă alt pretendent câștigă.";
+
+/* Username marketplace: register sheet body */
+"The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "Numele se înregistrează direct pe identitatea ta. Înregistrarea este o tranzacție de rețea plătită din soldul identității tale.";
+
+/* Username marketplace: contested label locked by a past vote */
+"The network voted to lock this name, so nobody can register it. Choose a different name." = "Rețeaua a votat blocarea acestui nume, deci nimeni nu îl poate înregistra. Alege alt nume.";
+
+/* Username marketplace */
+"The recipient identity couldn't be resolved." = "Identitatea destinatarului nu a putut fi determinată.";
+
+/* Username marketplace */
+"The seller changed the price before your purchase was accepted. Review the new price and try again." = "Vânzătorul a schimbat prețul înainte ca achiziția ta să fie acceptată. Verifică noul preț și încearcă din nou.";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Sending";
@@ -3965,6 +4931,66 @@
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "Aceasta adaugă două chei identității tale, ca alți utilizatori să îți poată trimite cereri de contact și ca tu să le poți accepta pe ale lor. Se întâmplă o singură dată.";
 
+/* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
+"This isn't a DashPay user QR code." = "Acesta nu este un cod QR de utilizator DashPay.";
+
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "Acest sold plătește taxele de rețea ale Dash Platform — nume de utilizator, cereri de contact, actualizări de profil. Aparține identității tale, nu portofelului: spre deosebire de soldurile Transparent, Platform și Shielded, nu poate fi cheltuit ca Dash obișnuit. Alimentarea transformă Dash dintr-un sold ales de tine — implicit Shielded — în credite de identitate.";
+
+/* Username marketplace: contested label already has an active vote */
+"This name is already in an active network vote. Your request joins it as another contender." = "Pentru acest nume există deja un vot activ al rețelei. Cererea ta i se alătură ca încă un pretendent.";
+
+/* Username marketplace */
+"This name is in an active network vote and can't be traded until the contest ends." = "Acest nume se află într-un vot activ al rețelei și nu poate fi tranzacționat până la încheierea competiției.";
+
+/* Username marketplace: detail for an unregistered name */
+"This name is not registered." = "Acest nume nu este înregistrat.";
+
+/* Username marketplace: seller-clarity callout on the detail sheet */
+"This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "Acest nume este oferit de un utilizator independent din rețeaua Dash — nu de Dash sau de această aplicație. Vânzătorul stabilește prețul.";
+
+/* Username marketplace: listing price exceeds the representable maximum */
+"This price is too high to list." = "Acest preț este prea mare pentru a fi listat.";
+
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "Acest transfer nu poate fi reîncercat de aici.";
+
+/* Username marketplace */
+"This username is not for sale." = "Acest nume de utilizator nu este de vânzare.";
+
+/* Username marketplace */
+"This username's record couldn't be read from the network." = "Înregistrarea acestui nume de utilizator nu a putut fi citită din rețea.";
+
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "Acest portofel nu are o identitate de alimentat.";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "Alimentează";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "Alimentează soldul identității";
+
+/* Username marketplace: timeline card title */
+"Trade history" = "Istoricul tranzacționării";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "Transfer finalizat";
+
+/* Username marketplace */
+"Transfer to Another Identity" = "Transferă către altă identitate";
+
+/* Username marketplace: transfer sheet title */
+"Transfer “%@”" = "Transferă „%@”";
+
+/* Username marketplace: history — transfer with both identities */
+"Transferred from %1$@ to %2$@" = "Transferat de la %1$@ către %2$@";
+
+/* Username marketplace: departed-name line — recipient identity */
+"Transferred to %@" = "Transferat către %@";
+
+/* Username marketplace */
+"Username Marketplace" = "Piața numelor de utilizator";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
@@ -4014,6 +5040,60 @@
 
 /* Usernames */
 "This name requires voting. Your Dash will be locked until voting completes." = "This name requires voting. Your Dash will be locked until voting completes.";
+
+/* Usernames */
+"Vote in progress" = "Vot în desfășurare";
+
+/* Usernames */
+"Vote ended" = "Votul s-a încheiat";
+
+/* Usernames */
+"A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender." = "Pentru acest nume există deja un vot al masternodurilor în desfășurare. Trimiterea unei cereri te înscrie în vot ca pretendent.";
+
+/* Usernames */
+"A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender." = "Pentru acest nume există deja un vot al masternodurilor în desfășurare — votul se încheie în jurul datei de %@. Trimiterea unei cereri te înscrie în vot ca pretendent.";
+
+/* Usernames */
+"A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote." = "Pentru acest nume este în desfășurare un vot al masternodurilor — votul se încheie în jurul datei de %@. Pretendenții noi nu se mai pot alătura acestui vot.";
+
+/* Usernames */
+"Username is in a network vote — new contenders can no longer join" = "Numele de utilizator este într-un vot al rețelei — pretendenții noi nu se mai pot alătura";
+
+/* Usernames */
+"The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "Proprietarul acestui nume de utilizator l-a listat în Piața numelor de utilizator la %@ Dash. Îl poți cumpăra de acolo.";
+
+/* Usernames */
+"The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance." = "Proprietarul acestui nume de utilizator l-a listat la %@ Dash. Îl poți cumpăra chiar acum — prețul se plătește din soldul portofelului tău.";
+
+/* Usernames */
+"The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "Proprietarul acestui nume de utilizator l-a listat la %1$@ Dash. Cumpărările de peste %2$@ Dash trebuie făcute din Piața numelor de utilizator — alege deocamdată alt nume de utilizator; poți decide mai târziu dacă îl cumperi pe acesta.";
+
+/* Usernames */
+"Buy for %@ Dash" = "Cumpără cu %@ Dash";
+
+/* Usernames */
+"Buy username" = "Cumpără numele de utilizator";
+
+/* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "Numele tău de utilizator temporar „%@” nu a putut fi înregistrat. Poți înregistra alt nume de utilizator mai târziu.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "„%1$@” este acum numele tău de utilizator. Dacă votul îți acordă „%2$@”, vei putea fi găsit sub ambele nume de utilizator.";
+
+/* Usernames */
+"“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "„%1$@” va fi cumpărat cu %2$@ Dash. Prețul se plătește din soldul portofelului tău.";
+
+/* Usernames */
+"Username purchased" = "Nume de utilizator cumpărat";
+
+/* Usernames */
+"“%@” is now your username." = "„%@” este acum numele tău de utilizator.";
+
+/* Usernames */
+"The masternode vote for this name has ended and the result is being finalized. Check back soon." = "Votul masternodurilor pentru acest nume s-a încheiat, iar rezultatul se finalizează. Revino în curând.";
+
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes." = "Pentru acest nume există deja un vot în desfășurare — cererea ta i se va alătura ca pretendent. Dash-ul tău va fi blocat până la finalizarea votului.";
 
 /* No comment provided by engineer. */
 "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone." = "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.";
@@ -4256,6 +5336,12 @@
 /* Voting */
 "Unblocked '%@' username" = "Unblocked '%@' username";
 
+/* SPV diagnostics */
+"Unconfirmed now" = "Neconfirmate acum";
+
+/* SPV diagnostics */
+"Unconfirmed Transactions" = "Tranzacții neconfirmate";
+
 /* DashPay Contacts */
 "Unhide Contact" = "Unhide Contact";
 
@@ -4369,6 +5455,9 @@
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Nume de utilizator, nu adrese";
 
+/* DashPay: banner identity row subtitle */
+"View profile" = "Vezi profilul";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Utilizatori care corespund cu %@ și care momentan nu sunt în contactele tale";
 
@@ -4399,11 +5488,17 @@
 /* No comment provided by engineer. */
 "Verified Successfully" = "Verified Successfully";
 
+/* DashPay Contacts: spinner after scanning a user QR code */
+"Verifying user…" = "Se verifică utilizatorul…";
+
 /* No comment provided by engineer. */
 "Verify" = "Verify";
 
 /* CrowdNode */
 "Verify your API Dash address" = "Verify your API Dash address";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "Verifică-ți fraza de recuperare pentru a seta un PIN nou.";
 
 /* Usernames */
 "Verify your identity" = "Verify your identity";
@@ -4618,6 +5713,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "Când vor deveni private cererile de contact?";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "Cât timp votul este în desfășurare, „%@” încă nu îți aparține, iar alți utilizatori nu te pot găsi după el. Adaugă un nume de utilizator necontestat pentru a folosi DashPay imediat. Acesta rămâne al tău definitiv — iar dacă votul îți acordă numele contestat, vei putea fi găsit sub ambele nume de utilizator.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "Where to Spend";
 
@@ -4628,6 +5726,18 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "De ce trebuie să îl activez?";
+
+/* Username marketplace: history participant is the current user */
+"you" = "tu";
+
+/* Username marketplace: contested request already submitted by this identity */
+"You already requested this name — the network vote is in progress. You'll find it under My Names." = "Ai solicitat deja acest nume — votul rețelei este în desfășurare. Îl găsești la „Numele mele”.";
+
+/* Username marketplace: purchase confirmation body with seller clarity */
+"You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "Cumperi de la un utilizator independent, nu de la Dash sau de la această aplicație. Prețul plus o mică taxă de rețea se plătesc din soldul identității tale, iar numele trece imediat la identitatea ta.";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "Nu ai un nume de utilizator cât timp votul este în desfășurare. Înregistrează acum un nume de utilizator necontestat — rămâne al tău, iar dacă votul îți acordă „%@”, vei putea fi găsit sub ambele nume de utilizator.";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "Why do I see all these transactions?";
@@ -4683,6 +5793,9 @@
 
 /* Wallets */
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
+
+/* Wallets */
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Notează aceste cuvinte în ordine și păstrează-le într-un loc sigur. Număr de cuvinte: %d. Sunt SINGURA modalitate de a recupera acest portofel. Oricine le are îți poate cheltui fondurile.";
 
 /* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
@@ -4934,6 +6047,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Istoricul tău, organizat";
 
+/* Username marketplace */
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Soldul identității tale nu acoperă această cumpărare: sunt necesari %1$@ DASH (inclusiv o rezervă pentru taxe), disponibili %2$@ DASH. Alimentează soldul identității și încearcă din nou.";
+
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "Identitatea ta are nevoie de două chei suplimentare pentru ca cererile de contact să poată fi criptate între tine și ceilalți utilizatori. Activarea le adaugă printr-o singură tranzacție în rețea. Se întâmplă o singură dată.";
 
@@ -4958,8 +6074,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "Monedele tale amestecate au fost mutate în soldul portofelului tău Dash.";
 
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "Nu am putut confirma această cumpărare la CTX. Dacă plata a trecut, cardul cadou va apărea în curând în lista ta de tranzacții — verifică acolo înainte de a cumpăra din nou.";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "Plata ta a fost trimisă, dar rețeaua nu a confirmat-o încă. Cardul tău cadou va apărea imediat ce va fi confirmată.";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Monedele tale amestecate au fost mutate în soldul protejat. Pentru cea mai bună confidențialitate, așteaptă cel puțin 2 ore înainte de a folosi aceste fonduri.";
+
+/* DashSpend */
+"Could not load your gift card" = "Cardul tău cadou nu a putut fi încărcat";
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
@@ -4975,6 +6100,9 @@
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "Soldul tău privat. Sumele și adresele sunt criptate pe lanț, așa că deținerile și istoricul tău rămân confidențiale.";
+
+/* Username marketplace: contested request explainer, paragraph 2 */
+"Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "Cererea ta intră într-un vot public al masternodurilor pentru aproximativ două săptămâni. Alții pot cere același nume; când votul se încheie, numele revine câștigătorului — sau nimănui, dacă rețeaua votează blocarea lui.";
 
 /* Usernames */
 "Your request was cancelled" = "Your request was cancelled";

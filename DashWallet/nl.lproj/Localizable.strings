@@ -9,6 +9,9 @@
 /* CrowdNode */
 " Terms of Use " = "Gebruiksvoorwaarden";
 
+/* Username marketplace: listing success — name, then price */
+"%1$@ listed for %2$@ DASH" = "%1$@ te koop gezet voor %2$@ DASH";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -20,6 +23,12 @@
 
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "%@ kon niet op het Dash-netwerk worden gevonden om een contactverzoek te sturen.";
+
+/* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
+"%@ couldn't be verified on the Dash network. The QR code may be outdated." = "%@ kon niet worden geverifieerd op het Dash-netwerk. De QR-code is mogelijk verouderd.";
+
+/* Username marketplace: contested request cost value — the vote-resolution fund amount */
+"%@ DASH + network fee" = "%@ DASH + netwerkkosten";
 
 /* Usernames */
 "%@ Dash available" = "%@ Dash beschikbaar";
@@ -42,6 +51,9 @@
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@ heeft u een contactverzoek gestuurd";
 
+/* Username marketplace: delist success */
+"%@ is no longer for sale" = "%@ is niet meer te koop";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ heeft geen toegang tot Face ID. Sta Face ID toegang toe bij instellingen.";
 
@@ -51,8 +63,17 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ heeft geen toegang tot Touch ID. Sta Touch ID toegang toe bij instellingen.";
 
+/* Username marketplace: purchase success */
+"%@ is now yours" = "%@ is nu van jou";
+
+/* Username marketplace: registration success */
+"%@ registered" = "%@ geregistreerd";
+
 /* Testnet faucet */
 "%@ tDash requested — it will arrive shortly" = "%@ tDash requested — it will arrive shortly";
+
+/* Username marketplace: transfer success */
+"%@ transferred" = "%@ overgedragen";
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
@@ -171,6 +192,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Er loopt al een stemming voor deze naam — je aanvraag doet mee als kandidaat. De wedstrijdkosten worden bij het indienen afgeschreven en niet terugbetaald, ook niet als je de naam niet wint.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -182,6 +206,9 @@
 
 /* No comment provided by engineer. */
 "About me" = "Over mij";
+
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "Over het saldo van de identiteitsrekening";
 
 "Abstain" = "Onthouden";
 
@@ -235,6 +262,9 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "Voeg een nieuw contact toe";
 
+/* Usernames */
+"Add a temporary username" = "Een tijdelijke gebruikersnaam toevoegen";
+
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
 
@@ -259,6 +289,9 @@
 /* Maya
    SwapKit */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+
+/* No comment provided by engineer. */
+"Advanced" = "Geavanceerd";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Geavanceerde Beveiliging";
@@ -315,6 +348,9 @@
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Bedrag in Dash";
 
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "Bedrag in DASH";
+
 /* No comment provided by engineer. */
 "Amount received" = "Ontvangen bedrag";
 
@@ -350,6 +386,9 @@
 
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Iedereen die een adres kent, kan de geschiedenis ervan bekijken";
+
+/* Username marketplace: set price sheet body */
+"Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance." = "Iedereen kan de naam precies voor deze prijs kopen. De opbrengst komt als krediet op je identiteitssaldo.";
 
 /* AboutDash */
 "App version" = "App version";
@@ -430,8 +469,17 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "Automatisch saldo verbergen";
 
+/* DashPay */
+"Available after sync finishes" = "Beschikbaar zodra het synchroniseren klaar is";
+
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
+
+/* Username marketplace: unregistered name row */
+"Available — register it on your identity" = "Beschikbaar — registreer hem op je identiteit";
+
+/* Username marketplace: unregistered contested-eligible name row */
+"Available — short names are decided by a network vote" = "Beschikbaar — over korte namen beslist een netwerkstemming";
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
@@ -525,6 +573,9 @@
 /* Voting */
 "Blocked '%@' username" = "Gebruikersnaam '%@' geblokkeerd";
 
+/* Username marketplace: history — purchase with buyer, seller, price */
+"Bought by %1$@ from %2$@ for %3$@ DASH" = "Gekocht door %1$@ van %2$@ voor %3$@ DASH";
+
 /* Identities: this key only signs for one data contract */
 "Bound to contract" = "Gebonden aan contract";
 
@@ -573,6 +624,9 @@
 /* Swap */
 "Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
 
+/* Username marketplace: purchase button */
+"Buy for %@ DASH" = "Koop voor %@ DASH";
+
 /* DashSpend */
 "Buy gift card" = "koop cadeaukaart";
 
@@ -581,6 +635,12 @@
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash for the exact amount of your purchase." = "Koop geschenkbonnen met je Dash voor het exacte bedrag van je aankoop.";
+
+/* Username marketplace: purchase confirmation title */
+"Buy “%@”?" = "“%@” kopen?";
+
+/* Username marketplace: Explore row subtitle */
+"Buy, sell and transfer DashPay usernames" = "Koop, verkoop en draag DashPay-gebruikersnamen over";
 
 /* Buy/Sell */
 "Buy/Sell" = "Koop/Verkoop";
@@ -631,6 +691,9 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "Wijzig pin";
+
+/* Username marketplace */
+"Change Price" = "Prijs wijzigen";
 
 /* TimeSkew */
 "Check date & time settings" = "Controleer datum & tijd instellingen";
@@ -713,6 +776,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "Binnenkort";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "Overdracht voltooien";
+
 /* Shielded transfer status */
 "Completed" = "Voltooid";
 
@@ -782,6 +848,18 @@
 
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "Contactverzoek verzonden naar %@";
+
+/* Usernames */
+"Continue without a temporary username" = "Doorgaan zonder tijdelijke gebruikersnaam";
+
+/* Identity top-up sheet — body */
+"Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Zet Dash om in identiteitskrediet om Platform-acties te betalen, zoals contactverzoeken en profielupdates.";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "Kon de overdracht niet voltooien";
+
+/* Identity top-up sheet — free amount chip */
+"Custom" = "Aangepast";
 
 /* No comment provided by engineer. */
 "Contact Requests" = "Contactverzoeken";
@@ -1042,6 +1120,27 @@
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "DashPay ingeschakeld";
 
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "Voer minstens %@ DASH in";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "Geschatte kosten";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "De kosten worden van het bedrag afgehaald; vanuit Shielded kan een klein restant op je Platform-saldo achterblijven.";
+
+/* Username marketplace: search segment */
+"Find Names" = "Namen zoeken";
+
+/* Username marketplace: listed badge */
+"For sale" = "Te koop";
+
+/* Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app */
+"For sale by an independent user" = "Te koop aangeboden door een onafhankelijke gebruiker";
+
+/* Identity top-up sheet — linkability warning for transparent-side sources */
+"Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Financieren vanuit een transparant saldo koppelt die munten publiekelijk aan je identiteit op de Dash-chain. Betaal voor je privacy vanuit je Shielded-saldo.";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "DashPay uitnodiging";
 
@@ -1062,6 +1161,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "Datum";
+
+/* History group header for restored shielded operations whose original date is not recoverable */
+"Date unknown" = "Datum onbekend";
 
 /* Voting */
 "Date: New to old" = "Datum: Nieuw naar oud";
@@ -1085,6 +1187,9 @@
 
 /* No comment provided by engineer. */
 "Delete Wallet?" = "Delete Wallet?";
+
+/* SPV diagnostics */
+"Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network." = "Verwijdert de onbevestigde transacties van deze wallet alleen van dit apparaat en maakt de munten vrij die ze probeerden uit te geven. De filterscan herstelt de transacties die daadwerkelijk op de blockchain staan. Er wordt niets naar het netwerk gestuurd.";
 
 /* Location Service Status */
 "Denied" = "Geweigerd";
@@ -1116,6 +1221,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "BEVEILIGING VAN HET APPARAAT IN GEVAAR\nEen 'jailbreak'-app heeft toegang tot de sleutelhanger van andere apps (en de mogelijkheid om je dash te stelen).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu." = "BEVEILIGING VAN APPARAAT AANGETAST\nElke 'jailbreak'-app kan bij de sleutelhangergegevens van elke andere app (en je Dash stelen). Verplaats je tegoed naar een wallet op een veilig apparaat en reset deze wallet daarna via ‘Wallet resetten’ in het menu Beveiliging.";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "BEVEILIGING VAN HET APPARAAT IN GEVAAR\nEen 'jailbreak'-app heeft toegang tot de sleutelhanger van andere apps (en de mogelijkheid om je dash te stelen). Verwijder deze portemonnee direct en herstel op een veilig apparaat.";
@@ -1169,6 +1277,27 @@
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
 "DPNS Names" = "DPNS Names";
+
+/* SPV diagnostics */
+"Drop & rescan" = "Weggooien en opnieuw scannen";
+
+/* SPV diagnostics */
+"Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network." = "Gooit de transacties van deze wallet die nog op het netwerk wachten (nooit vergrendeld of gemined) van dit apparaat weg, maakt de munten die ze probeerden uit te geven weer beschikbaar en scant recente filters opnieuw. Een weggegooide transactie die echt op de blockchain staat, komt tijdens het opnieuw scannen vanzelf terug. Er wordt niets naar het netwerk gestuurd.";
+
+/* SPV diagnostics */
+"Drop Unconfirmed & Rescan" = "Onbevestigde weggooien en opnieuw scannen";
+
+/* SPV diagnostics */
+"Drop unconfirmed transactions?" = "Onbevestigde transacties weggooien?";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row." = "%d onbevestigde transactie(s) weggegooid — filters worden opnieuw gescand, houd de rij Filters in de gaten.";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above." = "%d onbevestigde transactie(s) weggegooid, maar de filterscan kon niet starten — voer hierboven ‘Filters opnieuw scannen’ uit.";
+
+/* SPV diagnostics */
+"Dropping…" = "Weggooien…";
 
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Vanwege de servicevoorwaarden van CrowdNode kunnen gebruikers niet meer opnemen dan:";
@@ -1280,6 +1409,9 @@
 
 /* No comment provided by engineer. */
 "Enter your recovery phrase to reset your PIN" = "Enter your recovery phrase to reset your PIN";
+
+/* No comment provided by engineer. */
+"Enter your recovery phrase to set a new PIN" = "Voer je herstelzin in om een nieuwe pincode in te stellen";
 
 /* Voting */
 "Enter your voting key" = "Voer je stem sleutel in";
@@ -1665,6 +1797,42 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "Hoe verhoudt dit zich tot Ethereum-accounts op het gebied van privacy?";
 
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "Saldo identiteitsrekening";
+
+/* Username marketplace: section of contested-name requests awaiting the masternode vote */
+"In network vote" = "In netwerkstemming";
+
+/* Username marketplace: search row for a contested label with an active vote by others */
+"In a network vote — you can join as a contender" = "In een netwerkstemming — je kunt meedoen als kandidaat";
+
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "Ondertussen ben je bereikbaar op “%1$@”, die van jou blijft. Als de stemming je “%2$@” toekent, ben je op beide gebruikersnamen bereikbaar.";
+
+/* Username marketplace: search row for a label a past vote locked */
+"Locked by a network vote — nobody can register it" = "Vergrendeld door een netwerkstemming — niemand kan hem registreren";
+
+/* Username marketplace: latest ownership change */
+"Last transferred" = "Laatst overgedragen";
+
+/* Username marketplace: confirm listing button */
+"List For Sale" = "Te koop zetten";
+
+/* Username marketplace: own listed name */
+"Listed by you" = "Door jou te koop gezet";
+
+/* Username marketplace: history — price set */
+"Listed for %@ DASH" = "Te koop voor %@ DASH";
+
+/* Username marketplace: set price fee note */
+"Listing is a network transaction with a small fee, paid from your identity balance." = "Te koop zetten is een netwerktransactie met kleine kosten, betaald vanuit je identiteitssaldo.";
+
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "Mijn identiteit";
+
+/* Username marketplace: owned names segment */
+"My Names" = "Mijn namen";
+
 /* DashPay FAQ */
 "How private is DashPay?" = "Hoe privé is DashPay?";
 
@@ -2027,6 +2195,9 @@
 /* CrowdNode */
 "Leaving the pool" = "De pool verlaten";
 
+/* DashPay Contacts: caption under the user's own QR code */
+"Let another Dash Wallet user scan this code to add you as a contact." = "Laat een andere Dash Wallet-gebruiker deze code scannen om je als contact toe te voegen.";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Laat me weten wanneer het klaar is";
 
@@ -2099,6 +2270,51 @@
 "Lock" = "Vergrendelen";
 
 "Lock the name" = "De naam vergrendelen";
+
+/* Username marketplace: contest voting deadline row */
+"Vote ends" = "Stemming eindigt";
+
+/* Username marketplace: until when other identities can join the contest */
+"New contenders" = "Nieuwe kandidaten";
+
+/* Username marketplace: join deadline still open — value of the New contenders row */
+"can join until %@" = "kunnen meedoen tot %@";
+
+/* Username marketplace: the contest's join window has passed — value of the New contenders row */
+"joining closed" = "aanmelden gesloten";
+
+/* Username marketplace: masternode vote tally for one contest row */
+"%d votes" = "%d stemmen";
+
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "12 woorden is de standaard. 24 woorden kosten meer moeite om op te schrijven en te herstellen, maar zijn voor geavanceerde computersystemen in een verre toekomst aanzienlijk moeilijker te kraken.";
+
+/* Username marketplace: unresolvable transfer recipient */
+"No identity owns that username." = "Geen enkele identiteit bezit die gebruikersnaam.";
+
+/* Username marketplace: names that were sold or transferred away */
+"No longer yours" = "Niet meer van jou";
+
+/* Identity top-up sheet — missing unshield destination */
+"No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "Er is nog geen Platform-ontvangstadres beschikbaar — wacht tot de Platform-synchronisatie klaar is en probeer het opnieuw.";
+
+/* Username marketplace: empty owned list */
+"No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "Nog geen gebruikersnamen op deze identiteit. Zoek er een om te kopen of te registreren op het tabblad ‘Namen zoeken’.";
+
+/* Identity top-up sheet — insufficient funding source */
+"Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Onvoldoende saldo hier: %@ DASH nodig, %@ DASH beschikbaar.";
+
+/* Username marketplace: insufficient balance hint */
+"Not enough identity credits for this purchase — top up from My Profile first." = "Niet genoeg identiteitskrediet voor deze aankoop — laad eerst op via ‘Mijn profiel’.";
+
+/* Username marketplace: insufficient balance hint for a contested request */
+"Not enough identity credits for this request — top up from My Profile first." = "Niet genoeg identiteitskrediet voor deze aanvraag — laad eerst op via ‘Mijn profiel’.";
+
+/* Username marketplace: someone else's unlisted name */
+"Not for sale" = "Niet te koop";
+
+/* Username marketplace: own unlisted name */
+"Not listed for sale" = "Niet te koop gezet";
 
 "Lock “%@” so nobody gets it" = "“%@” vergrendelen zodat niemand hem krijgt";
 
@@ -2342,11 +2558,92 @@
 /* SDK identity profile sheet — title */
 "My Profile" = "My Profile";
 
+/* DashPay Contacts: shows the user's own contact QR code */
+"My QR" = "Mijn QR";
+
 /* No comment provided by engineer. */
 "Name" = "Naam";
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Naamdiensten zoals Unstoppable Domains koppelen een leesbare naam aan een vast openbaar adres op de keten. Iedereen kan de naam opzoeken en elke betaling zien die er ooit aan is gedaan. Een DashPay-gebruikersnaam verwijst nooit openbaar naar een betaaladres — adressen worden alleen onthuld binnen de versleutelde uitwisseling met elk contact, zodat je naam en je geld ongekoppeld blijven voor buitenstaanders.";
+
+/* Username marketplace: contested request line — voting deadline */
+"Network vote ends %@" = "De netwerkstemming eindigt op %@";
+
+/* Username marketplace: activity overlay while the purchase transition runs */
+"Completing your purchase…" = "Je aankoop afronden…";
+
+/* Usernames */
+"Register username" = "Gebruikersnaam registreren";
+
+/* Username marketplace: activity overlay while the delist transition runs */
+"Removing the listing…" = "Aanbieding verwijderen…";
+
+/* Username marketplace: activity overlay while the set-price transition runs */
+"Listing for sale…" = "Te koop zetten…";
+
+/* Usernames */
+"Submit both usernames" = "Beide gebruikersnamen indienen";
+
+/* Usernames */
+"Temporary username" = "Tijdelijke gebruikersnaam";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "De tijdelijke gebruikersnaam mag zelf geen stemming vereisen.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Deze naam vereist een masternode-stemming. De wedstrijdkosten worden bij het indienen afgeschreven en niet terugbetaald, ook niet als je de naam niet wint.";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "Deze gebruikersnaam zou ook een stemming vereisen — probeer een cijfer tussen 2 en 9 toe te voegen";
+
+/* Username marketplace: activity overlay while the transfer transition runs */
+"Transferring the username…" = "Gebruikersnaam overdragen…";
+
+/* Username marketplace: activity overlay while the registration transition runs */
+"Registering the username…" = "Gebruikersnaam registreren…";
+
+/* Username marketplace: activity overlay while the contested request transition runs */
+"Submitting your username request…" = "Je aanvraag voor de gebruikersnaam versturen…";
+
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "Bladeren";
+
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "Prijswijzigingen";
+
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "Aankopen";
+
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "Te koop voor %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "Verkocht voor %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "Verkocht voor %1$@ DASH · %2$@ · %3$@ → %4$@";
+
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "Nu niet te koop";
+
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "Er staan geen namen te koop in de recente aanbiedingsactiviteit. ‘Meer tonen’ gaat verder terug.";
+
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "Nog geen aankopen op het netwerk.";
+
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "Activiteit laden…";
+
+/* Username marketplace: load older browse activity */
+"Show more" = "Meer tonen";
+
+/* Username marketplace: contest tallies card title */
+"Network vote so far" = "Netwerkstemming tot nu toe";
+
+/* Username marketplace: contest with zero masternode votes so far */
+"No votes cast yet" = "Nog geen stemmen uitgebracht";
 
 /* Swap route provider
    Swap route provider short */
@@ -2381,6 +2678,9 @@
 
 /* (List of) New (notifications) */
 "New" = "Nieuw";
+
+/* SPV diagnostics */
+"No unconfirmed transactions to drop." = "Geen onbevestigde transacties om weg te gooien.";
 
 /* CrowdNode */
 "New CrowdNode Account" = "Nieuw account CrowdNode";
@@ -2563,6 +2863,15 @@
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "Op Bitcoin is er geen naamlaag, dus delen en hergebruiken mensen adressen in het openbaar — zodra een adres bekend is, kan alles wat het ooit ontving aan de eigenaar worden gekoppeld. Met DashPay is je gebruikersnaam openbaar, maar verwijst hij nooit naar een betaaladres: adressen worden per contact privé uitgewisseld en wisselen, dus betalen op naam maakt niet openbaar waar je geld heen gaat. Beide zijn transparante ketens, dus ketenanalyse blijft van toepassing op de munten zelf.";
 
+/* DashPay Contacts: search results from DPNS, not the local contact list */
+"On the Dash network" = "Op het Dash-netwerk";
+
+/* Username marketplace */
+"Owned by you" = "Van jou";
+
+/* Identity top-up sheet — funding source picker label */
+"Pay from" = "Betalen vanuit";
+
 /* Identities */
 "On Network" = "Op het netwerk";
 
@@ -2731,6 +3040,9 @@
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Betalingen zijn privé: de adressen die je met een contact uitwisselt, reizen in een versleutelde payload die alleen jullie tweeën kunnen lezen, en worden nooit gepubliceerd — je betalingen zijn dus niet eenvoudig aan je gebruikersnaam te koppelen. Het blijven wel gewone betalingen op een transparante keten: geavanceerde ketenanalyse kan informatie prijsgeven. Shielded DashPay (binnenkort) sluit dat gat. De contactverzoeken zelf zijn momenteel NIET privé: iedereen kan zien dat twee identiteiten verbonden zijn. Privé-contactverzoeken zijn een functie die binnenkort komt. Je gebruikersnaam en profiel zijn ook openbaar op Dash Platform.";
 
+/* Username marketplace: price placeholder */
+"Price in DASH" = "Prijs in DASH";
+
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "Betalingen worden binnen seconden bevestigd met InstantSend";
 
@@ -2788,6 +3100,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "De PIN is altijd vereist om een betaling uit te voeren";
+
+/* No comment provided by engineer. */
+"PIN Not Set" = "Pincode niet ingesteld";
 
 /* Dash Platform chain */
 "Platform" = "Platform";
@@ -2992,6 +3307,9 @@
 /* Identities: what a public key is used for */
 "Purpose" = "Doel";
 
+/* Username marketplace */
+"Put Up For Sale" = "Te koop aanbieden";
+
 /* DashSpend */
 "Quantity" = "Quantity";
 
@@ -3027,6 +3345,96 @@
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Alleen-lezen";
+
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "Opnieuw versturen";
+
+/* Delete a never-accepted transaction from local wallet state */
+"Remove if Not on Network" = "Verwijderen als niet op het netwerk";
+
+/* Remove never-accepted transaction: confirmation title */
+"Remove this transaction?" = "Deze transactie verwijderen?";
+
+/* Remove never-accepted transaction: destructive confirm button */
+"Remove Transaction" = "Transactie verwijderen";
+
+/* Username marketplace: transfer recipient placeholder */
+"Recipient username or identity ID" = "Gebruikersnaam of identiteits-ID van de ontvanger";
+
+/* Identity top-up sheet — shielded source note */
+"Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Aanbevolen: een overdracht in twee stappen via je eigen Platform-adres houdt je identiteit los van je transparante munten.";
+
+/* Username marketplace: register sheet title */
+"Register “%@”" = "“%@” registreren";
+
+/* Username marketplace: registration date */
+"Registered" = "Geregistreerd";
+
+/* Username marketplace */
+"Remove From Sale" = "Uit de verkoop halen";
+
+/* Remove never-accepted transaction: progress */
+"Removing transaction…" = "Transactie verwijderen…";
+
+/* Username marketplace: delist confirmation title */
+"Remove “%@” from sale?" = "“%@” uit de verkoop halen?";
+
+/* Username marketplace: history — delist (transfer to self) */
+"Removed from sale" = "Uit de verkoop gehaald";
+
+/* Username marketplace: delist confirmation body */
+"Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "De aanbieding verwijderen is een netwerktransactie met kleine kosten, betaald vanuit je identiteitssaldo. Je houdt de naam.";
+
+/* Remove never-accepted transaction: refused because the explorer found it */
+"Transaction is known to the network" = "De transactie is bekend bij het netwerk";
+
+/* Remove never-accepted transaction: refusal body */
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "Een blockexplorer meldt dat deze transactie bekend is bij het Dash-netwerk. Hij wacht mogelijk nog in de mempool of zit al in een blok, dus hij is niet verwijderd. De wallet werkt de bevestiging automatisch bij zodra hij in een gesynchroniseerd blok staat.";
+
+/* Remove never-accepted transaction: success */
+"Transaction removed" = "Transactie verwijderd";
+
+/* Remove never-accepted transaction: removed but the recovery rescan did not arm */
+"Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "Transactie verwijderd — de scan kon niet starten, voer ‘Filters opnieuw scannen’ uit in Core-synchronisatiestatus";
+
+/* Remove never-accepted transaction: confirmation body */
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "De wallet raadpleegt eerst een blockexplorer. Een transactie die bekend is bij het netwerk — of hij nu in de mempool wacht of al in een blok staat — wordt nooit verwijderd. Wordt de transactie niet gevonden, dan wordt hij uit deze wallet op dit apparaat verwijderd en komen de munten die hij probeerde uit te geven weer beschikbaar. Daarna scant de wallet de recente blokken opnieuw als veiligheidscontrole. Er wordt niets naar het netwerk gestuurd.";
+
+/* Remove never-accepted transaction: failure title */
+"Couldn't remove the transaction" = "Kon de transactie niet verwijderen";
+
+/* Remove never-accepted transaction: no local row */
+"This transaction is not in the local wallet." = "Deze transactie zit niet in de lokale wallet.";
+
+/* Remove never-accepted transaction: local state says it's on-chain */
+"This transaction is confirmed and can't be removed." = "Deze transactie is bevestigd en kan niet worden verwijderd.";
+
+/* Remove never-accepted transaction: explorer unreachable */
+"Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "Kon geen blockexplorer bereiken om te controleren of de transactie niet op de blockchain staat. Controleer je verbinding en probeer het opnieuw.";
+
+/* Username marketplace: contested request cost row */
+"Request cost" = "Kosten van de aanvraag";
+
+/* Username marketplace: contested request success */
+"Request for %@ submitted — masternodes now vote on it" = "Aanvraag voor %@ ingediend — masternodes stemmen er nu over";
+
+/* Username marketplace: confirm contested request button */
+"Request Username" = "Gebruikersnaam aanvragen";
+
+/* Username marketplace: contested register sheet title */
+"Request “%@”" = "“%@” aanvragen";
+
+/* Username marketplace: contested request not yet indexed by Platform */
+"Requested — waiting for the network vote" = "Aangevraagd — wacht op de netwerkstemming";
+
+/* Username marketplace: search row for a contested label this identity already requested */
+"Requested by you — the network vote is in progress" = "Door jou aangevraagd — de netwerkstemming loopt";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "Overdracht opnieuw proberen…";
+
+/* Username marketplace: screen subtitle */
+"Search usernames, buy ones that are for sale, and sell or transfer your own." = "Zoek gebruikersnamen, koop de namen die te koop staan en verkoop of draag je eigen namen over.";
 
 /* Usernames */
 "Ready around %@" = "Klaar rond %@";
@@ -3081,6 +3489,9 @@
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Herstelzin";
+
+/* Recovery phrase length */
+"Recovery phrase length" = "Lengte van de herstelzin";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "De herstelzin komt niet overeen";
@@ -3194,6 +3605,9 @@
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
+
+/* No comment provided by engineer. */
+"Completion unknown" = "Voltooiing onbekend";
 
 /* Location Service Status */
 "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "Herstelde portemonnees kunnen het bewerkingstype niet altijd achterhalen. Deze vermelding is gereconstrueerd uit notitiegegevens op de keten.";
@@ -3321,6 +3735,9 @@
 /* Identities: DPP security level of a public key */
 "Security level" = "Beveiligingsniveau";
 
+/* Username marketplace: transfer sheet body */
+"Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "Stuur deze naam gratis naar een andere identiteit. De overdracht haalt ook elke verkoopaanbieding weg. Dit kan niet ongedaan worden gemaakt — de nieuwe eigenaar zou hem moeten terugsturen.";
+
 /* DashSpend */
 "See card details" = "See card details";
 
@@ -3368,7 +3785,520 @@
 /* Coinbase */
 "Select the coin" = "Selecteer de munt";
 
+/* Identities */
+"Select the username to display for this identity." = "Kies de gebruikersnaam die voor deze identiteit wordt getoond.";
+
 "Selecting fewer nodes reveals less about which masternodes you run." = "Minder nodes selecteren onthult minder over welke masternodes je draait.";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "%ld wallets gevonden op dit apparaat";
+
+/* No comment provided by engineer. */
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "Er staan %ld wallets van een eerdere installatie op dit apparaat. ‘Alles verwijderen’ verwijdert elke wallet. Maak van elke herstelzin een back-up voordat je verwijdert.";
+
+/* No comment provided by engineer. */
+"Couldn’t Delete All Wallets" = "Kon niet alle wallets verwijderen";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Wallets" = "Kon de wallets niet lezen";
+
+/* No comment provided by engineer. */
+"Delete All" = "Alles verwijderen";
+
+/* No comment provided by engineer. */
+"Delete All Wallets?" = "Alle wallets verwijderen?";
+
+/* No comment provided by engineer. */
+"Deleting All Wallets…" = "Alle wallets verwijderen…";
+
+/* No comment provided by engineer. */
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "Het aantal wallets op dit apparaat kon niet worden geverifieerd. Doorgaan vereist een bevestigingszin van Dash Support voordat er een wallet wordt verwijderd.";
+
+/* No comment provided by engineer. */
+"Keep Wallets" = "Wallets behouden";
+
+/* No comment provided by engineer. */
+"No stored wallets were found. Nothing was deleted." = "Er zijn geen opgeslagen wallets gevonden. Er is niets verwijderd.";
+
+/* No comment provided by engineer. */
+"No Wallets Found" = "Geen wallets gevonden";
+
+/* No comment provided by engineer. */
+"Not all wallets could be deleted. Please try again." = "Niet alle wallets konden worden verwijderd. Probeer het opnieuw.";
+
+/* No comment provided by engineer. */
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "Hiermee worden alle wallets, privésleutels en herstelzinnen die deze app op dit apparaat bewaart permanent verwijderd. Ze kunnen alleen vanuit back-ups worden hersteld. Dit kan niet ongedaan worden gemaakt.";
+
+/* No comment provided by engineer. */
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "De wallets op dit apparaat konden niet worden geverifieerd. Er is niets verwijderd. Probeer het opnieuw.";
+
+/* No comment provided by engineer. */
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "Hiermee worden alle %ld wallets op dit apparaat gewist. Ze kunnen alleen met hun herstelzinnen worden hersteld. Ze van dit apparaat verwijderen kan niet ongedaan worden gemaakt.";
+
+/* No comment provided by engineer. */
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "Er staan nog walletgegevens van een eerdere installatie op dit apparaat. Deze wallets blijven gebruiken, of alle walletgegevens verwijderen en opnieuw beginnen? Zorg dat van elke herstelzin een back-up is gemaakt voordat je verwijdert.";
+
+/* No comment provided by engineer. */
+"Wallets found on this device" = "Wallets gevonden op dit apparaat";
+
+/* No comment provided by engineer. */
+"Wipe All Wallets" = "Alle wallets wissen";
+
+/* No comment provided by engineer. */
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "De herstelzin van één wallet kan het verwijderen van meerdere verschillende wallets niet autoriseren.";
+
+/* No comment provided by engineer. */
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "Een saldo van nul op testnet bewijst niet dat deze wallet leeg is op mainnet. Voer de herstelzin in om door te gaan.";
+
+/* No comment provided by engineer. */
+"Enter the recovery phrase to continue." = "Voer de herstelzin in om door te gaan.";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "Wallet kiezen";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Recovery Phrases" = "Kon de herstelzinnen niet lezen";
+
+/* No comment provided by engineer. */
+"No Recovery Phrase Found" = "Geen herstelzin gevonden";
+
+/* No comment provided by engineer. */
+"No recovery phrase is stored on this device." = "Er is geen herstelzin op dit apparaat opgeslagen.";
+
+/* No comment provided by engineer. */
+"Select the wallet whose recovery phrase you want to view." = "Kies de wallet waarvan je de herstelzin wilt bekijken.";
+
+/* No comment provided by engineer. */
+"The recovery phrases stored on this device could not be read. Please try again." = "De herstelzinnen op dit apparaat konden niet worden gelezen. Probeer het opnieuw.";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address for this network" = "Geen geldig Dash-adres voor dit netwerk";
+
+/* No comment provided by engineer. */
+"The claimable balance is too small to cover the Platform withdrawal fee." = "Het opvraagbare saldo is te klein om de Platform-opnamekosten te dekken.";
+
+/* No comment provided by engineer. */
+"You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it." = "Je kunt tot %@ DASH opnemen — de rest blijft staan om de Platform-kosten te dekken. Tik op ‘Max’ om dat te gebruiken.";
+
+/* No comment provided by engineer. */
+"The minimum withdrawal is %@ DASH." = "De minimale opname is %@ DASH.";
+
+/* No comment provided by engineer. */
+"Payout address key" = "Sleutel van het uitbetaaladres";
+
+/* No comment provided by engineer. */
+"Owner key (%@)" = "Eigenaarssleutel (%@)";
+
+/* No comment provided by engineer. */
+"Wallet is not ready. Try again in a moment." = "De wallet is niet klaar. Probeer het zo meteen opnieuw.";
+
+/* No comment provided by engineer. */
+"%@ · Claimable %@ DASH" = "%@ · Opvraagbaar %@ DASH";
+
+/* No comment provided by engineer. */
+"Withdraw to" = "Opnemen naar";
+
+/* No comment provided by engineer. */
+"Enter a Dash address" = "Voer een Dash-adres in";
+
+/* No comment provided by engineer. */
+"Use the payout address" = "Het uitbetaaladres gebruiken";
+
+/* No comment provided by engineer. */
+"This is the evonode's registered payout address." = "Dit is het geregistreerde uitbetaaladres van de evonode.";
+
+/* No comment provided by engineer. */
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "Deze wallet heeft de sleutel van het uitbetaaladres van de evonode, dus het saldo kan naar elk Dash-adres worden opgenomen.";
+
+/* No comment provided by engineer. */
+"Registered payout address" = "Geregistreerd uitbetaaladres";
+
+/* No comment provided by engineer. */
+"This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "Deze opname wordt ondertekend met de eigenaarssleutel van de evonode. Dash Platform laat de eigenaarssleutel alleen opnemen naar het geregistreerde uitbetaaladres, dus de bestemming kan hier niet worden gewijzigd. Gebruik voor opname naar een ander adres de wallet met de sleutel van het uitbetaaladres.";
+
+/* No comment provided by engineer. */
+"How it works" = "Hoe het werkt";
+
+/* No comment provided by engineer. */
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "Dash Platform betaalt de opname uit op de Dash-chain — meestal binnen een paar minuten. Bovenop het bedrag worden Platform-kosten van ongeveer %@ DASH van het saldo van de evonode afgehaald, dus ‘Max’ laat wat staan om die te dekken.";
+
+/* No comment provided by engineer. */
+"Confirm withdrawal" = "Opname bevestigen";
+
+/* No comment provided by engineer. */
+"Owner-key withdrawals are always paid to the registered payout address." = "Opnames met de eigenaarssleutel gaan altijd naar het geregistreerde uitbetaaladres.";
+
+/* No comment provided by engineer. */
+"Waiting for authorization…" = "Wachten op autorisatie…";
+
+/* No comment provided by engineer. */
+"Submitting to Dash Platform…" = "Versturen naar Dash Platform…";
+
+/* No comment provided by engineer. */
+"Withdrawal submitted" = "Opname ingediend";
+
+/* No comment provided by engineer. */
+"Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "Dash Platform betaalt hem binnenkort uit op de Dash-chain — meestal komt het binnen een paar minuten aan.";
+
+/* No comment provided by engineer. */
+"Remaining claimable balance: %@ DASH" = "Resterend opvraagbaar saldo: %@ DASH";
+
+/* No comment provided by engineer. */
+"%@ · Platform balance" = "%@ · Platform-saldo";
+
+/* No comment provided by engineer. */
+"Signed with" = "Ondertekend met";
+
+/* No comment provided by engineer. */
+"Platform fee" = "Platform-kosten";
+
+/* No comment provided by engineer. */
+"%@ (payout address)" = "%@ (uitbetaaladres)";
+
+/* No comment provided by engineer. */
+"This wallet holds the payout address key, so you can withdraw to any address." = "Deze wallet heeft de sleutel van het uitbetaaladres, dus je kunt naar elk adres opnemen.";
+
+/* No comment provided by engineer. */
+"This wallet holds the owner key, so withdrawals go to the registered payout address." = "Deze wallet heeft de eigenaarssleutel, dus opnames gaan naar het geregistreerde uitbetaaladres.";
+
+/* No comment provided by engineer. */
+"This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "Deze wallet heeft noch de eigenaarssleutel noch de sleutel van het uitbetaaladres van deze evonode, dus het saldo kan hier niet worden opgenomen.";
+
+/* No comment provided by engineer. */
+"Couldn't check which keys of this evonode are in the wallet." = "Kon niet controleren welke sleutels van deze evonode in de wallet zitten.";
+
+/* No comment provided by engineer. */
+"Result not confirmed" = "Resultaat niet bevestigd";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "De opname is naar Dash Platform gestuurd, maar het resultaat kon niet worden bevestigd. Hij is mogelijk gelukt. Dien hem niet opnieuw in — controleer eerst het opvraagbare saldo en het uitbetaaladres.";
+
+/* No comment provided by engineer. */
+"1 block proposed this epoch" = "1 blok voorgesteld dit tijdvak";
+
+/* No comment provided by engineer. */
+"%@ blocks proposed this epoch" = "%@ blokken voorgesteld dit tijdvak";
+
+/* No comment provided by engineer. */
+"Nodes" = "Nodes";
+
+/* No comment provided by engineer. */
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "Nodes, tijdvakdag %d, %@ blokken voorgesteld dit tijdvak";
+
+/* No comment provided by engineer. */
+"an evonode has not proposed a block in 2 days" = "een evonode heeft in 2 dagen geen blok voorgesteld";
+
+/* No comment provided by engineer. */
+"an evonode has no blocks this epoch" = "een evonode heeft geen blokken dit tijdvak";
+
+/* No comment provided by engineer. */
+"A key doesn't match this masternode — fix or clear it to continue." = "Een sleutel hoort niet bij deze masternode — corrigeer of wis hem om door te gaan.";
+
+/* No comment provided by engineer. */
+"Add keys" = "Sleutels toevoegen";
+
+/* No comment provided by engineer. */
+"Add masternode" = "Masternode toevoegen";
+
+/* No comment provided by engineer. */
+"Add this node's owner key or payout address key to withdraw from here." = "Voeg de eigenaarssleutel of de sleutel van het uitbetaaladres van deze node toe om hier op te nemen.";
+
+/* No comment provided by engineer. */
+"Already one of this wallet's masternodes — it's in the list above." = "Al een van de masternodes van deze wallet — hij staat in de lijst hierboven.";
+
+/* No comment provided by engineer. */
+"Already tracked." = "Wordt al gevolgd.";
+
+/* No comment provided by engineer. */
+"Any keys you added for it are deleted from this device's keychain too." = "Alle sleutels die je ervoor hebt toegevoegd, worden ook uit de sleutelhanger van dit apparaat verwijderd.";
+
+/* No comment provided by engineer. */
+"Available" = "Beschikbaar";
+
+/* No comment provided by engineer. */
+"BLS private key (hex)" = "BLS-privésleutel (hex)";
+
+/* No comment provided by engineer. */
+"Can't verify yet" = "Nog niet te verifiëren";
+
+/* No comment provided by engineer. */
+"Could not load the node's registration details — owner and payout keys will verify later." = "Kon de registratiegegevens van de node niet laden — eigenaars- en uitbetaalsleutels worden later geverifieerd.";
+
+/* No comment provided by engineer. */
+"Could not save a key to the keychain. Nothing was lost — try again." = "Kon een sleutel niet in de sleutelhanger opslaan. Er is niets verloren gegaan — probeer het opnieuw.";
+
+/* No comment provided by engineer. */
+"Destination address (optional)" = "Bestemmingsadres (optioneel)";
+
+/* No comment provided by engineer. */
+"Doesn't match" = "Komt niet overeen";
+
+/* No comment provided by engineer. */
+"Find" = "Zoeken";
+
+/* No comment provided by engineer. */
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "Vindt eigenaars- en uitbetaalsleutels, die niet in de masternodelijst staan. Stuurt de publieke vingerafdruk van de sleutel naar een Platform-node.";
+
+/* No comment provided by engineer. */
+"IP address, proTxHash or private key" = "IP-adres, proTxHash of privésleutel";
+
+/* No comment provided by engineer. */
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "Sleutels worden bewaard in de sleutelhanger van dit apparaat en verlaten die alleen om de actie te ondertekenen die je vraagt.";
+
+/* No comment provided by engineer. */
+"Keys on this device" = "Sleutels op dit apparaat";
+
+/* No comment provided by engineer. */
+"Label (optional)" = "Label (optioneel)";
+
+/* No comment provided by engineer. */
+"Loading registration details…" = "Registratiegegevens laden…";
+
+/* No comment provided by engineer. */
+"Matches" = "Komt overeen";
+
+/* No comment provided by engineer. */
+"Matches this node's %@ key" = "Komt overeen met de %@-sleutel van deze node";
+
+/* No comment provided by engineer. */
+"No masternode on the list matches that." = "Geen masternode in de lijst komt daarmee overeen.";
+
+/* No comment provided by engineer. */
+"Node key (base64 or hex)" = "Nodesleutel (base64 of hex)";
+
+/* No comment provided by engineer. */
+"Not added" = "Niet toegevoegd";
+
+/* No comment provided by engineer. */
+"On this device" = "Op dit apparaat";
+
+/* No comment provided by engineer. */
+"Operator payout" = "Uitbetaling operator";
+
+/* No comment provided by engineer. */
+"Payout" = "Uitbetaling";
+
+/* No comment provided by engineer. */
+"Platform could not be reached, so owner and payout keys were not checked." = "Platform was niet bereikbaar, dus eigenaars- en uitbetaalsleutels zijn niet gecontroleerd.";
+
+/* No comment provided by engineer. */
+"PoSe banned" = "PoSe-geblokkeerd";
+
+/* No comment provided by engineer. */
+"Private key (WIF or hex)" = "Privésleutel (WIF of hex)";
+
+/* No comment provided by engineer. */
+"Refresh details" = "Gegevens vernieuwen";
+
+/* No comment provided by engineer. */
+"Refreshing…" = "Vernieuwen…";
+
+/* No comment provided by engineer. */
+"Save keys" = "Sleutels opslaan";
+
+/* No comment provided by engineer. */
+"Search Platform too" = "Ook op Platform zoeken";
+
+/* No comment provided by engineer. */
+"Searching…" = "Zoeken…";
+
+/* No comment provided by engineer. */
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "Ondertekenen met de eigenaarssleutel — de opname gaat naar het geregistreerde uitbetaaladres.";
+
+/* No comment provided by engineer. */
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "Ondertekenen met de sleutel van het uitbetaaladres. Laat de bestemming leeg om naar het uitbetaaladres op te nemen.";
+
+/* No comment provided by engineer. */
+"Stop tracking" = "Stoppen met volgen";
+
+/* No comment provided by engineer. */
+"Stop tracking this masternode?" = "Stoppen met het volgen van deze masternode?";
+
+/* No comment provided by engineer. */
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "Dat kan ook een eigenaars- of uitbetaalsleutel zijn — zet ‘Ook op Platform zoeken’ aan om dat te controleren.";
+
+/* No comment provided by engineer. */
+"The signing key is missing from the keychain — re-add it and try again." = "De ondertekeningssleutel ontbreekt in de sleutelhanger — voeg hem opnieuw toe en probeer het nog eens.";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "De opname is verstuurd maar het resultaat kon niet worden bevestigd. Het saldo wordt opnieuw gecontroleerd — probeer het niet opnieuw tot dat vaststaat.";
+
+/* No comment provided by engineer. */
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "Volg elke masternode of evonode op het netwerk — hij hoeft niet bij deze wallet te horen.";
+
+/* No comment provided by engineer. */
+"Track this masternode" = "Deze masternode volgen";
+
+/* No comment provided by engineer. */
+"Tracked" = "Gevolgd";
+
+/* No comment provided by engineer. */
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "Gevolgd. Voeg hieronder de sleutels van deze node toe om acties als opnemen en stemmen mogelijk te maken, of rond nu af en voeg ze later toe.";
+
+/* No comment provided by engineer. */
+"Withdrawing…" = "Opnemen…";
+
+/* No comment provided by engineer. */
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "Je kunt ook elke masternode op het netwerk volgen — op IP, proTxHash of een van zijn sleutels — met de knop ‘+’.";
+
+/* No comment provided by engineer. */
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "Het DAPI-adres van deze evonode is niet bekend, dus je kunt hem niet om zijn status vragen.";
+
+/* No comment provided by engineer. */
+"Couldn't get the evonode's status." = "Kon de status van de evonode niet ophalen.";
+
+/* No comment provided by engineer. */
+"The evonode didn't answer in time." = "De evonode antwoordde niet op tijd.";
+
+/* No comment provided by engineer. */
+"Couldn't reach the evonode." = "Kon de evonode niet bereiken.";
+
+/* No comment provided by engineer. */
+"The evonode's answer couldn't be read." = "Het antwoord van de evonode kon niet worden gelezen.";
+
+/* No comment provided by engineer. */
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "Het eigen, niet-geverifieerde rapport van de node — wat hij over zichzelf zegt, niet waar het netwerk het over eens is.";
+
+/* No comment provided by engineer. */
+"Asked" = "Bevraagd";
+
+/* No comment provided by engineer. */
+"Software" = "Software";
+
+/* No comment provided by engineer. */
+"DAPI" = "DAPI";
+
+/* No comment provided by engineer. */
+"Drive" = "Drive";
+
+/* No comment provided by engineer. */
+"Tenderdash" = "Tenderdash";
+
+/* No comment provided by engineer. */
+"Protocol versions" = "Protocolversies";
+
+/* No comment provided by engineer. */
+"Tenderdash P2P" = "Tenderdash P2P";
+
+/* No comment provided by engineer. */
+"Tenderdash block" = "Tenderdash-blok";
+
+/* No comment provided by engineer. */
+"Drive current" = "Drive huidig";
+
+/* No comment provided by engineer. */
+"Drive latest" = "Drive nieuwste";
+
+/* No comment provided by engineer. */
+"Drive next epoch" = "Drive volgend tijdvak";
+
+/* No comment provided by engineer. */
+"Node ID" = "Node-ID";
+
+/* No comment provided by engineer. */
+"Identity check" = "Identiteitscontrole";
+
+/* No comment provided by engineer. */
+"Chain" = "Chain";
+
+/* No comment provided by engineer. */
+"Catching up" = "Loopt in";
+
+/* No comment provided by engineer. */
+"Latest block height" = "Hoogte nieuwste blok";
+
+/* No comment provided by engineer. */
+"Earliest block height" = "Hoogte vroegste blok";
+
+/* No comment provided by engineer. */
+"Max peer block height" = "Max. blokhoogte van peers";
+
+/* No comment provided by engineer. */
+"Core chain-locked height" = "Core chain-locked hoogte";
+
+/* No comment provided by engineer. */
+"Latest block hash" = "Hash nieuwste blok";
+
+/* No comment provided by engineer. */
+"Latest app hash" = "Hash nieuwste app";
+
+/* No comment provided by engineer. */
+"Earliest block hash" = "Hash vroegste blok";
+
+/* No comment provided by engineer. */
+"Earliest app hash" = "Hash vroegste app";
+
+/* No comment provided by engineer. */
+"Chain ID" = "Chain-ID";
+
+/* No comment provided by engineer. */
+"Peers" = "Peers";
+
+/* No comment provided by engineer. */
+"Listening" = "Luistert";
+
+/* No comment provided by engineer. */
+"State sync" = "Statussynchronisatie";
+
+/* No comment provided by engineer. */
+"Total synced time" = "Totale gesynchroniseerde tijd";
+
+/* No comment provided by engineer. */
+"Remaining time" = "Resterende tijd";
+
+/* No comment provided by engineer. */
+"Total snapshots" = "Totaal aantal snapshots";
+
+/* No comment provided by engineer. */
+"Chunk process avg time" = "Gem. verwerkingstijd per chunk";
+
+/* No comment provided by engineer. */
+"Snapshot height" = "Snapshothoogte";
+
+/* No comment provided by engineer. */
+"Snapshot chunks" = "Snapshotchunks";
+
+/* No comment provided by engineer. */
+"Backfilled blocks" = "Aangevulde blokken";
+
+/* No comment provided by engineer. */
+"Backfill blocks total" = "Totaal aan te vullen blokken";
+
+/* No comment provided by engineer. */
+"Time" = "Tijd";
+
+/* No comment provided by engineer. */
+"Node clock" = "Klok van de node";
+
+/* No comment provided by engineer. */
+"Latest block" = "Nieuwste blok";
+
+/* No comment provided by engineer. */
+"Genesis" = "Genesis";
+
+/* No comment provided by engineer. */
+"Epoch" = "Tijdvak";
+
+/* No comment provided by engineer. */
+"Matches this evonode" = "Komt overeen met deze evonode";
+
+/* No comment provided by engineer. */
+"Differs from this evonode" = "Wijkt af van deze evonode";
+
+/* No comment provided by engineer. */
+"Not reported" = "Niet gemeld";
+
+/* No comment provided by engineer. */
+"%.3f s" = "%.3f s";
+
+/* No comment provided by engineer. */
+"Node status" = "Nodestatus";
+
+/* No comment provided by engineer. */
+"Asking the evonode…" = "De evonode bevragen…";
+
+/* No comment provided by engineer. */
+"Request status" = "Status opvragen";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "Zelf afrekenen";
@@ -3442,6 +4372,42 @@
 
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "Stuur je eerste contactverzoek";
+
+/* Username marketplace: set price sheet title */
+"Set a price for “%@”" = "Een prijs instellen voor “%@”";
+
+/* Username marketplace */
+"Short names are decided by a network vote — use Request Username instead." = "Over korte namen beslist een netwerkstemming — gebruik in plaats daarvan ‘Gebruikersnaam aanvragen’.";
+
+/* Username marketplace: contested request explainer, paragraph 1 */
+"Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them." = "Korte namen — 19 tekens of minder, alleen letters en cijfers — worden niet direct geregistreerd. Het Dash-netwerk stemt over wie ze krijgt.";
+
+/* DashPay Contacts: expands the network search into the full add-contact flow */
+"Show more results" = "Meer resultaten tonen";
+
+/* Username marketplace: departed-name line — buyer identity */
+"Sold to %@" = "Verkocht aan %@";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 1 of 2 — moving Dash out of your Shielded balance…" = "Stap 1 van 2 — Dash uit je Shielded-saldo halen…";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 2 of 2 — topping up your identity…" = "Stap 2 van 2 — je identiteit opladen…";
+
+/* Username marketplace: contested request cost footnote */
+"The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "De kosten worden betaald vanuit je identiteitssaldo. Ze financieren de netwerkstemming en worden niet terugbetaald als een andere kandidaat wint.";
+
+/* Username marketplace: register sheet body */
+"The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "De naam wordt rechtstreeks op je identiteit geregistreerd. De registratie is een netwerktransactie die vanuit je identiteitssaldo wordt betaald.";
+
+/* Username marketplace: contested label locked by a past vote */
+"The network voted to lock this name, so nobody can register it. Choose a different name." = "Het netwerk heeft gestemd om deze naam te vergrendelen, dus niemand kan hem registreren. Kies een andere naam.";
+
+/* Username marketplace */
+"The recipient identity couldn't be resolved." = "De identiteit van de ontvanger kon niet worden gevonden.";
+
+/* Username marketplace */
+"The seller changed the price before your purchase was accepted. Review the new price and try again." = "De verkoper heeft de prijs gewijzigd voordat je aankoop werd geaccepteerd. Bekijk de nieuwe prijs en probeer het opnieuw.";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Bezig met verzenden";
@@ -3963,6 +4929,66 @@
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "Dit voegt twee sleutels toe aan je identiteit zodat andere gebruikers je contactverzoeken kunnen sturen en jij die van hen kunt accepteren. Dit gebeurt eenmalig.";
 
+/* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
+"This isn't a DashPay user QR code." = "Dit is geen QR-code van een DashPay-gebruiker.";
+
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "Dit saldo betaalt de netwerkkosten van Dash Platform — gebruikersnamen, contactverzoeken, profielupdates. Het hoort bij je identiteit, niet bij je wallet: anders dan je Transparant-, Platform- en Shielded-saldo kun je het niet als gewone Dash uitgeven. Bij opladen wordt Dash van een saldo naar keuze — standaard Shielded — omgezet in identiteitskrediet.";
+
+/* Username marketplace: contested label already has an active vote */
+"This name is already in an active network vote. Your request joins it as another contender." = "Voor deze naam loopt al een actieve netwerkstemming. Je aanvraag doet daaraan mee als extra kandidaat.";
+
+/* Username marketplace */
+"This name is in an active network vote and can't be traded until the contest ends." = "Deze naam zit in een actieve netwerkstemming en kan niet worden verhandeld tot de wedstrijd is afgelopen.";
+
+/* Username marketplace: detail for an unregistered name */
+"This name is not registered." = "Deze naam is niet geregistreerd.";
+
+/* Username marketplace: seller-clarity callout on the detail sheet */
+"This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "Deze naam wordt aangeboden door een onafhankelijke gebruiker op het Dash-netwerk — niet door Dash of deze app. De verkoper bepaalt de prijs.";
+
+/* Username marketplace: listing price exceeds the representable maximum */
+"This price is too high to list." = "Deze prijs is te hoog om te vermelden.";
+
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "Deze overdracht kan hier niet opnieuw worden geprobeerd.";
+
+/* Username marketplace */
+"This username is not for sale." = "Deze gebruikersnaam is niet te koop.";
+
+/* Username marketplace */
+"This username's record couldn't be read from the network." = "Het record van deze gebruikersnaam kon niet van het netwerk worden gelezen.";
+
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "Deze wallet heeft geen identiteit om op te laden.";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "Opladen";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "Identiteitssaldo opladen";
+
+/* Username marketplace: timeline card title */
+"Trade history" = "Handelsgeschiedenis";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "Overdracht voltooid";
+
+/* Username marketplace */
+"Transfer to Another Identity" = "Overdragen aan een andere identiteit";
+
+/* Username marketplace: transfer sheet title */
+"Transfer “%@”" = "“%@” overdragen";
+
+/* Username marketplace: history — transfer with both identities */
+"Transferred from %1$@ to %2$@" = "Overgedragen van %1$@ naar %2$@";
+
+/* Username marketplace: departed-name line — recipient identity */
+"Transferred to %@" = "Overgedragen aan %@";
+
+/* Username marketplace */
+"Username Marketplace" = "Gebruikersnaam-marktplaats";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
@@ -4012,6 +5038,60 @@
 
 /* Usernames */
 "This name requires voting. Your Dash will be locked until voting completes." = "This name requires voting. Your Dash will be locked until voting completes.";
+
+/* Usernames */
+"Vote in progress" = "Stemming loopt";
+
+/* Usernames */
+"Vote ended" = "Stemming afgelopen";
+
+/* Usernames */
+"A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender." = "Er loopt al een masternode-stemming voor deze naam. Een aanvraag indienen laat je als kandidaat aan de stemming meedoen.";
+
+/* Usernames */
+"A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender." = "Er loopt al een masternode-stemming voor deze naam — de stemming eindigt rond %@. Een aanvraag indienen laat je als kandidaat aan de stemming meedoen.";
+
+/* Usernames */
+"A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote." = "Er loopt een masternode-stemming voor deze naam — de stemming eindigt rond %@. Nieuwe kandidaten kunnen niet meer aan deze stemming meedoen.";
+
+/* Usernames */
+"Username is in a network vote — new contenders can no longer join" = "De gebruikersnaam zit in een netwerkstemming — nieuwe kandidaten kunnen niet meer meedoen";
+
+/* Usernames */
+"The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "De eigenaar van deze gebruikersnaam heeft hem op de Gebruikersnaam-marktplaats gezet voor %@ Dash. Je kunt hem daar kopen.";
+
+/* Usernames */
+"The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance." = "De eigenaar van deze gebruikersnaam heeft hem te koop gezet voor %@ Dash. Je kunt hem nu meteen kopen — de prijs wordt van je walletsaldo betaald.";
+
+/* Usernames */
+"The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "De eigenaar van deze gebruikersnaam heeft hem te koop gezet voor %1$@ Dash. Aankopen boven %2$@ Dash moeten via de Gebruikersnaam-marktplaats — kies voorlopig een andere gebruikersnaam; over deze kun je later beslissen.";
+
+/* Usernames */
+"Buy for %@ Dash" = "Koop voor %@ Dash";
+
+/* Usernames */
+"Buy username" = "Gebruikersnaam kopen";
+
+/* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "Je tijdelijke gebruikersnaam “%@” kon niet worden geregistreerd. Je kunt later een andere gebruikersnaam registreren.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "“%1$@” is nu je gebruikersnaam. Als de stemming je “%2$@” toekent, ben je op beide gebruikersnamen bereikbaar.";
+
+/* Usernames */
+"“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "“%1$@” wordt gekocht voor %2$@ Dash. De prijs wordt van je walletsaldo betaald.";
+
+/* Usernames */
+"Username purchased" = "Gebruikersnaam gekocht";
+
+/* Usernames */
+"“%@” is now your username." = "“%@” is nu je gebruikersnaam.";
+
+/* Usernames */
+"The masternode vote for this name has ended and the result is being finalized. Check back soon." = "De masternode-stemming voor deze naam is afgelopen en het resultaat wordt afgerond. Kijk binnenkort terug.";
+
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes." = "Er loopt al een stemming voor deze naam — je aanvraag doet mee als kandidaat. Je Dash blijft vergrendeld tot de stemming klaar is.";
 
 /* No comment provided by engineer. */
 "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone." = "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.";
@@ -4254,6 +5334,12 @@
 /* Voting */
 "Unblocked '%@' username" = "gebruikersnaam '%@' gedeblokkeerd";
 
+/* SPV diagnostics */
+"Unconfirmed now" = "Nu onbevestigd";
+
+/* SPV diagnostics */
+"Unconfirmed Transactions" = "Onbevestigde transacties";
+
 /* DashPay Contacts */
 "Unhide Contact" = "Unhide Contact";
 
@@ -4367,6 +5453,9 @@
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Gebruikersnamen, geen adressen";
 
+/* DashPay: banner identity row subtitle */
+"View profile" = "Profiel bekijken";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Gebruikers die overeenkomen met %@ en die momenteel niet in je contacten staan";
 
@@ -4397,11 +5486,17 @@
 /* No comment provided by engineer. */
 "Verified Successfully" = "Succesvol geverifieerd";
 
+/* DashPay Contacts: spinner after scanning a user QR code */
+"Verifying user…" = "Gebruiker verifiëren…";
+
 /* No comment provided by engineer. */
 "Verify" = "Verifiëren";
 
 /* CrowdNode */
 "Verify your API Dash address" = "Verifieer je API Dash adres";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "Verifieer je herstelzin om een nieuwe pincode in te stellen.";
 
 /* Usernames */
 "Verify your identity" = "Verifieer je identiteit";
@@ -4616,6 +5711,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "Wanneer worden contactverzoeken privé?";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "Zolang de stemming loopt, is “%@” nog niet van jou en kunnen andere gebruikers je er niet mee vinden. Voeg een onbetwiste gebruikersnaam toe om DashPay meteen te gebruiken. Die blijft permanent van jou — en als de stemming je de betwiste naam toekent, ben je op beide gebruikersnamen bereikbaar.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "Waar uit te geven";
 
@@ -4626,6 +5724,18 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "Waarom moet ik het inschakelen?";
+
+/* Username marketplace: history participant is the current user */
+"you" = "jij";
+
+/* Username marketplace: contested request already submitted by this identity */
+"You already requested this name — the network vote is in progress. You'll find it under My Names." = "Je hebt deze naam al aangevraagd — de netwerkstemming loopt. Je vindt hem onder ‘Mijn namen’.";
+
+/* Username marketplace: purchase confirmation body with seller clarity */
+"You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "Je koopt van een onafhankelijke gebruiker, niet van Dash of deze app. De prijs plus kleine netwerkkosten wordt betaald vanuit je identiteitssaldo, en de naam gaat direct over naar je identiteit.";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "Je hebt geen gebruikersnaam zolang de stemming loopt. Registreer nu een onbetwiste gebruikersnaam — die blijft van jou, en als de stemming je “%@” toekent, ben je op beide gebruikersnamen bereikbaar.";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "Waarom zie ik al deze transacties?";
@@ -4681,6 +5791,9 @@
 
 /* Wallets */
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
+
+/* Wallets */
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Schrijf deze %d woorden in volgorde op en bewaar ze op een veilige plek. Ze zijn de ENIGE manier om deze wallet te herstellen. Iedereen die ze heeft, kan je tegoed uitgeven.";
 
 /* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
@@ -4932,6 +6045,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Je geschiedenis, georganiseerd";
 
+/* Username marketplace */
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Je identiteitssaldo dekt deze aankoop niet: %1$@ DASH nodig (inclusief een reserve voor kosten), %2$@ DASH beschikbaar. Laad je identiteitssaldo op en probeer het opnieuw.";
+
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "Je identiteit heeft twee extra sleutels nodig zodat contactverzoeken tussen jou en andere gebruikers kunnen worden versleuteld. Bij het inschakelen worden ze met één netwerktransactie toegevoegd. Dit gebeurt eenmalig.";
 
@@ -4956,8 +6072,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "Je gemixte munten zijn verplaatst naar je Dash-portemonneesaldo.";
 
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "We konden deze aankoop niet bevestigen bij CTX. Als de betaling is doorgekomen, verschijnt de cadeaukaart binnenkort in je transactielijst — kijk daar voordat je opnieuw koopt.";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "Je betaling is verstuurd, maar het netwerk heeft hem nog niet bevestigd. Je cadeaukaart verschijnt zodra hij bevestigd is.";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Je gemixte munten zijn verplaatst naar je afgeschermde saldo. Wacht voor de beste privacy minstens 2 uur voordat je dit tegoed gebruikt.";
+
+/* DashSpend */
+"Could not load your gift card" = "Kon je cadeaukaart niet laden";
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
@@ -4973,6 +6098,9 @@
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "Je privésaldo. Bedragen en adressen zijn versleuteld op de keten, zodat je bezit en geschiedenis vertrouwelijk blijven.";
+
+/* Username marketplace: contested request explainer, paragraph 2 */
+"Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "Je aanvraag gaat ongeveer twee weken de publieke stemming van masternodes in. Anderen kunnen dezelfde naam aanvragen; als de stemming eindigt, gaat de naam naar de winnaar — of naar niemand, als het netwerk hem vergrendelt.";
 
 /* Usernames */
 "Your request was cancelled" = "Je aanvraag is geannuleerd";
