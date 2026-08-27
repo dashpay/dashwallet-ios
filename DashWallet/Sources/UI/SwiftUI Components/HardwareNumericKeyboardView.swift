@@ -24,6 +24,13 @@ enum HardwareNumericKeyboardKey: Equatable {
     case delete
 }
 
+/// Hardware-key → keypad-value rules.
+///
+/// These must stay byte-identical in behavior to DashUIKit's
+/// `NumericKeyboardLocaleSupport.applyKeyPress`, which drives the on-screen
+/// buttons. That type is `internal` to the package, so the app cannot call it;
+/// until it is made public the two implementations have to be kept in step by
+/// hand, and `HardwareNumericKeyboardInputTests` pins the shared cases.
 enum HardwareNumericKeyboardInput {
     static func applying(
         _ key: HardwareNumericKeyboardKey,
@@ -44,16 +51,34 @@ enum HardwareNumericKeyboardInput {
         }
     }
 
-    /// Both "." and "," map to the decimal separator: European numpads emit ","
-    /// for the decimal key, and the keypad has no grouping-separator concept.
-    static func key(for character: Character) -> HardwareNumericKeyboardKey? {
-        if character == "." || character == "," {
-            return .decimalSeparator
-        }
+    /// Maps a typed character the way the on-screen keypad maps a tapped key.
+    ///
+    /// The locale matters: `applyKeyPress` drops the locale's grouping
+    /// separator, so hardware input must drop it too. Without that, `1,000`
+    /// typed in `en_US` would become `1.000` — a silent 1000x error on the
+    /// send and pay screens.
+    static func key(for character: Character, locale: Locale) -> HardwareNumericKeyboardKey? {
         if let digit = character.wholeNumberValue, (0 ... 9).contains(digit) {
             return .digit(String(digit))
         }
-        return nil
+
+        guard character == "." || character == "," else { return nil }
+
+        let typed = String(character)
+        let decimalSeparator = locale.decimalSeparator ?? "."
+        let groupingSeparator = locale.groupingSeparator ?? ","
+
+        if typed == decimalSeparator {
+            return .decimalSeparator
+        }
+        if typed == groupingSeparator, groupingSeparator != decimalSeparator {
+            return nil
+        }
+        // Neither separator in this locale — a numpad decimal key that doesn't
+        // match the region (a Swiss layout emits "," while `de_CH` groups with
+        // "’"). Treat it as the decimal key, since the keypad has no other use
+        // for it.
+        return .decimalSeparator
     }
 }
 
@@ -140,6 +165,7 @@ private struct HardwareNumericKeyboardResponder: UIViewRepresentable {
 
     private func configure(_ field: HardwareNumericKeyboardTextField) {
         field.inputEnabled = inputEnabled
+        field.locale = locale
         field.onKey = { key in
             value = HardwareNumericKeyboardInput.applying(
                 key,
@@ -149,14 +175,25 @@ private struct HardwareNumericKeyboardResponder: UIViewRepresentable {
             )
         }
         field.onReturn = returnEnabled ? onReturn : nil
+        // SwiftUI re-runs the body of the screen underneath a sheet when that
+        // sheet is dismissed, so this is the reclaim path for the modals that
+        // post no end-editing notification of their own.
+        field.syncFirstResponderState()
     }
 }
 
 /// Hidden `UITextField` whose `UIKeyInput` overrides forward hardware keys to
 /// the keypad's value instead of the field's own text. An empty `inputView`
 /// suppresses the software keyboard (as in `TwoFactorAuthViewController`).
+///
+/// The field only acts while its own screen is the frontmost interactive one —
+/// see `ownsHardwareKeyboard`. Everything else in the app that takes focus
+/// (PIN prompt, currency picker, lock screen) presents *over* a keypad screen
+/// that stays in the window, so without that check the keypad would keep
+/// eating keys from behind the modal.
 final class HardwareNumericKeyboardTextField: UITextField, UITextFieldDelegate {
     var inputEnabled = true
+    var locale: Locale = .autoupdatingCurrent
     var onKey: ((HardwareNumericKeyboardKey) -> Void)?
     var onReturn: (() -> Void)?
 
@@ -166,6 +203,7 @@ final class HardwareNumericKeyboardTextField: UITextField, UITextFieldDelegate {
     private static let sentinel = "\u{200B}"
 
     private var editingObservers: [NSObjectProtocol] = []
+    private var isHandlingReturn = false
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -193,25 +231,59 @@ final class HardwareNumericKeyboardTextField: UITextField, UITextFieldDelegate {
     // MARK: - UIKeyInput
 
     override func insertText(_ text: String) {
+        guard ownsHardwareKeyboard else {
+            relinquishHardwareKeyboard()
+            return
+        }
         guard inputEnabled else { return }
         for character in text {
             if character == "\n" || character == "\r" {
-                onReturn?()
-            } else if let key = HardwareNumericKeyboardInput.key(for: character) {
+                handleReturn()
+            } else if let key = HardwareNumericKeyboardInput.key(for: character, locale: locale) {
                 onKey?(key)
             }
         }
     }
 
     override func deleteBackward() {
+        guard ownsHardwareKeyboard else {
+            relinquishHardwareKeyboard()
+            return
+        }
         guard inputEnabled else { return }
         onKey?(.delete)
     }
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        onReturn?()
+        handleReturn()
         return false
     }
+
+    /// A single hardware Return can arrive twice — once as `insertText("\n")`
+    /// and once as `textFieldShouldReturn` — and both land in the same runloop
+    /// turn, before SwiftUI can propagate `inProgress` and clear `onReturn`.
+    /// Some action handlers send money outright (`PayContactSheet.pay()`), so
+    /// the two deliveries are collapsed into one.
+    private func handleReturn() {
+        guard inputEnabled, ownsHardwareKeyboard, !isHandlingReturn else { return }
+        isHandlingReturn = true
+        DispatchQueue.main.async { [weak self] in self?.isHandlingReturn = false }
+        onReturn?()
+    }
+
+    // MARK: - Editing menu
+
+    /// The field's text is a sentinel, not the user's amount. Cut/copy/paste
+    /// against it would corrupt the sentinel and, for paste, bypass
+    /// `PastedAmountParser` — which is what the screens' own paste affordance
+    /// uses to read grouped input correctly.
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        false
+    }
+
+    override func paste(_ sender: Any?) { }
+
+    override func replace(_ range: UITextRange, withText text: String) { }
 
     // MARK: - First responder management
 
@@ -222,32 +294,89 @@ final class HardwareNumericKeyboardTextField: UITextField, UITextFieldDelegate {
         editingObservers = []
         guard window != nil else { return }
 
-        claimFirstResponderIfIdle()
+        syncFirstResponderState()
 
-        // A sheet or alert with a text field (currency-picker search, PIN
-        // prompt) steals first responder while this view stays in the window,
-        // so `didMoveToWindow` alone would leave hardware input dead after
-        // dismissal. Reclaim whenever any other editor ends editing.
-        for name in [UITextField.textDidEndEditingNotification, UITextView.textDidEndEditingNotification] {
+        // Anything that takes focus over a keypad screen leaves this view in
+        // the window, so `didMoveToWindow` alone would leave hardware input
+        // dead after the overlay goes away. Listen broadly and let
+        // `ownsHardwareKeyboard` decide whether the reclaim is appropriate:
+        // end-editing covers `UITextField`-based overlays (currency-picker
+        // search, the SwiftUI PIN prompt), keyboard-did-hide covers responders
+        // that post no end-editing notification (`DWPinField` is a
+        // `UIView<UITextInput>`), and the window/app notifications cover the
+        // separate lock window and backgrounding.
+        let names: [Notification.Name] = [
+            UITextField.textDidEndEditingNotification,
+            UITextView.textDidEndEditingNotification,
+            UIResponder.keyboardDidHideNotification,
+            UIWindow.didBecomeKeyNotification,
+            UIApplication.didBecomeActiveNotification,
+        ]
+        for name in names {
             editingObservers.append(NotificationCenter.default.addObserver(
                 forName: name, object: nil, queue: .main
             ) { [weak self] notification in
                 guard let self, (notification.object as? UIView) !== self else { return }
-                self.claimFirstResponderIfIdle()
+                self.syncFirstResponderState()
             })
         }
     }
 
-    private func claimFirstResponderIfIdle() {
+    /// Takes focus when this screen owns the hardware keyboard and gives it up
+    /// when it doesn't, so a modal presented over the keypad gets the keys and
+    /// the keypad gets them back once the modal is gone.
+    func syncFirstResponderState() {
         DispatchQueue.main.async { [weak self] in
-            guard let self, self.window != nil, !self.isFirstResponder else { return }
+            guard let self else { return }
+            guard self.ownsHardwareKeyboard else {
+                self.relinquishHardwareKeyboard()
+                return
+            }
+            guard !self.isFirstResponder else { return }
             // Don't yank focus from a text input the user is actively editing
             // (e.g. the contact Alias field beneath a Pay sheet).
-            if let current = UIResponder.currentFirstResponder, current !== self, current is UITextInput {
+            if let current = UIResponder.dw_currentFirstResponder, current !== self, current is UITextInput {
                 return
             }
             self.becomeFirstResponder()
         }
+    }
+
+    private func relinquishHardwareKeyboard() {
+        guard isFirstResponder else { return }
+        resignFirstResponder()
+    }
+
+    /// True only while this field's own screen is frontmost and interactive:
+    /// its window is key, and its view controller is (or is contained in) the
+    /// frontmost presented controller of that window. A SwiftUI `.sheet` is a
+    /// `pageSheet` and the PIN prompt is `.overFullScreen`, so in both cases
+    /// the presenting screen stays in the window and would otherwise still
+    /// hold first responder behind the modal.
+    private var ownsHardwareKeyboard: Bool {
+        guard let window, window.isKeyWindow, let owner = owningViewController else { return false }
+
+        var frontmost = window.rootViewController
+        while let presented = frontmost?.presentedViewController {
+            frontmost = presented
+        }
+        guard let frontmost else { return false }
+
+        var viewController: UIViewController? = owner
+        while let current = viewController {
+            if current === frontmost { return true }
+            viewController = current.parent
+        }
+        return false
+    }
+
+    private var owningViewController: UIViewController? {
+        var responder: UIResponder? = self
+        while let current = responder {
+            if let viewController = current as? UIViewController { return viewController }
+            responder = current.next
+        }
+        return nil
     }
 }
 
@@ -256,13 +385,15 @@ private extension UIResponder {
         static weak var current: UIResponder?
     }
 
-    static var currentFirstResponder: UIResponder? {
+    static var dw_currentFirstResponder: UIResponder? {
         FirstResponderProbe.current = nil
-        UIApplication.shared.sendAction(#selector(captureFirstResponder), to: nil, from: nil, for: nil)
+        UIApplication.shared.sendAction(#selector(dw_captureFirstResponder), to: nil, from: nil, for: nil)
         return FirstResponderProbe.current
     }
 
-    @objc private func captureFirstResponder() {
+    // `private` does not scope the ObjC selector, which is installed on
+    // `UIResponder` process-wide — hence the prefix.
+    @objc private func dw_captureFirstResponder() {
         FirstResponderProbe.current = self
     }
 }

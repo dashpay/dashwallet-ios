@@ -351,13 +351,38 @@ final class HardwareNumericKeyboardInputTests: XCTestCase {
     }
 
     func testCharacterMapping() {
-        XCTAssertEqual(HardwareNumericKeyboardInput.key(for: "0"), .digit("0"))
-        XCTAssertEqual(HardwareNumericKeyboardInput.key(for: "9"), .digit("9"))
-        XCTAssertEqual(HardwareNumericKeyboardInput.key(for: "."), .decimalSeparator)
-        XCTAssertEqual(HardwareNumericKeyboardInput.key(for: ","), .decimalSeparator)
-        XCTAssertNil(HardwareNumericKeyboardInput.key(for: "a"))
-        XCTAssertNil(HardwareNumericKeyboardInput.key(for: "-"))
-        XCTAssertNil(HardwareNumericKeyboardInput.key(for: " "))
+        let locale = Locale(identifier: "en_US")
+        XCTAssertEqual(HardwareNumericKeyboardInput.key(for: "0", locale: locale), .digit("0"))
+        XCTAssertEqual(HardwareNumericKeyboardInput.key(for: "9", locale: locale), .digit("9"))
+        XCTAssertEqual(HardwareNumericKeyboardInput.key(for: ".", locale: locale), .decimalSeparator)
+        XCTAssertNil(HardwareNumericKeyboardInput.key(for: "a", locale: locale))
+        XCTAssertNil(HardwareNumericKeyboardInput.key(for: "-", locale: locale))
+        XCTAssertNil(HardwareNumericKeyboardInput.key(for: " ", locale: locale))
+    }
+
+    /// The on-screen keypad drops the locale's grouping separator
+    /// (`NumericKeyboardLocaleSupport.applyKeyPress`), so hardware input must
+    /// drop it too — otherwise `1,000` typed in `en_US` becomes `1.000`.
+    func testGroupingSeparatorIsIgnoredPerLocale() {
+        let enUS = Locale(identifier: "en_US")
+        XCTAssertNil(HardwareNumericKeyboardInput.key(for: ",", locale: enUS))
+        XCTAssertEqual(HardwareNumericKeyboardInput.key(for: ".", locale: enUS), .decimalSeparator)
+
+        let deDE = Locale(identifier: "de_DE")
+        XCTAssertNil(HardwareNumericKeyboardInput.key(for: ".", locale: deDE))
+        XCTAssertEqual(HardwareNumericKeyboardInput.key(for: ",", locale: deDE), .decimalSeparator)
+    }
+
+    func testTypingAGroupedAmountKeepsItsMagnitude() {
+        let locale = Locale(identifier: "en_US")
+        var value = ""
+
+        for character in "1,000.5" {
+            guard let key = HardwareNumericKeyboardInput.key(for: character, locale: locale) else { continue }
+            value = HardwareNumericKeyboardInput.applying(key, to: value, showDecimalSeparator: true, locale: locale)
+        }
+
+        XCTAssertEqual(value, "1000.5")
     }
 }
 
