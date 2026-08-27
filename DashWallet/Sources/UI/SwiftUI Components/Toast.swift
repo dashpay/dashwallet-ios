@@ -32,9 +32,14 @@ struct ToastView: View {
             if let icon = icon {
                 VStack {
                     Icon(name: icon)
+                        // `font` sizes SF Symbols only. A `.custom` asset is
+                        // resizable with no intrinsic cap, so without this
+                        // frame it grows to fill the row and squeezes the
+                        // text onto two lines.
+                        .font(.system(size: 15))
+                        .frame(maxHeight: 20)
                         .padding(.leading, 8)
                         .padding(.top, 12)
-                        .font(.system(size: 15))
                     Spacer()
                 }
             }

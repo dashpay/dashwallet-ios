@@ -81,6 +81,17 @@ class MainTabbarController: UITabBarController {
     private var paymentIsOpened = false
 
     weak var homeController: HomeViewController?
+    /// Root of the payments tab. Held so shortcut entry points can put it on
+    /// the right sub-tab before selecting it. Rebuilt by
+    /// `configureControllers()`, which also refreshes `paymentsTabIndex` —
+    /// the DashPay layout inserts tabs before this one.
+    private weak var paymentsTabRootController: PaymentsTabRootController?
+    private var paymentsTabIndex: Int?
+    #if DASHPAY
+    /// Nil until an identity exists — the Contacts tab is only built then, and
+    /// its position moves with the rest of the DashPay layout.
+    private var contactsTabIndex: Int?
+    #endif
     weak var menuNavigationController: MainMenuViewController?
 
     #if DASHPAY
@@ -175,6 +186,19 @@ class MainTabbarController: UITabBarController {
 extension MainTabbarController {
     private func configureControllers() {
         var viewControllers: [UIViewController] = []
+        // The bar is hidden by children — the payments landing does it while it
+        // is up — and hiding outlives the child that asked for it. A rebuild
+        // replaces `viewControllers` outright, which can take that child out of
+        // the hierarchy without a `viewWillDisappear` to undo it, leaving a
+        // wallet with no tab bar at all. Whoever wants it hidden after this
+        // will say so again on their next appearance.
+        setTabBarHidden(false, animated: false)
+        #if DASHPAY
+        // Cleared before the rebuild, not after: this pass may be the one that
+        // drops the Contacts tab (a wallet switch away from an identity), and a
+        // surviving index would then point at whatever took its place.
+        contactsTabIndex = nil
+        #endif
 
         // Home
         var item = UITabBarItem(title: nil, image: MainTabbarTabs.home.icon, selectedImage: MainTabbarTabs.home.selectedIcon)
@@ -201,18 +225,26 @@ extension MainTabbarController {
 
             let contactsVC = UIHostingController(rootView: ContactsScreen())
             contactsVC.tabBarItem = item
+            contactsTabIndex = viewControllers.count
             viewControllers.append(contactsVC)
         }
         #endif
 
-        // Payment (tapping this tab opens the payment modal instead of switching tabs)
+        // Payment. A real tab, not a modal: the landing is where the send /
+        // receive / transfer flows start, and the tab bar stays visible on it.
+        // The screens it pushes set `hidesBottomBarWhenPushed`, so the bar is
+        // gone from the first step that asks for an amount.
         let paymentImage = Self.makePaymentTabImage()
         item = UITabBarItem(title: nil, image: paymentImage, selectedImage: paymentImage)
         item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
         item.accessibilityIdentifier = "tabbar_payments_button"
 
-        let paymentVC = EmptyController()
+        let paymentsRoot = PaymentsTabRootController()
+        paymentsTabRootController = paymentsRoot
+        let paymentVC = BaseNavigationController(rootViewController: paymentsRoot)
+        paymentVC.isNavigationBarHidden = true
         paymentVC.tabBarItem = item
+        paymentsTabIndex = viewControllers.count
         viewControllers.append(paymentVC)
         
         #if DASHPAY
@@ -398,6 +430,25 @@ extension MainTabbarController {
 
 // MARK: - Public
 extension MainTabbarController {
+    /// Switch to the history. Used by flows that finish somewhere else and
+    /// want the user to land where their transaction shows up.
+    @objc
+    public func showHome() {
+        selectedIndex = MainTabbarTabs.home.rawValue
+    }
+
+    #if DASHPAY
+    /// Switch to the contacts tab. Returns false when there is none — the tab
+    /// exists only alongside a DashPay identity — so the caller can say so
+    /// rather than appearing to do nothing.
+    @discardableResult
+    func showContacts() -> Bool {
+        guard let contactsTabIndex else { return false }
+        selectedIndex = contactsTabIndex
+        return true
+    }
+    #endif
+
     @objc
     public func performScanQRCodeAction() {
         dismiss(animated: false, completion: nil)
@@ -497,12 +548,35 @@ extension MainTabbarController: HomeViewControllerDelegate {
     func showPaymentsController(withActivePage pageIndex: PaymentsViewControllerState) {
         switch pageIndex {
         case .receive:
-            presentPaymentsLandingScreen(activeTab: .receive)
+            selectPaymentsTab(activeTab: .receive)
         case .enterAddress:
             presentSendToAddressScreen()
         case .pay, .none:
-            presentPaymentsLandingScreen(activeTab: .send)
+            selectPaymentsTab(activeTab: .send)
         }
+    }
+
+    /// Payments open as a large-detent sheet over whatever the user was
+    /// looking at, not as a tab switched to.
+    ///
+    /// The tab bar item stays — it is still how you get here — but selecting
+    /// its index is intercepted in `shouldSelect`. A sheet keeps the screen
+    /// underneath visible at the top and brings its own grabber and
+    /// swipe-to-dismiss, which is what "not full screen" means here.
+    ///
+    /// Every shortcut and menu entry comes through this one path, so they all
+    /// start at the destination picker rather than wherever a long-lived tab
+    /// was last left.
+    private func selectPaymentsTab(activeTab: PaymentsLandingTab) {
+        // Re-entering while it is already up would either fail silently or
+        // stack a second copy; put the open one on the requested tab instead.
+        if let presented = presentedViewController as? BaseNavigationController,
+           let landing = presented.viewControllers.first as? PaymentsLandingHostingController {
+            presented.popToRootViewController(animated: false)
+            landing.select(tab: activeTab)
+            return
+        }
+        presentPaymentsLandingScreen(activeTab: activeTab, showsHeader: false, asSheet: true)
     }
 
     /// The "Send to Address" shortcut skips the payments landing: straight
@@ -583,11 +657,14 @@ extension MainTabbarController: HomeViewControllerDelegate {
 
 extension MainTabbarController: UITabBarControllerDelegate {
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
-        if viewController is EmptyController {
-            showPaymentsController(withActivePage: .none)
+        // Payments is a sheet, not a destination. Its tab item is kept because
+        // it is the button everyone reaches for, but selecting the index would
+        // put the landing full screen — the presentation it was moved off.
+        if let paymentsTabIndex,
+           viewControllers?.firstIndex(of: viewController) == paymentsTabIndex {
+            selectPaymentsTab(activeTab: .send)
             return false
         }
-
         return true
     }
 }

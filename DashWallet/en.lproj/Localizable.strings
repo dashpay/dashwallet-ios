@@ -3725,6 +3725,9 @@
 /* No comment provided by engineer. */
 "Scan QR" = "Scan QR";
 
+/* Payments */
+"Scan Dash QR" = "Scan Dash QR";
+
 /* No comment provided by engineer. */
 "Scan QR Code" = "Scan QR Code";
 
@@ -3886,14 +3889,23 @@
 /* No comment provided by engineer. */
 "Send to a Contact" = "Send to a Contact";
 
+/* Payments */
+"Swap to other crypto" = "Swap to other crypto";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Send to Address";
 
 /* No comment provided by engineer. */
 "Send to address" = "Send to address";
 
+/* Payments */
+"Send to Dash address" = "Send to Dash address";
+
 /* No comment provided by engineer. */
 "Send to contact" = "Send to contact";
+
+/* Payments */
+"Send to username" = "Send to username";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Contact" = "Send to Contact";

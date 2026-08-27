@@ -11,7 +11,9 @@ import DashUIKit
 /// rewrite the amount already presented for confirmation.
 private struct InternalTransferConfirmation: Identifiable {
     let id = UUID()
-    let route: InternalTransferRoute
+    /// Balance-to-balance route; `nil` exactly when one of the identity
+    /// transfers below is set.
+    let route: InternalTransferRoute?
     let dashDuffs: Int64
     let amountDuffsUnsigned: UInt64
     let creditsAmount: UInt64
@@ -20,19 +22,31 @@ private struct InternalTransferConfirmation: Identifiable {
     let isFullPlatformWithdrawal: Bool
     let isFullShieldedSweep: Bool
     let platformShieldAmountWasMax: Bool
+    /// Identity-destination submission: the top-up the confirm sheet runs
+    /// instead of a route.
+    let identityTopUp: IdentityTopUpTransfer?
+    /// Identity-source submission: the withdrawal the confirm sheet runs
+    /// instead of a route. Mutually exclusive with `identityTopUp`.
+    let identityWithdrawal: IdentityWithdrawalTransfer?
 }
 
 struct InternalTransferScreen: View {
     @ObservedObject var viewModel: InternalTransferViewModel
 
-    /// Invoked when the user finishes a successful transfer via the
-    /// confirm sheet's `Done` button. The hosting controller wires it
-    /// to `navigationController?.popViewController`.
+    /// Invoked once the confirm sheet has handed the transfer to the runner.
+    /// The transfer is still running — the hosting controller closes this
+    /// screen and returns to the history, where the outcome shows up.
     var onCompleted: () -> Void = {}
 
     /// False when embedded under a host that renders its own title
     /// (the balance-row receive sheet) — hides the built-in header.
     var showsHeader: Bool = true
+
+    /// Draws the design system's navigation bar with a back button above the
+    /// title. `nil` for the embedded variants, which sit under the host's own
+    /// chrome. The host hides the UIKit bar and passes the pop through here,
+    /// so the back button is `DashUIKit`'s rather than the system's.
+    var onBack: (() -> Void)? = nil
 
     /// Receive-sheet variant: fixes the destination card (the balance being
     /// received into) at the bottom, turns the rows above it into the
@@ -48,25 +62,24 @@ struct InternalTransferScreen: View {
 
     @State private var confirmation: InternalTransferConfirmation?
 
-    /// Standalone screen: which endpoint's balance picker is presented as
-    /// the bottom sheet. `nil` = none — the form shows just the two
-    /// selected-endpoint cards, never all six rows at once. Presentation
-    /// state only — the selection itself lives in the view model.
-    @State private var endpointPicker: EndpointGroup?
-
-    private enum EndpointGroup: String, Identifiable {
-        case from
-        case to
-
-        var id: String { rawValue }
-    }
+    /// Set when Confirm handed the transfer off, consumed by the sheet's
+    /// `onDismiss`. Leaving the screen is what closes it, and doing that in the
+    /// same turn as `confirmation = nil` ran the sheet's dismissal and the
+    /// screen's own over each other — which is what read as being yanked out
+    /// the moment the PIN was accepted. One animation at a time instead.
+    @State private var leavesAfterConfirmation = false
 
     var body: some View {
         VStack(spacing: 0) {
+            if let onBack {
+                DashUIKit.NavigationBar(
+                    leading: { DashUIKit.NavigationBarElement.back.button(action: onBack) })
+            }
+
             if showsHeader {
                 header
                     .padding(.horizontal, 20)
-                    .padding(.top, 10)
+                    .padding(.top, onBack == nil ? 10 : 0)
             }
 
             // Scrollable so the keypad and action button stay fully on
@@ -75,38 +88,76 @@ struct InternalTransferScreen: View {
             // eat ~110pt the standalone layout has to spare. When the
             // content fits (standalone), this behaves like the old
             // fixed layout: top-aligned content, keypad pinned below.
-            ScrollView {
-                VStack(spacing: 16) {
-                    amountRow
+            //
+            // The reader is what gives that content a viewport height to fill,
+            // so the preview can sit in the middle of the free space below the
+            // cards instead of hanging off them.
+            GeometryReader { proxy in
+                ScrollView {
+                    VStack(spacing: 16) {
+                        amountRow
+                            // Its own height, not a share of the slack.
+                            // `EnterAmountView` draws the figure inside a
+                            // `maxHeight: .infinity` frame, so in a stack that
+                            // has room to give it is flexible — and a `Spacer`
+                            // does not beat it, it splits with it. That is why
+                            // the amount still drifted down the screen with the
+                            // spacer already in place: both were taking half
+                            // each. `fixedSize` proposes its ideal height and
+                            // leaves every remaining point to the spacer.
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.horizontal, 20)
+                            .padding(.top, showsHeader ? 10 : 0)
+
+                        TransferEndpointCards(
+                            viewModel: viewModel,
+                            sendFrom: sendFrom,
+                            receiveInto: receiveInto
+                        )
                         .padding(.horizontal, 20)
-                        .padding(.top, showsHeader ? 12 : 0)
 
-                    directionCards
-                        .padding(.horizontal, 20)
+                        // Takes every point `.frame(minHeight:)` below hands
+                        // the stack beyond what the content needs — which is
+                        // what keeps the form at the top rather than floating
+                        // in the middle.
+                        Spacer(minLength: 12)
 
-                    if viewModel.isBlockedBySync {
-                        SyncGateNote()
-                            .padding(.horizontal, 20)
+                        if viewModel.canContinue {
+                            // The second spacer is what centres the preview:
+                            // the pair splits the slack evenly. Both collapse
+                            // to their minimum once the content already fills
+                            // the viewport, so the tight receive-sheet layout
+                            // is unchanged.
+                            TransferPreview(amountFormatted: viewModel.dashAmountFormatted)
+                                .padding(.horizontal, 20)
+
+                            Spacer(minLength: 12)
+                        }
                     }
-
-                    if let message = viewModel.amountValidationMessage {
-                        TransferAmountValidationNote(message: message)
-                            .padding(.horizontal, 20)
-                    }
-
-                    if viewModel.canContinue {
-                        transferPreview
-                            .padding(.horizontal, 20)
-                    }
+                    // Fill the viewport so those spacers have slack to divide.
+                    // Taller content is unaffected: it exceeds the minimum and
+                    // scrolls exactly as before.
+                    .frame(minHeight: proxy.size.height, alignment: .top)
                 }
-                .padding(.bottom, 12)
+                .scrollBounceBehavior(.basedOnSize)
             }
-            .scrollBounceBehavior(.basedOnSize)
 
             keyboardSection
         }
         .background(Color.dash.primaryBackground)
-        .sheet(item: $confirmation) { submission in
+        // Over the keypad rather than inline above it: the gate is about the
+        // whole screen being unusable, not about the amount that was typed.
+        .conditionToast(
+            isVisible: viewModel.isBlockedBySync,
+            style: .loading,
+            message: NSLocalizedString(
+                "Wait until the chain is fully synced to make transfers",
+                comment: "Transfer blocked during a restored wallet's initial sync"))
+        .sheet(item: $confirmation, onDismiss: {
+            guard leavesAfterConfirmation else { return }
+            leavesAfterConfirmation = false
+            onCompleted()
+        }) { submission in
             InternalTransferConfirmSheet(
                 route: submission.route,
                 dashDuffs: submission.dashDuffs,
@@ -117,10 +168,12 @@ struct InternalTransferScreen: View {
                 isFullPlatformWithdrawal: submission.isFullPlatformWithdrawal,
                 isFullShieldedSweep: submission.isFullShieldedSweep,
                 platformShieldAmountWasMax: submission.platformShieldAmountWasMax,
+                identityTopUp: submission.identityTopUp,
+                identityWithdrawal: submission.identityWithdrawal,
                 onCancel: { confirmation = nil },
-                onCompleted: {
+                onSubmitted: {
+                    leavesAfterConfirmation = true
                     confirmation = nil
-                    onCompleted()
                 },
                 onPlatformShieldCapacityChanged: { maxCredits, amountWasMax in
                     confirmation = nil
@@ -128,8 +181,9 @@ struct InternalTransferScreen: View {
                         maxShieldableCredits: maxCredits,
                         submittedAmountWasMax: amountWasMax)
                 })
-                .presentationDetents([.large])
-                .presentationDragIndicator(.hidden)
+                // No detent here: the sheet is `BottomSheet.selfSizing`, which
+                // sets its own from the measured content, and draws its own
+                // grabber.
         }
     }
 
@@ -153,10 +207,22 @@ struct InternalTransferScreen: View {
             isPrimarySelected: isDashInputSelected,
             currencyCodes: amountCurrencyCodes,
             selectedCurrencyCode: selectedAmountCurrencyCode,
-            onMax: { viewModel.fillMaxFromWallet() },
+            // No Max toward Identity: `route` is a stale balance pair while
+            // the destination overlay is on, so `fillMaxFromWallet` has no
+            // ceiling to compute — and emptying a whole balance into credits
+            // is not an action to invite. The profile sheet's top-up offers
+            // none either. Max FROM the identity is a different matter: the
+            // fee reserve is a fixed bound, so that branch does resolve.
+            //
+            // TODO(identity-max): price a top-up ceiling per funding source
+            // and offer Max here too.
+            onMax: viewModel.isIdentityDestination
+                ? nil
+                : { viewModel.fillMaxFromWallet() },
             onSwap: toggleAmountUnit,
             onCurrencyTap: toggleAmountUnit,
-            onSelectInputType: selectAmountCurrency
+            onSelectInputType: selectAmountCurrency,
+            errorMessage: viewModel.amountValidationMessage
         )
     }
 
@@ -171,18 +237,17 @@ struct InternalTransferScreen: View {
             inProgress: false,
             actionHandler: presentConfirmation
         )
-        .padding(.top, 12)
-        .padding(.horizontal, 16)
-        .padding(.bottom, 12)
-        .background(Color.dash.secondaryBackground)
-        .clipShape(.rect(cornerRadius: 20))
-        .background(Color.dash.secondaryBackground, ignoresSafeAreaEdges: .bottom)
     }
 
     private func presentConfirmation() {
         guard viewModel.canContinue else { return }
+        // Either identity side: no route describes it — the sheet runs the
+        // identity transfer captured here instead.
+        let identityTopUp = viewModel.identityTopUpTransfer
+        let identityWithdrawal = viewModel.identityWithdrawalTransfer
+        let isIdentityTransfer = identityTopUp != nil || identityWithdrawal != nil
         confirmation = InternalTransferConfirmation(
-            route: viewModel.route,
+            route: isIdentityTransfer ? nil : viewModel.route,
             dashDuffs: viewModel.dashDuffs,
             amountDuffsUnsigned: viewModel.dashDuffsUnsigned,
             creditsAmount: viewModel.creditsPreview,
@@ -190,228 +255,12 @@ struct InternalTransferScreen: View {
             withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
             isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
             isFullShieldedSweep: viewModel.isFullShieldedSweep,
-            platformShieldAmountWasMax: viewModel.platformShieldAmountWasMax)
+            platformShieldAmountWasMax: viewModel.platformShieldAmountWasMax,
+            identityTopUp: identityTopUp,
+            identityWithdrawal: identityWithdrawal)
     }
 
     // MARK: - From / To cards
-
-    @ViewBuilder
-    private var directionCards: some View {
-        if let source = sendFrom {
-            sendCards(source: source)
-        } else if let target = receiveInto {
-            receiveCards(target: target)
-        } else {
-            swappableCards
-        }
-    }
-
-    /// Send-sheet layout: the source stays pinned as the top card; the rows
-    /// below pick the destination among the other two balances. No swap
-    /// badge — the source is fixed by the tapped balance row.
-    @ViewBuilder
-    private func sendCards(source: ChainNetwork) -> some View {
-        VStack(spacing: 12) {
-            pinnedCard(source, caption: NSLocalizedString("From", comment: ""))
-            selectionGroup(
-                caption: NSLocalizedString("To", comment: ""),
-                networks: availableTargets(for: source),
-                selected: viewModel.resolvedSendTarget,
-                onSelect: viewModel.selectSendTarget)
-        }
-    }
-
-    /// Non-tappable pinned endpoint card (the fixed From of the send sheet).
-    private func pinnedCard(_ network: ChainNetwork, caption: String) -> some View {
-        let display = networkDisplay(network)
-        return sourceRow(
-            iconSystemName: display.icon,
-            caption: caption,
-            title: display.title,
-            balanceTrailing: dashBalanceTrailing(display.balance),
-            selected: false,
-            showsRadio: false,
-            action: {})
-    }
-
-    /// Icon / title / formatted balance for a balance row, one source of
-    /// truth for the pinned cards and picker rows.
-    private func networkDisplay(_ network: ChainNetwork) -> (icon: String, title: String, balance: String) {
-        switch network {
-        case .core:
-            return ("d.circle.fill", network.balanceName, viewModel.coreBalanceFormatted)
-        case .platform:
-            return ("creditcard.fill", network.balanceName, viewModel.platformCreditsFormatted)
-        case .shielded:
-            return ("shield.fill", network.balanceName, viewModel.shieldedBalanceFormatted)
-        }
-    }
-
-    private var swappableCards: some View {
-        VStack(spacing: 12) {
-            collapsedEndpointCard(viewModel.source, caption: NSLocalizedString("From", comment: "")) {
-                presentEndpointPicker(.from)
-            }
-            collapsedEndpointCard(viewModel.resolvedSendTarget, caption: NSLocalizedString("To", comment: "")) {
-                presentEndpointPicker(.to)
-            }
-        }
-        .sheet(item: $endpointPicker) { group in
-            endpointPickerSheet(for: group)
-                .presentationDetents([.height(400)])
-                .presentationDragIndicator(.visible)
-        }
-    }
-
-    private func presentEndpointPicker(_ group: EndpointGroup) {
-        endpointPicker = group
-    }
-
-    /// Bottom-sheet balance picker for one endpoint, sized to slide over
-    /// the keypad area. Every pick applies and dismisses — picking the
-    /// balance already on the opposite side moves that side to its default
-    /// (the view model keeps the endpoints distinct).
-    private func endpointPickerSheet(for group: EndpointGroup) -> some View {
-        let isFrom = group == .from
-        return VStack(alignment: .leading, spacing: 16) {
-            Text(isFrom
-                ? NSLocalizedString("Transfer from", comment: "Internal transfer source picker title")
-                : NSLocalizedString("Transfer to", comment: "Internal transfer destination picker title"))
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.dash.primaryText)
-
-            selectionGroup(
-                caption: isFrom
-                    ? NSLocalizedString("From", comment: "")
-                    : NSLocalizedString("To", comment: ""),
-                networks: ChainNetwork.allCases,
-                selected: isFrom ? viewModel.source : viewModel.resolvedSendTarget,
-                onSelect: { network in
-                    if isFrom {
-                        viewModel.selectStandaloneSource(network)
-                    } else {
-                        viewModel.selectStandaloneTarget(network)
-                    }
-                    endpointPicker = nil
-                })
-
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 24)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.dash.primaryBackground)
-    }
-
-    private func collapsedEndpointCard(
-        _ network: ChainNetwork,
-        caption: String,
-        action: @escaping () -> Void
-    ) -> some View {
-        let display = networkDisplay(network)
-        return TransferSourceRow(
-            iconSystemName: display.icon,
-            caption: caption,
-            title: display.title,
-            balanceTrailing: dashBalanceTrailing(display.balance),
-            selected: false,
-            showsRadio: false,
-            showsChevron: true,
-            action: action)
-    }
-
-    /// Receive-sheet layout: the destination stays pinned as the bottom
-    /// card; the rows above pick the source among the other two balances.
-    /// No swap badge — the destination is fixed by the tapped balance row.
-    @ViewBuilder
-    private func receiveCards(target: ChainNetwork) -> some View {
-        VStack(spacing: 12) {
-            selectionGroup(
-                caption: NSLocalizedString("From", comment: ""),
-                networks: availableSources(for: target),
-                selected: viewModel.resolvedReceiveSource,
-                onSelect: viewModel.selectReceiveSource)
-
-            pinnedCard(target, caption: NSLocalizedString("To", comment: ""))
-        }
-    }
-
-    /// Trailing balance amount + Dash currency glyph, shared by every card.
-    private func dashBalanceTrailing(_ formatted: String) -> AnyView {
-        TransferSourceRow.dashBalanceTrailing(formatted)
-    }
-
-    private func selectionGroup(
-        caption: String,
-        networks: [ChainNetwork],
-        selected: ChainNetwork,
-        onSelect: @escaping (ChainNetwork) -> Void
-    ) -> some View {
-        VStack(spacing: 8) {
-            ForEach(networks, id: \.self) { network in
-                let display = networkDisplay(network)
-                sourceRow(
-                    iconSystemName: display.icon,
-                    caption: caption,
-                    title: display.title,
-                    balanceTrailing: dashBalanceTrailing(display.balance),
-                    selected: selected == network,
-                    action: { onSelect(network) })
-            }
-        }
-    }
-
-    /// Tappable source row with a trailing radio indicator — rendered by the
-    /// shared `TransferSourceRow` (also used by the Send screen's From picker).
-    private func sourceRow(
-        iconSystemName: String,
-        caption: String,
-        title: String,
-        balanceTrailing: AnyView,
-        selected: Bool,
-        showsRadio: Bool = true,
-        action: @escaping () -> Void
-    ) -> some View {
-        TransferSourceRow(
-            iconSystemName: iconSystemName,
-            caption: caption,
-            title: title,
-            balanceTrailing: balanceTrailing,
-            selected: selected,
-            showsRadio: showsRadio,
-            action: action)
-    }
-
-    /// Pinned-sheet picker lists (the balance-row arrow sheets): the fixed
-    /// endpoint's balance is left out entirely — only the standalone screen
-    /// shows all three with same-balance taps rejected.
-    private func availableTargets(for source: ChainNetwork) -> [ChainNetwork] {
-        ChainNetwork.allCases.filter { $0 != source }
-    }
-
-    private func availableSources(for target: ChainNetwork) -> [ChainNetwork] {
-        ChainNetwork.allCases.filter { $0 != target }
-    }
-
-    // MARK: - Transfer preview
-
-    private var transferPreview: some View {
-        VStack(spacing: 2) {
-            Text(NSLocalizedString("You will transfer", comment: ""))
-                .font(.system(size: 12))
-                .foregroundColor(Color.dash.secondaryText)
-            HStack(spacing: 4) {
-                Text("~ \(viewModel.dashAmountFormatted)")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.dash.primaryText)
-                Image("icon_dash_currency")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 13, height: 13)
-            }
-        }
-        .frame(maxWidth: .infinity)
-    }
 
     // MARK: - Helpers
 
@@ -476,117 +325,136 @@ struct InternalTransferScreen: View {
     }
 }
 
-// MARK: - TransferAmountValidationNote
+#if DEBUG
 
-/// Inline explanation for a route-specific amount that cannot be submitted.
-/// Keeping this next to the amount/source controls prevents a protective SDK
-/// build-time refusal from becoming the user's first feedback.
-struct TransferAmountValidationNote: View {
-    let message: String
-
-    var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 13))
-                .foregroundColor(.orange)
-            Text(message)
-                .font(.system(size: 13))
-                .foregroundColor(.dash.secondaryText)
-                .fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: 0)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
+/// Previews run without a wallet, so anything the SDK has to price is
+/// unavailable: the pool-fee routes (`.coreToShielded`) and the shielded
+/// reverse routes render their "fee unavailable" validation note instead of an
+/// enabled Continue. `.core → .platform` needs no estimate, so that pair is the
+/// default here and the one to use when previewing an enabled action button.
+@MainActor
+private func transferScreenSample(
+    source: ChainNetwork = .core,
+    target: ChainNetwork = .platform,
+    identityDestination: Bool = false,
+    amountText: String = "0",
+    sendFrom: ChainNetwork? = nil,
+    receiveInto: ChainNetwork? = nil,
+    showsHeader: Bool = true,
+    isChainSynced: Bool = true,
+    isResyncingWallet: Bool = false
+) -> some View {
+    InternalTransferScreen(
+        viewModel: .makeForPreview(
+            source: source,
+            target: target,
+            sendFrom: sendFrom,
+            receiveInto: receiveInto,
+            identityDestination: identityDestination,
+            amountText: amountText,
+            isChainSynced: isChainSynced,
+            isResyncingWallet: isResyncingWallet),
+        showsHeader: showsHeader,
+        receiveInto: receiveInto,
+        sendFrom: sendFrom)
 }
 
-// MARK: - TransferSourceRow
-
-/// Tappable balance row with icon, caption ("From"/"To"), title, trailing
-/// balance, and a radio indicator — shared by the internal transfer screen's
-/// source picker and the Send screen's From picker.
-struct TransferSourceRow: View {
-    let iconSystemName: String
-    let caption: String
-    let title: String
-    let balanceTrailing: AnyView
-    let selected: Bool
-    /// False renders a fixed (non-picker) endpoint card: no radio circle
-    /// and no selection border.
-    var showsRadio: Bool = true
-    /// With `showsRadio` false: true renders a tappable collapsed selector
-    /// (chevron trailing, expands a picker on tap) instead of a fixed card.
-    var showsChevron: Bool = false
-    var action: () -> Void
-
-    /// Trailing balance amount + Dash currency glyph, the standard trailing
-    /// content for these rows.
-    static func dashBalanceTrailing(_ formatted: String) -> AnyView {
-        AnyView(
-            HStack(spacing: 2) {
-                Text(formatted)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.dash.primaryText)
-                Image("icon_dash_currency")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 14, height: 14)
-            })
-    }
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 14) {
-                Image(systemName: iconSystemName)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.blue)
-                    .frame(width: 36, height: 36)
-                    .background(Color.dash.blue.opacity(0.08))
-                    .clipShape(Circle())
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(caption)
-                        .font(.system(size: 11))
-                        .foregroundColor(Color.dash.secondaryText)
-                    Text(title)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(.dash.primaryText)
-                }
-
-                Spacer()
-
-                balanceTrailing
-
-                if showsRadio {
-                    radioIndicator
-                } else if showsChevron {
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(Color.dash.secondaryText)
-                }
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(Color.dash.secondaryBackground)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(showsRadio && selected ? Color.dash.blue : Color.clear,
-                            lineWidth: showsRadio && selected ? 1.5 : 0))
-            .cornerRadius(12)
-        }
-        .buttonStyle(.plain)
-        .disabled(!showsRadio && !showsChevron)
-    }
-
-    private var radioIndicator: some View {
-        ZStack {
-            Circle()
-                .stroke(selected ? Color.dash.blue : Color.dash.gray300.opacity(0.6), lineWidth: 1.5)
-                .frame(width: 18, height: 18)
-            if selected {
-                Circle()
-                    .fill(Color.dash.blue)
-                    .frame(width: 10, height: 10)
-            }
-        }
-    }
+@available(iOS 17, *)
+#Preview("Standalone · empty") {
+    transferScreenSample()
 }
+
+/// Amount entered and affordable: the "You will transfer" line appears and
+/// Continue is enabled.
+@available(iOS 17, *)
+#Preview("Standalone · valid amount") {
+    transferScreenSample(amountText: "0.5")
+}
+
+/// Above the 2.45 DASH preview balance — the inline insufficient-balance note
+/// replaces the transfer preview and Continue stays disabled.
+@available(iOS 17, *)
+#Preview("Standalone · over balance") {
+    transferScreenSample(amountText: "9.5")
+}
+
+/// Identity destination: the To card pins the identity (no swap badge, no
+/// Max), and a valid amount enables Continue — the Core source needs no SDK
+/// fee estimate.
+@available(iOS 17, *)
+#Preview("Standalone · to Identity") {
+    transferScreenSample(identityDestination: true, amountText: "0.05")
+}
+
+/// Below the top-up executor's 0.01 DASH floor — the inline note names the
+/// minimum and Continue stays disabled.
+@available(iOS 17, *)
+#Preview("To Identity · below minimum") {
+    transferScreenSample(identityDestination: true, amountText: "0.005")
+}
+
+/// The gate needs BOTH halves — the restore marker and an unfinished sync.
+/// With only one it never appears, which is what this preview used to show.
+@available(iOS 17, *)
+#Preview("Sync gate") {
+    transferScreenSample(
+        amountText: "0.5",
+        isChainSynced: false,
+        isResyncingWallet: true)
+}
+
+/// Same unfinished sync, but the wallet was not restored — nothing is blocked,
+/// and Continue stays live.
+@available(iOS 17, *)
+#Preview("Syncing · not restored") {
+    transferScreenSample(amountText: "0.5", isChainSynced: false)
+}
+
+/// The gate covers the Core-funded routes only: a shielded source transfers
+/// during the same sync.
+@available(iOS 17, *)
+#Preview("Sync gate · shielded source") {
+    transferScreenSample(
+        source: .shielded,
+        target: .core,
+        amountText: "0.1",
+        isChainSynced: false,
+        isResyncingWallet: true)
+}
+
+/// Send-sheet embedding: source pinned, host draws its own title.
+@available(iOS 17, *)
+#Preview("Send sheet · no header") {
+    transferScreenSample(
+        source: .core,
+        amountText: "0.5",
+        sendFrom: .core,
+        showsHeader: false)
+}
+
+/// Receive-sheet embedding: destination pinned at the bottom.
+@available(iOS 17, *)
+#Preview("Receive sheet · no header") {
+    transferScreenSample(
+        source: .core,
+        target: .platform,
+        amountText: "0.5",
+        receiveInto: .platform,
+        showsHeader: false)
+}
+
+@available(iOS 17, *)
+#Preview("Dark") {
+    transferScreenSample(amountText: "0.5")
+        .preferredColorScheme(.dark)
+}
+
+/// The form scrolls above the pinned keypad — at accessibility sizes the
+/// action button must stay reachable rather than being pushed off screen.
+@available(iOS 17, *)
+#Preview("Large type") {
+    transferScreenSample(amountText: "0.5")
+        .environment(\.dynamicTypeSize, .accessibility1)
+}
+
+#endif

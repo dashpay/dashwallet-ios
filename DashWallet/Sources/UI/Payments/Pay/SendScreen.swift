@@ -29,6 +29,10 @@ struct SendScreen: View {
     /// (the balance-row send sheet) — hides the X + title header.
     var showsHeader: Bool = true
 
+    /// Set when the screen was pushed: the header's leading slot becomes a
+    /// back button instead of a close one, and the host hides the UIKit bar.
+    var onBack: (() -> Void)? = nil
+
     @FocusState private var addressFieldFocused: Bool
     @State private var isEditingAddress = false
 
@@ -42,9 +46,9 @@ struct SendScreen: View {
     var body: some View {
         VStack(spacing: 0) {
             if showsHeader {
+                // No padding of its own: `NavigationBar` already insets its
+                // leading/trailing slots by 20 and stands 64 tall.
                 header
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
             }
 
             ScrollView {
@@ -82,22 +86,23 @@ struct SendScreen: View {
 
     // MARK: - Header
 
+    /// Back when the screen was pushed, close when it is the root of its own
+    /// presentation. Both come from the design system's bar rather than the
+    /// UIKit one, so the glyph and its ring are the `navigationbar-*` assets.
     private var header: some View {
-        HStack {
-            Button(action: onClose) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 16, weight: .medium))
+        DashUIKit.NavigationBar(
+            leading: {
+                if let onBack {
+                    DashUIKit.NavigationBarElement.back.button(action: onBack)
+                } else {
+                    DashUIKit.NavigationBarElement.close.button(action: onClose)
+                }
+            },
+            central: {
+                Text(NSLocalizedString("Send", comment: ""))
+                    .dashFont(.subheadMedium)
                     .foregroundColor(Color.dash.primaryText)
-                    .frame(width: 36, height: 36)
-                    .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
-            }
-            Spacer()
-            Text(NSLocalizedString("Send", comment: ""))
-                .font(.headline)
-                .foregroundColor(.dash.primaryText)
-            Spacer()
-            Color.clear.frame(width: 36, height: 36)
-        }
+            })
     }
 
     // MARK: - Address
@@ -464,12 +469,6 @@ struct ExternalSendAmountScreen: View {
             inProgress: false,
             actionHandler: continueAction
         )
-        .padding(.top, 12)
-        .padding(.horizontal, 16)
-        .padding(.bottom, 12)
-        .background(Color.dash.secondaryBackground)
-        .clipShape(.rect(cornerRadius: 20))
-        .background(Color.dash.secondaryBackground, ignoresSafeAreaEdges: .bottom)
     }
 
     private func continueAction() {
@@ -652,11 +651,8 @@ private func sourceIconName(_ network: ChainNetwork) -> String {
 }
 
 private func sourceTitle(_ network: ChainNetwork) -> String {
-    switch network {
-    case .core: return NSLocalizedString("Transparent", comment: "Balance breakdown")
-    case .platform: return NSLocalizedString("Platform", comment: "Dash Platform chain")
-    case .shielded: return NSLocalizedString("Shielded", comment: "")
-    }
+    // One source of truth: simple mode calls the Core balance "Dash Wallet".
+    network.balanceName
 }
 
 private func destinationBadge(_ destination: SendViewModel.DestinationKind) -> some View {

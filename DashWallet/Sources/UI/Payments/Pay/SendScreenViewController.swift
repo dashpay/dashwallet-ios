@@ -28,7 +28,7 @@ final class SendScreenViewController: DWBasePayViewController {
 
     private let sendViewModel = SendViewModel()
     private lazy var hostingController: UIHostingController<SendScreen> = {
-        let screen = SendScreen(
+        var screen = SendScreen(
             viewModel: sendViewModel,
             onClose: { [weak self] in self?.dismiss(animated: true) },
             onScanQR: { [weak self] in self?.performScanQRCodeAction() },
@@ -38,6 +38,11 @@ final class SendScreenViewController: DWBasePayViewController {
                     viewModel: self.sendViewModel,
                     onSendCompleted: { [weak self] in self?.dismiss(animated: true) })
             })
+        // Pushed from the payments landing there is somewhere to go back to;
+        // presented as the "Send to Address" shortcut there is not.
+        if let navigationController, navigationController.viewControllers.first !== self {
+            screen.onBack = { [weak self] in self?.navigationController?.popViewController(animated: true) }
+        }
         return UIHostingController(rootView: screen)
     }()
 
@@ -98,14 +103,18 @@ extension DWBasePayViewController {
     /// balance-row send sheet.
     func continueCore(address: String, amountDuffs: UInt64) {
         guard address.isValidDashAddressForCurrentNetwork else { return }
-        var uriString = "dash:\(address)"
-        if amountDuffs > 0 {
-            let dashAmount = InternalTransferViewModel.formatTyped(
-                amountDuffs.dashAmount, fractionDigits: 8)
-            uriString += "?amount=\(dashAmount)"
-        }
-        guard let url = URL(string: uriString) else { return }
-        performPay(to: url)
+        // A plain-address input, not a `dash:` URI through `performPay(to:)`.
+        // That route classifies a URI carrying a valid address as a DEEP LINK,
+        // and `DWPaymentProcessor` answers a deep link by asking for an amount
+        // — pushing the legacy `ProvideAmountViewController` on top of the
+        // amount step the user has just filled in, prefilled with the same
+        // number. Two amount screens, and the second one in the old design.
+        //
+        // Nothing here is a deep link: this flow already holds the address and
+        // the amount. `payToAddress:amount:` puts both on a `PlainAddress`
+        // input, which the processor takes straight to the confirmation with
+        // the real fee — the same place Platform and Shielded land.
+        performPay(toAddress: address, amount: amountDuffs)
     }
 
     /// Push the external-send SOURCE step (From picker) onto the current
@@ -120,16 +129,12 @@ extension DWBasePayViewController {
             onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) },
             onContinue: { [weak self] in
                 guard let self else { return }
-                if viewModel.route == .coreToCore {
-                    // Transparent → Transparent: skip our amount step and use
-                    // the classic L1 amount screen (real fee math + its own
-                    // confirm) reached through the payment processor.
-                    self.continueCore(address: viewModel.trimmedAddress, amountDuffs: 0)
-                } else {
-                    // Legs the L1 amount screen can't fund (asset-lock shield,
-                    // platform/shielded sources): our amount step + confirm.
-                    self.pushExternalSendAmount(viewModel: viewModel, onSendCompleted: onSendCompleted)
-                }
+                // Every source lands on the same amount step, Transparent
+                // included. Core → Core still finishes in the L1 payment
+                // processor for the real fee math and its confirm, but it
+                // gets there from that step carrying the amount, rather than
+                // being handed off before one is entered.
+                self.pushExternalSendAmount(viewModel: viewModel, onSendCompleted: onSendCompleted)
             })
         // Every UIHostingController already conforms to NavigationBarDisplayable
         // (nav bar + back button hidden); the screen draws its own back + title.
@@ -159,8 +164,9 @@ extension DWBasePayViewController {
 // The screen draws its own X + title header. When it is the root of its own
 // modal (the "Send to Address" shortcut), BaseNavigationController's willShow
 // pass must not re-show the (empty) navigation bar above it. Pushed from the
-// payments landing it keeps the bar's back arrow, as before.
+// payments landing the bar stays hidden too — `SendScreen` draws the design
+// system's own `NavigationBar`, with back in place of close.
 extension SendScreenViewController: NavigationBarDisplayable {
-    var isBackButtonHidden: Bool { navigationController?.viewControllers.first === self }
-    var isNavigationBarHidden: Bool { navigationController?.viewControllers.first === self }
+    var isBackButtonHidden: Bool { true }
+    var isNavigationBarHidden: Bool { true }
 }

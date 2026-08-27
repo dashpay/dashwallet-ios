@@ -34,6 +34,19 @@ public protocol ConfirmPaymentDataSource {
 
     @objc(totalWithFont:tintColor:)
     func total(with font: UIFont, tintColor: UIColor) -> DWTitleDetailItem
+
+    /// The fee and the all-in debit in duffs.
+    ///
+    /// The `DWTitleDetailItem`s above carry the same two figures already
+    /// formatted, but they carry the Dash symbol as an image attachment — read
+    /// back as plain text it is gone, and the row renders a bare number. A
+    /// renderer that wants to draw the amount itself needs the number.
+    ///
+    /// Optional because only the L1 payment path has duffs to give: the Uphold
+    /// transfer implements this protocol too, and its amounts are not Core
+    /// values. Callers fall back to the formatted string.
+    @objc optional var feeDuffs: UInt64 { get }
+    @objc optional var totalDuffs: UInt64 { get }
 }
 
 // MARK: - ConfirmPaymentModel

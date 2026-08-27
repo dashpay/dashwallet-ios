@@ -136,9 +136,18 @@ final class SendViewModel: ObservableObject {
 
     /// Drives the one-time restore gate reactively. A normal catch-up may set
     /// this to false, but it only blocks while the recovery marker is active.
-    @Published private(set) var isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
+    ///
+    /// Seeded from the monitor in `init()` rather than here: a property default
+    /// runs in EVERY initializer, and the preview initializer must not spin up
+    /// the sync monitor singleton.
+    @Published private(set) var isChainSynced = false
 
     private var cancellables = Set<AnyCancellable>()
+
+    #if DEBUG
+    /// True only for `makeForPreview` instances — see the guard in `deinit`.
+    private var isPreviewInstance = false
+    #endif
 
     /// Set by the balance-row send sheet: the source is fixed to the tapped
     /// balance instead of being user-pickable, and an address whose type
@@ -147,6 +156,11 @@ final class SendViewModel: ObservableObject {
     let pinnedSource: ChainNetwork?
 
     deinit {
+        #if DEBUG
+        // Preview instances never registered — building the monitor here just
+        // to unregister would start reachability inside the canvas.
+        if isPreviewInstance { return }
+        #endif
         // The monitor holds observers strongly — without this the VM (and
         // its Combine pipelines) outlive the screen.
         SyncingActivityMonitor.shared.remove(observer: self)
@@ -159,6 +173,7 @@ final class SendViewModel: ObservableObject {
         }
         refreshClipboardSuggestion()
         SyncingActivityMonitor.shared.add(observer: self)
+        isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
 
         NotificationCenter.default.publisher(for: UIPasteboard.changedNotification)
             .receive(on: RunLoop.main)
@@ -203,6 +218,64 @@ final class SendViewModel: ObservableObject {
             }
             .store(in: &cancellables)
     }
+
+    #if DEBUG
+    /// Lightweight initializer used only by SwiftUI previews. Sets the balances
+    /// and the typed destination directly and skips the sync-monitor,
+    /// pasteboard and wallet-state wiring the real `init()` sets up.
+    ///
+    /// Property observers do not fire during initialization, so assigning
+    /// `addressText` here also skips the destination parse and preflight the
+    /// real screen would run on every keystroke.
+    private init(
+        previewPinnedSource: ChainNetwork?,
+        previewSource: ChainNetwork,
+        previewAddressText: String,
+        previewAmountText: String,
+        previewCoreDuffs: UInt64,
+        previewPlatformCredits: UInt64,
+        previewShieldedCredits: UInt64,
+        previewIsChainSynced: Bool
+    ) {
+        pinnedSource = previewPinnedSource
+        isPreviewInstance = true
+        source = previewSource
+        addressText = previewAddressText
+        amountText = previewAmountText
+        coreBalanceDuffs = previewCoreDuffs
+        platformCredits = previewPlatformCredits
+        shieldedBalance = previewShieldedCredits
+        isChainSynced = previewIsChainSynced
+    }
+
+    /// Preview view model with stubbed balances. Core is in duffs (1e8 per
+    /// DASH), Platform and Shielded in credits (1e11 per DASH); the defaults
+    /// are 2.45 / 1.2 / 0.785 DASH.
+    ///
+    /// `destination` stays `nil` because the address parse never runs here, so
+    /// the screen renders its address-entry step rather than a resolved
+    /// recipient.
+    static func makeForPreview(
+        pinnedSource: ChainNetwork? = nil,
+        source: ChainNetwork = .core,
+        addressText: String = "",
+        amountText: String = "0",
+        coreDuffs: UInt64 = 245_000_000,
+        platformCredits: UInt64 = 120_000_000_000,
+        shieldedCredits: UInt64 = 78_500_000_000,
+        isChainSynced: Bool = true
+    ) -> SendViewModel {
+        SendViewModel(
+            previewPinnedSource: pinnedSource,
+            previewSource: source,
+            previewAddressText: addressText,
+            previewAmountText: amountText,
+            previewCoreDuffs: coreDuffs,
+            previewPlatformCredits: platformCredits,
+            previewShieldedCredits: shieldedCredits,
+            previewIsChainSynced: isChainSynced)
+    }
+    #endif
 
     /// Fee kind for the pool-spending routes; `nil` for every other route.
     private func shieldedFeeKind(for route: Route?) -> PlatformWalletManager.ShieldedFeeKind? {
@@ -287,14 +360,10 @@ final class SendViewModel: ObservableObject {
 
     /// Localized name of the pinned source balance, for the mismatch label.
     var pinnedSourceTitle: String {
-        switch pinnedSource {
-        case .core, nil:
-            return NSLocalizedString("Transparent", comment: "Balance breakdown")
-        case .platform:
-            return NSLocalizedString("Platform", comment: "Dash Platform chain")
-        case .shielded:
-            return NSLocalizedString("Shielded", comment: "")
-        }
+        // `balanceName` rather than a second copy of the same three strings:
+        // simple mode renames the Core balance, and one of these lists would
+        // have been forgotten.
+        (pinnedSource ?? .core).balanceName
     }
 
     private func sourceDidChange() {
