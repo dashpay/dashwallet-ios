@@ -374,7 +374,7 @@ struct IdentityDetailScreen: View {
                         if row.pendingContestedName != nil {
                             pendingNameCard
                         }
-                        if !currentRow.dpnsNames.isEmpty {
+                        if !currentRow.dpnsNames.isEmpty || isMain {
                             namesCard
                         }
                         mainIdentityCard
@@ -623,11 +623,47 @@ struct IdentityDetailScreen: View {
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
             }
+            if isMain {
+                Divider()
+                Button(action: showUsernameMarketplace) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(.dash.blue)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(currentRow.dpnsNames.isEmpty
+                                ? NSLocalizedString("Add a username", comment: "Username marketplace: identity entry point")
+                                : NSLocalizedString("Add another username", comment: "Username marketplace: identity entry point"))
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.dash.blue)
+                            Text(NSLocalizedString(
+                                "Buy a listed name or register an available one",
+                                comment: "Username marketplace: identity entry point subtitle"))
+                                .font(.caption)
+                                .foregroundColor(.dash.secondaryText)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.dash.secondaryText)
+                    }
+                    .padding(.vertical, 4)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
+    }
+
+    private func showUsernameMarketplace() {
+        let controller = UIHostingController(
+            rootView: UsernameMarketplaceScreen(vc: vc))
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
     }
 
     private var pendingNameCard: some View {

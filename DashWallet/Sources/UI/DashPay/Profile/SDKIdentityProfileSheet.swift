@@ -37,6 +37,7 @@ struct SDKIdentityProfileSheet: View {
     @State private var identityIdData: Data?
     @State private var showingBalanceInfo = false
     @State private var showingTopUp = false
+    @State private var showingUsernameMarketplace = false
 
     /// Callback invoked when the user taps Edit. Owner (HomeViewController)
     /// dismisses the sheet and pushes `RootEditProfileViewController`.
@@ -51,7 +52,7 @@ struct SDKIdentityProfileSheet: View {
                     header
                     Divider()
                     infoSection
-                    if !dpnsNames.isEmpty {
+                    if hasIdentity {
                         namesSection
                     }
                     // Edit Profile gated on hasIdentity: the editor's
@@ -96,6 +97,11 @@ struct SDKIdentityProfileSheet: View {
                 pendingContestedName = DWContestedNameStatusService.shared.pendingLabel
                 pendingVotingEndTime = DWContestedNameStatusService.shared.pendingVotingEndTime
                 avatarURL = DWCurrentUserIdentityInfo.shared.avatarURL
+            }
+        }
+        .fullScreenCover(isPresented: $showingUsernameMarketplace) {
+            UsernameMarketplaceScreen {
+                showingUsernameMarketplace = false
             }
         }
     }
@@ -273,6 +279,37 @@ struct SDKIdentityProfileSheet: View {
                         Divider()
                     }
                 }
+                if !dpnsNames.isEmpty {
+                    Divider()
+                }
+                Button {
+                    showingUsernameMarketplace = true
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(.dash.blue)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(dpnsNames.isEmpty
+                                ? NSLocalizedString("Add a username", comment: "Username marketplace: profile entry point")
+                                : NSLocalizedString("Add another username", comment: "Username marketplace: profile entry point"))
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.dash.blue)
+                            Text(NSLocalizedString(
+                                "Buy a listed name or register an available one",
+                                comment: "Username marketplace: profile entry point subtitle"))
+                                .font(.caption)
+                                .foregroundColor(.dash.secondaryText)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.dash.secondaryText)
+                    }
+                    .padding(.vertical, 12)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal, 12)
             .background(Color.dash.secondaryBackground)
