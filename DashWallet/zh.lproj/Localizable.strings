@@ -172,7 +172,7 @@
 "80 km" = "80 公里";
 
 /* No comment provided by engineer. */
-"\"%@\" is not a recovery phrase word" = "\"%@\"不是一个助记词";
+"\"%@\" is not a recovery phrase word" = "\"%@\"不是一个助记词中的单词";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" 不是一个助记词. 您是否想尝试找回正确的单词?";
@@ -397,10 +397,10 @@
 "Apple Pay" = "Apple Pay";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting a payment to" = "应用程序 %@ 正在申请付款给";
+"Application %@ is requesting a payment to" = "应用程序 %@ 正在请求付款给";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "应用程序 %@ 正在申请一个地址用来发送交易给您. 您是否同意?";
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "应用程序 %@ 正在请求一个地址用来发送交易给您.  您是否同意?";
 
 /* No comment provided by engineer. */
 "Apply" = "应用";
@@ -565,7 +565,7 @@
 "block #%d of %d" = "%2$d中#%1$d的区块";
 
 /* No comment provided by engineer. */
-"Block #%d of %d" = "%2$d中#%1$d的区块";
+"Block #%d of %d" = "第 %1$d 个区块，共 %2$d 个";
 
 /* SPV diagnostics */
 "Block height" = "Block height";
@@ -613,7 +613,7 @@
 "Buy credits" = "购买积分";
 
 /* No comment provided by engineer. */
-"Buy Dash" = "购买Dash";
+"Buy Dash" = "购买 Dash";
 
 /* Dash Service Overview */
 "Buy Dash with fiat" = "通过法币购买Dash";
@@ -1069,7 +1069,7 @@
 "Dash" = "Dash";
 
 /* No comment provided by engineer. */
-"Dash address" = "达世币地址";
+"Dash address" = "Dash 地址";
 
 /* CrowdNode */
 "Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "此设备上Dash钱包中为您的CrowdNode账户指定Dash地址";
@@ -1355,10 +1355,10 @@
 "Enable DashPay" = "启用 DashPay";
 
 /* No comment provided by engineer. */
-"Enable Face ID" = "启用脸部识别";
+"Enable Face ID" = "启用面容 ID";
 
 /* No comment provided by engineer. */
-"Enable Touch ID" = "启用指纹识别";
+"Enable Touch ID" = "启用触控 ID";
 
 /* DashPay FAQ */
 "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "启用 DashPay 需要一笔小额的一次性网络手续费，从您身份的积分余额中支付。确认前会显示确切的预估金额。发送联系人请求和支付则收取通常的网络手续费。";
@@ -1467,7 +1467,7 @@
 "External address" = "外部地址";
 
 /* No comment provided by engineer. */
-"Face ID limit" = "脸部识别限制";
+"Face ID limit" = "面容 ID 限制";
 
 /* No comment provided by engineer. */
 "Failed" = "失败";
@@ -1587,7 +1587,7 @@
 "For some reason, the request for the username '%@' has failed." = "由于某种原因, 对用户名 '%@' 的请求失败.";
 
 /* Coinbase */
-"For your security, you have been signed out." = "为了保障您的账户安全, 您已被登出.";
+"For your security, you have been signed out." = "为了保障您的账户安全，您已退出登录。";
 
 /* No comment provided by engineer. */
 "Forget about long crypto addresses, create the username, find friends and add them to your contacts" = "忘记冗长的加密地址, 创建用户名, 找到朋友并将他们添加到您的联系人中.";
@@ -1749,7 +1749,7 @@
 "Have complete control and customize your wallet based on your needs" = "完全控制并根据需求定制您的钱包";
 
 /* No comment provided by engineer. */
-"header #%d of %d" = "头部 %2$d分之#%1$d";
+"header #%d of %d" = "第 %1$d 个区块头，共 %2$d 个";
 
 /* SPV sync phase */
 "Headers" = "区块头";
@@ -1852,7 +1852,7 @@
 "I accept %@ terms and conditions" = "我接收 %@ 条款和条件";
 
 /* No comment provided by engineer. */
-"I accept that I will lose my coins if I no longer possess the recovery phrase" = "我同意如果我丢失助记词, 我会丢失我的Dash";
+"I accept that I will lose my coins if I no longer possess the recovery phrase" = "我同意如果我丢失助记词，我会丢失我的 Dash";
 
 /* CrowdNode */
 "I agree to CrowdNode" = "我同意 CrowdNode";
@@ -1915,7 +1915,7 @@
 "If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "如果您丢失此钱包的密码并丢失此设备或卸载Dash钱包, 您将无法访问CrowdNode上和此钱包中的资金.";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input: \"%@\"" = "如果您仍想清空钱包, 请输入: \"%@\"";
+"If you still would like to wipe it please input: \"%@\"" = "如果您仍想清空钱包, 请输入：\"%@\"";
 
 /* Usernames */
 "If you tap “Cancel Request”, you will still have a chance to request another username without paying again" = "如果您点击 “取消申请”, 您仍然可以再申请另一个用户名无需再次付款";
@@ -2357,16 +2357,16 @@
 "Logged in to DashSpend account" = "登录的 DashSpend 账户";
 
 /* No comment provided by engineer. */
-"Login with Face ID" = "以脸部识别登入";
+"Login with Face ID" = "使用面容 ID 登录";
 
 /* No comment provided by engineer. */
-"Login with Touch ID" = "以指纹识别登入";
+"Login with Touch ID" = "使用触控 ID 登录";
 
 /* a verb, Logout Immediately */
 "Logout" = "退出";
 
 /* Logout after 5 min */
-"Logout after" = "退出后";
+"Logout after" = "多久后退出";
 
 /* Maya */
 "Long press to paste" = "Long press to paste";
@@ -2415,7 +2415,7 @@
 "Masternode list" = "主节点列表";
 
 /* No comment provided by engineer. */
-"masternode list #%d of %d" = "主节点列表 #%2$d 分之  %1$d";
+"masternode list #%d of %d" = "第 %1$d 个主节点列表，共 %2$d 个";
 
 /* About screen tech info */
 "Masternode list: %u of %u" = "Masternode list: %1$u of %2$u";
@@ -3182,7 +3182,7 @@
 "Please note, you will not be able to withdraw your funds from CrowdNode to this wallet until you increase your balance to %@ Dash." = "Please note, you will not be able to withdraw your funds from CrowdNode to this wallet until you increase your balance to %@ Dash.";
 
 /* No comment provided by engineer. */
-"Please place your phone near NFC device." = "请将您的手机靠近NFC设备.";
+"Please place your phone near NFC device." = "请将你的手机靠近NFC设备.";
 
 /* CTXSpend error */
 "Please sign in to your DashSpend account." = "请注册您的 DashSpend 账户";
@@ -3459,10 +3459,10 @@
 "Receive your share of rewards daily." = "每天接收属于您份额的奖励.";
 
 /* Received transaction */
-"Received" = "已接收";
+"Received" = "收到";
 
 /* No comment provided by engineer. */
-"Received %@ (%@)" = "已接收 %1$@ (%2$@)";
+"Received %@ (%@)" = "收到 %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "Received at" = "接收于";
@@ -3674,7 +3674,7 @@
 "Screenshot detected. New recovery phrase:" = "检测到屏幕截图. 新的助记词:";
 
 /* No comment provided by engineer. */
-"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "屏幕截图可以被其他程序或者设备获得. 请生成一个新的助记词并妥善保管.";
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "屏幕截图可以被其他程序或者设备获得。请生成一个新的助记词并妥善保管。";
 
 /* Raw transaction inspector */
 "Script" = "脚本";
@@ -4160,7 +4160,7 @@
 "The node's own report, unverified — what it says about itself, not what the network has agreed on." = "节点自报的未经验证的信息——是它对自己的说法，而非网络已达成一致的结果。";
 
 /* No comment provided by engineer. */
-"Asked" = "询问时间";
+"Asked" = "询问地址";
 
 /* No comment provided by engineer. */
 "Software" = "软件";
@@ -5177,7 +5177,7 @@
 "Total" = "总计";
 
 /* No comment provided by engineer. */
-"Touch ID limit" = "触控ID限制";
+"Touch ID limit" = "触控 ID 限制";
 
 /* DashPay Contacts */
 "Transaction" = "Transaction";
@@ -5517,7 +5517,7 @@
 "View All" = "查看全部";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "在浏览器中查看";
+"View in Block Explorer" = "在区块浏览器中查看";
 
 /* Dash DEX */
 "View MayaChain explorer" = "View MayaChain explorer";
@@ -5828,10 +5828,10 @@
 "You can authenticate with biometrics for payments below" = "You can authenticate with biometrics for payments below";
 
 /* No comment provided by engineer. */
-"You can authenticate with Face ID for payments below" = "您可以使用脸部识别来认证下方交易";
+"You can authenticate with Face ID for payments below" = "您可以使用面容 ID 认证以下金额的付款";
 
 /* No comment provided by engineer. */
-"You can authenticate with Touch ID for payments below" = "您可以使用指纹识别来认证下方交易";
+"You can authenticate with Touch ID for payments below" = "您可以使用触控 ID 认证以下金额的付款";
 
 /* DashSpend */
 "You can buy up to %@ in gift cards per order" = "You can buy up to %@ in gift cards per order";
@@ -5876,7 +5876,7 @@
 "You have %@ Dash so far" = "您目前有 %@ Dash";
 
 /* Usernames */
-"You have %@ Dash.\nSome usernames cost up to %@ Dash." = "您拥有 %1$@ Dash. \n一些用户名会至多花费 %2$@ Dash.";
+"You have %@ Dash.\nSome usernames cost up to %@ Dash." = "您拥有 %1$@ Dash.\n一些用户名会至多花费 %2$@ Dash.";
 
 /* CoinJoin */
 "You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance." = "You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance.";
