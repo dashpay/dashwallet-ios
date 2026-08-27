@@ -23,20 +23,20 @@ on:
         default: ""
         type: string
       release_channel:
-        description: "TestFlight distribution channel"
+        description: "TestFlight distribution channel — internal-only marks the upload TestFlight Internal Only"
         required: true
-        default: internal
+        default: internal-only
         type: choice
         options:
+          - internal-only
           - internal
           - external
       app_version:
-        description: "App version, or 'auto' to follow the latest TestFlight/App Store version"
+        description: "App version to ship, e.g. 9.1.0 — the build number is assigned automatically"
         required: true
-        default: auto
         type: string
       testflight_group:
-        description: "Exact external TestFlight group name (ignored for internal releases)"
+        description: "Exact external TestFlight group name (ignored unless release_channel is external)"
         required: true
         default: Public Beta v9.0
         type: string
@@ -625,6 +625,7 @@ jobs:
         env:
           API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          RELEASE_CHANNEL: ${{ inputs.release_channel }}
         run: |
           set -euo pipefail
 
@@ -635,6 +636,14 @@ jobs:
           /usr/libexec/PlistBuddy -c "Add :teamID string $APPLE_TEAM_ID" "$export_options"
           /usr/libexec/PlistBuddy -c 'Add :manageAppVersionAndBuildNumber bool false' "$export_options"
           /usr/libexec/PlistBuddy -c 'Add :uploadSymbols bool true' "$export_options"
+
+          # Xcode Organizer's "TestFlight Internal Only": App Store Connect
+          # marks the uploaded build so it can only reach internal testers —
+          # it can never be distributed externally or released to the App
+          # Store. The export method stays app-store-connect either way.
+          if [[ "$RELEASE_CHANNEL" == 'internal-only' ]]; then
+            /usr/libexec/PlistBuddy -c 'Add :testFlightInternalTestingOnly bool true' "$export_options"
+          fi
 
           xcodebuild -exportArchive \
             -archivePath "$ARCHIVE_PATH" \
@@ -658,7 +667,7 @@ jobs:
           ruby "$RELEASE_SCRIPT" wait-build
 
       - name: Finalize internal TestFlight build
-        if: inputs.release_channel == 'internal'
+        if: inputs.release_channel != 'external'
         env:
           WHAT_TO_TEST: ${{ inputs.what_to_test }}
           VERSION: ${{ steps.app-version.outputs.version }}
@@ -733,13 +742,16 @@ jobs:
             echo "- dashwallet-ios: \`${WALLET_SHA}\` (requested: \`${REQUESTED_WALLET_REF}\`)"
             echo "- platform: \`${PLATFORM_SHA}\` (requested: \`${REQUESTED_PLATFORM_REF}\`)"
             echo "- Channel: \`${RELEASE_CHANNEL}\`"
-            if [[ "$RELEASE_CHANNEL" == 'internal' ]]; then
+            if [[ "$RELEASE_CHANNEL" == 'external' ]]; then
+              echo "- External group: \`${TESTFLIGHT_GROUP}\`"
+              echo '- External tester notifications: enabled'
+            else
               echo '- Internal group: `App Store Connect Users`'
               echo '- External distribution: disabled'
               echo '- Beta App Review: not submitted'
-            else
-              echo "- External group: \`${TESTFLIGHT_GROUP}\`"
-              echo '- External tester notifications: enabled'
+              if [[ "$RELEASE_CHANNEL" == 'internal-only' ]]; then
+                echo '- Marked TestFlight Internal Only: this build can never go external or to the App Store'
+              fi
             fi
             echo
             echo 'The uploaded build is processed and ready for TestFlight.'

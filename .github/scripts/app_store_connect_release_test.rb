@@ -12,51 +12,46 @@ class AppStoreConnectReleaseTest < Minitest::Test
     )
   end
 
-  def test_auto_uses_latest_testflight_version
-    result = resolve(requested: "auto", testflight: %w[9.0.1 9.1.0], production: ["9.0.1"])
-
-    assert_equal "9.1.0", result.fetch(:effective)
-    refute result.fetch(:bumped)
-  end
-
-  def test_auto_uses_production_when_it_is_higher
-    result = resolve(requested: "auto", testflight: ["9.1.0"], production: ["9.2.0"])
+  def test_requested_version_is_used_as_given
+    result = resolve(requested: "9.2.0", testflight: ["9.1.0"], production: ["9.0.1"])
 
     assert_equal "9.2.0", result.fetch(:effective)
+    assert_equal "9.1.0", result.fetch(:latest_testflight)
+    assert_equal "9.0.1", result.fetch(:latest_production)
   end
 
-  def test_lower_explicit_version_is_bumped
-    result = resolve(requested: "9.0.1", testflight: ["9.1.0"], production: [])
+  def test_version_below_testflight_but_above_production_is_allowed
+    result = resolve(requested: "9.0.5", testflight: ["9.1.0"], production: ["9.0.1"])
 
-    assert_equal "9.1.0", result.fetch(:effective)
-    assert result.fetch(:bumped)
+    assert_equal "9.0.5", result.fetch(:effective)
   end
 
-  def test_higher_explicit_version_opens_new_train
-    result = resolve(requested: "9.2.0", testflight: ["9.1.0"], production: [])
+  def test_version_below_live_app_store_fails
+    error = assert_raises(AppStoreConnectRelease::Error) do
+      resolve(requested: "9.0.1", testflight: [], production: ["9.1.0"])
+    end
 
-    assert_equal "9.2.0", result.fetch(:effective)
-    refute result.fetch(:bumped)
+    assert_match "not above the live App Store version 9.1.0", error.message
   end
 
-  def test_versions_are_compared_numerically
-    result = resolve(requested: "auto", testflight: %w[9.2 9.10], production: [])
+  def test_version_equal_to_live_app_store_fails
+    assert_raises(AppStoreConnectRelease::Error) do
+      resolve(requested: "9.1.0", testflight: [], production: ["9.1"])
+    end
+  end
 
-    assert_equal "9.10", result.fetch(:effective)
+  def test_first_release_needs_no_existing_versions
+    result = resolve(requested: "1.0.0")
+
+    assert_equal "1.0.0", result.fetch(:effective)
+    assert_nil result.fetch(:latest_testflight)
+    assert_nil result.fetch(:latest_production)
   end
 
   def test_existing_train_spelling_wins_for_equivalent_version
     result = resolve(requested: "9.1.0", testflight: ["9.1"], production: [])
 
     assert_equal "9.1", result.fetch(:effective)
-  end
-
-  def test_auto_without_existing_versions_fails
-    error = assert_raises(AppStoreConnectRelease::Error) do
-      resolve(requested: "auto")
-    end
-
-    assert_match "Provide an explicit app_version", error.message
   end
 
   def test_invalid_version_fails
@@ -80,6 +75,7 @@ class AppStoreConnectReleaseTest < Minitest::Test
   end
 
   def test_release_channel_validation
+    assert_equal "internal-only", AppStoreConnectRelease.validate_release_channel("internal-only")
     assert_equal "internal", AppStoreConnectRelease.validate_release_channel("internal")
     assert_equal "external", AppStoreConnectRelease.validate_release_channel("external")
     assert_raises(AppStoreConnectRelease::Error) do
