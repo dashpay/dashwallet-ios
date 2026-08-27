@@ -557,9 +557,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         // synchronous FFI and a main-context SwiftData fetch. Nothing here has
         // ever been timed, so a uniform app-wide stutter during sync has no
         // way of being attributed. Measured here rather than assumed.
-        let tickStartedAt = Date()
+        // Monotonic: a wall-clock adjustment mid-tick would otherwise turn a
+        // fast tick into a fabricated stall, or hide a real one.
+        let tickStartedAt = DispatchTime.now()
         defer {
-            let heldMs = Int(Date().timeIntervalSince(tickStartedAt) * 1000)
+            let heldMs = Int(DispatchTime.now().uptimeNanoseconds - tickStartedAt.uptimeNanoseconds) / 1_000_000
             if heldMs >= 50 {
                 Self.logger.warning(
                     "🛰️ SPVCOORD :: progress tick held the main thread \(heldMs, privacy: .public)ms")
@@ -619,9 +621,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         // Timed separately from the tick: this is the FFI half, and knowing
         // which half is expensive decides whether the fix is throttling the
         // tick or moving the read off the main actor.
-        let startedAt = Date()
+        let startedAt = DispatchTime.now()
         defer {
-            let ms = Int(Date().timeIntervalSince(startedAt) * 1000)
+            let ms = Int(DispatchTime.now().uptimeNanoseconds - startedAt.uptimeNanoseconds) / 1_000_000
             if ms >= 50 {
                 Self.logger.warning(
                     "🛰️ SPVCOORD :: balance bridge held the main thread \(ms, privacy: .public)ms")

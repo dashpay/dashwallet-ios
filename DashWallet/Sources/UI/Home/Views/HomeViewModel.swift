@@ -965,7 +965,13 @@ class HomeViewModel: ObservableObject {
         let now = Date()
         let elapsedMs = Int(now.timeIntervalSince(startedAt) * 1000)
         let workMs = Int(now.timeIntervalSince(workStartedAt) * 1000)
-        DWLogger.log("HomeViewModel: Timeline rebuild complete in \(elapsedMs)ms (queued \(max(0, elapsedMs - workMs))ms, work \(workMs)ms), \(array.count) groups, \(self.txByHash.count) items cached, window \(windowTxs.count) rows")
+        DWLogger.log(
+            """
+            HomeViewModel: Timeline rebuild complete in \(elapsedMs)ms \
+            (queued \(max(0, elapsedMs - workMs))ms, work \(workMs)ms), \
+            \(array.count) groups, \(self.txByHash.count) items cached, \
+            window \(windowTxs.count) rows
+            """)
 
         publishTimeline(
             array,
@@ -2526,14 +2532,25 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// the SPV scan has reached, which is what the sync UI reports.
     ///
     /// One bounded fetch; call it on a state transition, not per tick.
-    static func persistedSyncedHeight() -> UInt32? {
+    ///
+    /// Returns the wallet the reading belongs to alongside it, because the
+    /// active wallet can change between the moment a caller starts observing
+    /// and the moment it reads: without the id, a reading taken after a wallet
+    /// switch is indistinguishable from one taken before it. A `nil` `height`
+    /// means that wallet has no persisted watermark yet — distinct from a
+    /// `nil` result, which means there is no active wallet at all.
+    static func persistedSyncedHeightSnapshot() -> (walletId: Data, height: UInt32?)? {
         guard let (container, walletId) = hostHandles() else { return nil }
         let context = ModelContext(container)
         var descriptor = FetchDescriptor<PersistentWallet>(
             predicate: #Predicate { $0.walletId == walletId })
         descriptor.fetchLimit = 1
-        return (try? context.fetch(descriptor))?.first?.syncedHeight
+        return (walletId, (try? context.fetch(descriptor))?.first?.syncedHeight)
     }
+
+    /// The active wallet's id, without the watermark fetch — two property
+    /// reads on the main actor, cheap enough to call when a sync cycle starts.
+    static var activeWalletId: Data? { hostHandles()?.walletId }
 
     private static func hostHandles() -> (container: ModelContainer, walletId: Data)? {
         onMain {
@@ -3014,6 +3031,9 @@ class SwiftDashSDKWalletSource: TransactionSource {
 #if DEBUG
 private struct HomeViewModelPreviewTransactionSource: TransactionSource {
     var allTransactions: [Transaction] { [] }
+    /// Fixture data, never the live wallet — so this can never register a
+    /// wallet observer, whichever initializer builds the model around it.
+    var isLiveWalletSource: Bool { false }
 }
 #endif
 

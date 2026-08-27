@@ -179,6 +179,12 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
     private var lastPeakDate: Date?
     private var cancellables = Set<AnyCancellable>()
 
+    /// The wallet the in-flight sync cycle started on. `.syncDone` arrives
+    /// from a singleton SPV stream that carries no wallet identity, while the
+    /// durable watermark is read from whichever wallet is active at log time —
+    /// so the completion is pinned to the wallet its cycle began on.
+    private var syncCycleWalletId: Data?
+
     /// Weak, because this is a singleton that outlives every observer and a
     /// strong array here turns any missed `remove(observer:)` into an
     /// unbounded leak — one did, silently, until a large-wallet scan had
@@ -323,21 +329,80 @@ extension SyncingActivityMonitor {
         // Logged at the transition rather than gated on, because whether the
         // watermark reliably reaches the tip is exactly what is unproven. One
         // line per completion answers it from an ordinary session.
+        if mapped == .syncing && syncCycleWalletId == nil {
+            syncCycleWalletId = SwiftDashSDKWalletSource.activeWalletId
+        }
+
         if mapped == .syncDone && !wasDone {
-            logDurableWatermarkAtCompletion(scannedTip: sdkSyncProgress.headers?.currentHeight ?? 0)
+            logDurableWatermarkAtCompletion(
+                scannedTip: sdkSyncProgress.headers?.currentHeight,
+                cycleWalletId: syncCycleWalletId)
+            syncCycleWalletId = nil
         }
     }
 
     /// One-shot read of the persisted sync height at the moment the UI first
     /// calls a sync complete, next to the height that was actually scanned.
     /// A single fetch on a state transition — not a per-tick cost.
-    private func logDurableWatermarkAtCompletion(scannedTip: UInt32) {
-        guard let durable = SwiftDashSDKWalletSource.persistedSyncedHeight() else {
-            Self.logger.warning("⛓️ SYNCSTATE :: reported done at tip \(scannedTip, privacy: .public); durable watermark unavailable")
+    private func logDurableWatermarkAtCompletion(scannedTip: UInt32?, cycleWalletId: Data?) {
+        let tip = scannedTip.map(String.init) ?? "unavailable"
+
+        guard let snapshot = SwiftDashSDKWalletSource.persistedSyncedHeightSnapshot() else {
+            Self.logger.warning(
+                """
+                ⛓️ SYNCSTATE :: reported done at tip \(tip, privacy: .public); \
+                no active wallet to read a durable watermark from
+                """)
             return
         }
-        let behind = scannedTip > durable ? scannedTip - durable : 0
-        Self.logger.info("⛓️ SYNCSTATE :: reported done — scanned tip \(scannedTip, privacy: .public), durable watermark \(durable, privacy: .public), behind by \(behind, privacy: .public) block(s)")
+
+        // A completion queued before a wallet switch would otherwise be
+        // measured against the wallet that replaced it.
+        if let cycleWalletId, snapshot.walletId != cycleWalletId {
+            Self.logger.warning(
+                """
+                ⛓️ SYNCSTATE :: reported done at tip \(tip, privacy: .public) for a wallet that is \
+                no longer active; durable watermark not read
+                """)
+            return
+        }
+
+        guard let durable = snapshot.height else {
+            Self.logger.warning(
+                """
+                ⛓️ SYNCSTATE :: reported done at tip \(tip, privacy: .public); \
+                durable watermark unavailable
+                """)
+            return
+        }
+
+        guard let scannedTip else {
+            Self.logger.warning(
+                """
+                ⛓️ SYNCSTATE :: reported done with an unavailable scanned tip; \
+                durable watermark \(durable, privacy: .public)
+                """)
+            return
+        }
+
+        // `durable > scannedTip` is not "caught up": the persister is ahead of
+        // the height the scan reports, which is itself worth seeing.
+        guard scannedTip >= durable else {
+            Self.logger.warning(
+                """
+                ⛓️ SYNCSTATE :: reported done — scanned tip \(scannedTip, privacy: .public), \
+                durable watermark \(durable, privacy: .public), watermark AHEAD by \
+                \(durable - scannedTip, privacy: .public) block(s)
+                """)
+            return
+        }
+
+        Self.logger.info(
+            """
+            ⛓️ SYNCSTATE :: reported done — scanned tip \(scannedTip, privacy: .public), \
+            durable watermark \(durable, privacy: .public), behind by \
+            \(scannedTip - durable, privacy: .public) block(s)
+            """)
     }
 
     private static let logger = Logger(subsystem: "org.dashfoundation.dash", category: "sync-state")
