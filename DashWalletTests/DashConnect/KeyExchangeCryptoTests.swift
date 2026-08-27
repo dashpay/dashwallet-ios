@@ -67,15 +67,15 @@ final class KeyExchangeCryptoTests: XCTestCase {
         XCTAssertNotEqual(auth, encryption)
     }
 
-    func testHash160MatchesKnownVector() {
+    func testHash160MatchesKnownVector() throws {
         let input = Data(repeating: 0x00, count: 33)
-        let hash = KeyExchangeCrypto.hash160(input)
+        let hash = try KeyExchangeCrypto.hash160(input)
 
         XCTAssertEqual(hash.hexEncodedString(), "29cfc6376255a78451eeb4b129ed8eacffa2feef")
     }
 
-    func testKotlinHash160VectorMatchesExpectedHex() {
-        let hash = KeyExchangeCrypto.hash160(Data([0x01, 0x02, 0x03]))
+    func testKotlinHash160VectorMatchesExpectedHex() throws {
+        let hash = try KeyExchangeCrypto.hash160(Data([0x01, 0x02, 0x03]))
         XCTAssertEqual(hash.hexEncodedString(), "9bc4860bb936abf262d7a51f74b4304833fee3b2")
     }
 

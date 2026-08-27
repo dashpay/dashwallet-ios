@@ -222,7 +222,7 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         )
         XCTAssertEqual(
             draft.properties["appEphemeralPubKeyHash"]?.base as? String,
-            KeyExchangeCrypto.hash160(appEphemeralPubKey).toHexString()
+            try KeyExchangeCrypto.hash160(appEphemeralPubKey).toHexString()
         )
         XCTAssertEqual(
             draft.properties["walletEphemeralPubKey"]?.base as? String,
@@ -283,7 +283,7 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
                     keyType: transition.addPublicKeys[0].keyType,
                     purpose: transition.addPublicKeys[0].purpose,
                     securityLevel: transition.addPublicKeys[0].securityLevel,
-                    publicKeyData: KeyExchangeCrypto.hash160(attackerPublicKey),
+                    publicKeyData: try KeyExchangeCrypto.hash160(attackerPublicKey),
                     contractBounds: transition.addPublicKeys[0].contractBounds
                 ),
                 transition.addPublicKeys[1],
@@ -879,7 +879,7 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
                     keyType: .ecdsaHash160,
                     purpose: .authentication,
                     securityLevel: .high,
-                    publicKeyData: KeyExchangeCrypto.hash160(authPublicKey),
+                    publicKeyData: try KeyExchangeCrypto.hash160(authPublicKey),
                     contractBounds: nil
                 ),
                 DashConnectKeyRegistrationKey(
