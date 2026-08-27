@@ -684,7 +684,7 @@ struct HomeViewContent<Content: View>: View {
         }
 
         if txItem.transactionType == .reward {
-            return (.custom("transaction-mining", bundle: .dashUIKit), nil)
+            return (.custom(DashIcon.Transaction.mining.assetName, bundle: .dashUIKit), nil)
         }
 
         return (.custom(txItem.iconName), nil)

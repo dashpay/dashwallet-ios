@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 private enum CoreLifecycleTestError: Error {
     case start

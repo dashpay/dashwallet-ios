@@ -199,6 +199,8 @@ struct ToolsMenuScreen: View {
             showMasternodeKeys()
         case .csvExport:
             showCSVExportSheet = true
+        case .connections:
+            showConnections()
         case .zenLedger:
             showZenLedgerSheet = true
         case .storageExplorer:
@@ -265,6 +267,13 @@ struct ToolsMenuScreen: View {
     
     private func showMasternodeKeys() {
         let controller = KeysOverviewViewController()
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
+    }
+
+    private func showConnections() {
+        let screen = ConnectionsScreen(vc: vc)
+        let controller = UIHostingController(rootView: screen)
         controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }

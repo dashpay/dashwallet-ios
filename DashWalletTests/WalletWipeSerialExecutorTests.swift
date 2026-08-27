@@ -8,7 +8,7 @@
 //
 
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 private enum WalletLifecycleTestError: Error {
     case walletDeletion

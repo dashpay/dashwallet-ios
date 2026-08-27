@@ -131,16 +131,16 @@ struct SwapConvertView: View {
                     // An error (e.g. insufficient balance after coin-mode gross-up) supersedes the
                     // receive estimate — both can be set at once, so show the error first.
                     Text(error)
-                        .font(Font.dash.caption1)
+                        .dashFont(.caption1)
                         .foregroundColor(Color.dash.red)
                         .multilineTextAlignment(.center)
                 } else if let amount = viewModel.receiveAmount {
                     Text(NSLocalizedString("Receive amount", comment: "Dash DEX"))
-                        .font(Font.dash.caption1)
+                        .dashFont(.caption1)
                         .foregroundStyle(Color.dash.tertiaryText)
 
                     Text("~ \(amount)")
-                        .font(Font.dash.subhead)
+                        .dashFont(.subhead)
                         .foregroundStyle(Color.dash.primaryText)
                 }
             }
