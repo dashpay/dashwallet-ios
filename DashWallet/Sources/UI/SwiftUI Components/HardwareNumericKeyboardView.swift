@@ -18,70 +18,6 @@ import DashUIKit
 import SwiftUI
 import UIKit
 
-enum HardwareNumericKeyboardKey: Equatable {
-    case digit(String)
-    case decimalSeparator
-    case delete
-}
-
-/// Hardware-key → keypad-value rules.
-///
-/// These must stay byte-identical in behavior to DashUIKit's
-/// `NumericKeyboardLocaleSupport.applyKeyPress`, which drives the on-screen
-/// buttons. That type is `internal` to the package, so the app cannot call it;
-/// until it is made public the two implementations have to be kept in step by
-/// hand, and `HardwareNumericKeyboardInputTests` pins the shared cases.
-enum HardwareNumericKeyboardInput {
-    static func applying(
-        _ key: HardwareNumericKeyboardKey,
-        to value: String,
-        showDecimalSeparator: Bool,
-        locale: Locale
-    ) -> String {
-        switch key {
-        case .digit(let digit):
-            return value + digit
-        case .decimalSeparator:
-            let separator = locale.decimalSeparator ?? "."
-            guard showDecimalSeparator, !value.contains(separator) else { return value }
-            return value + separator
-        case .delete:
-            guard !value.isEmpty else { return value }
-            return String(value.dropLast())
-        }
-    }
-
-    /// Maps a typed character the way the on-screen keypad maps a tapped key.
-    ///
-    /// The locale matters: `applyKeyPress` drops the locale's grouping
-    /// separator, so hardware input must drop it too. Without that, `1,000`
-    /// typed in `en_US` would become `1.000` — a silent 1000x error on the
-    /// send and pay screens.
-    static func key(for character: Character, locale: Locale) -> HardwareNumericKeyboardKey? {
-        if let digit = character.wholeNumberValue, (0 ... 9).contains(digit) {
-            return .digit(String(digit))
-        }
-
-        guard character == "." || character == "," else { return nil }
-
-        let typed = String(character)
-        let decimalSeparator = locale.decimalSeparator ?? "."
-        let groupingSeparator = locale.groupingSeparator ?? ","
-
-        if typed == decimalSeparator {
-            return .decimalSeparator
-        }
-        if typed == groupingSeparator, groupingSeparator != decimalSeparator {
-            return nil
-        }
-        // Neither separator in this locale — a numpad decimal key that doesn't
-        // match the region (a Swiss layout emits "," while `de_CH` groups with
-        // "’"). Treat it as the decimal key, since the keypad has no other use
-        // for it.
-        return .decimalSeparator
-    }
-}
-
 /// DashUIKit's numeric keypad is made of buttons and therefore has no text
 /// responder for a connected keyboard. This wrapper keeps the visible keypad
 /// unchanged while installing a hidden text responder for physical-keyboard
@@ -166,10 +102,13 @@ private struct HardwareNumericKeyboardResponder: UIViewRepresentable {
     private func configure(_ field: HardwareNumericKeyboardTextField) {
         field.inputEnabled = inputEnabled
         field.locale = locale
+        // Both input paths run the same rules: `key` is whatever the on-screen
+        // keypad would have sent, and `applyKeyPress` decides what it does to
+        // the value.
         field.onKey = { key in
-            value = HardwareNumericKeyboardInput.applying(
-                key,
-                to: value,
+            value = NumericKeyboardLocaleSupport.applyKeyPress(
+                value: value,
+                key: key,
                 showDecimalSeparator: showDecimalSeparator,
                 locale: locale
             )
@@ -194,7 +133,8 @@ private struct HardwareNumericKeyboardResponder: UIViewRepresentable {
 final class HardwareNumericKeyboardTextField: UITextField, UITextFieldDelegate {
     var inputEnabled = true
     var locale: Locale = .autoupdatingCurrent
-    var onKey: ((HardwareNumericKeyboardKey) -> Void)?
+    /// Receives the on-screen keypad key a hardware keystroke maps to.
+    var onKey: ((String) -> Void)?
     var onReturn: (() -> Void)?
 
     /// The field's text stays pinned to this zero-width sentinel so `hasText`
@@ -239,7 +179,7 @@ final class HardwareNumericKeyboardTextField: UITextField, UITextFieldDelegate {
         for character in text {
             if character == "\n" || character == "\r" {
                 handleReturn()
-            } else if let key = HardwareNumericKeyboardInput.key(for: character, locale: locale) {
+            } else if let key = NumericKeyboardLocaleSupport.key(forTyped: character, locale: locale) {
                 onKey?(key)
             }
         }
@@ -251,7 +191,7 @@ final class HardwareNumericKeyboardTextField: UITextField, UITextFieldDelegate {
             return
         }
         guard inputEnabled else { return }
-        onKey?(.delete)
+        onKey?(NumericKeyboardLocaleSupport.deleteKey)
     }
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
