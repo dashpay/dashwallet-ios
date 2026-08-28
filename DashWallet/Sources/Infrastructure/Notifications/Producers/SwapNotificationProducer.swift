@@ -32,8 +32,9 @@ import UserNotifications
 /// Known limitation: the poll loop only runs while the app process is
 /// scheduled, so a swap that completes while the app is suspended or killed
 /// is only observed on the next poll after relaunch/return. If the user is
-/// back in the foreground by then, the transition is consumed silently
-/// (the swap UI and the tx-history badge already show the outcome).
+/// back on the live swap-status screen by then, the transition is consumed
+/// silently (that screen already shows the outcome); anywhere else it posts
+/// as a foreground banner.
 final class SwapNotificationProducer {
     /// A terminal order must have been finalised at most this long ago to
     /// notify — the replay guard: the DAO publisher replays the whole
@@ -46,6 +47,9 @@ final class SwapNotificationProducer {
     /// not touch the DAO singleton before `start()`.
     private let ordersPublisher: () -> AnyPublisher<[SwapOrder], Never>
     private let appState: AppStateProvider
+    /// True while the user is watching a live swap-status screen; deferred
+    /// closure for the same reason as `ordersPublisher` (and for tests).
+    private let swapUIVisible: () -> Bool
     private let now: () -> Date
     private var cancellables = Set<AnyCancellable>()
 
@@ -53,11 +57,13 @@ final class SwapNotificationProducer {
          store: NotifiedEventStoring,
          ordersPublisher: @escaping () -> AnyPublisher<[SwapOrder], Never> = { SwapOrdersDAOImpl.shared.observeAll() },
          appState: AppStateProvider = UIApplicationStateProvider(),
+         swapUIVisible: @escaping () -> Bool = { SwapTrackingService.shared.isStatusUIVisible },
          now: @escaping () -> Date = Date.init) {
         self.dispatcher = dispatcher
         self.store = store
         self.ordersPublisher = ordersPublisher
         self.appState = appState
+        self.swapUIVisible = swapUIVisible
         self.now = now
     }
 
@@ -99,10 +105,13 @@ final class SwapNotificationProducer {
             return
         }
 
-        // App-state policy: the swap UI shows live progress in the
-        // foreground, so a transition the user can watch is consumed —
-        // a later emission (relaunch, next poll) cannot resurrect it.
-        if appState.isApplicationActive {
+        // App-state policy: consume only a transition the user is
+        // actually watching happen — foregrounded AND on the live
+        // swap-status screen — so a later emission (relaunch, next poll)
+        // cannot resurrect it. Anywhere else in the foreground the post
+        // below surfaces as a banner (`foregroundBehavior: .banner` is
+        // obeyed by `NotificationLifecycle.willPresent`).
+        if appState.isApplicationActive && swapUIVisible() {
             await store.consume(id: id, topic: .swap)
             return
         }

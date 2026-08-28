@@ -105,12 +105,17 @@ final class SwapTransactionStatusHostingController: UIViewController, Navigation
         super.viewWillAppear(animated)
         // No swipe-back while the status screen is active.
         navigationController?.interactivePopGestureRecognizer?.isEnabled = false
+        // The user is now watching this swap's live progress, so
+        // `SwapNotificationProducer` consumes the terminal transition
+        // instead of showing a banner over it.
+        SwapTrackingService.shared.statusScreenWillAppear()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         // Restore normal swipe-back for whatever screen comes next (Home / Portal / Order Preview).
         navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+        SwapTrackingService.shared.statusScreenWillDisappear()
     }
 
     // MARK: - Retry

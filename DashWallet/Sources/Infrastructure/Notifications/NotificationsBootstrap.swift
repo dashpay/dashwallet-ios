@@ -74,7 +74,13 @@ final class NotificationsBootstrap: NSObject {
         self.backgroundRefresh = BackgroundRefreshCoordinator(
             postSyncProducerSweep: { await transactionProducer.scanAndNotify() })
         self.crowdNodeProducer = CrowdNodeNotificationProducer(dispatcher: dispatcher)
-        self.swapProducer = SwapNotificationProducer(dispatcher: dispatcher, store: store)
+        // Foreground terminal-swap banners are suppressed only while the
+        // live swap-status screen is on screen (it marks itself visible on
+        // `SwapTrackingService`).
+        self.swapProducer = SwapNotificationProducer(
+            dispatcher: dispatcher,
+            store: store,
+            swapUIVisible: { SwapTrackingService.shared.isStatusUIVisible })
         self.inactivityReminderScheduler = InactivityReminderScheduler(client: client,
                                                                        permissions: permissionCoordinator)
         #if DASHPAY

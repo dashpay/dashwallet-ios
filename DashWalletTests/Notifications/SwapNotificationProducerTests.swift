@@ -34,6 +34,7 @@ final class SwapNotificationProducerTests: XCTestCase {
     private var preferences: FakeNotificationPreferenceStore!
     private var dispatcher: NotificationDispatcher!
     private var appState: FakeAppStateProvider!
+    private var swapUIVisible = false
     private var ordersSubject: PassthroughSubject<[SwapOrder], Never>!
     private var producer: SwapNotificationProducer!
 
@@ -43,6 +44,7 @@ final class SwapNotificationProducerTests: XCTestCase {
         store = InMemoryNotifiedEventStore()
         preferences = FakeNotificationPreferenceStore()
         appState = FakeAppStateProvider()
+        swapUIVisible = false
         ordersSubject = PassthroughSubject()
         let permissions = NotificationPermissionCoordinator(client: client, preferences: preferences)
         dispatcher = NotificationDispatcher(client: client, store: store, permissions: permissions)
@@ -51,6 +53,7 @@ final class SwapNotificationProducerTests: XCTestCase {
             store: store,
             ordersPublisher: { [ordersSubject] in ordersSubject!.eraseToAnyPublisher() },
             appState: appState,
+            swapUIVisible: { [weak self] in self?.swapUIVisible ?? false },
             now: { Self.referenceNow })
     }
 
@@ -141,8 +144,9 @@ final class SwapNotificationProducerTests: XCTestCase {
 
     // MARK: App-state policy
 
-    func testForegroundTransitionIsConsumedAndStaysSilentAfterBackgrounding() async {
+    func testForegroundOnSwapUIIsConsumedAndStaysSilentAfterBackgrounding() async {
         appState.isApplicationActive = true
+        swapUIVisible = true
         let order = makeOrder(status: .completed)
 
         await producer.process([order])
@@ -150,12 +154,41 @@ final class SwapNotificationProducerTests: XCTestCase {
         XCTAssertTrue(client.addedRequests.isEmpty)
         XCTAssertEqual(store.events["swap.order-1"]?.seen, true)
 
-        // The user watched the swap UI finish; a re-emission after
-        // backgrounding cannot resurrect it.
+        // The user watched the swap-status screen finish; a re-emission
+        // after backgrounding cannot resurrect it.
         appState.isApplicationActive = false
+        swapUIVisible = false
         await producer.process([order])
 
         XCTAssertTrue(client.addedRequests.isEmpty)
+    }
+
+    func testForegroundOffSwapUIPostsBanner() async {
+        appState.isApplicationActive = true
+        swapUIVisible = false
+
+        await producer.process([makeOrder(status: .completed)])
+
+        XCTAssertEqual(client.addedRequests.count, 1)
+        let request = client.addedRequests[0]
+        XCTAssertEqual(request.identifier, "swap.order-1")
+        // `.banner` rides in userInfo so `NotificationLifecycle.willPresent`
+        // shows it over the non-swap screen the user is on.
+        XCTAssertEqual(request.content.userInfo[NotificationUserInfoKey.foregroundBehavior] as? String,
+                       NotificationForegroundBehavior.banner.rawValue)
+    }
+
+    func testBackgroundedPostsEvenWhileVisibilityFlagIsTrue() async {
+        // A stale visible flag (e.g. the status screen was frontmost when
+        // the app was backgrounded — viewWillDisappear never fires) must
+        // not suppress: visibility only matters while active.
+        appState.isApplicationActive = false
+        swapUIVisible = true
+
+        await producer.process([makeOrder(status: .completed)])
+
+        XCTAssertEqual(client.addedRequests.count, 1)
+        XCTAssertEqual(client.addedRequests[0].identifier, "swap.order-1")
     }
 
     // MARK: Signal wiring
@@ -169,5 +202,45 @@ final class SwapNotificationProducerTests: XCTestCase {
 
         wait(for: [delivered], timeout: 2)
         XCTAssertEqual(client.addedRequests.first?.identifier, "swap.order-1")
+    }
+}
+
+// MARK: - SwapStatusUIVisibilityTests
+
+/// Exercises the visible-screen counter on `SwapTrackingService.shared`
+/// (the production `swapUIVisible` source). The singleton's counter is
+/// process-global, so every path here rebalances it back to zero.
+final class SwapStatusUIVisibilityTests: XCTestCase {
+    func testStackedScreensKeepVisibilityUntilTheLastDisappears() {
+        let service = SwapTrackingService.shared
+        XCTAssertFalse(service.isStatusUIVisible)
+
+        // Two status screens overlap mid-transition (retry rebuilds the
+        // stack): one screen leaving must not clear the other's mark.
+        service.statusScreenWillAppear()
+        service.statusScreenWillAppear()
+        XCTAssertTrue(service.isStatusUIVisible)
+
+        service.statusScreenWillDisappear()
+        XCTAssertTrue(service.isStatusUIVisible)
+
+        service.statusScreenWillDisappear()
+        XCTAssertFalse(service.isStatusUIVisible)
+    }
+
+    func testUnbalancedDisappearCannotPreCancelALaterAppear() {
+        let service = SwapTrackingService.shared
+        XCTAssertFalse(service.isStatusUIVisible)
+
+        // The count clamps at zero, so a stray disappear leaves the next
+        // appear/disappear pair working normally.
+        service.statusScreenWillDisappear()
+        XCTAssertFalse(service.isStatusUIVisible)
+
+        service.statusScreenWillAppear()
+        XCTAssertTrue(service.isStatusUIVisible)
+
+        service.statusScreenWillDisappear()
+        XCTAssertFalse(service.isStatusUIVisible)
     }
 }

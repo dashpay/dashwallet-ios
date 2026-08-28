@@ -53,6 +53,16 @@ final class SwapTrackingService {
     private let dao = SwapOrdersDAOImpl.shared
     private var trackingTask: Task<Void, Never>?
 
+    /// Guards `visibleStatusScreenCount`: written from the main thread
+    /// (view lifecycle), read from `SwapNotificationProducer`'s
+    /// background task.
+    private let visibilityLock = NSLock()
+    /// A counter, not a Bool: during a stack transition the incoming and
+    /// outgoing screens' lifecycle callbacks interleave, and a Bool
+    /// cleared by the outgoing screen would mark a still-visible
+    /// replacement as gone.
+    private var visibleStatusScreenCount = 0
+
     private init() {}
 
     // MARK: - Public
@@ -63,6 +73,35 @@ final class SwapTrackingService {
         trackingTask?.cancel()
         trackingTask = Task { await pollLoop() }
         DWLogger.log("SwapTrackingService: started")
+    }
+
+    // MARK: - Public: live-status UI visibility
+
+    /// True while at least one live swap-status screen
+    /// (`SwapTransactionStatusHostingController`) is on screen.
+    /// `SwapNotificationProducer` reads this to consume — instead of
+    /// banner — a terminal order the user is already watching finish.
+    var isStatusUIVisible: Bool {
+        visibilityLock.lock()
+        defer { visibilityLock.unlock() }
+        return visibleStatusScreenCount > 0
+    }
+
+    /// Called from a status screen's `viewWillAppear`; each call must be
+    /// balanced by `statusScreenWillDisappear()`.
+    func statusScreenWillAppear() {
+        visibilityLock.lock()
+        defer { visibilityLock.unlock() }
+        visibleStatusScreenCount += 1
+    }
+
+    /// Called from a status screen's `viewWillDisappear`. Clamped at
+    /// zero so an unbalanced disappear can only under-report visibility
+    /// for its own screen, never pre-cancel a later screen's appear.
+    func statusScreenWillDisappear() {
+        visibilityLock.lock()
+        defer { visibilityLock.unlock() }
+        visibleStatusScreenCount = max(0, visibleStatusScreenCount - 1)
     }
 
     // MARK: - Private: Poll loop
