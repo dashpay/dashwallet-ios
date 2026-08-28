@@ -529,19 +529,32 @@ struct InternalTransferConfirmSheet: View {
     }
 }
 
-/// Recovery sheet for a stuck "to Shielded" transfer (Core→Shielded). The
-/// transfer's L1 asset lock is committed on-chain but the shield state
-/// transition never landed, so the funds sit on an unconsumed
-/// `PersistentAssetLock` — recoverable, not lost. "Finish now" resumes that
-/// exact outpoint via `ShieldedTransferCoordinator.resumeAssetLock`
-/// (re-auth → Orchard proof → ShieldFromAssetLock ST → consume), rather than
-/// building a second lock.
+/// Recovery sheet for a stuck asset-lock-funded transfer. The transfer's L1
+/// asset lock is committed on-chain but its state transition never landed, so
+/// the funds sit on an unconsumed `PersistentAssetLock` — recoverable, not
+/// lost. "Finish now" resumes that exact outpoint rather than building a second
+/// lock.
 ///
 /// Presented from the home tx list when the user taps a row flagged
-/// `Transaction.isPendingShieldedTransfer`. Owns its own coordinator so it is
-/// independent of any live confirm-sheet flow.
-struct ShieldedRecoverySheet: View {
+/// `Transaction.isPendingShieldedTransfer` (`.shielded`) or
+/// `.isPendingPlatformFunding` (`.platformFunding`). Owns its own coordinator
+/// so it is independent of any live confirm-sheet flow.
+struct AssetLockRecoverySheet: View {
 
+    /// Which funding route's lock is being recovered. The two differ in the
+    /// resume call, the stages that remain, and the lookup used to detect a
+    /// lock a background sync already consumed.
+    enum Kind {
+        /// Type 5 — `resumeAssetLock`, rebuilds the Orchard proof.
+        case shielded
+        /// Type 4 — `resumeFundPlatform`; no proof, so the resume is short.
+        /// The recipient is resolved from durable storage inside
+        /// `PlatformAddressSyncCoordinator.resumeFundFromCore`, so a cold
+        /// launch still pays the third party the user originally confirmed.
+        case platformFunding
+    }
+
+    var kind: Kind = .shielded
     let transaction: Transaction
     var onDismiss: () -> Void
 
@@ -557,7 +570,7 @@ struct ShieldedRecoverySheet: View {
             dragHandle
                 .padding(.top, 8)
 
-            Text(NSLocalizedString("Finish shielded transfer", comment: "InternalTransfer recovery"))
+            Text(sheetTitle)
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .foregroundColor(.dash.primaryText)
@@ -580,6 +593,61 @@ struct ShieldedRecoverySheet: View {
         }
         .background(Color.dash.primaryBackground)
         .interactiveDismissDisabled(isInFlight)
+    }
+
+    private var sheetTitle: String {
+        switch kind {
+        case .shielded:
+            return NSLocalizedString("Finish shielded transfer", comment: "InternalTransfer recovery")
+        case .platformFunding:
+            return NSLocalizedString("Finish Platform transfer", comment: "InternalTransfer recovery")
+        }
+    }
+
+    private var infoIcon: String {
+        switch kind {
+        case .shielded: return "shield.fill"
+        case .platformFunding: return "arrow.left.arrow.right"
+        }
+    }
+
+    private var infoBodyText: String {
+        switch kind {
+        case .shielded:
+            return NSLocalizedString(
+                "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it.",
+                comment: "InternalTransfer recovery")
+        case .platformFunding:
+            return NSLocalizedString(
+                "This transfer's funds were locked on-chain but the Platform transfer didn't finish. Tap Finish now to complete it.",
+                comment: "InternalTransfer recovery")
+        }
+    }
+
+    /// Stages that remain on a resume. Both skip `.locking` (the lock is
+    /// already on-chain); only the shielded route builds a proof.
+    private var resumeSteps: [ShieldedTransferStepList.Step] {
+        var steps: [ShieldedTransferStepList.Step] = [
+            .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing)
+        ]
+        if kind == .shielded {
+            steps.append(.init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving))
+        }
+        steps.append(.init(label: NSLocalizedString("Broadcasting", comment: ""), phase: .broadcasting))
+        return steps
+    }
+
+    private var inFlightNote: String {
+        switch kind {
+        case .shielded:
+            return NSLocalizedString(
+                "Building the privacy proof can take up to a minute. Keep the app open.",
+                comment: "InternalTransfer recovery")
+        case .platformFunding:
+            return NSLocalizedString(
+                "Completing the transfer on Platform. Keep the app open.",
+                comment: "InternalTransfer recovery")
+        }
     }
 
     private var isInFlight: Bool {
@@ -632,20 +700,10 @@ struct ShieldedRecoverySheet: View {
     private var inFlightBody: some View {
         VStack(alignment: .leading, spacing: 16) {
             // Same stepped checklist as the original transfer so the user sees
-            // what's happening during the (~30s+) Orchard proof build. Resume
-            // skips `.locking` (the lock is already on-chain), so only
-            // Authorizing → Generating proof → Broadcasting are shown.
-            ShieldedTransferStepList(
-                currentPhase: coordinator.phase,
-                steps: [
-                    .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing),
-                    .init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving),
-                    .init(label: NSLocalizedString("Broadcasting", comment: ""), phase: .broadcasting),
-                ])
+            // what's happening while the resume runs.
+            ShieldedTransferStepList(currentPhase: coordinator.phase, steps: resumeSteps)
 
-            Text(NSLocalizedString(
-                "Building the privacy proof can take up to a minute. Keep the app open.",
-                comment: "InternalTransfer recovery"))
+            Text(inFlightNote)
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
@@ -705,7 +763,7 @@ struct ShieldedRecoverySheet: View {
                 Circle()
                     .fill(Color.dash.blue)
                     .frame(width: 30, height: 30)
-                Image(systemName: "shield.fill")
+                Image(systemName: infoIcon)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(Color.dash.whiteText)
             }
@@ -714,9 +772,7 @@ struct ShieldedRecoverySheet: View {
                 Text(NSLocalizedString("Your Dash is safe", comment: "InternalTransfer recovery"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
-                Text(NSLocalizedString(
-                    "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it.",
-                    comment: "InternalTransfer recovery"))
+                Text(infoBodyText)
                     .font(.system(size: 13))
                     .foregroundColor(.dash.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -732,7 +788,10 @@ struct ShieldedRecoverySheet: View {
     // MARK: - Action
 
     private func finish() {
-        guard let op = transaction.shieldedOutPoint else {
+        let outPoint = kind == .shielded
+            ? transaction.shieldedOutPoint
+            : transaction.platformFundingOutPoint
+        guard let op = outPoint else {
             onDismiss()
             return
         }
@@ -744,7 +803,9 @@ struct ShieldedRecoverySheet: View {
             // this guard a just-completed transfer would dead-end after ~30s.
             await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-recovery-preflight")
             let displayTxid = op.txidWire.reversed().map { String(format: "%02x", $0) }.joined()
-            let statusRaw = ShieldedTxLookup.shared.info(forTxidHex: displayTxid)?.statusRaw
+            let statusRaw = kind == .shielded
+                ? ShieldedTxLookup.shared.info(forTxidHex: displayTxid)?.statusRaw
+                : ShieldedTxLookup.shared.platformFundingInfo(forTxidHex: displayTxid)?.statusRaw
             if statusRaw == 4 {
                 // Already consumed by a background sync since the row snapshot was
                 // captured → it's done; show success without a doomed ~30s resume.
@@ -755,8 +816,14 @@ struct ShieldedRecoverySheet: View {
             // unknown), or nil/0 (status unavailable, e.g. a failed refresh):
             // attempt the resume. Both a local Consumed tombstone and a remote
             // already-consumed report map to unconfirmed rather than false success.
-            await coordinator.resumeAssetLock(outPointTxidWire: op.txidWire, outPointVout: op.vout)
-            // On success the shield ST consumed the lock; refresh the snapshot so
+            switch kind {
+            case .shielded:
+                await coordinator.resumeAssetLock(outPointTxidWire: op.txidWire, outPointVout: op.vout)
+            case .platformFunding:
+                await coordinator.resumeFundPlatform(
+                    outPointTxidWire: op.txidWire, outPointVout: op.vout)
+            }
+            // On success the ST consumed the lock; refresh the snapshot so
             // the history row flips pending → completed even before the next
             // scheduled shielded sync pass lands.
             if case .success = coordinator.phase {

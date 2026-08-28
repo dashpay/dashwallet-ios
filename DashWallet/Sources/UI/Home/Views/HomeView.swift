@@ -229,6 +229,9 @@ struct HomeViewContent<Content: View>: View {
     @State private var navigateToDashPayFlow: Bool = false
     @State private var navigateToClaimInvitation: Bool = false
     @State private var pendingShieldedRecovery: Transaction? = nil
+    /// Type-4 twin of `pendingShieldedRecovery`: a Core → Platform funding
+    /// whose asset lock committed but whose funding ST never landed.
+    @State private var pendingPlatformFundingRecovery: Transaction? = nil
     /// Balance whose explainer sheet is up (tap on a breakdown row's body).
     @State private var balanceInfoNetwork: ChainNetwork? = nil
 
@@ -498,8 +501,13 @@ struct HomeViewContent<Content: View>: View {
         .sheet(item: $viewModel.giftCardTxId) { txId in
             GiftCardDetailsSheet(txId: txId)
         }
+        .sheet(item: $pendingPlatformFundingRecovery) { tx in
+            AssetLockRecoverySheet(kind: .platformFunding, transaction: tx) {
+                pendingPlatformFundingRecovery = nil
+            }
+        }
         .sheet(item: $pendingShieldedRecovery) { tx in
-            ShieldedRecoverySheet(transaction: tx) {
+            AssetLockRecoverySheet(kind: .shielded, transaction: tx) {
                 pendingShieldedRecovery = nil
             }
         }
@@ -828,9 +836,11 @@ struct HomeViewContent<Content: View>: View {
                     ? NSLocalizedString("Pending — tap to finish", comment: "InternalTransfer recovery")
                     : txItem.isPendingIdentityRegistration
                         ? NSLocalizedString("Pending — tap to finish", comment: "DashPay registration recovery")
-                    // A pending top-up has nothing to "finish" in another
-                    // flow — it recovers from the tx detail sheet.
-                    : txItem.isPendingIdentityFunding || txItem.isPendingPlatformFunding
+                    : txItem.isPendingPlatformFunding
+                        ? NSLocalizedString("Pending — tap to finish", comment: "InternalTransfer recovery")
+                    // A pending identity top-up has nothing to "finish" in
+                    // another flow — it recovers from the tx detail sheet.
+                    : txItem.isPendingIdentityFunding
                         ? NSLocalizedString("Pending", comment: "")
                         : (metadata?.details?.isEmpty == false
                             ? metadata?.details
@@ -849,6 +859,8 @@ struct HomeViewContent<Content: View>: View {
                 // instead of the read-only detail/gift-card sheets.
                 if txItem.isPendingShieldedTransfer {
                     self.pendingShieldedRecovery = txItem
+                } else if txItem.isPendingPlatformFunding {
+                    self.pendingPlatformFundingRecovery = txItem
                 } else if txItem.isPendingIdentityRegistration {
                     #if DASHPAY
                     delegate?.homeViewRequestUsername()
