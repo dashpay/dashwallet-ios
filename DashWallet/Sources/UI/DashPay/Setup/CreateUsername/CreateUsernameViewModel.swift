@@ -603,10 +603,14 @@ class CreateUsernameViewModel: ObservableObject {
                 candidates: platformFundingCandidates,
                 fundingDuffs: UInt64(requiredCost))
         let currentShieldedReadiness = isContested
-            ? contestedShieldedReadiness
+            ? contestedReadiness()
             : ShieldedIdentityFundingReadiness.shared.standardSnapshot
         if shieldedReadiness != currentShieldedReadiness {
             shieldedReadiness = currentShieldedReadiness
+            // The picker's Shielded row and this formatted amount read the same
+            // snapshot, so they have to move together — `checkBalance` no longer
+            // runs on the typing path that reaches here.
+            shieldedBalance = Self.formattedShieldedBalance(from: currentShieldedReadiness)
         }
         armShieldedMaturityRevalidation()
         updateCurrentFundingEligibility(
@@ -831,6 +835,10 @@ class CreateUsernameViewModel: ObservableObject {
                 // The only moment the spendable ceiling can move. Recomputing
                 // it here keeps the FFI UTXO walk off the typing path.
                 self.coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
+                // A Core-balance event also kicks a throttled PP re-tally, which
+                // publishes only when the aggregate moves — so a redistribution
+                // across PP addresses arrives here and nowhere else.
+                self.refreshPlatformFundingCandidates()
                 self.refreshRegistrationRecoverySnapshot()
                 self.validateUsername(username: self.username)
                 self.checkBalance()
@@ -862,10 +870,11 @@ class CreateUsernameViewModel: ObservableObject {
                 self.checkBalance()
             }
             .store(in: &cancellableBag)
-        // Cold launch can present this screen before the SDK host finishes
-        // restoring the wallet's identity and recovery rows. Refresh the
-        // caches when that fully assembled wallet becomes active instead of
-        // probing SwiftData again on the user's next keystroke.
+        // Fires on create / import / migrate, a wallet switch, a network
+        // change and a wipe — not on an ordinary launch, which enqueues
+        // `.startIfReady` and publishes nothing. Cold-launch ordering is
+        // covered by `contestedReadiness()` re-evaluating while its cache is
+        // empty, not by this.
         NotificationCenter.default
             .publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
             .receive(on: RunLoop.main)
@@ -911,8 +920,36 @@ class CreateUsernameViewModel: ObservableObject {
     }
 
     private func refreshShieldedReadinessSnapshots() {
-        contestedShieldedReadiness = ShieldedIdentityFundingReadiness.shared.evaluate(
-            requiredCredits: ShieldedIdentityFundingReadiness.contestedDenominationCredits)
+        // Keep the last good snapshot when `evaluate` declines: publishing nil
+        // takes Shielded out of the funding picker, and `contestedReadiness()`
+        // is the only thing that would put it back.
+        if let snapshot = ShieldedIdentityFundingReadiness.shared.evaluate(
+            requiredCredits: ShieldedIdentityFundingReadiness.contestedDenominationCredits) {
+            contestedShieldedReadiness = snapshot
+        }
+    }
+
+    /// Contested-denomination readiness, evaluated lazily while the cache is
+    /// empty. `evaluate` returns nil until `SwiftDashSDKHost` has a wallet and
+    /// a model container, so a screen entered before the host is up would
+    /// otherwise show no Shielded option for the whole visit — the refresh
+    /// callers all fire before or at appear, and none of them run again on the
+    /// typing path. The standard denomination has no equivalent problem: it
+    /// reads `ShieldedIdentityFundingReadiness.shared.standardSnapshot`, which
+    /// the service itself keeps current.
+    private func contestedReadiness() -> ShieldedIdentityFundingReadiness.Snapshot? {
+        if let contestedShieldedReadiness { return contestedShieldedReadiness }
+        refreshShieldedReadinessSnapshots()
+        return contestedShieldedReadiness
+    }
+
+    /// Credits → duffs (÷1000) for display; the readiness snapshot keeps the
+    /// canonical credit-denominated values.
+    private static func formattedShieldedBalance(
+        from snapshot: ShieldedIdentityFundingReadiness.Snapshot?
+    ) -> String {
+        ((snapshot?.unspentCredits ?? 0) / 1_000)
+            .dashAmount.formattedDashAmountWithoutCurrencySymbol
     }
 
     private func refreshRegistrationRecoverySnapshot() {
@@ -947,10 +984,7 @@ class CreateUsernameViewModel: ObservableObject {
         let requiredDuffs = uiState.requiredDash
         self.balance = balance.dashAmount.formattedDashAmountWithoutCurrencySymbol
         self.platformPaymentBalance = platformDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
-        // Credits → duffs (÷1000) for display; the readiness snapshot
-        // keeps the canonical credit-denominated values.
-        let shieldedDuffs = (shieldedReadiness?.unspentCredits ?? 0) / 1_000
-        self.shieldedBalance = shieldedDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
+        self.shieldedBalance = Self.formattedShieldedBalance(from: shieldedReadiness)
         // These flags drive the actual funding-source picker. They must
         // follow the current name's cost, otherwise a Core/Platform
         // balance that covers 0.03 DASH but not a contested name's
