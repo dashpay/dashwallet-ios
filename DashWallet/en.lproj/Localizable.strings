@@ -592,6 +592,9 @@
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Buy a Gift Card";
 
+/* Username marketplace: profile entry point subtitle */
+"Buy a listed name or register an available one" = "Buy a listed name or register an available one";
+
 /* Dash Service Overview */
 "Buy and convert Dash with another crypto" = "Buy and convert Dash with another crypto";
 
@@ -760,6 +763,12 @@
 
 /* Identity top-up sheet — linkability warning for transparent-side sources */
 "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance.";
+
+/* Username marketplace: profile entry point */
+"Get a username" = "Get a username";
+
+/* Username marketplace: profile entry point */
+"Get another username" = "Get another username";
 
 /* DashPay FAQ */
 "Funds are on the way…" = "Funds are on the way…";
