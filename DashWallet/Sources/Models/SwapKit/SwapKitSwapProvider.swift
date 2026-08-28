@@ -346,7 +346,8 @@ final class SwapKitSwapProvider: SwapProvider {
         }
 
         guard let best = bestRoute(from: quoteResponse.routes ?? []) else {
-            let msg = quoteResponse.providerErrors?.first?.message
+            let providerError = quoteResponse.providerErrors?.first
+            let msg = SwapKitErrorCopy.providerErrorMessage(providerError)
                 ?? NSLocalizedString("No route available", comment: "SwapKit")
             return errorResult(msg)
         }
@@ -375,7 +376,8 @@ final class SwapKitSwapProvider: SwapProvider {
 
         // Step 2: pick RECOMMENDED → CHEAPEST → first (mirrors Android bestRoute()).
         guard let best = bestRoute(from: quoteResponse.routes ?? []) else {
-            let msg = quoteResponse.providerErrors?.first?.message
+            let providerError = quoteResponse.providerErrors?.first
+            let msg = SwapKitErrorCopy.providerErrorMessage(providerError)
                 ?? NSLocalizedString("No route available", comment: "SwapKit")
             return errorResult(msg)
         }
@@ -614,7 +616,8 @@ final class SwapKitSwapProvider: SwapProvider {
         }
 
         guard let best = bestRoute(from: quoteResponse.routes ?? []) else {
-            let message = quoteResponse.providerErrors?.first?.message
+            let providerError = quoteResponse.providerErrors?.first
+            let message = SwapKitErrorCopy.providerErrorMessage(providerError)
                 ?? quoteResponse.message
                 ?? quoteResponse.error
                 ?? NSLocalizedString("No route available", comment: "SwapKit")
@@ -727,16 +730,24 @@ final class SwapKitSwapProvider: SwapProvider {
             return .routable
         }
 
-        let message = [response.error, response.message, response.providerErrors?.first?.message]
-            .compactMap { $0 }
-            .joined(separator: " ")
+        // Classify on the codes, not the prose: a provider reports its reason in
+        // `providerErrors[].errorCode`, and only the code is a stable identifier.
+        let providerCode = SwapKitErrorCopy.providerErrorMessage(response.providerErrors?.first)
 
-        if isConfirmedNoRoute(message) {
-            return .notRoutable
+        if let providerCode {
+            if SwapKitErrorCopy.isBelowMinimum(providerCode) {
+                // The probe amount was under this route's floor, which says nothing about whether
+                // the asset is routable — the picker must not hide it on this evidence.
+                return .routable
+            }
+
+            // A provider naming its own no-route is as conclusive as the top-level code; anything
+            // else it reports (an upstream `apiRequestFailed`, say) leaves the question open.
+            return SwapKitErrorCopy.isNoRoute(providerCode) ? .notRoutable : nil
         }
 
-        if isMinimumOrAmountError(message) {
-            return .routable
+        if SwapKitErrorCopy.isNoRoute(response.error) {
+            return .notRoutable
         }
 
         return nil
@@ -747,19 +758,6 @@ final class SwapKitSwapProvider: SwapProvider {
         return try? JSONDecoder().decode(SwapKitQuoteResponse.self, from: response.data)
     }
 
-    private static func isConfirmedNoRoute(_ message: String) -> Bool {
-        let normalized = message.lowercased()
-        return normalized.contains("noroutesfound") || normalized.contains("no routes found")
-    }
-
-    private static func isMinimumOrAmountError(_ message: String) -> Bool {
-        let normalized = message.lowercased()
-        return normalized.contains("below minimum")
-            || normalized.contains("amount too small")
-            || normalized.contains("too small")
-            || normalized.contains("minimum")
-    }
-
     private func decodeQuoteError(from error: Error) -> String? {
         guard case HTTPClientError.statusCode(let response) = error,
               let body = try? JSONDecoder().decode(SwapKitQuoteResponse.self, from: response.data)
@@ -767,7 +765,14 @@ final class SwapKitSwapProvider: SwapProvider {
             return nil
         }
 
-        return body.message ?? body.error ?? body.providerErrors?.first?.message
+        if let code = body.error, !code.isEmpty {
+            if let message = body.message, !message.isEmpty {
+                return "\(code): \(message)"
+            }
+            return code
+        }
+
+        return SwapKitErrorCopy.providerErrorMessage(body.providerErrors?.first) ?? body.message
     }
 
     private func decodeSwapError(from error: Error) -> String? {
