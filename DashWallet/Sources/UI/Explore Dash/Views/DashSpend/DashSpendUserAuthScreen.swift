@@ -146,7 +146,7 @@ struct DashSpendUserAuthScreen: View {
             
             // Bottom section with button or keyboard
             if authType == .otp {
-                DashUIKit.NumericKeyboardView(
+                HardwareNumericKeyboardView(
                     value: $viewModel.input,
                     showDecimalSeparator: false,
                     locale: .autoupdatingCurrent,

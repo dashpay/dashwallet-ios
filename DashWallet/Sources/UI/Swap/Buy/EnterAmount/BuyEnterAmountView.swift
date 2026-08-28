@@ -56,7 +56,7 @@ struct BuyEnterAmountView: View {
         }
         .dexOfflineToast(isOnline: viewModel.isOnline)
         .sheet(isPresented: $showLocalCurrency) {
-            let dialog = BottomSheet(
+            let dialog = DashUIKit.BottomSheet(
                 showBackButton: Binding<Bool>.constant(false)
             ) {
                 LocalCurrencyView { code in
@@ -102,7 +102,7 @@ struct BuyEnterAmountView: View {
 
                 if let statusMessage = viewModel.statusMessage {
                     Text(statusMessage)
-                        .font(Font.dash.caption1)
+                        .dashFont(.caption1)
                         .foregroundStyle(Color.dash.tertiaryText)
                 }
             }
@@ -112,14 +112,14 @@ struct BuyEnterAmountView: View {
             HStack(spacing: 8) {
                 SwiftUI.ProgressView()
                 Text(NSLocalizedString("Checking amount…", comment: "Dash DEX"))
-                    .font(Font.dash.caption1)
+                    .dashFont(.caption1)
                     .foregroundStyle(Color.dash.tertiaryText)
             }
             .frame(maxWidth: .infinity, alignment: .center)
             .transition(.opacity)
         } else if let error = viewModel.inlineMessage {
             Text(error)
-                .font(Font.dash.caption1)
+                .dashFont(.caption1)
                 .foregroundColor(Color.dash.red)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .transition(.opacity)
@@ -129,7 +129,7 @@ struct BuyEnterAmountView: View {
     // MARK: - Keyboard
 
     private var keyboard: some View {
-        NumericKeyboardView(
+        HardwareNumericKeyboardView(
             value: Binding(
                 get: { viewModel.inputValue },
                 set: { viewModel.setInput($0) }

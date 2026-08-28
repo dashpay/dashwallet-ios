@@ -15,7 +15,7 @@
 //
 
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 /// Tests for `BaseAmountModel.normalizedPastedNumberString(from:)`, which makes pasting
 /// amounts work regardless of the decimal/grouping convention of the pasted text or the

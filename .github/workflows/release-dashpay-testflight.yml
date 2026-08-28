@@ -17,21 +17,26 @@ on:
         required: true
         default: v4.2-dev
         type: string
+      dashuikit_ref:
+        description: "dashpay/DashUIKit branch, tag, or full commit SHA — blank uses the pin committed in Package.resolved"
+        required: false
+        default: ""
+        type: string
       release_channel:
-        description: "TestFlight distribution channel"
+        description: "TestFlight distribution channel — internal-only marks the upload TestFlight Internal Only"
         required: true
-        default: internal
+        default: internal-only
         type: choice
         options:
+          - internal-only
           - internal
           - external
       app_version:
-        description: "App version, or 'auto' to follow the latest TestFlight/App Store version"
+        description: "App version to ship, e.g. 9.1.0 — the build number is assigned automatically"
         required: true
-        default: auto
         type: string
       testflight_group:
-        description: "Exact external TestFlight group name (ignored for internal releases)"
+        description: "Exact external TestFlight group name (ignored unless release_channel is external)"
         required: true
         default: Public Beta v9.0
         type: string
@@ -77,6 +82,117 @@ jobs:
           path: dashwallet-ios
           fetch-depth: 1
           persist-credentials: false
+
+      # DashUIKit is a remote Swift package, so a branch of it cannot be tested
+      # by checking it out beside the wallet the way platform is. The archive
+      # runs with `-onlyUsePackageVersionsFromResolvedFile`, which makes
+      # `Package.resolved` the authority — so pointing that (and the project's
+      # requirement, which must agree) at another ref is what selects it.
+      #
+      # Left blank, nothing is touched and the committed pin is used.
+      - name: Override the DashUIKit pin
+        if: inputs.dashuikit_ref != ''
+        working-directory: ${{ github.workspace }}/dashwallet-ios
+        env:
+          DASHUIKIT_REF: ${{ inputs.dashuikit_ref }}
+        run: |
+          set -euo pipefail
+
+          # Classify the ref: a branch keeps a branch requirement, while a
+          # tag or a bare commit SHA becomes a revision requirement — SwiftPM
+          # rejects a branch requirement naming something that is not a
+          # branch. An annotated tag lists both the tag object and the peeled
+          # commit ("^{}"); the peeled commit wins because a Package.resolved
+          # revision must be a commit, not a tag object.
+          refs="$(git ls-remote https://github.com/dashpay/DashUIKit \
+            "refs/heads/$DASHUIKIT_REF" \
+            "refs/tags/$DASHUIKIT_REF" \
+            "refs/tags/$DASHUIKIT_REF^{}")"
+          branch_sha="$(printf '%s\n' "$refs" | awk -v ref="refs/heads/$DASHUIKIT_REF" '$2 == ref { print $1 }')"
+          peeled_tag_sha="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$DASHUIKIT_REF^{}" '$2 == ref { print $1 }')"
+          tag_sha="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$DASHUIKIT_REF" '$2 == ref { print $1 }')"
+
+          if [ -n "$branch_sha" ]; then
+            kind=branch
+            sha="$branch_sha"
+          elif [ -n "${peeled_tag_sha}${tag_sha}" ]; then
+            kind=revision
+            sha="${peeled_tag_sha:-$tag_sha}"
+          elif [[ "$DASHUIKIT_REF" =~ ^[0-9a-f]{40}$ ]]; then
+            kind=revision
+            sha="$DASHUIKIT_REF"
+          else
+            echo "::error::dashuikit_ref '$DASHUIKIT_REF' is not a DashUIKit branch, tag, or full 40-hex commit SHA."
+            exit 1
+          fi
+          echo "DashUIKit → $DASHUIKIT_REF ($kind $sha)"
+
+          python3 - "$DASHUIKIT_REF" "$sha" "$kind" <<'PY'
+          import json, re, sys
+
+          ref, sha, kind = sys.argv[1], sys.argv[2], sys.argv[3]
+
+          resolved = "DashWallet.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+          with open(resolved) as handle:
+              document = json.load(handle)
+          pins = [p for p in document["pins"] if p["identity"].lower() == "dashuikit"]
+          if not pins:
+              sys.exit("no DashUIKit pin in Package.resolved")
+          pins[0]["state"] = {"branch": ref, "revision": sha} if kind == "branch" else {"revision": sha}
+          with open(resolved, "w") as handle:
+              json.dump(document, handle, indent=2)
+              handle.write("\n")
+
+          # The project pins a requirement too, and `-onlyUsePackageVersionsFromResolvedFile`
+          # still checks the resolved revision against it. Rewrites only the
+          # requirement inside DashUIKit's own reference block.
+          # The branch name is quoted: it carries slashes, and pbxproj only
+          # leaves bare tokens unquoted. Quoting a plain name too is harmless.
+          if kind == "branch":
+              requirement = f'branch = "{ref}";\n\t\t\t\tkind = branch;'
+          else:
+              requirement = f'kind = revision;\n\t\t\t\trevision = {sha};'
+          project = "DashWallet.xcodeproj/project.pbxproj"
+          with open(project) as handle:
+              text = handle.read()
+          pattern = re.compile(
+              r'(XCRemoteSwiftPackageReference "DashUIKit" \*/ = \{.*?requirement = \{\n)\t+[^}]*?(\n\t+\};)',
+              re.DOTALL)
+          text, count = pattern.subn(
+              lambda match: match.group(1) + "\t\t\t\t" + requirement + match.group(2),
+              text,
+              count=1)
+          if count != 1:
+              sys.exit("could not rewrite the DashUIKit requirement")
+          with open(project, "w") as handle:
+              handle.write(text)
+          PY
+
+      # The release scripts come from the ref this workflow was dispatched
+      # from, not from the branch being built. Every step runs inside the
+      # `dashwallet-ios` checkout, so `.github/scripts` there is whatever
+      # `wallet_ref` happens to carry — and a branch cut before those scripts
+      # existed cannot be released at all, which is the opposite of what a
+      # release pipeline is for. Sparse: only the scripts are needed.
+      - name: Checkout release tooling
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+          path: release-tooling
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Locate release tooling
+        run: |
+          set -euo pipefail
+          script="$GITHUB_WORKSPACE/release-tooling/.github/scripts/app_store_connect_release.rb"
+          if [[ ! -f "$script" ]]; then
+            echo "::error::release tooling missing at $script"
+            exit 1
+          fi
+          echo "RELEASE_SCRIPT=$script" >> "$GITHUB_ENV"
 
       - name: Checkout platform
         uses: actions/checkout@v6
@@ -211,7 +327,7 @@ jobs:
           TESTFLIGHT_GROUP: ${{ inputs.testflight_group }}
         run: |
           set -euo pipefail
-          ruby .github/scripts/app_store_connect_release.rb resolve-version
+          ruby "$RELEASE_SCRIPT" resolve-version
 
       - name: Select Xcode 26.6
         uses: maxim-lobanov/setup-xcode@v1
@@ -356,7 +472,7 @@ jobs:
           EFFECTIVE_VERSION: ${{ steps.release-version.outputs.effective_version }}
         run: |
           set -euo pipefail
-          ruby .github/scripts/app_store_connect_release.rb resolve-build
+          ruby "$RELEASE_SCRIPT" resolve-build
 
       - name: Install Apple signing certificates
         env:
@@ -530,12 +646,13 @@ jobs:
           BUILD_NUMBER: ${{ steps.app-version.outputs.build }}
         run: |
           set -euo pipefail
-          ruby .github/scripts/app_store_connect_release.rb assert-build-free
+          ruby "$RELEASE_SCRIPT" assert-build-free
 
       - name: Upload archive to TestFlight
         env:
           API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          RELEASE_CHANNEL: ${{ inputs.release_channel }}
         run: |
           set -euo pipefail
 
@@ -546,6 +663,14 @@ jobs:
           /usr/libexec/PlistBuddy -c "Add :teamID string $APPLE_TEAM_ID" "$export_options"
           /usr/libexec/PlistBuddy -c 'Add :manageAppVersionAndBuildNumber bool false' "$export_options"
           /usr/libexec/PlistBuddy -c 'Add :uploadSymbols bool true' "$export_options"
+
+          # Xcode Organizer's "TestFlight Internal Only": App Store Connect
+          # marks the uploaded build so it can only reach internal testers —
+          # it can never be distributed externally or released to the App
+          # Store. The export method stays app-store-connect either way.
+          if [[ "$RELEASE_CHANNEL" == 'internal-only' ]]; then
+            /usr/libexec/PlistBuddy -c 'Add :testFlightInternalTestingOnly bool true' "$export_options"
+          fi
 
           xcodebuild -exportArchive \
             -archivePath "$ARCHIVE_PATH" \
@@ -566,10 +691,10 @@ jobs:
           BUILD_NUMBER: ${{ steps.app-version.outputs.build }}
         run: |
           set -euo pipefail
-          ruby .github/scripts/app_store_connect_release.rb wait-build
+          ruby "$RELEASE_SCRIPT" wait-build
 
       - name: Finalize internal TestFlight build
-        if: inputs.release_channel == 'internal'
+        if: inputs.release_channel != 'external'
         env:
           WHAT_TO_TEST: ${{ inputs.what_to_test }}
           VERSION: ${{ steps.app-version.outputs.version }}
@@ -644,13 +769,16 @@ jobs:
             echo "- dashwallet-ios: \`${WALLET_SHA}\` (requested: \`${REQUESTED_WALLET_REF}\`)"
             echo "- platform: \`${PLATFORM_SHA}\` (requested: \`${REQUESTED_PLATFORM_REF}\`)"
             echo "- Channel: \`${RELEASE_CHANNEL}\`"
-            if [[ "$RELEASE_CHANNEL" == 'internal' ]]; then
+            if [[ "$RELEASE_CHANNEL" == 'external' ]]; then
+              echo "- External group: \`${TESTFLIGHT_GROUP}\`"
+              echo '- External tester notifications: enabled'
+            else
               echo '- Internal group: `App Store Connect Users`'
               echo '- External distribution: disabled'
               echo '- Beta App Review: not submitted'
-            else
-              echo "- External group: \`${TESTFLIGHT_GROUP}\`"
-              echo '- External tester notifications: enabled'
+              if [[ "$RELEASE_CHANNEL" == 'internal-only' ]]; then
+                echo '- Marked TestFlight Internal Only: this build can never go external or to the App Store'
+              fi
             fi
             echo
             echo 'The uploaded build is processed and ready for TestFlight.'

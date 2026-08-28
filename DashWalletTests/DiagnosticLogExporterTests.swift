@@ -30,7 +30,7 @@
 //
 
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 final class DiagnosticLogExporterTests: XCTestCase {
     private func candidate(_ stamp: String, bytes: UInt64) -> DiagnosticLogExporter.SessionCandidate {

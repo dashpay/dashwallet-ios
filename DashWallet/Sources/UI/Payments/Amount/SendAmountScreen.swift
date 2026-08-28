@@ -235,7 +235,7 @@ private struct SendAmountKeyboardSection: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            DashUIKit.NumericKeyboardView(
+            HardwareNumericKeyboardView(
                 value: $value,
                 showDecimalSeparator: true,
                 locale: locale,

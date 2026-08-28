@@ -297,7 +297,7 @@ struct EvonodeWithdrawalScreen: View {
     // MARK: Keyboard
 
     private var keyboardSection: some View {
-        NumericKeyboardView(
+        HardwareNumericKeyboardView(
             value: keypadBinding,
             showDecimalSeparator: true,
             actionButtonText: NSLocalizedString("Continue", comment: ""),
@@ -348,19 +348,15 @@ struct EvonodeWithdrawalConfirmSheet: View {
     let onUnconfirmedAcknowledged: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            Rectangle()
-                .fill(Color.dash.grabberFill)
-                .frame(width: 36, height: 5)
-                .cornerRadius(2.5)
-                .padding(.top, 8)
-
-            Text(NSLocalizedString("Confirm withdrawal", comment: "Evonode withdrawal"))
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(.dash.primaryText)
-                .padding(.top, 20)
-
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Confirm withdrawal", comment: "Evonode withdrawal"),
+            showBackButton: .constant(false),
+            isDismissalEnabled: .constant(!(isInFlight || isUnconfirmed)),
+            // Supplying `onClose` makes the close button live regardless of
+            // `isDismissalEnabled`, so the protected phases have to gate it here.
+            isCloseButtonEnabled: !(isInFlight || isUnconfirmed),
+            onClose: closeAction
+        ) {
             switch viewModel.phase {
             case let .success(remaining):
                 successBody(remainingCredits: remaining)
@@ -370,13 +366,26 @@ struct EvonodeWithdrawalConfirmSheet: View {
                 detailsBody
             }
         }
-        .background(Color.dash.primaryBackground)
-        .interactiveDismissDisabled(isInFlight || isUnconfirmed)
     }
 
     private var isUnconfirmed: Bool {
         if case .submittedUnconfirmed = viewModel.phase { return true }
         return false
+    }
+
+    /// The close button has to do what the visible button of the current phase
+    /// does. `onCancel` only closes the sheet, so on success it would skip
+    /// `onWithdrawn(remaining)` and leave the withdrawal screen showing the
+    /// stale pre-withdrawal claimable balance.
+    private var closeAction: () -> Void {
+        switch viewModel.phase {
+        case let .success(remaining):
+            return { onCompleted(remaining) }
+        case .submittedUnconfirmed:
+            return onUnconfirmedAcknowledged
+        default:
+            return onCancel
+        }
     }
 
     private var isInFlight: Bool {

@@ -456,7 +456,7 @@ struct ExternalSendAmountScreen: View {
     // MARK: - Keyboard
 
     private var keyboardSection: some View {
-        NumericKeyboardView(
+        HardwareNumericKeyboardView(
             value: keypadBinding,
             showDecimalSeparator: true,
             actionButtonText: NSLocalizedString("Continue", comment: ""),
@@ -726,16 +726,15 @@ struct SendConfirmSheet: View {
     @StateObject private var coordinator = ShieldedTransferCoordinator()
 
     var body: some View {
-        VStack(spacing: 0) {
-            dragHandle
-                .padding(.top, 8)
-
-            Text(NSLocalizedString("Confirm", comment: ""))
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(.dash.primaryText)
-                .padding(.top, 20)
-
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Confirm", comment: ""),
+            showBackButton: .constant(false),
+            isDismissalEnabled: .constant(!isInFlight),
+            // Supplying `onClose` makes the close button live regardless of
+            // `isDismissalEnabled`, so the protected phases have to gate it here.
+            isCloseButtonEnabled: !isInFlight,
+            onClose: closeAction
+        ) {
             switch coordinator.phase {
             case .success:
                 successBody
@@ -745,8 +744,20 @@ struct SendConfirmSheet: View {
                 detailsBody
             }
         }
-        .background(Color.dash.primaryBackground)
-        .interactiveDismissDisabled(isInFlight)
+    }
+
+    /// The close button has to do what the visible button of the current phase
+    /// does. In the terminal phases that is `onCompleted`, which also unwinds
+    /// the send flow — `onCancel` only closes the sheet, so routing every phase
+    /// there would drop the user back on the amount screen with the amount
+    /// still entered, one tap away from sending it twice.
+    private var closeAction: () -> Void {
+        switch coordinator.phase {
+        case .success, .submittedUnconfirmed:
+            return onCompleted
+        default:
+            return onCancel
+        }
     }
 
     private var isInFlight: Bool {
@@ -849,13 +860,6 @@ struct SendConfirmSheet: View {
     }
 
     // MARK: - Pieces
-
-    private var dragHandle: some View {
-        Rectangle()
-            .fill(Color.dash.grabberFill)
-            .frame(width: 36, height: 5)
-            .cornerRadius(2.5)
-    }
 
     private var summaryCard: some View {
         VStack(spacing: 0) {

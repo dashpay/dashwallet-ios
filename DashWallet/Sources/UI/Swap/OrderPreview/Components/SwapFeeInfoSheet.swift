@@ -29,12 +29,12 @@ struct SwapFeeInfoSheet: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(NSLocalizedString("Fees in crypto purchases", comment: "Dash DEX"))
-                    .font(Font.dash.title1)
+                    .dashFont(.title1)
                     .foregroundColor(Color.dash.primaryText)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
 
                 Text(infoDescription)
-                .font(Font.dash.body)
+                .dashFont(.body)
                 .foregroundStyle(Color.dash.gray500)
                 .multilineTextAlignment(.leading)
             }
@@ -99,17 +99,7 @@ private struct SwapFeeInfoSheetPreviewHost: View {
         Color.dash.primaryBackground
             .ignoresSafeArea()
             .sheet(isPresented: $isPresented) {
-//                let sheet = BottomSheet(showBackButton: .constant(false)) {
-//                        SwapFeeInfoSheet(onDismiss: {})
-//                    }
-//
-//                if #available(iOS 16.0, *) {
-//                    sheet.presentationDetents([.height(450)])
-//                } else {
-//                    sheet
-//                }
-
-                BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
+                DashUIKit.BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
                     SwapFeeInfoSheet(usesGenericFeeInfo: false, onDismiss: {})
                 }
                 .selfSizingSheet()

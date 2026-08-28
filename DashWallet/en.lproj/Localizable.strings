@@ -270,6 +270,7 @@
 "Add at least %@ Dash to your Shielded balance" = "Add at least %@ Dash to your Shielded balance";
 
 /* Usernames */
+"Add this masternode's operator key to unban it from here." = "Add this masternode's operator key to unban it from here.";
 "Add to your Shielded balance now and register your username privately a few hours later" = "Add to your Shielded balance now and register your username privately a few hours later";
 
 /* Wallets */
@@ -572,6 +573,7 @@
 "Broadcasting" = "Broadcasting";
 
 /* InternalTransfer recovery */
+"Broadcasting…" = "Broadcasting…";
 "Building the privacy proof can take up to a minute. Keep the app open." = "Building the privacy proof can take up to a minute. Keep the app open.";
 
 /* Log export */
@@ -589,6 +591,9 @@
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Buy a Gift Card";
+
+/* Username marketplace: profile entry point subtitle */
+"Buy a listed name or register an available one" = "Buy a listed name or register an available one";
 
 /* Dash Service Overview */
 "Buy and convert Dash with another crypto" = "Buy and convert Dash with another crypto";
@@ -714,6 +719,7 @@
 "Complete Transfer" = "Complete Transfer";
 
 /* Shielded transfer status */
+"Complete unban" = "Complete unban";
 "Completed" = "Completed";
 
 /* Balance info sheet section */
@@ -758,7 +764,14 @@
 /* Identity top-up sheet — linkability warning for transparent-side sources */
 "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance.";
 
+/* Username marketplace: profile entry point */
+"Get a username" = "Get a username";
+
+/* Username marketplace: profile entry point */
+"Get another username" = "Get another username";
+
 /* DashPay FAQ */
+"Funds are on the way…" = "Funds are on the way…";
 "How does this compare to Bitcoin in terms of privacy?" = "How does this compare to Bitcoin in terms of privacy?";
 
 /* DashPay FAQ */
@@ -795,6 +808,8 @@
 "Listing is a network transaction with a small fee, paid from your identity balance." = "Listing is a network transaction with a small fee, paid from your identity balance.";
 
 /* DashPay: banner fallback when the identity has no name yet */
+"Move %@ from shielded balance" = "Move %@ from shielded balance";
+"Moving funds from the shielded balance…" = "Moving funds from the shielded balance…";
 "My identity" = "My identity";
 
 /* Username marketplace: owned names segment */
@@ -810,6 +825,9 @@
 "Completing your purchase…" = "Completing your purchase…";
 
 /* Usernames */
+"Operator payout address" = "Operator payout address";
+"Platform P2P port" = "Platform P2P port";
+"Receive some DASH to this wallet, or fund its shielded balance, then return here." = "Receive some DASH to this wallet, or fund its shielded balance, then return here.";
 "Register username" = "Register username";
 
 /* Username marketplace: activity overlay while the delist transition runs */
@@ -825,15 +843,26 @@
 "Temporary username" = "Temporary username";
 
 /* Usernames */
+"The masternode list doesn't carry an evonode's Platform P2P port, so it must be confirmed here. 26656 is the standard port — change it only if this node uses another." = "The masternode list doesn't carry an evonode's Platform P2P port, so it must be confirmed here. 26656 is the standard port — change it only if this node uses another.";
+"The masternode list hasn't synced yet. Wait for sync to finish and try again." = "The masternode list hasn't synced yet. Wait for sync to finish and try again.";
+"The masternode should return to the valid list within a few blocks. Refresh its details in a few minutes." = "The masternode should return to the valid list within a few blocks. Refresh its details in a few minutes.";
+"The operator key is missing from the keychain — re-add it and try again." = "The operator key is missing from the keychain — re-add it and try again.";
 "The temporary username must not itself require voting." = "The temporary username must not itself require voting.";
 
 /* Usernames */
+"The transfer settles through the network's withdrawal queue — usually a few minutes. You can close this sheet and come back; the unban resumes where it left off." = "The transfer settles through the network's withdrawal queue — usually a few minutes. You can close this sheet and come back; the unban resumes where it left off.";
+"The unban was sent but its result couldn't be confirmed. Don't retry — check the masternode's status again in a few minutes." = "The unban was sent but its result couldn't be confirmed. Don't retry — check the masternode's status again in a few minutes.";
+"The wallet has no spendable DASH for the network fee." = "The wallet has no spendable DASH for the network fee.";
+"The withdrawal settles through the network's withdrawal queue — usually a few minutes. You can close this sheet; \"Complete unban\" appears on the masternode until it's done." = "The withdrawal settles through the network's withdrawal queue — usually a few minutes. You can close this sheet; \"Complete unban\" appears on the masternode until it's done.";
+"This masternode pays an operator reward, and the update replaces its payout address on-chain — confirm the address the operator reward should keep paying." = "This masternode pays an operator reward, and the update replaces its payout address on-chain — confirm the address the operator reward should keep paying.";
+"This masternode uses extended (v3) network info, which this wallet can't re-assert yet. Unban it with dash-cli instead." = "This masternode uses extended (v3) network info, which this wallet can't re-assert yet. Unban it with dash-cli instead.";
 "This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name.";
 
 /* Usernames */
 "This username would also require voting — try adding a digit between 2 and 9" = "This username would also require voting — try adding a digit between 2 and 9";
 
 /* Username marketplace: activity overlay while the transfer transition runs */
+"This wallet doesn't hold this masternode's operator key, so it can't be unbanned from here." = "This wallet doesn't hold this masternode's operator key, so it can't be unbanned from here.";
 "Transferring the username…" = "Transferring the username…";
 
 /* Username marketplace: activity overlay while the registration transition runs */
@@ -888,6 +917,11 @@
 "Lock the name" = "Lock the name";
 
 /* Username marketplace: contest voting deadline row */
+"Unban" = "Unban";
+"Unban masternode" = "Unban masternode";
+"Unban submitted" = "Unban submitted";
+"Unban submitted — the masternode list updates within a few blocks." = "Unban submitted — the masternode list updates within a few blocks.";
+"Unbanning broadcasts a provider update signed with the operator key, re-asserting the service address shown above. The masternode returns to the valid list within a few blocks." = "Unbanning broadcasts a provider update signed with the operator key, re-asserting the service address shown above. The masternode returns to the valid list within a few blocks.";
 "Vote ends" = "Vote ends";
 
 /* Username marketplace: until when other identities can join the contest */

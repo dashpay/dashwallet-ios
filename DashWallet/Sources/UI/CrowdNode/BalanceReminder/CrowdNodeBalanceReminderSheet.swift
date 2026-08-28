@@ -24,7 +24,7 @@ struct CrowdNodeBalanceReminderSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Image(dash: .custom("crowdnode.warning", bundle: .dashUIKit))
+            DashIcon.Illustrations.crowdnodeWarning.image
                 .resizable()
                 .scaledToFit()
                 .frame(width: 90, height: 90)
@@ -35,12 +35,12 @@ struct CrowdNodeBalanceReminderSheet: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(NSLocalizedString("You have a balance on CrowdNode", comment: "CrowdNode"))
-                    .font(Font.dash.title1)
+                    .dashFont(.title1)
                     .foregroundStyle(Color.dash.primaryText)
                     .multilineTextAlignment(.leading)
 
                 Text(NSLocalizedString("These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device.", comment: "CrowdNode"))
-                    .font(Font.dash.subhead)
+                    .dashFont(.subhead)
                     .foregroundStyle(Color.dash.secondaryText)
                     .multilineTextAlignment(.leading)
             }
@@ -85,8 +85,7 @@ struct CrowdNodeBalanceReminderSheet: View {
         .ignoresSafeArea()
         .sheet(isPresented: .constant(true)) {
             // Use the lib's qualified factory: it sets `fillsHeight: false`, self-sizes to content,
-            // and (via `cornerRadius`) fills the sheet background + rounds the corners. Being fully
-            // qualified by type, it also avoids the ambiguity with the project's `selfSizingSheet`.
+            // and (via `cornerRadius`) fills the sheet background + rounds the corners.
             // `fallback` avoids the `.medium` flash before the first measurement.
             DashUIKit.BottomSheet.selfSizing(
                 showBackButton: .constant(false),

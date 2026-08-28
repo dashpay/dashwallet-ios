@@ -347,13 +347,20 @@ struct CreateUsernameView: View {
             syncFundingSourceToViableSource()
         }
         .sheet(isPresented: $showContestedConfirmation) {
-            ContestedNameConfirmationSheet(
-                viewModel: viewModel,
-                temporaryField: viewModel.temporaryField,
-                onSubmit: { temporaryUsername in
-                    confirmContestedSubmission(temporaryUsername: temporaryUsername)
-                },
-                onCancel: { showContestedConfirmation = false })
+            DashUIKit.BottomSheet(
+                title: NSLocalizedString("Contested name", comment: "Usernames"),
+                showBackButton: .constant(false)
+            ) {
+                ContestedNameConfirmationSheet(
+                    viewModel: viewModel,
+                    temporaryField: viewModel.temporaryField,
+                    onSubmit: { temporaryUsername in
+                        confirmContestedSubmission(temporaryUsername: temporaryUsername)
+                    },
+                    onCancel: { showContestedConfirmation = false })
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.hidden)
         }
         .alert(
             NSLocalizedString("Buy username", comment: "Usernames"),
@@ -950,15 +957,11 @@ private struct ContestedNameConfirmationSheet: View {
         VStack(alignment: .leading, spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Text(NSLocalizedString("Contested name", comment: "Usernames"))
-                        .foregroundColor(.dash.primaryText)
-                        .font(.title2.bold())
-                        .padding(.top, 24)
                     Text(voteMessage)
                         .foregroundColor(.dash.secondaryText)
                         .font(.subheadline)
                         .fixedSize(horizontal: false, vertical: true)
-                        .padding(.top, 8)
+                        .padding(.top, 24)
 
                     Text(NSLocalizedString("Add a temporary username", comment: "Usernames"))
                         .foregroundColor(.dash.primaryText)
@@ -978,6 +981,11 @@ private struct ContestedNameConfirmationSheet: View {
                         .padding(.top, 16)
                 }
             }
+            // The buttons below sit outside this ScrollView, and `BottomSheet`'s
+            // `edgesIgnoringSafeArea(.bottom)` swallows the keyboard region as well as the
+            // home indicator, so nothing moves when the keyboard appears. Let a drag put it
+            // away; the toolbar below gives an explicit way out too.
+            .scrollDismissesKeyboard(.interactively)
 
             DashButton(
                 text: NSLocalizedString("Submit both usernames", comment: "Usernames"),
@@ -1005,7 +1013,15 @@ private struct ContestedNameConfirmationSheet: View {
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 20)
-        .presentationDetents([.large])
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button(NSLocalizedString("Done", comment: "")) {
+                    UIApplication.shared.sendAction(
+                        #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                }
+            }
+        }
         .onAppear {
             temporaryField.seedSuggestion(from: viewModel.username)
         }

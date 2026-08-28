@@ -246,7 +246,13 @@ struct HomeViewContent<Content: View>: View {
     #endif
 
     @ObservedObject var viewModel: HomeViewModel
-    @ObservedObject private var balanceModel = BalanceModel()
+    // Owned here, so `@StateObject`: `BalanceModel.init` registers with
+    // `SyncingActivityMonitor.shared`, which holds its observers strongly, so
+    // an instance built by a struct re-init can never be released. `HomeView`
+    // is re-created far less often than the list header that hit this hard
+    // (see `SyncingHeaderView`), but four live models were still found in a
+    // single session.
+    @StateObject private var balanceModel = BalanceModel()
     #if DASHPAY
     @ObservedObject var joinDPViewModel: JoinDashPayViewModel
     #endif
@@ -305,11 +311,13 @@ struct HomeViewContent<Content: View>: View {
                     .padding(.top, 5)
                     .padding(.bottom, -12)
                     .sheet(item: $balanceInfoNetwork) { network in
-                        BalanceInfoSheet(network: network) {
-                            balanceInfoNetwork = nil
+                        DashUIKit.BottomSheet(showBackButton: .constant(false)) {
+                            BalanceInfoSheet(network: network) {
+                                balanceInfoNetwork = nil
+                            }
                         }
                         .presentationDetents([.medium, .large])
-                        .presentationDragIndicator(.visible)
+                        .presentationDragIndicator(.hidden)
                     }
 
                     VStack(spacing: 0) {
@@ -684,7 +692,7 @@ struct HomeViewContent<Content: View>: View {
         }
 
         if txItem.transactionType == .reward {
-            return (.custom("transaction-mining", bundle: .dashUIKit), nil)
+            return (.custom(DashIcon.Transaction.mining.assetName, bundle: .dashUIKit), nil)
         }
 
         return (.custom(txItem.iconName), nil)
@@ -910,7 +918,7 @@ struct GiftCardDetailsSheet: View {
     
     var body: some View {
         let showsTxDetailRoute = txDetailRoute != nil
-        let dialog = BottomSheet(
+        let dialog = DashUIKit.BottomSheet(
             showBackButton: $showBackButton,
             onBackButtonPressed: {
                 handleBackNavigation()
@@ -1066,7 +1074,7 @@ struct TransactionDetailsSheet: View {
     var item: TransactionListDataItem
     
     var body: some View {
-        BottomSheet(showBackButton: $showBackButton, onBackButtonPressed: {
+        DashUIKit.BottomSheet(showBackButton: $showBackButton, onBackButtonPressed: {
             backNavigationRequested = true
         }) {
             TxDetailsDestination(from: item)

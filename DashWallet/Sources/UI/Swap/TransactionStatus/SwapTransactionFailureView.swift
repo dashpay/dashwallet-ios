@@ -43,12 +43,12 @@ struct SwapTransactionFailureView: View {
 
             VStack(spacing: 6) {
                 Text(NSLocalizedString("Conversion failed", comment: "Dash DEX"))
-                    .font(Font.dash.title1)
+                    .dashFont(.title1)
                     .foregroundColor(Color.dash.primaryText)
                     .multilineTextAlignment(.center)
 
                 Text(reason ?? NSLocalizedString("Your DASH was not converted and no funds were deducted. Try again, or come back later.", comment: "Dash DEX"))
-                    .font(Font.dash.subhead)
+                    .dashFont(.subhead)
                     .foregroundColor(Color.dash.secondaryText)
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
@@ -106,7 +106,7 @@ struct SwapTransactionFailureView: View {
             openURL(url)
         } label: {
             Text(label)
-                .font(Font.dash.subheadMedium)
+                .dashFont(.subheadMedium)
                 .foregroundColor(Color.dash.blue)
         }
         .buttonStyle(.plain)

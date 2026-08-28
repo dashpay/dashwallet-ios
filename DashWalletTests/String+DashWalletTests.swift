@@ -16,7 +16,7 @@
 //
 
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 // MARK: - String_DashWallet
 

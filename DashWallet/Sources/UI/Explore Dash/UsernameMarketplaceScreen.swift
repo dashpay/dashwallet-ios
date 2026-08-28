@@ -427,21 +427,27 @@ final class UsernameMarketplaceViewModel: ObservableObject {
 // MARK: - UsernameMarketplaceScreen
 
 struct UsernameMarketplaceScreen: View {
-    private let vc: UINavigationController
+    private let onBack: () -> Void
 
     @StateObject private var viewModel = UsernameMarketplaceViewModel()
     @State private var selectedLabel: SelectedMarketplaceLabel?
     @State private var registerCandidate: RegisterCandidate?
 
     init(vc: UINavigationController) {
-        self.vc = vc
+        onBack = { [weak vc] in
+            vc?.popViewController(animated: true)
+        }
+    }
+
+    /// Standalone presentation path used by My Profile, which is itself
+    /// presented as a sheet and therefore has no UIKit navigation controller.
+    init(onBack: @escaping () -> Void) {
+        self.onBack = onBack
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            NavBarBack {
-                vc.popViewController(animated: true)
-            }
+            NavBarBack(onBack: onBack)
 
             TopIntro(
                 title: NSLocalizedString("Username Marketplace", comment: "Username marketplace"),
@@ -480,7 +486,10 @@ struct UsernameMarketplaceScreen: View {
         }
         .sheet(item: $registerCandidate) { candidate in
             if candidate.isContested {
-                DashUIKit.BottomSheet(showBackButton: .constant(false)) {
+                DashUIKit.BottomSheet(
+                    showBackButton: .constant(false),
+                    isDismissalEnabled: .constant(!viewModel.isPerformingAction)
+                ) {
                     RegisterNameSheet(
                         label: candidate.label,
                         isContested: candidate.isContested,
@@ -490,6 +499,7 @@ struct UsernameMarketplaceScreen: View {
             } else {
                 DashUIKit.BottomSheet.selfSizing(
                     showBackButton: .constant(false),
+                    isDismissalEnabled: .constant(!viewModel.isPerformingAction),
                     fallback: 340,
                     cornerRadius: 24
                 ) {
@@ -1842,7 +1852,6 @@ private struct RegisterNameSheet: View {
             }
         }
         .background(Color.dash.primaryBackground)
-        .interactiveDismissDisabled(viewModel.isPerformingAction)
         .overlay {
             if let activity = viewModel.activityMessage {
                 MarketplaceActivityOverlay(message: activity)

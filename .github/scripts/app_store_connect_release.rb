@@ -64,9 +64,9 @@ module AppStoreConnectRelease
   module_function
 
   def validate_release_channel(channel)
-    return channel if %w[internal external].include?(channel)
+    return channel if %w[internal-only internal external].include?(channel)
 
-    raise Error, "Invalid release channel '#{channel}'. Expected 'internal' or 'external'."
+    raise Error, "Invalid release channel '#{channel}'. Expected 'internal-only', 'internal' or 'external'."
   end
 
   def validate_external_group(requested_group, groups)
@@ -86,31 +86,32 @@ module AppStoreConnectRelease
   end
 
   def resolve_effective_version(requested:, testflight_versions:, production_versions:)
+    requested_version = MarketingVersion.new(requested)
     latest_testflight = maximum_version(testflight_versions)
     latest_production = maximum_version(production_versions)
-    baseline = [latest_testflight, latest_production].compact.max
 
-    if requested == "auto"
-      unless baseline
-        raise Error, "No TestFlight or live App Store version exists. Provide an explicit app_version input."
-      end
-
-      return {
-        effective: baseline.value,
-        latest_testflight: latest_testflight&.value,
-        latest_production: latest_production&.value,
-        bumped: false
-      }
+    # Apple closes a version train once it ships to the App Store: a build
+    # with the same or a lower version would be rejected at upload, so fail
+    # here instead of after a two-hour archive.
+    if latest_production && requested_version <= latest_production
+      raise Error, "App version #{requested} is not above the live App Store version " \
+                   "#{latest_production.value}. Pick a higher version."
     end
 
-    requested_version = MarketingVersion.new(requested)
-    effective = baseline && requested_version <= baseline ? baseline : requested_version
+    # "9.1" and "9.1.0" are different trains to App Store Connect. A train
+    # spelled exactly as requested always wins; failing that, an existing
+    # TestFlight train that is numerically the same version lends its
+    # spelling, so the upload continues that train instead of opening a
+    # parallel one.
+    existing_trains = testflight_versions.map { |value| MarketingVersion.new(value) }
+    matching_train =
+      existing_trains.find { |version| version.value == requested_version.value } ||
+      existing_trains.find { |version| version == requested_version }
 
     {
-      effective: effective.value,
+      effective: (matching_train || requested_version).value,
       latest_testflight: latest_testflight&.value,
-      latest_production: latest_production&.value,
-      bumped: baseline ? requested_version < baseline : false
+      latest_production: latest_production&.value
     }
   end
 
@@ -359,8 +360,8 @@ module AppStoreConnectRelease
         )
       end
 
-      if result.fetch(:bumped)
-        @output.puts "::warning::Requested app version #{requested} is below App Store Connect. Using #{result.fetch(:effective)}."
+      if result.fetch(:effective) != requested
+        @output.puts "::notice::Requested version #{requested} continues the existing TestFlight train #{result.fetch(:effective)}."
       end
 
       write_outputs(
