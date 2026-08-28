@@ -382,7 +382,12 @@ extension CrowdNodeModel {
 /// (ticket 32026), so exhaustion is not evidence the address is foreign.
 @MainActor
 enum CrowdNodeMessageSigner {
-    private static let scanLimit: UInt32 = 300
+    // QA DIAGNOSTIC BUILD — support ticket 32026, do not merge.
+    // Lowered from 300 to 1 so the bounded scan always exhausts, reproducing
+    // on any wallet the condition the affected customer hit. This also breaks
+    // CrowdNode message signing, so withdrawals and email signing must not be
+    // tested on this build.
+    private static let scanLimit: UInt32 = 1
 
     /// 65-byte compact recoverable signature over the DarkCoin-framed
     /// message (`DarkCoinMessage.framed`; the signer FFI SHA256d-hashes
