@@ -116,27 +116,21 @@ struct InternalTransferScreen: View {
                         )
                         .padding(.horizontal, 20)
 
-                        // Takes every point `.frame(minHeight:)` below hands
-                        // the stack beyond what the content needs — which is
-                        // what keeps the form at the top rather than floating
-                        // in the middle.
-                        Spacer(minLength: 12)
-
                         if viewModel.canContinue {
-                            // The second spacer is what centres the preview:
-                            // the pair splits the slack evenly. Both collapse
-                            // to their minimum once the content already fills
-                            // the viewport, so the tight receive-sheet layout
-                            // is unchanged.
+                            // Sits under the cards, not in the middle of the
+                            // gap above the keypad: a spacer on each side used
+                            // to split the slack evenly, which floated the line
+                            // away from the form it belongs to. 20pt from the
+                            // cards — the stack's own 16 plus 4.
                             TransferPreview(amountFormatted: viewModel.dashAmountFormatted)
+                                .padding(.top, 4)
                                 .padding(.horizontal, 20)
-
-                            Spacer(minLength: 12)
                         }
                     }
-                    // Fill the viewport so those spacers have slack to divide.
-                    // Taller content is unaffected: it exceeds the minimum and
-                    // scrolls exactly as before.
+                    // Fill the viewport and pin the content to its top, so a
+                    // form shorter than the screen sits under the selector
+                    // instead of centring itself in the scroll view. Taller
+                    // content exceeds the minimum and scrolls as before.
                     .frame(minHeight: proxy.size.height, alignment: .top)
                 }
                 .scrollBounceBehavior(.basedOnSize)
