@@ -183,7 +183,7 @@ private struct SpecifyAmountView: View {
 
                     Spacer(minLength: 0)
 
-                    DashUIKit.NumericKeyboardView(
+                    HardwareNumericKeyboardView(
                         value: Binding(
                             get: { model.currentInputString },
                             set: { model.updateKeyboardInputString($0) }

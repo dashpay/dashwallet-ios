@@ -129,7 +129,7 @@ struct BuyEnterAmountView: View {
     // MARK: - Keyboard
 
     private var keyboard: some View {
-        NumericKeyboardView(
+        HardwareNumericKeyboardView(
             value: Binding(
                 get: { viewModel.inputValue },
                 set: { viewModel.setInput($0) }

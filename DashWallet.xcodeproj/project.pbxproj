@@ -686,6 +686,8 @@
 		750CED612C94BFD7000FB837 /* SettingsMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750CED5F2C94BFD7000FB837 /* SettingsMenuViewModel.swift */; };
 		750CEFA12CCA6EA100E87A32 /* TextInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750CEFA02CCA6EA100E87A32 /* TextInput.swift */; };
 		750CEFA22CCA6EA100E87A32 /* TextInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750CEFA02CCA6EA100E87A32 /* TextInput.swift */; };
+		519BAFD0CEA0510E4F35E973 /* HardwareNumericKeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516FBC2E8DE4BEE90D103F68 /* HardwareNumericKeyboardView.swift */; };
+		512C760BD00B172C4E65B8F8 /* HardwareNumericKeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516FBC2E8DE4BEE90D103F68 /* HardwareNumericKeyboardView.swift */; };
 		750CEFA42CCA713300E87A32 /* CreateUsernameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750CEFA32CCA712E00E87A32 /* CreateUsernameViewController.swift */; };
 		7513DA882AB175E0005D55F6 /* TopperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720E2AA9F58E0066557E /* TopperViewModel.swift */; };
 		7513DA892AB17606005D55F6 /* Topper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E2F3C92AA4D1B900C3B458 /* Topper.swift */; };
@@ -2909,6 +2911,7 @@
 		750C6CC01B5C8EB60038AAE9 /* el */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = el; path = el.lproj/Localizable.strings; sourceTree = "<group>"; };
 		750CED5F2C94BFD7000FB837 /* SettingsMenuViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenuViewModel.swift; sourceTree = "<group>"; };
 		750CEFA02CCA6EA100E87A32 /* TextInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextInput.swift; sourceTree = "<group>"; };
+		516FBC2E8DE4BEE90D103F68 /* HardwareNumericKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HardwareNumericKeyboardView.swift; sourceTree = "<group>"; };
 		750CEFA32CCA712E00E87A32 /* CreateUsernameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateUsernameViewController.swift; sourceTree = "<group>"; };
 		7511E8CB1AE5FF240025F1B3 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; lineEnding = 0; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		7511E8CF1AE5FF2D0025F1B3 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -6949,6 +6952,7 @@
 			isa = PBXGroup;
 			children = (
 				51DFA7F72FA8A9DF001EDB3A /* DashStepper.swift */,
+				516FBC2E8DE4BEE90D103F68 /* HardwareNumericKeyboardView.swift */,
 				516983C02FCAEDD600BA91A2 /* Icons */,
 				7581B19C2CE3509A00714007 /* Dialogs */,
 				75EBAA112BB99B6B004488E3 /* BottomSheet.swift */,
@@ -9840,6 +9844,7 @@
 				478C983229433C5700FAA0F0 /* PaymentMethodsController.swift in Sources */,
 				47AE8C1328C5F0A700490F5E /* POIDetailsViewController.swift in Sources */,
 				750CEFA22CCA6EA100E87A32 /* TextInput.swift in Sources */,
+				519BAFD0CEA0510E4F35E973 /* HardwareNumericKeyboardView.swift in Sources */,
 				47AE8C1C28C6AA2500490F5E /* PointOfUseLocationServicePopup.swift in Sources */,
 				472D13E8299E4EE7006903F1 /* BalanceModel.swift in Sources */,
 				47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */,
@@ -10819,6 +10824,7 @@
 				C9D2C77E2A320AA000D15901 /* ConfirmationTransactionQRController.swift in Sources */,
 				C9D2C7812A320AA000D15901 /* Numbers+Dash.swift in Sources */,
 				750CEFA12CCA6EA100E87A32 /* TextInput.swift in Sources */,
+				512C760BD00B172C4E65B8F8 /* HardwareNumericKeyboardView.swift in Sources */,
 				C9D2C7822A320AA000D15901 /* PaymentMethodsController.swift in Sources */,
 				C9D2C7832A320AA000D15901 /* POIDetailsViewController.swift in Sources */,
 				C9D2C7842A320AA000D15901 /* PointOfUseLocationServicePopup.swift in Sources */,
