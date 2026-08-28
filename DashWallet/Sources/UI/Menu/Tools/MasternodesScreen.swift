@@ -171,7 +171,7 @@ extension PlatformMasternode {
     var statusName: String {
         switch masternodeStatus {
         case .active: return NSLocalizedString("Active", comment: "Masternode status")
-        case .inactive: return NSLocalizedString("Inactive", comment: "Masternode status")
+        case .inactive: return NSLocalizedString("PoSe banned", comment: "Masternode status")
         case .retired: return NSLocalizedString("Retired", comment: "Masternode status")
         case .unknown: return NSLocalizedString("Unknown", comment: "Masternode status")
         }
@@ -526,6 +526,11 @@ struct MasternodeDetailScreen: View {
     let ownerOwnership: String
     let votingOwnership: String
     @StateObject private var viewModel: MasternodeDetailViewModel
+    @State private var showUnbanSheet = false
+    /// Set after a successful ProUpServTx broadcast: the DML entry stays
+    /// PoSe-banned for a few more blocks, so the row must not invite a
+    /// duplicate submission in that window.
+    @State private var unbanSubmitted = false
 
     init(
         masternode: PlatformMasternode,
@@ -559,6 +564,7 @@ struct MasternodeDetailScreen: View {
                 if masternode.isEvonode {
                     requestStatusRow
                 }
+                unbanRows
             }
 
             Section(NSLocalizedString("Registration", comment: "Masternodes")) {
@@ -676,6 +682,46 @@ struct MasternodeDetailScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             await viewModel.load()
+        }
+        .sheet(isPresented: $showUnbanSheet) {
+            UnbanMasternodeSheet(
+                record: masternode,
+                keySource: .wallet(operatorKeyIndex: masternode.operatorKeyIndex),
+                onSubmitted: { unbanSubmitted = true })
+        }
+    }
+
+    /// Unban entry point: shown while the node is PoSe-banned (or an unban
+    /// funded from the shielded balance is still pending), enabled when this
+    /// wallet holds the operator key that signs the ProUpServTx.
+    @ViewBuilder
+    private var unbanRows: some View {
+        let pending = PendingMasternodeUnbanStore.shared.pending(forProTxHash: masternode.proTxHash) != nil
+        if unbanSubmitted {
+            Text(NSLocalizedString(
+                "Unban submitted — the masternode list updates within a few blocks.",
+                comment: "Masternode unban"))
+                .font(.caption)
+                .foregroundColor(Color.dash.secondaryText)
+        } else if masternode.masternodeStatus == .inactive || pending {
+            if masternode.operatorInWallet {
+                Button {
+                    showUnbanSheet = true
+                } label: {
+                    Label(
+                        pending
+                            ? NSLocalizedString("Complete unban", comment: "Masternode unban")
+                            : NSLocalizedString("Unban masternode", comment: "Masternode unban"),
+                        systemImage: "arrow.up.heart")
+                        .foregroundColor(Color.dash.blue)
+                }
+            } else if masternode.masternodeStatus == .inactive {
+                Text(NSLocalizedString(
+                    "This wallet doesn't hold this masternode's operator key, so it can't be unbanned from here.",
+                    comment: "Masternode unban"))
+                    .font(.caption)
+                    .foregroundColor(Color.dash.secondaryText)
+            }
         }
     }
 
