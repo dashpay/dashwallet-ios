@@ -30,6 +30,36 @@ private enum MainTabbarTabs: Int, CaseIterable {
 }
 
 extension MainTabbarTabs {
+    var accessibilityLabel: String {
+        switch self {
+        case .home:
+            return NSLocalizedString("Dash Wallet", comment: "Main tab bar: Home")
+        case .contacts:
+            return NSLocalizedString("Contacts", comment: "Main tab bar")
+        case .payment:
+            return NSLocalizedString("Payments", comment: "Main tab bar")
+        case .explore:
+            return NSLocalizedString("Explore", comment: "Main tab bar")
+        case .more:
+            return NSLocalizedString("More", comment: "Main tab bar")
+        }
+    }
+
+    var accessibilityIdentifier: String {
+        switch self {
+        case .home:
+            return "tabbar_home_button"
+        case .contacts:
+            return "tabbar_contacts_button"
+        case .payment:
+            return "tabbar_payments_button"
+        case .explore:
+            return "tabbar_explore_button"
+        case .more:
+            return "tabbar_menu_button"
+        }
+    }
+
     var icon: UIImage {
         let name: String
 
@@ -66,6 +96,17 @@ extension MainTabbarTabs {
         }
 
         return UIImage(named: name)!.withRenderingMode(.alwaysOriginal)
+    }
+
+    func tabBarItem(image: UIImage? = nil, selectedImage: UIImage? = nil) -> UITabBarItem {
+        let item = UITabBarItem(
+            title: nil,
+            image: image ?? icon,
+            selectedImage: selectedImage ?? selectedIcon)
+        item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
+        item.accessibilityLabel = accessibilityLabel
+        item.accessibilityIdentifier = accessibilityIdentifier
+        return item
     }
 }
 
@@ -177,8 +218,7 @@ extension MainTabbarController {
         var viewControllers: [UIViewController] = []
 
         // Home
-        var item = UITabBarItem(title: nil, image: MainTabbarTabs.home.icon, selectedImage: MainTabbarTabs.home.selectedIcon)
-        item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
+        var item = MainTabbarTabs.home.tabBarItem()
 
         let homeVC = HomeViewController()
         homeVC.delegate = self
@@ -196,8 +236,7 @@ extension MainTabbarController {
         if identityAvailable {
             // Contacts — SwiftUI screen backed by SwiftDashSDKContactsService
             // (Row #18); replaces the DashSync-era DWRootContactsViewController.
-            item = UITabBarItem(title: nil, image: MainTabbarTabs.contacts.icon, selectedImage: MainTabbarTabs.contacts.selectedIcon)
-            item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
+            item = MainTabbarTabs.contacts.tabBarItem()
 
             let contactsVC = UIHostingController(rootView: ContactsScreen())
             contactsVC.tabBarItem = item
@@ -207,9 +246,7 @@ extension MainTabbarController {
 
         // Payment (tapping this tab opens the payment modal instead of switching tabs)
         let paymentImage = Self.makePaymentTabImage()
-        item = UITabBarItem(title: nil, image: paymentImage, selectedImage: paymentImage)
-        item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
-        item.accessibilityIdentifier = "tabbar_payments_button"
+        item = MainTabbarTabs.payment.tabBarItem(image: paymentImage, selectedImage: paymentImage)
 
         let paymentVC = EmptyController()
         paymentVC.tabBarItem = item
@@ -218,8 +255,7 @@ extension MainTabbarController {
         #if DASHPAY
         if identityAvailable {
             // Explore
-            item = UITabBarItem(title: nil, image: MainTabbarTabs.explore.icon, selectedImage: MainTabbarTabs.explore.selectedIcon)
-            item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
+            item = MainTabbarTabs.explore.tabBarItem()
             
             nvc = BaseNavigationController(rootViewController: EmptyController())
             let exploreScreen = ExploreMenuScreen(
@@ -239,8 +275,7 @@ extension MainTabbarController {
         #endif
 
         // More
-        item = UITabBarItem(title: nil, image: MainTabbarTabs.more.icon, selectedImage: MainTabbarTabs.more.selectedIcon)
-        item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
+        item = MainTabbarTabs.more.tabBarItem()
         
         let menuVC: MainMenuViewController
         #if DASHPAY

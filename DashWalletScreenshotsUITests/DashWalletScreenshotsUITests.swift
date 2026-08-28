@@ -35,7 +35,7 @@ class DashWalletScreenshotsUITests: XCTestCase {
             // Home screen
             snapshot("1")
 
-            waitAndTap(app.otherElements["tabbar_menu_button"])
+            waitAndTap(app.buttons["tabbar_menu_button"])
             waitAndTap(app.cells["menu_security_item"])
             waitAndTap(app.cells["menu_security_advanced_item"])
             sleep(1)
@@ -45,7 +45,7 @@ class DashWalletScreenshotsUITests: XCTestCase {
             waitAndTap(app.navigationBars.buttons.element(boundBy: 0))
             waitAndTap(app.navigationBars.buttons.element(boundBy: 0))
 
-            waitAndTap(app.otherElements["tabbar_home_button"])
+            waitAndTap(app.buttons["tabbar_home_button"])
             waitAndTap(app.cells["shortcut_secure_wallet"])
             waitAndTap(app.buttons["show_recovery_button"])
             waitAndTap(app.otherElements["seedphrase_checkbox"])
