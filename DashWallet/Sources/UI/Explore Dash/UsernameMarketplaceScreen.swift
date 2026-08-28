@@ -480,7 +480,10 @@ struct UsernameMarketplaceScreen: View {
         }
         .sheet(item: $registerCandidate) { candidate in
             if candidate.isContested {
-                DashUIKit.BottomSheet(showBackButton: .constant(false)) {
+                DashUIKit.BottomSheet(
+                    showBackButton: .constant(false),
+                    isDismissalEnabled: .constant(!viewModel.isPerformingAction)
+                ) {
                     RegisterNameSheet(
                         label: candidate.label,
                         isContested: candidate.isContested,
@@ -490,6 +493,7 @@ struct UsernameMarketplaceScreen: View {
             } else {
                 DashUIKit.BottomSheet.selfSizing(
                     showBackButton: .constant(false),
+                    isDismissalEnabled: .constant(!viewModel.isPerformingAction),
                     fallback: 340,
                     cornerRadius: 24
                 ) {
@@ -1842,7 +1846,6 @@ private struct RegisterNameSheet: View {
             }
         }
         .background(Color.dash.primaryBackground)
-        .interactiveDismissDisabled(viewModel.isPerformingAction)
         .overlay {
             if let activity = viewModel.activityMessage {
                 MarketplaceActivityOverlay(message: activity)
