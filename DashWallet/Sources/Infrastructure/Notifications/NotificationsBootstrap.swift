@@ -39,6 +39,8 @@ final class NotificationsBootstrap: NSObject {
     let swapProducer: SwapNotificationProducer
     /// Schedules the 30-day "you still have funds" reminder on backgrounding.
     let inactivityReminderScheduler: InactivityReminderScheduler
+    /// Registers and runs the BGAppRefresh bounded background sync.
+    let backgroundRefresh: BackgroundRefreshCoordinator
     #if DASHPAY
     /// Posts contact-request and request-accepted notifications.
     let contactsProducer: DashPayContactsNotificationProducer
@@ -57,13 +59,20 @@ final class NotificationsBootstrap: NSObject {
         })
         let lifecycle = NotificationLifecycle(client: client, store: store, router: router)
 
+        let transactionProducer = TransactionNotificationProducer(dispatcher: dispatcher,
+                                                                  store: store)
+
         self.store = store
         self.permissionCoordinator = permissionCoordinator
         self.dispatcher = dispatcher
         self.router = router
         self.lifecycle = lifecycle
-        self.transactionProducer = TransactionNotificationProducer(dispatcher: dispatcher,
-                                                                   store: store)
+        self.transactionProducer = transactionProducer
+        // After a bounded background sync reaches sync-done, one awaited
+        // producer scan posts the rows whose mid-sync signals the producer's
+        // sync gate dropped — before the task tears the runtime down.
+        self.backgroundRefresh = BackgroundRefreshCoordinator(
+            postSyncProducerSweep: { await transactionProducer.scanAndNotify() })
         self.crowdNodeProducer = CrowdNodeNotificationProducer(dispatcher: dispatcher)
         self.swapProducer = SwapNotificationProducer(dispatcher: dispatcher, store: store)
         self.inactivityReminderScheduler = InactivityReminderScheduler(client: client,
@@ -82,6 +91,10 @@ final class NotificationsBootstrap: NSObject {
         contactsProducer.start()
         #endif
         inactivityReminderScheduler.start()
+        // BGTaskScheduler registration must happen before
+        // `application(_:didFinishLaunching:)` returns; the bootstrap is
+        // constructed inside it.
+        backgroundRefresh.start()
         lifecycle.inactivityReminderHandler = inactivityReminderScheduler
 
         // `CrowdNode.shared` is created before this graph exists (in

@@ -229,16 +229,6 @@ NS_ASSUME_NONNULL_BEGIN
     return NO; // disable extensions such as custom keyboards for security purposes
 }
 
-- (void)application:(UIApplication *)application
-performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-    // Background fetch is no longer driven by DashSync. SwiftDashSDK does not
-    // yet run in the background — backgrounded SPV is a future milestone.
-    // The Apple Watch sync path that piggybacks on this will be re-pointed
-    // in M10 (DWPhoneWCSessionManager). Until then, watch balance updates
-    // may be stale until the user opens the phone app.
-    completionHandler(UIBackgroundFetchResultNoData);
-}
-
 #if DASHPAY
 - (BOOL)application:(UIApplication *)application continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> *_Nullable))restorationHandler {
     // Universal links (invitations.dashpay.io applink). Firebase

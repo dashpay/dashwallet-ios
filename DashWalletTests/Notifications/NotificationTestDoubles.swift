@@ -127,6 +127,51 @@ final class FakeAppStateProvider: AppStateProvider {
     var isApplicationActive = false
 }
 
+// MARK: - FakeBackgroundTaskScheduler
+
+final class FakeBackgroundTaskScheduler: BackgroundTaskScheduling {
+    struct Submission {
+        let identifier: String
+        let earliestBeginDate: Date?
+    }
+
+    private(set) var registeredIdentifiers: [String] = []
+    private(set) var launchHandlers: [String: (BackgroundRefreshTaskHandle) -> Void] = [:]
+    private(set) var submissions: [Submission] = []
+    var registerResult = true
+    var submitError: Error?
+    var onSubmit: ((Submission) -> Void)?
+
+    func register(identifier: String, launchHandler: @escaping (BackgroundRefreshTaskHandle) -> Void) -> Bool {
+        registeredIdentifiers.append(identifier)
+        launchHandlers[identifier] = launchHandler
+        return registerResult
+    }
+
+    func submit(identifier: String, earliestBeginDate: Date?) throws {
+        if let submitError {
+            throw submitError
+        }
+        let submission = Submission(identifier: identifier, earliestBeginDate: earliestBeginDate)
+        submissions.append(submission)
+        onSubmit?(submission)
+    }
+}
+
+// MARK: - FakeBackgroundRefreshTask
+
+/// Stands in for `BGAppRefreshTask`, which has no public initializer.
+final class FakeBackgroundRefreshTask: BackgroundRefreshTaskHandle {
+    var expirationHandler: (() -> Void)?
+    private(set) var completions: [Bool] = []
+    var onSetTaskCompleted: ((Bool) -> Void)?
+
+    func setTaskCompleted(success: Bool) {
+        completions.append(success)
+        onSetTaskCompleted?(success)
+    }
+}
+
 // MARK: - RecordingNotificationRouter
 
 @MainActor
