@@ -163,20 +163,9 @@ struct DashSpendConfirmationDialog: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 20)
         }
-        // Publish the natural height so `.selfSizingSheet()` (which reads
-        // `BottomSheetHeightPreferenceKey`) can size the sheet. This dialog is not a `BottomSheet`,
-        // so without this the modifier never gets a measurement and falls back to `.medium`, which
-        // is too short and lets the content overflow above the sheet. `.fixedSize(vertical:)` keeps
-        // the measurement stable (decoupled from the offered height) like the BottomSheet does.
+        // Keep the natural height independent of the offered detent so DashUIKit's
+        // `.selfSizingSheet()` can measure a stable intrinsic height.
         .fixedSize(horizontal: false, vertical: true)
-        .background(
-            GeometryReader { proxy in
-                Color.clear.preference(
-                    key: BottomSheetHeightPreferenceKey.self,
-                    value: proxy.size.height
-                )
-            }
-        )
     }
 
     private func detailsRow(title: String, @ViewBuilder value: () -> some View) -> some View {

@@ -66,7 +66,7 @@ struct OrderPreviewFeeRow: View {
         .padding(.vertical, rowVPadding)
         .frame(minHeight: rowMinHeight)
         .sheet(isPresented: $showInfoSheet) {
-            BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
+            DashUIKit.BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
                 SwapFeeInfoSheet(
                     usesGenericFeeInfo: usesGenericFeeInfo,
                     onDismiss: { showInfoSheet = false }

@@ -916,7 +916,7 @@ struct GiftCardDetailsSheet: View {
     
     var body: some View {
         let showsTxDetailRoute = txDetailRoute != nil
-        let dialog = BottomSheet(
+        let dialog = DashUIKit.BottomSheet(
             showBackButton: $showBackButton,
             onBackButtonPressed: {
                 handleBackNavigation()
@@ -1072,7 +1072,7 @@ struct TransactionDetailsSheet: View {
     var item: TransactionListDataItem
     
     var body: some View {
-        BottomSheet(showBackButton: $showBackButton, onBackButtonPressed: {
+        DashUIKit.BottomSheet(showBackButton: $showBackButton, onBackButtonPressed: {
             backNavigationRequested = true
         }) {
             TxDetailsDestination(from: item)

@@ -17,6 +17,7 @@
 
 import UIKit
 import SwiftUI
+import DashUIKit
 
 // MARK: - TxDetailDisplayType
 
@@ -223,7 +224,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
 
 extension TXDetailViewController {
     private func viewInBlockExplorer() {
-        let swiftUIView = BottomSheet(
+        let swiftUIView = DashUIKit.BottomSheet(
             title: NSLocalizedString("Select block explorer", comment: "Block explorer picker"),
             showBackButton: Binding<Bool>.constant(false)
         ) {
@@ -259,7 +260,7 @@ extension TXDetailViewController {
 
     /// Full consensus-field inspector for this transaction's stored raw bytes.
     private func viewRawTransaction() {
-        let sheet = BottomSheet(
+        let sheet = DashUIKit.BottomSheet(
             title: NSLocalizedString("Transaction", comment: "Raw transaction inspector"),
             showBackButton: Binding<Bool>.constant(false)
         ) {

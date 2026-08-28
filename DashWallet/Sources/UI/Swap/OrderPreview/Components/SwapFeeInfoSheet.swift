@@ -99,17 +99,7 @@ private struct SwapFeeInfoSheetPreviewHost: View {
         Color.dash.primaryBackground
             .ignoresSafeArea()
             .sheet(isPresented: $isPresented) {
-//                let sheet = BottomSheet(showBackButton: .constant(false)) {
-//                        SwapFeeInfoSheet(onDismiss: {})
-//                    }
-//
-//                if #available(iOS 16.0, *) {
-//                    sheet.presentationDetents([.height(450)])
-//                } else {
-//                    sheet
-//                }
-
-                BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
+                DashUIKit.BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
                     SwapFeeInfoSheet(usesGenericFeeInfo: false, onDismiss: {})
                 }
                 .selfSizingSheet()
