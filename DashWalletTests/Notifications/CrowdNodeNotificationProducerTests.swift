@@ -17,7 +17,7 @@
 
 import XCTest
 import UserNotifications
-@testable import dashwallet
+@testable import dashpay
 
 /// Exercises the producer against the real dispatcher over the in-memory
 /// store, so the event-scoped-id design is proven against the actual dedup.

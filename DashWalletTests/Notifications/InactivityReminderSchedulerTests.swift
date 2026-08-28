@@ -18,7 +18,7 @@
 import XCTest
 import UIKit
 import UserNotifications
-@testable import dashwallet
+@testable import dashpay
 
 /// Drives the scheduler directly (and once through the app-lifecycle
 /// notification it observes). The real wall clock stays in place: a

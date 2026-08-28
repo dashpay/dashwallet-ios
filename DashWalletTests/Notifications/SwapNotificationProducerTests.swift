@@ -18,7 +18,7 @@
 import Combine
 import XCTest
 import UserNotifications
-@testable import dashwallet
+@testable import dashpay
 
 /// Feeds synthetic order sets through `process` (and once through the
 /// injected publisher) against the real dispatcher over the in-memory

@@ -18,7 +18,7 @@
 #if DASHPAY
 
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 /// Pure read-state arithmetic behind the bell: what counts as unread and
 /// where viewing advances the marker to. Exercised directly — the contacts

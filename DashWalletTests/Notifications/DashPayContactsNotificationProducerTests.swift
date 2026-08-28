@@ -19,7 +19,7 @@
 
 import XCTest
 import UserNotifications
-@testable import dashwallet
+@testable import dashpay
 
 /// Feeds synthetic contact snapshots through `scanAndNotify` against the
 /// real dispatcher over the in-memory store, so the

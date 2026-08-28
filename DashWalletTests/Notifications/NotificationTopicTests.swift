@@ -16,7 +16,7 @@
 //
 
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 final class NotificationTopicTests: XCTestCase {
     /// Raw values are wire/thread identifiers — renaming a case silently

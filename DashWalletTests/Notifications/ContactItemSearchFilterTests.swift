@@ -18,7 +18,7 @@
 #if DASHPAY
 
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 /// `ContactItem.matches(searchQuery:)` — the local-search predicate the
 /// contacts and notifications screens both filter with.

@@ -17,7 +17,7 @@
 
 import UIKit
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 /// Drives the coordinator through the seams `NotificationsBootstrap`
 /// injects: a fake scheduler records registration/submissions, a fake task

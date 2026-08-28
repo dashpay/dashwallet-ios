@@ -17,7 +17,7 @@
 
 import XCTest
 import UserNotifications
-@testable import dashwallet
+@testable import dashpay
 
 final class NotificationPermissionCoordinatorTests: XCTestCase {
     private var client: FakeUserNotificationCenterClient!

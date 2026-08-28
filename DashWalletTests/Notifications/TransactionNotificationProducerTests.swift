@@ -17,7 +17,7 @@
 
 import XCTest
 import UserNotifications
-@testable import dashwallet
+@testable import dashpay
 
 /// Drives the producer through its injected row source with synthetic
 /// `ObservedTransaction` rows — no SwiftData involved — against the real

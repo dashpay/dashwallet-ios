@@ -18,7 +18,7 @@
 import XCTest
 import UIKit
 import UserNotifications
-@testable import dashwallet
+@testable import dashpay
 
 @MainActor
 final class NotificationLifecycleTests: XCTestCase {

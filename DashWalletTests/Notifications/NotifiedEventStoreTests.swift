@@ -16,7 +16,7 @@
 //
 
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 /// Exercises the real SQLite-backed store against a private in-memory
 /// database created by the same `AddNotifiedEventsTable` migration the app

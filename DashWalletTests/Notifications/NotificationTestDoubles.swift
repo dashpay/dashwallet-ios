@@ -17,7 +17,7 @@
 
 import Foundation
 import UserNotifications
-@testable import dashwallet
+@testable import dashpay
 
 // MARK: - FakeUserNotificationCenterClient
 
