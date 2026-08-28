@@ -36,13 +36,22 @@ final class NotificationDispatcher {
 
     /// Registers one `UNNotificationCategory` per topic, so every request's
     /// `categoryIdentifier` resolves. Called once from the composition root.
-    /// No topic defines actions yet; the categories are registered without
-    /// any, and actions are added here together with the features that
-    /// handle them.
+    /// The `system` topic carries the inactivity reminder's two actions
+    /// (`InactivityReminderScheduler` schedules the request;
+    /// `NotificationLifecycle.didReceive` dispatches the action identifiers
+    /// back to the scheduler); no other topic defines actions yet.
     func registerCategories() {
-        let categories = Set(NotificationTopic.allCases.map {
-            UNNotificationCategory(identifier: $0.rawValue,
-                                   actions: [],
+        let inactivityActions = [
+            UNNotificationAction(identifier: InactivityReminderScheduler.remindLaterActionIdentifier,
+                                 title: NSLocalizedString("Remind me later", comment: "Inactivity reminder"),
+                                 options: []),
+            UNNotificationAction(identifier: InactivityReminderScheduler.optOutActionIdentifier,
+                                 title: NSLocalizedString("Don't remind me again", comment: "Inactivity reminder"),
+                                 options: []),
+        ]
+        let categories = Set(NotificationTopic.allCases.map { topic in
+            UNNotificationCategory(identifier: topic.rawValue,
+                                   actions: topic == .system ? inactivityActions : [],
                                    intentIdentifiers: [],
                                    options: [])
         })

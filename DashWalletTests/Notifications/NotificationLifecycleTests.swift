@@ -151,4 +151,50 @@ final class NotificationLifecycleTests: XCTestCase {
 
         XCTAssertTrue(router.openedRoutes.isEmpty)
     }
+
+    // MARK: Action dispatch
+
+    private final class RecordingInactivityHandler: InactivityReminderActionHandling {
+        private(set) var remindLaterCount = 0
+        private(set) var optOutCount = 0
+
+        func handleRemindLater() { remindLaterCount += 1 }
+        func handleOptOut() { optOutCount += 1 }
+    }
+
+    func testInactivityActionIdentifiersDispatchToTheHandlerNotTheRouter() {
+        let handler = RecordingInactivityHandler()
+        lifecycle.inactivityReminderHandler = handler
+        var userInfo: [AnyHashable: Any] = [:]
+        userInfo[NotificationUserInfoKey.route] = DeepLinkRoute.home.encodedForUserInfo()
+
+        lifecycle.handleNotificationResponse(
+            actionIdentifier: InactivityReminderScheduler.remindLaterActionIdentifier,
+            identifier: InactivityReminderScheduler.requestIdentifier,
+            userInfo: userInfo)
+        lifecycle.handleNotificationResponse(
+            actionIdentifier: InactivityReminderScheduler.optOutActionIdentifier,
+            identifier: InactivityReminderScheduler.requestIdentifier,
+            userInfo: userInfo)
+
+        XCTAssertEqual(handler.remindLaterCount, 1)
+        XCTAssertEqual(handler.optOutCount, 1)
+        XCTAssertTrue(router.openedRoutes.isEmpty)
+    }
+
+    func testDefaultActionFallsThroughToTapRouting() {
+        let handler = RecordingInactivityHandler()
+        lifecycle.inactivityReminderHandler = handler
+        var userInfo: [AnyHashable: Any] = [:]
+        userInfo[NotificationUserInfoKey.route] = DeepLinkRoute.url(URL(string: "https://www.dash.org")!).encodedForUserInfo()
+
+        lifecycle.handleNotificationResponse(
+            actionIdentifier: UNNotificationDefaultActionIdentifier,
+            identifier: "announcement.1",
+            userInfo: userInfo)
+
+        XCTAssertEqual(router.openedRoutes, [.url(URL(string: "https://www.dash.org")!)])
+        XCTAssertEqual(handler.remindLaterCount, 0)
+        XCTAssertEqual(handler.optOutCount, 0)
+    }
 }

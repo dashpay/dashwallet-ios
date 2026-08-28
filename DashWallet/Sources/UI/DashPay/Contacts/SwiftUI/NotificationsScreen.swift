@@ -100,10 +100,7 @@ struct NotificationsScreen: View {
         let requests = viewModel.incomingRequests.map { Event(item: $0, kind: .incomingRequest) }
         let sent = viewModel.outgoingRequests.map { Event(item: $0, kind: .sentRequest) }
         let established = viewModel.contacts.map { item -> Event in
-            // The newer direction row is the reciprocation.
-            let incoming = item.incomingCreatedAt ?? .distantPast
-            let outgoing = item.outgoingCreatedAt ?? .distantPast
-            return Event(item: item, kind: incoming >= outgoing ? .theyAccepted : .weAccepted)
+            Event(item: item, kind: item.establishedByTheirAccept ? .theyAccepted : .weAccepted)
         }
         return (requests + sent + established).sorted { $0.date > $1.date }
     }

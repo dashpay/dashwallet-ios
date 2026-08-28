@@ -703,7 +703,7 @@ extension CrowdNode {
     /// Posting seam, injected by `NotificationsBootstrap` at launch —
     /// `CrowdNode.shared` is created before the notifications graph, so the
     /// composition root sets this statically instead of adding a global.
-    static var notificationDispatcher: NotificationDispatcher?
+    static var notificationProducer: CrowdNodeResultNotifying?
 
     private func handleError(error: CrowdNode.Error) {
         apiError = error
@@ -712,24 +712,17 @@ extension CrowdNode {
     }
 
     private func notifyIfNeeded(message: String) {
+        // Screen-driven: the CrowdNode controllers clear this flag while
+        // their UI is on screen showing the result and set it on exit, so
+        // only unwatched results notify.
         guard showNotificationOnResult else { return }
-        guard let dispatcher = Self.notificationDispatcher else {
-            DWLogger.log("CrowdNode: notification dropped — no dispatcher injected")
+        guard let producer = Self.notificationProducer else {
+            DWLogger.log("CrowdNode: notification dropped — no producer injected")
             return
         }
 
         // The user-enabled check lives in the dispatcher's permission gate.
-        let notification = AppNotification(
-            id: CrowdNode.notificationID,
-            topic: .crowdnode,
-            title: nil,
-            body: message,
-            sound: .default,
-            route: .staking,
-            foregroundBehavior: .banner)
-        Task {
-            await dispatcher.post(notification)
-        }
+        producer.postResult(message: message)
     }
 }
 

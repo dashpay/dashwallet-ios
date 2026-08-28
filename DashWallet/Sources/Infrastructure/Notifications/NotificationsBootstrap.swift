@@ -33,6 +33,16 @@ final class NotificationsBootstrap: NSObject {
     let lifecycle: NotificationLifecycle
     /// Posts a notification per newly persisted incoming transaction.
     let transactionProducer: TransactionNotificationProducer
+    /// Posts CrowdNode result/error messages (injected into `CrowdNode`).
+    let crowdNodeProducer: CrowdNodeNotificationProducer
+    /// Posts a notification per swap order reaching a terminal state.
+    let swapProducer: SwapNotificationProducer
+    /// Schedules the 30-day "you still have funds" reminder on backgrounding.
+    let inactivityReminderScheduler: InactivityReminderScheduler
+    #if DASHPAY
+    /// Posts contact-request and request-accepted notifications.
+    let contactsProducer: DashPayContactsNotificationProducer
+    #endif
 
     @objc
     init(window: UIWindow) {
@@ -54,16 +64,30 @@ final class NotificationsBootstrap: NSObject {
         self.lifecycle = lifecycle
         self.transactionProducer = TransactionNotificationProducer(dispatcher: dispatcher,
                                                                    store: store)
+        self.crowdNodeProducer = CrowdNodeNotificationProducer(dispatcher: dispatcher)
+        self.swapProducer = SwapNotificationProducer(dispatcher: dispatcher, store: store)
+        self.inactivityReminderScheduler = InactivityReminderScheduler(client: client,
+                                                                       permissions: permissionCoordinator)
+        #if DASHPAY
+        self.contactsProducer = DashPayContactsNotificationProducer(dispatcher: dispatcher,
+                                                                    store: store)
+        #endif
         super.init()
 
         UNUserNotificationCenter.current().delegate = lifecycle
         dispatcher.registerCategories()
         transactionProducer.start()
+        swapProducer.start()
+        #if DASHPAY
+        contactsProducer.start()
+        #endif
+        inactivityReminderScheduler.start()
+        lifecycle.inactivityReminderHandler = inactivityReminderScheduler
 
         // `CrowdNode.shared` is created before this graph exists (in
         // `didFinishLaunching`), so its posting seam is injected statically
         // instead of adding another global.
-        CrowdNode.notificationDispatcher = dispatcher
+        CrowdNode.notificationProducer = crowdNodeProducer
     }
 
     /// The OS-authorization request path `AppDelegate` exposes to the home

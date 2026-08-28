@@ -42,6 +42,11 @@ final class NotificationLifecycle: NSObject {
     private let router: NotificationRouting
     private var didBecomeActiveObserver: NSObjectProtocol?
 
+    /// Target of the inactivity reminder's category actions. Weak and
+    /// settable: the composition root owns the scheduler and wires it in
+    /// after both objects exist.
+    weak var inactivityReminderHandler: InactivityReminderActionHandling?
+
     init(client: UserNotificationCenterClient,
          store: NotifiedEventStoring,
          router: NotificationRouting) {
@@ -103,6 +108,22 @@ final class NotificationLifecycle: NSObject {
         }
     }
 
+    /// Response handling: the inactivity reminder's category actions go to
+    /// their handler by action identifier; the default tap action (and any
+    /// identifier this build doesn't know) routes as a plain tap.
+    func handleNotificationResponse(actionIdentifier: String,
+                                    identifier: String,
+                                    userInfo: [AnyHashable: Any]) {
+        switch actionIdentifier {
+        case InactivityReminderScheduler.remindLaterActionIdentifier:
+            inactivityReminderHandler?.handleRemindLater()
+        case InactivityReminderScheduler.optOutActionIdentifier:
+            inactivityReminderHandler?.handleOptOut()
+        default:
+            handleNotificationTap(identifier: identifier, userInfo: userInfo)
+        }
+    }
+
     /// Tap handling: decode the route and hand it to the router. The legacy
     /// CrowdNode identifier predates encoded routes and folds into
     /// `.staking`, keeping the old `AppDelegate` special case working for
@@ -135,10 +156,13 @@ extension NotificationLifecycle: UNUserNotificationCenterDelegate {
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
                                             didReceive response: UNNotificationResponse,
                                             withCompletionHandler completionHandler: @escaping () -> Void) {
+        let actionIdentifier = response.actionIdentifier
         let identifier = response.notification.request.identifier
         let userInfo = response.notification.request.content.userInfo
         Task { @MainActor in
-            self.handleNotificationTap(identifier: identifier, userInfo: userInfo)
+            self.handleNotificationResponse(actionIdentifier: actionIdentifier,
+                                            identifier: identifier,
+                                            userInfo: userInfo)
         }
         completionHandler()
     }

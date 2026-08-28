@@ -24,10 +24,6 @@ import UserNotifications
 /// dispatcher over the shared in-memory store and fake center client
 /// doubles, so the store's dedup is exercised for real.
 final class TransactionNotificationProducerTests: XCTestCase {
-    private final class FakeAppStateProvider: AppStateProvider {
-        var isApplicationActive = false
-    }
-
     /// Fixed wall clock handed to the producer; rows are stamped relative
     /// to it.
     private static let referenceNow = Date(timeIntervalSince1970: 1_756_000_000)

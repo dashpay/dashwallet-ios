@@ -114,13 +114,21 @@ final class NotificationDispatcherTests: XCTestCase {
                        NotificationForegroundBehavior.suppress.rawValue)
     }
 
-    func testRegisterCategoriesRegistersOnePerTopicWithoutActions() {
+    func testRegisterCategoriesRegistersOnePerTopicWithInactivityActionsOnSystem() {
         dispatcher.registerCategories()
 
         XCTAssertEqual(client.registeredCategorySets.count, 1)
         let categories = client.registeredCategorySets[0]
         XCTAssertEqual(Set(categories.map(\.identifier)),
                        Set(NotificationTopic.allCases.map(\.rawValue)))
-        XCTAssertTrue(categories.allSatisfy { $0.actions.isEmpty })
+        // Only the system topic carries actions: the inactivity reminder's
+        // remind-later and opt-out pair.
+        let system = categories.first { $0.identifier == NotificationTopic.system.rawValue }
+        XCTAssertEqual(system?.actions.map(\.identifier),
+                       [InactivityReminderScheduler.remindLaterActionIdentifier,
+                        InactivityReminderScheduler.optOutActionIdentifier])
+        XCTAssertTrue(categories
+            .filter { $0.identifier != NotificationTopic.system.rawValue }
+            .allSatisfy { $0.actions.isEmpty })
     }
 }

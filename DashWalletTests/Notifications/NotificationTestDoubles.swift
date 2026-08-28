@@ -34,9 +34,12 @@ final class FakeUserNotificationCenterClient: UserNotificationCenterClient {
     private(set) var requestedAuthorizationOptions: [UNAuthorizationOptions] = []
 
     var onSetBadgeCount: ((Int) -> Void)?
+    var onAdd: ((UNNotificationRequest) -> Void)?
+    var onRemovePendingIdentifiers: (([String]) -> Void)?
 
     func add(_ request: UNNotificationRequest) async throws {
         addedRequests.append(request)
+        onAdd?(request)
     }
 
     func deliveredNotificationSummaries() async -> [DeliveredNotificationSummary] {
@@ -49,6 +52,7 @@ final class FakeUserNotificationCenterClient: UserNotificationCenterClient {
 
     func removePendingNotificationRequests(withIdentifiers identifiers: [String]) {
         removedPendingIdentifiers.append(identifiers)
+        onRemovePendingIdentifiers?(identifiers)
     }
 
     func setBadgeCount(_ count: Int) {
@@ -115,6 +119,12 @@ final class InMemoryNotifiedEventStore: NotifiedEventStoring {
 
 final class FakeNotificationPreferenceStore: NotificationPreferenceStore {
     var userWantsNotifications = true
+}
+
+// MARK: - FakeAppStateProvider
+
+final class FakeAppStateProvider: AppStateProvider {
+    var isApplicationActive = false
 }
 
 // MARK: - RecordingNotificationRouter

@@ -57,6 +57,7 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
 @dynamic exploreDashMerchantsInfoShown;
 @dynamic coinbaseInfoShown;
 @dynamic shortcutBannerState;
+@dynamic inactivityReminderDisabled;
 
 #ifdef DASHPAY
 @dynamic dashpayUsername;
