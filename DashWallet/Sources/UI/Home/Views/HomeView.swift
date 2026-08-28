@@ -291,15 +291,10 @@ struct HomeViewContent<Content: View>: View {
                         onLongPress: {
                             performShortcut(ShortcutAction(type: .localCurrency))
                         },
-                        onReceive: { network in
-                            delegate?.homeViewShowReceive(network: network)
-                        },
-                        onSend: { network in
-                            delegate?.homeViewShowSend(network: network)
-                        },
                         onInfo: { network in
                             balanceInfoNetwork = network
                         },
+                        showsPlatformBalance: viewModel.isAdvancedMode,
                         username: navUsername,
                         avatarURL: navAvatarURL,
                         identitySeed: navIdentitySeed,

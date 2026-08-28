@@ -52,18 +52,8 @@ struct SettingsScreen: View {
             // Menu list
             VStack(spacing: 2) {
                 ForEach(viewModel.items) { item in
-                    MenuItem(
-                        title: item.title,
-                        subtitle: item.subtitle,
-                        details: item.details,
-                        icon: item.icon,
-                        showInfo: item.showInfo,
-                        showChevron: false,
-                        showToggle: item.showToggle,
-                        isToggled: item.isToggled,
-                        action: item.action
-                    )
-                    .frame(minHeight: 60)
+                    row(for: item)
+                        .frame(minHeight: 60)
                 }
             }
             .padding(6)
@@ -82,45 +72,30 @@ struct SettingsScreen: View {
         .onReceive(viewModel.$showCSVExportActivity) { show in
             showCSVExportActivity = show
         }
-        .alert(NSLocalizedString("Network", comment: ""), isPresented: $showNetworkAlert) {
-            Button(NSLocalizedString("Mainnet", comment: "")) {
+        .networkChoiceAlert(
+            isPresented: $showNetworkAlert,
+            onMainnet: {
                 Task {
-                    let success = await viewModel.switchToMainnet()
-                    if success {
+                    if await viewModel.switchToMainnet() {
                         updateView()
                     }
                 }
-            }
-            Button(NSLocalizedString("Testnet", comment: "")) {
+            },
+            onTestnet: {
                 Task {
-                    let success = await viewModel.switchToTestnet()
-                    if success {
+                    if await viewModel.switchToTestnet() {
                         updateView()
                     }
                 }
-            }
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+            })
+        .sheet(isPresented: $viewModel.showAdvancedModeInfo) {
+            AdvancedModeInfoSheet()
         }
-        .alert(NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"), isPresented: $viewModel.showCoinJoinSweepConfirmation) {
-            Button(NSLocalizedString("Move funds", comment: "CoinJoin")) {
-                Task { await viewModel.performCoinJoinSweep() }
-            }
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
-        } message: {
-            Text(String(format: NSLocalizedString("Move your %@ in mixed coins to your spendable balance? CoinJoin is no longer supported.", comment: "CoinJoin"), viewModel.coinJoinLeftoverFormatted))
-        }
-        .alert(
-            NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"),
-            isPresented: Binding(
-                get: { viewModel.coinJoinSweepErrorMessage != nil },
-                set: { if !$0 { viewModel.coinJoinSweepErrorMessage = nil } }
-            ),
-            presenting: viewModel.coinJoinSweepErrorMessage
-        ) { _ in
-            Button(NSLocalizedString("OK", comment: "")) { viewModel.coinJoinSweepErrorMessage = nil }
-        } message: { message in
-            Text(message)
-        }
+        .coinJoinSweepAlerts(
+            isConfirming: $viewModel.showCoinJoinSweepConfirmation,
+            amount: viewModel.coinJoinLeftoverFormatted,
+            onConfirm: { Task { await viewModel.performCoinJoinSweep() } },
+            errorMessage: $viewModel.coinJoinSweepErrorMessage)
         .sheet(isPresented: $showCSVExportActivity) {
             if let csvData = viewModel.csvExportData {
                 ActivityView(activityItems: [csvData.file])
@@ -128,6 +103,72 @@ struct SettingsScreen: View {
         }
     }
     
+    // MARK: - Rows
+
+    /// One settings row, rendered by the design system's `MenuItem`.
+    ///
+    /// `DashUIKit.MenuItem` draws the row and nothing else — it carries no tap
+    /// handler of its own — so what a tap means is decided here, per row:
+    ///
+    /// - a switch owns its own gesture, so a plain toggle row is not wrapped;
+    /// - a row that also has something to explain puts the explanation on the
+    ///   row body, leaving the switch to toggle and the rest to inform (the
+    ///   info glyph is drawn by `MenuItem` but is not itself a button);
+    /// - everything else is a button that runs the row's action.
+    @ViewBuilder
+    private func row(for item: MenuItemModel) -> some View {
+        let content = DashUIKit.MenuItem(
+            leadingIcon: item.icon.map(Self.iconSource),
+            title: item.title,
+            helpText: item.subtitle,
+            info: item.showInfo ? .round(color: Color.dash.gray300Alpha70) : nil,
+            accessory: item.showToggle
+                ? .toggle(isOn: Self.toggleBinding(item))
+                : (item.details.map { .text($0) } ?? .none)
+        )
+
+        if item.showToggle {
+            if let infoAction = item.infoAction {
+                // The switch owns its own tap, so the rest of the row is free
+                // to answer the question the info glyph poses. Named so a UI
+                // test can tap the switch alone and assert the sheet stays shut.
+                Button(action: infoAction) { content }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("settings_row_\(item.title.lowercased().replacingOccurrences(of: " ", with: "_"))")
+            } else {
+                content
+            }
+        } else if let action = item.action {
+            Button(action: action) { content }
+                .buttonStyle(.plain)
+        } else {
+            content
+        }
+    }
+
+    /// Writing through the switch runs the row's action, which is what the
+    /// view model already uses to flip the underlying setting; the getter stays
+    /// the model's value so a refresh is what moves the switch.
+    private static func toggleBinding(_ item: MenuItemModel) -> Binding<Bool> {
+        Binding(
+            get: { item.isToggled },
+            set: { _ in item.action?() }
+        )
+    }
+
+    /// `IconName` predates `DashIconSource` and says the same things. The one
+    /// field with no counterpart is `maxHeight`: `MenuItem` sizes its own icon.
+    private static func iconSource(_ icon: IconName) -> DashIconSource {
+        switch icon {
+        case .system(let name):
+            .system(name)
+        case .custom(let name, let bundle, _):
+            .custom(name, bundle: bundle)
+        case .image(let uiImage, _):
+            .uiImage(uiImage)
+        }
+    }
+
     private func handleNavigation(_ destination: SettingsMenuNavigationDestination?) {
         switch destination {
         case .currencySelector:
@@ -186,15 +227,6 @@ struct SettingsScreen: View {
 }
 
 
-struct ActivityView: UIViewControllerRepresentable {
-    let activityItems: [Any]
-    
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        return UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
-    }
-    
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
 
 private final class LocalCurrencyHostingViewController: BaseViewController {
     private let rootView: LocalCurrencyView

@@ -46,6 +46,7 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
 @dynamic autoLockAppInterval;
 @dynamic shortcuts;
 @dynamic balanceHidden;
+@dynamic advancedModeEnabled;
 @dynamic tapToHideBalanceShown;
 @dynamic shouldDisplayOnboarding;
 @dynamic paymentsScreenCurrentTab;
@@ -229,6 +230,7 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
     self.shortcuts = nil;
     self.localNotificationsEnabled = YES;
     self.balanceHidden = NO;
+    self.advancedModeEnabled = NO;
     self.tapToHideBalanceShown = NO;
     self.resyncingWallet = NO;
     self.selectedPaymentCurrency = DWPaymentCurrencyDash;
