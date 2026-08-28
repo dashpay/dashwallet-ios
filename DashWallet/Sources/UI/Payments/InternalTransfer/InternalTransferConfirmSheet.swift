@@ -223,11 +223,11 @@ struct InternalTransferConfirmSheet: View {
         case .platformToShielded:
             // Shield (Type 15): base shielded fee. Real metered storage is
             // extra and only knowable on-chain, so this is a lower bound.
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .transfer, numActions: 2)
         case .shieldedToCore:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .withdrawal, numActions: 2)
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .withdrawal, numActions: 2)
         case .shieldedToPlatform:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 2)
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .unshield, numActions: 2)
         case .coreToPlatform:
             // Address-funding asset lock: the required processing balance
             // (the same 50k-duff base the Rust side reserves for address
@@ -742,7 +742,7 @@ struct ShieldedRecoverySheet: View {
             // history row's snapshot was captured. The resume FFI builds the
             // full proof before Platform reports "already consumed", so without
             // this guard a just-completed transfer would dead-end after ~30s.
-            ShieldedTxLookup.shared.refresh()
+            await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-recovery-preflight")
             let displayTxid = op.txidWire.reversed().map { String(format: "%02x", $0) }.joined()
             let statusRaw = ShieldedTxLookup.shared.info(forTxidHex: displayTxid)?.statusRaw
             if statusRaw == 4 {
@@ -760,7 +760,7 @@ struct ShieldedRecoverySheet: View {
             // the history row flips pending → completed even before the next
             // scheduled shielded sync pass lands.
             if case .success = coordinator.phase {
-                ShieldedTxLookup.shared.refresh()
+                await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-recovery-completed")
             }
         }
     }

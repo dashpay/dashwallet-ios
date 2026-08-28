@@ -59,14 +59,28 @@ enum CoreToShieldedAmountPolicy {
     /// (50_000 duffs) × 1000 credits/duff.
     static let assetLockBaseCostCredits: UInt64 = 50_000_000
 
+    /// Cached: this is read from `amountValidationMessage` and `canContinue`,
+    /// both of which a SwiftUI `body` evaluates — so an uncached property
+    /// crosses into Rust on every render and every keystroke. The value is a
+    /// pure function of the protocol version and the fixed `(transfer, 2)`
+    /// shape, so it cannot change within a launch.
+    private static var cachedPoolFeeCredits: UInt64??
+
     static var poolFeeCredits: UInt64? {
-        guard let shieldedFee = try? PlatformWalletManager.estimateShieldedFee(
+        if let cached = cachedPoolFeeCredits { return cached }
+        guard let shieldedFee = try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(
             kind: .transfer,
             numActions: 2)
-        else { return nil }
+        else {
+            // Not cached: a failed estimate is a transient FFI condition, and
+            // caching it would keep the screen permanently unusable.
+            return nil
+        }
 
         let (total, overflow) = shieldedFee.addingReportingOverflow(assetLockBaseCostCredits)
-        return overflow ? nil : total
+        let value: UInt64? = overflow ? nil : total
+        cachedPoolFeeCredits = .some(value)
+        return value
     }
 
     /// Pool fee in whole duffs, rounded UP so a duff-denominated lock always
@@ -886,11 +900,11 @@ final class InternalTransferViewModel: ObservableObject {
             // (`ShieldedActionBudget.maxActionsPerTransition`) so a fragmented
             // wallet can't pass the affordability check and then fail SDK note
             // selection.
-            return try? PlatformWalletManager.estimateShieldedFee(
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(
                 kind: .withdrawal,
                 numActions: ShieldedActionBudget.maxActionsPerTransition)
         case .shieldedToPlatform:
-            return try? PlatformWalletManager.estimateShieldedFee(
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(
                 kind: .unshield,
                 numActions: ShieldedActionBudget.maxActionsPerTransition)
         case .platformToCore:
@@ -1385,11 +1399,13 @@ final class InternalTransferViewModel: ObservableObject {
         return feeReserveExceedsBalanceMessage(.core)
     }
 
-    private static let platformShieldPreflightLoadingMessage = NSLocalizedString(
+    // Shared with `SendViewModel`'s Platform → external Shielded route,
+    // which runs the same preflight — hence `internal`, not `private`.
+    static let platformShieldPreflightLoadingMessage = NSLocalizedString(
         "Checking how much of your Platform balance can be moved…",
         comment: "Platform to Shielded preflight in progress")
 
-    private static let platformShieldPreflightUnavailableMessage = NSLocalizedString(
+    static let platformShieldPreflightUnavailableMessage = NSLocalizedString(
         "Could not check the available Platform balance. Sync and try again.",
         comment: "Platform to Shielded preflight failed")
 
@@ -1401,7 +1417,8 @@ final class InternalTransferViewModel: ObservableObject {
         "Refreshing your Platform balance before checking the new maximum…",
         comment: "Platform Shield manual resync in progress")
 
-    private static let platformShieldHeadroomUnavailableMessage = NSLocalizedString(
+    // Shared with `SendViewModel` — see the note above.
+    static let platformShieldHeadroomUnavailableMessage = NSLocalizedString(
         "Your Platform balance cannot currently cover the Shield transfer selection headroom.",
         comment: "Platform balance cannot fund shield selection headroom")
 

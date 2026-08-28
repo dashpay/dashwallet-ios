@@ -102,7 +102,7 @@ struct BuyEnterAmountView: View {
 
                 if let statusMessage = viewModel.statusMessage {
                     Text(statusMessage)
-                        .font(Font.dash.caption1)
+                        .dashFont(.caption1)
                         .foregroundStyle(Color.dash.tertiaryText)
                 }
             }
@@ -112,14 +112,14 @@ struct BuyEnterAmountView: View {
             HStack(spacing: 8) {
                 SwiftUI.ProgressView()
                 Text(NSLocalizedString("Checking amount…", comment: "Dash DEX"))
-                    .font(Font.dash.caption1)
+                    .dashFont(.caption1)
                     .foregroundStyle(Color.dash.tertiaryText)
             }
             .frame(maxWidth: .infinity, alignment: .center)
             .transition(.opacity)
         } else if let error = viewModel.inlineMessage {
             Text(error)
-                .font(Font.dash.caption1)
+                .dashFont(.caption1)
                 .foregroundColor(Color.dash.red)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .transition(.opacity)

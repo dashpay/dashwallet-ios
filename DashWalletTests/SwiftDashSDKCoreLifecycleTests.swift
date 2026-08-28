@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 private enum CoreLifecycleTestError: Error {
     case start
@@ -76,6 +76,47 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             "first-stop", "first-start",
             "second-stop", "second-start",
         ])
+    }
+
+    /// The value-returning variant is one link of the same serial chain:
+    /// its result comes back to the caller, its error propagates, and ops
+    /// enqueued around it stay strictly ordered.
+    func testEnqueueAwaitableReturnsValueThrowsAndKeepsChainOrder() async throws {
+        let queue = SerialAsyncLifecycleQueue()
+        var events: [String] = []
+
+        queue.enqueue { events.append("before") }
+        let value = try await queue.enqueueAwaitable { () async throws -> Int in
+            events.append("awaitable")
+            return 41
+        }
+        queue.enqueue { events.append("after") }
+
+        XCTAssertEqual(value, 41)
+        XCTAssertEqual(events, ["before", "awaitable"])
+
+        do {
+            _ = try await queue.enqueueAwaitable { () async throws -> Int in
+                events.append("throwing")
+                throw CoreLifecycleTestError.start
+            }
+            XCTFail("Expected the enqueued error to propagate")
+        } catch CoreLifecycleTestError.start {
+            // Expected — and the chain must survive a thrown link.
+        }
+
+        _ = try await queue.enqueueAwaitable { () async throws -> Int in
+            events.append("tail")
+            return 0
+        }
+        XCTAssertEqual(events, ["before", "awaitable", "after", "throwing", "tail"])
+    }
+
+    func testStallMonitorClassifiesLatenciesAroundTheMicrohangFloor() {
+        XCTAssertNil(MainThreadStallMonitor.stallMilliseconds(forLatency: 0.0001))
+        XCTAssertNil(MainThreadStallMonitor.stallMilliseconds(forLatency: 0.249))
+        XCTAssertEqual(MainThreadStallMonitor.stallMilliseconds(forLatency: 0.25), 250)
+        XCTAssertEqual(MainThreadStallMonitor.stallMilliseconds(forLatency: 1.512), 1512)
     }
 
     func testProcessCacheReusesValuesPerNetworkAndSeparatesNetworks() {
@@ -312,6 +353,81 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
 
     func testPlatformActivityUnitMigrationKeepsPrereleaseVersion() {
         XCTAssertEqual(NormalizePlatformAddressActivityUnits().version, 20260727140000)
+    }
+
+    func testPlatformActivityInitialBaselineIncludesZeroBalanceAddresses() {
+        let balances = PlatformAddressActivityUnitPolicy.initialBaselineBalances(addresses: [
+            DerivedPlatformAddress(
+                address: "tdash1zero",
+                accountIndex: 0,
+                addressIndex: 0,
+                isUsed: false,
+                balance: 0),
+            DerivedPlatformAddress(
+                address: "tdash1funded",
+                accountIndex: 0,
+                addressIndex: 1,
+                isUsed: true,
+                balance: 5_000),
+        ])
+
+        XCTAssertEqual(balances["tdash1zero"], 0)
+        XCTAssertEqual(balances["tdash1funded"], 5)
+    }
+
+    func testReceiveFilterAcceptsOnlySDKClassifiedExternalReceives() {
+        XCTAssertTrue(ReceivedAtAddressTransactionFilter.matches(
+            direction: .received,
+            ownOutputAddresses: ["yReceive"],
+            address: "yReceive"))
+        XCTAssertFalse(ReceivedAtAddressTransactionFilter.matches(
+            direction: .moved,
+            ownOutputAddresses: ["yReceive"],
+            address: "yReceive"))
+        XCTAssertFalse(ReceivedAtAddressTransactionFilter.matches(
+            direction: .received,
+            ownOutputAddresses: ["yDifferent"],
+            address: "yReceive"))
+    }
+
+    func testReceiveCoreContextMappingAndStatusNeverRegresses() {
+        XCTAssertEqual(ReceiveReceiptPolicy.coreStatus(context: 0), .mempool)
+        XCTAssertEqual(ReceiveReceiptPolicy.coreStatus(context: 1), .instantSend)
+        XCTAssertEqual(ReceiveReceiptPolicy.coreStatus(context: 2), .inBlock)
+        XCTAssertEqual(ReceiveReceiptPolicy.coreStatus(context: 3), .chainLocked)
+        XCTAssertNil(ReceiveReceiptPolicy.coreStatus(context: 4))
+        XCTAssertEqual(
+            ReceiveReceiptPolicy.strongestStatus(
+                current: .inBlock,
+                observed: .mempool),
+            .inBlock)
+    }
+
+    func testReceiveShieldedCooldownSkipIsNotProjected() {
+        XCTAssertFalse(ReceiveReceiptPolicy.shouldProjectShieldedResult(
+            success: true,
+            cooldownSkip: true))
+        XCTAssertFalse(ReceiveReceiptPolicy.shouldProjectShieldedResult(
+            success: false,
+            cooldownSkip: false))
+        XCTAssertTrue(ReceiveReceiptPolicy.shouldProjectShieldedResult(
+            success: true,
+            cooldownSkip: false))
+    }
+
+    func testAttendedPlatformRefreshRequiresRunningAvailableAccount() {
+        XCTAssertFalse(ReceiveReceiptPolicy.canRefreshPlatform(
+            isRunning: false,
+            availability: .available))
+        XCTAssertFalse(ReceiveReceiptPolicy.canRefreshPlatform(
+            isRunning: true,
+            availability: .unknown))
+        XCTAssertFalse(ReceiveReceiptPolicy.canRefreshPlatform(
+            isRunning: true,
+            availability: .unavailable))
+        XCTAssertTrue(ReceiveReceiptPolicy.canRefreshPlatform(
+            isRunning: true,
+            availability: .available))
     }
 
     func testCoreToShieldedPoolFeeDuffsRoundsUpToCoverTheCreditFee() {

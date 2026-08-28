@@ -112,6 +112,7 @@ struct GiftCardDetailsView: View {
             isLoadingCardDetails: viewModel.uiState.isLoadingCardDetails,
             hasBeenPollingForLongTime: viewModel.uiState.hasBeenPollingForLongTime,
             loadingError: viewModel.uiState.loadingError,
+            onRetryLoading: viewModel.uiState.canRetryLoading ? { viewModel.retryLoadingCardDetails() } : nil,
             onOpenClaimLink: openClaimLink,
             onCopy: copyToPasteboard
         )

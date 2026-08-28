@@ -104,9 +104,14 @@ final class EvonodeEpochBlocksMonitor: ObservableObject {
     static func activeEvonodeProTxHashes() -> Set<Data> {
         guard let manager = SwiftDashSDKHost.shared.manager,
               let walletId = SwiftDashSDKHost.shared.wallet?.walletId else { return [] }
-        return Set(manager.masternodes(for: walletId)
-            .filter { $0.isEvonode && MasternodeStatus(rawValue: $0.status) != .retired }
-            .map(\.proTxHash))
+        let stillListed: (PlatformMasternode) -> Bool = {
+            $0.isEvonode && MasternodeStatus(rawValue: $0.status) != .retired
+        }
+        // Wallet evonodes plus the user's tracked ones — the epoch-blocks
+        // range scan is privacy-preserving either way (it never names the
+        // nodes), so tracked evonodes ride the same tally.
+        return Set(manager.masternodes(for: walletId).filter(stillListed).map(\.proTxHash))
+            .union(manager.trackedMasternodes().filter(stillListed).map(\.proTxHash))
     }
 
     // MARK: Triggers

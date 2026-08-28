@@ -16,6 +16,8 @@
 //
 
 import Foundation
+import SwiftUI
+import UIKit
 
 // MARK: - BackupInfoItem
 
@@ -27,15 +29,23 @@ private enum BackupInfoItem {
 extension BackupInfoItem {
     var title: String {
         switch self {
-        case .notStoredByDash: return "Dash Core Group does NOT store this recovery phrase"
-        case .unableToRestore: return "You will NOT be able to restore the wallet without a recovery phrase"
+        case .notStoredByDash:
+            return NSLocalizedString("Dash Core Group does NOT store this recovery phrase",
+                                     comment: "Recovery phrase backup: security warning title — Dash Core Group does not store the phrase")
+        case .unableToRestore:
+            return NSLocalizedString("You will NOT be able to restore the wallet without a recovery phrase",
+                                     comment: "Recovery phrase backup: security warning title — the phrase is required to restore the wallet")
         }
     }
 
     var description: String {
         switch self {
-        case .notStoredByDash: return "Anyone that has your recovery phrase can access your funds."
-        case .unableToRestore: return "Write it in a safe place and don’t show it to anyone."
+        case .notStoredByDash:
+            return NSLocalizedString("Anyone that has your recovery phrase can access your funds.",
+                                     comment: "Recovery phrase backup: security warning body — anyone with the phrase can spend the funds")
+        case .unableToRestore:
+            return NSLocalizedString("Write it in a safe place and don’t show it to anyone.",
+                                     comment: "Recovery phrase backup: security warning body — keep the phrase written down and private")
         }
     }
 
@@ -79,6 +89,16 @@ final class BackupInfoViewController: BaseViewController {
     private var closeButton: UIBarButtonItem!
     private var seedPhraseModel: DWPreviewSeedPhraseModel!
 
+    /// `true` when this screen is the onboarding create-wallet step and no
+    /// wallet exists yet — i.e. it will generate the phrase and create the
+    /// wallet (lazily, in `createNewWalletIfNeeded`). `.setup` is also used
+    /// for the "back up existing wallet" entry points, where it's `false`.
+    private var createsNewWallet = false
+    /// Picker state (selection + locked-after-creation), observed by the hosted
+    /// SwiftUI picker; `selection` is read when the wallet is created.
+    private let phraseLengthModel = RecoveryPhraseLengthPickerModel()
+    private var phraseLengthPickerHost: UIHostingController<RecoveryPhraseLengthPickerHost>?
+
     @objc
     public weak var delegate: BackupInfoViewControllerDelegate?
 
@@ -118,6 +138,8 @@ final class BackupInfoViewController: BaseViewController {
 
     @IBAction
     func skipButtonAction() {
+        // Skipping the backup must still leave the user with a wallet.
+        createNewWalletIfNeeded()
         delegate?.secureWalletRoutineDidCancel(self)
     }
 
@@ -126,6 +148,7 @@ final class BackupInfoViewController: BaseViewController {
         let authManager = AuthenticationService.shared
         
         if type == .setup && authManager.didAuthenticate {
+            createNewWalletIfNeeded()
             showSeedPhraseViewController()
         } else {
             authManager.authenticate(withPrompt: nil,
@@ -143,7 +166,8 @@ final class BackupInfoViewController: BaseViewController {
                     self.seedPhraseModel = DWPreviewSeedPhraseModel()
                     self.seedPhraseModel.getOrCreateNewWallet()
                 }
-                
+
+                self.createNewWalletIfNeeded()
                 self.showSeedPhraseViewController()
             }
         }
@@ -153,9 +177,11 @@ final class BackupInfoViewController: BaseViewController {
         super.viewDidLoad()
 
         if type == .setup {
-            // Create wallet entry point
+            // Create-wallet entry point. The wallet itself is created lazily —
+            // on "Show Recovery Phrase" or "Skip" — so the user can still pick
+            // the phrase length on this screen first.
             seedPhraseModel = DWPreviewSeedPhraseModel()
-            seedPhraseModel.getOrCreateNewWallet()
+            createsNewWallet = !WalletEnvironment.hasWallet
         }
 
 
@@ -181,6 +207,7 @@ extension BackupInfoViewController {
 
         show(item: .notStoredByDash)
         show(item: .unableToRestore)
+        installPhraseLengthPickerIfNeeded()
 
         skipButton.isHidden = isSkipButtonHidden
         reloadCloseButton()
@@ -195,6 +222,35 @@ extension BackupInfoViewController {
             showCloseButtonIfNeeded()
             bottomButtonStack.isHidden = false
         }
+    }
+
+    /// Onboarding only (`createsNewWallet`): lets the user pick 12 or 24 words
+    /// before the phrase is generated. Hosted SwiftUI at the top of the button
+    /// stack, driven by `phraseLengthModel`; the host view is collapsed once
+    /// the model is locked (wallet created).
+    private func installPhraseLengthPickerIfNeeded() {
+        guard createsNewWallet, phraseLengthPickerHost == nil else { return }
+
+        let host = UIHostingController(rootView: RecoveryPhraseLengthPickerHost(model: phraseLengthModel))
+        host.view.backgroundColor = .clear
+        host.sizingOptions = .intrinsicContentSize
+        addChild(host)
+        bottomButtonStack.insertArrangedSubview(host.view, at: 0)
+        bottomButtonStack.setCustomSpacing(20, after: host.view)
+        host.didMove(toParent: self)
+        phraseLengthPickerHost = host
+    }
+
+    /// Generates the recovery phrase at the chosen length and kicks off wallet
+    /// creation — once. `DWPreviewSeedPhraseModel` caches the phrase it
+    /// generated, so the preview screen shows exactly the words being
+    /// persisted even if this runs again.
+    private func createNewWalletIfNeeded() {
+        guard createsNewWallet else { return }
+        seedPhraseModel.newWalletWordCount = UInt(phraseLengthModel.selection.rawValue)
+        seedPhraseModel.getOrCreateNewWallet()
+        phraseLengthModel.isLocked = true
+        phraseLengthPickerHost?.view.isHidden = true
     }
 
     private func showSeedPhraseViewController() {

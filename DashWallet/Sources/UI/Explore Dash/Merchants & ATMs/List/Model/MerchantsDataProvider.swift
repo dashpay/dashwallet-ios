@@ -21,26 +21,52 @@ import Foundation
 // MARK: - AllMerchantsDataProvider
 
 class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
+    /// The result set ignores bounds entirely, and userPoint only picks each merchant's
+    /// representative closest location — movement below this threshold can't meaningfully
+    /// change the outcome, so it isn't worth a full-catalog refetch.
+    private static let significantMoveDistance: CLLocationDistance = 500
+
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                         with filters: PointOfUseListFilters?,
                         completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        // Guarding on !items.isEmpty (like the sibling providers) keeps the cache honest:
+        // callers that invalidate by emptying `items` force a refetch, and an empty
+        // result is never sticky.
+        if lastQuery == query && !items.isEmpty && lastFilters == filters &&
+            !Self.movedSignificantly(from: lastUserPoint, to: userPoint) {
+            completion(.success(items))
+            return
+        }
+
         lastQuery = query
         lastUserPoint = userPoint
         lastBounds = bounds
         lastFilters = filters
 
-        // ALL TAB: Never filter by bounds or location - show ALL merchants regardless of location
-        // Don't pass userPoint to avoid the in-memory grouping path (which filters out online merchants)
-        fetch(by: query, in: nil, userPoint: nil, with: filters, offset: 0) { [weak self] result in
+        // ALL TAB: Never filter by bounds - show ALL merchants regardless of location.
+        // userPoint is still passed so each merchant is represented by its closest location.
+        fetch(by: query, in: nil, userPoint: userPoint, with: filters, offset: 0) { [weak self] result in
             self?.handle(result: result, completion: completion)
         }
     }
 
+    private static func movedSignificantly(from old: CLLocationCoordinate2D?, to new: CLLocationCoordinate2D?) -> Bool {
+        switch (old, new) {
+        case (nil, nil):
+            return false
+        case (nil, .some), (.some, nil):
+            return true
+        case (.some(let old), .some(let new)):
+            return CLLocation(latitude: old.latitude, longitude: old.longitude)
+                .distance(from: CLLocation(latitude: new.latitude, longitude: new.longitude)) > significantMoveDistance
+        }
+    }
+
     override func nextPage(completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
-        // ALL TAB: Never filter by bounds or location - show ALL merchants
-        // Don't pass userPoint to avoid the in-memory grouping path
-        fetch(by: lastQuery, in: nil, userPoint: nil, with: lastFilters, offset: nextOffset) { [weak self] result in
-            self?.handle(result: result, completion: completion)
+        // ALL TAB: Never filter by bounds - show ALL merchants regardless of location.
+        // userPoint is still passed so each merchant is represented by its closest location.
+        fetch(by: lastQuery, in: nil, userPoint: lastUserPoint, with: lastFilters, offset: nextOffset) { [weak self] result in
+            self?.handle(result: result, appending: true, completion: completion)
         }
     }
 
@@ -62,43 +88,24 @@ class NearbyMerchantsDataProvider: PointOfUseDataProvider {
                         with filters: PointOfUseListFilters?,
                         completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         guard let bounds, let userLocation = userPoint, DWLocationManager.shared.isAuthorized else {
-            print("🔍 NEARBY: No bounds/location/auth - returning empty")
             items = []
             currentPage = nil
             completion(.success(items))
             return
         }
 
-        print("🔍 NEARBY: Checking cache...")
-        print("🔍 NEARBY: lastBounds == bounds? \(String(describing: lastBounds == bounds))")
-        print("🔍 NEARBY: lastQuery == query? \(lastQuery == query)")
-        print("🔍 NEARBY: !items.isEmpty? \(!items.isEmpty)")
-        print("🔍 NEARBY: lastFilters == filters? \(String(describing: lastFilters == filters))")
 
         if lastBounds == bounds && lastQuery == query && !items.isEmpty && lastFilters == filters {
-            print("🔍 NEARBY: Cache hit - returning \(items.count) cached items")
             completion(.success(items))
             return
         }
 
-        print("🔍 NEARBY: Cache miss - fetching new data")
-        print("🔍 NEARBY: Bounds - NE=(\(bounds.neCoordinate.latitude), \(bounds.neCoordinate.longitude)), SW=(\(bounds.swCoordinate.latitude), \(bounds.swCoordinate.longitude))")
-        print("🔍 NEARBY: User location = \(userLocation.latitude), \(userLocation.longitude)")
         lastQuery = query
         lastUserPoint = userPoint
         lastBounds = bounds
         lastFilters = filters
 
         fetch(by: query, in: bounds, userPoint: userLocation, with: filters, offset: 0) { [weak self] result in
-            switch result {
-            case .success(let page):
-                print("🔍 NEARBY: Fetch succeeded - got \(page.items.count) items")
-                if let firstItem = page.items.first {
-                    print("🔍 NEARBY: First merchant: \(firstItem.name)")
-                }
-            case .failure(let error):
-                print("🔍 NEARBY: Fetch failed - \(error)")
-            }
             self?.handle(result: result, completion: completion)
         }
     }

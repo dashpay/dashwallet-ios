@@ -228,7 +228,6 @@ struct HomeViewContent<Content: View>: View {
     @State private var shouldShowJoinDashPayInfo: Bool = false
     @State private var navigateToDashPayFlow: Bool = false
     @State private var navigateToClaimInvitation: Bool = false
-    @State private var giftCardTxId: Data? = nil
     @State private var pendingShieldedRecovery: Transaction? = nil
     /// Balance whose explainer sheet is up (tap on a breakdown row's body).
     @State private var balanceInfoNetwork: ChainNetwork? = nil
@@ -247,7 +246,13 @@ struct HomeViewContent<Content: View>: View {
     #endif
 
     @ObservedObject var viewModel: HomeViewModel
-    @ObservedObject private var balanceModel = BalanceModel()
+    // Owned here, so `@StateObject`: `BalanceModel.init` registers with
+    // `SyncingActivityMonitor.shared`, which holds its observers strongly, so
+    // an instance built by a struct re-init can never be released. `HomeView`
+    // is re-created far less often than the list header that hit this hard
+    // (see `SyncingHeaderView`), but four live models were still found in a
+    // single session.
+    @StateObject private var balanceModel = BalanceModel()
     #if DASHPAY
     @ObservedObject var joinDPViewModel: JoinDashPayViewModel
     #endif
@@ -490,7 +495,7 @@ struct HomeViewContent<Content: View>: View {
         .sheet(item: $selectedTxDataItem) { item in
             TransactionDetailsSheet(item: item)
         }
-        .sheet(item: $giftCardTxId) { txId in
+        .sheet(item: $viewModel.giftCardTxId) { txId in
             GiftCardDetailsSheet(txId: txId)
         }
         .sheet(item: $pendingShieldedRecovery) { tx in
@@ -685,7 +690,7 @@ struct HomeViewContent<Content: View>: View {
         }
 
         if txItem.transactionType == .reward {
-            return (.custom("transaction-mining", bundle: .dashUIKit), nil)
+            return (.custom(DashIcon.Transaction.mining.assetName, bundle: .dashUIKit), nil)
         }
 
         return (.custom(txItem.iconName), nil)
@@ -812,7 +817,11 @@ struct HomeViewContent<Content: View>: View {
                     AnyView(Image(uiImage: $0).resizable().scaledToFit().clipShape(Circle()))
                 } ?? contactAvatar ?? routeSymbols.map { transferRouteIcon($0.source) },
                 secondaryIcon: routeSymbols.map { DashIconSource.system($0.destination) }
-                    ?? icons.secondary?.dashIconSource,
+                    ?? icons.secondary?.dashIconSource
+                    // A contact avatar takes the icon slot, so the direction
+                    // moves into the corner badge instead of being dropped —
+                    // matching Android and the tx-detail header.
+                    ?? (contactAvatar == nil ? nil : icons.primary.dashIconSource),
                 title: metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
                 details: txItem.isPendingShieldedTransfer
@@ -848,7 +857,7 @@ struct HomeViewContent<Content: View>: View {
                     #endif
                 } else if GiftCardMetadataProvider.shared.availableMetadata[txItem.txHashData] != nil {
                     // Check if this is a gift card transaction
-                    self.giftCardTxId = txItem.txHashData
+                    viewModel.giftCardTxId = txItem.txHashData
                 } else {
                     self.selectedTxDataItem = txDataItem
                 }
@@ -946,6 +955,8 @@ struct GiftCardDetailsSheet: View {
                     cards: viewModel.uiState.cards,
                     isLoadingCardDetails: viewModel.uiState.isLoadingCardDetails,
                     hasBeenPollingForLongTime: viewModel.uiState.hasBeenPollingForLongTime,
+                    loadingError: viewModel.uiState.loadingError,
+                    onRetryLoading: viewModel.uiState.canRetryLoading ? { viewModel.retryLoadingCardDetails() } : nil,
                     onSelectCard: { index in
                         selectedCardIndex = index
                         showBackButton = true

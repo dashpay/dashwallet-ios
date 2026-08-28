@@ -30,7 +30,7 @@ struct OrderPreviewTableRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: labelSpacing) {
             Text(leading)
-                .font(Font.dash.subheadMedium)
+                .dashFont(.subheadMedium)
                 .foregroundColor(Color.dash.tertiaryText)
                 .fixedSize()
 
@@ -41,7 +41,7 @@ struct OrderPreviewTableRow: View {
                     Text(secondary)
                 }
             }
-            .font(Font.dash.subhead)
+            .dashFont(.subhead)
             .foregroundColor(Color.dash.primaryText)
             .multilineTextAlignment(.trailing)
             .frame(maxWidth: .infinity, alignment: .trailing)

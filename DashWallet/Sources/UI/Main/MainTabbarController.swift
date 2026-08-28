@@ -289,6 +289,18 @@ extension MainTabbarController {
     /// wallet's tab set (the +2 shift `reconfigureDashPayTabsPreservingSelection`
     /// applies assumes tabs were added, which doesn't hold on removal).
     private func reconfigureDashPayTabsForActiveWalletChange() {
+        // A successful full wipe posts the wallet-removed change while the
+        // recover/reset flow that initiated it is still awaiting the wiper's
+        // barrier inside this tab stack. Rebuilding here would deallocate
+        // that flow — its completion clears the overlay and transitions to
+        // onboarding — stranding the app in a walletless main UI. Defer
+        // rather than drop: a successful wipe replaces this stack with
+        // onboarding anyway, but a FAILED wipe stays in the main UI and
+        // still needs the reconfiguration once the flow settles.
+        if case .wiping = WalletLifecycleTransitionState.shared.phase {
+            pendingDashPayTabReconfiguration = true
+            return
+        }
         if containsCreateUsernameController(in: self) {
             pendingDashPayTabReconfiguration = true
             return

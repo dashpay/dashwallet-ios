@@ -15,6 +15,7 @@ struct PaymentsLandingScreen: View {
     var onCopyAddress: () -> Void
     var onShareAddress: () -> Void
     var onSpecifyAmount: () -> Void
+    var onViewTransaction: (Data) -> Void
     var onScanQR: () -> Void
     /// The Internal tab's embedded transfer form. The full landing shows it
     /// un-pinned (free From + To pickers); the balance-row receive/send
@@ -56,7 +57,9 @@ struct PaymentsLandingScreen: View {
             switch viewModel.activeTab {
             case .receive:
                 receiveContent
-                Spacer()
+                if viewModel.receipt == nil {
+                    Spacer()
+                }
             case .internalTransfer:
                 if let sendFrom = transferSendFrom {
                     // Send sheet: the From card is pinned by the tapped
@@ -95,6 +98,8 @@ struct PaymentsLandingScreen: View {
         }
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
+        .animation(.spring(response: 0.45, dampingFraction: 0.82), value: viewModel.receipt?.id)
+        .sensoryFeedback(.success, trigger: viewModel.receipt?.id)
     }
 
     // MARK: - Header
@@ -170,20 +175,104 @@ struct PaymentsLandingScreen: View {
             ChainNetworkToggle(selection: $viewModel.network, options: ChainNetwork.allCases)
                 .padding(.horizontal, 20)
 
-            qrCard
+            if let receipt = viewModel.receipt {
+                receiptCard(receipt)
+                    .transition(.scale(scale: 0.94).combined(with: .opacity))
+            } else {
+                qrCard
 
-            HStack(spacing: 12) {
-                Button(action: onShareAddress) {
-                    actionPill(title: NSLocalizedString("Share address", comment: ""))
-                }
-                .disabled(viewModel.currentAddress == nil)
+                HStack(spacing: 12) {
+                    Button(action: onShareAddress) {
+                        actionPill(title: NSLocalizedString("Share address", comment: ""))
+                    }
+                    .disabled(viewModel.currentAddress == nil)
 
-                Button(action: onSpecifyAmount) {
-                    actionPill(title: NSLocalizedString("Specify amount", comment: ""))
+                    Button(action: onSpecifyAmount) {
+                        actionPill(title: NSLocalizedString("Specify amount", comment: ""))
+                    }
+                    .disabled(viewModel.currentAddress == nil || viewModel.network != .core)
                 }
-                .disabled(viewModel.currentAddress == nil || viewModel.network != .core)
+                .padding(.horizontal, 20)
+
+                if viewModel.isWatchingForReceipt {
+                    HStack(spacing: 8) {
+                        SwiftUI.ProgressView()
+                            .scaleEffect(0.8)
+                        Text(NSLocalizedString("Watching for a payment…", comment: "Receive screen activity"))
+                            .font(.caption)
+                            .foregroundColor(.dash.secondaryText)
+                    }
+                    .transition(.opacity)
+                }
             }
+        }
+    }
+
+    private func receiptCard(_ receipt: ReceiveReceipt) -> some View {
+        VStack(spacing: 16) {
+            PaymentSuccessHeader(
+                title: NSLocalizedString("Received", comment: "Receive success title"),
+                amountDuffs: Int64(clamping: receipt.amountDuffs),
+                fiatText: CurrencyExchanger.shared.fiatAmountString(
+                    for: receipt.amountDuffs.dashAmount))
+
+            VStack(spacing: 8) {
+                receiptInfoRow(
+                    title: NSLocalizedString("Balance", comment: "Receive receipt rail"),
+                    value: receipt.rail.balanceName)
+                receiptInfoRow(
+                    title: NSLocalizedString("Status", comment: "Receive receipt status"),
+                    value: receipt.statusTitle)
+                receiptInfoRow(
+                    title: NSLocalizedString("Time", comment: "Receive receipt time"),
+                    value: receipt.receivedAt.formatted(date: .omitted, time: .shortened))
+                if let memo = receipt.memo, !memo.isEmpty {
+                    receiptInfoRow(
+                        title: NSLocalizedString("Memo", comment: "Receive receipt memo"),
+                        value: memo)
+                }
+            }
+            .padding(14)
+            .background(Color.dash.secondaryBackground)
+            .cornerRadius(14)
             .padding(.horizontal, 20)
+
+            if viewModel.canViewTransaction, let transactionId = receipt.transactionId {
+                Button {
+                    onViewTransaction(transactionId)
+                } label: {
+                    Text(NSLocalizedString("View transaction", comment: "Receive receipt action"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.dash.blue)
+                }
+            }
+
+            Spacer(minLength: 12)
+
+            ButtonsGroup(
+                orientation: .horizontal,
+                size: .large,
+                positiveButtonText: NSLocalizedString("Done", comment: "Receive receipt action"),
+                positiveButtonAction: onClose,
+                negativeButtonText: NSLocalizedString("Receive another", comment: "Receive receipt action"),
+                negativeButtonAction: viewModel.receiveAnother)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func receiptInfoRow(title: String, value: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.dash.secondaryText)
+            Spacer()
+            Text(value)
+                .font(.caption.weight(.medium))
+                .foregroundColor(.dash.primaryText)
+                .multilineTextAlignment(.trailing)
+                .lineLimit(2)
         }
     }
 

@@ -9,6 +9,9 @@
 /* CrowdNode */
 " Terms of Use " = " Terms of Use ";
 
+/* Username marketplace: listing success — name, then price */
+"%1$@ listed for %2$@ DASH" = "%1$@ disenaraikan untuk dijual pada %2$@ DASH";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -20,6 +23,12 @@
 
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "%@ tidak dapat ditemui pada rangkaian Dash untuk menghantar permintaan kenalan.";
+
+/* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
+"%@ couldn't be verified on the Dash network. The QR code may be outdated." = "%@ tidak dapat disahkan di rangkaian Dash. Kod QR mungkin sudah lapuk.";
+
+/* Username marketplace: contested request cost value — the vote-resolution fund amount */
+"%@ DASH + network fee" = "%@ DASH + yuran rangkaian";
 
 /* Usernames */
 "%@ Dash available" = "%@ Dash tersedia";
@@ -42,6 +51,9 @@
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@ has sent you a contact request";
 
+/* Username marketplace: delist success */
+"%@ is no longer for sale" = "%@ tidak lagi dijual";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
@@ -51,8 +63,17 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
+/* Username marketplace: purchase success */
+"%@ is now yours" = "%@ kini milik anda";
+
+/* Username marketplace: registration success */
+"%@ registered" = "%@ didaftarkan";
+
 /* Testnet faucet */
 "%@ tDash requested — it will arrive shortly" = "%@ tDash requested — it will arrive shortly";
+
+/* Username marketplace: transfer success */
+"%@ transferred" = "%@ dipindahkan";
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
@@ -171,6 +192,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Pengundian bagi nama ini sudah berjalan — permohonan anda akan menyertainya sebagai pencabar. Yuran pertandingan ditolak semasa anda menghantar dan tidak dikembalikan, walaupun anda tidak memenangi nama itu.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -182,6 +206,9 @@
 
 /* No comment provided by engineer. */
 "About me" = "About me";
+
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "Tentang baki akaun identiti";
 
 "Abstain" = "Berkecuali";
 
@@ -235,6 +262,9 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "Add a New Contact";
 
+/* Usernames */
+"Add a temporary username" = "Tambah nama pengguna sementara";
+
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
 
@@ -259,6 +289,9 @@
 /* Maya
    SwapKit */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+
+/* No comment provided by engineer. */
+"Advanced" = "Lanjutan";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Advanced Security";
@@ -315,6 +348,9 @@
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Amount in Dash";
 
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "Jumlah dalam DASH";
+
 /* No comment provided by engineer. */
 "Amount received" = "Amount received";
 
@@ -348,8 +384,14 @@
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved";
 
+/* Recovery phrase backup: security warning body — anyone with the phrase can spend the funds */
+"Anyone that has your recovery phrase can access your funds." = "Sesiapa yang memiliki frasa pemulihan anda boleh mengakses dana anda.";
+
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Sesiapa yang mengetahui sesuatu alamat boleh melihat sejarahnya";
+
+/* Username marketplace: set price sheet body */
+"Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance." = "Sesiapa sahaja boleh membeli nama ini pada harga yang tepat ini. Hasilnya masuk sebagai kredit ke baki identiti anda.";
 
 /* AboutDash */
 "App version" = "App version";
@@ -430,8 +472,17 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "Autohide Balance";
 
+/* DashPay */
+"Available after sync finishes" = "Tersedia selepas penyegerakan selesai";
+
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
+
+/* Username marketplace: unregistered name row */
+"Available — register it on your identity" = "Tersedia — daftarkannya pada identiti anda";
+
+/* Username marketplace: unregistered contested-eligible name row */
+"Available — short names are decided by a network vote" = "Tersedia — nama pendek ditentukan melalui pengundian rangkaian";
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
@@ -525,6 +576,9 @@
 /* Voting */
 "Blocked '%@' username" = "Blocked '%@' username";
 
+/* Username marketplace: history — purchase with buyer, seller, price */
+"Bought by %1$@ from %2$@ for %3$@ DASH" = "Dibeli oleh %1$@ daripada %2$@ pada harga %3$@ DASH";
+
 /* Identities: this key only signs for one data contract */
 "Bound to contract" = "Terikat kepada kontrak";
 
@@ -573,6 +627,9 @@
 /* Swap */
 "Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
 
+/* Username marketplace: purchase button */
+"Buy for %@ DASH" = "Beli pada %@ DASH";
+
 /* DashSpend */
 "Buy gift card" = "Buy gift card";
 
@@ -581,6 +638,12 @@
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+
+/* Username marketplace: purchase confirmation title */
+"Buy “%@”?" = "Beli “%@”?";
+
+/* Username marketplace: Explore row subtitle */
+"Buy, sell and transfer DashPay usernames" = "Beli, jual dan pindahkan nama pengguna DashPay";
 
 /* Buy/Sell */
 "Buy/Sell" = "Buy/Sell";
@@ -631,6 +694,9 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
+
+/* Username marketplace */
+"Change Price" = "Tukar Harga";
 
 /* TimeSkew */
 "Check date & time settings" = "Check date & time settings";
@@ -713,6 +779,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "Akan datang";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "Selesaikan Pemindahan";
+
 /* Shielded transfer status */
 "Completed" = "Selesai";
 
@@ -782,6 +851,18 @@
 
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "Permintaan kenalan dihantar kepada %@";
+
+/* Usernames */
+"Continue without a temporary username" = "Teruskan tanpa nama pengguna sementara";
+
+/* Identity top-up sheet — body */
+"Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Tukarkan Dash kepada kredit identiti untuk membayar tindakan Platform seperti permintaan kenalan dan kemas kini profil.";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "Pemindahan tidak dapat diselesaikan";
+
+/* Identity top-up sheet — free amount chip */
+"Custom" = "Tersuai";
 
 /* No comment provided by engineer. */
 "Contact Requests" = "Permintaan Kenalan";
@@ -1005,6 +1086,9 @@
 /* Uphold Entry Point */
 "Dash balance on Uphold" = "Dash balance on Uphold";
 
+/* Recovery phrase backup: security warning title — Dash Core Group does not store the phrase */
+"Dash Core Group does NOT store this recovery phrase" = "Dash Core Group TIDAK menyimpan frasa pemulihan ini";
+
 /* Dash DEX Portal
    Translate it as short as possible! (24 symbols max) */
 "Dash DEX" = "Dash DEX";
@@ -1042,6 +1126,27 @@
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "DashPay didayakan";
 
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "Masukkan sekurang-kurangnya %@ DASH";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "Anggaran yuran";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "Yuran ditolak daripada jumlahnya; daripada Shielded, baki kecil mungkin tertinggal dalam baki Platform anda.";
+
+/* Username marketplace: search segment */
+"Find Names" = "Cari Nama";
+
+/* Username marketplace: listed badge */
+"For sale" = "Untuk dijual";
+
+/* Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app */
+"For sale by an independent user" = "Dijual oleh pengguna bebas";
+
+/* Identity top-up sheet — linkability warning for transparent-side sources */
+"Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Membiayai daripada baki telus akan mengaitkan syiling itu secara terbuka dengan identiti anda pada rantaian Dash. Demi privasi, bayarlah daripada baki Shielded anda.";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "DashPay Invitation";
 
@@ -1062,6 +1167,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "Date";
+
+/* History group header for restored shielded operations whose original date is not recoverable */
+"Date unknown" = "Tarikh tidak diketahui";
 
 /* Voting */
 "Date: New to old" = "Date: New to old";
@@ -1085,6 +1193,9 @@
 
 /* No comment provided by engineer. */
 "Delete Wallet?" = "Delete Wallet?";
+
+/* SPV diagnostics */
+"Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network." = "Memadamkan transaksi belum disahkan bagi dompet ini daripada peranti ini sahaja dan membebaskan syiling yang cuba dibelanjakannya. Imbasan semula penapis akan memulihkan mana-mana transaksi yang memang ada pada blockchain. Tiada apa-apa dihantar ke rangkaian.";
 
 /* Location Service Status */
 "Denied" = "Denied";
@@ -1116,6 +1227,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu." = "KESELAMATAN PERANTI TERJEJAS\nMana-mana aplikasi 'jailbreak' boleh mencapai data keychain aplikasi lain (dan mencuri Dash anda). Pindahkan dana anda ke dompet pada peranti yang selamat, kemudian tetapkan semula dompet ini melalui “Tetapkan Semula Dompet” dalam menu Keselamatan.";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.";
@@ -1169,6 +1283,27 @@
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
 "DPNS Names" = "DPNS Names";
+
+/* SPV diagnostics */
+"Drop & rescan" = "Buang & imbas semula";
+
+/* SPV diagnostics */
+"Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network." = "Membuang daripada peranti ini transaksi dompet ini yang masih menunggu rangkaian (tidak pernah dikunci atau dilombong), menjadikan syiling yang cuba dibelanjakannya tersedia semula, dan mengimbas semula penapis terkini. Transaksi yang dibuang tetapi memang ada pada blockchain akan kembali dengan sendirinya semasa imbasan semula. Tiada apa-apa dihantar ke rangkaian.";
+
+/* SPV diagnostics */
+"Drop Unconfirmed & Rescan" = "Buang Yang Belum Disahkan & Imbas Semula";
+
+/* SPV diagnostics */
+"Drop unconfirmed transactions?" = "Buang transaksi yang belum disahkan?";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row." = "%d transaksi belum disahkan dibuang — penapis sedang diimbas semula, perhatikan baris Penapis.";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above." = "%d transaksi belum disahkan dibuang, tetapi imbasan semula penapis tidak dapat dimulakan — jalankan “Imbas Semula Penapis” di atas.";
+
+/* SPV diagnostics */
+"Dropping…" = "Membuang…";
 
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Due to CrowdNode’s terms of service users can withdraw no more than:";
@@ -1280,6 +1415,9 @@
 
 /* No comment provided by engineer. */
 "Enter your recovery phrase to reset your PIN" = "Enter your recovery phrase to reset your PIN";
+
+/* No comment provided by engineer. */
+"Enter your recovery phrase to set a new PIN" = "Masukkan frasa pemulihan anda untuk menetapkan PIN baharu";
 
 /* Voting */
 "Enter your voting key" = "Enter your voting key";
@@ -1665,6 +1803,42 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "Bagaimana ini dibandingkan dengan akaun Ethereum dari segi privasi?";
 
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "Baki Akaun Identiti";
+
+/* Username marketplace: section of contested-name requests awaiting the masternode vote */
+"In network vote" = "Dalam pengundian rangkaian";
+
+/* Username marketplace: search row for a contested label with an active vote by others */
+"In a network vote — you can join as a contender" = "Dalam pengundian rangkaian — anda boleh menyertainya sebagai pencabar";
+
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "Sementara itu anda boleh dihubungi di “%1$@”, yang kekal milik anda. Jika pengundian menganugerahkan “%2$@” kepada anda, anda boleh dihubungi melalui kedua-dua nama pengguna.";
+
+/* Username marketplace: search row for a label a past vote locked */
+"Locked by a network vote — nobody can register it" = "Dikunci oleh pengundian rangkaian — tiada sesiapa boleh mendaftarkannya";
+
+/* Username marketplace: latest ownership change */
+"Last transferred" = "Pemindahan terakhir";
+
+/* Username marketplace: confirm listing button */
+"List For Sale" = "Senaraikan Untuk Dijual";
+
+/* Username marketplace: own listed name */
+"Listed by you" = "Disenaraikan oleh anda";
+
+/* Username marketplace: history — price set */
+"Listed for %@ DASH" = "Disenaraikan pada %@ DASH";
+
+/* Username marketplace: set price fee note */
+"Listing is a network transaction with a small fee, paid from your identity balance." = "Penyenaraian ialah transaksi rangkaian dengan yuran kecil, dibayar daripada baki identiti anda.";
+
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "Identiti saya";
+
+/* Username marketplace: owned names segment */
+"My Names" = "Nama Saya";
+
 /* DashPay FAQ */
 "How private is DashPay?" = "Sejauh mana DashPay bersifat peribadi?";
 
@@ -2027,6 +2201,9 @@
 /* CrowdNode */
 "Leaving the pool" = "Leaving the pool";
 
+/* DashPay Contacts: caption under the user's own QR code */
+"Let another Dash Wallet user scan this code to add you as a contact." = "Biarkan pengguna Dash Wallet lain mengimbas kod ini untuk menambah anda sebagai kenalan.";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Let me know when it’s done";
 
@@ -2099,6 +2276,51 @@
 "Lock" = "Kunci";
 
 "Lock the name" = "Kunci nama itu";
+
+/* Username marketplace: contest voting deadline row */
+"Vote ends" = "Pengundian tamat";
+
+/* Username marketplace: until when other identities can join the contest */
+"New contenders" = "Pencabar baharu";
+
+/* Username marketplace: join deadline still open — value of the New contenders row */
+"can join until %@" = "boleh menyertai sehingga %@";
+
+/* Username marketplace: the contest's join window has passed — value of the New contenders row */
+"joining closed" = "penyertaan ditutup";
+
+/* Username marketplace: masternode vote tally for one contest row */
+"%d votes" = "%d undi";
+
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "12 perkataan ialah piawainya. 24 perkataan mengambil masa lebih lama untuk dicatat dan dipulihkan, tetapi jauh lebih sukar dipecahkan oleh sistem komputer termaju pada masa depan yang jauh.";
+
+/* Username marketplace: unresolvable transfer recipient */
+"No identity owns that username." = "Tiada identiti memiliki nama pengguna itu.";
+
+/* Username marketplace: names that were sold or transferred away */
+"No longer yours" = "Bukan lagi milik anda";
+
+/* Identity top-up sheet — missing unshield destination */
+"No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "Belum ada alamat penerimaan Platform yang tersedia — tunggu penyegerakan Platform selesai dan cuba lagi.";
+
+/* Username marketplace: empty owned list */
+"No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "Belum ada nama pengguna pada identiti ini. Cari satu untuk dibeli atau didaftarkan dalam tab “Cari Nama”.";
+
+/* Identity top-up sheet — insufficient funding source */
+"Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Dana tidak mencukupi dalam baki ini: %@ DASH diperlukan, %@ DASH tersedia.";
+
+/* Username marketplace: insufficient balance hint */
+"Not enough identity credits for this purchase — top up from My Profile first." = "Kredit identiti tidak mencukupi untuk pembelian ini — tambah nilai dahulu daripada “Profil Saya”.";
+
+/* Username marketplace: insufficient balance hint for a contested request */
+"Not enough identity credits for this request — top up from My Profile first." = "Kredit identiti tidak mencukupi untuk permohonan ini — tambah nilai dahulu daripada “Profil Saya”.";
+
+/* Username marketplace: someone else's unlisted name */
+"Not for sale" = "Tidak dijual";
+
+/* Username marketplace: own unlisted name */
+"Not listed for sale" = "Tidak disenaraikan untuk dijual";
 
 "Lock “%@” so nobody gets it" = "Kunci “%@” supaya tiada sesiapa mendapatnya";
 
@@ -2342,11 +2564,92 @@
 /* SDK identity profile sheet — title */
 "My Profile" = "My Profile";
 
+/* DashPay Contacts: shows the user's own contact QR code */
+"My QR" = "QR Saya";
+
 /* No comment provided by engineer. */
 "Name" = "Name";
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Perkhidmatan nama seperti Unstoppable Domains memetakan nama yang boleh dibaca kepada satu alamat awam tetap pada rantaian. Sesiapa sahaja boleh menyelesaikan nama itu dan melihat setiap pembayaran yang pernah dibuat kepadanya. Nama pengguna DashPay tidak pernah menyelesaikan secara awam kepada alamat pembayaran — alamat hanya didedahkan di dalam pertukaran tersulit dengan setiap kenalan, jadi nama dan wang anda kekal tidak berkait bagi pemerhati luar.";
+
+/* Username marketplace: contested request line — voting deadline */
+"Network vote ends %@" = "Pengundian rangkaian tamat pada %@";
+
+/* Username marketplace: activity overlay while the purchase transition runs */
+"Completing your purchase…" = "Melengkapkan pembelian anda…";
+
+/* Usernames */
+"Register username" = "Daftarkan nama pengguna";
+
+/* Username marketplace: activity overlay while the delist transition runs */
+"Removing the listing…" = "Mengeluarkan penyenaraian…";
+
+/* Username marketplace: activity overlay while the set-price transition runs */
+"Listing for sale…" = "Menyenaraikan untuk dijual…";
+
+/* Usernames */
+"Submit both usernames" = "Hantar kedua-dua nama pengguna";
+
+/* Usernames */
+"Temporary username" = "Nama pengguna sementara";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "Nama pengguna sementara itu sendiri tidak boleh memerlukan pengundian.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Nama ini memerlukan pengundian masternode. Yuran pertandingan ditolak semasa anda menghantar dan tidak dikembalikan, walaupun anda tidak memenangi nama itu.";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "Nama pengguna ini juga akan memerlukan pengundian — cuba tambah satu digit antara 2 dan 9";
+
+/* Username marketplace: activity overlay while the transfer transition runs */
+"Transferring the username…" = "Memindahkan nama pengguna…";
+
+/* Username marketplace: activity overlay while the registration transition runs */
+"Registering the username…" = "Mendaftarkan nama pengguna…";
+
+/* Username marketplace: activity overlay while the contested request transition runs */
+"Submitting your username request…" = "Menghantar permohonan nama pengguna anda…";
+
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "Layari";
+
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "Perubahan harga";
+
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "Pembelian";
+
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "Disenaraikan pada %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "Dijual pada %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "Dijual pada %1$@ DASH · %2$@ · %3$@ → %4$@";
+
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "Tidak dijual sekarang";
+
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "Tiada nama untuk dijual dalam aktiviti penyenaraian terkini. “Tunjukkan lagi” menjangkau lebih jauh ke belakang.";
+
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "Belum ada pembelian di rangkaian.";
+
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "Memuatkan aktiviti…";
+
+/* Username marketplace: load older browse activity */
+"Show more" = "Tunjukkan lagi";
+
+/* Username marketplace: contest tallies card title */
+"Network vote so far" = "Pengundian rangkaian setakat ini";
+
+/* Username marketplace: contest with zero masternode votes so far */
+"No votes cast yet" = "Belum ada undian dibuat";
 
 /* Swap route provider
    Swap route provider short */
@@ -2381,6 +2684,9 @@
 
 /* (List of) New (notifications) */
 "New" = "New";
+
+/* SPV diagnostics */
+"No unconfirmed transactions to drop." = "Tiada transaksi belum disahkan untuk dibuang.";
 
 /* CrowdNode */
 "New CrowdNode Account" = "New CrowdNode Account";
@@ -2563,6 +2869,15 @@
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "Pada Bitcoin tiada lapisan nama, jadi orang berkongsi dan menggunakan semula alamat secara terbuka — sebaik sahaja sesuatu alamat diketahui, segala yang pernah diterimanya boleh dikaitkan dengan pemiliknya. Dengan DashPay, nama pengguna anda adalah awam tetapi tidak pernah menunjuk kepada alamat pembayaran: alamat ditukar secara peribadi bagi setiap kenalan dan sentiasa berganti, jadi membayar melalui nama tidak mendedahkan ke mana wang anda pergi. Kedua-duanya rantaian telus, jadi analisis rantaian masih terpakai kepada syiling itu sendiri.";
 
+/* DashPay Contacts: search results from DPNS, not the local contact list */
+"On the Dash network" = "Di rangkaian Dash";
+
+/* Username marketplace */
+"Owned by you" = "Milik anda";
+
+/* Identity top-up sheet — funding source picker label */
+"Pay from" = "Bayar daripada";
+
 /* Identities */
 "On Network" = "Pada Rangkaian";
 
@@ -2731,6 +3046,9 @@
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Pembayaran adalah peribadi: alamat yang anda tukar dengan kenalan bergerak di dalam muatan tersulit yang hanya boleh dibaca oleh anda berdua, dan tidak pernah diterbitkan — jadi pembayaran anda tidak mudah dikaitkan dengan nama pengguna anda. Namun begitu, ia masih pembayaran biasa pada rantaian telus: analisis rantaian yang canggih mungkin membocorkan maklumat. Shielded DashPay (akan datang) akan menutup jurang itu. Permintaan kenalan itu sendiri kini TIDAK peribadi: sesiapa sahaja boleh melihat bahawa dua identiti berhubung. Permintaan kenalan peribadi ialah ciri yang akan datang. Nama pengguna dan profil anda juga awam pada Dash Platform.";
 
+/* Username marketplace: price placeholder */
+"Price in DASH" = "Harga dalam DASH";
+
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "Pembayaran disahkan dalam beberapa saat dengan InstantSend";
 
@@ -2788,6 +3106,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN is always required to make a payment";
+
+/* No comment provided by engineer. */
+"PIN Not Set" = "PIN Belum Ditetapkan";
 
 /* Dash Platform chain */
 "Platform" = "Platform";
@@ -2993,6 +3314,9 @@
 /* Identities: what a public key is used for */
 "Purpose" = "Tujuan";
 
+/* Username marketplace */
+"Put Up For Sale" = "Tawarkan Untuk Dijual";
+
 /* DashSpend */
 "Quantity" = "Quantity";
 
@@ -3028,6 +3352,96 @@
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Baca sahaja";
+
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "Siar semula";
+
+/* Delete a never-accepted transaction from local wallet state */
+"Remove if Not on Network" = "Buang jika tiada di rangkaian";
+
+/* Remove never-accepted transaction: confirmation title */
+"Remove this transaction?" = "Buang transaksi ini?";
+
+/* Remove never-accepted transaction: destructive confirm button */
+"Remove Transaction" = "Buang Transaksi";
+
+/* Username marketplace: transfer recipient placeholder */
+"Recipient username or identity ID" = "Nama pengguna atau ID identiti penerima";
+
+/* Identity top-up sheet — shielded source note */
+"Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Disyorkan: pemindahan dua langkah melalui alamat Platform anda sendiri memastikan identiti anda tidak terkait dengan syiling telus anda.";
+
+/* Username marketplace: register sheet title */
+"Register “%@”" = "Daftarkan “%@”";
+
+/* Username marketplace: registration date */
+"Registered" = "Berdaftar";
+
+/* Username marketplace */
+"Remove From Sale" = "Tarik Balik Daripada Jualan";
+
+/* Remove never-accepted transaction: progress */
+"Removing transaction…" = "Membuang transaksi…";
+
+/* Username marketplace: delist confirmation title */
+"Remove “%@” from sale?" = "Tarik balik “%@” daripada jualan?";
+
+/* Username marketplace: history — delist (transfer to self) */
+"Removed from sale" = "Ditarik balik daripada jualan";
+
+/* Username marketplace: delist confirmation body */
+"Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "Mengeluarkan penyenaraian ialah transaksi rangkaian dengan yuran kecil, dibayar daripada baki identiti anda. Nama itu kekal milik anda.";
+
+/* Remove never-accepted transaction: refused because the explorer found it */
+"Transaction is known to the network" = "Transaksi diketahui oleh rangkaian";
+
+/* Remove never-accepted transaction: refusal body */
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "Penjelajah blok melaporkan bahawa transaksi ini diketahui oleh rangkaian Dash. Ia mungkin masih menunggu dalam mempool atau sudah dimasukkan ke dalam blok, jadi ia tidak dibuang. Dompet akan mengemas kini pengesahannya secara automatik sebaik sahaja ia dimasukkan ke dalam blok yang disegerakkan.";
+
+/* Remove never-accepted transaction: success */
+"Transaction removed" = "Transaksi dibuang";
+
+/* Remove never-accepted transaction: removed but the recovery rescan did not arm */
+"Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "Transaksi dibuang — imbasan semula tidak dapat dimulakan, jalankan “Imbas Semula Penapis” dalam Status Penyegerakan Core";
+
+/* Remove never-accepted transaction: confirmation body */
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "Dompet memeriksa penjelajah blok terlebih dahulu. Transaksi yang diketahui rangkaian — sama ada menunggu dalam mempool atau sudah dimasukkan ke dalam blok — tidak akan sekali-kali dibuang. Jika transaksi tidak ditemui, ia dipadamkan daripada dompet ini pada peranti ini, dan syiling yang cuba dibelanjakannya menjadi tersedia semula. Dompet kemudian mengimbas semula blok terkini sebagai pemeriksaan keselamatan. Tiada apa-apa dihantar ke rangkaian.";
+
+/* Remove never-accepted transaction: failure title */
+"Couldn't remove the transaction" = "Transaksi tidak dapat dibuang";
+
+/* Remove never-accepted transaction: no local row */
+"This transaction is not in the local wallet." = "Transaksi ini tiada dalam dompet setempat.";
+
+/* Remove never-accepted transaction: local state says it's on-chain */
+"This transaction is confirmed and can't be removed." = "Transaksi ini telah disahkan dan tidak boleh dibuang.";
+
+/* Remove never-accepted transaction: explorer unreachable */
+"Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "Tidak dapat menghubungi penjelajah blok untuk mengesahkan bahawa transaksi tiada pada blockchain. Semak sambungan anda dan cuba lagi.";
+
+/* Username marketplace: contested request cost row */
+"Request cost" = "Kos permohonan";
+
+/* Username marketplace: contested request success */
+"Request for %@ submitted — masternodes now vote on it" = "Permohonan untuk %@ dihantar — masternode kini mengundi";
+
+/* Username marketplace: confirm contested request button */
+"Request Username" = "Mohon Nama Pengguna";
+
+/* Username marketplace: contested register sheet title */
+"Request “%@”" = "Mohon “%@”";
+
+/* Username marketplace: contested request not yet indexed by Platform */
+"Requested — waiting for the network vote" = "Dimohon — menunggu pengundian rangkaian";
+
+/* Username marketplace: search row for a contested label this identity already requested */
+"Requested by you — the network vote is in progress" = "Dimohon oleh anda — pengundian rangkaian sedang berjalan";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "Mencuba pemindahan semula…";
+
+/* Username marketplace: screen subtitle */
+"Search usernames, buy ones that are for sale, and sell or transfer your own." = "Cari nama pengguna, beli yang sedang dijual, dan jual atau pindahkan nama anda sendiri.";
 
 /* Usernames */
 "Ready around %@" = "Sedia sekitar %@";
@@ -3082,6 +3496,9 @@
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase length */
+"Recovery phrase length" = "Panjang frasa pemulihan";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -3195,6 +3612,9 @@
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
+
+/* No comment provided by engineer. */
+"Completion unknown" = "Penyiapan tidak diketahui";
 
 /* Location Service Status */
 "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "Dompet yang dipulihkan tidak selalu dapat memulihkan jenis operasi. Entri ini dibina semula daripada data nota pada rantaian.";
@@ -3322,6 +3742,9 @@
 /* Identities: DPP security level of a public key */
 "Security level" = "Tahap keselamatan";
 
+/* Username marketplace: transfer sheet body */
+"Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "Hantar nama ini kepada identiti lain secara percuma. Pemindahan juga mengeluarkan sebarang penyenaraian jualan. Ini tidak boleh dibatalkan — pemilik baharu perlu memindahkannya kembali.";
+
 /* DashSpend */
 "See card details" = "See card details";
 
@@ -3370,7 +3793,520 @@
 /* Coinbase */
 "Select the coin" = "Select the coin";
 
+/* Identities */
+"Select the username to display for this identity." = "Pilih nama pengguna yang akan dipaparkan bagi identiti ini.";
+
 "Selecting fewer nodes reveals less about which masternodes you run." = "Memilih lebih sedikit nod mendedahkan lebih sedikit tentang masternode yang anda kendalikan.";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "%ld dompet ditemui pada peranti ini";
+
+/* No comment provided by engineer. */
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "%ld dompet daripada pemasangan terdahulu disimpan pada peranti ini. “Padam Semua” mengeluarkan setiap dompet. Sandarkan setiap frasa pemulihan sebelum memadam.";
+
+/* No comment provided by engineer. */
+"Couldn’t Delete All Wallets" = "Tidak Dapat Memadam Semua Dompet";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Wallets" = "Tidak Dapat Membaca Dompet";
+
+/* No comment provided by engineer. */
+"Delete All" = "Padam Semua";
+
+/* No comment provided by engineer. */
+"Delete All Wallets?" = "Padam Semua Dompet?";
+
+/* No comment provided by engineer. */
+"Deleting All Wallets…" = "Memadam Semua Dompet…";
+
+/* No comment provided by engineer. */
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "Bilangan dompet yang disimpan pada peranti ini tidak dapat disahkan. Untuk meneruskan, frasa pengesahan daripada Sokongan Dash diperlukan sebelum sebarang dompet dipadam.";
+
+/* No comment provided by engineer. */
+"Keep Wallets" = "Kekalkan Dompet";
+
+/* No comment provided by engineer. */
+"No stored wallets were found. Nothing was deleted." = "Tiada dompet tersimpan ditemui. Tiada apa-apa dipadam.";
+
+/* No comment provided by engineer. */
+"No Wallets Found" = "Tiada Dompet Ditemui";
+
+/* No comment provided by engineer. */
+"Not all wallets could be deleted. Please try again." = "Bukan semua dompet dapat dipadam. Sila cuba lagi.";
+
+/* No comment provided by engineer. */
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "Ini mengeluarkan secara kekal semua dompet, kunci peribadi dan frasa pemulihan yang disimpan oleh aplikasi ini pada peranti ini. Semuanya hanya boleh dipulihkan daripada sandaran. Ini tidak boleh dibatalkan.";
+
+/* No comment provided by engineer. */
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "Dompet yang disimpan pada peranti ini tidak dapat disahkan. Tiada apa-apa dipadam. Sila cuba lagi.";
+
+/* No comment provided by engineer. */
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "Ini akan memadam kesemua %ld dompet yang disimpan pada peranti ini. Semuanya hanya boleh dipulihkan dengan frasa pemulihannya. Pemadaman daripada peranti ini tidak boleh dibatalkan.";
+
+/* No comment provided by engineer. */
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "Data dompet daripada pemasangan terdahulu masih disimpan pada peranti ini. Teruskan menggunakan dompet ini, atau padam semua data dompet dan mulakan semula? Pastikan setiap frasa pemulihan telah disandarkan sebelum memadam.";
+
+/* No comment provided by engineer. */
+"Wallets found on this device" = "Dompet yang ditemui pada peranti ini";
+
+/* No comment provided by engineer. */
+"Wipe All Wallets" = "Padam Total Semua Dompet";
+
+/* No comment provided by engineer. */
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "Frasa pemulihan satu dompet tidak boleh membenarkan pemadaman beberapa dompet yang berbeza.";
+
+/* No comment provided by engineer. */
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "Baki sifar pada testnet tidak membuktikan dompet ini kosong pada mainnet. Masukkan frasa pemulihan untuk meneruskan.";
+
+/* No comment provided by engineer. */
+"Enter the recovery phrase to continue." = "Masukkan frasa pemulihan untuk meneruskan.";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "Pilih Dompet";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Recovery Phrases" = "Tidak Dapat Membaca Frasa Pemulihan";
+
+/* No comment provided by engineer. */
+"No Recovery Phrase Found" = "Frasa Pemulihan Tidak Ditemui";
+
+/* No comment provided by engineer. */
+"No recovery phrase is stored on this device." = "Tiada frasa pemulihan disimpan pada peranti ini.";
+
+/* No comment provided by engineer. */
+"Select the wallet whose recovery phrase you want to view." = "Pilih dompet yang frasa pemulihannya ingin anda lihat.";
+
+/* No comment provided by engineer. */
+"The recovery phrases stored on this device could not be read. Please try again." = "Frasa pemulihan yang disimpan pada peranti ini tidak dapat dibaca. Sila cuba lagi.";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address for this network" = "Bukan alamat Dash yang sah untuk rangkaian ini";
+
+/* No comment provided by engineer. */
+"The claimable balance is too small to cover the Platform withdrawal fee." = "Baki yang boleh dituntut terlalu kecil untuk menampung yuran pengeluaran Platform.";
+
+/* No comment provided by engineer. */
+"You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it." = "Anda boleh mengeluarkan sehingga %@ DASH — bakinya kekal untuk menampung yuran Platform. Ketik “Maks” untuk menggunakannya.";
+
+/* No comment provided by engineer. */
+"The minimum withdrawal is %@ DASH." = "Pengeluaran minimum ialah %@ DASH.";
+
+/* No comment provided by engineer. */
+"Payout address key" = "Kunci alamat pembayaran";
+
+/* No comment provided by engineer. */
+"Owner key (%@)" = "Kunci pemilik (%@)";
+
+/* No comment provided by engineer. */
+"Wallet is not ready. Try again in a moment." = "Dompet belum bersedia. Cuba lagi sebentar lagi.";
+
+/* No comment provided by engineer. */
+"%@ · Claimable %@ DASH" = "%@ · Boleh dituntut %@ DASH";
+
+/* No comment provided by engineer. */
+"Withdraw to" = "Keluarkan ke";
+
+/* No comment provided by engineer. */
+"Enter a Dash address" = "Masukkan alamat Dash";
+
+/* No comment provided by engineer. */
+"Use the payout address" = "Guna alamat pembayaran";
+
+/* No comment provided by engineer. */
+"This is the evonode's registered payout address." = "Ini ialah alamat pembayaran berdaftar evonode.";
+
+/* No comment provided by engineer. */
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "Dompet ini memegang kunci alamat pembayaran evonode, jadi bakinya boleh dikeluarkan ke mana-mana alamat Dash.";
+
+/* No comment provided by engineer. */
+"Registered payout address" = "Alamat pembayaran berdaftar";
+
+/* No comment provided by engineer. */
+"This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "Pengeluaran ini ditandatangani dengan kunci pemilik evonode. Dash Platform hanya membenarkan kunci pemilik mengeluarkan ke alamat pembayaran berdaftar, jadi destinasinya tidak boleh diubah di sini. Untuk mengeluarkan ke alamat lain, gunakan dompet yang memegang kunci alamat pembayaran.";
+
+/* No comment provided by engineer. */
+"How it works" = "Cara ia berfungsi";
+
+/* No comment provided by engineer. */
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "Dash Platform membayar pengeluaran itu pada rantaian Dash — biasanya dalam beberapa minit. Yuran Platform kira-kira %@ DASH diambil daripada baki evonode di luar jumlah pengeluaran, jadi “Maks” meninggalkan sedikit untuk menampungnya.";
+
+/* No comment provided by engineer. */
+"Confirm withdrawal" = "Sahkan pengeluaran";
+
+/* No comment provided by engineer. */
+"Owner-key withdrawals are always paid to the registered payout address." = "Pengeluaran dengan kunci pemilik sentiasa dibayar ke alamat pembayaran berdaftar.";
+
+/* No comment provided by engineer. */
+"Waiting for authorization…" = "Menunggu kebenaran…";
+
+/* No comment provided by engineer. */
+"Submitting to Dash Platform…" = "Menghantar ke Dash Platform…";
+
+/* No comment provided by engineer. */
+"Withdrawal submitted" = "Pengeluaran dihantar";
+
+/* No comment provided by engineer. */
+"Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "Dash Platform akan membayarnya pada rantaian Dash tidak lama lagi — biasanya tiba dalam beberapa minit.";
+
+/* No comment provided by engineer. */
+"Remaining claimable balance: %@ DASH" = "Baki boleh dituntut yang tinggal: %@ DASH";
+
+/* No comment provided by engineer. */
+"%@ · Platform balance" = "%@ · Baki Platform";
+
+/* No comment provided by engineer. */
+"Signed with" = "Ditandatangani dengan";
+
+/* No comment provided by engineer. */
+"Platform fee" = "Yuran Platform";
+
+/* No comment provided by engineer. */
+"%@ (payout address)" = "%@ (alamat pembayaran)";
+
+/* No comment provided by engineer. */
+"This wallet holds the payout address key, so you can withdraw to any address." = "Dompet ini memegang kunci alamat pembayaran, jadi anda boleh mengeluarkan ke mana-mana alamat.";
+
+/* No comment provided by engineer. */
+"This wallet holds the owner key, so withdrawals go to the registered payout address." = "Dompet ini memegang kunci pemilik, jadi pengeluaran pergi ke alamat pembayaran berdaftar.";
+
+/* No comment provided by engineer. */
+"This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "Dompet ini tidak memegang kunci pemilik mahupun kunci alamat pembayaran evonode ini, jadi bakinya tidak boleh dikeluarkan dari sini.";
+
+/* No comment provided by engineer. */
+"Couldn't check which keys of this evonode are in the wallet." = "Tidak dapat menyemak kunci evonode ini yang mana ada dalam dompet.";
+
+/* No comment provided by engineer. */
+"Result not confirmed" = "Keputusan tidak disahkan";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "Pengeluaran telah dihantar ke Dash Platform, tetapi keputusannya tidak dapat disahkan. Ia mungkin berjaya. Jangan hantar semula — semak dahulu baki yang boleh dituntut dan alamat pembayaran.";
+
+/* No comment provided by engineer. */
+"1 block proposed this epoch" = "1 blok dicadangkan pada epoch ini";
+
+/* No comment provided by engineer. */
+"%@ blocks proposed this epoch" = "%@ blok dicadangkan pada epoch ini";
+
+/* No comment provided by engineer. */
+"Nodes" = "Nod";
+
+/* No comment provided by engineer. */
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "Nod, hari epoch %d, %@ blok dicadangkan pada epoch ini";
+
+/* No comment provided by engineer. */
+"an evonode has not proposed a block in 2 days" = "sebuah evonode tidak mencadangkan blok selama 2 hari";
+
+/* No comment provided by engineer. */
+"an evonode has no blocks this epoch" = "sebuah evonode tiada blok pada epoch ini";
+
+/* No comment provided by engineer. */
+"A key doesn't match this masternode — fix or clear it to continue." = "Ada kunci yang tidak sepadan dengan masternode ini — betulkan atau kosongkannya untuk meneruskan.";
+
+/* No comment provided by engineer. */
+"Add keys" = "Tambah kunci";
+
+/* No comment provided by engineer. */
+"Add masternode" = "Tambah masternode";
+
+/* No comment provided by engineer. */
+"Add this node's owner key or payout address key to withdraw from here." = "Tambah kunci pemilik atau kunci alamat pembayaran nod ini untuk mengeluarkan dari sini.";
+
+/* No comment provided by engineer. */
+"Already one of this wallet's masternodes — it's in the list above." = "Sudah menjadi salah satu masternode dompet ini — ia ada dalam senarai di atas.";
+
+/* No comment provided by engineer. */
+"Already tracked." = "Sudah dijejaki.";
+
+/* No comment provided by engineer. */
+"Any keys you added for it are deleted from this device's keychain too." = "Sebarang kunci yang anda tambah untuknya turut dipadam daripada keychain peranti ini.";
+
+/* No comment provided by engineer. */
+"Available" = "Tersedia";
+
+/* No comment provided by engineer. */
+"BLS private key (hex)" = "Kunci peribadi BLS (hex)";
+
+/* No comment provided by engineer. */
+"Can't verify yet" = "Belum boleh disahkan";
+
+/* No comment provided by engineer. */
+"Could not load the node's registration details — owner and payout keys will verify later." = "Butiran pendaftaran nod tidak dapat dimuatkan — kunci pemilik dan pembayaran akan disahkan kemudian.";
+
+/* No comment provided by engineer. */
+"Could not save a key to the keychain. Nothing was lost — try again." = "Kunci tidak dapat disimpan ke keychain. Tiada apa-apa hilang — cuba lagi.";
+
+/* No comment provided by engineer. */
+"Destination address (optional)" = "Alamat destinasi (pilihan)";
+
+/* No comment provided by engineer. */
+"Doesn't match" = "Tidak sepadan";
+
+/* No comment provided by engineer. */
+"Find" = "Cari";
+
+/* No comment provided by engineer. */
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "Mencari kunci pemilik dan pembayaran, yang tiada dalam senarai masternode. Menghantar cap jari awam kunci itu ke sebuah nod Platform.";
+
+/* No comment provided by engineer. */
+"IP address, proTxHash or private key" = "Alamat IP, proTxHash atau kunci peribadi";
+
+/* No comment provided by engineer. */
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "Kunci disimpan dalam keychain peranti ini dan tidak pernah keluar daripadanya kecuali untuk menandatangani tindakan yang anda minta.";
+
+/* No comment provided by engineer. */
+"Keys on this device" = "Kunci pada peranti ini";
+
+/* No comment provided by engineer. */
+"Label (optional)" = "Label (pilihan)";
+
+/* No comment provided by engineer. */
+"Loading registration details…" = "Memuatkan butiran pendaftaran…";
+
+/* No comment provided by engineer. */
+"Matches" = "Sepadan";
+
+/* No comment provided by engineer. */
+"Matches this node's %@ key" = "Sepadan dengan kunci %@ nod ini";
+
+/* No comment provided by engineer. */
+"No masternode on the list matches that." = "Tiada masternode dalam senarai yang sepadan dengan itu.";
+
+/* No comment provided by engineer. */
+"Node key (base64 or hex)" = "Kunci nod (base64 atau hex)";
+
+/* No comment provided by engineer. */
+"Not added" = "Belum ditambah";
+
+/* No comment provided by engineer. */
+"On this device" = "Pada peranti ini";
+
+/* No comment provided by engineer. */
+"Operator payout" = "Pembayaran pengendali";
+
+/* No comment provided by engineer. */
+"Payout" = "Pembayaran";
+
+/* No comment provided by engineer. */
+"Platform could not be reached, so owner and payout keys were not checked." = "Platform tidak dapat dihubungi, jadi kunci pemilik dan pembayaran tidak disemak.";
+
+/* No comment provided by engineer. */
+"PoSe banned" = "Disekat PoSe";
+
+/* No comment provided by engineer. */
+"Private key (WIF or hex)" = "Kunci peribadi (WIF atau hex)";
+
+/* No comment provided by engineer. */
+"Refresh details" = "Segar semula butiran";
+
+/* No comment provided by engineer. */
+"Refreshing…" = "Menyegar semula…";
+
+/* No comment provided by engineer. */
+"Save keys" = "Simpan kunci";
+
+/* No comment provided by engineer. */
+"Search Platform too" = "Cari di Platform juga";
+
+/* No comment provided by engineer. */
+"Searching…" = "Mencari…";
+
+/* No comment provided by engineer. */
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "Menandatangani dengan kunci pemilik — pengeluaran pergi ke alamat pembayaran berdaftar.";
+
+/* No comment provided by engineer. */
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "Menandatangani dengan kunci alamat pembayaran. Biarkan destinasi kosong untuk mengeluarkan ke alamat pembayaran.";
+
+/* No comment provided by engineer. */
+"Stop tracking" = "Berhenti menjejak";
+
+/* No comment provided by engineer. */
+"Stop tracking this masternode?" = "Berhenti menjejak masternode ini?";
+
+/* No comment provided by engineer. */
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "Itu juga boleh jadi kunci pemilik atau pembayaran — hidupkan “Cari di Platform juga” untuk menyemaknya.";
+
+/* No comment provided by engineer. */
+"The signing key is missing from the keychain — re-add it and try again." = "Kunci penandatangan tiada dalam keychain — tambahkannya semula dan cuba lagi.";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "Pengeluaran telah dihantar tetapi keputusannya tidak dapat disahkan. Baki sedang disemak semula — jangan cuba lagi sehingga ia stabil.";
+
+/* No comment provided by engineer. */
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "Jejak mana-mana masternode atau evonode di rangkaian — ia tidak perlu menjadi milik dompet ini.";
+
+/* No comment provided by engineer. */
+"Track this masternode" = "Jejak masternode ini";
+
+/* No comment provided by engineer. */
+"Tracked" = "Dijejaki";
+
+/* No comment provided by engineer. */
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "Dijejaki. Tambah kunci nod ini di bawah untuk membolehkan tindakan seperti pengeluaran dan pengundian, atau selesaikan sekarang dan tambah kemudian.";
+
+/* No comment provided by engineer. */
+"Withdrawing…" = "Mengeluarkan…";
+
+/* No comment provided by engineer. */
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "Anda juga boleh menjejak mana-mana masternode di rangkaian — melalui IP, proTxHash atau salah satu kuncinya — dengan butang “+”.";
+
+/* No comment provided by engineer. */
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "Alamat DAPI evonode ini tidak diketahui, jadi statusnya tidak boleh ditanya.";
+
+/* No comment provided by engineer. */
+"Couldn't get the evonode's status." = "Status evonode tidak dapat diperoleh.";
+
+/* No comment provided by engineer. */
+"The evonode didn't answer in time." = "Evonode tidak menjawab tepat pada masanya.";
+
+/* No comment provided by engineer. */
+"Couldn't reach the evonode." = "Evonode tidak dapat dihubungi.";
+
+/* No comment provided by engineer. */
+"The evonode's answer couldn't be read." = "Jawapan evonode tidak dapat dibaca.";
+
+/* No comment provided by engineer. */
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "Laporan nod itu sendiri, belum disahkan — apa yang dikatakannya tentang dirinya, bukan apa yang telah dipersetujui oleh rangkaian.";
+
+/* No comment provided by engineer. */
+"Asked" = "Ditanya";
+
+/* No comment provided by engineer. */
+"Software" = "Perisian";
+
+/* No comment provided by engineer. */
+"DAPI" = "DAPI";
+
+/* No comment provided by engineer. */
+"Drive" = "Drive";
+
+/* No comment provided by engineer. */
+"Tenderdash" = "Tenderdash";
+
+/* No comment provided by engineer. */
+"Protocol versions" = "Versi protokol";
+
+/* No comment provided by engineer. */
+"Tenderdash P2P" = "Tenderdash P2P";
+
+/* No comment provided by engineer. */
+"Tenderdash block" = "Blok Tenderdash";
+
+/* No comment provided by engineer. */
+"Drive current" = "Drive semasa";
+
+/* No comment provided by engineer. */
+"Drive latest" = "Drive terkini";
+
+/* No comment provided by engineer. */
+"Drive next epoch" = "Drive epoch seterusnya";
+
+/* No comment provided by engineer. */
+"Node ID" = "ID nod";
+
+/* No comment provided by engineer. */
+"Identity check" = "Semakan identiti";
+
+/* No comment provided by engineer. */
+"Chain" = "Rantaian";
+
+/* No comment provided by engineer. */
+"Catching up" = "Sedang mengejar";
+
+/* No comment provided by engineer. */
+"Latest block height" = "Ketinggian blok terkini";
+
+/* No comment provided by engineer. */
+"Earliest block height" = "Ketinggian blok terawal";
+
+/* No comment provided by engineer. */
+"Max peer block height" = "Ketinggian blok maks. rakan setara";
+
+/* No comment provided by engineer. */
+"Core chain-locked height" = "Ketinggian chain-locked Core";
+
+/* No comment provided by engineer. */
+"Latest block hash" = "Hash blok terkini";
+
+/* No comment provided by engineer. */
+"Latest app hash" = "Hash aplikasi terkini";
+
+/* No comment provided by engineer. */
+"Earliest block hash" = "Hash blok terawal";
+
+/* No comment provided by engineer. */
+"Earliest app hash" = "Hash aplikasi terawal";
+
+/* No comment provided by engineer. */
+"Chain ID" = "ID rantaian";
+
+/* No comment provided by engineer. */
+"Peers" = "Rakan setara";
+
+/* No comment provided by engineer. */
+"Listening" = "Mendengar";
+
+/* No comment provided by engineer. */
+"State sync" = "Penyegerakan keadaan";
+
+/* No comment provided by engineer. */
+"Total synced time" = "Jumlah masa disegerakkan";
+
+/* No comment provided by engineer. */
+"Remaining time" = "Baki masa";
+
+/* No comment provided by engineer. */
+"Total snapshots" = "Jumlah syot kilat";
+
+/* No comment provided by engineer. */
+"Chunk process avg time" = "Purata masa proses bahagian";
+
+/* No comment provided by engineer. */
+"Snapshot height" = "Ketinggian syot kilat";
+
+/* No comment provided by engineer. */
+"Snapshot chunks" = "Bahagian syot kilat";
+
+/* No comment provided by engineer. */
+"Backfilled blocks" = "Blok yang dilengkapkan";
+
+/* No comment provided by engineer. */
+"Backfill blocks total" = "Jumlah blok untuk dilengkapkan";
+
+/* No comment provided by engineer. */
+"Time" = "Masa";
+
+/* No comment provided by engineer. */
+"Node clock" = "Jam nod";
+
+/* No comment provided by engineer. */
+"Latest block" = "Blok terkini";
+
+/* No comment provided by engineer. */
+"Genesis" = "Genesis";
+
+/* No comment provided by engineer. */
+"Epoch" = "Epoch";
+
+/* No comment provided by engineer. */
+"Matches this evonode" = "Sepadan dengan evonode ini";
+
+/* No comment provided by engineer. */
+"Differs from this evonode" = "Berbeza daripada evonode ini";
+
+/* No comment provided by engineer. */
+"Not reported" = "Tidak dilaporkan";
+
+/* No comment provided by engineer. */
+"%.3f s" = "%.3f saat";
+
+/* No comment provided by engineer. */
+"Node status" = "Status nod";
+
+/* No comment provided by engineer. */
+"Asking the evonode…" = "Menanyai evonode…";
+
+/* No comment provided by engineer. */
+"Request status" = "Minta status";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "Self-checkout";
@@ -3444,6 +4380,42 @@
 
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "Hantar permintaan kenalan pertama anda";
+
+/* Username marketplace: set price sheet title */
+"Set a price for “%@”" = "Tetapkan harga untuk “%@”";
+
+/* Username marketplace */
+"Short names are decided by a network vote — use Request Username instead." = "Nama pendek ditentukan melalui pengundian rangkaian — gunakan “Mohon Nama Pengguna” sebaliknya.";
+
+/* Username marketplace: contested request explainer, paragraph 1 */
+"Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them." = "Nama pendek — 19 aksara atau kurang, huruf dan nombor sahaja — tidak didaftarkan serta-merta. Rangkaian Dash mengundi siapa yang mendapatkannya.";
+
+/* DashPay Contacts: expands the network search into the full add-contact flow */
+"Show more results" = "Tunjukkan lagi keputusan";
+
+/* Username marketplace: departed-name line — buyer identity */
+"Sold to %@" = "Dijual kepada %@";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 1 of 2 — moving Dash out of your Shielded balance…" = "Langkah 1 daripada 2 — memindahkan Dash keluar daripada baki Shielded anda…";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 2 of 2 — topping up your identity…" = "Langkah 2 daripada 2 — menambah nilai identiti anda…";
+
+/* Username marketplace: contested request cost footnote */
+"The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "Kos dibayar daripada baki identiti anda. Ia membiayai pengundian rangkaian dan tidak dikembalikan jika pencabar lain menang.";
+
+/* Username marketplace: register sheet body */
+"The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "Nama didaftarkan terus pada identiti anda. Pendaftaran ialah transaksi rangkaian yang dibayar daripada baki identiti anda.";
+
+/* Username marketplace: contested label locked by a past vote */
+"The network voted to lock this name, so nobody can register it. Choose a different name." = "Rangkaian mengundi untuk mengunci nama ini, jadi tiada sesiapa boleh mendaftarkannya. Pilih nama lain.";
+
+/* Username marketplace */
+"The recipient identity couldn't be resolved." = "Identiti penerima tidak dapat dikenal pasti.";
+
+/* Username marketplace */
+"The seller changed the price before your purchase was accepted. Review the new price and try again." = "Penjual menukar harga sebelum pembelian anda diterima. Semak harga baharu dan cuba lagi.";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Sending";
@@ -3965,6 +4937,66 @@
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "Ini menambah dua kunci pada identiti anda supaya pengguna lain boleh menghantar permintaan kenalan kepada anda, dan supaya anda boleh menerima permintaan mereka. Ini berlaku sekali sahaja.";
 
+/* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
+"This isn't a DashPay user QR code." = "Ini bukan kod QR pengguna DashPay.";
+
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "Baki ini membayar yuran rangkaian Dash Platform — nama pengguna, permintaan kenalan, kemas kini profil. Ia milik identiti anda, bukan dompet anda: tidak seperti baki Telus, Platform dan Shielded anda, ia tidak boleh dibelanjakan sebagai Dash biasa. Menambah nilai menukar Dash daripada baki pilihan anda — Shielded secara lalai — kepada kredit identiti.";
+
+/* Username marketplace: contested label already has an active vote */
+"This name is already in an active network vote. Your request joins it as another contender." = "Nama ini sudah berada dalam pengundian rangkaian yang aktif. Permohonan anda menyertainya sebagai pencabar lain.";
+
+/* Username marketplace */
+"This name is in an active network vote and can't be traded until the contest ends." = "Nama ini berada dalam pengundian rangkaian yang aktif dan tidak boleh diniagakan sehingga pertandingan tamat.";
+
+/* Username marketplace: detail for an unregistered name */
+"This name is not registered." = "Nama ini tidak berdaftar.";
+
+/* Username marketplace: seller-clarity callout on the detail sheet */
+"This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "Nama ini ditawarkan oleh pengguna bebas di rangkaian Dash — bukan oleh Dash atau aplikasi ini. Penjual yang menetapkan harganya.";
+
+/* Username marketplace: listing price exceeds the representable maximum */
+"This price is too high to list." = "Harga ini terlalu tinggi untuk disenaraikan.";
+
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "Pemindahan ini tidak boleh dicuba semula dari sini.";
+
+/* Username marketplace */
+"This username is not for sale." = "Nama pengguna ini tidak dijual.";
+
+/* Username marketplace */
+"This username's record couldn't be read from the network." = "Rekod nama pengguna ini tidak dapat dibaca daripada rangkaian.";
+
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "Dompet ini tiada identiti untuk ditambah nilai.";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "Tambah Nilai";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "Tambah Nilai Baki Identiti";
+
+/* Username marketplace: timeline card title */
+"Trade history" = "Sejarah dagangan";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "Pemindahan selesai";
+
+/* Username marketplace */
+"Transfer to Another Identity" = "Pindahkan ke Identiti Lain";
+
+/* Username marketplace: transfer sheet title */
+"Transfer “%@”" = "Pindahkan “%@”";
+
+/* Username marketplace: history — transfer with both identities */
+"Transferred from %1$@ to %2$@" = "Dipindahkan daripada %1$@ kepada %2$@";
+
+/* Username marketplace: departed-name line — recipient identity */
+"Transferred to %@" = "Dipindahkan kepada %@";
+
+/* Username marketplace */
+"Username Marketplace" = "Pasaran Nama Pengguna";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
@@ -4014,6 +5046,60 @@
 
 /* Usernames */
 "This name requires voting. Your Dash will be locked until voting completes." = "This name requires voting. Your Dash will be locked until voting completes.";
+
+/* Usernames */
+"Vote in progress" = "Pengundian sedang berjalan";
+
+/* Usernames */
+"Vote ended" = "Pengundian tamat";
+
+/* Usernames */
+"A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender." = "Pengundian masternode bagi nama ini sudah berjalan. Menghantar permohonan menyertakan anda dalam pengundian sebagai pencabar.";
+
+/* Usernames */
+"A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender." = "Pengundian masternode bagi nama ini sudah berjalan — pengundian tamat sekitar %@. Menghantar permohonan menyertakan anda dalam pengundian sebagai pencabar.";
+
+/* Usernames */
+"A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote." = "Pengundian masternode bagi nama ini sedang berjalan — pengundian tamat sekitar %@. Pencabar baharu tidak boleh lagi menyertai pengundian ini.";
+
+/* Usernames */
+"Username is in a network vote — new contenders can no longer join" = "Nama pengguna berada dalam pengundian rangkaian — pencabar baharu tidak boleh lagi menyertainya";
+
+/* Usernames */
+"The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "Pemilik nama pengguna ini telah menyenaraikannya di Pasaran Nama Pengguna pada %@ Dash. Anda boleh membelinya di sana.";
+
+/* Usernames */
+"The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance." = "Pemilik nama pengguna ini telah menyenaraikannya pada %@ Dash. Anda boleh membelinya sekarang juga — harganya dibayar daripada baki dompet anda.";
+
+/* Usernames */
+"The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "Pemilik nama pengguna ini telah menyenaraikannya pada %1$@ Dash. Pembelian melebihi %2$@ Dash mesti dibuat melalui Pasaran Nama Pengguna — pilih nama pengguna lain buat masa ini; anda boleh membuat keputusan membeli yang ini kemudian.";
+
+/* Usernames */
+"Buy for %@ Dash" = "Beli pada %@ Dash";
+
+/* Usernames */
+"Buy username" = "Beli nama pengguna";
+
+/* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "Nama pengguna sementara anda “%@” tidak dapat didaftarkan. Anda boleh mendaftarkan nama pengguna lain kemudian.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "“%1$@” kini nama pengguna anda. Jika pengundian menganugerahkan “%2$@” kepada anda, anda boleh dihubungi melalui kedua-dua nama pengguna.";
+
+/* Usernames */
+"“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "“%1$@” akan dibeli pada %2$@ Dash. Harganya dibayar daripada baki dompet anda.";
+
+/* Usernames */
+"Username purchased" = "Nama pengguna dibeli";
+
+/* Usernames */
+"“%@” is now your username." = "“%@” kini nama pengguna anda.";
+
+/* Usernames */
+"The masternode vote for this name has ended and the result is being finalized. Check back soon." = "Pengundian masternode bagi nama ini telah tamat dan keputusannya sedang dimuktamadkan. Semak semula tidak lama lagi.";
+
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes." = "Pengundian bagi nama ini sudah berjalan — permohonan anda akan menyertainya sebagai pencabar. Dash anda akan dikunci sehingga pengundian selesai.";
 
 /* No comment provided by engineer. */
 "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone." = "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.";
@@ -4256,6 +5342,12 @@
 /* Voting */
 "Unblocked '%@' username" = "Unblocked '%@' username";
 
+/* SPV diagnostics */
+"Unconfirmed now" = "Belum disahkan sekarang";
+
+/* SPV diagnostics */
+"Unconfirmed Transactions" = "Transaksi Belum Disahkan";
+
 /* DashPay Contacts */
 "Unhide Contact" = "Unhide Contact";
 
@@ -4369,6 +5461,9 @@
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Nama pengguna, bukan alamat";
 
+/* DashPay: banner identity row subtitle */
+"View profile" = "Lihat profil";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Pengguna yang sepadan dengan %@ yang kini tiada dalam kenalan anda";
 
@@ -4399,11 +5494,17 @@
 /* No comment provided by engineer. */
 "Verified Successfully" = "Verified Successfully";
 
+/* DashPay Contacts: spinner after scanning a user QR code */
+"Verifying user…" = "Mengesahkan pengguna…";
+
 /* No comment provided by engineer. */
 "Verify" = "Verify";
 
 /* CrowdNode */
 "Verify your API Dash address" = "Verify your API Dash address";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "Sahkan frasa pemulihan anda untuk menetapkan PIN baharu.";
 
 /* Usernames */
 "Verify your identity" = "Verify your identity";
@@ -4618,6 +5719,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "Bilakah permintaan kenalan akan menjadi peribadi?";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "Selagi pengundian berjalan, “%@” belum menjadi milik anda dan pengguna lain tidak boleh mencari anda dengannya. Tambah nama pengguna yang tidak dipertandingkan untuk terus menggunakan DashPay. Nama itu kekal milik anda selama-lamanya — dan jika pengundian menganugerahkan nama yang dipertandingkan kepada anda, anda boleh dihubungi melalui kedua-dua nama pengguna.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "Where to Spend";
 
@@ -4628,6 +5732,18 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "Mengapa saya perlu mendayakannya?";
+
+/* Username marketplace: history participant is the current user */
+"you" = "anda";
+
+/* Username marketplace: contested request already submitted by this identity */
+"You already requested this name — the network vote is in progress. You'll find it under My Names." = "Anda sudah memohon nama ini — pengundian rangkaian sedang berjalan. Anda boleh menemuinya di bawah “Nama Saya”.";
+
+/* Username marketplace: purchase confirmation body with seller clarity */
+"You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "Anda membeli daripada pengguna bebas, bukan daripada Dash atau aplikasi ini. Harga ditambah yuran rangkaian yang kecil dibayar daripada baki identiti anda, dan nama itu berpindah ke identiti anda serta-merta.";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "Anda tiada nama pengguna selagi pengundian berjalan. Daftarkan nama pengguna yang tidak dipertandingkan sekarang — ia kekal milik anda, dan jika pengundian menganugerahkan “%@” kepada anda, anda boleh dihubungi melalui kedua-dua nama pengguna.";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "Why do I see all these transactions?";
@@ -4685,7 +5801,13 @@
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
 
 /* Wallets */
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Catatkan %d perkataan ini mengikut urutan dan simpan di tempat yang selamat. Itulah SATU-SATUNYA cara memulihkan dompet ini. Sesiapa yang memilikinya boleh membelanjakan dana anda.";
+
+/* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
+
+/* Recovery phrase backup: security warning body — keep the phrase written down and private */
+"Write it in a safe place and don’t show it to anyone." = "Tulis di tempat yang selamat dan jangan tunjukkan kepada sesiapa.";
 
 /* No comment provided by engineer. */
 "XpEBa5... or BIP21 URI" = "XpEBa5... or BIP21 URI";
@@ -4851,6 +5973,9 @@
 /* Back up wallet */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device.";
 
+/* Recovery phrase backup: security warning title — the phrase is required to restore the wallet */
+"You will NOT be able to restore the wallet without a recovery phrase" = "Anda TIDAK akan dapat memulihkan dompet tanpa frasa pemulihan";
+
 /* Coinbase */
 "You will receive" = "You will receive";
 
@@ -4934,6 +6059,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Sejarah anda, tersusun";
 
+/* Username marketplace */
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Baki identiti anda tidak mencukupi untuk pembelian ini: %1$@ DASH diperlukan (termasuk rizab yuran), %2$@ DASH tersedia. Tambah nilai baki identiti anda dan cuba lagi.";
+
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "Identiti anda memerlukan dua kunci tambahan supaya permintaan kenalan boleh disulitkan antara anda dan pengguna lain. Mendayakannya menambah kunci tersebut dengan satu transaksi rangkaian sahaja. Ini berlaku sekali sahaja.";
 
@@ -4958,8 +6086,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "Syiling campuran anda telah dipindahkan ke baki Dompet Dash anda.";
 
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "Kami tidak dapat mengesahkan pembelian ini dengan CTX. Jika pembayaran berjaya, kad hadiah akan muncul dalam senarai transaksi anda tidak lama lagi — sila semak di sana sebelum membeli lagi.";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "Pembayaran anda telah dihantar, tetapi rangkaian belum mengesahkannya. Kad hadiah anda akan muncul sebaik sahaja ia disahkan.";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Syiling campuran anda telah dipindahkan ke baki terlindung anda. Untuk privasi terbaik, tunggu sekurang-kurangnya 2 jam sebelum menggunakan dana ini.";
+
+/* DashSpend */
+"Could not load your gift card" = "Kad hadiah anda tidak dapat dimuatkan";
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
@@ -4975,6 +6112,9 @@
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "Baki peribadi anda. Jumlah dan alamat disulitkan pada rantaian, jadi pegangan dan sejarah anda kekal sulit.";
+
+/* Username marketplace: contested request explainer, paragraph 2 */
+"Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "Permohonan anda memasuki pengundian awam oleh masternode selama kira-kira dua minggu. Orang lain boleh memohon nama yang sama; apabila pengundian tamat, nama itu diberikan kepada pemenang — atau kepada sesiapa pun, jika rangkaian mengundi untuk menguncinya.";
 
 /* Usernames */
 "Your request was cancelled" = "Your request was cancelled";

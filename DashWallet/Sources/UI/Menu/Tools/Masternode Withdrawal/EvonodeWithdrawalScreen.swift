@@ -619,8 +619,9 @@ struct EvonodeWithdrawalConfirmSheet: View {
 
 // MARK: - QRScannerRepresentable
 
-/// SwiftUI wrapper for the UIKit `GenericQRScannerController`.
-private struct QRScannerRepresentable: UIViewControllerRepresentable {
+/// SwiftUI wrapper for the UIKit `GenericQRScannerController`. Internal: the
+/// add-masternode locator field reuses it.
+struct QRScannerRepresentable: UIViewControllerRepresentable {
     let onScanned: (String) -> Void
     let onCancel: () -> Void
 

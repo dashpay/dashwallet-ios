@@ -18,6 +18,22 @@
 			<string>%ld used</string>
 		</dict>
 	</dict>
+	<key>%d ATM(s) in %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@atms@</string>
+		<key>atms</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%1$d ATM in %2$@</string>
+			<key>other</key>
+			<string>%1$d ATMs in %2$@</string>
+		</dict>
+	</dict>
 	<key>%d merchant(s) in %@</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -320,6 +336,22 @@
 			<string>%d anmodning</string>
 			<key>other</key>
 			<string>%d anmodninger</string>
+		</dict>
+	</dict>
+	<key>%d words</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d ord</string>
+			<key>other</key>
+			<string>%d ord</string>
 		</dict>
 	</dict>
 </dict>

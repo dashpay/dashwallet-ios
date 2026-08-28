@@ -17,6 +17,7 @@
 
 import Combine
 import Foundation
+import OSLog
 import SwiftDashSDK
 
 private let kMaxProgressDelta = 0.1 // 10%
@@ -178,7 +179,20 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
     private var lastPeakDate: Date?
     private var cancellables = Set<AnyCancellable>()
 
-    private var observers: [SyncingActivityMonitorObserver] = []
+    /// The wallet the in-flight sync cycle started on. `.syncDone` arrives
+    /// from a singleton SPV stream that carries no wallet identity, while the
+    /// durable watermark is read from whichever wallet is active at log time —
+    /// so the completion is pinned to the wallet its cycle began on.
+    private var syncCycleWalletId: Data?
+
+    /// Weak, because this is a singleton that outlives every observer and a
+    /// strong array here turns any missed `remove(observer:)` into an
+    /// unbounded leak — one did, silently, until a large-wallet scan had
+    /// accumulated 3321 live `SyncModelImpl`s and the per-tick fan-out over
+    /// them became the dominant cost. Every observer is owned by whoever
+    /// created it (a view model, a `UIView`, a `@StateObject`), so the monitor
+    /// has no reason to keep any of them alive.
+    private let observers = NSHashTable<AnyObject>.weakObjects()
     private let observersLock = NSLock()
 
     override init() {
@@ -199,22 +213,21 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
     public func add(observer: SyncingActivityMonitorObserver) {
         observersLock.lock()
         defer { observersLock.unlock() }
-        observers.append(observer)
+        observers.add(observer)
     }
 
     @objc(removeObserver:)
     public func remove(observer: SyncingActivityMonitorObserver) {
         observersLock.lock()
         defer { observersLock.unlock() }
-        if let idx = observers.firstIndex(where: { $0 === observer }) {
-            observers.remove(at: idx)
-        }
+        observers.remove(observer)
     }
 
     private func observerSnapshot() -> [SyncingActivityMonitorObserver] {
         observersLock.lock()
         defer { observersLock.unlock() }
-        return observers
+        // `allObjects` already drops entries whose object has gone away.
+        return observers.allObjects.compactMap { $0 as? SyncingActivityMonitorObserver }
     }
 
     deinit {
@@ -304,8 +317,101 @@ extension SyncingActivityMonitor {
 
         applyProgressWithPeakSmoothing(sdkProgress)
         isSyncing = (mapped == .syncing)
+        let wasDone = state == .syncDone
+        let wasSyncing = state == .syncing
         state = mapped
+
+        // `syncDone` is derived purely from the SPV network phases — it knows
+        // nothing about how much of what was scanned is durably persisted.
+        // The two can be far apart: the durable watermark is what a relaunch
+        // resumes from, and what the transaction list is built out of, so a
+        // wallet can report "synced" while rows are still materializing.
+        //
+        // Logged at the transition rather than gated on, because whether the
+        // watermark reliably reaches the tip is exactly what is unproven. One
+        // line per completion answers it from an ordinary session.
+        // Every entry into `.syncing` opens a new cycle, so the id is replaced
+        // rather than only filled: a cycle that ended in `.syncFailed` or
+        // `.noConnection` never reaches the `.syncDone` branch that clears it,
+        // and a stale id would make the next cycle's completion look like it
+        // belonged to a wallet that is no longer active.
+        if mapped == .syncing && !wasSyncing {
+            syncCycleWalletId = SwiftDashSDKWalletSource.activeWalletId
+        }
+
+        if mapped == .syncDone && !wasDone {
+            logDurableWatermarkAtCompletion(
+                scannedTip: sdkSyncProgress.headers?.currentHeight,
+                cycleWalletId: syncCycleWalletId)
+            syncCycleWalletId = nil
+        }
     }
+
+    /// One-shot read of the persisted sync height at the moment the UI first
+    /// calls a sync complete, next to the height that was actually scanned.
+    /// A single fetch on a state transition — not a per-tick cost.
+    private func logDurableWatermarkAtCompletion(scannedTip: UInt32?, cycleWalletId: Data?) {
+        let tip = scannedTip.map(String.init) ?? "unavailable"
+
+        guard let snapshot = SwiftDashSDKWalletSource.persistedSyncedHeightSnapshot() else {
+            Self.logger.warning(
+                """
+                ⛓️ SYNCSTATE :: reported done at tip \(tip, privacy: .public); \
+                no active wallet to read a durable watermark from
+                """)
+            return
+        }
+
+        // A completion queued before a wallet switch would otherwise be
+        // measured against the wallet that replaced it.
+        if let cycleWalletId, snapshot.walletId != cycleWalletId {
+            Self.logger.warning(
+                """
+                ⛓️ SYNCSTATE :: reported done at tip \(tip, privacy: .public) for a wallet that is \
+                no longer active; durable watermark not read
+                """)
+            return
+        }
+
+        guard let durable = snapshot.height else {
+            Self.logger.warning(
+                """
+                ⛓️ SYNCSTATE :: reported done at tip \(tip, privacy: .public); \
+                durable watermark unavailable
+                """)
+            return
+        }
+
+        guard let scannedTip else {
+            Self.logger.warning(
+                """
+                ⛓️ SYNCSTATE :: reported done with an unavailable scanned tip; \
+                durable watermark \(durable, privacy: .public)
+                """)
+            return
+        }
+
+        // `durable > scannedTip` is not "caught up": the persister is ahead of
+        // the height the scan reports, which is itself worth seeing.
+        guard scannedTip >= durable else {
+            Self.logger.warning(
+                """
+                ⛓️ SYNCSTATE :: reported done — scanned tip \(scannedTip, privacy: .public), \
+                durable watermark \(durable, privacy: .public), watermark AHEAD by \
+                \(durable - scannedTip, privacy: .public) block(s)
+                """)
+            return
+        }
+
+        Self.logger.info(
+            """
+            ⛓️ SYNCSTATE :: reported done — scanned tip \(scannedTip, privacy: .public), \
+            durable watermark \(durable, privacy: .public), behind by \
+            \(scannedTip - durable, privacy: .public) block(s)
+            """)
+    }
+
+    private static let logger = Logger(subsystem: "org.dashfoundation.dash", category: "sync-state")
 
     /// Map SwiftDashSDK's per-phase progress to the snapshot fields the
     /// existing UI consumers expect. The phase priority order

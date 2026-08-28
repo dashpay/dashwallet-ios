@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 // NOTE: DashWalletTests links against the `dashwallet` target, but the
 // types under test (`DWIdentityRegistrationController`,

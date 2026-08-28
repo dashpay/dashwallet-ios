@@ -37,6 +37,24 @@ final class SerialAsyncLifecycleQueue {
         currentTask = task
         return task
     }
+
+    /// Value-returning variant: the operation is one link of the same serial
+    /// chain (full barrier semantics — everything enqueued later waits for
+    /// it), and its result or error is handed back to the caller through a
+    /// continuation. The chain itself stays `Task<Void, Never>`.
+    func enqueueAwaitable<T: Sendable>(
+        _ operation: @escaping @MainActor () async throws -> T
+    ) async throws -> T {
+        try await withCheckedThrowingContinuation { continuation in
+            enqueue {
+                do {
+                    continuation.resume(returning: try await operation())
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
 }
 
 @objc(DWSwiftDashSDKWalletRuntime)
@@ -117,9 +135,20 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         dispatchOnPipeline { shared.enqueueRefresh(trigger: .walletMaterialChanged) }
     }
 
-    @objc(handleWalletWiped)
-    nonisolated static func handleWalletWiped() {
-        dispatchOnPipeline { shared.enqueueFullReset(lastError: nil, forWipe: true) }
+    /// Tear down the runtime after a completed wipe and report when that
+    /// teardown has actually finished: `completion` fires (on the MainActor)
+    /// only after the enqueued `fullReset(forWipe: true)` — BLAST stop, SPV
+    /// stop, cleared wallet state, and the host's native shutdown — has
+    /// returned. The wiper blocks its serial queue on this completion, so
+    /// `waitForPendingWipe`'s barrier means "data wiped AND runtime torn
+    /// down", not "teardown merely scheduled".
+    nonisolated static func handleWalletWiped(completion: @escaping @Sendable () -> Void) {
+        dispatchOnPipeline {
+            shared.enqueue {
+                await shared.fullReset(lastError: nil, forWipe: true)
+                completion()
+            }
+        }
     }
 
     /// Rebuild the shared runtime through the same serialized lifecycle used
@@ -142,6 +171,89 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     @objc(rotatePeers)
     nonisolated static func rotatePeers() {
         restartCoreSPV()
+    }
+
+    // MARK: - Runtime network switching
+
+    /// Interactive network switch: the single owner of the runtime rebuild.
+    ///
+    /// Strict sequence — `stop old runtime → await native teardown off-main →
+    /// start new runtime → ready` — driven by exactly ONE `refresh` on the
+    /// serial lifecycle chain. The `DWCurrentNetworkDidChange` post carries a
+    /// `.managedSwitch` source so the runtime observer skips its own
+    /// lifecycle reaction (UI listeners like DWRootModel behave as always);
+    /// external key writers keep the observer-driven path.
+    ///
+    /// A no-op requires an actually-ready runtime (`isRuntimeReady`), not
+    /// just a matching persisted key — a matching key over a dead runtime
+    /// runs the full rebuild (self-heal).
+    ///
+    /// MUST NOT be called from within a lifecycle operation on
+    /// `lifecycleQueue` (`refresh`/`fullReset` bodies): it awaits its own
+    /// enqueued op, so a call from inside the chain would self-await and
+    /// deadlock the queue. UI entry points and coordinators outside the
+    /// chain are the intended callers.
+    @MainActor
+    func switchNetwork(to kind: WalletEnvironment.NetworkKind) async throws {
+        guard kind != .devnet else { throw SwitchError.unsupportedNetwork }
+        let targetNetwork: Network = kind == .mainnet ? .mainnet : .testnet
+        // No-op check stays BEFORE the admission gate (read-only, never
+        // consumes the gate); the gate itself rejects when ANY interactive
+        // lifecycle operation — network switch, wallet switch, or removal —
+        // is in flight, replacing the old network-only `.switching` guard.
+        if WalletEnvironment.networkKind == kind, isRuntimeReady(for: targetNetwork) {
+            Self.logger.info("🧭 RUNTIME :: switchNetwork — already on \(String(describing: kind), privacy: .public) with a ready runtime; no-op")
+            return
+        }
+
+        // A Retry / Switch Back begins from the failure card, where the
+        // persisted key already points at the FAILED target — carry the
+        // network that was really active when the saga began, so the card
+        // keeps offering a way back across repeated failed attempts.
+        let from: WalletEnvironment.NetworkKind
+        if case let .failedNetworkSwitch(savedFrom, _, _) = WalletLifecycleTransitionState.shared.phase {
+            from = savedFrom
+        } else {
+            from = WalletEnvironment.networkKind
+        }
+        guard WalletLifecycleTransitionState.shared.tryBegin(.switchingNetwork(from: from, to: kind)) else {
+            throw SwitchError.switchInProgress
+        }
+        let transitionID = String(UUID().uuidString.prefix(8))
+        let started = CFAbsoluteTimeGetCurrent()
+        // Thread stamp deliberately absent: this method is MainActor-bound
+        // (always main); the off-main proof for the blocking teardown is the
+        // shutdown metrics' `ranOffMainThread` in the HOST shutdown line.
+        DWLogger.log("🔀 NETSWITCH [\(transitionID)] start \(from) → \(kind)")
+
+        // Owned here for managed switches (the observer skips them): silence
+        // and zero the published balance mirrors before anything else renders
+        // the old network's funds as the new one's.
+        SwiftDashSDKSPVCoordinator.shared.prepareForNetworkSwitch()
+        PlatformAddressSyncCoordinator.shared.prepareForNetworkSwitch()
+
+        // Skip the key write when it already matches (a dead runtime on the
+        // right network heals via the refresh alone); `switchToNetwork`
+        // would early-return without posting in that case anyway.
+        if WalletEnvironment.networkKind != kind {
+            WalletEnvironment.switchToNetwork(kind, source: .managedSwitch(transitionID: transitionID))
+        }
+
+        await enqueueAwaitable { [weak self] in
+            await self?.refresh(trigger: .networkDidChange)
+        }.value
+
+        let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+        if isRuntimeReady(for: targetNetwork) {
+            WalletLifecycleTransitionState.shared.finish()
+            DWLogger.log("🔀 NETSWITCH [\(transitionID)] ready in \(ms)ms")
+        } else {
+            let detail = SwiftDashSDKSPVCoordinator.shared.lastError
+                ?? PlatformAddressSyncCoordinator.shared.lastError
+            WalletLifecycleTransitionState.shared.fail(.failedNetworkSwitch(from: from, target: kind, message: detail))
+            DWLogger.log("🔀 NETSWITCH [\(transitionID)] FAILED after \(ms)ms: \(detail ?? "runtime did not become ready")")
+            throw SwitchError.startFailed(detail)
+        }
     }
 
     // MARK: - Runtime wallet switching
@@ -186,6 +298,24 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         }
 
         publishActiveWalletDidChange(reason: "wallet-switch")
+    }
+
+    /// Additive wallet provisioning (`SwiftDashSDKHost.addWallet`) as ONE
+    /// link of the serial lifecycle chain, so a queued `refresh`/`fullReset`
+    /// can never interleave with the multi-network create. Like
+    /// `switchNetwork(to:)`, this MUST NOT be called from within a lifecycle
+    /// operation already running on the chain — it awaits its own enqueued
+    /// op and would self-await-deadlock the queue. The add flow's post-add
+    /// `switchWallet` is deliberately a SECOND, sequential chain op (the
+    /// caller awaits this method first), never nested inside it.
+    @MainActor
+    func performAddWallet(mnemonic: String, isImported: Bool) async throws
+        -> SwiftDashSDKHost.AddWalletResult {
+        try await lifecycleQueue.enqueueAwaitable {
+            try await SwiftDashSDKHost.shared.addWallet(
+                mnemonic: mnemonic,
+                isImported: isImported)
+        }
     }
 
     /// Validate that `walletId` is a switchable target on the current network:
@@ -359,7 +489,10 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         }
         await SwiftDashSDKSPVCoordinator.shared.stopAsync(lastError: lastError)
         SwiftDashSDKWalletState.shared.clearAllState()
-        SwiftDashSDKHost.shared.stop()
+        // Blocking native teardown runs off-main inside stopAsync; this only
+        // suspends. The shutdown metrics are logged by the host (DWLogger)
+        // so switch telemetry survives into diagnostic exports.
+        await SwiftDashSDKHost.shared.stopAsync()
         currentNetwork = nil
         if forWipe {
             DWCurrentUserIdentityInfo.shared.resetForWalletRemoval()
@@ -401,17 +534,28 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // elide the rebind.
             return false
         case .startIfReady, .networkDidChange, .platformSyncRearm:
-            // External callers (PlatformSyncStatusScreen, StorageExplorerUnavailableView,
-            // the Platform send path) can mutate BLAST without touching
-            // `currentNetwork`, so consult the live coordinator state too — otherwise
-            // the runtime would skip a refresh after an out-of-band BLAST stop and
-            // leave the user without the BLAST sync they triggered.
-            let blast = PlatformAddressSyncCoordinator.shared
-            return currentNetwork == network
-                && blast.isRunning
-                && blast.runningNetwork == network
-                && SwiftDashSDKSPVCoordinator.shared.isRunning
+            return isRuntimeReady(for: network)
         }
+    }
+
+    /// Whether the runtime is fully bound and running for `network`: host has
+    /// a bound wallet, SPV runs, and BLAST runs on that same network. The one
+    /// readiness predicate shared by refresh elision (`shouldSkipRefresh`)
+    /// and `switchNetwork(to:)`'s no-op / ready checks — a persisted network
+    /// key alone never counts as "ready".
+    ///
+    /// Consulting live coordinator state matters beyond switches too:
+    /// external callers (PlatformSyncStatusScreen, StorageExplorerUnavailableView,
+    /// the Platform send path) can mutate BLAST without touching
+    /// `currentNetwork`, and skipping a refresh after an out-of-band BLAST
+    /// stop would leave the user without the sync they triggered.
+    func isRuntimeReady(for network: Network) -> Bool {
+        let blast = PlatformAddressSyncCoordinator.shared
+        return currentNetwork == network
+            && SwiftDashSDKHost.shared.wallet != nil
+            && blast.isRunning
+            && blast.runningNetwork == network
+            && SwiftDashSDKSPVCoordinator.shared.isRunning
     }
 
     /// Internal (was private): reused by CrowdNode's TransactionObserver row
@@ -466,7 +610,14 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             forName: NSNotification.Name.DWCurrentNetworkDidChange,
             object: nil,
             queue: nil
-        ) { _ in
+        ) { note in
+            // A managed switch (`switchNetwork(to:)`) owns BOTH the mirror
+            // zeroing and the single lifecycle refresh — reacting here would
+            // double-drive the lifecycle and, after a failed switch, retry
+            // the rebuild behind the transition state machine's back.
+            // External writers (recovery, sole-network selection) still get
+            // the full observer behavior below.
+            guard !WalletEnvironment.isManagedSwitchNotification(note) else { return }
             Task { @MainActor in
                 // The home screen's funds are three published mirrors: the core
                 // balance plus BLAST's Platform and Shielded totals. `refresh`
@@ -502,8 +653,9 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         }
     }
 
-    /// Failure modes of `switchWallet(to:)`. Surfaced to the caller rather
-    /// than logged-and-swallowed so a UI switch flow can report why it failed.
+    /// Failure modes of `switchWallet(to:)` / `switchNetwork(to:)`. Surfaced
+    /// to the caller rather than logged-and-swallowed so a UI switch flow can
+    /// report why it failed.
     enum SwitchError: LocalizedError {
         /// The current network isn't SDK-supported (devnet/unsupported).
         case unsupportedNetwork
@@ -512,6 +664,14 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         /// The stop/clear/load/start sequence ran but the host did not bind the
         /// requested wallet (e.g. its rows failed to load).
         case bindFailed
+        /// Another interactive lifecycle operation (network switch, wallet
+        /// switch, or removal) already holds the admission gate; the
+        /// transition state machine admits one at a time.
+        case switchInProgress
+        /// The switch's teardown+rebuild ran but the destination runtime did
+        /// not come up ready; carries the coordinators' last error when one
+        /// was recorded.
+        case startFailed(String?)
 
         var errorDescription: String? {
             switch self {
@@ -521,6 +681,12 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 return "Cannot switch wallet: no wallet with that id is stored on this network."
             case .bindFailed:
                 return "Switching wallet failed: the new wallet could not be loaded."
+            case .switchInProgress:
+                return "Another wallet operation is already in progress."
+            case .startFailed(let detail):
+                let base = "Switching networks failed: the runtime did not start."
+                guard let detail, !detail.isEmpty else { return base }
+                return base + " (\(detail))"
             }
         }
     }

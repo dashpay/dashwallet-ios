@@ -9,6 +9,9 @@
 /* CrowdNode */
 " Terms of Use " = "Kullanım Şartları";
 
+/* Username marketplace: listing success — name, then price */
+"%1$@ listed for %2$@ DASH" = "%1$@ %2$@ DASH karşılığında satışa çıkarıldı";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -20,6 +23,12 @@
 
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "İletişim isteği göndermek için %@ Dash ağında bulunamadı.";
+
+/* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
+"%@ couldn't be verified on the Dash network. The QR code may be outdated." = "%@ Dash ağında doğrulanamadı. QR kodu güncel olmayabilir.";
+
+/* Username marketplace: contested request cost value — the vote-resolution fund amount */
+"%@ DASH + network fee" = "%@ DASH + ağ ücreti";
 
 /* Usernames */
 "%@ Dash available" = "%@ Dash kullanılabilir";
@@ -42,6 +51,9 @@
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@ size bir talep gönderdi";
 
+/* Username marketplace: delist success */
+"%@ is no longer for sale" = "%@ artık satışta değil";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
@@ -51,8 +63,17 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
+/* Username marketplace: purchase success */
+"%@ is now yours" = "%@ artık sizin";
+
+/* Username marketplace: registration success */
+"%@ registered" = "%@ kaydedildi";
+
 /* Testnet faucet */
 "%@ tDash requested — it will arrive shortly" = "%@ tDash requested — it will arrive shortly";
+
+/* Username marketplace: transfer success */
+"%@ transferred" = "%@ aktarıldı";
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
@@ -171,6 +192,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Bu ad için hâlihazırda bir oylama sürüyor — talebiniz bu oylamaya aday olarak katılacak. Yarışma ücreti gönderdiğinizde harcanır ve adı kazanmasanız bile iade edilmez.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -182,6 +206,9 @@
 
 /* No comment provided by engineer. */
 "About me" = "Hakkımda";
+
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "Kimlik hesabı bakiyesi hakkında";
 
 "Abstain" = "Çekimser kal";
 
@@ -235,6 +262,9 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "Yeni Kişi Ekle";
 
+/* Usernames */
+"Add a temporary username" = "Geçici bir kullanıcı adı ekle";
+
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
 
@@ -259,6 +289,9 @@
 /* Maya
    SwapKit */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+
+/* No comment provided by engineer. */
+"Advanced" = "Gelişmiş";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Gelişmiş Güvenlik";
@@ -315,6 +348,9 @@
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Dash'teki Tutar";
 
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "DASH cinsinden tutar";
+
 /* No comment provided by engineer. */
 "Amount received" = "Alınan miktar";
 
@@ -348,8 +384,14 @@
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved";
 
+/* Recovery phrase backup: security warning body — anyone with the phrase can spend the funds */
+"Anyone that has your recovery phrase can access your funds." = "Kurtarma sözcük grubunuza sahip olan herkes paranıza erişebilir.";
+
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Bir adresi bilen herkes onun geçmişini görüntüleyebilir";
+
+/* Username marketplace: set price sheet body */
+"Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance." = "Herkes bu adı tam olarak bu fiyata satın alabilecek. Gelir, kimlik bakiyenize kredi olarak yansır.";
 
 /* AboutDash */
 "App version" = "App version";
@@ -430,8 +472,17 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "Otomatik Bakiye Gizleme";
 
+/* DashPay */
+"Available after sync finishes" = "Eşitleme bittiğinde kullanılabilir";
+
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
+
+/* Username marketplace: unregistered name row */
+"Available — register it on your identity" = "Uygun — kimliğinize kaydedin";
+
+/* Username marketplace: unregistered contested-eligible name row */
+"Available — short names are decided by a network vote" = "Uygun — kısa adlara ağ oylaması karar verir";
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
@@ -525,6 +576,9 @@
 /* Voting */
 "Blocked '%@' username" = "Blocked '%@' username";
 
+/* Username marketplace: history — purchase with buyer, seller, price */
+"Bought by %1$@ from %2$@ for %3$@ DASH" = "%1$@ tarafından %2$@ kişisinden %3$@ DASH karşılığında satın alındı";
+
 /* Identities: this key only signs for one data contract */
 "Bound to contract" = "Sözleşmeye bağlı";
 
@@ -573,6 +627,9 @@
 /* Swap */
 "Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
 
+/* Username marketplace: purchase button */
+"Buy for %@ DASH" = "%@ DASH karşılığında satın al";
+
 /* DashSpend */
 "Buy gift card" = "Buy gift card";
 
@@ -581,6 +638,12 @@
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash for the exact amount of your purchase." = "Satın alma işleminizin tam tutarı için Dash'ınızla hediye kartları satın alın.";
+
+/* Username marketplace: purchase confirmation title */
+"Buy “%@”?" = "“%@” satın alınsın mı?";
+
+/* Username marketplace: Explore row subtitle */
+"Buy, sell and transfer DashPay usernames" = "DashPay kullanıcı adlarını alın, satın ve aktarın";
 
 /* Buy/Sell */
 "Buy/Sell" = "Al/Sat";
@@ -631,6 +694,9 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "PİN Değiştir";
+
+/* Username marketplace */
+"Change Price" = "Fiyatı Değiştir";
 
 /* TimeSkew */
 "Check date & time settings" = "Check date & time settings";
@@ -713,6 +779,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "Yakında";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "Aktarımı Tamamla";
+
 /* Shielded transfer status */
 "Completed" = "Tamamlandı";
 
@@ -782,6 +851,18 @@
 
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "%@ kişisine iletişim isteği gönderildi";
+
+/* Usernames */
+"Continue without a temporary username" = "Geçici kullanıcı adı olmadan devam et";
+
+/* Identity top-up sheet — body */
+"Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Kişi istekleri ve profil güncellemeleri gibi Platform işlemlerini ödemek için Dash'i kimlik kredisine dönüştürün.";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "Aktarım tamamlanamadı";
+
+/* Identity top-up sheet — free amount chip */
+"Custom" = "Özel";
 
 /* No comment provided by engineer. */
 "Contact Requests" = "İletişim İstekleri";
@@ -1005,6 +1086,9 @@
 /* Uphold Entry Point */
 "Dash balance on Uphold" = "Uphold’daki Dash bakiyeniz";
 
+/* Recovery phrase backup: security warning title — Dash Core Group does not store the phrase */
+"Dash Core Group does NOT store this recovery phrase" = "Dash Core Group bu kurtarma sözcük grubunu SAKLAMAZ";
+
 /* Dash DEX Portal
    Translate it as short as possible! (24 symbols max) */
 "Dash DEX" = "Dash DEX";
@@ -1042,6 +1126,27 @@
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "DashPay etkinleştirildi";
 
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "En az %@ DASH girin";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "Tahmini ücretler";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "Ücretler tutardan düşülür; Shielded üzerinden ödemede küçük bir bakiye Platform bakiyenizde kalabilir.";
+
+/* Username marketplace: search segment */
+"Find Names" = "Ad Bul";
+
+/* Username marketplace: listed badge */
+"For sale" = "Satılık";
+
+/* Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app */
+"For sale by an independent user" = "Bağımsız bir kullanıcı tarafından satılıyor";
+
+/* Identity top-up sheet — linkability warning for transparent-side sources */
+"Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Şeffaf bakiyeden ödeme yapmak, o coin'leri Dash zincirinde kimliğinizle herkese açık şekilde ilişkilendirir. Gizlilik için Shielded bakiyenizden ödeyin.";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "DashPay Davetiyesi";
 
@@ -1062,6 +1167,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "Tarih";
+
+/* History group header for restored shielded operations whose original date is not recoverable */
+"Date unknown" = "Tarih bilinmiyor";
 
 /* Voting */
 "Date: New to old" = "Tarih: Yeniden eskiye";
@@ -1085,6 +1193,9 @@
 
 /* No comment provided by engineer. */
 "Delete Wallet?" = "Delete Wallet?";
+
+/* SPV diagnostics */
+"Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network." = "Bu cüzdanın onaylanmamış işlemlerini yalnızca bu cihazdan siler ve harcamaya çalıştıkları coin'leri serbest bırakır. Filtre yeniden taraması, gerçekten blok zincirinde olanları geri getirir. Ağa hiçbir şey gönderilmez.";
 
 /* Location Service Status */
 "Denied" = "Reddedildi";
@@ -1116,6 +1227,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "CİHAZ GÜVENLİĞİ ZAYIFLADI\nHerhangi bir 'jailbreak' uygulaması diğer uygulamaların verilerine erişebilir (ve Dashlerinizi çalabilir).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu." = "CİHAZ GÜVENLİĞİ TEHLİKEDE\nHerhangi bir 'jailbreak' uygulaması, başka her uygulamanın anahtar zinciri verilerine erişebilir (ve Dash'inizi çalabilir). Paranızı güvenli bir cihazdaki cüzdana taşıyın, ardından Güvenlik menüsündeki “Cüzdanı Sıfırla” ile bu cüzdanı sıfırlayın.";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "CİHAZ GÜVENLİĞİ ZAYIFLADI\nHerhangi bir 'jailbreak' uygulaması diğer uygulamaların verilerine erişebilir (ve Dashlerinizi çalabilir). Bu cüzdanı hemen silin ve güvenli bir cihaza yükleyin.";
@@ -1169,6 +1283,27 @@
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
 "DPNS Names" = "DPNS Names";
+
+/* SPV diagnostics */
+"Drop & rescan" = "At ve yeniden tara";
+
+/* SPV diagnostics */
+"Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network." = "Bu cüzdanın hâlâ ağı bekleyen (hiç kilitlenmemiş veya kazılmamış) işlemlerini bu cihazdan atar, harcamaya çalıştıkları coin'leri yeniden kullanılabilir yapar ve son filtreleri yeniden tarar. Gerçekten blok zincirinde olan bir işlem, yeniden tarama sırasında kendiliğinden geri gelir. Ağa hiçbir şey gönderilmez.";
+
+/* SPV diagnostics */
+"Drop Unconfirmed & Rescan" = "Onaylanmamışları At ve Yeniden Tara";
+
+/* SPV diagnostics */
+"Drop unconfirmed transactions?" = "Onaylanmamış işlemler atılsın mı?";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row." = "%d onaylanmamış işlem atıldı — filtreler yeniden taranıyor, Filtreler satırını izleyin.";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above." = "%d onaylanmamış işlem atıldı, ancak filtre yeniden taraması başlatılamadı — yukarıdaki “Filtreleri Yeniden Tara” işlemini çalıştırın.";
+
+/* SPV diagnostics */
+"Dropping…" = "Atılıyor…";
 
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "CrowdNode'un hizmet koşulları nedeniyle, kullanıcılar aşağıdakilerden daha fazlasını çekemez:";
@@ -1280,6 +1415,9 @@
 
 /* No comment provided by engineer. */
 "Enter your recovery phrase to reset your PIN" = "Enter your recovery phrase to reset your PIN";
+
+/* No comment provided by engineer. */
+"Enter your recovery phrase to set a new PIN" = "Yeni bir PIN belirlemek için kurtarma sözcük grubunuzu girin";
 
 /* Voting */
 "Enter your voting key" = "Oylama anahtarınızı girin";
@@ -1665,6 +1803,42 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "Gizlilik açısından Ethereum hesaplarıyla karşılaştırıldığında nasıl?";
 
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "Kimlik Hesabı Bakiyesi";
+
+/* Username marketplace: section of contested-name requests awaiting the masternode vote */
+"In network vote" = "Ağ oylamasında";
+
+/* Username marketplace: search row for a contested label with an active vote by others */
+"In a network vote — you can join as a contender" = "Ağ oylamasında — aday olarak katılabilirsiniz";
+
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "Bu süre boyunca “%1$@” adıyla ulaşılabilirsiniz ve bu ad sizde kalır. Oylama size “%2$@” adını verirse her iki kullanıcı adıyla da ulaşılabilir olursunuz.";
+
+/* Username marketplace: search row for a label a past vote locked */
+"Locked by a network vote — nobody can register it" = "Ağ oylamasıyla kilitlendi — kimse kaydedemez";
+
+/* Username marketplace: latest ownership change */
+"Last transferred" = "Son aktarım";
+
+/* Username marketplace: confirm listing button */
+"List For Sale" = "Satışa Çıkar";
+
+/* Username marketplace: own listed name */
+"Listed by you" = "Sizin tarafınızdan satışa çıkarıldı";
+
+/* Username marketplace: history — price set */
+"Listed for %@ DASH" = "%@ DASH karşılığında satışta";
+
+/* Username marketplace: set price fee note */
+"Listing is a network transaction with a small fee, paid from your identity balance." = "Satışa çıkarma, kimlik bakiyenizden ödenen küçük bir ücreti olan bir ağ işlemidir.";
+
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "Kimliğim";
+
+/* Username marketplace: owned names segment */
+"My Names" = "Adlarım";
+
 /* DashPay FAQ */
 "How private is DashPay?" = "DashPay ne kadar özel?";
 
@@ -2027,6 +2201,9 @@
 /* CrowdNode */
 "Leaving the pool" = "Havuzdan ayrılmak";
 
+/* DashPay Contacts: caption under the user's own QR code */
+"Let another Dash Wallet user scan this code to add you as a contact." = "Sizi kişi olarak eklemesi için başka bir Dash Wallet kullanıcısının bu kodu taramasına izin verin.";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Bittiğinde bana haber ver";
 
@@ -2099,6 +2276,51 @@
 "Lock" = "Kilitle";
 
 "Lock the name" = "Adı kilitle";
+
+/* Username marketplace: contest voting deadline row */
+"Vote ends" = "Oylama bitiyor";
+
+/* Username marketplace: until when other identities can join the contest */
+"New contenders" = "Yeni adaylar";
+
+/* Username marketplace: join deadline still open — value of the New contenders row */
+"can join until %@" = "%@ tarihine kadar katılabilir";
+
+/* Username marketplace: the contest's join window has passed — value of the New contenders row */
+"joining closed" = "katılım kapandı";
+
+/* Username marketplace: masternode vote tally for one contest row */
+"%d votes" = "%d oy";
+
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "Standart 12 kelimedir. 24 kelimeyi yazmak ve geri yüklemek daha uzun sürer, ancak uzak gelecekteki gelişmiş bilgisayar sistemlerinin kırması çok daha zordur.";
+
+/* Username marketplace: unresolvable transfer recipient */
+"No identity owns that username." = "Bu kullanıcı adına sahip bir kimlik yok.";
+
+/* Username marketplace: names that were sold or transferred away */
+"No longer yours" = "Artık sizin değil";
+
+/* Identity top-up sheet — missing unshield destination */
+"No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "Henüz kullanılabilir bir Platform alma adresi yok — Platform eşitlemesinin bitmesini bekleyip yeniden deneyin.";
+
+/* Username marketplace: empty owned list */
+"No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "Bu kimlikte henüz kullanıcı adı yok. “Ad Bul” sekmesinden satın alacak veya kaydedecek bir ad bulun.";
+
+/* Identity top-up sheet — insufficient funding source */
+"Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Bu bakiyede yeterli tutar yok: %@ DASH gerekli, %@ DASH mevcut.";
+
+/* Username marketplace: insufficient balance hint */
+"Not enough identity credits for this purchase — top up from My Profile first." = "Bu satın alma için kimlik krediniz yetersiz — önce “Profilim” bölümünden yükleyin.";
+
+/* Username marketplace: insufficient balance hint for a contested request */
+"Not enough identity credits for this request — top up from My Profile first." = "Bu talep için kimlik krediniz yetersiz — önce “Profilim” bölümünden yükleyin.";
+
+/* Username marketplace: someone else's unlisted name */
+"Not for sale" = "Satılık değil";
+
+/* Username marketplace: own unlisted name */
+"Not listed for sale" = "Satışa çıkarılmadı";
 
 "Lock “%@” so nobody gets it" = "Kimse alamasın diye “%@” adını kilitle";
 
@@ -2342,11 +2564,92 @@
 /* SDK identity profile sheet — title */
 "My Profile" = "My Profile";
 
+/* DashPay Contacts: shows the user's own contact QR code */
+"My QR" = "QR Kodum";
+
 /* No comment provided by engineer. */
 "Name" = "İsim";
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Unstoppable Domains gibi ad hizmetleri, okunabilir bir adı zincir üzerindeki sabit ve herkese açık bir adrese eşler. Herkes bu adı çözümleyip ona yapılmış her ödemeyi görebilir. Bir DashPay kullanıcı adı hiçbir zaman herkese açık şekilde bir ödeme adresine çözümlenmez — adresler yalnızca her kişiyle yapılan şifreli değişimin içinde açığa çıkar, böylece adınız ve paranız dışarıdan bakanlar için ilişkisiz kalır.";
+
+/* Username marketplace: contested request line — voting deadline */
+"Network vote ends %@" = "Ağ oylaması %@ tarihinde bitiyor";
+
+/* Username marketplace: activity overlay while the purchase transition runs */
+"Completing your purchase…" = "Satın alma işleminiz tamamlanıyor…";
+
+/* Usernames */
+"Register username" = "Kullanıcı adı kaydet";
+
+/* Username marketplace: activity overlay while the delist transition runs */
+"Removing the listing…" = "İlan kaldırılıyor…";
+
+/* Username marketplace: activity overlay while the set-price transition runs */
+"Listing for sale…" = "Satışa çıkarılıyor…";
+
+/* Usernames */
+"Submit both usernames" = "Her iki kullanıcı adını da gönder";
+
+/* Usernames */
+"Temporary username" = "Geçici kullanıcı adı";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "Geçici kullanıcı adının kendisi oylama gerektirmemelidir.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Bu ad bir masternode oylaması gerektiriyor. Yarışma ücreti gönderdiğinizde harcanır ve adı kazanmasanız bile iade edilmez.";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "Bu kullanıcı adı da oylama gerektirir — 2 ile 9 arasında bir rakam eklemeyi deneyin";
+
+/* Username marketplace: activity overlay while the transfer transition runs */
+"Transferring the username…" = "Kullanıcı adı aktarılıyor…";
+
+/* Username marketplace: activity overlay while the registration transition runs */
+"Registering the username…" = "Kullanıcı adı kaydediliyor…";
+
+/* Username marketplace: activity overlay while the contested request transition runs */
+"Submitting your username request…" = "Kullanıcı adı talebiniz gönderiliyor…";
+
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "Göz at";
+
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "Fiyat değişiklikleri";
+
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "Satın alımlar";
+
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "%1$@ DASH karşılığında satışta · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "%1$@ DASH karşılığında satıldı · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "%1$@ DASH karşılığında satıldı · %2$@ · %3$@ → %4$@";
+
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "Şu anda satışta değil";
+
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "Son ilan hareketlerinde satılık ad yok. “Daha fazla göster” daha eskiye gider.";
+
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "Ağda henüz satın alım yok.";
+
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "Hareketler yükleniyor…";
+
+/* Username marketplace: load older browse activity */
+"Show more" = "Daha fazla göster";
+
+/* Username marketplace: contest tallies card title */
+"Network vote so far" = "Şu ana kadarki ağ oylaması";
+
+/* Username marketplace: contest with zero masternode votes so far */
+"No votes cast yet" = "Henüz oy kullanılmadı";
 
 /* Swap route provider
    Swap route provider short */
@@ -2381,6 +2684,9 @@
 
 /* (List of) New (notifications) */
 "New" = "Yeni";
+
+/* SPV diagnostics */
+"No unconfirmed transactions to drop." = "Atılacak onaylanmamış işlem yok.";
 
 /* CrowdNode */
 "New CrowdNode Account" = "Yeni CrowdNode Hesabı";
@@ -2563,6 +2869,15 @@
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "Bitcoin'de bir ad katmanı yoktur, bu yüzden insanlar adresleri açıkça paylaşır ve yeniden kullanır — bir adres bir kez bilindiğinde, o adrese gelmiş her şey sahibiyle ilişkilendirilebilir. DashPay'de kullanıcı adınız herkese açıktır ama hiçbir zaman bir ödeme adresini göstermez: adresler her kişiyle özel olarak değiştirilir ve döner, bu yüzden adla ödeme yapmak paranızın nereye gittiğini yayımlamaz. Her ikisi de şeffaf zincirlerdir, dolayısıyla zincir analizi coinlerin kendisi için hâlâ geçerlidir.";
 
+/* DashPay Contacts: search results from DPNS, not the local contact list */
+"On the Dash network" = "Dash ağında";
+
+/* Username marketplace */
+"Owned by you" = "Size ait";
+
+/* Identity top-up sheet — funding source picker label */
+"Pay from" = "Şuradan öde";
+
 /* Identities */
 "On Network" = "Ağda";
 
@@ -2731,6 +3046,9 @@
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Ödemeler özeldir: bir kişiyle değiş tokuş ettiğiniz adresler yalnızca ikinizin okuyabildiği şifreli bir yük içinde taşınır ve asla yayımlanmaz — bu yüzden ödemeleriniz kullanıcı adınızla kolayca ilişkilendirilemez. Yine de bunlar şeffaf zincir üzerindeki normal ödemelerdir: gelişmiş zincir analizi bilgi sızdırabilir. Shielded DashPay (yakında) bu boşluğu kapatacak. İletişim isteklerinin kendisi şu anda özel DEĞİLDİR: iki kimliğin bağlantılı olduğunu herkes görebilir. Özel iletişim istekleri yakında gelecek bir özelliktir. Kullanıcı adınız ve profiliniz de Dash Platform üzerinde herkese açıktır.";
 
+/* Username marketplace: price placeholder */
+"Price in DASH" = "DASH cinsinden fiyat";
+
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "Ödemeler InstantSend ile saniyeler içinde onaylanır";
 
@@ -2788,6 +3106,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Ödeme yapmak için her zaman PIN gereklidir";
+
+/* No comment provided by engineer. */
+"PIN Not Set" = "PIN Ayarlanmadı";
 
 /* Dash Platform chain */
 "Platform" = "Platform";
@@ -2992,6 +3313,9 @@
 /* Identities: what a public key is used for */
 "Purpose" = "Amaç";
 
+/* Username marketplace */
+"Put Up For Sale" = "Satışa Sun";
+
 /* DashSpend */
 "Quantity" = "Quantity";
 
@@ -3027,6 +3351,96 @@
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Salt okunur";
+
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "Yeniden yayınla";
+
+/* Delete a never-accepted transaction from local wallet state */
+"Remove if Not on Network" = "Ağda yoksa kaldır";
+
+/* Remove never-accepted transaction: confirmation title */
+"Remove this transaction?" = "Bu işlem kaldırılsın mı?";
+
+/* Remove never-accepted transaction: destructive confirm button */
+"Remove Transaction" = "İşlemi Kaldır";
+
+/* Username marketplace: transfer recipient placeholder */
+"Recipient username or identity ID" = "Alıcının kullanıcı adı veya kimlik kimliği";
+
+/* Identity top-up sheet — shielded source note */
+"Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Önerilir: kendi Platform adresiniz üzerinden iki adımlı bir aktarım, kimliğinizin şeffaf coin'lerinizle ilişkilendirilmesini önler.";
+
+/* Username marketplace: register sheet title */
+"Register “%@”" = "“%@” kaydet";
+
+/* Username marketplace: registration date */
+"Registered" = "Kaydedildi";
+
+/* Username marketplace */
+"Remove From Sale" = "Satıştan Kaldır";
+
+/* Remove never-accepted transaction: progress */
+"Removing transaction…" = "İşlem kaldırılıyor…";
+
+/* Username marketplace: delist confirmation title */
+"Remove “%@” from sale?" = "“%@” satıştan kaldırılsın mı?";
+
+/* Username marketplace: history — delist (transfer to self) */
+"Removed from sale" = "Satıştan kaldırıldı";
+
+/* Username marketplace: delist confirmation body */
+"Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "İlanı kaldırmak, kimlik bakiyenizden ödenen küçük bir ücreti olan bir ağ işlemidir. Ad sizde kalır.";
+
+/* Remove never-accepted transaction: refused because the explorer found it */
+"Transaction is known to the network" = "İşlem ağ tarafından biliniyor";
+
+/* Remove never-accepted transaction: refusal body */
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "Bir blok gezgini, bu işlemin Dash ağı tarafından bilindiğini bildiriyor. İşlem hâlâ mempool'da bekliyor veya çoktan bir bloğa dahil edilmiş olabilir; bu nedenle kaldırılmadı. İşlem eşitlenmiş bir bloğa dahil edilir edilmez cüzdan onayını otomatik olarak güncelleyecek.";
+
+/* Remove never-accepted transaction: success */
+"Transaction removed" = "İşlem kaldırıldı";
+
+/* Remove never-accepted transaction: removed but the recovery rescan did not arm */
+"Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "İşlem kaldırıldı — yeniden tarama başlatılamadı, Core Eşitleme Durumu'ndan “Filtreleri Yeniden Tara” işlemini çalıştırın";
+
+/* Remove never-accepted transaction: confirmation body */
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "Cüzdan önce bir blok gezginine bakar. Ağ tarafından bilinen bir işlem — ister mempool'da beklesin ister çoktan bir bloğa dahil edilmiş olsun — asla kaldırılmaz. İşlem bulunamazsa bu cihazdaki bu cüzdandan silinir ve harcamaya çalıştığı coin'ler yeniden kullanılabilir hale gelir. Ardından cüzdan güvenlik kontrolü olarak son blokları yeniden tarar. Ağa hiçbir şey gönderilmez.";
+
+/* Remove never-accepted transaction: failure title */
+"Couldn't remove the transaction" = "İşlem kaldırılamadı";
+
+/* Remove never-accepted transaction: no local row */
+"This transaction is not in the local wallet." = "Bu işlem yerel cüzdanda değil.";
+
+/* Remove never-accepted transaction: local state says it's on-chain */
+"This transaction is confirmed and can't be removed." = "Bu işlem onaylanmış ve kaldırılamaz.";
+
+/* Remove never-accepted transaction: explorer unreachable */
+"Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "İşlemin blok zincirinde olmadığını doğrulamak için bir blok gezginine ulaşılamadı. Bağlantınızı kontrol edip yeniden deneyin.";
+
+/* Username marketplace: contested request cost row */
+"Request cost" = "Talep maliyeti";
+
+/* Username marketplace: contested request success */
+"Request for %@ submitted — masternodes now vote on it" = "%@ talebi gönderildi — masternode'lar şimdi oyluyor";
+
+/* Username marketplace: confirm contested request button */
+"Request Username" = "Kullanıcı Adı Talep Et";
+
+/* Username marketplace: contested register sheet title */
+"Request “%@”" = "“%@” talep et";
+
+/* Username marketplace: contested request not yet indexed by Platform */
+"Requested — waiting for the network vote" = "Talep edildi — ağ oylaması bekleniyor";
+
+/* Username marketplace: search row for a contested label this identity already requested */
+"Requested by you — the network vote is in progress" = "Sizin tarafınızdan talep edildi — ağ oylaması sürüyor";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "Aktarım yeniden deneniyor…";
+
+/* Username marketplace: screen subtitle */
+"Search usernames, buy ones that are for sale, and sell or transfer your own." = "Kullanıcı adı arayın, satıştakileri satın alın, kendi adlarınızı satın veya aktarın.";
 
 /* Usernames */
 "Ready around %@" = "Yaklaşık %@ civarında hazır";
@@ -3081,6 +3495,9 @@
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Kurtarma Sözcük Grubu";
+
+/* Recovery phrase length */
+"Recovery phrase length" = "Kurtarma sözcük grubu uzunluğu";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Kurtarma cümlesi eşleşmiyor";
@@ -3194,6 +3611,9 @@
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
+
+/* No comment provided by engineer. */
+"Completion unknown" = "Tamamlanma durumu bilinmiyor";
 
 /* Location Service Status */
 "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "Geri yüklenen cüzdanlar işlem türünü her zaman kurtaramaz. Bu kayıt, zincir üzerindeki not verilerinden yeniden oluşturuldu.";
@@ -3321,6 +3741,9 @@
 /* Identities: DPP security level of a public key */
 "Security level" = "Güvenlik düzeyi";
 
+/* Username marketplace: transfer sheet body */
+"Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "Bu adı ücretsiz olarak başka bir kimliğe gönderin. Aktarım, varsa satış ilanını da kaldırır. Bu geri alınamaz — yeni sahibinin adı geri aktarması gerekir.";
+
 /* DashSpend */
 "See card details" = "See card details";
 
@@ -3368,7 +3791,520 @@
 /* Coinbase */
 "Select the coin" = "Koin seçin";
 
+/* Identities */
+"Select the username to display for this identity." = "Bu kimlik için gösterilecek kullanıcı adını seçin.";
+
 "Selecting fewer nodes reveals less about which masternodes you run." = "Daha az düğüm seçmek, hangi anadüğümleri işlettiğiniz hakkında daha az bilgi verir.";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "Bu cihazda %ld cüzdan bulundu";
+
+/* No comment provided by engineer. */
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "Bu cihazda önceki bir kurulumdan kalma %ld cüzdan saklanıyor. “Tümünü Sil” her cüzdanı kaldırır. Silmeden önce her kurtarma sözcük grubunu yedekleyin.";
+
+/* No comment provided by engineer. */
+"Couldn’t Delete All Wallets" = "Tüm Cüzdanlar Silinemedi";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Wallets" = "Cüzdanlar Okunamadı";
+
+/* No comment provided by engineer. */
+"Delete All" = "Tümünü Sil";
+
+/* No comment provided by engineer. */
+"Delete All Wallets?" = "Tüm cüzdanlar silinsin mi?";
+
+/* No comment provided by engineer. */
+"Deleting All Wallets…" = "Tüm Cüzdanlar Siliniyor…";
+
+/* No comment provided by engineer. */
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "Bu cihazda saklanan cüzdan sayısı doğrulanamadı. Devam etmek için, herhangi bir cüzdan silinmeden önce Dash Destek tarafından sağlanan bir onay ifadesi gerekir.";
+
+/* No comment provided by engineer. */
+"Keep Wallets" = "Cüzdanları Koru";
+
+/* No comment provided by engineer. */
+"No stored wallets were found. Nothing was deleted." = "Saklanan cüzdan bulunamadı. Hiçbir şey silinmedi.";
+
+/* No comment provided by engineer. */
+"No Wallets Found" = "Cüzdan Bulunamadı";
+
+/* No comment provided by engineer. */
+"Not all wallets could be deleted. Please try again." = "Tüm cüzdanlar silinemedi. Lütfen yeniden deneyin.";
+
+/* No comment provided by engineer. */
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "Bu işlem, bu uygulamanın bu cihazda sakladığı tüm cüzdanları, özel anahtarları ve kurtarma sözcük gruplarını kalıcı olarak kaldırır. Bunlar yalnızca yedeklerden geri yüklenebilir. Bu geri alınamaz.";
+
+/* No comment provided by engineer. */
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "Bu cihazda saklanan cüzdanlar doğrulanamadı. Hiçbir şey silinmedi. Lütfen yeniden deneyin.";
+
+/* No comment provided by engineer. */
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "Bu işlem, bu cihazda saklanan %ld cüzdanın tamamını siler. Bunlar yalnızca kurtarma sözcük gruplarıyla geri yüklenebilir. Bu cihazdan silinmeleri geri alınamaz.";
+
+/* No comment provided by engineer. */
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "Bu cihazda önceki bir kurulumdan kalma cüzdan verileri hâlâ saklanıyor. Bu cüzdanları kullanmaya devam mı, yoksa tüm cüzdan verilerini silip sıfırdan mı başlamak istiyorsunuz? Silmeden önce her kurtarma sözcük grubunun yedeklendiğinden emin olun.";
+
+/* No comment provided by engineer. */
+"Wallets found on this device" = "Bu cihazda bulunan cüzdanlar";
+
+/* No comment provided by engineer. */
+"Wipe All Wallets" = "Tüm Cüzdanları Sil";
+
+/* No comment provided by engineer. */
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "Tek bir cüzdanın kurtarma sözcük grubu, birden fazla farklı cüzdanın silinmesine izin veremez.";
+
+/* No comment provided by engineer. */
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "Testnet'te sıfır bakiye, bu cüzdanın mainnet'te boş olduğunu kanıtlamaz. Devam etmek için kurtarma sözcük grubunu girin.";
+
+/* No comment provided by engineer. */
+"Enter the recovery phrase to continue." = "Devam etmek için kurtarma sözcük grubunu girin.";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "Cüzdan Seç";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Recovery Phrases" = "Kurtarma Sözcük Grupları Okunamadı";
+
+/* No comment provided by engineer. */
+"No Recovery Phrase Found" = "Kurtarma Sözcük Grubu Bulunamadı";
+
+/* No comment provided by engineer. */
+"No recovery phrase is stored on this device." = "Bu cihazda saklanan bir kurtarma sözcük grubu yok.";
+
+/* No comment provided by engineer. */
+"Select the wallet whose recovery phrase you want to view." = "Kurtarma sözcük grubunu görmek istediğiniz cüzdanı seçin.";
+
+/* No comment provided by engineer. */
+"The recovery phrases stored on this device could not be read. Please try again." = "Bu cihazda saklanan kurtarma sözcük grupları okunamadı. Lütfen yeniden deneyin.";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address for this network" = "Bu ağ için geçerli bir Dash adresi değil";
+
+/* No comment provided by engineer. */
+"The claimable balance is too small to cover the Platform withdrawal fee." = "Talep edilebilir bakiye, Platform çekim ücretini karşılamak için çok düşük.";
+
+/* No comment provided by engineer. */
+"You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it." = "En fazla %@ DASH çekebilirsiniz — geri kalanı Platform ücretini karşılamak için kalır. Kullanmak için “Maks”a dokunun.";
+
+/* No comment provided by engineer. */
+"The minimum withdrawal is %@ DASH." = "En az çekim tutarı %@ DASH'tir.";
+
+/* No comment provided by engineer. */
+"Payout address key" = "Ödeme adresi anahtarı";
+
+/* No comment provided by engineer. */
+"Owner key (%@)" = "Sahip anahtarı (%@)";
+
+/* No comment provided by engineer. */
+"Wallet is not ready. Try again in a moment." = "Cüzdan hazır değil. Birazdan yeniden deneyin.";
+
+/* No comment provided by engineer. */
+"%@ · Claimable %@ DASH" = "%@ · Talep edilebilir %@ DASH";
+
+/* No comment provided by engineer. */
+"Withdraw to" = "Şuraya çek";
+
+/* No comment provided by engineer. */
+"Enter a Dash address" = "Bir Dash adresi girin";
+
+/* No comment provided by engineer. */
+"Use the payout address" = "Ödeme adresini kullan";
+
+/* No comment provided by engineer. */
+"This is the evonode's registered payout address." = "Bu, evonode'un kayıtlı ödeme adresidir.";
+
+/* No comment provided by engineer. */
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "Bu cüzdan evonode'un ödeme adresi anahtarını tuttuğu için bakiye herhangi bir Dash adresine çekilebilir.";
+
+/* No comment provided by engineer. */
+"Registered payout address" = "Kayıtlı ödeme adresi";
+
+/* No comment provided by engineer. */
+"This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "Bu çekim, evonode'un sahip anahtarıyla imzalanır. Dash Platform, sahip anahtarının yalnızca kayıtlı ödeme adresine çekim yapmasına izin verir; bu nedenle hedef burada değiştirilemez. Başka bir adrese çekmek için ödeme adresi anahtarını tutan cüzdanı kullanın.";
+
+/* No comment provided by engineer. */
+"How it works" = "Nasıl çalışır";
+
+/* No comment provided by engineer. */
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "Dash Platform çekimi Dash zincirinde öder — genellikle birkaç dakika içinde. Tutarın üzerine, evonode'un bakiyesinden yaklaşık %@ DASH Platform ücreti alınır; bu yüzden “Maks” bunu karşılamak için biraz pay bırakır.";
+
+/* No comment provided by engineer. */
+"Confirm withdrawal" = "Çekimi onayla";
+
+/* No comment provided by engineer. */
+"Owner-key withdrawals are always paid to the registered payout address." = "Sahip anahtarıyla yapılan çekimler her zaman kayıtlı ödeme adresine ödenir.";
+
+/* No comment provided by engineer. */
+"Waiting for authorization…" = "Yetkilendirme bekleniyor…";
+
+/* No comment provided by engineer. */
+"Submitting to Dash Platform…" = "Dash Platform'a gönderiliyor…";
+
+/* No comment provided by engineer. */
+"Withdrawal submitted" = "Çekim gönderildi";
+
+/* No comment provided by engineer. */
+"Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "Dash Platform kısa süre içinde Dash zincirinde ödeyecek — genellikle birkaç dakika içinde ulaşır.";
+
+/* No comment provided by engineer. */
+"Remaining claimable balance: %@ DASH" = "Kalan talep edilebilir bakiye: %@ DASH";
+
+/* No comment provided by engineer. */
+"%@ · Platform balance" = "%@ · Platform bakiyesi";
+
+/* No comment provided by engineer. */
+"Signed with" = "Şununla imzalandı";
+
+/* No comment provided by engineer. */
+"Platform fee" = "Platform ücreti";
+
+/* No comment provided by engineer. */
+"%@ (payout address)" = "%@ (ödeme adresi)";
+
+/* No comment provided by engineer. */
+"This wallet holds the payout address key, so you can withdraw to any address." = "Bu cüzdan ödeme adresi anahtarını tuttuğu için herhangi bir adrese çekim yapabilirsiniz.";
+
+/* No comment provided by engineer. */
+"This wallet holds the owner key, so withdrawals go to the registered payout address." = "Bu cüzdan sahip anahtarını tuttuğu için çekimler kayıtlı ödeme adresine gider.";
+
+/* No comment provided by engineer. */
+"This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "Bu cüzdan bu evonode'un ne sahip anahtarını ne de ödeme adresi anahtarını tutuyor; bu nedenle bakiyesi buradan çekilemez.";
+
+/* No comment provided by engineer. */
+"Couldn't check which keys of this evonode are in the wallet." = "Bu evonode'un hangi anahtarlarının cüzdanda olduğu kontrol edilemedi.";
+
+/* No comment provided by engineer. */
+"Result not confirmed" = "Sonuç onaylanmadı";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "Çekim Dash Platform'a gönderildi ancak sonucu doğrulanamadı. Gerçekleşmiş olabilir. Yeniden göndermeyin — önce talep edilebilir bakiyeyi ve ödeme adresini kontrol edin.";
+
+/* No comment provided by engineer. */
+"1 block proposed this epoch" = "Bu dönemde 1 blok önerildi";
+
+/* No comment provided by engineer. */
+"%@ blocks proposed this epoch" = "Bu dönemde %@ blok önerildi";
+
+/* No comment provided by engineer. */
+"Nodes" = "Düğümler";
+
+/* No comment provided by engineer. */
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "Düğümler, dönem günü %d, bu dönemde %@ blok önerildi";
+
+/* No comment provided by engineer. */
+"an evonode has not proposed a block in 2 days" = "bir evonode 2 gündür blok önermedi";
+
+/* No comment provided by engineer. */
+"an evonode has no blocks this epoch" = "bir evonode'un bu dönemde bloğu yok";
+
+/* No comment provided by engineer. */
+"A key doesn't match this masternode — fix or clear it to continue." = "Bir anahtar bu masternode ile eşleşmiyor — devam etmek için düzeltin veya temizleyin.";
+
+/* No comment provided by engineer. */
+"Add keys" = "Anahtar ekle";
+
+/* No comment provided by engineer. */
+"Add masternode" = "Masternode ekle";
+
+/* No comment provided by engineer. */
+"Add this node's owner key or payout address key to withdraw from here." = "Buradan çekim yapmak için bu düğümün sahip anahtarını veya ödeme adresi anahtarını ekleyin.";
+
+/* No comment provided by engineer. */
+"Already one of this wallet's masternodes — it's in the list above." = "Zaten bu cüzdanın masternode'larından biri — yukarıdaki listede.";
+
+/* No comment provided by engineer. */
+"Already tracked." = "Zaten izleniyor.";
+
+/* No comment provided by engineer. */
+"Any keys you added for it are deleted from this device's keychain too." = "Bunun için eklediğiniz tüm anahtarlar bu cihazın anahtar zincirinden de silinir.";
+
+/* No comment provided by engineer. */
+"Available" = "Mevcut";
+
+/* No comment provided by engineer. */
+"BLS private key (hex)" = "BLS özel anahtarı (hex)";
+
+/* No comment provided by engineer. */
+"Can't verify yet" = "Henüz doğrulanamıyor";
+
+/* No comment provided by engineer. */
+"Could not load the node's registration details — owner and payout keys will verify later." = "Düğümün kayıt bilgileri yüklenemedi — sahip ve ödeme anahtarları daha sonra doğrulanacak.";
+
+/* No comment provided by engineer. */
+"Could not save a key to the keychain. Nothing was lost — try again." = "Bir anahtar anahtar zincirine kaydedilemedi. Hiçbir şey kaybolmadı — yeniden deneyin.";
+
+/* No comment provided by engineer. */
+"Destination address (optional)" = "Hedef adres (isteğe bağlı)";
+
+/* No comment provided by engineer. */
+"Doesn't match" = "Eşleşmiyor";
+
+/* No comment provided by engineer. */
+"Find" = "Bul";
+
+/* No comment provided by engineer. */
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "Masternode listesinde bulunmayan sahip ve ödeme anahtarlarını bulur. Anahtarın genel parmak izini bir Platform düğümüne gönderir.";
+
+/* No comment provided by engineer. */
+"IP address, proTxHash or private key" = "IP adresi, proTxHash veya özel anahtar";
+
+/* No comment provided by engineer. */
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "Anahtarlar bu cihazın anahtar zincirinde saklanır ve yalnızca istediğiniz işlemi imzalamak dışında cihazdan çıkmaz.";
+
+/* No comment provided by engineer. */
+"Keys on this device" = "Bu cihazdaki anahtarlar";
+
+/* No comment provided by engineer. */
+"Label (optional)" = "Etiket (isteğe bağlı)";
+
+/* No comment provided by engineer. */
+"Loading registration details…" = "Kayıt bilgileri yükleniyor…";
+
+/* No comment provided by engineer. */
+"Matches" = "Eşleşiyor";
+
+/* No comment provided by engineer. */
+"Matches this node's %@ key" = "Bu düğümün %@ anahtarıyla eşleşiyor";
+
+/* No comment provided by engineer. */
+"No masternode on the list matches that." = "Listedeki hiçbir masternode bununla eşleşmiyor.";
+
+/* No comment provided by engineer. */
+"Node key (base64 or hex)" = "Düğüm anahtarı (base64 veya hex)";
+
+/* No comment provided by engineer. */
+"Not added" = "Eklenmedi";
+
+/* No comment provided by engineer. */
+"On this device" = "Bu cihazda";
+
+/* No comment provided by engineer. */
+"Operator payout" = "Operatör ödemesi";
+
+/* No comment provided by engineer. */
+"Payout" = "Ödeme";
+
+/* No comment provided by engineer. */
+"Platform could not be reached, so owner and payout keys were not checked." = "Platform'a ulaşılamadı, bu nedenle sahip ve ödeme anahtarları kontrol edilmedi.";
+
+/* No comment provided by engineer. */
+"PoSe banned" = "PoSe ile yasaklı";
+
+/* No comment provided by engineer. */
+"Private key (WIF or hex)" = "Özel anahtar (WIF veya hex)";
+
+/* No comment provided by engineer. */
+"Refresh details" = "Bilgileri yenile";
+
+/* No comment provided by engineer. */
+"Refreshing…" = "Yenileniyor…";
+
+/* No comment provided by engineer. */
+"Save keys" = "Anahtarları kaydet";
+
+/* No comment provided by engineer. */
+"Search Platform too" = "Platform'da da ara";
+
+/* No comment provided by engineer. */
+"Searching…" = "Aranıyor…";
+
+/* No comment provided by engineer. */
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "Sahip anahtarıyla imzalanıyor — çekim kayıtlı ödeme adresine gider.";
+
+/* No comment provided by engineer. */
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "Ödeme adresi anahtarıyla imzalanıyor. Ödeme adresine çekmek için hedefi boş bırakın.";
+
+/* No comment provided by engineer. */
+"Stop tracking" = "İzlemeyi durdur";
+
+/* No comment provided by engineer. */
+"Stop tracking this masternode?" = "Bu masternode'un izlenmesi durdurulsun mu?";
+
+/* No comment provided by engineer. */
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "Bu bir sahip veya ödeme anahtarı da olabilir — kontrol etmek için “Platform'da da ara” seçeneğini açın.";
+
+/* No comment provided by engineer. */
+"The signing key is missing from the keychain — re-add it and try again." = "İmzalama anahtarı anahtar zincirinde eksik — yeniden ekleyip tekrar deneyin.";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "Çekim gönderildi ancak sonucu doğrulanamadı. Bakiye yeniden kontrol ediliyor — netleşene kadar yeniden denemeyin.";
+
+/* No comment provided by engineer. */
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "Ağdaki herhangi bir masternode veya evonode'u izleyin — bu cüzdana ait olması gerekmez.";
+
+/* No comment provided by engineer. */
+"Track this masternode" = "Bu masternode'u izle";
+
+/* No comment provided by engineer. */
+"Tracked" = "İzleniyor";
+
+/* No comment provided by engineer. */
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "İzleniyor. Çekim ve oylama gibi işlemleri etkinleştirmek için aşağıya bu düğümün anahtarlarını ekleyin veya şimdi bitirip daha sonra ekleyin.";
+
+/* No comment provided by engineer. */
+"Withdrawing…" = "Çekiliyor…";
+
+/* No comment provided by engineer. */
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "Ağdaki herhangi bir masternode'u — IP, proTxHash veya anahtarlarından biriyle — “+” düğmesinden de izleyebilirsiniz.";
+
+/* No comment provided by engineer. */
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "Bu evonode'un DAPI adresi bilinmiyor, bu nedenle durumu sorulamıyor.";
+
+/* No comment provided by engineer. */
+"Couldn't get the evonode's status." = "Evonode'un durumu alınamadı.";
+
+/* No comment provided by engineer. */
+"The evonode didn't answer in time." = "Evonode zamanında yanıt vermedi.";
+
+/* No comment provided by engineer. */
+"Couldn't reach the evonode." = "Evonode'a ulaşılamadı.";
+
+/* No comment provided by engineer. */
+"The evonode's answer couldn't be read." = "Evonode'un yanıtı okunamadı.";
+
+/* No comment provided by engineer. */
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "Düğümün doğrulanmamış kendi raporu — ağın üzerinde anlaştığı şey değil, düğümün kendisi hakkında söyledikleri.";
+
+/* No comment provided by engineer. */
+"Asked" = "Soruldu";
+
+/* No comment provided by engineer. */
+"Software" = "Yazılım";
+
+/* No comment provided by engineer. */
+"DAPI" = "DAPI";
+
+/* No comment provided by engineer. */
+"Drive" = "Drive";
+
+/* No comment provided by engineer. */
+"Tenderdash" = "Tenderdash";
+
+/* No comment provided by engineer. */
+"Protocol versions" = "Protokol sürümleri";
+
+/* No comment provided by engineer. */
+"Tenderdash P2P" = "Tenderdash P2P";
+
+/* No comment provided by engineer. */
+"Tenderdash block" = "Tenderdash bloğu";
+
+/* No comment provided by engineer. */
+"Drive current" = "Drive geçerli";
+
+/* No comment provided by engineer. */
+"Drive latest" = "Drive en son";
+
+/* No comment provided by engineer. */
+"Drive next epoch" = "Drive sonraki dönem";
+
+/* No comment provided by engineer. */
+"Node ID" = "Düğüm kimliği";
+
+/* No comment provided by engineer. */
+"Identity check" = "Kimlik kontrolü";
+
+/* No comment provided by engineer. */
+"Chain" = "Zincir";
+
+/* No comment provided by engineer. */
+"Catching up" = "Yetişiyor";
+
+/* No comment provided by engineer. */
+"Latest block height" = "En son blok yüksekliği";
+
+/* No comment provided by engineer. */
+"Earliest block height" = "En eski blok yüksekliği";
+
+/* No comment provided by engineer. */
+"Max peer block height" = "Eşlerin maks. blok yüksekliği";
+
+/* No comment provided by engineer. */
+"Core chain-locked height" = "Core zincir kilitli yükseklik";
+
+/* No comment provided by engineer. */
+"Latest block hash" = "En son blok özeti";
+
+/* No comment provided by engineer. */
+"Latest app hash" = "En son uygulama özeti";
+
+/* No comment provided by engineer. */
+"Earliest block hash" = "En eski blok özeti";
+
+/* No comment provided by engineer. */
+"Earliest app hash" = "En eski uygulama özeti";
+
+/* No comment provided by engineer. */
+"Chain ID" = "Zincir kimliği";
+
+/* No comment provided by engineer. */
+"Peers" = "Eşler";
+
+/* No comment provided by engineer. */
+"Listening" = "Dinliyor";
+
+/* No comment provided by engineer. */
+"State sync" = "Durum eşitlemesi";
+
+/* No comment provided by engineer. */
+"Total synced time" = "Toplam eşitlenmiş süre";
+
+/* No comment provided by engineer. */
+"Remaining time" = "Kalan süre";
+
+/* No comment provided by engineer. */
+"Total snapshots" = "Toplam anlık görüntü";
+
+/* No comment provided by engineer. */
+"Chunk process avg time" = "Ort. parça işleme süresi";
+
+/* No comment provided by engineer. */
+"Snapshot height" = "Anlık görüntü yüksekliği";
+
+/* No comment provided by engineer. */
+"Snapshot chunks" = "Anlık görüntü parçaları";
+
+/* No comment provided by engineer. */
+"Backfilled blocks" = "Tamamlanan bloklar";
+
+/* No comment provided by engineer. */
+"Backfill blocks total" = "Tamamlanacak toplam blok";
+
+/* No comment provided by engineer. */
+"Time" = "Saat";
+
+/* No comment provided by engineer. */
+"Node clock" = "Düğüm saati";
+
+/* No comment provided by engineer. */
+"Latest block" = "En son blok";
+
+/* No comment provided by engineer. */
+"Genesis" = "Genesis";
+
+/* No comment provided by engineer. */
+"Epoch" = "Dönem";
+
+/* No comment provided by engineer. */
+"Matches this evonode" = "Bu evonode ile eşleşiyor";
+
+/* No comment provided by engineer. */
+"Differs from this evonode" = "Bu evonode'dan farklı";
+
+/* No comment provided by engineer. */
+"Not reported" = "Bildirilmedi";
+
+/* No comment provided by engineer. */
+"%.3f s" = "%.3f sn";
+
+/* No comment provided by engineer. */
+"Node status" = "Düğüm durumu";
+
+/* No comment provided by engineer. */
+"Asking the evonode…" = "Evonode'a soruluyor…";
+
+/* No comment provided by engineer. */
+"Request status" = "Durumu sor";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "Otomatik ödeme";
@@ -3442,6 +4378,42 @@
 
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "İlk iletişim isteğinizi gönderin";
+
+/* Username marketplace: set price sheet title */
+"Set a price for “%@”" = "“%@” için fiyat belirle";
+
+/* Username marketplace */
+"Short names are decided by a network vote — use Request Username instead." = "Kısa adlara ağ oylaması karar verir — bunun yerine “Kullanıcı Adı Talep Et” seçeneğini kullanın.";
+
+/* Username marketplace: contested request explainer, paragraph 1 */
+"Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them." = "Kısa adlar — 19 karakter veya daha az, yalnızca harf ve rakam — anında kaydedilmez. Bunları kimin alacağına Dash ağı oy vererek karar verir.";
+
+/* DashPay Contacts: expands the network search into the full add-contact flow */
+"Show more results" = "Daha fazla sonuç göster";
+
+/* Username marketplace: departed-name line — buyer identity */
+"Sold to %@" = "%@ kişisine satıldı";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 1 of 2 — moving Dash out of your Shielded balance…" = "2 adımdan 1'i — Dash, Shielded bakiyenizden çıkarılıyor…";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 2 of 2 — topping up your identity…" = "2 adımdan 2'si — kimliğiniz yükleniyor…";
+
+/* Username marketplace: contested request cost footnote */
+"The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "Maliyet, kimlik bakiyenizden ödenir. Ağ oylamasını finanse eder ve başka bir aday kazanırsa iade edilmez.";
+
+/* Username marketplace: register sheet body */
+"The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "Ad doğrudan kimliğinize kaydedilir. Kayıt, kimlik bakiyenizden ödenen bir ağ işlemidir.";
+
+/* Username marketplace: contested label locked by a past vote */
+"The network voted to lock this name, so nobody can register it. Choose a different name." = "Ağ bu adı kilitlemek için oy verdi, bu nedenle kimse kaydedemez. Farklı bir ad seçin.";
+
+/* Username marketplace */
+"The recipient identity couldn't be resolved." = "Alıcı kimliği çözümlenemedi.";
+
+/* Username marketplace */
+"The seller changed the price before your purchase was accepted. Review the new price and try again." = "Satıcı, satın alma işleminiz kabul edilmeden önce fiyatı değiştirdi. Yeni fiyatı inceleyip yeniden deneyin.";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Gönderiliyor";
@@ -3963,6 +4935,66 @@
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "Bu, diğer kullanıcıların size iletişim isteği gönderebilmesi ve sizin de onlarınkini kabul edebilmeniz için kimliğinize iki anahtar ekler. Bu yalnızca bir kez gerçekleşir.";
 
+/* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
+"This isn't a DashPay user QR code." = "Bu bir DashPay kullanıcı QR kodu değil.";
+
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "Bu bakiye, Dash Platform ağ ücretlerini öder — kullanıcı adları, kişi istekleri, profil güncellemeleri. Cüzdanınıza değil kimliğinize aittir: Şeffaf, Platform ve Shielded bakiyelerinizin aksine normal Dash gibi harcanamaz. Yükleme, seçtiğiniz bakiyedeki — varsayılan olarak Shielded — Dash'i kimlik kredisine dönüştürür.";
+
+/* Username marketplace: contested label already has an active vote */
+"This name is already in an active network vote. Your request joins it as another contender." = "Bu ad için zaten etkin bir ağ oylaması var. Talebiniz buna başka bir aday olarak katılır.";
+
+/* Username marketplace */
+"This name is in an active network vote and can't be traded until the contest ends." = "Bu ad etkin bir ağ oylamasında ve yarışma bitene kadar alınıp satılamaz.";
+
+/* Username marketplace: detail for an unregistered name */
+"This name is not registered." = "Bu ad kayıtlı değil.";
+
+/* Username marketplace: seller-clarity callout on the detail sheet */
+"This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "Bu ad, Dash ağındaki bağımsız bir kullanıcı tarafından sunuluyor — Dash veya bu uygulama tarafından değil. Fiyatı satıcı belirler.";
+
+/* Username marketplace: listing price exceeds the representable maximum */
+"This price is too high to list." = "Bu fiyat satışa çıkarmak için çok yüksek.";
+
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "Bu aktarım buradan yeniden denenemez.";
+
+/* Username marketplace */
+"This username is not for sale." = "Bu kullanıcı adı satılık değil.";
+
+/* Username marketplace */
+"This username's record couldn't be read from the network." = "Bu kullanıcı adının kaydı ağdan okunamadı.";
+
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "Bu cüzdanın yüklenecek bir kimliği yok.";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "Yükle";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "Kimlik Bakiyesini Yükle";
+
+/* Username marketplace: timeline card title */
+"Trade history" = "İşlem geçmişi";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "Aktarım tamamlandı";
+
+/* Username marketplace */
+"Transfer to Another Identity" = "Başka Bir Kimliğe Aktar";
+
+/* Username marketplace: transfer sheet title */
+"Transfer “%@”" = "“%@” aktar";
+
+/* Username marketplace: history — transfer with both identities */
+"Transferred from %1$@ to %2$@" = "%1$@ kişisinden %2$@ kişisine aktarıldı";
+
+/* Username marketplace: departed-name line — recipient identity */
+"Transferred to %@" = "%@ kişisine aktarıldı";
+
+/* Username marketplace */
+"Username Marketplace" = "Kullanıcı Adı Pazarı";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
@@ -4012,6 +5044,60 @@
 
 /* Usernames */
 "This name requires voting. Your Dash will be locked until voting completes." = "This name requires voting. Your Dash will be locked until voting completes.";
+
+/* Usernames */
+"Vote in progress" = "Oylama sürüyor";
+
+/* Usernames */
+"Vote ended" = "Oylama bitti";
+
+/* Usernames */
+"A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender." = "Bu ad için hâlihazırda bir masternode oylaması sürüyor. Talep göndermek sizi oylamaya aday olarak katar.";
+
+/* Usernames */
+"A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender." = "Bu ad için hâlihazırda bir masternode oylaması sürüyor — oylama yaklaşık %@ tarihinde bitiyor. Talep göndermek sizi oylamaya aday olarak katar.";
+
+/* Usernames */
+"A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote." = "Bu ad için bir masternode oylaması sürüyor — oylama yaklaşık %@ tarihinde bitiyor. Yeni adaylar artık bu oylamaya katılamaz.";
+
+/* Usernames */
+"Username is in a network vote — new contenders can no longer join" = "Kullanıcı adı bir ağ oylamasında — yeni adaylar artık katılamaz";
+
+/* Usernames */
+"The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "Bu kullanıcı adının sahibi onu Kullanıcı Adı Pazarı'nda %@ Dash karşılığında satışa çıkardı. Bunun yerine oradan satın alabilirsiniz.";
+
+/* Usernames */
+"The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance." = "Bu kullanıcı adının sahibi onu %@ Dash karşılığında satışa çıkardı. Hemen satın alabilirsiniz — fiyat cüzdan bakiyenizden ödenir.";
+
+/* Usernames */
+"The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "Bu kullanıcı adının sahibi onu %1$@ Dash karşılığında satışa çıkardı. %2$@ Dash üzerindeki satın alımlar Kullanıcı Adı Pazarı'ndan yapılmalıdır — şimdilik başka bir kullanıcı adı seçin; bunu satın almaya daha sonra karar verebilirsiniz.";
+
+/* Usernames */
+"Buy for %@ Dash" = "%@ Dash karşılığında satın al";
+
+/* Usernames */
+"Buy username" = "Kullanıcı adı satın al";
+
+/* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "Geçici kullanıcı adınız “%@” kaydedilemedi. Daha sonra başka bir kullanıcı adı kaydedebilirsiniz.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "“%1$@” artık kullanıcı adınız. Oylama size “%2$@” adını verirse her iki kullanıcı adıyla da ulaşılabilir olursunuz.";
+
+/* Usernames */
+"“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "“%1$@” %2$@ Dash karşılığında satın alınacak. Fiyat cüzdan bakiyenizden ödenir.";
+
+/* Usernames */
+"Username purchased" = "Kullanıcı adı satın alındı";
+
+/* Usernames */
+"“%@” is now your username." = "“%@” artık kullanıcı adınız.";
+
+/* Usernames */
+"The masternode vote for this name has ended and the result is being finalized. Check back soon." = "Bu ad için masternode oylaması bitti ve sonuç kesinleştiriliyor. Kısa süre sonra tekrar bakın.";
+
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes." = "Bu ad için hâlihazırda bir oylama sürüyor — talebiniz bu oylamaya aday olarak katılacak. Oylama tamamlanana kadar Dash'iniz kilitli kalacak.";
 
 /* No comment provided by engineer. */
 "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone." = "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.";
@@ -4254,6 +5340,12 @@
 /* Voting */
 "Unblocked '%@' username" = "Unblocked '%@' username";
 
+/* SPV diagnostics */
+"Unconfirmed now" = "Şu anda onaylanmamış";
+
+/* SPV diagnostics */
+"Unconfirmed Transactions" = "Onaylanmamış İşlemler";
+
 /* DashPay Contacts */
 "Unhide Contact" = "Unhide Contact";
 
@@ -4367,6 +5459,9 @@
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Adresler değil, kullanıcı adları";
 
+/* DashPay: banner identity row subtitle */
+"View profile" = "Profili görüntüle";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "%@ ile eşleşen ve şu anda kişilerinizde olmayan kullanıcılar";
 
@@ -4397,11 +5492,17 @@
 /* No comment provided by engineer. */
 "Verified Successfully" = "Başarıyla Doğrulandı";
 
+/* DashPay Contacts: spinner after scanning a user QR code */
+"Verifying user…" = "Kullanıcı doğrulanıyor…";
+
 /* No comment provided by engineer. */
 "Verify" = "Onayla";
 
 /* CrowdNode */
 "Verify your API Dash address" = "API Dash adresinizi doğrulayın";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "Yeni bir PIN belirlemek için kurtarma sözcük grubunuzu doğrulayın.";
 
 /* Usernames */
 "Verify your identity" = "Kimliğinizi doğrulayın";
@@ -4616,6 +5717,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "İletişim istekleri ne zaman özel olacak?";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "Oylama sürerken “%@” henüz size ait değildir ve diğer kullanıcılar sizi bu adla bulamaz. DashPay'i hemen kullanmak için tartışmasız bir kullanıcı adı ekleyin. O ad kalıcı olarak sizde kalır — oylama size tartışmalı adı verirse her iki kullanıcı adıyla da ulaşılabilir olursunuz.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "Nerede Harcamalı";
 
@@ -4626,6 +5730,18 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "Neden etkinleştirmem gerekiyor?";
+
+/* Username marketplace: history participant is the current user */
+"you" = "siz";
+
+/* Username marketplace: contested request already submitted by this identity */
+"You already requested this name — the network vote is in progress. You'll find it under My Names." = "Bu adı zaten talep ettiniz — ağ oylaması sürüyor. Onu “Adlarım” altında bulabilirsiniz.";
+
+/* Username marketplace: purchase confirmation body with seller clarity */
+"You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "Dash'ten veya bu uygulamadan değil, bağımsız bir kullanıcıdan satın alıyorsunuz. Fiyat ve küçük bir ağ ücreti kimlik bakiyenizden ödenir ve ad hemen kimliğinize geçer.";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "Oylama sürerken kullanıcı adınız olmaz. Şimdi tartışmasız bir kullanıcı adı kaydedin — o ad sizde kalır ve oylama size “%@” adını verirse her iki kullanıcı adıyla da ulaşılabilir olursunuz.";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "Neden tüm bu işlemleri görüyorum?";
@@ -4683,7 +5799,13 @@
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
 
 /* Wallets */
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Bu %d kelimeyi sırayla yazın ve güvenli bir yerde saklayın. Bu cüzdanı kurtarmanın TEK yolu bunlardır. Bunlara sahip olan herkes paranızı harcayabilir.";
+
+/* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
+
+/* Recovery phrase backup: security warning body — keep the phrase written down and private */
+"Write it in a safe place and don’t show it to anyone." = "Güvenli bir yere yazın ve kimseye göstermeyin.";
 
 /* No comment provided by engineer. */
 "XpEBa5... or BIP21 URI" = "XpEBa5... or BIP21 URI";
@@ -4849,6 +5971,9 @@
 /* Back up wallet */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "Bu cihaz kaybolursa, hasar görürse veya Dash Cüzdan'ı bu cihazdan kaldırılırsa paranıza erişmek için bu kurtarma ifadesine ihtiyacınız olacaktır.";
 
+/* Recovery phrase backup: security warning title — the phrase is required to restore the wallet */
+"You will NOT be able to restore the wallet without a recovery phrase" = "Kurtarma sözcük grubu olmadan cüzdanı geri YÜKLEYEMEZSİNİZ";
+
 /* Coinbase */
 "You will receive" = "You will receive";
 
@@ -4932,6 +6057,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Geçmişiniz, düzenli";
 
+/* Username marketplace */
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Kimlik bakiyeniz bu satın almayı karşılamıyor: %1$@ DASH gerekli (ücret payı dahil), %2$@ DASH mevcut. Kimlik bakiyenizi yükleyip yeniden deneyin.";
+
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "İletişim isteklerinin sizinle diğer kullanıcılar arasında şifrelenebilmesi için kimliğinizin iki ek anahtara ihtiyacı var. Etkinleştirmek, bunları tek bir ağ işlemiyle ekler. Bu yalnızca bir kez gerçekleşir.";
 
@@ -4956,8 +6084,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "Karıştırılmış coinleriniz Dash Cüzdanı bakiyenize taşındı.";
 
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "Bu satın almayı CTX ile doğrulayamadık. Ödeme gerçekleştiyse hediye kartı kısa süre içinde işlem listenizde görünecek — yeniden satın almadan önce lütfen oraya bakın.";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "Ödemeniz gönderildi ancak ağ henüz onaylamadı. Hediye kartınız onaylanır onaylanmaz görünecek.";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Karıştırılmış coinleriniz korumalı bakiyenize taşındı. En iyi gizlilik için bu fonları kullanmadan önce en az 2 saat bekleyin.";
+
+/* DashSpend */
+"Could not load your gift card" = "Hediye kartınız yüklenemedi";
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
@@ -4973,6 +6110,9 @@
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "Özel bakiyeniz. Tutarlar ve adresler zincir üzerinde şifrelenir, böylece varlıklarınız ve geçmişiniz gizli kalır.";
+
+/* Username marketplace: contested request explainer, paragraph 2 */
+"Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "Talebiniz yaklaşık iki hafta boyunca masternode'ların açık oylamasına girer. Başkaları da aynı adı talep edebilir; oylama bittiğinde ad kazanana geçer — ağ kilitlemeye oy verirse hiç kimseye geçmez.";
 
 /* Usernames */
 "Your request was cancelled" = "İsteğiniz iptal edildi";

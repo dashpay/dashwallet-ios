@@ -110,18 +110,28 @@ struct POIDetailsView: View {
     
     // MARK: - Header View
     
+    // Rounded square, so the text may use almost the whole box.
+    private var logoPlaceholder: some View {
+        MerchantLogoPlaceholder(merchantName: merchant.title ?? "", usableFraction: 0.84)
+    }
+
     private var headerView: some View {
         HStack(spacing: 20) {
             // Logo
             Group {
                 if let logoUrl = merchant.logoLocation, let url = URL(string: logoUrl) {
-                    WebImage(url: url)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
+                    // The placeholder also covers loading and load failures (a 404 or a timeout
+                    // leaves the image nil), so a broken logo URL still renders the generated icon
+                    // rather than an empty box — matching AllMerchantLocationsView.
+                    WebImage(url: url) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    } placeholder: {
+                        logoPlaceholder
+                    }
                 } else {
-                    Image(merchant.emptyLogoImageName)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
+                    logoPlaceholder
                 }
             }
             .frame(width: 50, height: 50)

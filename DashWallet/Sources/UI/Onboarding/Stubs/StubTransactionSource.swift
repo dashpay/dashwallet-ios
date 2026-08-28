@@ -21,6 +21,10 @@ import Foundation
 /// `.sdk`-shaped wrappers — no DashSync objects, no persisted rows. Amounts,
 /// directions and date spacing mirror the legacy `DWTransactionStub` fixture.
 class StubTransactionSource: TransactionSource {
+    /// Fixtures — nothing here reacts to the wallet, so a view model built on
+    /// this must not wire itself to live notifications.
+    var isLiveWalletSource: Bool { false }
+
     /// (duffs, isSent) fixture rows, newest first.
     private static let fixtures: [(amount: Int64, sent: Bool)] = [
         (314_000_000, true),    // 3.14 sent
