@@ -17,6 +17,7 @@
 
 import Combine
 import UIKit
+import UserNotifications
 
 enum SettingsMenuNavigationDestination {
     case currencySelector
@@ -69,11 +70,38 @@ class SettingsMenuViewModel: ObservableObject {
         DWGlobalOptions.sharedInstance().balanceHidden
     }
     
+    /// The OS-level authorization is a separate fact from the in-app
+    /// preference: when the user denied the system prompt, the toggle shows
+    /// off and tapping the row opens the app's iOS Settings page instead of
+    /// flipping a preference that can't take effect.
+    @Published private var osNotificationsDenied = false
+
     init() {
         self.notificationsEnabled = DWGlobalOptions.sharedInstance().localNotificationsEnabled
         refreshMenuItems()
         setupCoinJoinObservers()
         setupCurrencyChangeObserver()
+        refreshOSNotificationAuthorization()
+        // The user may come back from iOS Settings with a changed grant.
+        NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshOSNotificationAuthorization()
+            }
+            .store(in: &cancellableBag)
+    }
+
+    private func refreshOSNotificationAuthorization() {
+        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                let denied = settings.authorizationStatus == .denied
+                if self.osNotificationsDenied != denied {
+                    self.osNotificationsDenied = denied
+                    self.refreshMenuItems()
+                }
+            }
+        }
     }
     
     func resetNavigation() {
@@ -118,9 +146,17 @@ class SettingsMenuViewModel: ObservableObject {
                 title: NSLocalizedString("Notifications", comment: ""),
                 icon: .custom("image.notifications", maxHeight: 30),
                 showToggle: true,
-                isToggled: notificationsEnabled,
+                isToggled: notificationsEnabled && !osNotificationsDenied,
                 action: { [weak self] in
                     guard let self = self else { return }
+                    if self.osNotificationsDenied {
+                        // The system grant is off, so the in-app toggle can't
+                        // deliver anything — send the user to iOS Settings.
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                        return
+                    }
                     self.notificationsEnabled.toggle()
                     DWGlobalOptions.sharedInstance().localNotificationsEnabled = self.notificationsEnabled
                     self.refreshMenuItems()

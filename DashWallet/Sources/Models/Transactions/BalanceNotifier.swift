@@ -21,6 +21,10 @@ import Combine
 @objc(DWBalanceNotifier)
 class DWBalanceNotifier: NSObject {
 
+    /// Groups transaction notifications into one Notification Center stack
+    /// and lets `AppDelegate` clear exactly this thread when the app opens.
+    @objc static let transactionsThreadIdentifier = "transactions"
+
     // Combine subscriptions to SwiftDashSDKWalletState's balance publisher.
     private var cancellableBag = Set<AnyCancellable>()
 
@@ -63,7 +67,9 @@ class DWBalanceNotifier: NSObject {
             DispatchQueue.main.async {
                 NotificationCenter.default.post(name: .didRequestOSPermission, object: nil)
             }
-            DWGlobalOptions.sharedInstance().localNotificationsEnabled = granted
+            // `localNotificationsEnabled` is the user's in-app preference and
+            // stays untouched here — mirroring the OS grant into it silently
+            // re-enabled notifications the user had switched off in Settings.
             DWLogger.log("DWBalanceNotifier: register for notifications result \(granted), error \(String(describing: error))")
         }
     }
@@ -87,8 +93,13 @@ class DWBalanceNotifier: NSObject {
                 sound = UNNotificationSound.default
                 noteText = NSLocalizedString("Your deposit to CrowdNode is received.", comment: "CrowdNode")
             } else {
-                identifier = "Now"
-                sound = UNNotificationSound(named: UNNotificationSoundName(rawValue: "coinflip"))
+                // Unique per event: a shared identifier made every new payment
+                // silently replace the previous banner instead of stacking.
+                identifier = "tx.\(UUID().uuidString)"
+                // The bundled resource is "coinflip.aiff" — without the
+                // extension the sound name does not resolve and iOS delivers
+                // the notification silently.
+                sound = UNNotificationSound(named: UNNotificationSoundName(rawValue: "coinflip.aiff"))
                 let receivedAmountText = received.formattedDashAmount
                 let receivedInFiatText = CurrencyExchanger.shared.fiatAmountString(for: received.dashAmount)
                 noteText = String(format: NSLocalizedString("Received %@ (%@)", comment: ""), receivedAmountText, receivedInFiatText)
@@ -103,10 +114,13 @@ class DWBalanceNotifier: NSObject {
                     content.body = noteText
                     content.sound = sound
                     content.badge = NSNumber(value: application.applicationIconBadgeNumber + 1)
+                    if !isCrowdNode {
+                        content.threadIdentifier = Self.transactionsThreadIdentifier
+                    }
 
-                    // Deliver the notification in one second.
-                    let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1.0, repeats: false)
-                    let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+                    // Deliver immediately — a delayed trigger races the user's
+                    // return to the foreground.
+                    let request = UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
 
                     // schedule localNotification
                     let center = UNUserNotificationCenter.current()

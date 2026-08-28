@@ -202,6 +202,26 @@ NS_ASSUME_NONNULL_BEGIN
     //
     [self.balanceNotifier updateBalance];
 
+    // Reset the app badge and remove delivered transaction notifications —
+    // their content is visible in the app now. CrowdNode and other threads
+    // are kept until the user acts on them.
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    [center setBadgeCount:0 withCompletionHandler:nil];
+    [center getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> *notifications) {
+        NSMutableArray<NSString *> *identifiers = [NSMutableArray array];
+        for (UNNotification *notification in notifications) {
+            BOOL isTransaction = [notification.request.content.threadIdentifier
+                isEqualToString:DWBalanceNotifier.transactionsThreadIdentifier];
+            // "Now" is the shared identifier older builds delivered with.
+            if (isTransaction || [notification.request.identifier isEqualToString:@"Now"]) {
+                [identifiers addObject:notification.request.identifier];
+            }
+        }
+        if (identifiers.count > 0) {
+            [center removeDeliveredNotificationsWithIdentifiers:identifiers];
+        }
+    }];
+
     // Check geo-restriction for PiggyCards (if available)
     // This logs location info each time the app becomes active for debugging
     SEL checkGeoRestrictionSelector = NSSelectorFromString(@"checkGeoRestriction");
@@ -342,21 +362,19 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center
        willPresentNotification:(UNNotification *)notification
          withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler {
-    
-    if ([notification.request.identifier isEqual: CrowdNodeObjcWrapper.notificationID]) {
-        completionHandler(UNNotificationPresentationOptionList | UNNotificationPresentationOptionBanner | UNNotificationPresentationOptionSound);
-    }
+    // Every path must call the completion handler — returning without it
+    // makes iOS drop the notification after a delegate timeout.
+    completionHandler(UNNotificationPresentationOptionList | UNNotificationPresentationOptionBanner | UNNotificationPresentationOptionSound);
 }
 
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void(^)(void))completionHandler {
-
     if ([response.notification.request.identifier isEqual: CrowdNodeObjcWrapper.notificationID]) {
         if (SyncingActivityMonitor.shared.state == SyncingActivityMonitorStateSyncDone) {
             UIViewController *vc = [CrowdNodeModelObjcWrapper getRootVC];
             [_window.rootViewController presentViewController:vc animated:YES completion:nil];
         }
-        completionHandler();
     }
+    completionHandler();
 }
 
 #pragma mark - Notifications
