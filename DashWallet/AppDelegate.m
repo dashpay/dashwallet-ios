@@ -18,7 +18,6 @@
 #import "AppDelegate.h"
 
 #import <CloudInAppMessaging/CloudInAppMessaging.h>
-#import <UserNotifications/UserNotifications.h>
 
 @import Firebase;
 
@@ -54,8 +53,11 @@
 #endif
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AppDelegate () <UNUserNotificationCenterDelegate>
+@interface AppDelegate ()
 
+/// The notifications composition root: store, permission coordinator,
+/// dispatcher, lifecycle (the UNUserNotificationCenter delegate), router.
+@property (nonatomic, strong) DWNotificationsBootstrap *notifications;
 @property (nonatomic, strong) DWBalanceNotifier *balanceNotifier;
 
 @end
@@ -202,25 +204,9 @@ NS_ASSUME_NONNULL_BEGIN
     //
     [self.balanceNotifier updateBalance];
 
-    // Reset the app badge and remove delivered transaction notifications —
-    // their content is visible in the app now. CrowdNode and other threads
-    // are kept until the user acts on them.
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-    [center setBadgeCount:0 withCompletionHandler:nil];
-    [center getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> *notifications) {
-        NSMutableArray<NSString *> *identifiers = [NSMutableArray array];
-        for (UNNotification *notification in notifications) {
-            BOOL isTransaction = [notification.request.content.threadIdentifier
-                isEqualToString:DWBalanceNotifier.transactionsThreadIdentifier];
-            // "Now" is the shared identifier older builds delivered with.
-            if (isTransaction || [notification.request.identifier isEqualToString:@"Now"]) {
-                [identifiers addObject:notification.request.identifier];
-            }
-        }
-        if (identifiers.count > 0) {
-            [center removeDeliveredNotificationsWithIdentifiers:identifiers];
-        }
-    }];
+    // Badge reset and delivered-notification clearing live in
+    // DWNotificationsBootstrap's NotificationLifecycle, which observes
+    // UIApplicationDidBecomeActiveNotification itself.
 
     // Check geo-restriction for PiggyCards (if available)
     // This logs location info each time the app becomes active for debugging
@@ -352,29 +338,12 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     [DWPhoneWCSessionManager sharedInstance];
 #endif
 
-    self.balanceNotifier = [[DWBalanceNotifier alloc] init];
+    // The notifications composition root: builds the module graph and
+    // installs NotificationLifecycle as the UNUserNotificationCenter
+    // delegate (foreground presentation, tap routing, clearing).
+    self.notifications = [[DWNotificationsBootstrap alloc] initWithWindow:self.window];
+    self.balanceNotifier = self.notifications.balanceNotifier;
     [self.balanceNotifier setupNotifications];
-
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-    center.delegate = self;
-}
-
-- (void)userNotificationCenter:(UNUserNotificationCenter *)center
-       willPresentNotification:(UNNotification *)notification
-         withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler {
-    // Every path must call the completion handler — returning without it
-    // makes iOS drop the notification after a delegate timeout.
-    completionHandler(UNNotificationPresentationOptionList | UNNotificationPresentationOptionBanner | UNNotificationPresentationOptionSound);
-}
-
-- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void(^)(void))completionHandler {
-    if ([response.notification.request.identifier isEqual: CrowdNodeObjcWrapper.notificationID]) {
-        if (SyncingActivityMonitor.shared.state == SyncingActivityMonitorStateSyncDone) {
-            UIViewController *vc = [CrowdNodeModelObjcWrapper getRootVC];
-            [_window.rootViewController presentViewController:vc animated:YES completion:nil];
-        }
-    }
-    completionHandler();
 }
 
 #pragma mark - Notifications

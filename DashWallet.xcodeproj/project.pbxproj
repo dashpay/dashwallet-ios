@@ -3747,6 +3747,28 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		5D01A11CE5B0000000000001 /* Notifications */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = "DashWallet/Sources/Infrastructure/Notifications";
+			sourceTree = SOURCE_ROOT;
+		};
+		5D01A11CE5B0000000000002 /* NotificationsTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = "DashWalletTests/Notifications";
+			sourceTree = SOURCE_ROOT;
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -6696,6 +6718,8 @@
 			isa = PBXGroup;
 			children = (
 				51DFA7FB2FA8EAF2001EDB3A /* Components */,
+				5D01A11CE5B0000000000001 /* Notifications */,
+				5D01A11CE5B0000000000002 /* NotificationsTests */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -8793,6 +8817,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				51DFA7FB2FA8EAF2001EDB3A /* Components */,
+				5D01A11CE5B0000000000001 /* Notifications */,
 			);
 			name = dashwallet;
 			packageProductDependencies = (
@@ -8806,6 +8831,9 @@
 		75D5F3E4191EC270004AB296 /* DashWalletTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 75D5F3F9191EC270004AB296 /* Build configuration list for PBXNativeTarget "DashWalletTests" */;
+			fileSystemSynchronizedGroups = (
+				5D01A11CE5B0000000000002 /* NotificationsTests */,
+			);
 			buildPhases = (
 				A5BD49B2A59A7ED61D52013B /* [CP] Check Pods Manifest.lock */,
 				75D5F3E1191EC270004AB296 /* Sources */,
@@ -8897,6 +8925,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				51DFA7FB2FA8EAF2001EDB3A /* Components */,
+				5D01A11CE5B0000000000001 /* Notifications */,
 			);
 			name = dashpay;
 			packageProductDependencies = (

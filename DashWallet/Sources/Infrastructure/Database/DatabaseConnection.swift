@@ -97,7 +97,8 @@ extension DatabaseConnection {
             AddRedeemUrlChallengeToGiftCardsTable(),
             AddSwapOrdersTable(),
             AddPlatformAddressActivityTables(),
-            NormalizePlatformAddressActivityUnits()
+            NormalizePlatformAddressActivityUnits(),
+            AddNotifiedEventsTable()
         ]
     }
 

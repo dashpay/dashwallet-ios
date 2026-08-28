@@ -125,6 +125,7 @@ final class TransactionDirectionTests: XCTestCase {
             ownOutputsAmount: 0,
             ownOutputAddresses: [],
             isChainAccepted: true,
+            context: 2,
             wrapped: wrapped)
     }
 

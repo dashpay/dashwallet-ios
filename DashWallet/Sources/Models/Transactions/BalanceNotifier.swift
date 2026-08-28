@@ -17,19 +17,26 @@
 
 import Foundation
 import Combine
+import UserNotifications
 
 @objc(DWBalanceNotifier)
 class DWBalanceNotifier: NSObject {
-
-    /// Groups transaction notifications into one Notification Center stack
-    /// and lets `AppDelegate` clear exactly this thread when the app opens.
-    @objc static let transactionsThreadIdentifier = "transactions"
 
     // Combine subscriptions to SwiftDashSDKWalletState's balance publisher.
     private var cancellableBag = Set<AnyCancellable>()
 
     // the most recent balance as received by notification
     private var balance = UInt64.max
+
+    private let dispatcher: NotificationDispatcher
+    private let permissionCoordinator: NotificationPermissionCoordinator
+
+    init(dispatcher: NotificationDispatcher,
+         permissionCoordinator: NotificationPermissionCoordinator) {
+        self.dispatcher = dispatcher
+        self.permissionCoordinator = permissionCoordinator
+        super.init()
+    }
 
     // MARK: Public
 
@@ -61,17 +68,7 @@ class DWBalanceNotifier: NSObject {
 
     @objc
     func registerForPushNotifications() {
-        NotificationCenter.default.post(name: .willRequestOSPermission, object: nil)
-        let options: UNAuthorizationOptions = [.badge, .sound, .alert]
-        UNUserNotificationCenter.current().requestAuthorization(options: options) { granted, error in
-            DispatchQueue.main.async {
-                NotificationCenter.default.post(name: .didRequestOSPermission, object: nil)
-            }
-            // `localNotificationsEnabled` is the user's in-app preference and
-            // stays untouched here — mirroring the OS grant into it silently
-            // re-enabled notifications the user had switched off in Settings.
-            DWLogger.log("DWBalanceNotifier: register for notifications result \(granted), error \(String(describing: error))")
-        }
+        permissionCoordinator.requestAuthorizationIfNeeded()
     }
 
     // MARK: Private
@@ -81,62 +78,50 @@ class DWBalanceNotifier: NSObject {
         let application = UIApplication.shared
 
         if balance < currentBalance {
-            let notificationsEnabled = DWGlobalOptions.sharedInstance().localNotificationsEnabled
             let received = currentBalance - balance
-            var noteText = ""
-            var identifier = ""
-            var sound: UNNotificationSound?
             let isCrowdNode = received == (ApiCode.depositReceived.rawValue + CrowdNode.apiOffset)
 
+            let notification: AppNotification
             if isCrowdNode {
-                identifier = CrowdNode.notificationID
-                sound = UNNotificationSound.default
-                noteText = NSLocalizedString("Your deposit to CrowdNode is received.", comment: "CrowdNode")
+                notification = AppNotification(
+                    id: CrowdNode.notificationID,
+                    topic: .crowdnode,
+                    title: nil,
+                    body: NSLocalizedString("Your deposit to CrowdNode is received.", comment: "CrowdNode"),
+                    sound: .default,
+                    route: .staking,
+                    foregroundBehavior: .banner)
             } else {
-                // Unique per event: a shared identifier made every new payment
-                // silently replace the previous banner instead of stacking.
-                identifier = "tx.\(UUID().uuidString)"
-                // The bundled resource is "coinflip.aiff" — without the
-                // extension the sound name does not resolve and iOS delivers
-                // the notification silently.
-                sound = UNNotificationSound(named: UNNotificationSoundName(rawValue: "coinflip.aiff"))
                 let receivedAmountText = received.formattedDashAmount
                 let receivedInFiatText = CurrencyExchanger.shared.fiatAmountString(for: received.dashAmount)
-                noteText = String(format: NSLocalizedString("Received %@ (%@)", comment: ""), receivedAmountText, receivedInFiatText)
+                notification = AppNotification(
+                    // Unique per event: a shared identifier made every new
+                    // payment silently replace the previous banner instead
+                    // of stacking.
+                    id: "tx.\(UUID().uuidString)",
+                    topic: .transactions,
+                    title: nil,
+                    body: String(format: NSLocalizedString("Received %@ (%@)", comment: ""), receivedAmountText, receivedInFiatText),
+                    // The bundled resource is "coinflip.aiff" — without the
+                    // extension the sound name does not resolve and iOS
+                    // delivers the notification silently.
+                    sound: UNNotificationSound(named: UNNotificationSoundName(rawValue: "coinflip.aiff")),
+                    route: nil,
+                    foregroundBehavior: .banner)
             }
 
-            DWLogger.log("DWBalanceNotifier: local notifications enabled = \(notificationsEnabled)")
-
-            // send a local notification if in the background or it's a CrowdNode notification
+            // post a local notification if in the background or it's a
+            // CrowdNode notification; the dispatcher applies the permission
+            // gate and dedup
             if application.applicationState == .background || application.applicationState == .inactive || isCrowdNode {
-                if notificationsEnabled {
-                    let content = UNMutableNotificationContent()
-                    content.body = noteText
-                    content.sound = sound
-                    content.badge = NSNumber(value: application.applicationIconBadgeNumber + 1)
-                    if !isCrowdNode {
-                        content.threadIdentifier = Self.transactionsThreadIdentifier
-                    }
-
-                    // Deliver immediately — a delayed trigger races the user's
-                    // return to the foreground.
-                    let request = UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
-
-                    // schedule localNotification
-                    let center = UNUserNotificationCenter.current()
-                    center.add(request) { error in
-                        if let error {
-                            DWLogger.log("DWBalanceNotifier: failed to send local notification: \(error)")
-                        } else {
-                            DWLogger.log("DWBalanceNotifier: sent local notification")
-                        }
-                    }
+                Task { [dispatcher] in
+                    await dispatcher.post(notification)
                 }
             }
 
             #if !IGNORE_WATCH_TARGET
             // send a custom notification to the watch if the watch app is up
-            DWPhoneWCSessionManager.sharedInstance().notifyTransactionString(noteText)
+            DWPhoneWCSessionManager.sharedInstance().notifyTransactionString(notification.body)
             #endif
         }
 

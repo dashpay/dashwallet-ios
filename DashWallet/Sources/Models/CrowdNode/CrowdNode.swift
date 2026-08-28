@@ -700,6 +700,11 @@ extension CrowdNode {
 
 // MARK: Errors / Notifications
 extension CrowdNode {
+    /// Posting seam, injected by `NotificationsBootstrap` at launch —
+    /// `CrowdNode.shared` is created before the notifications graph, so the
+    /// composition root sets this statically instead of adding a global.
+    static var notificationDispatcher: NotificationDispatcher?
+
     private func handleError(error: CrowdNode.Error) {
         apiError = error
         notifyIfNeeded(message: error.errorDescription)
@@ -707,15 +712,24 @@ extension CrowdNode {
     }
 
     private func notifyIfNeeded(message: String) {
-        guard showNotificationOnResult &&
-            DWGlobalOptions.sharedInstance().localNotificationsEnabled else { return }
+        guard showNotificationOnResult else { return }
+        guard let dispatcher = Self.notificationDispatcher else {
+            DWLogger.log("CrowdNode: notification dropped — no dispatcher injected")
+            return
+        }
 
-        let content = UNMutableNotificationContent()
-        content.body = message
-        content.sound = UNNotificationSound.default
-        let request = UNNotificationRequest(identifier: CrowdNode.notificationID, content: content, trigger: nil)
-        let notificationCenter = UNUserNotificationCenter.current()
-        notificationCenter.add(request)
+        // The user-enabled check lives in the dispatcher's permission gate.
+        let notification = AppNotification(
+            id: CrowdNode.notificationID,
+            topic: .crowdnode,
+            title: nil,
+            body: message,
+            sound: .default,
+            route: .staking,
+            foregroundBehavior: .banner)
+        Task {
+            await dispatcher.post(notification)
+        }
     }
 }
 
