@@ -570,10 +570,12 @@
 "Bound to contract, document type “%@”" = "Bound to contract, document type “%@”";
 
 /* No comment provided by engineer. */
+"Broadcast" = "Broadcast";
 "Broadcasting" = "Broadcasting";
 
 /* InternalTransfer recovery */
 "Broadcasting…" = "Broadcasting…";
+"Build and sign the transaction and show it here, so you can check it before it's broadcast." = "Build and sign the transaction and show it here, so you can check it before it's broadcast.";
 "Building the privacy proof can take up to a minute. Keep the app open." = "Building the privacy proof can take up to a minute. Keep the app open.";
 
 /* Log export */
@@ -674,6 +676,7 @@
 "Challenge" = "Challenge";
 
 /* SPV sync */
+"Change" = "Change";
 "Change peers" = "Change peers";
 
 /* No comment provided by engineer. */
@@ -744,6 +747,7 @@
 "DashPay enabled" = "DashPay enabled";
 
 /* Identity top-up sheet — custom amount below the floor */
+"Discard" = "Discard";
 "Enter at least %@ DASH" = "Enter at least %@ DASH";
 
 /* Identity top-up sheet — fee estimate line */
@@ -790,6 +794,7 @@
 "In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames.";
 
 /* Username marketplace: search row for a label a past vote locked */
+"Inputs" = "Inputs";
 "Locked by a network vote — nobody can register it" = "Locked by a network vote — nobody can register it";
 
 /* Username marketplace: latest ownership change */
@@ -825,8 +830,11 @@
 "Completing your purchase…" = "Completing your purchase…";
 
 /* Usernames */
+"Non-standard output" = "Non-standard output";
 "Operator payout address" = "Operator payout address";
+"Operator signature (BLS)" = "Operator signature (BLS)";
 "Platform P2P port" = "Platform P2P port";
+"Provider update payload" = "Provider update payload";
 "Receive some DASH to this wallet, or fund its shielded balance, then return here." = "Receive some DASH to this wallet, or fund its shielded balance, then return here.";
 "Register username" = "Register username";
 
@@ -837,6 +845,7 @@
 "Listing for sale…" = "Listing for sale…";
 
 /* Usernames */
+"Review transaction first" = "Review transaction first";
 "Submit both usernames" = "Submit both usernames";
 
 /* Usernames */
@@ -854,6 +863,7 @@
 "The unban was sent but its result couldn't be confirmed. Don't retry — check the masternode's status again in a few minutes." = "The unban was sent but its result couldn't be confirmed. Don't retry — check the masternode's status again in a few minutes.";
 "The wallet has no spendable DASH for the network fee." = "The wallet has no spendable DASH for the network fee.";
 "The withdrawal settles through the network's withdrawal queue — usually a few minutes. You can close this sheet; \"Complete unban\" appears on the masternode until it's done." = "The withdrawal settles through the network's withdrawal queue — usually a few minutes. You can close this sheet; \"Complete unban\" appears on the masternode until it's done.";
+"This is the signed transaction, exactly as it will be broadcast." = "This is the signed transaction, exactly as it will be broadcast.";
 "This masternode pays an operator reward, and the update replaces its payout address on-chain — confirm the address the operator reward should keep paying." = "This masternode pays an operator reward, and the update replaces its payout address on-chain — confirm the address the operator reward should keep paying.";
 "This masternode uses extended (v3) network info, which this wallet can't re-assert yet. Unban it with dash-cli instead." = "This masternode uses extended (v3) network info, which this wallet can't re-assert yet. Unban it with dash-cli instead.";
 "This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name.";
