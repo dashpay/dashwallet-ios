@@ -43,6 +43,9 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
                     viewModel: self.embeddedSendViewModel,
                     onSendCompleted: { [weak self] in self?.dismiss(animated: true) })
             },
+            onSendToAddress: { [weak self] in self?.pushSendToAddress() },
+            onSendToUsername: { [weak self] in self?.showContactBook() },
+            onSwapToCrypto: { [weak self] in self?.presentDashDEX() },
             onCloseLanding: { [weak self] in self?.leaveLanding() },
             showsHeader: showsHeader)
         return UIHostingController(rootView: screen)
@@ -329,15 +332,63 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// The base class routes a scanned payment straight into the payment
     /// processor (its `DWQRScanModelDelegate` conformance is a private
     /// class extension, so this can't be `override` — the matching selector
-    /// shadows it through ObjC dispatch). Every scan on the landing
-    /// originates from the Send tab's embedded form, so fill that form —
-    /// destination-type detection and the From picker then apply to scanned
-    /// addresses exactly like typed/pasted ones.
+    /// shadows it through ObjC dispatch). A scan on the landing fills the send
+    /// FORM instead, so destination-type detection and the From picker apply to
+    /// scanned addresses exactly like typed/pasted ones.
+    ///
+    /// Where that form is depends on the mode. The balance-row send sheet
+    /// embeds it as its Send tab, and the scan goes straight in. On the picker
+    /// landing the Send tab is a card list — "Scan Dash QR" sits next to "Send
+    /// to Dash address" — and `embeddedSendViewModel` backs nothing on screen:
+    /// filling it left the user on the same three rows with no sign the scan
+    /// had been read. There the scan pushes the send form carrying it, which is
+    /// where the sibling row goes.
     @objc(qrScanModel:didScanPaymentInput:)
     func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
         dismiss(animated: true) { [weak self] in
-            self?.embeddedSendViewModel.ingestScannedInput(paymentInput)
+            guard let self else { return }
+
+            if self.transferSendFrom != nil {
+                if !self.embeddedSendViewModel.ingestScannedInput(paymentInput) {
+                    self.processPaymentInput(paymentInput)
+                }
+                return
+            }
+
+            // A BIP70 request carries a fetched confirmation rather than an
+            // address, so there is nothing to open the form with.
+            guard SendViewModel.scannedAddress(in: paymentInput) != nil else {
+                self.processPaymentInput(paymentInput)
+                return
+            }
+
+            let controller = SendScreenViewController()
+            controller.prefill(scannedInput: paymentInput)
+            self.pushScannedSend(controller)
         }
+    }
+
+    /// Open a scanned send on the From picker, with the address step behind it.
+    ///
+    /// The address step asks for the one thing the scan has already answered,
+    /// and a QR's BIP21 amount is invisible until the step after that — so a
+    /// scan used to land on a screen that looked like it had read neither. The
+    /// stack is built in one transition rather than pushed twice, so the
+    /// skipped step never appears; back (and the address summary's edit tap)
+    /// still returns to it, which is where a misread address is corrected.
+    ///
+    /// An address that did not decode keeps the address step: it is the screen
+    /// that says so.
+    private func pushScannedSend(_ controller: SendScreenViewController) {
+        controller.hidesBottomBarWhenPushed = true
+        guard let navigationController else { return }
+        guard controller.hasResolvedDestination else {
+            navigationController.pushViewController(controller, animated: true)
+            return
+        }
+        navigationController.setViewControllers(
+            navigationController.viewControllers + [controller, controller.makeSourceStep()],
+            animated: true)
     }
 
     /// First-ever visit to the free-form Internal tab: explain transfer
@@ -348,6 +399,53 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     func select(tab: PaymentsLandingTab) {
         viewModel.activeTab = tab
     }
+
+    #if DASHPAY
+    /// "Send to username" → the contact book. The same screen the Send-to-a-
+    /// contact entry opens (`PayableViewController.performPayToDashPayUser`);
+    /// paying happens from a contact's profile sheet, so this row's whole job
+    /// is getting the user there.
+    ///
+    /// Selects the contacts TAB rather than showing a copy of the screen.
+    ///
+    /// `ContactsScreen` is a tab root and only works as one. It runs its banner
+    /// under the status bar (`ignoresSafeArea(edges: .top)`) and lets the safe
+    /// area place the title inside it, which collapses in a sheet; and it
+    /// carries no dismiss control, because a tab root never needs one — pushing
+    /// it onto this stack left the user with no way back, since the payments
+    /// navigation controller hides its bar.
+    ///
+    /// The tab is there whenever this row is: both appear only with a DashPay
+    /// identity. The tab bar is the way back, and there stays exactly one
+    /// contacts screen in the app.
+    private func showContactBook() {
+        guard let tabBarController = mainTabBarController else {
+            assertionFailure("Payments landing outside the tab bar hierarchy")
+            return
+        }
+        // The landing is a sheet now, and the contacts tab would open behind
+        // it. Close first, switch after.
+        guard presentingViewController != nil else {
+            switchToContacts(on: tabBarController)
+            return
+        }
+        dismiss(animated: true) { [weak self] in
+            self?.switchToContacts(on: tabBarController)
+        }
+    }
+
+    private func switchToContacts(on tabBarController: MainTabbarController) {
+        guard tabBarController.showContacts() else {
+            // No contacts tab means no identity — which is also the condition
+            // that hides the row. Reaching here would be a bug, and silently
+            // doing nothing is how it would stay invisible.
+            assertionFailure("Send to username offered without a contacts tab")
+            return
+        }
+    }
+    #else
+    private func showContactBook() {}
+    #endif
 
     /// The tab bar controller this landing belongs to.
     ///
@@ -394,6 +492,28 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         tabBarController.setTabBarHidden(true, animated: true)
     }
 
+    /// "Swap to other crypto" → the Dash DEX portal.
+    ///
+    /// Behind the same authentication gate the Home shortcut puts it behind:
+    /// the portal is a spending surface, and a destination that asks for a PIN
+    /// from one entry point and not another is not a gate at all.
+    private func presentDashDEX() {
+        AuthenticationService.shared.authenticate(
+            withPrompt: nil,
+            usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
+            alertIfLockout: true
+        ) { [weak self] authenticated, _, _ in
+            guard authenticated, let self else { return }
+            let controller = SwapKitPortalViewController()
+            controller.hidesBottomBarWhenPushed = true
+            let navigationController = BaseNavigationController(rootViewController: controller)
+            navigationController.modalPresentationStyle = .fullScreen
+            self.present(navigationController, animated: true)
+        }
+    }
+
+    /// Send card → the address-entry form. Pushed rather than embedded: the
+    /// landing's Send tab is now the destination picker, not the form.
     /// Where Done on a receive receipt goes.
     ///
     /// Presented as a sheet there is something to dismiss; as the payments
@@ -443,6 +563,10 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         guard let host, navigationController.topViewController !== host else { return }
 
         navigationController.popToViewController(host, animated: true)
+    }
+
+    private func pushSendToAddress() {
+        pushWithoutTabBar(SendScreenViewController())
     }
 
     /// The landing keeps the tab bar; everything it pushes is a step in a

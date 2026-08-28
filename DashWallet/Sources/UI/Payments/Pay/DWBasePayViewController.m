@@ -93,6 +93,16 @@ NS_ASSUME_NONNULL_BEGIN
     [self processPaymentInput:paymentInput];
 }
 
+- (void)performPayToAddress:(NSString *)address amount:(uint64_t)amount {
+    DWPaymentInput *paymentInput = [[[DWPaymentInputBuilder alloc] init] payToAddress:address
+                                                                               amount:amount];
+    if (!paymentInput) {
+        return;
+    }
+
+    [self processPaymentInput:paymentInput];
+}
+
 - (void)processPaymentInput:(DWPaymentInput *)input {
     [self.paymentController performPaymentWith:input];
 }
@@ -100,8 +110,31 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWTxDetailFullscreenViewControllerDelegate
 
 - (void)txDetailViewControllerDidFinishWithController:(SuccessTxDetailViewController *)controller {
-    // Nothing to do — the success screen dismisses itself; the legacy pay-to-contact
-    // follow-up that lived here is gone with the contact plumbing (Row #18).
+    // The success screen has already dismissed itself; what is left underneath
+    // is the send that produced it — an amount step, a source picker, an
+    // address field. Handing those back would offer to redo a payment that has
+    // just happened, so leave for the history, which is where the transaction
+    // now is.
+    //
+    // Presented as a modal there is something to dismiss; inside the payments
+    // tab there is not, and the way back is the stack plus the tab. The tab
+    // change waits for the pop — run together they animate over each other.
+    if (self.presentingViewController) {
+        [self dismissViewControllerAnimated:YES completion:nil];
+        return;
+    }
+
+    MainTabbarController *tabBarController =
+        [self.tabBarController isKindOfClass:MainTabbarController.class]
+            ? (MainTabbarController *)self.tabBarController
+            : nil;
+
+    [CATransaction begin];
+    [CATransaction setCompletionBlock:^{
+        [tabBarController showHome];
+    }];
+    [self.navigationController popToRootViewControllerAnimated:YES];
+    [CATransaction commit];
 }
 
 #pragma mark -  DWQRScanModelDelegate
@@ -129,11 +162,21 @@ NS_ASSUME_NONNULL_BEGIN
 /// Present the Send screen prefilled with a scanned bech32m destination —
 /// same presentation chrome as the payments landing (hidden-bar navigation
 /// controller, full screen; the screen draws its own X/title header).
+///
+/// Opened on the From picker, with the address step behind it: the scan named
+/// the recipient, so that step has nothing left to ask, and a BIP21 amount
+/// does not become visible until the step after it. Same rule as the landing's
+/// own scan (`pushScannedSend`). An address that did not decode stays on the
+/// address step, which is the screen that says so.
 - (void)routeScannedBech32Address:(DWParsedPaymentURI *)parsed {
     DWSendScreenViewController *controller = [[DWSendScreenViewController alloc] init];
     [controller prefillWithAddress:parsed.address amountDuffs:parsed.amount];
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
+    if (controller.hasResolvedDestination) {
+        [navigationController setViewControllers:@[ controller, [controller makeSourceStep] ]
+                                        animated:NO];
+    }
     navigationController.navigationBarHidden = YES;
     navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:navigationController animated:YES completion:nil];

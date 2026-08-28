@@ -121,6 +121,14 @@ final class SendViewModel: ObservableObject {
     /// same semantics as the internal transfer's: `nil` while unknown,
     /// affordability fails closed.
     @Published private(set) var withdrawalPreflight: ManagedPlatformAddressWallet.WithdrawalPreflight?
+    /// True when the last withdrawal preflight ATTEMPT failed (threw), as
+    /// opposed to still resolving — the same distinction
+    /// `shieldPreflightFailed` draws below, and for the same reason: a
+    /// permanently failed preflight left the amount screen silent, so a
+    /// disabled Continue had nothing explaining it. An empty Platform
+    /// balance is the ordinary way to get there (`preflightWithdrawal`
+    /// throws `noFundedAddress` when no address holds credits).
+    @Published private(set) var withdrawalPreflightFailed = false
     private var preflightTask: Task<Void, Never>?
 
     /// Live result of `preflightShield()` for the Platform → Shielded route —
@@ -136,9 +144,18 @@ final class SendViewModel: ObservableObject {
 
     /// Drives the one-time restore gate reactively. A normal catch-up may set
     /// this to false, but it only blocks while the recovery marker is active.
-    @Published private(set) var isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
+    ///
+    /// Seeded from the monitor in `init()` rather than here: a property default
+    /// runs in EVERY initializer, and the preview initializer must not spin up
+    /// the sync monitor singleton.
+    @Published private(set) var isChainSynced = false
 
     private var cancellables = Set<AnyCancellable>()
+
+    #if DEBUG
+    /// True only for `makeForPreview` instances — see the guard in `deinit`.
+    private var isPreviewInstance = false
+    #endif
 
     /// Set by the balance-row send sheet: the source is fixed to the tapped
     /// balance instead of being user-pickable, and an address whose type
@@ -147,6 +164,11 @@ final class SendViewModel: ObservableObject {
     let pinnedSource: ChainNetwork?
 
     deinit {
+        #if DEBUG
+        // Preview instances never registered — building the monitor here just
+        // to unregister would start reachability inside the canvas.
+        if isPreviewInstance { return }
+        #endif
         // The monitor holds observers strongly — without this the VM (and
         // its Combine pipelines) outlive the screen.
         SyncingActivityMonitor.shared.remove(observer: self)
@@ -159,6 +181,7 @@ final class SendViewModel: ObservableObject {
         }
         refreshClipboardSuggestion()
         SyncingActivityMonitor.shared.add(observer: self)
+        isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
 
         NotificationCenter.default.publisher(for: UIPasteboard.changedNotification)
             .receive(on: RunLoop.main)
@@ -203,6 +226,64 @@ final class SendViewModel: ObservableObject {
             }
             .store(in: &cancellables)
     }
+
+    #if DEBUG
+    /// Lightweight initializer used only by SwiftUI previews. Sets the balances
+    /// and the typed destination directly and skips the sync-monitor,
+    /// pasteboard and wallet-state wiring the real `init()` sets up.
+    ///
+    /// Property observers do not fire during initialization, so assigning
+    /// `addressText` here also skips the destination parse and preflight the
+    /// real screen would run on every keystroke.
+    private init(
+        previewPinnedSource: ChainNetwork?,
+        previewSource: ChainNetwork,
+        previewAddressText: String,
+        previewAmountText: String,
+        previewCoreDuffs: UInt64,
+        previewPlatformCredits: UInt64,
+        previewShieldedCredits: UInt64,
+        previewIsChainSynced: Bool
+    ) {
+        pinnedSource = previewPinnedSource
+        isPreviewInstance = true
+        source = previewSource
+        addressText = previewAddressText
+        amountText = previewAmountText
+        coreBalanceDuffs = previewCoreDuffs
+        platformCredits = previewPlatformCredits
+        shieldedBalance = previewShieldedCredits
+        isChainSynced = previewIsChainSynced
+    }
+
+    /// Preview view model with stubbed balances. Core is in duffs (1e8 per
+    /// DASH), Platform and Shielded in credits (1e11 per DASH); the defaults
+    /// are 2.45 / 1.2 / 0.785 DASH.
+    ///
+    /// `destination` stays `nil` because the address parse never runs here, so
+    /// the screen renders its address-entry step rather than a resolved
+    /// recipient.
+    static func makeForPreview(
+        pinnedSource: ChainNetwork? = nil,
+        source: ChainNetwork = .core,
+        addressText: String = "",
+        amountText: String = "0",
+        coreDuffs: UInt64 = 245_000_000,
+        platformCredits: UInt64 = 120_000_000_000,
+        shieldedCredits: UInt64 = 78_500_000_000,
+        isChainSynced: Bool = true
+    ) -> SendViewModel {
+        SendViewModel(
+            previewPinnedSource: pinnedSource,
+            previewSource: source,
+            previewAddressText: addressText,
+            previewAmountText: amountText,
+            previewCoreDuffs: coreDuffs,
+            previewPlatformCredits: platformCredits,
+            previewShieldedCredits: shieldedCredits,
+            previewIsChainSynced: isChainSynced)
+    }
+    #endif
 
     /// Fee kind for the pool-spending routes; `nil` for every other route.
     private func shieldedFeeKind(for route: Route?) -> PlatformWalletManager.ShieldedFeeKind? {
@@ -287,14 +368,10 @@ final class SendViewModel: ObservableObject {
 
     /// Localized name of the pinned source balance, for the mismatch label.
     var pinnedSourceTitle: String {
-        switch pinnedSource {
-        case .core, nil:
-            return NSLocalizedString("Transparent", comment: "Balance breakdown")
-        case .platform:
-            return NSLocalizedString("Platform", comment: "Dash Platform chain")
-        case .shielded:
-            return NSLocalizedString("Shielded", comment: "")
-        }
+        // `balanceName` rather than a second copy of the same three strings:
+        // simple mode renames the Core balance, and one of these lists would
+        // have been forgotten.
+        (pinnedSource ?? .core).balanceName
     }
 
     private func sourceDidChange() {
@@ -361,10 +438,12 @@ final class SendViewModel: ObservableObject {
             return
         }
         guard preflightTask == nil else { return }
+        withdrawalPreflightFailed = false
         preflightTask = Task { [weak self] in
             let result = try? await PlatformAddressSyncCoordinator.shared.preflightWithdrawal()
             guard let self, !Task.isCancelled else { return }
             self.withdrawalPreflight = result
+            self.withdrawalPreflightFailed = result == nil
             self.preflightTask = nil
         }
     }
@@ -450,22 +529,36 @@ final class SendViewModel: ObservableObject {
         return nil
     }
 
+    /// The address a scanned input would put in the address field, or nil for
+    /// one this form cannot hold.
+    ///
+    /// A BIP70 payment request is the nil case: it carries a fetched
+    /// confirmation instead of an address, and belongs to the classic payment
+    /// processor. Callers that open this screen for a scan check first —
+    /// otherwise the scan lands on an empty form.
+    static func scannedAddress(in paymentInput: DWPaymentInput) -> String? {
+        if let address = paymentInput.parsedURI?.address, !address.isEmpty {
+            return address
+        }
+        if let raw = paymentInput.userDetails, classify(raw) != nil {
+            return raw
+        }
+        return nil
+    }
+
     /// Scanned QR → address text. The classifier decides what it is; a
     /// BIP21 `dash:` URI contributes its address (and its amount when the
     /// screen's amount is still untouched).
-    func ingestScannedInput(_ paymentInput: DWPaymentInput) {
-        if let address = paymentInput.parsedURI?.address, !address.isEmpty {
-            addressText = address
-            let scannedAmount = paymentInput.parsedURI?.amount ?? 0
-            if scannedAmount > 0, dashDuffsUnsigned == 0 {
-                unit = .dash
-                amountText = scannedAmount.formattedDashAmountWithoutCurrencySymbol
-            }
-            return
+    @discardableResult
+    func ingestScannedInput(_ paymentInput: DWPaymentInput) -> Bool {
+        guard let address = Self.scannedAddress(in: paymentInput) else { return false }
+        addressText = address
+        let scannedAmount = paymentInput.parsedURI?.amount ?? 0
+        if scannedAmount > 0, dashDuffsUnsigned == 0 {
+            unit = .dash
+            amountText = scannedAmount.formattedDashAmountWithoutCurrencySymbol
         }
-        if let raw = paymentInput.userDetails, Self.classify(raw) != nil {
-            addressText = raw
-        }
+        return true
     }
 
     // MARK: - Amount
@@ -731,9 +824,29 @@ final class SendViewModel: ObservableObject {
                 feeReserveCredits: reserve)
 
         case .platformToCore:
-            // Stay quiet while the preflight is still resolving: Continue is
+            // The balance envelope first. A request the balance cannot cover
+            // is unaffordable whatever the preflight would have said — and
+            // with an EMPTY balance the preflight never says anything: it
+            // throws `noFundedAddress`, because a zero balance leaves no
+            // funded address to preflight. That is how asking to withdraw
+            // from an empty Platform balance used to reach a disabled
+            // Continue with nothing on screen explaining it.
+            if let message = TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: balanceName,
+                requestedCredits: creditsPreview,
+                balanceCredits: platformCredits,
+                feeReserveCredits: 0) {
+                return message
+            }
+            // Stay quiet while the preflight is still RESOLVING: Continue is
             // disabled, but the amount is not yet known to be unaffordable.
-            guard let preflight = withdrawalPreflight else { return nil }
+            // An attempt that already failed is named instead — the same
+            // rule the shield branch below follows.
+            guard let preflight = withdrawalPreflight else {
+                return withdrawalPreflightFailed
+                    ? InternalTransferViewModel.platformWithdrawalPreflightUnavailableMessage
+                    : nil
+            }
             guard preflight.canWithdraw else {
                 return String.localizedStringWithFormat(
                     NSLocalizedString(

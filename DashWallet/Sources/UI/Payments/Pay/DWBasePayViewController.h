@@ -21,6 +21,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWPaymentInput;
 @protocol DWPayModelProtocol;
 
 @interface DWBasePayViewController : UIViewController
@@ -37,6 +38,23 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performPayToPasteboardAction;
 - (void)performNFCReadingAction;
 - (void)performPayToURL:(NSURL *)url;
+/// Pay a send this flow has already fully specified — the address and the
+/// amount are both known and there is nothing left to ask for.
+///
+/// Deliberately not `performPayToURL:` with a `dash:…?amount=` string: that
+/// classifies a URI carrying a valid address as a DEEP LINK, and the processor
+/// answers a deep link by pushing the legacy amount screen — prefilled with the
+/// number the caller already collected. This routes straight to the
+/// confirmation with the real fee instead.
+- (void)performPayToAddress:(NSString *)address amount:(uint64_t)amount;
+
+/// Hand an already-built input to the classic payment processor.
+///
+/// Declared for the Swift subclasses that shadow the scan delegate to fill a
+/// form instead: an input their form cannot hold — a BIP70 request, which
+/// carries a fetched confirmation rather than an address — still has to go
+/// somewhere, and this is where the base class sends it.
+- (void)processPaymentInput:(DWPaymentInput *)input;
 
 @end
 

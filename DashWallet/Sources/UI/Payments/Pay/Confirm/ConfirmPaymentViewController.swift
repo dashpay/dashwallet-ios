@@ -15,6 +15,8 @@
 //  limitations under the License.
 //
 
+import DashUIKit
+import SwiftUI
 import UIKit
 
 // MARK: - ConfirmPaymentViewControllerDelegate
@@ -27,6 +29,18 @@ protocol ConfirmPaymentViewControllerDelegate: AnyObject {
 
 // MARK: - ConfirmPaymentViewController
 
+/// The last step of an L1 send: the amount, what it costs, and the two buttons.
+///
+/// Drawn with `DashUIKit.BottomSheet` rather than the hand-built stack of
+/// `BalanceView` + `UITableView` + `ActionButton` it used to be, so it matches
+/// the confirmation the internal transfer and the non-Core send routes present.
+/// Everything around the drawing is unchanged: it is still a `SheetViewController`
+/// (same presentation, same content-measured detent), still reports through
+/// `ConfirmPaymentViewControllerDelegate`, and `ConfirmPaymentModel` still owns
+/// what the rows say and when the button turns into "Sending…".
+///
+/// The model predates `ObservableObject` and pushes updates through two
+/// closures, so `State` below is the thin adapter between them and SwiftUI.
 class ConfirmPaymentViewController: SheetViewController {
     public var delegate: ConfirmPaymentViewControllerDelegate?
     public var isSendingEnabled = true {
@@ -35,17 +49,28 @@ class ConfirmPaymentViewController: SheetViewController {
                 model.stopPayment()
             }
 
-            confirmButton.isEnabled = isSendingEnabled
+            state.isSendingEnabled = isSendingEnabled
             isModalInPresentation = !isSendingEnabled
         }
     }
 
-    private var balanceView: BalanceView!
-    private var tableView: UITableView!
-    private var confirmButton: ActionButton!
-    // TODO: setIsAcceptContactRequestCheckboxOn
-
     internal let model: ConfirmPaymentModel
+
+    private let state = State()
+
+    /// Rebuilt from the model, so the detent can be re-resolved against it.
+    private lazy var hostingController: UIHostingController<AnyView> = {
+        let sheet = DashUIKit.BottomSheet.selfSizing(
+            title: NSLocalizedString("Confirm", comment: "Payment confirmation"),
+            showBackButton: .constant(false)
+        ) {
+            ConfirmPaymentSheet(
+                state: self.state,
+                onCancel: { [weak self] in self?.cancel() },
+                onConfirm: { [weak self] in self?.confirm() })
+        }
+        return UIHostingController(rootView: AnyView(sheet))
+    }()
 
     convenience init(dataSource: ConfirmPaymentDataSource, fiatCurrency: String) {
         let model = ConfirmPaymentModel(dataSource: dataSource, fiatCurrency: fiatCurrency)
@@ -67,12 +92,25 @@ class ConfirmPaymentViewController: SheetViewController {
         model.update(with: dataSource)
     }
 
+    /// Measured from the SwiftUI content instead of counted in rows: the sheet
+    /// is `selfSizing`, and the row count is not the only thing that moves its
+    /// height — a wrapped address or Dynamic Type does too.
     override func contentViewHeight() -> CGFloat {
-        190 + CGFloat(model.items.count)*46
+        let width = view.bounds.width > 0 ? view.bounds.width : UIScreen.main.bounds.width
+        let bottomInset = view.window?.safeAreaInsets.bottom ?? 0
+        let measured = hostingController
+            .sizeThatFits(in: CGSize(width: width, height: .greatestFiniteMagnitude))
+            .height
+        return measured + bottomInset
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        // `BottomSheet` draws its own grabber; the base class turns the system
+        // one on for the hand-built content it was written for.
+        sheetPresentationController?.prefersGrabberVisible = false
+        presentationController?.delegate = self
 
         configureModel()
         configureHierarchy()
@@ -81,118 +119,80 @@ class ConfirmPaymentViewController: SheetViewController {
 
 extension ConfirmPaymentViewController {
     private func configureModel() {
-        model.actionButtonTitleDidChange = { [weak self] in
-            guard let self else { return }
+        reloadState()
 
-            self.confirmButton.setTitle(self.model.actionButtonTitle, for: .normal)
+        model.actionButtonTitleDidChange = { [weak self] in
+            self?.state.actionTitle = self?.model.actionButtonTitle ?? ""
         }
 
         model.dataSourceDidChange = { [weak self] in
-            self?.balanceView.reloadData()
-            self?.tableView.reloadData()
+            self?.reloadState()
+        }
+    }
+
+    /// Pull everything the sheet draws off the model in one pass, and re-resolve
+    /// the detent — an updated payment output can add or drop a row.
+    private func reloadState() {
+        state.items = model.items ?? []
+        state.actionTitle = model.actionButtonTitle
+        // Digits only. `mainAmountString` is `formattedDashAmount`, which spells
+        // the currency out — "DASH 0.02" — and the component draws the symbol.
+        state.mainAmount = model.dataSource.amountToDisplay.dashAmount
+            .formattedDashAmountWithoutCurrencySymbol
+        state.feeDuffs = model.dataSource.feeDuffs
+        state.totalDuffs = model.dataSource.totalDuffs
+        state.supplementaryAmount = model.supplementaryAmountString
+
+        if #available(iOS 16.0, *) {
+            sheetPresentationController?.animateChanges {
+                sheetPresentationController?.invalidateDetents()
+            }
         }
     }
 
     private func configureHierarchy() {
-        view.backgroundColor = .dw_secondaryBackground()
+        view.backgroundColor = UIColor(Color.dash.primaryBackground)
 
-        presentationController?.delegate = self
-
-        balanceView = BalanceView()
-        balanceView.dataSource = model
-        balanceView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(balanceView)
-
-        tableView = DWIntrinsicTableView(frame: .zero, style: .insetGrouped)
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.preservesSuperviewLayoutMargins = true
-        tableView.isScrollEnabled = false
-        tableView.separatorStyle = .none
-        tableView.backgroundColor = UIColor.dw_secondaryBackground()
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.layoutMargins = view.layoutMargins
-        tableView.registerClass(for: TitleValueCell.self)
-        tableView.tableHeaderView = EmptyUIView(frame: .init(x: 0, y: 0, width: 1, height: CGFloat.leastNonzeroMagnitude))
-        tableView.tableFooterView = EmptyUIView(frame: .init(x: 0, y: 0, width: 1, height: CGFloat.leastNonzeroMagnitude))
-        view.addSubview(tableView)
-
-        let bottomButtonsStack = UIStackView()
-        bottomButtonsStack.translatesAutoresizingMaskIntoConstraints = false
-        bottomButtonsStack.axis = .horizontal
-        bottomButtonsStack.spacing = 10
-        bottomButtonsStack.distribution = .fillEqually
-        view.addSubview(bottomButtonsStack)
-
-        let cancelButton = GrayButton()
-        cancelButton.addAction(.touchUpInside) { [weak self] _ in
-            guard let self else { return }
-
-            self.model.stopPayment()
-            self.delegate?.confirmPaymentViewControllerDidCancel(self)
-            self.dismiss(animated: true)
-        }
-
-        cancelButton.setTitle(NSLocalizedString("Cancel", comment: "Payment confirmation"), for: .normal)
-        bottomButtonsStack.addArrangedSubview(cancelButton)
-
-        confirmButton = ActionButton()
-        confirmButton.setTitle(model.actionButtonTitle, for: .normal)
-        confirmButton.addAction(.touchUpInside) { [weak self] _ in
-            guard let self else { return }
-
-            self.isSendingEnabled = false
-            self.model.confirmPayment()
-            self.delegate?.confirmPaymentViewControllerDidConfirm(self)
-        }
-
-        bottomButtonsStack.addArrangedSubview(confirmButton)
-
+        addChild(hostingController)
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        hostingController.view.backgroundColor = .clear
+        view.addSubview(hostingController.view)
         NSLayoutConstraint.activate([
-            balanceView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-
-            tableView.topAnchor.constraint(equalTo: balanceView.bottomAnchor, constant: 20),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-
-            bottomButtonsStack.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: 30),
-            bottomButtonsStack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -15),
-            bottomButtonsStack.heightAnchor.constraint(equalToConstant: 46),
-            bottomButtonsStack.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-            bottomButtonsStack.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
+        hostingController.didMove(toParent: self)
+    }
+
+    private func cancel() {
+        model.stopPayment()
+        delegate?.confirmPaymentViewControllerDidCancel(self)
+        dismiss(animated: true)
+    }
+
+    private func confirm() {
+        isSendingEnabled = false
+        model.confirmPayment()
+        delegate?.confirmPaymentViewControllerDidConfirm(self)
     }
 }
 
-// MARK: UITableViewDelegate, UITableViewDataSource
+// MARK: - ConfirmPaymentViewController.State
 
-extension ConfirmPaymentViewController: UITableViewDelegate, UITableViewDataSource {
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let item = model.items[indexPath.row]
-
-        let cell = tableView.dequeueReusableCell(type: TitleValueCell.self, for: indexPath)
-        cell.update(with: item)
-        return cell
-    }
-
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        model.items.count
-    }
-
-    public func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        nil
-    }
-
-    public func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        nil
-    }
-
-    public func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        CGFloat.leastNonzeroMagnitude
-    }
-
-    public func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        CGFloat.leastNonzeroMagnitude
+extension ConfirmPaymentViewController {
+    /// What the sheet draws, republished from `ConfirmPaymentModel`'s callbacks.
+    @MainActor
+    fileprivate final class State: ObservableObject {
+        @Published var items: [DWTitleDetailItem] = []
+        /// Present on the L1 payment path only; see `ConfirmPaymentDataSource`.
+        @Published var feeDuffs: UInt64?
+        @Published var totalDuffs: UInt64?
+        @Published var actionTitle = ""
+        @Published var mainAmount = ""
+        @Published var supplementaryAmount = ""
+        @Published var isSendingEnabled = true
     }
 }
 
@@ -205,5 +205,103 @@ extension ConfirmPaymentViewController: UIAdaptivePresentationControllerDelegate
 
     func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
         true
+    }
+}
+
+// MARK: - ConfirmPaymentSheet
+
+/// Amount, the rows that price it, and the pair of buttons.
+///
+/// Nothing below decides anything: the rows arrive as `DWTitleDetailItem`s the
+/// model already assembled, and the confirm title is whatever the model says it
+/// is right now — including its "Sending. / .. / ..." animation.
+private struct ConfirmPaymentSheet: View {
+    @ObservedObject var state: ConfirmPaymentViewController.State
+
+    /// Every place a duff can occupy. A Core fee is a few hundred of them, and
+    /// the component's five-place default renders that as "0" — a confirmation
+    /// that names the wrong fee is worse than one that names a long number.
+    private static let dashFractionDigits = 8
+
+    var onCancel: () -> Void
+    var onConfirm: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // The amount string already carries its Dash symbol — it comes from
+            // the same `formattedDashAmount` the balance view used — so the
+            // component's own logo would draw a second one.
+            DashUIKit.SwapAmountView(
+                amount: state.mainAmount,
+                secondaryText: state.supplementaryAmount,
+                showDashLogo: true)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 14)
+
+            VStack(spacing: 0) {
+                ForEach(Array(state.items.enumerated()), id: \.offset) { _, item in
+                    DashUIKit.MenuItem(
+                        title: item.title ?? "",
+                        accessory: accessory(for: item))
+                }
+            }
+            .modifier(MenuViewModifier())
+            .padding(.top, 20)
+
+            HStack(spacing: 20) {
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Cancel", comment: "Payment confirmation"),
+                    isEnabled: state.isSendingEnabled,
+                    fillsWidth: true,
+                    size: .large,
+                    style: .tintedGray,
+                    action: onCancel
+                )
+
+                DashUIKit.DashButton(
+                    text: state.actionTitle,
+                    isEnabled: state.isSendingEnabled,
+                    fillsWidth: true,
+                    size: .large,
+                    style: .filledBlue,
+                    action: onConfirm
+                )
+            }
+            .padding(.top, 24)
+        }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 20)
+    }
+
+    /// How a row's value is drawn.
+    ///
+    /// The two money rows go through `.balance`, which renders the amount with
+    /// the library's own Dash symbol. Their `attributedDetail` carries one too,
+    /// but as an image attachment — read back as plain text it disappears and
+    /// the row shows a bare number, which is what it did.
+    ///
+    /// Matched by title against the model's own strings: the items arrive as an
+    /// untyped list, and re-deriving the order here would be a second copy of
+    /// the assembly `ConfirmPaymentModel` already does.
+    private func accessory(for item: DWTitleDetailItem) -> DashUIKit.MenuItemAccessory {
+        if let fee = state.feeDuffs, item.title == NSLocalizedString("Network fee", comment: "") {
+            return .balance(dash: Int64(clamping: fee), sign: .none,
+                            maximumFractionDigits: Self.dashFractionDigits)
+        }
+        if let total = state.totalDuffs, item.title == NSLocalizedString("Total", comment: "") {
+            return .balance(dash: Int64(clamping: total), sign: .none,
+                            maximumFractionDigits: Self.dashFractionDigits)
+        }
+        return .text(detail(of: item))
+    }
+
+    /// The row's value as plain text, shortened when the model asked for one
+    /// truncated line — an address, which otherwise wraps and pushes the whole
+    /// row out of shape. `MenuItem` takes a string rather than a styled view, so
+    /// the shortening happens here instead of as a truncation mode.
+    private func detail(of item: DWTitleDetailItem) -> String {
+        let value = item.plainDetail ?? item.attributedDetail?.string ?? ""
+        guard item.style == .truncatedSingleLine, value.count > 24 else { return value }
+        return "\(value.prefix(12))…\(value.suffix(12))"
     }
 }
