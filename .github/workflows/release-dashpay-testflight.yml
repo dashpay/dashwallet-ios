@@ -18,7 +18,7 @@ on:
         default: v4.2-dev
         type: string
       dashuikit_ref:
-        description: "dashpay/DashUIKit branch, tag, or commit SHA — blank uses the pin committed in Package.resolved"
+        description: "dashpay/DashUIKit branch, tag, or full commit SHA — blank uses the pin committed in Package.resolved"
         required: false
         default: ""
         type: string
@@ -87,7 +87,7 @@ jobs:
       # by checking it out beside the wallet the way platform is. The archive
       # runs with `-onlyUsePackageVersionsFromResolvedFile`, which makes
       # `Package.resolved` the authority — so pointing that (and the project's
-      # branch requirement, which must agree) at another ref is what selects it.
+      # requirement, which must agree) at another ref is what selects it.
       #
       # Left blank, nothing is touched and the committed pin is used.
       - name: Override the DashUIKit pin
@@ -98,19 +98,39 @@ jobs:
         run: |
           set -euo pipefail
 
-          # A branch or tag resolves to its tip; anything else is taken as a
-          # commit SHA already, and `Package.resolved` wants both a name and a
-          # revision either way.
-          sha="$(git ls-remote https://github.com/dashpay/DashUIKit "$DASHUIKIT_REF" | cut -f1 | head -1)"
-          if [ -z "$sha" ]; then
-            sha="$DASHUIKIT_REF"
-          fi
-          echo "DashUIKit → $DASHUIKIT_REF ($sha)"
+          # Classify the ref: a branch keeps a branch requirement, while a
+          # tag or a bare commit SHA becomes a revision requirement — SwiftPM
+          # rejects a branch requirement naming something that is not a
+          # branch. An annotated tag lists both the tag object and the peeled
+          # commit ("^{}"); the peeled commit wins because a Package.resolved
+          # revision must be a commit, not a tag object.
+          refs="$(git ls-remote https://github.com/dashpay/DashUIKit \
+            "refs/heads/$DASHUIKIT_REF" \
+            "refs/tags/$DASHUIKIT_REF" \
+            "refs/tags/$DASHUIKIT_REF^{}")"
+          branch_sha="$(printf '%s\n' "$refs" | awk -v ref="refs/heads/$DASHUIKIT_REF" '$2 == ref { print $1 }')"
+          peeled_tag_sha="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$DASHUIKIT_REF^{}" '$2 == ref { print $1 }')"
+          tag_sha="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$DASHUIKIT_REF" '$2 == ref { print $1 }')"
 
-          python3 - "$DASHUIKIT_REF" "$sha" <<'PY'
+          if [ -n "$branch_sha" ]; then
+            kind=branch
+            sha="$branch_sha"
+          elif [ -n "${peeled_tag_sha}${tag_sha}" ]; then
+            kind=revision
+            sha="${peeled_tag_sha:-$tag_sha}"
+          elif [[ "$DASHUIKIT_REF" =~ ^[0-9a-f]{40}$ ]]; then
+            kind=revision
+            sha="$DASHUIKIT_REF"
+          else
+            echo "::error::dashuikit_ref '$DASHUIKIT_REF' is not a DashUIKit branch, tag, or full 40-hex commit SHA."
+            exit 1
+          fi
+          echo "DashUIKit → $DASHUIKIT_REF ($kind $sha)"
+
+          python3 - "$DASHUIKIT_REF" "$sha" "$kind" <<'PY'
           import json, re, sys
 
-          ref, sha = sys.argv[1], sys.argv[2]
+          ref, sha, kind = sys.argv[1], sys.argv[2], sys.argv[3]
 
           resolved = "DashWallet.xcworkspace/xcshareddata/swiftpm/Package.resolved"
           with open(resolved) as handle:
@@ -118,25 +138,32 @@ jobs:
           pins = [p for p in document["pins"] if p["identity"].lower() == "dashuikit"]
           if not pins:
               sys.exit("no DashUIKit pin in Package.resolved")
-          pins[0]["state"] = {"branch": ref, "revision": sha}
+          pins[0]["state"] = {"branch": ref, "revision": sha} if kind == "branch" else {"revision": sha}
           with open(resolved, "w") as handle:
               json.dump(document, handle, indent=2)
               handle.write("\n")
 
-          # The project pins a branch too, and `-onlyUsePackageVersionsFromResolvedFile`
+          # The project pins a requirement too, and `-onlyUsePackageVersionsFromResolvedFile`
           # still checks the resolved revision against it. Rewrites only the
           # requirement inside DashUIKit's own reference block.
+          # The branch name is quoted: it carries slashes, and pbxproj only
+          # leaves bare tokens unquoted. Quoting a plain name too is harmless.
+          if kind == "branch":
+              requirement = f'branch = "{ref}";\n\t\t\t\tkind = branch;'
+          else:
+              requirement = f'kind = revision;\n\t\t\t\trevision = {sha};'
           project = "DashWallet.xcodeproj/project.pbxproj"
           with open(project) as handle:
               text = handle.read()
           pattern = re.compile(
-              r'(XCRemoteSwiftPackageReference "DashUIKit" \*/ = \{.*?branch = )[^;]+(;)',
+              r'(XCRemoteSwiftPackageReference "DashUIKit" \*/ = \{.*?requirement = \{\n)\t+[^}]*?(\n\t+\};)',
               re.DOTALL)
-          # Quoted: a branch name carries slashes, and pbxproj only leaves bare
-          # tokens unquoted. Quoting a plain name too is harmless.
-          text, count = pattern.subn(rf'\g<1>"{ref}"\g<2>', text, count=1)
+          text, count = pattern.subn(
+              lambda match: match.group(1) + "\t\t\t\t" + requirement + match.group(2),
+              text,
+              count=1)
           if count != 1:
-              sys.exit("could not rewrite the DashUIKit branch requirement")
+              sys.exit("could not rewrite the DashUIKit requirement")
           with open(project, "w") as handle:
               handle.write(text)
           PY

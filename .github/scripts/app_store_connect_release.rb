@@ -98,16 +98,18 @@ module AppStoreConnectRelease
                    "#{latest_production.value}. Pick a higher version."
     end
 
-    # "9.1" and "9.1.0" are different trains to App Store Connect. When an
-    # existing TestFlight train is numerically the same version, reuse its
-    # spelling so the upload continues that train instead of opening a
+    # "9.1" and "9.1.0" are different trains to App Store Connect. A train
+    # spelled exactly as requested always wins; failing that, an existing
+    # TestFlight train that is numerically the same version lends its
+    # spelling, so the upload continues that train instead of opening a
     # parallel one.
-    existing_spelling = testflight_versions
-      .map { |value| MarketingVersion.new(value) }
-      .find { |version| version == requested_version }
+    existing_trains = testflight_versions.map { |value| MarketingVersion.new(value) }
+    matching_train =
+      existing_trains.find { |version| version.value == requested_version.value } ||
+      existing_trains.find { |version| version == requested_version }
 
     {
-      effective: (existing_spelling || requested_version).value,
+      effective: (matching_train || requested_version).value,
       latest_testflight: latest_testflight&.value,
       latest_production: latest_production&.value
     }

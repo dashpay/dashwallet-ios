@@ -54,6 +54,12 @@ class AppStoreConnectReleaseTest < Minitest::Test
     assert_equal "9.1", result.fetch(:effective)
   end
 
+  def test_exact_train_spelling_beats_equivalent_train
+    result = resolve(requested: "9.1.0", testflight: %w[9.1 9.1.0], production: [])
+
+    assert_equal "9.1.0", result.fetch(:effective)
+  end
+
   def test_invalid_version_fails
     assert_raises(AppStoreConnectRelease::Error) do
       resolve(requested: "v9.1", testflight: ["9.0.0"])
