@@ -291,8 +291,8 @@ struct SDKIdentityProfileSheet: View {
                             .foregroundColor(.dash.blue)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(dpnsNames.isEmpty
-                                ? NSLocalizedString("Add a username", comment: "Username marketplace: profile entry point")
-                                : NSLocalizedString("Add another username", comment: "Username marketplace: profile entry point"))
+                                ? NSLocalizedString("Get a username", comment: "Username marketplace: profile entry point")
+                                : NSLocalizedString("Get another username", comment: "Username marketplace: profile entry point"))
                                 .font(.system(size: 15, weight: .semibold))
                                 .foregroundColor(.dash.blue)
                             Text(NSLocalizedString(

@@ -632,8 +632,8 @@ struct IdentityDetailScreen: View {
                             .foregroundColor(.dash.blue)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(currentRow.dpnsNames.isEmpty
-                                ? NSLocalizedString("Add a username", comment: "Username marketplace: identity entry point")
-                                : NSLocalizedString("Add another username", comment: "Username marketplace: identity entry point"))
+                                ? NSLocalizedString("Get a username", comment: "Username marketplace: identity entry point")
+                                : NSLocalizedString("Get another username", comment: "Username marketplace: identity entry point"))
                                 .font(.system(size: 15, weight: .semibold))
                                 .foregroundColor(.dash.blue)
                             Text(NSLocalizedString(
