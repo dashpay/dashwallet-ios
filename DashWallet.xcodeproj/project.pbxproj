@@ -630,6 +630,12 @@
 		5AFDE1012FA1000000000016 /* AddMasternodeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFDE1012FA1000000000003 /* AddMasternodeScreen.swift */; };
 		5AFDE1012FA1000000000017 /* TrackedMasternodeDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFDE1012FA1000000000004 /* TrackedMasternodeDetailScreen.swift */; };
 		5AFDE1012FA1000000000018 /* TrackedMasternodeDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFDE1012FA1000000000004 /* TrackedMasternodeDetailScreen.swift */; };
+		UB26A0012FA2000000000011 /* PendingMasternodeUnbanStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = UB26A0012FA2000000000001 /* PendingMasternodeUnbanStore.swift */; };
+		UB26A0012FA2000000000012 /* PendingMasternodeUnbanStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = UB26A0012FA2000000000001 /* PendingMasternodeUnbanStore.swift */; };
+		UB26A0012FA2000000000013 /* MasternodeUnbanViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = UB26A0012FA2000000000002 /* MasternodeUnbanViewModel.swift */; };
+		UB26A0012FA2000000000014 /* MasternodeUnbanViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = UB26A0012FA2000000000002 /* MasternodeUnbanViewModel.swift */; };
+		UB26A0012FA2000000000015 /* UnbanMasternodeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = UB26A0012FA2000000000003 /* UnbanMasternodeSheet.swift */; };
+		UB26A0012FA2000000000016 /* UnbanMasternodeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = UB26A0012FA2000000000003 /* UnbanMasternodeSheet.swift */; };
 		5AE5700E2F9C000000000003 /* EvonodeStatusViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE5700E2F9C000000000001 /* EvonodeStatusViewModel.swift */; };
 		5AE5700E2F9C000000000004 /* EvonodeStatusViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE5700E2F9C000000000001 /* EvonodeStatusViewModel.swift */; };
 		5AE5700E2F9C000000000005 /* EvonodeStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE5700E2F9C000000000002 /* EvonodeStatusScreen.swift */; };
@@ -2868,6 +2874,9 @@
 		5AFDE1012FA1000000000002 /* AddMasternodeViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AddMasternodeViewModel.swift; sourceTree = "<group>"; };
 		5AFDE1012FA1000000000003 /* AddMasternodeScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AddMasternodeScreen.swift; sourceTree = "<group>"; };
 		5AFDE1012FA1000000000004 /* TrackedMasternodeDetailScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrackedMasternodeDetailScreen.swift; sourceTree = "<group>"; };
+		UB26A0012FA2000000000001 /* PendingMasternodeUnbanStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PendingMasternodeUnbanStore.swift; sourceTree = "<group>"; };
+		UB26A0012FA2000000000002 /* MasternodeUnbanViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MasternodeUnbanViewModel.swift; sourceTree = "<group>"; };
+		UB26A0012FA2000000000003 /* UnbanMasternodeSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UnbanMasternodeSheet.swift; sourceTree = "<group>"; };
 		5AE5700E2F9C000000000001 /* EvonodeStatusViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeStatusViewModel.swift; sourceTree = "<group>"; };
 		5AE5700E2F9C000000000002 /* EvonodeStatusScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeStatusScreen.swift; sourceTree = "<group>"; };
 		51BA2E9F2F0B2E0100A1B201 /* SwapPendingGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapPendingGate.swift; sourceTree = "<group>"; };
@@ -3847,6 +3856,16 @@
 				5AFDE1012FA1000000000004 /* TrackedMasternodeDetailScreen.swift */,
 			);
 			path = "Tracked Masternodes";
+			sourceTree = "<group>";
+		};
+		UB26A0012FA2000000000004 /* Unban */ = {
+			isa = PBXGroup;
+			children = (
+				UB26A0012FA2000000000001 /* PendingMasternodeUnbanStore.swift */,
+				UB26A0012FA2000000000002 /* MasternodeUnbanViewModel.swift */,
+				UB26A0012FA2000000000003 /* UnbanMasternodeSheet.swift */,
+			);
+			path = Unban;
 			sourceTree = "<group>";
 		};
 		5AE5700E2F9C000000000007 /* Evonode Status */ = {
@@ -4905,6 +4924,7 @@
 				51AA00202F970020005A0020 /* MasternodesScreen.swift */,
 				5AEDE0012F9B000000000007 /* Masternode Withdrawal */,
 				5AFDE1012FA1000000000005 /* Tracked Masternodes */,
+				UB26A0012FA2000000000004 /* Unban */,
 				5AE5700E2F9C000000000007 /* Evonode Status */,
 				7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */,
 				RC00C0032FA0000000000001 /* CSVExportSheet.swift */,
@@ -10304,6 +10324,9 @@
 				5AFDE1012FA1000000000014 /* AddMasternodeViewModel.swift in Sources */,
 				5AFDE1012FA1000000000016 /* AddMasternodeScreen.swift in Sources */,
 				5AFDE1012FA1000000000018 /* TrackedMasternodeDetailScreen.swift in Sources */,
+				UB26A0012FA2000000000012 /* PendingMasternodeUnbanStore.swift in Sources */,
+				UB26A0012FA2000000000014 /* MasternodeUnbanViewModel.swift in Sources */,
+				UB26A0012FA2000000000016 /* UnbanMasternodeSheet.swift in Sources */,
 				5AE5700E2F9C000000000004 /* EvonodeStatusViewModel.swift in Sources */,
 				5AE5700E2F9C000000000006 /* EvonodeStatusScreen.swift in Sources */,
 				51AA00022F970002005A0002 /* SyncInfoMenuScreen.swift in Sources */,
@@ -11336,6 +11359,9 @@
 				5AFDE1012FA1000000000013 /* AddMasternodeViewModel.swift in Sources */,
 				5AFDE1012FA1000000000015 /* AddMasternodeScreen.swift in Sources */,
 				5AFDE1012FA1000000000017 /* TrackedMasternodeDetailScreen.swift in Sources */,
+				UB26A0012FA2000000000011 /* PendingMasternodeUnbanStore.swift in Sources */,
+				UB26A0012FA2000000000013 /* MasternodeUnbanViewModel.swift in Sources */,
+				UB26A0012FA2000000000015 /* UnbanMasternodeSheet.swift in Sources */,
 				5AE5700E2F9C000000000003 /* EvonodeStatusViewModel.swift in Sources */,
 				5AE5700E2F9C000000000005 /* EvonodeStatusScreen.swift in Sources */,
 				51AA00032F970003005A0003 /* SyncInfoMenuScreen.swift in Sources */,

@@ -262,6 +262,7 @@ struct TrackedMasternodeDetailScreen: View {
     @State private var showStopConfirm = false
     @State private var showWithdrawSheet = false
     @State private var showKeysSheet = false
+    @State private var showUnbanSheet = false
     let onChanged: () -> Void
 
     init(record: PlatformMasternode, onChanged: @escaping () -> Void) {
@@ -286,6 +287,17 @@ struct TrackedMasternodeDetailScreen: View {
         }
         .sheet(isPresented: $showKeysSheet, onDismiss: { viewModel.reloadAttachedRoles() }) {
             TrackedKeyManagementSheet(record: viewModel.record, vault: viewModel.vault)
+        }
+        .sheet(isPresented: $showUnbanSheet) {
+            UnbanMasternodeSheet(
+                record: viewModel.record,
+                keySource: .tracked(vault: viewModel.vault),
+                onSubmitted: {
+                    Task {
+                        await viewModel.refresh()
+                        onChanged()
+                    }
+                })
         }
         .confirmationDialog(
             NSLocalizedString("Stop tracking this masternode?", comment: "Tracked masternodes"),
@@ -458,6 +470,8 @@ struct TrackedMasternodeDetailScreen: View {
 
     private var manageSection: some View {
         Section {
+            unbanRows
+
             requestStatusRow
 
             Button {
@@ -482,6 +496,35 @@ struct TrackedMasternodeDetailScreen: View {
             } label: {
                 Label(NSLocalizedString("Stop tracking", comment: "Tracked masternodes"), systemImage: "eye.slash")
                     .foregroundColor(.red)
+            }
+        }
+    }
+
+    /// Unban entry point: shown while the node is PoSe-banned (or an unban
+    /// funded from the shielded balance is still pending), enabled when the
+    /// operator key — the one that signs a ProUpServTx — is on this device.
+    @ViewBuilder
+    private var unbanRows: some View {
+        let pending = PendingMasternodeUnbanStore.shared.pending(
+            forProTxHash: viewModel.record.proTxHash) != nil
+        if viewModel.record.masternodeStatus == .inactive || pending {
+            if viewModel.capabilities.canUpdateService {
+                Button {
+                    showUnbanSheet = true
+                } label: {
+                    Label(
+                        pending
+                            ? NSLocalizedString("Complete unban", comment: "Masternode unban")
+                            : NSLocalizedString("Unban masternode", comment: "Masternode unban"),
+                        systemImage: "arrow.up.heart")
+                        .foregroundColor(Color.dash.blue)
+                }
+            } else if viewModel.record.masternodeStatus == .inactive {
+                Text(NSLocalizedString(
+                    "Add this masternode's operator key to unban it from here.",
+                    comment: "Masternode unban"))
+                    .font(.caption)
+                    .foregroundColor(Color.dash.secondaryText)
             }
         }
     }
