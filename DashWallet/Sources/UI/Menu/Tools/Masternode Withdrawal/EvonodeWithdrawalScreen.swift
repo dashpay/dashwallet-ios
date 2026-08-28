@@ -352,7 +352,10 @@ struct EvonodeWithdrawalConfirmSheet: View {
             title: NSLocalizedString("Confirm withdrawal", comment: "Evonode withdrawal"),
             showBackButton: .constant(false),
             isDismissalEnabled: .constant(!(isInFlight || isUnconfirmed)),
-            onClose: onCancel
+            // Supplying `onClose` makes the close button live regardless of
+            // `isDismissalEnabled`, so the protected phases have to gate it here.
+            isCloseButtonEnabled: !(isInFlight || isUnconfirmed),
+            onClose: closeAction
         ) {
             switch viewModel.phase {
             case let .success(remaining):
@@ -368,6 +371,21 @@ struct EvonodeWithdrawalConfirmSheet: View {
     private var isUnconfirmed: Bool {
         if case .submittedUnconfirmed = viewModel.phase { return true }
         return false
+    }
+
+    /// The close button has to do what the visible button of the current phase
+    /// does. `onCancel` only closes the sheet, so on success it would skip
+    /// `onWithdrawn(remaining)` and leave the withdrawal screen showing the
+    /// stale pre-withdrawal claimable balance.
+    private var closeAction: () -> Void {
+        switch viewModel.phase {
+        case let .success(remaining):
+            return { onCompleted(remaining) }
+        case .submittedUnconfirmed:
+            return onUnconfirmedAcknowledged
+        default:
+            return onCancel
+        }
     }
 
     private var isInFlight: Bool {

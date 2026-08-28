@@ -55,7 +55,10 @@ struct InternalTransferConfirmSheet: View {
             title: NSLocalizedString("Confirm", comment: ""),
             showBackButton: .constant(false),
             isDismissalEnabled: .constant(!isInFlight),
-            onClose: onCancel
+            // Supplying `onClose` makes the close button live regardless of
+            // `isDismissalEnabled`, so the protected phases have to gate it here.
+            isCloseButtonEnabled: !isInFlight,
+            onClose: closeAction
         ) {
             switch coordinator.phase {
             case .success:
@@ -77,6 +80,18 @@ struct InternalTransferConfirmSheet: View {
             return true
         default:
             return false
+        }
+    }
+
+    /// The close button has to do what the visible button of the current phase
+    /// does. In the terminal phases that is `onCompleted`, which tells the
+    /// transfer screen the transfer finished; `onCancel` only closes the sheet.
+    private var closeAction: () -> Void {
+        switch coordinator.phase {
+        case .success, .submittedUnconfirmed:
+            return onCompleted
+        default:
+            return onCancel
         }
     }
 
@@ -544,6 +559,9 @@ struct ShieldedRecoverySheet: View {
             title: NSLocalizedString("Finish shielded transfer", comment: "InternalTransfer recovery"),
             showBackButton: .constant(false),
             isDismissalEnabled: .constant(!isInFlight),
+            // Supplying `onClose` makes the close button live regardless of
+            // `isDismissalEnabled`, so the protected phases have to gate it here.
+            isCloseButtonEnabled: !isInFlight,
             onClose: onDismiss
         ) {
             switch coordinator.phase {

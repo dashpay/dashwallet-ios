@@ -186,6 +186,9 @@ struct CoinJoinMoveFundsSheet: View {
             title: NSLocalizedString("Move your mixed coins", comment: "CoinJoin"),
             showBackButton: .constant(false),
             isDismissalEnabled: .constant(!viewModel.isInFlight),
+            // Supplying `onClose` makes the close button live regardless of
+            // `isDismissalEnabled`, so the in-flight stages have to gate it here.
+            isCloseButtonEnabled: !viewModel.isInFlight,
             onClose: onDismiss
         ) {
             switch viewModel.stage {
@@ -209,41 +212,49 @@ struct CoinJoinMoveFundsSheet: View {
 
     private var choiceBody: some View {
         VStack(spacing: 0) {
-            DashAmount(
-                amount: Int64(viewModel.amountDuffs),
-                font: .largeTitle,
-                dashSymbolFactor: 0.7,
-                showDirection: false)
-                .padding(.top, 14)
+            // Scrollable: this is the only migrated sheet whose initial detent is
+            // `.medium`, and the BottomSheet chrome takes 82pt of it. Letting the
+            // choices scroll keeps "Later" — the only way out that records the
+            // deferral — reachable on a short screen or a long translation.
+            ScrollView {
+                VStack(spacing: 0) {
+                    DashAmount(
+                        amount: Int64(viewModel.amountDuffs),
+                        font: .largeTitle,
+                        dashSymbolFactor: 0.7,
+                        showDirection: false)
+                        .padding(.top, 14)
 
-            Text(NSLocalizedString(
-                "CoinJoin is no longer supported — choose where to move your mixed coins.",
-                comment: "CoinJoin"))
-                .font(.system(size: 14))
-                .foregroundColor(.dash.secondaryText)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
-                .padding(.top, 12)
+                    Text(NSLocalizedString(
+                        "CoinJoin is no longer supported — choose where to move your mixed coins.",
+                        comment: "CoinJoin"))
+                        .font(.system(size: 14))
+                        .foregroundColor(.dash.secondaryText)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 24)
+                        .padding(.top, 12)
 
-            VStack(spacing: 10) {
-                destinationCard(
-                    icon: "wallet.pass.fill",
-                    title: NSLocalizedString("Dash Wallet balance", comment: "CoinJoin"),
-                    subtitle: NSLocalizedString(
-                        "Move to your regular spendable balance.", comment: "CoinJoin"),
-                    action: { Task { await viewModel.moveToWallet() } })
-                destinationCard(
-                    icon: "shield.fill",
-                    title: NSLocalizedString("Shielded balance", comment: "CoinJoin"),
-                    subtitle: NSLocalizedString(
-                        "Keep these coins private. Network and privacy fees apply.",
-                        comment: "CoinJoin"),
-                    action: { Task { await viewModel.moveToShielded() } })
+                    VStack(spacing: 10) {
+                        destinationCard(
+                            icon: "wallet.pass.fill",
+                            title: NSLocalizedString("Dash Wallet balance", comment: "CoinJoin"),
+                            subtitle: NSLocalizedString(
+                                "Move to your regular spendable balance.", comment: "CoinJoin"),
+                            action: { Task { await viewModel.moveToWallet() } })
+                        destinationCard(
+                            icon: "shield.fill",
+                            title: NSLocalizedString("Shielded balance", comment: "CoinJoin"),
+                            subtitle: NSLocalizedString(
+                                "Keep these coins private. Network and privacy fees apply.",
+                                comment: "CoinJoin"),
+                            action: { Task { await viewModel.moveToShielded() } })
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 20)
+                    .padding(.bottom, 12)
+                }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 20)
-
-            Spacer(minLength: 12)
+            .scrollBounceBehavior(.basedOnSize)
 
             DashButton(
                 text: NSLocalizedString("Later", comment: "CoinJoin"),

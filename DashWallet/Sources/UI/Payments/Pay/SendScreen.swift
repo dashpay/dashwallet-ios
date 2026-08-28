@@ -730,7 +730,10 @@ struct SendConfirmSheet: View {
             title: NSLocalizedString("Confirm", comment: ""),
             showBackButton: .constant(false),
             isDismissalEnabled: .constant(!isInFlight),
-            onClose: onCancel
+            // Supplying `onClose` makes the close button live regardless of
+            // `isDismissalEnabled`, so the protected phases have to gate it here.
+            isCloseButtonEnabled: !isInFlight,
+            onClose: closeAction
         ) {
             switch coordinator.phase {
             case .success:
@@ -740,6 +743,20 @@ struct SendConfirmSheet: View {
             default:
                 detailsBody
             }
+        }
+    }
+
+    /// The close button has to do what the visible button of the current phase
+    /// does. In the terminal phases that is `onCompleted`, which also unwinds
+    /// the send flow — `onCancel` only closes the sheet, so routing every phase
+    /// there would drop the user back on the amount screen with the amount
+    /// still entered, one tap away from sending it twice.
+    private var closeAction: () -> Void {
+        switch coordinator.phase {
+        case .success, .submittedUnconfirmed:
+            return onCompleted
+        default:
+            return onCancel
         }
     }
 

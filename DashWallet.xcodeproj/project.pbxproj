@@ -13413,8 +13413,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/dashpay/DashUIKit";
 			requirement = {
-				kind = revision;
-				revision = e8d92434bfc28fbf933b896cd40a01dd61835b5f;
+				branch = master;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
