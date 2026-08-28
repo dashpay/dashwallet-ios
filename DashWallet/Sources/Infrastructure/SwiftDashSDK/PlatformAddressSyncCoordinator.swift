@@ -537,23 +537,46 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         Task { await self.syncNow() }
     }
 
-    /// Fund the wallet's own Platform balance from the Core L1 balance via
-    /// an asset lock (funding type 4, `AssetLockAddressTopUp`). `amountDuffs`
-    /// is locked on L1; the credited amount is that value minus the fees the
-    /// Rust side carves from the single remainder recipient (the wallet's
-    /// own next unused Platform address).
-    public func fundFromCore(amountDuffs: UInt64) async throws {
-        let (addressWallet, container, recipient, accountIndex) = try resolveFundEnvironment()
+    /// Fund a Platform balance from the Core L1 balance via an asset lock
+    /// (funding type 4, `AssetLockAddressTopUp`). `amountDuffs` is locked on L1.
+    ///
+    /// `externalRecipient` nil = the INTERNAL transfer: a single remainder
+    /// recipient pointed at the wallet's own next unused Platform address, which
+    /// receives the locked value minus the fees Rust carves from it.
+    ///
+    /// Non-nil and `isExternal` = the EXTERNAL send: two outputs, the payee's
+    /// with an explicit credit amount and the wallet's own next address as the
+    /// remainder. The fee strategy reduces the remainder, so the payee is paid
+    /// EXACTLY `credits` and the sender's own change absorbs every fee. This
+    /// takes the `fundFromAssetLockExternal` entry point, which relaxes the
+    /// membership pre-flight for explicit-amount recipients only — the
+    /// remainder must still be an address this wallet owns.
+    public func fundFromCore(
+        amountDuffs: UInt64,
+        externalRecipient: PlatformFundingRecipient? = nil
+    ) async throws {
+        let (addressWallet, container, ownChange, accountIndex) = try resolveFundEnvironment()
         let signer = KeychainSigner(modelContainer: container, network: runningNetwork!)
 
-        Self.logger.info("🛰️ PLATFORM-FUND :: core → platform amount=\(amountDuffs) account=\(accountIndex)")
-
-        let updated = try await addressWallet.fundFromAssetLock(
-            amountDuffs: amountDuffs,
-            fundingAccountIndex: 0,
-            platformAccountIndex: accountIndex,
-            recipients: [recipient],
-            signer: signer)
+        let updated: [ManagedPlatformAddressWallet.UpdatedBalance]
+        if let payee = try Self.externalPayee(externalRecipient) {
+            Self.logger.info(
+                "🛰️ PLATFORM-FUND :: core → external platform lock=\(amountDuffs) payee=\(payee.credits ?? 0) account=\(accountIndex)")
+            updated = try await addressWallet.fundFromAssetLockExternal(
+                amountDuffs: amountDuffs,
+                fundingAccountIndex: 0,
+                platformAccountIndex: accountIndex,
+                recipients: [payee, ownChange],
+                signer: signer)
+        } else {
+            Self.logger.info("🛰️ PLATFORM-FUND :: core → platform amount=\(amountDuffs) account=\(accountIndex)")
+            updated = try await addressWallet.fundFromAssetLock(
+                amountDuffs: amountDuffs,
+                fundingAccountIndex: 0,
+                platformAccountIndex: accountIndex,
+                recipients: [ownChange],
+                signer: signer)
+        }
 
         applyUpdatedBalances(updated, context: container.mainContext)
         await ShieldedTxLookup.shared.refresh(reason: "platform-fund-completed")
@@ -566,32 +589,106 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// the existing outpoint instead of building (and stranding) a second
     /// lock. See `ShieldedTransferCoordinator.resumeAssetLock` for the same
     /// pattern on the shielded route.
-    public func resumeFundFromCore(outPointTxid: Data, outPointVout: UInt32) async throws {
-        let (addressWallet, container, recipient, accountIndex) = try resolveFundEnvironment()
+    ///
+    /// This is the single choke point every resume surface funnels through
+    /// (tx-detail retry, the home screen's tap-to-finish, `AssetLockRecovery
+    /// Service`, and the confirm sheet's "Try again"), so the recipient is
+    /// resolved from durable storage HERE rather than at each call site — a
+    /// resume path added later cannot forget to do it.
+    ///
+    /// `externalRecipient` nil means "look it up": the lock's persisted
+    /// recipient is used when one was recorded, and a lock with NO recorded
+    /// recipient keeps the legacy own-next-address behavior so funding locks
+    /// that predate the field family still resume correctly.
+    public func resumeFundFromCore(
+        outPointTxid: Data,
+        outPointVout: UInt32,
+        externalRecipient: PlatformFundingRecipient? = nil
+    ) async throws {
+        let (addressWallet, container, ownChange, accountIndex) = try resolveFundEnvironment()
         let signer = KeychainSigner(modelContainer: container, network: runningNetwork!)
 
-        Self.logger.info("🛰️ PLATFORM-FUND :: resume core → platform vout=\(outPointVout)")
+        let resolved = externalRecipient
+            ?? resolvePersistedFundingRecipient(
+                outPointTxid: outPointTxid,
+                outPointVout: outPointVout,
+                container: container)
 
-        let updated = try await addressWallet.resumeFundFromAssetLock(
-            outPointTxid: outPointTxid,
-            outPointVout: outPointVout,
-            platformAccountIndex: accountIndex,
-            recipients: [recipient],
-            signer: signer)
+        let updated: [ManagedPlatformAddressWallet.UpdatedBalance]
+        if let payee = try Self.externalPayee(resolved) {
+            Self.logger.info(
+                "🛰️ PLATFORM-FUND :: resume core → external platform vout=\(outPointVout)")
+            updated = try await addressWallet.resumeFundFromAssetLockExternal(
+                outPointTxid: outPointTxid,
+                outPointVout: outPointVout,
+                platformAccountIndex: accountIndex,
+                recipients: [payee, ownChange],
+                signer: signer)
+        } else {
+            Self.logger.info("🛰️ PLATFORM-FUND :: resume core → platform vout=\(outPointVout)")
+            updated = try await addressWallet.resumeFundFromAssetLock(
+                outPointTxid: outPointTxid,
+                outPointVout: outPointVout,
+                platformAccountIndex: accountIndex,
+                recipients: [ownChange],
+                signer: signer)
+        }
 
         applyUpdatedBalances(updated, context: container.mainContext)
         await ShieldedTxLookup.shared.refresh(reason: "platform-fund-resume-completed")
         Task { await self.syncNow() }
     }
 
-    /// Shared readiness + recipient resolution for `fundFromCore` /
-    /// `resumeFundFromCore`: the single credits-nil recipient is the
-    /// remainder output (absorbs the locked value less fees), pointed at the
-    /// wallet's own next receive address.
+    /// The persisted recipient of a tracked type-4 lock, or `nil` when none was
+    /// recorded (legacy locks, and every lock the internal transfer builds).
+    private func resolvePersistedFundingRecipient(
+        outPointTxid: Data,
+        outPointVout: UInt32,
+        container: ModelContainer
+    ) -> PlatformFundingRecipient? {
+        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+              let hex = PlatformFundingRecipientStore.outPointHex(
+                  txidWire: outPointTxid, vout: outPointVout)
+        else { return nil }
+        return PlatformFundingRecipientStore.resolve(
+            outPointHex: hex, walletId: walletId, container: container)
+    }
+
+    /// Map a durable recipient record onto the SDK's explicit-amount recipient,
+    /// or `nil` when the funding is an ordinary own-address top-up.
+    ///
+    /// Throws rather than silently degrading to the own-address path: a record
+    /// that says "external" but carries no amount, or a P2SH destination, is a
+    /// bug or a corrupted row, and quietly paying the sender's own address
+    /// instead is exactly the misdirection this whole field family exists to
+    /// prevent.
+    private static func externalPayee(
+        _ recipient: PlatformFundingRecipient?
+    ) throws -> ManagedPlatformAddressWallet.FundFromAssetLockRecipient? {
+        guard let recipient, recipient.isExternal else { return nil }
+        guard recipient.addressType == 0 else { throw SendError.p2shNotSupported }
+        guard let credits = recipient.credits, credits > 0, recipient.hash.count == 20 else {
+            throw SendError.invalidDestination
+        }
+        return ManagedPlatformAddressWallet.FundFromAssetLockRecipient(
+            addressType: recipient.addressType,
+            hash: recipient.hash,
+            credits: credits)
+    }
+
+    /// Shared readiness + own-address resolution for `fundFromCore` /
+    /// `resumeFundFromCore`.
+    ///
+    /// The wallet's own next receive address is ALWAYS resolved, on both the
+    /// internal and the external path — it is the single `credits == nil`
+    /// remainder recipient, which on an external send is the sender's change
+    /// output (and the one the fee strategy reduces). `fundFromAssetLockExternal`
+    /// requires the remainder to be an address this wallet owns, so this lookup
+    /// is not an internal-only concern.
     private func resolveFundEnvironment() throws -> (
         wallet: ManagedPlatformAddressWallet,
         container: ModelContainer,
-        recipient: ManagedPlatformAddressWallet.FundFromAssetLockRecipient,
+        ownChange: ManagedPlatformAddressWallet.FundFromAssetLockRecipient,
         accountIndex: UInt32
     ) {
         guard isRunning,
@@ -603,9 +700,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
               let parsed = Self.parsePlatformRecipient(bech32m: target.address),
               parsed.ffiAddressType == 0
         else { throw SendError.noPlatformReceiveAddress }
-        let recipient = ManagedPlatformAddressWallet.FundFromAssetLockRecipient(
+        let ownChange = ManagedPlatformAddressWallet.FundFromAssetLockRecipient(
             addressType: 0, hash: parsed.hash, credits: nil)
-        return (addressWallet, container, recipient, target.accountIndex)
+        return (addressWallet, container, ownChange, target.accountIndex)
     }
 
     /// Full local wipe of the platform-address sync state — the Sync Info

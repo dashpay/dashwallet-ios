@@ -78,6 +78,13 @@ struct AssetLockRecoveryService {
             // can't forget the check.
             let coordinator = ShieldedTransferCoordinator()
             if fundingTypeRaw == 4 {
+                // No recipient argument: `PlatformAddressSyncCoordinator
+                // .resumeFundFromCore` resolves the lock's persisted recipient
+                // from its outpoint, so a Core → Platform send that was paying
+                // a third party resumes to THAT party rather than to the
+                // sender's own next address. Locks with no recorded recipient
+                // (the internal transfer, and anything predating the field
+                // family) keep the own-address behavior.
                 await coordinator.resumeFundPlatform(outPointTxidWire: txidWire, outPointVout: vout)
             } else {
                 await coordinator.resumeAssetLock(outPointTxidWire: txidWire, outPointVout: vout)

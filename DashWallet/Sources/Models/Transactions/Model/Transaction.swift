@@ -395,8 +395,8 @@ class Transaction: TransactionDataItem, Identifiable {
 
     /// Platform-funding sibling of `isPendingShieldedTransfer`: the type-4
     /// lock is committed but the address-funding transition hasn't consumed
-    /// it. Drives the home row's "Pending" pill (no tap-to-recover surface
-    /// yet — retry lives in the transfer confirm sheet).
+    /// it. Drives the home row's "Pending — tap to finish" affordance and the
+    /// `PlatformFundingRecoverySheet` behind it.
     var isPendingPlatformFunding: Bool {
         guard let status = platformFundingLockInfo?.statusRaw else { return false }
         return (1...3).contains(status)
@@ -408,6 +408,14 @@ class Transaction: TransactionDataItem, Identifiable {
     /// keying `ShieldedTxLookup`). `nil` for non-shielded-transfer txs.
     var shieldedOutPoint: (txidWire: Data, vout: UInt32)? {
         guard let info = shieldedLockInfo else { return nil }
+        return (txHashData, info.vout)
+    }
+
+    /// Type-4 twin of `shieldedOutPoint`: the outpoint of this transfer's
+    /// Core → Platform address-funding asset lock, for a recovery resume.
+    /// `nil` for every other kind of transaction.
+    var platformFundingOutPoint: (txidWire: Data, vout: UInt32)? {
+        guard let info = platformFundingLockInfo else { return nil }
         return (txHashData, info.vout)
     }
 
