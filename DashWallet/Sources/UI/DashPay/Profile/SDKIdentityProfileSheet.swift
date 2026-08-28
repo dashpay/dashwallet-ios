@@ -90,20 +90,27 @@ struct SDKIdentityProfileSheet: View {
                         .transition(.opacity)
                 }
             }
-            .onAppear {
-                loadIdentityId()
-                dpnsNames = DWCurrentUserIdentityInfo.shared.usernames
-                hasIdentity = DWCurrentUserIdentityInfo.shared.hasIdentity
-                pendingContestedName = DWContestedNameStatusService.shared.pendingLabel
-                pendingVotingEndTime = DWContestedNameStatusService.shared.pendingVotingEndTime
-                avatarURL = DWCurrentUserIdentityInfo.shared.avatarURL
-            }
+            .onAppear(perform: reloadIdentitySnapshot)
         }
-        .fullScreenCover(isPresented: $showingUsernameMarketplace) {
+        // `onDismiss` rather than relying on the `onAppear` above: SwiftUI does
+        // not re-run it for the presenting view when a `fullScreenCover` closes,
+        // and a name registered or bought in the marketplace changes both
+        // `dpnsNames` and `hasIdentity`.
+        .fullScreenCover(isPresented: $showingUsernameMarketplace,
+                         onDismiss: reloadIdentitySnapshot) {
             UsernameMarketplaceScreen {
                 showingUsernameMarketplace = false
             }
         }
+    }
+
+    private func reloadIdentitySnapshot() {
+        loadIdentityId()
+        dpnsNames = DWCurrentUserIdentityInfo.shared.usernames
+        hasIdentity = DWCurrentUserIdentityInfo.shared.hasIdentity
+        pendingContestedName = DWContestedNameStatusService.shared.pendingLabel
+        pendingVotingEndTime = DWContestedNameStatusService.shared.pendingVotingEndTime
+        avatarURL = DWCurrentUserIdentityInfo.shared.avatarURL
     }
 
     // MARK: - Edit button

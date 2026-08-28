@@ -384,6 +384,12 @@ struct IdentityDetailScreen: View {
             }
         }
         .navigationBarHidden(true)
+        // Re-read on every appearance, not just the first: the username
+        // marketplace is pushed onto the same stack, and a name registered or
+        // bought there changes `currentRow`. Doing it here rather than in the
+        // marketplace's back action also covers the UIKit bar button and the
+        // swipe-back gesture.
+        .onAppear { viewModel.reload() }
         .alert(
             NSLocalizedString("Set as Main Identity", comment: "Identities"),
             isPresented: $confirmSetMain
