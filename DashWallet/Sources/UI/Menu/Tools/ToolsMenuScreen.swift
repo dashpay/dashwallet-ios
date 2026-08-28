@@ -103,14 +103,16 @@ struct ToolsMenuScreen: View {
         }
         .sheet(isPresented: $showCSVExportSheet) {
             if #available(iOS 16.4, *) {
-                CSVExportSheet(onExport: handleCSVExport)
+                csvExportSheet
                     .presentationDetents([.large])
                     .presentationCornerRadius(32)
+                    .presentationDragIndicator(.hidden)
             } else if #available(iOS 16.0, *) {
-                CSVExportSheet(onExport: handleCSVExport)
+                csvExportSheet
                     .presentationDetents([.large])
+                    .presentationDragIndicator(.hidden)
             } else {
-                CSVExportSheet(onExport: handleCSVExport)
+                csvExportSheet
             }
         }
         .alert(NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"), isPresented: $viewModel.showCoinJoinSweepConfirmation) {
@@ -167,27 +169,49 @@ struct ToolsMenuScreen: View {
             }
         }) {
             if #available(iOS 16.4, *) {
-                ZenLedgerInfoSheet(safariLink: $viewModel.safariLink)
+                zenLedgerSheet
                     .presentationDetents([.large])
                     .presentationCornerRadius(32)
+                    .presentationDragIndicator(.hidden)
             } else if #available(iOS 16.0, *) {
-                ZenLedgerInfoSheet(safariLink: $viewModel.safariLink)
+                zenLedgerSheet
                     .presentationDetents([.large])
+                    .presentationDragIndicator(.hidden)
             } else {
-                ZenLedgerInfoSheet(safariLink: $viewModel.safariLink)
+                zenLedgerSheet
             }
         }
         .sheet(isPresented: $showExtendedPublicKeySheet) {
             if #available(iOS 16.4, *) {
-                ExtendedPublicKeySheet()
+                extendedPublicKeySheet
                     .presentationDetents([.height(640)])
                     .presentationCornerRadius(32)
+                    .presentationDragIndicator(.hidden)
             } else if #available(iOS 16.0, *) {
-                ExtendedPublicKeySheet()
+                extendedPublicKeySheet
                     .presentationDetents([.height(640)])
+                    .presentationDragIndicator(.hidden)
             } else {
-                ExtendedPublicKeySheet()
+                extendedPublicKeySheet
             }
+        }
+    }
+
+    private var csvExportSheet: some View {
+        DashUIKit.BottomSheet(showBackButton: .constant(false)) {
+            CSVExportSheet(onExport: handleCSVExport)
+        }
+    }
+
+    private var zenLedgerSheet: some View {
+        DashUIKit.BottomSheet(showBackButton: .constant(false)) {
+            ZenLedgerInfoSheet(safariLink: $viewModel.safariLink)
+        }
+    }
+
+    private var extendedPublicKeySheet: some View {
+        DashUIKit.BottomSheet(showBackButton: .constant(false)) {
+            ExtendedPublicKeySheet()
         }
     }
     

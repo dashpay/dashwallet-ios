@@ -20,6 +20,12 @@ import DashUIKit
 import SDWebImageSwiftUI
 
 struct DashSpendConfirmationDialog: View {
+    /// Detent used before `selfSizingSheet` has measured the sheet, so it doesn't
+    /// present short and then jump. Covers this dialog's own natural height plus
+    /// `DashUIKit.BottomSheet`'s chrome — an 18pt grabber and a 64pt navigation bar.
+    /// Both presenters share this value; keep it here so they can't drift apart.
+    static let sheetFallbackHeight: CGFloat = 582
+
     let merchantName: String
     let merchantIconUrl: String
     let originalPrice: Decimal
@@ -54,17 +60,6 @@ struct DashSpendConfirmationDialog: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Capsule()
-                .fill(Color.dash.grabberFill)
-                .frame(width: 36, height: 5)
-                .padding(.top, 6)
-                .padding(.bottom, 13)
-
-            Text(NSLocalizedString("Confirm", comment: "DashSpend"))
-                .font(.calloutMedium)
-                .foregroundColor(.dash.primaryText)
-                .frame(height: 44)
-
             VStack(spacing: 20) {
                 DashSpendAmountView(
                     currencySymbol: fiatFormatter.currencySymbol,
@@ -203,28 +198,21 @@ private struct DashSpendConfirmationDialogPreview: View {
                 .onTapGesture { isPresented = true }
         }
         .sheet(isPresented: $isPresented) {
-            let content = DashSpendConfirmationDialog(
-                merchantName: "Amazon",
-                merchantIconUrl: "",
-                originalPrice: 75.70,
-                discount: 0.10,
-                quantities: [50: 1, 25: 2],
-                onConfirm: {},
-                onCancel: {}
-            )
-
-            if #available(iOS 16.4, *) {
-                content
-                    .presentationBackground(Color.dash.primaryBackground)
-                    .selfSizingSheet()
-                    .presentationCornerRadius(32)
-                    .presentationDragIndicator(.hidden)
-            } else if #available(iOS 16.0, *) {
-                content
-                    .selfSizingSheet()
-                    .presentationDragIndicator(.hidden)
-            } else {
-                content
+            DashUIKit.BottomSheet.selfSizing(
+                title: NSLocalizedString("Confirm", comment: "DashSpend"),
+                showBackButton: .constant(false),
+                fallback: DashSpendConfirmationDialog.sheetFallbackHeight,
+                cornerRadius: 32
+            ) {
+                DashSpendConfirmationDialog(
+                    merchantName: "Amazon",
+                    merchantIconUrl: "",
+                    originalPrice: 75.70,
+                    discount: 0.10,
+                    quantities: [50: 1, 25: 2],
+                    onConfirm: {},
+                    onCancel: {}
+                )
             }
         }
     }

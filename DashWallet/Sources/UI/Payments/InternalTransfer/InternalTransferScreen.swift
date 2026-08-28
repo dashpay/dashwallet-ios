@@ -257,14 +257,25 @@ struct InternalTransferScreen: View {
             }
         }
         .sheet(item: $endpointPicker) { group in
-            endpointPickerSheet(for: group)
+            DashUIKit.BottomSheet(
+                title: endpointPickerTitle(for: group),
+                showBackButton: .constant(false)
+            ) {
+                endpointPickerSheet(for: group)
+            }
                 .presentationDetents([.height(400)])
-                .presentationDragIndicator(.visible)
+                .presentationDragIndicator(.hidden)
         }
     }
 
     private func presentEndpointPicker(_ group: EndpointGroup) {
         endpointPicker = group
+    }
+
+    private func endpointPickerTitle(for group: EndpointGroup) -> String {
+        group == .from
+            ? NSLocalizedString("Transfer from", comment: "Internal transfer source picker title")
+            : NSLocalizedString("Transfer to", comment: "Internal transfer destination picker title")
     }
 
     /// Bottom-sheet balance picker for one endpoint, sized to slide over
@@ -274,12 +285,6 @@ struct InternalTransferScreen: View {
     private func endpointPickerSheet(for group: EndpointGroup) -> some View {
         let isFrom = group == .from
         return VStack(alignment: .leading, spacing: 16) {
-            Text(isFrom
-                ? NSLocalizedString("Transfer from", comment: "Internal transfer source picker title")
-                : NSLocalizedString("Transfer to", comment: "Internal transfer destination picker title"))
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.dash.primaryText)
-
             selectionGroup(
                 caption: isFrom
                     ? NSLocalizedString("From", comment: "")
@@ -298,7 +303,7 @@ struct InternalTransferScreen: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 20)
-        .padding(.top, 24)
+        .padding(.top, 16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.dash.primaryBackground)
     }
