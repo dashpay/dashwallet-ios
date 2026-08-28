@@ -85,6 +85,28 @@ final class NotifiedEventStoreTests: XCTestCase {
         XCTAssertEqual(count, 1)
     }
 
+    func testConsumeRecordsSeenAndDedups() async {
+        await store.consume(id: "tx.watched", topic: .transactions)
+
+        // Consumed events never count toward the badge...
+        let unseen = await store.unseenCount()
+        XCTAssertEqual(unseen, 0)
+        // ...and can never be notified afterwards.
+        let marked = await store.markIfNew(id: "tx.watched", topic: .transactions)
+        XCTAssertFalse(marked)
+    }
+
+    func testConsumeLeavesAnAlreadyRecordedEventUntouched() async {
+        _ = await store.markIfNew(id: "tx.posted", topic: .transactions)
+
+        await store.consume(id: "tx.posted", topic: .transactions)
+
+        // The posted event stays unseen — its seen state is the
+        // lifecycle's to clear, not consume's.
+        let unseen = await store.unseenCount()
+        XCTAssertEqual(unseen, 1)
+    }
+
     func testPruneRemovesRowsOlderThanThirtyDays() async {
         _ = await store.markIfNew(id: "tx.old", topic: .transactions)
 

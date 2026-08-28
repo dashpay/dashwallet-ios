@@ -93,6 +93,12 @@ final class InMemoryNotifiedEventStore: NotifiedEventStoring {
         return true
     }
 
+    func consume(id: String, topic: NotificationTopic) async {
+        if events[id] == nil {
+            events[id] = Event(topic: topic, seen: true)
+        }
+    }
+
     func unseenCount() async -> Int {
         events.values.filter { !$0.seen }.count
     }

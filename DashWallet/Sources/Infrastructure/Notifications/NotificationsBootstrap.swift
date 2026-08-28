@@ -31,11 +31,8 @@ final class NotificationsBootstrap: NSObject {
     let dispatcher: NotificationDispatcher
     let router: NotificationRouter
     let lifecycle: NotificationLifecycle
-
-    /// Constructed here so the dispatcher and permission coordinator are
-    /// injected; `AppDelegate` keeps calling `updateBalance` /
-    /// `registerForPushNotifications` on it.
-    @objc let balanceNotifier: DWBalanceNotifier
+    /// Posts a notification per newly persisted incoming transaction.
+    let transactionProducer: TransactionNotificationProducer
 
     @objc
     init(window: UIWindow) {
@@ -55,16 +52,26 @@ final class NotificationsBootstrap: NSObject {
         self.dispatcher = dispatcher
         self.router = router
         self.lifecycle = lifecycle
-        self.balanceNotifier = DWBalanceNotifier(dispatcher: dispatcher,
-                                                 permissionCoordinator: permissionCoordinator)
+        self.transactionProducer = TransactionNotificationProducer(dispatcher: dispatcher,
+                                                                   store: store)
         super.init()
 
         UNUserNotificationCenter.current().delegate = lifecycle
         dispatcher.registerCategories()
+        transactionProducer.start()
 
         // `CrowdNode.shared` is created before this graph exists (in
         // `didFinishLaunching`), so its posting seam is injected statically
         // instead of adding another global.
         CrowdNode.notificationDispatcher = dispatcher
+    }
+
+    /// The OS-authorization request path `AppDelegate` exposes to the home
+    /// screen's first-appearance prompt. Delegates to the permission
+    /// coordinator; must be called on the main thread (it is — the chain is
+    /// `HomeViewController` → `DWHomeModel` → `AppDelegate` → here).
+    @objc
+    func registerForPushNotifications() {
+        permissionCoordinator.requestAuthorizationIfNeeded()
     }
 }

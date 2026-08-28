@@ -26,6 +26,11 @@ protocol NotifiedEventStoring: AnyObject {
     /// Records the event as notified. `false` means it was already recorded
     /// and the caller must not notify again.
     func markIfNew(id: String, topic: NotificationTopic) async -> Bool
+    /// Records the event as notified AND already seen, without a post — for
+    /// an event whose content the user was watching in the app when it
+    /// occurred, so a later scan cannot notify it and the badge never counts
+    /// it. An id that is already recorded is left untouched.
+    func consume(id: String, topic: NotificationTopic) async
     /// Events recorded but not yet seen in the app, across all topics —
     /// the number the app badge shows.
     func unseenCount() async -> Int
@@ -114,6 +119,24 @@ actor NotifiedEventStore: NotifiedEventStoring {
             // Fail open: nothing was recorded, so dedup for this id is lost —
             // but a broken database must not silently swallow notifications.
             return true
+        }
+    }
+
+    func consume(id: String, topic: NotificationTopic) async {
+        typealias S = NotifiedEventSchema
+        do {
+            // `seen_at` is set up front — the event was on screen when it
+            // happened. `insert(or: .ignore)` leaves an id that was posted
+            // earlier untouched; its seen state is the lifecycle's to manage.
+            let stamp = epochSeconds(now())
+            try connection.run(S.table.insert(
+                or: .ignore,
+                S.colId <- id,
+                S.colTopic <- topic.rawValue,
+                S.colCreatedAt <- stamp,
+                S.colSeenAt <- stamp))
+        } catch {
+            DWLogger.log("NotifiedEventStore: consume(\(id)) failed: \(error)")
         }
     }
 

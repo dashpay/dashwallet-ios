@@ -56,9 +56,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface AppDelegate ()
 
 /// The notifications composition root: store, permission coordinator,
-/// dispatcher, lifecycle (the UNUserNotificationCenter delegate), router.
+/// dispatcher, lifecycle (the UNUserNotificationCenter delegate), router,
+/// and the transaction producer.
 @property (nonatomic, strong) DWNotificationsBootstrap *notifications;
-@property (nonatomic, strong) DWBalanceNotifier *balanceNotifier;
 
 @end
 
@@ -71,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)registerForPushNotifications {
-    [self.balanceNotifier registerForPushNotifications];
+    [self.notifications registerForPushNotifications];
 }
 
 #pragma mark - UIApplicationDelegate
@@ -202,7 +202,6 @@ NS_ASSUME_NONNULL_BEGIN
     //
     // When adding any logic here mind the migration process
     //
-    [self.balanceNotifier updateBalance];
 
     // Badge reset and delivered-notification clearing live in
     // DWNotificationsBootstrap's NotificationLifecycle, which observes
@@ -342,8 +341,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     // installs NotificationLifecycle as the UNUserNotificationCenter
     // delegate (foreground presentation, tap routing, clearing).
     self.notifications = [[DWNotificationsBootstrap alloc] initWithWindow:self.window];
-    self.balanceNotifier = self.notifications.balanceNotifier;
-    [self.balanceNotifier setupNotifications];
 }
 
 #pragma mark - Notifications

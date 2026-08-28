@@ -49,16 +49,20 @@ final class NotificationDispatcher {
         client.setNotificationCategories(categories)
     }
 
-    /// Posts the event, unless the permission gate or the dedup store drops it.
-    func post(_ notification: AppNotification) async {
+    /// Posts the event, unless the permission gate or the dedup store drops
+    /// it. Returns whether a request was actually handed to the notification
+    /// center — callers that mirror posted notifications elsewhere (the
+    /// producers' watch bridge) key off this.
+    @discardableResult
+    func post(_ notification: AppNotification) async -> Bool {
         let state = await permissions.effectiveState()
         guard state == .on else {
             DWLogger.log("NotificationDispatcher: dropped \(notification.id) — permission state \(state)")
-            return
+            return false
         }
         guard await store.markIfNew(id: notification.id, topic: notification.topic) else {
             DWLogger.log("NotificationDispatcher: dropped \(notification.id) — already notified")
-            return
+            return false
         }
         // The just-marked event is unseen, so the count includes it.
         let unseen = await store.unseenCount()
@@ -91,8 +95,10 @@ final class NotificationDispatcher {
         do {
             try await client.add(request)
             DWLogger.log("NotificationDispatcher: posted \(notification.id) (topic \(notification.topic.rawValue))")
+            return true
         } catch {
             DWLogger.log("NotificationDispatcher: failed to post \(notification.id): \(error)")
+            return false
         }
     }
 }
