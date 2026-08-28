@@ -104,7 +104,10 @@ final class MasternodeUnbanViewModel: ObservableObject {
     var isEvonode: Bool { record.isEvonode }
 
     var p2pPort: UInt16? {
-        UInt16(p2pPortText.trimmingCharacters(in: .whitespaces))
+        // Port 0 parses but is not a usable service port — reject it so
+        // canSubmit treats it like any other invalid entry.
+        let port = UInt16(p2pPortText.trimmingCharacters(in: .whitespaces))
+        return port == 0 ? nil : port
     }
 
     var canSubmit: Bool {
@@ -161,12 +164,14 @@ final class MasternodeUnbanViewModel: ObservableObject {
     // MARK: Top-up (D3: guided, resumable)
 
     /// Withdraw the buffer from the shielded pool to the wallet's own
-    /// receive address and wait for the L1 payout. The intent is persisted
-    /// first so a relaunch mid-queue resumes at "Complete unban".
+    /// receive address and wait for the L1 payout. The intent persists only
+    /// once the withdrawal was actually submitted (or its outcome is
+    /// ambiguous, when the payout can still arrive) — persisting earlier
+    /// would leave a phantom "Complete unban" behind if the app dies during
+    /// the authentication prompt, with no payout ever coming.
     func topUpFromShielded() async {
         errorText = nil
         phase = .toppingUp
-        persistPending()
 
         await topUpCoordinator.performWithdraw(amountCredits: Self.topUpCredits)
 
@@ -174,15 +179,15 @@ final class MasternodeUnbanViewModel: ObservableObject {
         case .success, .submittedUnconfirmed:
             // `.submittedUnconfirmed` is non-retryable but the payout can
             // still arrive — same waiting posture, the poller decides.
+            persistPending()
             phase = .waitingForFunds
             startBalancePolling()
         case .failed(let message):
-            PendingMasternodeUnbanStore.shared.clear(forProTxHash: record.proTxHash)
             errorText = message
             phase = .needsFunds
         default:
-            // Cancelled auth leaves the coordinator idle.
-            PendingMasternodeUnbanStore.shared.clear(forProTxHash: record.proTxHash)
+            // Cancelled auth leaves the coordinator idle; nothing was sent
+            // and nothing was persisted.
             phase = .needsFunds
         }
     }
@@ -224,17 +229,23 @@ final class MasternodeUnbanViewModel: ObservableObject {
             return
         }
         errorText = nil
+        // Leave `.ready` BEFORE suspending on authentication: `canSubmit`
+        // requires `.ready`, so a second tap while the PIN prompt is up
+        // can't start a duplicate submission.
+        phase = .submitting
 
         let outcome = await AuthenticationGate.authenticate(
             biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled)
-        guard outcome == .ok else { return }
+        guard outcome == .ok else {
+            phase = .ready
+            return
+        }
 
         let port = isEvonode ? p2pPort : nil
         let payout = payoutAddressRequired
             ? payoutAddressText.trimmingCharacters(in: .whitespacesAndNewlines)
             : nil
 
-        phase = .submitting
         do {
             let txid: Data
             switch keySource {

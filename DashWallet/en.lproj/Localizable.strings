@@ -911,6 +911,7 @@
 "Unban" = "Unban";
 "Unban masternode" = "Unban masternode";
 "Unban submitted" = "Unban submitted";
+"Unban submitted — the masternode list updates within a few blocks." = "Unban submitted — the masternode list updates within a few blocks.";
 "Unbanning broadcasts a provider update signed with the operator key, re-asserting the service address shown above. The masternode returns to the valid list within a few blocks." = "Unbanning broadcasts a provider update signed with the operator key, re-asserting the service address shown above. The masternode returns to the valid list within a few blocks.";
 "Vote ends" = "Vote ends";
 

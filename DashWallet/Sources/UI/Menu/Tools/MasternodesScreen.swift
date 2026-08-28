@@ -527,6 +527,10 @@ struct MasternodeDetailScreen: View {
     let votingOwnership: String
     @StateObject private var viewModel: MasternodeDetailViewModel
     @State private var showUnbanSheet = false
+    /// Set after a successful ProUpServTx broadcast: the DML entry stays
+    /// PoSe-banned for a few more blocks, so the row must not invite a
+    /// duplicate submission in that window.
+    @State private var unbanSubmitted = false
 
     init(
         masternode: PlatformMasternode,
@@ -683,7 +687,7 @@ struct MasternodeDetailScreen: View {
             UnbanMasternodeSheet(
                 record: masternode,
                 keySource: .wallet(operatorKeyIndex: masternode.operatorKeyIndex),
-                onSubmitted: {})
+                onSubmitted: { unbanSubmitted = true })
         }
     }
 
@@ -693,7 +697,13 @@ struct MasternodeDetailScreen: View {
     @ViewBuilder
     private var unbanRows: some View {
         let pending = PendingMasternodeUnbanStore.shared.pending(forProTxHash: masternode.proTxHash) != nil
-        if masternode.masternodeStatus == .inactive || pending {
+        if unbanSubmitted {
+            Text(NSLocalizedString(
+                "Unban submitted — the masternode list updates within a few blocks.",
+                comment: "Masternode unban"))
+                .font(.caption)
+                .foregroundColor(Color.dash.secondaryText)
+        } else if masternode.masternodeStatus == .inactive || pending {
             if masternode.operatorInWallet {
                 Button {
                     showUnbanSheet = true

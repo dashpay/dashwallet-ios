@@ -263,6 +263,10 @@ struct TrackedMasternodeDetailScreen: View {
     @State private var showWithdrawSheet = false
     @State private var showKeysSheet = false
     @State private var showUnbanSheet = false
+    /// Set after a successful ProUpServTx broadcast: the DML entry stays
+    /// PoSe-banned for a few more blocks, so the row must not invite a
+    /// duplicate submission in that window.
+    @State private var unbanSubmitted = false
     let onChanged: () -> Void
 
     init(record: PlatformMasternode, onChanged: @escaping () -> Void) {
@@ -293,6 +297,7 @@ struct TrackedMasternodeDetailScreen: View {
                 record: viewModel.record,
                 keySource: .tracked(vault: viewModel.vault),
                 onSubmitted: {
+                    unbanSubmitted = true
                     Task {
                         await viewModel.refresh()
                         onChanged()
@@ -507,7 +512,13 @@ struct TrackedMasternodeDetailScreen: View {
     private var unbanRows: some View {
         let pending = PendingMasternodeUnbanStore.shared.pending(
             forProTxHash: viewModel.record.proTxHash) != nil
-        if viewModel.record.masternodeStatus == .inactive || pending {
+        if unbanSubmitted {
+            Text(NSLocalizedString(
+                "Unban submitted — the masternode list updates within a few blocks.",
+                comment: "Masternode unban"))
+                .font(.caption)
+                .foregroundColor(Color.dash.secondaryText)
+        } else if viewModel.record.masternodeStatus == .inactive || pending {
             if viewModel.capabilities.canUpdateService {
                 Button {
                     showUnbanSheet = true
