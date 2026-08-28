@@ -44,8 +44,22 @@ final class MasternodeUnbanViewModel: ObservableObject {
         /// withdrawal queue (minutes). Polling the spendable balance.
         case waitingForFunds
         case submitting
+        /// Built and signed, waiting for the user to look it over. Only
+        /// reachable with `reviewBeforeBroadcast` on.
+        case previewing
         /// The ProUpServTx was broadcast and accepted (display-order txid).
         case submitted(txidHex: String)
+    }
+
+    /// The prepared ProUpServTx as the review step renders it — decoded from
+    /// the very bytes that will be broadcast, never re-derived from the form.
+    struct Preview {
+        let feeDuffs: UInt64
+        let sizeBytes: Int
+        let inputCount: Int
+        let outputs: [(address: String, amountDuffs: UInt64)]
+        let payloadFields: [RawTransactionDetails.PayloadField]
+        let rawHex: String
     }
 
     let record: PlatformMasternode
@@ -59,6 +73,17 @@ final class MasternodeUnbanViewModel: ObservableObject {
     /// on-chain, so it must be confirmed explicitly, never defaulted).
     @Published var payoutAddressText = ""
     @Published private(set) var payoutAddressRequired = false
+
+    /// Opt-in review step (owner request): off by default, so the ordinary
+    /// unban stays one tap; on, the signed transaction is shown before it
+    /// goes out.
+    @Published var reviewBeforeBroadcast = false
+    @Published private(set) var preview: Preview?
+
+    /// The signed, reserved transaction behind `preview`. Held only between
+    /// preparing and the user's decision; releasing it abandons the
+    /// transaction and frees its inputs.
+    private var prepared: FinalizedCoreTransaction?
 
     @Published private(set) var phase: Phase = .ready
     @Published private(set) var errorText: String?
@@ -246,6 +271,14 @@ final class MasternodeUnbanViewModel: ObservableObject {
             ? payoutAddressText.trimmingCharacters(in: .whitespacesAndNewlines)
             : nil
 
+        // With review on, stop at a signed transaction and show it; the
+        // broadcast is a second, explicit decision.
+        guard !reviewBeforeBroadcast else {
+            await prepareForReview(
+                manager: manager, walletId: walletId, port: port, payout: payout)
+            return
+        }
+
         do {
             let txid: Data
             switch keySource {
@@ -317,5 +350,108 @@ final class MasternodeUnbanViewModel: ObservableObject {
             errorText = error.errorDescription
             phase = .ready
         }
+    }
+
+    // MARK: Review before broadcasting
+
+    /// Build and sign the ProUpServTx without sending it, then decode the
+    /// exact bytes for the review step. The signed transaction holds its
+    /// funding inputs reserved until it is broadcast or discarded.
+    private func prepareForReview(
+        manager: PlatformWalletManager,
+        walletId: Data,
+        port: UInt16?,
+        payout: String?
+    ) async {
+        do {
+            let prepared: FinalizedCoreTransaction
+            switch keySource {
+            case .wallet(let operatorKeyIndex):
+                prepared = try await manager.masternodePrepareUpdateService(
+                    walletId: walletId,
+                    proTxHash: record.proTxHash,
+                    operatorKeyIndex: operatorKeyIndex,
+                    platformP2PPort: port,
+                    operatorPayoutAddress: payout)
+            case .tracked(let vault):
+                guard let keyText = vault.key(for: record.proTxHash, role: .operator) else {
+                    errorText = NSLocalizedString(
+                        "The operator key is missing from the keychain — re-add it and try again.",
+                        comment: "Masternode unban")
+                    phase = .ready
+                    return
+                }
+                prepared = try await manager.trackedMasternodePrepareUpdateService(
+                    walletId: walletId,
+                    proTxHash: record.proTxHash,
+                    operatorKey: keyText,
+                    platformP2PPort: port,
+                    operatorPayoutAddress: payout)
+            }
+            preview = try Self.makePreview(from: prepared)
+            self.prepared = prepared
+            phase = .previewing
+        } catch let error as PlatformWalletError {
+            handleSubmitError(error)
+        } catch {
+            errorText = error.localizedDescription
+            phase = .ready
+        }
+    }
+
+    /// Decode the signed bytes — the same inspector the transaction detail
+    /// screen uses — so what is shown is what will be sent.
+    private static func makePreview(
+        from prepared: FinalizedCoreTransaction
+    ) throws -> Preview {
+        let bytes = try prepared.serializedData()
+        let parsed = try ParsedRawTransaction(data: bytes)
+        let network: PaymentNetwork = WalletEnvironment.isTestnet ? .testnet : .mainnet
+        let outputs = parsed.outputs.map { output in
+            (address: ScriptAddressCodec.address(forScript: output.scriptPubKey, network: network)
+                ?? NSLocalizedString("Non-standard output", comment: "Masternode unban"),
+             amountDuffs: output.valueDuffs)
+        }
+        return Preview(
+            feeDuffs: prepared.fee,
+            sizeBytes: bytes.count,
+            inputCount: parsed.inputs.count,
+            outputs: outputs,
+            payloadFields: RawTransactionInspector.parsePayloadFields(
+                type: parsed.type, payload: parsed.extraPayload, network: network),
+            rawHex: bytes.map { String(format: "%02x", $0) }.joined())
+    }
+
+    /// Send the reviewed transaction. Reuses the wallet's own broadcast
+    /// path, so acceptance is classified exactly like an ordinary send.
+    func broadcastReviewed() async {
+        guard let transaction = prepared else { return }
+        errorText = nil
+        phase = .submitting
+        prepared = nil
+        do {
+            let outcome = try SwiftDashSDKTransactionSender.broadcast(transaction)
+            let txid = try SwiftDashSDKTransactionSender.requireAccepted(outcome)
+            PendingMasternodeUnbanStore.shared.clear(forProTxHash: record.proTxHash)
+            preview = nil
+            phase = .submitted(txidHex: txid)
+        } catch {
+            // The handle is consumed either way: a rejected broadcast
+            // released its reservation, an ambiguous one keeps it. Neither
+            // may be re-sent from here — prepare again for a fresh attempt.
+            preview = nil
+            errorText = error.localizedDescription
+            terminal = true
+            phase = .ready
+        }
+    }
+
+    /// Discard a reviewed transaction the user decided not to send. Dropping
+    /// the token abandons it and releases its inputs.
+    func discardReviewed() {
+        prepared = nil
+        preview = nil
+        errorText = nil
+        phase = .ready
     }
 }
