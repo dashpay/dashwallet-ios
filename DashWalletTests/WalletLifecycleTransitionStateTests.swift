@@ -12,7 +12,7 @@
 //
 
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 @MainActor
 final class WalletLifecycleTransitionStateTests: XCTestCase {

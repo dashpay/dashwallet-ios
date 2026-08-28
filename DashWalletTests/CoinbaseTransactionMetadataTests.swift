@@ -6,7 +6,7 @@
 import DashUIKit
 import Foundation
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 final class CoinbaseTransactionMetadataTests: XCTestCase {
     func testDirectCoinbaseHashConvertsDisplayOrderToWireOrder() {
