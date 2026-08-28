@@ -137,4 +137,15 @@ struct ContactItem: Identifiable, Equatable {
     var establishedByTheirAccept: Bool {
         (incomingCreatedAt ?? .distantPast) >= (outgoingCreatedAt ?? .distantPast)
     }
+
+    /// Local search predicate shared by the contacts and notifications
+    /// screens: case-insensitive substring match on the rendered
+    /// `displayTitle` or the DPNS username. A query that is empty after
+    /// trimming matches everything.
+    func matches(searchQuery: String) -> Bool {
+        let trimmed = searchQuery.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return true }
+        return displayTitle.localizedCaseInsensitiveContains(trimmed)
+            || (username?.localizedCaseInsensitiveContains(trimmed) ?? false)
+    }
 }

@@ -137,3 +137,38 @@ final class RecordingNotificationRouter: NotificationRouting {
         openedRoutes.append(route)
     }
 }
+
+#if DASHPAY
+
+// MARK: - ContactItem fixture
+
+extension ContactItem {
+    /// Synthetic contact row with the display/flag fields defaulted —
+    /// shared by the read-state, search-filter, and contacts-producer
+    /// tests, which only vary identity, relationship, names, and dates.
+    static func fixture(idByte: UInt8 = 0xaa,
+                        relationship: ContactRelationship,
+                        username: String? = "alice",
+                        profileDisplayName: String? = nil,
+                        alias: String? = nil,
+                        createdAt: Date,
+                        incomingCreatedAt: Date? = nil,
+                        outgoingCreatedAt: Date? = nil) -> ContactItem {
+        ContactItem(
+            contactIdentityId: Data(repeating: idByte, count: 32),
+            relationship: relationship,
+            username: username,
+            profileDisplayName: profileDisplayName,
+            alias: alias,
+            note: nil,
+            isHidden: false,
+            paymentChannelBroken: false,
+            avatarURL: nil,
+            publicMessage: nil,
+            createdAt: createdAt,
+            incomingCreatedAt: incomingCreatedAt,
+            outgoingCreatedAt: outgoingCreatedAt)
+    }
+}
+
+#endif

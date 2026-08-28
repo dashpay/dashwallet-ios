@@ -78,17 +78,37 @@ final class NotificationLifecycle: NSObject {
     /// stale. Other threads (CrowdNode, announcements) stay until acted on.
     func reconcileAfterBecomingActive() async {
         client.setBadgeCount(0)
+        await clearTray(topic: .transactions, extraIdentifiers: [Self.legacyTransactionIdentifier])
+    }
 
-        let transactionsThread = NotificationTopic.transactions.rawValue
+    #if DASHPAY
+    /// Bell-screen exit reconciliation: the user has just viewed the
+    /// DashPay notifications screen, so the tray's dashpay thread and the
+    /// store's dashpay seen-state are stale. Reached through the
+    /// `SwiftDashSDKContactsService.notificationsViewedHandler` seam the
+    /// composition root injects — the bell and the tray share one
+    /// seen-state, so viewing either surface clears both. Idempotent; the
+    /// badge is untouched (this is not an activation, and the become-active
+    /// pass already zeroed it).
+    func reconcileAfterDashPayNotificationsViewed() async {
+        await clearTray(topic: .dashpay)
+    }
+    #endif
+
+    /// Removes the delivered notifications on `topic`'s thread (plus any
+    /// `extraIdentifiers` regardless of thread — legacy identifiers
+    /// delivered by older builds) and marks the topic seen in the store.
+    private func clearTray(topic: NotificationTopic, extraIdentifiers: Set<String> = []) async {
+        let thread = topic.rawValue
         let delivered = await client.deliveredNotificationSummaries()
         let identifiers = delivered
-            .filter { $0.threadIdentifier == transactionsThread || $0.identifier == Self.legacyTransactionIdentifier }
+            .filter { $0.threadIdentifier == thread || extraIdentifiers.contains($0.identifier) }
             .map(\.identifier)
         if !identifiers.isEmpty {
             client.removeDeliveredNotifications(withIdentifiers: identifiers)
         }
 
-        await store.markAllSeen(topic: .transactions)
+        await store.markAllSeen(topic: topic)
     }
 
     /// Presentation options for a notification arriving while the app is

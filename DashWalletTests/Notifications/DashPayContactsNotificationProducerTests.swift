@@ -60,23 +60,18 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
             now: { Self.referenceNow })
     }
 
+    /// Ages-relative-to-`referenceNow` wrapper over the shared
+    /// `ContactItem.fixture` (NotificationTestDoubles.swift).
     private func makeItem(idByte: UInt8 = 0xaa,
                           relationship: ContactRelationship,
                           username: String? = "alice",
                           age: TimeInterval = 60,
                           incomingAge: TimeInterval? = nil,
                           outgoingAge: TimeInterval? = nil) -> ContactItem {
-        ContactItem(
-            contactIdentityId: Data(repeating: idByte, count: 32),
+        ContactItem.fixture(
+            idByte: idByte,
             relationship: relationship,
             username: username,
-            profileDisplayName: nil,
-            alias: nil,
-            note: nil,
-            isHidden: false,
-            paymentChannelBroken: false,
-            avatarURL: nil,
-            publicMessage: nil,
             createdAt: Self.referenceNow.addingTimeInterval(-age),
             incomingCreatedAt: incomingAge.map { Self.referenceNow.addingTimeInterval(-$0) },
             outgoingCreatedAt: outgoingAge.map { Self.referenceNow.addingTimeInterval(-$0) })

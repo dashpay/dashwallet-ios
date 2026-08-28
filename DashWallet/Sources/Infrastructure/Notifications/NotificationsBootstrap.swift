@@ -88,6 +88,18 @@ final class NotificationsBootstrap: NSObject {
         // `didFinishLaunching`), so its posting seam is injected statically
         // instead of adding another global.
         CrowdNode.notificationProducer = crowdNodeProducer
+
+        #if DASHPAY
+        // Same static-injection shape for the contacts service: its
+        // `markNotificationsViewed` (every bell-screen exit) must also
+        // clear the tray's dashpay thread and the store's dashpay
+        // seen-state, without the pre-existing singleton depending on
+        // this module.
+        SwiftDashSDKContactsService.notificationsViewedHandler = { [weak lifecycle] in
+            guard let lifecycle else { return }
+            Task { await lifecycle.reconcileAfterDashPayNotificationsViewed() }
+        }
+        #endif
     }
 
     /// The OS-authorization request path `AppDelegate` exposes to the home

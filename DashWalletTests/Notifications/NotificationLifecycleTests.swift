@@ -110,6 +110,45 @@ final class NotificationLifecycleTests: XCTestCase {
         XCTAssertTrue(client.removedDeliveredIdentifiers.isEmpty)
     }
 
+    #if DASHPAY
+    // MARK: DashPay notifications viewed (bell ↔ tray shared seen-state)
+
+    func testDashPayViewedClearsDashPayThreadAndStoreTopicOnly() async {
+        client.deliveredSummaries = [
+            DeliveredNotificationSummary(identifier: "contact.request.aa",
+                                         threadIdentifier: NotificationTopic.dashpay.rawValue),
+            DeliveredNotificationSummary(identifier: "tx.1",
+                                         threadIdentifier: NotificationTopic.transactions.rawValue),
+        ]
+        store.seed(id: "contact.request.aa", topic: .dashpay)
+        store.seed(id: "tx.1", topic: .transactions)
+
+        await lifecycle.reconcileAfterDashPayNotificationsViewed()
+
+        XCTAssertEqual(client.removedDeliveredIdentifiers, [["contact.request.aa"]])
+        XCTAssertEqual(store.markAllSeenTopics, [.dashpay])
+        XCTAssertEqual(store.events["contact.request.aa"]?.seen, true)
+        // Other topics keep their delivered notifications and unseen state.
+        XCTAssertEqual(store.events["tx.1"]?.seen, false)
+        // Bell-screen exit is not an activation: the badge is untouched.
+        XCTAssertTrue(client.badgeCounts.isEmpty)
+    }
+
+    func testDashPayViewedRemovesNothingWhenTrayHasNoDashPayThread() async {
+        client.deliveredSummaries = [
+            DeliveredNotificationSummary(identifier: "tx.1",
+                                         threadIdentifier: NotificationTopic.transactions.rawValue),
+        ]
+
+        await lifecycle.reconcileAfterDashPayNotificationsViewed()
+
+        XCTAssertTrue(client.removedDeliveredIdentifiers.isEmpty)
+        // The store seen-state still reconciles — dashpay events consumed
+        // in-foreground never had a tray entry to remove.
+        XCTAssertEqual(store.markAllSeenTopics, [.dashpay])
+    }
+    #endif
+
     func testDidBecomeActiveNotificationTriggersReconcile() async {
         let badgeCleared = expectation(description: "badge set to 0")
         client.onSetBadgeCount = { count in
