@@ -305,6 +305,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         CoinJoinRecovery.shared.resetForWipe()
         CoinJoinWithdrawalStore.shared.resetForWipe()
         ShieldedWithdrawalStore.shared.resetForWipe()
+        PlatformFundingRecipientStore.shared.resetForWipe()
         SPVChainResyncMarker.resetForWipe()
         // Without this a contested submission outlived the wallet that made it:
         // reset mid-vote, create a new wallet, and the new wallet reported the
@@ -639,6 +640,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
             CrowdNodeDefaults.shared.clearPerWalletKeys(forWalletIdHex: walletIdHex)
             CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
+            PlatformFundingRecipientStore.shared.clearForWallet(walletIdHex: walletIdHex)
         }
     }
 }

@@ -38,6 +38,11 @@ final class SendViewModel: ObservableObject {
         /// coordinator locks `amount + pool_fee`, so the recipient receives
         /// the full typed amount.
         case coreToShielded
+        /// BIP44 UTXOs → asset lock → an explicit-amount credit output on a
+        /// THIRD PARTY's Platform address, with the wallet's own next address
+        /// carrying the remainder. The payee receives EXACTLY the typed
+        /// amount; the sender's own change absorbs the Platform fees.
+        case coreToPlatform
         case platformToPlatform
         case platformToCore
         /// Platform Payment credits → Type 15 shield note assigned to the
@@ -248,6 +253,56 @@ final class SendViewModel: ObservableObject {
         destination == nil && trimmedAddress.count >= 20
     }
 
+    /// The entered Platform address decoded into its FFI discriminant + hash,
+    /// or `nil` when the destination is not a Platform address. Decoding here
+    /// keeps the confirm sheet from re-parsing bech32m and gives the durable
+    /// recipient record its bytes.
+    var platformRecipient: PlatformAddressSyncCoordinator.PlatformRecipient? {
+        guard destination == .platform else { return nil }
+        return PlatformAddressSyncCoordinator.parsePlatformRecipient(bech32m: trimmedAddress)
+    }
+
+    /// Durable recipient record for a `.coreToPlatform` send: the payee's
+    /// decoded address plus the EXACT credit amount their output carries.
+    /// `nil` for every other route, and for a P2SH destination (which
+    /// `unsupportedDestinationMessage` already blocks at the address step).
+    var coreToPlatformRecipient: PlatformFundingRecipient? {
+        guard route == .coreToPlatform,
+              let recipient = platformRecipient,
+              recipient.ffiAddressType == 0,
+              let credits = CoreToPlatformAmountPolicy.payeeCredits(forAmountDuffs: dashDuffsUnsigned)
+        else { return nil }
+        return PlatformFundingRecipient(
+            addressType: recipient.ffiAddressType,
+            hash: recipient.hash,
+            isExternal: true,
+            credits: credits)
+    }
+
+    /// L1 value the `.coreToPlatform` asset lock is built with — the payee's
+    /// amount plus the headroom the sender's own change output needs to pay
+    /// the Platform fees. `nil` for every other route, or on overflow.
+    var coreToPlatformLockDuffs: UInt64? {
+        guard route == .coreToPlatform else { return nil }
+        return CoreToPlatformAmountPolicy.externalLockValueDuffs(forAmountDuffs: dashDuffsUnsigned)
+    }
+
+    /// Why a decodable address still can't be paid, surfaced on the ADDRESS
+    /// step rather than at confirm time.
+    ///
+    /// `DashAddressClassifier` accepts both DIP-0018 wire types, but every
+    /// execution path rejects P2SH (`0x80`): the Rust
+    /// `TryFrom<PlatformAddressFFI>` is P2PKH-only, and so are the SDK's
+    /// funding and transfer pre-flights. Letting the user reach Confirm and
+    /// fail there is a stub-and-assert — name it while the address is still
+    /// being entered.
+    var unsupportedDestinationMessage: String? {
+        guard let recipient = platformRecipient, recipient.ffiAddressType != 0 else { return nil }
+        return NSLocalizedString(
+            "P2SH Platform addresses aren't supported yet. Ask for a P2PKH address.",
+            comment: "Send screen: P2SH platform destination rejected at input")
+    }
+
     private func destinationDidChange() {
         let sanitized = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
         if sanitized != addressText {
@@ -314,33 +369,49 @@ final class SendViewModel: ObservableObject {
 
     // MARK: - Sources & route
 
-    /// Which balances can fund a send to the entered destination.
-    /// Core addresses can be paid from any bucket; Platform addresses from
-    /// Platform credits or the shielded pool (there is no external
-    /// core → platform funding); shielded addresses from any bucket — the
-    /// pool (`shieldedTransfer`), the Core balance (asset-lock shield), or
-    /// Platform credits (`shieldedShieldToRecipient`).
+    /// Which balances can fund a send to the entered destination. Ordered by
+    /// preference — the auto-pick takes the first entry with a balance.
+    ///
+    /// Every destination type can now be paid from any bucket. Core addresses
+    /// from any of the three; Platform addresses from Platform credits, the
+    /// shielded pool (`shieldedUnshieldToRecipient`), or the Core balance
+    /// (`coreToPlatform`, an asset lock paying the payee an explicit credit
+    /// amount); shielded addresses from the pool (`shieldedTransfer`), the Core
+    /// balance (asset-lock shield), or Platform credits
+    /// (`shieldedShieldToRecipient`).
     var validSources: [ChainNetwork] {
+        Self.validSources(for: destination)
+    }
+
+    /// Pure form of `validSources` — the routing table with no instance state,
+    /// so it can be exercised directly.
+    static func validSources(for destination: DestinationKind?) -> [ChainNetwork] {
         switch destination {
         case .core: return [.core, .platform, .shielded]
-        case .platform: return [.platform, .shielded]
+        case .platform: return [.platform, .shielded, .core]
         case .shielded: return [.shielded, .core, .platform]
         case nil: return []
         }
     }
 
     var route: Route? {
+        Self.route(source: source, destination: destination)
+    }
+
+    /// Pure form of `route` — same rationale as `validSources(for:)`. Every
+    /// pair `validSources` admits must resolve here, and nothing else may.
+    static func route(source: ChainNetwork, destination: DestinationKind?) -> Route? {
         guard let destination else { return nil }
         switch (source, destination) {
         case (.core, .core): return .coreToCore
         case (.core, .shielded): return .coreToShielded
+        case (.core, .platform): return .coreToPlatform
         case (.platform, .platform): return .platformToPlatform
         case (.platform, .core): return .platformToCore
         case (.platform, .shielded): return .platformToShielded
         case (.shielded, .core): return .shieldedToCore
         case (.shielded, .platform): return .shieldedToPlatform
         case (.shielded, .shielded): return .shieldedToShielded
-        default: return nil
         }
     }
 
@@ -555,7 +626,7 @@ final class SendViewModel: ObservableObject {
     /// amount. `nil` = requirement unavailable → callers fail closed.
     private var feeReserveCredits: UInt64? {
         switch route {
-        case .coreToCore, .coreToShielded, .platformToCore, .platformToShielded, nil:
+        case .coreToCore, .coreToShielded, .coreToPlatform, .platformToCore, .platformToShielded, nil:
             // L1 send fees are handled by the payment processor; the
             // asset-lock shield's pool fee is duff-denominated and enforced
             // in the route branches (`canContinue`, Max) directly, mirroring
@@ -618,7 +689,7 @@ final class SendViewModel: ObservableObject {
     var isBlockedBySync: Bool {
         guard let route else { return false }
         switch route {
-        case .coreToCore, .coreToShielded:
+        case .coreToCore, .coreToShielded, .coreToPlatform:
             return WalletSendService.isBlockedByInitialRestoreSync(
                 isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingWallet,
                 isChainSynced: isChainSynced)
@@ -639,6 +710,17 @@ final class SendViewModel: ObservableObject {
         if route == .coreToShielded,
            CoreToShieldedAmountPolicy.currentPoolFeeDuffs == nil {
             return Self.feeEstimateUnavailableMessage
+        }
+
+        // The payee's credit output must clear the protocol's minimum output
+        // amount like any other transition output.
+        if route == .coreToPlatform,
+           dashDuffsUnsigned < CoreToPlatformAmountPolicy.minimumAmountDuffs {
+            return String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "The smallest amount you can send to a Platform address is %@.",
+                    comment: "Core → Platform send minimum"),
+                "\(CoreToPlatformAmountPolicy.minimumAmountDuffs.formattedDashAmountWithoutCurrencySymbol) DASH")
         }
 
         return insufficientBalanceMessage
@@ -671,6 +753,17 @@ final class SendViewModel: ObservableObject {
                 requestedDuffs: dashDuffsUnsigned,
                 spendableDuffs: spendableDuffs > feeDuffs
                     ? spendableDuffs - feeDuffs : 0)
+
+        case .coreToPlatform:
+            // Fee-on-top: the lock is amount + headroom so the payee's output
+            // carries the exact typed amount and the sender's own change
+            // absorbs the fees. Mirrors `canContinue`.
+            let headroom = CoreToPlatformAmountPolicy.externalHeadroomDuffs
+            let spendable = coreSpendableDuffs
+            return TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: balanceName,
+                requestedDuffs: dashDuffsUnsigned,
+                spendableDuffs: spendable > headroom ? spendable - headroom : 0)
 
         case .platformToPlatform:
             guard let reserve = feeReserveCredits else {
@@ -770,7 +863,7 @@ final class SendViewModel: ObservableObject {
     /// The amount, balance, and sync checks live on the amount step
     /// (`canContinue`).
     var canAdvanceToAmount: Bool {
-        destination != nil && !pinnedSourceMismatch
+        destination != nil && !pinnedSourceMismatch && unsupportedDestinationMessage == nil
     }
 
     var canContinue: Bool {
@@ -790,6 +883,14 @@ final class SendViewModel: ObservableObject {
                   let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
                       forAmountDuffs: dashDuffsUnsigned,
                       poolFeeCredits: poolFeeCredits)
+            else { return false }
+            return lockDuffs <= coreSpendableDuffs
+        case .coreToPlatform:
+            // Fee-on-top: the lock is amount + headroom, so the balance must
+            // cover both. Fails closed on overflow or a sub-minimum amount.
+            guard dashDuffsUnsigned >= CoreToPlatformAmountPolicy.minimumAmountDuffs,
+                  let lockDuffs = CoreToPlatformAmountPolicy.externalLockValueDuffs(
+                      forAmountDuffs: dashDuffsUnsigned)
             else { return false }
             return lockDuffs <= coreSpendableDuffs
         case .platformToPlatform:
@@ -842,6 +943,15 @@ final class SendViewModel: ObservableObject {
                 break
             }
             sourceDuffs = spendable > feeDuffs ? spendable - feeDuffs : 0
+            if spendable > 0, sourceDuffs == 0 {
+                shieldedMaxNotice = InternalTransferViewModel.feeReserveExceedsBalanceMessage(source)
+            }
+        case .coreToPlatform:
+            // Fee-on-top Max: the lock is amount + headroom, so the largest
+            // payable amount is the L1-fee-aware spendable minus that headroom.
+            let spendable = coreSpendableDuffs
+            let headroom = CoreToPlatformAmountPolicy.externalHeadroomDuffs
+            sourceDuffs = spendable > headroom ? spendable - headroom : 0
             if spendable > 0, sourceDuffs == 0 {
                 shieldedMaxNotice = InternalTransferViewModel.feeReserveExceedsBalanceMessage(source)
             }

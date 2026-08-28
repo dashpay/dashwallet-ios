@@ -43,6 +43,105 @@ enum InternalTransferRoute: Equatable {
     }
 }
 
+/// Protocol cost constants shared by every asset-lock-funded route, mirrored
+/// from the Rust version tables. They are versioned constants rather than
+/// anything the FFI exposes to the host, so they are duplicated here the way
+/// the wallet already duplicates the base processing cost — each one names the
+/// exact Rust field it mirrors so a version bump has a grep handle.
+enum AssetLockFundingCostPolicy {
+    /// Credits per duff (`CREDITS_PER_DUFF`).
+    static let creditsPerDuff: UInt64 = 1000
+
+    /// The balance an asset lock must carry before Platform will begin
+    /// processing an address funding. Mirrors Rust
+    /// `required_asset_lock_duff_balance_for_processing_start_for_address_funding`
+    /// (50_000 duffs) x `CREDITS_PER_DUFF`.
+    ///
+    /// It is the ADDRESS-FUNDING constant, not a shielded-specific one — the
+    /// Core -> Shielded pool fee folds the same number in, which is why both
+    /// routes read it from here.
+    static let baseProcessingCostCredits: UInt64 = 50_000_000
+
+    /// Per-output component of `AddressFundingFromAssetLockTransition`'s
+    /// minimum required fee. Mirrors Rust `state_transition_min_fees
+    /// .address_funds_transfer_output_cost`.
+    static let addressFundsTransferOutputCostCredits: UInt64 = 6_000_000
+
+    /// Smallest credit amount a transition output may carry. Mirrors Rust
+    /// `dpp.state_transitions.min_output_amount`.
+    static let minOutputAmountCredits: UInt64 = 500_000
+
+    /// Credits expressed in whole duffs, rounded UP so a duff-denominated lock
+    /// always covers the full credit-denominated requirement.
+    static func duffsRoundingUp(credits: UInt64) -> UInt64 {
+        credits / creditsPerDuff + (credits.isMultiple(of: creditsPerDuff) ? 0 : 1)
+    }
+}
+
+/// Amount boundary for the Core -> Platform EXTERNAL send (paying a third
+/// party's Platform address from the Core balance via an asset lock).
+///
+/// Deliberately different from the Core -> Platform INTERNAL transfer, which
+/// locks exactly what the user typed and lets Platform carve its fees out of
+/// the single remainder output. That is fine when the remainder is your own
+/// address; paying a third party that way would silently short the payee.
+///
+/// Here the transition carries TWO outputs: the payee's, with an explicit
+/// credit amount, and the sender's own change address as the remainder. The
+/// fee strategy reduces the remainder, so the payee receives EXACTLY the typed
+/// amount and the sender's change absorbs the fees. That costs headroom on top
+/// of the amount, which is what this policy sizes.
+enum CoreToPlatformAmountPolicy {
+    /// Outputs in an external funding transition: payee + own change.
+    private static let externalOutputCount: UInt64 = 2
+
+    /// Headroom (credits) the lock must carry ON TOP of the payee's amount.
+    ///
+    /// `calculate_min_required_fee` for `AddressFundingFromAssetLockTransition`
+    /// is `base + input_cost x inputs + output_cost x max(outputs, 1)`. An
+    /// asset-lock-funded address funding has no address inputs (the lock IS the
+    /// funding), so the input term is zero and only the two outputs are
+    /// charged. On top of the fee the change output must itself clear
+    /// `min_output_amount`, or the transition is invalid.
+    ///
+    /// This is the protocol MINIMUM. The metered fee Platform actually charges
+    /// can exceed it, and it too comes out of the change output — never out of
+    /// the payee's explicit amount. A lock too thin to cover the real fee is
+    /// rejected Rust-side with a typed error, which surfaces as a failed
+    /// transfer rather than as a short payment.
+    static let externalHeadroomCredits: UInt64 =
+        AssetLockFundingCostPolicy.baseProcessingCostCredits
+            + AssetLockFundingCostPolicy.addressFundsTransferOutputCostCredits * externalOutputCount
+            + AssetLockFundingCostPolicy.minOutputAmountCredits
+
+    /// `externalHeadroomCredits` in whole duffs, rounded up.
+    static var externalHeadroomDuffs: UInt64 {
+        AssetLockFundingCostPolicy.duffsRoundingUp(credits: externalHeadroomCredits)
+    }
+
+    /// Smallest payable amount: the payee's output must clear
+    /// `min_output_amount` like any other transition output.
+    static var minimumAmountDuffs: UInt64 {
+        AssetLockFundingCostPolicy.duffsRoundingUp(
+            credits: AssetLockFundingCostPolicy.minOutputAmountCredits)
+    }
+
+    /// L1 lock value that delivers exactly `amountDuffs` to the payee while
+    /// leaving the sender's own change output able to pay the fees. `nil` on
+    /// UInt64 overflow - callers fail closed.
+    static func externalLockValueDuffs(forAmountDuffs amountDuffs: UInt64) -> UInt64? {
+        let (total, overflow) = amountDuffs.addingReportingOverflow(externalHeadroomDuffs)
+        return overflow ? nil : total
+    }
+
+    /// Credit amount the payee's explicit output carries for `amountDuffs`.
+    static func payeeCredits(forAmountDuffs amountDuffs: UInt64) -> UInt64? {
+        let (credits, overflow) = amountDuffs.multipliedReportingOverflow(
+            by: AssetLockFundingCostPolicy.creditsPerDuff)
+        return overflow ? nil : credits
+    }
+}
+
 /// Shared Type-18 amount boundary for Core → Shielded transfers.
 ///
 /// The pool fee rides ON TOP of the typed amount: the app locks
@@ -53,11 +152,12 @@ enum InternalTransferRoute: Equatable {
 /// transfer confirmation screens.
 @MainActor
 enum CoreToShieldedAmountPolicy {
-    /// Asset-lock processing base cost folded into a ShieldFromAssetLock
-    /// pool fee on top of `compute_minimum_shielded_fee`. Mirrors Rust
-    /// `required_asset_lock_duff_balance_for_processing_start_for_address_funding`
-    /// (50_000 duffs) × 1000 credits/duff.
-    static let assetLockBaseCostCredits: UInt64 = 50_000_000
+    /// Asset-lock processing base cost folded into a ShieldFromAssetLock pool
+    /// fee on top of `compute_minimum_shielded_fee`. Reads the shared
+    /// address-funding constant - the number is not shielded-specific.
+    static var assetLockBaseCostCredits: UInt64 {
+        AssetLockFundingCostPolicy.baseProcessingCostCredits
+    }
 
     /// Cached: this is read from `amountValidationMessage` and `canContinue`,
     /// both of which a SwiftUI `body` evaluates — so an uncached property

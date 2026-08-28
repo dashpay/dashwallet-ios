@@ -947,6 +947,7 @@
 		87AC92AAD9DF8CBF271609AC /* SwiftDashSDKSPVStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90D495F8DF1E8EE8A84C8E8 /* SwiftDashSDKSPVStatusScreen.swift */; };
 		88436E7D9764791AC81AFFB0 /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EE3302C1C5DF898D1A0F915 /* AuthenticationService.swift */; };
 		89ED38B6205FE4EEEE8013B9 /* ShieldedWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C9D64AB542D03FE3704D02 /* ShieldedWithdrawalStore.swift */; };
+		408DF23C9C7BBF7FD7C49B8D /* PlatformFundingRecipientStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F48F3043C3BB643CCB30499 /* PlatformFundingRecipientStore.swift */; };
 		8A7607606A594C6E99A2FAC7 /* DerivationPathKeysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC1F4DB87C442BEABDF0DB2 /* DerivationPathKeysView.swift */; };
 		8AF94168DE3494EAF0811D77 /* PaymentURIBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E3F6CC617DA824F467AADC /* PaymentURIBuilder.swift */; };
 		8B8898971DC24152E171DABC /* PaymentsLandingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E735446F9E918618E97EDD38 /* PaymentsLandingScreen.swift */; };
@@ -980,6 +981,7 @@
 		9A1606353B5B4E5481AC5C6A /* NotificationsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B728BBE755AB93DD58FDA4EC /* NotificationsScreen.swift */; };
 		9A891339E42C1BE3AED09CBB /* WalletAccountDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BFD41DDFE194362A163BC7 /* WalletAccountDetailScreen.swift */; };
 		9B40E576972DB41F7EF4D21E /* ShieldedWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C9D64AB542D03FE3704D02 /* ShieldedWithdrawalStore.swift */; };
+		262DD1FC124BA3166DABB2E6 /* PlatformFundingRecipientStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F48F3043C3BB643CCB30499 /* PlatformFundingRecipientStore.swift */; };
 		9B54AF317E7728C18646F702 /* QRCodeGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A52F6A39C711B1E955B7E3A /* QRCodeGenerator.swift */; };
 		9B627F0FCC93D887BAB3E9A9 /* BIP70PaymentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D58056D713E4B50DAE0F24B /* BIP70PaymentService.swift */; };
 		9E39B6CDE39A9CA4E74ADF3B /* IdentitiesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 528594007157A56ABDEAD552 /* IdentitiesScreen.swift */; };
@@ -1179,6 +1181,7 @@
 		BD509A68B1A0B6E4599F9C7A /* DWProfileUpdateCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82926C69F3BB675BEF1A1FFD /* DWProfileUpdateCoordinator.swift */; };
 		C05FA6CE3DDE2D0327D334E5 /* CoinJoinRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = B478AD92C1F1C11D09645DF4 /* CoinJoinRecovery.swift */; };
 		C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */; };
+		451EFA427874A094F9B85545 /* CoreToPlatformSendRouteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43CBA1F437965D7BE80145C6 /* CoreToPlatformSendRouteTests.swift */; };
 		C124DF94278D4238FAE0975D /* OrderPreviewFeeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */; };
 		C1A0B2C3D4E5F60718293A02 /* ShortcutsBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */; };
 		C1A0B2C3D4E5F60718293A03 /* ShortcutsBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */; };
@@ -2882,6 +2885,7 @@
 		59C18FCF827D815007BAEF29 /* DWLogger.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = DWLogger.m; sourceTree = "<group>"; };
 		59C18FCF827D815007BAEB01 /* MainThreadStallMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainThreadStallMonitor.swift; sourceTree = "<group>"; };
 		59C9D64AB542D03FE3704D02 /* ShieldedWithdrawalStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalStore.swift; sourceTree = "<group>"; };
+		4F48F3043C3BB643CCB30499 /* PlatformFundingRecipientStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlatformFundingRecipientStore.swift; sourceTree = "<group>"; };
 		5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedActivityHistory.swift; sourceTree = "<group>"; };
 		5A1EC0FE2E29A20000000011 /* PlatformAddressActivityStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformAddressActivityStore.swift; sourceTree = "<group>"; };
 		5A1EC0FE2E29A20000000014 /* PlatformAddressHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformAddressHistory.swift; sourceTree = "<group>"; };
@@ -3224,6 +3228,7 @@
 		BCD0199D74601A6150ABC8D1 /* WalletAccountDetailViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletAccountDetailViewModel.swift; sourceTree = "<group>"; };
 		C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OrderPreviewFeeRow.swift; sourceTree = "<group>"; };
 		C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKCoreLifecycleTests.swift; sourceTree = "<group>"; };
+		43CBA1F437965D7BE80145C6 /* CoreToPlatformSendRouteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreToPlatformSendRouteTests.swift; sourceTree = "<group>"; };
 		C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsBarView.swift; sourceTree = "<group>"; };
 		C1D2E3F4A5B6C7D8E9F01234 /* TransferAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountView.swift; sourceTree = "<group>"; };
 		C3DAD266246AA6F10001624F /* DWScreenshotWarningViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWScreenshotWarningViewController.h; sourceTree = "<group>"; };
@@ -3871,6 +3876,7 @@
 				05723F61BFF76C3BB9EF3CDC /* InternalTransferConfirmSheet.swift */,
 				0D2C8F8102C5C603DB63569F /* ShieldedTransferCoordinator.swift */,
 				59C9D64AB542D03FE3704D02 /* ShieldedWithdrawalStore.swift */,
+				4F48F3043C3BB643CCB30499 /* PlatformFundingRecipientStore.swift */,
 			);
 			path = InternalTransfer;
 			sourceTree = "<group>";
@@ -7206,6 +7212,7 @@
 				A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */,
 				B7C072AA26C7000000000002 /* DWContestedNameStatusServiceTests.swift */,
 				C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */,
+				43CBA1F437965D7BE80145C6 /* CoreToPlatformSendRouteTests.swift */,
 				CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */,
 				CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */,
 				7A30000130A1000000000001 /* TransactionDirectionTests.swift */,
@@ -10333,6 +10340,7 @@
 				A15ED0B9E7AAF29C694E4E17 /* DWIdentityAuthorizer.swift in Sources */,
 				2A6B1257A51E609B8025BF3A /* ShieldedTransferCoordinator.swift in Sources */,
 				9B40E576972DB41F7EF4D21E /* ShieldedWithdrawalStore.swift in Sources */,
+				262DD1FC124BA3166DABB2E6 /* PlatformFundingRecipientStore.swift in Sources */,
 				06132521E7B4D21B4A1597E7 /* PlatformSendExecutor.swift in Sources */,
 				D3DA37D1924A7F5B089FE110 /* StorageExplorerView.swift in Sources */,
 				3B1ECCE5521BAB084D74B5ED /* StorageModelListViews.swift in Sources */,
@@ -10410,6 +10418,7 @@
 				A17EED0126C7000000000001 /* WalletWipeSerialExecutorTests.swift in Sources */,
 				B7C072AA26C7000000000001 /* DWContestedNameStatusServiceTests.swift in Sources */,
 				C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */,
+				451EFA427874A094F9B85545 /* CoreToPlatformSendRouteTests.swift in Sources */,
 				CB9000022FE1000000000002 /* CoinbaseTransactionMetadataTests.swift in Sources */,
 				CB9100022FE2000000000002 /* CoinbaseTransferAmountTests.swift in Sources */,
 				7A30000230A1000000000002 /* TransactionDirectionTests.swift in Sources */,
@@ -11365,6 +11374,7 @@
 				E2D0F4AD56B92356C871F568 /* InternalTransferConfirmSheet.swift in Sources */,
 				17ED79A8B56522CD03A8CD5E /* ShieldedTransferCoordinator.swift in Sources */,
 				89ED38B6205FE4EEEE8013B9 /* ShieldedWithdrawalStore.swift in Sources */,
+				408DF23C9C7BBF7FD7C49B8D /* PlatformFundingRecipientStore.swift in Sources */,
 				4AC8F492DD74101C71A5EA5E /* PlatformSendExecutor.swift in Sources */,
 				983748715D558F311DF6BFCD /* StorageExplorerView.swift in Sources */,
 				02EDCC7635BCD84768554D9C /* StorageModelListViews.swift in Sources */,

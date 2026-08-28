@@ -461,7 +461,13 @@ enum PlatformAddressActivityRecorder {
             })
         guard let rows = try? container.mainContext.fetch(descriptor) else { return false }
         return rows.contains { lock in
-            lock.recipientPlatformAddressHash == Data(addressHash)
+            // `recipientIsExternal == true` is an outgoing payment to a third
+            // party, whose hash will never match one of our addresses anyway —
+            // but excluding it explicitly keeps an external send from ever
+            // being reported as an incoming own top-up. `nil` predates the
+            // discriminator and can only have come from the own-address flow.
+            lock.recipientIsExternal != true
+                && lock.recipientPlatformAddressHash == Data(addressHash)
                 && deltaDuffs <= lock.amountDuffs
         }
     }

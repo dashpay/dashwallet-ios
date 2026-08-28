@@ -160,6 +160,10 @@ struct SendScreen: View {
                 Text(NSLocalizedString("This is not a valid Dash address for this network", comment: "Send screen"))
                     .font(.caption)
                     .foregroundColor(.red)
+            } else if let unsupported = viewModel.unsupportedDestinationMessage {
+                Text(unsupported)
+                    .font(.caption)
+                    .foregroundColor(.red)
             } else if viewModel.pinnedSourceMismatch {
                 Text(String(
                     format: NSLocalizedString("This address can't be paid from your %@ balance", comment: "Send sheet source/destination mismatch"),
@@ -413,6 +417,8 @@ struct ExternalSendAmountScreen: View {
                     route: route,
                     destinationAddress: viewModel.trimmedAddress,
                     destinationRaw43: shieldedRecipientRaw43,
+                    platformFundingRecipient: viewModel.coreToPlatformRecipient,
+                    platformFundingLockDuffs: viewModel.coreToPlatformLockDuffs,
                     dashDuffs: viewModel.dashDuffs,
                     creditsAmount: viewModel.creditsPreview,
                     fiatText: viewModel.fiatAmountString,
@@ -713,6 +719,12 @@ struct SendConfirmSheet: View {
     /// shielded-destination routes (`.coreToShielded`,
     /// `.platformToShielded`, `.shieldedToShielded`), nil otherwise.
     let destinationRaw43: Data?
+    /// Payee + exact credit amount for `.coreToPlatform`, nil otherwise. Built
+    /// by the ViewModel so this View does no fee math.
+    var platformFundingRecipient: PlatformFundingRecipient? = nil
+    /// L1 lock value for `.coreToPlatform` (payee amount + change headroom),
+    /// nil otherwise.
+    var platformFundingLockDuffs: UInt64? = nil
     let dashDuffs: Int64
     let creditsAmount: UInt64
     let fiatText: String
@@ -894,7 +906,7 @@ struct SendConfirmSheet: View {
             return NSLocalizedString("Platform balance", comment: "The Dash Platform credits balance")
         case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
             return NSLocalizedString("Shielded balance", comment: "")
-        case .coreToCore, .coreToShielded:
+        case .coreToCore, .coreToShielded, .coreToPlatform:
             return NSLocalizedString("Transparent balance", comment: "The transparent (Core) balance of the Dash Wallet")
         }
     }
@@ -933,6 +945,13 @@ struct SendConfirmSheet: View {
             // The lock charges the fee rounded UP to a whole duff — display
             // that, so Amount + Network fee equals Total exactly.
             return CoreToShieldedAmountPolicy.currentPoolFeeDuffs.map { $0 * 1000 }
+        case .coreToPlatform:
+            // Address-funding asset lock with two outputs: the protocol
+            // minimum required fee plus the change output's own minimum —
+            // exactly the headroom the lock is built with. The metered fee can
+            // exceed it, and the excess also comes out of the sender's change,
+            // never out of the payee's explicit amount.
+            return CoreToPlatformAmountPolicy.externalHeadroomCredits
         case .platformToPlatform:
             // Credit transfer: the metered transition fee. The executor
             // states ~0.001 DASH as the conservative max.
@@ -962,22 +981,26 @@ struct SendConfirmSheet: View {
         return "~ " + CurrencyExchanger.shared.fiatAmountString(for: dash)
     }
 
-    /// What actually leaves the source balance. Core→Shielded charges the
-    /// pool fee on top of the amount (the executed lock value); every other
-    /// route's total is the amount itself. "—" when the fee estimate is
-    /// unavailable — `canContinue` fails closed before that can be confirmed,
-    /// but the row must never show the un-inflated number.
+    /// What actually leaves the source balance. The two asset-lock routes
+    /// charge their fee on top of the amount, so their total is the executed
+    /// lock value; every other route's total is the amount itself. "—" when the
+    /// fee estimate is unavailable — `canContinue` fails closed before that can
+    /// be confirmed, but the row must never show the un-inflated number.
     private var totalString: String {
-        guard route == .coreToShielded else {
+        guard route == .coreToShielded || route == .coreToPlatform,
+              let amountDuffs = UInt64(exactly: dashDuffs)
+        else {
             return dashDuffs.formattedDashAmount
         }
-        guard let amountDuffs = UInt64(exactly: dashDuffs),
-              let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
-              let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
-                  forAmountDuffs: amountDuffs,
-                  poolFeeCredits: poolFeeCredits),
-              let signedLockDuffs = Int64(exactly: lockDuffs)
-        else { return "—" }
+        let lockDuffs: UInt64?
+        if route == .coreToPlatform {
+            lockDuffs = CoreToPlatformAmountPolicy.externalLockValueDuffs(forAmountDuffs: amountDuffs)
+        } else {
+            lockDuffs = CoreToShieldedAmountPolicy.poolFeeCredits.flatMap {
+                CoreToShieldedAmountPolicy.lockValueDuffs(forAmountDuffs: amountDuffs, poolFeeCredits: $0)
+            }
+        }
+        guard let lockDuffs, let signedLockDuffs = Int64(exactly: lockDuffs) else { return "—" }
         return signedLockDuffs.formattedDashAmount
     }
 
@@ -1055,7 +1078,7 @@ struct SendConfirmSheet: View {
             .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing)
         ]
         // Only the asset-lock route has the on-chain locking stage.
-        if route == .coreToShielded {
+        if route == .coreToShielded || route == .coreToPlatform {
             steps.append(.init(label: NSLocalizedString("Locking funds", comment: ""), phase: .locking))
         }
         // Only shielded legs build an Orchard proof.
@@ -1063,7 +1086,7 @@ struct SendConfirmSheet: View {
         case .coreToShielded, .platformToShielded, .shieldedToCore, .shieldedToPlatform,
              .shieldedToShielded:
             steps.append(.init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving))
-        case .platformToPlatform, .platformToCore, .coreToCore:
+        case .coreToPlatform, .platformToPlatform, .platformToCore, .coreToCore:
             break
         }
         steps.append(.init(label: NSLocalizedString("Broadcasting", comment: ""), phase: .broadcasting))
@@ -1083,6 +1106,16 @@ struct SendConfirmSheet: View {
                 await coordinator.performAssetLock(
                     recipientAmountDuffs: UInt64(dashDuffs),
                     recipientRaw43: destinationRaw43)
+            case .coreToPlatform:
+                // Fail closed rather than falling back to a remainder-only
+                // funding, which would pay the SENDER's own address.
+                guard let platformFundingRecipient, let platformFundingLockDuffs else {
+                    coordinator.reset()
+                    return
+                }
+                await coordinator.performFundPlatform(
+                    amountDuffs: platformFundingLockDuffs,
+                    externalRecipient: platformFundingRecipient)
             case .platformToPlatform:
                 await coordinator.performPlatformSend(
                     destination: destinationAddress,
@@ -1142,6 +1175,20 @@ struct SendConfirmSheet: View {
                     outPointTxidWire: op.txidWire,
                     outPointVout: op.vout,
                     recipientRaw43: destinationRaw43)
+            }
+            return
+        }
+        // Same rule for the Core → Platform funding lock: resume the committed
+        // outpoint with the SAME payee rather than building a second lock.
+        if route == .coreToPlatform,
+           let op = coordinator.lastAssetLockOutPoint,
+           let platformFundingRecipient {
+            coordinator.reset()
+            Task {
+                await coordinator.resumeFundPlatform(
+                    outPointTxidWire: op.txidWire,
+                    outPointVout: op.vout,
+                    externalRecipient: platformFundingRecipient)
             }
             return
         }

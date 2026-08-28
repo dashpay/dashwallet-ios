@@ -250,6 +250,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// cleared on `reset()` and at the start of a fresh `performAssetLock`.
     private(set) var lastAssetLockOutPoint: (txidWire: Data, vout: UInt32)?
 
+    /// Destination of the Core → Platform funding currently in flight, held
+    /// only long enough to stamp it onto the `PersistentAssetLock` row once the
+    /// outpoint is observed. Durability lives in `PlatformFundingRecipientStore`
+    /// and on the row itself — never in this property, which dies with the
+    /// process.
+    private var inFlightFundingRecipient: PlatformFundingRecipient?
+
     // MARK: - Errors
 
     enum CoordinatorError: LocalizedError {
@@ -702,6 +709,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
         if let row = try? modelContainer.mainContext.fetch(descriptor).first,
            let outPoint = Self.parseOutPoint(row.outPointHex) {
             lastAssetLockOutPoint = outPoint
+            stampFundingRecipientIfNeeded(
+                outPointHex: row.outPointHex,
+                walletId: walletId,
+                modelContainer: modelContainer,
+                fundingType: fundingType)
         }
     }
 
@@ -1015,10 +1027,22 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// (IS/CL-locked) before the funding ST lands. On failure after the lock
     /// committed, `lastAssetLockOutPoint` is captured so "Try again" resumes
     /// that lock via `resumeFundPlatform` instead of stranding it.
-    func performFundPlatform(amountDuffs: UInt64) async {
+    func performFundPlatform(
+        amountDuffs: UInt64,
+        externalRecipient: PlatformFundingRecipient? = nil
+    ) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
-        Self.logger.info("🛡️ SHIELD-TX :: core→platform fund route amount=\(amountDuffs)")
+        inFlightFundingRecipient = externalRecipient
+        Self.logger.info(
+            "🛡️ SHIELD-TX :: core→platform fund route lock=\(amountDuffs) external=\(externalRecipient?.isExternal == true)")
+        // Record the confirmed destination BEFORE anything is broadcast, so a
+        // kill in the window between the lock landing on-chain and the funding
+        // ST being submitted cannot leave a resume surface guessing. The
+        // outpoint is not known yet; the poll below stamps it as soon as it is.
+        if let externalRecipient {
+            PlatformFundingRecipientStore.shared.recordIntent(externalRecipient)
+        }
 
         let env: BasicEnvironment
         do {
@@ -1044,7 +1068,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
             fundingType: Self.addressAssetLockFundingType)
 
         do {
-            try await PlatformAddressSyncCoordinator.shared.fundFromCore(amountDuffs: amountDuffs)
+            try await PlatformAddressSyncCoordinator.shared.fundFromCore(
+                amountDuffs: amountDuffs,
+                externalRecipient: externalRecipient)
         } catch {
             stopAssetLockPolling()
             captureLatestAssetLockOutPoint(
@@ -1058,6 +1084,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         stopAssetLockPolling()
         Self.logger.info("🛡️ SHIELD-TX :: core→platform fund route completed")
+        // The funding ST landed and consumed the lock: no resume can follow, so
+        // the pre-submit intent has nothing left to protect.
+        PlatformFundingRecipientStore.shared.clearIntent()
+        inFlightFundingRecipient = nil
         phase = .broadcasting
         phase = .success
         schedulePlatformResync()
@@ -1066,7 +1096,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Resume of route 5 after its asset lock committed but the address-
     /// funding ST never landed — drives the remaining stages on the SAME
     /// outpoint. Mirrors `resumeAssetLock` on the shielded route.
-    func resumeFundPlatform(outPointTxidWire: Data, outPointVout: UInt32) async {
+    ///
+    /// `externalRecipient` nil means "resolve it from durable storage": the
+    /// resolution happens in `PlatformAddressSyncCoordinator.resumeFundFromCore`,
+    /// the single choke point every resume surface funnels through, so a lock
+    /// that was recorded as an external send resumes to the SAME third party
+    /// even after a cold launch. Locks with no recorded recipient keep the
+    /// legacy own-next-address behavior.
+    func resumeFundPlatform(
+        outPointTxidWire: Data,
+        outPointVout: UInt32,
+        externalRecipient: PlatformFundingRecipient? = nil
+    ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume core→platform fund vout=\(outPointVout)")
 
@@ -1090,13 +1131,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
         do {
             try await PlatformAddressSyncCoordinator.shared.resumeFundFromCore(
                 outPointTxid: outPointTxidWire,
-                outPointVout: outPointVout)
+                outPointVout: outPointVout,
+                externalRecipient: externalRecipient)
         } catch {
             handleFailure(CoordinatorError.transferFailed(error))
             return
         }
 
         Self.logger.info("🛡️ SHIELD-TX :: resume core→platform fund completed")
+        PlatformFundingRecipientStore.shared.clearIntent()
         phase = .success
         schedulePlatformResync()
     }
@@ -1448,6 +1491,27 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
     }
 
+    /// Bind the in-flight funding recipient to the now-known outpoint, on the
+    /// canonical `PersistentAssetLock` row and in the app-side mirror. Called
+    /// from both outpoint-capture sites so the record exists no matter which
+    /// one observed the lock first. No-op unless a Core → Platform funding with
+    /// an explicit recipient is in flight.
+    private func stampFundingRecipientIfNeeded(
+        outPointHex: String,
+        walletId: Data,
+        modelContainer: ModelContainer,
+        fundingType: Int
+    ) {
+        guard fundingType == Self.addressAssetLockFundingType,
+              let recipient = inFlightFundingRecipient
+        else { return }
+        PlatformFundingRecipientStore.persist(
+            recipient: recipient,
+            outPointHex: outPointHex,
+            walletId: walletId,
+            container: modelContainer)
+    }
+
     private func stopAssetLockPolling() {
         assetLockPollingTask?.cancel()
         assetLockPollingTask = nil
@@ -1485,6 +1549,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
             // building a second one. Display→wire reversal happens in parse.
             if row.statusRaw >= 1, let outPoint = Self.parseOutPoint(row.outPointHex) {
                 lastAssetLockOutPoint = outPoint
+                stampFundingRecipientIfNeeded(
+                    outPointHex: row.outPointHex,
+                    walletId: walletId,
+                    modelContainer: modelContainer,
+                    fundingType: fundingType)
             }
             advancePhaseForAssetLockStatus(row.statusRaw)
         } catch {
