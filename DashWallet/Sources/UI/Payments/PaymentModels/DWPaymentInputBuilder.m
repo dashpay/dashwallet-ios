@@ -28,6 +28,20 @@ NS_ASSUME_NONNULL_BEGIN
     return [[DWPaymentInput alloc] initWithSource:source];
 }
 
+- (DWPaymentInput *)paymentInputWithParsedURI:(DWParsedPaymentURI *)parsedURI
+                                       source:(DWPaymentInputSource)source {
+    DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:source];
+    [paymentInput attachParsedURI:parsedURI];
+    return paymentInput;
+}
+
+- (DWPaymentInput *)paymentInputWithBIP70Confirmation:(id)bip70Confirmation
+                                               source:(DWPaymentInputSource)source {
+    DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:source];
+    paymentInput.bip70Confirmation = bip70Confirmation;
+    return paymentInput;
+}
+
 - (nullable DWPaymentInput *)payToAddress:(NSString *)address
                                    amount:(uint64_t)amount {
     DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:address];

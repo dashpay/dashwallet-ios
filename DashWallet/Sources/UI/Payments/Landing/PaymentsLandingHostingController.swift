@@ -241,14 +241,11 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     }
 
     /// The base class routes a scanned payment straight into the payment
-    /// processor (its `DWQRScanModelDelegate` conformance is a private
-    /// class extension, so this can't be `override` — the matching selector
-    /// shadows it through ObjC dispatch). Every scan on the landing
-    /// originates from the Send tab's embedded form, so fill that form —
-    /// destination-type detection and the From picker then apply to scanned
-    /// addresses exactly like typed/pasted ones.
-    @objc(qrScanModel:didScanPaymentInput:)
-    func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
+    /// processor. Every scan on the landing originates from the Send tab's
+    /// embedded form, so fill that form — destination-type detection and
+    /// the From picker then apply to scanned addresses exactly like
+    /// typed/pasted ones.
+    override func didScanPaymentInput(_ paymentInput: DWPaymentInput) {
         dismiss(animated: true) { [weak self] in
             self?.embeddedSendViewModel.ingestScannedInput(paymentInput)
         }
