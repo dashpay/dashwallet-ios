@@ -25,6 +25,8 @@ final class FakeUserNotificationCenterClient: UserNotificationCenterClient {
     var authorizationStatusValue: UNAuthorizationStatus = .authorized
     var requestAuthorizationResult: Result<Bool, Error> = .success(true)
     var deliveredSummaries: [DeliveredNotificationSummary] = []
+    /// When set, `add` throws instead of recording the request.
+    var addError: Error?
 
     private(set) var addedRequests: [UNNotificationRequest] = []
     private(set) var removedDeliveredIdentifiers: [[String]] = []
@@ -38,6 +40,9 @@ final class FakeUserNotificationCenterClient: UserNotificationCenterClient {
     var onRemovePendingIdentifiers: (([String]) -> Void)?
 
     func add(_ request: UNNotificationRequest) async throws {
+        if let addError {
+            throw addError
+        }
         addedRequests.append(request)
         onAdd?(request)
     }
@@ -84,6 +89,7 @@ final class InMemoryNotifiedEventStore: NotifiedEventStoring {
 
     private(set) var events: [String: Event] = [:]
     private(set) var markAllSeenTopics: [NotificationTopic] = []
+    private(set) var unmarkedIds: [String] = []
 
     func seed(id: String, topic: NotificationTopic, seen: Bool = false) {
         events[id] = Event(topic: topic, seen: seen)
@@ -101,6 +107,11 @@ final class InMemoryNotifiedEventStore: NotifiedEventStoring {
         if events[id] == nil {
             events[id] = Event(topic: topic, seen: true)
         }
+    }
+
+    func unmark(id: String) async {
+        unmarkedIds.append(id)
+        events.removeValue(forKey: id)
     }
 
     func unseenCount() async -> Int {

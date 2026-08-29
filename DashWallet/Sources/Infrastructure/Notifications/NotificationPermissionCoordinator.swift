@@ -23,8 +23,14 @@ import UserNotifications
 /// Effective notification permission, derived from two independent facts:
 /// the in-app toggle and the live OS authorization.
 enum NotificationPermissionState: Equatable {
-    /// The user wants notifications and the OS does not forbid them.
+    /// The user wants notifications and the OS has granted them.
     case on
+    /// The user wants notifications but the OS authorization is still
+    /// `.notDetermined` — iOS silently ignores requests until the grant
+    /// lands, so the dispatcher must drop WITHOUT consuming the dedup id
+    /// (the event stays postable once authorization arrives). UI renders
+    /// this like `.on`: the toggle reflects the user's choice.
+    case awaitingAuthorization
     /// The in-app toggle is off; nothing is posted.
     case offByUser
     /// The OS authorization is denied. Only iOS Settings can change that, so
@@ -72,17 +78,28 @@ final class NotificationPermissionCoordinator {
         set { preferences.userWantsNotifications = newValue }
     }
 
+    /// Invoked on the main thread when `requestAuthorizationIfNeeded`'s
+    /// request returns granted. The composition root hooks the post-grant
+    /// catch-up here (a producer rescan), so events the dispatcher dropped
+    /// un-marked while the state was `.awaitingAuthorization` get their
+    /// post. Never invoked on denial or failure.
+    var onAuthorizationGranted: (() -> Void)?
+
     func effectiveState() async -> NotificationPermissionState {
         // OS denial wins over the toggle: the Settings row must offer the
         // way out (iOS Settings) even while the in-app toggle is off.
-        if await client.authorizationStatus() == .denied {
+        let status = await client.authorizationStatus()
+        if status == .denied {
             return .blockedBySystem
         }
-        // `.notDetermined` counts as not-forbidden: the app simply hasn't
-        // asked yet (the home-screen visit prompts), the toggle stays
-        // meaningful, and posting is harmless — the OS ignores requests
-        // until the grant lands, which is exactly the pre-module behavior.
-        return preferences.userWantsNotifications ? .on : .offByUser
+        guard preferences.userWantsNotifications else {
+            return .offByUser
+        }
+        // `.notDetermined` means the app simply hasn't asked yet (the
+        // home-screen visit prompts). The toggle stays meaningful, but the
+        // OS ignores posted requests until the grant lands — the distinct
+        // state lets the dispatcher drop without consuming dedup ids.
+        return status == .notDetermined ? .awaitingAuthorization : .on
     }
 
     /// The registration path the home screen triggers on appearance. iOS
@@ -93,7 +110,7 @@ final class NotificationPermissionCoordinator {
     /// Must be called on the main thread (`DWWindow` asserts it).
     func requestAuthorizationIfNeeded() {
         NotificationCenter.default.post(name: .willRequestOSPermission, object: nil)
-        Task { [client] in
+        Task { [client, weak self] in
             var granted = false
             var failure: Error?
             do {
@@ -103,6 +120,9 @@ final class NotificationPermissionCoordinator {
             }
             await MainActor.run {
                 NotificationCenter.default.post(name: .didRequestOSPermission, object: nil)
+                if granted {
+                    self?.onAuthorizationGranted?()
+                }
             }
             DWLogger.log("NotificationPermissionCoordinator: authorization request result \(granted), error \(String(describing: failure))")
         }

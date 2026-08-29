@@ -66,6 +66,11 @@ final class NotificationDispatcher {
     func post(_ notification: AppNotification) async -> Bool {
         let state = await permissions.effectiveState()
         guard state == .on else {
+            // Dropped before the dedup mark on purpose: for
+            // `.awaitingAuthorization` (and the off/blocked states) the OS
+            // would swallow the request, so consuming the id here would
+            // suppress the event forever — it stays postable for the
+            // post-grant catch-up scan instead.
             DWLogger.log("NotificationDispatcher: dropped \(notification.id) — permission state \(state)")
             return false
         }
@@ -107,6 +112,10 @@ final class NotificationDispatcher {
             return true
         } catch {
             DWLogger.log("NotificationDispatcher: failed to post \(notification.id): \(error)")
+            // Roll the dedup mark back: nothing was delivered, so a retry
+            // post must be able to reach the center. (The mark stays before
+            // `add` above — it is the concurrent-duplicate guard.)
+            await store.unmark(id: notification.id)
             return false
         }
     }

@@ -107,6 +107,30 @@ final class NotifiedEventStoreTests: XCTestCase {
         XCTAssertEqual(unseen, 1)
     }
 
+    func testUnmarkRemovesRecordSoMarkIfNewSucceedsAgain() async {
+        _ = await store.markIfNew(id: "tx.failed-post", topic: .transactions)
+
+        await store.unmark(id: "tx.failed-post")
+
+        // The row is gone: no badge weight, and the id counts as new again.
+        let unseen = await store.unseenCount()
+        XCTAssertEqual(unseen, 0)
+        let marked = await store.markIfNew(id: "tx.failed-post", topic: .transactions)
+        XCTAssertTrue(marked)
+    }
+
+    func testUnmarkOfAbsentIdIsNoOp() async {
+        _ = await store.markIfNew(id: "tx.kept", topic: .transactions)
+
+        await store.unmark(id: "tx.never-recorded")
+
+        // Nothing else was touched.
+        let unseen = await store.unseenCount()
+        XCTAssertEqual(unseen, 1)
+        let markedAgain = await store.markIfNew(id: "tx.kept", topic: .transactions)
+        XCTAssertFalse(markedAgain)
+    }
+
     func testPruneRemovesRowsOlderThanThirtyDays() async {
         _ = await store.markIfNew(id: "tx.old", topic: .transactions)
 

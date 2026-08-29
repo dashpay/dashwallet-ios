@@ -31,6 +31,10 @@ protocol NotifiedEventStoring: AnyObject {
     /// occurred, so a later scan cannot notify it and the badge never counts
     /// it. An id that is already recorded is left untouched.
     func consume(id: String, topic: NotificationTopic) async
+    /// Deletes the record for `id`, so a later `markIfNew` succeeds again —
+    /// the dispatcher's rollback when handing the request to the
+    /// notification center failed after the mark. An absent id is a no-op.
+    func unmark(id: String) async
     /// Events recorded but not yet seen in the app, across all topics —
     /// the number the app badge shows.
     func unseenCount() async -> Int
@@ -137,6 +141,15 @@ actor NotifiedEventStore: NotifiedEventStoring {
                 S.colSeenAt <- stamp))
         } catch {
             DWLogger.log("NotifiedEventStore: consume(\(id)) failed: \(error)")
+        }
+    }
+
+    func unmark(id: String) async {
+        typealias S = NotifiedEventSchema
+        do {
+            try connection.run(S.table.filter(S.colId == id).delete())
+        } catch {
+            DWLogger.log("NotifiedEventStore: unmark(\(id)) failed: \(error)")
         }
     }
 

@@ -163,9 +163,15 @@ final class NotificationLifecycle: NSObject {
 extension NotificationLifecycle: UNUserNotificationCenterDelegate {
     // Both delegate methods call their completion handler unconditionally on
     // every path — returning without it makes iOS drop the notification
-    // after a delegate timeout. They stay one-expression trampolines over
-    // the handlers above (`UNNotification`/`UNNotificationResponse` cannot
-    // be constructed in tests, the handlers can be exercised directly).
+    // after a delegate timeout. They stay thin trampolines over the handlers
+    // above (`UNNotification`/`UNNotificationResponse` cannot be constructed
+    // in tests, the handlers can be exercised directly). `didReceive` calls
+    // its handler only after `handleNotificationResponse` returns: on a
+    // background-activation tap the system may treat the response as
+    // processed the moment the handler runs, so acknowledging before the
+    // router has run could cut the routing short. The main-actor Task runs
+    // unconditionally and `handleNotificationResponse` cannot throw, so the
+    // completion handler is still reached on every path.
 
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
                                             willPresent notification: UNNotification,
@@ -183,7 +189,7 @@ extension NotificationLifecycle: UNUserNotificationCenterDelegate {
             self.handleNotificationResponse(actionIdentifier: actionIdentifier,
                                             identifier: identifier,
                                             userInfo: userInfo)
+            completionHandler()
         }
-        completionHandler()
     }
 }

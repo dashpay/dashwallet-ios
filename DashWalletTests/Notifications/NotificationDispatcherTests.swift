@@ -77,6 +77,39 @@ final class NotificationDispatcherTests: XCTestCase {
         XCTAssertTrue(store.events.isEmpty)
     }
 
+    func testFailedAddUnmarksSoRetryReachesTheClient() async {
+        client.addError = NSError(domain: "test.add", code: 1)
+
+        let first = await dispatcher.post(makeNotification(id: "tx.retry"))
+
+        XCTAssertFalse(first)
+        XCTAssertTrue(client.addedRequests.isEmpty)
+        // The dedup mark was rolled back — a failed delivery must not
+        // suppress the event forever.
+        XCTAssertEqual(store.unmarkedIds, ["tx.retry"])
+        XCTAssertTrue(store.events.isEmpty)
+
+        client.addError = nil
+        let retry = await dispatcher.post(makeNotification(id: "tx.retry"))
+
+        XCTAssertTrue(retry)
+        XCTAssertEqual(client.addedRequests.map(\.identifier), ["tx.retry"])
+    }
+
+    func testPostDroppedWithoutStoreInteractionWhileAwaitingAuthorization() async {
+        client.authorizationStatusValue = .notDetermined
+
+        let posted = await dispatcher.post(makeNotification())
+
+        XCTAssertFalse(posted)
+        XCTAssertTrue(client.addedRequests.isEmpty)
+        // The dedup id is not consumed: iOS would swallow the request while
+        // authorization is undetermined, and the event must stay postable
+        // for the post-grant catch-up scan.
+        XCTAssertTrue(store.events.isEmpty)
+        XCTAssertTrue(store.unmarkedIds.isEmpty)
+    }
+
     func testPostDroppedWhenSystemDenied() async {
         client.authorizationStatusValue = .denied
 

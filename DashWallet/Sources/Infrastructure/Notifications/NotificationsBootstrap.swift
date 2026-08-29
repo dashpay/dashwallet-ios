@@ -103,6 +103,18 @@ final class NotificationsBootstrap: NSObject {
         backgroundRefresh.start()
         lifecycle.inactivityReminderHandler = inactivityReminderScheduler
 
+        // Post-grant catch-up: while authorization was `.notDetermined` the
+        // dispatcher dropped events without consuming their dedup ids, so
+        // one rescan right after the user grants posts them. The producer's
+        // freshness window bounds what can retroactively fire — only
+        // transactions first seen within the last
+        // `TransactionNotificationProducer.freshnessWindow` (10 minutes)
+        // are admitted; older drops stay dropped.
+        permissionCoordinator.onAuthorizationGranted = { [weak transactionProducer] in
+            guard let transactionProducer else { return }
+            Task { await transactionProducer.scanAndNotify() }
+        }
+
         // `CrowdNode.shared` is created before this graph exists (in
         // `didFinishLaunching`), so its posting seam is injected statically
         // instead of adding another global.

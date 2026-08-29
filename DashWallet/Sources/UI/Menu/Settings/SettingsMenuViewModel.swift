@@ -147,7 +147,10 @@ class SettingsMenuViewModel: ObservableObject {
                 title: NSLocalizedString("Notifications", comment: ""),
                 icon: .custom("image.notifications", maxHeight: 30),
                 showToggle: true,
-                isToggled: notificationPermissionState == .on,
+                // `.awaitingAuthorization` renders like `.on`: the user's
+                // toggle is on and only the OS grant is still pending.
+                isToggled: notificationPermissionState == .on
+                    || notificationPermissionState == .awaitingAuthorization,
                 action: { [weak self] in
                     guard let self = self else { return }
                     if self.notificationPermissionState == .blockedBySystem {

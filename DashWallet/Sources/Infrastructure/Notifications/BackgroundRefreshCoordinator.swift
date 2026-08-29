@@ -32,6 +32,34 @@ protocol BackgroundRefreshTaskHandle: AnyObject {
 
 extension BGTask: BackgroundRefreshTaskHandle {}
 
+// MARK: - BackgroundRefreshTaskCompletion
+
+/// One-shot wrapper over a task's `setTaskCompleted`: the run body and the
+/// expiration handler can both try to complete, from different threads, and
+/// exactly the first call wins. Completing twice is a `BGTask` API violation.
+/// `@unchecked Sendable`: the flag is lock-protected and
+/// `BGTask.setTaskCompleted` is callable from any thread.
+private final class BackgroundRefreshTaskCompletion: @unchecked Sendable {
+    private let task: BackgroundRefreshTaskHandle
+    private let lock = NSLock()
+    private var completed = false
+
+    init(_ task: BackgroundRefreshTaskHandle) {
+        self.task = task
+    }
+
+    /// Completes the task on the first call; every later call is a no-op.
+    func complete(success: Bool) {
+        lock.lock()
+        let isFirst = !completed
+        completed = true
+        lock.unlock()
+        if isFirst {
+            task.setTaskCompleted(success: success)
+        }
+    }
+}
+
 // MARK: - BackgroundTaskScheduling
 
 /// Seam over `BGTaskScheduler`: registration and request submission are the
@@ -232,24 +260,36 @@ final class BackgroundRefreshCoordinator {
 
     /// Launch-handler entry. Nonisolated so the expiration handler is
     /// assigned synchronously on the scheduler's queue; the run body is a
-    /// cancellable main-actor task the handler cancels.
+    /// cancellable main-actor task the handler cancels. The handler also
+    /// completes the task itself: cancellation unwinds the sync-deadline
+    /// race promptly, but the runtime bring-up await runs on the runtime's
+    /// non-cancellable serial lifecycle queue — the system must not wait
+    /// that out. The shared one-shot completion makes whichever path gets
+    /// there first the only one that completes; the run body still finishes
+    /// afterwards (teardown included) with its completion call a no-op.
     nonisolated func handleRefreshTask(_ task: BackgroundRefreshTaskHandle) {
+        let completion = BackgroundRefreshTaskCompletion(task)
         let run = Task { @MainActor in
-            await self.run(task)
+            await self.run(completion: completion)
         }
-        task.expirationHandler = { run.cancel() }
+        task.expirationHandler = {
+            run.cancel()
+            completion.complete(success: false)
+        }
     }
 
-    /// The bounded background sync. Completes the task on every path;
-    /// `success` means the sync reached `.syncDone` within the deadline and
-    /// the post-sync producer sweep ran — a run that hit the deadline (or
-    /// was expired, or had no wallet, or whose runtime failed to start)
-    /// completes with `success: false`, because no notification work was
-    /// finished. Rows a failed run did persist are not lost: the producer's
-    /// store and freshness window admit them on the next open or run.
-    private func run(_ task: BackgroundRefreshTaskHandle) async {
+    /// The bounded background sync. Completes the task on every path (an
+    /// expired task was already completed by the expiration handler; the
+    /// call here is then the one-shot's no-op); `success` means the sync
+    /// reached `.syncDone` within the deadline and the post-sync producer
+    /// sweep ran — a run that hit the deadline (or was expired, or had no
+    /// wallet, or whose runtime failed to start) completes with
+    /// `success: false`, because no notification work was finished. Rows a
+    /// failed run did persist are not lost: the producer's store and
+    /// freshness window admit them on the next open or run.
+    private func run(completion: BackgroundRefreshTaskCompletion) async {
         guard hasWallet() else {
-            task.setTaskCompleted(success: false)
+            completion.complete(success: false)
             return
         }
 
@@ -275,7 +315,7 @@ final class BackgroundRefreshCoordinator {
         }
 
         scheduleNextRefresh()
-        task.setTaskCompleted(success: success)
+        completion.complete(success: success)
     }
 
     /// Race the sync-done wait against the deadline clock. Expiration

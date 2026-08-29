@@ -57,17 +57,62 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
         try await super.tearDown()
     }
 
+    /// A cancellation-immune await: `withUnsafeContinuation` never resumes
+    /// on task cancellation, mirroring the runtime's serial-queue bring-up
+    /// that `run` awaits. `resolve` releases every current and later waiter.
+    private final class ManualGate: @unchecked Sendable {
+        private let lock = NSLock()
+        private var resolved = false
+        private var result = false
+        private var continuations: [UnsafeContinuation<Bool, Never>] = []
+        /// Invoked at the top of every `wait`, so a test can detect that
+        /// the run body reached the blocked await.
+        var onWait: (() -> Void)?
+
+        func wait() async -> Bool {
+            onWait?()
+            return await withUnsafeContinuation { continuation in
+                lock.lock()
+                if resolved {
+                    let value = result
+                    lock.unlock()
+                    continuation.resume(returning: value)
+                } else {
+                    continuations.append(continuation)
+                    lock.unlock()
+                }
+            }
+        }
+
+        func resolve(_ value: Bool) {
+            lock.lock()
+            resolved = true
+            result = value
+            let waiting = continuations
+            continuations = []
+            lock.unlock()
+            for continuation in waiting {
+                continuation.resume(returning: value)
+            }
+        }
+    }
+
     /// `syncDoneImmediately: true` resolves the sync wait at once (the
     /// deadline sleep never wins); `false` leaves the wait pending so only
     /// the deadline sleep — immediate by default in that mode — or an
-    /// expiration can end it.
+    /// expiration can end it. `runtimeStartOverride` replaces the counted
+    /// instant runtime start (the counter still ticks).
     private func makeCoordinator(syncDoneImmediately: Bool = true,
-                                 deadlineSleepsForever: Bool = false) {
+                                 deadlineSleepsForever: Bool = false,
+                                 runtimeStartOverride: (() async -> Bool)? = nil) {
         coordinator = BackgroundRefreshCoordinator(
             scheduler: scheduler,
             hasWallet: { [weak self] in self?.walletExists ?? false },
             runtimeStart: { @MainActor [weak self] in
                 self?.runtimeStartCalls += 1
+                if let runtimeStartOverride {
+                    return await runtimeStartOverride()
+                }
                 return self?.runtimeStartResult ?? false
             },
             runtimeStop: { @MainActor [weak self] in
@@ -249,16 +294,58 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
         let task = FakeBackgroundRefreshTask()
         let completed = expectation(description: "task completed")
         task.onSetTaskCompleted = { _ in completed.fulfill() }
+        // The expiration path completes the task before the run body has
+        // unwound; the re-submission marks the run body's end.
+        let submitted = expectation(description: "next refresh scheduled")
+        scheduler.onSubmit = { _ in submitted.fulfill() }
 
         handler(task)
         let expiration = try XCTUnwrap(task.expirationHandler)
         expiration()
 
-        await fulfillment(of: [completed], timeout: 5)
+        await fulfillment(of: [completed, submitted], timeout: 5)
         XCTAssertEqual(task.completions, [false])
         XCTAssertEqual(sweepCalls, 0)
         XCTAssertEqual(runtimeStopCalls, 1)
         XCTAssertEqual(scheduler.submissions.count, 1)
+    }
+
+    func testExpirationDuringRuntimeStartCompletesPromptlyAndExactlyOnce() async throws {
+        // The runtime bring-up await is non-cancellable in production (the
+        // runtime's serial lifecycle queue); the gate reproduces that.
+        let gate = ManualGate()
+        makeCoordinator(syncDoneImmediately: true, runtimeStartOverride: { await gate.wait() })
+        coordinator.start()
+        let handler = try XCTUnwrap(scheduler.launchHandlers[BackgroundRefreshCoordinator.taskIdentifier])
+        let task = FakeBackgroundRefreshTask()
+        let completed = expectation(description: "task completed")
+        task.onSetTaskCompleted = { _ in completed.fulfill() }
+        let startBlocked = expectation(description: "run parked on runtimeStart")
+        gate.onWait = { startBlocked.fulfill() }
+
+        handler(task)
+        await fulfillment(of: [startBlocked], timeout: 5)
+
+        // Only the expiration path can complete promptly now.
+        let expiration = try XCTUnwrap(task.expirationHandler)
+        expiration()
+
+        await fulfillment(of: [completed], timeout: 5)
+        XCTAssertEqual(task.completions, [false])
+        // The run body is still parked: no teardown yet.
+        XCTAssertEqual(runtimeStopCalls, 0)
+
+        // Unblock the startup: the run body finishes in the background —
+        // the background-launch teardown still runs — without a second
+        // completion of the already-completed task.
+        let submitted = expectation(description: "next refresh scheduled")
+        scheduler.onSubmit = { _ in submitted.fulfill() }
+        gate.resolve(true)
+
+        await fulfillment(of: [submitted], timeout: 5)
+        XCTAssertEqual(task.completions, [false])
+        XCTAssertEqual(runtimeStopCalls, 1)
+        XCTAssertEqual(sweepCalls, 0)
     }
 
     // MARK: Task run — no wallet

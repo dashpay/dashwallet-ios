@@ -39,14 +39,15 @@ final class NotificationPermissionCoordinatorTests: XCTestCase {
     }
 
     func testDerivedStateMatrix() async {
-        // The toggle is on and the OS does not forbid — .on. `.notDetermined`
-        // counts as not-forbidden (the app simply hasn't asked yet).
+        // The toggle is on and the OS has granted — .on.
         var state = await derivedState(userWants: true, status: .authorized)
         XCTAssertEqual(state, .on)
         state = await derivedState(userWants: true, status: .provisional)
         XCTAssertEqual(state, .on)
+        // The toggle is on but the app hasn't asked the OS yet — the
+        // distinct state that posts nothing and consumes no dedup ids.
         state = await derivedState(userWants: true, status: .notDetermined)
-        XCTAssertEqual(state, .on)
+        XCTAssertEqual(state, .awaitingAuthorization)
 
         // The toggle is off — .offByUser, whatever the (non-denied) OS grant.
         state = await derivedState(userWants: false, status: .authorized)
@@ -100,5 +101,40 @@ final class NotificationPermissionCoordinatorTests: XCTestCase {
 
         await fulfillment(of: [willRequest, didRequest], timeout: 2)
         XCTAssertEqual(client.requestedAuthorizationOptions, [[.badge, .sound, .alert]])
+    }
+
+    @MainActor
+    func testOnAuthorizationGrantedFiresOnMainThreadWhenGranted() async {
+        client.requestAuthorizationResult = .success(true)
+        let granted = expectation(description: "onAuthorizationGranted invoked")
+        coordinator.onAuthorizationGranted = {
+            XCTAssertTrue(Thread.isMainThread)
+            granted.fulfill()
+        }
+
+        coordinator.requestAuthorizationIfNeeded()
+
+        await fulfillment(of: [granted], timeout: 2)
+    }
+
+    @MainActor
+    func testOnAuthorizationGrantedDoesNotFireOnDenial() async {
+        client.requestAuthorizationResult = .success(false)
+        // The did-request signal posts in the same main-actor block that
+        // would invoke the callback, so it brackets the non-invocation.
+        let didRequest = expectation(description: "didRequestOSPermission posted")
+        let didObserver = NotificationCenter.default.addObserver(
+            forName: .didRequestOSPermission, object: nil, queue: .main) { _ in
+            didRequest.fulfill()
+        }
+        defer { NotificationCenter.default.removeObserver(didObserver) }
+        let calledBack = expectation(description: "onAuthorizationGranted not invoked")
+        calledBack.isInverted = true
+        coordinator.onAuthorizationGranted = { calledBack.fulfill() }
+
+        coordinator.requestAuthorizationIfNeeded()
+
+        await fulfillment(of: [didRequest], timeout: 2)
+        await fulfillment(of: [calledBack], timeout: 0.2)
     }
 }
