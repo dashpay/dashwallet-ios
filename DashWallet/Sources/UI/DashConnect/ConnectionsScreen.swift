@@ -370,17 +370,9 @@ struct ConnectionsScreen: View {
         // Not while something signs or an approval is up: the scanner would
         // cover it.
         guard viewModel.mayScan() else { return }
-        let scanner = GenericQRScannerController()
-
-        scanner.onQRCodeScanned = { value in
-            vc?.dismiss(animated: true) {
-                viewModel.onQRScanned(value)
-            }
+        let scanner = QRScannerController.addressScanner(expectsDashAddress: false) { value in
+            viewModel.onQRScanned(value)
         }
-        scanner.onCancel = {
-            vc?.dismiss(animated: true)
-        }
-
         vc?.present(scanner, animated: true)
     }
 
