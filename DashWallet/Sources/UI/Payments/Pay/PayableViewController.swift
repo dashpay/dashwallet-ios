@@ -20,22 +20,12 @@ import SwiftUI
 
 // MARK: - PayableViewController
 
-protocol PayableViewController: DWQRScanModelDelegate {
+protocol PayableViewController {
     var payModel: DWPayModelProtocol! { get }
     var paymentController: PaymentController! { get }
 }
 
 extension PayableViewController where Self: UIViewController {
-    func performScanQRCodeAction(delegate: DWQRScanModelDelegate) {
-        if let vc = presentedViewController, vc is DWQRScanViewController {
-            return;
-        }
-
-        let controller = DWQRScanViewController()
-        controller.model.delegate = delegate
-        present(controller, animated: true, completion: nil)
-    }
-
     func performNFCReadingAction() {
         payModel?.performNFCReading(completion: { [weak self] paymentInput in
             guard let strongSelf = self else { return }
@@ -63,5 +53,3 @@ extension PayableViewController where Self: UIViewController {
     }
 #endif
 }
-
-extension PayableViewController where Self: UIViewController { }

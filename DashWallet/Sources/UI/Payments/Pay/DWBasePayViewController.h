@@ -33,6 +33,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL locksBalance;
 
+/// Whether the QR scanner may leave the payment flow for a scanned
+/// contact / invitation QR. Default YES; the lock screen overrides to NO
+/// (nothing may navigate the app while it is locked).
+@property (readonly, nonatomic, assign) BOOL allowsScannerCrossContextRouting;
+
 - (void)performScanQRCodeAction;
 /// Assume pasteboard contains needed data and pay
 - (void)performPayToPasteboardAction;
@@ -78,6 +83,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// it) an address send gets; the delegate wiring lives in the base class,
 /// which is where the conformance is.
 - (void)presentSendSuccessWithTxidWire:(NSData *)txidWire;
+
+/// Scanner completion — dismisses the scanner and processes the input.
+/// Subclasses override to take ownership of the scanned input (the send
+/// screen and payments landing feed their own view models instead).
+- (void)didScanPaymentInput:(DWPaymentInput *)paymentInput;
 
 @end
 

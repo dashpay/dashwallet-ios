@@ -38,6 +38,7 @@ struct AddContactScreen: View {
     @FocusState private var isSearchFocused: Bool
 
     @State private var query: String
+    private let scannedLink: DashPayUserLink?
 
     private enum Layout {
         static let searchFieldHeight: CGFloat = 52
@@ -59,10 +60,15 @@ struct AddContactScreen: View {
 
     /// `initialQuery` prefills the search (the Contacts tab's network
     /// teaser hands its text over); the search fires on appear so the
-    /// results are already loading when the sheet lands.
-    init(initialQuery: String = "") {
+    /// results are already loading when the sheet lands. `scannedLink`
+    /// enters the same verify-then-preview path as an in-screen scan —
+    /// it's how a contact QR scanned elsewhere (the payment scanner)
+    /// lands here.
+    init(initialQuery: String = "", scannedLink: DashPayUserLink? = nil) {
         _query = State(initialValue: initialQuery)
+        self.scannedLink = scannedLink
     }
+
     @State private var results: [DpnsSearchResult] = []
     @State private var isSearching = false
     @State private var searchTask: Task<Void, Never>? = nil
@@ -152,9 +158,11 @@ struct AddContactScreen: View {
                 }
             }
             .fullScreenCover(isPresented: $showScanner) {
-                GenericQRScannerView(
-                    onQRCodeScanned: { handleScannedCode($0) },
+                QRScannerView(
+                    mode: .dashPayUser,
+                    onResult: { handleScanResult($0) },
                     onCancel: { showScanner = false })
+                    .ignoresSafeArea()
             }
             .sheet(isPresented: $showMyQR) {
                 if let link = myUserLink {
@@ -169,6 +177,9 @@ struct AddContactScreen: View {
             .onAppear {
                 if !trimmedQuery.isEmpty {
                     scheduleSearch()
+                }
+                if let scannedLink {
+                    verifyScannedLink(scannedLink)
                 }
             }
             .onDisappear {
@@ -446,8 +457,9 @@ struct AddContactScreen: View {
         return DashPayUserLink(identityId: identityId, username: username.withoutDashSuffix)
     }
 
-    /// Scanned QR → parse → verify against Platform → the same
-    /// send-confirmation sheet a search result tap opens. Verification
+    /// Scanned user link → verify against Platform → the same
+    /// send-confirmation sheet a search result tap opens. (Parsing and
+    /// wrong-payload rejection happen inside the scanner now.) Verification
     /// is an exact DPNS resolution (`resolveUsername`) that must return
     /// the scanned identity id — not a capped prefix page that could
     /// miss the identity, and never the QR's own unproven claim. The
@@ -458,20 +470,25 @@ struct AddContactScreen: View {
     /// cancellation check, and a new scan cancels the previous task
     /// first, so a slow stale lookup can neither clear the newer
     /// scan's spinner nor overwrite its result.
-    private func handleScannedCode(_ value: String) {
+    private func handleScanResult(_ result: QRScanResult) {
         showScanner = false
+        switch result {
+        case .dashPayUser(let link):
+            verifyScannedLink(link)
+        default:
+            // Accepted redirect offer (payment / invitation): the QR
+            // belongs to another flow — leave this sheet for it.
+            QRScanResultRouter.route(result)
+        }
+    }
+
+    private func verifyScannedLink(_ link: DashPayUserLink) {
         // A new scan replaces the previous one wholesale — cancel its
-        // verification before even parsing, so an invalid code can't
-        // leave a stale lookup spinning behind the error alert and
-        // popping the prior QR's preview later.
+        // verification first, so an invalid code can't leave a stale
+        // lookup spinning behind the error alert and popping the prior
+        // QR's preview later.
         scanVerifyTask?.cancel()
         scanVerifyTask = nil
-        isVerifyingScan = false
-
-        guard let link = DashPayUserLink.parse(value) else {
-            errorMessage = NSLocalizedString("This isn't a DashPay user QR code.", comment: "DashPay Contacts: scanned QR is a payment/invitation/foreign code")
-            return
-        }
         isVerifyingScan = true
         scanVerifyTask = Task {
             defer {

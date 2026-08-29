@@ -95,10 +95,13 @@ struct VotingKeyInputScreen: View {
         // thing to do here.
         .onAppear { isFieldFocused = true }
         .sheet(isPresented: $showScanner) {
-            QRScannerRepresentable(
-                onScanned: { value in
-                    viewModel.keyText = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            QRScannerView(
+                mode: .addressInput(expectsDashAddress: false),
+                onResult: { result in
                     showScanner = false
+                    if case .text(let value) = result {
+                        viewModel.keyText = value.trimmingCharacters(in: .whitespacesAndNewlines)
+                    }
                 },
                 onCancel: { showScanner = false })
                 .ignoresSafeArea()
