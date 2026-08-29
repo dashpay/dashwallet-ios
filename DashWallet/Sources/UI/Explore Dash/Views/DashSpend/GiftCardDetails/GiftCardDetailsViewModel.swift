@@ -626,40 +626,8 @@ class GiftCardDetailsViewModel: ObservableObject {
 
     private func imageFromBarcode(value: String?, format: String?) -> UIImage? {
         guard let value, !value.isEmpty else { return nil }
-        let normalizedFormat = normalizeBarcodeFormat(format)
-
-        let filterName: String
-        let transform: CGAffineTransform
-        switch normalizedFormat {
-        case "QR_CODE":
-            filterName = "CIQRCodeGenerator"
-            transform = CGAffineTransform(scaleX: 6.0, y: 6.0)
-        case "PDF_417":
-            filterName = "CIPDF417BarcodeGenerator"
-            transform = CGAffineTransform(scaleX: 3.0, y: 3.0)
-        case "AZTEC":
-            filterName = "CIAztecCodeGenerator"
-            transform = CGAffineTransform(scaleX: 6.0, y: 6.0)
-        case "DATA_MATRIX":
-            filterName = "CIDataMatrixCodeGenerator"
-            transform = CGAffineTransform(scaleX: 8.0, y: 8.0)
-        default:
-            filterName = "CICode128BarcodeGenerator"
-            transform = CGAffineTransform(scaleX: 3.0, y: 5.0)
-        }
-
-        guard let filter = CIFilter(name: filterName) else { return nil }
-        filter.setValue(value.data(using: .utf8), forKey: "inputMessage")
-        if normalizedFormat == "QR_CODE" {
-            filter.setValue("M", forKey: "inputCorrectionLevel")
-        }
-
-        guard let outputImage = filter.outputImage else { return nil }
-        let transformedImage = outputImage.transformed(by: transform)
-        let context = CIContext()
-        guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else { return nil }
-
-        return UIImage(cgImage: cgImage)
+        let barcodeFormat = BarcodeFormat(rawValue: normalizeBarcodeFormat(format)) ?? .code128
+        return QRCodeGenerator.barcodeImage(value: value, format: barcodeFormat)
     }
 }
 

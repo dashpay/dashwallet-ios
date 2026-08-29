@@ -51,11 +51,16 @@ struct AddMasternodeScreen: View {
         .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
         .navigationBarHidden(true)
         .sheet(isPresented: $showScanner) {
-            QRScannerRepresentable(
-                onScanned: { value in
-                    viewModel.query = value
+            QRScannerView(
+                mode: .addressInput(expectsDashAddress: false),
+                onResult: { result in
                     showScanner = false
-                    Task { await viewModel.search() }
+                    if case .text(let value) = result {
+                        viewModel.query = value
+                        Task { await viewModel.search() }
+                    } else {
+                        QRScanResultRouter.route(result)
+                    }
                 },
                 onCancel: { showScanner = false })
                 .ignoresSafeArea()
