@@ -1322,21 +1322,8 @@ extension HomeViewModel {
     /// moved amount survives the fees. Fails closed (BIP44-only popup) when
     /// the fee estimate or the shielded binding is unavailable.
     var coinJoinShieldDestinationAvailable: Bool {
-        let balanceDuffs = coinJoinSweepAmountDuffs
-        // Host + manager are `@MainActor`-isolated — reuse the wallet source's
-        // main-thread trampoline (same file).
-        return SwiftDashSDKWalletSource.onMain {
-            guard let manager = SwiftDashSDKHost.shared.manager,
-                  let wallet = SwiftDashSDKHost.shared.wallet,
-                  ((try? manager.shieldedDefaultAddress(walletId: wallet.walletId)) ?? nil) != nil,
-                  let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits
-            else { return false }
-            // The shared Type 18 pool-fee estimate (credits → duffs is ÷ 1000);
-            // `sendFeeReserveDuffs` (0.001 DASH) allows for the L1 fee of a
-            // drain spending hundreds of mixed-coin inputs.
-            let overheadDuffs = poolFeeCredits / 1000 + WalletBalance.sendFeeReserveDuffs
-            return balanceDuffs >= overheadDuffs * 2
-        }
+        CoinJoinMoveDestinationPolicy.shieldedDestinationAvailable(
+            forBalanceDuffs: coinJoinSweepAmountDuffs)
     }
 
     /// Proactively surface the "move your mixed coins" popup once per session

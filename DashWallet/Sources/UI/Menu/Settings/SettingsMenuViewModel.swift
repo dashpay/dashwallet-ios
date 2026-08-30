@@ -35,6 +35,11 @@ class SettingsMenuViewModel: ObservableObject {
     @Published var showCSVExportActivity = false
     @Published var csvExportData: (fileName: String, file: URL)?
     @Published var showCoinJoinSweepConfirmation = false
+    /// Destination-choice sheet (Dash Wallet vs Shielded). Presented
+    /// instead of the plain confirmation when the shielded route is
+    /// available, so this row offers the same choice as the post-sync
+    /// popup rather than silently sweeping to the transparent balance.
+    @Published var showCoinJoinMoveFundsSheet = false
     @Published var coinJoinSweepErrorMessage: String?
 
     /// Minimum CoinJoin-account balance (duffs) worth surfacing a sweep for —
@@ -43,7 +48,7 @@ class SettingsMenuViewModel: ObservableObject {
 
     /// Live CoinJoin-account spendable balance (duffs) — the SDK source of
     /// truth, NOT the legacy DashSync `CoinJoinService`.
-    private var coinJoinLeftoverDuffs: UInt64 {
+    var coinJoinLeftoverDuffs: UInt64 {
         SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs
     }
 
@@ -151,7 +156,18 @@ class SettingsMenuViewModel: ObservableObject {
                     subtitle: NSLocalizedString("CoinJoin is no longer supported", comment: "CoinJoin"),
                     icon: .custom("image.coinjoin.menu", maxHeight: 22),
                     action: { [weak self] in
-                        self?.showCoinJoinSweepConfirmation = true
+                        guard let self else { return }
+                        // Same branch as the post-sync popup
+                        // (`HomeViewModel.maybeShowCoinJoinSweepDialog`): offer the
+                        // destination choice whenever the shielded route is viable,
+                        // and fall back to the transparent-only confirmation when
+                        // it is not.
+                        if CoinJoinMoveDestinationPolicy.shieldedDestinationAvailable(
+                            forBalanceDuffs: self.coinJoinLeftoverDuffs) {
+                            self.showCoinJoinMoveFundsSheet = true
+                        } else {
+                            self.showCoinJoinSweepConfirmation = true
+                        }
                     }
                 )
             )
