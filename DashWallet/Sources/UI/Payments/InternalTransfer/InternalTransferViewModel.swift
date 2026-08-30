@@ -1741,11 +1741,10 @@ final class InternalTransferViewModel: ObservableObject {
                     confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0)
             } else if sourceDuffs == 0 {
                 maxNotice = Self.feeReserveExceedsBalanceMessage(route.source)
-            } else {
-                // The balance card shows the total, so a Max that lands below
-                // it reads as a bug unless the held-back part is accounted for.
-                maxNotice = Self.coreHeldBackMessage(coreBalanceDuffs - sourceDuffs)
             }
+            // A Max below the balance card's total is not worth a notice: the
+            // fee reserve and unconfirmed coins are ordinary, and saying so in
+            // the slot that otherwise carries errors reads as one.
         case .coreToPlatform:
             // Fee-aware max: spendable minus the send fee reserve (mirrors
             // DSAccount.maxOutputAmount), never the raw total — the asset-lock
@@ -1755,11 +1754,9 @@ final class InternalTransferViewModel: ObservableObject {
                 maxNotice = Self.coreZeroMaxMessage(
                     totalDuffs: coreBalanceDuffs,
                     confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0)
-            } else if sourceDuffs < coreBalanceDuffs {
-                // The balance card shows the total, so a Max that lands below
-                // it reads as a bug unless the held-back part is accounted for.
-                maxNotice = Self.coreHeldBackMessage(coreBalanceDuffs - sourceDuffs)
             }
+            // No notice for a Max below the total — same reason as the
+            // shielded branch above.
         case .platformToShielded:
             // Handled above because an unresolved async preflight must preserve
             // the user's current text while queueing the Max request.
@@ -2098,17 +2095,6 @@ final class InternalTransferViewModel: ObservableObject {
             isPlatformShieldPreflightLoading = false
             awaitingPlatformShieldResync = true
         }
-    }
-
-    /// The part of the Core balance Max cannot offer: unconfirmed/immature
-    /// coins plus the reserved L1 fee.
-    private static func coreHeldBackMessage(_ duffs: UInt64) -> String {
-        let formatted = duffs.formattedDashAmountWithoutCurrencySymbol
-        return String.localizedStringWithFormat(
-            NSLocalizedString(
-                "%@ DASH is held back for the network fee and unconfirmed coins.",
-                comment: "Core Max holds back fee and unconfirmed funds"),
-            formatted)
     }
 
     /// Why a Core Max produced nothing, told apart by the three states that
