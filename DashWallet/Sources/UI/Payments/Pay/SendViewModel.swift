@@ -54,6 +54,21 @@ final class SendViewModel: ObservableObject {
         didSet { destinationDidChange() }
     }
     @Published private(set) var destination: DestinationKind? = nil
+    #if DASHPAY
+    /// The DashPay contact this send pays, when the flow was opened from the
+    /// contact picker instead of the address field.
+    ///
+    /// Mutually exclusive with `addressText`: a contact payment has no address
+    /// to type, so `trimmedAddress` stays empty for this send's whole life and
+    /// the recipient is rendered from the contact instead.
+    @Published private(set) var contactRecipient: ContactItem?
+    /// True while `sendToContact()` is in flight — the amount step's Send
+    /// button shows progress, and `canContinue` refuses a second tap.
+    @Published private(set) var isSendingToContact = false
+    /// Failure from the last contact send, surfaced by
+    /// `amountValidationMessage`. A cancelled PIN prompt never lands here.
+    @Published private(set) var contactSendError: String?
+    #endif
     /// The balance the user is sending FROM. Constrained to
     /// `validSources`; re-picked automatically when the destination changes.
     @Published var source: ChainNetwork = .core {
@@ -73,6 +88,11 @@ final class SendViewModel: ObservableObject {
         didSet {
             guard !isApplyingMax else { return }
             clearShieldedMaxSelection()
+            #if DASHPAY
+            // A new amount is a new attempt; the previous failure described an
+            // amount that is no longer on screen.
+            contactSendError = nil
+            #endif
         }
     }
     @Published private(set) var isFullShieldedSweep = false
@@ -330,6 +350,12 @@ final class SendViewModel: ObservableObject {
     }
 
     private func destinationDidChange() {
+        #if DASHPAY
+        // A contact send has no address. Its destination was set outright by
+        // `setContactRecipient`, so it must not be re-derived from the empty
+        // address field.
+        if contactRecipient != nil { return }
+        #endif
         let sanitized = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
         if sanitized != addressText {
             addressText = sanitized
@@ -389,6 +415,96 @@ final class SendViewModel: ObservableObject {
         source = network
     }
 
+    // MARK: - Contact recipient
+
+    #if DASHPAY
+    /// Open this send on a DashPay contact instead of an address. Called by
+    /// the contact picker before the amount step is pushed; the address step
+    /// and the From step are both skipped, because neither has anything left
+    /// to ask.
+    ///
+    /// The destination is assigned rather than parsed — there is no text to
+    /// parse — and the source is put on Core, the only balance
+    /// `contactValidSources` admits.
+    func setContactRecipient(_ contact: ContactItem) {
+        contactRecipient = contact
+        destination = .core
+        // Not the user's pick: it is the only legal source, and recording it
+        // as a pick would let it survive a later destination change.
+        setSourceWithoutClaimingUserIntent(.core)
+    }
+
+    /// A contact payment can only be funded from the transparent balance.
+    ///
+    /// Not a property of DashPay but of the SDK seam as it stands:
+    /// `sendDashPayPayment` derives the contact's DIP-15 receive address
+    /// inside Rust and builds, signs and broadcasts the L1 transaction there —
+    /// the address itself never crosses the FFI boundary. `platformToCore` and
+    /// `shieldedToCore` both need a Core address to pay to, so there is
+    /// nothing to hand them.
+    ///
+    /// TODO(dashpay-contact-address): when the SDK exposes the derived
+    /// address, a contact becomes an ordinary Core destination — this list
+    /// then matches the one `.core` addresses already get in `validSources`,
+    /// and `route` stops needing its own contact branch.
+    static let contactValidSources: [ChainNetwork] = [.core]
+
+    /// The SDK gave up permanently on this contact's DIP-15 payment channel
+    /// (`ContactItem.paymentChannelBroken`), so no amount can be sent on it.
+    /// Only a fresh contact request from the CONTACT clears the flag.
+    ///
+    /// The picker refuses to open such a contact; this is what covers a flag
+    /// that arrives from a background sync while the amount step is already up.
+    var isContactPaymentUnavailable: Bool {
+        contactRecipient?.paymentChannelBroken == true
+    }
+
+    /// Shown both on the picker row and in place of the amount validation, so
+    /// the two say the same thing.
+    static let contactPaymentsUnavailableMessage = NSLocalizedString(
+        "Payments unavailable — ask them to send you a new contact request.",
+        comment: "DashPay: contact whose payment channel could not be built")
+
+    /// Execute the pay-to-contact spend.
+    ///
+    /// There is no prepare/confirm split on this path —
+    /// `WalletSendService.sendToContact` runs the spend-auth gate and the
+    /// SDK's single-shot build+sign+broadcast — so the Send tap on the amount
+    /// step is the confirmation, and this is the only route the amount step
+    /// executes itself rather than handing on to the L1 payment processor or
+    /// `SendConfirmSheet`.
+    ///
+    /// - Returns: the broadcast transaction's wire-order txid on success;
+    ///   `nil` when it failed or the user cancelled the PIN prompt. A
+    ///   cancellation leaves `contactSendError` clear — backing out of the
+    ///   prompt is not an error.
+    func sendToContact() async -> Data? {
+        guard let contact = contactRecipient, canContinue else { return nil }
+        let duffs = dashDuffsUnsigned
+        isSendingToContact = true
+        contactSendError = nil
+        defer { isSendingToContact = false }
+
+        do {
+            let (txid, _) = try await WalletSendService.shared.sendToContact(
+                contactIdentityId: contact.contactIdentityId,
+                amount: duffs)
+            // Project the freshly recorded Sent entry to SwiftData right away
+            // — the entry lives only in Rust memory until a projection runs,
+            // and an app kill before one would lose it permanently (the SDK
+            // cannot re-derive sent history).
+            SwiftDashSDKContactsService.shared.refreshPaymentsProjection()
+            return txid
+        } catch {
+            let nsError = error as NSError
+            if !WalletSendService.isAuthenticationCancelledError(nsError) {
+                contactSendError = error.localizedDescription
+            }
+            return nil
+        }
+    }
+    #endif
+
     // MARK: - Sources & route
 
     /// Which balances can fund a send to the entered destination.
@@ -398,6 +514,9 @@ final class SendViewModel: ObservableObject {
     /// pool (`shieldedTransfer`), the Core balance (asset-lock shield), or
     /// Platform credits (`shieldedShieldToRecipient`).
     var validSources: [ChainNetwork] {
+        #if DASHPAY
+        if contactRecipient != nil { return Self.contactValidSources }
+        #endif
         switch destination {
         case .core: return [.core, .platform, .shielded]
         case .platform: return [.platform, .shielded]
@@ -407,6 +526,14 @@ final class SendViewModel: ObservableObject {
     }
 
     var route: Route? {
+        #if DASHPAY
+        if contactRecipient != nil {
+            // A contact payment is a transparent L1 spend; `contactValidSources`
+            // admits nothing else, so any other source is not a route this flow
+            // can execute.
+            return source == .core ? .coreToCore : nil
+        }
+        #endif
         guard let destination else { return nil }
         switch (source, destination) {
         case (.core, .core): return .coreToCore
@@ -723,6 +850,13 @@ final class SendViewModel: ObservableObject {
     /// Inline explanation for an amount rejected before Confirm. Keep zero
     /// quiet until the user types.
     var amountValidationMessage: String? {
+        #if DASHPAY
+        // Both are independent of the amount: the first says nothing can ever
+        // be sent on this channel, the second reports the attempt that just
+        // failed (cleared the moment the amount changes, so it can't go stale).
+        if isContactPaymentUnavailable { return Self.contactPaymentsUnavailableMessage }
+        if let contactSendError { return contactSendError }
+        #endif
         if let shieldedMaxNotice { return shieldedMaxNotice }
         guard dashDuffsUnsigned > 0, let route else { return nil }
 
@@ -749,7 +883,7 @@ final class SendViewModel: ObservableObject {
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
                 requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: coreBalanceDuffs)
+                spendableDuffs: coreToCoreSpendableDuffs)
 
         case .coreToShielded:
             // The pool fee rides on top of the amount, so the spendable
@@ -886,13 +1020,30 @@ final class SendViewModel: ObservableObject {
         destination != nil && !pinnedSourceMismatch
     }
 
+    /// Affordability ceiling for the Core → Core route.
+    ///
+    /// A typed address rides the L1 payment processor, which rejects an
+    /// unfundable send with its own error, so the raw balance is enough of a
+    /// gate there. A contact payment has no such backstop —
+    /// `sendDashPayPayment` builds, signs and broadcasts in one SDK call and
+    /// charges the fee on top of the amount — so it is held to the fee-aware
+    /// envelope, which is also the cap `WalletSendService.sendToContact`
+    /// documents for its callers and the one Max already fills.
+    private var coreToCoreSpendableDuffs: UInt64 {
+        #if DASHPAY
+        if contactRecipient != nil { return coreSpendableDuffs }
+        #endif
+        return coreBalanceDuffs
+    }
+
     var canContinue: Bool {
+        #if DASHPAY
+        if isSendingToContact || isContactPaymentUnavailable { return false }
+        #endif
         guard dashDuffsUnsigned > 0, let route, !isBlockedBySync else { return false }
         switch route {
         case .coreToCore:
-            // The L1 fee rides on top; the payment processor rejects an
-            // unfundable send with its own error, so gate on the balance only.
-            return dashDuffsUnsigned <= coreBalanceDuffs
+            return dashDuffsUnsigned <= coreToCoreSpendableDuffs
         case .coreToShielded:
             // Fee-on-top: the lock value is amount + pool fee, and the
             // asset-lock funding is an L1 spend — validate against the

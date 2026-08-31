@@ -365,18 +365,27 @@ struct SendSourceScreen: View {
 
 // MARK: - Step 3: amount
 
-/// The final step of the split external-send flow: the address and source are
-/// already chosen (both shown read-only), leaving only the amount keypad and
-/// the balance/affordability validation. Continue routes exactly as the old
-/// single-screen form did — Core → Core into the L1 payment processor,
+/// The final step of the split external-send flow: the recipient and source
+/// are already chosen (both shown read-only), leaving only the amount keypad
+/// and the balance/affordability validation. Continue routes exactly as the
+/// old single-screen form did — Core → Core into the L1 payment processor,
 /// everything else into `SendConfirmSheet`.
+///
+/// Also the amount step for a DashPay contact, which the picker opens
+/// directly: same screen, same view model, with the recipient rendered as a
+/// contact and the button executing the send itself (there is no confirmation
+/// after it — `sendToContact` broadcasts in one shot).
 struct ExternalSendAmountScreen: View {
     @ObservedObject var viewModel: SendViewModel
-    /// Pop back to the source step.
+    /// Pop back to the step that chose the recipient — the source step for an
+    /// address, the contact picker for a contact.
     var onBack: () -> Void
     /// Core → Core: hand (address, amount in duffs) to the hosting
     /// controller, which routes through the L1 payment processor.
     var onContinueCore: (String, UInt64) -> Void
+    /// Contact route: run the pay-to-contact spend on the hosting controller,
+    /// which presents the send-success screen.
+    var onContinueContact: () -> Void
     /// A non-core route finished successfully (confirm sheet's Done).
     var onSendCompleted: () -> Void
 
@@ -401,6 +410,15 @@ struct ExternalSendAmountScreen: View {
 
                     if let message = viewModel.amountValidationMessage {
                         TransferAmountValidationNote(message: message)
+                            .padding(.horizontal, 20)
+                    }
+
+                    // The address flow meets this gate on the source step,
+                    // which won't advance while it is up — but a restored
+                    // wallet can start resyncing while this screen is open, and
+                    // the contact flow never passes through that step at all.
+                    if viewModel.isBlockedBySync {
+                        SyncGateNote()
                             .padding(.horizontal, 20)
                     }
                 }
@@ -464,14 +482,23 @@ struct ExternalSendAmountScreen: View {
         HardwareNumericKeyboardView(
             value: keypadBinding,
             showDecimalSeparator: true,
-            actionButtonText: NSLocalizedString("Continue", comment: ""),
+            // A contact payment is broadcast by this very tap; every other
+            // route continues to a confirmation first, so only one of them
+            // can honestly say "Send".
+            actionButtonText: isContactSend
+                ? NSLocalizedString("Send", comment: "")
+                : NSLocalizedString("Continue", comment: ""),
             actionEnabled: viewModel.canContinue,
-            inProgress: false,
+            inProgress: isContactSendInFlight,
             actionHandler: continueAction
         )
     }
 
     private func continueAction() {
+        if isContactSend {
+            onContinueContact()
+            return
+        }
         guard let route = viewModel.route else { return }
         if route == .coreToCore {
             onContinueCore(viewModel.trimmedAddress, viewModel.dashDuffsUnsigned)
@@ -480,7 +507,29 @@ struct ExternalSendAmountScreen: View {
         }
     }
 
-    /// The source picked on the previous step, read-only. Tapping goes back.
+    /// True on the DashPay contact route. Always false in the dashwallet
+    /// target, which has no contacts — so the contact branches below are
+    /// compiled out of every path there.
+    private var isContactSend: Bool {
+        #if DASHPAY
+        return viewModel.contactRecipient != nil
+        #else
+        return false
+        #endif
+    }
+
+    private var isContactSendInFlight: Bool {
+        #if DASHPAY
+        return viewModel.isSendingToContact
+        #else
+        return false
+        #endif
+    }
+
+    /// The source picked on the previous step, read-only. Tapping goes back —
+    /// except on the contact route, where the transparent balance is the only
+    /// possible source and there is no From step behind this screen, so the
+    /// card is a fact rather than a way back.
     private var fromSummary: some View {
         Button(action: onBack) {
             HStack(spacing: 10) {
@@ -497,9 +546,11 @@ struct ExternalSendAmountScreen: View {
                         .foregroundColor(.primaryText)
                 }
                 Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.secondary)
+                if !isContactSend {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.secondary)
+                }
             }
             .padding(12)
             .frame(maxWidth: .infinity)
@@ -507,6 +558,7 @@ struct ExternalSendAmountScreen: View {
             .cornerRadius(10)
         }
         .buttonStyle(.plain)
+        .disabled(isContactSend)
         .padding(.horizontal, 20)
     }
 
@@ -601,8 +653,10 @@ private struct SendStepHeader: View {
     }
 }
 
-/// The chosen destination address, read-only. Tapping (`onEdit`) pops back to
-/// the address step. Shared by the source and amount steps.
+/// The chosen recipient, read-only — a truncated address, or a DashPay
+/// contact's avatar and name when the flow was opened from the contact picker.
+/// Tapping (`onEdit`) pops back to whichever step chose it. Shared by the
+/// source and amount steps.
 private struct SendAddressSummary: View {
     @ObservedObject var viewModel: SendViewModel
     var onEdit: () -> Void
@@ -610,33 +664,102 @@ private struct SendAddressSummary: View {
     var body: some View {
         Button(action: onEdit) {
             VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text(NSLocalizedString("Address", comment: ""))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Spacer()
-                    if let destination = viewModel.destination {
-                        destinationBadge(destination)
-                    }
-                }
-                HStack(spacing: 8) {
-                    Text(truncateMiddle(viewModel.trimmedAddress, visible: 10))
-                        .font(.system(.footnote, design: .monospaced))
-                        .foregroundColor(.primaryText)
-                        .lineLimit(1)
-                    Spacer()
-                    Image(systemName: "pencil")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.secondary)
-                }
-                .padding(12)
-                .frame(maxWidth: .infinity)
-                .background(Color.secondaryBackground)
-                .cornerRadius(10)
+                caption
+                card
             }
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 20)
+    }
+
+    @ViewBuilder
+    private var caption: some View {
+        HStack {
+            Text(isContactRecipient
+                ? NSLocalizedString("To", comment: "")
+                : NSLocalizedString("Address", comment: ""))
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Spacer()
+            // A contact has no address form to name — the row below already
+            // says who is being paid.
+            if !isContactRecipient, let destination = viewModel.destination {
+                destinationBadge(destination)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var card: some View {
+        #if DASHPAY
+        if let contact = viewModel.contactRecipient {
+            contactCard(contact)
+        } else {
+            addressCard
+        }
+        #else
+        addressCard
+        #endif
+    }
+
+    private var addressCard: some View {
+        HStack(spacing: 8) {
+            Text(truncateMiddle(viewModel.trimmedAddress, visible: 10))
+                .font(.system(.footnote, design: .monospaced))
+                .foregroundColor(.primaryText)
+                .lineLimit(1)
+            Spacer()
+            Image(systemName: "pencil")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.secondary)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity)
+        .background(Color.secondaryBackground)
+        .cornerRadius(10)
+    }
+
+    #if DASHPAY
+    private func contactCard(_ contact: ContactItem) -> some View {
+        HStack(spacing: 10) {
+            ContactAvatarView(
+                title: contact.displayTitle,
+                avatarURL: contact.avatarURL,
+                identitySeed: contact.contactIdentityId)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(contact.displayTitle)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(.primaryText)
+                    .lineLimit(1)
+                // Only when it adds something: the title is already the alias
+                // or profile name when one of those is known.
+                if let username = contact.username?.withoutDashSuffix,
+                   !username.isEmpty,
+                   username != contact.displayTitle {
+                    Text(username)
+                        .font(.system(size: 12))
+                        .foregroundColor(Color.dash.tertiaryText)
+                        .lineLimit(1)
+                }
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.secondary)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity)
+        .background(Color.secondaryBackground)
+        .cornerRadius(10)
+    }
+    #endif
+
+    private var isContactRecipient: Bool {
+        #if DASHPAY
+        return viewModel.contactRecipient != nil
+        #else
+        return false
+        #endif
     }
 }
 

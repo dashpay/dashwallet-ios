@@ -2,19 +2,16 @@
 //  SendToContactScreen.swift
 //  DashWallet
 //
-//  "Send to username", split across two pushed steps. Step one
-//  (`SendToContactPickerScreen`) picks an established DashPay contact; step
-//  two (`SendToContactAmountScreen`) takes the amount and spends through
-//  `WalletSendService.sendToContact`, which derives the contact's DIP-15
-//  receive address Rust-side and broadcasts atomically.
+//  "Send to username", step one: pick an established DashPay contact. Step
+//  two is the ordinary `ExternalSendAmountScreen` — the picker sets the
+//  contact on a `SendViewModel` and pushes it, so a contact is a destination
+//  of the standard send flow rather than a parallel screen of its own.
 //
 
 #if DASHPAY
 
 import DashUIKit
 import SwiftUI
-
-// MARK: - Step 1: contact picker
 
 struct SendToContactPickerScreen: View {
     @ObservedObject var viewModel: SendToContactPickerViewModel
@@ -77,9 +74,9 @@ struct SendToContactPickerScreen: View {
             VStack(alignment: .leading, spacing: 0) {
                 ContactRow(item: item)
                 if item.paymentChannelBroken {
-                    Text(NSLocalizedString(
-                        "Payments unavailable — ask them to send you a new contact request.",
-                        comment: "DashPay: contact whose payment channel could not be built"))
+                    // Same sentence the amount step shows if the flag arrives
+                    // after a contact is already open.
+                    Text(SendViewModel.contactPaymentsUnavailableMessage)
                         .font(.system(size: 12))
                         .foregroundColor(.dashGolden)
                         .fixedSize(horizontal: false, vertical: true)
@@ -155,174 +152,11 @@ struct SendToContactPickerScreen: View {
     }
 }
 
-// MARK: - Step 2: amount
-
-struct SendToContactAmountScreen: View {
-    @ObservedObject var viewModel: SendToContactAmountViewModel
-    /// Pop back to the contact picker.
-    var onBack: () -> Void
-    /// Send tapped — the host runs the spend and presents the success screen.
-    var onSend: () -> Void
-
-    var body: some View {
-        VStack(spacing: 0) {
-            SendToContactHeader(onBack: onBack)
-
-            ScrollView {
-                VStack(spacing: 14) {
-                    contactSummary
-                        .padding(.top, 12)
-
-                    sourceCard
-
-                    amountRow
-                        .padding(.horizontal, 20)
-                        .padding(.top, 6)
-
-                    if let message = viewModel.amountValidationMessage {
-                        TransferAmountValidationNote(message: message)
-                            .padding(.horizontal, 20)
-                    }
-
-                    if let message = viewModel.errorMessage {
-                        TransferAmountValidationNote(message: message)
-                            .padding(.horizontal, 20)
-                    }
-
-                    if viewModel.isBlockedBySync {
-                        SyncGateNote()
-                            .padding(.horizontal, 20)
-                    }
-
-                    feeNote
-                }
-                .padding(.bottom, 8)
-            }
-            .scrollBounceBehavior(.basedOnSize)
-
-            keyboardSection
-        }
-        .background(Color.dash.primaryBackground)
-        .navigationBarHidden(true)
-    }
-
-    // MARK: - Recipient
-
-    /// Who is being paid, read-only. Tapping goes back to the picker, which is
-    /// where a different contact is chosen.
-    private var contactSummary: some View {
-        let contact = viewModel.contact
-        return Button(action: onBack) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(NSLocalizedString("To", comment: ""))
-                    .font(.caption)
-                    .foregroundColor(Color.dash.secondaryText)
-                HStack(spacing: 10) {
-                    ContactAvatarView(
-                        title: contact.displayTitle,
-                        avatarURL: contact.avatarURL,
-                        identitySeed: contact.contactIdentityId)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(contact.displayTitle)
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(Color.dash.primaryText)
-                            .lineLimit(1)
-                        if let username = contact.username?.withoutDashSuffix,
-                           !username.isEmpty,
-                           username != contact.displayTitle {
-                            Text(username)
-                                .font(.system(size: 12))
-                                .foregroundColor(Color.dash.tertiaryText)
-                                .lineLimit(1)
-                        }
-                    }
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(Color.dash.secondaryText)
-                }
-                .padding(12)
-                .frame(maxWidth: .infinity)
-                .background(Color.dash.secondaryBackground)
-                .cornerRadius(10)
-            }
-        }
-        .buttonStyle(.plain)
-        .padding(.horizontal, 20)
-    }
-
-    // MARK: - Source
-
-    /// The funding balance, fixed rather than picked. A contact payment is
-    /// derived and signed Rust-side from the transparent account, so there is
-    /// no other balance that could pay it.
-    private var sourceCard: some View {
-        TransferSourceRow(
-            iconSystemName: "d.circle.fill",
-            caption: NSLocalizedString("From", comment: ""),
-            title: viewModel.sourceTitle,
-            balanceTrailing: TransferSourceRow.dashBalanceTrailing(viewModel.coreBalanceFormatted),
-            selected: false,
-            showsRadio: false,
-            action: {})
-            .padding(.horizontal, 20)
-    }
-
-    // MARK: - Amount
-
-    private var amountRow: some View {
-        EnterAmountView(
-            primaryAmount: viewModel.dashAmountText,
-            secondaryAmount: viewModel.fiatAmountText,
-            primaryCurrency: .dash,
-            secondaryCurrency: .fiat(viewModel.fiatCurrencyCode),
-            isPrimarySelected: viewModel.isDashInputSelected,
-            currencyCodes: viewModel.amountCurrencyCodes,
-            selectedCurrencyCode: viewModel.selectedAmountCurrencyCode,
-            onMax: { viewModel.fillMax() },
-            onSwap: { viewModel.toggleUnit() },
-            onCurrencyTap: { viewModel.toggleUnit() },
-            onSelectInputType: { viewModel.selectCurrency($0) }
-        )
-    }
-
-    /// The SDK charges the network fee on top of the entered amount, so the
-    /// wallet is debited slightly more than the figure above.
-    private var feeNote: some View {
-        Text(NSLocalizedString(
-            "A network fee will be added on top of the amount.",
-            comment: "DashPay Contacts"))
-            .font(.system(size: 12))
-            .foregroundColor(Color.dash.tertiaryText)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 20)
-    }
-
-    // MARK: - Keyboard
-
-    private var keyboardSection: some View {
-        HardwareNumericKeyboardView(
-            value: keypadBinding,
-            showDecimalSeparator: true,
-            actionButtonText: NSLocalizedString("Send", comment: ""),
-            actionEnabled: viewModel.canSend,
-            inProgress: viewModel.isSending,
-            actionHandler: onSend
-        )
-    }
-
-    private var keypadBinding: Binding<String> {
-        Binding(
-            get: { viewModel.keypadText },
-            set: { viewModel.keypadText = $0 })
-    }
-}
-
 // MARK: - Shared chrome
 
-/// Back-chevron + "Send" title, shared by both steps. The design system's bar
-/// rather than the UIKit one, so the glyph and its ring are the
-/// `navigationbar-*` assets — same chrome as the address-send steps.
+/// Back-chevron + "Send" title. The design system's bar rather than the UIKit
+/// one, so the glyph and its ring are the `navigationbar-*` assets — the same
+/// chrome the address-send steps draw.
 private struct SendToContactHeader: View {
     var onBack: () -> Void
 

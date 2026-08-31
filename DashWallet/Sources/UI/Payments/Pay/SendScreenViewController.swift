@@ -186,8 +186,14 @@ extension DWBasePayViewController {
     }
 
     /// Push the external-send AMOUNT step (final). Core → Core rides
-    /// `continueCore` (the L1 payment processor); every other route confirms in
+    /// `continueCore` (the L1 payment processor); a DashPay contact rides
+    /// `continueContactPayment`; every other route confirms in
     /// `SendConfirmSheet`.
+    ///
+    /// Also the contact flow's SECOND and last step: the picker sets the
+    /// recipient on the view model and calls this directly, skipping the
+    /// address step (there is no address) and the From step (Core is the only
+    /// source a contact payment can have).
     func pushExternalSendAmount(viewModel: SendViewModel,
                                 onSendCompleted: @escaping () -> Void) {
         let screen = ExternalSendAmountScreen(
@@ -196,10 +202,36 @@ extension DWBasePayViewController {
             onContinueCore: { [weak self] address, amountDuffs in
                 self?.continueCore(address: address, amountDuffs: amountDuffs)
             },
+            onContinueContact: { [weak self] in
+                self?.continueContactPayment(viewModel: viewModel)
+            },
             onSendCompleted: onSendCompleted)
         let host = UIHostingController(rootView: screen)
         navigationController?.pushViewController(host, animated: true)
     }
+
+    #if DASHPAY
+    /// DashPay pay-to-contact. `WalletSendService.sendToContact` runs the
+    /// spend-auth gate and the SDK's single-shot build+sign+broadcast, so the
+    /// Send tap was the confirmation and what is left is the success screen —
+    /// the same one an address send lands on.
+    ///
+    /// A failure (or a cancelled PIN prompt) returns nil and leaves the user on
+    /// the amount step; the view model carries the message it shows inline.
+    fileprivate func continueContactPayment(viewModel: SendViewModel) {
+        Task { [weak self] in
+            guard let self, let txidWire = await viewModel.sendToContact() else { return }
+            self.presentSendSuccess(withTxidWire: txidWire)
+        }
+    }
+    #else
+    /// Unreachable here: `contactRecipient` is DashPay-only, so
+    /// `ExternalSendAmountScreen`'s contact branch is compiled out of this
+    /// target. Asserts rather than pretending a payment happened.
+    fileprivate func continueContactPayment(viewModel: SendViewModel) {
+        assertionFailure("Contact payment reached in a build without DashPay")
+    }
+    #endif
 }
 
 // MARK: NavigationBarDisplayable
