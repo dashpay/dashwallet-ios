@@ -395,7 +395,7 @@ struct ExternalSendAmountScreen: View {
         VStack(spacing: 0) {
             #if DASHPAY
             if let contact = viewModel.contactRecipient {
-                SendContactIntro(contact: contact, onBack: onBack)
+                SendContactIntro(contact: contact, source: viewModel.source, onBack: onBack)
                     .padding(.horizontal, 20)
                     .padding(.top, 10)
             } else {
@@ -419,7 +419,9 @@ struct ExternalSendAmountScreen: View {
                             .padding(.top, 12)
                     }
 
-                    fromSummary
+                    if !isContactSend {
+                        fromSummary
+                    }
 
                     amountRow
                         .padding(.horizontal, 20)
@@ -683,6 +685,9 @@ private struct SendStepHeader: View {
 /// to make from here.
 private struct SendContactIntro: View {
     let contact: ContactItem
+    /// The funding balance, named on its own line — a contact can only be paid
+    /// from Core today, so this states the source rather than offering it.
+    let source: ChainNetwork
     var onBack: () -> Void
 
     var body: some View {
@@ -709,6 +714,19 @@ private struct SendContactIntro: View {
                         identitySeed: contact.contactIdentityId,
                         size: 24)
                     Text(contact.displayTitle)
+                        .dashFont(.subhead)
+                        .foregroundColor(Color.dash.primaryText)
+                        .lineLimit(1)
+                }
+
+                // The source is one line, not a card: there is a single legal
+                // source for a contact, so the card's icon, caption and inert
+                // chevron dressed a fact that has no choice behind it.
+                HStack(spacing: 6) {
+                    Text(NSLocalizedString("from", comment: "Send screen: precedes the funding balance"))
+                        .dashFont(.subhead)
+                        .foregroundColor(Color.dash.primaryText)
+                    Text(sourceTitle(source))
                         .dashFont(.subhead)
                         .foregroundColor(Color.dash.primaryText)
                         .lineLimit(1)
