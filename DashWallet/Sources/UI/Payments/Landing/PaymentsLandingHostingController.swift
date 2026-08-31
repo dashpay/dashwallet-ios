@@ -44,7 +44,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
                     onSendCompleted: { [weak self] in self?.dismiss(animated: true) })
             },
             onSendToAddress: { [weak self] in self?.pushSendToAddress() },
-            onSendToUsername: { [weak self] in self?.showContactBook() },
+            onSendToUsername: { [weak self] in self?.pushSendToContact() },
             onSwapToCrypto: { [weak self] in self?.presentDashDEX() },
             onCloseLanding: { [weak self] in self?.leaveLanding() },
             showsHeader: showsHeader)
@@ -401,67 +401,23 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     }
 
     #if DASHPAY
-    /// "Send to username" → the contact book. The same screen the Send-to-a-
-    /// contact entry opens (`PayableViewController.performPayToDashPayUser`);
-    /// paying happens from a contact's profile sheet, so this row's whole job
-    /// is getting the user there.
+    /// "Send to username" → the contact picker, as a step of THIS flow.
     ///
-    /// Selects the contacts TAB rather than showing a copy of the screen.
+    /// Pushed like the sibling "Send to Dash address" row, so the two read the
+    /// same way: pick who, then say how much, then send. Picking a contact
+    /// pushes the amount step, which spends through
+    /// `WalletSendService.sendToContact`.
     ///
-    /// `ContactsScreen` is a tab root and only works as one. It runs its banner
-    /// under the status bar (`ignoresSafeArea(edges: .top)`) and lets the safe
-    /// area place the title inside it, which collapses in a sheet; and it
-    /// carries no dismiss control, because a tab root never needs one — pushing
-    /// it onto this stack left the user with no way back, since the payments
-    /// navigation controller hides its bar.
-    ///
-    /// The tab is there whenever this row is: both appear only with a DashPay
-    /// identity. The tab bar is the way back, and there stays exactly one
-    /// contacts screen in the app.
-    private func showContactBook() {
-        guard let tabBarController = mainTabBarController else {
-            assertionFailure("Payments landing outside the tab bar hierarchy")
-            return
-        }
-        // The landing is a sheet now, and the contacts tab would open behind
-        // it. Close first, switch after.
-        guard presentingViewController != nil else {
-            switchToContacts(on: tabBarController)
-            return
-        }
-        dismiss(animated: true) { [weak self] in
-            self?.switchToContacts(on: tabBarController)
-        }
-    }
-
-    private func switchToContacts(on tabBarController: MainTabbarController) {
-        guard tabBarController.showContacts() else {
-            // No contacts tab means no identity — which is also the condition
-            // that hides the row. Reaching here would be a bug, and silently
-            // doing nothing is how it would stay invisible.
-            assertionFailure("Send to username offered without a contacts tab")
-            return
-        }
+    /// It used to switch to the contacts TAB and stop there, leaving the user
+    /// to find the person themselves and pay from their profile sheet — a row
+    /// on the Send screen that did not send. That tab, and the profile sheet's
+    /// own Pay button, are untouched.
+    private func pushSendToContact() {
+        pushWithoutTabBar(SendToContactPickerViewController())
     }
     #else
-    private func showContactBook() {}
+    private func pushSendToContact() {}
     #endif
-
-    /// The tab bar controller this landing belongs to.
-    ///
-    /// `tabBarController` alone is not enough any more: the landing is
-    /// presented as a sheet, and a presented controller is outside the tab
-    /// bar's hierarchy, so that property is nil. Walking the presenter chain
-    /// finds it whether this was pushed inside a tab or shown over one.
-    private var mainTabBarController: MainTabbarController? {
-        if let tabBarController = tabBarController as? MainTabbarController {
-            return tabBarController
-        }
-        // Searched down from the window's root, not up the presenter chain:
-        // the presenter is whichever screen happened to call `present`, and
-        // the window root is a container rather than the tab bar itself.
-        return view.window?.rootViewController?.dw_firstTabBarController() as? MainTabbarController
-    }
 
     /// The X above the Internal form. Dismisses where something presented this
     /// landing, and leaves for the history where nothing did — as the payments

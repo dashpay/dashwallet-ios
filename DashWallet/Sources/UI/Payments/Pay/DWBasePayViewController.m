@@ -195,6 +195,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)paymentControllerDidFinishTransaction:(PaymentController *_Nonnull)controller txidWire:(NSData *_Nonnull)txidWire {
+    [self presentSendSuccessWithTxidWire:txidWire];
+}
+
+#pragma mark - Send success
+
+- (void)presentSendSuccessWithTxidWire:(NSData *)txidWire {
     void (^presentSuccess)(void) = ^{
         DWTxDetailModel *model = [[DWTxDetailModel alloc] initWithTxidWire:txidWire];
         SuccessTxDetailViewController *vc = [[SuccessTxDetailViewController alloc] initWithModel:model];
@@ -218,6 +224,8 @@ NS_ASSUME_NONNULL_BEGIN
         presentSuccess();
     }
 }
+
+#pragma mark - PaymentControllerPresentationContextProviding
 
 - (UIViewController *_Nonnull)presentationAnchorForPaymentController:(PaymentController *_Nonnull)controller {
     return self;

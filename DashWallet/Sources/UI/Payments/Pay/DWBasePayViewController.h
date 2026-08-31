@@ -56,6 +56,19 @@ NS_ASSUME_NONNULL_BEGIN
 /// somewhere, and this is where the base class sends it.
 - (void)processPaymentInput:(DWPaymentInput *)input;
 
+/// Present the shared send-success screen for an already-broadcast
+/// transaction. `txidWire` is the wire-order txid (`Transaction.txHashData`
+/// byte order).
+///
+/// Declared for the Swift subclasses whose send does NOT run through the
+/// classic payment processor and therefore never reaches
+/// `paymentControllerDidFinishTransaction:txidWire:` — the DashPay
+/// pay-to-contact step, whose SDK call builds, signs and broadcasts in one
+/// shot. This is the same presentation (and the same Close handling behind
+/// it) an address send gets; the delegate wiring lives in the base class,
+/// which is where the conformance is.
+- (void)presentSendSuccessWithTxidWire:(NSData *)txidWire;
+
 @end
 
 NS_ASSUME_NONNULL_END
