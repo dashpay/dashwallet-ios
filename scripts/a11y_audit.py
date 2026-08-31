@@ -602,6 +602,10 @@ def rule_swiftui_button(code: str, original: str, path: str,
             if "label" not in args and _block_speaks(args):
                 continue
 
+        # For `Button(action:, label: { ... })` the label block ends INSIDE the
+        # parens, so the modifier chain has to be scanned from the end of the
+        # whole expression — otherwise a chained .accessibilityLabel is missed.
+        expr_end = balanced_parens(code, opener) if code[opener] == "(" else None
         located = _label_block(code, opener)
         if located is None:
             continue
@@ -613,7 +617,8 @@ def rule_swiftui_button(code: str, original: str, path: str,
             continue
         if _tail_escapes(block):
             continue
-        if _tail_escapes(modifier_tail(code, block_end)):
+        tail_start = max(block_end, expr_end) if expr_end else block_end
+        if _tail_escapes(modifier_tail(code, tail_start)):
             continue
         line_no = line_of(code, match.start())
         add(findings, original, "A11Y004", path, line_no,
@@ -1082,6 +1087,16 @@ FIXTURES: List[Tuple[str, bool, str]] = [
     ("A11Y004", False,
      'Button { act() } label: {\n    Image(systemName: "xmark")\n}\n'
      '.accessibilityLabel(Text("Close"))\n'),
+
+    # A chained .accessibilityLabel must be seen on every form, including the
+    # one whose label block closes inside the parentheses.
+    ("A11Y004", False,
+     'Button(action: a, label: { Image(systemName: "x") })\n'
+     '.accessibilityLabel(Text("Close"))\n'),
+    ("A11Y004", False,
+     'Button(action: a, label: { Image(systemName: "x") })\n'
+     '    .padding(4)\n'
+     '    .accessibilityLabel(Text("Close"))\n'),
 
     # A label given as a plain string literal is a real label: masking string
     # bodies must not turn it into an empty one.
