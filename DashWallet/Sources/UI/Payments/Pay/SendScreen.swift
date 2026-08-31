@@ -393,14 +393,31 @@ struct ExternalSendAmountScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            #if DASHPAY
+            if let contact = viewModel.contactRecipient {
+                SendContactIntro(contact: contact, onBack: onBack)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
+            } else {
+                SendStepHeader(onBack: onBack)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
+            }
+            #else
             SendStepHeader(onBack: onBack)
                 .padding(.horizontal, 20)
                 .padding(.top, 10)
+            #endif
 
             ScrollView {
                 VStack(spacing: 14) {
-                    SendAddressSummary(viewModel: viewModel, onEdit: onBack)
-                        .padding(.top, 12)
+                    // The contact route names its recipient in the intro
+                    // above; only the address route repeats it as a card,
+                    // where tapping it is also the way back to editing.
+                    if !isContactSend {
+                        SendAddressSummary(viewModel: viewModel, onEdit: onBack)
+                            .padding(.top, 12)
+                    }
 
                     fromSummary
 
@@ -652,6 +669,57 @@ private struct SendStepHeader: View {
         }
     }
 }
+
+#if DASHPAY
+
+/// The contact route's header: the design system's TopIntro — back control, a
+/// large left-aligned title, and the recipient named underneath.
+///
+/// `TopIntroView` draws the title. The recipient line is composed here rather
+/// than passed as its `mainDescription` because the component's descriptions
+/// are plain strings and this one carries an avatar; it uses the same
+/// `.subhead` token, so the two read as one block. A `TopIntroView` overload
+/// taking a description view would let this drop — a DashUIKit change, not one
+/// to make from here.
+private struct SendContactIntro: View {
+    let contact: ContactItem
+    var onBack: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Button(action: onBack) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.primary)
+                    .frame(width: 36, height: 36)
+                    .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+
+            VStack(alignment: .leading, spacing: 4) {
+                DashUIKit.TopIntroView(title: NSLocalizedString("Send", comment: ""))
+
+                HStack(spacing: 6) {
+                    Text(NSLocalizedString("to", comment: "Send screen: precedes the recipient"))
+                        .dashFont(.subhead)
+                        .foregroundColor(Color.dash.primaryText)
+                    ContactAvatarView(
+                        title: contact.displayTitle,
+                        avatarURL: contact.avatarURL,
+                        identitySeed: contact.contactIdentityId,
+                        size: 24)
+                    Text(contact.displayTitle)
+                        .dashFont(.subhead)
+                        .foregroundColor(Color.dash.primaryText)
+                        .lineLimit(1)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+#endif
 
 /// The chosen recipient, read-only — a truncated address, or a DashPay
 /// contact's avatar and name when the flow was opened from the contact picker.
