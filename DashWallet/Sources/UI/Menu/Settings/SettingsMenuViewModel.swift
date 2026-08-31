@@ -31,7 +31,6 @@ class SettingsMenuViewModel: ObservableObject {
 
     @Published var items: [MenuItemModel] = []
     @Published var navigationDestination: SettingsMenuNavigationDestination?
-    @Published var notificationsEnabled: Bool
     @Published var showCSVExportActivity = false
     @Published var csvExportData: (fileName: String, file: URL)?
     @Published var showCoinJoinSweepConfirmation = false
@@ -69,11 +68,41 @@ class SettingsMenuViewModel: ObservableObject {
         DWGlobalOptions.sharedInstance().balanceHidden
     }
     
-    init() {
-        self.notificationsEnabled = DWGlobalOptions.sharedInstance().localNotificationsEnabled
+    /// Effective permission from `NotificationPermissionCoordinator`: the
+    /// in-app toggle and the live OS authorization combined. While the OS
+    /// grant is denied the row shows off and tapping it opens the app's iOS
+    /// Settings page instead of flipping a preference that can't take effect.
+    @Published private var notificationPermissionState: NotificationPermissionState
+
+    private let notificationPermissions: NotificationPermissionCoordinator
+
+    init(notificationPermissions: NotificationPermissionCoordinator = NotificationPermissionCoordinator()) {
+        self.notificationPermissions = notificationPermissions
+        // The OS half of the state arrives asynchronously; until then render
+        // from the in-app toggle alone.
+        self.notificationPermissionState = notificationPermissions.userWantsNotifications ? .on : .offByUser
         refreshMenuItems()
         setupCoinJoinObservers()
         setupCurrencyChangeObserver()
+        refreshNotificationPermissionState()
+        // The user may come back from iOS Settings with a changed grant.
+        NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshNotificationPermissionState()
+            }
+            .store(in: &cancellableBag)
+    }
+
+    private func refreshNotificationPermissionState() {
+        Task { [weak self] in
+            guard let self else { return }
+            let state = await self.notificationPermissions.effectiveState()
+            if self.notificationPermissionState != state {
+                self.notificationPermissionState = state
+                self.refreshMenuItems()
+            }
+        }
     }
     
     func resetNavigation() {
@@ -118,12 +147,26 @@ class SettingsMenuViewModel: ObservableObject {
                 title: NSLocalizedString("Notifications", comment: ""),
                 icon: .custom("image.notifications", maxHeight: 30),
                 showToggle: true,
-                isToggled: notificationsEnabled,
+                // `.awaitingAuthorization` renders like `.on`: the user's
+                // toggle is on and only the OS grant is still pending.
+                isToggled: notificationPermissionState == .on
+                    || notificationPermissionState == .awaitingAuthorization,
                 action: { [weak self] in
                     guard let self = self else { return }
-                    self.notificationsEnabled.toggle()
-                    DWGlobalOptions.sharedInstance().localNotificationsEnabled = self.notificationsEnabled
+                    if self.notificationPermissionState == .blockedBySystem {
+                        // The system grant is off, so the in-app toggle can't
+                        // deliver anything — send the user to iOS Settings.
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                        return
+                    }
+                    self.notificationPermissions.userWantsNotifications.toggle()
+                    // Render the flip immediately from the toggle; the OS
+                    // half of the state re-derives asynchronously.
+                    self.notificationPermissionState = self.notificationPermissions.userWantsNotifications ? .on : .offByUser
                     self.refreshMenuItems()
+                    self.refreshNotificationPermissionState()
                 }
             ),
             MenuItemModel(

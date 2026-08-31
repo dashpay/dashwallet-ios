@@ -18,7 +18,6 @@
 #import "AppDelegate.h"
 
 #import <CloudInAppMessaging/CloudInAppMessaging.h>
-#import <UserNotifications/UserNotifications.h>
 
 @import Firebase;
 
@@ -54,9 +53,12 @@
 #endif
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AppDelegate () <UNUserNotificationCenterDelegate>
+@interface AppDelegate ()
 
-@property (nonatomic, strong) DWBalanceNotifier *balanceNotifier;
+/// The notifications composition root: store, permission coordinator,
+/// dispatcher, lifecycle (the UNUserNotificationCenter delegate), router,
+/// and the transaction producer.
+@property (nonatomic, strong) DWNotificationsBootstrap *notifications;
 
 @end
 
@@ -69,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)registerForPushNotifications {
-    [self.balanceNotifier registerForPushNotifications];
+    [self.notifications registerForPushNotifications];
 }
 
 #pragma mark - UIApplicationDelegate
@@ -200,7 +202,10 @@ NS_ASSUME_NONNULL_BEGIN
     //
     // When adding any logic here mind the migration process
     //
-    [self.balanceNotifier updateBalance];
+
+    // Badge reset and delivered-notification clearing live in
+    // DWNotificationsBootstrap's NotificationLifecycle, which observes
+    // UIApplicationDidBecomeActiveNotification itself.
 
     // Check geo-restriction for PiggyCards (if available)
     // This logs location info each time the app becomes active for debugging
@@ -222,16 +227,6 @@ NS_ASSUME_NONNULL_BEGIN
 // If unimplemented, the default behavior is to allow the extension point identifier.
 - (BOOL)application:(UIApplication *)application shouldAllowExtensionPointIdentifier:(NSString *)extensionPointIdentifier {
     return NO; // disable extensions such as custom keyboards for security purposes
-}
-
-- (void)application:(UIApplication *)application
-performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-    // Background fetch is no longer driven by DashSync. SwiftDashSDK does not
-    // yet run in the background — backgrounded SPV is a future milestone.
-    // The Apple Watch sync path that piggybacks on this will be re-pointed
-    // in M10 (DWPhoneWCSessionManager). Until then, watch balance updates
-    // may be stale until the user opens the phone app.
-    completionHandler(UIBackgroundFetchResultNoData);
 }
 
 #if DASHPAY
@@ -332,31 +327,10 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     [DWPhoneWCSessionManager sharedInstance];
 #endif
 
-    self.balanceNotifier = [[DWBalanceNotifier alloc] init];
-    [self.balanceNotifier setupNotifications];
-
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-    center.delegate = self;
-}
-
-- (void)userNotificationCenter:(UNUserNotificationCenter *)center
-       willPresentNotification:(UNNotification *)notification
-         withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler {
-    
-    if ([notification.request.identifier isEqual: CrowdNodeObjcWrapper.notificationID]) {
-        completionHandler(UNNotificationPresentationOptionList | UNNotificationPresentationOptionBanner | UNNotificationPresentationOptionSound);
-    }
-}
-
-- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void(^)(void))completionHandler {
-
-    if ([response.notification.request.identifier isEqual: CrowdNodeObjcWrapper.notificationID]) {
-        if (SyncingActivityMonitor.shared.state == SyncingActivityMonitorStateSyncDone) {
-            UIViewController *vc = [CrowdNodeModelObjcWrapper getRootVC];
-            [_window.rootViewController presentViewController:vc animated:YES completion:nil];
-        }
-        completionHandler();
-    }
+    // The notifications composition root: builds the module graph and
+    // installs NotificationLifecycle as the UNUserNotificationCenter
+    // delegate (foreground presentation, tap routing, clearing).
+    self.notifications = [[DWNotificationsBootstrap alloc] initWithWindow:self.window];
 }
 
 #pragma mark - Notifications

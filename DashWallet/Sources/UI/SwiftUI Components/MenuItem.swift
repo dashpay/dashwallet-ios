@@ -41,7 +41,16 @@ struct MenuItem: View {
     var trailingStatusColor: Color = Color.dash.orange
     var trailingView: AnyView?
     var showToggle: Bool = false
+    /// The model's current toggle value. `@State` seeds from it only at
+    /// identity creation, so later re-renders must re-sync explicitly (see
+    /// the `.onChange(of: modelToggleValue)` below) — otherwise the switch
+    /// drifts from the model and the next user tap inverts the preference
+    /// relative to what is shown.
+    private var modelToggleValue: Bool = false
     @State private var isToggled: Bool = false
+    /// True while `isToggled` is being programmatically re-synced to the
+    /// model, so the sync does not fire `action` as if the user tapped.
+    @State private var suppressToggleAction = false
     var action: (() -> Void)?
 
     init(
@@ -139,6 +148,7 @@ struct MenuItem: View {
         self.trailingStatusText = trailingStatusText
         self.trailingStatusColor = trailingStatusColor
         self.trailingView = trailingView
+        self.modelToggleValue = isToggled
         self._isToggled = State(initialValue: isToggled)
         self.showToggle = showToggle
         self.action = action
@@ -273,7 +283,19 @@ struct MenuItem: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity)
+        .onChange(of: modelToggleValue) { newValue in
+            // The model re-rendered this row with a different value
+            // (permission state resolved, settings rebuilt after a network
+            // switch): adopt it without treating it as a user tap.
+            guard isToggled != newValue else { return }
+            suppressToggleAction = true
+            isToggled = newValue
+        }
         .onChange(of: isToggled) { newValue in
+            if suppressToggleAction {
+                suppressToggleAction = false
+                return
+            }
             action?()
         }
     }

@@ -6,7 +6,7 @@
 	<string>support@dash.org</string>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>org.dashcore.dashsync.backgroundblocksync</string>
+		<string>org.dashfoundation.dashpay.refresh</string>
 	</array>
 	<key>CALL_BACK_URL_SCHEME</key>
 	<string>$(CALL_BACK_URL_SCHEME)</string>
@@ -119,7 +119,6 @@
 	<string>$(REDIRECT_URI)</string>
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>

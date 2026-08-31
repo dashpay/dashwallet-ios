@@ -5,7 +5,7 @@
 //  Copyright © 2026 Dash Core Group. All rights reserved.
 //
 
-@testable import dashwallet
+@testable import dashpay
 import Combine
 import SwiftDashSDK
 import XCTest

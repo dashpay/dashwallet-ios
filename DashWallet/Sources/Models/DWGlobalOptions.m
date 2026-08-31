@@ -57,6 +57,7 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
 @dynamic exploreDashMerchantsInfoShown;
 @dynamic coinbaseInfoShown;
 @dynamic shortcutBannerState;
+@dynamic inactivityReminderDisabled;
 
 #ifdef DASHPAY
 @dynamic dashpayUsername;
@@ -228,6 +229,7 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
     self.walletBackupReminderWasShown = NO;
     self.shortcuts = nil;
     self.localNotificationsEnabled = YES;
+    self.inactivityReminderDisabled = NO;
     self.balanceHidden = NO;
     self.tapToHideBalanceShown = NO;
     self.resyncingWallet = NO;

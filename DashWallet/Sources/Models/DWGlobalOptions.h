@@ -43,6 +43,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSArray<NSNumber *> *shortcuts;
 
 @property (nonatomic, assign) BOOL localNotificationsEnabled;
+/// The "Don't remind me again" opt-out of the inactivity reminder
+/// (`InactivityReminderScheduler`).
+@property (nonatomic, assign) BOOL inactivityReminderDisabled;
 
 @property (nonatomic, assign) BOOL balanceHidden;
 @property (nonatomic, assign) BOOL tapToHideBalanceShown;

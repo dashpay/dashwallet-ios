@@ -127,4 +127,25 @@ struct ContactItem: Identifiable, Equatable {
     /// base58, so a contact's id is shown the same way rather than as the hex
     /// `displayTitle`'s fallback happens to use.
     var identityIdBase58: String { contactIdentityId.toBase58String() }
+
+    /// For an established pair: true when the friendship completed because
+    /// THEY reciprocated our request — the newer direction row is the
+    /// reciprocation, so a newer (or equal) incoming row means they
+    /// accepted. The notifications screen's they-accepted/we-accepted split
+    /// and the contacts notification producer both classify with this.
+    /// Meaningless for pending relationships (one direction row missing).
+    var establishedByTheirAccept: Bool {
+        (incomingCreatedAt ?? .distantPast) >= (outgoingCreatedAt ?? .distantPast)
+    }
+
+    /// Local search predicate shared by the contacts and notifications
+    /// screens: case-insensitive substring match on the rendered
+    /// `displayTitle` or the DPNS username. A query that is empty after
+    /// trimming matches everything.
+    func matches(searchQuery: String) -> Bool {
+        let trimmed = searchQuery.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return true }
+        return displayTitle.localizedCaseInsensitiveContains(trimmed)
+            || (username?.localizedCaseInsensitiveContains(trimmed) ?? false)
+    }
 }

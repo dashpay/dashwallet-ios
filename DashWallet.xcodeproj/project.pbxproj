@@ -376,7 +376,6 @@
 		472CEE012924AA6D00656B48 /* PointOfUseListEmptyResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472CEE002924AA6D00656B48 /* PointOfUseListEmptyResultsView.swift */; };
 		472D13DF299DF5C6006903F1 /* TaxReportGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13DE299DF5C6006903F1 /* TaxReportGenerator.swift */; };
 		472D13E1299E1F2F006903F1 /* CSVBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E0299E1F2F006903F1 /* CSVBuilder.swift */; };
-		472D13E3299E23B7006903F1 /* BalanceNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E2299E23B7006903F1 /* BalanceNotifier.swift */; };
 		472D13E6299E3C82006903F1 /* AmountPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E5299E3C81006903F1 /* AmountPreviewView.swift */; };
 		472D13E8299E4EE7006903F1 /* BalanceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E7299E4EE7006903F1 /* BalanceModel.swift */; };
 		472D13EA299E5396006903F1 /* NSAttributedString+Builder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E9299E5396006903F1 /* NSAttributedString+Builder.swift */; };
@@ -1630,7 +1629,6 @@
 		C9D2C8332A320AA000D15901 /* DerivationPathKeysModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C909615229F28E3700002D82 /* DerivationPathKeysModel.swift */; };
 		C9D2C8342A320AA000D15901 /* DWSeedUIConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFF42305333000C475EB /* DWSeedUIConstants.m */; };
 		C9D2C8352A320AA000D15901 /* DWWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69B22312E8A0001B8C90 /* DWWindow.m */; };
-		C9D2C8362A320AA000D15901 /* BalanceNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E2299E23B7006903F1 /* BalanceNotifier.swift */; };
 		C9D2C8372A320AA000D15901 /* DWSeedWordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6322D9127600C99324 /* DWSeedWordModel.m */; };
 		C9D2C8382A320AA000D15901 /* DWRootModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44313F22CF642C009BAF7F /* DWRootModel.m */; };
 		C9D2C8392A320AA000D15901 /* BaseAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AE28FDAA3300028A8D /* BaseAmountViewController.swift */; };
@@ -2648,7 +2646,6 @@
 		472CEE002924AA6D00656B48 /* PointOfUseListEmptyResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseListEmptyResultsView.swift; sourceTree = "<group>"; };
 		472D13DE299DF5C6006903F1 /* TaxReportGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaxReportGenerator.swift; sourceTree = "<group>"; };
 		472D13E0299E1F2F006903F1 /* CSVBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVBuilder.swift; sourceTree = "<group>"; };
-		472D13E2299E23B7006903F1 /* BalanceNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceNotifier.swift; sourceTree = "<group>"; };
 		472D13E5299E3C81006903F1 /* AmountPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountPreviewView.swift; sourceTree = "<group>"; };
 		472D13E7299E4EE7006903F1 /* BalanceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceModel.swift; sourceTree = "<group>"; };
 		472D13E9299E5396006903F1 /* NSAttributedString+Builder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSAttributedString+Builder.swift"; sourceTree = "<group>"; };
@@ -3758,6 +3755,28 @@
 		51DC0001300000000000DC01 /* DashConnect */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DashConnect; sourceTree = "<group>"; };
 		51DC0002300000000000DC02 /* DashConnect */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DashConnect; sourceTree = "<group>"; };
 		51DFA7FB2FA8EAF2001EDB3A /* Components */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Components; sourceTree = "<group>"; };
+		5D01A11CE5B0000000000001 /* Notifications */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = "DashWallet/Sources/Infrastructure/Notifications";
+			sourceTree = SOURCE_ROOT;
+		};
+		5D01A11CE5B0000000000002 /* NotificationsTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = "DashWalletTests/Notifications";
+			sourceTree = SOURCE_ROOT;
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -5799,7 +5818,6 @@
 			isa = PBXGroup;
 			children = (
 				47081195298CF1FE003FCA3D /* Model */,
-				472D13E2299E23B7006903F1 /* BalanceNotifier.swift */,
 				11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */,
 				FE0000000000000000000061 /* ExtendedPublicKeysView.swift */,
 				2C4FDA5A52AB80D7F349A7AF /* WalletSendService.swift */,
@@ -6720,6 +6738,8 @@
 			isa = PBXGroup;
 			children = (
 				51DFA7FB2FA8EAF2001EDB3A /* Components */,
+				5D01A11CE5B0000000000001 /* Notifications */,
+				5D01A11CE5B0000000000002 /* NotificationsTests */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -8825,6 +8845,7 @@
 				51DC0001300000000000DC01 /* DashConnect */,
 				51DC0002300000000000DC02 /* DashConnect */,
 				51DFA7FB2FA8EAF2001EDB3A /* Components */,
+				5D01A11CE5B0000000000001 /* Notifications */,
 			);
 			name = dashwallet;
 			packageProductDependencies = (
@@ -8838,6 +8859,9 @@
 		75D5F3E4191EC270004AB296 /* DashWalletTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 75D5F3F9191EC270004AB296 /* Build configuration list for PBXNativeTarget "DashWalletTests" */;
+			fileSystemSynchronizedGroups = (
+				5D01A11CE5B0000000000002 /* NotificationsTests */,
+			);
 			buildPhases = (
 				A5BD49B2A59A7ED61D52013B /* [CP] Check Pods Manifest.lock */,
 				75D5F3E1191EC270004AB296 /* Sources */,
@@ -8931,6 +8955,7 @@
 				51DC0001300000000000DC01 /* DashConnect */,
 				51DC0002300000000000DC02 /* DashConnect */,
 				51DFA7FB2FA8EAF2001EDB3A /* Components */,
+				5D01A11CE5B0000000000001 /* Notifications */,
 			);
 			name = dashpay;
 			packageProductDependencies = (
@@ -10054,7 +10079,6 @@
 				C909615329F28E3700002D82 /* DerivationPathKeysModel.swift in Sources */,
 				2A74EFF52305333000C475EB /* DWSeedUIConstants.m in Sources */,
 				2A0C69B32312E8A0001B8C90 /* DWWindow.m in Sources */,
-				472D13E3299E23B7006903F1 /* BalanceNotifier.swift in Sources */,
 				752F819A2E30F55E00ADA76D /* SecurityMenuScreen.swift in Sources */,
 				752F819B2E30F55E00ADA76D /* SecurityMenuViewModel.swift in Sources */,
 				A1C0D0020000000000000002 /* RecoveryPhraseFlow.swift in Sources */,
@@ -11058,7 +11082,6 @@
 				C9D2C8342A320AA000D15901 /* DWSeedUIConstants.m in Sources */,
 				C9D2C8352A320AA000D15901 /* DWWindow.m in Sources */,
 				753130982B4944130069C9B7 /* UpholdError.swift in Sources */,
-				C9D2C8362A320AA000D15901 /* BalanceNotifier.swift in Sources */,
 				754C27D12CC3C82900BA7B9F /* JoinDashPayInfoDialog.swift in Sources */,
 				C9D2C8372A320AA000D15901 /* DWSeedWordModel.m in Sources */,
 				C9D2C8382A320AA000D15901 /* DWRootModel.m in Sources */,
