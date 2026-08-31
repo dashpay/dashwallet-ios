@@ -397,7 +397,7 @@ struct ExternalSendAmountScreen: View {
             if let contact = viewModel.contactRecipient {
                 SendContactIntro(
                     contact: contact,
-                    balanceFormatted: viewModel.coreBalanceFormatted,
+                    balanceDuffs: viewModel.coreBalanceDuffs,
                     onBack: onBack)
                     .padding(.horizontal, 20)
                     .padding(.top, 10)
@@ -688,11 +688,20 @@ private struct SendStepHeader: View {
 /// to make from here.
 private struct SendContactIntro: View {
     let contact: ContactItem
-    /// The funding balance, shown on its own line. A contact can only be paid
-    /// from Core today, so the screen states what is available rather than
-    /// offering a choice.
-    let balanceFormatted: String
+    /// The funding balance in duffs, shown on its own line. A contact can only
+    /// be paid from Core today, so the screen states what is available rather
+    /// than offering a choice.
+    let balanceDuffs: UInt64
     var onBack: () -> Void
+
+    /// Hidden first, like the merchant pay screen: the number is here to be
+    /// consulted, not broadcast to whoever is looking at the phone.
+    @State private var balanceHidden = true
+
+    private enum Layout {
+        static let eyeCircleSize: CGFloat = 28
+        static let eyeIconSize: CGFloat = 14
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -725,15 +734,60 @@ private struct SendContactIntro: View {
 
                 // What the send has to spend, not which balance it came from:
                 // a contact can only be paid from Core, so naming the source
-                // says nothing the user can act on — the number does.
-                Text(String.localizedStringWithFormat(
-                    NSLocalizedString("Balance: %@", comment: "Send screen: the funding balance"),
-                    balanceFormatted))
-                    .dashFont(.subhead)
-                    .foregroundColor(Color.dash.secondaryText)
+                // says nothing the user can act on — the number does. Masked
+                // until asked for, with the eye control and the hidden-first
+                // default `DashSpendPayIntro` established for this same row.
+                HStack(spacing: 4) {
+                    Text(NSLocalizedString("Balance:", comment: "Send screen: the funding balance"))
+
+                    if balanceHidden {
+                        Text("***********")
+                    } else {
+                        DashAmount(amount: Int64(balanceDuffs), font: .subheadline, showDirection: false)
+                        Text("~").font(.subheadline)
+                        fiatText
+                    }
+
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.2)) { balanceHidden.toggle() }
+                    }) {
+                        eyeIcon
+                    }
+                    .buttonStyle(.plain)
+                }
+                .font(.subheadline)
+                .foregroundColor(Color.dash.secondaryText)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var eyeIcon: some View {
+        ZStack {
+            Circle()
+                .fill(Color.dash.gray300Alpha10)
+                .frame(width: Layout.eyeCircleSize, height: Layout.eyeCircleSize)
+
+            Icon(name: .custom("eye_opened-icon", maxHeight: Layout.eyeIconSize))
+                .foregroundColor(.dash.primaryText)
+                .opacity(balanceHidden ? 1 : 0)
+
+            Icon(name: .custom("eye_closed-icon", maxHeight: Layout.eyeIconSize))
+                .foregroundColor(.dash.primaryText)
+                .opacity(balanceHidden ? 0 : 1)
+        }
+        .compositingGroup()
+    }
+
+    @ViewBuilder
+    private var fiatText: some View {
+        let text = try? CurrencyExchanger.shared
+            .convertDash(amount: balanceDuffs.dashAmount, to: App.fiatCurrency)
+            .formattedFiatAmount
+
+        Text(text ?? NSLocalizedString("Not available", comment: ""))
+            .font(.subheadline)
+            .foregroundColor(Color.dash.secondaryText)
     }
 }
 
