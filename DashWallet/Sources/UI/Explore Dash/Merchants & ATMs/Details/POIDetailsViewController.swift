@@ -235,6 +235,14 @@ extension POIDetailsViewController {
 
     private func presentDetailsSheetIfNeeded() {
         guard pointOfUse.showMap, !didPresentDetailsSheet, presentedViewController == nil else { return }
+        // Only while this really is the visible screen. The gift-card flow pops
+        // back to here and pushes the amount screen in the same turn, and the
+        // push runs first — `performAfterDismissingDetailsSheetIfNeeded` finds
+        // no sheet to dismiss, so it calls straight through. `viewDidAppear`
+        // then arrives after the push, and without this guard it would strand
+        // the details sheet on top of the amount screen, where
+        // `isModalInPresentation` leaves no way to swipe it away.
+        if let navigationController, navigationController.topViewController !== self { return }
         guard let detailsView = makeDetailsView() else { return }
 
         let sheetViewController = UIHostingController(rootView: detailsView)
