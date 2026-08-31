@@ -7,9 +7,14 @@ name: "Accessibility"
 # control. New P2 findings (Dynamic Type) are reported as advisory and do not
 # fail the build.
 #
-# On a pull request the baseline is read from the BASE branch, not from the PR
-# checkout: otherwise a PR could add a regression and add its fingerprint to the
-# same file, and the check would pass.
+# On a pull request the baseline AND the config are read from the BASE branch,
+# not from the PR checkout. Otherwise a PR could add a regression and, in the
+# same commit, either baseline its fingerprint or disable the rule that catches
+# it — and the check would pass on its own weakened settings.
+#
+# Landing a deliberate config change therefore takes two steps: merge the config
+# change, then rely on it. Add the `a11y-config-change` label to a PR to have it
+# checked with its own config instead.
 #
 # No Xcode needed: the audit is static analysis, so it runs on a free Ubuntu
 # runner in about a second.
@@ -57,28 +62,39 @@ jobs:
 
       # Take the accepted debt from the base branch. A PR that both introduces
       # a finding and baselines it would otherwise pass its own check.
-      - name: Resolve the baseline to compare against
-        id: baseline
+      - name: Resolve the baseline and config to check against
+        id: settings
         env:
           BASE_REF: ${{ github.base_ref }}
+          ALLOW_PR_CONFIG: ${{ contains(github.event.pull_request.labels.*.name, 'a11y-config-change') }}
         run: |
           set -euo pipefail
           BASELINE_PATH="scripts/a11y_baseline.json"
+          CONFIG_PATH="scripts/a11y_config.json"
           if [ -n "${BASE_REF:-}" ]; then
             git fetch --depth=1 origin "$BASE_REF"
             if git cat-file -e "origin/${BASE_REF}:scripts/a11y_baseline.json" 2>/dev/null; then
               git show "origin/${BASE_REF}:scripts/a11y_baseline.json" > /tmp/base_baseline.json
               BASELINE_PATH="/tmp/base_baseline.json"
-              echo "Comparing against the baseline on origin/${BASE_REF}."
+              echo "Baseline: origin/${BASE_REF}."
             else
-              echo "origin/${BASE_REF} has no baseline yet — using the one in this PR."
+              echo "Baseline: origin/${BASE_REF} has none yet — using this PR's."
+            fi
+            if [ "${ALLOW_PR_CONFIG}" = "true" ]; then
+              echo "Config: this PR's (a11y-config-change label present)."
+            elif git cat-file -e "origin/${BASE_REF}:scripts/a11y_config.json" 2>/dev/null; then
+              git show "origin/${BASE_REF}:scripts/a11y_config.json" > /tmp/base_config.json
+              CONFIG_PATH="/tmp/base_config.json"
+              echo "Config: origin/${BASE_REF}."
+            else
+              echo "Config: origin/${BASE_REF} has none yet — using this PR's."
             fi
           fi
-          echo "path=${BASELINE_PATH}" >> "$GITHUB_OUTPUT"
+          echo "baseline=${BASELINE_PATH}" >> "$GITHUB_OUTPUT"
+          echo "config=${CONFIG_PATH}" >> "$GITHUB_OUTPUT"
 
-      # Flag a weakened config for the reviewer. This does not fail the build:
-      # relaxing the config can only ever reduce findings, so it cannot smuggle
-      # a regression past the ratchet — but it must not pass unnoticed either.
+      # Surface a config change for the reviewer. The blocking check above
+      # already runs with the base config, so this is informational.
       - name: Note config changes
         if: github.base_ref != ''
         env:
@@ -106,13 +122,15 @@ jobs:
           # Passed through the environment rather than interpolated into the
           # script body, so a dispatch input cannot inject shell.
           FAIL_ON: ${{ github.event.inputs.fail_on || 'P0,P1' }}
-          BASELINE_PATH: ${{ steps.baseline.outputs.path }}
+          BASELINE_PATH: ${{ steps.settings.outputs.baseline }}
+          CONFIG_PATH: ${{ steps.settings.outputs.config }}
         run: |
           set -euo pipefail
           python3 scripts/a11y_audit.py \
             --check \
             --github \
             --baseline "$BASELINE_PATH" \
+            --config "$CONFIG_PATH" \
             --fail-on "$FAIL_ON"
 
       - name: Current debt summary
@@ -127,7 +145,8 @@ jobs:
             python3 scripts/a11y_audit.py --summary
             echo '```'
             echo
-            echo "Fails only on findings absent from the base branch's \`scripts/a11y_baseline.json\`."
+            echo "Checked against the base branch's baseline and config, so a PR cannot"
+            echo "weaken its own gate. Label \`a11y-config-change\` to use this PR's config."
             echo "Deliberate exception: \`// a11y-ignore: <RULE> <why>\` on the line."
             echo "Fixed something? \`scripts/a11y_audit.py --write-baseline\` banks it."
           } >> "$GITHUB_STEP_SUMMARY"

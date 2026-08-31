@@ -44,6 +44,11 @@ scripts/a11y_audit.py --path "DashWallet/Sources/UI/Payments"
 | A11Y011 | P1 | Image-only control in a xib/storyboard with no label |
 | A11Y012 | P1 | `.onTapGesture` on a view with no accessibility treatment |
 
+All three SwiftUI button forms are inspected — the trailing-closure
+`Button(action:) { … }`, the two-closure `Button { … } label: { … }`, and
+`Button(action:label:)` — so an icon-only label cannot hide in the form it was
+written with.
+
 What it does **not** check — these still need a human with VoiceOver on a device:
 
 - whether a label reads *well* (an accurate label can still be a bad one)
@@ -66,10 +71,16 @@ It fails **only on findings that are not in `scripts/a11y_baseline.json`.** The
 existing debt is recorded there, so the check can be adopted today without
 fixing everything first — but a PR cannot add a new unlabeled control.
 
-On a pull request the baseline is read from the **base branch**, not from the PR
-checkout. Otherwise a PR could introduce a regression and add its fingerprint to
-the same file in the same commit, and the check would pass on its own weakened
-baseline.
+On a pull request both the baseline **and `a11y_config.json`** are read from the
+**base branch**, not from the PR checkout. Otherwise a PR could introduce a
+regression and, in the same commit, either baseline its fingerprint or disable
+the rule that catches it — and the check would pass on its own weakened gate.
+
+A consequence worth knowing: a config change takes effect only once it is
+merged. If a PR genuinely needs its own config to pass — say it adds a wrapper
+component and lists it in `labeled_wrappers` — either land the config change
+first, or add the `a11y-config-change` label to have the PR checked with its own
+config.
 
 New **P2** findings (Dynamic Type) are printed as advisory and do not fail the
 build. Change that with `--fail-on all` once the P2 debt is paid down.

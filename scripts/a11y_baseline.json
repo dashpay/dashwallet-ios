@@ -9,7 +9,7 @@
     "A11Y008": 8,
     "A11Y002": 10,
     "A11Y003": 1,
-    "A11Y004": 31,
+    "A11Y004": 37,
     "A11Y005": 1,
     "A11Y006": 2,
     "A11Y009": 2,
@@ -18,7 +18,7 @@
     "A11Y012": 31,
     "A11Y007": 559
   },
-  "total": 659,
+  "total": 665,
   "findings": [
     {
       "rule": "A11Y008",
@@ -155,6 +155,27 @@
     },
     {
       "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactAvatarView.swift",
+      "fingerprint": "d71909e411b8e790",
+      "line_when_recorded": 147,
+      "snippet": "Button {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "31b848249e2e75eb",
+      "line_when_recorded": 275,
+      "snippet": "Button {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "31b848249e2e75eb",
+      "line_when_recorded": 339,
+      "snippet": "Button {"
+    },
+    {
+      "rule": "A11Y004",
       "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
       "fingerprint": "603d89e57095d24b",
       "line_when_recorded": 842,
@@ -222,6 +243,13 @@
       "fingerprint": "6959c08ee2fb80f6",
       "line_when_recorded": 424,
       "snippet": "Button(action: { vc.popViewController(animated: true) }) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "1a4bb9493c42e241",
+      "line_when_recorded": 811,
+      "snippet": "Button {"
     },
     {
       "rule": "A11Y004",
@@ -306,6 +334,20 @@
       "fingerprint": "0bc340276de2bdfc",
       "line_when_recorded": 275,
       "snippet": "Button(action: popRoot) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Tracked Masternodes/AddMasternodeScreen.swift",
+      "fingerprint": "18468fb6082a418f",
+      "line_when_recorded": 69,
+      "snippet": "Button {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Tracked Masternodes/AddMasternodeScreen.swift",
+      "fingerprint": "18468fb6082a418f",
+      "line_when_recorded": 79,
+      "snippet": "Button {"
     },
     {
       "rule": "A11Y004",

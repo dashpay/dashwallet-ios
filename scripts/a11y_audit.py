@@ -286,16 +286,18 @@ def strip_comments(text: str) -> str:
                     out[i] = " "
                 i += 1
         elif ch == '"':
-            # Leave the quotes, blank the body: rules that look for string
-            # literals still see "" and can tell an empty label from a real one.
+            # Mask the body with 'x' rather than spaces, so a non-empty literal
+            # stays visibly non-empty: blanking turned Toggle("Wi-Fi", isOn:)
+            # into Toggle("", isOn:) and reported a correctly labeled control.
+            # Only a genuinely empty literal survives as "".
             i += 1
             while i < n and text[i] != '"':
                 if text[i] == "\\" and i + 1 < n:
-                    out[i] = out[i + 1] = " "
+                    out[i] = out[i + 1] = "x"
                     i += 2
                     continue
                 if text[i] != "\n":
-                    out[i] = " "
+                    out[i] = "x"
                 i += 1
             i += 1
         else:
@@ -541,6 +543,50 @@ def _tail_escapes(tail: str) -> bool:
     return any(token in tail for token in CONFIG.escape_tokens())
 
 
+def _has_string_title(args: str) -> bool:
+    """Button("Title", action:) — a leading non-empty string literal."""
+    return re.match(r'\(\s*"[^"]', args) is not None
+
+
+def _label_block(code: str, opener: int) -> Optional[Tuple[int, int]]:
+    """Locate the closure that provides a Button's LABEL, not its action.
+
+    Handles every form we use:
+      Button(action: x) { Image(...) }            trailing closure is the label
+      Button { x } label: { Image(...) }          second closure is the label
+      Button(action: x, label: { Image(...) })    label lives inside the parens
+    Returns (block_start, block_end) or None.
+    """
+    if code[opener] == "(":
+        close_paren = balanced_parens(code, opener)
+        if close_paren is None:
+            return None
+        args = code[opener:close_paren]
+        # label: { ... } passed as an argument
+        label_arg = re.search(r"\blabel\s*:\s*\{", args)
+        if label_arg:
+            brace = opener + label_arg.end() - 1
+            end = balanced_block(code, brace)
+            return (brace, end) if end else None
+        brace = code.find("{", close_paren)
+        if brace == -1 or brace - close_paren > 4:
+            return None
+        end = balanced_block(code, brace)
+        return (brace, end) if end else None
+
+    # Button { ... } — could be the label, or the action of a two-closure form.
+    first_end = balanced_block(code, opener)
+    if first_end is None:
+        return None
+    following = code[first_end:first_end + 40]
+    second = re.match(r"\s*label\s*:\s*\{", following)
+    if second:
+        brace = first_end + second.end() - 1
+        end = balanced_block(code, brace)
+        return (brace, end) if end else None
+    return (opener, first_end)
+
+
 def rule_swiftui_button(code: str, original: str, path: str,
                         findings: List[Finding]) -> None:
     for match in re.finditer(r"\bButton\s*(\(|\{)", code):
@@ -550,27 +596,24 @@ def rule_swiftui_button(code: str, original: str, path: str,
             if close_paren is None:
                 continue
             args = code[opener:close_paren]
-            # Button("Title", action:) announces its title.
-            if _block_speaks(args):
+            if _has_string_title(args):
                 continue
-            brace = code.find("{", close_paren)
-            if brace == -1 or brace - close_paren > 4:
-                # No trailing closure: Button(action:) with no label body.
+            # Button(action:) with a Text label inside the parens
+            if "label" not in args and _block_speaks(args):
                 continue
-        else:
-            brace = opener
-        block_end = balanced_block(code, brace)
-        if block_end is None:
+
+        located = _label_block(code, opener)
+        if located is None:
             continue
+        brace, block_end = located
         block = code[brace:block_end]
         if _block_speaks(block):
             continue
         if not _block_has_visual(block):
             continue
-        tail = modifier_tail(code, block_end)
-        if _tail_escapes(tail):
-            continue
         if _tail_escapes(block):
+            continue
+        if _tail_escapes(modifier_tail(code, block_end)):
             continue
         line_no = line_of(code, match.start())
         add(findings, original, "A11Y004", path, line_no,
@@ -587,27 +630,29 @@ def rule_toggle(code: str, original: str, path: str,
         if close is None:
             continue
         args = code[open_paren:close]
+
+        # Toggle("Wi-Fi", isOn:) — the title argument is the label.
+        if _has_string_title(args):
+            continue
         if _block_speaks(args):
             continue
-        brace = code.find("{", close)
-        empty_label = False
+
         end_of_toggle = close
+        brace = code.find("{", close)
         if brace != -1 and brace - close <= 3:
             block_end = balanced_block(code, brace)
-            if block_end is not None:
-                block = code[brace + 1:block_end - 1]
-                end_of_toggle = block_end
-                if not block.strip():
-                    empty_label = True
-                elif not _block_speaks(block):
-                    empty_label = True
-        else:
-            # Toggle(isOn:) with no label argument at all
-            empty_label = '""' in args or "isOn" in args and not _block_speaks(args)
-        if not empty_label:
+            if block_end is None:
+                continue
+            end_of_toggle = block_end
+            block = code[brace + 1:block_end - 1]
+            if block.strip() and _block_speaks(block):
+                continue
+            # An empty or purely visual label closure announces nothing.
+        elif not re.search(r"\bisOn\s*:", args):
+            # Not the labelled initialiser we care about.
             continue
-        tail = modifier_tail(code, end_of_toggle)
-        if _tail_escapes(tail):
+
+        if _tail_escapes(modifier_tail(code, end_of_toggle)):
             continue
         line_no = line_of(code, match.start())
         add(findings, original, "A11Y005", path, line_no,
@@ -1023,6 +1068,27 @@ FIXTURES: List[Tuple[str, bool, str]] = [
     ("A11Y004", False,
      '// a11y-ignore: A11Y004 decorative, the row above carries the label\n'
      'Button(action: onClose) {\n    Image(systemName: "xmark")\n}\n'),
+
+    # Every Button label-closure form must be inspected, not just the
+    # trailing-closure one.
+    ("A11Y004", True,
+     'Button { act() } label: {\n    Image(systemName: "xmark")\n}\n'),
+    ("A11Y004", False,
+     'Button { act() } label: {\n    Text("Close")\n}\n'),
+    ("A11Y004", True,
+     'Button(action: act, label: {\n    Image(systemName: "xmark")\n})\n'),
+    ("A11Y004", False,
+     'Button(action: act, label: {\n    Text("Close")\n})\n'),
+    ("A11Y004", False,
+     'Button { act() } label: {\n    Image(systemName: "xmark")\n}\n'
+     '.accessibilityLabel(Text("Close"))\n'),
+
+    # A label given as a plain string literal is a real label: masking string
+    # bodies must not turn it into an empty one.
+    ("A11Y005", False, 'Toggle("Wi-Fi", isOn: $enabled)\n'),
+    ("A11Y005", False, 'Toggle("Wi-Fi", isOn: $enabled) { }\n'),
+    ("A11Y005", True, 'Toggle("", isOn: $enabled)\n'),
+    ("A11Y004", False, 'Button("Close", action: act)\n'),
 
     # A sibling view's accessibility modifier must not suppress this one.
     ("A11Y004", True,
