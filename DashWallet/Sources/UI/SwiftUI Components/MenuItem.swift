@@ -233,6 +233,8 @@ struct MenuItem: View {
                         .tint(Color.dash.blue)
                         .scaleEffect(0.75)
                         .frame(maxWidth: 60)
+                        // VoiceOver reads the row title on the switch, tying it to what it controls
+                        .accessibilityLabel(title)
                 }
                 
                 if showChevron {
