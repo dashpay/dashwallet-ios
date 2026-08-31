@@ -122,9 +122,6 @@
 		22B03841025A55A573432CC9 /* WalletAccountsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 285B961142AB3AFF2442F4EB /* WalletAccountsScreen.swift */; };
 		2556F3C5C72D70A771C6C61A /* PaymentProtocolWireFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = E66B030D4B574621DA2C5816 /* PaymentProtocolWireFormat.swift */; };
 		25C88271468A4CD23F34A6E9 /* SendScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1F21A7592E99814A800518 /* SendScreen.swift */; };
-		BE683BB1C1312FC033606DA0 /* SendToContactScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08E25A4A85971BBF2BED6C3F /* SendToContactScreen.swift */; };
-		340238C40ABAB8E8F32BCD86 /* SendToContactViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FA65DCAE38B074599D7BC86 /* SendToContactViewController.swift */; };
-		48B4860EAF4DE915216FEEE7 /* SendToContactViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 009CAE452A11A372A38C592D /* SendToContactViewModel.swift */; };
 		1B4B570DEFDE93352486F118 /* SendToContactScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08E25A4A85971BBF2BED6C3F /* SendToContactScreen.swift */; };
 		E78E49CC8ED4CC88E6122A1A /* SendToContactViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FA65DCAE38B074599D7BC86 /* SendToContactViewController.swift */; };
 		E932B50D2C8449B6C2A8A6E0 /* SendToContactViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 009CAE452A11A372A38C592D /* SendToContactViewModel.swift */; };
@@ -10506,9 +10503,6 @@
 				25C88271468A4CD23F34A6E9 /* SendScreen.swift in Sources */,
 				C8D0B892715B6C46126FBE3A /* SendScreenViewController.swift in Sources */,
 				15F9C3B621487500E2919619 /* SendViewModel.swift in Sources */,
-				BE683BB1C1312FC033606DA0 /* SendToContactScreen.swift in Sources */,
-				340238C40ABAB8E8F32BCD86 /* SendToContactViewController.swift in Sources */,
-				48B4860EAF4DE915216FEEE7 /* SendToContactViewModel.swift in Sources */,
 				8B8898971DC24152E171DABC /* PaymentsLandingScreen.swift in Sources */,
 				12DE15416F9F7A0B8749CAF1 /* PaymentsLandingViewModel.swift in Sources */,
 				908AB7EFCC69D3828BBD70A8 /* PaymentsLandingHostingController.swift in Sources */,
