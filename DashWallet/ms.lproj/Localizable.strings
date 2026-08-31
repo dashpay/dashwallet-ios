@@ -1703,9 +1703,6 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "Getting started with CrowdNode";
 
-/* Core to Platform fee quote request in progress */
-"Getting the network fee quote…" = "Mendapatkan sebut harga yuran rangkaian…";
-
 /* No comment provided by engineer. */
 "Gift card" = "Gift card";
 
@@ -4862,9 +4859,6 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "Tempat paling peribadi untuk menyimpan Dash anda";
 
-/* Core to Platform fee quote unavailable */
-"The network fee quote is unavailable. Check your connection and try again." = "Sebut harga yuran rangkaian tidak tersedia. Semak sambungan anda dan cuba lagi.";
-
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "Baris dompet tersimpan tiada rangkaian — tidak dapat menyediakan penyegerakan semula.";
 
@@ -4924,9 +4918,6 @@
 
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Dana ini berpindah ke baki Platform anda dan sedia untuk dibelanjakan sebaik sahaja pemindahan selesai.";
-
-/* Advisory estimate of the Platform fee deducted from the locked total */
-"Estimated Platform fee" = "Anggaran yuran Platform";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

@@ -1703,9 +1703,6 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "Primeros pasos con CrowdNode";
 
-/* Core to Platform fee quote request in progress */
-"Getting the network fee quote…" = "Obteniendo la cotización de la comisión de red…";
-
 /* No comment provided by engineer. */
 "Gift card" = "Tarjeta de regalo";
 
@@ -4860,9 +4857,6 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "El lugar más privado para guardar tus Dash";
 
-/* Core to Platform fee quote unavailable */
-"The network fee quote is unavailable. Check your connection and try again." = "La cotización de la comisión de red no está disponible. Comprueba tu conexión e inténtalo de nuevo.";
-
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "La fila de billetera guardada no tiene red: no se puede preparar una resincronización.";
 
@@ -4922,9 +4916,6 @@
 
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Estos fondos se mueven a tu saldo de Platform y estarán listos para gastar en cuanto se complete la transferencia.";
-
-/* Advisory estimate of the Platform fee deducted from the locked total */
-"Estimated Platform fee" = "Comisión de Platform estimada";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

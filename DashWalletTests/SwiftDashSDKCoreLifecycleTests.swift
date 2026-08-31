@@ -6,6 +6,7 @@
 //
 
 import XCTest
+import SwiftDashSDK
 @testable import dashpay
 
 private enum CoreLifecycleTestError: Error {
@@ -457,61 +458,44 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 poolFeeCredits: 212_851_200))
     }
 
-    // MARK: Core → Platform quote-sized reserve policy
+    // MARK: Core → Platform static reserve policy
     //
-    // Mock-quote tests of the pure reserve math. Quote loading/unavailable
-    // failing closed (Continue disabled, Max filling 0) is ViewModel state
+    // Pure reserve math for the DPP static address-funding floor. Runtime
+    // failure to resolve the SDK estimate is ViewModel/coordinator state
     // handled in `InternalTransferViewModel` and exercised by the testnet
     // smoke while the unit-test target stays broken.
 
-    /// A quote whose fee is not a whole-duff multiple, with the real
-    /// one-output admission floor (56M credits).
-    private static let fundingQuote = CoreToPlatformFundingQuote(
-        estimatedFeeCredits: 15_432_100,
-        minimumRequiredLockCredits: 56_000_000)
+    private static let addressFundingReserveCredits: UInt64 = 62_000_000
 
-    func testCoreToPlatformReserveIsTheRoundedUpQuotedFee() {
-        // Amount large enough that the floor is already cleared: the
-        // reserve is the quoted fee estimate rounded UP to a whole duff.
+    func testCoreToPlatformReserveIsTheRoundedUpStaticFundingFee() {
         XCTAssertEqual(
             CoreToPlatformAmountPolicy.reserveDuffs(
                 forAmountDuffs: 5_000_000,
-                quote: Self.fundingQuote),
-            15_433)
+                reserveCredits: Self.addressFundingReserveCredits),
+            62_000)
         // An exact duff multiple must NOT gain a spurious +1.
         XCTAssertEqual(
-            CoreToPlatformAmountPolicy.reserveDuffs(
-                forAmountDuffs: 5_000_000,
-                quote: CoreToPlatformFundingQuote(
-                    estimatedFeeCredits: 15_000_000,
-                    minimumRequiredLockCredits: 56_000_000)),
+            CoreToPlatformAmountPolicy.reserveDuffs(reserveCredits: 15_000_000),
             15_000)
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.reserveDuffs(reserveCredits: 15_000_001),
+            15_001)
         XCTAssertEqual(
             CoreToPlatformAmountPolicy.lockValueDuffs(
                 forAmountDuffs: 5_000_000,
-                quote: Self.fundingQuote),
-            5_015_433)
+                reserveCredits: Self.addressFundingReserveCredits),
+            5_062_000)
     }
 
-    func testCoreToPlatformTinyAmountReserveTopsUpToTheAdmissionFloor() {
-        // 1-duff topup: the floor gap (56M − 1000 credits) dominates the
-        // fee estimate, so the whole lock still clears the floor — locking
-        // less would strand the outpoint (Platform rejects the funding ST
-        // only after the L1 broadcast).
-        let quote = Self.fundingQuote
+    func testCoreToPlatformTinyAmountLocksAmountPlusStaticReserve() {
         let reserve = CoreToPlatformAmountPolicy.reserveDuffs(
-            forAmountDuffs: 1, quote: quote)
-        XCTAssertEqual(reserve, 55_999)
+            forAmountDuffs: 1,
+            reserveCredits: Self.addressFundingReserveCredits)
+        XCTAssertEqual(reserve, 62_000)
         let lock = CoreToPlatformAmountPolicy.lockValueDuffs(
-            forAmountDuffs: 1, quote: quote)
-        XCTAssertEqual(lock, 56_000)
-        XCTAssertGreaterThanOrEqual(
-            (lock ?? 0) * 1000,
-            quote.minimumRequiredLockCredits)
-        // And the reserve still covers the fee estimate.
-        XCTAssertGreaterThanOrEqual(
-            (reserve ?? 0) * 1000,
-            quote.estimatedFeeCredits)
+            forAmountDuffs: 1,
+            reserveCredits: Self.addressFundingReserveCredits)
+        XCTAssertEqual(lock, 62_001)
     }
 
     func testCoreToPlatformMaxAmountLockEqualsTheSpendable() {
@@ -523,36 +507,26 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         let spendable: UInt64 = 4_043_550_440
         let maxAmount = CoreToPlatformAmountPolicy.maxAmountDuffs(
             spendableDuffs: spendable,
-            quote: Self.fundingQuote)
-        XCTAssertEqual(maxAmount, spendable - 15_433)
+            reserveCredits: Self.addressFundingReserveCredits)
+        XCTAssertEqual(maxAmount, spendable - 62_000)
         XCTAssertEqual(
             CoreToPlatformAmountPolicy.lockValueDuffs(
                 forAmountDuffs: maxAmount,
-                quote: Self.fundingQuote),
+                reserveCredits: Self.addressFundingReserveCredits),
             spendable)
     }
 
     func testCoreToPlatformMaxFailsClosedWhenTheBalanceCannotFund() {
-        // Fee alone exhausts the spendable balance.
         XCTAssertEqual(
             CoreToPlatformAmountPolicy.maxAmountDuffs(
-                spendableDuffs: 15_433,
-                quote: Self.fundingQuote),
+                spendableDuffs: 62_000,
+                reserveCredits: Self.addressFundingReserveCredits),
             0)
-        // Even locking the entire spendable balance cannot clear the
-        // admission floor — shrinking the amount only widens the gap, so
-        // no amount works.
         XCTAssertEqual(
             CoreToPlatformAmountPolicy.maxAmountDuffs(
-                spendableDuffs: 55_999,
-                quote: Self.fundingQuote),
-            0)
-        // Exactly at the floor: fundable.
-        XCTAssertEqual(
-            CoreToPlatformAmountPolicy.maxAmountDuffs(
-                spendableDuffs: 56_000,
-                quote: Self.fundingQuote),
-            56_000 - 15_433)
+                spendableDuffs: 62_001,
+                reserveCredits: Self.addressFundingReserveCredits),
+            1)
     }
 
     func testCoreToPlatformMaxHeldBackExcludesTheFundingReserve() {
@@ -562,7 +536,7 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         let spendable: UInt64 = 4_043_550_440
         let maxAmount = CoreToPlatformAmountPolicy.maxAmountDuffs(
             spendableDuffs: spendable,
-            quote: Self.fundingQuote)
+            reserveCredits: Self.addressFundingReserveCredits)
 
         // Whole balance spendable: Max locks all of it — nothing stays in
         // Core, so no notice.
@@ -570,7 +544,7 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             CoreToPlatformAmountPolicy.maxHeldBackDuffs(
                 coreBalanceDuffs: spendable,
                 maxAmountDuffs: maxAmount,
-                quote: Self.fundingQuote))
+                reserveCredits: Self.addressFundingReserveCredits))
 
         // With unconfirmed coins on top of the spendable envelope, the
         // held-back value is exactly those coins.
@@ -579,7 +553,7 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             CoreToPlatformAmountPolicy.maxHeldBackDuffs(
                 coreBalanceDuffs: spendable + unconfirmed,
                 maxAmountDuffs: maxAmount,
-                quote: Self.fundingQuote),
+                reserveCredits: Self.addressFundingReserveCredits),
             unconfirmed)
     }
 
@@ -588,11 +562,11 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertNil(
             CoreToPlatformAmountPolicy.reserveDuffs(
                 forAmountDuffs: UInt64.max,
-                quote: Self.fundingQuote))
+                reserveCredits: Self.addressFundingReserveCredits))
         XCTAssertNil(
             CoreToPlatformAmountPolicy.lockValueDuffs(
                 forAmountDuffs: UInt64.max,
-                quote: Self.fundingQuote))
+                reserveCredits: Self.addressFundingReserveCredits))
         // The largest amount whose credits fit still resolves (amount +
         // reserve cannot overflow once amount × 1000 fits — the checked
         // add in `lockValueDuffs` is defensive).
@@ -600,9 +574,65 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertNotNil(
             CoreToPlatformAmountPolicy.lockValueDuffs(
                 forAmountDuffs: nearMax,
-                quote: CoreToPlatformFundingQuote(
-                    estimatedFeeCredits: UInt64.max,
-                    minimumRequiredLockCredits: 0)))
+                reserveCredits: Self.addressFundingReserveCredits))
+    }
+
+    func testCoreToPlatformAddressPairUsesTwoUnusedP2PKHAddresses() throws {
+        let used = try platformFundingAddress(
+            hashByte: 0x01,
+            addressIndex: 0,
+            isUsed: true)
+        let recipient = try platformFundingAddress(hashByte: 0x02, addressIndex: 1)
+        let remainder = try platformFundingAddress(hashByte: 0x03, addressIndex: 2)
+
+        let pair = try PlatformAddressSyncCoordinator.resolveCoreToPlatformAddressPair(
+            from: [remainder, used, recipient])
+
+        XCTAssertEqual(pair.recipient.row, recipient)
+        XCTAssertEqual(pair.remainder.row, remainder)
+    }
+
+    func testCoreToPlatformAddressPairFallsBackToUsedRemainderAddress() throws {
+        let recipient = try platformFundingAddress(hashByte: 0x01, addressIndex: 0)
+        let usedRemainder = try platformFundingAddress(
+            hashByte: 0x02,
+            addressIndex: 1,
+            isUsed: true)
+
+        let pair = try PlatformAddressSyncCoordinator.resolveCoreToPlatformAddressPair(
+            from: [usedRemainder, recipient])
+
+        XCTAssertEqual(pair.recipient.row, recipient)
+        XCTAssertEqual(pair.remainder.row, usedRemainder)
+    }
+
+    func testCoreToPlatformAddressPairRequiresTwoP2PKHAddresses() throws {
+        let recipient = try platformFundingAddress(hashByte: 0x01, addressIndex: 0)
+        let p2shOnly = try platformFundingAddress(
+            typeByte: 0x80,
+            hashByte: 0x02,
+            addressIndex: 1)
+
+        XCTAssertThrowsError(
+            try PlatformAddressSyncCoordinator.resolveCoreToPlatformAddressPair(
+                from: [p2shOnly, recipient]))
+    }
+
+    private func platformFundingAddress(
+        typeByte: UInt8 = 0xb0,
+        hashByte: UInt8,
+        accountIndex: UInt32 = 0,
+        addressIndex: UInt32,
+        isUsed: Bool = false
+    ) throws -> DerivedPlatformAddress {
+        let payload = Data([typeByte] + Array(repeating: hashByte, count: 20))
+        let address = try XCTUnwrap(Bech32m.encode(hrp: "tdash", data: payload))
+        return DerivedPlatformAddress(
+            address: address,
+            accountIndex: accountIndex,
+            addressIndex: addressIndex,
+            isUsed: isUsed,
+            balance: 0)
     }
 
     func testShieldedSweepChoosesPrefixWithLargestNetPayout() {

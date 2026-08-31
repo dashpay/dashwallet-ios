@@ -1703,9 +1703,6 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "Getting started with CrowdNode";
 
-/* Core to Platform fee quote request in progress */
-"Getting the network fee quote…" = "S'està obtenint la cotització de la comissió de xarxa…";
-
 /* No comment provided by engineer. */
 "Gift card" = "Gift card";
 
@@ -4862,9 +4859,6 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "El lloc més privat per guardar els teus Dash";
 
-/* Core to Platform fee quote unavailable */
-"The network fee quote is unavailable. Check your connection and try again." = "La cotització de la comissió de xarxa no està disponible. Comproveu la connexió i torneu-ho a provar.";
-
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "La fila de cartera desada no té xarxa: no es pot preparar una resincronització.";
 
@@ -4924,9 +4918,6 @@
 
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Aquests fons passen al teu saldo de Platform i estan a punt per gastar tan bon punt es completi la transferència.";
-
-/* Advisory estimate of the Platform fee deducted from the locked total */
-"Estimated Platform fee" = "Comissió de Platform estimada";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

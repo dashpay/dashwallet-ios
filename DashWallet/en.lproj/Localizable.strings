@@ -774,9 +774,6 @@
 /* Username marketplace: profile entry point */
 "Get another username" = "Get another username";
 
-/* Core to Platform fee quote request in progress */
-"Getting the network fee quote…" = "Getting the network fee quote…";
-
 /* DashPay FAQ */
 "Funds are on the way…" = "Funds are on the way…";
 "How does this compare to Bitcoin in terms of privacy?" = "How does this compare to Bitcoin in terms of privacy?";
@@ -853,9 +850,6 @@
 
 /* Usernames */
 "Temporary username" = "Temporary username";
-
-/* Core to Platform fee quote unavailable */
-"The network fee quote is unavailable. Check your connection and try again." = "The network fee quote is unavailable. Check your connection and try again.";
 
 /* Usernames */
 "The masternode list doesn't carry an evonode's Platform P2P port, so it must be confirmed here. 26656 is the standard port — change it only if this node uses another." = "The masternode list doesn't carry an evonode's Platform P2P port, so it must be confirmed here. 26656 is the standard port — change it only if this node uses another.";
@@ -4717,9 +4711,6 @@
 
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "These funds move to your Platform balance and are ready to spend as soon as the transfer completes.";
-
-/* Advisory estimate of the Platform fee deducted from the locked total */
-"Estimated Platform fee" = "Estimated Platform fee";
 
 /* No comment provided by engineer. */
 "The Dash arrives in your Transparent balance once the network processes the withdrawal." = "The Dash arrives in your Transparent balance once the network processes the withdrawal.";

@@ -263,7 +263,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case authCancelled
         case authFailed
         case shieldedPoolFeeUnavailable
-        case fundingQuoteUnavailable
+        case addressFundingFeeUnavailable
         case platformShieldCapacityChanged(maxShieldableCredits: UInt64?)
         case shieldedSweepWaiting(UInt64)
         case shieldedSweepChanged
@@ -294,8 +294,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString(
                     "There was an error, please try again later",
                     comment: "Core to Shielded pool fee estimate unavailable")
-            case .fundingQuoteUnavailable:
-                return InternalTransferViewModel.coreToPlatformQuoteUnavailableMessage
+            case .addressFundingFeeUnavailable:
+                return NSLocalizedString(
+                    "There was an error, please try again later",
+                    comment: "Core to Platform funding fee estimate unavailable")
             case .platformShieldCapacityChanged(let maxShieldableCredits):
                 guard let maxShieldableCredits else {
                     return NSLocalizedString(
@@ -1019,16 +1021,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// committed, `lastAssetLockOutPoint` is captured so "Try again" resumes
     /// that lock via `resumeFundPlatform` instead of stranding it.
     ///
-    /// Fee-on-top: the funding ST's fee is deducted from the locked value
-    /// (the remainder recipient absorbs `lock − fee`), so `lockValueDuffs`
-    /// carries a quote-sized funding reserve on top of
-    /// `recipientAmountDuffs` — sized by `CoreToPlatformAmountPolicy` from
-    /// the live `getAddressFundingFeeQuote` and FROZEN into the confirmed
-    /// submission by the ViewModel. This coordinator executes that frozen
-    /// value verbatim and never recomputes it, so the Total the user
-    /// confirmed is exactly the lock executed. The Platform balance is
-    /// credited with `lock − actual fee`; the quote is advisory, not a
-    /// guaranteed upper bound of that fee.
+    /// Fee-on-top: the recipient gets an explicit amount and the funding ST's
+    /// fee is deducted from the sender-owned remainder output, so
+    /// `lockValueDuffs` carries a static reserve on top of
+    /// `recipientAmountDuffs`. This coordinator executes the frozen value
+    /// verbatim and never recomputes it, so the Total the user confirmed is
+    /// exactly the lock executed.
     func performFundPlatform(recipientAmountDuffs: UInt64, lockValueDuffs: UInt64?) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
@@ -1041,7 +1039,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
               let lockValueDuffs,
               lockValueDuffs > recipientAmountDuffs
         else {
-            handleFailure(CoordinatorError.fundingQuoteUnavailable)
+            handleFailure(CoordinatorError.addressFundingFeeUnavailable)
             return
         }
         Self.logger.info("🛡️ SHIELD-TX :: core→platform fund route recipient=\(recipientAmountDuffs) lock=\(lockValueDuffs)")
@@ -1070,7 +1068,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
             fundingType: Self.addressAssetLockFundingType)
 
         do {
-            try await PlatformAddressSyncCoordinator.shared.fundFromCore(amountDuffs: lockValueDuffs)
+            try await PlatformAddressSyncCoordinator.shared.fundFromCore(
+                recipientAmountDuffs: recipientAmountDuffs,
+                lockValueDuffs: lockValueDuffs)
         } catch {
             stopAssetLockPolling()
             captureLatestAssetLockOutPoint(
@@ -1092,9 +1092,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Resume of route 5 after its asset lock committed but the address-
     /// funding ST never landed — drives the remaining stages on the SAME
     /// outpoint. Mirrors `resumeAssetLock` on the shielded route.
-    func resumeFundPlatform(outPointTxidWire: Data, outPointVout: UInt32) async {
+    func resumeFundPlatform(
+        outPointTxidWire: Data,
+        outPointVout: UInt32,
+        recipientAmountDuffs: UInt64
+    ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume core→platform fund vout=\(outPointVout)")
+
+        guard recipientAmountDuffs > 0 else {
+            handleFailure(CoordinatorError.addressFundingFeeUnavailable)
+            return
+        }
 
         do {
             _ = try resolveBasicEnvironment()
@@ -1116,7 +1125,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         do {
             try await PlatformAddressSyncCoordinator.shared.resumeFundFromCore(
                 outPointTxid: outPointTxidWire,
-                outPointVout: outPointVout)
+                outPointVout: outPointVout,
+                recipientAmountDuffs: recipientAmountDuffs)
         } catch {
             handleFailure(CoordinatorError.transferFailed(error))
             return

@@ -30,21 +30,20 @@ struct InternalTransferConfirmSheet: View {
     let amountDuffsUnsigned: UInt64
     let creditsAmount: UInt64
     let fiatText: String
-    /// Resolved "Network fee" row value (credits), computed by
+    /// Resolved fee row value (credits), computed by
     /// `InternalTransferViewModel.confirmNetworkFeeCredits` and frozen into
     /// the submission — fee math is banned inside View structs. `nil`
     /// renders as "—".
-    var networkFeeCredits: UInt64? = nil
+    var networkFeeCredits: UInt64?
     /// Resolved "Total" row value (duffs) — what actually leaves the source
     /// balance (`InternalTransferViewModel.confirmTotalDuffs`). `nil`
     /// renders as "—".
-    var totalDuffs: Int64? = nil
-    /// Frozen Core→Platform lock value (duffs) — amount + quote-sized
-    /// reserve, resolved by `InternalTransferViewModel` from the live fee
-    /// quote at Continue and executed verbatim (the coordinator never
-    /// recomputes it), so the Total the user confirms is exactly the lock
+    var totalDuffs: Int64?
+    /// Frozen Core→Platform lock value (duffs) — amount + static funding
+    /// reserve, resolved by `InternalTransferViewModel` at Continue and
+    /// executed verbatim, so the Total the user confirms is exactly the lock
     /// executed. Only meaningful for `.coreToPlatform`.
-    var coreToPlatformLockDuffs: UInt64? = nil
+    var coreToPlatformLockDuffs: UInt64?
     /// Preflighted `AddressCreditWithdrawalTransition` fee — only meaningful
     /// for `.platformToCore` (the fee headroom / netting basis).
     var withdrawalFeeCredits: UInt64? = nil
@@ -244,14 +243,11 @@ struct InternalTransferConfirmSheet: View {
         totalDuffs?.formattedDashAmount ?? "—"
     }
 
-    /// The fee row's label: the Core→Platform fee is the node's advisory
-    /// estimate (charged out of the executed lock, not guaranteed exact),
-    /// so name it honestly; other routes keep the plain "Network fee".
+    /// The fee row's label: Core→Platform uses the existing simple Platform
+    /// fee copy; other routes keep the plain "Network fee".
     private var feeRowLabel: String {
         route == .coreToPlatform
-            ? NSLocalizedString(
-                "Estimated Platform fee",
-                comment: "Advisory estimate of the Platform fee deducted from the locked total")
+            ? NSLocalizedString("Platform fee", comment: "")
             : NSLocalizedString("Network fee", comment: "")
     }
 
@@ -493,7 +489,12 @@ struct InternalTransferConfirmSheet: View {
                 return
             case .coreToPlatform:
                 coordinator.reset()
-                Task { await coordinator.resumeFundPlatform(outPointTxidWire: op.txidWire, outPointVout: op.vout) }
+                Task {
+                    await coordinator.resumeFundPlatform(
+                        outPointTxidWire: op.txidWire,
+                        outPointVout: op.vout,
+                        recipientAmountDuffs: amountDuffsUnsigned)
+                }
                 return
             default:
                 break

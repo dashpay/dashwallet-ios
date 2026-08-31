@@ -1703,9 +1703,6 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "Getting started with CrowdNode";
 
-/* Core to Platform fee quote request in progress */
-"Getting the network fee quote…" = "Po merret oferta e tarifës së rrjetit…";
-
 /* No comment provided by engineer. */
 "Gift card" = "Gift card";
 
@@ -4862,9 +4859,6 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "Vendi më privat për të mbajtur Dash-in tuaj";
 
-/* Core to Platform fee quote unavailable */
-"The network fee quote is unavailable. Check your connection and try again." = "Oferta e tarifës së rrjetit nuk është e disponueshme. Kontrolloni lidhjen tuaj dhe provoni përsëri.";
-
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "Rreshti i ruajtur i kuletës nuk ka rrjet — nuk mund të përgatitet një risinkronizim.";
 
@@ -4924,9 +4918,6 @@
 
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Këto fonde kalojnë te balanca juaj Platform dhe janë gati për t'u shpenzuar sapo transferimi të përfundojë.";
-
-/* Advisory estimate of the Platform fee deducted from the locked total */
-"Estimated Platform fee" = "Tarifa e vlerësuar e Platform";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

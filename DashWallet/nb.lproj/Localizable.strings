@@ -1703,9 +1703,6 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "Getting started with CrowdNode";
 
-/* Core to Platform fee quote request in progress */
-"Getting the network fee quote…" = "Henter tilbud på nettverksgebyr…";
-
 /* No comment provided by engineer. */
 "Gift card" = "Gift card";
 
@@ -4862,9 +4859,6 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "Det mest private stedet å oppbevare Dash-ene dine";
 
-/* Core to Platform fee quote unavailable */
-"The network fee quote is unavailable. Check your connection and try again." = "Tilbudet på nettverksgebyret er ikke tilgjengelig. Sjekk tilkoblingen din og prøv igjen.";
-
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "Den lagrede lommebokoppføringen mangler nettverk — kan ikke klargjøre ny synkronisering.";
 
@@ -4924,9 +4918,6 @@
 
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Disse midlene flyttes til Platform-saldoen din og er klare til bruk så snart overføringen er fullført.";
-
-/* Advisory estimate of the Platform fee deducted from the locked total */
-"Estimated Platform fee" = "Anslått Platform-gebyr";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

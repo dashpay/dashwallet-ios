@@ -1703,9 +1703,6 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "Getting started with CrowdNode";
 
-/* Core to Platform fee quote request in progress */
-"Getting the network fee quote…" = "Võrgutasu hinnangu hankimine…";
-
 /* No comment provided by engineer. */
 "Gift card" = "Gift card";
 
@@ -4862,9 +4859,6 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "Kõige privaatsem koht oma Dashi hoidmiseks";
 
-/* Core to Platform fee quote unavailable */
-"The network fee quote is unavailable. Check your connection and try again." = "Võrgutasu hinnang pole saadaval. Kontrolli ühendust ja proovi uuesti.";
-
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "Salvestatud rahakoti kirjel puudub võrk — uuesti sünkroonimist ei saa ette valmistada.";
 
@@ -4924,9 +4918,6 @@
 
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Need vahendid liiguvad su Platformi jääki ja on kulutamiseks valmis kohe, kui ülekanne lõpeb.";
-
-/* Advisory estimate of the Platform fee deducted from the locked total */
-"Estimated Platform fee" = "Hinnanguline Platformi tasu";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

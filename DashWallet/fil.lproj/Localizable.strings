@@ -1703,9 +1703,6 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "Pagsisimula sa CrowdNode";
 
-/* Core to Platform fee quote request in progress */
-"Getting the network fee quote…" = "Kinukuha ang quote ng bayarin sa network…";
-
 /* No comment provided by engineer. */
 "Gift card" = "Gift card";
 
@@ -4860,9 +4857,6 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "Ang pinakapribadong lugar para itago ang iyong Dash";
 
-/* Core to Platform fee quote unavailable */
-"The network fee quote is unavailable. Check your connection and try again." = "Hindi available ang quote ng bayarin sa network. Suriin ang iyong koneksyon at subukang muli.";
-
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "Walang network ang naka-save na wallet record — hindi maihahanda ang resync.";
 
@@ -4922,9 +4916,6 @@
 
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Napupunta ang pondong ito sa iyong balanse sa Platform at handa nang gastusin sa oras na matapos ang paglilipat.";
-
-/* Advisory estimate of the Platform fee deducted from the locked total */
-"Estimated Platform fee" = "Tinatayang bayarin sa Platform";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

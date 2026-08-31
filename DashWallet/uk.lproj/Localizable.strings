@@ -1703,9 +1703,6 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "Початок роботи з CrowdNode";
 
-/* Core to Platform fee quote request in progress */
-"Getting the network fee quote…" = "Отримання котирування комісії мережі…";
-
 /* No comment provided by engineer. */
 "Gift card" = "Подарункова карта";
 
@@ -4860,9 +4857,6 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "Найприватніше місце для зберігання ваших Dash";
 
-/* Core to Platform fee quote unavailable */
-"The network fee quote is unavailable. Check your connection and try again." = "Котирування комісії мережі недоступне. Перевірте з'єднання та спробуйте ще раз.";
-
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "У збереженого запису гаманця немає мережі — неможливо підготувати пересинхронізацію.";
 
@@ -4922,9 +4916,6 @@
 
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Ці кошти переходять на ваш баланс Platform і готові до витрачання, щойно переказ завершиться.";
-
-/* Advisory estimate of the Platform fee deducted from the locked total */
-"Estimated Platform fee" = "Орієнтовна комісія Platform";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

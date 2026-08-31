@@ -1703,9 +1703,6 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "Getting started with CrowdNode";
 
-/* Core to Platform fee quote request in progress */
-"Getting the network fee quote…" = "Se obţine oferta pentru taxa de reţea…";
-
 /* No comment provided by engineer. */
 "Gift card" = "Gift card";
 
@@ -4862,9 +4859,6 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "Cel mai privat loc pentru a-ți ține Dash-ii";
 
-/* Core to Platform fee quote unavailable */
-"The network fee quote is unavailable. Check your connection and try again." = "Oferta pentru taxa de reţea nu este disponibilă. Verificaţi conexiunea şi încercaţi din nou.";
-
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "Înregistrarea salvată a portofelului nu are rețea — resincronizarea nu poate fi pregătită.";
 
@@ -4924,9 +4918,6 @@
 
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Aceste fonduri trec în soldul tău Platform și sunt gata de cheltuit imediat ce transferul se finalizează.";
-
-/* Advisory estimate of the Platform fee deducted from the locked total */
-"Estimated Platform fee" = "Taxă Platform estimată";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

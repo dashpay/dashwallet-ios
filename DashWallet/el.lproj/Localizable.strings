@@ -1703,9 +1703,6 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "Ξεκινώντας με το CrowdNode";
 
-/* Core to Platform fee quote request in progress */
-"Getting the network fee quote…" = "Λήψη προσφοράς τέλους δικτύου…";
-
 /* No comment provided by engineer. */
 "Gift card" = "Δωροκάρτα";
 
@@ -4860,9 +4857,6 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "Το πιο ιδιωτικό μέρος για να κρατάτε τα Dash σας";
 
-/* Core to Platform fee quote unavailable */
-"The network fee quote is unavailable. Check your connection and try again." = "Η προσφορά τέλους δικτύου δεν είναι διαθέσιμη. Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά.";
-
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "Η αποθηκευμένη εγγραφή πορτοφολιού δεν έχει δίκτυο — δεν είναι δυνατός ο προγραμματισμός επανασυγχρονισμού.";
 
@@ -4922,9 +4916,6 @@
 
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Αυτά τα κεφάλαια μεταφέρονται στο υπόλοιπο Platform και είναι έτοιμα για δαπάνη μόλις ολοκληρωθεί η μεταφορά.";
-
-/* Advisory estimate of the Platform fee deducted from the locked total */
-"Estimated Platform fee" = "Εκτιμώμενο τέλος Platform";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

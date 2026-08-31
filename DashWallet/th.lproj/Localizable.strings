@@ -1703,9 +1703,6 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "เริ่มต้นใช้งาน CrowdNode";
 
-/* Core to Platform fee quote request in progress */
-"Getting the network fee quote…" = "กำลังขอใบเสนอราคาค่าธรรมเนียมเครือข่าย…";
-
 /* No comment provided by engineer. */
 "Gift card" = "บัตรของขวัญ";
 
@@ -4860,9 +4857,6 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "ที่ที่เป็นส่วนตัวที่สุดสำหรับเก็บ Dash ของคุณ";
 
-/* Core to Platform fee quote unavailable */
-"The network fee quote is unavailable. Check your connection and try again." = "ใบเสนอราคาค่าธรรมเนียมเครือข่ายไม่พร้อมใช้งาน โปรดตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง";
-
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "ระเบียนกระเป๋าเงินที่บันทึกไว้ไม่มีเครือข่าย — เตรียมการซิงค์ใหม่ไม่ได้";
 
@@ -4922,9 +4916,6 @@
 
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "เงินนี้จะย้ายไปยังยอดคงเหลือ Platform ของคุณ และพร้อมใช้จ่ายทันทีที่การโอนเสร็จสมบูรณ์";
-
-/* Advisory estimate of the Platform fee deducted from the locked total */
-"Estimated Platform fee" = "ค่าธรรมเนียม Platform โดยประมาณ";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

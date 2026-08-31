@@ -1703,9 +1703,6 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "Getting started with CrowdNode";
 
-/* Core to Platform fee quote request in progress */
-"Getting the network fee quote…" = "Đang lấy báo giá phí mạng…";
-
 /* No comment provided by engineer. */
 "Gift card" = "Gift card";
 
@@ -4862,9 +4859,6 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "Nơi riêng tư nhất để giữ Dash của bạn";
 
-/* Core to Platform fee quote unavailable */
-"The network fee quote is unavailable. Check your connection and try again." = "Báo giá phí mạng không khả dụng. Hãy kiểm tra kết nối và thử lại.";
-
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "Bản ghi ví đã lưu không có mạng — không thể chuẩn bị đồng bộ lại.";
 
@@ -4924,9 +4918,6 @@
 
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Số tiền này chuyển vào số dư Platform của bạn và sẵn sàng để chi tiêu ngay khi việc chuyển hoàn tất.";
-
-/* Advisory estimate of the Platform fee deducted from the locked total */
-"Estimated Platform fee" = "Phí Platform ước tính";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
