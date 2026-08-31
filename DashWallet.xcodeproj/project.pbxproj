@@ -12468,7 +12468,7 @@
 				);
 				INFOPLIST_FILE = "DashPay/dashpay-info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = DashPay;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
