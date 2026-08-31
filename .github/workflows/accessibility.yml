@@ -1,0 +1,76 @@
+name: "Accessibility"
+
+# Static VoiceOver / Dynamic Type audit (scripts/a11y_audit.py).
+#
+# The job fails only on findings that are NOT in scripts/a11y_baseline.json, so
+# the existing debt never blocks unrelated work — but a PR cannot add a new
+# unlabeled control. New P2 findings (Dynamic Type) are reported as advisory and
+# do not fail the build.
+#
+# No Xcode needed: the audit is static analysis, so it runs on a free Ubuntu
+# runner in about a second.
+
+on:
+  pull_request:
+    paths:
+      - "DashWallet/**"
+      - "TodayExtension/**"
+      - "WatchApp/**"
+      - "WatchApp Extension/**"
+      - "scripts/a11y_audit.py"
+      - "scripts/a11y_baseline.json"
+      - ".github/workflows/accessibility.yml"
+  push:
+    branches:
+      - develop
+      - master
+  workflow_dispatch:
+    inputs:
+      fail_on:
+        description: "Severities that fail the run (P0,P1 | all)"
+        required: false
+        default: "P0,P1"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: VoiceOver / Dynamic Type audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # If the rules themselves regress, every later result is meaningless —
+      # so the fixtures run before the audit.
+      - name: Rule self-test
+        run: python3 scripts/a11y_audit.py --self-test
+
+      - name: Audit changed code against the baseline
+        id: audit
+        run: |
+          python3 scripts/a11y_audit.py \
+            --check \
+            --github \
+            --fail-on "${{ github.event.inputs.fail_on || 'P0,P1' }}"
+
+      - name: Current debt summary
+        # Runs even when the check above fails, so the PR always shows where
+        # the app stands overall.
+        if: always()
+        run: |
+          {
+            echo "### Accessibility debt"
+            echo
+            echo '```'
+            python3 scripts/a11y_audit.py --summary
+            echo '```'
+            echo
+            echo "Fails only on findings absent from \`scripts/a11y_baseline.json\`."
+            echo "Deliberate exception: \`// a11y-ignore: <RULE> <why>\` on the line."
+            echo "Fixed something? \`scripts/a11y_audit.py --write-baseline\` banks it."
+          } >> "$GITHUB_STEP_SUMMARY"

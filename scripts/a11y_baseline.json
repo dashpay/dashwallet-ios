@@ -1,0 +1,4623 @@
+{
+  "_comment": [
+    "Accepted accessibility debt, recorded by scripts/a11y_audit.py.",
+    "CI fails only on findings that are NOT in this list, so the debt",
+    "can shrink over time without blocking unrelated work.",
+    "Regenerate with: scripts/a11y_audit.py --write-baseline"
+  ],
+  "counts": {
+    "A11Y008": 8,
+    "A11Y002": 10,
+    "A11Y003": 1,
+    "A11Y004": 30,
+    "A11Y005": 1,
+    "A11Y006": 2,
+    "A11Y009": 2,
+    "A11Y010": 3,
+    "A11Y011": 11,
+    "A11Y012": 30,
+    "A11Y007": 559
+  },
+  "total": 657,
+  "findings": [
+    {
+      "rule": "A11Y008",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "84144361824789ed",
+      "line_when_recorded": 24,
+      "snippet": "public static let largeTitle: Font = .system(size: 34, weight: .bold)"
+    },
+    {
+      "rule": "A11Y008",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "809e21b4ebdef45d",
+      "line_when_recorded": 30,
+      "snippet": "public static let title2: Font = .system(size: 22, weight: .bold)"
+    },
+    {
+      "rule": "A11Y008",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "33631dcce2e417b2",
+      "line_when_recorded": 33,
+      "snippet": "public static let title3: Font = .system(size: 20, weight: .bold)"
+    },
+    {
+      "rule": "A11Y008",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "58e68dd11ff6fcd2",
+      "line_when_recorded": 41,
+      "snippet": "public static let headline: Font = .system(size: 17, weight: .bold)"
+    },
+    {
+      "rule": "A11Y008",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "6aad66c68311c82d",
+      "line_when_recorded": 44,
+      "snippet": "public static let body: Font = .system(size: 17, weight: .regular)"
+    },
+    {
+      "rule": "A11Y008",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "25461bc4e19d3a67",
+      "line_when_recorded": 47,
+      "snippet": "public static let callout: Font = .system(size: 16, weight: .regular)"
+    },
+    {
+      "rule": "A11Y008",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "d78b42282c6327c1",
+      "line_when_recorded": 59,
+      "snippet": "public static let footnote: Font = .system(size: 13, weight: .regular)"
+    },
+    {
+      "rule": "A11Y008",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "9399897f3ba8d951",
+      "line_when_recorded": 68,
+      "snippet": "public static let caption2: Font = .system(size: 11, weight: .regular)"
+    },
+    {
+      "rule": "A11Y002",
+      "path": "DashWallet/Sources/UI/CrowdNode/Portal/CrowdNodePortalViewController.swift",
+      "fingerprint": "d4e5d5705b3b7865",
+      "line_when_recorded": 115,
+      "snippet": "navigationItem.leftBarButtonItem = UIBarButtonItem(customView: backButton)"
+    },
+    {
+      "rule": "A11Y002",
+      "path": "DashWallet/Sources/UI/CrowdNode/Portal/CrowdNodePortalViewController.swift",
+      "fingerprint": "d5fb2fe8cef6e430",
+      "line_when_recorded": 121,
+      "snippet": "let button = UIBarButtonItem(image: buttonImage, style: UIBarButtonItem.Style.plain, target: self, action: #selector(infoButtonAction))"
+    },
+    {
+      "rule": "A11Y002",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/List/ExplorePointOfUseListViewController.swift",
+      "fingerprint": "baade693e219e86b",
+      "line_when_recorded": 405,
+      "snippet": "let appliedFilters = UIBarButtonItem(customView: appliedFiltersStackView)"
+    },
+    {
+      "rule": "A11Y002",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/List/ExplorePointOfUseListViewController.swift",
+      "fingerprint": "c7dd6b33b822fa89",
+      "line_when_recorded": 406,
+      "snippet": "let filter = UIBarButtonItem(image: .init(systemName: \"line.3.horizontal.decrease.circle.fill\"), style: .plain,"
+    },
+    {
+      "rule": "A11Y002",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/List/ExplorePointOfUseListViewController.swift",
+      "fingerprint": "a39c4dd0b02ca581",
+      "line_when_recorded": 410,
+      "snippet": "let fakeFilter = UIBarButtonItem(image: .init(systemName: \"line.3.horizontal.decrease.circle.fill\"), style: .plain,"
+    },
+    {
+      "rule": "A11Y002",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/List/MerchantListViewController.swift",
+      "fingerprint": "7609009204e51cf1",
+      "line_when_recorded": 413,
+      "snippet": "infoButton = UIBarButtonItem(image: infoImage, style: .plain, target: self, action: #selector(infoButtonAction))"
+    },
+    {
+      "rule": "A11Y002",
+      "path": "DashWallet/Sources/UI/Home/HomeViewController.swift",
+      "fingerprint": "b5d8e9956bd12717",
+      "line_when_recorded": 201,
+      "snippet": "let notificationButton = UIBarButtonItem(image: notificationsImage, style: .plain, target: self, action: #selector(notificationAction))"
+    },
+    {
+      "rule": "A11Y002",
+      "path": "DashWallet/Sources/UI/Home/HomeViewController.swift",
+      "fingerprint": "ebd65e8d9018fa1f",
+      "line_when_recorded": 265,
+      "snippet": "let avatarButton = UIBarButtonItem(customView: avatarView)"
+    },
+    {
+      "rule": "A11Y002",
+      "path": "DashWallet/Sources/UI/Views/BaseController/ActionButtonViewController.swift",
+      "fingerprint": "6f9ea5c48f770b44",
+      "line_when_recorded": 80,
+      "snippet": "let barButtonItem = UIBarButtonItem(customView: activityIndicator)"
+    },
+    {
+      "rule": "A11Y002",
+      "path": "DashWallet/Sources/UI/Views/Navigation/BaseNavigationController.swift",
+      "fingerprint": "7bfea68d64b4670a",
+      "line_when_recorded": 182,
+      "snippet": "let item = UIBarButtonItem(customView: backButton)"
+    },
+    {
+      "rule": "A11Y003",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/List/Views/ExploreMapView.swift",
+      "fingerprint": "89ee65e07c6d997c",
+      "line_when_recorded": 355,
+      "snippet": "let myLocationButton = UIButton(type: .custom)"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "009e4095a4d81052",
+      "line_when_recorded": 842,
+      "snippet": "Button(action: action) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/DashPay/Setup/CreateUsername/VerifyIdentityScreen.swift",
+      "fingerprint": "ee77ca9025da8d06",
+      "line_when_recorded": 63,
+      "snippet": "Button(action: {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/DashPay/Voting/UsernameVotingScreen.swift",
+      "fingerprint": "84301d0300925c1f",
+      "line_when_recorded": 70,
+      "snippet": "Button(action: onClose) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/Details/Views/POIDetailsView.swift",
+      "fingerprint": "5e7e3f2cb094defe",
+      "line_when_recorded": 210,
+      "snippet": "Button(action: directionAction) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/List/Filters/TerritoryPickerView.swift",
+      "fingerprint": "900e00a721ab69b5",
+      "line_when_recorded": 123,
+      "snippet": "Button(action: {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Explore Dash/Views/DashSpend/DashSpendTermsScreen.swift",
+      "fingerprint": "42faa08080b47ad5",
+      "line_when_recorded": 37,
+      "snippet": "Button(action: {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Explore Dash/Views/DashSpend/DashSpendUserAuthScreen.swift",
+      "fingerprint": "74154c279d5c7aae",
+      "line_when_recorded": 81,
+      "snippet": "Button(action: {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Explore Dash/Views/DashSpend/GiftCardDetails/Components/GiftCardDetailsInfoCard.swift",
+      "fingerprint": "72248ae40da4edfa",
+      "line_when_recorded": 209,
+      "snippet": "Button(action: onCopy) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "0defbdba85142afb",
+      "line_when_recorded": 119,
+      "snippet": "Button(action: { vc.popViewController(animated: true) }) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "0defbdba85142afb",
+      "line_when_recorded": 424,
+      "snippet": "Button(action: { vc.popViewController(animated: true) }) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletAccountDetailScreen.swift",
+      "fingerprint": "9973c8027a37796c",
+      "line_when_recorded": 95,
+      "snippet": "Button(action: { vc.popViewController(animated: true) }) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/DashPaySyncInfoScreen.swift",
+      "fingerprint": "e28ac9d78d9b4361",
+      "line_when_recorded": 144,
+      "snippet": "Button(action: {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "141c4ce5af723be1",
+      "line_when_recorded": 43,
+      "snippet": "Button(action: {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "934f5ceac27db560",
+      "line_when_recorded": 195,
+      "snippet": "Button(action: { UIPasteboard.general.string = addr.address }) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "aeecd142cce9e6b0",
+      "line_when_recorded": 37,
+      "snippet": "Button(action: {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "5dc99df382b60ffb",
+      "line_when_recorded": 86,
+      "snippet": "Button(action: {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "5dc99df382b60ffb",
+      "line_when_recorded": 301,
+      "snippet": "Button(action: {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Menu/Tools/MasternodesScreen.swift",
+      "fingerprint": "03e7e9f74095825b",
+      "line_when_recorded": 236,
+      "snippet": "Button(action: popRoot) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Menu/Tools/StorageExplorer/StorageExplorerView.swift",
+      "fingerprint": "f84c69b86412d8e5",
+      "line_when_recorded": 102,
+      "snippet": "Button(action: { loadCounts() }) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Menu/Tools/ToolsMenuScreen.swift",
+      "fingerprint": "6c7e2ee173df03f8",
+      "line_when_recorded": 259,
+      "snippet": "Button(action: popRoot) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Menu/Tools/ToolsMenuScreen.swift",
+      "fingerprint": "6c7e2ee173df03f8",
+      "line_when_recorded": 275,
+      "snippet": "Button(action: popRoot) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Payments/Landing/PaymentsLandingScreen.swift",
+      "fingerprint": "08b7fc2fb4037212",
+      "line_when_recorded": 109,
+      "snippet": "Button(action: onClose) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "a1c9d3de8022efc3",
+      "line_when_recorded": 87,
+      "snippet": "Button(action: onClose) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "3ddfd8b898b8480f",
+      "line_when_recorded": 588,
+      "snippet": "Button(action: onBack) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/Swap/QRScanner/GenericQRScannerView.swift",
+      "fingerprint": "0143fd4144df14a0",
+      "line_when_recorded": 61,
+      "snippet": "Button(action: { torchOn.toggle() }) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/NavigationBar.swift",
+      "fingerprint": "c2ea76f6cd01c31f",
+      "line_when_recorded": 152,
+      "snippet": "Button(action: onBack) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/NavigationBar.swift",
+      "fingerprint": "c2ea76f6cd01c31f",
+      "line_when_recorded": 211,
+      "snippet": "Button(action: onBack) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/NavigationBar.swift",
+      "fingerprint": "6833995482ae652e",
+      "line_when_recorded": 233,
+      "snippet": "Button(action: onAdd) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/NavigationBar.swift",
+      "fingerprint": "a7dc9971f9cf05c0",
+      "line_when_recorded": 287,
+      "snippet": "Button(action: onClose) {"
+    },
+    {
+      "rule": "A11Y004",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/SendIntro.swift",
+      "fingerprint": "04a22d3697ea388b",
+      "line_when_recorded": 69,
+      "snippet": "Button(action: {"
+    },
+    {
+      "rule": "A11Y005",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/MenuItem.swift",
+      "fingerprint": "3ea1f401f0b12c36",
+      "line_when_recorded": 232,
+      "snippet": "Toggle(isOn: $isToggled) { }"
+    },
+    {
+      "rule": "A11Y006",
+      "path": "DashWallet/Sources/UI/CrowdNode/Portal/CrowdNodePortalViewController.swift",
+      "fingerprint": "67c208cbce08b390",
+      "line_when_recorded": 109,
+      "snippet": "let backButton = UIButton(type: .custom)"
+    },
+    {
+      "rule": "A11Y006",
+      "path": "DashWallet/Sources/UI/Views/Navigation/BaseNavigationController.swift",
+      "fingerprint": "4423c686f217929f",
+      "line_when_recorded": 177,
+      "snippet": "let backButton = UIButton(type: .custom)"
+    },
+    {
+      "rule": "A11Y009",
+      "path": "DashWallet/Sources/UI/Menu/Tools/StorageExplorer/StorageModelListViews.swift",
+      "fingerprint": "5cd54c554ab5a556",
+      "line_when_recorded": 151,
+      "snippet": ".accessibilityLabel(Text(\"Refresh from Platform\"))"
+    },
+    {
+      "rule": "A11Y009",
+      "path": "DashWallet/Sources/UI/Menu/Tools/StorageExplorer/StorageRecordDetailViews.swift",
+      "fingerprint": "454683cec5a6c99c",
+      "line_when_recorded": 116,
+      "snippet": ".accessibilityLabel(Text(\"Refresh from Platform\"))"
+    },
+    {
+      "rule": "A11Y010",
+      "path": "DashWallet/Sources/UI/DashConnect/Components/ConnectionRow.swift",
+      "fingerprint": "02df12e2f7227b32",
+      "line_when_recorded": 105,
+      "snippet": ".accessibilityLabel(Text(NSLocalizedString(\"Disconnect\", comment: \"DashConnect\")))"
+    },
+    {
+      "rule": "A11Y010",
+      "path": "DashWallet/Sources/UI/Home/Views/HomeUsernameRow.swift",
+      "fingerprint": "fc20a8f3918a7567",
+      "line_when_recorded": 31,
+      "snippet": ".accessibilityLabel(Text(String(format: NSLocalizedString(\"My profile, %@\", comment: \"Home — persistent username row accessibility label\"), username)))"
+    },
+    {
+      "rule": "A11Y010",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "6050298251b9e842",
+      "line_when_recorded": 838,
+      "snippet": ".accessibilityLabel(Text(NSLocalizedString(\"Refresh keys from Platform\", comment: \"Identities: re-fetch this identity's public keys\")))"
+    },
+    {
+      "rule": "A11Y011",
+      "path": "DashWallet/Sources/UI/Buy Sell/BuySellPortal.storyboard",
+      "fingerprint": "b09336b2b50985cf",
+      "line_when_recorded": 315,
+      "snippet": "<barButtonItem key=\"rightBarButtonItem\" id=\"hlH-Nb-mXz\">"
+    },
+    {
+      "rule": "A11Y011",
+      "path": "DashWallet/Sources/UI/Coinbase/Base.lproj/Coinbase.storyboard",
+      "fingerprint": "e59764611405db5d",
+      "line_when_recorded": 380,
+      "snippet": "<button opaque=\"NO\" contentMode=\"scaleToFill\" selected=\"YES\" contentHorizontalAlignment=\"center\" contentVerticalAlignment=\"center\" lineBreakMode=\"middleTruncati"
+    },
+    {
+      "rule": "A11Y011",
+      "path": "DashWallet/Sources/UI/Coinbase/Base.lproj/Coinbase.storyboard",
+      "fingerprint": "11cf4bf48799ba77",
+      "line_when_recorded": 449,
+      "snippet": "<button opaque=\"NO\" contentMode=\"scaleToFill\" contentHorizontalAlignment=\"center\" contentVerticalAlignment=\"center\" lineBreakMode=\"middleTruncation\" translatesA"
+    },
+    {
+      "rule": "A11Y011",
+      "path": "DashWallet/Sources/UI/Coinbase/Base.lproj/Coinbase.storyboard",
+      "fingerprint": "11cf4bf48799ba77",
+      "line_when_recorded": 502,
+      "snippet": "<button opaque=\"NO\" contentMode=\"scaleToFill\" contentHorizontalAlignment=\"center\" contentVerticalAlignment=\"center\" lineBreakMode=\"middleTruncation\" translatesA"
+    },
+    {
+      "rule": "A11Y011",
+      "path": "DashWallet/Sources/UI/CrowdNode/CrowdNode.storyboard",
+      "fingerprint": "f8cdb0ea182d85bc",
+      "line_when_recorded": 88,
+      "snippet": "<buttonConfiguration key=\"configuration\" style=\"plain\" image=\"icon_copy_outline\"/>"
+    },
+    {
+      "rule": "A11Y011",
+      "path": "DashWallet/Sources/UI/CrowdNode/CrowdNode.storyboard",
+      "fingerprint": "f8cdb0ea182d85bc",
+      "line_when_recorded": 1335,
+      "snippet": "<buttonConfiguration key=\"configuration\" style=\"plain\" image=\"icon_copy_outline\"/>"
+    },
+    {
+      "rule": "A11Y011",
+      "path": "DashWallet/Sources/UI/CrowdNode/CrowdNode.storyboard",
+      "fingerprint": "f8cdb0ea182d85bc",
+      "line_when_recorded": 1516,
+      "snippet": "<buttonConfiguration key=\"configuration\" style=\"plain\" image=\"icon_copy_outline\"/>"
+    },
+    {
+      "rule": "A11Y011",
+      "path": "DashWallet/Sources/UI/CrowdNode/CrowdNode.storyboard",
+      "fingerprint": "f8cdb0ea182d85bc",
+      "line_when_recorded": 1573,
+      "snippet": "<buttonConfiguration key=\"configuration\" style=\"plain\" image=\"icon_copy_outline\"/>"
+    },
+    {
+      "rule": "A11Y011",
+      "path": "DashWallet/Sources/UI/CrowdNode/CrowdNode.storyboard",
+      "fingerprint": "f8cdb0ea182d85bc",
+      "line_when_recorded": 1719,
+      "snippet": "<buttonConfiguration key=\"configuration\" style=\"plain\" image=\"icon_copy_outline\"/>"
+    },
+    {
+      "rule": "A11Y011",
+      "path": "DashWallet/Sources/UI/CrowdNode/CrowdNode.storyboard",
+      "fingerprint": "f8cdb0ea182d85bc",
+      "line_when_recorded": 1776,
+      "snippet": "<buttonConfiguration key=\"configuration\" style=\"plain\" image=\"icon_copy_outline\"/>"
+    },
+    {
+      "rule": "A11Y011",
+      "path": "WatchApp/Base.lproj/Interface.storyboard",
+      "fingerprint": "5c416c3a871270f5",
+      "line_when_recorded": 192,
+      "snippet": "<button width=\"1\" alignment=\"left\" id=\"DPm-5o-p0S\">"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "6f1e1bdcc4e3f2e4",
+      "line_when_recorded": 315,
+      "snippet": ".onTapGesture { previewTarget = candidate(result) }"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "d2959c4b0d5e37bf",
+      "line_when_recorded": 196,
+      "snippet": ".onTapGesture {"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "d2959c4b0d5e37bf",
+      "line_when_recorded": 665,
+      "snippet": ".onTapGesture {"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "2d2830c857230f01",
+      "line_when_recorded": 467,
+      "snippet": ".onTapGesture { selectedContact = item }"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "2d2830c857230f01",
+      "line_when_recorded": 479,
+      "snippet": ".onTapGesture { selectedContact = item }"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "2d2830c857230f01",
+      "line_when_recorded": 490,
+      "snippet": ".onTapGesture { selectedContact = item }"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "2d2830c857230f01",
+      "line_when_recorded": 503,
+      "snippet": ".onTapGesture { selectedContact = item }"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "d472650a84c0a9f9",
+      "line_when_recorded": 557,
+      "snippet": ".onTapGesture { openAddContact(query: result.fullName.withoutDashSuffix) }"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/NotificationsScreen.swift",
+      "fingerprint": "9e40677581eede6f",
+      "line_when_recorded": 262,
+      "snippet": ".onTapGesture { selectedContact = event.item }"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/DashPay/Setup/CreateUsername/JoinDashPayView.swift",
+      "fingerprint": "c109fb9a8a3f5dee",
+      "line_when_recorded": 190,
+      "snippet": ".onTapGesture {"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/List/Filters/MerchantFiltersView.swift",
+      "fingerprint": "2ebc5e2101a3d71d",
+      "line_when_recorded": 298,
+      "snippet": ".onTapGesture {"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/Explore Dash/Views/DashSpend/DashSpendConfirmationDialog.swift",
+      "fingerprint": "36150e2a5946d5f7",
+      "line_when_recorded": 198,
+      "snippet": ".onTapGesture { isPresented = true }"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/Explore Dash/Views/DashSpend/DashSpendTermsScreen.swift",
+      "fingerprint": "cd218d8662236d70",
+      "line_when_recorded": 102,
+      "snippet": ".onTapGesture {"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/Home/Views/Home Balance View/HomeBalanceView.swift",
+      "fingerprint": "fc42cdfce0dd86d8",
+      "line_when_recorded": 133,
+      "snippet": ".onTapGesture {"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/Home/Views/HomeView.swift",
+      "fingerprint": "99b0140a7827009d",
+      "line_when_recorded": 763,
+      "snippet": ".onTapGesture { self.selectedTxDataItem = txDataItem }"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/Home/Views/HomeView.swift",
+      "fingerprint": "99b0140a7827009d",
+      "line_when_recorded": 777,
+      "snippet": ".onTapGesture { self.selectedTxDataItem = txDataItem }"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/Home/Views/Shortcuts/ShortcutsBarView.swift",
+      "fingerprint": "6fe03e4a2f2fd1fd",
+      "line_when_recorded": 107,
+      "snippet": ".onTapGesture { onSelect() }"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "0e2bbe238ad43f4b",
+      "line_when_recorded": 57,
+      "snippet": ".onTapGesture { showDetail(row) }"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletAccountDetailScreen.swift",
+      "fingerprint": "a56aa329e1d56193",
+      "line_when_recorded": 252,
+      "snippet": ".onTapGesture { copy(item.address) }"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletAccountsScreen.swift",
+      "fingerprint": "56c740b37bdf311f",
+      "line_when_recorded": 64,
+      "snippet": ".onTapGesture { showDetail(row) }"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "96732b96cf9bc821",
+      "line_when_recorded": 81,
+      "snippet": ".onTapGesture { showAccounts(row) }"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/Menu/Settings/LocalCurrency/LocalCurrencyView.swift",
+      "fingerprint": "a76ed76dc8df1d8f",
+      "line_when_recorded": 131,
+      "snippet": ".onTapGesture {"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/Menu/Tools/StorageExplorer/StorageRecordDetailViews.swift",
+      "fingerprint": "5e88a5e8846b28b1",
+      "line_when_recorded": 29,
+      "snippet": ".onTapGesture {"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/Menu/Tools/StorageExplorer/StorageRecordDetailViews.swift",
+      "fingerprint": "5e88a5e8846b28b1",
+      "line_when_recorded": 480,
+      "snippet": ".onTapGesture {"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/Menu/Tools/StorageExplorer/StorageRecordDetailViews.swift",
+      "fingerprint": "5e88a5e8846b28b1",
+      "line_when_recorded": 675,
+      "snippet": ".onTapGesture {"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/Payments/Landing/PaymentsLandingScreen.swift",
+      "fingerprint": "76d131dd1c2c9c51",
+      "line_when_recorded": 301,
+      "snippet": ".onTapGesture { onCopyAddress() }"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/Swap/OrderPreview/Components/OrderPreviewFeeRow.swift",
+      "fingerprint": "c0638eb367473ee1",
+      "line_when_recorded": 51,
+      "snippet": ".onTapGesture { showInfoSheet = true }"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Dialogs/ConfirmSpendDialog.swift",
+      "fingerprint": "a66835180ca20a96",
+      "line_when_recorded": 46,
+      "snippet": ".onTapGesture {"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Dialogs/ConfirmSpendDialog.swift",
+      "fingerprint": "a66835180ca20a96",
+      "line_when_recorded": 88,
+      "snippet": ".onTapGesture {"
+    },
+    {
+      "rule": "A11Y012",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/TextInput.swift",
+      "fingerprint": "13ea5194fb6d6d2b",
+      "line_when_recorded": 86,
+      "snippet": ".onTapGesture {"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Auth/PinPromptView.swift",
+      "fingerprint": "323053bb1509331d",
+      "line_when_recorded": 229,
+      "snippet": ".font(.system(size: 17, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Auth/PinPromptView.swift",
+      "fingerprint": "b2d6137cba3ec4de",
+      "line_when_recorded": 237,
+      "snippet": ".font(.system(size: 13, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Auth/PinPromptView.swift",
+      "fingerprint": "4466c2bfca075e99",
+      "line_when_recorded": 244,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Auth/PinPromptView.swift",
+      "fingerprint": "67888c5050ef935a",
+      "line_when_recorded": 257,
+      "snippet": ".font(.system(size: 17))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "0f9a19cb80a0725c",
+      "line_when_recorded": 205,
+      "snippet": ".font(.system(size: 14, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "b22a69b756b6da3a",
+      "line_when_recorded": 216,
+      "snippet": ".font(.system(size: 44))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "7ea3ef1c02ce67cc",
+      "line_when_recorded": 221,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "836e74fad9faf0fe",
+      "line_when_recorded": 261,
+      "snippet": ".font(.system(size: 17, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "7ea3ef1c02ce67cc",
+      "line_when_recorded": 263,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "6f2085bcd59da200",
+      "line_when_recorded": 279,
+      "snippet": ".font(.system(size: 56, weight: .light))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "da71ac82e66f3517",
+      "line_when_recorded": 283,
+      "snippet": ".font(.system(size: 20, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "b04ceca88a0d5e2d",
+      "line_when_recorded": 286,
+      "snippet": ".font(.system(size: 16))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "60cbb96f56f4a9d9",
+      "line_when_recorded": 300,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "60cbb96f56f4a9d9",
+      "line_when_recorded": 305,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "49796c018dfde2e3",
+      "line_when_recorded": 374,
+      "snippet": ".font(.system(size: 17, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "fa29be4afd46accf",
+      "line_when_recorded": 379,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "66e268fee870c301",
+      "line_when_recorded": 681,
+      "snippet": ".font(.system(size: 22, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "60cbb96f56f4a9d9",
+      "line_when_recorded": 687,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "60cbb96f56f4a9d9",
+      "line_when_recorded": 696,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "60cbb96f56f4a9d9",
+      "line_when_recorded": 703,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "7ea3ef1c02ce67cc",
+      "line_when_recorded": 772,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "6c93b028a3e48534",
+      "line_when_recorded": 784,
+      "snippet": "Text(title).font(.system(size: 14, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "66e268fee870c301",
+      "line_when_recorded": 812,
+      "snippet": ".font(.system(size: 22, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "60cbb96f56f4a9d9",
+      "line_when_recorded": 817,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/AddContactScreen.swift",
+      "fingerprint": "60cbb96f56f4a9d9",
+      "line_when_recorded": 840,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactAvatarView.swift",
+      "fingerprint": "fe280c80eae046b6",
+      "line_when_recorded": 59,
+      "snippet": ".font(.system(size: size * 0.5, weight: .regular))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactAvatarView.swift",
+      "fingerprint": "88a2623c1cc24cee",
+      "line_when_recorded": 97,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactAvatarView.swift",
+      "fingerprint": "dd066f8455e8f8b2",
+      "line_when_recorded": 117,
+      "snippet": ".font(.system(size: 12, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactAvatarView.swift",
+      "fingerprint": "e499779a2ca3c48e",
+      "line_when_recorded": 142,
+      "snippet": ".font(.system(size: 15))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactAvatarView.swift",
+      "fingerprint": "7d9f0b7688ee54fc",
+      "line_when_recorded": 233,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactAvatarView.swift",
+      "fingerprint": "eab76b81339485e0",
+      "line_when_recorded": 237,
+      "snippet": ".font(.system(size: 12, design: .monospaced))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactAvatarView.swift",
+      "fingerprint": "735ef047a069cb5f",
+      "line_when_recorded": 242,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "ac62203b00dcf55a",
+      "line_when_recorded": 74,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "fe1c60df270e5cb6",
+      "line_when_recorded": 154,
+      "snippet": ".font(.system(size: 13, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "e5e97d453dd650a7",
+      "line_when_recorded": 173,
+      "snippet": ".font(.system(size: 20, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "ac62203b00dcf55a",
+      "line_when_recorded": 182,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "ce70d9f0492921e9",
+      "line_when_recorded": 189,
+      "snippet": ".font(.system(size: 12, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "54902d031f2af9b5",
+      "line_when_recorded": 214,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "6ba1f1a70860a1e7",
+      "line_when_recorded": 225,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "6ba1f1a70860a1e7",
+      "line_when_recorded": 238,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "e1b808e60f9836c7",
+      "line_when_recorded": 253,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "fe1c60df270e5cb6",
+      "line_when_recorded": 255,
+      "snippet": ".font(.system(size: 13, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "6ba1f1a70860a1e7",
+      "line_when_recorded": 287,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "6ba1f1a70860a1e7",
+      "line_when_recorded": 309,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "3ce6513e8aa334e1",
+      "line_when_recorded": 328,
+      "snippet": ".font(.system(size: 17, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "e1b808e60f9836c7",
+      "line_when_recorded": 331,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "5e11110294a7ae48",
+      "line_when_recorded": 336,
+      "snippet": ".font(.system(size: 15))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "5e11110294a7ae48",
+      "line_when_recorded": 347,
+      "snippet": ".font(.system(size: 15))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "d29484accb68087a",
+      "line_when_recorded": 360,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "6ba1f1a70860a1e7",
+      "line_when_recorded": 453,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "54902d031f2af9b5",
+      "line_when_recorded": 458,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "3ce6513e8aa334e1",
+      "line_when_recorded": 476,
+      "snippet": ".font(.system(size: 17, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "e1b808e60f9836c7",
+      "line_when_recorded": 482,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "ac62203b00dcf55a",
+      "line_when_recorded": 486,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "ac62203b00dcf55a",
+      "line_when_recorded": 608,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "f544152b2c6d93a5",
+      "line_when_recorded": 612,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "e4e958d0bea51213",
+      "line_when_recorded": 639,
+      "snippet": ".font(.system(size: 14, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "e1b808e60f9836c7",
+      "line_when_recorded": 643,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "e1b808e60f9836c7",
+      "line_when_recorded": 648,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "e1b808e60f9836c7",
+      "line_when_recorded": 655,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "ce70d9f0492921e9",
+      "line_when_recorded": 659,
+      "snippet": ".font(.system(size: 12, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "54902d031f2af9b5",
+      "line_when_recorded": 795,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "e1b808e60f9836c7",
+      "line_when_recorded": 799,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "fbbdcce9fb0250c6",
+      "line_when_recorded": 824,
+      "snippet": ".font(.system(size: 48))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "32c2335d78579ddd",
+      "line_when_recorded": 827,
+      "snippet": ".font(.system(size: 17, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "ac62203b00dcf55a",
+      "line_when_recorded": 833,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactProfileSheet.swift",
+      "fingerprint": "e1b808e60f9836c7",
+      "line_when_recorded": 839,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "080a73e06068bc5d",
+      "line_when_recorded": 377,
+      "snippet": ".font(.system(size: 28, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "9649d8f289bb5ae0",
+      "line_when_recorded": 384,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "e103ea14dc12259d",
+      "line_when_recorded": 405,
+      "snippet": ".font(.system(size: 17, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "0f4b97b9c9241003",
+      "line_when_recorded": 410,
+      "snippet": ".font(.system(size: 12.5))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "15f562ab39e631b7",
+      "line_when_recorded": 417,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "a6ee2efe281b9cce",
+      "line_when_recorded": 533,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "d5a1550a1a6dad07",
+      "line_when_recorded": 547,
+      "snippet": ".font(.system(size: 17, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "15f562ab39e631b7",
+      "line_when_recorded": 564,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "9c9a3b3028571a8d",
+      "line_when_recorded": 582,
+      "snippet": ".font(.system(size: size, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "5d2ecf94017c6456",
+      "line_when_recorded": 607,
+      "snippet": ".font(.system(size: 72, weight: .light))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "9b64c7030a55f3a9",
+      "line_when_recorded": 611,
+      "snippet": ".font(.system(size: 20, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "f464f586bac2f1cf",
+      "line_when_recorded": 614,
+      "snippet": ".font(.system(size: 16))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "15f562ab39e631b7",
+      "line_when_recorded": 624,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "8b69a0b0e21a9403",
+      "line_when_recorded": 680,
+      "snippet": ".font(.system(size: 40))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "60abecb92956dfd3",
+      "line_when_recorded": 687,
+      "snippet": ".font(.system(size: 22, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "78afd492ec5a699f",
+      "line_when_recorded": 695,
+      "snippet": ".font(.system(size: 15))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "1b88b7594122e91d",
+      "line_when_recorded": 727,
+      "snippet": ".font(.system(size: 15, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "9649d8f289bb5ae0",
+      "line_when_recorded": 739,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "cc339ac2b6656df6",
+      "line_when_recorded": 758,
+      "snippet": ".font(.system(size: 18, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "d544243993fcb6e2",
+      "line_when_recorded": 764,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "a6ee2efe281b9cce",
+      "line_when_recorded": 767,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "6b1daee1747dce8e",
+      "line_when_recorded": 856,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "d544243993fcb6e2",
+      "line_when_recorded": 863,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "8b69a0b0e21a9403",
+      "line_when_recorded": 911,
+      "snippet": ".font(.system(size: 40))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "9b64c7030a55f3a9",
+      "line_when_recorded": 918,
+      "snippet": ".font(.system(size: 20, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "6b1daee1747dce8e",
+      "line_when_recorded": 925,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "9649d8f289bb5ae0",
+      "line_when_recorded": 934,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "847e622e7693b715",
+      "line_when_recorded": 948,
+      "snippet": ".font(.system(size: 16, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "1812ceaf135d9d10",
+      "line_when_recorded": 982,
+      "snippet": ".font(.system(size: 34))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "9b64c7030a55f3a9",
+      "line_when_recorded": 989,
+      "snippet": ".font(.system(size: 20, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "6b1daee1747dce8e",
+      "line_when_recorded": 996,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "d544243993fcb6e2",
+      "line_when_recorded": 1008,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "178e5a7a411d6824",
+      "line_when_recorded": 1021,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "9649d8f289bb5ae0",
+      "line_when_recorded": 1030,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "847e622e7693b715",
+      "line_when_recorded": 1045,
+      "snippet": ".font(.system(size: 16, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "d5a1550a1a6dad07",
+      "line_when_recorded": 1071,
+      "snippet": ".font(.system(size: 17, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "178e5a7a411d6824",
+      "line_when_recorded": 1076,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "47fba84d3f45c081",
+      "line_when_recorded": 1084,
+      "snippet": ".font(.system(size: 11, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "d5a1550a1a6dad07",
+      "line_when_recorded": 1117,
+      "snippet": ".font(.system(size: 17, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "178e5a7a411d6824",
+      "line_when_recorded": 1122,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "178e5a7a411d6824",
+      "line_when_recorded": 1132,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift",
+      "fingerprint": "47fba84d3f45c081",
+      "line_when_recorded": 1134,
+      "snippet": ".font(.system(size: 11, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/NotificationsScreen.swift",
+      "fingerprint": "2e3f604750f072a2",
+      "line_when_recorded": 121,
+      "snippet": ".font(.system(size: 44, weight: .light))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/NotificationsScreen.swift",
+      "fingerprint": "c3f300edf2ec435e",
+      "line_when_recorded": 124,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/NotificationsScreen.swift",
+      "fingerprint": "4c7ba246e978fe19",
+      "line_when_recorded": 148,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/NotificationsScreen.swift",
+      "fingerprint": "65e7ddc350eb745a",
+      "line_when_recorded": 183,
+      "snippet": "Image(systemName: \"hourglass\").font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/NotificationsScreen.swift",
+      "fingerprint": "87b4f7cdbb632539",
+      "line_when_recorded": 185,
+      "snippet": ".font(.system(size: 11, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/NotificationsScreen.swift",
+      "fingerprint": "65e7ddc350eb745a",
+      "line_when_recorded": 202,
+      "snippet": "Image(systemName: \"hourglass\").font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/NotificationsScreen.swift",
+      "fingerprint": "87b4f7cdbb632539",
+      "line_when_recorded": 204,
+      "snippet": ".font(.system(size: 11, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/NotificationsScreen.swift",
+      "fingerprint": "d11fc63395ee4249",
+      "line_when_recorded": 217,
+      "snippet": ".font(.system(size: 20))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/NotificationsScreen.swift",
+      "fingerprint": "d11fc63395ee4249",
+      "line_when_recorded": 228,
+      "snippet": ".font(.system(size: 20))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/NotificationsScreen.swift",
+      "fingerprint": "c3f300edf2ec435e",
+      "line_when_recorded": 249,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Contacts/SwiftUI/NotificationsScreen.swift",
+      "fingerprint": "cfb4c2a4f794587a",
+      "line_when_recorded": 253,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Invitations/ClaimInvitationScreen.swift",
+      "fingerprint": "68ea53b83a769207",
+      "line_when_recorded": 226,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Invitations/ClaimInvitationScreen.swift",
+      "fingerprint": "24bf81a8a51a4021",
+      "line_when_recorded": 234,
+      "snippet": ".font(.system(size: 14, design: .monospaced))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Invitations/ClaimInvitationScreen.swift",
+      "fingerprint": "3323fc854ec9bb4c",
+      "line_when_recorded": 305,
+      "snippet": ".font(.system(size: 20))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "e478b6ecbf1331aa",
+      "line_when_recorded": 221,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "fa0b4fdea47194cb",
+      "line_when_recorded": 297,
+      "snippet": ".font(.system(size: 18))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "8d43d0f579f4ad59",
+      "line_when_recorded": 303,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "bf4b9dcb6cb8d4d4",
+      "line_when_recorded": 313,
+      "snippet": ".font(.system(size: 12, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "b26483c457254e8e",
+      "line_when_recorded": 645,
+      "snippet": ".font(.system(size: 34))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "1a183cd9c5f0929a",
+      "line_when_recorded": 652,
+      "snippet": ".font(.system(size: 20, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "209c6279f1284789",
+      "line_when_recorded": 659,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "156032002835d55a",
+      "line_when_recorded": 680,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "156032002835d55a",
+      "line_when_recorded": 688,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "156032002835d55a",
+      "line_when_recorded": 692,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "8d43d0f579f4ad59",
+      "line_when_recorded": 708,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "b0c05be285841cf4",
+      "line_when_recorded": 710,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "8d43d0f579f4ad59",
+      "line_when_recorded": 721,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "b0c05be285841cf4",
+      "line_when_recorded": 723,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "aececc43bd4d247f",
+      "line_when_recorded": 738,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "156032002835d55a",
+      "line_when_recorded": 745,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "156032002835d55a",
+      "line_when_recorded": 751,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "587f4d827726b4a4",
+      "line_when_recorded": 761,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "e478b6ecbf1331aa",
+      "line_when_recorded": 765,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "156032002835d55a",
+      "line_when_recorded": 772,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "156032002835d55a",
+      "line_when_recorded": 787,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "aececc43bd4d247f",
+      "line_when_recorded": 795,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift",
+      "fingerprint": "bcfabf7425d08697",
+      "line_when_recorded": 812,
+      "snippet": ".font(.system(size: 16, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Setup/CreateUsername/CreateUsernameViewController.swift",
+      "fingerprint": "755388e771ef6baa",
+      "line_when_recorded": 176,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Setup/CreateUsername/CreateUsernameViewController.swift",
+      "fingerprint": "ccad05e4b7dc3661",
+      "line_when_recorded": 466,
+      "snippet": ".font(.system(size: 20))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Setup/CreateUsername/CreateUsernameViewController.swift",
+      "fingerprint": "ccad05e4b7dc3661",
+      "line_when_recorded": 497,
+      "snippet": ".font(.system(size: 20))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Setup/CreateUsername/CreateUsernameViewController.swift",
+      "fingerprint": "ccad05e4b7dc3661",
+      "line_when_recorded": 606,
+      "snippet": ".font(.system(size: 20))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Setup/CreateUsername/CreateUsernameViewController.swift",
+      "fingerprint": "ccad05e4b7dc3661",
+      "line_when_recorded": 655,
+      "snippet": ".font(.system(size: 20))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Setup/CreateUsername/CreateUsernameViewController.swift",
+      "fingerprint": "ccad05e4b7dc3661",
+      "line_when_recorded": 677,
+      "snippet": ".font(.system(size: 20))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Setup/CreateUsername/JoinDashPayReadinessScreen.swift",
+      "fingerprint": "1c7f7ea6bbc75234",
+      "line_when_recorded": 67,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Setup/CreateUsername/JoinDashPayReadinessScreen.swift",
+      "fingerprint": "24c9bb8dd99a19c3",
+      "line_when_recorded": 86,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Setup/CreateUsername/JoinDashPayReadinessScreen.swift",
+      "fingerprint": "6c7822476f64d8a9",
+      "line_when_recorded": 244,
+      "snippet": ".font(.system(size: 20, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Setup/CreateUsername/JoinDashPayReadinessScreen.swift",
+      "fingerprint": "6046a4740c7c4ad1",
+      "line_when_recorded": 250,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Setup/CreateUsername/JoinDashPayReadinessScreen.swift",
+      "fingerprint": "9205079d05ff6487",
+      "line_when_recorded": 254,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Setup/CreateUsername/JoinDashPayReadinessScreen.swift",
+      "fingerprint": "080948e71a2268bd",
+      "line_when_recorded": 263,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Voting/BulkVoteSheet.swift",
+      "fingerprint": "dc1458ffa24dd205",
+      "line_when_recorded": 378,
+      "snippet": ".font(.system(size: 40))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Voting/CastVoteSheet.swift",
+      "fingerprint": "c29bdb1de30d25da",
+      "line_when_recorded": 246,
+      "snippet": ".font(.system(size: 40))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/DashPay/Voting/UsernameVotingScreen.swift",
+      "fingerprint": "1f2a95a6321e9e34",
+      "line_when_recorded": 384,
+      "snippet": ".font(.system(size: 40))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/Details/Views/POIDetailsView.swift",
+      "fingerprint": "6f1620a366e5ff77",
+      "line_when_recorded": 143,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/Details/Views/POIDetailsView.swift",
+      "fingerprint": "26f388f658636abb",
+      "line_when_recorded": 148,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/Details/Views/POIDetailsView.swift",
+      "fingerprint": "b2b67d815b005022",
+      "line_when_recorded": 212,
+      "snippet": ".font(.system(size: 22))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/Details/Views/POIDetailsView.swift",
+      "fingerprint": "d61e678894bb557a",
+      "line_when_recorded": 271,
+      "snippet": ".font(.system(size: 13, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/Details/Views/POIDetailsView.swift",
+      "fingerprint": "26f388f658636abb",
+      "line_when_recorded": 277,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/Details/Views/POIDetailsView.swift",
+      "fingerprint": "d61e678894bb557a",
+      "line_when_recorded": 316,
+      "snippet": ".font(.system(size: 13, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/Details/Views/POIDetailsView.swift",
+      "fingerprint": "26f388f658636abb",
+      "line_when_recorded": 322,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/Details/Views/POIDetailsView.swift",
+      "fingerprint": "d61e678894bb557a",
+      "line_when_recorded": 333,
+      "snippet": ".font(.system(size: 13, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/Details/Views/POIDetailsView.swift",
+      "fingerprint": "26f388f658636abb",
+      "line_when_recorded": 384,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/Details/Views/POIDetailsView.swift",
+      "fingerprint": "26f388f658636abb",
+      "line_when_recorded": 414,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/Details/Views/POIDetailsView.swift",
+      "fingerprint": "26f388f658636abb",
+      "line_when_recorded": 425,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/List/AllMerchantLocations/AllMerchantLocationsView.swift",
+      "fingerprint": "51ffca9cf8b647ca",
+      "line_when_recorded": 127,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/List/AllMerchantLocations/AllMerchantLocationsView.swift",
+      "fingerprint": "91ad4cbb0169cab8",
+      "line_when_recorded": 132,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/List/Filters/MerchantFiltersView.swift",
+      "fingerprint": "9b84c97dfc9e294e",
+      "line_when_recorded": 230,
+      "snippet": ".font(.system(size: 15, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/List/Filters/MerchantFiltersView.swift",
+      "fingerprint": "9b84c97dfc9e294e",
+      "line_when_recorded": 237,
+      "snippet": ".font(.system(size: 15, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Merchants & ATMs/List/Filters/TerritoryPickerView.swift",
+      "fingerprint": "8bc76e94170a5e55",
+      "line_when_recorded": 127,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "e9cd1e0d3e625029",
+      "line_when_recorded": 521,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "017502583fd9b095",
+      "line_when_recorded": 616,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "e9cd1e0d3e625029",
+      "line_when_recorded": 626,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "531fbb8e1cbd2681",
+      "line_when_recorded": 677,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "3a21eec1805f704b",
+      "line_when_recorded": 681,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "a4a32498cb62e978",
+      "line_when_recorded": 689,
+      "snippet": ".font(.system(size: 10, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "69fd6636b0c7aad8",
+      "line_when_recorded": 692,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "7fb2ae8ff24fe9e8",
+      "line_when_recorded": 697,
+      "snippet": ".font(.system(size: 10, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "fe46c5cd570a7fbc",
+      "line_when_recorded": 701,
+      "snippet": ".font(.system(size: 12, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "531fbb8e1cbd2681",
+      "line_when_recorded": 761,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "3a21eec1805f704b",
+      "line_when_recorded": 768,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "a4a32498cb62e978",
+      "line_when_recorded": 776,
+      "snippet": ".font(.system(size: 10, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "69fd6636b0c7aad8",
+      "line_when_recorded": 779,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "fe46c5cd570a7fbc",
+      "line_when_recorded": 784,
+      "snippet": ".font(.system(size: 12, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "531fbb8e1cbd2681",
+      "line_when_recorded": 818,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "3a21eec1805f704b",
+      "line_when_recorded": 822,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "a4a32498cb62e978",
+      "line_when_recorded": 830,
+      "snippet": ".font(.system(size: 10, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "69fd6636b0c7aad8",
+      "line_when_recorded": 833,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "fe46c5cd570a7fbc",
+      "line_when_recorded": 838,
+      "snippet": ".font(.system(size: 12, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "97100287959b34b3",
+      "line_when_recorded": 903,
+      "snippet": ".font(.system(size: 20, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "531fbb8e1cbd2681",
+      "line_when_recorded": 910,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "d523068a185b0211",
+      "line_when_recorded": 915,
+      "snippet": ".font(.system(size: 13, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "3a21eec1805f704b",
+      "line_when_recorded": 921,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "eb57050f3f263917",
+      "line_when_recorded": 977,
+      "snippet": ".font(.system(size: 26))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "531fbb8e1cbd2681",
+      "line_when_recorded": 981,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "3a21eec1805f704b",
+      "line_when_recorded": 984,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "fe46c5cd570a7fbc",
+      "line_when_recorded": 989,
+      "snippet": ".font(.system(size: 12, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "69fd6636b0c7aad8",
+      "line_when_recorded": 1008,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "a785d656fb830563",
+      "line_when_recorded": 1019,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "736ab3b0660ece46",
+      "line_when_recorded": 1041,
+      "snippet": ".font(.system(size: 14, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "1c044349c188f0b9",
+      "line_when_recorded": 1119,
+      "snippet": ".font(.system(size: 22, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "a785d656fb830563",
+      "line_when_recorded": 1146,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "fe46c5cd570a7fbc",
+      "line_when_recorded": 1201,
+      "snippet": ".font(.system(size: 12, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "e76b9efeadf7433b",
+      "line_when_recorded": 1204,
+      "snippet": ".font(.system(size: 18, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "017502583fd9b095",
+      "line_when_recorded": 1207,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "d523068a185b0211",
+      "line_when_recorded": 1215,
+      "snippet": ".font(.system(size: 13, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "017502583fd9b095",
+      "line_when_recorded": 1226,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "a785d656fb830563",
+      "line_when_recorded": 1230,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "69fd6636b0c7aad8",
+      "line_when_recorded": 1271,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "fe46c5cd570a7fbc",
+      "line_when_recorded": 1296,
+      "snippet": ".font(.system(size: 12, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "a785d656fb830563",
+      "line_when_recorded": 1301,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "3a21eec1805f704b",
+      "line_when_recorded": 1306,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "017502583fd9b095",
+      "line_when_recorded": 1452,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "fe46c5cd570a7fbc",
+      "line_when_recorded": 1456,
+      "snippet": ".font(.system(size: 12, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "3a21eec1805f704b",
+      "line_when_recorded": 1461,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "a785d656fb830563",
+      "line_when_recorded": 1471,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "69fd6636b0c7aad8",
+      "line_when_recorded": 1475,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "637b6d9ae6cc9cb4",
+      "line_when_recorded": 1486,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "6d823c326d86d556",
+      "line_when_recorded": 1499,
+      "snippet": ".font(.system(size: 15, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "c18fad49d81aeea6",
+      "line_when_recorded": 1537,
+      "snippet": ".font(.system(size: 20, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "5b1131fa195c8c9d",
+      "line_when_recorded": 1544,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "f3a46846ccf1c319",
+      "line_when_recorded": 1557,
+      "snippet": ".font(.system(size: 18, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "017502583fd9b095",
+      "line_when_recorded": 1564,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "017502583fd9b095",
+      "line_when_recorded": 1572,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "531fbb8e1cbd2681",
+      "line_when_recorded": 1591,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "c9f5433ac6d992a9",
+      "line_when_recorded": 1608,
+      "snippet": ".font(.system(size: 16, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "c18fad49d81aeea6",
+      "line_when_recorded": 1647,
+      "snippet": ".font(.system(size: 20, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "5b1131fa195c8c9d",
+      "line_when_recorded": 1652,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "9fded2ec55ba0230",
+      "line_when_recorded": 1665,
+      "snippet": ".font(.system(size: 15))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "017502583fd9b095",
+      "line_when_recorded": 1672,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "531fbb8e1cbd2681",
+      "line_when_recorded": 1688,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "c9f5433ac6d992a9",
+      "line_when_recorded": 1706,
+      "snippet": ".font(.system(size: 16, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "3d8148d5c6c30ac2",
+      "line_when_recorded": 1801,
+      "snippet": ".font(.system(size: 36))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "c18fad49d81aeea6",
+      "line_when_recorded": 1812,
+      "snippet": ".font(.system(size: 20, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "5b1131fa195c8c9d",
+      "line_when_recorded": 1820,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "c9f5433ac6d992a9",
+      "line_when_recorded": 1843,
+      "snippet": ".font(.system(size: 16, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "5b1131fa195c8c9d",
+      "line_when_recorded": 1875,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "5b1131fa195c8c9d",
+      "line_when_recorded": 1897,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "a785d656fb830563",
+      "line_when_recorded": 1943,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "69fd6636b0c7aad8",
+      "line_when_recorded": 1949,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "a785d656fb830563",
+      "line_when_recorded": 1956,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "69fd6636b0c7aad8",
+      "line_when_recorded": 1960,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "3a21eec1805f704b",
+      "line_when_recorded": 1966,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "3a21eec1805f704b",
+      "line_when_recorded": 1974,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "69fd6636b0c7aad8",
+      "line_when_recorded": 1996,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "017502583fd9b095",
+      "line_when_recorded": 2003,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "d671bd8549c1c66e",
+      "line_when_recorded": 2043,
+      "snippet": ".font(.system(size: 13, weight: emphasized ? .semibold : .regular))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "69fd6636b0c7aad8",
+      "line_when_recorded": 2049,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "a785d656fb830563",
+      "line_when_recorded": 2059,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "69fd6636b0c7aad8",
+      "line_when_recorded": 2063,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "017502583fd9b095",
+      "line_when_recorded": 2086,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "a785d656fb830563",
+      "line_when_recorded": 2090,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/UsernameMarketplaceScreen.swift",
+      "fingerprint": "531fbb8e1cbd2681",
+      "line_when_recorded": 2105,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Views/DashSpend/DashSpendTermsScreen.swift",
+      "fingerprint": "6f391204f4b5c651",
+      "line_when_recorded": 41,
+      "snippet": ".font(.system(size: 18, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Views/DashSpend/DashSpendTermsScreen.swift",
+      "fingerprint": "730e0942c14020bf",
+      "line_when_recorded": 86,
+      "snippet": ".font(.system(size: 14, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Views/DashSpend/DashSpendTermsScreen.swift",
+      "fingerprint": "6140482c89b529b8",
+      "line_when_recorded": 96,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Views/DashSpend/DashSpendUserAuthScreen.swift",
+      "fingerprint": "6f50b84020dd6612",
+      "line_when_recorded": 85,
+      "snippet": ".font(.system(size: 18, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Views/DashSpend/DashSpendUserAuthScreen.swift",
+      "fingerprint": "3a2cde81f0d2a6f4",
+      "line_when_recorded": 93,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Views/DashSpend/DashSpendUserAuthScreen.swift",
+      "fingerprint": "ea7e709ffd238c7c",
+      "line_when_recorded": 111,
+      "snippet": ".font(.system(size: 24, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Explore Dash/Views/DashSpend/DashSpendUserAuthScreen.swift",
+      "fingerprint": "74599f252ce59c65",
+      "line_when_recorded": 115,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/CoinJoinMoveFundsSheet.swift",
+      "fingerprint": "3f25959907f25967",
+      "line_when_recorded": 231,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/CoinJoinMoveFundsSheet.swift",
+      "fingerprint": "a256feb052596cfa",
+      "line_when_recorded": 279,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/CoinJoinMoveFundsSheet.swift",
+      "fingerprint": "a256feb052596cfa",
+      "line_when_recorded": 285,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/CoinJoinMoveFundsSheet.swift",
+      "fingerprint": "e85c9e5f462216f9",
+      "line_when_recorded": 288,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/CoinJoinMoveFundsSheet.swift",
+      "fingerprint": "bf63ce438b1dda6f",
+      "line_when_recorded": 297,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/CoinJoinMoveFundsSheet.swift",
+      "fingerprint": "3f25959907f25967",
+      "line_when_recorded": 371,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/CoinJoinMoveFundsSheet.swift",
+      "fingerprint": "3f25959907f25967",
+      "line_when_recorded": 398,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/Home Balance View/BalanceInfoSheet.swift",
+      "fingerprint": "ce1197cdc5e863f8",
+      "line_when_recorded": 62,
+      "snippet": ".font(.system(size: 26, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/Home Balance View/BalanceInfoSheet.swift",
+      "fingerprint": "219d4833ef88fe45",
+      "line_when_recorded": 83,
+      "snippet": ".font(.system(size: 15))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/Home Balance View/HomeBalanceView.swift",
+      "fingerprint": "3412bd57595cab9a",
+      "line_when_recorded": 238,
+      "snippet": ".font(.system(size: 11, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/Home Balance View/HomeBalanceView.swift",
+      "fingerprint": "3027a019fe575207",
+      "line_when_recorded": 266,
+      "snippet": ".font(.system(size: 15))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/Home Balance View/HomeBalanceView.swift",
+      "fingerprint": "ec3b61b85d2a17f4",
+      "line_when_recorded": 314,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/HomeView.swift",
+      "fingerprint": "01c63eecf3014b95",
+      "line_when_recorded": 741,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/PlatformAddressHistory.swift",
+      "fingerprint": "55cf453394cf8832",
+      "line_when_recorded": 84,
+      "snippet": ".font(.system(size: 24, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/PlatformAddressHistory.swift",
+      "fingerprint": "4016783cd171fd54",
+      "line_when_recorded": 89,
+      "snippet": ".font(.system(size: 11, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/ShieldedActivityHistory.swift",
+      "fingerprint": "c34f9f9921fe57a8",
+      "line_when_recorded": 329,
+      "snippet": ".font(.system(size: 26, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/ShieldedActivityHistory.swift",
+      "fingerprint": "9c682b3d735256d6",
+      "line_when_recorded": 335,
+      "snippet": ".font(.system(size: 11, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/Shortcuts/NodesShortcutIcon.swift",
+      "fingerprint": "58a3591902c332b6",
+      "line_when_recorded": 86,
+      "snippet": ".font(.system(size: 19, weight: .bold, design: .rounded))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/Shortcuts/NodesShortcutIcon.swift",
+      "fingerprint": "9e02482ada2734cc",
+      "line_when_recorded": 92,
+      "snippet": ".font(.system(size: 8.5, weight: .heavy, design: .rounded))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/Shortcuts/ShortcutCustomizeBannerView.swift",
+      "fingerprint": "008cc823c50cdebf",
+      "line_when_recorded": 43,
+      "snippet": ".font(.system(size: 10, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Home/Views/Shortcuts/WalletSwitchDialog.swift",
+      "fingerprint": "58f88a00fdde9f45",
+      "line_when_recorded": 55,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/RecoveryPhraseFlow.swift",
+      "fingerprint": "278c057f6580bf1e",
+      "line_when_recorded": 569,
+      "snippet": ".font(.system(size: 16, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/RecoveryPhraseFlow.swift",
+      "fingerprint": "bc14db0c86fada64",
+      "line_when_recorded": 573,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/RecoveryPhraseFlow.swift",
+      "fingerprint": "f21de81f316aa8d6",
+      "line_when_recorded": 580,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/RecoveryPhraseFlow.swift",
+      "fingerprint": "be3828644272788c",
+      "line_when_recorded": 584,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "8388c880a9255221",
+      "line_when_recorded": 121,
+      "snippet": ".font(.system(size: 18, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "f57aa6cfb415640a",
+      "line_when_recorded": 136,
+      "snippet": ".font(.system(size: 16, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "f57aa6cfb415640a",
+      "line_when_recorded": 151,
+      "snippet": ".font(.system(size: 16, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "911a5928f5b444c0",
+      "line_when_recorded": 180,
+      "snippet": ".font(.system(size: 40))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "17120559b8005208",
+      "line_when_recorded": 206,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "f57aa6cfb415640a",
+      "line_when_recorded": 231,
+      "snippet": ".font(.system(size: 16, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "d2f660dad68c399e",
+      "line_when_recorded": 248,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "0f3f3d5e7d0f26a7",
+      "line_when_recorded": 263,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "8388c880a9255221",
+      "line_when_recorded": 426,
+      "snippet": ".font(.system(size: 18, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "7729fe1170cc468d",
+      "line_when_recorded": 444,
+      "snippet": ".font(.system(size: 20))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "d7a05632edfea3b8",
+      "line_when_recorded": 465,
+      "snippet": ".font(.system(size: 15, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "d2f660dad68c399e",
+      "line_when_recorded": 477,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "377befe798feee21",
+      "line_when_recorded": 485,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "d2f660dad68c399e",
+      "line_when_recorded": 496,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "6b58a0a920c7a23c",
+      "line_when_recorded": 523,
+      "snippet": ".font(.system(size: 14, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "085e67c41be3a9e4",
+      "line_when_recorded": 566,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "0f3f3d5e7d0f26a7",
+      "line_when_recorded": 570,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "101c50e0aaa2d77b",
+      "line_when_recorded": 573,
+      "snippet": ".font(.system(size: 12, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "d7a05632edfea3b8",
+      "line_when_recorded": 612,
+      "snippet": ".font(.system(size: 15, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "67fdf35bfbba02d0",
+      "line_when_recorded": 616,
+      "snippet": ".font(.system(size: 18))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "67fdf35bfbba02d0",
+      "line_when_recorded": 637,
+      "snippet": ".font(.system(size: 18))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "17120559b8005208",
+      "line_when_recorded": 643,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "101c50e0aaa2d77b",
+      "line_when_recorded": 653,
+      "snippet": ".font(.system(size: 12, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "d7a05632edfea3b8",
+      "line_when_recorded": 682,
+      "snippet": ".font(.system(size: 15, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "085e67c41be3a9e4",
+      "line_when_recorded": 719,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "0f3f3d5e7d0f26a7",
+      "line_when_recorded": 723,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "8388c880a9255221",
+      "line_when_recorded": 815,
+      "snippet": ".font(.system(size: 18, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "f57aa6cfb415640a",
+      "line_when_recorded": 830,
+      "snippet": ".font(.system(size: 16, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "085e67c41be3a9e4",
+      "line_when_recorded": 852,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "17120559b8005208",
+      "line_when_recorded": 866,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "6b58a0a920c7a23c",
+      "line_when_recorded": 911,
+      "snippet": ".font(.system(size: 14, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "085e67c41be3a9e4",
+      "line_when_recorded": 950,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/IdentitiesScreen.swift",
+      "fingerprint": "0f3f3d5e7d0f26a7",
+      "line_when_recorded": 954,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletAccountDetailScreen.swift",
+      "fingerprint": "d443bc75f57b0f2c",
+      "line_when_recorded": 97,
+      "snippet": ".font(.system(size: 18, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletAccountDetailScreen.swift",
+      "fingerprint": "66836a2040815e08",
+      "line_when_recorded": 162,
+      "snippet": ".font(.system(size: 15, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletAccountDetailScreen.swift",
+      "fingerprint": "9e02abea1b52bc80",
+      "line_when_recorded": 293,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletAccountsScreen.swift",
+      "fingerprint": "dbcdc2c75d0a261a",
+      "line_when_recorded": 169,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletAccountsScreen.swift",
+      "fingerprint": "8d899caae8725242",
+      "line_when_recorded": 183,
+      "snippet": ".font(.system(size: 12, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "bf45f673aec2a714",
+      "line_when_recorded": 230,
+      "snippet": ".font(.system(size: 18, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "bf45f673aec2a714",
+      "line_when_recorded": 238,
+      "snippet": ".font(.system(size: 18, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "47f065ae0d4cf9ee",
+      "line_when_recorded": 335,
+      "snippet": ".font(.system(size: 16, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "b62949a6cebfb0e2",
+      "line_when_recorded": 340,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "b62949a6cebfb0e2",
+      "line_when_recorded": 346,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "bf2f6ca974f687ed",
+      "line_when_recorded": 354,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "bf2f6ca974f687ed",
+      "line_when_recorded": 391,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "2f77d94e68348492",
+      "line_when_recorded": 397,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "58190b0931f2086c",
+      "line_when_recorded": 442,
+      "snippet": ".font(.system(size: 15, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "bf2f6ca974f687ed",
+      "line_when_recorded": 463,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "019d5ba8f88fb0d1",
+      "line_when_recorded": 595,
+      "snippet": ".font(.system(size: 22))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "bf2f6ca974f687ed",
+      "line_when_recorded": 600,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "b62949a6cebfb0e2",
+      "line_when_recorded": 603,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "2f77d94e68348492",
+      "line_when_recorded": 608,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "8da52739bf05fedd",
+      "line_when_recorded": 652,
+      "snippet": ".font(.system(size: 15))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "bf2f6ca974f687ed",
+      "line_when_recorded": 663,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "1542fabd64399bdb",
+      "line_when_recorded": 698,
+      "snippet": ".font(.system(size: 13, design: .monospaced))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "58190b0931f2086c",
+      "line_when_recorded": 702,
+      "snippet": ".font(.system(size: 15, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "900cf989191b7974",
+      "line_when_recorded": 770,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsScreen.swift",
+      "fingerprint": "bf2f6ca974f687ed",
+      "line_when_recorded": 781,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/DashPaySyncInfoScreen.swift",
+      "fingerprint": "961c2d9707c8710d",
+      "line_when_recorded": 148,
+      "snippet": ".font(.system(size: 18, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/DashPaySyncInfoScreen.swift",
+      "fingerprint": "fef56d029b85cb59",
+      "line_when_recorded": 201,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/DashPaySyncInfoScreen.swift",
+      "fingerprint": "fef56d029b85cb59",
+      "line_when_recorded": 206,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/DashPaySyncInfoScreen.swift",
+      "fingerprint": "fef56d029b85cb59",
+      "line_when_recorded": 212,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/DashPaySyncInfoScreen.swift",
+      "fingerprint": "fef56d029b85cb59",
+      "line_when_recorded": 218,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/DashPaySyncInfoScreen.swift",
+      "fingerprint": "2ab5dbbada58a3a5",
+      "line_when_recorded": 224,
+      "snippet": ".font(.system(size: 12, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/DashPaySyncInfoScreen.swift",
+      "fingerprint": "fef56d029b85cb59",
+      "line_when_recorded": 237,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/DashPaySyncInfoScreen.swift",
+      "fingerprint": "fef56d029b85cb59",
+      "line_when_recorded": 252,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/DashPaySyncInfoScreen.swift",
+      "fingerprint": "04156343d109247d",
+      "line_when_recorded": 255,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/DashPaySyncInfoScreen.swift",
+      "fingerprint": "fef56d029b85cb59",
+      "line_when_recorded": 273,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/DashPaySyncInfoScreen.swift",
+      "fingerprint": "04156343d109247d",
+      "line_when_recorded": 292,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/DashPaySyncInfoScreen.swift",
+      "fingerprint": "efaf6753ca37d662",
+      "line_when_recorded": 296,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "f958529e49f8b9d0",
+      "line_when_recorded": 47,
+      "snippet": ".font(.system(size: 18, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "d644d609ea265c74",
+      "line_when_recorded": 102,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "d644d609ea265c74",
+      "line_when_recorded": 108,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "d644d609ea265c74",
+      "line_when_recorded": 114,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "ba36857c726693a7",
+      "line_when_recorded": 120,
+      "snippet": ".font(.system(size: 12, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "d644d609ea265c74",
+      "line_when_recorded": 154,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "d241cce6ddd5e328",
+      "line_when_recorded": 160,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "f5d1960bf7113327",
+      "line_when_recorded": 223,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "d241cce6ddd5e328",
+      "line_when_recorded": 227,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "d241cce6ddd5e328",
+      "line_when_recorded": 230,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "d644d609ea265c74",
+      "line_when_recorded": 244,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "ba36857c726693a7",
+      "line_when_recorded": 248,
+      "snippet": ".font(.system(size: 12, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "d644d609ea265c74",
+      "line_when_recorded": 266,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "f5d1960bf7113327",
+      "line_when_recorded": 269,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "d644d609ea265c74",
+      "line_when_recorded": 288,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "d644d609ea265c74",
+      "line_when_recorded": 304,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "d644d609ea265c74",
+      "line_when_recorded": 317,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "f5d1960bf7113327",
+      "line_when_recorded": 333,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "e400cade6090ac20",
+      "line_when_recorded": 337,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "1959ddbc5273be14",
+      "line_when_recorded": 346,
+      "snippet": ".font(.system(size: 16, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "e36db957a18fe033",
+      "line_when_recorded": 350,
+      "snippet": ".font(.system(size: 11, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/PlatformSyncStatusScreen.swift",
+      "fingerprint": "699689a3f05643ac",
+      "line_when_recorded": 354,
+      "snippet": ".font(.system(size: 10))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "e8c2820754b61109",
+      "line_when_recorded": 41,
+      "snippet": ".font(.system(size: 18, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "2e082897e331c5ad",
+      "line_when_recorded": 97,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "2e082897e331c5ad",
+      "line_when_recorded": 102,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "2e082897e331c5ad",
+      "line_when_recorded": 108,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "2e082897e331c5ad",
+      "line_when_recorded": 114,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "2e082897e331c5ad",
+      "line_when_recorded": 120,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "a425634931a4676c",
+      "line_when_recorded": 126,
+      "snippet": ".font(.system(size: 12, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "2e082897e331c5ad",
+      "line_when_recorded": 153,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "a425634931a4676c",
+      "line_when_recorded": 158,
+      "snippet": ".font(.system(size: 12, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "2e082897e331c5ad",
+      "line_when_recorded": 201,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "a425634931a4676c",
+      "line_when_recorded": 205,
+      "snippet": ".font(.system(size: 12, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "2e082897e331c5ad",
+      "line_when_recorded": 222,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "991674adbaa847b2",
+      "line_when_recorded": 225,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "2e082897e331c5ad",
+      "line_when_recorded": 244,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "2e082897e331c5ad",
+      "line_when_recorded": 257,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "991674adbaa847b2",
+      "line_when_recorded": 276,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "07a6ab41f1475a4f",
+      "line_when_recorded": 280,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "991674adbaa847b2",
+      "line_when_recorded": 292,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "0a9de042f9860a93",
+      "line_when_recorded": 299,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "0a9de042f9860a93",
+      "line_when_recorded": 305,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "6dba5368218fd867",
+      "line_when_recorded": 319,
+      "snippet": ".font(.system(size: 16, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/ShieldedSyncInfoScreen.swift",
+      "fingerprint": "b661f0fad60620f0",
+      "line_when_recorded": 323,
+      "snippet": ".font(.system(size: 11, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c5a0f89015cb9e98",
+      "line_when_recorded": 90,
+      "snippet": ".font(.system(size: 18, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "aa0528c87ab928ca",
+      "line_when_recorded": 245,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c647c06200e94414",
+      "line_when_recorded": 258,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c647c06200e94414",
+      "line_when_recorded": 262,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c6f5dbed95f97fea",
+      "line_when_recorded": 294,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "f5dcfeab0e3ba1f5",
+      "line_when_recorded": 298,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "f5dcfeab0e3ba1f5",
+      "line_when_recorded": 306,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c647c06200e94414",
+      "line_when_recorded": 321,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c647c06200e94414",
+      "line_when_recorded": 325,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c6f5dbed95f97fea",
+      "line_when_recorded": 333,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c6f5dbed95f97fea",
+      "line_when_recorded": 339,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "f050e6e33aace722",
+      "line_when_recorded": 356,
+      "snippet": ".font(.system(size: 11, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c647c06200e94414",
+      "line_when_recorded": 385,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c647c06200e94414",
+      "line_when_recorded": 426,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "11f2745ef3ec8a06",
+      "line_when_recorded": 432,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c647c06200e94414",
+      "line_when_recorded": 441,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "11f2745ef3ec8a06",
+      "line_when_recorded": 454,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "11f2745ef3ec8a06",
+      "line_when_recorded": 460,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c647c06200e94414",
+      "line_when_recorded": 474,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "11f2745ef3ec8a06",
+      "line_when_recorded": 480,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c647c06200e94414",
+      "line_when_recorded": 500,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "11f2745ef3ec8a06",
+      "line_when_recorded": 514,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "11f2745ef3ec8a06",
+      "line_when_recorded": 520,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c647c06200e94414",
+      "line_when_recorded": 534,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c6f5dbed95f97fea",
+      "line_when_recorded": 537,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c647c06200e94414",
+      "line_when_recorded": 553,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c647c06200e94414",
+      "line_when_recorded": 570,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c6f5dbed95f97fea",
+      "line_when_recorded": 591,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "f5dcfeab0e3ba1f5",
+      "line_when_recorded": 595,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "c6f5dbed95f97fea",
+      "line_when_recorded": 604,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
+      "fingerprint": "ef347edb5857ac0a",
+      "line_when_recorded": 608,
+      "snippet": ".font(.system(size: 12, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/CSVExportSheet.swift",
+      "fingerprint": "ca93c49bda34a50b",
+      "line_when_recorded": 42,
+      "snippet": ".font(.system(size: 28, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/CSVExportSheet.swift",
+      "fingerprint": "94e85104b58b9f77",
+      "line_when_recorded": 48,
+      "snippet": ".font(.system(size: 15))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Evonode Status/EvonodeStatusScreen.swift",
+      "fingerprint": "ab920a5dc45ed110",
+      "line_when_recorded": 103,
+      "snippet": ".font(.system(size: 40))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/ExtendedKeys/ExtendedPublicKeySheet.swift",
+      "fingerprint": "e132d6afc6832fb9",
+      "line_when_recorded": 101,
+      "snippet": ".font(.system(size: 28, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/ExtendedKeys/ExtendedPublicKeySheet.swift",
+      "fingerprint": "70b53f9218741ead",
+      "line_when_recorded": 116,
+      "snippet": ".font(.system(size: 15))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Keys/DerivationPathKeys/DerivationPathKeysView.swift",
+      "fingerprint": "6e6311d9ad5145b2",
+      "line_when_recorded": 76,
+      "snippet": ".font(.system(size: 28, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Keys/Overview/KeysOverviewView.swift",
+      "fingerprint": "d0d17fb3d24847eb",
+      "line_when_recorded": 40,
+      "snippet": ".font(.system(size: 28, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "1b43a799b768bab6",
+      "line_when_recorded": 137,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "1b43a799b768bab6",
+      "line_when_recorded": 143,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "d6cb6382fdb4553b",
+      "line_when_recorded": 191,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "01086ffda9dbda82",
+      "line_when_recorded": 211,
+      "snippet": ".font(.system(size: 13, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "1b43a799b768bab6",
+      "line_when_recorded": 219,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "1b43a799b768bab6",
+      "line_when_recorded": 226,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "9102314d2ad9060a",
+      "line_when_recorded": 232,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "387c7e29955d5643",
+      "line_when_recorded": 237,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "1b43a799b768bab6",
+      "line_when_recorded": 253,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "d6cb6382fdb4553b",
+      "line_when_recorded": 272,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "d6cb6382fdb4553b",
+      "line_when_recorded": 278,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "1b43a799b768bab6",
+      "line_when_recorded": 285,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "9102314d2ad9060a",
+      "line_when_recorded": 325,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "1b43a799b768bab6",
+      "line_when_recorded": 328,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "1b43a799b768bab6",
+      "line_when_recorded": 418,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "1b43a799b768bab6",
+      "line_when_recorded": 427,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "9102314d2ad9060a",
+      "line_when_recorded": 465,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "1b43a799b768bab6",
+      "line_when_recorded": 497,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "4caf2fbccf088fa2",
+      "line_when_recorded": 503,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "1b43a799b768bab6",
+      "line_when_recorded": 544,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "01086ffda9dbda82",
+      "line_when_recorded": 552,
+      "snippet": ".font(.system(size: 13, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "9102314d2ad9060a",
+      "line_when_recorded": 608,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "21caa2de777ff76e",
+      "line_when_recorded": 612,
+      "snippet": ".font(monospaced ? .system(size: 12, design: .monospaced) : .system(size: 14, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/Masternode Withdrawal/EvonodeWithdrawalScreen.swift",
+      "fingerprint": "21caa2de777ff76e",
+      "line_when_recorded": 612,
+      "snippet": ".font(monospaced ? .system(size: 12, design: .monospaced) : .system(size: 14, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/MasternodesScreen.swift",
+      "fingerprint": "34614d6f2f7cfc68",
+      "line_when_recorded": 257,
+      "snippet": ".font(.system(size: 40))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/ZenLedger/ZenLedgerInfoSheet.swift",
+      "fingerprint": "37d5823d5aec4b48",
+      "line_when_recorded": 45,
+      "snippet": ".font(.system(size: 28, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/ZenLedger/ZenLedgerInfoSheet.swift",
+      "fingerprint": "ef9dbcca73150c14",
+      "line_when_recorded": 51,
+      "snippet": ".font(.system(size: 15))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Menu/Tools/ZenLedger/ZenLedgerInfoSheet.swift",
+      "fingerprint": "863c270cc1311c9c",
+      "line_when_recorded": 63,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferConfirmSheet.swift",
+      "fingerprint": "aaa69f0ca77a1543",
+      "line_when_recorded": 118,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferConfirmSheet.swift",
+      "fingerprint": "f0ec5adf85b65344",
+      "line_when_recorded": 327,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferConfirmSheet.swift",
+      "fingerprint": "7eb31d497e0d4efb",
+      "line_when_recorded": 334,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferConfirmSheet.swift",
+      "fingerprint": "145d09dd36926d90",
+      "line_when_recorded": 359,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferConfirmSheet.swift",
+      "fingerprint": "145d09dd36926d90",
+      "line_when_recorded": 365,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferConfirmSheet.swift",
+      "fingerprint": "aaa69f0ca77a1543",
+      "line_when_recorded": 368,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferConfirmSheet.swift",
+      "fingerprint": "aaa69f0ca77a1543",
+      "line_when_recorded": 610,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferConfirmSheet.swift",
+      "fingerprint": "145d09dd36926d90",
+      "line_when_recorded": 701,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferConfirmSheet.swift",
+      "fingerprint": "145d09dd36926d90",
+      "line_when_recorded": 707,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferConfirmSheet.swift",
+      "fingerprint": "aaa69f0ca77a1543",
+      "line_when_recorded": 712,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferConfirmSheet.swift",
+      "fingerprint": "63119344afb5a628",
+      "line_when_recorded": 846,
+      "snippet": ".font(.system(size: 15, weight: state == .active ? .semibold : .regular))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferConfirmSheet.swift",
+      "fingerprint": "d9d7e44836bcc46f",
+      "line_when_recorded": 879,
+      "snippet": ".font(.system(size: 11, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferScreen.swift",
+      "fingerprint": "9aff53ae2e1cd596",
+      "line_when_recorded": 140,
+      "snippet": ".font(.system(size: 24, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferScreen.swift",
+      "fingerprint": "220f45355e7593c5",
+      "line_when_recorded": 406,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferScreen.swift",
+      "fingerprint": "002e01927b833c30",
+      "line_when_recorded": 410,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferScreen.swift",
+      "fingerprint": "2d4ace0ba7c7fdcf",
+      "line_when_recorded": 495,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferScreen.swift",
+      "fingerprint": "2d4ace0ba7c7fdcf",
+      "line_when_recorded": 498,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferScreen.swift",
+      "fingerprint": "5f93ac9c90f5933e",
+      "line_when_recorded": 532,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferScreen.swift",
+      "fingerprint": "27f6cad051445d61",
+      "line_when_recorded": 545,
+      "snippet": ".font(.system(size: 18, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferScreen.swift",
+      "fingerprint": "17c9ddd4bee56a44",
+      "line_when_recorded": 553,
+      "snippet": ".font(.system(size: 11))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferScreen.swift",
+      "fingerprint": "f6617e3c43b7cc62",
+      "line_when_recorded": 556,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferScreen.swift",
+      "fingerprint": "002e01927b833c30",
+      "line_when_recorded": 568,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/TransferTimingSheet.swift",
+      "fingerprint": "35b1042b89979923",
+      "line_when_recorded": 21,
+      "snippet": ".font(.system(size: 24, weight: .bold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/TransferTimingSheet.swift",
+      "fingerprint": "8625ad2b42fc1368",
+      "line_when_recorded": 67,
+      "snippet": ".font(.system(size: 18, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/TransferTimingSheet.swift",
+      "fingerprint": "f3a10d3c3cee19aa",
+      "line_when_recorded": 73,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/InternalTransfer/TransferTimingSheet.swift",
+      "fingerprint": "77ed87c75fca734a",
+      "line_when_recorded": 77,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Landing/PaymentsLandingScreen.swift",
+      "fingerprint": "4278181bb7b120dd",
+      "line_when_recorded": 111,
+      "snippet": ".font(.system(size: 16, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Landing/PaymentsLandingScreen.swift",
+      "fingerprint": "c02837d854577e0f",
+      "line_when_recorded": 143,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Landing/PaymentsLandingScreen.swift",
+      "fingerprint": "d7849b4571170958",
+      "line_when_recorded": 145,
+      "snippet": ".font(.system(size: 13, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Landing/PaymentsLandingScreen.swift",
+      "fingerprint": "f6efb32e79615515",
+      "line_when_recorded": 326,
+      "snippet": ".font(.system(size: 14, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "f13639e928f93e11",
+      "line_when_recorded": 89,
+      "snippet": ".font(.system(size: 16, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "defb175bcd87b069",
+      "line_when_recorded": 185,
+      "snippet": ".font(.system(size: 13, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "ebd3f98ef7d86a4b",
+      "line_when_recorded": 199,
+      "snippet": ".font(.system(size: 10, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "d441b14a3c1b5569",
+      "line_when_recorded": 263,
+      "snippet": ".font(.system(size: 14, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "713c2b5de21dae45",
+      "line_when_recorded": 489,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "1a64618a96658ecc",
+      "line_when_recorded": 497,
+      "snippet": ".font(.system(size: 15, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "defb175bcd87b069",
+      "line_when_recorded": 502,
+      "snippet": ".font(.system(size: 13, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "2da3d12ad779cdcd",
+      "line_when_recorded": 590,
+      "snippet": ".font(.system(size: 16, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "defb175bcd87b069",
+      "line_when_recorded": 630,
+      "snippet": ".font(.system(size: 13, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "ebd3f98ef7d86a4b",
+      "line_when_recorded": 665,
+      "snippet": ".font(.system(size: 10, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "2dfd1f0e28719bb2",
+      "line_when_recorded": 794,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "1705709bc5d9460f",
+      "line_when_recorded": 872,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "1705709bc5d9460f",
+      "line_when_recorded": 909,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "713c2b5de21dae45",
+      "line_when_recorded": 913,
+      "snippet": ".font(.system(size: 15, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "4e57d77e637e7001",
+      "line_when_recorded": 997,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "4e57d77e637e7001",
+      "line_when_recorded": 1003,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "2dfd1f0e28719bb2",
+      "line_when_recorded": 1006,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift",
+      "fingerprint": "2dfd1f0e28719bb2",
+      "line_when_recorded": 1163,
+      "snippet": ".font(.system(size: 13))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Setup/SecureWallet/Seed/RecoveryPhraseLength.swift",
+      "fingerprint": "c3db04b29f8479b8",
+      "line_when_recorded": 63,
+      "snippet": ".font(.system(size: 13, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Setup/SecureWallet/Seed/RecoveryPhraseLength.swift",
+      "fingerprint": "c09ae9e746f06362",
+      "line_when_recorded": 79,
+      "snippet": ".font(.system(size: 12))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Setup/SecureWallet/Seed/RecoveryPhraseLength.swift",
+      "fingerprint": "a7c2bc997c0285e2",
+      "line_when_recorded": 119,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Setup/SecureWallet/Seed/RecoveryPhraseLength.swift",
+      "fingerprint": "107b2d1240aba61c",
+      "line_when_recorded": 121,
+      "snippet": ".font(.system(size: 11, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Swap/QRScanner/GenericQRScannerView.swift",
+      "fingerprint": "64cf107eb1994bc2",
+      "line_when_recorded": 55,
+      "snippet": ".font(.system(size: 17))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Swap/QRScanner/GenericQRScannerView.swift",
+      "fingerprint": "dd16bf2a726147de",
+      "line_when_recorded": 64,
+      "snippet": ".font(.system(size: 20))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Swap/QRScanner/GenericQRScannerView.swift",
+      "fingerprint": "113223743ee6dd6b",
+      "line_when_recorded": 79,
+      "snippet": ".font(.system(size: 15, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Swap/SelectCoin/SelectCoinView.swift",
+      "fingerprint": "de937384b0f3a469",
+      "line_when_recorded": 180,
+      "snippet": ".font(.system(size: Layout.errorIconSize))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Swap/SelectCoin/SelectCoinView.swift",
+      "fingerprint": "2587f469a611a31b",
+      "line_when_recorded": 184,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Swap/SelectCoin/SelectCoinView.swift",
+      "fingerprint": "6ae38dca76bc0270",
+      "line_when_recorded": 200,
+      "snippet": ".font(.system(size: 14, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Button.swift",
+      "fingerprint": "7fa5f3927cdfa4b5",
+      "line_when_recorded": 60,
+      "snippet": ".font(.system(size: iconSize))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Button.swift",
+      "fingerprint": "7fac7a7750d4c569",
+      "line_when_recorded": 71,
+      "snippet": ".font(.system(size: fontSize))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Button.swift",
+      "fingerprint": "7fa5f3927cdfa4b5",
+      "line_when_recorded": 80,
+      "snippet": ".font(.system(size: iconSize))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Dialogs/ConfirmSpendDialog.swift",
+      "fingerprint": "058bd28f8541a4c4",
+      "line_when_recorded": 43,
+      "snippet": ".font(.system(size: 15))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "14357cbe2e3055ff",
+      "line_when_recorded": 24,
+      "snippet": "public static let largeTitle: Font = .system(size: 34, weight: .bold)"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "cd274d8249815587",
+      "line_when_recorded": 27,
+      "snippet": "public static let title1: Font = .system(size: 28, weight: .bold)"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "ca7b60a94d015c87",
+      "line_when_recorded": 30,
+      "snippet": "public static let title2: Font = .system(size: 22, weight: .bold)"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "bbcb30070366d2ac",
+      "line_when_recorded": 33,
+      "snippet": "public static let title3: Font = .system(size: 20, weight: .bold)"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "7bfd2d00c3c09a7f",
+      "line_when_recorded": 36,
+      "snippet": "public static let title3Medium: Font = .system(size: 20, weight: .medium)"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "4a52b157b833580d",
+      "line_when_recorded": 41,
+      "snippet": "public static let headline: Font = .system(size: 17, weight: .bold)"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "ac125a5b3d92d019",
+      "line_when_recorded": 44,
+      "snippet": "public static let body: Font = .system(size: 17, weight: .regular)"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "260bb09e3fa03a62",
+      "line_when_recorded": 47,
+      "snippet": "public static let callout: Font = .system(size: 16, weight: .regular)"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "4f637f6662db5365",
+      "line_when_recorded": 50,
+      "snippet": "public static let calloutMedium: Font = .system(size: 16, weight: .semibold)"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "5af12a3d74fddb7f",
+      "line_when_recorded": 53,
+      "snippet": "public static let subhead: Font = .system(size: 15, weight: .regular)"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "88dc400851e7cea5",
+      "line_when_recorded": 56,
+      "snippet": "public static let subheadMedium: Font = .system(size: 15, weight: .medium)"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "26dfc40424b0fc32",
+      "line_when_recorded": 59,
+      "snippet": "public static let footnote: Font = .system(size: 13, weight: .regular)"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "a6f6056029aee936",
+      "line_when_recorded": 62,
+      "snippet": "public static let footnoteMedium: Font = .system(size: 13, weight: .medium)"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "2d1dd468941d8ba4",
+      "line_when_recorded": 65,
+      "snippet": "public static let caption1: Font = .system(size: 12, weight: .regular)"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Font+DWStyle.swift",
+      "fingerprint": "b6d3ddf369d8f379",
+      "line_when_recorded": 68,
+      "snippet": "public static let caption2: Font = .system(size: 11, weight: .regular)"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/MerchantLogoPlaceholder.swift",
+      "fingerprint": "031eb8c1a8edc249",
+      "line_when_recorded": 61,
+      "snippet": ".font(.system(size: side * 0.4, weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/MerchantLogoPlaceholder.swift",
+      "fingerprint": "5396ff5e123d80d4",
+      "line_when_recorded": 64,
+      "snippet": ".font(.system(size: fittedFontSize(side: side), weight: .semibold))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/NetworkUnavailableStateView.swift",
+      "fingerprint": "a57154fee613d125",
+      "line_when_recorded": 81,
+      "snippet": ".font(.system(size: 17, weight: .medium))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Toast.swift",
+      "fingerprint": "eb5e514029354099",
+      "line_when_recorded": 37,
+      "snippet": ".font(.system(size: 15))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/SwiftUI Components/Toast.swift",
+      "fingerprint": "5409fc0923785110",
+      "line_when_recorded": 43,
+      "snippet": ".font(.system(size: 14))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Tx/Details/RawTransactionView.swift",
+      "fingerprint": "0141b67693808b4d",
+      "line_when_recorded": 90,
+      "snippet": ".font(.system(size: 34))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Tx/Details/RawTransactionView.swift",
+      "fingerprint": "532e966c1eeaa156",
+      "line_when_recorded": 253,
+      "snippet": ".font(.system(size: 11, design: .monospaced))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Tx/Details/RawTransactionView.swift",
+      "fingerprint": "492502273e8725c6",
+      "line_when_recorded": 302,
+      "snippet": ".font(.system(size: 10))"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Tx/Details/RawTransactionView.swift",
+      "fingerprint": "23fd7f1f1d3b17c5",
+      "line_when_recorded": 306,
+      "snippet": ".font(monospaced ? .system(size: 12, design: .monospaced) : .footnote)"
+    },
+    {
+      "rule": "A11Y007",
+      "path": "DashWallet/Sources/UI/Tx/Details/Views/TxDetailContactViews.swift",
+      "fingerprint": "36bdd51d9aabe56d",
+      "line_when_recorded": 92,
+      "snippet": ".font(.system(size: 12, weight: .semibold))"
+    }
+  ]
+}
