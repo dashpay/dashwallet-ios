@@ -395,7 +395,10 @@ struct ExternalSendAmountScreen: View {
         VStack(spacing: 0) {
             #if DASHPAY
             if let contact = viewModel.contactRecipient {
-                SendContactIntro(contact: contact, source: viewModel.source, onBack: onBack)
+                SendContactIntro(
+                    contact: contact,
+                    balanceFormatted: viewModel.coreBalanceFormatted,
+                    onBack: onBack)
                     .padding(.horizontal, 20)
                     .padding(.top, 10)
             } else {
@@ -685,9 +688,10 @@ private struct SendStepHeader: View {
 /// to make from here.
 private struct SendContactIntro: View {
     let contact: ContactItem
-    /// The funding balance, named on its own line — a contact can only be paid
-    /// from Core today, so this states the source rather than offering it.
-    let source: ChainNetwork
+    /// The funding balance, shown on its own line. A contact can only be paid
+    /// from Core today, so the screen states what is available rather than
+    /// offering a choice.
+    let balanceFormatted: String
     var onBack: () -> Void
 
     var body: some View {
@@ -719,18 +723,14 @@ private struct SendContactIntro: View {
                         .lineLimit(1)
                 }
 
-                // The source is one line, not a card: there is a single legal
-                // source for a contact, so the card's icon, caption and inert
-                // chevron dressed a fact that has no choice behind it.
-                HStack(spacing: 6) {
-                    Text(NSLocalizedString("from", comment: "Send screen: precedes the funding balance"))
-                        .dashFont(.subhead)
-                        .foregroundColor(Color.dash.primaryText)
-                    Text(sourceTitle(source))
-                        .dashFont(.subhead)
-                        .foregroundColor(Color.dash.primaryText)
-                        .lineLimit(1)
-                }
+                // What the send has to spend, not which balance it came from:
+                // a contact can only be paid from Core, so naming the source
+                // says nothing the user can act on — the number does.
+                Text(String.localizedStringWithFormat(
+                    NSLocalizedString("Balance: %@", comment: "Send screen: the funding balance"),
+                    balanceFormatted))
+                    .dashFont(.subhead)
+                    .foregroundColor(Color.dash.secondaryText)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
