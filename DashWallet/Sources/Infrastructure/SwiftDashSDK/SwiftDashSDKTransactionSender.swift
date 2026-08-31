@@ -251,9 +251,12 @@ final class SwiftDashSDKTransactionSender: NSObject {
             let utxos = manager.accountUtxos(for: walletId, balance: cjBalance)
             guard !utxos.isEmpty else { return [] }
 
-            // Drain each balanced ≤500-input chunk to `address`. `SelectionStrategy.all`
-            // makes core compute output = Σinputs − fee with no change (the addOutput
-            // amount is ignored); `finalizeAtomic` resolves dual-chain `/0/`+`/1/` signing.
+            // Drain each balanced ≤500-input chunk to `address`. `useOnlyAddedInputs`
+            // is what makes the chunk the transaction's input set — the finalizer
+            // otherwise funds from the whole account regardless of what was seeded.
+            // `SelectionStrategy.all` makes core compute output = Σinputs − fee with
+            // no change (the addOutput amount is ignored); `finalizeAtomic` resolves
+            // dual-chain `/0/`+`/1/` signing.
             // Partial-failure tolerant: keep the txs that broadcast, log the rest, and
             // throw only if nothing broadcast at all (a re-run sweeps the remainder).
             var txids: [Data] = []
@@ -264,6 +267,11 @@ final class SwiftDashSDKTransactionSender: NSObject {
                     try builder.addInputs(
                         wallet: wallet, accountType: .coinJoin,
                         accountIndex: Self.coinJoinAccountIndex, utxos: chunk)
+                    // Without this the finalizer adds every unreserved UTXO of
+                    // the account on top of the chunk and `.all` takes the lot,
+                    // so the chunking below has no effect and an account over
+                    // the input cap fails on every chunk and every retry.
+                    try builder.useOnlyAddedInputs()
                     try builder.setSelectionStrategy(.all)
                     try builder.setFeeRate(satPerKb: Self.feeRateSatPerKb)
                     // No setCurrentHeight: the finalizer sets the height from the
