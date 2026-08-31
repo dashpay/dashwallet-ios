@@ -2,10 +2,14 @@ name: "Accessibility"
 
 # Static VoiceOver / Dynamic Type audit (scripts/a11y_audit.py).
 #
-# The job fails only on findings that are NOT in scripts/a11y_baseline.json, so
-# the existing debt never blocks unrelated work — but a PR cannot add a new
-# unlabeled control. New P2 findings (Dynamic Type) are reported as advisory and
-# do not fail the build.
+# The job fails only on findings that are NOT in the baseline, so the existing
+# debt never blocks unrelated work — but a PR cannot add a new unlabeled
+# control. New P2 findings (Dynamic Type) are reported as advisory and do not
+# fail the build.
+#
+# On a pull request the baseline is read from the BASE branch, not from the PR
+# checkout: otherwise a PR could add a regression and add its fingerprint to the
+# same file, and the check would pass.
 #
 # No Xcode needed: the audit is static analysis, so it runs on a free Ubuntu
 # runner in about a second.
@@ -19,6 +23,7 @@ on:
       - "WatchApp Extension/**"
       - "scripts/a11y_audit.py"
       - "scripts/a11y_baseline.json"
+      - "scripts/a11y_config.json"
       - ".github/workflows/accessibility.yml"
   push:
     branches:
@@ -50,13 +55,65 @@ jobs:
       - name: Rule self-test
         run: python3 scripts/a11y_audit.py --self-test
 
-      - name: Audit changed code against the baseline
-        id: audit
+      # Take the accepted debt from the base branch. A PR that both introduces
+      # a finding and baselines it would otherwise pass its own check.
+      - name: Resolve the baseline to compare against
+        id: baseline
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
+          set -euo pipefail
+          BASELINE_PATH="scripts/a11y_baseline.json"
+          if [ -n "${BASE_REF:-}" ]; then
+            git fetch --depth=1 origin "$BASE_REF"
+            if git cat-file -e "origin/${BASE_REF}:scripts/a11y_baseline.json" 2>/dev/null; then
+              git show "origin/${BASE_REF}:scripts/a11y_baseline.json" > /tmp/base_baseline.json
+              BASELINE_PATH="/tmp/base_baseline.json"
+              echo "Comparing against the baseline on origin/${BASE_REF}."
+            else
+              echo "origin/${BASE_REF} has no baseline yet — using the one in this PR."
+            fi
+          fi
+          echo "path=${BASELINE_PATH}" >> "$GITHUB_OUTPUT"
+
+      # Flag a weakened config for the reviewer. This does not fail the build:
+      # relaxing the config can only ever reduce findings, so it cannot smuggle
+      # a regression past the ratchet — but it must not pass unnoticed either.
+      - name: Note config changes
+        if: github.base_ref != ''
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          if ! git cat-file -e "origin/${BASE_REF}:scripts/a11y_config.json" 2>/dev/null; then
+            exit 0
+          fi
+          git show "origin/${BASE_REF}:scripts/a11y_config.json" > /tmp/base_config.json
+          if ! diff -q /tmp/base_config.json scripts/a11y_config.json >/dev/null; then
+            {
+              echo "### ⚠️ Accessibility config changed"
+              echo
+              echo "Review the rule scope before merging:"
+              echo
+              echo '```diff'
+              diff -u /tmp/base_config.json scripts/a11y_config.json || true
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Audit changed code against the baseline
+        env:
+          # Passed through the environment rather than interpolated into the
+          # script body, so a dispatch input cannot inject shell.
+          FAIL_ON: ${{ github.event.inputs.fail_on || 'P0,P1' }}
+          BASELINE_PATH: ${{ steps.baseline.outputs.path }}
+        run: |
+          set -euo pipefail
           python3 scripts/a11y_audit.py \
             --check \
             --github \
-            --fail-on "${{ github.event.inputs.fail_on || 'P0,P1' }}"
+            --baseline "$BASELINE_PATH" \
+            --fail-on "$FAIL_ON"
 
       - name: Current debt summary
         # Runs even when the check above fails, so the PR always shows where
@@ -70,7 +127,7 @@ jobs:
             python3 scripts/a11y_audit.py --summary
             echo '```'
             echo
-            echo "Fails only on findings absent from \`scripts/a11y_baseline.json\`."
+            echo "Fails only on findings absent from the base branch's \`scripts/a11y_baseline.json\`."
             echo "Deliberate exception: \`// a11y-ignore: <RULE> <why>\` on the line."
             echo "Fixed something? \`scripts/a11y_audit.py --write-baseline\` banks it."
           } >> "$GITHUB_STEP_SUMMARY"

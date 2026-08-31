@@ -66,11 +66,18 @@ It fails **only on findings that are not in `scripts/a11y_baseline.json`.** The
 existing debt is recorded there, so the check can be adopted today without
 fixing everything first — but a PR cannot add a new unlabeled control.
 
+On a pull request the baseline is read from the **base branch**, not from the PR
+checkout. Otherwise a PR could introduce a regression and add its fingerprint to
+the same file in the same commit, and the check would pass on its own weakened
+baseline.
+
 New **P2** findings (Dynamic Type) are printed as advisory and do not fail the
 build. Change that with `--fail-on all` once the P2 debt is paid down.
 
 Baseline entries are keyed by a hash of the code snippet, not by line number, so
-moving code around or reindenting a file does not create false failures.
+moving code around or reindenting a file does not create false failures. They are
+matched as a **multiset**: two identical unlabeled buttons in one file share a
+fingerprint, so the baseline records the count and a third copy still fails.
 
 ### When CI fails on your PR
 

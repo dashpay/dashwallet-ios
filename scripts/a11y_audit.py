@@ -203,7 +203,7 @@ class Finding:
         """Stable across line moves and reindentation, unlike a line number."""
         normalized = re.sub(r"\s+", "", self.snippet)
         payload = "{}|{}|{}".format(self.rule_id, self.path, normalized)
-        return hashlib.sha1(payload.encode("utf-8")).hexdigest()[:16]
+        return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
 
     def key(self) -> Tuple[str, str, str]:
         return (self.rule_id, self.path, self.fingerprint())
@@ -343,9 +343,66 @@ def balanced_parens(text: str, open_pos: int) -> Optional[int]:
     return None
 
 
-def modifier_tail(text: str, end_pos: int, max_chars: int = 700) -> str:
-    """The chained modifiers that follow a view expression."""
-    return text[end_pos:end_pos + max_chars]
+def modifier_tail(text: str, end_pos: int, max_chars: int = 2000) -> str:
+    """Only the modifiers chained onto THIS expression.
+
+    A fixed character window would also swallow the next sibling view, so an
+    unrelated `.accessibilityLabel` further down the body could mask a real
+    finding. This walks `.name(...)`/`.name { ... }` segments and stops at the
+    first token that is not part of the chain.
+    """
+    limit = min(len(text), end_pos + max_chars)
+    collected: List[str] = []
+    i = end_pos
+    while i < limit:
+        j = i
+        while j < limit and text[j] in " \t\r\n":
+            j += 1
+        if j >= limit or text[j] != ".":
+            break
+        k = j + 1
+        while k < limit and (text[k].isalnum() or text[k] == "_"):
+            k += 1
+        if k == j + 1:            # a lone dot, not a modifier
+            break
+        end = k
+        while end < limit:        # consume (...) and/or { ... }
+            m = end
+            while m < limit and text[m] in " \t":
+                m += 1
+            if m < limit and text[m] == "(":
+                close = balanced_parens(text, m)
+                if close is None:
+                    return "".join(collected)
+                end = close
+                continue
+            if m < limit and text[m] == "{":
+                close = balanced_block(text, m)
+                if close is None:
+                    return "".join(collected)
+                end = close
+                continue
+            break
+        collected.append(text[j:end])
+        i = end
+    return "".join(collected)
+
+
+def modifier_chain_before(code: str, offset: int) -> str:
+    """The part of this expression that precedes `offset`.
+
+    Walks back over lines that are continuation modifiers (`.foo(...)`) and
+    stops at the line that starts the expression, so a neighbouring view's
+    accessibility modifier cannot suppress a finding.
+    """
+    lines = code.splitlines()
+    index = line_of(code, offset) - 1
+    if index < 0 or index >= len(lines):
+        return ""
+    start = index
+    while start > 0 and lines[start].lstrip().startswith("."):
+        start -= 1
+    return "\n".join(lines[start:index + 1])
 
 
 def suppressed(original: str, line_no: int, rule_id: str) -> bool:
@@ -562,13 +619,13 @@ def rule_tap_gesture(code: str, original: str, path: str,
                      findings: List[Finding]) -> None:
     """`.onTapGesture` with no accessibility treatment anywhere near it."""
     for match in re.finditer(r"\.onTapGesture\s*(\{|\()", code):
-        # Look both ways: the modifier chain around this view.
-        before = code[max(0, match.start() - 900):match.start()]
+        # Look both ways along THIS expression's modifier chain only.
+        before = modifier_chain_before(code, match.start())
         opener = match.end() - 1
         block_end = (balanced_block(code, opener) if code[opener] == "{"
                      else balanced_parens(code, opener))
         after_start = block_end if block_end else match.end()
-        after = code[after_start:after_start + 600]
+        after = modifier_tail(code, after_start)
         if _tail_escapes(before) or _tail_escapes(after):
             continue
         # A tap gesture attached to something that already reads as text is a
@@ -759,14 +816,34 @@ def analyze(repo_root: str, roots: Sequence[str],
     return findings
 
 
-def load_baseline(repo_root: str, path: str) -> Optional[Set[Tuple[str, str, str]]]:
-    abs_path = os.path.join(repo_root, path)
-    if not os.path.exists(abs_path):
+def load_baseline(path: str) -> Optional["Counter"]:
+    """Accepted debt as a multiset.
+
+    Counting matters: two identical unlabeled buttons in one file share a
+    fingerprint, so a set would let a third copy in unnoticed. With counts, only
+    the excess over what was recorded is treated as new.
+    """
+    if not os.path.exists(path):
         return None
-    with open(abs_path, "r", encoding="utf-8") as handle:
+    with open(path, "r", encoding="utf-8") as handle:
         data = json.load(handle)
-    return {(item["rule"], item["path"], item["fingerprint"])
-            for item in data.get("findings", [])}
+    return Counter((item["rule"], item["path"], item["fingerprint"])
+                   for item in data.get("findings", []))
+
+
+def new_findings(findings: List[Finding],
+                 baseline: "Counter") -> Tuple[List[Finding], int]:
+    """Findings beyond the recorded count, plus how many entries were fixed."""
+    allowance = Counter(baseline)
+    new: List[Finding] = []
+    for finding in findings:
+        key = finding.key()
+        if allowance.get(key, 0) > 0:
+            allowance[key] -= 1
+        else:
+            new.append(finding)
+    fixed = sum(count for count in allowance.values() if count > 0)
+    return new, fixed
 
 
 def write_baseline(repo_root: str, path: str,
@@ -947,6 +1024,23 @@ FIXTURES: List[Tuple[str, bool, str]] = [
      '// a11y-ignore: A11Y004 decorative, the row above carries the label\n'
      'Button(action: onClose) {\n    Image(systemName: "xmark")\n}\n'),
 
+    # A sibling view's accessibility modifier must not suppress this one.
+    ("A11Y004", True,
+     'VStack {\n'
+     '    Button(action: a) { Image(systemName: "x") }\n'
+     '    Text("hi").accessibilityLabel(Text("y"))\n'
+     '}\n'),
+    ("A11Y012", True,
+     'VStack {\n'
+     '    Text("a").accessibilityElement(children: .combine)\n'
+     '    Text(name).onTapGesture { select() }\n'
+     '}\n'),
+    # ...but a modifier on the same chain still counts.
+    ("A11Y004", False,
+     'Button(action: a) { Image(systemName: "x") }\n'
+     '    .padding(4)\n'
+     '    .accessibilityLabel(Text("Close"))\n'),
+
     # Comments and strings must not trigger rules
     ("A11Y001", False,
      '// let item = UITabBarItem(title: nil, image: icon)\n'),
@@ -976,9 +1070,52 @@ def _config_fixtures() -> List[Tuple[str, bool, str, Dict[str, object]]]:
     ]
 
 
+def _baseline_fixtures() -> List[Tuple[str, int, int]]:
+    """(label, expected_new, expected_fixed) for the multiset matcher."""
+    return []
+
+
+def _run_baseline_fixtures() -> int:
+    """Two identical findings must not be covered by one baseline entry."""
+    failures = 0
+    source = ('VStack {\n'
+              '    Button(action: a) { Image(systemName: "x") }\n'
+              '    Button(action: a) { Image(systemName: "x") }\n'
+              '}\n')
+    findings = [f for f in _analyze_source(source) if f.rule_id == "A11Y004"]
+    if len(findings) != 2:
+        print("FAIL baseline#1 expected 2 identical findings, got {}"
+              .format(len(findings)))
+        return 1
+    if findings[0].key() != findings[1].key():
+        print("FAIL baseline#2 fixture no longer produces a shared key")
+        return 1
+
+    one_recorded = Counter([findings[0].key()])
+    new, fixed = new_findings(findings, one_recorded)
+    if len(new) != 1 or fixed != 0:
+        failures += 1
+        print("FAIL baseline#3 one baselined + one new: expected 1 new/0 fixed,"
+              " got {} new/{} fixed".format(len(new), fixed))
+
+    both_recorded = Counter([findings[0].key(), findings[1].key()])
+    new, fixed = new_findings(findings, both_recorded)
+    if new or fixed:
+        failures += 1
+        print("FAIL baseline#4 both baselined: expected 0 new/0 fixed, got "
+              "{} new/{} fixed".format(len(new), fixed))
+
+    new, fixed = new_findings([findings[0]], both_recorded)
+    if new or fixed != 1:
+        failures += 1
+        print("FAIL baseline#5 one fixed: expected 0 new/1 fixed, got "
+              "{} new/{} fixed".format(len(new), fixed))
+    return failures
+
+
 def self_test() -> int:
     global CONFIG
-    failures = 0
+    failures = _run_baseline_fixtures()
 
     for index, (rule_id, should_fire, source, cfg) in enumerate(
             _config_fixtures(), 1):
@@ -1008,11 +1145,11 @@ def self_test() -> int:
                 "{} finding(s)".format(len(found)) if fired else "none"))
             for line in source.strip().splitlines():
                 print("         | {}".format(line))
-    total = len(FIXTURES) + len(_config_fixtures())
+    total = len(FIXTURES) + len(_config_fixtures()) + 5
     if failures:
         print("\n{}/{} fixtures failed".format(failures, total))
         return 1
-    print("All {} rule and config fixtures pass".format(total))
+    print("All {} rule, config and baseline fixtures pass".format(total))
     return 0
 
 
@@ -1090,14 +1227,17 @@ def main(argv: Sequence[str]) -> int:
             handle.write("\n")
 
     if args.check:
-        baseline = load_baseline(repo_root, args.baseline)
+        baseline_path = args.baseline
+        if not os.path.isabs(baseline_path):
+            candidate = os.path.join(repo_root, baseline_path)
+            baseline_path = candidate if os.path.exists(candidate) \
+                else baseline_path
+        baseline = load_baseline(baseline_path)
         if baseline is None:
             print("No baseline at {} — run --write-baseline first."
                   .format(args.baseline), file=sys.stderr)
             return 2
-        new = [f for f in findings if f.key() not in baseline]
-        current_keys = {f.key() for f in findings}
-        fixed = len(baseline - current_keys)
+        new, fixed = new_findings(findings, baseline)
 
         blocking_severities = {s.strip().upper()
                                for s in args.fail_on.split(",") if s.strip()}
