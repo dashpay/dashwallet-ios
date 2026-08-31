@@ -98,6 +98,7 @@ final class SwiftDashSDKHost {
     // MARK: - Singleton
 
     static let shared = SwiftDashSDKHost()
+    nonisolated static let defaultWalletName = "dashwallet"
 
     // MARK: - Logging
 
@@ -497,7 +498,7 @@ final class SwiftDashSDKHost {
     /// manufacture cross-network copies while replaying old key material.
     ///
     /// For adding a wallet ALONGSIDE existing ones without rebinding the
-    /// active wallet, use `addWallet(mnemonic:isImported:)` instead — this path replaces
+    /// active wallet, use `addWallet(mnemonic:isImported:name:)` instead — this path replaces
     /// the running runtime and is not additive.
     @discardableResult
     func createOrImportWallet(
@@ -519,6 +520,7 @@ final class SwiftDashSDKHost {
                 mnemonic: mnemonic,
                 manager: handles.manager,
                 network: handles.network,
+                name: Self.defaultWalletName,
                 // Imported mnemonics may hold history from long before
                 // this device: scan from the network's import floor
                 // (genesis on testnet, block 200,000 on mainnet — see
@@ -551,6 +553,7 @@ final class SwiftDashSDKHost {
                             mnemonic: mnemonic,
                             manager: targetManager,
                             network: targetNetwork,
+                            name: Self.defaultWalletName,
                             birthHeight: isImported
                                 ? Self.importedWalletBirthHeight(for: targetNetwork)
                                 : nil,
@@ -584,15 +587,16 @@ final class SwiftDashSDKHost {
         return createdWallet
     }
 
-    /// Outcome of `addWallet(mnemonic:isImported:)`. `Sendable` because it
+    /// Outcome of `addWallet(mnemonic:isImported:name:)`. `Sendable` because it
     /// crosses the lifecycle queue's awaitable seam
     /// (`SwiftDashSDKWalletRuntime.performAddWallet`).
     enum AddWalletResult: Sendable {
         /// The wallet was created and its mnemonic persisted; the running
         /// runtime is unchanged (the caller switches to it explicitly).
         case added(walletId: Data)
-        /// A wallet deriving this walletId already has a persisted mnemonic on
-        /// this device — nothing was written. The caller offers switching to it.
+        /// A wallet deriving this current-network walletId already has a
+        /// persisted mnemonic. A missing sibling-network representation may
+        /// still have been repaired; the caller offers switching to this one.
         case alreadyExists(walletId: Data)
     }
 
@@ -624,9 +628,11 @@ final class SwiftDashSDKHost {
 
     /// Add a wallet from `mnemonic` ADDITIVELY: create it in the already-running
     /// manager and persist its mnemonic, then materialize the same logical
-    /// wallet for the other supported network. This is explicit provisioning
-    /// at create/import time; reinstall recovery remains network-scoped and
-    /// must never manufacture a mirror from an arbitrary surviving entry.
+    /// wallet for the other supported network. The optional user-facing name
+    /// is written to each newly provisioned network row. This is explicit
+    /// provisioning at create/import time; reinstall recovery remains
+    /// network-scoped and must never manufacture a mirror from an arbitrary
+    /// surviving entry.
     /// Neither operation touches the active-wallet registries or rebinds the
     /// published active wallet. The caller (Wallets screen "Add Wallet")
     /// switches to the current-network wallet afterward via
@@ -634,9 +640,11 @@ final class SwiftDashSDKHost {
     ///
     /// Requires a running host (a bound active wallet already exists — adding
     /// is only reachable from the Wallets screen). Returns `.alreadyExists`
-    /// without writing anything when a mnemonic for the derived walletId is
-    /// already persisted (`manager.createWallet` is idempotent by walletId, so
-    /// re-adding would silently no-op — the caller surfaces this instead).
+    /// without recreating the current-network wallet when its mnemonic is
+    /// already persisted; any missing sibling-network representation is still
+    /// provisioned first. `manager.createWallet` is idempotent by walletId, so
+    /// the caller surfaces the existing-wallet outcome instead of silently
+    /// claiming a new wallet was added.
     ///
     /// Shares the persist-then-create transaction with
     /// `createOrImportWallet` (`createAndPersist`); differs only in that it
@@ -647,7 +655,7 @@ final class SwiftDashSDKHost {
     /// as one link of the serial lifecycle chain so queued refresh/reset
     /// operations cannot interleave with the multi-network provisioning.
     @discardableResult
-    func addWallet(mnemonic: String, isImported: Bool) async throws -> AddWalletResult {
+    func addWallet(mnemonic: String, isImported: Bool, name: String?) async throws -> AddWalletResult {
         let mnemonic = Mnemonic.normalizePhrase(mnemonic)
         guard !mnemonic.isEmpty, Mnemonic.validate(mnemonic) else {
             throw HostError.invalidMnemonic
@@ -690,6 +698,7 @@ final class SwiftDashSDKHost {
                     mnemonic: mnemonic,
                     manager: targetManager,
                     network: targetNetwork,
+                    name: name,
                     // Same semantics as `createOrImportWallet`: imports scan
                     // from each network's import floor, freshly generated
                     // wallets from that network's tip.
@@ -744,6 +753,7 @@ final class SwiftDashSDKHost {
         mnemonic: String,
         manager: PlatformWalletManager,
         network: Network,
+        name: String?,
         birthHeight: UInt32?,
         offMainCreate: Bool
     ) async throws -> ManagedPlatformWallet {
@@ -792,7 +802,7 @@ final class SwiftDashSDKHost {
                         return try await manager.createWallet(
                             mnemonic: mnemonic,
                             network: network,
-                            name: "dashwallet",
+                            name: name,
                             createDefaultAccounts: true,
                             birthHeight: birthHeight)
                     }
@@ -805,7 +815,7 @@ final class SwiftDashSDKHost {
                         try manager.createWallet(
                             mnemonic: mnemonic,
                             network: network,
-                            name: "dashwallet",
+                            name: name,
                             createDefaultAccounts: true,
                             birthHeight: birthHeight)
                     }
@@ -1254,7 +1264,7 @@ final class SwiftDashSDKHost {
                 let created = try handles.manager.createWallet(
                     mnemonic: entry.mnemonic,
                     network: handles.network,
-                    name: "dashwallet",
+                    name: Self.defaultWalletName,
                     createDefaultAccounts: true,
                     // This path registers a keychain mnemonic whose
                     // SwiftData rows are gone (reinstall) or never
