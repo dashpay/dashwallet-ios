@@ -79,7 +79,7 @@ struct SwapConvertView: View {
                 options: viewModel.currencyOptions,
                 onMax: { viewModel.setMax() },
                 onCurrencyTap: { showLocalCurrency = true },
-                hidesSelectedOption: true
+                hidesSelectedOption: false
             )
             .frame(height: 70)
             conversionCard
