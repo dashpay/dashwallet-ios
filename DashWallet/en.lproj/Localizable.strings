@@ -5870,3 +5870,6 @@
 
 /* Receive: the QR image doubles as a copy control */
 "Copy QR code" = "Copy QR code";
+
+/* Send: the contact step's back control */
+"Back" = "Back";

@@ -713,6 +713,7 @@ private struct SendContactIntro: View {
                     .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(Text(NSLocalizedString("Back", comment: "")))
 
             VStack(alignment: .leading, spacing: 4) {
                 DashUIKit.TopIntroView(title: NSLocalizedString("Send", comment: ""))

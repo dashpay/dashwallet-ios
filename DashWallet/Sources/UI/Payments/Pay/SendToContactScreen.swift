@@ -93,6 +93,11 @@ struct SendToContactPickerScreen: View {
             guard !item.paymentChannelBroken else { return }
             onSelect(item)
         }
+        // A stack with a tap gesture is invisible to VoiceOver: it needs the
+        // button trait and one combined label. A broken payment channel loses
+        // the trait along with the tap it already refuses.
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(item.paymentChannelBroken ? [] : .isButton)
     }
 
     private var noMatchesNote: some View {
