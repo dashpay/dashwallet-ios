@@ -63,17 +63,20 @@ extension ConfirmationTransactionQRController {
     }
 
     private func configureQrImage() {
-        let rawQRImage = UIImage.dw_image(withQRCodeData: paymentRequest.data, color: CIColor(color: UIColor.label))
+        guard let rawQRImage = QRCodeGenerator.image(for: paymentRequest.data, foregroundColor: .label) else {
+            return
+        }
 
         let overlayImage = UIImage(named: "dash_logo_qr")!.withTintColor(.label)
         let screenWidth = CGRectGetWidth(UIScreen.main.bounds)
         let padding = 38.0
-        let side = screenWidth - padding * 2;
+        let side = screenWidth - padding * 2
 
-        var resizedImage = rawQRImage.dw_resize(CGSizeMake(side, side), with: .none)
-        resizedImage = resizedImage.dw_imageByCuttingHoleInCenter(with: CGSizeMake(84.0, 84.0))
-        let image = resizedImage.dw_imageByMerging(with: overlayImage)
-
-        qrImage.image = image
+        qrImage.image = QRCodeGenerator.composited(
+            rawQRImage: rawQRImage,
+            targetSize: CGSize(width: side, height: side),
+            holeSize: CGSize(width: 84, height: 84),
+            overlay: overlayImage,
+            overlaySize: overlayImage.size)
     }
 }

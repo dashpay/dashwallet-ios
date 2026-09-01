@@ -36,24 +36,7 @@ class ExtendedPublicKeySheetViewModel: ObservableObject {
         let model = ExtendedPublicKeysModel()
         guard let xpub = model.bip44AccountXpub else { return }
         keyValue = xpub
-        qrImage = generateQRCode(from: keyValue)
-    }
-
-    private func generateQRCode(from string: String) -> UIImage? {
-        guard !string.isEmpty,
-              let filter = CIFilter(name: "CIQRCodeGenerator"),
-              let data = string.data(using: .utf8) else { return nil }
-
-        filter.setValue(data, forKey: "inputMessage")
-        filter.setValue("M", forKey: "inputCorrectionLevel")
-
-        guard let outputImage = filter.outputImage else { return nil }
-
-        let scale = 180.0 / outputImage.extent.width
-        let scaledImage = outputImage.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
-        let context = CIContext()
-        guard let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) else { return nil }
-        return UIImage(cgImage: cgImage)
+        qrImage = QRCodeGenerator.image(for: keyValue, size: 180, correctionLevel: .medium)
     }
 }
 
