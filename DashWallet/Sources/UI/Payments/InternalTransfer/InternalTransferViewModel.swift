@@ -2211,10 +2211,18 @@ final class InternalTransferViewModel: ObservableObject {
             formatted)
     }
 
+    /// Why Max offered less than the balance card shows — `nil` when the answer
+    /// is "tap Max again in a minute".
+    ///
+    /// A remainder that a later sweep can move is not worth a line in the slot
+    /// that carries errors: the user repeats Max once this transaction settles
+    /// and the rest follows. A remainder that no sweep can ever move is the
+    /// opposite — silence there would leave a permanent gap between the balance
+    /// and what the wallet will ever offer to send.
     private static func shieldedRemainderMessage(
         _ credits: UInt64,
         followUpCredits: UInt64
-    ) -> String {
+    ) -> String? {
         let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
         guard followUpCredits > 0 else {
             // Spending these notes costs more than they hold, so no later
@@ -2225,11 +2233,7 @@ final class InternalTransferViewModel: ObservableObject {
                     comment: "Shielded Max dust remainder"),
                 formatted)
         }
-        return String.localizedStringWithFormat(
-            NSLocalizedString(
-                "%@ DASH is held in notes that don't fit in one transaction. Use Max again after this one settles to send the rest.",
-                comment: "Shielded Max multi-bundle remainder"),
-            formatted)
+        return nil
     }
 
     // MARK: - Conversion on unit toggle
