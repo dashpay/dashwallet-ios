@@ -447,6 +447,30 @@ extension MainTabbarController {
         homeController?.performPay(to: url)
     }
 
+    /// Opens the Connections screen for a `dash-key:` / `dash-st:` link.
+    ///
+    /// The More tab's index moves with the DashPay layout, so it is resolved
+    /// from the navigation controller itself rather than from the tab enum.
+    @objc
+    public func openDashConnect(_ uri: String) {
+        dismiss(animated: false, completion: nil)
+
+        guard let menuNav = menuNavigationController?.navigationController else { return }
+
+        if let index = viewControllers?.firstIndex(of: menuNav) {
+            selectedIndex = index
+        }
+
+        if let connections = menuNav.topViewController as? DashConnectHostingController {
+            connections.handle(uri: uri)
+            return
+        }
+
+        let controller = DashConnectHostingController(navigationController: menuNav, uri: uri)
+        controller.hidesBottomBarWhenPushed = true
+        menuNav.pushViewController(controller, animated: true)
+    }
+
     @objc
     public func openPaymentsScreen() {
         assert(isDemoMode, "Invalid usage. Should be used in Demo mode only")

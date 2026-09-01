@@ -108,6 +108,31 @@ final class DashConnectUriTests: XCTestCase {
         assertStError("dash-st:?n=t&v=1", .emptyBody)
     }
 
+    // MARK: - Deep links
+
+    func testDeepLinkAcceptsBothDashConnectSchemes() throws {
+        let keyUri = try validKeyUri()
+        let stUri = validStUri()
+
+        XCTAssertEqual(DashConnectDeepLink.uri(from: try url(keyUri)), keyUri)
+        XCTAssertEqual(DashConnectDeepLink.uri(from: try url(stUri)), stUri)
+        XCTAssertTrue(DashConnectDeepLink.canHandle(try url(keyUri)))
+    }
+
+    func testDeepLinkRejectsTheAppsOtherSchemes() throws {
+        for uri in [
+            "dash:XnhkeQZLtHqzYqbxLXaAvB9RLnKGrRWKgy?amount=0.1",
+            "dashwallet://scanqr",
+            "dashpay://invite/abc",
+            "pay:XnhkeQZLtHqzYqbxLXaAvB9RLnKGrRWKgy",
+            "https://yap.pr/login",
+        ] {
+            XCTAssertNil(DashConnectDeepLink.uri(from: try url(uri)), uri)
+            XCTAssertFalse(DashConnectDeepLink.canHandle(try url(uri)), uri)
+        }
+    }
+
+
     private func assertKeyError(_ uri: String, _ expected: DashConnectUriError) {
         XCTAssertThrowsError(try DashConnectUri.parseKeyRequest(uri)) { error in
             XCTAssertEqual(error as? DashConnectUriError, expected)
@@ -195,5 +220,9 @@ final class DashConnectUriTests: XCTestCase {
             result.append(chunk)
         }
         return result
+    }
+
+    private func url(_ string: String) throws -> URL {
+        try XCTUnwrap(URL(string: string), "not a URL: \(string)")
     }
 }

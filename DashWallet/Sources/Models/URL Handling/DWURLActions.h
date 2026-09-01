@@ -58,4 +58,13 @@ typedef NS_ENUM(NSUInteger, DWURLRequestActionType) {
 
 @end
 
+//
+
+@interface DWURLDashConnectAction : DWURLAction
+
+/// The `dash-key:` / `dash-st:` URI exactly as the app that opened it wrote it.
+@property (nonatomic, copy) NSString *uri;
+
+@end
+
 NS_ASSUME_NONNULL_END

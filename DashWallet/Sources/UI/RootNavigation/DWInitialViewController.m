@@ -39,6 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if DASHPAY
 @property (nullable, nonatomic, strong) NSURL *deferredDeeplink;
 #endif
+@property (nullable, nonatomic, strong) NSURL *deferredURL;
 
 @end
 
@@ -87,7 +88,15 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 
 - (void)handleURL:(NSURL *)url {
-    [self.rootController handleURL:url];
+    // A cold launch delivers the URL before the root controller exists — an
+    // opened link must not be dropped on the way in, so it waits like a
+    // deeplink does.
+    if (self.rootController) {
+        [self.rootController handleURL:url];
+    }
+    else {
+        self.deferredURL = url;
+    }
 }
 
 #pragma mark - DWOnboardingViewControllerDelegate
@@ -213,6 +222,11 @@ NS_ASSUME_NONNULL_BEGIN
         self.deferredDeeplink = nil;
     }
 #endif
+
+    if (self.deferredURL) {
+        [controller handleURL:self.deferredURL];
+        self.deferredURL = nil;
+    }
 
     return controller;
 }
