@@ -25,10 +25,10 @@ final class BalanceModel: ObservableObject {
     
     @Published private(set) var state = SyncingActivityMonitor.shared.state
     @Published private(set) var value: UInt64 = 0
-    /// True while the wallet runs on testnet — drives the home header's
-    /// TESTNET badge so test funds can't be mistaken for real Dash
-    /// (fresh installs currently default to testnet by design).
-    @Published private(set) var isTestnet = WalletEnvironment.isTestnet
+    /// Badge text for the home header while the wallet runs on a test
+    /// network ("TESTNET"/"DEVNET"), so test funds can't be mistaken for
+    /// real Dash; nil on mainnet.
+    @Published private(set) var networkBadgeText: String? = BalanceModel.badgeText()
     @Published var isBalanceHidden: Bool {
         didSet {
             DWGlobalOptions.sharedInstance().balanceHidden = isBalanceHidden
@@ -58,12 +58,23 @@ final class BalanceModel: ObservableObject {
         NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                self?.isTestnet = WalletEnvironment.isTestnet
+                self?.networkBadgeText = BalanceModel.badgeText()
             }
             .store(in: &cancellableBag)
 
         reloadBalance()
         observeAppLifecycle()
+    }
+
+    private static func badgeText() -> String? {
+        switch WalletEnvironment.networkKind {
+        case .mainnet:
+            return nil
+        case .testnet:
+            return NSLocalizedString("TESTNET", comment: "Badge on the home balance while the wallet runs on testnet")
+        case .devnet:
+            return NSLocalizedString("DEVNET", comment: "Badge on the home balance while the wallet runs on a devnet")
+        }
     }
 
     func hideBalanceIfNeeded() {

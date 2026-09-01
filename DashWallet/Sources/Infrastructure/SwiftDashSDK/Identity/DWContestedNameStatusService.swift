@@ -450,6 +450,8 @@ public final class DWContestedNameStatusService: NSObject {
     }
 
     private nonisolated static func networkKey(_ network: Network) -> String {
-        network == .mainnet ? "mainnet" : "testnet"
+        // Same "mainnet"/"testnet" strings as before; devnet gets its own
+        // key instead of colliding with testnet's bookmarks.
+        network.networkName
     }
 }

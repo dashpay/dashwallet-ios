@@ -1178,6 +1178,10 @@
 		BB0000052DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000092DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift */; };
 		BB0000062DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000092DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift */; };
 		BB779AE4D9B43803EAF0CB6F /* WalletEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E0B188220763649450C9423 /* WalletEnvironment.swift */; };
+		DECAF00000000000000000A1 /* DevnetConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECAF00000000000000000C1 /* DevnetConfiguration.swift */; };
+		DECAF00000000000000000B1 /* DevnetConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECAF00000000000000000C1 /* DevnetConfiguration.swift */; };
+		DECAF00000000000000000A2 /* DevnetSettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECAF00000000000000000C2 /* DevnetSettingsScreen.swift */; };
+		DECAF00000000000000000B2 /* DevnetSettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECAF00000000000000000C2 /* DevnetSettingsScreen.swift */; };
 		BC2677B2880883067AE18DC5 /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 797D9070BF54A3533190584E /* libPods-dashwallet.a */; };
 		BCBED608CAAABA10839A0ADE /* SwiftDashSDKWalletState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42C22064915D913252F56184 /* SwiftDashSDKWalletState.swift */; };
 		BD509A68B1A0B6E4599F9C7A /* DWProfileUpdateCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82926C69F3BB675BEF1A1FFD /* DWProfileUpdateCoordinator.swift */; };
@@ -2150,6 +2154,8 @@
 		1AF20341A5E313C9D309BF39 /* Pods-DashWalletTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.release.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.release.xcconfig"; sourceTree = "<group>"; };
 		1D57AD13519CA41EBE3B8D53 /* CoinJoinWithdrawalTxSet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoinJoinWithdrawalTxSet.swift; sourceTree = "<group>"; };
 		1E0B188220763649450C9423 /* WalletEnvironment.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletEnvironment.swift; sourceTree = "<group>"; };
+		DECAF00000000000000000C1 /* DevnetConfiguration.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DevnetConfiguration.swift; sourceTree = "<group>"; };
+		DECAF00000000000000000C2 /* DevnetSettingsScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DevnetSettingsScreen.swift; sourceTree = "<group>"; };
 		1E7370138411E3E74B42F4CC /* Pods-dashwallet.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testflight.xcconfig"; path = "Target Support Files/Pods-dashwallet/Pods-dashwallet.testflight.xcconfig"; sourceTree = "<group>"; };
 		20554F992205428BA790F6CF /* SwapCoinIconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCoinIconView.swift; sourceTree = "<group>"; };
 		222040C51C1A1940005CE1C3 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
@@ -4901,6 +4907,7 @@
 				2A8F420A21BEE69E00858B91 /* About */,
 				2A7A7BD52348CB6600451078 /* SettingsScreen.swift */,
 				750CED5F2C94BFD7000FB837 /* SettingsMenuViewModel.swift */,
+				DECAF00000000000000000C2 /* DevnetSettingsScreen.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -7289,6 +7296,7 @@
 				15DF22D94904D5A8CD596ED8 /* SwiftDashSDKWalletWiper.swift */,
 				42C22064915D913252F56184 /* SwiftDashSDKWalletState.swift */,
 				1E0B188220763649450C9423 /* WalletEnvironment.swift */,
+				DECAF00000000000000000C1 /* DevnetConfiguration.swift */,
 				A876A874736D422F781F797F /* SwiftDashSDKReceiveAddressReader.swift */,
 				31271807D89A63FB9413C936 /* SwiftDashSDKTransactionSender.swift */,
 				40153BBCF17452E661EFB84B /* SwiftDashSDKCoinJoinBalanceReader.swift */,
@@ -9623,6 +9631,7 @@
 				CNR0000052FF100000000001 /* CrowdNodeBalanceReminderBanner.swift in Sources */,
 				CNR0000112FF100000000001 /* CrowdNodeWithdrawalRouter.swift in Sources */,
 				2A7A7BD62348CB6600451078 /* SettingsScreen.swift in Sources */,
+				DECAF00000000000000000A2 /* DevnetSettingsScreen.swift in Sources */,
 				2A0C69DA2314727F001B8C90 /* UISpringTimingParameters+DWInit.m in Sources */,
 				47C661AD28F972BD00028A8D /* NumberKeyboardButton.swift in Sources */,
 				11AE3DD82997C599000856EE /* IsDefaultEmail.swift in Sources */,
@@ -10361,6 +10370,7 @@
 				DC485FD6F26BDE9D539EFA04 /* SwiftDashSDKWalletWiper.swift in Sources */,
 				E5B6555D068FA44028784652 /* SwiftDashSDKWalletState.swift in Sources */,
 				DABF195F497554C7CFE816CA /* WalletEnvironment.swift in Sources */,
+				DECAF00000000000000000A1 /* DevnetConfiguration.swift in Sources */,
 				02EED2FC7EAC55B96ECEAAD6 /* DWLogger.m in Sources */,
 				02EED2FC7EAC55B96ECEAB01 /* MainThreadStallMonitor.swift in Sources */,
 				4B8A9492829B622FCDAF4F19 /* SecureTimeService.swift in Sources */,
@@ -10527,6 +10537,7 @@
 				CNR0000062FF100000000001 /* CrowdNodeBalanceReminderBanner.swift in Sources */,
 				CNR0000122FF100000000001 /* CrowdNodeWithdrawalRouter.swift in Sources */,
 				C9D2C6B02A320AA000D15901 /* SettingsScreen.swift in Sources */,
+				DECAF00000000000000000B2 /* DevnetSettingsScreen.swift in Sources */,
 				751B61C52ADFFD0700D1C2EF /* IntegrationViewController+Uphold.swift in Sources */,
 				C9D2C6B22A320AA000D15901 /* UISpringTimingParameters+DWInit.m in Sources */,
 				C9D2C6B62A320AA000D15901 /* NumberKeyboardButton.swift in Sources */,
@@ -11395,6 +11406,7 @@
 				4A32D146F43760F5116B9945 /* SwiftDashSDKWalletWiper.swift in Sources */,
 				BCBED608CAAABA10839A0ADE /* SwiftDashSDKWalletState.swift in Sources */,
 				BB779AE4D9B43803EAF0CB6F /* WalletEnvironment.swift in Sources */,
+				DECAF00000000000000000B1 /* DevnetConfiguration.swift in Sources */,
 				66B50619EC898EEE8C8FE13E /* DWLogger.m in Sources */,
 				66B50619EC898EEE8C8FEB01 /* MainThreadStallMonitor.swift in Sources */,
 				94CE86155CB8D4DBCB18F6F7 /* SecureTimeService.swift in Sources */,

@@ -229,7 +229,61 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     @MainActor
     private func performStart(for network: Network) async -> Result<Void, Error> {
+        // Checked before `host.start` builds the SDK: an unconfigured devnet
+        // would otherwise surface as a cryptic SDK-init failure (the SDK
+        // reads the quorum URL itself and can't discover DAPI nodes without
+        // it). The shared start path re-checks for the Core-only restart
+        // entry, which skips this method.
+        if network == .devnet, !DevnetConfiguration.isConfigured {
+            return .failure(StartError.devnetNotConfigured)
+        }
+
         let host = SwiftDashSDKHost.shared
+
+        // Devnet peer discovery runs BEFORE `host.start` builds the SDK:
+        // `SDK.init` performs its own `/masternodes` fetch against the same
+        // quorum URL and refuses to build without it, so a dead quorum
+        // service would fail inside `host.start` first and surface as the
+        // generic wallet-import error below instead of
+        // `devnetPeerDiscoveryFailed`. Probing the endpoint here reports the
+        // actionable error before the SDK build gets a chance to wrap it,
+        // and the discovered peers are passed through to the shared start
+        // path so a full devnet start performs one app-side fetch (the
+        // SDK's internal fetch is its own and stays).
+        //
+        // Skipped when SPV is already up on this network, on the same
+        // condition the readiness pass and the shared path elide on: a
+        // repeated start must not pay a multi-second fetch (or fail on a
+        // transient one) only to reach a guard that returns immediately.
+        var discoveredDevnetPeers: [String]? = nil
+        if network == .devnet,
+           host.manager.map({ isAlreadyRunning(manager: $0, network: network) }) != true {
+            guard let quorumURL = DevnetConfiguration.quorumURL else {
+                return .failure(StartError.devnetNotConfigured)
+            }
+
+            // `discoverActiveMasternodes` blocks on a semaphore for up to
+            // ~6 s — never on the MainActor. UserDefaults + the nonisolated
+            // SDK static are both safe off-main.
+            let discovered = await Task.detached(priority: .userInitiated) {
+                SDK.discoverActiveMasternodes(quorumBase: quorumURL)
+            }.value
+
+            // Re-entry guard after the multi-second suspension, identical
+            // to the shared start path's: if the user switched networks
+            // meanwhile, starting the abandoned devnet client would revive
+            // sync the lifecycle queue is about to tear down.
+            guard WalletEnvironment.network == network else {
+                Self.logger.info("🛰️ SPVCOORD :: devnet start superseded during peer discovery")
+                return .failure(StartError.superseded)
+            }
+
+            guard let discovered, !discovered.isEmpty else {
+                return .failure(StartError.devnetPeerDiscoveryFailed(quorumURL: quorumURL))
+            }
+            discoveredDevnetPeers = discovered.map(\.spvPeer)
+        }
+
         let manager: PlatformWalletManager
         let wallet: ManagedPlatformWallet
         do {
@@ -262,13 +316,16 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
 #endif
 
-        return await performStart(manager: manager, for: network)
+        return await performStart(
+            manager: manager, for: network,
+            discoveredDevnetPeers: discoveredDevnetPeers)
     }
 
     @MainActor
     private func performStart(
         manager: PlatformWalletManager,
-        for network: Network
+        for network: Network,
+        discoveredDevnetPeers: [String]? = nil
     ) async -> Result<Void, Error> {
         // If SPV is already running on this network, treat it as a
         // success. Mirrors `SwiftDashSDKWalletRuntime.shouldSkipRefresh`'s
@@ -290,13 +347,72 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             return .failure(StartError.dataDirectory(error))
         }
 
+        // Devnet has no built-in seed nodes: SPV peers are discovered from
+        // the quorum-list service's `/masternodes` endpoint, using each
+        // masternode's verbatim `address` field (`ip:CoreP2PPort` — moutai
+        // reports :20001, so never assume the canonical 29999). The devnet
+        // name is mandatory — Core devnet peers drop handshakes whose user
+        // agent lacks `devnet.devnet-<name>`. Mainnet/testnet keep today's
+        // config byte-for-byte (empty peer override, FFI seed nodes).
+        var devnetPeers: [String] = []
+        var devnetName: String? = nil
+        if network == .devnet {
+            guard DevnetConfiguration.isConfigured,
+                  let quorumURL = DevnetConfiguration.quorumURL,
+                  let name = DevnetConfiguration.devnetName else {
+                return .failure(StartError.devnetNotConfigured)
+            }
+            devnetName = name
+
+            if let discoveredDevnetPeers {
+                // Peers discovered pre-flight by `performStart(for:)`, ahead
+                // of `host.start` — reuse them instead of fetching
+                // `/masternodes` a second time. `host.start` (and the
+                // readiness pass) suspended since that discovery, so re-check
+                // supersession here just as the fallback below does after its
+                // own suspension.
+                guard WalletEnvironment.network == network else {
+                    Self.logger.info("🛰️ SPVCOORD :: devnet start superseded during host start")
+                    return .failure(StartError.superseded)
+                }
+                devnetPeers = discoveredDevnetPeers
+            } else {
+                // No pre-flight discovery: the Core-only restart
+                // (`restartAsync`) enters this method directly, so it fetches
+                // its own peer list here.
+                //
+                // `discoverActiveMasternodes` blocks on a semaphore for up to
+                // ~6 s — never on the MainActor. UserDefaults + the nonisolated
+                // SDK static are both safe off-main.
+                let discovered = await Task.detached(priority: .userInitiated) {
+                    SDK.discoverActiveMasternodes(quorumBase: quorumURL)
+                }.value
+
+                // Re-entry guard after the multi-second suspension: if the user
+                // switched networks meanwhile (the persisted selection moved),
+                // starting the abandoned devnet client here would revive sync
+                // the lifecycle queue is about to tear down. Mirrors
+                // CoreSpvLauncher's `stillCurrent` check.
+                guard WalletEnvironment.network == network else {
+                    Self.logger.info("🛰️ SPVCOORD :: devnet start superseded during peer discovery")
+                    return .failure(StartError.superseded)
+                }
+
+                guard let discovered, !discovered.isEmpty else {
+                    return .failure(StartError.devnetPeerDiscoveryFailed(quorumURL: quorumURL))
+                }
+                devnetPeers = discovered.map(\.spvPeer)
+            }
+        }
+
         let config = PlatformSpvStartConfig(
             dataDir: dataDir,
             network: network,
             userAgent: nil,
-            peers: [],
-            restrictToConfiguredPeers: false,
-            startFromHeight: 0)
+            peers: devnetPeers,
+            restrictToConfiguredPeers: !devnetPeers.isEmpty,
+            startFromHeight: 0,
+            devnetName: devnetName)
 
         // One-time wide CoinJoin recovery scan: on the first launch (per
         // network) of every wallet, widen the CoinJoin address gap (matching
@@ -702,6 +818,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         case walletImport(Error)
         case walletIdMismatch
         case runtimeNotRunning
+        case devnetNotConfigured
+        case devnetPeerDiscoveryFailed(quorumURL: String)
+        case superseded
 
         var errorDescription: String? {
             switch self {
@@ -717,6 +836,12 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 return "Imported wallet ID mismatch"
             case .runtimeNotRunning:
                 return "Core SPV cannot restart because the wallet runtime is not running"
+            case .devnetNotConfigured:
+                return "Devnet is not configured. Set the Quorum URL and Devnet Name in Settings → Devnet Settings."
+            case .devnetPeerDiscoveryFailed(let quorumURL):
+                return "No devnet peers could be discovered from \(quorumURL)/masternodes. Check the Quorum URL and that the devnet is reachable."
+            case .superseded:
+                return "The network changed while devnet peers were being discovered."
             }
         }
     }
@@ -768,7 +893,10 @@ enum SPVChainResyncMarker {
     }
 
     private static func key(for network: Network) -> String {
-        "spvChainResync.v1.pending.\(network == .mainnet ? "mainnet" : "testnet")"
+        // `networkName` yields the same "mainnet"/"testnet" strings the old
+        // two-way mapping produced, so existing markers keep their keys;
+        // devnet gets its own key instead of colliding with testnet's.
+        "spvChainResync.v1.pending.\(network.networkName)"
     }
 
     /// Arm the marker: `network`'s chain store is deleted before the first
@@ -815,10 +943,11 @@ enum SPVChainResyncMarker {
 
     /// Clear pending markers on a wallet wipe: the rows and chain data they
     /// reference are gone, so a stale marker would only wipe the next
-    /// wallet's fresh sync. Clears both networks, mirroring
+    /// wallet's fresh sync. Clears every startable network, mirroring
     /// `CoinJoinRecovery.resetForWipe`.
     static func resetForWipe() {
         clear(for: .mainnet)
         clear(for: .testnet)
+        clear(for: .devnet)
     }
 }

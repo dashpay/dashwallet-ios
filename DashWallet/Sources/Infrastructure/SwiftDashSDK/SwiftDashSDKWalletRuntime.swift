@@ -195,8 +195,16 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// chain are the intended callers.
     @MainActor
     func switchNetwork(to kind: WalletEnvironment.NetworkKind) async throws {
-        guard kind != .devnet else { throw SwitchError.unsupportedNetwork }
-        let targetNetwork: Network = kind == .mainnet ? .mainnet : .testnet
+        // Devnet needs its coordinates before anything is torn down: failing
+        // here leaves the current runtime untouched with a message the
+        // Settings UI can show, instead of driving the overlay into a failed
+        // switch for a start that could never succeed. (The SPV coordinator
+        // re-checks this at start time for the config-cleared-while-on-devnet
+        // case.)
+        if kind == .devnet, !DevnetConfiguration.isConfigured {
+            throw SwitchError.devnetNotConfigured
+        }
+        let targetNetwork: Network = sdkNetwork(for: kind)
         // No-op check stays BEFORE the admission gate (read-only, never
         // consumes the gate); the gate itself rejects when ANY interactive
         // lifecycle operation — network switch, wallet switch, or removal —
@@ -341,16 +349,27 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         return network
     }
 
-    /// `WalletEnvironment.NetworkKind` for the SDK `Network`. Only
-    /// `.mainnet`/`.testnet` reach a persisted wallet (the runtime fails fast
-    /// on every other network before this is called), so the switch path never
-    /// sees a network without a registry key; the `default` maps to `.testnet`
-    /// defensively to keep the return non-optional.
+    /// `WalletEnvironment.NetworkKind` for the SDK `Network`. Every network
+    /// the runtime can run (mainnet/testnet/devnet) has a registry key;
+    /// `.regtest` never reaches a persisted wallet (the host rejects it), so
+    /// the `default` maps to `.testnet` defensively to keep the return
+    /// non-optional.
     private func registryNetworkKind(for network: Network) -> WalletEnvironment.NetworkKind {
         switch network {
         case .mainnet: return .mainnet
         case .testnet: return .testnet
+        case .devnet: return .devnet
         default: return .testnet
+        }
+    }
+
+    /// The SDK `Network` for an app `NetworkKind` — the inverse of
+    /// `registryNetworkKind(for:)`; total over the three selectable kinds.
+    private func sdkNetwork(for kind: WalletEnvironment.NetworkKind) -> Network {
+        switch kind {
+        case .mainnet: return .mainnet
+        case .testnet: return .testnet
+        case .devnet: return .devnet
         }
     }
 
@@ -519,7 +538,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             return false
         }
 
-        let kind: WalletEnvironment.NetworkKind = storedNetwork == .mainnet ? .mainnet : .testnet
+        let kind = registryNetworkKind(for: storedNetwork)
         Self.logger.info(
             "🧭 RUNTIME :: selecting sole persisted wallet network \(storedNetwork.networkName, privacy: .public)")
         return WalletEnvironment.switchToNetwork(kind)
@@ -657,8 +676,12 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// to the caller rather than logged-and-swallowed so a UI switch flow can
     /// report why it failed.
     enum SwitchError: LocalizedError {
-        /// The current network isn't SDK-supported (devnet/unsupported).
+        /// The current network isn't SDK-supported.
         case unsupportedNetwork
+        /// Devnet was requested without a quorum URL + devnet name
+        /// (`DevnetConfiguration.isConfigured` is false). Thrown before any
+        /// teardown, so the running network is untouched.
+        case devnetNotConfigured
         /// No mnemonic is persisted in `WalletStorage` for the target walletId.
         case unknownWallet
         /// The stop/clear/load/start sequence ran but the host did not bind the
@@ -677,6 +700,10 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             switch self {
             case .unsupportedNetwork:
                 return "Cannot switch wallet: the current network is not supported."
+            case .devnetNotConfigured:
+                return NSLocalizedString(
+                    "Devnet is not configured. Enter a Quorum URL and Devnet Name in Settings → Devnet Settings first.",
+                    comment: "Devnet")
             case .unknownWallet:
                 return "Cannot switch wallet: no wallet with that id is stored on this network."
             case .bindFailed:

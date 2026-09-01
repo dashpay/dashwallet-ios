@@ -75,8 +75,8 @@ struct HomeBalanceView: View {
             )
             #endif
 
-            if viewModel.isTestnet {
-                testnetBadge
+            if let badgeText = viewModel.networkBadgeText {
+                networkBadge(badgeText)
             }
 
             ZStack {
@@ -232,9 +232,9 @@ struct HomeBalanceView: View {
     }
 
     /// Unmissable "these are not real funds" marker while the wallet runs
-    /// on testnet.
-    private var testnetBadge: some View {
-        Text(NSLocalizedString("TESTNET", comment: "Badge on the home balance while the wallet runs on testnet"))
+    /// on a test network (TESTNET/DEVNET).
+    private func networkBadge(_ text: String) -> some View {
+        Text(text)
             .font(.system(size: 11, weight: .bold))
             .kerning(1.2)
             .foregroundColor(Color.dash.whiteText)

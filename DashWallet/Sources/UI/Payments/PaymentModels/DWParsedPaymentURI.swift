@@ -44,7 +44,8 @@ enum DashAddressClassifier {
         }
 
         guard let decoded = Bech32m.decode(trimmed.lowercased()) else { return nil }
-        let expectedHrp = Bech32m.platformHrp(mainnet: !WalletEnvironment.isTestnet)
+        // Mainnet HRP only on mainnet — devnet parses with the testnet HRP.
+        let expectedHrp = Bech32m.platformHrp(mainnet: WalletEnvironment.isMainnet)
         guard decoded.hrp == expectedHrp else { return nil }
 
         if decoded.data.count == 21,

@@ -85,8 +85,8 @@ enum MasternodeAPYCalculator {
             constantDifficulty: 1, // any low-diff value clamps the base to the 25-DASH cap
             referenceHeight: 905_100)
 
-        // The category's DevNet arm, kept for parity; devnets are otherwise
-        // unsupported by the runtime (WalletEnvironment.network == nil).
+        // The category's DevNet arm — used whenever the app runs on a
+        // devnet (generic dash defaults; a specific devnet may differ).
         static let devnet = Consensus(
             increaseBlockHeight: 4030,
             period: 10,

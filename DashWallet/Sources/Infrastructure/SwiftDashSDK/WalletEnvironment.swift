@@ -24,9 +24,9 @@ import SwiftDashSDK
 /// UserDefaults integer holding a DashSync `ChainType_Tag` raw value
 /// (`0` mainnet / `1` testnet / `2` devnet; `dash_shared_core.h`).
 /// `switchToNetwork(_:)` is the sole writer of the key; everything else here
-/// is a static reader. A stored devnet value is reported as-is (devnet ⇒
-/// `network == nil`, both bools false), matching the runtime's fail-fast
-/// handling of unsupported networks.
+/// is a static reader. All three networks are selectable; devnet additionally
+/// requires the user-supplied coordinates in `DevnetConfiguration` before the
+/// runtime can start on it.
 ///
 /// Not a singleton — a stateless namespace of static members over
 /// UserDefaults (no instances, no mutable state, nothing to inject).
@@ -42,18 +42,28 @@ public final class WalletEnvironment: NSObject {
 
     private static let currentChainTypeKey = "CURRENT_CHAIN_TYPE_KEY"
 
-    /// The persisted network selection. A missing key means mainnet — testnet
-    /// is reached only through `switchToNetwork(_:)`, the key's sole writer.
-    /// Unknown raw values classify as `.devnet` (unsupported).
+    /// The persisted network selection. A missing key means mainnet —
+    /// testnet/devnet are reached only through `switchToNetwork(_:)`, the
+    /// key's sole writer. Unknown raw values (which the writer never
+    /// produces) classify as `.mainnet`, same as a missing key — devnet is a
+    /// real, startable network now, so garbage must not select it.
     public static var networkKind: NetworkKind {
         let defaults = UserDefaults.standard
         guard defaults.object(forKey: currentChainTypeKey) != nil else { return .mainnet }
-        return NetworkKind(rawValue: defaults.integer(forKey: currentChainTypeKey)) ?? .devnet
+        return NetworkKind(rawValue: defaults.integer(forKey: currentChainTypeKey)) ?? .mainnet
     }
 
     @objc public static var isMainnet: Bool { networkKind == .mainnet }
 
     @objc public static var isTestnet: Bool { networkKind == .testnet }
+
+    @objc public static var isDevnet: Bool { networkKind == .devnet }
+
+    /// True on any test network (testnet OR devnet). The gate for features
+    /// that mean "not real funds / not mainnet" — distinct from `isTestnet`,
+    /// which stays literally "the testnet chain" (testnet faucet, testnet
+    /// service endpoints, testnet-pinned contract ids).
+    @objc public static var isTestNetwork: Bool { isTestnet || isDevnet }
 
     /// Display name of the current network ("Mainnet"/"Testnet"/"Devnet") —
     /// same strings DashSync's `DSChain.name` produced for the supported nets.
@@ -65,14 +75,16 @@ public final class WalletEnvironment: NSObject {
         }
     }
 
-    /// The SwiftDashSDK network for the current selection, or `nil` for
-    /// devnet/unsupported — callers fail fast instead of silently mapping
-    /// to a supported network (same contract as the wallet runtime).
+    /// The SwiftDashSDK network for the current selection. Optional for
+    /// source compatibility with the fail-fast era (callers `guard let`);
+    /// today every persisted `NetworkKind` maps to a concrete SDK network —
+    /// devnet included — so this only returns `nil` if a future kind gains
+    /// no SDK mapping.
     public static var network: SwiftDashSDK.Network? {
         switch networkKind {
         case .mainnet: return .mainnet
         case .testnet: return .testnet
-        case .devnet: return nil
+        case .devnet: return .devnet
         }
     }
 
@@ -101,8 +113,10 @@ public final class WalletEnvironment: NSObject {
     }
 
     /// Switches the persisted network selection. Returns `true` when the app
-    /// is on `kind` afterwards (including the already-there no-op), `false`
-    /// for `.devnet` (no SDK network exists for it).
+    /// is on `kind` afterwards (including the already-there no-op). All
+    /// three kinds are accepted; whether devnet can actually START is the
+    /// runtime's concern (`DevnetConfiguration.isConfigured`), not this
+    /// key's.
     ///
     /// Posting `DWCurrentNetworkDidChangeNotification` is what actually moves
     /// the app: the SDK wallet runtime restarts SPV for the new network and
@@ -117,16 +131,19 @@ public final class WalletEnvironment: NSObject {
         source: NetworkSwitchSource = .external
     ) -> Bool {
         guard kind != networkKind else { return true }
-        guard kind != .devnet else { return false }
 
         // The DashPay mirror (username + registration flag) is a single
         // global slot while identities are per-network — without this, a
         // testnet-registered username keeps rendering after switching to
         // mainnet (avatar, menu, Join DashPay gating all read the mirror).
-        // Clearing is safe: re-entering a network that has a registered
-        // identity re-backfills the mirror from the SDK's
-        // `PersistentIdentity` rows on the next read
-        // (`DWCurrentUserIdentityInfo`'s self-heal).
+        // This clears on every switch to a different network, including
+        // attempts whose destination then fails to start. Re-entering a
+        // network restores the mirror only when
+        // `DWCurrentUserIdentityInfo`'s next snapshot read resolves a
+        // confirmed username (the SDK DPNS cache, or the persisted
+        // SwiftData name sources as its fallback); the self-heal never
+        // re-sets the flag from identity existence alone, so an identity
+        // with no resolvable name stays unmirrored.
         DWGlobalOptions.sharedInstance().dashpayUsername = nil
         DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted = false
 
@@ -156,10 +173,10 @@ public final class WalletEnvironment: NSObject {
 
     /// UserDefaults key holding the raw walletId `Data` chosen as active on
     /// `network`. One key per network — the app tracks a distinct active
-    /// wallet on mainnet and testnet (the same posture as the per-network
-    /// SwiftData store `SwiftDashSDKHost.buildModelContainer` builds). A
-    /// missing key means "unset" — no wallet has been resolved on this
-    /// network yet, and `SwiftDashSDKHost` falls back to `firstWallet`.
+    /// wallet on each of mainnet, testnet and devnet (the same posture as
+    /// the per-network SwiftData store `SwiftDashSDKHost.buildModelContainer`
+    /// builds). A missing key means "unset" — no wallet has been resolved on
+    /// this network yet, and `SwiftDashSDKHost` falls back to `firstWallet`.
     private static func activeWalletIdKey(for network: NetworkKind) -> String {
         "DW_ACTIVE_WALLET_ID_\(network.rawValue)"
     }
@@ -191,15 +208,9 @@ public final class WalletEnvironment: NSObject {
     /// UserDefaults keys (backup / has-balance) by the active wallet without
     /// importing SwiftDashSDK. Resolves through the same per-network registry
     /// the Swift side reads (`activeWalletId(for:)`) — one place owns the
-    /// registry. `devnet`/unsupported network ⇒ nil.
+    /// registry. Nil only while no wallet is resolved on the current network.
     @objc public static var activeWalletIdHex: NSString? {
-        let kind: NetworkKind
-        switch networkKind {
-        case .mainnet: kind = .mainnet
-        case .testnet: kind = .testnet
-        case .devnet: return nil
-        }
-        guard let id = activeWalletId(for: kind) else { return nil }
+        guard let id = activeWalletId(for: networkKind) else { return nil }
         return id.map { String(format: "%02x", $0) }.joined() as NSString
     }
 
@@ -221,8 +232,8 @@ extension Notification.Name {
 extension String {
     /// Dash address validity for the app's CURRENT network, via SwiftDashSDK's
     /// `Address.validate` (P2PKH + P2SH version bytes) against
-    /// `WalletEnvironment.network`. devnet/unsupported network ⇒ `false`
-    /// (fail-fast, same contract as the wallet runtime). The app's single
+    /// `WalletEnvironment.network` — devnet shares testnet's version bytes,
+    /// which the SDK resolves itself. The app's single
     /// expression of this rule — replaces DashSync's
     /// `isValidDashAddress(on: DSChain)` at every call site.
     var isValidDashAddressForCurrentNetwork: Bool {

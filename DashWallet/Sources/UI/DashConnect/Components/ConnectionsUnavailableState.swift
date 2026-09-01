@@ -37,7 +37,7 @@ struct ConnectionsUnavailableState: View {
                 .frame(width: 80, height: 80)
 
                 VStack(spacing: 4) {
-                    Text(NSLocalizedString("Available on testnet only", comment: "DashConnect"))
+                    Text(NSLocalizedString("Available on test networks only", comment: "DashConnect"))
                         .dashFont(.title3Medium)
                         .foregroundColor(Color.dash.primaryText)
 

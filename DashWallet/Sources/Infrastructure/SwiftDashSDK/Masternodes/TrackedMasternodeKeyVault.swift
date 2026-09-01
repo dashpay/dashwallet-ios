@@ -62,7 +62,7 @@ final class TrackedMasternodeKeyVault: TrackedMasternodeKeyVaulting {
 
     nonisolated init(keychain: KeychainManager = .shared,
          network: @escaping () -> Network? = {
-             WalletEnvironment.isTestnet ? .testnet : .mainnet
+             WalletEnvironment.network
          }) {
         self.keychain = keychain
         self.network = network

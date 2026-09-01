@@ -1633,7 +1633,7 @@ extension HomeViewModel {
                     // ShortcutActionType.customizableActions and ServiceDataProvider.shouldShow);
                     // a saved DEX shortcut degrades to Spend whenever that gate isn't met. The
                     // saved config is untouched, so it returns once the gate passes again.
-                    let dashDEXAvailable = !isTestnet && SwapKitConstants.isConfigured
+                    let dashDEXAvailable = WalletEnvironment.isMainnet && SwapKitConstants.isConfigured
                     if type == .dashDEX && !dashDEXAvailable {
                         type = .spend
                     }
@@ -2446,7 +2446,9 @@ class SwiftDashSDKWalletSource: TransactionSource {
         return AddressTransformer.formatAddress(
             counterparty,
             asBech32m: true,
-            isTestnet: WalletEnvironment.isTestnet)
+            // Testnet-style prefixes on every non-mainnet network (devnet
+            // shares testnet's address encoding).
+            isTestnet: !WalletEnvironment.isMainnet)
     }
 
     /// Decode a shielded send's counterparty (43-byte raw Orchard address) to
@@ -2457,7 +2459,9 @@ class SwiftDashSDKWalletSource: TransactionSource {
     private static func shieldedDestinationAddress(counterparty: Data) -> String? {
         guard counterparty.count == 43 else { return nil }
         return Bech32m.encode(
-            hrp: Bech32m.platformHrp(mainnet: !WalletEnvironment.isTestnet),
+            // Mainnet HRP only on mainnet — devnet uses the testnet HRP,
+            // matching its testnet-style address encoding.
+            hrp: Bech32m.platformHrp(mainnet: WalletEnvironment.isMainnet),
             data: Data([0x10]) + counterparty)
     }
 
@@ -2496,7 +2500,9 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// to a Base58Check address. Nil for empty / non-P2PKH/P2SH scripts.
     private static func withdrawalDestinationAddress(counterparty: Data) -> String? {
         guard !counterparty.isEmpty else { return nil }
-        let network: PaymentNetwork = WalletEnvironment.isTestnet ? .testnet : .mainnet
+        // Devnet shares testnet's version bytes, so anything non-mainnet
+        // decodes with the testnet token.
+        let network: PaymentNetwork = WalletEnvironment.isMainnet ? .mainnet : .testnet
         return ScriptAddressCodec.address(forScript: counterparty, network: network)
     }
 

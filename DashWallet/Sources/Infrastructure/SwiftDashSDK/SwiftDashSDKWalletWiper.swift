@@ -118,35 +118,35 @@ enum SwiftDashSDKStoredWalletNetworkResolver {
         let canonicalMainnetWalletId: Data
     }
 
+    /// The networks a stored wallet id can be scoped to. key-wallet folds a
+    /// per-network discriminant into the id digest, so all three ids of one
+    /// seed are distinct.
+    static let storableNetworks: [Network] = [.mainnet, .testnet, .devnet]
+
     static func walletIds(for mnemonic: String) throws -> [Network: Data] {
         let mnemonic = Mnemonic.normalizePhrase(mnemonic)
         guard Mnemonic.validate(mnemonic) else {
             throw SwiftDashSDKWalletDeletionError.invalidMnemonic
         }
-        return [
-            .mainnet: try SwiftDashSDK.Wallet(
+        var ids: [Network: Data] = [:]
+        for network in storableNetworks {
+            ids[network] = try SwiftDashSDK.Wallet(
                 mnemonic: mnemonic,
-                network: .mainnet
-            ).id,
-            .testnet: try SwiftDashSDK.Wallet(
-                mnemonic: mnemonic,
-                network: .testnet
-            ).id,
-        ]
+                network: network
+            ).id
+        }
+        return ids
     }
 
     static func resolve(walletId: Data, mnemonic: String) throws -> Resolution {
         let walletIds = try walletIds(for: mnemonic)
-        guard let mainnetWalletId = walletIds[.mainnet],
-              let testnetWalletId = walletIds[.testnet] else {
+        guard let mainnetWalletId = walletIds[.mainnet] else {
             throw SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork
         }
-        if mainnetWalletId == walletId {
-            return Resolution(network: .mainnet, canonicalMainnetWalletId: mainnetWalletId)
-        }
-
-        if testnetWalletId == walletId {
-            return Resolution(network: .testnet, canonicalMainnetWalletId: mainnetWalletId)
+        for network in storableNetworks {
+            if walletIds[network] == walletId {
+                return Resolution(network: network, canonicalMainnetWalletId: mainnetWalletId)
+            }
         }
 
         throw SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork
@@ -383,7 +383,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         walletIdsByNetwork: [Network: Set<Data>],
         mnemonics: [String]
     ) {
-        var walletIdsByNetwork: [Network: Set<Data>] = [.mainnet: [], .testnet: []]
+        var walletIdsByNetwork: [Network: Set<Data>] = [.mainnet: [], .testnet: [], .devnet: []]
         var mnemonics: [String] = []
 
         for walletId in try storage.listWalletIdsWithMnemonic() {
@@ -425,6 +425,13 @@ final class SwiftDashSDKWalletWiper: NSObject {
         Task { @MainActor in
             let host = SwiftDashSDKHost.shared
             var networks: [Network] = [.mainnet, .testnet]
+            // Devnet joins the wipe only when a devnet-scoped entry exists:
+            // building a devnet manager needs the quorum service, so paying
+            // that (and risking its failure) is only justified when there is
+            // devnet data to delete.
+            if !(storedWalletIdsByNetwork[.devnet] ?? []).isEmpty {
+                networks.append(.devnet)
+            }
             if let current = host.runningNetwork,
                let currentIndex = networks.firstIndex(of: current) {
                 networks.remove(at: currentIndex)
@@ -498,7 +505,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
             "deleteWallet failed for \(network.networkName, privacy: .public)/\(walletLabel, privacy: .public)…: \(String(describing: error), privacy: .public)")
     }
 
-    /// Delete every mainnet/testnet SDK representation of one recovery phrase.
+    /// Delete every SDK representation (mainnet/testnet, plus devnet when
+    /// one is stored) of one recovery phrase.
     /// Legacy cleanup runs first on the migrator's serial queue, so an import
     /// that was already in flight is visible to the managers prepared below.
     /// The live network is deleted last, preserving its mnemonic for Retry if
@@ -512,7 +520,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
 
         let walletIds = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(
             for: mnemonic)
-        guard walletIds.count == 2 else {
+        guard walletIds.count == SwiftDashSDKStoredWalletNetworkResolver.storableNetworks.count else {
             throw SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork
         }
 
@@ -523,6 +531,12 @@ final class SwiftDashSDKWalletWiper: NSObject {
         let storedWalletIds = Set(try storage.listWalletIdsWithMnemonic())
         let host = SwiftDashSDKHost.shared
         var networks: [Network] = [.mainnet, .testnet]
+        // Same conditional devnet leg as the full wipe: only when this
+        // phrase's devnet-scoped id is actually stored is a devnet manager
+        // worth (and safe to require) building.
+        if let devnetId = walletIds[.devnet], storedWalletIds.contains(devnetId) {
+            networks.append(.devnet)
+        }
         if let current = host.runningNetwork ?? WalletEnvironment.network,
            let currentIndex = networks.firstIndex(of: current) {
             networks.remove(at: currentIndex)
