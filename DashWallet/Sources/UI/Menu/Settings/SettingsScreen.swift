@@ -99,7 +99,27 @@ struct SettingsScreen: View {
                     }
                 }
             }
+            Button(NSLocalizedString("Devnet", comment: "")) {
+                Task {
+                    let success = await viewModel.switchToDevnet()
+                    if success {
+                        updateView()
+                    }
+                }
+            }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+        }
+        .alert(
+            NSLocalizedString("Network", comment: ""),
+            isPresented: Binding(
+                get: { viewModel.networkSwitchErrorMessage != nil },
+                set: { if !$0 { viewModel.networkSwitchErrorMessage = nil } }
+            ),
+            presenting: viewModel.networkSwitchErrorMessage
+        ) { _ in
+            Button(NSLocalizedString("OK", comment: "")) { viewModel.networkSwitchErrorMessage = nil }
+        } message: { message in
+            Text(message)
         }
         .alert(NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"), isPresented: $viewModel.showCoinJoinSweepConfirmation) {
             Button(NSLocalizedString("Move funds", comment: "CoinJoin")) {
@@ -138,6 +158,8 @@ struct SettingsScreen: View {
             showAboutController()
         case .exportCSV:
             handleCSVExport()
+        case .devnetSettings:
+            showDevnetSettings()
         case .none:
             break
         }
@@ -165,6 +187,12 @@ struct SettingsScreen: View {
     
     private func showAboutController() {
         let controller = AboutDashHostingViewController()
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
+    }
+
+    private func showDevnetSettings() {
+        let controller = DevnetSettingsHostingViewController(vc: vc)
         controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }

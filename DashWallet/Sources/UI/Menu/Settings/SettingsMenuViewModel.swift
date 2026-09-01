@@ -23,6 +23,7 @@ enum SettingsMenuNavigationDestination {
     case network
     case about
     case exportCSV
+    case devnetSettings
 }
 
 @MainActor
@@ -36,6 +37,11 @@ class SettingsMenuViewModel: ObservableObject {
     @Published var csvExportData: (fileName: String, file: URL)?
     @Published var showCoinJoinSweepConfirmation = false
     @Published var coinJoinSweepErrorMessage: String?
+    /// Set when a network switch is refused before any teardown (today:
+    /// devnet selected without a quorum URL + devnet name). Failures during
+    /// the switch itself keep rendering through the lifecycle overlay's
+    /// failure card, not this.
+    @Published var networkSwitchErrorMessage: String?
 
     /// Minimum CoinJoin-account balance (duffs) worth surfacing a sweep for —
     /// below this it's un-sweepable dust/fragments, not a real denomination.
@@ -135,6 +141,14 @@ class SettingsMenuViewModel: ObservableObject {
                 }
             ),
             MenuItemModel(
+                title: NSLocalizedString("Devnet Settings", comment: "Devnet"),
+                subtitle: NSLocalizedString("Quorum URL, name and contract ids", comment: "Devnet"),
+                icon: .custom("image.network.monitor", maxHeight: 30),
+                action: { [weak self] in
+                    self?.navigationDestination = .devnetSettings
+                }
+            ),
+            MenuItemModel(
                 title: NSLocalizedString("About", comment: ""),
                 icon: .custom("image.about", maxHeight: 30),
                 action: { [weak self] in
@@ -199,15 +213,26 @@ class SettingsMenuViewModel: ObservableObject {
         await switchNetwork(to: .testnet)
     }
 
+    func switchToDevnet() async -> Bool {
+        await switchNetwork(to: .devnet)
+    }
+
     /// Route through the runtime's managed switch: strict teardown → rebuild
     /// with the blocking overlay window up for the whole transition. A thrown
-    /// failure leaves the overlay in its `.failed` phase (Retry lives there),
-    /// so this only reports the outcome to the settings screen.
+    /// failure normally leaves the overlay in its `.failed` phase (Retry
+    /// lives there), so this only reports the outcome to the settings screen
+    /// — except `devnetNotConfigured`, which is thrown BEFORE the transition
+    /// begins (nothing torn down, no overlay card) and therefore surfaces
+    /// here as an alert.
     private func switchNetwork(to kind: WalletEnvironment.NetworkKind) async -> Bool {
         WalletLifecycleOverlayPresenter.shared.ensureActive()
         do {
             try await SwiftDashSDKWalletRuntime.shared.switchNetwork(to: kind)
             return true
+        } catch SwiftDashSDKWalletRuntime.SwitchError.devnetNotConfigured {
+            networkSwitchErrorMessage =
+                SwiftDashSDKWalletRuntime.SwitchError.devnetNotConfigured.localizedDescription
+            return false
         } catch {
             DWLogger.log("SettingsMenuViewModel: network switch failed: \(error)")
             return false

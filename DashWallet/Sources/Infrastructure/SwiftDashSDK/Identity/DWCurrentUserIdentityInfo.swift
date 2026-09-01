@@ -212,9 +212,13 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         snapshot.username
     }
 
-    /// All DPNS labels the identity owns (`ManagedIdentity.getDpnsNames()`),
-    /// with the pending-contested label filtered out same as `username`.
-    /// Empty when no identity is registered or the cache is unpopulated.
+    /// All DPNS labels the identity owns — `ManagedIdentity.getDpnsNames()`,
+    /// or the persisted SwiftData name sources when that cache yields
+    /// nothing — with the pending-contested labels filtered out same as
+    /// `username`. Unlike `username` this never falls back to
+    /// `DWGlobalOptions.dashpayUsername`, so it stays empty while a
+    /// registration is still in flight. Empty when no identity is
+    /// registered or no source carries a confirmed name yet.
     @objc public var usernames: [String] {
         snapshot.usernames
     }
@@ -530,6 +534,39 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             username = usernames.first ?? username
         }
 
+        // Persisted fallback: the managed-wallet DPNS cache is session-
+        // scoped — it holds only names written by `registerDpnsName` in
+        // this session or pulled by a `syncDpnsNames` round — so on a
+        // fresh runtime start it is legitimately empty until the next
+        // sync round, while the SwiftData side already carries the
+        // confirmed name: `IdentitiesViewModel.refreshFromNetwork`
+        // resolves names through a live `sdk.dpnsGetUsername` query and
+        // writes the `PersistentIdentity.dpnsName` scalar, and the SDK
+        // persister maintains the owned `PersistentDPNSName` rows. Read
+        // those sources when the cache yields nothing so the confirmed
+        // name reaches `usernames` — and through it the mirror self-heal
+        // below. (Only that cache-not-yet-synced window: a wallet with no
+        // persisted identity row never reaches this fallback — the
+        // `guard let persisted` above returns `.empty` first.) Owned
+        // label rows first (ownership-tracked), then the scalars in
+        // `reconcileRecoveredIdentity`'s order; the pending-contested
+        // filter applies the same as above.
+        if usernames.isEmpty {
+            var persistedCandidates = persisted.dpnsNames
+                .filter { $0.isOwned }
+                .map { $0.label }
+            persistedCandidates.append(contentsOf: [persisted.mainDpnsName, persisted.dpnsName]
+                .compactMap { Self.nilIfEmpty($0) })
+            for candidate in persistedCandidates where !isPending(candidate) {
+                if !usernames.contains(where: {
+                    DWContestedNameStatusService.labelsMatch($0, candidate)
+                }) {
+                    usernames.append(candidate)
+                }
+            }
+            username = usernames.first
+        }
+
         // Post-register fallback: SwiftDashSDK's DPNS cache is empty
         // immediately after `registerDpnsName` returns until the next
         // `syncDpnsNames` round, but the coordinator writes
@@ -547,10 +584,12 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         // reinstall, registered under an older build) leaves the mirror
         // empty forever — and every mirror reader (the menu's Join
         // DashPay banner, DWDashPayModel's registration status) then
-        // disagrees with the SDK truth rendered everywhere else. Only an
-        // SDK-sourced name qualifies (`usernames` — the fallback above
-        // IS the mirror), and the pending-contested filter has already
-        // run, so a deferred contested registration can't sneak in. The
+        // disagrees with the SDK truth rendered everywhere else. Only a
+        // confirmed name qualifies (`usernames` — fed by the SDK DPNS
+        // cache or the persisted SwiftData sources; the `DWGlobalOptions`
+        // fallback above IS the mirror and never feeds it), and the
+        // pending-contested filter has already run, so a deferred
+        // contested registration can't sneak in. The
         // canonical notification is posted async: this runs lazily inside a
         // property read, and re-entering registration-status observers
         // mid-read is the kind of surprise we don't need. Recovered
@@ -677,7 +716,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                 },
                 discover: {
                     Self.logger.info(
-                        "🪪 IDENT-RECOVERY :: no local identities; scanning seed from index 0")
+                        "🪪 IDENT-RECOVERY :: wallet=\(walletHex.prefix(8), privacy: .public) no local identities; scanning seed from index 0")
                     return try await wallet.discoverIdentities(startIndex: 0)
                 },
                 refreshNames: { identityIds in
@@ -718,7 +757,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
             completedContexts.insert(contextKey)
             Self.logger.info(
                 """
-                🪪 IDENT-RECOVERY :: complete \
+                🪪 IDENT-RECOVERY :: wallet=\(walletHex.prefix(8), privacy: .public) complete \
                 discovered=\(outcome.discoveredCount, privacy: .public) \
                 identities=\(outcome.identityCount, privacy: .public) \
                 adopted=\(outcome.adopted, privacy: .public)

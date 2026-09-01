@@ -463,7 +463,18 @@ final class SwiftDashSDKHost {
             // wallet rows from them instead of failing the start. Before this,
             // reinstall+Keep only worked when the KeyMigrator's async re-import
             // happened to win the race against this load.
-            guard let recovered = recoverPersistedWallet(handles: handles) else {
+            //
+            // Devnet first entry: keychain entries are network-scoped, so a
+            // wallet created before devnet existed has no devnet id to
+            // recover from — provision a devnet representation instead: the
+            // FROM-network active phrase, bound as devnet-active, with an
+            // every-stored-phrase fallback (devnet rows + devnet-scoped
+            // mnemonic entries only; mainnet/testnet are untouched).
+            var recovered = recoverPersistedWallet(handles: handles)
+            if recovered == nil, network == .devnet {
+                recovered = await provisionDevnetWallets(handles: handles)
+            }
+            guard let recovered else {
                 // The freshly built manager was never published — tear it
                 // down deterministically instead of leaving it to the
                 // deinit fallback.
@@ -605,18 +616,24 @@ final class SwiftDashSDKHost {
         persistedWalletIds: Set<Data>,
         currentNetwork: Network
     ) throws -> [Network] {
-        let otherNetwork: Network
+        // Mainnet and testnet mirror each other (unchanged). Devnet
+        // provisions ONLY itself: a devnet wallet must never cause a
+        // mainnet/testnet wallet row to be created, and mainnet/testnet
+        // creation must never start mirroring to devnet.
+        let candidates: [Network]
         switch currentNetwork {
         case .mainnet:
-            otherNetwork = .testnet
+            candidates = [.mainnet, .testnet]
         case .testnet:
-            otherNetwork = .mainnet
+            candidates = [.testnet, .mainnet]
+        case .devnet:
+            candidates = [.devnet]
         default:
             throw HostError.unsupportedNetwork(currentNetwork)
         }
 
         let walletIds = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: mnemonic)
-        return [currentNetwork, otherNetwork].filter { network in
+        return candidates.filter { network in
             guard let walletId = walletIds[network] else { return false }
             return !persistedWalletIds.contains(walletId)
         }
@@ -956,6 +973,14 @@ final class SwiftDashSDKHost {
             throw HostError.unsupportedNetwork(network)
         }
 
+        // `SDK.init(network: .devnet, …)` reads the `platformQuorumURL`
+        // UserDefaults key directly (then auto-discovers DAPI addresses from
+        // `{quorumURL}/masternodes`). Registration is per-process, so make
+        // sure the seeded default is visible before every devnet SDK build.
+        if network == .devnet {
+            DevnetConfiguration.ensureDefaultsRegistered()
+        }
+
         Self.ensureSDKInitialized()
         Self.logger.info("🪺 HOST :: stage 1/4 creating SDK for \(network.rawValue, privacy: .public)")
 
@@ -1196,15 +1221,16 @@ final class SwiftDashSDKHost {
     }
 
     /// `WalletEnvironment.NetworkKind` for the SDK `Network` — the app-side
-    /// key the active-wallet registry is scoped by. Only `.mainnet` /
-    /// `.testnet` reach the registry; `.devnet`/`.regtest` don't run a
-    /// persisted wallet (`buildRuntime` rejects `.regtest`), so they map to
+    /// key the active-wallet registry is scoped by. Every startable network
+    /// (mainnet/testnet/devnet) has a registry key; only `.regtest` doesn't
+    /// run a persisted wallet (`makeRuntime` rejects it), so it maps to
     /// `nil` and the resolver falls back to `firstWallet` without touching
     /// the registry.
     private func registryNetworkKind(for network: Network) -> WalletEnvironment.NetworkKind? {
         switch network {
         case .mainnet: return .mainnet
         case .testnet: return .testnet
+        case .devnet: return .devnet
         default: return nil
         }
     }
@@ -1278,6 +1304,139 @@ final class SwiftDashSDKHost {
         guard let resolved = resolveActiveWallet(in: handles.manager, network: handles.network) else { return nil }
         Self.logger.info("🪺 HOST :: recovered persisted wallet from keychain mnemonic(s); network=\(handles.network.networkName, privacy: .public) eligible=\(entries.count, privacy: .public) skipped=\(inventory.count - entries.count, privacy: .public)")
         return resolved
+    }
+
+    /// First devnet entry for wallets that predate devnet support: give the
+    /// phrase active on the network the managed switch came FROM a devnet
+    /// representation (devnet wallet rows + a devnet-scoped Keychain mnemonic
+    /// entry, via the shared `createAndPersist` transaction), then pin that
+    /// phrase's devnet walletId into the devnet active-wallet registry — so
+    /// the first entry binds the logical wallet the user was just using
+    /// rather than whichever provisioned wallet `firstWallet` sorts first.
+    /// Devnet-only: no mainnet/testnet row can result from it. Other stored
+    /// phrases get no devnet twin here; adding one on devnet goes through the
+    /// Wallets screen while on devnet (`missingWalletNetworks` provisions
+    /// devnet-only there).
+    ///
+    /// Fallback: when no FROM-network active phrase resolves
+    /// (`devnetProvisioningSourcePhrase` — each nil path logged) or its
+    /// create fails, every distinct stored phrase is provisioned instead and
+    /// the registry is left to `resolveActiveWallet`'s `firstWallet` pin —
+    /// devnet must never become unprovisionable (the hard `walletNotFound`
+    /// dead-end this function exists to prevent).
+    ///
+    /// Birth height 0: devnet chains are short and restart, so a genesis scan
+    /// is both cheap and the only correct floor.
+    ///
+    /// Best-effort per phrase (`createDevnetWallet`): one failed create is
+    /// logged and skipped so a single bad entry cannot block devnet for the
+    /// rest. Returns the resolved active wallet, or nil when nothing could be
+    /// provisioned (the caller then fails the start with `walletNotFound`).
+    private func provisionDevnetWallets(handles: RuntimeHandles) async -> ManagedPlatformWallet? {
+        guard handles.network == .devnet else { return nil }
+
+        let sourcePhrase = devnetProvisioningSourcePhrase()
+        var provisionedCount = 0
+        if let sourcePhrase, await createDevnetWallet(phrase: sourcePhrase, manager: handles.manager) {
+            provisionedCount = 1
+        } else {
+            if sourcePhrase != nil {
+                Self.logger.error(
+                    "🪺 HOST :: devnet create failed for the FROM-network active phrase; provisioning every stored phrase instead")
+            }
+            var attemptedPhrases = Set<String>()
+            if let sourcePhrase { attemptedPhrases.insert(sourcePhrase) }
+            for entry in Self.persistedMnemonics() {
+                let phrase = Mnemonic.normalizePhrase(entry.mnemonic)
+                guard Mnemonic.validate(phrase), !attemptedPhrases.contains(phrase) else { continue }
+                attemptedPhrases.insert(phrase)
+                if await createDevnetWallet(phrase: phrase, manager: handles.manager) {
+                    provisionedCount += 1
+                }
+            }
+        }
+
+        // Pin the FROM-network active wallet's devnet twin BEFORE resolving,
+        // so `resolveActiveWallet`'s registry branch binds it instead of
+        // pinning `firstWallet`. Guarded on the manager actually holding the
+        // twin — a failed targeted create must not write a dangling registry
+        // entry.
+        if let sourcePhrase,
+           let devnetWalletId = try? SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: sourcePhrase)[.devnet],
+           handles.manager.wallets[devnetWalletId] != nil {
+            WalletEnvironment.setActiveWalletId(devnetWalletId, for: .devnet)
+            let idTag = devnetWalletId.prefix(4).map { String(format: "%02x", $0) }.joined()
+            Self.logger.info(
+                "🪺 HOST :: devnet active wallet bound to the FROM-network active wallet's devnet twin; wallet=\(idTag, privacy: .public)")
+        } else {
+            Self.logger.info(
+                "🪺 HOST :: devnet active wallet left to resolveActiveWallet (registry, then firstWallet)")
+        }
+
+        guard let resolved = resolveActiveWallet(in: handles.manager, network: .devnet) else { return nil }
+        Self.logger.info(
+            "🪺 HOST :: provisioned \(provisionedCount, privacy: .public) wallet(s) for devnet on first entry")
+        return resolved
+    }
+
+    /// The normalized mnemonic of the wallet active on the network a managed
+    /// devnet switch is coming FROM, or nil when it cannot be resolved. The
+    /// FROM side is read from `WalletLifecycleTransitionState`:
+    /// `switchNetwork(to:)` holds `.switchingNetwork(from:to:)` for the whole
+    /// lifecycle refresh this provisioning runs inside, so no extra plumbing
+    /// carries it here. Nil paths (each logged): no managed switch from
+    /// another network in flight (cold start with the persisted network
+    /// already devnet, an external network-key write, or the devnet→devnet
+    /// dead-runtime self-heal), an unset FROM-network active-wallet registry,
+    /// a registry id with no stored mnemonic, or a stored mnemonic that fails
+    /// validation.
+    private func devnetProvisioningSourcePhrase() -> String? {
+        guard case let .switchingNetwork(from, to) = WalletLifecycleTransitionState.shared.phase,
+              to == .devnet, from != .devnet else {
+            Self.logger.notice(
+                "🪺 HOST :: devnet provisioning without a managed switch from another network in flight; no FROM-network active phrase")
+            return nil
+        }
+        guard let activeWalletId = WalletEnvironment.activeWalletId(for: from) else {
+            Self.logger.notice(
+                "🪺 HOST :: devnet provisioning: \(String(describing: from), privacy: .public) active-wallet registry unset; no FROM-network active phrase")
+            return nil
+        }
+        guard let entry = Self.persistedMnemonics().first(where: { $0.walletId == activeWalletId }) else {
+            Self.logger.notice(
+                "🪺 HOST :: devnet provisioning: \(String(describing: from), privacy: .public) active wallet has no stored mnemonic; no FROM-network active phrase")
+            return nil
+        }
+        let phrase = Mnemonic.normalizePhrase(entry.mnemonic)
+        guard Mnemonic.validate(phrase) else {
+            Self.logger.notice(
+                "🪺 HOST :: devnet provisioning: \(String(describing: from), privacy: .public) active wallet's stored mnemonic failed validation; no FROM-network active phrase")
+            return nil
+        }
+        return phrase
+    }
+
+    /// One phrase → devnet wallet rows + a devnet-scoped Keychain mnemonic
+    /// entry, via the shared `createAndPersist` transaction. Best-effort: a
+    /// failure is logged and reads as `false`, so `provisionDevnetWallets`
+    /// can fall back instead of failing the start.
+    private func createDevnetWallet(phrase: String, manager: PlatformWalletManager) async -> Bool {
+        do {
+            _ = try await createAndPersist(
+                mnemonic: phrase,
+                manager: manager,
+                network: .devnet,
+                birthHeight: 0,
+                // `start` is a lifecycle-queue op, so the async create's
+                // suspension between persist and create cannot interleave
+                // with a competing refresh (same argument as `addWallet`).
+                offMainCreate: true)
+            return true
+        } catch {
+            Self.logger.error(
+                "🪺 HOST :: devnet provisioning failed for one phrase: \(String(describing: error), privacy: .public)")
+            return false
+        }
     }
 
     private func publish(handles: RuntimeHandles, wallet resolvedWallet: ManagedPlatformWallet) {
