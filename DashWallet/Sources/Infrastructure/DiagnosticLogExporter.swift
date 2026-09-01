@@ -66,6 +66,27 @@ struct DiagnosticLogExporter {
         let bytes: UInt64
     }
 
+    private struct ExportContext: Sendable {
+        let network: String
+        let appVersion: String
+        let currentSession: URL?
+        let appLogFiles: [URL]
+    }
+
+    /// Keep the pre-export ordering explicit and independently testable.
+    /// Diagnostics are best-effort at the call site; flushing still runs when
+    /// there is no active SDK runtime to snapshot.
+    @MainActor
+    static func prepareLogsForExport<Context>(
+        emitDiagnostics: () async -> Void,
+        flush: () -> Void,
+        capture: () -> Context
+    ) async -> Context {
+        await emitDiagnostics()
+        flush()
+        return capture()
+    }
+
     /// Blocking (file I/O + compression) — call off the main actor.
     ///
     /// - Parameters:
@@ -185,24 +206,51 @@ struct DiagnosticLogExporter {
     /// About-screen shake gesture) so the capture rules live in one place.
     @MainActor
     static func exportArchive() async -> Result<URL, Error> {
-        let network = SwiftDashSDKHost.shared.runningNetwork.map { String(describing: $0) } ?? "unknown"
-        let bundle = Bundle.main
-        let short = bundle.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
-        let build = bundle.infoDictionary?["CFBundleVersion"] as? String ?? "?"
-        let appVersion = "\(short) (\(build))"
-        // Authoritative record of which directory this run is writing
-        // to — timestamp sorting alone can be fooled by a clock
-        // rollback or a stale future-dated directory.
-        let currentSession = LoggingPreferences.currentSessionDirectory
-        let appLogFiles = DWLogger.sharedInstance().logFiles()
+        // Pin the runtime identity before the awaited snapshot. Main-actor
+        // reentrancy can otherwise switch networks while diagnostics are
+        // reading SwiftData, producing an archive labelled with a different
+        // network than the wallet that was actually inspected.
+        let manager = SwiftDashSDKHost.shared.manager
+        let walletId = SwiftDashSDKHost.shared.wallet?.walletId
+        let capturedNetwork = SwiftDashSDKHost.shared.runningNetwork
+            .map { String(describing: $0) } ?? "unknown"
+        let context = await prepareLogsForExport(
+            emitDiagnostics: {
+                // The SDK owns all diagnostic error handling. Missing runtime
+                // handles simply mean there is no live state to add; neither
+                // condition is allowed to prevent the existing logs export.
+                guard let manager, let walletId else {
+                    return
+                }
+                await manager.emitCoreWalletDiagnostics(for: walletId)
+            },
+            flush: {
+                // Make the structured Swift log durable before we capture the
+                // session directory and hand file copying to the detached task.
+                SDKLogger.flush()
+            },
+            capture: {
+                let bundle = Bundle.main
+                let short = bundle.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+                let build = bundle.infoDictionary?["CFBundleVersion"] as? String ?? "?"
+                return ExportContext(
+                    network: capturedNetwork,
+                    appVersion: "\(short) (\(build))",
+                    // Authoritative record of which directory this run is
+                    // writing to; timestamp sorting can be fooled by a clock
+                    // rollback or a stale future-dated directory.
+                    currentSession: LoggingPreferences.currentSessionDirectory,
+                    appLogFiles: DWLogger.sharedInstance().logFiles()
+                )
+            })
 
         return await Task.detached(priority: .userInitiated) {
             Result {
                 try export(
-                    network: network,
-                    appVersion: appVersion,
-                    currentSession: currentSession,
-                    appLogFiles: appLogFiles
+                    network: context.network,
+                    appVersion: context.appVersion,
+                    currentSession: context.currentSession,
+                    appLogFiles: context.appLogFiles
                 )
             }
         }.value

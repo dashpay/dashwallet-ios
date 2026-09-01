@@ -59,6 +59,16 @@ final class ProcessNetworkValueCache<Value> {
     }
 }
 
+/// Filesystem facts captured before SwiftData opens a Core wallet store.
+/// Kept path-free so the same value can safely feed structured diagnostics.
+struct CoreStoreOpenMetadata: Equatable {
+    let existedBeforeOpen: Bool
+    let sizeBytesBefore: UInt64
+    let mainStoreSizeBytesBefore: UInt64
+    let walSizeBytesBefore: UInt64
+    let sharedMemorySizeBytesBefore: UInt64
+}
+
 /// Enforces the seed-safety ordering for wallet creation: persist and verify
 /// the mnemonic before making the wallet live in a manager. If creation then
 /// fails, only the provisional mnemonic is rolled back.
@@ -973,21 +983,77 @@ final class SwiftDashSDKHost {
         }
 
         let container: ModelContainer
+        let containerStarted = CFAbsoluteTimeGetCurrent()
+        var storeURL: URL?
+        var storeMetadata = CoreStoreOpenMetadata(
+            existedBeforeOpen: false,
+            sizeBytesBefore: 0,
+            mainStoreSizeBytesBefore: 0,
+            walSizeBytesBefore: 0,
+            sharedMemorySizeBytesBefore: 0)
         do {
             Self.logger.info("🪺 HOST :: stage 2/4 obtaining ModelContainer for \(network.rawValue, privacy: .public)")
             // Timed for the same reason as stage 1: main-thread work whose
             // real cost decides whether it ever needs to move off-main. The
             // cached (reused) path should be ~0ms; only the first build of a
             // network's container in the process pays the store-open cost.
-            let started = CFAbsoluteTimeGetCurrent()
+            let resolvedStoreURL = try modelStoreURL(for: network)
+            storeURL = resolvedStoreURL
+            storeMetadata = Self.storeOpenMetadata(at: resolvedStoreURL)
             let cached = try modelContainerCache.value(for: network.networkName) {
-                try buildModelContainer(for: network)
+                try buildModelContainer(at: resolvedStoreURL)
             }
-            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+            let ms = max(0, Int((CFAbsoluteTimeGetCurrent() - containerStarted) * 1000))
             container = cached.value
+            SDKLogger.event(
+                "core_store_open_result",
+                category: .persistence,
+                fields: [
+                    "container_result": .publicText(cached.reused ? "reused" : "opened"),
+                    "container_reused": .boolean(cached.reused),
+                    "duration_ms": .unsignedInteger(UInt64(ms)),
+                    "migration_result": .publicText(
+                        cached.reused
+                            ? "not_run_reused_container"
+                            : (storeMetadata.existedBeforeOpen
+                                ? "store_open_succeeded"
+                                : "not_required_new_store")
+                    ),
+                    "network": .publicText(network.networkName),
+                    "result": .publicText("success"),
+                    "store_existed_before_open": .boolean(storeMetadata.existedBeforeOpen),
+                    "store_main_size_bytes_before": .unsignedInteger(storeMetadata.mainStoreSizeBytesBefore),
+                    "store_shm_size_bytes_before": .unsignedInteger(storeMetadata.sharedMemorySizeBytesBefore),
+                    "store_size_bytes_before": .unsignedInteger(storeMetadata.sizeBytesBefore),
+                    "store_wal_size_bytes_before": .unsignedInteger(storeMetadata.walSizeBytesBefore),
+                ])
             Self.logger.info("🪺 HOST :: stage 2/4 ModelContainer \(cached.reused ? "reused" : "created", privacy: .public) for \(network.rawValue, privacy: .public)")
             DWLogger.log("HOST stage 2/4 ModelContainer \(cached.reused ? "reused" : "created") for \(network.rawValue) in \(ms)ms")
         } catch {
+            let ms = max(0, Int((CFAbsoluteTimeGetCurrent() - containerStarted) * 1000))
+            SDKLogger.event(
+                "core_store_open_result",
+                category: .persistence,
+                severity: .error,
+                fields: [
+                    "container_result": .publicText("open_failed"),
+                    "container_reused": .boolean(false),
+                    "duration_ms": .unsignedInteger(UInt64(ms)),
+                    "migration_result": .publicText(
+                        storeMetadata.existedBeforeOpen
+                            ? "store_open_or_migration_failed"
+                            : "not_attempted_new_store_create_failed"
+                    ),
+                    "network": .publicText(network.networkName),
+                    "result": .publicText("failure"),
+                    "store_existed_before_open": .boolean(storeMetadata.existedBeforeOpen),
+                    "store_main_size_bytes_before": .unsignedInteger(storeMetadata.mainStoreSizeBytesBefore),
+                    "store_shm_size_bytes_before": .unsignedInteger(storeMetadata.sharedMemorySizeBytesBefore),
+                    "store_size_bytes_before": .unsignedInteger(storeMetadata.sizeBytesBefore),
+                    "store_wal_size_bytes_before": .unsignedInteger(storeMetadata.walSizeBytesBefore),
+                ],
+                error: error,
+                redacting: storeURL.map { [$0.path] } ?? [])
             Self.logger.error("🪺 HOST :: ModelContainer build failed: \(String(describing: error), privacy: .public)")
             throw HostError.modelContainerFailed(error)
         }
@@ -1290,7 +1356,33 @@ final class SwiftDashSDKHost {
 
     // MARK: - ModelContainer
 
-    private func buildModelContainer(for network: Network) throws -> ModelContainer {
+    nonisolated static func storeOpenMetadata(
+        at url: URL,
+        fileManager: FileManager = .default
+    ) -> CoreStoreOpenMetadata {
+        func fileSize(at candidate: URL) -> UInt64 {
+            let attributes = try? fileManager.attributesOfItem(atPath: candidate.path)
+            return (attributes?[.size] as? NSNumber)?.uint64Value ?? 0
+        }
+
+        let existed = fileManager.fileExists(atPath: url.path)
+        let mainSize = fileSize(at: url)
+        let walSize = fileSize(at: URL(fileURLWithPath: url.path + "-wal"))
+        let sharedMemorySize = fileSize(at: URL(fileURLWithPath: url.path + "-shm"))
+        let totalSize = [mainSize, walSize, sharedMemorySize].reduce(UInt64(0)) {
+            partial, value in
+            let (sum, overflow) = partial.addingReportingOverflow(value)
+            return overflow ? UInt64.max : sum
+        }
+        return CoreStoreOpenMetadata(
+            existedBeforeOpen: existed,
+            sizeBytesBefore: totalSize,
+            mainStoreSizeBytesBefore: mainSize,
+            walSizeBytesBefore: walSize,
+            sharedMemorySizeBytesBefore: sharedMemorySize)
+    }
+
+    private func modelStoreURL(for network: Network) throws -> URL {
         let documents = try FileManager.default.url(
             for: .documentDirectory,
             in: .userDomainMask,
@@ -1303,8 +1395,10 @@ final class SwiftDashSDKHost {
         try FileManager.default.createDirectory(
             at: dir,
             withIntermediateDirectories: true)
-        let url = dir.appendingPathComponent("DashModel.sqlite", isDirectory: false)
+        return dir.appendingPathComponent("DashModel.sqlite", isDirectory: false)
+    }
 
+    private func buildModelContainer(at url: URL) throws -> ModelContainer {
         let configuration = ModelConfiguration(
             schema: DashModelContainer.schema,
             url: url,

@@ -42,6 +42,45 @@ final class DiagnosticLogExporterTests: XCTestCase {
 
     // MARK: - SDK session selection
 
+    @MainActor
+    func testPreparationSnapshotsThenFlushesBeforeCopy() async {
+        var events: [String] = []
+
+        let captured = await DiagnosticLogExporter.prepareLogsForExport(
+            emitDiagnostics: {
+                events.append("snapshot-start")
+                await Task.yield()
+                events.append("snapshot-finished")
+            },
+            flush: {
+                events.append("flush")
+            },
+            capture: {
+                events.append("copy")
+                return "captured"
+            })
+
+        XCTAssertEqual(captured, "captured")
+        XCTAssertEqual(events, [
+            "snapshot-start",
+            "snapshot-finished",
+            "flush",
+            "copy",
+        ])
+    }
+
+    @MainActor
+    func testPreparationStillFlushesWhenThereIsNoRuntimeToSnapshot() async {
+        var events: [String] = []
+
+        _ = await DiagnosticLogExporter.prepareLogsForExport(
+            emitDiagnostics: {},
+            flush: { events.append("flush") },
+            capture: { events.append("copy") })
+
+        XCTAssertEqual(events, ["flush", "copy"])
+    }
+
     func testCurrentSessionIsFirstEvenWhenOlderStampedThanOthers() {
         // A stale future-dated directory sorts lexicographically after
         // the real current session. It must not displace it.
