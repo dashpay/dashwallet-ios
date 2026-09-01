@@ -119,7 +119,10 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// core-send "Max" call site so the sent amount tracks the real fee instead
     /// of stranding ~0.001 DASH as change.
     public func feeAwareMaxSendable() -> UInt64 {
-        let spendable = balance?.spendable ?? 0
+        // The pooled figure, not `balance.spendable`: Max filling from the
+        // wallet-wide balance is the same lie the amount gate told, one tap
+        // more convincing.
+        let spendable = pooledSpendableDuffs
         let reserve = SwiftDashSDKTransactionSender.maxSendFeeReserveDuffs()
         return spendable > reserve ? spendable - reserve : 0
     }
@@ -157,6 +160,18 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// gate their visibility on `> dust`. Bound here — NOT to the legacy
     /// DashSync `CoinJoinService`, which is being removed.
     @Published public private(set) var coinJoinBalanceDuffs: UInt64 = 0
+
+    /// What a plain send could actually draw on: the accounts `.allSpendable`
+    /// pools — BIP44@0, BIP32@0 and the DashPay receiving accounts — counting
+    /// only UTXOs coin selection accepts.
+    ///
+    /// `balance.spendable` is a strict superset: it sums every funding account
+    /// the wallet has, CoinJoin included. Gating on it offers money the builder
+    /// then refuses, which is what surfaced as "insufficient unreserved core
+    /// funds" against a visibly larger balance. Reservations are not subtracted
+    /// (the SDK cannot read them yet), so this stays optimistic by whatever an
+    /// in-flight build holds — transient, unlike the account-set difference.
+    @Published public private(set) var pooledSpendableDuffs: UInt64 = 0
 
     // MARK: - Obj-C bridge
 
@@ -213,6 +228,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             MainActor.assumeIsolated {
                 self.refreshPlatformPaymentCredits()
                 self.refreshCoinJoinBalance()
+                self.refreshPooledSpendableBalance()
             }
             NotificationCenter.default.post(
                 name: SwiftDashSDKWalletState.balanceDidChangeNotification,
@@ -339,6 +355,20 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     ///
     /// `@MainActor` for symmetry with `refreshPlatformPaymentCredits`; the
     /// reader detects the main thread and reads synchronously.
+    /// Re-read the pooled spendable balance from the SDK. Refreshed with every
+    /// balance event, like the CoinJoin tally beside it.
+    @MainActor
+    public func refreshPooledSpendableBalance() {
+        guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let core = try? wallet.coreWallet(),
+              let duffs = try? core.pooledSpendableBalance()
+        else { return }
+        if pooledSpendableDuffs != duffs {
+            pooledSpendableDuffs = duffs
+            Self.logger.info("💰 WALLET :: pooledSpendableDuffs=\(duffs, privacy: .public)")
+        }
+    }
+
     @MainActor
     public func refreshCoinJoinBalance() {
         let duffs = SwiftDashSDKCoinJoinBalanceReader.coinJoinSpendableDuffs()
