@@ -26,6 +26,11 @@ NS_ASSUME_NONNULL_BEGIN
  To add a new option: add a property with UsedDefaults-supported type and mark it as @dynamic
  in the implementation
  */
+/// Posted whenever `advancedModeEnabled` changes — including the reset in
+/// `restoreToDefaults`, which is why the name lives here rather than only in
+/// Swift. Mirrored as `Notification.Name.advancedModeDidChange`.
+extern NSNotificationName const DWAdvancedModeDidChangeNotification;
+
 @interface DWGlobalOptions : DSDynamicOptions
 
 @property (nonatomic, assign) BOOL walletNeedsBackup;
