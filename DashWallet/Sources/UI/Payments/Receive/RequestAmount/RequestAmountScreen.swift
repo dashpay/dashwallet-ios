@@ -172,6 +172,8 @@ struct RequestAmountScreen: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(Text(NSLocalizedString(
+                "Copy QR code", comment: "Receive: the QR image doubles as a copy control")))
         } else {
             // The same 220pt square the QR occupies, so the rows below do not
             // jump once the address resolves.

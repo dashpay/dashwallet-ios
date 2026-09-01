@@ -5855,3 +5855,6 @@
 "Node status" = "Node status";
 "Asking the evonode…" = "Asking the evonode…";
 "Request status" = "Request status";
+
+/* Receive: the QR image doubles as a copy control */
+"Copy QR code" = "Copy QR code";
