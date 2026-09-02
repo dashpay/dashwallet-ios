@@ -94,6 +94,29 @@ enum DashPayContactAddressReadiness {
                 👥 DP-READY :: identity discovery failed locally after \
                 \(seconds, privacy: .public)s; starting SPV without DashPay state
                 """)
+        case .seedBindingUnverified:
+            // The signer handed to the call belongs to a different wallet, so
+            // the drain derived nothing rather than write contact addresses
+            // from the wrong seed. A rerun with the right signer completes the
+            // work, which stays queued — hence warning, not error.
+            logger.warning(
+                """
+                👥 DP-READY :: contact crypto could not verify this wallet's seed \
+                after \(seconds, privacy: .public)s; starting SPV, contact accounts \
+                stay queued for a run with the matching signer
+                """)
+        case .identityScanIncomplete:
+            // Every later step ran for the identity that is known, but the
+            // gap-limit scan left indices unanswered, so the identity set is
+            // not established. The verdict stays on record and the next launch
+            // re-scans instead of taking the warm shortcut.
+            logger.warning(
+                """
+                👥 DP-READY :: identity scan left indices unanswered after \
+                \(seconds, privacy: .public)s \
+                scans=\(outcome.discoveryAttempts, privacy: .public); \
+                starting SPV, the next start re-scans
+                """)
         }
     }
 }

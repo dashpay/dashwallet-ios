@@ -51,7 +51,7 @@ struct ConnectionsScreen: View {
                 content
             }
 
-            if viewModel.isProcessingKeyRegistration {
+            if viewModel.isProcessingStateTransition {
                 Color.black.opacity(0.08)
                     .ignoresSafeArea()
 
@@ -78,6 +78,11 @@ struct ConnectionsScreen: View {
         .sheet(isPresented: isApproveSheetPresented) {
             if let request = viewModel.pendingRequest {
                 approveSheet(for: request)
+            }
+        }
+        .sheet(isPresented: isTokenPurchaseSheetPresented) {
+            if let purchase = viewModel.pendingTokenPurchase {
+                tokenPurchaseSheet(for: purchase)
             }
         }
     }
@@ -111,6 +116,17 @@ struct ConnectionsScreen: View {
         .approveSheetPresentation(isLoading: viewModel.isApproving)
     }
 
+    private func tokenPurchaseSheet(for purchase: DashConnectTokenPurchaseRequest) -> some View {
+        ApproveTokenPurchaseSheet(
+            request: purchase,
+            isLoading: viewModel.isApprovingPurchase,
+            errorText: viewModel.purchaseApproveError,
+            onApprove: { viewModel.approvePendingTokenPurchase() },
+            onDeny: { viewModel.denyPendingTokenPurchase() }
+        )
+        .approveSheetPresentation(isLoading: viewModel.isApprovingPurchase)
+    }
+
     // MARK: - Presentation bindings
 
     private var isApproveSheetPresented: Binding<Bool> {
@@ -119,6 +135,17 @@ struct ConnectionsScreen: View {
             set: { isPresented in
                 if !isPresented && !viewModel.isApproving {
                     viewModel.denyPendingRequest()
+                }
+            }
+        )
+    }
+
+    private var isTokenPurchaseSheetPresented: Binding<Bool> {
+        Binding(
+            get: { viewModel.pendingTokenPurchase != nil },
+            set: { isPresented in
+                if !isPresented && !viewModel.isApprovingPurchase {
+                    viewModel.denyPendingTokenPurchase()
                 }
             }
         )

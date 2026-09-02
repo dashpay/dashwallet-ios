@@ -20,13 +20,13 @@ final class DashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(request.network, .testnet)
     }
 
-    func testParseQRRoutesValidDashStUriToKeyRegistration() async throws {
+    func testParseQRRoutesValidDashStUriToStateTransition() async throws {
         let dataSource = MockDashConnectDataSource()
 
         let result = try await dataSource.parseQR(validStUri())
 
-        guard case let .keyRegistration(request) = result else {
-            return XCTFail("Expected a key registration request")
+        guard case let .stateTransition(request) = result else {
+            return XCTFail("Expected a state transition request")
         }
 
         XCTAssertEqual(request.transitionBytes, Data([0x01, 0x02, 0x03, 0x04]))
@@ -78,16 +78,16 @@ final class DashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(request.contractId, contractId)
     }
 
-    func testCompleteKeyRegistrationThrowsOnMock() async throws {
+    func testHandleStateTransitionThrowsOnMock() async throws {
         let dataSource = MockDashConnectDataSource()
 
         await XCTAssertThrowsErrorAsync({
-            try await dataSource.completeKeyRegistration(.init(
+            try await dataSource.handleStateTransition(.init(
                 transitionBytes: Data([0x01, 0x02, 0x03, 0x04]),
                 network: .testnet
             ))
         }) { error in
-            XCTAssertEqual(error as? DashConnectMockError, .keyRegistrationNotSupported)
+            XCTAssertEqual(error as? DashConnectMockError, .stateTransitionNotSupported)
         }
     }
 

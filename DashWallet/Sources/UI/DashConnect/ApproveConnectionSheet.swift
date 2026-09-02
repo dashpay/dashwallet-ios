@@ -20,6 +20,16 @@
 import DashUIKit
 import SwiftUI
 
+/// Truncates long identifiers in the middle for display, keeping `prefix`
+/// leading and `suffix` trailing characters (e.g. "5DbLwAx…FzUo8"). Shared
+/// by the DashConnect approval sheets.
+enum DashConnectIdentifierFormatting {
+    static func truncateMiddle(_ value: String, prefix: Int = 7, suffix: Int = 5) -> String {
+        guard value.count > prefix + suffix + 1 else { return value }
+        return "\(value.prefix(prefix))…\(value.suffix(suffix))"
+    }
+}
+
 struct ApproveConnectionSheet: View {
     let request: ConnectionRequest
     var isLoading: Bool = false
@@ -69,15 +79,15 @@ struct ApproveConnectionSheet: View {
                     if request.walletUsername != nil || request.walletIdentityId != nil {
                         VStack(spacing: 4) {
                             if let walletUsername = request.walletUsername {
-                                DetailRow(
+                                DashConnectDetailRow(
                                     label: NSLocalizedString("Username", comment: "DashConnect"),
                                     value: walletUsername
                                 )
                             }
                             if let walletIdentityId = request.walletIdentityId {
-                                DetailRow(
+                                DashConnectDetailRow(
                                     label: NSLocalizedString("Identity", comment: "DashConnect"),
-                                    value: truncateMiddle(walletIdentityId)
+                                    value: DashConnectIdentifierFormatting.truncateMiddle(walletIdentityId)
                                 )
                             }
                         }
@@ -225,13 +235,6 @@ struct ApproveConnectionSheet: View {
         )
     }
 
-    /// Truncates a long identifier in the middle, keeping `prefix` leading and
-    /// `suffix` trailing characters (e.g. "5DbLwAx…7zUo8").
-    fileprivate func truncateMiddle(_ value: String, prefix: Int = 7, suffix: Int = 5) -> String {
-        guard value.count > prefix + suffix + 1 else { return value }
-        return "\(value.prefix(prefix))…\(value.suffix(suffix))"
-    }
-
     private static let connectedSinceFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
@@ -256,7 +259,9 @@ private struct PermissionRow: View {
     }
 }
 
-private struct DetailRow: View {
+/// Label/value row used inside the bordered detail boxes of the DashConnect
+/// approval sheets.
+struct DashConnectDetailRow: View {
     let label: String
     let value: String
 
@@ -278,13 +283,10 @@ private struct DetailRow: View {
 
 #if DEBUG
 private let dashConnectTruncateMiddleCheck: Bool = {
-    let sheet = ApproveConnectionSheet(
-        request: MockDashConnectDataSource.sampleRequest,
-        onApprove: {},
-        onDeny: {}
-    )
     assert(
-        sheet.truncateMiddle("5DbLwAxEWR695MsqP4KybNQD5n7CUDWydJYNg63FzUo8") == "5DbLwAx…zUo8"
+        DashConnectIdentifierFormatting.truncateMiddle(
+            "5DbLwAxEWR695MsqP4KybNQD5n7CUDWydJYNg63FzUo8"
+        ) == "5DbLwAx…FzUo8"
     )
     return true
 }()

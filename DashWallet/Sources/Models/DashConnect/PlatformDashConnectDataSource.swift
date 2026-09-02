@@ -68,6 +68,7 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case keyRegistrationWrongIdentity
     case keyRegistrationUnexpectedMutation
     case keyRegistrationMismatchedDerivedKey(KeyPurpose)
+    case tokenPurchaseWrongIdentity
     case ephemeralKeyGenerationFailed
     case ambiguousKeyRegistrationConnection
     case devnetLoginContractNotConfigured
@@ -111,6 +112,8 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
             return "Could not tell which approved app this login belongs to. Scan the app's QR code again."
         case .keyRegistrationMismatchedDerivedKey(let purpose):
             return "The scanned key-registration transition adds a \(purpose.name) key we did not derive."
+        case .tokenPurchaseWrongIdentity:
+            return "The scanned token purchase targets a different identity."
         case .devnetLoginContractNotConfigured:
             return NSLocalizedString(
                 "The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings.",
@@ -182,53 +185,88 @@ private struct DashConnectKeyRegistrationDerivedMaterial {
     let encryptionPublicKey: Data
 }
 
-protocol DashConnectKeyRegistrationParsing {
-    func parse(_ transitionBytes: Data) throws -> DashConnectKeyRegistrationTransition
+/// A token direct purchase parsed out of a `dash-st:` transition: what the
+/// approval sheet must show, and what `tokenPurchase(...)` is rebuilt from
+/// after the user approves it.
+struct DashConnectTokenPurchaseTransition: Equatable {
+    /// The identity whose credits pay for the purchase.
+    let ownerId: Data
+    let dataContractId: Data
+    let tokenId: Data
+    let tokenContractPosition: UInt16
+    let tokenCount: UInt64
+    /// Credits the dApp asks the owner to agree to pay in total.
+    let totalAgreedPrice: UInt64
 }
 
-struct PlatformWalletDashConnectKeyRegistrationParser: DashConnectKeyRegistrationParsing {
-    private let parseTransition: (Data) throws -> ManagedPlatformWallet.ParsedIdentityUpdateTransition
+/// One `dash-st:` payload reduced to app-level types, discriminated by the
+/// kind of state transition it carried.
+enum DashConnectParsedStateTransition: Equatable {
+    case keyRegistration(DashConnectKeyRegistrationTransition)
+    case tokenPurchase(DashConnectTokenPurchaseTransition)
+}
+
+protocol DashConnectStateTransitionParsing {
+    func parse(_ transitionBytes: Data) throws -> DashConnectParsedStateTransition
+}
+
+struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitionParsing {
+    private let parseTransition: (Data) throws -> ManagedPlatformWallet.ParsedStateTransition
 
     init(
-        parseTransition: @escaping (Data) throws -> ManagedPlatformWallet.ParsedIdentityUpdateTransition = { bytes in
+        parseTransition: @escaping (Data) throws -> ManagedPlatformWallet.ParsedStateTransition = { bytes in
             try MainActor.assumeIsolated {
                 guard let wallet = SwiftDashSDKHost.shared.wallet else {
                     throw DashConnectPlatformError.noWallet
                 }
-                return try wallet.parseIdentityUpdateTransition(bytes)
+                return try wallet.parseStateTransition(bytes)
             }
         }
     ) {
         self.parseTransition = parseTransition
     }
 
-    func parse(_ transitionBytes: Data) throws -> DashConnectKeyRegistrationTransition {
-        let parsed = try parseTransition(transitionBytes)
-
-        return DashConnectKeyRegistrationTransition(
-            identityId: parsed.identityId,
-            addPublicKeys: parsed.addPublicKeys.map { key in
-                DashConnectKeyRegistrationKey(
-                    keyId: key.keyId,
-                    keyType: key.keyType,
-                    purpose: key.purpose,
-                    securityLevel: key.securityLevel,
-                    publicKeyData: key.pubkeyBytes,
-                    contractBounds: key.contractBounds.map {
-                        switch $0 {
-                        case .singleContract(let id):
-                            return .singleContract(id: id)
-                        case .singleContractDocumentType(let id, let documentTypeName):
-                            return .singleContractDocumentType(
-                                id: id,
-                                documentTypeName: documentTypeName
-                            )
-                        }
-                    }
+    func parse(_ transitionBytes: Data) throws -> DashConnectParsedStateTransition {
+        switch try parseTransition(transitionBytes) {
+        case .identityUpdate(let parsed):
+            return .keyRegistration(
+                DashConnectKeyRegistrationTransition(
+                    identityId: parsed.identityId,
+                    addPublicKeys: parsed.addPublicKeys.map { key in
+                        DashConnectKeyRegistrationKey(
+                            keyId: key.keyId,
+                            keyType: key.keyType,
+                            purpose: key.purpose,
+                            securityLevel: key.securityLevel,
+                            publicKeyData: key.pubkeyBytes,
+                            contractBounds: key.contractBounds.map {
+                                switch $0 {
+                                case .singleContract(let id):
+                                    return .singleContract(id: id)
+                                case .singleContractDocumentType(let id, let documentTypeName):
+                                    return .singleContractDocumentType(
+                                        id: id,
+                                        documentTypeName: documentTypeName
+                                    )
+                                }
+                            }
+                        )
+                    },
+                    disablePublicKeyIds: parsed.disablePublicKeyIds
                 )
-            },
-            disablePublicKeyIds: parsed.disablePublicKeyIds
-        )
+            )
+        case .tokenPurchase(let parsed):
+            return .tokenPurchase(
+                DashConnectTokenPurchaseTransition(
+                    ownerId: parsed.ownerId,
+                    dataContractId: parsed.dataContractId,
+                    tokenId: parsed.tokenId,
+                    tokenContractPosition: parsed.tokenContractPosition,
+                    tokenCount: parsed.tokenCount,
+                    totalAgreedPrice: parsed.totalAgreedPrice
+                )
+            )
+        }
     }
 }
 
@@ -270,7 +308,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private let store: any DashConnectStore
     private let subject: CurrentValueSubject<[DAppConnection], Never>
     private let authorizer: DWIdentityAuthorizer
-    private let keyRegistrationParser: any DashConnectKeyRegistrationParsing
+    private let stateTransitionParser: any DashConnectStateTransitionParsing
     private let now: () -> Date
 
     /// The DashConnect network matching the app's current network selection —
@@ -289,7 +327,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         supportedNetwork: DashConnectNetwork = PlatformDashConnectDataSource.currentEnvironmentNetwork(),
         store: (any DashConnectStore)? = nil,
         authorizer: DWIdentityAuthorizer = DWIdentityAuthorizer(),
-        keyRegistrationParser: any DashConnectKeyRegistrationParsing = PlatformWalletDashConnectKeyRegistrationParser(),
+        stateTransitionParser: any DashConnectStateTransitionParsing = PlatformWalletDashConnectStateTransitionParser(),
         now: @escaping () -> Date = Date.init
     ) {
         assert(
@@ -298,7 +336,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         self.supportedNetwork = supportedNetwork
         self.store = store ?? UserDefaultsDashConnectStore(network: supportedNetwork)
         self.authorizer = authorizer
-        self.keyRegistrationParser = keyRegistrationParser
+        self.stateTransitionParser = stateTransitionParser
         self.now = now
         self.subject = CurrentValueSubject(self.store.load())
     }
@@ -319,7 +357,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         if DashConnectUri.isStUri(trimmed) {
             let request = try DashConnectUri.parseStRequest(trimmed)
             try validateNetwork(request.network)
-            return .keyRegistration(request)
+            return .stateTransition(request)
         }
 
         throw DashConnectMockError.notDashConnectQrCode
@@ -370,6 +408,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             Self.logger.error("🔗 DASHCONNECT :: authorization failed — \(error.localizedDescription, privacy: .public)")
             throw error
         }
+        Self.logger.info("🔗 DASHCONNECT :: authorized; deriving login key")
 
         // `deriveIdentityAuthKeyAtSlot` is main-actor isolated in the SDK.
         var chainKey = try await MainActor.run {
@@ -404,14 +443,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // substrings in the error text instead would break the moment the SDK
         // rewords or localizes a message, and "duplicate" also matches unique-
         // index failures that have nothing to do with this document.
+        // Step markers: everything between `approveLogin started` and the
+        // finish was silent, so a stall anywhere in derive → write → preview
+        // was indistinguishable from a stall in any other step.
+        Self.logger.info("🔗 DASHCONNECT :: writing loginKeyResponse document")
         try await writeLoginKeyResponseDocument(
             context: context,
             appContractId: request.contractId,
             propertiesJSON: propertiesJSON,
             signer: signer
         )
+        Self.logger.info("🔗 DASHCONNECT :: loginKeyResponse document written")
 
         let preview = await makeConnectionRequest(from: request)
+        Self.logger.info("🔗 DASHCONNECT :: connection preview resolved")
         let connection: DAppConnection
         do {
             var derivedMaterial = try Self.deriveKeyRegistrationMaterial(
@@ -456,21 +501,40 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return connection
     }
 
-    func completeKeyRegistration(_ request: DashStRequest) async throws {
+    func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction {
         try validateNetwork(request.network)
         let context = try await requireContext()
-        // Chosen approach: (a) deserialize the scanned IdentityUpdateTransition,
-        // verify it only adds the exact derived login keys for our identity,
-        // then rebuild the equivalent `updateIdentity(...)` call through the SDK.
-        //
-        // Parsed before the connection is chosen: `DashStRequest` carries no app
-        // identifier, but the transition's keys usually do, in their contract
-        // bounds. Picking the most recently approved connection instead would
-        // derive app B's keys for a QR scanned from app A.
-        let transition = try await MainActor.run {
-            try keyRegistrationParser.parse(request.transitionBytes)
+        // The incoming bytes are parsed only to learn the intent — they are
+        // never signed. Each branch validates the parsed values and rebuilds
+        // the operation through the SDK itself.
+        let parsed = try await MainActor.run {
+            try stateTransitionParser.parse(request.transitionBytes)
         }
 
+        switch parsed {
+        case .keyRegistration(let transition):
+            try await completeKeyRegistration(transition, context: context)
+            return .keyRegistrationCompleted
+        case .tokenPurchase(let purchase):
+            return .tokenPurchaseApprovalRequired(
+                try makeTokenPurchaseRequest(purchase, context: context)
+            )
+        }
+    }
+
+    /// The key-registration half of a scanned `dash-st:` payload. Verifies
+    /// the parsed transition only adds the exact derived login keys for our
+    /// identity, then rebuilds the equivalent `updateIdentity(...)` call
+    /// through the SDK.
+    private func completeKeyRegistration(
+        _ transition: DashConnectKeyRegistrationTransition,
+        context: Context
+    ) async throws {
+        // The transition was parsed before the connection is chosen:
+        // `DashStRequest` carries no app identifier, but the transition's
+        // keys usually do, in their contract bounds. Picking the most
+        // recently approved connection instead would derive app B's keys for
+        // a QR scanned from app A.
         let pendingConnection = try pendingApprovedConnectionForKeyRegistration(
             boundContractId: Self.boundAppContractId(in: transition)
         )
@@ -561,6 +625,64 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     updatedAt: now()
                 )
             }
+        )
+    }
+
+    /// Builds the user-facing approval request for a parsed token purchase,
+    /// refusing purchases that name someone else's identity. Local data only:
+    /// resolving richer metadata (token name, DPNS username) would add
+    /// network calls the purchase itself does not need.
+    private func makeTokenPurchaseRequest(
+        _ purchase: DashConnectTokenPurchaseTransition,
+        context: Context
+    ) throws -> DashConnectTokenPurchaseRequest {
+        // Checked before anything is shown: a purchase that would charge a
+        // different identity must be refused, not rendered for approval.
+        guard purchase.ownerId == context.identityId else {
+            throw DashConnectPlatformError.tokenPurchaseWrongIdentity
+        }
+
+        let contractIdBase58 = purchase.dataContractId.toBase58String()
+        return DashConnectTokenPurchaseRequest(
+            // A connection approved earlier for the same contract names the
+            // app; otherwise the sheet falls back to the contract id.
+            appName: subject.value.first { $0.id == contractIdBase58 }?.name,
+            ownerId: purchase.ownerId,
+            dataContractId: purchase.dataContractId,
+            tokenId: purchase.tokenId,
+            tokenContractPosition: purchase.tokenContractPosition,
+            tokenCount: purchase.tokenCount,
+            totalAgreedPriceCredits: purchase.totalAgreedPrice,
+            walletUsername: context.storedUsername,
+            walletIdentityId: context.identityId.toBase58String()
+        )
+    }
+
+    func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws {
+        let context = try await requireContext()
+        // Re-checked at approve time: the sheet can sit open while the
+        // wallet's identity changes, and the purchase must only ever debit
+        // the identity the user saw on the sheet.
+        guard request.ownerId == context.identityId else {
+            throw DashConnectPlatformError.tokenPurchaseWrongIdentity
+        }
+
+        try await authorize()
+
+        let signer = KeychainSigner(modelContainer: context.modelContainer)
+        // `expectedTotalCost` is the same credits figure the approval sheet
+        // rendered — Platform rejects the transition if the on-chain price
+        // disagrees, so the charged amount cannot diverge from the shown one.
+        // `signingKeyId` is left at its default: the signer selects a
+        // CRITICAL key itself and fails with a clear error when the identity
+        // has none.
+        try await context.wallet.tokenPurchase(
+            identityId: context.identityId,
+            contractId: request.dataContractId,
+            tokenPosition: request.tokenContractPosition,
+            amount: request.tokenCount,
+            expectedTotalCost: request.totalAgreedPriceCredits,
+            signer: signer
         )
     }
 

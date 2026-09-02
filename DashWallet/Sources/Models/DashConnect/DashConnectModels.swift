@@ -22,7 +22,52 @@ import SwiftDashSDK
 
 enum DashConnectQr: Equatable {
     case login(DashKeyRequest)
-    case keyRegistration(DashStRequest)
+    /// A `dash-st:` payload — a serialized state transition whose kind is
+    /// only known once the wallet parses it (key registration or token
+    /// purchase).
+    case stateTransition(DashStRequest)
+}
+
+/// What the wallet did — or still needs the user to do — with a scanned
+/// `dash-st:` state transition.
+enum DashConnectStAction: Equatable {
+    /// Key registration was validated and published (or the derived keys
+    /// were already on the identity).
+    case keyRegistrationCompleted
+    /// The payload is a token purchase; nothing was signed or sent yet — it
+    /// awaits explicit user approval via `approveTokenPurchase(_:)`.
+    case tokenPurchaseApprovalRequired(DashConnectTokenPurchaseRequest)
+}
+
+/// A pending token purchase parsed from a `dash-st:` payload, awaiting user
+/// approval. Carries the raw values the purchase is rebuilt from and the
+/// display fields the approval sheet renders.
+struct DashConnectTokenPurchaseRequest: Equatable {
+    /// Name of an already-connected app whose contract id matches the
+    /// purchase's data contract, when one is stored locally. Display only.
+    let appName: String?
+    /// Identity the purchase debits — validated to be the wallet's own both
+    /// when the request is built and again on approve.
+    let ownerId: Data
+    let dataContractId: Data
+    let tokenId: Data
+    let tokenContractPosition: UInt16
+    let tokenCount: UInt64
+    /// Total price in Platform credits; passed to `tokenPurchase(...)` as
+    /// `expectedTotalCost` so the shown and charged amounts cannot diverge.
+    let totalAgreedPriceCredits: UInt64
+    let walletUsername: String?
+    let walletIdentityId: String
+}
+
+extension DashConnectTokenPurchaseRequest {
+    /// Platform credits per DASH (1e11 — 1e8 duffs x 1000 credits per duff).
+    static let creditsPerDash: Decimal = 100_000_000_000
+
+    /// The total price converted to DASH for display.
+    var totalPriceDash: Decimal {
+        Decimal(totalAgreedPriceCredits) / Self.creditsPerDash
+    }
 }
 
 /// Lifecycle of an app connection.
