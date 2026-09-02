@@ -48,13 +48,18 @@ final class ConnectionsViewModel: ObservableObject {
     @Published private(set) var connections: [DAppConnection] = []
     @Published private(set) var featureUnavailable: Bool
     @Published var pendingRequest: ConnectionRequest?
+    @Published var pendingTokenPurchase: DashConnectTokenPurchaseRequest?
     @Published var isApproving = false
-    @Published var isProcessingKeyRegistration = false
+    @Published var isApprovingPurchase = false
+    @Published var isProcessingStateTransition = false
     @Published var message: ConnectionsScreenMessage?
     /// Failure of the last approve attempt, rendered **inside** the approve sheet.
     /// A screen-level `.alert` cannot appear over a presented sheet, so routing this
     /// through `message` would leave the user with no feedback at all.
     @Published var approveError: String?
+    /// Failure of the last token-purchase approve attempt, rendered inside
+    /// the purchase sheet for the same reason as `approveError`.
+    @Published var purchaseApproveError: String?
 
     private let dataSource: any DashConnectDataSource
     private var pendingLoginRequest: DashKeyRequest?
@@ -83,20 +88,25 @@ final class ConnectionsViewModel: ObservableObject {
             do {
                 pendingRequest = nil
                 pendingLoginRequest = nil
+                pendingTokenPurchase = nil
 
                 switch try await dataSource.parseQR(content) {
                 case let .login(request):
                     pendingLoginRequest = request
                     pendingRequest = await dataSource.makeConnectionRequest(from: request)
-                case let .keyRegistration(request):
-                    isProcessingKeyRegistration = true
-                    defer { isProcessingKeyRegistration = false }
+                case let .stateTransition(request):
+                    isProcessingStateTransition = true
+                    defer { isProcessingStateTransition = false }
 
-                    try await dataSource.completeKeyRegistration(request)
-                    message = ConnectionsScreenMessage(
-                        kind: .success,
-                        text: NSLocalizedString("DashConnect key registration completed.", comment: "DashConnect")
-                    )
+                    switch try await dataSource.handleStateTransition(request) {
+                    case .keyRegistrationCompleted:
+                        message = ConnectionsScreenMessage(
+                            kind: .success,
+                            text: NSLocalizedString("DashConnect key registration completed.", comment: "DashConnect")
+                        )
+                    case let .tokenPurchaseApprovalRequired(purchase):
+                        pendingTokenPurchase = purchase
+                    }
                 }
             } catch {
                 message = ConnectionsScreenMessage(
@@ -145,6 +155,41 @@ final class ConnectionsViewModel: ObservableObject {
         pendingRequest = nil
         pendingLoginRequest = nil
         approveError = nil
+    }
+
+    func approvePendingTokenPurchase() {
+        guard let purchase = pendingTokenPurchase, !isApprovingPurchase else { return }
+
+        isApprovingPurchase = true
+        purchaseApproveError = nil
+
+        Task {
+            defer { isApprovingPurchase = false }
+
+            do {
+                try await dataSource.approveTokenPurchase(purchase)
+                self.pendingTokenPurchase = nil
+                self.purchaseApproveError = nil
+                message = ConnectionsScreenMessage(
+                    kind: .success,
+                    text: NSLocalizedString("Token purchase completed.", comment: "DashConnect")
+                )
+            } catch {
+                // Keep the sheet up so the user can retry without rescanning
+                // the QR. Failures — including "the identity has no CRITICAL
+                // key" from the SDK — surface here as the sheet's error text.
+                self.purchaseApproveError = String(
+                    format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
+                    error.localizedDescription
+                )
+            }
+        }
+    }
+
+    func denyPendingTokenPurchase() {
+        guard !isApprovingPurchase else { return }
+        pendingTokenPurchase = nil
+        purchaseApproveError = nil
     }
 
     func disconnect(_ connection: DAppConnection) {

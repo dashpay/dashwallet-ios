@@ -187,10 +187,12 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(tagless.addPublicKeys.map(\.keyId), tagged.addPublicKeys.map(\.keyId))
         XCTAssertEqual(tagless.disablePublicKeyIds, tagged.disablePublicKeyIds)
 
-        let appParser = PlatformWalletDashConnectKeyRegistrationParser { bytes in
-            try wallet.parseIdentityUpdateTransition(bytes)
+        let appParser = PlatformWalletDashConnectStateTransitionParser { bytes in
+            .identityUpdate(try wallet.parseIdentityUpdateTransition(bytes))
         }
-        let appTransition = try appParser.parse(taglessBytes)
+        guard case let .keyRegistration(appTransition) = try appParser.parse(taglessBytes) else {
+            return XCTFail("Expected a key-registration transition")
+        }
         XCTAssertEqual(appTransition.identityId, tagged.identityId)
         XCTAssertEqual(appTransition.addPublicKeys.map(\.keyId), [17, 18])
         XCTAssertEqual(appTransition.disablePublicKeyIds, [4, 8])

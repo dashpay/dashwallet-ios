@@ -26,7 +26,12 @@ protocol DashConnectDataSource {
     func parseQR(_ content: String) async throws -> DashConnectQr
     func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest
     func approveLogin(_ request: DashKeyRequest) async throws -> DAppConnection
-    func completeKeyRegistration(_ request: DashStRequest) async throws
+    /// Parses a scanned `dash-st:` payload and either completes key
+    /// registration immediately or returns a token purchase that awaits
+    /// explicit user approval via `approveTokenPurchase(_:)`.
+    func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction
+    /// Rebuilds, signs and submits a token purchase the user approved.
+    func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws
     func disconnect(id: String) async
     func remove(id: String) async
 }
@@ -36,7 +41,7 @@ enum DashConnectMockError: LocalizedError, Equatable {
     case approveFailed
     case notDashConnectQrCode
     case unsupportedNetwork(expected: DashConnectNetwork, actual: DashConnectNetwork)
-    case keyRegistrationNotSupported
+    case stateTransitionNotSupported
 
     var errorDescription: String? {
         switch self {
@@ -48,8 +53,8 @@ enum DashConnectMockError: LocalizedError, Equatable {
             return "This QR code is not a DashConnect QR code."
         case let .unsupportedNetwork(expected, actual):
             return "This DashConnect QR is for \(Self.displayName(for: actual)), but this wallet currently supports \(Self.displayName(for: expected)) only."
-        case .keyRegistrationNotSupported:
-            return "Key registration is not supported by the mock."
+        case .stateTransitionNotSupported:
+            return "State transitions are not supported by the mock."
         }
     }
 
@@ -150,7 +155,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         if DashConnectUri.isStUri(trimmed) {
             let request = try DashConnectUri.parseStRequest(trimmed)
             try validateNetwork(request.network)
-            return .keyRegistration(request)
+            return .stateTransition(request)
         }
 
         throw DashConnectMockError.notDashConnectQrCode
@@ -191,9 +196,13 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         )
     }
 
-    func completeKeyRegistration(_ request: DashStRequest) async throws {
+    func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction {
         try await Task.sleep(nanoseconds: 400_000_000)
-        throw DashConnectMockError.keyRegistrationNotSupported
+        throw DashConnectMockError.stateTransitionNotSupported
+    }
+
+    func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws {
+        throw DashConnectMockError.stateTransitionNotSupported
     }
 
     func disconnect(id: String) async {
