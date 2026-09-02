@@ -35,7 +35,7 @@ enum SwapKitErrorCopy {
     static let noRoutesFoundCode = "noroutesfound"
 
     /// A provider-level failure rendered in the same `"<code>: <detail>"` shape the top-level
-    /// `error` field uses, so both reach `message(for:coin:minimum:)` through one path.
+    /// `error` field uses, so both reach `message(for:coin:)` through one path.
     /// Nil when the provider reported neither a code nor prose.
     static func providerErrorMessage(_ error: SwapKitProviderError?) -> String? {
         let code = error?.errorCode?.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -50,18 +50,6 @@ enum SwapKitErrorCopy {
         case (nil, nil):
             return nil
         }
-    }
-
-    /// True when the failure means "the sell amount is under what this route can fill" — the case
-    /// the amount screens surface inline (raise the amount and retry) instead of as a dead end.
-    /// `noRoutesFound` is included because SwapKit answers with it for amounts far below the
-    /// minimum and only switches to an explicit below-minimum code close to the floor: measured
-    /// 2026-08-28, DASH → BTC returned `noRoutesFound` at 0.01 DASH and `sellAssetAmountTooSmall`
-    /// (min 0.175) at 0.05. It is genuinely ambiguous — a route can also be briefly unavailable —
-    /// so its copy stays neutral.
-    static func isAmountTooLow(_ rawError: String?) -> Bool {
-        let code = code(of: rawError)
-        return code == noRoutesFoundCode || isBelowMinimumCode(code)
     }
 
     static func message(for rawError: String?, coin: SwapCryptoCurrency) -> String {
@@ -168,16 +156,22 @@ enum SwapKitErrorCopy {
         }
     }
 
-    /// True when the failure is the top-level "no provider can carry this pair/amount" code —
-    /// which SwapKit also reports per provider inside `providerErrors[]`.
+    /// True when the failure is the "no provider can carry this pair/amount" code — reported
+    /// top-level and, per provider, inside `providerErrors[]`.
+    ///
+    /// Only the per-provider form is conclusive. SwapKit answers top-level `noRoutesFound` for an
+    /// amount far below a route's floor as well as for a pair it cannot carry: measured
+    /// 2026-08-28, DASH → BTC returned it at 0.01 DASH, `sellAssetAmountTooSmall` (min 0.175) at
+    /// 0.05, and a route at 0.3. Callers must not read the top-level form as "this cannot be
+    /// swapped at all" — hence the neutral copy, and `routability(from:)` ignoring it.
     static func isNoRoute(_ rawError: String?) -> Bool {
         code(of: rawError) == noRoutesFoundCode
     }
 
-    /// True when the failure is specifically "under this route's minimum" — the unambiguous half
-    /// of [isAmountTooLow]. Routability probing needs this narrower test: a provider-level
-    /// `noRoutesFound` really does mean the provider can't carry the asset, whereas a
-    /// below-minimum reply only says the probe amount was too small.
+    /// True when the failure is specifically "under this route's minimum" — the unambiguous
+    /// counterpart to [isNoRoute]. Routability probing needs both: a provider-level
+    /// `noRoutesFound` does mean the provider can't carry the asset, whereas a below-minimum
+    /// reply only says the probe amount was too small.
     static func isBelowMinimum(_ rawError: String?) -> Bool {
         isBelowMinimumCode(code(of: rawError))
     }
