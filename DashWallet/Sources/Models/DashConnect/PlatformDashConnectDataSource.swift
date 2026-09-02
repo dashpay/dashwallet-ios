@@ -408,6 +408,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             Self.logger.error("🔗 DASHCONNECT :: authorization failed — \(error.localizedDescription, privacy: .public)")
             throw error
         }
+        Self.logger.info("🔗 DASHCONNECT :: authorized; deriving login key")
 
         // `deriveIdentityAuthKeyAtSlot` is main-actor isolated in the SDK.
         var chainKey = try await MainActor.run {
@@ -442,14 +443,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // substrings in the error text instead would break the moment the SDK
         // rewords or localizes a message, and "duplicate" also matches unique-
         // index failures that have nothing to do with this document.
+        // Step markers: everything between `approveLogin started` and the
+        // finish was silent, so a stall anywhere in derive → write → preview
+        // was indistinguishable from a stall in any other step.
+        Self.logger.info("🔗 DASHCONNECT :: writing loginKeyResponse document")
         try await writeLoginKeyResponseDocument(
             context: context,
             appContractId: request.contractId,
             propertiesJSON: propertiesJSON,
             signer: signer
         )
+        Self.logger.info("🔗 DASHCONNECT :: loginKeyResponse document written")
 
         let preview = await makeConnectionRequest(from: request)
+        Self.logger.info("🔗 DASHCONNECT :: connection preview resolved")
         let connection: DAppConnection
         do {
             var derivedMaterial = try Self.deriveKeyRegistrationMaterial(
