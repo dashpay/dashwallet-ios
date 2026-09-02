@@ -117,15 +117,13 @@ enum CoreToPlatformAmountPolicy {
     static let addressFundingInputCount = 0
     static let addressFundingOutputCount = 2
 
-    @MainActor
-    static var currentReserveCredits: UInt64? {
+    @MainActor static var currentReserveCredits: UInt64? {
         try? SwiftDashSDKHost.shared.manager?.estimateAddressFundingFee(
             inputCount: addressFundingInputCount,
             outputCount: addressFundingOutputCount)
     }
 
-    @MainActor
-    static var currentReserveDuffs: UInt64? {
+    @MainActor static var currentReserveDuffs: UInt64? {
         currentReserveCredits.map(reserveDuffs(reserveCredits:))
     }
 
