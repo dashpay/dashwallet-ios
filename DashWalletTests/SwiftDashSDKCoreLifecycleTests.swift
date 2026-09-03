@@ -529,6 +529,21 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             1)
     }
 
+    func testCoreToPlatformMaxNeverFillsAnAmountContinueRejects() {
+        // At the UInt64 boundary the duffs→credits conversion overflows, so
+        // an uncapped Max would fill an amount `lockValueDuffs` refuses.
+        // Max caps at the largest representable amount instead — every
+        // filled amount stays submittable.
+        let maxAmount = CoreToPlatformAmountPolicy.maxAmountDuffs(
+            spendableDuffs: .max,
+            reserveCredits: Self.addressFundingReserveCredits)
+        XCTAssertEqual(maxAmount, UInt64.max / 1000)
+        XCTAssertNotNil(
+            CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: maxAmount,
+                reserveCredits: Self.addressFundingReserveCredits))
+    }
+
     func testCoreToPlatformMaxHeldBackExcludesTheFundingReserve() {
         // The held-back notice describes what STAYS in Core after the Max
         // lock executes. The reserve leaves Core inside the lock, so it

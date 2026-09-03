@@ -159,14 +159,17 @@ enum CoreToPlatformAmountPolicy {
     }
 
     /// Largest topup amount the spendable balance can fund: the whole
-    /// spendable envelope goes into the lock, minus the rounded-up reserve.
+    /// spendable envelope goes into the lock, minus the rounded-up reserve,
+    /// capped at the largest amount `lockValueDuffs` accepts — beyond that
+    /// the duffs→credits conversion overflows and Continue would fail
+    /// closed on an amount Max itself filled.
     static func maxAmountDuffs(
         spendableDuffs: UInt64,
         reserveCredits: UInt64
     ) -> UInt64 {
         let reserveDuffs = reserveDuffs(reserveCredits: reserveCredits)
         guard spendableDuffs > reserveDuffs else { return 0 }
-        return spendableDuffs - reserveDuffs
+        return min(spendableDuffs - reserveDuffs, UInt64.max / 1000)
     }
 
     /// What actually STAYS in the Core balance after a Max fill executes:
