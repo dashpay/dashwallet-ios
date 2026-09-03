@@ -101,6 +101,16 @@ struct SettingsScreen: View {
             }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
         }
+        // Destination choice (Dash Wallet vs Shielded), the same sheet the
+        // post-sync popup presents. Deliberately no `onDismiss` hook: unlike the
+        // popup this row is user-initiated, so closing it must not persist a
+        // "Later" that would suppress the popup for good.
+        .sheet(isPresented: $viewModel.showCoinJoinMoveFundsSheet) {
+            CoinJoinMoveFundsSheet(amountDuffs: viewModel.coinJoinLeftoverDuffs) {
+                viewModel.showCoinJoinMoveFundsSheet = false
+            }
+            .presentationDetents([.medium, .large])
+        }
         .alert(NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"), isPresented: $viewModel.showCoinJoinSweepConfirmation) {
             Button(NSLocalizedString("Move funds", comment: "CoinJoin")) {
                 Task { await viewModel.performCoinJoinSweep() }

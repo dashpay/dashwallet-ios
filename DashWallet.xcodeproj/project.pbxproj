@@ -709,6 +709,10 @@
 		751C05DE2D3E39A800475E52 /* TransactionListDataItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751C05DC2D3E39A600475E52 /* TransactionListDataItem.swift */; };
 		5A1EC0FE2E29A30000000002 /* CoinJoinMoveFundsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A30000000001 /* CoinJoinMoveFundsSheet.swift */; };
 		5A1EC0FE2E29A30000000003 /* CoinJoinMoveFundsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A30000000001 /* CoinJoinMoveFundsSheet.swift */; };
+		5A1EC0FE2E29A30000000012 /* CoinJoinMoveFundsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A30000000011 /* CoinJoinMoveFundsViewModel.swift */; };
+		5A1EC0FE2E29A30000000013 /* CoinJoinMoveFundsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A30000000011 /* CoinJoinMoveFundsViewModel.swift */; };
+		5A1EC0FE2E29A30000000022 /* CoinJoinMoveDestinationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A30000000021 /* CoinJoinMoveDestinationPolicy.swift */; };
+		5A1EC0FE2E29A30000000023 /* CoinJoinMoveDestinationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A30000000021 /* CoinJoinMoveDestinationPolicy.swift */; };
 		7527720D2AA9B2630066557E /* SupportedTopperAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */; };
 		7527720F2AA9F58E0066557E /* TopperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720E2AA9F58E0066557E /* TopperViewModel.swift */; };
 		752772122AAA1CE30066557E /* Coinbase-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752772112AAA1CE30066557E /* Coinbase-Info.plist */; };
@@ -2930,6 +2934,8 @@
 		751C05DA2D3D0E7C00475E52 /* JoinDashPayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinDashPayViewModel.swift; sourceTree = "<group>"; };
 		751C05DC2D3E39A600475E52 /* TransactionListDataItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionListDataItem.swift; sourceTree = "<group>"; };
 		5A1EC0FE2E29A30000000001 /* CoinJoinMoveFundsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinMoveFundsSheet.swift; sourceTree = "<group>"; };
+		5A1EC0FE2E29A30000000011 /* CoinJoinMoveFundsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinMoveFundsViewModel.swift; sourceTree = "<group>"; };
+		5A1EC0FE2E29A30000000021 /* CoinJoinMoveDestinationPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinMoveDestinationPolicy.swift; sourceTree = "<group>"; };
 		7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedTopperAssets.swift; sourceTree = "<group>"; };
 		7527720E2AA9F58E0066557E /* TopperViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopperViewModel.swift; sourceTree = "<group>"; };
 		752772112AAA1CE30066557E /* Coinbase-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Coinbase-Info.plist"; sourceTree = "<group>"; };
@@ -4462,6 +4468,16 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		5A1EC0FE2E29A30000000031 /* CoinJoinMoveFunds */ = {
+			isa = PBXGroup;
+			children = (
+				5A1EC0FE2E29A30000000001 /* CoinJoinMoveFundsSheet.swift */,
+				5A1EC0FE2E29A30000000011 /* CoinJoinMoveFundsViewModel.swift */,
+				5A1EC0FE2E29A30000000021 /* CoinJoinMoveDestinationPolicy.swift */,
+			);
+			path = CoinJoinMoveFunds;
+			sourceTree = "<group>";
+		};
 		2A307CB322E6FA7F00A18347 /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -4474,7 +4490,7 @@
 				754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */,
 				751C05DC2D3E39A600475E52 /* TransactionListDataItem.swift */,
 				5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */,
-				5A1EC0FE2E29A30000000001 /* CoinJoinMoveFundsSheet.swift */,
+				5A1EC0FE2E29A30000000031 /* CoinJoinMoveFunds */,
 				5A1EC0FE2E29A20000000014 /* PlatformAddressHistory.swift */,
 				75D657662DF579F300ACE570 /* TransactionFilterDialog.swift */,
 				4E55DD28C4EBE049216291A2 /* HomeUsernameRow.swift */,
@@ -9816,6 +9832,8 @@
 				751C05DE2D3E39A800475E52 /* TransactionListDataItem.swift in Sources */,
 				5A1EC0FE2E29A10000000003 /* ShieldedActivityHistory.swift in Sources */,
 				5A1EC0FE2E29A30000000003 /* CoinJoinMoveFundsSheet.swift in Sources */,
+				5A1EC0FE2E29A30000000013 /* CoinJoinMoveFundsViewModel.swift in Sources */,
+				5A1EC0FE2E29A30000000023 /* CoinJoinMoveDestinationPolicy.swift in Sources */,
 				5A1EC0FE2E29A20000000013 /* PlatformAddressActivityStore.swift in Sources */,
 				5A1EC0FE2E29A20000000016 /* PlatformAddressHistory.swift in Sources */,
 				2ADB396C242615C200A6F898 /* CALayer+MBAnimationPersistence.m in Sources */,
@@ -10666,6 +10684,8 @@
 				751C05DD2D3E39A800475E52 /* TransactionListDataItem.swift in Sources */,
 				5A1EC0FE2E29A10000000002 /* ShieldedActivityHistory.swift in Sources */,
 				5A1EC0FE2E29A30000000002 /* CoinJoinMoveFundsSheet.swift in Sources */,
+				5A1EC0FE2E29A30000000012 /* CoinJoinMoveFundsViewModel.swift in Sources */,
+				5A1EC0FE2E29A30000000022 /* CoinJoinMoveDestinationPolicy.swift in Sources */,
 				5A1EC0FE2E29A20000000012 /* PlatformAddressActivityStore.swift in Sources */,
 				5A1EC0FE2E29A20000000015 /* PlatformAddressHistory.swift in Sources */,
 				C9D2C70B2A320AA000D15901 /* DWDemoAppRootViewController.m in Sources */,
