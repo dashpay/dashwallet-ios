@@ -48,7 +48,7 @@ final class SpecifyAmountViewController: ActionButtonViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor(named: "SecondaryBackground", in: .dashUIKit, compatibleWith: .current)
+        view.backgroundColor = UIColor(named: "PrimaryBackground", in: .dashUIKit, compatibleWith: .current)
         configureHierarchy()
     }
 
@@ -79,7 +79,7 @@ final class SpecifyAmountViewController: ActionButtonViewController {
         )
 
         let hostingController = UIHostingController(rootView: rootView)
-        hostingController.view.backgroundColor = UIColor(named: "SecondaryBackground", in: .dashUIKit, compatibleWith: .current)
+        hostingController.view.backgroundColor = UIColor(named: "PrimaryBackground", in: .dashUIKit, compatibleWith: .current)
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
 
         addChild(hostingController)
@@ -116,90 +116,5 @@ extension SpecifyAmountViewController: DWLocalCurrencyViewControllerDelegate {
 
     func localCurrencyViewControllerDidCancel(_ controller: DWLocalCurrencyViewController) {
         controller.dismiss(animated: true)
-    }
-}
-
-private struct SpecifyAmountView: View {
-    @ObservedObject var model: BaseAmountModel
-    let onBack: () -> Void
-    let onReceive: () -> Void
-    let onCurrencyTap: () -> Void
-
-    private func displayAmountString(from formatted: String, locale: Locale) -> String {
-        let decimalSeparator = locale.decimalSeparator ?? "."
-        let groupingSeparator = locale.groupingSeparator ?? ","
-        let allowed = CharacterSet.decimalDigits
-            .union(CharacterSet(charactersIn: decimalSeparator + groupingSeparator))
-        let trimmed = formatted.trimmingCharacters(in: .whitespacesAndNewlines)
-        let filtered = String(trimmed.unicodeScalars.filter { allowed.contains($0) })
-        return filtered.isEmpty ? trimmed : filtered
-    }
-
-    private var primaryAmountNumeric: String {
-        displayAmountString(from: model.mainAmountString, locale: model.keyboardLocale)
-    }
-
-    private var secondaryAmountNumeric: String {
-        displayAmountString(from: model.supplementaryAmountString, locale: model.keyboardLocale)
-    }
-
-    var body: some View {
-        ZStack(alignment: .top) {
-            Color.dash.primaryBackground
-                .ignoresSafeArea(edges: .top)
-
-            VStack(spacing: 0) {
-                NavigationBar(leading: {
-                    NavigationBarElement.back.button { onBack() }
-                })
-                .background(Color.dash.secondaryBackground)
-
-                VStack(alignment: .leading, spacing: 26) {
-                    Text(NSLocalizedString("Specify Amount", comment: "Specify Amount"))
-                        .font(.largeTitle.weight(.bold))
-                        .foregroundColor(Color.dash.primaryText)
-                        .padding(.top, 10)
-
-                    DashUIKit.EnterAmountView(
-                        primaryAmount: primaryAmountNumeric,
-                        secondaryAmount: secondaryAmountNumeric,
-                        primaryCurrency: .dash,
-                        secondaryCurrency: .fiat(model.localCurrencyCode),
-                        isPrimarySelected: model.currentInputItem.isMain,
-                        isCurrencySelectorHidden: model.isCurrencySelectorHidden,
-                        currencyCodes: model.inputItems.map { $0.currencyCode },
-                        selectedCurrencyCode: model.currentInputItem.currencyCode,
-                        onMax: nil,
-                        onSwap: { model.amountInputControlDidSwapInputs() },
-                        onCurrencyTap: onCurrencyTap,
-                        onPaste: model.pasteFromClipboard,
-                        onSelectInputType: { code in
-                            if let index = model.inputItems.firstIndex(where: { $0.currencyCode == code }) {
-                                model.selectInputItem(at: index)
-                            }
-                        }
-                    )
-                    .frame(minHeight: 90)
-
-                    Spacer(minLength: 0)
-
-                    HardwareNumericKeyboardView(
-                        value: Binding(
-                            get: { model.currentInputString },
-                            set: { model.updateKeyboardInputString($0) }
-                        ),
-                        showDecimalSeparator: true,
-                        locale: model.keyboardLocale,
-                        actionButtonText: NSLocalizedString("Receive", comment: "Specify Amount"),
-                        actionEnabled: model.isAllowedToContinue,
-                        inProgress: false,
-                        actionHandler: onReceive
-                    )
-                }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
-                .background(Color.dash.secondaryBackground)
-            }
-        }
     }
 }

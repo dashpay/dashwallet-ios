@@ -27,6 +27,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         let screen = PaymentsLandingScreen(
             viewModel: viewModel,
             onClose: { [weak self] in self?.dismiss(animated: true) },
+            onDone: { [weak self] in self?.finishReceiving() },
             onCopyAddress: { [weak self] in self?.copyCurrentAddress() },
             onShareAddress: { [weak self] in self?.shareCurrentAddress() },
             onSpecifyAmount: { [weak self] in self?.pushSpecifyAmount() },
@@ -43,6 +44,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
                     viewModel: self.embeddedSendViewModel,
                     onSendCompleted: { [weak self] in self?.dismiss(animated: true) })
             },
+            onCloseLanding: { [weak self] in self?.leaveLanding() },
             showsHeader: showsHeader)
         return UIHostingController(rootView: screen)
     }()
@@ -54,6 +56,22 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     private static let shieldedBalanceTimingShownKey = "DWShieldedBalanceTimingShown"
 
     private var cancellables = Set<AnyCancellable>()
+    /// Set while the receive flow pushes one of its OWN steps.
+    ///
+    /// Specify Amount is not somewhere else — it is the next screen of the same
+    /// receive, and the address it is naming an amount for is the one the
+    /// session was armed on. Without this the landing's `viewWillDisappear`
+    /// suspends watching the moment that screen is pushed, so nothing is
+    /// detected while the user is on the very screen they are handing over.
+    private var isPushingReceiveStep = false
+    /// The specify-amount sheet while it is up, so a receipt can dismiss it.
+    private weak var requestAmountController: RequestAmountHostingController?
+    /// Kept apart from `cancellables`: these live exactly as long as that sheet
+    /// does, and are dropped with it rather than for the screen's lifetime.
+    private var requestAmountObservers = Set<AnyCancellable>()
+    /// Live for as long as a receive step is pushed — the sheet is optional
+    /// within that, and the return has to happen with or without it.
+    private var receiveStepObservers = Set<AnyCancellable>()
     /// The Internal tab was activated before the landing finished appearing
     /// (e.g. it is the initial tab) — present the timing sheet from
     /// `viewDidAppear` instead of against a view that isn't on screen yet.
@@ -193,6 +211,13 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         }
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // Also on the way back from a pushed step, which restored the bar on
+        // its own way out.
+        applyTabBarVisibility()
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         // Programmatic dismissal does not call
@@ -200,6 +225,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         // here as well so returning from transaction details can resume the
         // same receive session (or start a fresh "Receive another" session).
         viewModel.setReceiptWatchingObscured(false)
+        isPushingReceiveStep = false
+        receiveStepObservers.removeAll()
         viewModel.setReceiveSurfaceVisible(true)
         if timingSheetPendingAppearance {
             timingSheetPendingAppearance = false
@@ -209,16 +236,25 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        // Stepping deeper into the receive flow is not leaving it. Everything
+        // else — a tab change, a dismissal, a pop — still puts the session to
+        // sleep.
+        guard !isPushingReceiveStep else { return }
         viewModel.setReceiveSurfaceVisible(false)
+        // Leaving for another tab, or being dismissed — either way the bar is
+        // not ours to keep hidden. A pushed step hides it for itself.
+        if presentingViewController == nil {
+            tabBarController?.setTabBarHidden(false, animated: false)
+        }
     }
 
     // MARK: - Actions
 
+    /// Copies only. The "Copied" toast is drawn by the SwiftUI screen — this
+    /// controller has no view of its own to hang it on that isn't behind the
+    /// tab bar.
     private func copyCurrentAddress() {
         viewModel.copyCurrentAddressToPasteboard()
-        view.dw_showInfoHUD(
-            withText: NSLocalizedString("Copied", comment: ""),
-            offsetForNavBar: false)
     }
 
     private func shareCurrentAddress() {
@@ -237,7 +273,42 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     private func pushSpecifyAmount() {
         let specify = SpecifyAmountViewController.controller()
         specify.delegate = self
-        navigationController?.pushViewController(specify, animated: true)
+        isPushingReceiveStep = true
+        observeReceiptWhileOnReceiveStep()
+        pushWithoutTabBar(specify)
+    }
+
+    /// Bring the user back to the receipt from wherever in the receive flow
+    /// they are standing.
+    ///
+    /// Armed by the push, not by the sheet: the sheet is optional — Specify
+    /// Amount can be sat on with nothing over it — and a receipt arriving there
+    /// used to leave the user one screen short of the thing they were waiting
+    /// for, with no way to know it had happened.
+    private func observeReceiptWhileOnReceiveStep() {
+        receiveStepObservers.removeAll()
+
+        viewModel.$receipt
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.receiveStepObservers.removeAll()
+
+                guard let sheet = self.requestAmountController else {
+                    self.returnToLandingFromReceiveStep()
+                    return
+                }
+                // The sheet first, then the step under it — dismissing and
+                // popping in the same turn runs the two animations over each
+                // other.
+                self.requestAmountObservers.removeAll()
+                self.requestAmountController = nil
+                sheet.dismiss(animated: true) { [weak self] in
+                    self?.returnToLandingFromReceiveStep()
+                }
+            }
+            .store(in: &receiveStepObservers)
     }
 
     /// The base class routes a scanned payment straight into the payment
@@ -252,6 +323,127 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         dismiss(animated: true) { [weak self] in
             self?.embeddedSendViewModel.ingestScannedInput(paymentInput)
         }
+    }
+
+    /// Puts the landing on `tab` without rebuilding it — the tab-bar entry
+    /// points select this controller rather than presenting a copy.
+    func select(tab: PaymentsLandingTab) {
+        viewModel.activeTab = tab
+    }
+
+    /// The tab bar controller this landing belongs to.
+    ///
+    /// `tabBarController` alone is not enough any more: the landing is
+    /// presented as a sheet, and a presented controller is outside the tab
+    /// bar's hierarchy, so that property is nil. Walking the presenter chain
+    /// finds it whether this was pushed inside a tab or shown over one.
+    private var mainTabBarController: MainTabbarController? {
+        if let tabBarController = tabBarController as? MainTabbarController {
+            return tabBarController
+        }
+        // Searched down from the window's root, not up the presenter chain:
+        // the presenter is whichever screen happened to call `present`, and
+        // the window root is a container rather than the tab bar itself.
+        return view.window?.rootViewController?.dw_firstTabBarController() as? MainTabbarController
+    }
+
+    /// The X above the Internal form. Dismisses where something presented this
+    /// landing, and leaves for the history where nothing did — as the payments
+    /// tab's root, `dismiss` is a no-op, which is the bug the receive receipt's
+    /// Done button had.
+    private func leaveLanding() {
+        if isPresentedModally {
+            dismiss(animated: true)
+        } else {
+            mainTabBarController?.showHome()
+        }
+    }
+
+    /// Whether this landing was presented rather than being the payments tab's
+    /// own root.
+    ///
+    /// Asked of the navigation controller as well as of self: every modal
+    /// presentation of this screen wraps it in a `BaseNavigationController`, so
+    /// the container is what UIKit presented. `presentingViewController` does
+    /// resolve through the container, but naming both makes the intent survive
+    /// a future re-parenting rather than depending on that inheritance.
+    private var isPresentedModally: Bool {
+        presentingViewController != nil || navigationController?.presentingViewController != nil
+    }
+
+    /// The tab bar goes while the landing is up, and the X above the selector
+    /// takes its place as the way out.
+    ///
+    /// The Internal tab forced the question — it embeds the transfer form now,
+    /// and its keypad and Continue button were sharing the bottom of the screen
+    /// with the bar, which the payments tab's own rule already forbids: the bar
+    /// is gone from the first step that asks for an amount. Hiding it on that
+    /// tab alone, though, would flicker the chrome in and out as the user moved
+    /// between the three, so it goes for the whole landing.
+    ///
+    /// Only meaningful on the tab. The balance-row sheets are presented and
+    /// have no tab bar to hide.
+    private func applyTabBarVisibility() {
+        guard let tabBarController, presentingViewController == nil else { return }
+        tabBarController.setTabBarHidden(true, animated: true)
+    }
+
+    /// Where Done on a receive receipt goes.
+    ///
+    /// Presented as a sheet there is something to dismiss; as the payments
+    /// tab's root there is not — `dismiss` was a no-op, which is why the button
+    /// appeared dead. Leaving for the history is what finishing means there,
+    /// and it is where the receipt's transaction shows up.
+    private func finishReceiving() {
+        if isPresentedModally {
+            dismiss(animated: true)
+        } else {
+            mainTabBarController?.showHome()
+        }
+    }
+
+    /// Mirror the session into the specify-amount sheet, and close that sheet
+    /// the moment a payment lands — the receipt is on the surface behind it,
+    /// and a QR for an amount just paid would be the stalest thing on screen.
+    private func observeReceiptWhileRequestingAmount(_ controller: RequestAmountHostingController) {
+        requestAmountObservers.removeAll()
+
+        viewModel.$isWatchingForReceipt
+            .receive(on: RunLoop.main)
+            .sink { [weak controller] watching in
+                controller?.setWatchingForReceipt(watching)
+            }
+            .store(in: &requestAmountObservers)
+
+    }
+
+    /// Pop back to the landing from a pushed receive step, if that is where we
+    /// are. `isPushingReceiveStep` is the flag for exactly that state, and
+    /// `viewDidAppear` clears it on arrival.
+    ///
+    /// The pop targets the STACK MEMBER holding this controller, not this
+    /// controller. In the payments tab the landing is a child of
+    /// `PaymentsTabRootController`, which is what the navigation stack
+    /// actually contains; presented, it is the navigation controller's own
+    /// root. Popping to `self` therefore named a controller that is not in the
+    /// stack at all, and UIKit had nothing to pop to — the sheet closed and
+    /// nothing else moved.
+    private func returnToLandingFromReceiveStep() {
+        guard isPushingReceiveStep, let navigationController else { return }
+
+        let host = navigationController.viewControllers.first { controller in
+            controller === self || controller.children.contains { $0 === self }
+        }
+        guard let host, navigationController.topViewController !== host else { return }
+
+        navigationController.popToViewController(host, animated: true)
+    }
+
+    /// The landing keeps the tab bar; everything it pushes is a step in a
+    /// flow and takes the whole screen.
+    private func pushWithoutTabBar(_ controller: UIViewController) {
+        controller.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(controller, animated: true)
     }
 
     /// First-ever visit to the free-form Internal tab: explain transfer
@@ -321,29 +513,53 @@ extension PaymentsLandingHostingController: NavigationBarDisplayable {
 
 extension PaymentsLandingHostingController: SpecifyAmountViewControllerDelegate {
     func specifyAmountViewController(_ vc: SpecifyAmountViewController, didInput amount: UInt64) {
-        let model = DWReceiveModel(amount: amount)
-
-        let requestController = DWRequestAmountViewController(model: model)
-        requestController.delegate = self
-        viewModel.setReceiptWatchingObscured(true)
-        present(requestController, animated: true) { [weak self, weak requestController] in
-            requestController?.presentationController?.delegate = self
-        }
+        // The SwiftUI sheet, not `DWRequestAmountViewController`: this landing
+        // is the redesigned path, and it sizes its own detent. The ObjC pair is
+        // still what the legacy `ReceiveViewController` presents.
+        //
+        // The session keeps running behind THIS sheet, unlike every other one
+        // the landing presents.
+        //
+        // #1041 suspends watching whenever something covers the receive UI, and
+        // for the share sheet or transaction details that is right — the user
+        // is not presenting anything. This sheet is the opposite: a QR with the
+        // amount already in it, held up for someone to pay. Pausing detection
+        // on the handoff surface would pause it exactly where the feature is
+        // for. Nothing is lost either way — the session's baseline survives a
+        // suspend — but the sheet could not say it was watching, and could not
+        // get out of the way when the payment landed.
+        let requestController = RequestAmountHostingController.present(
+            from: self,
+            model: DWReceiveModel(amount: amount),
+            delegate: self)
+        requestAmountController = requestController
+        requestController.setWatchingForReceipt(viewModel.isWatchingForReceipt)
+        observeReceiptWhileRequestingAmount(requestController)
     }
 }
 
-// MARK: DWRequestAmountViewControllerDelegate
+// MARK: RequestAmountHostingControllerDelegate
 
-extension PaymentsLandingHostingController: DWRequestAmountViewControllerDelegate {
-    func requestAmountViewController(_ controller: DWRequestAmountViewController, didReceiveAmountWithInfo info: String) {
+extension PaymentsLandingHostingController: RequestAmountHostingControllerDelegate {
+    /// The requested amount arrived, which this sheet notices through its own
+    /// balance-change observer. Getting out of the way is all that is left to
+    /// do: the attended receipt on the surface behind already says what landed,
+    /// with the rail, the status and the transaction.
+    ///
+    /// It used to pop the navigation stack and raise an info HUD as well. Both
+    /// were written for a landing that had been PUSHED — as the payments tab's
+    /// root there is nothing to pop, and that HUD went onto the navigation
+    /// controller's view, where it drew underneath the tab bar as an
+    /// unidentifiable smudge.
+    func requestAmountHostingController(
+        _ controller: RequestAmountHostingController,
+        didReceiveAmountWithInfo info: String
+    ) {
         controller.dismiss(animated: true) {
-            self.viewModel.setReceiptWatchingObscured(false)
-            self.navigationController?.popViewController(animated: true)
-
-            let popAnimationDuration = 300
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .milliseconds(popAnimationDuration)) {
-                self.navigationController?.view.dw_showInfoHUD(withText: info)
-            }
+            // No un-obscuring: this sheet never suspended the session. What
+            // does end here is the sheet's own mirroring of it.
+            self.requestAmountObservers.removeAll()
+            self.requestAmountController = nil
         }
     }
 }
