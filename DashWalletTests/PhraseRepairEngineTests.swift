@@ -20,7 +20,7 @@
 
 import XCTest
 import SwiftDashSDK
-@testable import dashwallet
+@testable import dashpay
 
 // MARK: - Helpers
 

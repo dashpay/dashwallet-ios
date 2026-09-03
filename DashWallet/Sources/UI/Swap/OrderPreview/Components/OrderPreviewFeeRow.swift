@@ -37,7 +37,7 @@ struct OrderPreviewFeeRow: View {
         HStack(alignment: .top, spacing: labelSpacing) {
             HStack(spacing: infoSpacing) {
                 Text(feeTitle)
-                    .font(Font.dash.subheadMedium)
+                    .dashFont(.subheadMedium)
                     .foregroundColor(Color.dash.tertiaryText)
 
                 ZStack {
@@ -58,7 +58,7 @@ struct OrderPreviewFeeRow: View {
                     Text(secondary)
                 }
             }
-            .font(Font.dash.subhead)
+            .dashFont(.subhead)
             .foregroundColor(Color.dash.primaryText)
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
@@ -66,7 +66,7 @@ struct OrderPreviewFeeRow: View {
         .padding(.vertical, rowVPadding)
         .frame(minHeight: rowMinHeight)
         .sheet(isPresented: $showInfoSheet) {
-            BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
+            DashUIKit.BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
                 SwapFeeInfoSheet(
                     usesGenericFeeInfo: usesGenericFeeInfo,
                     onDismiss: { showInfoSheet = false }

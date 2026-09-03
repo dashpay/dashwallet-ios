@@ -799,7 +799,7 @@ struct PayContactSheet: View {
             .font(.system(size: 12))
             .foregroundColor(.dash.tertiaryText)
 
-        NumericKeyboardView(
+        HardwareNumericKeyboardView(
             value: $amountText,
             showDecimalSeparator: true,
             actionButtonText: NSLocalizedString("Pay", comment: "DashPay Contacts"),
@@ -807,7 +807,6 @@ struct PayContactSheet: View {
             inProgress: isSending,
             actionHandler: { pay() }
         )
-        .padding(.top, 8)
     }
 
     /// Fiat equivalent of what is typed, for the secondary line. Empty while

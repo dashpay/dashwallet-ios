@@ -16,6 +16,9 @@ private struct InternalTransferConfirmation: Identifiable {
     let amountDuffsUnsigned: UInt64
     let creditsAmount: UInt64
     let fiatText: String
+    let networkFeeCredits: UInt64?
+    let totalDuffs: Int64?
+    let coreToPlatformLockDuffs: UInt64?
     let withdrawalFeeCredits: UInt64?
     let isFullPlatformWithdrawal: Bool
     let isFullShieldedSweep: Bool
@@ -113,6 +116,9 @@ struct InternalTransferScreen: View {
                 amountDuffsUnsigned: submission.amountDuffsUnsigned,
                 creditsAmount: submission.creditsAmount,
                 fiatText: submission.fiatText,
+                networkFeeCredits: submission.networkFeeCredits,
+                totalDuffs: submission.totalDuffs,
+                coreToPlatformLockDuffs: submission.coreToPlatformLockDuffs,
                 withdrawalFeeCredits: submission.withdrawalFeeCredits,
                 isFullPlatformWithdrawal: submission.isFullPlatformWithdrawal,
                 isFullShieldedSweep: submission.isFullShieldedSweep,
@@ -163,7 +169,7 @@ struct InternalTransferScreen: View {
     // MARK: - Keyboard
 
     private var keyboardSection: some View {
-        NumericKeyboardView(
+        HardwareNumericKeyboardView(
             value: keypadBinding,
             showDecimalSeparator: true,
             actionButtonText: NSLocalizedString("Continue", comment: ""),
@@ -187,6 +193,9 @@ struct InternalTransferScreen: View {
             amountDuffsUnsigned: viewModel.dashDuffsUnsigned,
             creditsAmount: viewModel.creditsPreview,
             fiatText: viewModel.fiatAmountString,
+            networkFeeCredits: viewModel.confirmNetworkFeeCredits,
+            totalDuffs: viewModel.confirmTotalDuffs,
+            coreToPlatformLockDuffs: viewModel.coreToPlatformLockValueDuffs,
             withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
             isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
             isFullShieldedSweep: viewModel.isFullShieldedSweep,
@@ -257,14 +266,25 @@ struct InternalTransferScreen: View {
             }
         }
         .sheet(item: $endpointPicker) { group in
-            endpointPickerSheet(for: group)
+            DashUIKit.BottomSheet(
+                title: endpointPickerTitle(for: group),
+                showBackButton: .constant(false)
+            ) {
+                endpointPickerSheet(for: group)
+            }
                 .presentationDetents([.height(400)])
-                .presentationDragIndicator(.visible)
+                .presentationDragIndicator(.hidden)
         }
     }
 
     private func presentEndpointPicker(_ group: EndpointGroup) {
         endpointPicker = group
+    }
+
+    private func endpointPickerTitle(for group: EndpointGroup) -> String {
+        group == .from
+            ? NSLocalizedString("Transfer from", comment: "Internal transfer source picker title")
+            : NSLocalizedString("Transfer to", comment: "Internal transfer destination picker title")
     }
 
     /// Bottom-sheet balance picker for one endpoint, sized to slide over
@@ -274,12 +294,6 @@ struct InternalTransferScreen: View {
     private func endpointPickerSheet(for group: EndpointGroup) -> some View {
         let isFrom = group == .from
         return VStack(alignment: .leading, spacing: 16) {
-            Text(isFrom
-                ? NSLocalizedString("Transfer from", comment: "Internal transfer source picker title")
-                : NSLocalizedString("Transfer to", comment: "Internal transfer destination picker title"))
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.dash.primaryText)
-
             selectionGroup(
                 caption: isFrom
                     ? NSLocalizedString("From", comment: "")
@@ -298,7 +312,7 @@ struct InternalTransferScreen: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 20)
-        .padding(.top, 24)
+        .padding(.top, 16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.dash.primaryBackground)
     }

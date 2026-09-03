@@ -18,8 +18,10 @@
 //     tears down and rebuilds.
 //   - `createOrImportWallet(mnemonic:network:isImported:)` is the only path
 //     that creates wallet rows and stores the mnemonic in WalletStorage.
-//   - `stop()` releases the manager handle. Wipe-time persisted-row cleanup is
-//     owned by `PlatformAddressSyncCoordinator` before BLAST stops.
+//   - `stopAsync()` shuts the manager down off-main (blocking native
+//     teardown on the SDK's destroy queue) and only then releases the
+//     references. Wipe-time persisted-row cleanup is owned by
+//     `PlatformAddressSyncCoordinator` before BLAST stops.
 //
 //  Subsystems coordinate ordering through `SwiftDashSDKWalletRuntime`:
 //  start = host.start → SPV.start → BLAST.start. Stop = BLAST.stop →
@@ -66,8 +68,8 @@ enum MnemonicFirstWalletCreation {
         persistMnemonic: () throws -> Void,
         retrieveMnemonic: () throws -> String,
         rollbackMnemonic: () -> Void,
-        createWallet: () throws -> Wallet
-    ) throws -> Wallet {
+        createWallet: () async throws -> Wallet
+    ) async throws -> Wallet {
         do {
             try persistMnemonic()
             guard try retrieveMnemonic() == mnemonic else {
@@ -82,7 +84,7 @@ enum MnemonicFirstWalletCreation {
         }
 
         do {
-            return try createWallet()
+            return try await createWallet()
         } catch {
             rollbackMnemonic()
             throw MnemonicFirstWalletCreationError.walletCreation(error)
@@ -438,9 +440,9 @@ final class SwiftDashSDKHost {
 
     /// Start the host for `network`. Idempotent: re-entering with the same
     /// network leaves the live manager + wallet alone. Different network
-    /// triggers a clean rebuild via `stop()` first.
+    /// triggers a clean rebuild via `stopAsync()` first.
     @discardableResult
-    func start(network: Network) throws -> (manager: PlatformWalletManager, wallet: ManagedPlatformWallet) {
+    func start(network: Network) async throws -> (manager: PlatformWalletManager, wallet: ManagedPlatformWallet) {
         if let existingManager = manager,
            let existingWallet = wallet,
            runningNetwork == network {
@@ -448,12 +450,13 @@ final class SwiftDashSDKHost {
         }
 
         Self.logger.info("🪺 HOST :: starting for \(network.rawValue, privacy: .public)")
+        DWLogger.log("HOST starting for \(network.rawValue)")
 
-        let handles = try buildRuntime(for: network)
+        let handles = try await buildRuntime(for: network)
         let resolvedWallet: ManagedPlatformWallet
         Self.logger.info("🪺 HOST :: stage 4/4 restoring wallet for \(network.rawValue, privacy: .public)")
         do {
-            resolvedWallet = try loadPersistedWallet(manager: handles.manager, network: network)
+            resolvedWallet = try await loadPersistedWallet(manager: handles.manager, network: network)
         } catch HostError.walletNotFound {
             // Reinstall recovery (C6-C): the SwiftData store dies with the app
             // but WalletStorage mnemonics live in the keychain — rebuild the
@@ -461,19 +464,26 @@ final class SwiftDashSDKHost {
             // reinstall+Keep only worked when the KeyMigrator's async re-import
             // happened to win the race against this load.
             guard let recovered = recoverPersistedWallet(handles: handles) else {
+                // The freshly built manager was never published — tear it
+                // down deterministically instead of leaving it to the
+                // deinit fallback.
+                await handles.manager.shutdown()
                 throw HostError.walletNotFound(network)
             }
             resolvedWallet = recovered
         } catch let error as HostError {
+            await handles.manager.shutdown()
             throw error
         } catch {
             Self.logger.error("🪺 HOST :: wallet bootstrap failed: \(String(describing: error), privacy: .public)")
+            await handles.manager.shutdown()
             throw HostError.walletBootstrapFailed(error)
         }
 
         publish(handles: handles, wallet: resolvedWallet)
         Self.logger.info("🪺 HOST :: stage 4/4 wallet restored for \(network.rawValue, privacy: .public)")
         Self.logger.info("🪺 HOST :: started for \(network.rawValue, privacy: .public)")
+        DWLogger.log("HOST started for \(network.rawValue)")
         return (handles.manager, resolvedWallet)
     }
 
@@ -502,10 +512,10 @@ final class SwiftDashSDKHost {
 
         Self.logger.info("🪺 HOST :: creating managed wallet for \(network.rawValue, privacy: .public)")
 
-        let handles = try buildRuntime(for: network)
+        let handles = try await buildRuntime(for: network)
         let createdWallet: ManagedPlatformWallet
         do {
-            createdWallet = try createAndPersist(
+            createdWallet = try await createAndPersist(
                 mnemonic: mnemonic,
                 manager: handles.manager,
                 network: handles.network,
@@ -517,7 +527,10 @@ final class SwiftDashSDKHost {
                 // the scan anchors at the tip.
                 birthHeight: isImported
                     ? Self.importedWalletBirthHeight(for: handles.network)
-                    : nil)
+                    : nil,
+                // Onboarding is not lifecycle-queue-serialized: keep the
+                // persist→create critical section MainActor-atomic.
+                offMainCreate: false)
 
             if provisionAcrossSupportedNetworks {
                 let persistedWalletIds = Set(try WalletStorage().listWalletIdsWithMnemonic())
@@ -527,24 +540,37 @@ final class SwiftDashSDKHost {
                     currentNetwork: network)
 
                 for targetNetwork in missingNetworks where targetNetwork != network {
-                    let targetManager = try managerForStoredWalletOperation(
+                    // Always temporary here: `buildRuntime` just cleared the
+                    // published runtime, so `managerForStoredWalletOperation`
+                    // can never hand back a live manager — but keep the
+                    // guard so this call site stays correct if that changes.
+                    let (targetManager, isTemporary) = try await managerForStoredWalletOperation(
                         network: targetNetwork)
-                    _ = try createAndPersist(
-                        mnemonic: mnemonic,
-                        manager: targetManager,
-                        network: targetNetwork,
-                        birthHeight: isImported
-                            ? Self.importedWalletBirthHeight(for: targetNetwork)
-                            : nil)
+                    do {
+                        _ = try await createAndPersist(
+                            mnemonic: mnemonic,
+                            manager: targetManager,
+                            network: targetNetwork,
+                            birthHeight: isImported
+                                ? Self.importedWalletBirthHeight(for: targetNetwork)
+                                : nil,
+                            offMainCreate: false)
+                    } catch {
+                        if isTemporary { await targetManager.shutdown() }
+                        throw error
+                    }
+                    if isTemporary { await targetManager.shutdown() }
                     Self.logger.info(
                         "🪺 HOST :: provisioned onboarding wallet for \(targetNetwork.rawValue, privacy: .public)")
                 }
             }
         } catch {
             // `createOrImportWallet` owns a freshly-built (not yet published)
-            // runtime, so tear it down on failure. `createAndPersist` has
-            // already rolled back any provisional mnemonic it wrote.
-            stop()
+            // runtime, so tear it down on failure — the manager was never
+            // assigned to `self.manager`, so it must be shut down directly.
+            // `createAndPersist` has already rolled back any provisional
+            // mnemonic it wrote.
+            await handles.manager.shutdown()
             throw error
         }
 
@@ -558,8 +584,10 @@ final class SwiftDashSDKHost {
         return createdWallet
     }
 
-    /// Outcome of `addWallet(mnemonic:isImported:)`.
-    enum AddWalletResult {
+    /// Outcome of `addWallet(mnemonic:isImported:)`. `Sendable` because it
+    /// crosses the lifecycle queue's awaitable seam
+    /// (`SwiftDashSDKWalletRuntime.performAddWallet`).
+    enum AddWalletResult: Sendable {
         /// The wallet was created and its mnemonic persisted; the running
         /// runtime is unchanged (the caller switches to it explicitly).
         case added(walletId: Data)
@@ -613,6 +641,11 @@ final class SwiftDashSDKHost {
     /// Shares the persist-then-create transaction with
     /// `createOrImportWallet` (`createAndPersist`); differs only in that it
     /// uses the LIVE manager and does not publish or set-active.
+    ///
+    /// Interactive callers route through
+    /// `SwiftDashSDKWalletRuntime.performAddWallet`, which runs this method
+    /// as one link of the serial lifecycle chain so queued refresh/reset
+    /// operations cannot interleave with the multi-network provisioning.
     @discardableResult
     func addWallet(mnemonic: String, isImported: Bool) async throws -> AddWalletResult {
         let mnemonic = Mnemonic.normalizePhrase(mnemonic)
@@ -638,19 +671,40 @@ final class SwiftDashSDKHost {
         let createsCurrentNetwork = networksToCreate.contains(network)
 
         for targetNetwork in networksToCreate {
-            let targetManager = targetNetwork == network
-                ? manager
-                : try managerForStoredWalletOperation(network: targetNetwork)
-            _ = try createAndPersist(
-                mnemonic: mnemonic,
-                manager: targetManager,
-                network: targetNetwork,
-                // Same semantics as `createOrImportWallet`: imports scan
-                // from each network's import floor, freshly generated
-                // wallets from that network's tip.
-                birthHeight: isImported
-                    ? Self.importedWalletBirthHeight(for: targetNetwork)
-                    : nil)
+            let targetManager: PlatformWalletManager
+            let isTemporary: Bool
+            if targetNetwork == network {
+                targetManager = manager
+                isTemporary = false
+            } else {
+                // Wall-clock only (this line always runs on the MainActor);
+                // per-stage thread attribution lives in the stage 1-4 logs.
+                let prepStarted = CFAbsoluteTimeGetCurrent()
+                (targetManager, isTemporary) = try await managerForStoredWalletOperation(
+                    network: targetNetwork)
+                let prepMs = Int((CFAbsoluteTimeGetCurrent() - prepStarted) * 1000)
+                DWLogger.log("HOST mirror-prep for \(targetNetwork.rawValue) total \(prepMs)ms")
+            }
+            do {
+                _ = try await createAndPersist(
+                    mnemonic: mnemonic,
+                    manager: targetManager,
+                    network: targetNetwork,
+                    // Same semantics as `createOrImportWallet`: imports scan
+                    // from each network's import floor, freshly generated
+                    // wallets from that network's tip.
+                    birthHeight: isImported
+                        ? Self.importedWalletBirthHeight(for: targetNetwork)
+                        : nil,
+                    // The interactive add runs as one lifecycle-queue op
+                    // (`performAddWallet`), so refreshes cannot observe the
+                    // suspension the off-main create introduces.
+                    offMainCreate: true)
+            } catch {
+                if isTemporary { await targetManager.shutdown() }
+                throw error
+            }
+            if isTemporary { await targetManager.shutdown() }
             Self.logger.info(
                 "🪺 HOST :: added managed wallet for \(targetNetwork.rawValue, privacy: .public) (additive)")
         }
@@ -674,12 +728,25 @@ final class SwiftDashSDKHost {
     /// unsynced headers the SDK falls back to the network's newest
     /// hardcoded checkpoint), `0` scans from genesis (imported mnemonic
     /// whose history predates this device).
+    /// `offMainCreate` picks the SDK create overload. `true` (interactive
+    /// add): the async overload — the blocking FFI leaves the MainActor,
+    /// but the transaction gains a REAL suspension point between the
+    /// mnemonic persist and the wallet rows appearing; safe only when the
+    /// caller is serialized against runtime refreshes (the add flow runs on
+    /// the lifecycle queue). `false` (onboarding/migration): the sync
+    /// overload — no suspension between persist and create, so a
+    /// concurrently scheduled `startIfReady`/refresh can never observe the
+    /// half-state (mnemonic present, no wallet rows) and build a competing
+    /// runtime; `createOrImportWallet` is NOT queue-serialized (the
+    /// migrator is awaited by refresh itself — enqueueing would deadlock),
+    /// so it must keep the MainActor-atomic critical section.
     private func createAndPersist(
         mnemonic: String,
         manager: PlatformWalletManager,
         network: Network,
-        birthHeight: UInt32?
-    ) throws -> ManagedPlatformWallet {
+        birthHeight: UInt32?,
+        offMainCreate: Bool
+    ) async throws -> ManagedPlatformWallet {
         let walletId: Data
         do {
             // This is the same deterministic id contract used by addWallet's
@@ -702,7 +769,7 @@ final class SwiftDashSDKHost {
         }
 
         do {
-            return try MnemonicFirstWalletCreation.run(
+            return try await MnemonicFirstWalletCreation.run(
                 mnemonic: mnemonic,
                 persistMnemonic: {
                     try storage.storeMnemonic(mnemonic, for: walletId)
@@ -718,12 +785,31 @@ final class SwiftDashSDKHost {
                     }
                 },
                 createWallet: {
-                    try manager.createWallet(
-                        mnemonic: mnemonic,
-                        network: network,
-                        name: "dashwallet",
-                        createDefaultAccounts: true,
-                        birthHeight: birthHeight)
+                    if offMainCreate {
+                        // Async SDK overload: the blocking native create
+                        // runs on the SDK's dedicated queue, not the main
+                        // thread.
+                        return try await manager.createWallet(
+                            mnemonic: mnemonic,
+                            network: network,
+                            name: "dashwallet",
+                            createDefaultAccounts: true,
+                            birthHeight: birthHeight)
+                    }
+                    // Sync SDK overload, forced by the explicit non-async
+                    // function type (an async context would otherwise
+                    // prefer the async one): blocks the MainActor for the
+                    // whole create, keeping persist→create atomic for the
+                    // unserialized onboarding path.
+                    let syncCreate: () throws -> ManagedPlatformWallet = {
+                        try manager.createWallet(
+                            mnemonic: mnemonic,
+                            network: network,
+                            name: "dashwallet",
+                            createDefaultAccounts: true,
+                            birthHeight: birthHeight)
+                    }
+                    return try syncCreate()
                 })
         } catch MnemonicFirstWalletCreationError.mnemonicRoundTripMismatch {
             Self.logger.error("🪺 HOST :: mnemonic persistence round-trip mismatch")
@@ -745,16 +831,57 @@ final class SwiftDashSDKHost {
         }
     }
 
-    /// Tear down the host's active references. The per-network
+    /// Tear down the host's active references, running the manager's blocking
+    /// native teardown OFF the main thread and returning only when it has
+    /// completed (`nil` when no manager was running). The per-network
     /// `ModelContainer` remains process-cached so a later runtime rebuild does
     /// not open a second container over the same SQLite store.
+    ///
+    /// Order matters:
+    /// 1. `contactCryptoDrainWatch` is cancelled AND awaited first — the task
+    ///    holds the manager strongly and calls `unlockWalletFromKeychain`
+    ///    (FFI), so it must be provably finished before the manager's handle
+    ///    is taken. No self-deadlock: this method and the task share the
+    ///    main actor, but `await value` suspends (freeing the actor) and the
+    ///    task's `for await …values` / `Task.sleep` both honor cancellation,
+    ///    so the wait is short and deterministic.
+    /// 2. `manager.shutdown()` takes the FFI handle exactly once and runs the
+    ///    five sync stops + destroy on the SDK's dedicated destroy queue.
+    /// 3. Only then are the host references dropped — their deinits find a
+    ///    NULL handle and do no FFI.
     ///
     /// Persisted-row cleanup on wipe is owned by `PlatformAddressSyncCoordinator`
     /// — it must happen BEFORE BLAST's tokio task winds down so in-flight
     /// `walletNetwork(walletId:)` callbacks early-exit on an empty fetch.
     /// The host is torn down last (after BLAST + SPV stops), so the
     /// invariant doesn't hold here.
-    func stop() {
+    @discardableResult
+    func stopAsync() async -> PlatformWalletShutdownMetrics? {
+        let drainWatch = contactCryptoDrainWatch
+        contactCryptoDrainWatch = nil
+        drainWatch?.cancel()
+        await drainWatch?.value
+
+        let metrics = await manager?.shutdown()
+        if let metrics {
+            let stepSummary = metrics.steps
+                .map { "\($0.name)=\($0.milliseconds)ms(code \($0.ffiCode))" }
+                .joined(separator: " ")
+            // DWLogger on purpose (os_log doesn't reach diagnostic exports):
+            // this line is the field telemetry for how often the native
+            // teardown hits its wedged-pass worst case.
+            DWLogger.log(
+                "HOST shutdown: total=\(metrics.totalMilliseconds)ms offMain=\(metrics.ranOffMainThread) \(stepSummary)")
+        }
+
+        clearRuntimeReferences()
+        return metrics
+    }
+
+    /// Drop the host's references AFTER the manager teardown has completed.
+    /// Split out of `stopAsync` so the shutdown-first ordering is the only
+    /// public shape; never call this with a still-configured manager.
+    private func clearRuntimeReferences() {
         manager = nil
         wallet = nil
         sdk = nil
@@ -762,23 +889,69 @@ final class SwiftDashSDKHost {
         runningNetwork = nil
 
         Self.logger.info("🪺 HOST :: stopped")
+        DWLogger.log("HOST stopped")
     }
 
     // MARK: - Runtime bootstrap
 
-    private func buildRuntime(for network: Network) throws -> RuntimeHandles {
+    private func buildRuntime(for network: Network) async throws -> RuntimeHandles {
         if manager != nil {
-            stop()
+            await stopAsync()
         }
 
-        return try makeRuntime(for: network)
+        return try await makeRuntime(for: network)
+    }
+
+    /// Dedicated queue parking the blocking SDK construction
+    /// (`dash_sdk_create_trusted`: tokio runtime + TLS + DapiClient build,
+    /// ~1-2s). A plain GCD queue, never `Task.detached` — the blocking FFI
+    /// would park a cooperative-pool thread. Serial on purpose: runtime
+    /// bootstraps are already serialized by the lifecycle queue, so
+    /// concurrency here would buy nothing.
+    private nonisolated static let sdkBuildQueue = DispatchQueue(
+        label: "org.dashfoundation.dash.sdk-build",
+        qos: .userInitiated)
+
+    /// Build the `SDK` off the main thread and hand it back at the
+    /// suspension point. Safe because `SDK` is `@unchecked Sendable`, its
+    /// init touches nothing main-bound (one blocking FFI plus thread-safe
+    /// UserDefaults reads), and after the continuation resumes the instance
+    /// is only ever used from the MainActor. A thrown init constructs no
+    /// object; once built, `SDK.deinit` releases the native handle if a
+    /// later bootstrap stage throws.
+    private nonisolated static func buildSDKOffMain(
+        network: Network,
+        platformVersion: UInt32
+    ) async throws -> SDK {
+        try await withCheckedThrowingContinuation { continuation in
+            sdkBuildQueue.async {
+                let started = CFAbsoluteTimeGetCurrent()
+                do {
+                    let sdk = try SDK(network: network, platformVersion: platformVersion)
+                    let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+                    // Logged HERE, on the build queue, so offMain= is
+                    // evidence of where the work actually ran — a log after
+                    // the await would always print from the MainActor.
+                    DWLogger.log("HOST stage 1/4 SDK created for \(network.rawValue) in \(ms)ms offMain=\(!Thread.isMainThread)")
+                    continuation.resume(returning: sdk)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
     /// Build a configured manager/container pair without replacing the
     /// published app runtime. Full-device wipe uses this for the inactive
     /// network so each network-scoped SwiftData store is deleted through a
     /// manager configured for that same network.
-    private func makeRuntime(for network: Network) throws -> RuntimeHandles {
+    ///
+    /// Async since etap C: stage 1 (SDK construction) runs on
+    /// [`sdkBuildQueue`] instead of blocking the MainActor; stages 2-4
+    /// (ModelContainer, configure, and the caller's loadFromPersistor)
+    /// stay on the MainActor — their measured cost decides whether they
+    /// ever follow (see the stage timing logs).
+    private func makeRuntime(for network: Network) async throws -> RuntimeHandles {
         guard network != .regtest else {
             throw HostError.unsupportedNetwork(network)
         }
@@ -789,7 +962,9 @@ final class SwiftDashSDKHost {
         let newSDK: SDK
         do {
             let platformVersion = Self.platformVersion(for: network)
-            newSDK = try SDK(network: network, platformVersion: platformVersion)
+            newSDK = try await Self.buildSDKOffMain(
+                network: network,
+                platformVersion: platformVersion)
             Self.logger.info(
                 "🪺 HOST :: stage 1/4 SDK created for \(network.rawValue, privacy: .public), protocol \(platformVersion == 0 ? "auto-detect" : "pinned v\(platformVersion)", privacy: .public)")
         } catch {
@@ -800,11 +975,18 @@ final class SwiftDashSDKHost {
         let container: ModelContainer
         do {
             Self.logger.info("🪺 HOST :: stage 2/4 obtaining ModelContainer for \(network.rawValue, privacy: .public)")
+            // Timed for the same reason as stage 1: main-thread work whose
+            // real cost decides whether it ever needs to move off-main. The
+            // cached (reused) path should be ~0ms; only the first build of a
+            // network's container in the process pays the store-open cost.
+            let started = CFAbsoluteTimeGetCurrent()
             let cached = try modelContainerCache.value(for: network.networkName) {
                 try buildModelContainer(for: network)
             }
+            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
             container = cached.value
             Self.logger.info("🪺 HOST :: stage 2/4 ModelContainer \(cached.reused ? "reused" : "created", privacy: .public) for \(network.rawValue, privacy: .public)")
+            DWLogger.log("HOST stage 2/4 ModelContainer \(cached.reused ? "reused" : "created") for \(network.rawValue) in \(ms)ms")
         } catch {
             Self.logger.error("🪺 HOST :: ModelContainer build failed: \(String(describing: error), privacy: .public)")
             throw HostError.modelContainerFailed(error)
@@ -813,8 +995,11 @@ final class SwiftDashSDKHost {
         let newManager = PlatformWalletManager()
         do {
             Self.logger.info("🪺 HOST :: stage 3/4 configuring manager for \(network.rawValue, privacy: .public)")
+            let started = CFAbsoluteTimeGetCurrent()
             try newManager.configure(sdk: newSDK, modelContainer: container)
+            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
             Self.logger.info("🪺 HOST :: stage 3/4 manager configured for \(network.rawValue, privacy: .public)")
+            DWLogger.log("HOST stage 3/4 manager configured for \(network.rawValue) in \(ms)ms")
         } catch {
             Self.logger.error("🪺 HOST :: configure failed: \(String(describing: error), privacy: .public)")
             throw HostError.configureFailed(error)
@@ -829,32 +1014,65 @@ final class SwiftDashSDKHost {
 
     /// Manager bound to `network` for full-device wipe.
     ///
-    /// The live manager is reused for its network. The other network gets a
-    /// detached manager over the process-cached `ModelContainer`, avoiding a
-    /// second open of the same SQLite store and leaving the published runtime
-    /// unchanged until the wipe commits.
-    func managerForWipe(network: Network) throws -> PlatformWalletManager {
-        try managerForStoredWalletOperation(network: network)
+    /// The live manager is reused for its network (`isTemporary == false` —
+    /// the caller must NOT shut it down). The other network gets a detached
+    /// manager over the process-cached `ModelContainer`
+    /// (`isTemporary == true` — the caller owns its lifecycle and must
+    /// `await manager.shutdown()` when done), avoiding a second open of the
+    /// same SQLite store and leaving the published runtime unchanged until
+    /// the wipe commits.
+    func managerForWipe(network: Network) async throws -> (manager: PlatformWalletManager, isTemporary: Bool) {
+        try await managerForStoredWalletOperation(network: network)
     }
 
     /// Returns a manager over the network's persisted store without changing
     /// the published runtime. Shared by full-device wipe and explicit
-    /// cross-network wallet provisioning.
-    private func managerForStoredWalletOperation(network: Network) throws -> PlatformWalletManager {
+    /// cross-network wallet provisioning. `isTemporary` tells the caller
+    /// whether it owns the manager's teardown (`await manager.shutdown()`
+    /// after use) or borrowed the live published one (hands off).
+    private func managerForStoredWalletOperation(
+        network: Network
+    ) async throws -> (manager: PlatformWalletManager, isTemporary: Bool) {
         if runningNetwork == network, let manager {
-            return manager
+            return (manager, false)
         }
 
-        let handles = try makeRuntime(for: network)
-        _ = try handles.manager.loadFromPersistor()
-        return handles.manager
+        let handles = try await makeRuntime(for: network)
+        do {
+            // Stage 4 of the detached-manager bootstrap: cost scales with the
+            // number of persisted wallets on `network` (~400ms per wallet
+            // measured). The async SDK overload runs the bulk restore and
+            // per-wallet lookups off-main; only the keychain-unlock epilogue
+            // remains on the MainActor (timed separately by the SDK).
+            let started = CFAbsoluteTimeGetCurrent()
+            let restored = try await handles.manager.loadFromPersistor()
+            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+            DWLogger.log("HOST stage 4/4 loadFromPersistor for \(network.rawValue) restored=\(restored.count) in \(ms)ms")
+        } catch {
+            // The detached manager is already fully configured; rethrowing
+            // without an explicit shutdown would leave its native teardown to
+            // the fire-and-forget deinit fallback, racing a follow-up rebuild
+            // over the same process-cached ModelContainer — exactly what the
+            // isTemporary ownership contract exists to prevent.
+            await handles.manager.shutdown()
+            throw error
+        }
+        return (handles.manager, true)
     }
 
+    /// Async since etap C: the launch/switch/refresh bootstrap awaits the
+    /// SDK's off-main load (same overload the mirror leg uses), so the
+    /// ~400ms-per-wallet restore no longer stalls the MainActor. The
+    /// caller (`start`) is a lifecycle-queue op, so the added suspension
+    /// cannot interleave with other lifecycle operations.
     private func loadPersistedWallet(
         manager: PlatformWalletManager,
         network: Network
-    ) throws -> ManagedPlatformWallet {
-        let restored = try manager.loadFromPersistor()
+    ) async throws -> ManagedPlatformWallet {
+        let loadStarted = CFAbsoluteTimeGetCurrent()
+        let restored = try await manager.loadFromPersistor()
+        let loadMs = Int((CFAbsoluteTimeGetCurrent() - loadStarted) * 1000)
+        DWLogger.log("HOST stage 4/4 loadFromPersistor for \(network.rawValue) restored=\(restored.count) in \(loadMs)ms")
         if let resolved = resolveActiveWallet(in: manager, network: network) {
             Self.logger.info("🪺 HOST :: reusing persisted wallet; restored=\(restored.count, privacy: .public)")
             // Off the load path. `PlatformWalletManager` is `@MainActor`, so

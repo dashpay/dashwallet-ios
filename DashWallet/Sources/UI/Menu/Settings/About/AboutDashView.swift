@@ -71,7 +71,7 @@ struct AboutDashView: View {
                 VStack(alignment: .center, spacing: 2) {
                     VStack(alignment: .center, spacing: 2) {
                         Text(NSLocalizedString("Dash Wallet is an open sourced app forked from Bitcoin Wallet", comment: "AboutDash"))
-                            .font(Font.dash.footnote)
+                            .dashFont(.footnote)
                             .foregroundStyle(Color.dash.tertiaryText)
                             .multilineTextAlignment(.center)
 
@@ -81,7 +81,7 @@ struct AboutDashView: View {
                     .padding(.vertical, 8)
 
                     Text(NSLocalizedString("Copyright © 2026 Dash Core Group", comment: "AboutDash"))
-                        .font(Font.dash.footnote)
+                        .dashFont(.footnote)
                         .foregroundStyle(Color.dash.tertiaryText)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 14)
@@ -149,7 +149,7 @@ struct AboutDashView: View {
         return AnyView(
             Link(destination: url) {
                 Text(viewModel.repositoryURL)
-                    .font(Font.dash.footnote)
+                    .dashFont(.footnote)
                     .foregroundStyle(Color.dash.blueText)
                     .multilineTextAlignment(.center)
             }

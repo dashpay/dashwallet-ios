@@ -7,44 +7,40 @@ import SwiftUI
 import DashUIKit
 
 struct TransferTimingSheet: View {
-    @Environment(\.dismiss) private var dismiss
-
     var onConfirm: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            HStack {
-                Spacer()
-                Button(action: { dismiss() }) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 16, weight: .medium))
+            // Scrollable: the sheet is presented in a fixed `.medium()` detent and the
+            // `BottomSheet` chrome takes part of it, so on a short screen or with a long
+            // translation the text no longer fits. Letting it scroll keeps the CTA — the
+            // only thing that records the acknowledgement — reachable at any height.
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    Text(NSLocalizedString("Transfers take different times", comment: ""))
+                        .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.dash.primaryText)
-                        .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    VStack(alignment: .leading, spacing: 18) {
+                        timingRow(
+                            iconSystemName: "bolt.fill",
+                            iconColor: .orange,
+                            title: NSLocalizedString("From Dash Wallet to Shielded balance", comment: ""),
+                            subtitle: NSLocalizedString("The transfer is instant", comment: ""))
+
+                        timingRow(
+                            iconSystemName: "clock.fill",
+                            iconColor: .blue,
+                            title: NSLocalizedString("From Shielded balance to Dash Wallet", comment: ""),
+                            subtitle: NSLocalizedString("The transfer could take up to 10 minutes", comment: ""))
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, 8)
             }
-
-            Text(NSLocalizedString("Transfers take different times", comment: ""))
-                .font(.system(size: 24, weight: .bold))
-                .foregroundColor(.dash.primaryText)
-                .multilineTextAlignment(.leading)
-                .fixedSize(horizontal: false, vertical: true)
-
-            VStack(alignment: .leading, spacing: 18) {
-                timingRow(
-                    iconSystemName: "bolt.fill",
-                    iconColor: .orange,
-                    title: NSLocalizedString("From Dash Wallet to Shielded balance", comment: ""),
-                    subtitle: NSLocalizedString("The transfer is instant", comment: ""))
-
-                timingRow(
-                    iconSystemName: "clock.fill",
-                    iconColor: .blue,
-                    title: NSLocalizedString("From Shielded balance to Dash Wallet", comment: ""),
-                    subtitle: NSLocalizedString("The transfer could take up to 10 minutes", comment: ""))
-            }
-
-            Spacer(minLength: 8)
+            .scrollBounceBehavior(.basedOnSize)
 
             DashButton(
                 text: NSLocalizedString("I got it", comment: ""),
@@ -55,7 +51,7 @@ struct TransferTimingSheet: View {
                 })
         }
         .padding(.horizontal, 24)
-        .padding(.top, 14)
+        .padding(.top, 24)
         .padding(.bottom, 24)
         .background(Color.dash.primaryBackground)
     }

@@ -382,13 +382,13 @@ final class UsernameMarketplaceViewModel: ObservableObject {
 
     /// Run one PIN-gated trade action with shared progress/error/success
     /// handling, then refresh both lists so the new sale state renders.
-    /// `progressText` drives the blocking activity overlay on the
-    /// marketplace screen — the sheets dismiss themselves as the action
-    /// starts, and a Platform transition takes seconds; without it the
-    /// screen sat silent until the success banner.
+    /// The presenting sheet stays attached until the operation succeeds:
+    /// dismissing it while the PIN modal is being presented makes UIKit
+    /// tear down the PIN host before the user can enter anything.
     func perform(
         progressText: String,
         successText: String,
+        onSuccess: @escaping () -> Void,
         _ operation: @escaping () async throws -> Void
     ) {
         guard !isPerformingAction else { return }
@@ -401,6 +401,7 @@ final class UsernameMarketplaceViewModel: ObservableObject {
                 try await operation()
                 isPerformingAction = false
                 withAnimation { successMessage = successText }
+                onSuccess()
                 loadMyNames()
                 updateSearch()
                 // Auto-hide in a detached task so the banner's 2.5 s
@@ -426,21 +427,27 @@ final class UsernameMarketplaceViewModel: ObservableObject {
 // MARK: - UsernameMarketplaceScreen
 
 struct UsernameMarketplaceScreen: View {
-    private let vc: UINavigationController
+    private let onBack: () -> Void
 
     @StateObject private var viewModel = UsernameMarketplaceViewModel()
     @State private var selectedLabel: SelectedMarketplaceLabel?
     @State private var registerCandidate: RegisterCandidate?
 
     init(vc: UINavigationController) {
-        self.vc = vc
+        onBack = { [weak vc] in
+            vc?.popViewController(animated: true)
+        }
+    }
+
+    /// Standalone presentation path used by My Profile, which is itself
+    /// presented as a sheet and therefore has no UIKit navigation controller.
+    init(onBack: @escaping () -> Void) {
+        self.onBack = onBack
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            NavBarBack {
-                vc.popViewController(animated: true)
-            }
+            NavBarBack(onBack: onBack)
 
             TopIntro(
                 title: NSLocalizedString("Username Marketplace", comment: "Username marketplace"),
@@ -474,37 +481,38 @@ struct UsernameMarketplaceScreen: View {
         .background(Color.dash.primaryBackground.ignoresSafeArea())
         .onAppear { viewModel.loadMyNames() }
         .sheet(item: $selectedLabel) { selected in
-            MarketplaceNameDetailSheet(label: selected.label, viewModel: viewModel)
+            MarketplaceNameDetailSheet(selection: selected, viewModel: viewModel)
                 .presentationDetents([.medium, .large])
         }
         .sheet(item: $registerCandidate) { candidate in
-            RegisterNameSheet(label: candidate.label, viewModel: viewModel)
-                .presentationDetents([.medium, .large])
+            if candidate.isContested {
+                DashUIKit.BottomSheet(
+                    showBackButton: .constant(false),
+                    isDismissalEnabled: .constant(!viewModel.isPerformingAction)
+                ) {
+                    RegisterNameSheet(
+                        label: candidate.label,
+                        isContested: candidate.isContested,
+                        viewModel: viewModel)
+                }
+                    .presentationDetents([.medium, .large])
+            } else {
+                DashUIKit.BottomSheet.selfSizing(
+                    showBackButton: .constant(false),
+                    isDismissalEnabled: .constant(!viewModel.isPerformingAction),
+                    fallback: 340,
+                    cornerRadius: 24
+                ) {
+                    RegisterNameSheet(
+                        label: candidate.label,
+                        isContested: candidate.isContested,
+                        viewModel: viewModel)
+                }
+            }
         }
         .overlay {
-            // Blocking activity overlay while a trade transition is in
-            // flight — the action sheets dismiss themselves as the action
-            // starts, so this is the only feedback until success/error.
-            // (The PIN prompt is a UIKit modal and presents above it.)
             if let activity = viewModel.activityMessage {
-                ZStack {
-                    Color.black.opacity(0.3).ignoresSafeArea()
-                    VStack(spacing: 14) {
-                        SwiftUI.ProgressView()
-                            .scaleEffect(1.3)
-                        Text(activity)
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.dash.primaryText)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding(.horizontal, 28)
-                    .padding(.vertical, 24)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(Color.dash.secondaryBackground)
-                            .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 6))
-                }
-                .transition(.opacity)
+                MarketplaceActivityOverlay(message: activity)
             }
         }
         .overlay(alignment: .bottom) {
@@ -741,7 +749,7 @@ struct UsernameMarketplaceScreen: View {
     private func searchRow(_ name: DpnsMarketplaceName) -> some View {
         let isMine = name.isOwned(by: viewModel.ownIdentityId)
         return Button {
-            selectedLabel = SelectedMarketplaceLabel(label: name.label)
+            selectedLabel = SelectedMarketplaceLabel(label: name.label, initialName: name)
         } label: {
             HStack(spacing: 10) {
                 ContactAvatarView(
@@ -798,7 +806,7 @@ struct UsernameMarketplaceScreen: View {
 
     private func stateRow(_ row: DpnsNameStateRow) -> some View {
         Button {
-            selectedLabel = SelectedMarketplaceLabel(label: row.label)
+            selectedLabel = selection(for: row)
         } label: {
             HStack(spacing: 10) {
                 ContactAvatarView(
@@ -838,6 +846,27 @@ struct UsernameMarketplaceScreen: View {
             .opacity({ if case .owned = row.status { return 1 } else { return 0.65 } }())
         }
         .buttonStyle(.plain)
+    }
+
+    private func selection(for row: DpnsNameStateRow) -> SelectedMarketplaceLabel {
+        guard case .owned = row.status else {
+            // A departed row does not know the current owner after a later
+            // transfer, so do not fabricate a live snapshot for it.
+            return SelectedMarketplaceLabel(label: row.label)
+        }
+        let initialName = DpnsMarketplaceName(
+            documentId: row.documentId,
+            ownerId: row.walletIdentityId,
+            recordsIdentityId: row.walletIdentityId,
+            label: row.label,
+            normalizedLabel: row.normalizedLabel,
+            priceCredits: row.priceCredits,
+            createdAtMs: row.createdAtMs,
+            updatedAtMs: row.updatedAtMs,
+            transferredAtMs: row.transferredAtMs)
+        return SelectedMarketplaceLabel(
+            label: row.label,
+            initialName: initialName)
     }
 
     private func stateLine(for row: DpnsNameStateRow) -> String {
@@ -941,7 +970,7 @@ struct UsernameMarketplaceScreen: View {
             subtitle = NSLocalizedString("Available — register it on your identity", comment: "Username marketplace: unregistered name row")
         }
         return Button {
-            registerCandidate = RegisterCandidate(label: label)
+            registerCandidate = RegisterCandidate(label: label, isContested: contested)
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: icon)
@@ -996,37 +1025,85 @@ struct UsernameMarketplaceScreen: View {
     }
 }
 
+/// Reused by the marketplace screen and its sheets. The sheet-local copies
+/// keep progress visible while the authenticated Platform transition runs;
+/// the UIKit PIN modal presents above this SwiftUI overlay.
+private struct MarketplaceActivityOverlay: View {
+    let message: String
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.3).ignoresSafeArea()
+            VStack(spacing: 14) {
+                SwiftUI.ProgressView()
+                    .scaleEffect(1.3)
+                Text(message)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.dash.primaryText)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal, 28)
+            .padding(.vertical, 24)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.dash.secondaryBackground)
+                    .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 6))
+        }
+        .transition(.opacity)
+    }
+}
+
 /// Identifiable wrappers for `.sheet(item:)`.
 struct SelectedMarketplaceLabel: Identifiable {
     let label: String
+    let initialName: DpnsMarketplaceName?
+
+    init(
+        label: String,
+        initialName: DpnsMarketplaceName? = nil
+    ) {
+        self.label = label
+        self.initialName = initialName
+    }
+
     var id: String { label }
 }
 
 struct RegisterCandidate: Identifiable {
     let label: String
+    let isContested: Bool
     var id: String { label }
 }
 
 // MARK: - MarketplaceNameDetailSheet
 
-/// Authoritative detail for one name: loads the live document state and
-/// the full trade timeline on appear, then offers exactly the actions
-/// the state allows. Works for departed names too (the history query
-/// covers names that already left the wallet).
+/// Detail for one name: renders the caller's snapshot immediately, then
+/// refreshes authoritative live state and the supplementary trade timeline
+/// independently. Works for departed names too (the history query covers names
+/// that already left the wallet).
 private struct MarketplaceNameDetailSheet: View {
-    let label: String
+    let selection: SelectedMarketplaceLabel
     @ObservedObject var viewModel: UsernameMarketplaceViewModel
     @Environment(\.dismiss) private var dismiss
 
     @State private var liveName: DpnsMarketplaceName?
     @State private var history: [DpnsNameHistoryEvent] = []
-    @State private var isLoading = true
+    @State private var isLoadingState: Bool
+    @State private var isLoadingHistory = true
     @State private var showingSetPrice = false
     @State private var showingTransfer = false
     @State private var confirmBuy = false
     @State private var confirmDelist = false
 
+    private var label: String { selection.label }
     private var isMine: Bool { liveName?.isOwned(by: viewModel.ownIdentityId) ?? false }
+
+    init(selection: SelectedMarketplaceLabel, viewModel: UsernameMarketplaceViewModel) {
+        self.selection = selection
+        self.viewModel = viewModel
+        _liveName = State(initialValue: selection.initialName)
+        _isLoadingState = State(initialValue: selection.initialName == nil)
+    }
 
     var body: some View {
         ScrollView {
@@ -1043,7 +1120,7 @@ private struct MarketplaceNameDetailSheet: View {
                     .foregroundColor(.dash.primaryText)
                     .padding(.top, 10)
 
-                if isLoading {
+                if isLoadingState && liveName == nil {
                     SwiftUI.ProgressView().padding(.top, 20)
                 } else if let name = liveName {
                     saleState(name)
@@ -1055,7 +1132,7 @@ private struct MarketplaceNameDetailSheet: View {
                     infoCard(name)
                         .padding(.horizontal, 20)
                         .padding(.top, 14)
-                    if !history.isEmpty {
+                    if isLoadingHistory || !history.isEmpty {
                         historyCard
                             .padding(.horizontal, 20)
                             .padding(.top, 12)
@@ -1074,7 +1151,17 @@ private struct MarketplaceNameDetailSheet: View {
             }
         }
         .background(Color.dash.primaryBackground)
-        .task { await load() }
+        .task {
+            async let state: Void = loadState()
+            async let timeline: Void = loadHistory()
+            _ = await (state, timeline)
+        }
+        .interactiveDismissDisabled(viewModel.isPerformingAction)
+        .overlay {
+            if let activity = viewModel.activityMessage {
+                MarketplaceActivityOverlay(message: activity)
+            }
+        }
         .sheet(isPresented: $showingSetPrice) {
             SetNamePriceSheet(label: label, viewModel: viewModel, onDone: { dismiss() })
                 .presentationDetents([.medium, .large])
@@ -1085,17 +1172,25 @@ private struct MarketplaceNameDetailSheet: View {
         }
     }
 
-    private func load() async {
-        isLoading = true
-        // Live state and timeline are independent reads; a history
-        // failure must not blank the sale state (and vice versa).
+    private func loadState() async {
+        defer { isLoadingState = false }
         do {
-            liveName = try await viewModel.service.nameState(label)
+            let refreshedName = try await viewModel.service.nameState(label)
+            guard !Task.isCancelled else { return }
+            liveName = refreshedName
         } catch {
+            guard !Task.isCancelled else { return }
             viewModel.errorMessage = UsernameMarketplaceService.userFacingMessage(for: error)
         }
-        history = (try? await viewModel.service.history(label)) ?? []
-        isLoading = false
+    }
+
+    private func loadHistory() async {
+        defer { isLoadingHistory = false }
+        let loadedHistory = (try? await viewModel.service.history(label)) ?? []
+        guard !Task.isCancelled else { return }
+        // History is supplementary. A failed timeline read must not hide the
+        // live state or the actions for the selected name.
+        history = loadedHistory
     }
 
     @ViewBuilder
@@ -1178,8 +1273,14 @@ private struct MarketplaceNameDetailSheet: View {
                 .padding(.horizontal, 14)
                 .padding(.top, 12)
                 .padding(.bottom, 4)
-            ForEach(Array(history.enumerated().reversed()), id: \.offset) { _, event in
-                historyRow(event)
+            if isLoadingHistory {
+                SwiftUI.ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+            } else {
+                ForEach(Array(history.enumerated().reversed()), id: \.offset) { _, event in
+                    historyRow(event)
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -1304,10 +1405,10 @@ private struct MarketplaceNameDetailSheet: View {
                     progressText: NSLocalizedString("Completing your purchase…", comment: "Username marketplace: activity overlay while the purchase transition runs"),
                     successText: String.localizedStringWithFormat(
                     NSLocalizedString("%@ is now yours", comment: "Username marketplace: purchase success"),
-                    label)) {
+                    label),
+                    onSuccess: { dismiss() }) {
                     try await viewModel.service.purchase(name: label, expectedPriceCredits: expected)
                 }
-                dismiss()
             }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
         } message: {
@@ -1325,10 +1426,10 @@ private struct MarketplaceNameDetailSheet: View {
                     progressText: NSLocalizedString("Removing the listing…", comment: "Username marketplace: activity overlay while the delist transition runs"),
                     successText: String.localizedStringWithFormat(
                     NSLocalizedString("%@ is no longer for sale", comment: "Username marketplace: delist success"),
-                    label)) {
+                    label),
+                    onSuccess: { dismiss() }) {
                     try await viewModel.service.removeFromSale(name: label)
                 }
-                dismiss()
             }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
         } message: {
@@ -1481,11 +1582,10 @@ private struct SetNamePriceSheet: View {
                         successText: String.localizedStringWithFormat(
                         NSLocalizedString("%1$@ listed for %2$@ DASH", comment: "Username marketplace: listing success — name, then price"),
                         label,
-                        duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)) {
+                        duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol),
+                        onSuccess: { onDone() }) {
                         try await viewModel.service.setPrice(name: label, priceDuffs: duffs)
                     }
-                    dismiss()
-                    onDone()
                 } label: {
                     Text(NSLocalizedString("List For Sale", comment: "Username marketplace: confirm listing button"))
                         .font(.system(size: 16, weight: .semibold))
@@ -1517,6 +1617,12 @@ private struct SetNamePriceSheet: View {
         }
         .background(Color.dash.primaryBackground)
         .onAppear { fieldFocused = true }
+        .interactiveDismissDisabled(viewModel.isPerformingAction)
+        .overlay {
+            if let activity = viewModel.activityMessage {
+                MarketplaceActivityOverlay(message: activity)
+            }
+        }
     }
 }
 
@@ -1608,6 +1714,12 @@ private struct TransferNameSheet: View {
             }
         }
         .background(Color.dash.primaryBackground)
+        .interactiveDismissDisabled(viewModel.isPerformingAction)
+        .overlay {
+            if let activity = viewModel.activityMessage {
+                MarketplaceActivityOverlay(message: activity)
+            }
+        }
     }
 
     /// Accepts a base58 identity id directly, or resolves a username via
@@ -1644,11 +1756,10 @@ private struct TransferNameSheet: View {
             progressText: NSLocalizedString("Transferring the username…", comment: "Username marketplace: activity overlay while the transfer transition runs"),
             successText: String.localizedStringWithFormat(
             NSLocalizedString("%@ transferred", comment: "Username marketplace: transfer success"),
-            label)) {
+            label),
+            onSuccess: { onDone() }) {
             try await viewModel.service.transfer(name: label, toIdentityBase58: recipientBase58)
         }
-        dismiss()
-        onDone()
     }
 }
 
@@ -1656,6 +1767,7 @@ private struct TransferNameSheet: View {
 
 private struct RegisterNameSheet: View {
     let label: String
+    let isContested: Bool
     @ObservedObject var viewModel: UsernameMarketplaceViewModel
     @Environment(\.dismiss) private var dismiss
 
@@ -1664,10 +1776,6 @@ private struct RegisterNameSheet: View {
     /// Live vote tallies for an active contest on this label (yours or
     /// anyone's); nil while loading, unavailable, or no contest exists.
     @State private var voteState: ContestVoteState?
-
-    private var isContested: Bool {
-        UsernameMarketplaceService.isContested(label)
-    }
 
     /// This identity already has a request in for this label — the vote
     /// is in progress and a second submission would just fail.
@@ -1721,10 +1829,10 @@ private struct RegisterNameSheet: View {
                             progressText: NSLocalizedString("Registering the username…", comment: "Username marketplace: activity overlay while the registration transition runs"),
                             successText: String.localizedStringWithFormat(
                             NSLocalizedString("%@ registered", comment: "Username marketplace: registration success"),
-                            label)) {
+                            label),
+                            onSuccess: { dismiss() }) {
                             try await viewModel.service.register(label: label)
                         }
-                        dismiss()
                     }
                 }
 
@@ -1744,6 +1852,11 @@ private struct RegisterNameSheet: View {
             }
         }
         .background(Color.dash.primaryBackground)
+        .overlay {
+            if let activity = viewModel.activityMessage {
+                MarketplaceActivityOverlay(message: activity)
+            }
+        }
         .task {
             guard isContested else { return }
             if precheck == nil {
@@ -1804,10 +1917,10 @@ private struct RegisterNameSheet: View {
                     progressText: NSLocalizedString("Submitting your username request…", comment: "Username marketplace: activity overlay while the contested request transition runs"),
                     successText: String.localizedStringWithFormat(
                     NSLocalizedString("Request for %@ submitted — masternodes now vote on it", comment: "Username marketplace: contested request success"),
-                    label)) {
+                    label),
+                    onSuccess: { dismiss() }) {
                     try await viewModel.service.requestContestedName(label: label)
                 }
-                dismiss()
             }
             .disabled(!canAffordRequest)
             .opacity(canAffordRequest ? 1 : 0.55)

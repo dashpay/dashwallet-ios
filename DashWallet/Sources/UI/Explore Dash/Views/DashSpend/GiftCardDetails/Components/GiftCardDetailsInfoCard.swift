@@ -24,6 +24,8 @@ struct GiftCardDetailsInfoCard: View {
     let isLoadingCardDetails: Bool
     let hasBeenPollingForLongTime: Bool
     let loadingError: Error?
+    /// Offered when the poller gave up on a run of failures; nil hides the affordance.
+    var onRetryLoading: (() -> Void)? = nil
     let onOpenClaimLink: (String) -> Void
     let onCopy: (String) -> Void
 
@@ -67,9 +69,19 @@ struct GiftCardDetailsInfoCard: View {
                             .scaleEffect(0.8)
                     }
                 } else if loadingError != nil {
-                    Text(NSLocalizedString("Failed to load barcode", comment: "DashSpend"))
-                        .font(.footnote)
-                        .foregroundColor(.dash.red)
+                    VStack(spacing: 6) {
+                        Text(NSLocalizedString("Failed to load barcode", comment: "DashSpend"))
+                            .font(.footnote)
+                            .foregroundColor(.dash.red)
+
+                        if let onRetryLoading {
+                            Button(action: onRetryLoading) {
+                                Text(NSLocalizedString("Retry", comment: "DashSpend"))
+                                    .font(.footnote.weight(.medium))
+                                    .foregroundColor(.dash.blue)
+                            }
+                        }
+                    }
                 }
             }
             .padding(.horizontal, 6)

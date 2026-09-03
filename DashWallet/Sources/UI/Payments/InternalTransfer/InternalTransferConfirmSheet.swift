@@ -12,7 +12,7 @@ import SwiftDashSDK
 /// `ShieldedTransferCoordinator.phase`:
 ///   - `.idle`           → summary card + Cancel/Confirm buttons.
 ///   - in-flight phases  → step checklist (Signing / Locking / Proving /
-///                         Broadcasting). Drag-dismiss is disabled.
+///                         Broadcasting). Sheet dismissal is disabled.
 ///   - `.success`        → green check + amount + Done.
 ///   - `.failed(msg)`    → summary card with red error + Try again / Close.
 ///
@@ -21,7 +21,7 @@ import SwiftDashSDK
 ///   - `.platformToShielded` → `performShield(amountCredits:)`
 ///   - `.shieldedToCore`     → `performWithdraw(amountCredits:)`
 ///   - `.shieldedToPlatform` → `performUnshield(amountCredits:)`
-///   - `.coreToPlatform`     → `performFundPlatform(amountDuffs:)`
+///   - `.coreToPlatform`     → `performFundPlatform(recipientAmountDuffs:lockValueDuffs:)`
 ///   - `.platformToCore`     → `performPlatformWithdrawAll()` (full balance)
 struct InternalTransferConfirmSheet: View {
 
@@ -30,6 +30,20 @@ struct InternalTransferConfirmSheet: View {
     let amountDuffsUnsigned: UInt64
     let creditsAmount: UInt64
     let fiatText: String
+    /// Resolved fee row value (credits), computed by
+    /// `InternalTransferViewModel.confirmNetworkFeeCredits` and frozen into
+    /// the submission — fee math is banned inside View structs. `nil`
+    /// renders as "—".
+    var networkFeeCredits: UInt64?
+    /// Resolved "Total" row value (duffs) — what actually leaves the source
+    /// balance (`InternalTransferViewModel.confirmTotalDuffs`). `nil`
+    /// renders as "—".
+    var totalDuffs: Int64?
+    /// Frozen Core→Platform lock value (duffs) — amount + static funding
+    /// reserve, resolved by `InternalTransferViewModel` at Continue and
+    /// executed verbatim, so the Total the user confirms is exactly the lock
+    /// executed. Only meaningful for `.coreToPlatform`.
+    var coreToPlatformLockDuffs: UInt64?
     /// Preflighted `AddressCreditWithdrawalTransition` fee — only meaningful
     /// for `.platformToCore` (the fee headroom / netting basis).
     var withdrawalFeeCredits: UInt64? = nil
@@ -51,16 +65,15 @@ struct InternalTransferConfirmSheet: View {
     @State private var handledPlatformShieldCapacityChange = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            dragHandle
-                .padding(.top, 8)
-
-            Text(NSLocalizedString("Confirm", comment: ""))
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(.dash.primaryText)
-                .padding(.top, 20)
-
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Confirm", comment: ""),
+            showBackButton: .constant(false),
+            isDismissalEnabled: .constant(!isInFlight),
+            // Supplying `onClose` makes the close button live regardless of
+            // `isDismissalEnabled`, so the protected phases have to gate it here.
+            isCloseButtonEnabled: !isInFlight,
+            onClose: closeAction
+        ) {
             switch coordinator.phase {
             case .success:
                 successBody
@@ -70,8 +83,6 @@ struct InternalTransferConfirmSheet: View {
                 detailsBody
             }
         }
-        .background(Color.dash.primaryBackground)
-        .interactiveDismissDisabled(isInFlight)
         .onChange(of: coordinator.phase) { phase in
             handlePlatformShieldCapacityChange(phase)
         }
@@ -83,6 +94,18 @@ struct InternalTransferConfirmSheet: View {
             return true
         default:
             return false
+        }
+    }
+
+    /// The close button has to do what the visible button of the current phase
+    /// does. In the terminal phases that is `onCompleted`, which tells the
+    /// transfer screen the transfer finished; `onCancel` only closes the sheet.
+    private var closeAction: () -> Void {
+        switch coordinator.phase {
+        case .success, .submittedUnconfirmed:
+            return onCompleted
+        default:
+            return onCancel
         }
     }
 
@@ -192,13 +215,6 @@ struct InternalTransferConfirmSheet: View {
 
     // MARK: - Pieces
 
-    private var dragHandle: some View {
-        Rectangle()
-            .fill(Color.dash.grabberFill)
-            .frame(width: 36, height: 5)
-            .cornerRadius(2.5)
-    }
-
     private var secondaryLine: some View {
         Text(fiatText)
             .font(.subheadline)
@@ -210,62 +226,30 @@ struct InternalTransferConfirmSheet: View {
     /// Platform credits per DASH (1e11).
     private static let creditsPerDash: Decimal = 100_000_000_000
 
-    /// Flat fee estimate (credits) for the active route, computed offline by
-    /// the SDK against the latest protocol version (so it matches the fee the
-    /// SDK will charge). `nil` if the estimate is unavailable → the row
-    /// shows "—".
-    private var networkFeeCredits: UInt64? {
-        switch route {
-        case .coreToShielded:
-            // The lock charges the fee rounded UP to a whole duff — display
-            // that, so Amount + Network fee equals Total exactly.
-            return CoreToShieldedAmountPolicy.currentPoolFeeDuffs.map { $0 * 1000 }
-        case .platformToShielded:
-            // Shield (Type 15): base shielded fee. Real metered storage is
-            // extra and only knowable on-chain, so this is a lower bound.
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
-        case .shieldedToCore:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .withdrawal, numActions: 2)
-        case .shieldedToPlatform:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 2)
-        case .coreToPlatform:
-            // Address-funding asset lock: the required processing balance
-            // (the same 50k-duff base the Rust side reserves for address
-            // funding). The funding ST's metered fee is extra and only
-            // knowable on-chain, so this is a lower bound.
-            return CoreToShieldedAmountPolicy.assetLockBaseCostCredits
-        case .platformToCore:
-            // The exact transition fee the preflight already netted out of
-            // the payout amount.
-            return withdrawalFeeCredits
-        }
-    }
-
     /// Network-fee estimate as fiat (e.g. "~ $0.08"), or "—" if unavailable.
+    /// Display-only: the value is resolved by the ViewModel and frozen into
+    /// the submission.
     private var networkFeeString: String {
         guard let credits = networkFeeCredits else { return "—" }
         let dash = Decimal(credits) / Self.creditsPerDash
         return "~ " + CurrencyExchanger.shared.fiatAmountString(for: dash)
     }
 
-    /// What actually leaves the source balance. Core→Shielded charges the
-    /// pool fee on top of the amount (the executed lock value); every other
-    /// route's total is the amount itself. "—" when the fee estimate is
-    /// unavailable — `canContinue` fails closed before that can be confirmed,
-    /// but the row must never show the un-inflated number.
+    /// "Total" as DASH text — what actually leaves the source balance,
+    /// resolved by the ViewModel. "—" when unavailable — `canContinue`
+    /// fails closed before that can be confirmed, but the row must never
+    /// show an un-inflated number.
     private var totalString: String {
-        guard route == .coreToShielded else {
-            return dashDuffs.formattedDashAmount
-        }
-        guard let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
-              let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
-                  forAmountDuffs: amountDuffsUnsigned,
-                  poolFeeCredits: poolFeeCredits),
-              let signedLockDuffs = Int64(exactly: lockDuffs)
-        else { return "—" }
-        return signedLockDuffs.formattedDashAmount
+        totalDuffs?.formattedDashAmount ?? "—"
     }
 
+    /// The fee row's label: Core→Platform uses the existing simple Platform
+    /// fee copy; other routes keep the plain "Network fee".
+    private var feeRowLabel: String {
+        route == .coreToPlatform
+            ? NSLocalizedString("Platform fee", comment: "")
+            : NSLocalizedString("Network fee", comment: "")
+    }
 
     // MARK: - Summary card
 
@@ -280,7 +264,7 @@ struct InternalTransferConfirmSheet: View {
                 value: toLabel)
             divider
             summaryRow(
-                label: NSLocalizedString("Network fee", comment: ""),
+                label: feeRowLabel,
                 value: networkFeeString)
             divider
             summaryRow(
@@ -478,7 +462,9 @@ struct InternalTransferConfirmSheet: View {
                     amountCredits: creditsAmount,
                     sweepAll: isFullShieldedSweep)
             case .coreToPlatform:
-                await coordinator.performFundPlatform(amountDuffs: amountDuffsUnsigned)
+                await coordinator.performFundPlatform(
+                    recipientAmountDuffs: amountDuffsUnsigned,
+                    lockValueDuffs: coreToPlatformLockDuffs)
             case .platformToCore:
                 await coordinator.performPlatformWithdraw(
                     amountCredits: creditsAmount,
@@ -503,7 +489,12 @@ struct InternalTransferConfirmSheet: View {
                 return
             case .coreToPlatform:
                 coordinator.reset()
-                Task { await coordinator.resumeFundPlatform(outPointTxidWire: op.txidWire, outPointVout: op.vout) }
+                Task {
+                    await coordinator.resumeFundPlatform(
+                        outPointTxidWire: op.txidWire,
+                        outPointVout: op.vout,
+                        recipientAmountDuffs: amountDuffsUnsigned)
+                }
                 return
             default:
                 break
@@ -553,16 +544,15 @@ struct ShieldedRecoverySheet: View {
     @State private var alreadyComplete = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            dragHandle
-                .padding(.top, 8)
-
-            Text(NSLocalizedString("Finish shielded transfer", comment: "InternalTransfer recovery"))
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(.dash.primaryText)
-                .padding(.top, 20)
-
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Finish shielded transfer", comment: "InternalTransfer recovery"),
+            showBackButton: .constant(false),
+            isDismissalEnabled: .constant(!isInFlight),
+            // Supplying `onClose` makes the close button live regardless of
+            // `isDismissalEnabled`, so the protected phases have to gate it here.
+            isCloseButtonEnabled: !isInFlight,
+            onClose: onDismiss
+        ) {
             switch coordinator.phase {
             case .success:
                 successBody
@@ -578,8 +568,6 @@ struct ShieldedRecoverySheet: View {
                 }
             }
         }
-        .background(Color.dash.primaryBackground)
-        .interactiveDismissDisabled(isInFlight)
     }
 
     private var isInFlight: Bool {
@@ -692,13 +680,6 @@ struct ShieldedRecoverySheet: View {
 
     // MARK: - Pieces
 
-    private var dragHandle: some View {
-        Rectangle()
-            .fill(Color.dash.grabberFill)
-            .frame(width: 36, height: 5)
-            .cornerRadius(2.5)
-    }
-
     private var infoCard: some View {
         HStack(alignment: .top, spacing: 12) {
             ZStack {
@@ -742,7 +723,7 @@ struct ShieldedRecoverySheet: View {
             // history row's snapshot was captured. The resume FFI builds the
             // full proof before Platform reports "already consumed", so without
             // this guard a just-completed transfer would dead-end after ~30s.
-            ShieldedTxLookup.shared.refresh()
+            await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-recovery-preflight")
             let displayTxid = op.txidWire.reversed().map { String(format: "%02x", $0) }.joined()
             let statusRaw = ShieldedTxLookup.shared.info(forTxidHex: displayTxid)?.statusRaw
             if statusRaw == 4 {
@@ -760,7 +741,7 @@ struct ShieldedRecoverySheet: View {
             // the history row flips pending → completed even before the next
             // scheduled shielded sync pass lands.
             if case .success = coordinator.phase {
-                ShieldedTxLookup.shared.refresh()
+                await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-recovery-completed")
             }
         }
     }

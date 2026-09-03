@@ -44,6 +44,23 @@ enum TransactionFilterCategory: CaseIterable {
 class HomeViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     private let queue = DispatchQueue(label: "HomeViewModel", qos: .userInitiated)
+    /// Whether a reconcile pass is queued or running. `queue` is serial, so
+    /// without this every trigger enqueues another full pass and they drain
+    /// back-to-back — each one re-reading the window and republishing the whole
+    /// list to the main thread for a result the pass behind it is about to
+    /// replace. Main-actor state, mutated only from `reloadTxDataSource` and
+    /// `finishReloadPass`.
+    private var reloadPassInFlight = false
+    /// A trigger that arrived while a pass was in flight. Collapsed to a
+    /// single follow-up pass, so a burst of N notifications costs two passes
+    /// (the one running plus one more that sees all of it), not N.
+    private var reloadPassRequestedAgain = false
+    /// Triggers that arrived while a pass was in flight. They are not served
+    /// by that pass — it is already past reading its inputs — but by the one
+    /// follow-up pass `finishReloadPass()` schedules, however many arrived.
+    /// Logged so the next session's numbers say how much this actually
+    /// absorbs.
+    private var reloadPassCoalesced = 0
     private var timeSkewDialogShown: Bool = false
     /// Session guard so the proactive CoinJoin-sweep popup shows at most once
     /// per launch (re-evaluated each launch while a leftover balance exists).
@@ -59,9 +76,12 @@ class HomeViewModel: ObservableObject {
     private var coinJoinTxSets: [String: CoinJoinMixingTxSet] = [:] // Grouped by date
     private var coinJoinWithdrawalSet = CoinJoinWithdrawalTxSet() // Single combined "CoinJoin Withdrawals" group (app's sweep tx)
     private var metadataProviders: [MetadataProvider] = []
-    #if DEBUG
+    /// Set only by the `#if DEBUG` preview initializer, but declared
+    /// unconditionally: two `guard`s read it from ordinary code paths, so
+    /// hiding the property behind `DEBUG` left them referring to something
+    /// that does not exist in any configuration without it. False everywhere
+    /// else costs a Bool.
     var isPreviewMode: Bool = false
-    #endif
 
     /// Tracks whether initial data load has completed (Fix #2)
     private var hasCompletedInitialLoad: Bool = false
@@ -194,8 +214,16 @@ class HomeViewModel: ObservableObject {
     @Published private(set) var headerHeight: CGFloat = kBaseBalanceHeaderHeight // TDOO: move back to HomeView when fully transitioned to SwiftUI
     @Published private(set) var showReclassifyTransaction: Transaction? = nil
     @Published var shouldShowShortcutBanner: Bool = false
+    /// Drives the gift-card details sheet on the home screen — the single source of truth for
+    /// both entry points: a tap on a gift-card transaction row, and a completed DashSpend
+    /// purchase routed here by `HomeViewController.showGiftCardDetails(txId:)`. A local
+    /// `@State` copy in the view would leave the controller's setter observed by nobody.
     @Published var giftCardTxId: Data? = nil
-    
+    /// Mirrors `DWGlobalOptions.advancedModeEnabled`. The balance breakdown on
+    /// the header is one of the surfaces the mode unlocks, and it has to appear
+    /// and disappear with the switch rather than on the next launch.
+    @Published private(set) var isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+
 #if DASHPAY
     var joinDashPayState: JoinDashPayState = .callToAction
 #endif
@@ -245,6 +273,11 @@ class HomeViewModel: ObservableObject {
         // coalesce yet, and the fetch runs on `queue`, so this is safe to
         // start immediately.
         self.reloadTxsAndShortcuts()
+
+        // A fixture-backed model has no live data to observe. Subscribing
+        // anyway is what kept the onboarding demos reacting to every persister
+        // save and balance change for the whole session.
+        guard transactionSource.isLiveWalletSource else { return }
 
         self.observeCoinJoinSweep()
         self.observeWallet()
@@ -302,6 +335,13 @@ class HomeViewModel: ObservableObject {
         // wallet). The balance-driven reloads don't cover this — the balance
         // notifications the switch posts can carry the same total, and their
         // observers don't clear the stale per-hash cache.
+        NotificationCenter.default.publisher(for: .advancedModeDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+            }
+            .store(in: &cancellableBag)
+
         NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -437,7 +477,7 @@ class HomeViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 Task { @MainActor in
-                    ShieldedTxLookup.shared.refresh()
+                    await ShieldedTxLookup.shared.refresh(reason: "transaction-projection-changed")
                     self?.txReloadRequests.send()
                 }
             }
@@ -555,6 +595,18 @@ class HomeViewModel: ObservableObject {
         // once up front, asynchronously, keeps the pass free-running.
         let dispatch = { @MainActor [weak self] in
             guard let self else { return }
+            // A pass already owns the queue: record that the world changed
+            // again and let it re-run once when it lands. Enqueueing here
+            // instead is what produced bursts of identical rebuilds — the
+            // reported duration of each includes the wait behind the ones
+            // before it, so a backlog reads as a slow pass and every entry in
+            // it republishes the full list.
+            guard !self.reloadPassInFlight else {
+                self.reloadPassRequestedAgain = true
+                self.reloadPassCoalesced += 1
+                return
+            }
+            self.reloadPassInFlight = true
             // Pair each request with the filter selection that was live when
             // it was made. Reading it inside the pass instead would let a pass
             // triggered by one change render a selection the user made after
@@ -563,6 +615,7 @@ class HomeViewModel: ObservableObject {
             let startedAt = Date()
             self.queue.async { [weak self] in
                 self?.performReload(selectedFilters: selectedFilters, startedAt: startedAt)
+                self?.finishReloadPass()
             }
         }
         if Thread.isMainThread {
@@ -572,7 +625,34 @@ class HomeViewModel: ObservableObject {
         }
     }
 
+    /// Release the pass and, if the world moved while it ran, run exactly one
+    /// more. Called outside `performReload` so every early return in it — an
+    /// unbound host, a nil delta — still releases.
+    private func finishReloadPass() {
+        DispatchQueue.main.async {
+            MainActor.assumeIsolated { [weak self] in
+                guard let self else { return }
+                let coalesced = self.reloadPassCoalesced
+                self.reloadPassCoalesced = 0
+                self.reloadPassInFlight = false
+                if coalesced > 0 {
+                    DWLogger.log(
+                        "HomeViewModel: coalesced \(coalesced) reconcile trigger(s) into one follow-up pass"
+                    )
+                }
+                guard self.reloadPassRequestedAgain else { return }
+                self.reloadPassRequestedAgain = false
+                self.reloadTxDataSource()
+            }
+        }
+    }
+
     private func performReload(selectedFilters: Set<TransactionFilterCategory>, startedAt: Date) {
+        // `startedAt` is stamped when the pass was REQUESTED, on the main
+        // actor. `workStartedAt` is when it actually got the queue. Reporting
+        // only their sum reads a backlog as a slow pass — which is exactly how
+        // a burst of triggers used to look like one 21-second rebuild.
+        let workStartedAt = Date()
         DWLogger.log("HomeViewModel: Starting timeline reconcile")
 
         // --- Stage 1: bring the wrapped-row window up to date. Every
@@ -626,7 +706,11 @@ class HomeViewModel: ObservableObject {
         }
 
         // --- Stage 3: rebuild the visible list from the in-memory window.
-        rebuildTimelineItems(selectedFilters: selectedFilters, startedAt: startedAt, pageCompleted: false)
+        rebuildTimelineItems(
+            selectedFilters: selectedFilters,
+            startedAt: startedAt,
+            workStartedAt: workStartedAt,
+            pageCompleted: false)
     }
 
     /// Replace the window cache with a freshly fetched first page.
@@ -699,6 +783,7 @@ class HomeViewModel: ObservableObject {
         let startedAt = Date()
         queue.async { [weak self] in
             guard let self else { return }
+            let workStartedAt = Date()
             guard self.hasOlderHistory, self.windowOldestDayStart > 0,
                   let page = self.transactionSource.olderTimelinePage(
                       endingBefore: self.windowOldestDayStart,
@@ -718,7 +803,11 @@ class HomeViewModel: ObservableObject {
             // its rows' `lastUpdated` can postdate window updates the next
             // delta still has to pick up.
             DWLogger.log("HomeViewModel: Timeline paged to \(self.windowTxs.count) rows, older history: \(self.hasOlderHistory)")
-            self.rebuildTimelineItems(selectedFilters: selectedFilters, startedAt: startedAt, pageCompleted: true)
+            self.rebuildTimelineItems(
+                selectedFilters: selectedFilters,
+                startedAt: startedAt,
+                workStartedAt: workStartedAt,
+                pageCompleted: true)
         }
     }
 
@@ -751,6 +840,7 @@ class HomeViewModel: ObservableObject {
     private func rebuildTimelineItems(
         selectedFilters: Set<TransactionFilterCategory>,
         startedAt: Date,
+        workStartedAt: Date,
         pageCompleted: Bool
     ) {
         let transactions = timelineInputTransactions()
@@ -886,8 +976,16 @@ class HomeViewModel: ObservableObject {
             return TransactionGroup(id: key, date: first.date, items: items)
         }.sorted { $0.date > $1.date }
 
-        let elapsedMs = Int(Date().timeIntervalSince(startedAt) * 1000)
-        DWLogger.log("HomeViewModel: Timeline rebuild complete in \(elapsedMs)ms, \(array.count) groups, \(self.txByHash.count) items cached, window \(windowTxs.count) rows")
+        let now = Date()
+        let elapsedMs = Int(now.timeIntervalSince(startedAt) * 1000)
+        let workMs = Int(now.timeIntervalSince(workStartedAt) * 1000)
+        DWLogger.log(
+            """
+            HomeViewModel: Timeline rebuild complete in \(elapsedMs)ms \
+            (queued \(max(0, elapsedMs - workMs))ms, work \(workMs)ms), \
+            \(array.count) groups, \(self.txByHash.count) items cached, \
+            window \(windowTxs.count) rows
+            """)
 
         publishTimeline(
             array,
@@ -944,7 +1042,13 @@ class HomeViewModel: ObservableObject {
         pageCompleted: Bool
     ) {
         let canLoadMore = hasOlderHistory
+        let groupCount = array.count
         DispatchQueue.main.async {
+            // The one part of a reconcile that is unavoidably main-thread:
+            // assigning `txItems` republishes the whole list and SwiftUI diffs
+            // it. Timed so the cost of republishing is a number rather than an
+            // inference.
+            let publishStartedAt = Date()
             self.txItems = array
             self.hasLoadedInitialTxItems = true
             if self.canLoadMoreHistory != canLoadMore {
@@ -959,6 +1063,10 @@ class HomeViewModel: ObservableObject {
             }
             if self.hasMasternodeHistory != hasMasternodes {
                 self.hasMasternodeHistory = hasMasternodes
+            }
+            let publishMs = Int(Date().timeIntervalSince(publishStartedAt) * 1000)
+            if publishMs >= 50 {
+                DWLogger.log("HomeViewModel: publish held the main thread \(publishMs)ms for \(groupCount) groups")
             }
         }
     }
@@ -1661,6 +1769,16 @@ struct WalletTimelineDelta {
 protocol TransactionSource {
     var allTransactions: Array<Transaction> { get }
 
+    /// Whether this source is backed by the real wallet.
+    ///
+    /// A fixture source has nothing to learn from a persister save or a
+    /// balance change, so a view model built on one must not subscribe to
+    /// them: the onboarding demo screens outlive their own presentation, and
+    /// two such view models were found still rebuilding their four-row
+    /// fixture window on every notification twenty minutes into a session,
+    /// long after onboarding had finished.
+    var isLiveWalletSource: Bool { get }
+
     /// The newest rows as a day-completed window of about `targetRowCount`.
     /// Nil when the source has no active wallet yet.
     func timelineWindow(targetRowCount: Int) -> WalletTimelineWindow?
@@ -1682,6 +1800,10 @@ protocol TransactionSource {
 /// `allTransactions` set is one complete, already-loaded window; there is
 /// nothing older to page in and no store to answer deltas or gates from.
 extension TransactionSource {
+    /// Live unless a source opts out, so adding this cannot silently
+    /// disconnect a real one.
+    var isLiveWalletSource: Bool { true }
+
     func timelineWindow(targetRowCount: Int) -> WalletTimelineWindow? {
         WalletTimelineWindow(
             walletId: Data(),
@@ -2418,6 +2540,32 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// cheap enough to block a worker queue on). `ModelContainer` is
     /// `Sendable`, so the caller then opens its own `ModelContext` on its
     /// own thread and all SwiftData work stays there.
+    /// The durable sync watermark the persister last wrote for the active
+    /// wallet — the height a relaunch resumes from, and the boundary below
+    /// which the transaction list is materialized. Distinct from the height
+    /// the SPV scan has reached, which is what the sync UI reports.
+    ///
+    /// One bounded fetch; call it on a state transition, not per tick.
+    ///
+    /// Returns the wallet the reading belongs to alongside it, because the
+    /// active wallet can change between the moment a caller starts observing
+    /// and the moment it reads: without the id, a reading taken after a wallet
+    /// switch is indistinguishable from one taken before it. A `nil` `height`
+    /// means that wallet has no persisted watermark yet — distinct from a
+    /// `nil` result, which means there is no active wallet at all.
+    static func persistedSyncedHeightSnapshot() -> (walletId: Data, height: UInt32?)? {
+        guard let (container, walletId) = hostHandles() else { return nil }
+        let context = ModelContext(container)
+        var descriptor = FetchDescriptor<PersistentWallet>(
+            predicate: #Predicate { $0.walletId == walletId })
+        descriptor.fetchLimit = 1
+        return (walletId, (try? context.fetch(descriptor))?.first?.syncedHeight)
+    }
+
+    /// The active wallet's id, without the watermark fetch — two property
+    /// reads on the main actor, cheap enough to call when a sync cycle starts.
+    static var activeWalletId: Data? { hostHandles()?.walletId }
+
     private static func hostHandles() -> (container: ModelContainer, walletId: Data)? {
         onMain {
             guard let container = SwiftDashSDKHost.shared.modelContainer,
@@ -2897,6 +3045,9 @@ class SwiftDashSDKWalletSource: TransactionSource {
 #if DEBUG
 private struct HomeViewModelPreviewTransactionSource: TransactionSource {
     var allTransactions: [Transaction] { [] }
+    /// Fixture data, never the live wallet — so this can never register a
+    /// wallet observer, whichever initializer builds the model around it.
+    var isLiveWalletSource: Bool { false }
 }
 #endif
 

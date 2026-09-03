@@ -91,7 +91,7 @@ struct OrderPreviewView: View {
                 "The final amount you receive may differ from this estimate by up to %d%% due to price slippage.",
                 comment: "Dash DEX"
             ), SwapKitConstants.defaultSlippagePercent))
-                .font(Font.dash.caption1)
+                .dashFont(.caption1)
                 .foregroundColor(Color.dash.tertiaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 20)
@@ -103,7 +103,7 @@ struct OrderPreviewView: View {
                 HStack(spacing: 0) {
 
                     HStack(spacing: 8) {
-                        Image(dash: .custom("stopwatch", bundle: .dashUIKit))
+                        DashIcon.SystemMessage.timerSmall.image
 
                         Text(NSLocalizedString("Quote expires", comment: "Dash DEX"))
                             .dashFont(.subheadMedium)
@@ -139,7 +139,7 @@ struct OrderPreviewView: View {
     private var fromRow: some View {
         HStack(spacing: Layout.labelSpacing) {
             Text(NSLocalizedString("From", comment: "Dash DEX"))
-                .font(Font.dash.subheadMedium)
+                .dashFont(.subheadMedium)
                 .foregroundColor(Color.dash.tertiaryText)
                 .fixedSize()
 
@@ -149,7 +149,7 @@ struct OrderPreviewView: View {
                     .clipShape(.rect(cornerRadius: Layout.coinLogoCornerRadius))
 
                 Text(NSLocalizedString("Dash Wallet", comment: "Dash DEX"))
-                    .font(Font.dash.subhead)
+                    .dashFont(.subhead)
                     .foregroundColor(Color.dash.primaryText)
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
@@ -162,7 +162,7 @@ struct OrderPreviewView: View {
     private var toRow: some View {
         HStack(spacing: Layout.labelSpacing) {
             Text(NSLocalizedString("To", comment: "Dash DEX"))
-                .font(Font.dash.subheadMedium)
+                .dashFont(.subheadMedium)
                 .foregroundColor(Color.dash.tertiaryText)
                 .fixedSize()
 
@@ -174,7 +174,7 @@ struct OrderPreviewView: View {
                 )
 
                 Text(viewModel.coin.name)
-                    .font(Font.dash.subhead)
+                    .dashFont(.subhead)
                     .foregroundColor(Color.dash.primaryText)
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
@@ -224,11 +224,11 @@ struct OrderPreviewView: View {
     private var totalRow: some View {
         HStack(alignment: .lastTextBaseline, spacing: Layout.labelSpacing) {
             Text(NSLocalizedString("Total", comment: "Dash DEX"))
-                .font(Font.dash.subheadMedium)
+                .dashFont(.subheadMedium)
                 .foregroundColor(Color.dash.tertiaryText)
 
             Text(viewModel.totalAmount)
-                .font(Font.dash.title3Medium)
+                .dashFont(.title3Medium)
                 .foregroundColor(Color.dash.primaryText)
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }

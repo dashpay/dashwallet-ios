@@ -23,7 +23,7 @@ struct CrowdNodeBalanceReminderBanner: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            Image(dash: .custom("warning_triangle", bundle: .dashUIKit))
+            DashIcon.SystemMessage.warningTriangle.image
                 .resizable()
                 .scaledToFit()
                 .frame(width: 30, height: 30)
@@ -31,11 +31,11 @@ struct CrowdNodeBalanceReminderBanner: View {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(NSLocalizedString("You have a balance on CrowdNode", comment: "CrowdNode"))
-                        .font(Font.dash.subheadMedium)
+                        .dashFont(.subheadMedium)
                         .foregroundColor(Color.dash.primaryText)
 
                     Text(NSLocalizedString("These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device.", comment: "CrowdNode"))
-                        .font(Font.dash.subhead)
+                        .dashFont(.subhead)
                         .foregroundColor(Color.dash.secondaryText)
                         .multilineTextAlignment(.leading)
                 }

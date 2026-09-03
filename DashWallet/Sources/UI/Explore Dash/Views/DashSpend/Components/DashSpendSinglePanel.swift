@@ -131,7 +131,7 @@ struct DashSpendSinglePanel: View {
 
             Spacer(minLength: 0)
 
-            DashUIKit.NumericKeyboardView(
+            HardwareNumericKeyboardView(
                 value: $input,
                 showDecimalSeparator: true,
                 locale: .autoupdatingCurrent,
@@ -140,9 +140,6 @@ struct DashSpendSinglePanel: View {
                 inProgress: inProgress,
                 actionHandler: onAction
             )
-            .frame(maxWidth: .infinity)
-            .bottomPanelStyle()
-            .background(Color.dash.secondaryBackground, ignoresSafeAreaEdges: .bottom)
         }
 
     }

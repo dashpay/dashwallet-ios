@@ -55,6 +55,26 @@ class MainMenuViewModel: ObservableObject {
 
     weak var delegate: MainMenuViewModelDelegate?
 
+    private var cancellableBag = Set<AnyCancellable>()
+
+    /// Wallets and Identities are advanced surfaces: they expose accounts,
+    /// derivation and Platform identities, which is more than an ordinary user
+    /// is asked to reason about. They appear only while Advanced mode is on.
+    private var showsAdvancedRows: Bool {
+        DWGlobalOptions.sharedInstance().advancedModeEnabled
+    }
+
+    /// The menu is built once, so without this a row toggled in Settings would
+    /// not appear until something else rebuilt it.
+    private func observeAdvancedMode() {
+        NotificationCenter.default.publisher(for: .advancedModeDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.buildMenuSections()
+            }
+            .store(in: &cancellableBag)
+    }
+
     #if DASHPAY
     init(dashPayModel: DWDashPayProtocol? = nil,
          dashPayReady: DWDashPayReadyProtocol? = nil,
@@ -63,6 +83,7 @@ class MainMenuViewModel: ObservableObject {
         self.dashPayReady = dashPayReady
         self.userProfileModel = userProfileModel
         buildMenuSections()
+        observeAdvancedMode()
 
         userProfileModel?.$showJoinDashpay
             .receive(on: DispatchQueue.main)
@@ -79,6 +100,7 @@ class MainMenuViewModel: ObservableObject {
     #else
     init() {
         buildMenuSections()
+        observeAdvancedMode()
     }
     #endif
     
@@ -105,23 +127,25 @@ class MainMenuViewModel: ObservableObject {
             }
         ))
 
-        // Wallets
-        allItems.append(MenuItemModel(
-            title: NSLocalizedString("Wallets", comment: ""),
-            icon: .custom("image.wallets", maxHeight: 30),
-            action: { [weak self] in
-                self?.navigationDestination = .wallets
-            }
-        ))
+        if showsAdvancedRows {
+            // Wallets
+            allItems.append(MenuItemModel(
+                title: NSLocalizedString("Wallets", comment: ""),
+                icon: .custom("image.wallets", maxHeight: 30),
+                action: { [weak self] in
+                    self?.navigationDestination = .wallets
+                }
+            ))
 
-        // Identities — the device's Dash Platform identities (under Wallets)
-        allItems.append(MenuItemModel(
-            title: NSLocalizedString("Identities", comment: "Identities"),
-            icon: .system("person.crop.circle"),
-            action: { [weak self] in
-                self?.navigationDestination = .identities
-            }
-        ))
+            // Identities — the device's Dash Platform identities (under Wallets)
+            allItems.append(MenuItemModel(
+                title: NSLocalizedString("Identities", comment: "Identities"),
+                icon: .system("person.crop.circle"),
+                action: { [weak self] in
+                    self?.navigationDestination = .identities
+                }
+            ))
+        }
 
         // Security
         allItems.append(MenuItemModel(

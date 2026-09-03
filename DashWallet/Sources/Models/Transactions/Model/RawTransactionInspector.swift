@@ -267,6 +267,25 @@ enum RawTransactionInspector {
         return Data(b[3 ..< 23])
     }
 
+    /// The 16 network-order bytes of a DIP-3 service address as text: an
+    /// IPv4-mapped address renders as a dotted quad, anything else as IPv6
+    /// groups.
+    private static func ipText(_ bytes: Data) -> String {
+        let octets = [UInt8](bytes)
+        guard octets.count == 16 else {
+            return octets.map { String(format: "%02x", $0) }.joined()
+        }
+        let isV4Mapped = octets[0..<10].allSatisfy { $0 == 0 }
+            && octets[10] == 0xFF && octets[11] == 0xFF
+        if isV4Mapped {
+            return "\(octets[12]).\(octets[13]).\(octets[14]).\(octets[15])"
+        }
+        let groups = stride(from: 0, to: 16, by: 2).map { i in
+            String(format: "%x", Int(octets[i]) << 8 | Int(octets[i + 1]))
+        }
+        return "[\(groups.joined(separator: ":"))]"
+    }
+
     /// DIP-2 special transaction names, keyed by the tx `type` field.
     static func specialTypeName(_ type: UInt16) -> String? {
         switch type {
@@ -287,11 +306,75 @@ enum RawTransactionInspector {
     /// Parsed fields for the payload types the app understands. Anything the
     /// parser doesn't positively recognize contributes no fields — the UI
     /// falls back to the payload hex rather than showing guessed values.
-    private static func parsePayloadFields(type: UInt16, payload: Data?, network: PaymentNetwork) -> [RawTransactionDetails.PayloadField] {
+    ///
+    /// Internal: the unban preview renders the same fields for a ProUpServTx
+    /// it has built but not yet broadcast.
+    static func parsePayloadFields(type: UInt16, payload: Data?, network: PaymentNetwork) -> [RawTransactionDetails.PayloadField] {
         guard let payload, !payload.isEmpty else { return [] }
         var fields: [RawTransactionDetails.PayloadField] = []
 
         switch type {
+        case 2: // ProUpServTx — see DIP-3. Field order matches dashcore's
+                // `base_payload_data_encode`; the service port is
+                // byte-swapped on the wire, the platform ports are not.
+            var reader = ByteReader(payload)
+            guard let version = try? reader.readUInt16() else { break }
+            fields.append(.init(label: "Payload version", value: "\(version)"))
+
+            var masternodeType: UInt16?
+            if version >= 2 {
+                masternodeType = try? reader.readUInt16()
+                if let masternodeType {
+                    fields.append(.init(
+                        label: "Masternode type",
+                        value: masternodeType == 1
+                            ? NSLocalizedString("Evonode", comment: "")
+                            : NSLocalizedString("Masternode", comment: "")))
+                }
+            }
+
+            guard let proTxHash = try? reader.readBytes(32),
+                  let ipBytes = try? reader.readBytes(16),
+                  let portBytes = try? reader.readBytes(2) else { break }
+            fields.append(.init(
+                label: "proTxHash",
+                value: proTxHash.reversed().map { String(format: "%02x", $0) }.joined()))
+            let port = UInt16(portBytes[portBytes.startIndex]) << 8
+                | UInt16(portBytes[portBytes.startIndex + 1])
+            fields.append(.init(
+                label: NSLocalizedString("Service", comment: "Masternodes"),
+                value: "\(Self.ipText(ipBytes)):\(port)"))
+
+            guard let scriptLength = try? reader.readVarInt(),
+                  let script = try? reader.readBytes(Int(scriptLength)),
+                  let inputsHash = try? reader.readBytes(32) else { break }
+            fields.append(.init(
+                label: NSLocalizedString("Operator payout", comment: "Masternode unban"),
+                value: script.isEmpty
+                    ? NSLocalizedString("None", comment: "Masternode unban")
+                    : (ScriptAddressCodec.address(forScript: script, network: network)
+                        ?? script.map { String(format: "%02x", $0) }.joined())))
+            fields.append(.init(
+                label: "Inputs hash",
+                value: inputsHash.reversed().map { String(format: "%02x", $0) }.joined()))
+
+            if version >= 2, masternodeType == 1 {
+                if let nodeId = try? reader.readBytes(20),
+                   let p2pPort = try? reader.readUInt16(),
+                   let httpPort = try? reader.readUInt16() {
+                    fields.append(.init(
+                        label: NSLocalizedString("Platform Node ID", comment: ""),
+                        value: nodeId.map { String(format: "%02x", $0) }.joined()))
+                    fields.append(.init(label: "Platform P2P port", value: "\(p2pPort)"))
+                    fields.append(.init(label: "Platform HTTP port", value: "\(httpPort)"))
+                }
+            }
+
+            if let signature = try? reader.readBytes(96) {
+                fields.append(.init(
+                    label: NSLocalizedString("Operator signature (BLS)", comment: "Masternode unban"),
+                    value: signature.map { String(format: "%02x", $0) }.joined()))
+            }
         case 5: // CbTx: u16 version, u32 height, 32B merkle root MN list, …
             var reader = ByteReader(payload)
             if let version = try? reader.readUInt16(),
