@@ -474,6 +474,9 @@
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
 
+/* Accessibility label for the navigation bar back button */
+"Back" = "Back";
+
 /* Dash DEX */
 "Back home" = "Back home";
 
@@ -746,6 +749,9 @@
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "DashPay enabled";
 
+/* Accessibility label for the decimal separator key on the number keypad */
+"Decimal separator" = "Decimal separator";
+
 /* Identity top-up sheet — custom amount below the floor */
 "Discard" = "Discard";
 "Enter at least %@ DASH" = "Enter at least %@ DASH";
@@ -793,6 +799,9 @@
 /* Usernames */
 "In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames.";
 
+/* Accessibility label for the navigation bar info button */
+"Info" = "Info";
+
 /* Username marketplace: search row for a label a past vote locked */
 "Inputs" = "Inputs";
 "Locked by a network vote — nobody can register it" = "Locked by a network vote — nobody can register it";
@@ -811,6 +820,9 @@
 
 /* Username marketplace: set price fee note */
 "Listing is a network transaction with a small fee, paid from your identity balance." = "Listing is a network transaction with a small fee, paid from your identity balance.";
+
+/* VoiceOver-only label for an outgoing amount; %@ is the amount with its currency, e.g. 'Minus 0.05 Dash' */
+"Minus %@" = "Minus %@";
 
 /* DashPay: banner fallback when the identity has no name yet */
 "Move %@ from shielded balance" = "Move %@ from shielded balance";
@@ -831,9 +843,18 @@
 
 /* Usernames */
 "Non-standard output" = "Non-standard output";
+/* Accessibility value for a settings switch that is enabled */
+"On" = "On";
+
+/* Accessibility value for a settings switch that is disabled */
+"Off" = "Off";
+
 "Operator payout address" = "Operator payout address";
 "Operator signature (BLS)" = "Operator signature (BLS)";
 "Platform P2P port" = "Platform P2P port";
+/* VoiceOver-only label for an incoming amount; %@ is the amount with its currency, e.g. 'Plus 0.05 Dash' */
+"Plus %@" = "Plus %@";
+
 "Provider update payload" = "Provider update payload";
 "Receive some DASH to this wallet, or fund its shielded balance, then return here." = "Receive some DASH to this wallet, or fund its shielded balance, then return here.";
 "Register username" = "Register username";

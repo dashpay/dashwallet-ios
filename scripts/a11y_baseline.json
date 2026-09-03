@@ -7,18 +7,17 @@
   ],
   "counts": {
     "A11Y008": 8,
-    "A11Y002": 10,
+    "A11Y002": 9,
     "A11Y003": 1,
-    "A11Y004": 37,
-    "A11Y005": 1,
-    "A11Y006": 2,
+    "A11Y004": 33,
+    "A11Y006": 1,
     "A11Y009": 2,
     "A11Y010": 3,
     "A11Y011": 11,
     "A11Y012": 31,
     "A11Y007": 559
   },
-  "total": 665,
+  "total": 658,
   "findings": [
     {
       "rule": "A11Y008",
@@ -138,13 +137,6 @@
       "fingerprint": "64d20f1c746d8531",
       "line_when_recorded": 80,
       "snippet": "let barButtonItem = UIBarButtonItem(customView: activityIndicator)"
-    },
-    {
-      "rule": "A11Y002",
-      "path": "DashWallet/Sources/UI/Views/Navigation/BaseNavigationController.swift",
-      "fingerprint": "6ab921512e79bf0f",
-      "line_when_recorded": 182,
-      "snippet": "let item = UIBarButtonItem(customView: backButton)"
     },
     {
       "rule": "A11Y003",
@@ -379,58 +371,16 @@
     },
     {
       "rule": "A11Y004",
-      "path": "DashWallet/Sources/UI/SwiftUI Components/NavigationBar.swift",
-      "fingerprint": "099a421bad6a3019",
-      "line_when_recorded": 152,
-      "snippet": "Button(action: onBack) {"
-    },
-    {
-      "rule": "A11Y004",
-      "path": "DashWallet/Sources/UI/SwiftUI Components/NavigationBar.swift",
-      "fingerprint": "099a421bad6a3019",
-      "line_when_recorded": 211,
-      "snippet": "Button(action: onBack) {"
-    },
-    {
-      "rule": "A11Y004",
-      "path": "DashWallet/Sources/UI/SwiftUI Components/NavigationBar.swift",
-      "fingerprint": "7690c023535454ae",
-      "line_when_recorded": 233,
-      "snippet": "Button(action: onAdd) {"
-    },
-    {
-      "rule": "A11Y004",
-      "path": "DashWallet/Sources/UI/SwiftUI Components/NavigationBar.swift",
-      "fingerprint": "07fa3ed86b3e1f10",
-      "line_when_recorded": 287,
-      "snippet": "Button(action: onClose) {"
-    },
-    {
-      "rule": "A11Y004",
       "path": "DashWallet/Sources/UI/SwiftUI Components/SendIntro.swift",
       "fingerprint": "e5251255b9f564fd",
       "line_when_recorded": 69,
       "snippet": "Button(action: {"
     },
     {
-      "rule": "A11Y005",
-      "path": "DashWallet/Sources/UI/SwiftUI Components/MenuItem.swift",
-      "fingerprint": "34bcf206edfe454d",
-      "line_when_recorded": 232,
-      "snippet": "Toggle(isOn: $isToggled) { }"
-    },
-    {
       "rule": "A11Y006",
       "path": "DashWallet/Sources/UI/CrowdNode/Portal/CrowdNodePortalViewController.swift",
       "fingerprint": "78003431c215cd98",
       "line_when_recorded": 109,
-      "snippet": "let backButton = UIButton(type: .custom)"
-    },
-    {
-      "rule": "A11Y006",
-      "path": "DashWallet/Sources/UI/Views/Navigation/BaseNavigationController.swift",
-      "fingerprint": "6ee73a8d95d7ac7f",
-      "line_when_recorded": 177,
       "snippet": "let backButton = UIButton(type: .custom)"
     },
     {
