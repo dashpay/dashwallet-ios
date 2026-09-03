@@ -370,11 +370,23 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// tab's root, `dismiss` is a no-op, which is the bug the receive receipt's
     /// Done button had.
     private func leaveLanding() {
-        if presentingViewController != nil {
+        if isPresentedModally {
             dismiss(animated: true)
         } else {
-            (tabBarController as? MainTabbarController)?.showHome()
+            mainTabBarController?.showHome()
         }
+    }
+
+    /// Whether this landing was presented rather than being the payments tab's
+    /// own root.
+    ///
+    /// Asked of the navigation controller as well as of self: every modal
+    /// presentation of this screen wraps it in a `BaseNavigationController`, so
+    /// the container is what UIKit presented. `presentingViewController` does
+    /// resolve through the container, but naming both makes the intent survive
+    /// a future re-parenting rather than depending on that inheritance.
+    private var isPresentedModally: Bool {
+        presentingViewController != nil || navigationController?.presentingViewController != nil
     }
 
     /// The tab bar goes while the landing is up, and the X above the selector
@@ -401,10 +413,10 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// appeared dead. Leaving for the history is what finishing means there,
     /// and it is where the receipt's transaction shows up.
     private func finishReceiving() {
-        if presentingViewController != nil {
+        if isPresentedModally {
             dismiss(animated: true)
         } else {
-            (tabBarController as? MainTabbarController)?.showHome()
+            mainTabBarController?.showHome()
         }
     }
 

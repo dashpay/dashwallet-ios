@@ -375,9 +375,11 @@ final class PaymentsLandingViewModel: ObservableObject {
     /// coming back should start from a clean receive screen rather than the
     /// receipt of a payment already dealt with.
     func finishReceiving() {
+        // No reconcile: that would see a nil session and start a fresh one,
+        // which is the opposite of what Done means. Leaving the screen is what
+        // stops the watcher, and returning is what starts the next session.
         receipt = nil
         invalidateReceiptSession()
-        reconcileReceiptWatching()
     }
 
     func receiveAnother() {
@@ -784,6 +786,11 @@ final class PaymentsLandingViewModel: ObservableObject {
         platformAddress = PlatformAddressSyncCoordinator.shared
             .derivedAddresses.nextReceiveAddress?.address
         reloadShieldedAddress()
+        #if DASHPAY
+        // The identity is network-scoped, so a network switch can invalidate
+        // the Send tab's username row exactly as a registration change does.
+        refreshCanSendToUsername()
+        #endif
         reconcileReceiptWatching()
     }
 
