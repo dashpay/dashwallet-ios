@@ -218,7 +218,13 @@ extension CrowdNode {
 
         DWLogger.log("restoring CrowdNode state")
         signUpState = SignUpState.notStarted
-        validatePrefs()
+        // nil ⇒ the stored address is kept but unproven. `CrowdNodeDefaults`
+        // seeds a new wallet's per-wallet keys from the retained pre-multi-wallet
+        // globals (account address, saved online state, last known balance), so
+        // an unproven address can be the *previous* wallet's. The signup scan
+        // below proves ownership from this wallet's own history; the online-account
+        // path has no such evidence and must not activate the address on trust.
+        let ownsStoredAddress = validatePrefs()
 
         // One snapshot serves the whole restore. The signup reconstruction and
         // the linked-account confirmation lookup consume the same window —
@@ -239,7 +245,10 @@ extension CrowdNode {
 
         var onlineState = prefs.savedOnlineAccountState
 
-        if let address = getOnlineAccountAddress(state: onlineState, observed: observed) {
+        if let address = getOnlineAccountAddress(
+            state: onlineState,
+            observed: observed,
+            trustStoredAddress: ownsStoredAddress == true) {
             prefs.accountAddress = address
 
             if onlineState == .none {
@@ -332,15 +341,24 @@ extension CrowdNode {
         signUpState = SignUpState.signingUp
     }
 
-    private func validatePrefs() {
-        guard let accountAddress = prefs.accountAddress else { return }
+    /// Validate the stored account address against the active wallet and
+    /// report the verdict to the restore that called it.
+    ///
+    /// Returns `true` when the scan proved the address is this wallet's,
+    /// `false` when it proved it is not (the account is reset), and `nil`
+    /// when the scan proved nothing — the SDK wallet isn't up yet, or the
+    /// address sits beyond the bounded scan. `nil` keeps the stored account
+    /// on disk but leaves it unproven, and the caller must not activate it
+    /// on trust alone.
+    private func validatePrefs() -> Bool? {
+        guard let accountAddress = prefs.accountAddress else { return nil }
 
         // SDK-native ownership check (BIP44 acct-0 scan — the same one the
         // CrowdNode signer uses). Tri-state: nil ⇒ unknown (the SDK wallet
-        // isn't up yet, or the address sits beyond the bounded scan) — skip
-        // rather than reset a live account; the check reruns on the next
-        // restoreState. false is returned only for an address that cannot
-        // belong to this wallet (not a P2PKH address of the running network).
+        // isn't up yet, or the address sits beyond the bounded scan) — keep
+        // the stored account rather than resetting it. false is returned only
+        // for an address that cannot belong to this wallet (not a P2PKH
+        // address of the running network).
         let owns: Bool?
         if Thread.isMainThread {
             owns = MainActor.assumeIsolated { CrowdNodeMessageSigner.ownsAddress(accountAddress) }
@@ -357,10 +375,12 @@ extension CrowdNode {
             DWLogger.log("Found alien address in CrowdNode prefs")
             reset()
         case nil:
-            DWLogger.log("CrowdNode prefs validation inconclusive (wallet not up, or address beyond scan bound) — keeping stored account")
+            DWLogger.log("CrowdNode prefs validation inconclusive (wallet not up, or address beyond scan bound) — keeping stored account, ownership unproven")
         default:
             break
         }
+
+        return owns
     }
 
     private func reset() {
@@ -1045,10 +1065,18 @@ extension CrowdNode {
         return TransactionObserver.fetchObserved().contains { filter.matches($0) }
     }
 
-    private func getOnlineAccountAddress(state: OnlineAccountState, observed: [ObservedTransaction]) -> String? {
+    /// - Parameter trustStoredAddress: whether the ownership scan proved the
+    ///   stored address belongs to the active wallet. When false the stored
+    ///   address is ignored and the address must come from this wallet's own
+    ///   API-confirmation transaction, so an unproven address — including one
+    ///   inherited from a pre-multi-wallet install's globals — can never
+    ///   publish another wallet's linked account or its balance.
+    private func getOnlineAccountAddress(state: OnlineAccountState,
+                                         observed: [ObservedTransaction],
+                                         trustStoredAddress: Bool) -> String? {
         let savedAddress = prefs.accountAddress
 
-        if savedAddress != nil && state != .none {
+        if trustStoredAddress, savedAddress != nil, state != .none {
             return savedAddress
         } else if let confirmationTx = getApiAddressConfirmationTx(in: observed),
                   let apiAddress = confirmationTx.ownOutputAddresses.first {
