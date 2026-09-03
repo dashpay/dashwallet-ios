@@ -108,7 +108,9 @@ final class WalletsViewModel: ObservableObject {
             // Stable ordering: active first, then by display name.
             .sorted { lhs, rhs in
                 if lhs.isActive != rhs.isActive { return lhs.isActive }
-                return lhs.displayName.localizedCaseInsensitiveCompare(rhs.displayName) == .orderedAscending
+                let nameOrder = lhs.displayName.localizedCaseInsensitiveCompare(rhs.displayName)
+                if nameOrder != .orderedSame { return nameOrder == .orderedAscending }
+                return lhs.walletId.lexicographicallyPrecedes(rhs.walletId)
             }
 
         rows = built
@@ -244,23 +246,26 @@ final class WalletsViewModel: ObservableObject {
         Mnemonic.validate(Self.normalize(phrase))
     }
 
-    /// Add a wallet from `mnemonic` and switch to it. `isImported` distinguishes
-    /// the two entry paths and sets the new wallet's `walletNeedsBackup` flag:
-    /// a created wallet still needs a backup (its phrase was only shown, not
-    /// verified — matches onboarding); an imported wallet does not (the user
-    /// already holds the phrase — matches the recover flow).
+    /// Add a wallet from `mnemonic`, persist its optional display `name`, and
+    /// switch to it. `isImported` distinguishes the two entry paths and sets
+    /// the new wallet's `walletNeedsBackup` flag: a created wallet still needs
+    /// a backup (its phrase was only shown, not verified — matches onboarding);
+    /// an imported wallet does not (the user already holds the phrase — matches
+    /// the recover flow).
     ///
     /// Flow: `SwiftDashSDKHost.addWallet` (additive — no rebind) → on `.added`,
     /// `switchWallet(to:)` the new wallet (awaited, progress overlay) → set the
     /// per-wallet backup flag for the now-active new wallet → refresh. On
-    /// `.alreadyExists` nothing is written and `.alreadyOnDevice` is returned so
-    /// the sheet can offer switching instead.
+    /// `.alreadyExists`, an entered name is applied to the existing current-
+    /// network row and `.alreadyOnDevice` lets the sheet offer switching.
     ///
     /// Returns the outcome; returns nil after surfacing an error (the sheet
     /// stays open on failure — never claims a success that didn't happen).
-    func addWallet(mnemonic: String, isImported: Bool) async -> AddOutcome? {
+    func addWallet(mnemonic: String, isImported: Bool, name: String? = nil) async -> AddOutcome? {
         guard !addInProgress, !switchInProgress, !removeInProgress else { return nil }
         let normalized = Self.normalize(mnemonic)
+        let enteredName = Self.normalizedWalletName(name)
+        let creationName = enteredName ?? SwiftDashSDKHost.defaultWalletName
 
         addInProgress = true
         defer { addInProgress = false }
@@ -293,7 +298,8 @@ final class WalletsViewModel: ObservableObject {
             // would self-await-deadlock the queue).
             result = try await SwiftDashSDKWalletRuntime.shared.performAddWallet(
                 mnemonic: normalized,
-                isImported: isImported)
+                isImported: isImported,
+                name: creationName)
         } catch {
             // The ONE exit where a forgotten finish() would strand the
             // blocking overlay with no owner.
@@ -310,6 +316,13 @@ final class WalletsViewModel: ObservableObject {
         switch result {
         case .alreadyExists(let walletId):
             state.finish()
+            // The phrase may already exist on the current network while the
+            // host has just repaired its missing sibling-network copy. Honor
+            // the name the user entered instead of silently discarding it.
+            if enteredName != nil,
+               !persistWalletName(enteredName, walletId: walletId) {
+                return nil
+            }
             return .alreadyOnDevice(walletId: walletId)
         case .added(let walletId):
             switchInProgress = true
@@ -350,23 +363,31 @@ final class WalletsViewModel: ObservableObject {
 
     // MARK: - Rename
 
-    /// Write `name` to `PersistentWallet.name` for `walletId` (empty string
-    /// clears it to nil). Persists via the host's `modelContainer` mainContext.
+    /// Write `name` to `PersistentWallet.name` for `walletId` (empty input
+    /// restores the default name). Persists through the host's model context.
     func rename(walletId: Data, to name: String) {
+        let effectiveName = Self.normalizedWalletName(name)
+            ?? SwiftDashSDKHost.defaultWalletName
+        _ = persistWalletName(effectiveName, walletId: walletId)
+    }
+
+    @discardableResult
+    private func persistWalletName(_ name: String?, walletId: Data) -> Bool {
         guard let context = SwiftDashSDKHost.shared.modelContainer?.mainContext,
               let persisted = Self.fetchPersistentWallet(walletId: walletId, in: context) else {
             Self.logger.error("rename: no PersistentWallet row for target")
             errorMessage = NSLocalizedString("Could not rename this wallet.", comment: "Wallets")
-            return
+            return false
         }
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        persisted.name = trimmed.isEmpty ? nil : trimmed
+        persisted.name = Self.normalizedWalletName(name)
         do {
             try context.save()
             reload()
+            return true
         } catch {
             Self.logger.error("rename save failed: \(String(describing: error), privacy: .public)")
             errorMessage = error.localizedDescription
+            return false
         }
     }
 
@@ -514,6 +535,14 @@ final class WalletsViewModel: ObservableObject {
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .split(whereSeparator: { $0.isWhitespace })
             .joined(separator: " ")
+    }
+
+    /// Trim an optional user-entered wallet name. Blank input becomes nil so
+    /// callers can distinguish "use the default name" from an explicit name.
+    nonisolated static func normalizedWalletName(_ name: String?) -> String? {
+        guard let trimmed = name?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !trimmed.isEmpty else { return nil }
+        return trimmed
     }
 
     private static func fetchPersistentWallet(walletId: Data, in context: ModelContext) -> PersistentWallet? {
