@@ -64,7 +64,16 @@ struct HomeBalanceView: View {
 
     private var platformDuffs: UInt64 { platformSync.platformBalance / 1_000 }
     private var shieldedDuffs: UInt64 { platformSync.shieldedBalance / 1_000 }
-    private var totalDuffs: UInt64 { viewModel.value + platformDuffs + shieldedDuffs }
+    /// The hero figure is the sum of the rows below it — including Platform
+    /// only while that row is on screen.
+    ///
+    /// Simple mode hides Platform credits everywhere, not just here: the
+    /// internal transfer's endpoints exclude them too, so counting them in a
+    /// total whose breakdown cannot show them would state a number the user
+    /// can neither see the parts of nor reach.
+    private var totalDuffs: UInt64 {
+        viewModel.value + shieldedDuffs + (showsPlatformBalance ? platformDuffs : 0)
+    }
 
     var body: some View {
         VStack(spacing: 0) {

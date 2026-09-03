@@ -122,5 +122,12 @@ class AdvancedModeRowUITests: XCTestCase {
 
         XCTAssertNotEqual(toggle.value as? String, before,
                           "The switch did not change state, so the tap never reached it")
+
+        // The switch writes through to UserDefaults, which this target does not
+        // reset between runs — put it back so the next test does not start in
+        // whichever mode this one left behind.
+        toggle.tap()
+        XCTAssertEqual(toggle.value as? String, before,
+                       "Could not restore the Advanced mode switch to its original state")
     }
 }

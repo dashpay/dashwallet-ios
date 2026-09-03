@@ -30,6 +30,13 @@ struct InternalTransferRequest: Equatable {
     let kind: Kind
     let amountDuffsUnsigned: UInt64
     let creditsAmount: UInt64
+    /// `.coreToPlatform` only: the L1 asset-lock value — the recipient amount
+    /// plus the funding reserve that rides on top of it. Resolved by
+    /// `InternalTransferViewModel.coreToPlatformLockValueDuffs` and FROZEN
+    /// here at Continue: the coordinator executes this number verbatim and
+    /// never recomputes the reserve, so the Total the user confirmed is
+    /// exactly the lock that is broadcast. `nil` fails the transfer closed.
+    let coreToPlatformLockDuffs: UInt64?
     /// `.platformToCore` only: the preflighted transition fee.
     let withdrawalFeeCredits: UInt64?
     /// `.platformToCore` only: run the AUTO all-addresses withdrawal.
@@ -233,7 +240,13 @@ final class InternalTransferRunner: ObservableObject {
                 amountCredits: request.creditsAmount,
                 sweepAll: request.isFullShieldedSweep)
         case .coreToPlatform:
-            await coordinator.performFundPlatform(amountDuffs: request.amountDuffsUnsigned)
+            // Fee-on-top: the recipient is credited the typed amount and the
+            // funding reserve rides on top inside the lock. The frozen lock
+            // value goes through as-is — the coordinator fails closed if it is
+            // missing or does not exceed the amount.
+            await coordinator.performFundPlatform(
+                recipientAmountDuffs: request.amountDuffsUnsigned,
+                lockValueDuffs: request.coreToPlatformLockDuffs)
         case .platformToCore:
             await coordinator.performPlatformWithdraw(
                 amountCredits: request.creditsAmount,

@@ -37,18 +37,27 @@ struct TransferConfirmSummary {
 
     let from: String
     let to: String
+    /// What the fee row is called — a balance route to Platform pays a
+    /// Platform-side funding fee rather than an L1 network fee.
+    let networkFeeLabel: String
     let networkFee: String
     let total: String
 
+    /// `networkFeeCredits` and `totalDuffs` are the ViewModel's resolved
+    /// figures, frozen into the submission at Continue (fee math is banned
+    /// inside View structs, and a re-resolve here could show a Total other
+    /// than the one that executes). Both are `nil` for the identity transfers,
+    /// which price themselves below.
     init(
         route: InternalTransferRoute?,
         identityTopUp: IdentityTopUpTransfer?,
         identityWithdrawal: IdentityWithdrawalTransfer?,
         dashDuffs: Int64,
-        amountDuffsUnsigned: UInt64,
-        withdrawalFeeCredits: UInt64?
+        networkFeeCredits: UInt64?,
+        totalDuffs: Int64?
     ) {
         let identityName = InternalTransferSummaryFigures.identityEndpointName
+        networkFeeLabel = InternalTransferSummaryFigures.feeRowLabel(route: route)
 
         if let identityTopUp {
             from = InternalTransferSummaryFigures.balanceName(identityTopUp.source)
@@ -79,11 +88,8 @@ struct TransferConfirmSummary {
         from = InternalTransferSummaryFigures.balanceName(endpoints.from)
         to = InternalTransferSummaryFigures.balanceName(endpoints.to)
         networkFee = InternalTransferSummaryFigures.networkFeeFiat(
-            route: route,
-            withdrawalFeeCredits: withdrawalFeeCredits) ?? Self.unavailable
+            credits: networkFeeCredits) ?? Self.unavailable
         total = InternalTransferSummaryFigures.totalLeavingSource(
-            route: route,
-            dashDuffs: dashDuffs,
-            amountDuffsUnsigned: amountDuffsUnsigned) ?? Self.unavailable
+            totalDuffs: totalDuffs) ?? Self.unavailable
     }
 }

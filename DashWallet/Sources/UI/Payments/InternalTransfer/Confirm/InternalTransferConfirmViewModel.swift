@@ -45,6 +45,14 @@ final class InternalTransferConfirmViewModel: ObservableObject {
     let dashDuffs: Int64
     let fiatText: String
 
+    /// Fee row (credits) and Total row (duffs) as
+    /// `InternalTransferViewModel` resolved them at Continue. Frozen rather
+    /// than recomputed here: for a Core-funded route the Total IS the lock
+    /// value that executes, so a figure re-derived while the sheet is up could
+    /// differ from the one the user is confirming.
+    private let networkFeeCredits: UInt64?
+    private let totalDuffs: Int64?
+
     /// Forwarded from the runner: a nested `ObservableObject` does not
     /// republish through its owner. The sheet closes as soon as the transfer
     /// starts, so this is the only runner state it still needs — a capacity
@@ -63,6 +71,9 @@ final class InternalTransferConfirmViewModel: ObservableObject {
         amountDuffsUnsigned: UInt64,
         creditsAmount: UInt64,
         fiatText: String,
+        networkFeeCredits: UInt64?,
+        totalDuffs: Int64?,
+        coreToPlatformLockDuffs: UInt64?,
         withdrawalFeeCredits: UInt64?,
         isFullPlatformWithdrawal: Bool,
         isFullShieldedSweep: Bool,
@@ -87,6 +98,7 @@ final class InternalTransferConfirmViewModel: ObservableObject {
                 kind: kind,
                 amountDuffsUnsigned: amountDuffsUnsigned,
                 creditsAmount: creditsAmount,
+                coreToPlatformLockDuffs: coreToPlatformLockDuffs,
                 withdrawalFeeCredits: withdrawalFeeCredits,
                 isFullPlatformWithdrawal: isFullPlatformWithdrawal,
                 isFullShieldedSweep: isFullShieldedSweep,
@@ -95,6 +107,8 @@ final class InternalTransferConfirmViewModel: ObservableObject {
 
         self.dashDuffs = dashDuffs
         self.fiatText = fiatText
+        self.networkFeeCredits = networkFeeCredits
+        self.totalDuffs = totalDuffs
         self.runner = runner
 
         // `dropFirst` because the runner is shared: whatever a previous
@@ -122,8 +136,8 @@ final class InternalTransferConfirmViewModel: ObservableObject {
             identityTopUp: topUpOrNil,
             identityWithdrawal: withdrawalOrNil,
             dashDuffs: dashDuffs,
-            amountDuffsUnsigned: request?.amountDuffsUnsigned ?? 0,
-            withdrawalFeeCredits: request?.withdrawalFeeCredits)
+            networkFeeCredits: networkFeeCredits,
+            totalDuffs: totalDuffs)
     }
 
     var privacyTipContext: TransferPrivacyTip.Context? {

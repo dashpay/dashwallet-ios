@@ -537,25 +537,29 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         Task { await self.syncNow() }
     }
 
-    /// Fund the wallet's own Platform balance from the Core L1 balance via
-    /// an asset lock (funding type 4, `AssetLockAddressTopUp`). `amountDuffs`
-    /// is locked on L1; the credited amount is that value minus the fees the
-    /// Rust side carves from the single remainder recipient (the wallet's
-    /// own next unused Platform address).
-    public func fundFromCore(amountDuffs: UInt64) async throws {
-        let (addressWallet, container, recipient, accountIndex) = try resolveFundEnvironment()
-        let signer = KeychainSigner(modelContainer: container, network: runningNetwork!)
+    /// Fund the wallet's own Platform balance from the Core L1 balance via an
+    /// asset lock (funding type 4, `AssetLockAddressTopUp`). The lock carries
+    /// a static reserve on top of `recipientAmountDuffs`; the requested amount
+    /// is paid explicitly to one own Platform address and the reserve remainder
+    /// is returned to a second own Platform address.
+    public func fundFromCore(
+        recipientAmountDuffs: UInt64,
+        lockValueDuffs: UInt64
+    ) async throws {
+        let env = try resolveFundEnvironment(recipientAmountDuffs: recipientAmountDuffs)
+        let signer = KeychainSigner(modelContainer: env.container, network: env.network)
 
-        Self.logger.info("🛰️ PLATFORM-FUND :: core → platform amount=\(amountDuffs) account=\(accountIndex)")
+        Self.logger.info(
+            "🛰️ PLATFORM-FUND :: core → platform recipient=\(recipientAmountDuffs) lock=\(lockValueDuffs) account=\(env.accountIndex)")
 
-        let updated = try await addressWallet.fundFromAssetLock(
-            amountDuffs: amountDuffs,
+        let updated = try await env.addressWallet.fundFromAssetLock(
+            amountDuffs: lockValueDuffs,
             fundingAccountIndex: 0,
-            platformAccountIndex: accountIndex,
-            recipients: [recipient],
+            platformAccountIndex: env.accountIndex,
+            recipients: env.recipients,
             signer: signer)
 
-        applyUpdatedBalances(updated, context: container.mainContext)
+        applyUpdatedBalances(updated, context: env.container.mainContext)
         await ShieldedTxLookup.shared.refresh(reason: "platform-fund-completed")
         Task { await self.syncNow() }
     }
@@ -566,46 +570,60 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// the existing outpoint instead of building (and stranding) a second
     /// lock. See `ShieldedTransferCoordinator.resumeAssetLock` for the same
     /// pattern on the shielded route.
-    public func resumeFundFromCore(outPointTxid: Data, outPointVout: UInt32) async throws {
-        let (addressWallet, container, recipient, accountIndex) = try resolveFundEnvironment()
-        let signer = KeychainSigner(modelContainer: container, network: runningNetwork!)
+    public func resumeFundFromCore(
+        outPointTxid: Data,
+        outPointVout: UInt32,
+        recipientAmountDuffs: UInt64
+    ) async throws {
+        let env = try resolveFundEnvironment(recipientAmountDuffs: recipientAmountDuffs)
+        let signer = KeychainSigner(modelContainer: env.container, network: env.network)
 
         Self.logger.info("🛰️ PLATFORM-FUND :: resume core → platform vout=\(outPointVout)")
 
-        let updated = try await addressWallet.resumeFundFromAssetLock(
+        let updated = try await env.addressWallet.resumeFundFromAssetLock(
             outPointTxid: outPointTxid,
             outPointVout: outPointVout,
-            platformAccountIndex: accountIndex,
-            recipients: [recipient],
+            platformAccountIndex: env.accountIndex,
+            recipients: env.recipients,
             signer: signer)
 
-        applyUpdatedBalances(updated, context: container.mainContext)
+        applyUpdatedBalances(updated, context: env.container.mainContext)
         await ShieldedTxLookup.shared.refresh(reason: "platform-fund-resume-completed")
         Task { await self.syncNow() }
     }
 
     /// Shared readiness + recipient resolution for `fundFromCore` /
-    /// `resumeFundFromCore`: the single credits-nil recipient is the
-    /// remainder output (absorbs the locked value less fees), pointed at the
-    /// wallet's own next receive address.
-    private func resolveFundEnvironment() throws -> (
-        wallet: ManagedPlatformAddressWallet,
-        container: ModelContainer,
-        recipient: ManagedPlatformAddressWallet.FundFromAssetLockRecipient,
-        accountIndex: UInt32
-    ) {
+    /// `resumeFundFromCore`: one own address receives the requested amount
+    /// explicitly, and a second own address receives the remainder/change.
+    private func resolveFundEnvironment(
+        recipientAmountDuffs: UInt64
+    ) throws -> FundFromCoreEnvironment {
         guard isRunning,
               let addressWallet = platformAddressWallet,
               let container = modelContainer,
-              runningNetwork != nil
+              let network = runningNetwork
         else { throw SendError.coordinatorNotReady }
-        guard let target = derivedAddresses.nextReceiveAddress,
-              let parsed = Self.parsePlatformRecipient(bech32m: target.address),
-              parsed.ffiAddressType == 0
-        else { throw SendError.noPlatformReceiveAddress }
+
+        let addressPair = try Self.resolveCoreToPlatformAddressPair(from: derivedAddresses)
+        let recipientCredits = recipientAmountDuffs.multipliedReportingOverflow(by: 1000)
+        guard recipientAmountDuffs > 0, !recipientCredits.overflow else {
+            throw SendError.invalidAmount
+        }
+
         let recipient = ManagedPlatformAddressWallet.FundFromAssetLockRecipient(
-            addressType: 0, hash: parsed.hash, credits: nil)
-        return (addressWallet, container, recipient, target.accountIndex)
+            addressType: 0,
+            hash: addressPair.recipient.hash,
+            credits: recipientCredits.partialValue)
+        let remainder = ManagedPlatformAddressWallet.FundFromAssetLockRecipient(
+            addressType: 0,
+            hash: addressPair.remainder.hash,
+            credits: nil)
+        return FundFromCoreEnvironment(
+            addressWallet: addressWallet,
+            container: container,
+            network: network,
+            accountIndex: addressPair.remainder.row.accountIndex,
+            recipients: [recipient, remainder])
     }
 
     /// Full local wipe of the platform-address sync state — the Sync Info
@@ -1414,6 +1432,24 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         let hash: Data             // 20 bytes
     }
 
+    struct CoreToPlatformFundingAddress: Equatable {
+        let row: DerivedPlatformAddress
+        let hash: Data
+    }
+
+    struct CoreToPlatformFundingAddressPair: Equatable {
+        let recipient: CoreToPlatformFundingAddress
+        let remainder: CoreToPlatformFundingAddress
+    }
+
+    private struct FundFromCoreEnvironment {
+        let addressWallet: ManagedPlatformAddressWallet
+        let container: ModelContainer
+        let network: Network
+        let accountIndex: UInt32
+        let recipients: [ManagedPlatformAddressWallet.FundFromAssetLockRecipient]
+    }
+
     /// Decode a DIP-0018 bech32m address (HRP `dash`/`tdash`) into the FFI
     /// discriminant + 20-byte hash that `ManagedPlatformAddressWallet`
     /// expects. Per rs-dpp's `address_funds/platform_address.rs`, only
@@ -1435,6 +1471,37 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         return PlatformRecipient(
             ffiAddressType: ffiType,
             hash: decoded.data.subdata(in: 1..<21))
+    }
+
+    static func resolveCoreToPlatformAddressPair(
+        from addresses: [DerivedPlatformAddress]
+    ) throws -> CoreToPlatformFundingAddressPair {
+        let sorted = addresses.sorted {
+            ($0.accountIndex, $0.addressIndex) < ($1.accountIndex, $1.addressIndex)
+        }
+        let decoded = sorted.compactMap { row -> CoreToPlatformFundingAddress? in
+            guard let parsed = parsePlatformRecipient(bech32m: row.address),
+                  parsed.ffiAddressType == 0
+            else { return nil }
+            return CoreToPlatformFundingAddress(row: row, hash: parsed.hash)
+        }
+        let accountIndices = Array(Set(decoded.map { $0.row.accountIndex })).sorted()
+
+        for accountIndex in accountIndices {
+            let accountRows = decoded.filter { $0.row.accountIndex == accountIndex }
+            let unusedRows = accountRows.filter { !$0.row.isUsed }
+            guard let recipient = unusedRows.first ?? accountRows.first else { continue }
+            let remainder = (unusedRows + accountRows).first {
+                $0.row.address != recipient.row.address && $0.hash != recipient.hash
+            }
+            if let remainder {
+                return CoreToPlatformFundingAddressPair(
+                    recipient: recipient,
+                    remainder: remainder)
+            }
+        }
+
+        throw SendError.noPlatformReceiveAddress
     }
 
 }
@@ -1460,6 +1527,7 @@ extension PlatformAddressSyncCoordinator {
         case invalidDestination
         case p2shNotSupported
         case noPlatformReceiveAddress
+        case invalidAmount
         case mnemonicUnavailable
         case keyDecodeFailed(String)
 
@@ -1484,6 +1552,10 @@ extension PlatformAddressSyncCoordinator {
             case .noPlatformReceiveAddress:
                 return NSLocalizedString(
                     "Could not resolve a destination Platform Payment address",
+                    comment: "InternalTransfer")
+            case .invalidAmount:
+                return NSLocalizedString(
+                    "The amount is too large to transfer.",
                     comment: "InternalTransfer")
             case .mnemonicUnavailable:
                 return NSLocalizedString(
