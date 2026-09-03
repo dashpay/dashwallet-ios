@@ -46,6 +46,7 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
 @dynamic autoLockAppInterval;
 @dynamic shortcuts;
 @dynamic balanceHidden;
+@dynamic advancedModeEnabled;
 @dynamic tapToHideBalanceShown;
 @dynamic shouldDisplayOnboarding;
 @dynamic paymentsScreenCurrentTab;
@@ -221,7 +222,10 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
 
 #pragma mark - Methods
 
+NSNotificationName const DWAdvancedModeDidChangeNotification = @"org.dash.advanced-mode-did-change";
+
 - (void)restoreToDefaults {
+    const BOOL advancedModeWasEnabled = self.advancedModeEnabled;
     self.walletNeedsBackup = YES;
     self.userHasBalance = NO;
     self.balanceChangedDate = nil;
@@ -229,6 +233,7 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
     self.shortcuts = nil;
     self.localNotificationsEnabled = YES;
     self.balanceHidden = NO;
+    self.advancedModeEnabled = NO;
     self.tapToHideBalanceShown = NO;
     self.resyncingWallet = NO;
     self.selectedPaymentCurrency = DWPaymentCurrencyDash;
@@ -246,6 +251,13 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
     self.dashPayRegistrationOpenedOnce = NO;
     self.confirmationAcceptContactRequestIsOn = YES;
 #endif
+
+    // A screen already on display reads the flag once; the reset has to
+    // say it moved, exactly as the settings switch does.
+    if (advancedModeWasEnabled) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:DWAdvancedModeDidChangeNotification
+                                                            object:nil];
+    }
 }
 
 @end
