@@ -3755,8 +3755,8 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		51DC0001300000000000DC01 /* DashConnect */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DashConnect; sourceTree = "<group>"; };
-		51DC0002300000000000DC02 /* DashConnect */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DashConnect; sourceTree = "<group>"; };
+		51DC0001300000000000DC01 /* DashConnect */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DashWallet/Sources/UI/DashConnect; sourceTree = SOURCE_ROOT; };
+		51DC0002300000000000DC02 /* DashConnect */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DashWallet/Sources/Models/DashConnect; sourceTree = SOURCE_ROOT; };
 		51DFA7FB2FA8EAF2001EDB3A /* Components */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Components; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
