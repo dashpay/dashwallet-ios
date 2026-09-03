@@ -33,10 +33,19 @@ NS_ASSUME_NONNULL_BEGIN
         return NO;
     }
 
-    return [url.scheme isEqual:@"dash"] || [url.scheme isEqual:@"dashwallet"] || [url.scheme isEqual:@"pay"];
+    return [url.scheme isEqual:@"dash"] || [url.scheme isEqual:@"dashwallet"] ||
+           [url.scheme isEqual:@"pay"] || [DWDashConnectDeepLink canHandleURL:url];
 }
 
 + (nullable DWURLAction *)actionForURL:(NSURL *)url {
+    NSString *dashConnectURI = [DWDashConnectDeepLink uriFromURL:url];
+    if (dashConnectURI) {
+        DWURLDashConnectAction *action = [[DWURLDashConnectAction alloc] init];
+        action.uri = dashConnectURI;
+
+        return action;
+    }
+
     if ([url.absoluteString containsString:@"uphold"]) {
         DWURLIntegrationAction *action = [[DWURLIntegrationAction alloc] init];
         action.url = url;

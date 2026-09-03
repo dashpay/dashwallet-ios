@@ -110,6 +110,12 @@ final class ConnectionsViewModel: ObservableObject {
         }
     }
 
+    /// A `dash-key:` / `dash-st:` link opened by an app running on this phone.
+    /// It carries exactly what the QR code encodes, so it takes the same path.
+    func onURIReceived(_ uri: String) {
+        onQRScanned(uri)
+    }
+
     func approvePendingRequest() {
         guard pendingRequest != nil, let pendingLoginRequest, !isApproving else { return }
 

@@ -296,8 +296,7 @@ struct ToolsMenuScreen: View {
     }
 
     private func showConnections() {
-        let screen = ConnectionsScreen(vc: vc)
-        let controller = UIHostingController(rootView: screen)
+        let controller = DashConnectHostingController(navigationController: vc)
         controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }
