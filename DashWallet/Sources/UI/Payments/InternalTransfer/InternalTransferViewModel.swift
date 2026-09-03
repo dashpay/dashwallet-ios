@@ -105,6 +105,92 @@ enum CoreToShieldedAmountPolicy {
     }
 }
 
+/// Shared fee-on-top amount boundary for Core → Platform address topups,
+/// sized from DPP's static minimum-required address-funding fee.
+///
+/// The app submits two Platform outputs: an explicit recipient amount and a
+/// sender-owned remainder/change output. The reserve rides on top of the typed
+/// amount in the L1 asset lock; Rust deducts the actual Platform fee from the
+/// remainder, so the recipient receives exactly the requested amount and any
+/// unused reserve remains in the sender's Platform balance.
+enum CoreToPlatformAmountPolicy {
+    static let addressFundingInputCount = 0
+    static let addressFundingOutputCount = 2
+
+    @MainActor static var currentReserveCredits: UInt64? {
+        try? SwiftDashSDKHost.shared.manager?.estimateAddressFundingFee(
+            inputCount: addressFundingInputCount,
+            outputCount: addressFundingOutputCount)
+    }
+
+    @MainActor static var currentReserveDuffs: UInt64? {
+        currentReserveCredits.map(reserveDuffs(reserveCredits:))
+    }
+
+    /// Funding reserve (duffs) the lock carries on top of `amountDuffs`,
+    /// rounded UP so a duff-denominated lock always covers the
+    /// credit-denominated minimum fee. `nil` when `amountDuffs` cannot be
+    /// represented as credits.
+    static func reserveDuffs(
+        forAmountDuffs amountDuffs: UInt64,
+        reserveCredits: UInt64
+    ) -> UInt64? {
+        let amountCredits = amountDuffs.multipliedReportingOverflow(by: 1000)
+        guard !amountCredits.overflow else { return nil }
+        return reserveDuffs(reserveCredits: reserveCredits)
+    }
+
+    static func reserveDuffs(reserveCredits: UInt64) -> UInt64 {
+        reserveCredits / 1000 + (reserveCredits.isMultiple(of: 1000) ? 0 : 1)
+    }
+
+    /// Fee-on-top L1 lock value: amount + static reserve. `nil` on overflow
+    /// — callers fail closed.
+    static func lockValueDuffs(
+        forAmountDuffs amountDuffs: UInt64,
+        reserveCredits: UInt64
+    ) -> UInt64? {
+        guard let reserve = reserveDuffs(
+            forAmountDuffs: amountDuffs,
+            reserveCredits: reserveCredits)
+        else { return nil }
+        let (total, overflow) = amountDuffs.addingReportingOverflow(reserve)
+        return overflow ? nil : total
+    }
+
+    /// Largest topup amount the spendable balance can fund: the whole
+    /// spendable envelope goes into the lock, minus the rounded-up reserve,
+    /// capped at the largest amount `lockValueDuffs` accepts — beyond that
+    /// the duffs→credits conversion overflows and Continue would fail
+    /// closed on an amount Max itself filled.
+    static func maxAmountDuffs(
+        spendableDuffs: UInt64,
+        reserveCredits: UInt64
+    ) -> UInt64 {
+        let reserveDuffs = reserveDuffs(reserveCredits: reserveCredits)
+        guard spendableDuffs > reserveDuffs else { return 0 }
+        return min(spendableDuffs - reserveDuffs, UInt64.max / 1000)
+    }
+
+    /// What actually STAYS in the Core balance after a Max fill executes:
+    /// the total balance minus the executed lock (amount + reserve). The
+    /// reserve itself leaves Core inside the asset lock, so it must never
+    /// be described as held back. `nil` when nothing stays behind (or on
+    /// overflow) — callers show no held-back notice.
+    static func maxHeldBackDuffs(
+        coreBalanceDuffs: UInt64,
+        maxAmountDuffs: UInt64,
+        reserveCredits: UInt64
+    ) -> UInt64? {
+        guard let lockDuffs = lockValueDuffs(
+            forAmountDuffs: maxAmountDuffs,
+            reserveCredits: reserveCredits),
+              coreBalanceDuffs > lockDuffs
+        else { return nil }
+        return coreBalanceDuffs - lockDuffs
+    }
+}
+
 /// Shared affordability boundary for every transfer route, whichever balance
 /// it spends.
 ///
@@ -517,6 +603,7 @@ final class InternalTransferViewModel: ObservableObject {
         } else {
             cancelPlatformShieldPreflight()
         }
+
     }
 
     /// Net payout of the full-balance (Max) Platform → Core withdrawal, in
@@ -731,13 +818,18 @@ final class InternalTransferViewModel: ObservableObject {
                     ? coreSpendableDuffs - feeDuffs : 0)
 
         case .coreToPlatform:
-            // This asset-lock route carves its processing fee from the locked
-            // value, but the funding transaction is still an L1 spend — only
-            // confirmed UTXOs, and the miner fee comes off the top.
+            // The static address-funding reserve rides on top of the amount,
+            // so the spendable envelope shrinks by it — same shape as Core →
+            // Shielded above. Missing SDK estimate → fail closed with why.
+            guard let reserveCredits = CoreToPlatformAmountPolicy.currentReserveCredits else {
+                return Self.feeEstimateUnavailableMessage
+            }
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
                 requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: coreSpendableDuffs)
+                spendableDuffs: CoreToPlatformAmountPolicy.maxAmountDuffs(
+                    spendableDuffs: coreSpendableDuffs,
+                    reserveCredits: reserveCredits))
 
         case .platformToShielded:
             if awaitingPlatformShieldResync {
@@ -843,11 +935,15 @@ final class InternalTransferViewModel: ObservableObject {
             else { return false }
             return lockDuffs <= coreSpendableDuffs
         case .coreToPlatform:
-            // This asset-lock route carves its processing fee from the locked
-            // value rather than charging it on top. What still bounds it is
-            // the funding spend itself — confirmed UTXOs minus the L1 fee
-            // reserve, which is exactly `coreSpendableDuffs`.
-            return dashDuffsUnsigned <= coreSpendableDuffs
+            // Fee-on-top: the lock value is amount + static reserve (the ST's
+            // fee is taken from the sender change output, not the recipient
+            // amount), so the L1 spendable balance must cover both.
+            guard let reserveCredits = CoreToPlatformAmountPolicy.currentReserveCredits,
+                  let lockDuffs = CoreToPlatformAmountPolicy.lockValueDuffs(
+                      forAmountDuffs: dashDuffsUnsigned,
+                      reserveCredits: reserveCredits)
+            else { return false }
+            return lockDuffs <= coreSpendableDuffs
         case .platformToShielded:
             return !isPlatformShieldPreflightLoading
                 && PlatformShieldAmountPolicy.canSubmit(
@@ -885,10 +981,10 @@ final class InternalTransferViewModel: ObservableObject {
     private var feeReserveCredits: UInt64? {
         switch route {
         case .coreToShielded, .coreToPlatform:
-            // Core→Shielded's pool fee is duff-denominated and enforced in
-            // the route branches (`canContinue`, Max) directly; Core→Platform
-            // carves its fee from the locked value. Neither reserves credits
-            // from the source balance here.
+            // Both Core-funded routes charge their fee/headroom ON TOP of the
+            // amount, but duff-denominated and enforced in the route branches
+            // (`canContinue`, Max) directly. Neither reserves credits from
+            // the source balance here.
             return 0
         case .platformToShielded:
             // Governed by the SDK's account/address-aware shield preflight.
@@ -911,6 +1007,78 @@ final class InternalTransferViewModel: ObservableObject {
             // Full-balance withdrawal: the fee is already netted out of the
             // preflight's `netWithdrawable`; no reserve on top.
             return 0
+        }
+    }
+
+    /// Resolved fee row (credits) for the confirm sheet: a protocol-version
+    /// based estimate or the route's fee-on-top headroom. Lives here because
+    /// fee math is banned inside View structs; frozen into the submission at
+    /// Continue. `nil` renders as "—".
+    var confirmNetworkFeeCredits: UInt64? {
+        switch route {
+        case .coreToShielded:
+            // The lock charges the fee rounded UP to a whole duff — display
+            // that, so Amount + Network fee equals Total exactly.
+            return CoreToShieldedAmountPolicy.currentPoolFeeDuffs.map { $0 * 1000 }
+        case .platformToShielded:
+            // Shield (Type 15): base shielded fee. Real metered storage is
+            // extra and only knowable on-chain, so this is a lower bound.
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .transfer, numActions: 2)
+        case .shieldedToCore:
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .withdrawal, numActions: 2)
+        case .shieldedToPlatform:
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .unshield, numActions: 2)
+        case .coreToPlatform:
+            // Display the whole static reserve the lock carries. The actual
+            // Platform fee is deducted from the sender-owned remainder output;
+            // any unused reserve stays in Platform balance.
+            guard let reserveDuffs = CoreToPlatformAmountPolicy.currentReserveDuffs else {
+                return nil
+            }
+            let feeCredits = reserveDuffs.multipliedReportingOverflow(by: 1000)
+            return feeCredits.overflow ? nil : feeCredits.partialValue
+        case .platformToCore:
+            // The exact transition fee the preflight already netted out of
+            // the payout amount.
+            return withdrawalPreflight?.estimatedFee
+        }
+    }
+
+    /// The exact L1 lock value the Core → Platform submission will execute:
+    /// amount + static reserve. Resolved here (fee math is banned in View
+    /// structs) and FROZEN into the confirmation at Continue — the coordinator
+    /// receives this value verbatim and never recomputes it, so the Total the
+    /// user confirms is exactly the lock executed.
+    var coreToPlatformLockValueDuffs: UInt64? {
+        guard route == .coreToPlatform,
+              let reserveCredits = CoreToPlatformAmountPolicy.currentReserveCredits
+        else { return nil }
+        return CoreToPlatformAmountPolicy.lockValueDuffs(
+            forAmountDuffs: dashDuffsUnsigned,
+            reserveCredits: reserveCredits)
+    }
+
+    /// Resolved "Total" row (duffs) for the confirm sheet — what actually
+    /// leaves the source balance. Both Core-funded asset-lock routes charge
+    /// their fee/headroom on top of the amount (the executed lock value);
+    /// every other route's total is the amount itself. `nil` (rendered "—")
+    /// when the fee estimate is unavailable or the sum overflows —
+    /// `canContinue` fails closed before that can be confirmed, but the row
+    /// must never show the un-inflated number.
+    var confirmTotalDuffs: Int64? {
+        switch route {
+        case .coreToShielded:
+            guard let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
+                  let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
+                      forAmountDuffs: dashDuffsUnsigned,
+                      poolFeeCredits: poolFeeCredits)
+            else { return nil }
+            return Int64(exactly: lockDuffs)
+        case .coreToPlatform:
+            guard let lockDuffs = coreToPlatformLockValueDuffs else { return nil }
+            return Int64(exactly: lockDuffs)
+        default:
+            return dashDuffs
         }
     }
 
@@ -1047,18 +1215,33 @@ final class InternalTransferViewModel: ObservableObject {
                 maxNotice = Self.coreHeldBackMessage(coreBalanceDuffs - sourceDuffs)
             }
         case .coreToPlatform:
-            // Fee-aware max: spendable minus the send fee reserve (mirrors
-            // DSAccount.maxOutputAmount), never the raw total — the asset-lock
-            // spends core UTXOs and still needs room for the L1 fee.
-            sourceDuffs = coreSpendableDuffs
-            if sourceDuffs == 0 {
+            // Fee-on-top Max: the lock is amount + static reserve, so the
+            // largest topup is the L1-fee-aware spendable minus that reserve.
+            guard let reserveCredits = CoreToPlatformAmountPolicy.currentReserveCredits else {
+                maxNotice = Self.feeEstimateUnavailableMessage
+                sourceDuffs = 0
+                break
+            }
+            sourceDuffs = CoreToPlatformAmountPolicy.maxAmountDuffs(
+                spendableDuffs: coreSpendableDuffs,
+                reserveCredits: reserveCredits)
+            if coreSpendableDuffs == 0 {
                 maxNotice = Self.coreZeroMaxMessage(
                     totalDuffs: coreBalanceDuffs,
                     confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0)
-            } else if sourceDuffs < coreBalanceDuffs {
+            } else if sourceDuffs == 0 {
+                maxNotice = Self.feeReserveExceedsBalanceMessage(route.source)
+            } else if let heldBackDuffs = CoreToPlatformAmountPolicy.maxHeldBackDuffs(
+                coreBalanceDuffs: coreBalanceDuffs,
+                maxAmountDuffs: sourceDuffs,
+                reserveCredits: reserveCredits) {
                 // The balance card shows the total, so a Max that lands below
-                // it reads as a bug unless the held-back part is accounted for.
-                maxNotice = Self.coreHeldBackMessage(coreBalanceDuffs - sourceDuffs)
+                // it reads as a bug unless the part staying in Core (L1 fee
+                // headroom + unconfirmed coins) is accounted for. The funding
+                // reserve is NOT part of it — it leaves Core inside the
+                // executed lock — so the notice is derived from the executed
+                // lock value, and skipped entirely when nothing stays behind.
+                maxNotice = Self.coreHeldBackMessage(heldBackDuffs)
             }
         case .platformToShielded:
             // Handled above because an unresolved async preflight must preserve

@@ -114,6 +114,14 @@ enum DashPayContactAddressReadiness {
                 \(seconds, privacy: .public)s; starting SPV, discovery retries \
                 on the next start
                 """)
+        @unknown default:
+            logger.warning(
+                """
+                👥 DP-READY :: unknown wallet startup status \
+                \(outcome.status.rawValue, privacy: .public) after \
+                \(seconds, privacy: .public)s; starting SPV without assuming \
+                DashPay readiness
+                """)
         }
     }
 }
