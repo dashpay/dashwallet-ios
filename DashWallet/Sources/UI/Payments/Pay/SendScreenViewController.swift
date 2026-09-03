@@ -75,13 +75,10 @@ final class SendScreenViewController: DWBasePayViewController {
     // MARK: - QR scan
 
     /// The base class routes a scanned payment straight into the payment
-    /// processor (its `DWQRScanModelDelegate` conformance is a private
-    /// class extension, so this can't be `override` — the matching selector
-    /// shadows it through ObjC dispatch). On this screen a scan fills the
-    /// form instead, so the destination-type detection and From picker
-    /// apply to scanned addresses exactly like typed/pasted ones.
-    @objc(qrScanModel:didScanPaymentInput:)
-    func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
+    /// processor. On this screen a scan fills the form instead, so the
+    /// destination-type detection and From picker apply to scanned
+    /// addresses exactly like typed/pasted ones.
+    override func didScanPaymentInput(_ paymentInput: DWPaymentInput) {
         dismiss(animated: true) { [weak self] in
             self?.sendViewModel.ingestScannedInput(paymentInput)
         }
