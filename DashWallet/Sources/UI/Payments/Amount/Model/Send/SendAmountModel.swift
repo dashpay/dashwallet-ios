@@ -62,7 +62,11 @@ class SendAmountModel: BaseAmountModel {
 
     var canShowInsufficientFunds: Bool {
         let plainAmount = amount.plainAmount
-        let allAvailableFunds = SwiftDashSDKWalletState.shared.balance?.spendable ?? 0
+        // The accounts a send can actually draw on, not the whole wallet:
+        // `balance.spendable` also counts CoinJoin, which the funding pool
+        // excludes by design, so gating on it accepts amounts the builder then
+        // refuses with "insufficient unreserved core funds".
+        let allAvailableFunds = SwiftDashSDKWalletState.shared.pooledSpendableDuffs
         return plainAmount > allAvailableFunds
     }
 
