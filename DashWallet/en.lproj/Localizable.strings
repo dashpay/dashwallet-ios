@@ -843,6 +843,12 @@
 
 /* Usernames */
 "Non-standard output" = "Non-standard output";
+/* Accessibility value for a settings switch that is enabled */
+"On" = "On";
+
+/* Accessibility value for a settings switch that is disabled */
+"Off" = "Off";
+
 "Operator payout address" = "Operator payout address";
 "Operator signature (BLS)" = "Operator signature (BLS)";
 "Platform P2P port" = "Platform P2P port";

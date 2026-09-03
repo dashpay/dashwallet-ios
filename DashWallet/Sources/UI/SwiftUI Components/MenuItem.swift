@@ -233,8 +233,11 @@ struct MenuItem: View {
                         .tint(Color.dash.blue)
                         .scaleEffect(0.75)
                         .frame(maxWidth: 60)
-                        // VoiceOver reads the row title on the switch, tying it to what it controls
-                        .accessibilityLabel(title)
+                        // The row Button already carries the switch semantics
+                        // (see `toggleRowAccessibility`), so this stays out of
+                        // the accessibility tree rather than appearing as a
+                        // second, nested control.
+                        .accessibilityHidden(true)
                 }
                 
                 if showChevron {
@@ -275,6 +278,7 @@ struct MenuItem: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity)
+        .toggleRowAccessibility(isToggleRow: showToggle, title: title, isOn: isToggled)
         .onChange(of: isToggled) { newValue in
             action?()
         }
@@ -287,6 +291,33 @@ struct MenuItem: View {
         Text(text)
             .font(.caption)
             .foregroundColor(.dash.secondaryText)
+    }
+}
+
+extension View {
+    /// Presents a `MenuItem` that carries a switch as one accessibility element
+    /// with switch semantics.
+    ///
+    /// The row is a `Button` whose label contains the `Toggle`, so without this
+    /// the two nest: VoiceOver is handed two overlapping controls and has to
+    /// guess which one an activation belongs to. Collapsing the row to a single
+    /// element with `.isToggle` and a spoken on/off value leaves exactly one
+    /// target, while the `Button` keeps driving the state as before.
+    ///
+    /// Rows without a switch are untouched — `Button` already merges its label
+    /// content into one element with the correct trait.
+    @ViewBuilder
+    func toggleRowAccessibility(isToggleRow: Bool, title: String, isOn: Bool) -> some View {
+        if isToggleRow {
+            accessibilityElement(children: .ignore)
+                .accessibilityLabel(title)
+                .accessibilityValue(isOn
+                    ? NSLocalizedString("On", comment: "Accessibility value for a settings switch that is enabled")
+                    : NSLocalizedString("Off", comment: "Accessibility value for a settings switch that is disabled"))
+                .accessibilityAddTraits(.isToggle)
+        } else {
+            self
+        }
     }
 }
 
