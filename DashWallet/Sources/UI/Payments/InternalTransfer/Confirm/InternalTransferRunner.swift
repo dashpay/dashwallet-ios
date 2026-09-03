@@ -194,6 +194,12 @@ final class InternalTransferRunner: ObservableObject {
         platformShieldCapacityChange = nil
         coordinator.reset()
 
+        // Claimed here, not inside the task `run` schedules: `defer` clears
+        // `isAwaitingAuthorization` the moment this returns, and until the
+        // executor publishes its first phase there would be nothing else
+        // holding the door — a second Confirm in that window passed both
+        // guards and started a second transfer behind the first.
+        phase = .inFlight
         notice = .started
         run(request)
         return .started

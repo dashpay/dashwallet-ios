@@ -64,6 +64,11 @@ struct TransferPrivacyTip: View {
         case .route(.shieldedToCore, _), .route(.platformToCore, _),
              .identityWithdrawal(.transparent):
             return DashIcon.SystemMessage.timerSmall.source
+        case .route(.shieldedToPlatform, _), .route(.coreToPlatform, _),
+             .identityWithdrawal(.platform):
+            // Their message is about when the funds are spendable, so they
+            // take the timing glyph rather than the privacy shield.
+            return DashIcon.SystemMessage.timerSmall.source
         default:
             return DashIcon.SystemMessage.shieldSmall.source
         }
@@ -81,6 +86,12 @@ struct TransferPrivacyTip: View {
             return isFullWithdrawal
                 ? NSLocalizedString("Withdraws the entire balance", comment: "Full-balance Platform → Transparent withdrawal")
                 : NSLocalizedString("Processing time", comment: "Platform → Transparent withdrawal")
+        case .route(.shieldedToPlatform, _), .route(.coreToPlatform, _):
+            // Both messages say the funds are spendable immediately — the same
+            // statement the identity → Platform transfer already titles this
+            // way. "Privacy tip" over a sentence about timing reads as a
+            // heading for a different card.
+            return NSLocalizedString("Ready right away", comment: "Identity → Platform credit transfer")
         default:
             return NSLocalizedString("Privacy tip", comment: "")
         }
