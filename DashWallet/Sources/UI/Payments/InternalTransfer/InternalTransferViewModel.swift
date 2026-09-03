@@ -1020,11 +1020,11 @@ final class InternalTransferViewModel: ObservableObject {
         case .platformToShielded:
             // Shield (Type 15): base shielded fee. Real metered storage is
             // extra and only knowable on-chain, so this is a lower bound.
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .transfer, numActions: 2)
         case .shieldedToCore:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .withdrawal, numActions: 2)
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .withdrawal, numActions: 2)
         case .shieldedToPlatform:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 2)
+            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .unshield, numActions: 2)
         case .coreToPlatform:
             // Display the whole static reserve the lock carries. The actual
             // Platform fee is deducted from the sender-owned remainder output;
