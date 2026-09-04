@@ -652,16 +652,27 @@ enum StartupIdentityRecoveryPolicy {
     /// re-arm, the storage explorer's direct BLAST start): the backstop runs
     /// as before. A known identity keeps it running too — the pipeline then
     /// skips discovery and only refreshes names + adopts. No identity after a
-    /// readiness pass (`.noIdentity`, `.partialNoIdentity`,
-    /// `.discoveryFailed`) means that pass WAS the discovery, with the SDK's
-    /// backoff schedule; repeating it unbudgeted is what cost a wallet switch
-    /// 31 s.
+    /// readiness pass that ended in one of the three discovery verdicts
+    /// (`.noIdentity`, `.partialNoIdentity`, `.discoveryFailed`) means that
+    /// pass WAS the discovery, with the SDK's backoff schedule; repeating it
+    /// unbudgeted is what cost a wallet switch 31 s. Every other status —
+    /// including `.seedBindingUnverified` and any status this build does not
+    /// know — leaves the identity question to the backstop, which fails safe
+    /// towards running.
     static func shouldRunBackstop(
         readinessStatus: WalletStartupStatus?,
         readinessIdentityId: Data?
     ) -> Bool {
-        guard readinessStatus != nil else { return true }
-        return readinessIdentityId != nil
+        guard let readinessStatus else { return true }
+        if readinessIdentityId != nil { return true }
+        switch readinessStatus {
+        case .noIdentity, .partialNoIdentity, .discoveryFailed:
+            return false
+        case .ready, .partialAccountsPending, .seedBindingUnverified, .identityScanIncomplete:
+            return true
+        @unknown default:
+            return true
+        }
     }
 
     /// Only a Platform-confirmed absence settles the context for the rest of

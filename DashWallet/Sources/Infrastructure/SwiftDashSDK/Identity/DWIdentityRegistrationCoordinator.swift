@@ -310,6 +310,11 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// `.completed` mirror can write DWGlobalOptions.dashpayUsername.
     private(set) var currentUsername: String?
 
+    /// Wallet the in-flight attempt registers for. Stashed at submit time
+    /// because `.completed` arrives after awaited Platform work, during
+    /// which a wallet switch can rebind `SwiftDashSDKHost.shared.wallet`.
+    private var registrationWalletId: Data?
+
     /// Funding source for the in-flight attempt (the value the
     /// coordinator's caller passed into `startCreateUsername(_:fundingSource:)`).
     /// Read by `DWIdentityRegistrationBridge.refreshFromCoordinator`
@@ -536,6 +541,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         resetState()
 
         currentUsername = username
+        registrationWalletId = wallet.walletId
         // A persisted identity-registration lock always wins over the
         // newly-selected funding source. The original Core payment has
         // already happened; presenting PP / shielded progress here would
@@ -963,6 +969,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         }
         resetState()
         currentUsername = name
+        registrationWalletId = wallet.walletId
         currentFundingSource = .core
 
         let newController = DWIdentityRegistrationController()
@@ -1371,7 +1378,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             // The wallet now owns an identity: drop the generated-on-device
             // marker so the next runtime start runs the full pre-SPV
             // bring-up (hygiene — the budget gate also checks local rows).
-            if let walletId = SwiftDashSDKHost.shared.wallet?.walletId {
+            // Keyed by the wallet this attempt started for, not the host's
+            // current wallet, which a switch may have rebound meanwhile.
+            if let walletId = registrationWalletId {
                 GeneratedWalletIdentityMarker.clear(walletId: walletId)
             }
         }
@@ -1439,6 +1448,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         failedAtPhase = nil
         lastErrorMessage = nil
         currentUsername = nil
+        registrationWalletId = nil
         currentFundingSource = .core
         registeredTemporaryUsername = nil
         temporaryUsernameError = nil

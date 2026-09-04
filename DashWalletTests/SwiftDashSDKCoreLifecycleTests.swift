@@ -209,6 +209,22 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         }
     }
 
+    func testBackstopRunsWhenSeedBindingIsUnverifiedWithoutAnIdentity() {
+        // The identity question is unresolved, not answered: the pass never
+        // got to derive anything for this wallet.
+        XCTAssertTrue(StartupIdentityRecoveryPolicy.shouldRunBackstop(
+            readinessStatus: .seedBindingUnverified, readinessIdentityId: nil))
+    }
+
+    func testBackstopRunsForNonDiscoveryStatusesWithoutAnIdentity() {
+        for status: WalletStartupStatus in [.ready, .partialAccountsPending, .identityScanIncomplete] {
+            XCTAssertTrue(
+                StartupIdentityRecoveryPolicy.shouldRunBackstop(
+                    readinessStatus: status, readinessIdentityId: nil),
+                "\(status)")
+        }
+    }
+
     func testOnlyProvenAbsenceCompletesTheRecoveryContext() {
         XCTAssertTrue(StartupIdentityRecoveryPolicy.marksContextCompleted(readinessStatus: .noIdentity))
         for status: WalletStartupStatus in [.ready, .partialNoIdentity, .discoveryFailed, .identityScanIncomplete] {

@@ -1365,6 +1365,11 @@ final class SwiftDashSDKHost {
 /// short startup budget (`StartupIdentityRecoveryPolicy`). Lives here, not
 /// in the DASHPAY-only identity file, because both writers compile into
 /// every target.
+///
+/// Deliberately NOT restored by `recoverPersistedWallet` (reinstall with a
+/// surviving Keychain mnemonic): UserDefaults die with the app, and a
+/// recovered wallet's origin is unknown — an imported seed must keep the
+/// default budget, so the safe direction is the slower one.
 enum GeneratedWalletIdentityMarker {
     private static func key(walletId: Data) -> String {
         "DWGeneratedWalletNoIdentity." + walletId.map { String(format: "%02x", $0) }.joined()
