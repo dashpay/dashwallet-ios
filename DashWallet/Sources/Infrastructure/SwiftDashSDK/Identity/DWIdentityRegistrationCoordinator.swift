@@ -1375,14 +1375,16 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 DWGlobalOptions.sharedInstance().dashpayUsername = username
                 DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted = true
             }
-            // The wallet now owns an identity: drop the generated-on-device
-            // marker so the next runtime start runs the full pre-SPV
-            // bring-up (hygiene — the budget gate also checks local rows).
-            // Keyed by the wallet this attempt started for, not the host's
-            // current wallet, which a switch may have rebound meanwhile.
-            if let walletId = registrationWalletId {
-                GeneratedWalletIdentityMarker.clear(walletId: walletId)
-            }
+        }
+
+        // The registering wallet now owns an identity: drop its
+        // generated-on-device marker so the next runtime start runs the
+        // full pre-SPV bring-up (hygiene — the budget gate also checks local
+        // rows). Independent of the username mirror above, and keyed by the
+        // wallet this attempt started for, not the host's current wallet,
+        // which a switch may have rebound meanwhile.
+        if case .completed = newPhase, let walletId = registrationWalletId {
+            GeneratedWalletIdentityMarker.clear(walletId: walletId)
         }
 
         // Stop asset-lock polling on terminal phases — no further
