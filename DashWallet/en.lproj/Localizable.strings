@@ -3368,6 +3368,9 @@
 /* Platform → Transparent withdrawal */
 "Processing time" = "Processing time";
 
+/* Sync phase: scan finished, transactions still being written */
+"Processing transactions" = "Processing transactions";
+
 /* SDK identity profile sheet */
 "Platform Credits" = "Platform Credits";
 
