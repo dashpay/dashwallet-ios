@@ -5872,3 +5872,5 @@
 "stopped after repeated failures" = "stopped after repeated failures";
 "Cancelled." = "Cancelled.";
 "Nothing to finish." = "Nothing to finish.";
+/* Receive: the QR image doubles as a copy control */
+"Copy QR code" = "Copy QR code";

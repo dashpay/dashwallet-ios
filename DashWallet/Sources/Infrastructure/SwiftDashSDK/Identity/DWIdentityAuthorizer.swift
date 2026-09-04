@@ -37,17 +37,37 @@ final class DWIdentityAuthorizer {
         }
     }
 
-    /// `sessionAuthSufficient` lets a caller that has ALREADY gated the whole
-    /// operation once skip the per-item prompt — a bulk asset-lock recovery
-    /// authenticates for the batch, not for each of its (possibly dozens of)
-    /// resumes. Default `false`, so every interactive caller keeps prompting.
+    /// True while a caller has already run this gate for the work about to
+    /// execute, so the executor's own `authorize()` must not ask a second
+    /// time.
+    ///
+    /// Task-local rather than a stored flag: it covers exactly the work run
+    /// inside `preauthorized(_:)` and nothing else, so every other entry point
+    /// (the recovery sheet, the Send screen, a profile top-up) still prompts
+    /// for itself, and it cannot be left set by a transfer that died.
+    @TaskLocal static var isPreauthorized = false
+
+    /// Runs `body` with this gate already satisfied. The caller must have
+    /// awaited `authorize()` successfully first — this only suppresses the
+    /// SECOND prompt, it never skips authentication.
+    ///
+    /// Why anyone would: the gate has to be settled before the screen that
+    /// asked for it goes away, and the executors raise it from deep inside
+    /// work that outlives that screen.
+    static func preauthorized<T>(_ body: () async -> T) async -> T {
+        await $isPreauthorized.withValue(true, operation: body)
+    }
+
     @MainActor
-    func authorize(sessionAuthSufficient: Bool = false) async throws {
+    func authorize() async throws {
+        if Self.isPreauthorized {
+            Self.logger.info("🪪 IDENTITY-AUTH :: already authorized for this operation — not prompting again")
+            return
+        }
+
         let biometricEnabled = DWGlobalOptions.sharedInstance().biometricAuthEnabled
-        Self.logger.info("🪪 IDENTITY-AUTH :: authenticating via AuthenticationGate (biometric=\(biometricEnabled, privacy: .public) sessionAuthSufficient=\(sessionAuthSufficient, privacy: .public))")
-        let outcome = await AuthenticationGate.authenticate(
-            biometric: biometricEnabled,
-            sessionAuthSufficient: sessionAuthSufficient)
+        Self.logger.info("🪪 IDENTITY-AUTH :: authenticating via AuthenticationGate (biometric=\(biometricEnabled, privacy: .public))")
+        let outcome = await AuthenticationGate.authenticate(biometric: biometricEnabled)
 
         switch outcome {
         case .ok:

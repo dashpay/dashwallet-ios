@@ -146,11 +146,6 @@ struct BuyEnterAmountView: View {
                 }
             }
         )
-        .frame(maxWidth: .infinity, maxHeight: 320)
-        .padding(.horizontal, Layout.hPadding)
-        .background(Color.dash.secondaryBackground)
-        .clipShape(.rect(cornerRadius: 20))
-        .background(Color.dash.secondaryBackground, ignoresSafeAreaEdges: .bottom)
     }
 }
 

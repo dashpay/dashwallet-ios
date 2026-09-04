@@ -27,6 +27,8 @@
 
 import Foundation
 import OSLog
+import SwiftDashSDK
+import SwiftData
 
 @MainActor
 struct AssetLockRecoveryService {
@@ -79,19 +81,13 @@ struct AssetLockRecoveryService {
     /// out of the PIN prompt — callers treat that as a non-error.
     /// Returns only after the resume ran to completion, which for a
     /// still-unlocked transaction includes the IS/CL wait.
-    /// `sessionAuthSufficient` is for the bulk recovery pass, which gates the
-    /// whole batch once instead of prompting per lock. Interactive callers
-    /// leave it `false`.
     @discardableResult
-    func retry(fundingTypeRaw: Int,
-               txidWire: Data,
-               vout: UInt32,
-               sessionAuthSufficient: Bool = false) async throws -> Outcome {
+    func retry(fundingTypeRaw: Int, txidWire: Data, vout: UInt32) async throws -> Outcome {
         Self.logger.info("🔁 LOCK-RETRY :: type=\(fundingTypeRaw, privacy: .public) vout=\(vout, privacy: .public)")
         let outcome: Outcome
         switch fundingTypeRaw {
         case 1, 2:
-            try await retryIdentityTopUp(txidWire: txidWire, vout: vout, sessionAuthSufficient: sessionAuthSufficient)
+            try await retryIdentityTopUp(txidWire: txidWire, vout: vout)
             outcome = .completed
         case 4, 5:
             // Both coordinator routes report their outcome through the
@@ -100,13 +96,15 @@ struct AssetLockRecoveryService {
             // can't forget the check.
             let coordinator = ShieldedTransferCoordinator()
             if fundingTypeRaw == 4 {
+                let recipientAmountDuffs = try Self.coreToPlatformRecipientAmountDuffs(
+                    txidWire: txidWire,
+                    vout: vout)
                 await coordinator.resumeFundPlatform(
-                    outPointTxidWire: txidWire, outPointVout: vout,
-                    sessionAuthSufficient: sessionAuthSufficient)
+                    outPointTxidWire: txidWire,
+                    outPointVout: vout,
+                    recipientAmountDuffs: recipientAmountDuffs)
             } else {
-                await coordinator.resumeAssetLock(
-                    outPointTxidWire: txidWire, outPointVout: vout,
-                    sessionAuthSufficient: sessionAuthSufficient)
+                await coordinator.resumeAssetLock(outPointTxidWire: txidWire, outPointVout: vout)
             }
             try Self.checkTerminalPhase(coordinator)
             // The coordinator parks an unauthenticated already-consumed
@@ -199,16 +197,26 @@ struct AssetLockRecoveryService {
         var outcome = BulkOutcome()
         guard !pending.isEmpty else { return outcome }
 
-        // One gate for the batch. Everything below runs with
-        // `sessionAuthSufficient`, which passes without UI only because this
-        // succeeded; if the session is somehow not authenticated the per-lock
-        // prompt still appears rather than silently proceeding.
+        // One gate for the batch: authorize here, then run every resume inside
+        // `preauthorized`, whose task-local suppresses only the second prompt
+        // for exactly this work — dozens of PIN prompts is not a flow. Any
+        // other entry point still gates for itself.
         do {
             try await DWIdentityAuthorizer().authorize()
         } catch {
             outcome.cancelled = true
             return outcome
         }
+
+        return await DWIdentityAuthorizer.preauthorized { [self] in
+            await runRecoveries(pending, into: outcome, progress: progress)
+        }
+    }
+
+    private func runRecoveries(_ pending: [PendingRecovery],
+                               into initial: BulkOutcome,
+                               progress: @MainActor (Int, Int) -> Void) async -> BulkOutcome {
+        var outcome = initial
 
         var consecutiveFailures = 0
         DWLogger.log("LOCK-RETRY bulk start count=\(pending.count)")
@@ -220,8 +228,7 @@ struct AssetLockRecoveryService {
                 let result = try await retry(
                     fundingTypeRaw: item.fundingTypeRaw,
                     txidWire: item.txidWire,
-                    vout: item.vout,
-                    sessionAuthSufficient: true)
+                    vout: item.vout)
                 consecutiveFailures = 0
                 switch result {
                 case .completed: outcome.completed += 1
@@ -276,12 +283,43 @@ struct AssetLockRecoveryService {
         return Data(display.reversed())
     }
 
+    private static func coreToPlatformRecipientAmountDuffs(
+        txidWire: Data,
+        vout: UInt32
+    ) throws -> UInt64 {
+        guard txidWire.count == 32,
+              let container = SwiftDashSDKHost.shared.modelContainer,
+              let reserveCredits = CoreToPlatformAmountPolicy.currentReserveCredits
+        else { throw RecoveryError.notReady }
+
+        var outPoint = Data(txidWire)
+        var voutLittleEndian = vout.littleEndian
+        withUnsafeBytes(of: &voutLittleEndian) { outPoint.append(contentsOf: $0) }
+        let outPointHex = PersistentAssetLock.encodeOutPoint(rawBytes: outPoint)
+        let descriptor = FetchDescriptor<PersistentAssetLock>(
+            predicate: #Predicate<PersistentAssetLock> { row in
+                row.outPointHex == outPointHex
+            })
+
+        guard let lock = try container.mainContext.fetch(descriptor).first,
+              lock.amountDuffs > 0
+        else { throw RecoveryError.unsupportedRoute }
+
+        let lockValueDuffs = UInt64(lock.amountDuffs)
+        let reserveDuffs = CoreToPlatformAmountPolicy.reserveDuffs(
+            reserveCredits: reserveCredits)
+        guard lockValueDuffs > reserveDuffs else {
+            throw RecoveryError.unsupportedRoute
+        }
+        return lockValueDuffs - reserveDuffs
+    }
+
     /// Identity top-up resume: the lock's credit output funds the
     /// wallet's own identity — the only identity this app tops up.
     /// `consumeInvitationVoucher` stays false: a generic retry surface
     /// must never silently consume an invitation lock (the SDK resolver
     /// refuses them).
-    private func retryIdentityTopUp(txidWire: Data, vout: UInt32, sessionAuthSufficient: Bool = false) async throws {
+    private func retryIdentityTopUp(txidWire: Data, vout: UInt32) async throws {
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             Self.logger.error("🔁 LOCK-RETRY :: top-up aborted — no active wallet")
             throw RecoveryError.notReady
@@ -290,7 +328,7 @@ struct AssetLockRecoveryService {
             Self.logger.error("🔁 LOCK-RETRY :: top-up aborted — wallet has no identity")
             throw RecoveryError.noIdentity
         }
-        try await DWIdentityAuthorizer().authorize(sessionAuthSufficient: sessionAuthSufficient)
+        try await DWIdentityAuthorizer().authorize()
         _ = try await wallet.resumeTopUpWithAssetLock(
             identityId: identityId,
             outPointTxid: txidWire,
