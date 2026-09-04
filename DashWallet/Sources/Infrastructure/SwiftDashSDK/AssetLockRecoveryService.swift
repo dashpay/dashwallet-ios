@@ -25,6 +25,8 @@
 
 import Foundation
 import OSLog
+import SwiftDashSDK
+import SwiftData
 
 @MainActor
 struct AssetLockRecoveryService {
@@ -78,7 +80,13 @@ struct AssetLockRecoveryService {
             // can't forget the check.
             let coordinator = ShieldedTransferCoordinator()
             if fundingTypeRaw == 4 {
-                await coordinator.resumeFundPlatform(outPointTxidWire: txidWire, outPointVout: vout)
+                let recipientAmountDuffs = try Self.coreToPlatformRecipientAmountDuffs(
+                    txidWire: txidWire,
+                    vout: vout)
+                await coordinator.resumeFundPlatform(
+                    outPointTxidWire: txidWire,
+                    outPointVout: vout,
+                    recipientAmountDuffs: recipientAmountDuffs)
             } else {
                 await coordinator.resumeAssetLock(outPointTxidWire: txidWire, outPointVout: vout)
             }
@@ -88,6 +96,37 @@ struct AssetLockRecoveryService {
         }
         await ShieldedTxLookup.shared.refresh(reason: "asset-lock-recovery-completed")
         Self.logger.info("🔁 LOCK-RETRY :: completed type=\(fundingTypeRaw, privacy: .public)")
+    }
+
+    private static func coreToPlatformRecipientAmountDuffs(
+        txidWire: Data,
+        vout: UInt32
+    ) throws -> UInt64 {
+        guard txidWire.count == 32,
+              let container = SwiftDashSDKHost.shared.modelContainer,
+              let reserveCredits = CoreToPlatformAmountPolicy.currentReserveCredits
+        else { throw RecoveryError.notReady }
+
+        var outPoint = Data(txidWire)
+        var voutLittleEndian = vout.littleEndian
+        withUnsafeBytes(of: &voutLittleEndian) { outPoint.append(contentsOf: $0) }
+        let outPointHex = PersistentAssetLock.encodeOutPoint(rawBytes: outPoint)
+        let descriptor = FetchDescriptor<PersistentAssetLock>(
+            predicate: #Predicate<PersistentAssetLock> { row in
+                row.outPointHex == outPointHex
+            })
+
+        guard let lock = try container.mainContext.fetch(descriptor).first,
+              lock.amountDuffs > 0
+        else { throw RecoveryError.unsupportedRoute }
+
+        let lockValueDuffs = UInt64(lock.amountDuffs)
+        let reserveDuffs = CoreToPlatformAmountPolicy.reserveDuffs(
+            reserveCredits: reserveCredits)
+        guard lockValueDuffs > reserveDuffs else {
+            throw RecoveryError.unsupportedRoute
+        }
+        return lockValueDuffs - reserveDuffs
     }
 
     /// Identity top-up resume: the lock's credit output funds the

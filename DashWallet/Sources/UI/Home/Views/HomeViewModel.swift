@@ -76,9 +76,12 @@ class HomeViewModel: ObservableObject {
     private var coinJoinTxSets: [String: CoinJoinMixingTxSet] = [:] // Grouped by date
     private var coinJoinWithdrawalSet = CoinJoinWithdrawalTxSet() // Single combined "CoinJoin Withdrawals" group (app's sweep tx)
     private var metadataProviders: [MetadataProvider] = []
-    #if DEBUG
+    /// Set only by the `#if DEBUG` preview initializer, but declared
+    /// unconditionally: two `guard`s read it from ordinary code paths, so
+    /// hiding the property behind `DEBUG` left them referring to something
+    /// that does not exist in any configuration without it. False everywhere
+    /// else costs a Bool.
     var isPreviewMode: Bool = false
-    #endif
 
     /// Tracks whether initial data load has completed (Fix #2)
     private var hasCompletedInitialLoad: Bool = false
@@ -216,7 +219,11 @@ class HomeViewModel: ObservableObject {
     /// purchase routed here by `HomeViewController.showGiftCardDetails(txId:)`. A local
     /// `@State` copy in the view would leave the controller's setter observed by nobody.
     @Published var giftCardTxId: Data? = nil
-    
+    /// Mirrors `DWGlobalOptions.advancedModeEnabled`. The balance breakdown on
+    /// the header is one of the surfaces the mode unlocks, and it has to appear
+    /// and disappear with the switch rather than on the next launch.
+    @Published private(set) var isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+
 #if DASHPAY
     var joinDashPayState: JoinDashPayState = .callToAction
 #endif
@@ -328,6 +335,13 @@ class HomeViewModel: ObservableObject {
         // wallet). The balance-driven reloads don't cover this — the balance
         // notifications the switch posts can carry the same total, and their
         // observers don't clear the stale per-hash cache.
+        NotificationCenter.default.publisher(for: .advancedModeDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+            }
+            .store(in: &cancellableBag)
+
         NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
