@@ -83,6 +83,10 @@ struct AssetLockRecoveryService {
     /// still-unlocked transaction includes the IS/CL wait.
     @discardableResult
     func retry(fundingTypeRaw: Int, txidWire: Data, vout: UInt32) async throws -> Outcome {
+        // Resolved before the resume suspends: a wallet switch during the
+        // round-trip must not file this probe under whatever wallet is active
+        // when the answer arrives.
+        let originatingWalletIdHex = AssetLockProbeStore.currentWalletIdHex()
         Self.logger.info("🔁 LOCK-RETRY :: type=\(fundingTypeRaw, privacy: .public) vout=\(vout, privacy: .public)")
         let outcome: Outcome
         switch fundingTypeRaw {
@@ -117,7 +121,7 @@ struct AssetLockRecoveryService {
                 // the answer dies with this call and every later launch offers
                 // the same futile retry. Recorded at the service layer so the
                 // single-row and bulk callers share it.
-                AssetLockProbeStore.shared.record(txid: txidWire)
+                AssetLockProbeStore.shared.record(txid: txidWire, walletIdHex: originatingWalletIdHex)
                 outcome = .completionUnconfirmed
             } else {
                 outcome = .completed
@@ -153,6 +157,9 @@ struct AssetLockRecoveryService {
         var firstFailureMessage: String?
         /// Set when the pass gave up early after repeated failures.
         var stoppedAfterRepeatedFailures = false
+        /// Set when the batch never started because authentication failed —
+        /// distinct from `cancelled`, which means the user backed out.
+        var authFailureMessage: String?
 
         var attempted: Int { completed + alreadySpent + failed }
     }
@@ -209,8 +216,16 @@ struct AssetLockRecoveryService {
         // other entry point still gates for itself.
         do {
             try await DWIdentityAuthorizer().authorize()
-        } catch {
+        } catch DWIdentityAuthorizer.AuthError.cancelled {
             outcome.cancelled = true
+            return outcome
+        } catch {
+            // Authentication can also time out or fail outright. Reporting
+            // that as "Cancelled." blames the user for something they did not
+            // do and hides the reason, so it gets its own state.
+            outcome.authFailureMessage = (error as? LocalizedError)?.errorDescription
+                ?? error.localizedDescription
+            DWLogger.log("LOCK-RETRY bulk aborted — authentication failed: \(outcome.authFailureMessage ?? "")")
             return outcome
         }
 

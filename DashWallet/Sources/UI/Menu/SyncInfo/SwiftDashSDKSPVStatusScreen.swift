@@ -838,6 +838,14 @@ extension SwiftDashSDKSPVStatusScreen {
             recoveryProgress = nil
             refreshPendingRecoveries()
 
+            if let authFailure = outcome.authFailureMessage {
+                recoveryResultIsError = true
+                recoveryResultMessage = String(
+                    format: NSLocalizedString("Couldn't authenticate: %@", comment: "SPV diagnostics"),
+                    authFailure)
+                return
+            }
+
             if outcome.cancelled, outcome.attempted == 0 {
                 recoveryResultIsError = false
                 recoveryResultMessage = NSLocalizedString("Cancelled.", comment: "SPV diagnostics")

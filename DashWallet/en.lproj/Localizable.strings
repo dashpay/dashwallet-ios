@@ -5874,3 +5874,4 @@
 "Nothing to finish." = "Nothing to finish.";
 /* Receive: the QR image doubles as a copy control */
 "Copy QR code" = "Copy QR code";
+"Couldn't authenticate: %@" = "Couldn't authenticate: %@";

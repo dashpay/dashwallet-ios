@@ -58,15 +58,25 @@ final class AssetLockProbeStore {
     private init() {}
 
     private func resolvedKey() -> String {
-        guard let walletIdHex = WalletEnvironment.activeWalletIdHex as String?,
-              !walletIdHex.isEmpty else {
-            return legacyKey
-        }
+        key(forWalletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+    }
+
+    /// The storage key for an EXPLICIT wallet. Callers that suspend before
+    /// writing must resolve their wallet up front and pass it here: the active
+    /// wallet can change mid-flight, and `resolvedKey()` would then file the
+    /// result under whichever wallet happens to be active at write time.
+    private func key(forWalletIdHex walletIdHex: String?) -> String {
+        guard let walletIdHex, !walletIdHex.isEmpty else { return legacyKey }
         return "\(legacyKey)_\(walletIdHex)"
     }
 
-    private func loaded() -> Set<Data> {
-        let key = resolvedKey()
+    /// Hex id of the wallet a probe should be filed under, captured BEFORE the
+    /// work that will report it. Nil when no wallet is active.
+    static func currentWalletIdHex() -> String? {
+        WalletEnvironment.activeWalletIdHex as String?
+    }
+
+    private func loaded(key: String) -> Set<Data> {
         if cacheKey == key, let cache { return cache }
         let stored = (defaults.array(forKey: key) as? [Data]) ?? []
         let set = Set(stored)
@@ -75,15 +85,23 @@ final class AssetLockProbeStore {
         return set
     }
 
+    private func loaded() -> Set<Data> { loaded(key: resolvedKey()) }
+
     /// Record that `txid` (WIRE order) was probed and reported already spent.
     /// Idempotent and thread-safe.
-    func record(txid: Data) {
+    /// `walletIdHex` is the wallet the probe belongs to, captured before the
+    /// network round-trip that produced it — passing it explicitly is what
+    /// keeps a wallet switch during that round-trip from filing the result
+    /// under the wrong wallet.
+    func record(txid: Data, walletIdHex: String?) {
+        let key = key(forWalletIdHex: walletIdHex)
         lock.lock(); defer { lock.unlock() }
-        var set = loaded()
+        var set = loaded(key: key)
         guard !set.contains(txid) else { return }
         set.insert(txid)
+        cacheKey = key
         cache = set
-        defaults.set(Array(set), forKey: resolvedKey())
+        defaults.set(Array(set), forKey: key)
     }
 
     /// Whether `txid` (WIRE order, e.g. `Transaction.txHashData`) has already
