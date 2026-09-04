@@ -171,8 +171,14 @@ struct AssetLockRecoveryService {
     /// `RecoveredFromChain` at once, so this is routinely dozens of entries —
     /// which is exactly why they need one action rather than one tap each.
     static func pendingRecoveries() -> [PendingRecovery] {
-        ShieldedTxLookup.shared.allEntries().compactMap { entry in
-            guard TxDetailModel.statusAllowsRetry(entry.info.statusRaw),
+        // The snapshot spans every wallet whose rows live in this container, so
+        // the active wallet's id is the first filter: resuming another wallet's
+        // outpoint fails with "not tracked by this wallet", and a batch of them
+        // reports as a network problem it never was.
+        guard let activeWalletId = SwiftDashSDKHost.shared.wallet?.walletId else { return [] }
+        return ShieldedTxLookup.shared.allEntries().compactMap { entry in
+            guard entry.info.walletId == activeWalletId,
+                  TxDetailModel.statusAllowsRetry(entry.info.statusRaw),
                   supportsRetry(fundingTypeRaw: entry.info.fundingTypeRaw),
                   let txidWire = txidWire(fromDisplayHex: entry.txidHex),
                   !AssetLockProbeStore.shared.contains(txidWire)

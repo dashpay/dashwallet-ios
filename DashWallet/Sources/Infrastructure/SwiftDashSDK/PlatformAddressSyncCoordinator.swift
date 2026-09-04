@@ -1626,6 +1626,11 @@ final class ShieldedTxLookup {
         let vout: UInt32
         /// 5 = shielded funding, 4 = platform address funding.
         let fundingTypeRaw: Int
+        /// Owning wallet. The snapshot spans every wallet in the container —
+        /// per-txid lookups don't care (txids are unique), but anything that
+        /// ENUMERATES locks must filter, or it hands another wallet's outpoints
+        /// to the SDK, which rightly answers "not tracked by this wallet".
+        let walletId: Data
     }
 
     /// Value-only result crossing from the detached SwiftData reader back to
@@ -1789,7 +1794,8 @@ final class ShieldedTxLookup {
                     amountDuffs: UInt64(row.amountDuffs),
                     statusRaw: row.statusRaw,
                     vout: vout,
-                    fundingTypeRaw: row.fundingTypeRaw)
+                    fundingTypeRaw: row.fundingTypeRaw,
+                    walletId: row.walletId)
                 func rank(_ statusRaw: Int) -> Int { statusRaw == 4 ? .max : statusRaw }
                 if let existing = map[txid], rank(existing.statusRaw) >= rank(info.statusRaw) { continue }
                 map[txid] = info
