@@ -635,6 +635,49 @@ enum SameSeedIdentityRecoveryPipeline {
     }
 }
 
+/// Decides what the BLAST-side same-seed recovery backstop still has to do
+/// after the pre-SPV readiness pass (`DashPayContactAddressReadiness` →
+/// `startWalletSubsystems`) already ran for the same runtime start. Pure so
+/// the rules stay regression-testable.
+enum StartupIdentityRecoveryPolicy {
+    /// Budget handed to the SDK's startup sequence for a wallet whose
+    /// mnemonic was generated on this device and that has no local identity:
+    /// a proof of absence settles on the first discovery pass (seconds), and
+    /// an unreachable Platform then costs this much instead of the SDK
+    /// default. A short budget rather than a skip on purpose — the same seed
+    /// can still own an identity registered from another device.
+    static let generatedWalletStartupBudget: TimeInterval = 5
+
+    /// `nil` status = no readiness pass ran in this start (a Platform-sync
+    /// re-arm, the storage explorer's direct BLAST start): the backstop runs
+    /// as before. A known identity keeps it running too — the pipeline then
+    /// skips discovery and only refreshes names + adopts. No identity after a
+    /// readiness pass (`.noIdentity`, `.partialNoIdentity`,
+    /// `.discoveryFailed`) means that pass WAS the discovery, with the SDK's
+    /// backoff schedule; repeating it unbudgeted is what cost a wallet switch
+    /// 31 s.
+    static func shouldRunBackstop(
+        readinessStatus: WalletStartupStatus?,
+        readinessIdentityId: Data?
+    ) -> Bool {
+        guard readinessStatus != nil else { return true }
+        return readinessIdentityId != nil
+    }
+
+    /// Only a Platform-confirmed absence settles the context for the rest of
+    /// the process (the pipeline's own "scanned, found nothing" completion).
+    /// An unreachable Platform stays retryable on the next runtime start.
+    static func marksContextCompleted(readinessStatus: WalletStartupStatus) -> Bool {
+        readinessStatus == .noIdentity
+    }
+
+    /// `nil` = the SDK default budget.
+    static func startupBudget(isGeneratedOnDevice: Bool, hasLocalIdentity: Bool) -> TimeInterval? {
+        guard isGeneratedOnDevice, !hasLocalIdentity else { return nil }
+        return generatedWalletStartupBudget
+    }
+}
+
 /// Best-effort startup recovery for an identity created by the same seed on a
 /// different device/install. One successful attempt is enough per
 /// network-scoped wallet and process; failures remain retryable on the next
@@ -649,8 +692,36 @@ final class DWSameSeedIdentityRecoveryCoordinator {
 
     private var completedContexts: Set<String> = []
     private var activeContexts: Set<String> = []
+    /// Readiness verdicts recorded by `DashPayContactAddressReadiness` for
+    /// the current runtime start, consumed (removed) by `recoverIfNeeded`.
+    private var startupVerdicts: [String: (status: WalletStartupStatus, identityId: Data?)] = [:]
 
     private init() {}
+
+    /// Hand over the pre-SPV readiness verdict for `walletId` on `network`
+    /// so the backstop below can tell a fresh discovery from a repeat.
+    func recordStartupDiscovery(
+        status: WalletStartupStatus,
+        identityId: Data?,
+        walletId: Data,
+        network: Network
+    ) {
+        startupVerdicts[Self.contextKey(walletId: walletId, network: network)] = (status, identityId)
+    }
+
+    /// Drop every recorded verdict; runtime teardown calls this so a verdict
+    /// can never outlive the start that produced it.
+    func clearStartupVerdicts() {
+        startupVerdicts.removeAll()
+    }
+
+    /// Startup budget for the SDK's pre-SPV sequence, or `nil` for the SDK
+    /// default — see `StartupIdentityRecoveryPolicy.startupBudget`.
+    func startupBudget(walletId: Data, modelContainer: ModelContainer) -> TimeInterval? {
+        StartupIdentityRecoveryPolicy.startupBudget(
+            isGeneratedOnDevice: GeneratedWalletIdentityMarker.isMarked(walletId: walletId),
+            hasLocalIdentity: !Self.localIdentityIds(walletId: walletId, modelContainer: modelContainer).isEmpty)
+    }
 
     func recoverIfNeeded(
         wallet: ManagedPlatformWallet,
@@ -658,13 +729,31 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         network: Network
     ) async {
         let walletId = wallet.walletId
-        let walletHex = walletId.map { String(format: "%02x", $0) }.joined()
-        let contextKey = "\(network.rawValue):\(walletHex)"
+        let contextKey = Self.contextKey(walletId: walletId, network: network)
 
         guard !completedContexts.contains(contextKey),
               !activeContexts.contains(contextKey)
         else {
             return
+        }
+
+        if let verdict = startupVerdicts.removeValue(forKey: contextKey) {
+            if StartupIdentityRecoveryPolicy.marksContextCompleted(readinessStatus: verdict.status) {
+                completedContexts.insert(contextKey)
+                Self.logger.info(
+                    "🪪 IDENT-RECOVERY :: skipped — startup readiness proved this seed owns no identity")
+                return
+            }
+            if !StartupIdentityRecoveryPolicy.shouldRunBackstop(
+                readinessStatus: verdict.status,
+                readinessIdentityId: verdict.identityId) {
+                Self.logger.info(
+                    """
+                    🪪 IDENT-RECOVERY :: skipped — startup readiness already scanned \
+                    (status=\(verdict.status.rawValue, privacy: .public)); retries on the next runtime start
+                    """)
+                return
+            }
         }
 
         activeContexts.insert(contextKey)
@@ -732,7 +821,13 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         }
     }
 
-    private static func localIdentityIds(
+    private static func contextKey(walletId: Data, network: Network) -> String {
+        "\(network.rawValue):" + walletId.map { String(format: "%02x", $0) }.joined()
+    }
+
+    /// Internal (was private): shared with the startup-budget decision above
+    /// — reuse, not a copy, per the repo's no-copy-then-adapt guardrail.
+    static func localIdentityIds(
         walletId: Data,
         modelContainer: ModelContainer
     ) -> [Data] {

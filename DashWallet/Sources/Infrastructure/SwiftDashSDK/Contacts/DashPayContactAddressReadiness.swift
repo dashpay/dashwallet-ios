@@ -46,9 +46,26 @@ enum DashPayContactAddressReadiness {
         wallet: ManagedPlatformWallet,
         network: Network
     ) async {
+        // A mnemonic generated on this device with no local identity gets a
+        // short budget instead of the SDK default; the verdict then goes to
+        // the same-seed recovery coordinator so the BLAST-side backstop does
+        // not repeat the discovery this pass just ran.
+        let recovery = DWSameSeedIdentityRecoveryCoordinator.shared
+        let budget = SwiftDashSDKHost.shared.modelContainer.flatMap {
+            recovery.startupBudget(walletId: wallet.walletId, modelContainer: $0)
+        }
+        if let budget {
+            logger.info(
+                "👥 DP-READY :: wallet generated on this device, no local identity — budget \(Int(budget), privacy: .public)s")
+        }
         do {
-            let outcome = try await manager.startWalletSubsystems(wallet: wallet)
+            let outcome = try await manager.startWalletSubsystems(wallet: wallet, budget: budget)
             log(outcome, network: network)
+            recovery.recordStartupDiscovery(
+                status: outcome.status,
+                identityId: outcome.identityId,
+                walletId: wallet.walletId,
+                network: network)
         } catch {
             logger.warning(
                 "👥 DP-READY :: bring-up failed; starting SPV anyway: \(String(describing: error), privacy: .public)")

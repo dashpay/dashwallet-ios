@@ -925,7 +925,10 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         // the first filter set is built. This call stays as the backstop for
         // the orders that do not go through the SPV coordinator — a Platform
         // sync re-arm, or an SPV start that failed — and is a no-op once the
-        // identity has been adopted.
+        // identity has been adopted. When the readiness pass did run in this
+        // start it hands its verdict to the coordinator
+        // (`recordStartupDiscovery`), and `recoverIfNeeded` skips the repeat
+        // discovery for a seed that pass found no identity for.
         if let container = SwiftDashSDKHost.shared.modelContainer {
             await DWSameSeedIdentityRecoveryCoordinator.shared.recoverIfNeeded(
                 wallet: resolvedWallet,

@@ -1368,6 +1368,12 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 DWGlobalOptions.sharedInstance().dashpayUsername = username
                 DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted = true
             }
+            // The wallet now owns an identity: drop the generated-on-device
+            // marker so the next runtime start runs the full pre-SPV
+            // bring-up (hygiene — the budget gate also checks local rows).
+            if let walletId = SwiftDashSDKHost.shared.wallet?.walletId {
+                GeneratedWalletIdentityMarker.clear(walletId: walletId)
+            }
         }
 
         // Stop asset-lock polling on terminal phases — no further

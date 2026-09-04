@@ -183,6 +183,50 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             .init(discoveredCount: 0, identityCount: 1, adopted: true))
     }
 
+    // MARK: - StartupIdentityRecoveryPolicy
+
+    func testBackstopRunsWhenNoReadinessPassRan() {
+        XCTAssertTrue(StartupIdentityRecoveryPolicy.shouldRunBackstop(
+            readinessStatus: nil, readinessIdentityId: nil))
+    }
+
+    func testBackstopRunsWhenReadinessKnowsAnIdentity() {
+        let identityId = Data(repeating: 0x18, count: 32)
+        for status: WalletStartupStatus in [.ready, .partialAccountsPending, .identityScanIncomplete] {
+            XCTAssertTrue(
+                StartupIdentityRecoveryPolicy.shouldRunBackstop(
+                    readinessStatus: status, readinessIdentityId: identityId),
+                "\(status)")
+        }
+    }
+
+    func testBackstopSkipsWhenReadinessFoundNoIdentity() {
+        for status: WalletStartupStatus in [.noIdentity, .partialNoIdentity, .discoveryFailed] {
+            XCTAssertFalse(
+                StartupIdentityRecoveryPolicy.shouldRunBackstop(
+                    readinessStatus: status, readinessIdentityId: nil),
+                "\(status)")
+        }
+    }
+
+    func testOnlyProvenAbsenceCompletesTheRecoveryContext() {
+        XCTAssertTrue(StartupIdentityRecoveryPolicy.marksContextCompleted(readinessStatus: .noIdentity))
+        for status: WalletStartupStatus in [.ready, .partialNoIdentity, .discoveryFailed, .identityScanIncomplete] {
+            XCTAssertFalse(
+                StartupIdentityRecoveryPolicy.marksContextCompleted(readinessStatus: status),
+                "\(status)")
+        }
+    }
+
+    func testShortStartupBudgetOnlyForGeneratedWalletWithoutLocalIdentity() {
+        XCTAssertEqual(
+            StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: true, hasLocalIdentity: false),
+            StartupIdentityRecoveryPolicy.generatedWalletStartupBudget)
+        XCTAssertNil(StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: true, hasLocalIdentity: true))
+        XCTAssertNil(StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: false, hasLocalIdentity: false))
+        XCTAssertNil(StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: false, hasLocalIdentity: true))
+    }
+
     func testWatchdogRefreshesOnlyAfterFullScanBecomesStale() {
         XCTAssertFalse(ShieldedSyncFreshnessPolicy.shouldRefreshForWatchdog(
             now: now,
