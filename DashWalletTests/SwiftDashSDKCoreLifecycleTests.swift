@@ -135,6 +135,43 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertFalse(mainnetFirst.value === testnet.value)
     }
 
+    func testStoreOpenMetadataReportsMissingStoreWithoutInventingSize() {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+            .appendingPathComponent("DashModel.sqlite")
+
+        XCTAssertEqual(
+            SwiftDashSDKHost.storeOpenMetadata(at: url),
+            CoreStoreOpenMetadata(
+                existedBeforeOpen: false,
+                sizeBytesBefore: 0,
+                mainStoreSizeBytesBefore: 0,
+                walSizeBytesBefore: 0,
+                sharedMemorySizeBytesBefore: 0))
+    }
+
+    func testStoreOpenMetadataReportsExistingStoreSize() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CoreStoreOpenMetadataTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true)
+        let url = directory.appendingPathComponent("DashModel.sqlite")
+        try Data(repeating: 0x5a, count: 37).write(to: url)
+        try Data(repeating: 0x5b, count: 11).write(to: URL(fileURLWithPath: url.path + "-wal"))
+        try Data(repeating: 0x5c, count: 7).write(to: URL(fileURLWithPath: url.path + "-shm"))
+
+        XCTAssertEqual(
+            SwiftDashSDKHost.storeOpenMetadata(at: url),
+            CoreStoreOpenMetadata(
+                existedBeforeOpen: true,
+                sizeBytesBefore: 55,
+                mainStoreSizeBytesBefore: 37,
+                walSizeBytesBefore: 11,
+                sharedMemorySizeBytesBefore: 7))
+    }
+
     func testSameSeedIdentityRecoveryDiscoversRefreshesAndAdoptsInOneRun() async throws {
         let identityId = Data(repeating: 0x16, count: 32)
         var storedIdentityIds: [Data] = []

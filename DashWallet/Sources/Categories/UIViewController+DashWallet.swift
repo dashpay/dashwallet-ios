@@ -18,7 +18,6 @@
 import Intents
 import UIKit
 import MessageUI
-import SwiftDashSDK
 
 @objc
 extension UIViewController {
@@ -84,33 +83,16 @@ extension UIViewController {
     }
 
     @objc func presentSupportEmailController() {
-        // Zip the recent SwiftDashSDK log sessions off the main actor
-        // first (blocking file I/O), then compose. App logs stay as
-        // loose attachments — the support workflow already expects
-        // them — while the SDK sessions ride along as one zip. A
-        // failed/empty SDK export (e.g. first launch after the update
-        // that enabled file logging) just omits the zip.
-        let network = SwiftDashSDKHost.shared.runningNetwork.map { String(describing: $0) } ?? "unknown"
-        let short = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
-        let appVersion = "\(short) (\(build))"
-        let currentSession = LoggingPreferences.currentSessionDirectory
-
+        // Use the same snapshot -> flush -> single-archive path as Tools and
+        // About. If export fails, support remains reachable without silently
+        // substituting a different, partial set of loose log attachments.
         Task { [weak self] in
-            let sdkLogsZip = await Task.detached(priority: .userInitiated) { () -> URL? in
-                try? DiagnosticLogExporter.export(
-                    network: network,
-                    appVersion: appVersion,
-                    currentSession: currentSession,
-                    appLogFiles: [])
-            }.value
-            self?.presentSupportEmailController(sdkLogsZip: sdkLogsZip)
+            let logsArchive = await DiagnosticLogExporter.exportArchiveForSupport()
+            self?.presentSupportEmailController(logsArchive: logsArchive)
         }
     }
 
-    private func presentSupportEmailController(sdkLogsZip: URL?) {
-        let logFiles = DWLogger.sharedInstance().logFiles()
-
+    private func presentSupportEmailController(logsArchive: URL?) {
         if MFMailComposeViewController.canSendMail() {
             let mailComposer = MFMailComposeViewController()
             mailComposer.mailComposeDelegate = self as? MFMailComposeViewControllerDelegate
@@ -120,41 +102,11 @@ extension UIViewController {
             mailComposer.setToRecipients([email])
             mailComposer.setSubject(String(format: NSLocalizedString("iOS Dash Wallet: %@ Reported issue", comment: ""), version))
 
-            var totalSize: Int64 = 0
-            let maxSize: Int64 = 25 * 1024 * 1024 // 25MB in bytes
-
-            // SDK sessions first — one compressed zip; the app-log
-            // loop below fills the remaining attachment budget.
-            if let sdkLogsZip, let zipData = try? Data(contentsOf: sdkLogsZip) {
+            if let logsArchive, let zipData = try? Data(contentsOf: logsArchive) {
                 mailComposer.addAttachmentData(
                     zipData,
                     mimeType: "application/zip",
-                    fileName: sdkLogsZip.lastPathComponent)
-                totalSize += Int64(zipData.count)
-            }
-
-            // Sort log files by modification date, most recent first
-            let sortedLogFiles = logFiles.sorted { (url1, url2) -> Bool in
-                let date1 = try? url1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
-                let date2 = try? url2.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
-                return (date1 ?? .distantPast) > (date2 ?? .distantPast)
-            }
-
-            for logFileURL in sortedLogFiles {
-                guard let logData = try? Data(contentsOf: logFileURL) else {
-                    continue
-                }
-
-                // Break if this file would exceed the size limit
-                if totalSize + Int64(logData.count) > maxSize {
-                    break
-                }
-
-                let fileName = logFileURL.lastPathComponent
-                let mimeType = fileName.hasSuffix(".gz") ? "application/gzip" : "text/plain"
-                mailComposer.addAttachmentData(logData, mimeType: mimeType, fileName: fileName)
-
-                totalSize += Int64(logData.count)
+                    fileName: logsArchive.lastPathComponent)
             }
 
             present(mailComposer, animated: true)
@@ -174,9 +126,8 @@ extension UIViewController {
             if !email.isEmpty {
                 activityItems.append(SupportRecipientActivityItem(email: email, subject: subject))
             }
-            activityItems.append(contentsOf: logFiles)
-            if let sdkLogsZip {
-                activityItems.append(sdkLogsZip)
+            if let logsArchive {
+                activityItems.append(logsArchive)
             }
             dw_presentActivityViewController(activityItems: activityItems)
         }

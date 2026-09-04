@@ -42,6 +42,71 @@ final class DiagnosticLogExporterTests: XCTestCase {
 
     // MARK: - SDK session selection
 
+    @MainActor
+    func testPreparationSnapshotsThenFlushesBeforeCopy() async {
+        var events: [String] = []
+
+        let captured = await DiagnosticLogExporter.prepareLogsForExport(
+            emitDiagnostics: {
+                events.append("snapshot-start")
+                await Task.yield()
+                events.append("snapshot-finished")
+            },
+            flush: {
+                events.append("flush")
+            },
+            capture: {
+                events.append("copy")
+                return "captured"
+            })
+
+        XCTAssertEqual(captured, "captured")
+        XCTAssertEqual(events, [
+            "snapshot-start",
+            "snapshot-finished",
+            "flush",
+            "copy",
+        ])
+    }
+
+    @MainActor
+    func testPreparationStillFlushesWhenThereIsNoRuntimeToSnapshot() async {
+        var events: [String] = []
+
+        _ = await DiagnosticLogExporter.prepareLogsForExport(
+            emitDiagnostics: {},
+            flush: { events.append("flush") },
+            capture: { events.append("copy") })
+
+        XCTAssertEqual(events, ["flush", "copy"])
+    }
+
+    @MainActor
+    func testSupportExportUsesTheSharedArchiveOnSuccess() async {
+        let expected = URL(fileURLWithPath: "/tmp/diagnostics.zip")
+        var failureWasReported = false
+
+        let archive = await DiagnosticLogExporter.exportArchiveForSupport(
+            using: { .success(expected) },
+            onFailure: { _ in failureWasReported = true })
+
+        XCTAssertEqual(archive, expected)
+        XCTAssertFalse(failureWasReported)
+    }
+
+    @MainActor
+    func testSupportExportFailureHasNoAlternativeAttachment() async {
+        struct ExportFailure: Error {}
+        var failureWasReported = false
+
+        let archive = await DiagnosticLogExporter.exportArchiveForSupport(
+            using: { .failure(ExportFailure()) },
+            onFailure: { _ in failureWasReported = true })
+
+        XCTAssertNil(archive)
+        XCTAssertTrue(failureWasReported)
+    }
+
     func testCurrentSessionIsFirstEvenWhenOlderStampedThanOthers() {
         // A stale future-dated directory sorts lexicographically after
         // the real current session. It must not displace it.
