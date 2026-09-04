@@ -281,25 +281,94 @@ extension TXDetailViewController {
         let txidWire = model.transaction.txHashData
         view.dw_showProgressHUD(withMessage: NSLocalizedString("Retrying transfer…", comment: "Asset-lock retry in progress"))
         Task { [weak self] in
-            defer {
-                self?.isRetryingAssetLock = false
-                self?.view.dw_hideProgressHUD()
-            }
+            // The outcome is decided here and rendered only after the
+            // spinner is down: `dw_hideProgressHUD` hides whichever HUD is
+            // topmost on the view rather than the progress one specifically,
+            // so anything shown while the spinner is still up would be
+            // dismissed in its place and leave the spinner running.
+            var toast: (message: String, style: ToastStyle)?
+            var failure: Error?
             do {
-                try await AssetLockRecoveryService().retry(
+                let outcome = try await AssetLockRecoveryService().retry(
                     fundingTypeRaw: retry.fundingTypeRaw,
                     txidWire: txidWire,
                     vout: retry.vout)
-                self?.view.dw_showInfoHUD(withText: NSLocalizedString("Transfer completed", comment: "Asset-lock retry finished"))
+                switch outcome {
+                case .completed:
+                    toast = (NSLocalizedString("Transfer completed", comment: "Asset-lock retry finished"), .success)
+                case .completionUnconfirmed:
+                    // Platform said the outpoint is already spent, but that
+                    // report is not quorum-authenticated. Nothing is left to
+                    // retry; say only that, so the wallet never reports a
+                    // completion it did not witness.
+                    toast = (NSLocalizedString("Already spent — nothing to transfer", comment: "Asset-lock retry found the lock already consumed"), .info)
+                }
             } catch DWIdentityAuthorizer.AuthError.cancelled {
                 // Backing out of the PIN prompt is not an error state.
             } catch {
-                self?.presentRetryFailure(error)
+                failure = error
+            }
+
+            guard let self else { return }
+            self.isRetryingAssetLock = false
+            self.view.dw_hideProgressHUD()
+            if let toast {
+                self.presentToast(style: toast.style, message: toast.message)
+            }
+            if let failure {
+                self.presentRetryFailure(failure)
             }
             // Re-derive the rows either way — even a failed retry can
             // have advanced the lock (e.g. broadcast landed, Platform
             // submit didn't), and the status row should say so.
-            self?.reloadDataSource()
+            self.reloadDataSource()
+        }
+    }
+
+    /// Bottom-anchored design-system toast, hosted from this UIKit screen.
+    /// `DashUIKit.Toast` is a SwiftUI view with no presenter of its own, so
+    /// the hosting is done here; it is used rather than the app-local
+    /// `showToast` because it sizes its own icon (16×16 in a 24×24 slot) and
+    /// resolves it from the DashUIKit bundle, where the toast imagesets live.
+    /// Geometry matches the SwiftUI call sites (`dexOfflineToast`,
+    /// `SelectCoinView`): bottom overlay, 20pt sides, 16pt above the safe area.
+    /// `onDismiss` stays nil — the toast auto-dismisses, so it carries no
+    /// close button.
+    ///
+    /// Hosted on the outermost controller of this screen's own hierarchy, not
+    /// on `view`: this screen is a `UIViewControllerRepresentable`
+    /// (`TXDetailVCWrapper`) inside a `DashUIKit.BottomSheet`, so its own view
+    /// ends where the sheet's content ends and a toast pinned to it lands
+    /// mid-screen instead of at the bottom edge the other toasts share.
+    ///
+    /// The child controller is parented to that same controller. Adding a
+    /// child's view to a hierarchy its parent does not own — the window, say —
+    /// trips UIKit's `_associatedViewControllerForwardsAppearanceCallbacks`
+    /// check and raises.
+    private func presentToast(style: ToastStyle, message: String, duration: TimeInterval = 3.5) {
+        var owner: UIViewController = self
+        while let parent = owner.parent { owner = parent }
+
+        let host = UIHostingController(rootView: DashUIKit.Toast(style: style, message: message))
+        host.view.backgroundColor = .clear
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+        owner.addChild(host)
+        owner.view.addSubview(host.view)
+        NSLayoutConstraint.activate([
+            host.view.leadingAnchor.constraint(equalTo: owner.view.leadingAnchor, constant: 20),
+            host.view.trailingAnchor.constraint(equalTo: owner.view.trailingAnchor, constant: -20),
+            host.view.bottomAnchor.constraint(equalTo: owner.view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+        ])
+        host.didMove(toParent: owner)
+
+        host.view.alpha = 0
+        UIView.animate(withDuration: 0.3) { host.view.alpha = 1 }
+        UIView.animate(withDuration: 0.3, delay: duration, options: .curveEaseOut) {
+            host.view.alpha = 0
+        } completion: { _ in
+            host.willMove(toParent: nil)
+            host.view.removeFromSuperview()
+            host.removeFromParent()
         }
     }
 
