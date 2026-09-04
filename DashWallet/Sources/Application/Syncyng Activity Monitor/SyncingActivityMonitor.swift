@@ -16,6 +16,7 @@
 //
 
 import Combine
+import CoreData
 import Foundation
 import OSLog
 import SwiftDashSDK
@@ -111,6 +112,11 @@ public class SyncStateSnapshot: NSObject {
 protocol SyncingActivityMonitorObserver: AnyObject {
     func syncingActivityMonitorProgressDidChange(_ progress: Double)
     func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State)
+    /// Fires when `SyncingActivityMonitor.isPersistingScannedHistory`
+    /// flips. `state` stays `.syncing` across the flip, so observers that
+    /// only key off state changes never see it — this is for the few
+    /// surfaces that word the syncing phase.
+    @objc optional func syncingActivityMonitorPersistingDidChange(_ isPersisting: Bool)
 }
 
 // MARK: - SyncingActivityMonitor
@@ -179,6 +185,31 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
     private var lastPeakDate: Date?
     private var cancellables = Set<AnyCancellable>()
 
+    /// True while dash-spv reports the scan complete but the persisted
+    /// watermark — what the transaction list is built out of and what a
+    /// relaunch resumes from — is still behind the scanned tip. `state`
+    /// is held at `.syncing` and `progress` tracks the watermark for the
+    /// duration; see `handleCoordinatorUpdate`.
+    ///
+    /// Measured on a mixing-heavy wallet on an iPhone 13 Pro: the persister
+    /// needed ~20 minutes to write the tail after dash-spv called the
+    /// scan done. A "synced" wallet whose history ends two years ago is
+    /// exactly the screen users kill the app on.
+    @objc public private(set) var isPersistingScannedHistory = false {
+        didSet {
+            guard oldValue != isPersistingScannedHistory else { return }
+            observerSnapshot().forEach {
+                $0.syncingActivityMonitorPersistingDidChange?(isPersistingScannedHistory)
+            }
+        }
+    }
+
+    /// Blocks the durable watermark may trail the scanned tip by while the
+    /// sync still counts as done. New blocks land in the store within a
+    /// second of being scanned, so a small tolerance covers that window
+    /// without letting a genuine backlog through.
+    private static let durableLagTolerance: UInt32 = 3
+
     /// The wallet the in-flight sync cycle started on. `.syncDone` arrives
     /// from a singleton SPV stream that carries no wallet identity, while the
     /// durable watermark is read from whichever wallet is active at log time —
@@ -200,6 +231,7 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
 
         initializeReachibility()
         subscribeToCoordinator()
+        subscribeToPersistedWatermark()
     }
 
     @objc
@@ -315,11 +347,44 @@ extension SyncingActivityMonitor {
             mapped = .unknown
         }
 
-        applyProgressWithPeakSmoothing(sdkProgress)
-        isSyncing = (mapped == .syncing)
         let wasDone = state == .syncDone
         let wasSyncing = state == .syncing
-        state = mapped
+
+        // Durable-watermark gate. `.syncDone` from dash-spv means the scan
+        // reached the tip in memory; the transaction list is read from
+        // SwiftData, which the persister fills in rounds that can trail the
+        // scan by many minutes on a large wallet. Hold `.syncing` until the
+        // persisted watermark is within tolerance of the scanned tip, and
+        // let `progress` show the watermark climbing instead of a frozen
+        // 100%. Only evaluated on the way INTO done (or while held): once
+        // done is confirmed it stays done until dash-spv itself leaves it,
+        // so a new block briefly ahead of its own persist round can't flap
+        // the UI.
+        var effective = mapped
+        var effectiveProgress = sdkProgress
+        if mapped == .syncDone, !wasDone || isPersistingScannedHistory {
+            if let hold = durableLag(scannedTip: sdkSyncProgress.headers?.currentHeight) {
+                effective = .syncing
+                effectiveProgress = min(hold.progress, 0.999)
+                if !isPersistingScannedHistory {
+                    Self.logger.info(
+                        """
+                        ⛓️ SYNCSTATE :: scan done at tip \(hold.scannedTip, privacy: .public); holding \
+                        .syncing until the durable watermark (\(hold.durable, privacy: .public), behind by \
+                        \(hold.scannedTip - hold.durable, privacy: .public) block(s)) catches up
+                        """)
+                }
+                isPersistingScannedHistory = true
+            } else {
+                isPersistingScannedHistory = false
+            }
+        } else {
+            isPersistingScannedHistory = false
+        }
+
+        applyProgressWithPeakSmoothing(effectiveProgress)
+        isSyncing = (effective == .syncing)
+        state = effective
 
         // `syncDone` is derived purely from the SPV network phases — it knows
         // nothing about how much of what was scanned is durably persisted.
@@ -335,16 +400,63 @@ extension SyncingActivityMonitor {
         // `.noConnection` never reaches the `.syncDone` branch that clears it,
         // and a stale id would make the next cycle's completion look like it
         // belonged to a wallet that is no longer active.
-        if mapped == .syncing && !wasSyncing {
+        if effective == .syncing && !wasSyncing {
             syncCycleWalletId = SwiftDashSDKWalletSource.activeWalletId
         }
 
-        if mapped == .syncDone && !wasDone {
+        if effective == .syncDone && !wasDone {
             logDurableWatermarkAtCompletion(
                 scannedTip: sdkSyncProgress.headers?.currentHeight,
                 cycleWalletId: syncCycleWalletId)
             syncCycleWalletId = nil
         }
+    }
+
+    /// The persisted watermark's shortfall against the scanned tip, or `nil`
+    /// when there is nothing to hold on: no active wallet, no watermark yet
+    /// (a wallet whose first persist round hasn't landed — holding there
+    /// would pin a fresh wallet on "processing" with nothing to process),
+    /// no scanned tip, or a shortfall within `durableLagTolerance`.
+    private func durableLag(scannedTip: UInt32?) -> (scannedTip: UInt32, durable: UInt32, progress: Double)? {
+        guard let scannedTip, scannedTip > 0,
+              let snapshot = SwiftDashSDKWalletSource.persistedSyncedHeightSnapshot(),
+              let durable = snapshot.height,
+              durable + Self.durableLagTolerance < scannedTip else {
+            return nil
+        }
+        return (scannedTip, durable, Double(durable) / Double(scannedTip))
+    }
+
+    /// Re-run the gate whenever the persister commits a round. The round's
+    /// final save updates `PersistentWallet.syncedHeight`, so a save whose
+    /// updated set carries that entity is the exact signal; the coordinator
+    /// publishes nothing at that moment (dash-spv is idle at the tip), so
+    /// without this the hold would only lift on the next unrelated tick.
+    /// Payload inspection happens before the main-queue hop — the object
+    /// sets belong to the posting thread. Throttled: intermediate saves
+    /// every 500 rows also fire this notification.
+    private func subscribeToPersistedWatermark() {
+        NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
+            .filter { Self.saveTouchesWalletWatermark($0) }
+            .map { _ in () }
+            .throttle(for: .seconds(1), scheduler: RunLoop.main, latest: true)
+            .sink { [weak self] in
+                guard let self, self.isPersistingScannedHistory else { return }
+                let coord = SwiftDashSDKSPVCoordinator.shared
+                self.handleCoordinatorUpdate(
+                    sdkState: coord.state,
+                    sdkProgress: coord.progress,
+                    sdkSyncProgress: coord.syncProgress,
+                    peersBestHeight: coord.bestPeerHeight)
+            }
+            .store(in: &cancellables)
+    }
+
+    private static func saveTouchesWalletWatermark(_ notification: Notification) -> Bool {
+        guard let updated = notification.userInfo?[NSUpdatedObjectsKey] as? Set<NSManagedObject> else {
+            return false
+        }
+        return updated.contains { $0.entity.name == "PersistentWallet" }
     }
 
     /// One-shot read of the persisted sync height at the moment the UI first
