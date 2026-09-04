@@ -83,7 +83,9 @@ public class ExploreDashObjcWrapper: NSObject {
     }
 
     #if PIGGYCARDS_ENABLED
-    /// Check geo-restriction status. Call this when the app becomes active to log location info.
+    /// Resolve the user's country if it has not been resolved yet this launch.
+    /// Cheap to call repeatedly: `checkRestriction()` returns immediately once a
+    /// country has been determined.
     @objc public class func checkGeoRestriction() {
         Task { @MainActor in
             await GeoRestrictionService.shared.checkRestriction()
