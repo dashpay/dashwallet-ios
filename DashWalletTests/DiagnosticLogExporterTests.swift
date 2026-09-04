@@ -81,6 +81,32 @@ final class DiagnosticLogExporterTests: XCTestCase {
         XCTAssertEqual(events, ["flush", "copy"])
     }
 
+    @MainActor
+    func testSupportExportUsesTheSharedArchiveOnSuccess() async {
+        let expected = URL(fileURLWithPath: "/tmp/diagnostics.zip")
+        var failureWasReported = false
+
+        let archive = await DiagnosticLogExporter.exportArchiveForSupport(
+            using: { .success(expected) },
+            onFailure: { _ in failureWasReported = true })
+
+        XCTAssertEqual(archive, expected)
+        XCTAssertFalse(failureWasReported)
+    }
+
+    @MainActor
+    func testSupportExportFailureHasNoAlternativeAttachment() async {
+        struct ExportFailure: Error {}
+        var failureWasReported = false
+
+        let archive = await DiagnosticLogExporter.exportArchiveForSupport(
+            using: { .failure(ExportFailure()) },
+            onFailure: { _ in failureWasReported = true })
+
+        XCTAssertNil(archive)
+        XCTAssertTrue(failureWasReported)
+    }
+
     func testCurrentSessionIsFirstEvenWhenOlderStampedThanOthers() {
         // A stale future-dated directory sorts lexicographically after
         // the real current session. It must not displace it.

@@ -256,6 +256,27 @@ struct DiagnosticLogExporter {
         }.value
     }
 
+    /// Shared best-effort bridge for the support composer. Support uses the
+    /// exact same archive as the Tools and About screens; a failed export is
+    /// reported locally and never falls back to a different attachment set.
+    @MainActor
+    static func exportArchiveForSupport(
+        using exporter: () async -> Result<URL, Error> = {
+            await DiagnosticLogExporter.exportArchive()
+        },
+        onFailure: (Error) -> Void = { error in
+            DWLogger.log("Support diagnostic archive export failed: \(error.localizedDescription)")
+        }
+    ) async -> URL? {
+        switch await exporter() {
+        case .success(let archiveURL):
+            return archiveURL
+        case .failure(let error):
+            onFailure(error)
+            return nil
+        }
+    }
+
     /// Pure SDK-session selection policy, split out for unit testing.
     ///
     /// The current session (when known) is always first and always
