@@ -584,7 +584,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     ///
     /// Used by both confirm sheets' "Try again" (in-session) and the
     /// home-screen recovery sheet (after relaunch).
-    func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43 recipientOverride: Data? = nil) async {
+    func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43 recipientOverride: Data? = nil, sessionAuthSufficient: Bool = false) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume asset-lock vout=\(outPointVout) external=\(recipientOverride != nil)")
 
@@ -597,7 +597,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
 
         do {
-            try await authorize()
+            try await authorize(sessionAuthSufficient: sessionAuthSufficient)
         } catch {
             handleFailure(error)
             return
@@ -1066,7 +1066,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Resume of route 5 after its asset lock committed but the address-
     /// funding ST never landed — drives the remaining stages on the SAME
     /// outpoint. Mirrors `resumeAssetLock` on the shielded route.
-    func resumeFundPlatform(outPointTxidWire: Data, outPointVout: UInt32) async {
+    func resumeFundPlatform(outPointTxidWire: Data, outPointVout: UInt32, sessionAuthSufficient: Bool = false) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume core→platform fund vout=\(outPointVout)")
 
@@ -1078,7 +1078,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
 
         do {
-            try await authorize()
+            try await authorize(sessionAuthSufficient: sessionAuthSufficient)
         } catch {
             handleFailure(error)
             return
@@ -1351,9 +1351,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// PIN/biometric gate. `phase` is already `.signing` (set synchronously
     /// by `beginTransfer()`); this just awaits user authorization and maps
     /// the cancel/fail outcomes onto coordinator errors.
-    private func authorize() async throws {
+    /// `sessionAuthSufficient` is forwarded from a caller that already gated
+    /// the whole operation once (bulk asset-lock recovery); interactive
+    /// transfers leave it `false` and prompt per transfer.
+    private func authorize(sessionAuthSufficient: Bool = false) async throws {
         do {
-            try await authorizer.authorize()
+            try await authorizer.authorize(sessionAuthSufficient: sessionAuthSufficient)
         } catch DWIdentityAuthorizer.AuthError.cancelled {
             throw CoordinatorError.authCancelled
         } catch {

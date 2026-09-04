@@ -37,11 +37,17 @@ final class DWIdentityAuthorizer {
         }
     }
 
+    /// `sessionAuthSufficient` lets a caller that has ALREADY gated the whole
+    /// operation once skip the per-item prompt — a bulk asset-lock recovery
+    /// authenticates for the batch, not for each of its (possibly dozens of)
+    /// resumes. Default `false`, so every interactive caller keeps prompting.
     @MainActor
-    func authorize() async throws {
+    func authorize(sessionAuthSufficient: Bool = false) async throws {
         let biometricEnabled = DWGlobalOptions.sharedInstance().biometricAuthEnabled
-        Self.logger.info("🪪 IDENTITY-AUTH :: authenticating via AuthenticationGate (biometric=\(biometricEnabled, privacy: .public))")
-        let outcome = await AuthenticationGate.authenticate(biometric: biometricEnabled)
+        Self.logger.info("🪪 IDENTITY-AUTH :: authenticating via AuthenticationGate (biometric=\(biometricEnabled, privacy: .public) sessionAuthSufficient=\(sessionAuthSufficient, privacy: .public))")
+        let outcome = await AuthenticationGate.authenticate(
+            biometric: biometricEnabled,
+            sessionAuthSufficient: sessionAuthSufficient)
 
         switch outcome {
         case .ok:

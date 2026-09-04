@@ -75,6 +75,17 @@ struct SwiftDashSDKSPVStatusScreen: View {
     @State private var dropResultMessage: String?
     @State private var dropResultIsError = false
 
+    // MARK: - Pending transfers UI state
+
+    /// Locks awaiting a recovery resume, re-read when the card appears and
+    /// after a pass so the count reflects what actually remains.
+    @State private var pendingRecoveries: [AssetLockRecoveryService.PendingRecovery] = []
+    @State private var isRecoveringPending = false
+    /// "3 of 23" progress while the pass runs.
+    @State private var recoveryProgress: (done: Int, total: Int)?
+    @State private var recoveryResultMessage: String?
+    @State private var recoveryResultIsError = false
+
     init(vc: UINavigationController) {
         self.vc = vc
     }
@@ -118,6 +129,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
                     perPhaseCard
                     rescanFiltersCard
                     dropUnconfirmedCard
+                    pendingTransfersCard
                     connectedPeersCard
                     if let lastError = coordinator.lastError {
                         errorCard(message: lastError)
@@ -468,6 +480,77 @@ struct SwiftDashSDKSPVStatusScreen: View {
         .cornerRadius(12)
     }
 
+    /// Bulk "finish what the restore left open".
+    ///
+    /// A restore rebuilds every shielded funding lock from chain as
+    /// `RecoveredFromChain` — completion unknown — so a wallet with a long
+    /// shielded history comes back with dozens of transfers each offering its
+    /// own retry. Tapping through them one at a time is not a flow, and it is
+    /// the only way to learn which ones still hold recoverable value. This runs
+    /// the same resume over all of them behind a single authentication.
+    @ViewBuilder
+    private var pendingTransfersCard: some View {
+        if !pendingRecoveries.isEmpty || isRecoveringPending || recoveryResultMessage != nil {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(NSLocalizedString("Unfinished Transfers", comment: "SPV diagnostics"))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.dash.primaryText)
+
+                Text(NSLocalizedString(
+                    "Restoring a wallet loses the local record of whether each balance transfer finished on Platform, so they come back marked unknown. This asks the network about every one of them at once, finishing the transfers that are still open and marking the rest as already spent. It never builds a new transaction, so it cannot spend anything twice.",
+                    comment: "SPV diagnostics"))
+                    .font(.system(size: 12))
+                    .foregroundColor(Color.dash.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                row(
+                    title: NSLocalizedString("Awaiting completion", comment: "SPV diagnostics"),
+                    value: "\(pendingRecoveries.count)")
+
+                Button(action: { runPendingRecovery() }) {
+                    HStack(spacing: 8) {
+                        if isRecoveringPending {
+                            SwiftUI.ProgressView()
+                                .controlSize(.small)
+                        }
+                        Text(recoveryButtonTitle)
+                            .font(.system(size: 14, weight: .semibold))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color.dash.gray300.opacity(0.3))
+                    .foregroundColor(pendingRecoveries.isEmpty || isRecoveringPending ? .secondary : .dash.primaryText)
+                    .cornerRadius(8)
+                }
+                .disabled(pendingRecoveries.isEmpty || isRecoveringPending)
+
+                if let recoveryResultMessage {
+                    Text(recoveryResultMessage)
+                        .font(.system(size: 12))
+                        .foregroundColor(recoveryResultIsError ? .red : Color.dash.secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(16)
+            .background(Color.dash.secondaryBackground)
+            .cornerRadius(12)
+            .onAppear { refreshPendingRecoveries() }
+        } else {
+            Color.clear.frame(height: 0).onAppear { refreshPendingRecoveries() }
+        }
+    }
+
+    private var recoveryButtonTitle: String {
+        if let recoveryProgress, isRecoveringPending {
+            return String(
+                format: NSLocalizedString("Finishing %1$d of %2$d…", comment: "SPV diagnostics"),
+                recoveryProgress.done, recoveryProgress.total)
+        }
+        return isRecoveringPending
+            ? NSLocalizedString("Finishing…", comment: "SPV diagnostics")
+            : NSLocalizedString("Finish Transfers", comment: "SPV diagnostics")
+    }
+
     private var dropUnconfirmedCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(NSLocalizedString("Unconfirmed Transactions", comment: "SPV diagnostics"))
@@ -734,6 +817,71 @@ extension SwiftDashSDKSPVStatusScreen {
     /// Validate the "From height…" text field to a `UInt32` and start
     /// the rescan. A non-numeric or empty entry is rejected with an
     /// error banner rather than defaulted to `0`.
+    func refreshPendingRecoveries() {
+        pendingRecoveries = AssetLockRecoveryService.pendingRecoveries()
+    }
+
+    func runPendingRecovery() {
+        guard !isRecoveringPending else { return }
+        let pending = pendingRecoveries
+        guard !pending.isEmpty else { return }
+
+        isRecoveringPending = true
+        recoveryResultMessage = nil
+        recoveryProgress = (0, pending.count)
+
+        Task { @MainActor in
+            let outcome = await AssetLockRecoveryService().recoverAll(pending) { done, total in
+                recoveryProgress = (done, total)
+            }
+            isRecoveringPending = false
+            recoveryProgress = nil
+            refreshPendingRecoveries()
+
+            if outcome.cancelled, outcome.attempted == 0 {
+                recoveryResultIsError = false
+                recoveryResultMessage = NSLocalizedString("Cancelled.", comment: "SPV diagnostics")
+                return
+            }
+
+            // Report each bucket separately: "finished" and "was already spent"
+            // are different facts about the user's money, and only the first is
+            // a completion this pass witnessed.
+            var parts: [String] = []
+            if outcome.completed > 0 {
+                parts.append(String(
+                    format: NSLocalizedString("%d finished", comment: "SPV diagnostics"),
+                    outcome.completed))
+            }
+            if outcome.alreadySpent > 0 {
+                parts.append(String(
+                    format: NSLocalizedString("%d already spent", comment: "SPV diagnostics"),
+                    outcome.alreadySpent))
+            }
+            if outcome.failed > 0 {
+                parts.append(String(
+                    format: NSLocalizedString("%d could not be reached", comment: "SPV diagnostics"),
+                    outcome.failed))
+            }
+            if outcome.cancelled {
+                parts.append(NSLocalizedString("stopped early", comment: "SPV diagnostics"))
+            }
+            if outcome.stoppedAfterRepeatedFailures {
+                parts.append(NSLocalizedString("stopped after repeated failures", comment: "SPV diagnostics"))
+            }
+            recoveryResultIsError = outcome.failed > 0
+            var summary = parts.isEmpty
+                ? NSLocalizedString("Nothing to finish.", comment: "SPV diagnostics")
+                : parts.joined(separator: ", ")
+            // A count of failures with no reason is undiagnosable; carry the
+            // first one's text so the screen says what actually went wrong.
+            if let reason = outcome.firstFailureMessage {
+                summary += "\n\(reason)"
+            }
+            recoveryResultMessage = summary
+        }
+    }
+
     func startRescanFromEnteredHeight() {
         let trimmed = heightEntryText.trimmingCharacters(in: .whitespaces)
         guard let height = UInt32(trimmed) else {

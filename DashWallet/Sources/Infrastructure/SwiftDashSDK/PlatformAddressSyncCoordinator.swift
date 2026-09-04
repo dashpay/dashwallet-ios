@@ -1614,6 +1614,15 @@ final class ShieldedTxLookup {
         return entry
     }
 
+    /// The whole snapshot as (display-order hex txid, info) pairs. The caller
+    /// owns the policy of which entries mean anything — this is the raw
+    /// tracked set. Thread-safe; touches no SwiftData.
+    func allEntries() -> [(txidHex: String, info: ShieldedLockInfo)] {
+        lock.lock()
+        defer { lock.unlock() }
+        return infoByTxid.map { (txidHex: $0.key, info: $0.value) }
+    }
+
     private func entry(forTxidHex txidHex: String, fundingType: Int) -> ShieldedLockInfo? {
         let key = txidHex.lowercased()
         lock.lock()

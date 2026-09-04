@@ -940,6 +940,7 @@
 		75FFD6C82BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
 		76766A50AFDB7BC138F569DC /* NetworkUnavailableStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487C4C2E6AC61005536FF85E /* NetworkUnavailableStateView.swift */; };
 		7A30000230A1000000000002 /* TransactionDirectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30000130A1000000000001 /* TransactionDirectionTests.swift */; };
+		7A30001230A1000000000012 /* StuckAssetLockRetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */; };
 		7B18F4580CB3D24E417435DE /* StorageRecordDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCBA057E553F81F54ACE6E1 /* StorageRecordDetailViews.swift */; };
 		7B4F28EE00BA451DA8675B06 /* SwapCoinIconLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F0351CAD174EEB8E64012A /* SwapCoinIconLoader.swift */; };
 		7B9BBDE902964C57C44F68BD /* PinStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132FE91D9C90E736DB1634A5 /* PinStore.swift */; };
@@ -975,6 +976,7 @@
 		955230194626740DD881B4DC /* PaymentIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2DE6B63FE6B9E24278B870E /* PaymentIntent.swift */; };
 		95BBA0F4AB84110658BDB608 /* BIP70SendAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 379F0351A49BFB8CCA87926D /* BIP70SendAuthorizer.swift */; };
 		973AD0F3986AFFDBA78ED560 /* CoinJoinWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B208A9A34D0FFEEC796752C /* CoinJoinWithdrawalStore.swift */; };
+		7A30002230A1000000000022 /* AssetLockProbeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30002130A1000000000021 /* AssetLockProbeStore.swift */; };
 		97C1167F9600BF7E489A8545 /* SwapTransactionStatusHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B5469F5588395FA0668C4B /* SwapTransactionStatusHostingController.swift */; };
 		97E0FFBBAFFB7394F6841B61 /* DWPreviewSeedPhraseModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D8BC6623C81DD3F008A668 /* DWPreviewSeedPhraseModel+Mnemonic.swift */; };
 		926525A3134D15BF737BC355 /* RecoveryPhraseLength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210C818A8AAC76F91676AFF9 /* RecoveryPhraseLength.swift */; };
@@ -1868,6 +1870,7 @@
 		D5A0C007D5A0C007D5A0C007 /* DashSpendSinglePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B007D5A0B007D5A0B007 /* DashSpendSinglePanel.swift */; };
 		D5E6F7A8B9C0D1E2F3A4B5C6 /* TransferAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F4A5B6C7D8E9F01234 /* TransferAmountView.swift */; };
 		D60828F846490A6462E351E9 /* CoinJoinWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B208A9A34D0FFEEC796752C /* CoinJoinWithdrawalStore.swift */; };
+		7A30002330A1000000000023 /* AssetLockProbeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30002130A1000000000021 /* AssetLockProbeStore.swift */; };
 		D6C0C001D6C0C001D6C0C001 /* GiftCardDetailsInfoCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B001D6C0B001D6C0B001 /* GiftCardDetailsInfoCard.swift */; };
 		D6C0C002D6C0C002D6C0C002 /* GiftCardDetailsMerchantHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B002D6C0B002D6C0B002 /* GiftCardDetailsMerchantHeader.swift */; };
 		D6C0C003D6C0C003D6C0C003 /* GiftCardPurchaseSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B003D6C0B003D6C0B003 /* GiftCardPurchaseSelectionSheet.swift */; };
@@ -2062,6 +2065,7 @@
 		0755F840BCC1E0754D807B04 /* libPods-TodayExtension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TodayExtension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		080B9ECCDC82A7B7FF4039C6 /* ScriptAddressCodec.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScriptAddressCodec.swift; sourceTree = "<group>"; };
 		0B208A9A34D0FFEEC796752C /* CoinJoinWithdrawalStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoinJoinWithdrawalStore.swift; sourceTree = "<group>"; };
+		7A30002130A1000000000021 /* AssetLockProbeStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AssetLockProbeStore.swift; sourceTree = "<group>"; };
 		0C1D2D397047E72188C90FAE /* DWAboutModel+MasternodeSync.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "DWAboutModel+MasternodeSync.swift"; sourceTree = "<group>"; };
 		0CE6B29178211061196A0936 /* Pods-WatchApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.debug.xcconfig"; path = "Target Support Files/Pods-WatchApp/Pods-WatchApp.debug.xcconfig"; sourceTree = "<group>"; };
 		0D2C8F8102C5C603DB63569F /* ShieldedTransferCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedTransferCoordinator.swift; sourceTree = "<group>"; };
@@ -3088,6 +3092,7 @@
 		7708BBFDD14AFF237FB72D71 /* MayaConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaConstants.swift; sourceTree = "<group>"; };
 		797D9070BF54A3533190584E /* libPods-dashwallet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-dashwallet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7A30000130A1000000000001 /* TransactionDirectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionDirectionTests.swift; sourceTree = "<group>"; };
+		7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StuckAssetLockRetryTests.swift; sourceTree = "<group>"; };
 		7B56B94951BA51EAC9E0A6E1 /* libPods-DashWalletScreenshotsUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletScreenshotsUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B94B3697D7742BFA991B5CC /* BuySellPortalScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuySellPortalScreen.swift; sourceTree = "<group>"; };
 		7C172F43568AE0A5AFDB5349 /* Secp256k1Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Secp256k1Tests.swift; path = DashConnect/Secp256k1Tests.swift; sourceTree = "<group>"; };
@@ -7225,6 +7230,7 @@
 				CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */,
 				CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */,
 				7A30000130A1000000000001 /* TransactionDirectionTests.swift */,
+				7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */,
 				CB9200012FE3000000000001 /* PassiveWalletStateUITailTests.swift */,
 				AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */,
 				AA00F1002FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift */,
@@ -7280,6 +7286,7 @@
 				E6E56673B2BFED8EC0181A1F /* PlatformAddressSyncCoordinator.swift */,
 				UM00B0032FA0000000000001 /* UsernameMarketplaceService.swift */,
 				A1FA10C00000000000000001 /* AssetLockRecoveryService.swift */,
+				7A30002130A1000000000021 /* AssetLockProbeStore.swift */,
 				UTR0B0002FA0000000000001 /* UnconfirmedTransactionRemover.swift */,
 				INSGT0001000000000000001 /* InsightExplorerAPI.swift */,
 				51AA000D2F97000D005A000D /* ShieldedSyncMonitor.swift */,
@@ -10387,6 +10394,7 @@
 				0A7C300A1E685D356BEE3F54 /* SwiftDashSDKCoinJoinBalanceReader.swift in Sources */,
 				C05FA6CE3DDE2D0327D334E5 /* CoinJoinRecovery.swift in Sources */,
 				D60828F846490A6462E351E9 /* CoinJoinWithdrawalStore.swift in Sources */,
+				7A30002330A1000000000023 /* AssetLockProbeStore.swift in Sources */,
 				950A3F8FA0D89530F227FE25 /* CoinJoinWithdrawalTxSet.swift in Sources */,
 				99FAE80A3A63E073A2EB5209 /* PaymentProtocolWireFormat.swift in Sources */,
 				4539AA3FC5C209480BA279AA /* PaymentProtocolMessages.swift in Sources */,
@@ -10431,6 +10439,7 @@
 				CB9000022FE1000000000002 /* CoinbaseTransactionMetadataTests.swift in Sources */,
 				CB9100022FE2000000000002 /* CoinbaseTransferAmountTests.swift in Sources */,
 				7A30000230A1000000000002 /* TransactionDirectionTests.swift in Sources */,
+				7A30001230A1000000000012 /* StuckAssetLockRetryTests.swift in Sources */,
 				CB9200022FE3000000000002 /* PassiveWalletStateUITailTests.swift in Sources */,
 				AA0003042CA0F58E00A1B402 /* SwapAddressValidatorTests.swift in Sources */,
 				AA00F1012FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift in Sources */,
@@ -11413,6 +11422,7 @@
 				7408C11E2FBCCD879AE9CFFC /* SwiftDashSDKCoinJoinBalanceReader.swift in Sources */,
 				B66294BFAF57B052A74EE77D /* CoinJoinRecovery.swift in Sources */,
 				973AD0F3986AFFDBA78ED560 /* CoinJoinWithdrawalStore.swift in Sources */,
+				7A30002230A1000000000022 /* AssetLockProbeStore.swift in Sources */,
 				931B18EAFD7F2563BFAAF21E /* CoinJoinWithdrawalTxSet.swift in Sources */,
 				2556F3C5C72D70A771C6C61A /* PaymentProtocolWireFormat.swift in Sources */,
 				C1B995F0556113706D9CDA9A /* PaymentProtocolMessages.swift in Sources */,
