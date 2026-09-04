@@ -336,9 +336,11 @@ extension CrowdNode {
         guard let accountAddress = prefs.accountAddress else { return }
 
         // SDK-native ownership check (BIP44 acct-0 scan — the same one the
-        // CrowdNode signer uses). Tri-state: nil ⇒ the SDK wallet isn't up
-        // yet, so we can't validate — skip rather than reset a live account;
-        // the check reruns on the next restoreState.
+        // CrowdNode signer uses). Tri-state: nil ⇒ unknown (the SDK wallet
+        // isn't up yet, or the address sits beyond the bounded scan) — skip
+        // rather than reset a live account; the check reruns on the next
+        // restoreState. false is returned only for an address that cannot
+        // belong to this wallet (not a P2PKH address of the running network).
         let owns: Bool?
         if Thread.isMainThread {
             owns = MainActor.assumeIsolated { CrowdNodeMessageSigner.ownsAddress(accountAddress) }
@@ -355,7 +357,7 @@ extension CrowdNode {
             DWLogger.log("Found alien address in CrowdNode prefs")
             reset()
         case nil:
-            DWLogger.log("CrowdNode prefs validation skipped — SDK wallet not available yet")
+            DWLogger.log("CrowdNode prefs validation inconclusive (wallet not up, or address beyond scan bound) — keeping stored account")
         default:
             break
         }
