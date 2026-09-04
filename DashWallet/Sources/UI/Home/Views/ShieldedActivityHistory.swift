@@ -94,8 +94,8 @@ struct ShieldedActivityItem: Identifiable {
     let minNotePosition: UInt64?
     /// Decoded UTF-8 text memo, when the 36-byte Dash memo is kind-1 text.
     let memoText: String?
-    /// Created identity id (hex) for `identityCreate` entries.
-    let createdIdentityIdHex: String?
+    /// Created identity id (base58) for `identityCreate` entries.
+    let createdIdentityIdBase58: String?
     /// Decoded destination, when the entry's counterparty names one:
     /// the Base58Check Core address for a withdrawal, the bech32m
     /// Platform address for an unshield. Nil for other kinds and for
@@ -144,8 +144,8 @@ struct ShieldedActivityItem: Identifiable {
             : .distantPast
         minNotePosition = row.hasMinNotePosition ? row.minNotePosition : nil
         memoText = Self.decodeTextMemo(row.memo)
-        createdIdentityIdHex = effectiveKind == .identityCreate && row.identityId.count == 32
-            ? row.identityId.map { String(format: "%02x", $0) }.joined()
+        createdIdentityIdBase58 = effectiveKind == .identityCreate && row.identityId.count == 32
+            ? row.identityId.toBase58String()
             : nil
     }
 
@@ -393,7 +393,7 @@ struct ShieldedActivityDetailsView: View {
                     }
                     .padding(.vertical, 10)
                 }
-                if let identityId = item.createdIdentityIdHex {
+                if let identityId = item.createdIdentityIdBase58 {
                     copyableRow(NSLocalizedString("Identity ID", comment: "Identities"), identityId)
                 }
                 infoRow(

@@ -113,7 +113,6 @@ public final class DWCurrentUserIdentityInfo: NSObject {
     /// on the next property access after `currentRevision` advances.
     private struct Snapshot {
         let identityId: Data?
-        let identityIdHex: String?
         let username: String?
         let usernames: [String]
         let displayName: String?
@@ -122,7 +121,6 @@ public final class DWCurrentUserIdentityInfo: NSObject {
 
         static let empty = Snapshot(
             identityId: nil,
-            identityIdHex: nil,
             username: nil,
             usernames: [],
             displayName: nil,
@@ -239,18 +237,11 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         snapshot.publicMessage
     }
 
-    /// 32-byte identity ID rendered as lowercase hex (64 chars), or
-    /// nil when no identity is registered. Mirrors the format used
-    /// by `SDKIdentityProfileSheet` and the coordinator logs.
-    @objc public var identityIdHex: String? {
-        snapshot.identityIdHex
-    }
-
     /// Raw 32-byte identity ID, or nil when no identity is registered.
-    /// Swift-only (SDK APIs take `Identifier` = `Data`); Obj-C callers
-    /// use `identityIdHex`. Added for the contacts service (Row #18),
-    /// which passes it as `ownerIdentityId` into the SwiftData
-    /// predicates and `ManagedPlatformWallet` contact calls.
+    /// Swift-only (SDK APIs take `Identifier` = `Data`). Added for the
+    /// contacts service (Row #18), which passes it as `ownerIdentityId`
+    /// into the SwiftData predicates and `ManagedPlatformWallet` contact
+    /// calls; the marketplace, invitation and send paths read it too.
     public var identityId: Data? {
         snapshot.identityId
     }
@@ -575,7 +566,6 @@ public final class DWCurrentUserIdentityInfo: NSObject {
 
         return Snapshot(
             identityId: identityId,
-            identityIdHex: hex,
             username: username,
             usernames: usernames,
             displayName: displayName,
