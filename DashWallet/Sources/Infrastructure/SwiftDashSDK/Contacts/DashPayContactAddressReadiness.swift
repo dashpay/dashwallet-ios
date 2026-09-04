@@ -22,10 +22,15 @@ import SwiftDashSDK
 /// contacts and contact accounts up first means the very first filter set
 /// already covers them.
 ///
-/// The sequence itself — including the discovery retry policy and the budget —
-/// lives in the SDK (`PlatformWalletManager.startWalletSubsystems`), so iOS and
-/// Android share one implementation and one set of tests. This file is the call
-/// site and its logging; it deliberately holds no ordering logic of its own.
+/// The sequence itself — including the discovery retry policy and the default
+/// budget — lives in the SDK (`PlatformWalletManager.startWalletSubsystems`),
+/// so iOS and Android share one implementation and one set of tests. This
+/// file holds no ordering logic of its own; what it does decide, app-side, is
+/// the budget handed to that sequence for a wallet generated on this device
+/// (`StartupIdentityRecoveryPolicy`, keyed on `GeneratedWalletIdentityMarker`)
+/// and the handoff of the outcome to `DWSameSeedIdentityRecoveryCoordinator`.
+/// TODO(platform-wallet): carry "generated on this device" on the wallet
+/// record so the short-budget probe moves into the shared Rust sequence.
 ///
 /// `reconcile_dashpay_rescan` (DIP-15 §12.6) stays load-bearing regardless:
 /// contacts established later in a session, or on a later day, always arrive
@@ -46,9 +51,40 @@ enum DashPayContactAddressReadiness {
         wallet: ManagedPlatformWallet,
         network: Network
     ) async {
+        // A mnemonic generated on this device with no local identity gets a
+        // short budget instead of the SDK default. That budget caps the
+        // whole sequence, so it only serves as a probe: when the probe DOES
+        // find an identity, the marker is dropped and the sequence runs
+        // again with the default budget — the identity is local by then, so
+        // the second run skips discovery and spends its budget on the
+        // contact sync and the contact-account drain that the first one cut
+        // short. The final verdict goes to the same-seed recovery
+        // coordinator so the BLAST-side backstop does not repeat the
+        // discovery this pass just ran.
+        let recovery = DWSameSeedIdentityRecoveryCoordinator.shared
+        let walletId = wallet.walletId
+        let probeBudget = SwiftDashSDKHost.shared.modelContainer.flatMap {
+            recovery.startupBudget(walletId: walletId, modelContainer: $0)
+        }
+        if let probeBudget {
+            logger.info(
+                "👥 DP-READY :: wallet generated on this device, no local identity — budget \(Int(probeBudget), privacy: .public)s")
+        }
         do {
-            let outcome = try await manager.startWalletSubsystems(wallet: wallet)
+            var outcome = try await manager.startWalletSubsystems(wallet: wallet, budget: probeBudget)
             log(outcome, network: network)
+            if probeBudget != nil, outcome.identityId != nil {
+                GeneratedWalletIdentityMarker.clear(walletId: walletId)
+                logger.info(
+                    "👥 DP-READY :: probe found an identity for a generated wallet — re-running with the default budget")
+                outcome = try await manager.startWalletSubsystems(wallet: wallet)
+                log(outcome, network: network)
+            }
+            recovery.recordStartupDiscovery(
+                status: outcome.status,
+                identityId: outcome.identityId,
+                walletId: walletId,
+                network: network)
         } catch {
             logger.warning(
                 "👥 DP-READY :: bring-up failed; starting SPV anyway: \(String(describing: error), privacy: .public)")

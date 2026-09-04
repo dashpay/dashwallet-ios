@@ -183,6 +183,78 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             .init(discoveredCount: 0, identityCount: 1, adopted: true))
     }
 
+    // MARK: - StartupIdentityRecoveryPolicy
+
+    private static let discoveryVerdicts: [WalletStartupStatus] = [.noIdentity, .partialNoIdentity, .discoveryFailed]
+    private static let nonDiscoveryStatuses: [WalletStartupStatus] = [
+        .ready, .partialAccountsPending, .seedBindingUnverified, .identityScanIncomplete,
+    ]
+
+    func testBackstopRunsWhenNoReadinessPassRan() {
+        for isGenerated in [false, true] {
+            XCTAssertTrue(StartupIdentityRecoveryPolicy.shouldRunBackstop(
+                readinessStatus: nil, readinessIdentityId: nil, isGeneratedOnDevice: isGenerated))
+        }
+    }
+
+    func testKnownIdentityAlwaysRunsTheBackstop() {
+        // The guard behind adoption: whatever the status says, an identity
+        // the readiness pass knows about must reach refreshNames + adopt.
+        let identityId = Data(repeating: 0x18, count: 32)
+        for status in Self.discoveryVerdicts + Self.nonDiscoveryStatuses {
+            for isGenerated in [false, true] {
+                XCTAssertTrue(
+                    StartupIdentityRecoveryPolicy.shouldRunBackstop(
+                        readinessStatus: status, readinessIdentityId: identityId, isGeneratedOnDevice: isGenerated),
+                    "\(status) generated=\(isGenerated)")
+            }
+        }
+    }
+
+    func testSettledAbsenceSkipsTheBackstop() {
+        for status: WalletStartupStatus in [.noIdentity, .discoveryFailed] {
+            for isGenerated in [false, true] {
+                XCTAssertFalse(
+                    StartupIdentityRecoveryPolicy.shouldRunBackstop(
+                        readinessStatus: status, readinessIdentityId: nil, isGeneratedOnDevice: isGenerated),
+                    "\(status) generated=\(isGenerated)")
+            }
+        }
+    }
+
+    func testUnreachablePlatformKeepsTheBackstopUnlessTheWalletWasGeneratedHere() {
+        for status: WalletStartupStatus in [.partialNoIdentity, .identityScanIncomplete] {
+            XCTAssertTrue(
+                StartupIdentityRecoveryPolicy.shouldRunBackstop(
+                    readinessStatus: status, readinessIdentityId: nil, isGeneratedOnDevice: false),
+                "\(status)")
+            XCTAssertFalse(
+                StartupIdentityRecoveryPolicy.shouldRunBackstop(
+                    readinessStatus: status, readinessIdentityId: nil, isGeneratedOnDevice: true),
+                "\(status)")
+        }
+    }
+
+    func testUnresolvedStatusesWithoutAnIdentityRunTheBackstop() {
+        for status: WalletStartupStatus in [.ready, .partialAccountsPending, .seedBindingUnverified] {
+            for isGenerated in [false, true] {
+                XCTAssertTrue(
+                    StartupIdentityRecoveryPolicy.shouldRunBackstop(
+                        readinessStatus: status, readinessIdentityId: nil, isGeneratedOnDevice: isGenerated),
+                    "\(status) generated=\(isGenerated)")
+            }
+        }
+    }
+
+    func testShortStartupBudgetOnlyForGeneratedWalletWithoutLocalIdentity() {
+        XCTAssertEqual(
+            StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: true, hasLocalIdentity: false),
+            StartupIdentityRecoveryPolicy.generatedWalletStartupBudget)
+        XCTAssertNil(StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: true, hasLocalIdentity: true))
+        XCTAssertNil(StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: false, hasLocalIdentity: false))
+        XCTAssertNil(StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: false, hasLocalIdentity: true))
+    }
+
     func testWatchdogRefreshesOnlyAfterFullScanBecomesStale() {
         XCTAssertFalse(ShieldedSyncFreshnessPolicy.shouldRefreshForWatchdog(
             now: now,

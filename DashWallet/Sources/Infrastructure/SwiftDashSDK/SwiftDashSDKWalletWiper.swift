@@ -639,6 +639,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
             CrowdNodeDefaults.shared.clearPerWalletKeys(forWalletIdHex: walletIdHex)
             CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
+            GeneratedWalletIdentityMarker.clear(walletId: walletId)
         }
     }
 }

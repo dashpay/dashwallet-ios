@@ -635,6 +635,58 @@ enum SameSeedIdentityRecoveryPipeline {
     }
 }
 
+/// Decides what the BLAST-side same-seed recovery backstop still has to do
+/// after the pre-SPV readiness pass (`DashPayContactAddressReadiness` →
+/// `startWalletSubsystems`) already ran for the same runtime start. Pure so
+/// the rules stay regression-testable.
+enum StartupIdentityRecoveryPolicy {
+    /// Budget handed to the SDK's startup sequence for a wallet whose
+    /// mnemonic was generated on this device and that has no local identity.
+    /// It caps the WHOLE sequence, so it is only ever used as a first probe:
+    /// a proof of absence settles on the first discovery pass (seconds), an
+    /// unreachable Platform costs this much instead of the SDK default, and
+    /// a found identity makes `DashPayContactAddressReadiness` re-run the
+    /// sequence with the default budget so the contact sync and the
+    /// contact-account drain are not cut short.
+    static let generatedWalletStartupBudget: TimeInterval = 5
+
+    /// `nil` status = no readiness pass ran in this start (a Platform-sync
+    /// re-arm, the storage explorer's direct BLAST start): the backstop runs
+    /// as before. A known identity keeps it running too — the pipeline then
+    /// skips discovery and only refreshes names + adopts. `.noIdentity` and
+    /// `.discoveryFailed` settle the question for this start (retrying the
+    /// unbudgeted scan is what cost a wallet switch 31 s). A pass that
+    /// never reached Platform (`.partialNoIdentity`, which is also what the
+    /// SDK decodes an unrecognised FFI status into) keeps the backstop as
+    /// the in-session retry — except for a wallet generated on this device,
+    /// where the next runtime start retries instead. Every other status
+    /// leaves the question to the backstop.
+    static func shouldRunBackstop(
+        readinessStatus: WalletStartupStatus?,
+        readinessIdentityId: Data?,
+        isGeneratedOnDevice: Bool
+    ) -> Bool {
+        guard let readinessStatus else { return true }
+        if readinessIdentityId != nil { return true }
+        switch readinessStatus {
+        case .noIdentity, .discoveryFailed:
+            return false
+        case .partialNoIdentity, .identityScanIncomplete:
+            return !isGeneratedOnDevice
+        case .ready, .partialAccountsPending, .seedBindingUnverified:
+            return true
+        @unknown default:
+            return true
+        }
+    }
+
+    /// `nil` = the SDK default budget.
+    static func startupBudget(isGeneratedOnDevice: Bool, hasLocalIdentity: Bool) -> TimeInterval? {
+        guard isGeneratedOnDevice, !hasLocalIdentity else { return nil }
+        return generatedWalletStartupBudget
+    }
+}
+
 /// Best-effort startup recovery for an identity created by the same seed on a
 /// different device/install. One successful attempt is enough per
 /// network-scoped wallet and process; failures remain retryable on the next
@@ -649,8 +701,44 @@ final class DWSameSeedIdentityRecoveryCoordinator {
 
     private var completedContexts: Set<String> = []
     private var activeContexts: Set<String> = []
+    /// Readiness verdicts recorded by `DashPayContactAddressReadiness` for
+    /// the current runtime start. `recoverIfNeeded` removes the verdict for
+    /// its context on entry, before any early return, so one verdict is
+    /// consulted at most once.
+    private var startupVerdicts: [String: (status: WalletStartupStatus, identityId: Data?)] = [:]
 
     private init() {}
+
+    /// Hand over the pre-SPV readiness verdict for `walletId` on `network`
+    /// so the backstop below can tell a fresh discovery from a repeat.
+    func recordStartupDiscovery(
+        status: WalletStartupStatus,
+        identityId: Data?,
+        walletId: Data,
+        network: Network
+    ) {
+        startupVerdicts[Self.contextKey(walletId: walletId, network: network)] = (status, identityId)
+    }
+
+    /// Runtime teardown (`SwiftDashSDKWalletRuntime.fullReset`) calls this
+    /// so nothing recorded here outlives the start that produced it: the
+    /// readiness verdicts, and the completed contexts — walletIds are
+    /// deterministic per mnemonic+network, so a wallet removed and
+    /// re-imported in the same session must get its recovery attempt back.
+    func resetForRuntimeTeardown() {
+        startupVerdicts.removeAll()
+        completedContexts.removeAll()
+    }
+
+    /// Startup budget for the SDK's pre-SPV sequence, or `nil` for the SDK
+    /// default — see `StartupIdentityRecoveryPolicy.startupBudget`. The
+    /// SwiftData fetch only runs for a marked wallet.
+    func startupBudget(walletId: Data, modelContainer: ModelContainer) -> TimeInterval? {
+        guard GeneratedWalletIdentityMarker.isMarked(walletId: walletId) else { return nil }
+        return StartupIdentityRecoveryPolicy.startupBudget(
+            isGeneratedOnDevice: true,
+            hasLocalIdentity: !Self.localIdentityIds(walletId: walletId, modelContainer: modelContainer).isEmpty)
+    }
 
     func recoverIfNeeded(
         wallet: ManagedPlatformWallet,
@@ -658,12 +746,27 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         network: Network
     ) async {
         let walletId = wallet.walletId
-        let walletHex = walletId.map { String(format: "%02x", $0) }.joined()
-        let contextKey = "\(network.rawValue):\(walletHex)"
+        let contextKey = Self.contextKey(walletId: walletId, network: network)
+        // Consumed first: a verdict belongs to exactly one backstop decision,
+        // whichever branch below takes it.
+        let verdict = startupVerdicts.removeValue(forKey: contextKey)
 
         guard !completedContexts.contains(contextKey),
               !activeContexts.contains(contextKey)
         else {
+            return
+        }
+
+        if let verdict,
+           !StartupIdentityRecoveryPolicy.shouldRunBackstop(
+               readinessStatus: verdict.status,
+               readinessIdentityId: verdict.identityId,
+               isGeneratedOnDevice: GeneratedWalletIdentityMarker.isMarked(walletId: walletId)) {
+            Self.logger.info(
+                """
+                🪪 IDENT-RECOVERY :: skipped — startup readiness already ran discovery \
+                (status=\(verdict.status.rawValue, privacy: .public))
+                """)
             return
         }
 
@@ -732,7 +835,13 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         }
     }
 
-    private static func localIdentityIds(
+    private static func contextKey(walletId: Data, network: Network) -> String {
+        "\(network.rawValue):" + walletId.map { String(format: "%02x", $0) }.joined()
+    }
+
+    /// Internal (was private): shared with the startup-budget decision above
+    /// — reuse, not a copy, per the repo's no-copy-then-adapt guardrail.
+    static func localIdentityIds(
         walletId: Data,
         modelContainer: ModelContainer
     ) -> [Data] {
