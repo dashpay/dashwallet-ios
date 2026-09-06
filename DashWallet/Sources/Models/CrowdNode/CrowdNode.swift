@@ -245,13 +245,21 @@ extension CrowdNode {
 
         var onlineState = prefs.savedOnlineAccountState
 
+        let trustStoredAddress =
+            CrowdNode.storedAccountVerdict(ownership: ownsStoredAddress) == .trusted
         if let address = getOnlineAccountAddress(
             state: onlineState,
             observed: observed,
-            trustStoredAddress: CrowdNode.storedAccountVerdict(ownership: ownsStoredAddress) == .trusted) {
+            trustStoredAddress: trustStoredAddress) {
             prefs.accountAddress = address
 
-            if onlineState == .none {
+            // Without trust, the address came from this wallet's own API
+            // confirmation transaction, and that lookup already downgraded the
+            // persisted state to `.linking`. Carrying the stored `onlineState`
+            // forward here would publish a further-along state — `.done` for a
+            // legacy value copied from another wallet — that nothing in this
+            // wallet has established. Re-link from the evidence instead.
+            if !trustStoredAddress || onlineState == .none {
                 onlineState = .linking
             }
 
