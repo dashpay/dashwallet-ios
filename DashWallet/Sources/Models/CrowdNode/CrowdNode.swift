@@ -248,7 +248,7 @@ extension CrowdNode {
         if let address = getOnlineAccountAddress(
             state: onlineState,
             observed: observed,
-            trustStoredAddress: ownsStoredAddress == true) {
+            trustStoredAddress: CrowdNode.storedAccountVerdict(ownership: ownsStoredAddress) == .trusted) {
             prefs.accountAddress = address
 
             if onlineState == .none {
@@ -341,6 +341,31 @@ extension CrowdNode {
         signUpState = SignUpState.signingUp
     }
 
+    /// What a restore may do with the stored CrowdNode account, given the
+    /// tri-state ownership verdict. Named so the rule is pinned by tests
+    /// without standing an SDK wallet up: the whole point of ticket 32026 is
+    /// that `unproven` must behave like neither of the other two.
+    enum StoredAccountVerdict: Equatable {
+        /// The scan found the address among this wallet's keys — the online
+        /// restore may activate the stored account on it.
+        case trusted
+        /// Ownership is unknown (wallet not up, or the address sits beyond
+        /// the scan bound). Keep the stored data, but never activate an
+        /// account on it: the legacy per-wallet key seeding can have copied
+        /// it from another wallet on the same network.
+        case unproven
+        /// The address cannot be this wallet's — the account is reset.
+        case alien
+    }
+
+    static func storedAccountVerdict(ownership owns: Bool?) -> StoredAccountVerdict {
+        switch owns {
+        case true?: return .trusted
+        case false?: return .alien
+        case nil: return .unproven
+        }
+    }
+
     /// Validate the stored account address against the active wallet and
     /// report the verdict to the restore that called it.
     ///
@@ -370,13 +395,13 @@ extension CrowdNode {
             owns = captured
         }
 
-        switch owns {
-        case false:
+        switch CrowdNode.storedAccountVerdict(ownership: owns) {
+        case .alien:
             DWLogger.log("Found alien address in CrowdNode prefs")
             reset()
-        case nil:
+        case .unproven:
             DWLogger.log("CrowdNode prefs validation inconclusive (wallet not up, or address beyond scan bound) — keeping stored account, ownership unproven")
-        default:
+        case .trusted:
             break
         }
 

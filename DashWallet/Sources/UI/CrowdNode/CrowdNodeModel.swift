@@ -401,6 +401,15 @@ enum CrowdNodeMessageSigner {
             data: DarkCoinMessage.framed(message), privateKey: privateKey, network: network)
     }
 
+    /// What the ownership check needs from the running wallet: an
+    /// address → hash160 decode for the running network, and the bounded
+    /// BIP44 scan over that wallet's keys. `liveOwnership()` returns nil
+    /// when the SDK wallet or the network isn't up yet.
+    struct OwnershipLookup {
+        let hash160OfAddress: (String) -> String?
+        let derivationPath: (String) -> String?
+    }
+
     /// Tri-state wallet-ownership check for a persisted CrowdNode account
     /// address (a BIP44 acct-0 receive address, so the same bounded scan the
     /// signer uses can find it): `true` when the scan finds the key; `false`
@@ -412,21 +421,37 @@ enum CrowdNodeMessageSigner {
     /// unlike signing, where exhaustion safely fails closed, answering
     /// `false` here triggers a destructive reset of the CrowdNode link.
     static func ownsAddress(_ address: String) -> Bool? {
-        guard let network = SwiftDashSDKHost.shared.runningNetwork,
-              let (_, wallet, _) = SwiftDashSDKHost.shared.derivationWallet() else {
-            return nil
-        }
-        guard let targetHash160 = hash160(ofAddress: address, network: network) else {
+        ownsAddress(address, using: liveOwnership())
+    }
+
+    /// The verdict rule on its own, with the wallet reduced to two closures
+    /// so the tri-state contract can be pinned without an SDK host: a nil
+    /// `lookup` is "the wallet isn't up".
+    static func ownsAddress(_ address: String, using lookup: OwnershipLookup?) -> Bool? {
+        guard let lookup else { return nil }
+        guard let targetHash160 = lookup.hash160OfAddress(address) else {
             return false // not a P2PKH address of this network ⇒ not ours
         }
         // Scan exhaustion is "unknown", never "not mine" — the bound exists
         // for cost, not as an ownership horizon.
-        return derivationPath(ofHash160: targetHash160, wallet: wallet, network: network) != nil ? true : nil
+        return lookup.derivationPath(targetHash160) != nil ? true : nil
+    }
+
+    private static func liveOwnership() -> OwnershipLookup? {
+        guard let network = SwiftDashSDKHost.shared.runningNetwork,
+              let (_, wallet, _) = SwiftDashSDKHost.shared.derivationWallet() else {
+            return nil
+        }
+        return OwnershipLookup(
+            hash160OfAddress: { hash160(ofAddress: $0, network: network) },
+            derivationPath: { derivationPath(ofHash160: $0, wallet: wallet, network: network) })
     }
 
     /// Base58Check-decoded P2PKH hash160 of `address` as lowercase hex
-    /// (the format `computePublicKeyHashHex` emits).
-    private static func hash160(ofAddress address: String, network: Network) -> String? {
+    /// (the format `computePublicKeyHashHex` emits). Nil for anything that is
+    /// not a P2PKH address of `network` — the one input that lets `ownsAddress`
+    /// answer `false`, so it is exercised directly by the tests.
+    static func hash160(ofAddress address: String, network: Network) -> String? {
         let paymentNetwork: PaymentNetwork = network == .mainnet ? .mainnet : .testnet
         guard let script = ScriptAddressCodec.scriptPubKey(forAddress: address, network: paymentNetwork),
               script.count == 25 else { return nil } // P2PKH only; P2SH can't be message-signed
