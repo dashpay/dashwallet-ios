@@ -10,7 +10,7 @@ import UIKit
 @objc(DWSendScreenViewController)
 final class SendScreenViewController: DWBasePayViewController {
 
-    /// Set by the "Send to Address" shortcut entry: on load, a valid address
+    /// Set by the "Send to Address" shortcut entry: on appearance, a valid address
     /// on the clipboard is applied to the address field directly — the same
     /// action as tapping the clipboard suggestion chip.
     var prefillsFromClipboard = false
@@ -60,15 +60,21 @@ final class SendScreenViewController: DWBasePayViewController {
         ])
         hostingController.didMove(toParent: self)
 
-        if prefillsFromClipboard {
-            sendViewModel.useClipboardSuggestion()
-        }
         if let prefillAddress {
             sendViewModel.addressText = prefillAddress
             if prefillAmountDuffs > 0 {
                 sendViewModel.unit = .dash
                 sendViewModel.amountText = prefillAmountDuffs.formattedDashAmountWithoutCurrencySymbol
             }
+        }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if prefillsFromClipboard {
+            prefillsFromClipboard = false
+            sendViewModel.setClipboardMonitoringEnabled(true)
+            sendViewModel.useClipboardSuggestion()
         }
     }
 

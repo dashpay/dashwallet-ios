@@ -78,6 +78,15 @@ struct SendScreen: View {
         }
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
+        .task {
+            // A pasteboard read can block on the system permission dialog.
+            // Let the address form's entrance animation finish first. SwiftUI
+            // cancels this task if the user leaves before then.
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            viewModel.setClipboardMonitoringEnabled(true)
+        }
+        .onDisappear { viewModel.setClipboardMonitoringEnabled(false) }
     }
 
     // MARK: - Header

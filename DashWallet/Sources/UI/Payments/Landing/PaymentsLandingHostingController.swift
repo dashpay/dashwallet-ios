@@ -168,6 +168,10 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         super.viewDidLoad()
         view.backgroundColor = .dw_background()
 
+        embeddedSendViewModel.isClipboardReadAllowed = { [weak self] in
+            self?.viewModel.activeTab == .send
+        }
+
         addChild(hostingController)
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         hostingController.view.backgroundColor = .clear

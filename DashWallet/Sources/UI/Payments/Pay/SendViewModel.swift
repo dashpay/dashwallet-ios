@@ -94,6 +94,10 @@ final class SendViewModel: ObservableObject {
         }
     }
     @Published private(set) var clipboardSuggestion: ClipboardSuggestion? = nil
+    private var isClipboardMonitoringEnabled = false
+    /// Hosts with animated tabs must also check selection: the outgoing view
+    /// can remain alive briefly after another tab has been selected.
+    var isClipboardReadAllowed: () -> Bool = { true }
 
     // Balances — same feeds as `InternalTransferViewModel` (BIP44 duffs,
     // DIP-17 credits, Orchard credits).
@@ -157,7 +161,6 @@ final class SendViewModel: ObservableObject {
         if let pinnedSource {
             source = pinnedSource
         }
-        refreshClipboardSuggestion()
         SyncingActivityMonitor.shared.add(observer: self)
 
         NotificationCenter.default.publisher(for: UIPasteboard.changedNotification)
@@ -424,7 +427,18 @@ final class SendViewModel: ObservableObject {
         let kind: DestinationKind
     }
 
-    func refreshClipboardSuggestion() {
+    /// Only the visible address form enables automatic reads. This model also
+    /// exists behind Receive/Internal and is reused by later send steps.
+    func setClipboardMonitoringEnabled(_ enabled: Bool) {
+        guard isClipboardMonitoringEnabled != enabled else { return }
+        isClipboardMonitoringEnabled = enabled
+        if enabled {
+            refreshClipboardSuggestion()
+        }
+    }
+
+    private func refreshClipboardSuggestion() {
+        guard isClipboardMonitoringEnabled, isClipboardReadAllowed() else { return }
         guard let raw = UIPasteboard.general.string else {
             clipboardSuggestion = nil
             return
