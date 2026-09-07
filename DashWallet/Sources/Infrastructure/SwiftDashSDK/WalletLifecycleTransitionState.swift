@@ -59,6 +59,14 @@ final class WalletLifecycleTransitionState: ObservableObject {
         /// "Deleting Wallet…"). Failure alerts stay UIKit (shown after
         /// `finish()`), so there is no failed-wipe phase.
         case wiping(title: String?)
+        /// A diagnostic log export in flight (`DiagnosticLogExporter`). Not a
+        /// lifecycle operation, but it holds the SDK's persistence serial
+        /// queue for its duration (dashpay/platform#4580), so it takes the
+        /// same blocking card and the same admission gate: no wallet switch
+        /// may start under it, and it may not start under one. Finishes on
+        /// its own; there is no failure phase — a failed export is reported
+        /// by the screen that asked for it.
+        case exportingDiagnostics
 
         /// Compact form for gate/telemetry log lines (no wallet ids beyond
         /// what the operation logs themselves already include).
@@ -73,6 +81,7 @@ final class WalletLifecycleTransitionState: ObservableObject {
             case .failedWalletSwitch: return "failedWalletSwitch"
             case .failedWalletRemoval: return "failedWalletRemoval"
             case .wiping: return "wiping"
+            case .exportingDiagnostics: return "exportingDiagnostics"
             }
         }
     }
@@ -99,6 +108,7 @@ final class WalletLifecycleTransitionState: ObservableObject {
              (.idle, .removingWallet),
              (.idle, .addingWallet),
              (.idle, .wiping),
+             (.idle, .exportingDiagnostics),
              (.failedNetworkSwitch, .switchingNetwork),
              (.failedWalletSwitch, .switchingWallet),
              // Composite add → switch: the add flow's own continuation into

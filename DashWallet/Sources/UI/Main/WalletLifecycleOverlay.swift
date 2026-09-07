@@ -58,7 +58,7 @@ final class WalletLifecycleOverlayPresenter {
         case .switchingNetwork, .failedNetworkSwitch,
              .switchingWallet, .removingWallet, .addingWallet,
              .failedWalletSwitch, .failedWalletRemoval,
-             .wiping:
+             .wiping, .exportingDiagnostics:
             presentIfNeeded()
         }
     }
@@ -203,6 +203,12 @@ struct WalletLifecycleOverlayView: View {
                 progressCard(
                     title: title ?? NSLocalizedString("Deleting All Wallets…", comment: ""),
                     subtitle: nil)
+            case .exportingDiagnostics:
+                progressCard(
+                    title: NSLocalizedString("Preparing logs…", comment: "Diagnostic log export overlay"),
+                    subtitle: NSLocalizedString(
+                        "Collecting wallet diagnostics. This may take a few seconds.",
+                        comment: "Diagnostic log export overlay"))
             case let .failedNetworkSwitch(from, target, message):
                 card {
                     failureHeader(

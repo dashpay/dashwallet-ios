@@ -27,15 +27,21 @@
 //
 
 import Foundation
-import UIKit
 import SwiftDashSDK
 
 enum DiagnosticLogExportError: LocalizedError {
     case noLogsFound
     case zipFailed(String)
+    /// The lifecycle admission gate is held by a wallet switch, removal,
+    /// creation or wipe; the export must not run under one.
+    case anotherOperationInProgress
 
     var errorDescription: String? {
         switch self {
+        case .anotherOperationInProgress:
+            return NSLocalizedString(
+                "Another wallet operation is in progress. Try again in a moment.",
+                comment: "Log export")
         case .noLogsFound:
             return NSLocalizedString(
                 "No diagnostic logs were found on this device. Logs are written from the next launch onward.",
@@ -204,26 +210,28 @@ struct DiagnosticLogExporter {
     /// The export holds the SDK's persistence serial queue for its whole
     /// duration (`PlatformWalletManager.emitCoreWalletDiagnostics(for:)`,
     /// dashpay/platform#4580): any screen that reads wallet state through the
-    /// SDK meanwhile would stall the main thread behind it. A window-level
-    /// progress HUD — the same blocking HUD the app uses for sends and wallet
-    /// deletion — keeps the user from navigating into one, and from tapping
-    /// export twice, until the archive is ready. Anchored on the key window so
-    /// the view models that call this, which own no view, get it too.
+    /// SDK meanwhile would stall the main thread behind it. So it runs behind
+    /// the app-wide lifecycle overlay — the same blocking window a wallet
+    /// switch or creation uses, hosted in its own `UIWindow`, so the view
+    /// models that call this need no view of their own — and under the same
+    /// admission gate: it cannot start under a switch in flight, and no switch
+    /// can start under it. A refused gate is reported to the caller, never
+    /// waited out.
     @MainActor
     static func exportArchive() async -> Result<URL, Error> {
-        await withBlockingProgress { await exportArchiveUnguarded() }
-    }
-
-    @MainActor
-    private static func withBlockingProgress<T>(_ body: () async -> T) async -> T {
-        let anchor = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .flatMap(\.windows)
-            .first(where: \.isKeyWindow)
-        anchor?.dw_showProgressHUD(
-            withMessage: NSLocalizedString("Preparing logs…", comment: "Diagnostic log export in progress"))
-        defer { anchor?.dw_hideProgressHUD() }
-        return await body()
+        WalletLifecycleOverlayPresenter.shared.ensureActive()
+        let state = WalletLifecycleTransitionState.shared
+        guard state.tryBegin(.exportingDiagnostics) else {
+            return .failure(DiagnosticLogExportError.anotherOperationInProgress)
+        }
+        defer {
+            // Phase-guarded like `finishWiping`: never clear a phase this
+            // export does not own.
+            if case .exportingDiagnostics = state.phase {
+                state.finish()
+            }
+        }
+        return await exportArchiveUnguarded()
     }
 
     /// Main-actor entry point: captures the context that must be read on

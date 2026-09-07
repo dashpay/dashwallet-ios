@@ -25,6 +25,7 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         ("removingWallet", .removingWallet),
         ("addingWallet", .addingWallet(isImport: false)),
         ("wiping", .wiping(title: nil)),
+        ("exportingDiagnostics", .exportingDiagnostics),
     ]
 
     private static let failures: [(label: String, phase: Phase)] = [
@@ -39,7 +40,8 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         switch phase {
         case .idle:
             break
-        case .switchingNetwork, .switchingWallet, .removingWallet, .wiping:
+        case .switchingNetwork, .switchingWallet, .removingWallet, .addingWallet,
+             .wiping, .exportingDiagnostics:
             XCTAssertTrue(state.tryBegin(phase), "test setup: begin from idle must admit")
         case .failedNetworkSwitch, .failedWalletSwitch, .failedWalletRemoval:
             state.fail(phase)
