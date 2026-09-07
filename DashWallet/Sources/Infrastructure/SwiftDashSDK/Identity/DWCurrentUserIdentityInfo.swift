@@ -642,42 +642,75 @@ enum SameSeedIdentityRecoveryPipeline {
 enum StartupIdentityRecoveryPolicy {
     /// Budget handed to the SDK's startup sequence for a wallet whose
     /// mnemonic was generated on this device and that has no local identity.
-    /// It caps the WHOLE sequence, so it is only ever used as a first probe:
-    /// a proof of absence settles on the first discovery pass (seconds), an
-    /// unreachable Platform costs this much instead of the SDK default, and
-    /// a found identity makes `DashPayContactAddressReadiness` re-run the
-    /// sequence with the default budget so the contact sync and the
-    /// contact-account drain are not cut short.
+    /// It caps the WHOLE sequence, so it is only ever a first probe: a proof
+    /// of absence settles on the first discovery pass, an unreachable
+    /// Platform costs this much instead of the SDK default, and a probe cut
+    /// short after finding an identity is re-run with the default budget
+    /// (`probeNeedsFullRerun`). A probe that is cut off before it finds
+    /// anything reports `.partialNoIdentity`, which `decision` sends to the
+    /// backstop — so a generated wallet whose seed owns an identity
+    /// registered elsewhere is still discovered in the same runtime start.
     static let generatedWalletStartupBudget: TimeInterval = 5
 
+    /// What the backstop does with the readiness verdict of this start.
+    enum Decision: Equatable {
+        /// Run the full pipeline (discover if needed → refresh names → adopt),
+        /// subject to the per-process settled memo.
+        case runPipeline
+        /// Readiness discovered and persisted the identity in THIS start: a
+        /// second install's first sight of it. The pipeline runs regardless
+        /// of the settled memo — its discovery finds the rows already there,
+        /// and its name refresh rebuilds the contested-label bookmarks a new
+        /// install has no other source for.
+        case refreshNamesAndAdopt
+        /// Readiness re-confirmed an identity that was already local: only
+        /// the app-side adoption can be missing, so the pipeline's DPNS
+        /// round trips are skipped on the switch's critical path.
+        case adoptOnly
+        /// Platform confirmed the seed owns no identity; nothing to do.
+        case skipSettled
+    }
+
     /// `nil` status = no readiness pass ran in this start (a Platform-sync
-    /// re-arm, the storage explorer's direct BLAST start): the backstop runs
-    /// as before. A known identity keeps it running too — the pipeline then
-    /// skips discovery and only refreshes names + adopts. `.noIdentity` and
-    /// `.discoveryFailed` settle the question for this start (retrying the
-    /// unbudgeted scan is what cost a wallet switch 31 s). A pass that
-    /// never reached Platform (`.partialNoIdentity`, which is also what the
-    /// SDK decodes an unrecognised FFI status into) keeps the backstop as
-    /// the in-session retry — except for a wallet generated on this device,
-    /// where the next runtime start retries instead. Every other status
-    /// leaves the question to the backstop.
-    static func shouldRunBackstop(
+    /// re-arm, the storage explorer's direct BLAST start, a thrown or elided
+    /// pass): the pipeline runs as before. Only `.noIdentity` settles the
+    /// question; every other identity-less status — `.partialNoIdentity`
+    /// (Platform or the Keychain scan key not reachable, also what the SDK
+    /// decodes an unrecognised FFI status into), `.discoveryFailed` (a local
+    /// fault the pipeline's own discovery entry point may not share) and the
+    /// rest — is the SDK's "ask again", answered by the pipeline.
+    /// `readinessDiscoveredThisStart` is `discoveryAttempts > 0`: the SDK
+    /// ran a scan rather than reusing an identity already on file.
+    static func decision(
         readinessStatus: WalletStartupStatus?,
         readinessIdentityId: Data?,
-        isGeneratedOnDevice: Bool
-    ) -> Bool {
-        guard let readinessStatus else { return true }
-        if readinessIdentityId != nil { return true }
-        switch readinessStatus {
-        case .noIdentity, .discoveryFailed:
-            return false
-        case .partialNoIdentity, .identityScanIncomplete:
-            return !isGeneratedOnDevice
-        case .ready, .partialAccountsPending, .seedBindingUnverified:
-            return true
-        @unknown default:
-            return true
+        readinessDiscoveredThisStart: Bool
+    ) -> Decision {
+        guard let readinessStatus else { return .runPipeline }
+        if readinessIdentityId != nil {
+            return readinessDiscoveredThisStart ? .refreshNamesAndAdopt : .adoptOnly
         }
+        switch readinessStatus {
+        case .noIdentity:
+            return .skipSettled
+        case .partialNoIdentity, .discoveryFailed, .ready, .partialAccountsPending,
+             .seedBindingUnverified, .identityScanIncomplete:
+            return .runPipeline
+        @unknown default:
+            return .runPipeline
+        }
+    }
+
+    /// Whether a short-budget probe found an identity but ran out of budget
+    /// before the contact-request pass and the contact-account drain
+    /// completed — the two steps the readiness pass exists to guarantee
+    /// before the first SPV filter set is built.
+    static func probeNeedsFullRerun(
+        identityFound: Bool,
+        dashPaySyncRan: Bool,
+        contactAccountsPending: UInt32
+    ) -> Bool {
+        identityFound && (!dashPaySyncRan || contactAccountsPending > 0)
     }
 
     /// `nil` = the SDK default budget.
@@ -688,9 +721,13 @@ enum StartupIdentityRecoveryPolicy {
 }
 
 /// Best-effort startup recovery for an identity created by the same seed on a
-/// different device/install. One successful attempt is enough per
-/// network-scoped wallet and process; failures remain retryable on the next
-/// runtime start.
+/// different device/install. A network-scoped wallet is settled once per
+/// process — by a completed pipeline run, by a readiness pass that proved
+/// the seed owns no identity, or by adopting the identity a readiness pass
+/// found — until `forgetWallet` (wallet deletion) drops it, so a phrase
+/// removed and re-imported in the same session gets its attempt back.
+/// Failures remain retryable on the next runtime start. A readiness verdict
+/// with a known identity always adopts, settled or not.
 @MainActor
 final class DWSameSeedIdentityRecoveryCoordinator {
     static let shared = DWSameSeedIdentityRecoveryCoordinator()
@@ -705,7 +742,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
     /// the current runtime start. `recoverIfNeeded` removes the verdict for
     /// its context on entry, before any early return, so one verdict is
     /// consulted at most once.
-    private var startupVerdicts: [String: (status: WalletStartupStatus, identityId: Data?)] = [:]
+    private var startupVerdicts: [String: (status: WalletStartupStatus, identityId: Data?, discovered: Bool)] = [:]
 
     private init() {}
 
@@ -714,30 +751,40 @@ final class DWSameSeedIdentityRecoveryCoordinator {
     func recordStartupDiscovery(
         status: WalletStartupStatus,
         identityId: Data?,
+        discoveredThisStart: Bool,
         walletId: Data,
         network: Network
     ) {
-        startupVerdicts[Self.contextKey(walletId: walletId, network: network)] = (status, identityId)
+        startupVerdicts[Self.contextKey(walletId: walletId, network: network)] =
+            (status, identityId, discoveredThisStart)
     }
 
     /// Runtime teardown (`SwiftDashSDKWalletRuntime.fullReset`) calls this
-    /// so nothing recorded here outlives the start that produced it: the
-    /// readiness verdicts, and the completed contexts — walletIds are
-    /// deterministic per mnemonic+network, so a wallet removed and
-    /// re-imported in the same session must get its recovery attempt back.
-    func resetForRuntimeTeardown() {
+    /// so a readiness verdict never outlives the start that produced it.
+    /// The settled contexts deliberately survive: they are the per-process
+    /// memo that keeps the unbudgeted scan from running on every switch.
+    func clearStartupVerdicts() {
         startupVerdicts.removeAll()
-        completedContexts.removeAll()
+    }
+
+    /// Drop everything remembered about `walletId` on every network. Called
+    /// on wallet deletion: walletIds are deterministic per mnemonic+network,
+    /// so a phrase removed and re-imported must not inherit a settled
+    /// context.
+    func forgetWallet(walletId: Data) {
+        let suffix = ":" + walletId.hexEncodedString()
+        completedContexts = completedContexts.filter { !$0.hasSuffix(suffix) }
+        startupVerdicts = startupVerdicts.filter { !$0.key.hasSuffix(suffix) }
     }
 
     /// Startup budget for the SDK's pre-SPV sequence, or `nil` for the SDK
     /// default — see `StartupIdentityRecoveryPolicy.startupBudget`. The
-    /// SwiftData fetch only runs for a marked wallet.
+    /// SwiftData existence check only runs for a marked wallet.
     func startupBudget(walletId: Data, modelContainer: ModelContainer) -> TimeInterval? {
         guard GeneratedWalletIdentityMarker.isMarked(walletId: walletId) else { return nil }
         return StartupIdentityRecoveryPolicy.startupBudget(
             isGeneratedOnDevice: true,
-            hasLocalIdentity: !Self.localIdentityIds(walletId: walletId, modelContainer: modelContainer).isEmpty)
+            hasLocalIdentity: Self.hasLocalIdentity(walletId: walletId, modelContainer: modelContainer))
     }
 
     func recoverIfNeeded(
@@ -747,27 +794,41 @@ final class DWSameSeedIdentityRecoveryCoordinator {
     ) async {
         let walletId = wallet.walletId
         let contextKey = Self.contextKey(walletId: walletId, network: network)
-        // Consumed first: a verdict belongs to exactly one backstop decision,
-        // whichever branch below takes it.
+        // Consumed first: a verdict belongs to exactly one decision, and
+        // every branch below that acts on it records the outcome in
+        // `completedContexts`, so the decision holds for the rest of the
+        // process rather than for one call.
         let verdict = startupVerdicts.removeValue(forKey: contextKey)
 
-        guard !completedContexts.contains(contextKey),
-              !activeContexts.contains(contextKey)
-        else {
-            return
-        }
+        guard !activeContexts.contains(contextKey) else { return }
 
-        if let verdict,
-           !StartupIdentityRecoveryPolicy.shouldRunBackstop(
-               readinessStatus: verdict.status,
-               readinessIdentityId: verdict.identityId,
-               isGeneratedOnDevice: GeneratedWalletIdentityMarker.isMarked(walletId: walletId)) {
+        switch StartupIdentityRecoveryPolicy.decision(
+            readinessStatus: verdict?.status,
+            readinessIdentityId: verdict?.identityId,
+            readinessDiscoveredThisStart: verdict?.discovered ?? false) {
+        case .adoptOnly:
+            // Readiness re-confirmed an identity already on file; the
+            // pipeline's discovery and name refresh would only repeat SDK
+            // work. Adopt app-side and settle — a known identity adopts even
+            // for a context settled earlier in this process.
+            GeneratedWalletIdentityMarker.clear(walletId: walletId)
+            let adopted = DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
+            completedContexts.insert(contextKey)
             Self.logger.info(
-                """
-                🪪 IDENT-RECOVERY :: skipped — startup readiness already ran discovery \
-                (status=\(verdict.status.rawValue, privacy: .public))
-                """)
+                "🪪 IDENT-RECOVERY :: adopted the identity startup readiness re-confirmed adopted=\(adopted, privacy: .public)")
             return
+        case .skipSettled:
+            completedContexts.insert(contextKey)
+            Self.logger.info(
+                "🪪 IDENT-RECOVERY :: skipped — startup readiness proved this seed owns no identity")
+            return
+        case .refreshNamesAndAdopt:
+            // First sight of this identity on this install: run the pipeline
+            // past the settled memo (its discovery finds the rows readiness
+            // just persisted; the name refresh rebuilds contested bookmarks).
+            break
+        case .runPipeline:
+            guard !completedContexts.contains(contextKey) else { return }
         }
 
         activeContexts.insert(contextKey)
@@ -818,6 +879,11 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                     DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
                 })
 
+            if outcome.identityCount > 0 {
+                // The seed owns an identity after all; the next start must
+                // run the full pre-SPV bring-up, not the generated-wallet probe.
+                GeneratedWalletIdentityMarker.clear(walletId: walletId)
+            }
             completedContexts.insert(contextKey)
             Self.logger.info(
                 """
@@ -836,12 +902,21 @@ final class DWSameSeedIdentityRecoveryCoordinator {
     }
 
     private static func contextKey(walletId: Data, network: Network) -> String {
-        "\(network.rawValue):" + walletId.map { String(format: "%02x", $0) }.joined()
+        "\(network.rawValue):" + walletId.hexEncodedString()
     }
 
-    /// Internal (was private): shared with the startup-budget decision above
-    /// — reuse, not a copy, per the repo's no-copy-then-adapt guardrail.
-    static func localIdentityIds(
+    /// Existence check for the startup-budget decision: a `fetchCount` over
+    /// the identity rows of `walletId`, so the wallet-switch path never
+    /// faults in and sorts the identity set it would only test for emptiness.
+    static func hasLocalIdentity(walletId: Data, modelContainer: ModelContainer) -> Bool {
+        var descriptor = FetchDescriptor<PersistentIdentity>(
+            predicate: #Predicate { $0.wallet?.walletId == walletId }
+        )
+        descriptor.fetchLimit = 1
+        return ((try? modelContainer.mainContext.fetchCount(descriptor)) ?? 0) > 0
+    }
+
+    private static func localIdentityIds(
         walletId: Data,
         modelContainer: ModelContainer
     ) -> [Data] {

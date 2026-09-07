@@ -1356,15 +1356,17 @@ final class SwiftDashSDKHost {
 }
 
 /// Per-wallet "this mnemonic was generated on this device" marker, keyed by
-/// the network-scoped walletId (lowercase `%02x` hex, matching
-/// `WalletEnvironment.activeWalletIdHex`). Written by
+/// the network-scoped walletId (`Data.hexEncodedString()`, the same helper
+/// the runtime's wallet logging uses). Written by
 /// `SwiftDashSDKHost.createAndPersist` for a generated mnemonic and cleared
 /// there for an imported one, on wallet deletion
-/// (`SwiftDashSDKWalletWiper.deleteWalletFromSDK`) and when username
-/// registration completes. The DashPay identity bring-up reads it to pick a
-/// short startup budget (`StartupIdentityRecoveryPolicy`). Lives here, not
-/// in the DASHPAY-only identity file, because both writers compile into
-/// every target.
+/// (`SwiftDashSDKWalletWiper.deleteWalletFromSDK`), when username
+/// registration completes, and by the DashPay bring-up as soon as any path
+/// finds an identity for the seed. The identity bring-up reads it to pick a
+/// short startup probe budget (`StartupIdentityRecoveryPolicy`). Lives here,
+/// not in the DASHPAY-only identity file, because both writers compile into
+/// every target. `defaults` is injectable so the mark/clear matrix is
+/// testable against a throwaway suite.
 ///
 /// Deliberately NOT restored by `recoverPersistedWallet` (reinstall with a
 /// surviving Keychain mnemonic): UserDefaults die with the app, and a
@@ -1372,18 +1374,18 @@ final class SwiftDashSDKHost {
 /// default budget, so the safe direction is the slower one.
 enum GeneratedWalletIdentityMarker {
     private static func key(walletId: Data) -> String {
-        "DWGeneratedWalletNoIdentity." + walletId.map { String(format: "%02x", $0) }.joined()
+        "DWGeneratedWalletNoIdentity." + walletId.hexEncodedString()
     }
 
-    static func mark(walletId: Data) {
-        UserDefaults.standard.set(true, forKey: key(walletId: walletId))
+    static func mark(walletId: Data, defaults: UserDefaults = .standard) {
+        defaults.set(true, forKey: key(walletId: walletId))
     }
 
-    static func isMarked(walletId: Data) -> Bool {
-        UserDefaults.standard.bool(forKey: key(walletId: walletId))
+    static func isMarked(walletId: Data, defaults: UserDefaults = .standard) -> Bool {
+        defaults.bool(forKey: key(walletId: walletId))
     }
 
-    static func clear(walletId: Data) {
-        UserDefaults.standard.removeObject(forKey: key(walletId: walletId))
+    static func clear(walletId: Data, defaults: UserDefaults = .standard) {
+        defaults.removeObject(forKey: key(walletId: walletId))
     }
 }

@@ -495,9 +495,9 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         await SwiftDashSDKHost.shared.stopAsync()
         currentNetwork = nil
 #if DASHPAY
-        // Readiness verdicts and completed recovery contexts belong to the
-        // start that produced them.
-        DWSameSeedIdentityRecoveryCoordinator.shared.resetForRuntimeTeardown()
+        // A readiness verdict belongs to the start that produced it. The
+        // coordinator's settled contexts stay: they are per process.
+        DWSameSeedIdentityRecoveryCoordinator.shared.clearStartupVerdicts()
 #endif
         if forWipe {
             DWCurrentUserIdentityInfo.shared.resetForWalletRemoval()

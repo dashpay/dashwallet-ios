@@ -72,17 +72,26 @@ enum DashPayContactAddressReadiness {
         }
         do {
             var outcome = try await manager.startWalletSubsystems(wallet: wallet, budget: probeBudget)
-            log(outcome, network: network)
             if probeBudget != nil, outcome.identityId != nil {
+                // The seed owns an identity after all: the probe budget must
+                // never apply to this wallet again, whether or not the probe
+                // itself completed.
                 GeneratedWalletIdentityMarker.clear(walletId: walletId)
-                logger.info(
-                    "👥 DP-READY :: probe found an identity for a generated wallet — re-running with the default budget")
-                outcome = try await manager.startWalletSubsystems(wallet: wallet)
-                log(outcome, network: network)
+                if StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
+                    identityFound: true,
+                    dashPaySyncRan: outcome.dashPaySyncRan,
+                    contactAccountsPending: outcome.contactAccountsPending) {
+                    log(outcome, network: network, phase: .probe)
+                    logger.info(
+                        "👥 DP-READY :: probe found an identity but was cut short — re-running with the default budget")
+                    outcome = try await manager.startWalletSubsystems(wallet: wallet)
+                }
             }
+            log(outcome, network: network, phase: .verdict)
             recovery.recordStartupDiscovery(
                 status: outcome.status,
                 identityId: outcome.identityId,
+                discoveredThisStart: outcome.discoveryAttempts > 0,
                 walletId: walletId,
                 network: network)
         } catch {
@@ -91,33 +100,42 @@ enum DashPayContactAddressReadiness {
         }
     }
 
-    private static func log(_ outcome: WalletStartupOutcome, network: Network) {
+    /// Which pass a DP-READY line describes: the start's verdict, or the
+    /// short-budget probe that preceded a default-budget re-run. One start
+    /// logs at most one `.verdict` line.
+    private enum LogPhase {
+        case verdict
+        case probe
+    }
+
+    private static func log(_ outcome: WalletStartupOutcome, network: Network, phase: LogPhase) {
         let seconds = String(format: "%.1f", outcome.elapsed)
+        let tag = phase == .probe ? "👥 DP-READY (probe) :: " : "👥 DP-READY :: "
 
         switch outcome.status {
         case .ready:
             logger.info(
                 """
-                👥 DP-READY :: ready for SPV in \(seconds, privacy: .public)s \
+                \(tag, privacy: .public)ready for SPV in \(seconds, privacy: .public)s \
                 scans=\(outcome.discoveryAttempts, privacy: .public) \
                 drained=\(outcome.contactAccountsDrained, privacy: .public)
                 """)
         case .noIdentity:
             logger.info(
-                "👥 DP-READY :: no identity for this seed; nothing to prepare before SPV")
+                "\(tag, privacy: .public)no identity for this seed; nothing to prepare before SPV")
         case .partialNoIdentity:
             // Not an error: Platform was unreachable, so the question is still
             // open and the next runtime start asks again.
             logger.warning(
                 """
-                👥 DP-READY :: could not reach Platform in \(seconds, privacy: .public)s \
+                \(tag, privacy: .public)could not reach Platform in \(seconds, privacy: .public)s \
                 after \(outcome.discoveryAttempts, privacy: .public) scan(s); \
                 starting SPV, identity recovery retries on the next start
                 """)
         case .partialAccountsPending:
             logger.warning(
                 """
-                👥 DP-READY :: \(outcome.contactAccountsPending, privacy: .public) contact \
+                \(tag, privacy: .public)\(outcome.contactAccountsPending, privacy: .public) contact \
                 account build(s) still queued after \(seconds, privacy: .public)s; \
                 starting SPV, the DIP-15 rescan will backfill
                 """)
@@ -127,7 +145,7 @@ enum DashPayContactAddressReadiness {
             // session or the next will clear it on its own.
             logger.error(
                 """
-                👥 DP-READY :: identity discovery failed locally after \
+                \(tag, privacy: .public)identity discovery failed locally after \
                 \(seconds, privacy: .public)s; starting SPV without DashPay state
                 """)
         case .seedBindingUnverified:
@@ -136,7 +154,7 @@ enum DashPayContactAddressReadiness {
             // later run with the correct Keychain mapping.
             logger.error(
                 """
-                👥 DP-READY :: wallet seed binding could not be verified; \
+                \(tag, privacy: .public)wallet seed binding could not be verified; \
                 starting SPV without deriving contact accounts
                 """)
         case .identityScanIncomplete:
@@ -145,7 +163,7 @@ enum DashPayContactAddressReadiness {
             // of treating the local identity set as complete.
             logger.warning(
                 """
-                👥 DP-READY :: identity scan incomplete after \
+                \(tag, privacy: .public)identity scan incomplete after \
                 \(outcome.discoveryAttempts, privacy: .public) scan(s) and \
                 \(seconds, privacy: .public)s; starting SPV, discovery retries \
                 on the next start
@@ -153,7 +171,7 @@ enum DashPayContactAddressReadiness {
         @unknown default:
             logger.warning(
                 """
-                👥 DP-READY :: unknown wallet startup status \
+                \(tag, privacy: .public)unknown wallet startup status \
                 \(outcome.status.rawValue, privacy: .public) after \
                 \(seconds, privacy: .public)s; starting SPV without assuming \
                 DashPay readiness

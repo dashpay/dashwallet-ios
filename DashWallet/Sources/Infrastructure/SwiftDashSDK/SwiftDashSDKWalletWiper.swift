@@ -640,6 +640,12 @@ final class SwiftDashSDKWalletWiper: NSObject {
             CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             GeneratedWalletIdentityMarker.clear(walletId: walletId)
+#if DASHPAY
+            // walletIds are deterministic per mnemonic+network: the same
+            // phrase re-imported later must not inherit this wallet's settled
+            // identity-recovery context.
+            DWSameSeedIdentityRecoveryCoordinator.shared.forgetWallet(walletId: walletId)
+#endif
         }
     }
 }
