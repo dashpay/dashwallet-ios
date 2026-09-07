@@ -48,6 +48,14 @@ protocol CrowdNodeResultNotifying: AnyObject {
 /// swallow every message after the first one as a duplicate; already-
 /// delivered notifications under that legacy id keep their tap-fold to
 /// `.staking` in `NotificationLifecycle`.
+///
+/// Post-grant catch-up: none, on purpose. A message the dispatcher dropped
+/// while authorization was `.notDetermined` has no source to rescan and is
+/// discarded rather than queued — the CrowdNode screen that ran the
+/// operation shows its outcome inline, and a "signup finished" banner
+/// arriving minutes later, after the user has moved on, would be noise
+/// rather than news. The other producers (transactions, swaps, contacts)
+/// rescan their persisted rows on the grant instead.
 final class CrowdNodeNotificationProducer: CrowdNodeResultNotifying {
     private let dispatcher: NotificationDispatcher
     /// Event-scoped id per post; injectable so tests can pin it.

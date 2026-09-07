@@ -89,6 +89,7 @@ final class InMemoryNotifiedEventStore: NotifiedEventStoring {
 
     private(set) var events: [String: Event] = [:]
     private(set) var markAllSeenTopics: [NotificationTopic] = []
+    private(set) var markAllSeenCalls = 0
     private(set) var unmarkedIds: [String] = []
 
     func seed(id: String, topic: NotificationTopic, seen: Bool = false) {
@@ -121,6 +122,13 @@ final class InMemoryNotifiedEventStore: NotifiedEventStoring {
     func markAllSeen(topic: NotificationTopic) async {
         markAllSeenTopics.append(topic)
         for (id, event) in events where event.topic == topic {
+            events[id]?.seen = true
+        }
+    }
+
+    func markAllSeen() async {
+        markAllSeenCalls += 1
+        for id in events.keys {
             events[id]?.seen = true
         }
     }

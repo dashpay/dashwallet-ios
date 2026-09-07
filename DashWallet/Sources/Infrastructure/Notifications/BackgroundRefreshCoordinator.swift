@@ -115,6 +115,9 @@ final class SystemBackgroundTaskScheduler: BackgroundTaskScheduling {
 final class BackgroundRefreshCoordinator {
     /// Must match the `BGTaskSchedulerPermittedIdentifiers` entry in both
     /// app Info.plists (`DashWallet/Info.plist`, `DashPay/dashpay-info.plist`).
+    /// Those plists must also keep `fetch` in `UIBackgroundModes`: it is the
+    /// capability `BGAppRefreshTask` runs under, and without it every
+    /// `submit` fails with `BGTaskSchedulerErrorCodeNotPermitted`.
     nonisolated static let taskIdentifier = "org.dashfoundation.dashpay.refresh"
 
     /// Earliest-begin distance for a submitted request. iOS treats it as a

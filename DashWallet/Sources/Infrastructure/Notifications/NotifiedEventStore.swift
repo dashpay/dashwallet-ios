@@ -41,6 +41,11 @@ protocol NotifiedEventStoring: AnyObject {
     /// Marks every event of `topic` seen; opportunistically prunes rows
     /// older than `NotifiedEventStore.retentionInterval`.
     func markAllSeen(topic: NotificationTopic) async
+    /// Marks every unseen event seen, across all topics — the store-side
+    /// half of zeroing the app badge, so the next posted badge does not
+    /// resurrect events the cleared badge already represented. Prunes like
+    /// `markAllSeen(topic:)`.
+    func markAllSeen() async
 }
 
 // MARK: - Schema
@@ -109,15 +114,28 @@ actor NotifiedEventStore: NotifiedEventStoring {
     func markIfNew(id: String, topic: NotificationTopic) async -> Bool {
         typealias S = NotifiedEventSchema
         do {
-            // `seen_at` is left at its NULL default — the event is unseen.
-            try connection.run(S.table.insert(
-                or: .ignore,
-                S.colId <- id,
-                S.colTopic <- topic.rawValue,
-                S.colCreatedAt <- epochSeconds(now())))
-            // `insert(or: .ignore)` leaves an existing row untouched;
-            // `changes == 0` is the "already notified" signal.
-            return connection.changes > 0
+            // Existence check, then a plain insert, inside one transaction.
+            // NOT `insert(or: .ignore)` + `connection.changes`: `changes` is
+            // `sqlite3_changes` on the app-wide shared connection, read
+            // after `run` has released the connection queue, so any other
+            // DAO's statement landing in between replaces the count — a
+            // real insert could read as a duplicate (event suppressed for
+            // good) and a duplicate as a real insert (posted twice). The
+            // transaction holds the connection queue for both statements,
+            // and this actor is the table's only writer, so the check
+            // cannot go stale before the insert.
+            var inserted = false
+            try connection.transaction {
+                let exists = try connection.scalar(S.table.filter(S.colId == id).count) > 0
+                guard !exists else { return }
+                // `seen_at` is left at its NULL default — the event is unseen.
+                try connection.run(S.table.insert(
+                    S.colId <- id,
+                    S.colTopic <- topic.rawValue,
+                    S.colCreatedAt <- epochSeconds(now())))
+                inserted = true
+            }
+            return inserted
         } catch {
             DWLogger.log("NotifiedEventStore: markIfNew(\(id)) failed: \(error)")
             // Fail open: nothing was recorded, so dedup for this id is lost —
@@ -171,6 +189,18 @@ actor NotifiedEventStore: NotifiedEventStoring {
                 .update(S.colSeenAt <- epochSeconds(now())))
         } catch {
             DWLogger.log("NotifiedEventStore: markAllSeen(\(topic.rawValue)) failed: \(error)")
+        }
+        pruneExpired()
+    }
+
+    func markAllSeen() async {
+        typealias S = NotifiedEventSchema
+        do {
+            try connection.run(S.table
+                .filter(S.colSeenAt == nil)
+                .update(S.colSeenAt <- epochSeconds(now())))
+        } catch {
+            DWLogger.log("NotifiedEventStore: markAllSeen failed: \(error)")
         }
         pruneExpired()
     }

@@ -173,6 +173,39 @@
 /* Explore Dash: Filters */
 "80 km" = "80 km";
 
+/* Inactivity reminder */
+"Don't remind me again" = "Don't remind me again";
+
+/* Inactivity reminder */
+"It's been a while since you opened Dash Wallet. You still have %@ in your wallet." = "It's been a while since you opened Dash Wallet. You still have %@ in your wallet.";
+
+/* DashPay Notifications */
+"No notifications match your search" = "No notifications match your search";
+
+/* Notifications */
+"Open Settings" = "Open Settings";
+
+/* Inactivity reminder */
+"Remind me later" = "Remind me later";
+
+/* DashPay Notifications */
+"Search notifications" = "Search notifications";
+
+/* Dash DEX */
+"The status of your %@ swap could not be confirmed" = "The status of your %@ swap could not be confirmed";
+
+/* Notifications */
+"Turned off in iOS Settings" = "Turned off in iOS Settings";
+
+/* Dash DEX */
+"Your %@ swap failed" = "Your %@ swap failed";
+
+/* Dash DEX */
+"Your %@ swap is complete" = "Your %@ swap is complete";
+
+/* Dash DEX */
+"Your %@ swap was refunded" = "Your %@ swap was refunded";
+
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" is not a recovery phrase word";
 

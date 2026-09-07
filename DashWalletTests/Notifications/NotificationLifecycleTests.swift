@@ -95,8 +95,13 @@ final class NotificationLifecycleTests: XCTestCase {
         XCTAssertEqual(client.removedDeliveredIdentifiers, [["tx.1", "Now"]])
         XCTAssertEqual(store.markAllSeenTopics, [.transactions])
         XCTAssertEqual(store.events["tx.1"]?.seen, true)
-        // Other threads keep their delivered notifications and unseen state.
-        XCTAssertEqual(store.events["CrowdNode"]?.seen, false)
+        // Other threads keep their delivered notifications, but the zeroed
+        // badge covered them too, so their store records are seen as well —
+        // the next posted badge must not count them again.
+        XCTAssertEqual(store.markAllSeenCalls, 1)
+        XCTAssertEqual(store.events["CrowdNode"]?.seen, true)
+        let unseen = await store.unseenCount()
+        XCTAssertEqual(unseen, 0)
     }
 
     func testReconcileRemovesNothingWhenNoTransactionNotificationsDelivered() async {

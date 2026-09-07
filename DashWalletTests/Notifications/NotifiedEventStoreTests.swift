@@ -85,6 +85,20 @@ final class NotifiedEventStoreTests: XCTestCase {
         XCTAssertEqual(count, 1)
     }
 
+    func testMarkAllSeenWithoutTopicClearsEveryTopic() async {
+        _ = await store.markIfNew(id: "tx.1", topic: .transactions)
+        _ = await store.markIfNew(id: "cn.1", topic: .crowdnode)
+        _ = await store.markIfNew(id: "swap.1", topic: .swap)
+
+        await store.markAllSeen()
+
+        let count = await store.unseenCount()
+        XCTAssertEqual(count, 0)
+        // Seen is not forgotten: the ids stay recorded for dedup.
+        let again = await store.markIfNew(id: "cn.1", topic: .crowdnode)
+        XCTAssertFalse(again)
+    }
+
     func testConsumeRecordsSeenAndDedups() async {
         await store.consume(id: "tx.watched", topic: .transactions)
 

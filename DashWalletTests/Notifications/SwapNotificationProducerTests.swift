@@ -36,6 +36,8 @@ final class SwapNotificationProducerTests: XCTestCase {
     private var appState: FakeAppStateProvider!
     private var swapUIVisible = false
     private var ordersSubject: PassthroughSubject<[SwapOrder], Never>!
+    /// What `rescan()` reads — the DAO's current table in production.
+    private var currentOrders: [SwapOrder] = []
     private var producer: SwapNotificationProducer!
 
     override func setUp() {
@@ -52,6 +54,7 @@ final class SwapNotificationProducerTests: XCTestCase {
             dispatcher: dispatcher,
             store: store,
             ordersPublisher: { [ordersSubject] in ordersSubject!.eraseToAnyPublisher() },
+            currentOrders: { [weak self] in self?.currentOrders ?? [] },
             appState: appState,
             swapUIVisible: { [weak self] in self?.swapUIVisible ?? false },
             now: { Self.referenceNow })
@@ -90,6 +93,26 @@ final class SwapNotificationProducerTests: XCTestCase {
         XCTAssertEqual(request.content.threadIdentifier, NotificationTopic.swap.rawValue)
         XCTAssertEqual(DeepLinkRoute.decode(fromUserInfo: request.content.userInfo),
                        .swapOrder(id: "order-1"))
+    }
+
+    func testRescanPostsATerminalOrderDroppedWhileAwaitingAuthorization() async {
+        let order = makeOrder(status: .completed)
+        currentOrders = [order]
+
+        // The publisher emitted while the OS grant was still undetermined:
+        // the dispatcher dropped the post without marking the id.
+        client.authorizationStatusValue = .notDetermined
+        await producer.process([order])
+        XCTAssertTrue(client.addedRequests.isEmpty)
+        XCTAssertNil(store.events["swap.order-1"])
+
+        // The post-grant catch-up rescans the current table and posts it —
+        // once, however many rescans follow.
+        client.authorizationStatusValue = .authorized
+        await producer.rescan()
+        await producer.rescan()
+
+        XCTAssertEqual(client.addedRequests.map(\.identifier), ["swap.order-1"])
     }
 
     func testBodyNamesOutcomeAndPair() async {

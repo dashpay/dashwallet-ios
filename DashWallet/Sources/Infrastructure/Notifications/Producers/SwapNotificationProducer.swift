@@ -46,6 +46,9 @@ final class SwapNotificationProducer {
     /// The order-set publisher; deferred so subscribing at bootstrap does
     /// not touch the DAO singleton before `start()`.
     private let ordersPublisher: () -> AnyPublisher<[SwapOrder], Never>
+    /// The current order set, for a rescan outside the publisher's cadence
+    /// (the post-grant catch-up).
+    private let currentOrders: () async -> [SwapOrder]
     private let appState: AppStateProvider
     /// True while the user is watching a live swap-status screen; deferred
     /// closure for the same reason as `ordersPublisher` (and for tests).
@@ -56,12 +59,14 @@ final class SwapNotificationProducer {
     init(dispatcher: NotificationDispatcher,
          store: NotifiedEventStoring,
          ordersPublisher: @escaping () -> AnyPublisher<[SwapOrder], Never> = { SwapOrdersDAOImpl.shared.observeAll() },
+         currentOrders: @escaping () async -> [SwapOrder] = { await SwapOrdersDAOImpl.shared.all() },
          appState: AppStateProvider = UIApplicationStateProvider(),
          swapUIVisible: @escaping () -> Bool = { SwapTrackingService.shared.isStatusUIVisible },
          now: @escaping () -> Date = Date.init) {
         self.dispatcher = dispatcher
         self.store = store
         self.ordersPublisher = ordersPublisher
+        self.currentOrders = currentOrders
         self.appState = appState
         self.swapUIVisible = swapUIVisible
         self.now = now
@@ -76,6 +81,14 @@ final class SwapNotificationProducer {
                 Task { await self?.process(orders) }
             }
             .store(in: &cancellables)
+    }
+
+    /// One pass over the current order set, outside the publisher's
+    /// cadence — the post-grant catch-up: a terminal order the dispatcher
+    /// dropped un-marked while authorization was `.notDetermined` posts
+    /// now, as long as it is still inside the freshness window.
+    func rescan() async {
+        await process(await currentOrders())
     }
 
     /// One pass over an emitted order set. Overlapping passes posting the

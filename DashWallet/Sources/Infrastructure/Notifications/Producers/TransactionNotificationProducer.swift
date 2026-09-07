@@ -88,6 +88,8 @@ final class TransactionNotificationProducer {
     private let appState: AppStateProvider
     /// Mirrors a posted notification's body to the Apple Watch app.
     private let watchBridge: (String) -> Void
+    /// The fiat half of the received-payment copy, for a DASH amount.
+    private let fiatFormatter: (Decimal) async -> String
     private let now: () -> Date
     private var cancellables = Set<AnyCancellable>()
 
@@ -97,6 +99,7 @@ final class TransactionNotificationProducer {
          syncState: @escaping () -> SyncingActivityMonitor.State = { SyncingActivityMonitor.shared.state },
          appState: AppStateProvider = UIApplicationStateProvider(),
          watchBridge: @escaping (String) -> Void = TransactionNotificationProducer.defaultWatchBridge,
+         fiatFormatter: @escaping (Decimal) async -> String = TransactionNotificationProducer.defaultFiatFormatter,
          now: @escaping () -> Date = Date.init) {
         self.dispatcher = dispatcher
         self.store = store
@@ -104,6 +107,7 @@ final class TransactionNotificationProducer {
         self.syncState = syncState
         self.appState = appState
         self.watchBridge = watchBridge
+        self.fiatFormatter = fiatFormatter
         self.now = now
     }
 
@@ -175,7 +179,7 @@ final class TransactionNotificationProducer {
         let amount = tx.wrapped.dashAmount
         guard amount > 0 else { return }
 
-        let notification = Self.notification(for: tx, amount: amount)
+        let notification = await notification(for: tx, amount: amount)
 
         // App-state policy, preserved from the balance-delta notifier: a
         // plain received payment posts only while the app is backgrounded
@@ -197,7 +201,7 @@ final class TransactionNotificationProducer {
     /// Classification picks copy, topic, sound, and route only — the
     /// identity stays the txid, so a CrowdNode deposit still dedups per
     /// transaction like every other received payment.
-    private static func notification(for tx: ObservedTransaction, amount: UInt64) -> AppNotification {
+    private func notification(for tx: ObservedTransaction, amount: UInt64) async -> AppNotification {
         let id = "tx.\(tx.txidHexDisplay)"
 
         // The CrowdNode API encodes "deposit received" as an exact amount
@@ -214,7 +218,7 @@ final class TransactionNotificationProducer {
         }
 
         let amountText = amount.formattedDashAmount
-        let fiatText = CurrencyExchanger.shared.fiatAmountString(for: amount.dashAmount)
+        let fiatText = await fiatFormatter(amount.dashAmount)
         return AppNotification(
             id: id,
             topic: .transactions,
@@ -247,6 +251,19 @@ final class TransactionNotificationProducer {
     /// injected seam.
     static func defaultRowSource(firstSeenAtOrAfter floor: UInt64) -> [ObservedTransaction] {
         TransactionObserver.fetchObserved(fetchLimit: scanFetchLimit, firstSeenAtOrAfter: floor)
+    }
+
+    /// Production fiat copy, formatted on the main actor. Scans run on
+    /// whatever executor the signal's `Task` lands on, while
+    /// `CurrencyExchanger` has no synchronization of its own: its rate
+    /// tables are replaced by `BaseRatesProvider`'s update handler on the
+    /// main actor, so reading them anywhere else races a rate refresh.
+    /// (The retired balance notifier read them from `RunLoop.main` for the
+    /// same reason.)
+    static func defaultFiatFormatter(_ dashAmount: Decimal) async -> String {
+        await MainActor.run {
+            CurrencyExchanger.shared.fiatAmountString(for: dashAmount)
+        }
     }
 
     /// Sends a custom notification to the watch if the watch app is up.

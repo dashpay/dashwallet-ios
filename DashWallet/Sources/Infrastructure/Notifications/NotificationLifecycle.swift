@@ -75,10 +75,16 @@ final class NotificationLifecycle: NSObject {
 
     /// Become-active reconciliation: the app now shows the transactions
     /// feed, so the badge and the delivered transaction notifications are
-    /// stale. Other threads (CrowdNode, announcements) stay until acted on.
+    /// stale. Other threads (CrowdNode, swap, DashPay, announcements) stay
+    /// in the tray until acted on — but the badge is zeroed for all of
+    /// them, so the store's unseen set is zeroed to match: the dispatcher
+    /// computes every later badge from that set, and an unseen CrowdNode
+    /// record left behind would otherwise resurface in the badge alongside
+    /// the next new event.
     func reconcileAfterBecomingActive() async {
         client.setBadgeCount(0)
         await clearTray(topic: .transactions, extraIdentifiers: [Self.legacyTransactionIdentifier])
+        await store.markAllSeen()
     }
 
     #if DASHPAY

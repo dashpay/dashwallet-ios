@@ -105,14 +105,28 @@ final class NotificationsBootstrap: NSObject {
 
         // Post-grant catch-up: while authorization was `.notDetermined` the
         // dispatcher dropped events without consuming their dedup ids, so
-        // one rescan right after the user grants posts them. The producer's
-        // freshness window bounds what can retroactively fire — only
-        // transactions first seen within the last
-        // `TransactionNotificationProducer.freshnessWindow` (10 minutes)
-        // are admitted; older drops stay dropped.
-        permissionCoordinator.onAuthorizationGranted = { [weak transactionProducer] in
-            guard let transactionProducer else { return }
-            Task { await transactionProducer.scanAndNotify() }
+        // one rescan of every producer with a persisted source right after
+        // the user grants posts them. Each producer's freshness window
+        // bounds what can retroactively fire — only events at most 10
+        // minutes old are admitted; older drops stay dropped. CrowdNode
+        // results are one-shot and intentionally not recovered
+        // (`CrowdNodeNotificationProducer`).
+        let swapProducer = self.swapProducer
+        #if DASHPAY
+        let contactsProducer = self.contactsProducer
+        #endif
+        permissionCoordinator.onAuthorizationGranted = { [weak transactionProducer, weak swapProducer] in
+            if let transactionProducer {
+                Task { await transactionProducer.scanAndNotify() }
+            }
+            if let swapProducer {
+                Task { await swapProducer.rescan() }
+            }
+            #if DASHPAY
+            Task { @MainActor [weak contactsProducer] in
+                await contactsProducer?.scanAndNotify()
+            }
+            #endif
         }
 
         // `CrowdNode.shared` is created before this graph exists (in
