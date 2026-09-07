@@ -41,6 +41,8 @@ struct UnbanMasternodeSheet: View {
                     payoutSection
                 }
                 fundingSection
+                reviewToggleSection
+                previewSection
                 submitSection
             }
             .navigationTitle(NSLocalizedString("Unban masternode", comment: "Masternode unban"))
@@ -162,6 +164,67 @@ struct UnbanMasternodeSheet: View {
         }
     }
 
+    /// Opt-in review (off by default): with it on, Unban builds and signs
+    /// the transaction and shows it instead of sending it.
+    @ViewBuilder
+    private var reviewToggleSection: some View {
+        if viewModel.preview == nil {
+            Section {
+                Toggle(
+                    NSLocalizedString("Review transaction first", comment: "Masternode unban"),
+                    isOn: $viewModel.reviewBeforeBroadcast)
+            } footer: {
+                Text(NSLocalizedString(
+                    "Build and sign the transaction and show it here, so you can check it before it's broadcast.",
+                    comment: "Masternode unban"))
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var previewSection: some View {
+        if let preview = viewModel.preview {
+            Section {
+                MasternodeDetailRow(
+                    label: NSLocalizedString("Network fee", comment: "Masternode unban"),
+                    value: preview.feeDuffs.formattedDashAmount)
+                MasternodeDetailRow(
+                    label: NSLocalizedString("Size", comment: "Masternode unban"),
+                    value: String(
+                        format: NSLocalizedString("%d bytes", comment: "Masternode unban"),
+                        preview.sizeBytes))
+                MasternodeDetailRow(
+                    label: NSLocalizedString("Inputs", comment: "Masternode unban"),
+                    value: "\(preview.inputCount)")
+                ForEach(Array(preview.outputs.enumerated()), id: \.offset) { _, output in
+                    MasternodeDetailRow(
+                        label: NSLocalizedString("Change", comment: "Masternode unban"),
+                        value: "\(output.amountDuffs.formattedDashAmount) → \(output.address)")
+                }
+            } header: {
+                Text(NSLocalizedString("Transaction", comment: "Masternode unban"))
+            } footer: {
+                Text(NSLocalizedString(
+                    "This is the signed transaction, exactly as it will be broadcast.",
+                    comment: "Masternode unban"))
+            }
+
+            Section(NSLocalizedString("Provider update payload", comment: "Masternode unban")) {
+                ForEach(preview.payloadFields, id: \.label) { field in
+                    MasternodeCopyRow(label: field.label, value: field.value)
+                }
+            }
+
+            Section {
+                DisclosureGroup(NSLocalizedString("Raw transaction", comment: "Masternode unban")) {
+                    Text(preview.rawHex)
+                        .font(.system(.caption2, design: .monospaced))
+                        .textSelection(.enabled)
+                }
+            }
+        }
+    }
+
     @ViewBuilder
     private var submitSection: some View {
         Section {
@@ -187,6 +250,20 @@ struct UnbanMasternodeSheet: View {
                     Text(NSLocalizedString("Broadcasting…", comment: "Masternode unban"))
                 }
                 .frame(maxWidth: .infinity)
+            case .previewing:
+                Button {
+                    Task { await viewModel.broadcastReviewed() }
+                } label: {
+                    Text(NSLocalizedString("Broadcast", comment: "Masternode unban"))
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                }
+                Button(role: .destructive) {
+                    viewModel.discardReviewed()
+                } label: {
+                    Text(NSLocalizedString("Discard", comment: "Masternode unban"))
+                        .frame(maxWidth: .infinity)
+                }
             default:
                 Button {
                     Task { await viewModel.submit() }

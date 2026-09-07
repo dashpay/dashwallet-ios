@@ -82,7 +82,7 @@ struct BuyEnterAmountView: View {
                 selectedCurrency: $viewModel.selectedCurrency,
                 options: viewModel.currencyOptions,
                 onCurrencyTap: { showLocalCurrency = true },
-                hidesSelectedOption: true
+                hidesSelectedOption: false
             )
             .frame(height: 70)
 
@@ -146,11 +146,6 @@ struct BuyEnterAmountView: View {
                 }
             }
         )
-        .frame(maxWidth: .infinity, maxHeight: 320)
-        .padding(.horizontal, Layout.hPadding)
-        .background(Color.dash.secondaryBackground)
-        .clipShape(.rect(cornerRadius: 20))
-        .background(Color.dash.secondaryBackground, ignoresSafeAreaEdges: .bottom)
     }
 }
 

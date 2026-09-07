@@ -43,7 +43,10 @@ extension Service {
         case .uphold: return NSLocalizedString("Uphold", comment: "Dash Portal")
         case .topper: return NSLocalizedString("Topper", comment: "Dash Portal")
         case .maya: return NSLocalizedString("Maya", comment: "Dash Portal")
-        case .swapKit: return NSLocalizedString("SwapKit", comment: "Dash Portal")
+        // The product's name, not the provider's. "Dash DEX" is what the Home
+        // shortcut and the portal's own title already call it; SwapKit is the
+        // service behind it and stays in `SwapKitSwapProvider.displayName`.
+        case .swapKit: return NSLocalizedString("Dash DEX", comment: "Dash Portal")
         }
     }
 
