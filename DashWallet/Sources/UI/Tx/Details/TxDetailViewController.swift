@@ -17,6 +17,7 @@
 
 import UIKit
 import SwiftUI
+import DashUIKit
 
 // MARK: - TxDetailDisplayType
 
@@ -51,6 +52,7 @@ class BaseTxDetailsViewController: BaseViewController {
         tableView.registerNib(for: TxDetailTaxCategoryCell.self)
         tableView.registerNib(for: TxDetailInfoCell.self)
         tableView.registerNib(for: TxDetailActionCell.self)
+        tableView.registerClass(for: TxDetailContactCell.self)
         tableView.backgroundColor = UIColor.dw_secondaryBackground()
         tableView.delegate = self
 
@@ -127,6 +129,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
         case sentTo([DWTitleDetailItem])
         case movedFrom([DWTitleDetailItem])
         case movedTo([DWTitleDetailItem])
+        case contact(String, TxDetailModel.ContactParty)
         case networkFee(DWTitleDetailItem)
         case date(DWTitleDetailItem)
         case taxCategory(DWTitleDetailItem)
@@ -151,6 +154,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
             case .sentTo(let items): return ["SentTo"] + Self.identity(of: items)
             case .movedFrom(let items): return ["MovedFrom"] + Self.identity(of: items)
             case .movedTo(let items): return ["MovedTo"] + Self.identity(of: items)
+            case .contact(let title, let party): return ["Contact", title, party.name, party.secondaryName ?? "", party.avatarURL ?? ""]
             case .networkFee(let item): return ["NetworkFee"] + Self.identity(of: [item])
             case .date(let item): return ["Date"] + Self.identity(of: [item])
             case .taxCategory(let item): return ["TaxCategory"] + Self.identity(of: [item])
@@ -208,12 +212,19 @@ class TXDetailViewController: BaseTxDetailsViewController {
         model.resolveSwapExplorerLink { [weak self] in
             self?.reloadDataSource()
         }
+
+        // A received transaction whose fee this wallet can't derive asks the
+        // block explorer for it; the row reads "Paid by sender" until (and
+        // unless) an answer lands.
+        model.resolveExplorerFee { [weak self] in
+            self?.reloadDataSource()
+        }
     }
 }
 
 extension TXDetailViewController {
     private func viewInBlockExplorer() {
-        let swiftUIView = BottomSheet(
+        let swiftUIView = DashUIKit.BottomSheet(
             title: NSLocalizedString("Select block explorer", comment: "Block explorer picker"),
             showBackButton: Binding<Bool>.constant(false)
         ) {
@@ -249,7 +260,7 @@ extension TXDetailViewController {
 
     /// Full consensus-field inspector for this transaction's stored raw bytes.
     private func viewRawTransaction() {
-        let sheet = BottomSheet(
+        let sheet = DashUIKit.BottomSheet(
             title: NSLocalizedString("Transaction", comment: "Raw transaction inspector"),
             showBackButton: Binding<Bool>.constant(false)
         ) {
@@ -363,6 +374,21 @@ extension TXDetailViewController {
         reloadDataSource()
     }
 
+    /// Opens the counterparty's contact profile. The contact is resolved
+    /// from the contacts service's live snapshot; a payment whose contact is
+    /// no longer in it says so rather than silently doing nothing.
+    private func openContactProfile(_ party: TxDetailModel.ContactParty) {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            guard let contact = SwiftDashSDKContactsService.shared.contactItem(for: party.identityId) else {
+                self.view.dw_showInfoHUD(withText: NSLocalizedString("Contact is no longer available",
+                                                                     comment: "DashPay Contacts"))
+                return
+            }
+            self.present(UIHostingController(rootView: ContactProfileSheet(contact: contact)), animated: true)
+        }
+    }
+
     /// Copies the serialized transaction hex. A missing row (bytes not
     /// stored on this device) reports itself rather than copying nothing.
     private func copyRawTransaction() {
@@ -397,6 +423,12 @@ extension TXDetailViewController {
 
                     return cell
                 case .info:
+                    if case .contact(let title, let party) = item {
+                        let cell = tableView.dequeueReusableCell(type: TxDetailContactCell.self, for: indexPath)
+                        cell.update(title: title, contact: party)
+                        cell.separatorInset = .init(top: 0, left: 2000, bottom: 0, right: 0)
+                        return cell
+                    }
                     let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailInfoCell.reuseIdentifier,
                                                              for: indexPath) as! TxDetailInfoCell
                     cell.update(with: item)
@@ -460,6 +492,15 @@ extension TXDetailViewController {
             currentSnapshot.appendItems([.shieldedInfo(item)], toSection: .info)
         }
 
+        // A DashPay payment's counterparty is a contact row rather than an
+        // address group, appended in the slot that group would have occupied
+        // (see `TxDetailModel.hasSourceUser` / `hasDestinationUser`), so the
+        // section still reads source-then-destination.
+        let appendContact: () -> Void = { [weak self] in
+            guard let self, let party = self.model.contactParty else { return }
+            self.currentSnapshot.appendItems([.contact(self.model.contactRowTitle, party)], toSection: .info)
+        }
+
         // Empty address groups are skipped: SDK rows often carry no linked
         // input addresses and a sent row's external outputs may be unknown —
         // an empty .sentFrom/.sentTo would render a blank cell.
@@ -485,12 +526,18 @@ extension TXDetailViewController {
             if !sentTo.isEmpty {
                 currentSnapshot.appendItems([.sentTo(sentTo)], toSection: .info)
             }
+            appendContact()
             currentSnapshot.appendItems([.networkFee(fee)], toSection: .info)
         case .received:
+            appendContact()
             let receivedAt = model.outputAddresses(with: detailFont)
             if !receivedAt.isEmpty {
                 currentSnapshot.appendItems([.receivedAt(receivedAt)], toSection: .info)
             }
+            // Incoming rows carry the fee row too — it reads "Paid by sender"
+            // unless a real fee was recorded for this transaction.
+            currentSnapshot.appendItems([.networkFee(model.fee(with: detailFont, tintColor: UIColor.label))],
+                                        toSection: .info)
         case .notAccountFunds:
             break
         }
@@ -534,6 +581,10 @@ extension TXDetailViewController {
         let section = currentSnapshot.sectionIdentifiers[indexPath.section]
 
         switch section {
+        case .info:
+            if case .contact(_, let party)? = dataSource.itemIdentifier(for: indexPath) {
+                openContactProfile(party)
+            }
         case .taxCategory:
             model.toggleTaxCategoryOnCurrentTransaction()
             reloadDataSource()

@@ -34,10 +34,9 @@ struct GiftCardDetailsMerchantHeader: View {
                         .frame(width: 50, height: 50)
                         .clipShape(Circle())
                 } else {
-                    Image("image.explore.dash.wts.payment.gift-card")
-                        .resizable()
-                        .scaledToFit()
+                    MerchantLogoPlaceholder(merchantName: merchantName)
                         .frame(width: 50, height: 50)
+                        .clipShape(Circle())
                 }
 
                 if merchantIcon != nil {

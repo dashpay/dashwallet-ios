@@ -37,6 +37,7 @@ struct SDKIdentityProfileSheet: View {
     @State private var identityIdData: Data?
     @State private var showingBalanceInfo = false
     @State private var showingTopUp = false
+    @State private var showingUsernameMarketplace = false
 
     /// Callback invoked when the user taps Edit. Owner (HomeViewController)
     /// dismisses the sheet and pushes `RootEditProfileViewController`.
@@ -51,7 +52,7 @@ struct SDKIdentityProfileSheet: View {
                     header
                     Divider()
                     infoSection
-                    if !dpnsNames.isEmpty {
+                    if hasIdentity {
                         namesSection
                     }
                     // Edit Profile gated on hasIdentity: the editor's
@@ -89,15 +90,27 @@ struct SDKIdentityProfileSheet: View {
                         .transition(.opacity)
                 }
             }
-            .onAppear {
-                loadIdentityId()
-                dpnsNames = DWCurrentUserIdentityInfo.shared.usernames
-                hasIdentity = DWCurrentUserIdentityInfo.shared.hasIdentity
-                pendingContestedName = DWContestedNameStatusService.shared.pendingLabel
-                pendingVotingEndTime = DWContestedNameStatusService.shared.pendingVotingEndTime
-                avatarURL = DWCurrentUserIdentityInfo.shared.avatarURL
+            .onAppear(perform: reloadIdentitySnapshot)
+        }
+        // `onDismiss` rather than relying on the `onAppear` above: SwiftUI does
+        // not re-run it for the presenting view when a `fullScreenCover` closes,
+        // and a name registered or bought in the marketplace changes both
+        // `dpnsNames` and `hasIdentity`.
+        .fullScreenCover(isPresented: $showingUsernameMarketplace,
+                         onDismiss: reloadIdentitySnapshot) {
+            UsernameMarketplaceScreen {
+                showingUsernameMarketplace = false
             }
         }
+    }
+
+    private func reloadIdentitySnapshot() {
+        loadIdentityId()
+        dpnsNames = DWCurrentUserIdentityInfo.shared.usernames
+        hasIdentity = DWCurrentUserIdentityInfo.shared.hasIdentity
+        pendingContestedName = DWContestedNameStatusService.shared.pendingLabel
+        pendingVotingEndTime = DWContestedNameStatusService.shared.pendingVotingEndTime
+        avatarURL = DWCurrentUserIdentityInfo.shared.avatarURL
     }
 
     // MARK: - Edit button
@@ -273,6 +286,37 @@ struct SDKIdentityProfileSheet: View {
                         Divider()
                     }
                 }
+                if !dpnsNames.isEmpty {
+                    Divider()
+                }
+                Button {
+                    showingUsernameMarketplace = true
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(.dash.blue)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(dpnsNames.isEmpty
+                                ? NSLocalizedString("Get a username", comment: "Username marketplace: profile entry point")
+                                : NSLocalizedString("Get another username", comment: "Username marketplace: profile entry point"))
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.dash.blue)
+                            Text(NSLocalizedString(
+                                "Buy a listed name or register an available one",
+                                comment: "Username marketplace: profile entry point subtitle"))
+                                .font(.caption)
+                                .foregroundColor(.dash.secondaryText)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.dash.secondaryText)
+                    }
+                    .padding(.vertical, 12)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal, 12)
             .background(Color.dash.secondaryBackground)
@@ -390,6 +434,16 @@ final class IdentityTopUpViewModel: ObservableObject {
         case platform
         case transparent
 
+        /// The funding source that spends `network`'s balance — the internal
+        /// transfer screen's bridge from its FROM side to this executor.
+        init(spending network: ChainNetwork) {
+            switch network {
+            case .core: self = .transparent
+            case .platform: self = .platform
+            case .shielded: self = .shielded
+            }
+        }
+
         var title: String {
             switch self {
             case .shielded: return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
@@ -439,10 +493,18 @@ final class IdentityTopUpViewModel: ObservableObject {
     /// unshield minimum (shielded route only, via the pure
     /// `estimateShieldedFee` FFI) plus the observed top-up transition fee.
     /// The transparent route also pays a small Core miner fee on top.
-    static func estimatedFeeCredits(source: FundingSource) -> UInt64 {
+    /// `nil` when the shielded route's unshield estimate is unavailable —
+    /// callers show "no number" rather than only the transition fee.
+    static func estimatedFeeCredits(source: FundingSource) -> UInt64? {
         let unshieldFee: UInt64
         if source == .shielded {
-            unshieldFee = (try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 2)) ?? 0
+            // `nil`, not `0`, when there is no estimate — see the doc above.
+            // Reporting a zero fee for an unknown one is a number the user
+            // would act on.
+            guard let estimate = try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .unshield, numActions: 2) else {
+                return nil
+            }
+            unshieldFee = estimate
         } else {
             unshieldFee = 0
         }
@@ -828,7 +890,11 @@ struct IdentityTopUpSheet: View {
     }
 
     private var estimatedFeeText: String {
-        let credits = IdentityTopUpViewModel.estimatedFeeCredits(source: source)
+        guard let credits = IdentityTopUpViewModel.estimatedFeeCredits(source: source) else {
+            // Shielded route with the unshield estimate unavailable: show no
+            // number rather than one that omits the larger fee component.
+            return "—"
+        }
         let duffs = credits / 1000
         return String.localizedStringWithFormat(
             NSLocalizedString("~%@ DASH (≈ %@)", comment: "DashPay: estimated network fee — DASH amount, then its local-currency equivalent"),

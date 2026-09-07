@@ -24,6 +24,7 @@ private let kExploreWhereToSpendSectionCount = 5
 private let kHandlerHeight: CGFloat = 24.0
 internal let kDefaultOpenedMapPosition: CGFloat = 260.0
 private let kDefaultClosedMapPosition: CGFloat = -kHandlerHeight
+private let kSignificantLocationChange: CLLocationDistance = 500
 
 // MARK: - ExplorePointOfUseSections
 
@@ -65,6 +66,7 @@ class ExplorePointOfUseListViewController: UIViewController {
     internal var items: [ExplorePointOfUse] { model.items }
 
     internal var radius = 20 // In miles //Move to model
+    private var lastLocationDrivenFetch: CLLocation?
     internal var mapView: ExploreMapView!
     internal var showMapButton: UIButton!
     internal var syncBannerView: ExploreSyncBannerView?
@@ -112,8 +114,7 @@ class ExplorePointOfUseListViewController: UIViewController {
 
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveLinear) {
             self.contentViewTopLayoutConstraint.constant = kDefaultOpenedMapPosition
-            self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - kDefaultOpenedMapPosition,
-                                              right: 0)
+            self.mapView.contentInset = self.mapContentInsets(sheetTop: kDefaultOpenedMapPosition)
             self.view.layoutIfNeeded()
         } completion: { [weak self] _ in
             self?.updateTableViewInsetsForCurrentSheetPosition()
@@ -126,8 +127,7 @@ class ExplorePointOfUseListViewController: UIViewController {
 
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveLinear) {
             self.contentViewTopLayoutConstraint.constant = kDefaultClosedMapPosition
-            self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - kDefaultClosedMapPosition,
-                                              right: 0)
+            self.mapView.contentInset = self.mapContentInsets(sheetTop: kDefaultClosedMapPosition)
             self.view.layoutIfNeeded()
         } completion: { [weak self] _ in
             self?.updateTableViewInsetsForCurrentSheetPosition()
@@ -140,6 +140,15 @@ class ExplorePointOfUseListViewController: UIViewController {
             .shared.isAuthorized
 
         showMapButton.isHidden = !isVisible
+    }
+
+    private func mapContentInsets(sheetTop: CGFloat) -> UIEdgeInsets {
+        UIEdgeInsets(
+            top: expandedTableTopInset,
+            left: 0,
+            bottom: max(0, mapView.bounds.height - sheetTop),
+            right: 0
+        )
     }
 
     // MARK: life cycle
@@ -280,15 +289,11 @@ extension ExplorePointOfUseListViewController {
 
 extension ExplorePointOfUseListViewController: DWLocationObserver {
     func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation) {
-        print("🔍 LOCATION: GPS location changed to \(location.coordinate.latitude), \(location.coordinate.longitude)")
-
         // Set the map center first
         mapView.setCenter(location, animated: false)
-        print("🔍 LOCATION: Set map center to GPS location")
 
         // Clear search center to use actual GPS location
         model.searchCenterCoordinate = nil
-        print("🔍 LOCATION: Cleared searchCenterCoordinate - will use GPS")
 
         // Update the model's map bounds to match the new center
         if model.showMap {
@@ -299,13 +304,18 @@ extension ExplorePointOfUseListViewController: DWLocationObserver {
 
             let newBounds = mapView.mapBounds(with: radiusToUse)
             model.currentMapBounds = newBounds
-            print("🔍 LOCATION: Updated map bounds with radius \(radiusToUse)")
-        }
 
-        // If we're on the nearby tab and the model shows map, refresh the search with the new location
-        if currentSegment.tag == MerchantsListSegment.nearby.rawValue && model.showMap {
-            print("🔍 LOCATION: Fetching merchants for new GPS location")
-            model.fetch(query: nil)
+            // Refresh the search with the new location for every map-showing segment.
+            // This is what seeds the map when GPS gets its first fix after the screen
+            // is already visible. Later fixes can arrive every ~100 m, which is too
+            // chatty to requery and reload the list for — only refetch once the user
+            // has moved a significant distance.
+            let movedSignificantly = lastLocationDrivenFetch
+                .map { location.distance(from: $0) > kSignificantLocationChange } ?? true
+            if movedSignificantly {
+                lastLocationDrivenFetch = location
+                model.fetch(query: nil)
+            }
         }
     }
 
@@ -415,6 +425,9 @@ extension ExplorePointOfUseListViewController {
 
         mapView = ExploreMapView(frame: .zero)
         mapView.delegate = self
+        // This screen searches around mapView.centerCoordinate, so the rendered map is
+        // shifted to keep the frame center inside the strip exposed by the list sheet.
+        mapView.movesMapWithContentInset = true
         mapView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mapView)
 
@@ -530,6 +543,12 @@ extension ExplorePointOfUseListViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         updateTableViewInsetsForCurrentSheetPosition()
+
+        // The inset depends on mapView.bounds.height, so recompute it whenever layout
+        // changes (rotation, split view) — not only in the sheet animations.
+        if mapView != nil, contentViewTopLayoutConstraint != nil {
+            mapView.contentInset = mapContentInsets(sheetTop: contentViewTopLayoutConstraint.constant)
+        }
     }
 
     internal func updateTableViewInsetsForCurrentSheetPosition() {
@@ -641,6 +660,10 @@ extension ExplorePointOfUseListViewController {
 
         sender.setTranslation(.zero, in: view)
 
+        // Keep the map viewport in sync while the finger is still down; otherwise the
+        // area uncovered by the sheet renders empty until the gesture ends.
+        mapView.contentInset = mapContentInsets(sheetTop: contentViewTopLayoutConstraint.constant)
+
         if sender.state == .ended {
             let velocityInView = sender.velocity(in: view)
             let velocityY: CGFloat = 0.2*velocityInView.y
@@ -657,7 +680,7 @@ extension ExplorePointOfUseListViewController {
             let animationDuration: CGFloat = (abs(velocityY)*0.0002)+0.2;
 
             UIView.animate(withDuration: animationDuration, delay: 0, options: .curveEaseOut) {
-                self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - finalY, right: 0)
+                self.mapView.contentInset = self.mapContentInsets(sheetTop: finalY)
                 self.contentViewTopLayoutConstraint.constant = finalY
                 self.view.layoutIfNeeded()
             } completion: { _ in
@@ -723,24 +746,18 @@ extension ExplorePointOfUseListViewController: ExploreMapViewDelegate {
             return
         }
 
-        print("🔍 MAP: Map region changed")
-        print("🔍 MAP: Center = \(mapView.centerCoordinate.latitude), \(mapView.centerCoordinate.longitude)")
-        print("🔍 MAP: Current radius = \(model.currentRadius) meters")
-
         refreshFilterCell()
 
         // Update the search radius on the map view to match current filter
         mapView.searchRadius = model.currentRadius
 
-        // Update the search center to the map center (not the device GPS location)
+        // Update the search center to the map camera center (not the device GPS location)
         model.searchCenterCoordinate = mapView.centerCoordinate
 
         // Get bounds based on the current filter radius and new center location
         let newBounds = mapView.mapBounds(with: model.currentRadius)
-        print("🔍 MAP: New bounds NE=(\(newBounds.neCoordinate.latitude), \(newBounds.neCoordinate.longitude)), SW=(\(newBounds.swCoordinate.latitude), \(newBounds.swCoordinate.longitude))")
 
         model.currentMapBounds = newBounds
-        print("🔍 MAP: Calling refreshItems()")
         model.refreshItems()
     }
 

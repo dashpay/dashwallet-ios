@@ -22,6 +22,26 @@
 			<string>%ld použitých</string>
 		</dict>
 	</dict>
+	<key>%d ATM(s) in %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@atms@</string>
+		<key>atms</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%1$d ATM in %2$@</string>
+			<key>other</key>
+			<string>%1$d ATMs in %2$@</string>
+			<key>few</key>
+			<string>%1$d ATMs in %2$@</string>
+			<key>many</key>
+			<string>%1$d ATMs in %2$@</string>
+		</dict>
+	</dict>
 	<key>%d merchant(s) in %@</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -400,6 +420,26 @@
 			<string>%d žiadosti</string>
 			<key>other</key>
 			<string>%d žiadostí</string>
+		</dict>
+	</dict>
+	<key>%d words</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d slovo</string>
+			<key>few</key>
+			<string>%d slová</string>
+			<key>many</key>
+			<string>%d slova</string>
+			<key>other</key>
+			<string>%d slov</string>
 		</dict>
 	</dict>
 </dict>

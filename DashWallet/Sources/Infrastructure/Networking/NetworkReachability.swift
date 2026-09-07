@@ -73,26 +73,15 @@ final class NetworkReachability: NSObject {
         hasReceivedFirstPath = false
         lock.unlock()
 
-        let firstUpdate = DispatchSemaphore(value: 0)
         m.pathUpdateHandler = { [weak self] path in
-            if self?.handlePathUpdate(path) == true {
-                firstUpdate.signal()
-            }
+            self?.handlePathUpdate(path)
         }
         m.start(queue: queue)
 
-        // Off the main thread, keep the synchronous contract the old
-        // `SCNetworkReachability`-based manager offered: wait briefly so the
-        // caller observes real state on return.
-        //
-        // On the main thread, never wait. `NWPathMonitor` delivers on a
-        // background queue, so the wait made a user-interactive thread block on
-        // lower-QoS work for up to 200 ms at launch — the priority inversion
-        // the Thread Performance Checker flags. Every caller already observes
-        // `didChangeNotification`, which carries the first real path a few
-        // milliseconds later.
-        guard !Thread.isMainThread else { return }
-        _ = firstUpdate.wait(timeout: .now() + .milliseconds(200))
+        // Callers read `isReachable` the moment this returns, so the state is
+        // seeded from the path the monitor already holds instead of parking the
+        // caller until the utility-QoS queue delivers its first callback.
+        handlePathUpdate(m.currentPath)
     }
 
     @objc func stopMonitoring() {
@@ -103,16 +92,15 @@ final class NetworkReachability: NSObject {
         m?.cancel()
     }
 
-    /// Returns `true` on the first path update after `startMonitoring()`.
-    @discardableResult
-    private func handlePathUpdate(_ path: NWPath) -> Bool {
+    /// Updates the shared reachability snapshot from the latest path and marks
+    /// whether the monitor has observed at least one path since it started.
+    private func handlePathUpdate(_ path: NWPath) {
         let reachable = path.status == .satisfied
         let wifi = reachable && path.usesInterfaceType(.wifi)
 
         lock.lock()
         _isReachable = reachable
         _isReachableViaWiFi = wifi
-        let wasFirst = !hasReceivedFirstPath
         hasReceivedFirstPath = true
         lock.unlock()
 
@@ -122,6 +110,5 @@ final class NetworkReachability: NSObject {
                 object: self
             )
         }
-        return wasFirst
     }
 }

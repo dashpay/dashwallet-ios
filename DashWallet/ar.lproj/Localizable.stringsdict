@@ -18,6 +18,22 @@
 			<string>%ld used</string>
 		</dict>
 	</dict>
+	<key>%d ATM(s) in %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@atms@</string>
+		<key>atms</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%1$d ATM in %2$@</string>
+			<key>other</key>
+			<string>%1$d ATMs in %2$@</string>
+		</dict>
+	</dict>
 	<key>%d merchant(s) in %@</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -440,6 +456,30 @@
 			<string>%d طلبًا</string>
 			<key>other</key>
 			<string>%d طلب</string>
+		</dict>
+	</dict>
+	<key>%d words</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>zero</key>
+			<string>%d كلمة</string>
+			<key>one</key>
+			<string>%d كلمة</string>
+			<key>two</key>
+			<string>%d كلمة</string>
+			<key>few</key>
+			<string>%d كلمات</string>
+			<key>many</key>
+			<string>%d كلمة</string>
+			<key>other</key>
+			<string>%d كلمة</string>
 		</dict>
 	</dict>
 </dict>

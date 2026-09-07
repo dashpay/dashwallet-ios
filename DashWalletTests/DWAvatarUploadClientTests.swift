@@ -7,7 +7,7 @@
 import Moya
 import UIKit
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 final class DWAvatarUploadClientTests: XCTestCase {
     private final class Recorder: @unchecked Sendable {

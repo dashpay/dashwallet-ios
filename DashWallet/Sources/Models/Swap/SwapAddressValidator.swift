@@ -35,6 +35,16 @@ struct SwapAddressValidator {
         guard !trimmed.isEmpty else { return false }
 
         let chain = coin.chain.uppercased()
+
+        // A Dash address is never a valid swap *destination*: DASH is excluded from the sell
+        // coin list, so the address entered here must belong to the chosen destination coin.
+        // Several chains (e.g. XRP, TRON, ZEC) fall through to the permissive `default` branch
+        // below, which would otherwise accept a pasted Dash address — the Maya swap then fails
+        // on-chain and the user only sees "Conversion failed". Reject it up front.
+        if chain != "DASH", looksLikeDashAddress(trimmed) {
+            return false
+        }
+
         let looksEVM = isValidEVMAddress(trimmed)
 
         // Cross-family guard: an EVM address can only be valid on an EVM chain, and a non-EVM
@@ -146,6 +156,16 @@ struct SwapAddressValidator {
             lower = String(lower.dropFirst(prefix.count))
         }
         return matchesPattern("^[qp][a-z0-9]{41}$", lower)
+    }
+
+    // MARK: - Dash (reject a Dash address used as a swap destination)
+
+    /// Matches a Dash *mainnet* Base58Check address: P2PKH (version byte 76 → always starts with
+    /// `X`) or P2SH (version byte 16 → starts with `7`), always 34 characters total. No supported
+    /// swap destination chain uses these prefixes at this length, so this only ever matches a
+    /// genuine Dash address — meaning zero false positives against real destination addresses.
+    private static func looksLikeDashAddress(_ address: String) -> Bool {
+        matchesPattern("^[X7][1-9A-HJ-NP-Za-km-z]{33}$", address)
     }
 
     // MARK: - EVM (Ethereum, Arbitrum)

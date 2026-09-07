@@ -19,15 +19,17 @@ extension DWPreviewSeedPhraseModel {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.preview-seed-phrase-model")
 
-    /// Generate a 12-word BIP-39 mnemonic via SwiftDashSDK's Rust FFI.
-    /// Persistence is deferred to the async `SwiftDashSDKHost.createOrImportWallet`
-    /// path; see `getOrCreateNewWallet`'s call site for the surrounding
-    /// flow.
+    /// Generate a BIP-39 mnemonic of `newWalletWordCount` words (12 or 24,
+    /// per the user's pick; anything else falls back to the 12-word default)
+    /// via SwiftDashSDK's Rust FFI. Persistence is deferred to the async
+    /// `SwiftDashSDKHost.createOrImportWallet` path; see
+    /// `getOrCreateNewWallet`'s call site for the surrounding flow.
     @objc(generateAndStoreMnemonic)
     func generateAndStoreMnemonic() -> String? {
+        let length = RecoveryPhraseLength(rawValue: Int(newWalletWordCount)) ?? .default
         do {
-            let mnemonic = try Mnemonic.generate(wordCount: 12)
-            Self.mnemonicLogger.info("generated 12-word mnemonic")
+            let mnemonic = try Mnemonic.generate(wordCount: length.wordCount)
+            Self.mnemonicLogger.info("generated \(length.rawValue, privacy: .public)-word mnemonic")
             return mnemonic
         } catch {
             Self.mnemonicLogger.error("generateAndStoreMnemonic failed: \(String(describing: error), privacy: .public)")

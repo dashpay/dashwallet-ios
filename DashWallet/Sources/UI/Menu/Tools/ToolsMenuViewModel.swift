@@ -23,6 +23,7 @@ enum ToolsMenuNavigationDestination {
     case extendedPublicKeys
     case masternodeKeys
     case csvExport
+    case connections
     case zenLedger
     case storageExplorer
 }
@@ -120,6 +121,13 @@ class ToolsMenuViewModel: ObservableObject {
                 icon: .system("cylinder.split.1x2"),
                 action: { [weak self] in
                     self?.navigationDestination = .storageExplorer
+                }
+            ),
+            MenuItemModel(
+                title: NSLocalizedString("Connections", comment: "DashConnect"),
+                icon: .custom("menu-connections", maxHeight: 30),
+                action: { [weak self] in
+                    self?.navigationDestination = .connections
                 }
             ),
             MenuItemModel(

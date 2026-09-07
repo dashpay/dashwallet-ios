@@ -9,6 +9,9 @@
 /* CrowdNode */
 " Terms of Use " = " Terms of Use ";
 
+/* Username marketplace: listing success — name, then price */
+"%1$@ listed for %2$@ DASH" = "%1$@ meghirdetve %2$@ DASH áron";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -20,6 +23,12 @@
 
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "%@ nem található a Dash hálózaton, így nem küldhető neki kapcsolatkérés.";
+
+/* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
+"%@ couldn't be verified on the Dash network. The QR code may be outdated." = "%@ nem volt ellenőrizhető a Dash hálózaton. Lehet, hogy a QR-kód elavult.";
+
+/* Username marketplace: contested request cost value — the vote-resolution fund amount */
+"%@ DASH + network fee" = "%@ DASH + hálózati díj";
 
 /* Usernames */
 "%@ Dash available" = "%@ Dash érhető el";
@@ -42,6 +51,9 @@
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@ has sent you a contact request";
 
+/* Username marketplace: delist success */
+"%@ is no longer for sale" = "%@ már nem eladó";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
@@ -51,8 +63,17 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
+/* Username marketplace: purchase success */
+"%@ is now yours" = "%@ mostantól a tiéd";
+
+/* Username marketplace: registration success */
+"%@ registered" = "%@ regisztrálva";
+
 /* Testnet faucet */
 "%@ tDash requested — it will arrive shortly" = "%@ tDash requested — it will arrive shortly";
+
+/* Username marketplace: transfer success */
+"%@ transferred" = "%@ átruházva";
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
@@ -171,6 +192,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Ehhez a névhez már folyik szavazás — a kérelmed pályázóként csatlakozik hozzá. A versenydíjat a beküldéskor vonjuk le, és nem térítjük vissza, még akkor sem, ha nem nyered el a nevet.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -182,6 +206,9 @@
 
 /* No comment provided by engineer. */
 "About me" = "About me";
+
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "Az identitásfiók egyenlegéről";
 
 "Abstain" = "Tartózkodás";
 
@@ -235,6 +262,9 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "Add a New Contact";
 
+/* Usernames */
+"Add a temporary username" = "Ideiglenes felhasználónév hozzáadása";
+
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
 
@@ -259,6 +289,9 @@
 /* Maya
    SwapKit */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+
+/* No comment provided by engineer. */
+"Advanced" = "Speciális";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Advanced Security";
@@ -315,6 +348,9 @@
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Amount in Dash";
 
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "Összeg DASH-ben";
+
 /* No comment provided by engineer. */
 "Amount received" = "Amount received";
 
@@ -348,8 +384,14 @@
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved";
 
+/* Recovery phrase backup: security warning body — anyone with the phrase can spend the funds */
+"Anyone that has your recovery phrase can access your funds." = "Bárki, akinek megvan a helyreállítási kifejezésed, hozzáférhet a pénzedhez.";
+
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Bárki, aki ismer egy címet, megnézheti annak előzményeit";
+
+/* Username marketplace: set price sheet body */
+"Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance." = "Bárki megvásárolhatja a nevet pontosan ezen az áron. A bevétel kreditként érkezik az identitásod egyenlegére.";
 
 /* AboutDash */
 "App version" = "App version";
@@ -430,8 +472,17 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "Autohide Balance";
 
+/* DashPay */
+"Available after sync finishes" = "A szinkronizálás befejezése után érhető el";
+
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
+
+/* Username marketplace: unregistered name row */
+"Available — register it on your identity" = "Szabad — regisztráld az identitásodra";
+
+/* Username marketplace: unregistered contested-eligible name row */
+"Available — short names are decided by a network vote" = "Szabad — a rövid nevekről hálózati szavazás dönt";
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
@@ -525,6 +576,9 @@
 /* Voting */
 "Blocked '%@' username" = "Blocked '%@' username";
 
+/* Username marketplace: history — purchase with buyer, seller, price */
+"Bought by %1$@ from %2$@ for %3$@ DASH" = "%1$@ megvásárolta %2$@ felhasználótól %3$@ DASH áron";
+
 /* Identities: this key only signs for one data contract */
 "Bound to contract" = "Szerződéshez kötve";
 
@@ -573,6 +627,9 @@
 /* Swap */
 "Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
 
+/* Username marketplace: purchase button */
+"Buy for %@ DASH" = "Megvásárlás %@ DASH-ért";
+
 /* DashSpend */
 "Buy gift card" = "Buy gift card";
 
@@ -581,6 +638,12 @@
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+
+/* Username marketplace: purchase confirmation title */
+"Buy “%@”?" = "Megveszed a(z) „%@” nevet?";
+
+/* Username marketplace: Explore row subtitle */
+"Buy, sell and transfer DashPay usernames" = "Vásárolj, adj el és ruházz át DashPay felhasználóneveket";
 
 /* Buy/Sell */
 "Buy/Sell" = "Buy/Sell";
@@ -631,6 +694,9 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
+
+/* Username marketplace */
+"Change Price" = "Ár módosítása";
 
 /* TimeSkew */
 "Check date & time settings" = "Check date & time settings";
@@ -713,6 +779,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "Hamarosan";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "Átutalás befejezése";
+
 /* Shielded transfer status */
 "Completed" = "Befejezve";
 
@@ -782,6 +851,18 @@
 
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "Kapcsolatkérés elküldve neki: %@";
+
+/* Usernames */
+"Continue without a temporary username" = "Folytatás ideiglenes felhasználónév nélkül";
+
+/* Identity top-up sheet — body */
+"Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Váltsd át a Dasht identitáskreditre, hogy fizetni tudj a Platform műveletekért, például a névjegykérésekért és a profilfrissítésekért.";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "Az átutalást nem sikerült befejezni";
+
+/* Identity top-up sheet — free amount chip */
+"Custom" = "Egyéni";
 
 /* No comment provided by engineer. */
 "Contact Requests" = "Kapcsolatkérések";
@@ -1005,6 +1086,9 @@
 /* Uphold Entry Point */
 "Dash balance on Uphold" = "Dash balance on Uphold";
 
+/* Recovery phrase backup: security warning title — Dash Core Group does not store the phrase */
+"Dash Core Group does NOT store this recovery phrase" = "A Dash Core Group NEM tárolja ezt a helyreállítási kifejezést";
+
 /* Dash DEX Portal
    Translate it as short as possible! (24 symbols max) */
 "Dash DEX" = "Dash DEX";
@@ -1042,6 +1126,27 @@
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "A DashPay engedélyezve";
 
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "Adj meg legalább %@ DASH-t";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "Becsült díjak";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "A díjakat az összegből vonjuk le; Shielded egyenlegről fizetve kis maradék maradhat a Platform-egyenlegeden.";
+
+/* Username marketplace: search segment */
+"Find Names" = "Nevek keresése";
+
+/* Username marketplace: listed badge */
+"For sale" = "Eladó";
+
+/* Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app */
+"For sale by an independent user" = "Egy független felhasználó kínálja eladásra";
+
+/* Identity top-up sheet — linkability warning for transparent-side sources */
+"Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Ha átlátszó egyenlegről finanszírozod, azok az érmék nyilvánosan az identitásodhoz kötődnek a Dash láncon. Az adatvédelem érdekében fizess a Shielded egyenlegedről.";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "DashPay Invitation";
 
@@ -1062,6 +1167,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "Date";
+
+/* History group header for restored shielded operations whose original date is not recoverable */
+"Date unknown" = "Ismeretlen dátum";
 
 /* Voting */
 "Date: New to old" = "Date: New to old";
@@ -1085,6 +1193,9 @@
 
 /* No comment provided by engineer. */
 "Delete Wallet?" = "Delete Wallet?";
+
+/* SPV diagnostics */
+"Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network." = "Csak erről az eszközről törli a tárca megerősítetlen tranzakcióit, és felszabadítja az érméket, amelyeket el akartak költeni. A szűrők újraolvasása visszaállítja azokat, amelyek valóban szerepelnek a blokkláncon. Semmi nem kerül elküldésre a hálózatra.";
 
 /* Location Service Status */
 "Denied" = "Denied";
@@ -1116,6 +1227,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu." = "AZ ESZKÖZ BIZTONSÁGA SÉRÜLT\nBármely „jailbreak” alkalmazás hozzáférhet más alkalmazások kulcstartó-adataihoz (és ellophatja a Dashodat). Vidd át a pénzedet egy biztonságos eszközön lévő tárcába, majd állítsd vissza ezt a tárcát a Biztonság menü „Tárca visszaállítása” pontjával.";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.";
@@ -1169,6 +1283,27 @@
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
 "DPNS Names" = "DPNS Names";
+
+/* SPV diagnostics */
+"Drop & rescan" = "Eldobás és újraolvasás";
+
+/* SPV diagnostics */
+"Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network." = "Eldobja erről az eszközről a tárca azon tranzakcióit, amelyek még a hálózatra várnak (soha nem voltak zárolva vagy bányászva), újra elérhetővé teszi az érméket, amelyeket el akartak költeni, és újraolvassa a legutóbbi szűrőket. Az eldobott tranzakció, amely valóban szerepel a blokkláncon, magától visszatér az újraolvasás során. Semmi nem kerül elküldésre a hálózatra.";
+
+/* SPV diagnostics */
+"Drop Unconfirmed & Rescan" = "Megerősítetlenek eldobása és újraolvasás";
+
+/* SPV diagnostics */
+"Drop unconfirmed transactions?" = "Eldobod a megerősítetlen tranzakciókat?";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row." = "%d megerősítetlen tranzakció eldobva — a szűrők újraolvasása folyamatban, figyeld a Szűrők sort.";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above." = "%d megerősítetlen tranzakció eldobva, de a szűrők újraolvasását nem sikerült elindítani — futtasd a fenti „Szűrők újraolvasása” műveletet.";
+
+/* SPV diagnostics */
+"Dropping…" = "Eldobás…";
 
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Due to CrowdNode’s terms of service users can withdraw no more than:";
@@ -1280,6 +1415,9 @@
 
 /* No comment provided by engineer. */
 "Enter your recovery phrase to reset your PIN" = "Enter your recovery phrase to reset your PIN";
+
+/* No comment provided by engineer. */
+"Enter your recovery phrase to set a new PIN" = "Add meg a helyreállítási kifejezésedet új PIN beállításához";
 
 /* Voting */
 "Enter your voting key" = "Enter your voting key";
@@ -1665,6 +1803,42 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "Adatvédelem szempontjából hogyan viszonyul ez az Ethereum-fiókokhoz?";
 
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "Identitásfiók egyenlege";
+
+/* Username marketplace: section of contested-name requests awaiting the masternode vote */
+"In network vote" = "Hálózati szavazás alatt";
+
+/* Username marketplace: search row for a contested label with an active vote by others */
+"In a network vote — you can join as a contender" = "Hálózati szavazás alatt — pályázóként csatlakozhatsz";
+
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "Addig a(z) „%1$@” néven vagy elérhető, amely a tiéd marad. Ha a szavazás neked ítéli a(z) „%2$@” nevet, mindkét felhasználónéven elérhető leszel.";
+
+/* Username marketplace: search row for a label a past vote locked */
+"Locked by a network vote — nobody can register it" = "Hálózati szavazás zárolta — senki sem regisztrálhatja";
+
+/* Username marketplace: latest ownership change */
+"Last transferred" = "Utolsó átruházás";
+
+/* Username marketplace: confirm listing button */
+"List For Sale" = "Meghirdetés eladásra";
+
+/* Username marketplace: own listed name */
+"Listed by you" = "Te hirdetted meg";
+
+/* Username marketplace: history — price set */
+"Listed for %@ DASH" = "Meghirdetve %@ DASH áron";
+
+/* Username marketplace: set price fee note */
+"Listing is a network transaction with a small fee, paid from your identity balance." = "A meghirdetés hálózati tranzakció kis díjjal, amelyet az identitásod egyenlegéről fizetünk.";
+
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "Az identitásom";
+
+/* Username marketplace: owned names segment */
+"My Names" = "Neveim";
+
 /* DashPay FAQ */
 "How private is DashPay?" = "Mennyire privát a DashPay?";
 
@@ -2027,6 +2201,9 @@
 /* CrowdNode */
 "Leaving the pool" = "Leaving the pool";
 
+/* DashPay Contacts: caption under the user's own QR code */
+"Let another Dash Wallet user scan this code to add you as a contact." = "Olvastasd be ezt a kódot egy másik Dash Wallet felhasználóval, hogy felvegyen a névjegyei közé.";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Let me know when it’s done";
 
@@ -2099,6 +2276,51 @@
 "Lock" = "Zárolás";
 
 "Lock the name" = "A név zárolása";
+
+/* Username marketplace: contest voting deadline row */
+"Vote ends" = "A szavazás vége";
+
+/* Username marketplace: until when other identities can join the contest */
+"New contenders" = "Új pályázók";
+
+/* Username marketplace: join deadline still open — value of the New contenders row */
+"can join until %@" = "%@ napig csatlakozhatnak";
+
+/* Username marketplace: the contest's join window has passed — value of the New contenders row */
+"joining closed" = "a jelentkezés lezárult";
+
+/* Username marketplace: masternode vote tally for one contest row */
+"%d votes" = "%d szavazat";
+
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "A 12 szó a szokásos. A 24 szót tovább tart leírni és visszaállítani, viszont a távoli jövő fejlett számítógépes rendszerei számára jóval nehezebb feltörni.";
+
+/* Username marketplace: unresolvable transfer recipient */
+"No identity owns that username." = "Egyetlen identitás sem birtokolja ezt a felhasználónevet.";
+
+/* Username marketplace: names that were sold or transferred away */
+"No longer yours" = "Már nem a tieid";
+
+/* Identity top-up sheet — missing unshield destination */
+"No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "Még nincs elérhető Platform fogadócím — várd meg, amíg a Platform szinkronizálása befejeződik, majd próbáld újra.";
+
+/* Username marketplace: empty owned list */
+"No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "Ezen az identitáson még nincs felhasználónév. Keress egyet vásárlásra vagy regisztrálásra a „Nevek keresése” fülön.";
+
+/* Identity top-up sheet — insufficient funding source */
+"Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Nincs elég fedezet ezen az egyenlegen: %@ DASH szükséges, %@ DASH áll rendelkezésre.";
+
+/* Username marketplace: insufficient balance hint */
+"Not enough identity credits for this purchase — top up from My Profile first." = "Nincs elég identitáskredit ehhez a vásárláshoz — előbb tölts fel a „Profilom” menüből.";
+
+/* Username marketplace: insufficient balance hint for a contested request */
+"Not enough identity credits for this request — top up from My Profile first." = "Nincs elég identitáskredit ehhez a kérelemhez — előbb tölts fel a „Profilom” menüből.";
+
+/* Username marketplace: someone else's unlisted name */
+"Not for sale" = "Nem eladó";
+
+/* Username marketplace: own unlisted name */
+"Not listed for sale" = "Nincs meghirdetve eladásra";
 
 "Lock “%@” so nobody gets it" = "A(z) „%@” zárolása, hogy senki ne kapja meg";
 
@@ -2342,11 +2564,92 @@
 /* SDK identity profile sheet — title */
 "My Profile" = "My Profile";
 
+/* DashPay Contacts: shows the user's own contact QR code */
+"My QR" = "QR-kódom";
+
 /* No comment provided by engineer. */
 "Name" = "Name";
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Az olyan névszolgáltatások, mint az Unstoppable Domains, egy olvasható nevet egy rögzített, nyilvános lánci címhez rendelnek. Bárki feloldhatja a nevet, és láthatja az összes valaha ráküldött fizetést. A DashPay-felhasználónév soha nem oldódik fel nyilvánosan fizetési címmé — a címek csak az egyes névjegyekkel folytatott titkosított cserén belül kerülnek elő, így a neved és a pénzed a külső megfigyelők számára összekapcsolatlan marad.";
+
+/* Username marketplace: contested request line — voting deadline */
+"Network vote ends %@" = "A hálózati szavazás %@ napon zárul";
+
+/* Username marketplace: activity overlay while the purchase transition runs */
+"Completing your purchase…" = "A vásárlás befejezése…";
+
+/* Usernames */
+"Register username" = "Felhasználónév regisztrálása";
+
+/* Username marketplace: activity overlay while the delist transition runs */
+"Removing the listing…" = "Hirdetés eltávolítása…";
+
+/* Username marketplace: activity overlay while the set-price transition runs */
+"Listing for sale…" = "Meghirdetés eladásra…";
+
+/* Usernames */
+"Submit both usernames" = "Mindkét felhasználónév beküldése";
+
+/* Usernames */
+"Temporary username" = "Ideiglenes felhasználónév";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "Az ideiglenes felhasználónév maga nem igényelhet szavazást.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Ehhez a névhez masternode-szavazás szükséges. A versenydíjat a beküldéskor vonjuk le, és nem térítjük vissza, még akkor sem, ha nem nyered el a nevet.";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "Ez a felhasználónév is szavazást igényelne — próbálj hozzáadni egy 2 és 9 közötti számjegyet";
+
+/* Username marketplace: activity overlay while the transfer transition runs */
+"Transferring the username…" = "Felhasználónév átruházása…";
+
+/* Username marketplace: activity overlay while the registration transition runs */
+"Registering the username…" = "Felhasználónév regisztrálása…";
+
+/* Username marketplace: activity overlay while the contested request transition runs */
+"Submitting your username request…" = "A felhasználónév-kérelmed beküldése…";
+
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "Böngészés";
+
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "Árváltozások";
+
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "Vásárlások";
+
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "Meghirdetve %1$@ DASH áron · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "Eladva %1$@ DASH áron · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "Eladva %1$@ DASH áron · %2$@ · %3$@ → %4$@";
+
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "Jelenleg nem eladó";
+
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "A legutóbbi hirdetési tevékenységben nincs eladó név. A „Több megjelenítése” régebbre nyúlik vissza.";
+
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "Még nincs vásárlás a hálózaton.";
+
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "Tevékenység betöltése…";
+
+/* Username marketplace: load older browse activity */
+"Show more" = "Több megjelenítése";
+
+/* Username marketplace: contest tallies card title */
+"Network vote so far" = "A hálózati szavazás eddig";
+
+/* Username marketplace: contest with zero masternode votes so far */
+"No votes cast yet" = "Még nem adtak le szavazatot";
 
 /* Swap route provider
    Swap route provider short */
@@ -2381,6 +2684,9 @@
 
 /* (List of) New (notifications) */
 "New" = "New";
+
+/* SPV diagnostics */
+"No unconfirmed transactions to drop." = "Nincs eldobható megerősítetlen tranzakció.";
 
 /* CrowdNode */
 "New CrowdNode Account" = "New CrowdNode Account";
@@ -2563,6 +2869,15 @@
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "A Bitcoinon nincs névréteg, ezért az emberek nyíltan osztják meg és használják újra a címeket — ha egy cím ismertté válik, minden, amit valaha kapott, összekapcsolható a tulajdonosával. A DashPaynél a felhasználóneved nyilvános, de soha nem mutat fizetési címre: a címeket névjegyenként privát módon cserélitek, és váltakoznak, így a névre fizetés nem hozza nyilvánosságra, hová megy a pénzed. Mindkettő átlátszó lánc, így a láncelemzés magukra az érmékre továbbra is vonatkozik.";
 
+/* DashPay Contacts: search results from DPNS, not the local contact list */
+"On the Dash network" = "A Dash hálózaton";
+
+/* Username marketplace */
+"Owned by you" = "A te tulajdonod";
+
+/* Identity top-up sheet — funding source picker label */
+"Pay from" = "Fizetés innen";
+
 /* Identities */
 "On Network" = "A hálózaton";
 
@@ -2731,6 +3046,9 @@
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "A fizetések privátak: a névjeggyel cserélt címek titkosított tartalomban utaznak, amelyet csak ti ketten tudtok elolvasni, és soha nem kerülnek nyilvánosságra — így a fizetéseidet nem lehet könnyen a felhasználónevedhez kötni. Ettől még átlátszó láncon zajló, hagyományos fizetésekről van szó: a kifinomult láncelemzés információt szivárogtathat. A Shielded DashPay (hamarosan) betölti ezt a rést. Maguk a kapcsolatkérések jelenleg NEM privátak: bárki láthatja, hogy két identitás összekapcsolódik. A privát kapcsolatkérések hamarosan érkező funkció. A felhasználóneved és a profilod szintén nyilvános a Dash Platformon.";
 
+/* Username marketplace: price placeholder */
+"Price in DASH" = "Ár DASH-ben";
+
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "A fizetések másodpercek alatt megerősödnek az InstantSenddel";
 
@@ -2788,6 +3106,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN is always required to make a payment";
+
+/* No comment provided by engineer. */
+"PIN Not Set" = "A PIN nincs beállítva";
 
 /* Dash Platform chain */
 "Platform" = "Platform";
@@ -2993,6 +3314,9 @@
 /* Identities: what a public key is used for */
 "Purpose" = "Cél";
 
+/* Username marketplace */
+"Put Up For Sale" = "Eladásra kínálás";
+
 /* DashSpend */
 "Quantity" = "Quantity";
 
@@ -3028,6 +3352,96 @@
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Csak olvasható";
+
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "Újraküldés";
+
+/* Delete a never-accepted transaction from local wallet state */
+"Remove if Not on Network" = "Törlés, ha nincs a hálózaton";
+
+/* Remove never-accepted transaction: confirmation title */
+"Remove this transaction?" = "Törlöd ezt a tranzakciót?";
+
+/* Remove never-accepted transaction: destructive confirm button */
+"Remove Transaction" = "Tranzakció törlése";
+
+/* Username marketplace: transfer recipient placeholder */
+"Recipient username or identity ID" = "A címzett felhasználóneve vagy identitásazonosítója";
+
+/* Identity top-up sheet — shielded source note */
+"Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Ajánlott: a saját Platform címeden keresztüli kétlépcsős átutalás megőrzi, hogy az identitásod ne kapcsolódjon az átlátszó érméidhez.";
+
+/* Username marketplace: register sheet title */
+"Register “%@”" = "„%@” regisztrálása";
+
+/* Username marketplace: registration date */
+"Registered" = "Regisztrálva";
+
+/* Username marketplace */
+"Remove From Sale" = "Levétel az eladásról";
+
+/* Remove never-accepted transaction: progress */
+"Removing transaction…" = "Tranzakció törlése…";
+
+/* Username marketplace: delist confirmation title */
+"Remove “%@” from sale?" = "Leveszed a(z) „%@” nevet az eladásról?";
+
+/* Username marketplace: history — delist (transfer to self) */
+"Removed from sale" = "Levéve az eladásról";
+
+/* Username marketplace: delist confirmation body */
+"Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "A hirdetés eltávolítása hálózati tranzakció kis díjjal, amelyet az identitásod egyenlegéről fizetünk. A név a tiéd marad.";
+
+/* Remove never-accepted transaction: refused because the explorer found it */
+"Transaction is known to the network" = "A hálózat ismeri a tranzakciót";
+
+/* Remove never-accepted transaction: refusal body */
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "Egy blokkfelfedező jelentése szerint a Dash hálózat ismeri ezt a tranzakciót. Lehet, hogy még a mempoolban vár, vagy már bekerült egy blokkba, ezért nem lett törölve. A tárca automatikusan frissíti a megerősítését, amint bekerül egy szinkronizált blokkba.";
+
+/* Remove never-accepted transaction: success */
+"Transaction removed" = "Tranzakció törölve";
+
+/* Remove never-accepted transaction: removed but the recovery rescan did not arm */
+"Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "Tranzakció törölve — az újraolvasást nem sikerült elindítani, futtasd a „Szűrők újraolvasása” műveletet a Core szinkronizálási állapotban";
+
+/* Remove never-accepted transaction: confirmation body */
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "A tárca először egy blokkfelfedezőt ellenőriz. A hálózat által ismert tranzakciót — akár a mempoolban vár, akár már blokkban van — soha nem töröljük. Ha a tranzakció nem található, törlődik ebből a tárcából ezen az eszközön, és az érmék, amelyeket el akart költeni, újra elérhetővé válnak. A tárca ezután biztonsági ellenőrzésként újraolvassa a legutóbbi blokkokat. Semmi nem kerül elküldésre a hálózatra.";
+
+/* Remove never-accepted transaction: failure title */
+"Couldn't remove the transaction" = "A tranzakciót nem sikerült törölni";
+
+/* Remove never-accepted transaction: no local row */
+"This transaction is not in the local wallet." = "Ez a tranzakció nincs a helyi tárcában.";
+
+/* Remove never-accepted transaction: local state says it's on-chain */
+"This transaction is confirmed and can't be removed." = "Ez a tranzakció megerősített, ezért nem törölhető.";
+
+/* Remove never-accepted transaction: explorer unreachable */
+"Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "Nem sikerült elérni egy blokkfelfedezőt annak ellenőrzéséhez, hogy a tranzakció nincs a blokkláncon. Ellenőrizd a kapcsolatot, és próbáld újra.";
+
+/* Username marketplace: contested request cost row */
+"Request cost" = "A kérelem költsége";
+
+/* Username marketplace: contested request success */
+"Request for %@ submitted — masternodes now vote on it" = "%@ kérelme beküldve — a masternode-ok most szavaznak róla";
+
+/* Username marketplace: confirm contested request button */
+"Request Username" = "Felhasználónév kérelmezése";
+
+/* Username marketplace: contested register sheet title */
+"Request “%@”" = "„%@” kérelmezése";
+
+/* Username marketplace: contested request not yet indexed by Platform */
+"Requested — waiting for the network vote" = "Kérelmezve — hálózati szavazásra vár";
+
+/* Username marketplace: search row for a contested label this identity already requested */
+"Requested by you — the network vote is in progress" = "Te kérelmezted — a hálózati szavazás folyamatban van";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "Átutalás újrapróbálása…";
+
+/* Username marketplace: screen subtitle */
+"Search usernames, buy ones that are for sale, and sell or transfer your own." = "Keress felhasználóneveket, vedd meg az eladókat, és add el vagy ruházd át a sajátjaidat.";
 
 /* Usernames */
 "Ready around %@" = "Kb. ekkor lesz kész: %@";
@@ -3082,6 +3496,9 @@
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase length */
+"Recovery phrase length" = "Helyreállítási kifejezés hossza";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -3195,6 +3612,9 @@
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
+
+/* No comment provided by engineer. */
+"Completion unknown" = "Ismeretlen befejezés";
 
 /* Location Service Status */
 "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "A visszaállított tárcák nem mindig tudják visszanyerni a művelet típusát. Ez a bejegyzés a láncon lévő megjegyzésadatokból lett rekonstruálva.";
@@ -3322,6 +3742,9 @@
 /* Identities: DPP security level of a public key */
 "Security level" = "Biztonsági szint";
 
+/* Username marketplace: transfer sheet body */
+"Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "Küldd el ezt a nevet ingyen egy másik identitásnak. Az átruházás minden eladási hirdetést is eltávolít. Ez nem vonható vissza — az új tulajdonosnak kellene visszaruháznia.";
+
 /* DashSpend */
 "See card details" = "See card details";
 
@@ -3370,7 +3793,520 @@
 /* Coinbase */
 "Select the coin" = "Select the coin";
 
+/* Identities */
+"Select the username to display for this identity." = "Válaszd ki az ehhez az identitáshoz megjelenítendő felhasználónevet.";
+
 "Selecting fewer nodes reveals less about which masternodes you run." = "Kevesebb csomópont kiválasztása kevesebbet árul el arról, mely masternode-okat üzemelteted.";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "%ld tárca található ezen az eszközön";
+
+/* No comment provided by engineer. */
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "%ld tárca van tárolva ezen az eszközön egy korábbi telepítésből. Az „Összes törlése” minden tárcát eltávolít. Törlés előtt készíts biztonsági mentést minden helyreállítási kifejezésről.";
+
+/* No comment provided by engineer. */
+"Couldn’t Delete All Wallets" = "Nem sikerült az összes tárcát törölni";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Wallets" = "Nem sikerült beolvasni a tárcákat";
+
+/* No comment provided by engineer. */
+"Delete All" = "Összes törlése";
+
+/* No comment provided by engineer. */
+"Delete All Wallets?" = "Törlöd az összes tárcát?";
+
+/* No comment provided by engineer. */
+"Deleting All Wallets…" = "Az összes tárca törlése…";
+
+/* No comment provided by engineer. */
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "Az eszközön tárolt tárcák számát nem sikerült ellenőrizni. A folytatáshoz a Dash ügyfélszolgálata által megadott megerősítő kifejezés szükséges, mielőtt bármelyik tárca törlődne.";
+
+/* No comment provided by engineer. */
+"Keep Wallets" = "Tárcák megtartása";
+
+/* No comment provided by engineer. */
+"No stored wallets were found. Nothing was deleted." = "Nem található tárolt tárca. Semmi sem lett törölve.";
+
+/* No comment provided by engineer. */
+"No Wallets Found" = "Nem található tárca";
+
+/* No comment provided by engineer. */
+"Not all wallets could be deleted. Please try again." = "Nem sikerült az összes tárcát törölni. Kérjük, próbáld újra.";
+
+/* No comment provided by engineer. */
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "Ez véglegesen eltávolítja az összes tárcát, privát kulcsot és helyreállítási kifejezést, amelyet ez az alkalmazás ezen az eszközön tárol. Csak biztonsági mentésből állíthatók vissza. Ez nem vonható vissza.";
+
+/* No comment provided by engineer. */
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "Az eszközön tárolt tárcákat nem sikerült ellenőrizni. Semmi sem lett törölve. Kérjük, próbáld újra.";
+
+/* No comment provided by engineer. */
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "Ez törli mind a(z) %ld, ezen az eszközön tárolt tárcát. Csak a helyreállítási kifejezéseikkel állíthatók vissza. Az eszközről való törlésük nem vonható vissza.";
+
+/* No comment provided by engineer. */
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "Egy korábbi telepítésből származó tárcaadatok még mindig tárolva vannak ezen az eszközön. Tovább használod ezeket a tárcákat, vagy törlöd az összes tárcaadatot és újrakezded? Törlés előtt győződj meg róla, hogy minden helyreállítási kifejezésről van biztonsági mentés.";
+
+/* No comment provided by engineer. */
+"Wallets found on this device" = "Ezen az eszközön talált tárcák";
+
+/* No comment provided by engineer. */
+"Wipe All Wallets" = "Minden tárca végleges törlése";
+
+/* No comment provided by engineer. */
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "Egyetlen tárca helyreállítási kifejezése nem engedélyezheti több különböző tárca törlését.";
+
+/* No comment provided by engineer. */
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "A testneten lévő nulla egyenleg nem bizonyítja, hogy ez a tárca üres a mainneten. A folytatáshoz add meg a helyreállítási kifejezést.";
+
+/* No comment provided by engineer. */
+"Enter the recovery phrase to continue." = "A folytatáshoz add meg a helyreállítási kifejezést.";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "Tárca kiválasztása";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Recovery Phrases" = "Nem sikerült beolvasni a helyreállítási kifejezéseket";
+
+/* No comment provided by engineer. */
+"No Recovery Phrase Found" = "Nem található helyreállítási kifejezés";
+
+/* No comment provided by engineer. */
+"No recovery phrase is stored on this device." = "Ezen az eszközön nincs tárolva helyreállítási kifejezés.";
+
+/* No comment provided by engineer. */
+"Select the wallet whose recovery phrase you want to view." = "Válaszd ki azt a tárcát, amelynek a helyreállítási kifejezését meg szeretnéd nézni.";
+
+/* No comment provided by engineer. */
+"The recovery phrases stored on this device could not be read. Please try again." = "Az eszközön tárolt helyreállítási kifejezéseket nem sikerült beolvasni. Kérjük, próbáld újra.";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address for this network" = "Nem érvényes Dash cím ehhez a hálózathoz";
+
+/* No comment provided by engineer. */
+"The claimable balance is too small to cover the Platform withdrawal fee." = "Az igényelhető egyenleg túl kicsi a Platform kifizetési díjának fedezéséhez.";
+
+/* No comment provided by engineer. */
+"You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it." = "Legfeljebb %@ DASH-t vehetsz ki — a többi a Platform díjának fedezésére marad. Koppints a „Max” gombra a használatához.";
+
+/* No comment provided by engineer. */
+"The minimum withdrawal is %@ DASH." = "A minimális kivét %@ DASH.";
+
+/* No comment provided by engineer. */
+"Payout address key" = "Kifizetési cím kulcsa";
+
+/* No comment provided by engineer. */
+"Owner key (%@)" = "Tulajdonosi kulcs (%@)";
+
+/* No comment provided by engineer. */
+"Wallet is not ready. Try again in a moment." = "A tárca nincs készen. Próbáld újra egy pillanat múlva.";
+
+/* No comment provided by engineer. */
+"%@ · Claimable %@ DASH" = "%@ · Igényelhető %@ DASH";
+
+/* No comment provided by engineer. */
+"Withdraw to" = "Kivét ide";
+
+/* No comment provided by engineer. */
+"Enter a Dash address" = "Adj meg egy Dash címet";
+
+/* No comment provided by engineer. */
+"Use the payout address" = "A kifizetési cím használata";
+
+/* No comment provided by engineer. */
+"This is the evonode's registered payout address." = "Ez az evonode regisztrált kifizetési címe.";
+
+/* No comment provided by engineer. */
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "Ez a tárca birtokolja az evonode kifizetési címének kulcsát, így az egyenleg bármely Dash címre kivehető.";
+
+/* No comment provided by engineer. */
+"Registered payout address" = "Regisztrált kifizetési cím";
+
+/* No comment provided by engineer. */
+"This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "Ezt a kivétet az evonode tulajdonosi kulcsával írjuk alá. A Dash Platform a tulajdonosi kulcs számára csak a regisztrált kifizetési címre engedélyezi a kivétet, ezért a célcím itt nem módosítható. Másik címre való kivéthez használd azt a tárcát, amely a kifizetési cím kulcsát birtokolja.";
+
+/* No comment provided by engineer. */
+"How it works" = "Hogyan működik";
+
+/* No comment provided by engineer. */
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "A Dash Platform a Dash láncon fizeti ki a kivétet — általában néhány percen belül. Az összegen felül körülbelül %@ DASH Platform-díj kerül levonásra az evonode egyenlegéből, ezért a „Max” hagy egy keveset annak fedezésére.";
+
+/* No comment provided by engineer. */
+"Confirm withdrawal" = "Kivét megerősítése";
+
+/* No comment provided by engineer. */
+"Owner-key withdrawals are always paid to the registered payout address." = "A tulajdonosi kulccsal végzett kivéteket mindig a regisztrált kifizetési címre fizetjük ki.";
+
+/* No comment provided by engineer. */
+"Waiting for authorization…" = "Várakozás az engedélyezésre…";
+
+/* No comment provided by engineer. */
+"Submitting to Dash Platform…" = "Beküldés a Dash Platformra…";
+
+/* No comment provided by engineer. */
+"Withdrawal submitted" = "Kivét beküldve";
+
+/* No comment provided by engineer. */
+"Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "A Dash Platform hamarosan kifizeti a Dash láncon — általában néhány percen belül megérkezik.";
+
+/* No comment provided by engineer. */
+"Remaining claimable balance: %@ DASH" = "Fennmaradó igényelhető egyenleg: %@ DASH";
+
+/* No comment provided by engineer. */
+"%@ · Platform balance" = "%@ · Platform-egyenleg";
+
+/* No comment provided by engineer. */
+"Signed with" = "Aláírva ezzel";
+
+/* No comment provided by engineer. */
+"Platform fee" = "Platform-díj";
+
+/* No comment provided by engineer. */
+"%@ (payout address)" = "%@ (kifizetési cím)";
+
+/* No comment provided by engineer. */
+"This wallet holds the payout address key, so you can withdraw to any address." = "Ez a tárca birtokolja a kifizetési cím kulcsát, így bármely címre kivehetsz.";
+
+/* No comment provided by engineer. */
+"This wallet holds the owner key, so withdrawals go to the registered payout address." = "Ez a tárca birtokolja a tulajdonosi kulcsot, így a kivétek a regisztrált kifizetési címre mennek.";
+
+/* No comment provided by engineer. */
+"This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "Ez a tárca sem az evonode tulajdonosi kulcsát, sem a kifizetési címének kulcsát nem birtokolja, így az egyenlege innen nem vehető ki.";
+
+/* No comment provided by engineer. */
+"Couldn't check which keys of this evonode are in the wallet." = "Nem sikerült ellenőrizni, hogy az evonode mely kulcsai vannak a tárcában.";
+
+/* No comment provided by engineer. */
+"Result not confirmed" = "Az eredmény nincs megerősítve";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "A kivétet elküldtük a Dash Platformra, de az eredményét nem sikerült megerősíteni. Lehet, hogy sikerült. Ne küldd el újra — előbb ellenőrizd az igényelhető egyenleget és a kifizetési címet.";
+
+/* No comment provided by engineer. */
+"1 block proposed this epoch" = "1 blokk javasolva ebben az epochában";
+
+/* No comment provided by engineer. */
+"%@ blocks proposed this epoch" = "%@ blokk javasolva ebben az epochában";
+
+/* No comment provided by engineer. */
+"Nodes" = "Csomópontok";
+
+/* No comment provided by engineer. */
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "Csomópontok, epocha %d. napja, %@ blokk javasolva ebben az epochában";
+
+/* No comment provided by engineer. */
+"an evonode has not proposed a block in 2 days" = "egy evonode 2 napja nem javasolt blokkot";
+
+/* No comment provided by engineer. */
+"an evonode has no blocks this epoch" = "egy evonode-nak nincs blokkja ebben az epochában";
+
+/* No comment provided by engineer. */
+"A key doesn't match this masternode — fix or clear it to continue." = "Egy kulcs nem illik ehhez a masternode-hoz — javítsd vagy töröld a folytatáshoz.";
+
+/* No comment provided by engineer. */
+"Add keys" = "Kulcsok hozzáadása";
+
+/* No comment provided by engineer. */
+"Add masternode" = "Masternode hozzáadása";
+
+/* No comment provided by engineer. */
+"Add this node's owner key or payout address key to withdraw from here." = "Add hozzá ennek a csomópontnak a tulajdonosi kulcsát vagy a kifizetési címének kulcsát, hogy innen kivehess.";
+
+/* No comment provided by engineer. */
+"Already one of this wallet's masternodes — it's in the list above." = "Már ennek a tárcának az egyik masternode-ja — a fenti listán szerepel.";
+
+/* No comment provided by engineer. */
+"Already tracked." = "Már követve van.";
+
+/* No comment provided by engineer. */
+"Any keys you added for it are deleted from this device's keychain too." = "Az összes hozzá felvett kulcs is törlődik ennek az eszköznek a kulcstartójából.";
+
+/* No comment provided by engineer. */
+"Available" = "Elérhető";
+
+/* No comment provided by engineer. */
+"BLS private key (hex)" = "BLS privát kulcs (hex)";
+
+/* No comment provided by engineer. */
+"Can't verify yet" = "Még nem ellenőrizhető";
+
+/* No comment provided by engineer. */
+"Could not load the node's registration details — owner and payout keys will verify later." = "A csomópont regisztrációs adatait nem sikerült betölteni — a tulajdonosi és a kifizetési kulcsot később ellenőrizzük.";
+
+/* No comment provided by engineer. */
+"Could not save a key to the keychain. Nothing was lost — try again." = "Egy kulcsot nem sikerült elmenteni a kulcstartóba. Semmi sem veszett el — próbáld újra.";
+
+/* No comment provided by engineer. */
+"Destination address (optional)" = "Célcím (opcionális)";
+
+/* No comment provided by engineer. */
+"Doesn't match" = "Nem egyezik";
+
+/* No comment provided by engineer. */
+"Find" = "Keresés";
+
+/* No comment provided by engineer. */
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "Megkeresi a tulajdonosi és kifizetési kulcsokat, amelyek nem szerepelnek a masternode-listán. Elküldi a kulcs nyilvános ujjlenyomatát egy Platform csomópontnak.";
+
+/* No comment provided by engineer. */
+"IP address, proTxHash or private key" = "IP-cím, proTxHash vagy privát kulcs";
+
+/* No comment provided by engineer. */
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "A kulcsok ennek az eszköznek a kulcstartójában vannak, és soha nem hagyják el, kivéve az általad kért művelet aláírásához.";
+
+/* No comment provided by engineer. */
+"Keys on this device" = "Kulcsok ezen az eszközön";
+
+/* No comment provided by engineer. */
+"Label (optional)" = "Címke (opcionális)";
+
+/* No comment provided by engineer. */
+"Loading registration details…" = "Regisztrációs adatok betöltése…";
+
+/* No comment provided by engineer. */
+"Matches" = "Egyezik";
+
+/* No comment provided by engineer. */
+"Matches this node's %@ key" = "Egyezik a csomópont %@ kulcsával";
+
+/* No comment provided by engineer. */
+"No masternode on the list matches that." = "A listán egyetlen masternode sem egyezik ezzel.";
+
+/* No comment provided by engineer. */
+"Node key (base64 or hex)" = "Csomópontkulcs (base64 vagy hex)";
+
+/* No comment provided by engineer. */
+"Not added" = "Nincs hozzáadva";
+
+/* No comment provided by engineer. */
+"On this device" = "Ezen az eszközön";
+
+/* No comment provided by engineer. */
+"Operator payout" = "Operátori kifizetés";
+
+/* No comment provided by engineer. */
+"Payout" = "Kifizetés";
+
+/* No comment provided by engineer. */
+"Platform could not be reached, so owner and payout keys were not checked." = "A Platform nem volt elérhető, ezért a tulajdonosi és kifizetési kulcsokat nem ellenőriztük.";
+
+/* No comment provided by engineer. */
+"PoSe banned" = "PoSe-tiltás alatt";
+
+/* No comment provided by engineer. */
+"Private key (WIF or hex)" = "Privát kulcs (WIF vagy hex)";
+
+/* No comment provided by engineer. */
+"Refresh details" = "Adatok frissítése";
+
+/* No comment provided by engineer. */
+"Refreshing…" = "Frissítés…";
+
+/* No comment provided by engineer. */
+"Save keys" = "Kulcsok mentése";
+
+/* No comment provided by engineer. */
+"Search Platform too" = "Keresés a Platformon is";
+
+/* No comment provided by engineer. */
+"Searching…" = "Keresés…";
+
+/* No comment provided by engineer. */
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "Aláírás a tulajdonosi kulccsal — a kivét a regisztrált kifizetési címre megy.";
+
+/* No comment provided by engineer. */
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "Aláírás a kifizetési cím kulcsával. Hagyd üresen a célcímet, ha a kifizetési címre szeretnél kivenni.";
+
+/* No comment provided by engineer. */
+"Stop tracking" = "Követés leállítása";
+
+/* No comment provided by engineer. */
+"Stop tracking this masternode?" = "Leállítod ennek a masternode-nak a követését?";
+
+/* No comment provided by engineer. */
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "Ez lehet tulajdonosi vagy kifizetési kulcs is — kapcsold be a „Keresés a Platformon is” lehetőséget az ellenőrzéshez.";
+
+/* No comment provided by engineer. */
+"The signing key is missing from the keychain — re-add it and try again." = "Az aláíró kulcs hiányzik a kulcstartóból — add hozzá újra, és próbáld meg ismét.";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "A kivétet elküldtük, de az eredményét nem sikerült megerősíteni. Az egyenleget újraellenőrizzük — ne próbálkozz újra, amíg nem rendeződik.";
+
+/* No comment provided by engineer. */
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "Kövess bármely masternode-ot vagy evonode-ot a hálózaton — nem kell ehhez a tárcához tartoznia.";
+
+/* No comment provided by engineer. */
+"Track this masternode" = "Masternode követése";
+
+/* No comment provided by engineer. */
+"Tracked" = "Követve";
+
+/* No comment provided by engineer. */
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "Követve. Add hozzá alább ennek a csomópontnak a kulcsait, hogy engedélyezd az olyan műveleteket, mint a kivét és a szavazás, vagy fejezd be most, és add hozzá őket később.";
+
+/* No comment provided by engineer. */
+"Withdrawing…" = "Kivét folyamatban…";
+
+/* No comment provided by engineer. */
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "A „+” gombbal a hálózat bármely masternode-ját is követheted — IP, proTxHash vagy valamelyik kulcsa alapján.";
+
+/* No comment provided by engineer. */
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "Ennek az evonode-nak a DAPI-címe nem ismert, ezért nem kérdezhető le az állapota.";
+
+/* No comment provided by engineer. */
+"Couldn't get the evonode's status." = "Nem sikerült lekérni az evonode állapotát.";
+
+/* No comment provided by engineer. */
+"The evonode didn't answer in time." = "Az evonode nem válaszolt időben.";
+
+/* No comment provided by engineer. */
+"Couldn't reach the evonode." = "Az evonode nem volt elérhető.";
+
+/* No comment provided by engineer. */
+"The evonode's answer couldn't be read." = "Az evonode válaszát nem sikerült beolvasni.";
+
+/* No comment provided by engineer. */
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "A csomópont saját, ellenőrizetlen jelentése — amit magáról mond, nem az, amiben a hálózat megegyezett.";
+
+/* No comment provided by engineer. */
+"Asked" = "Lekérdezve";
+
+/* No comment provided by engineer. */
+"Software" = "Szoftver";
+
+/* No comment provided by engineer. */
+"DAPI" = "DAPI";
+
+/* No comment provided by engineer. */
+"Drive" = "Drive";
+
+/* No comment provided by engineer. */
+"Tenderdash" = "Tenderdash";
+
+/* No comment provided by engineer. */
+"Protocol versions" = "Protokollverziók";
+
+/* No comment provided by engineer. */
+"Tenderdash P2P" = "Tenderdash P2P";
+
+/* No comment provided by engineer. */
+"Tenderdash block" = "Tenderdash blokk";
+
+/* No comment provided by engineer. */
+"Drive current" = "Drive jelenlegi";
+
+/* No comment provided by engineer. */
+"Drive latest" = "Drive legújabb";
+
+/* No comment provided by engineer. */
+"Drive next epoch" = "Drive következő epocha";
+
+/* No comment provided by engineer. */
+"Node ID" = "Csomópont-azonosító";
+
+/* No comment provided by engineer. */
+"Identity check" = "Identitás-ellenőrzés";
+
+/* No comment provided by engineer. */
+"Chain" = "Lánc";
+
+/* No comment provided by engineer. */
+"Catching up" = "Felzárkózik";
+
+/* No comment provided by engineer. */
+"Latest block height" = "Legújabb blokk magassága";
+
+/* No comment provided by engineer. */
+"Earliest block height" = "Legkorábbi blokk magassága";
+
+/* No comment provided by engineer. */
+"Max peer block height" = "Társak max. blokkmagassága";
+
+/* No comment provided by engineer. */
+"Core chain-locked height" = "Core chain-locked magasság";
+
+/* No comment provided by engineer. */
+"Latest block hash" = "Legújabb blokk hasítóértéke";
+
+/* No comment provided by engineer. */
+"Latest app hash" = "Legújabb alkalmazás hasítóértéke";
+
+/* No comment provided by engineer. */
+"Earliest block hash" = "Legkorábbi blokk hasítóértéke";
+
+/* No comment provided by engineer. */
+"Earliest app hash" = "Legkorábbi alkalmazás hasítóértéke";
+
+/* No comment provided by engineer. */
+"Chain ID" = "Lánc azonosítója";
+
+/* No comment provided by engineer. */
+"Peers" = "Társak";
+
+/* No comment provided by engineer. */
+"Listening" = "Figyel";
+
+/* No comment provided by engineer. */
+"State sync" = "Állapotszinkronizálás";
+
+/* No comment provided by engineer. */
+"Total synced time" = "Teljes szinkronizált idő";
+
+/* No comment provided by engineer. */
+"Remaining time" = "Hátralévő idő";
+
+/* No comment provided by engineer. */
+"Total snapshots" = "Pillanatképek összesen";
+
+/* No comment provided by engineer. */
+"Chunk process avg time" = "Átl. darabfeldolgozási idő";
+
+/* No comment provided by engineer. */
+"Snapshot height" = "Pillanatkép magassága";
+
+/* No comment provided by engineer. */
+"Snapshot chunks" = "Pillanatkép darabjai";
+
+/* No comment provided by engineer. */
+"Backfilled blocks" = "Pótolt blokkok";
+
+/* No comment provided by engineer. */
+"Backfill blocks total" = "Pótlandó blokkok összesen";
+
+/* No comment provided by engineer. */
+"Time" = "Idő";
+
+/* No comment provided by engineer. */
+"Node clock" = "Csomópont órája";
+
+/* No comment provided by engineer. */
+"Latest block" = "Legújabb blokk";
+
+/* No comment provided by engineer. */
+"Genesis" = "Genesis";
+
+/* No comment provided by engineer. */
+"Epoch" = "Epocha";
+
+/* No comment provided by engineer. */
+"Matches this evonode" = "Egyezik ezzel az evonode-dal";
+
+/* No comment provided by engineer. */
+"Differs from this evonode" = "Eltér ettől az evonode-tól";
+
+/* No comment provided by engineer. */
+"Not reported" = "Nincs jelentve";
+
+/* No comment provided by engineer. */
+"%.3f s" = "%.3f mp";
+
+/* No comment provided by engineer. */
+"Node status" = "Csomópont állapota";
+
+/* No comment provided by engineer. */
+"Asking the evonode…" = "Evonode lekérdezése…";
+
+/* No comment provided by engineer. */
+"Request status" = "Állapot lekérdezése";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "Self-checkout";
@@ -3444,6 +4380,42 @@
 
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "Küldd el az első kapcsolatkérésedet";
+
+/* Username marketplace: set price sheet title */
+"Set a price for “%@”" = "Ár beállítása a(z) „%@” névhez";
+
+/* Username marketplace */
+"Short names are decided by a network vote — use Request Username instead." = "A rövid nevekről hálózati szavazás dönt — használd helyette a „Felhasználónév kérelmezése” lehetőséget.";
+
+/* Username marketplace: contested request explainer, paragraph 1 */
+"Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them." = "A rövid nevek — legfeljebb 19 karakter, csak betűk és számok — nem regisztrálódnak azonnal. A Dash hálózat szavaz arról, ki kapja meg őket.";
+
+/* DashPay Contacts: expands the network search into the full add-contact flow */
+"Show more results" = "További találatok megjelenítése";
+
+/* Username marketplace: departed-name line — buyer identity */
+"Sold to %@" = "Eladva neki: %@";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 1 of 2 — moving Dash out of your Shielded balance…" = "1. lépés a 2-ből — Dash átmozgatása a Shielded egyenlegedről…";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 2 of 2 — topping up your identity…" = "2. lépés a 2-ből — az identitásod feltöltése…";
+
+/* Username marketplace: contested request cost footnote */
+"The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "A költséget az identitásod egyenlegéről fizetjük. Ez finanszírozza a hálózati szavazást, és nem térítjük vissza, ha másik pályázó nyer.";
+
+/* Username marketplace: register sheet body */
+"The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "A név közvetlenül az identitásodra kerül regisztrálásra. A regisztráció hálózati tranzakció, amelyet az identitásod egyenlegéről fizetünk.";
+
+/* Username marketplace: contested label locked by a past vote */
+"The network voted to lock this name, so nobody can register it. Choose a different name." = "A hálózat a név zárolására szavazott, így senki sem regisztrálhatja. Válassz másik nevet.";
+
+/* Username marketplace */
+"The recipient identity couldn't be resolved." = "A címzett identitását nem sikerült feloldani.";
+
+/* Username marketplace */
+"The seller changed the price before your purchase was accepted. Review the new price and try again." = "Az eladó módosította az árat, mielőtt a vásárlásodat elfogadták volna. Nézd meg az új árat, és próbáld újra.";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Sending";
@@ -3965,6 +4937,66 @@
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "Ez két kulcsot ad az identitásodhoz, hogy más felhasználók kapcsolatkérést küldhessenek neked, és hogy te elfogadhasd az övéket. Ez csak egyszer történik meg.";
 
+/* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
+"This isn't a DashPay user QR code." = "Ez nem DashPay felhasználói QR-kód.";
+
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "Ez az egyenleg fizeti a Dash Platform hálózati díjait — felhasználóneveket, névjegykéréseket, profilfrissítéseket. Az identitásodhoz tartozik, nem a tárcádhoz: az Átlátszó, a Platform és a Shielded egyenlegtől eltérően nem költhető el hagyományos Dashként. A feltöltés az általad választott egyenlegről — alapértelmezés szerint Shielded — vált át Dasht identitáskreditre.";
+
+/* Username marketplace: contested label already has an active vote */
+"This name is already in an active network vote. Your request joins it as another contender." = "Ehhez a névhez már aktív hálózati szavazás folyik. A kérelmed további pályázóként csatlakozik hozzá.";
+
+/* Username marketplace */
+"This name is in an active network vote and can't be traded until the contest ends." = "Ez a név aktív hálózati szavazás alatt áll, és a verseny végéig nem adható-vehető.";
+
+/* Username marketplace: detail for an unregistered name */
+"This name is not registered." = "Ez a név nincs regisztrálva.";
+
+/* Username marketplace: seller-clarity callout on the detail sheet */
+"This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "Ezt a nevet egy független felhasználó kínálja a Dash hálózaton — nem a Dash vagy ez az alkalmazás. Az árat az eladó határozza meg.";
+
+/* Username marketplace: listing price exceeds the representable maximum */
+"This price is too high to list." = "Ez az ár túl magas a meghirdetéshez.";
+
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "Ez az átutalás innen nem próbálható újra.";
+
+/* Username marketplace */
+"This username is not for sale." = "Ez a felhasználónév nem eladó.";
+
+/* Username marketplace */
+"This username's record couldn't be read from the network." = "Ennek a felhasználónévnek a bejegyzését nem sikerült beolvasni a hálózatról.";
+
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "Ennek a tárcának nincs feltölthető identitása.";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "Feltöltés";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "Identitásegyenleg feltöltése";
+
+/* Username marketplace: timeline card title */
+"Trade history" = "Kereskedési előzmények";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "Az átutalás befejeződött";
+
+/* Username marketplace */
+"Transfer to Another Identity" = "Átruházás másik identitásra";
+
+/* Username marketplace: transfer sheet title */
+"Transfer “%@”" = "„%@” átruházása";
+
+/* Username marketplace: history — transfer with both identities */
+"Transferred from %1$@ to %2$@" = "Átruházva %1$@ felhasználótól %2$@ felhasználónak";
+
+/* Username marketplace: departed-name line — recipient identity */
+"Transferred to %@" = "Átruházva neki: %@";
+
+/* Username marketplace */
+"Username Marketplace" = "Felhasználónév-piactér";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
@@ -4014,6 +5046,60 @@
 
 /* Usernames */
 "This name requires voting. Your Dash will be locked until voting completes." = "This name requires voting. Your Dash will be locked until voting completes.";
+
+/* Usernames */
+"Vote in progress" = "Szavazás folyamatban";
+
+/* Usernames */
+"Vote ended" = "A szavazás lezárult";
+
+/* Usernames */
+"A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender." = "Ehhez a névhez már folyik masternode-szavazás. A kérelem beküldésével pályázóként csatlakozol a szavazáshoz.";
+
+/* Usernames */
+"A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender." = "Ehhez a névhez már folyik masternode-szavazás — a szavazás %@ körül zárul. A kérelem beküldésével pályázóként csatlakozol a szavazáshoz.";
+
+/* Usernames */
+"A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote." = "Ehhez a névhez masternode-szavazás folyik — a szavazás %@ körül zárul. Új pályázók már nem csatlakozhatnak ehhez a szavazáshoz.";
+
+/* Usernames */
+"Username is in a network vote — new contenders can no longer join" = "A felhasználónév hálózati szavazás alatt áll — új pályázók már nem csatlakozhatnak";
+
+/* Usernames */
+"The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "Ennek a felhasználónévnek a tulajdonosa %@ Dash áron hirdette meg a Felhasználónév-piactéren. Ott megveheted helyette.";
+
+/* Usernames */
+"The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance." = "Ennek a felhasználónévnek a tulajdonosa %@ Dash áron hirdette meg. Most azonnal megveheted — az árat a tárcaegyenlegedről fizetjük.";
+
+/* Usernames */
+"The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "Ennek a felhasználónévnek a tulajdonosa %1$@ Dash áron hirdette meg. A %2$@ Dash feletti vásárlásokat a Felhasználónév-piactéren kell lebonyolítani — egyelőre válassz másik felhasználónevet; erről később dönthetsz.";
+
+/* Usernames */
+"Buy for %@ Dash" = "Megvásárlás %@ Dash-ért";
+
+/* Usernames */
+"Buy username" = "Felhasználónév vásárlása";
+
+/* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "A(z) „%@” ideiglenes felhasználónevedet nem sikerült regisztrálni. Később regisztrálhatsz másik felhasználónevet.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "„%1$@” mostantól a felhasználóneved. Ha a szavazás neked ítéli a(z) „%2$@” nevet, mindkét felhasználónéven elérhető leszel.";
+
+/* Usernames */
+"“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "„%1$@” megvásárlása %2$@ Dash áron. Az árat a tárcaegyenlegedről fizetjük.";
+
+/* Usernames */
+"Username purchased" = "Felhasználónév megvásárolva";
+
+/* Usernames */
+"“%@” is now your username." = "„%@” mostantól a felhasználóneved.";
+
+/* Usernames */
+"The masternode vote for this name has ended and the result is being finalized. Check back soon." = "Az ehhez a névhez tartozó masternode-szavazás lezárult, az eredmény véglegesítése folyik. Nézz vissza hamarosan.";
+
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes." = "Ehhez a névhez már folyik szavazás — a kérelmed pályázóként csatlakozik hozzá. A Dashod zárolva lesz a szavazás befejezéséig.";
 
 /* No comment provided by engineer. */
 "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone." = "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.";
@@ -4256,6 +5342,12 @@
 /* Voting */
 "Unblocked '%@' username" = "Unblocked '%@' username";
 
+/* SPV diagnostics */
+"Unconfirmed now" = "Jelenleg megerősítetlen";
+
+/* SPV diagnostics */
+"Unconfirmed Transactions" = "Megerősítetlen tranzakciók";
+
 /* DashPay Contacts */
 "Unhide Contact" = "Unhide Contact";
 
@@ -4369,6 +5461,9 @@
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Felhasználónevek, nem címek";
 
+/* DashPay: banner identity row subtitle */
+"View profile" = "Profil megtekintése";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "A(z) %@ névre illeszkedő felhasználók, akik jelenleg nincsenek a névjegyeid között";
 
@@ -4399,11 +5494,17 @@
 /* No comment provided by engineer. */
 "Verified Successfully" = "Verified Successfully";
 
+/* DashPay Contacts: spinner after scanning a user QR code */
+"Verifying user…" = "Felhasználó ellenőrzése…";
+
 /* No comment provided by engineer. */
 "Verify" = "Verify";
 
 /* CrowdNode */
 "Verify your API Dash address" = "Verify your API Dash address";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "Ellenőrizd a helyreállítási kifejezésedet új PIN beállításához.";
 
 /* Usernames */
 "Verify your identity" = "Verify your identity";
@@ -4618,6 +5719,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "Mikor válnak privátra a kapcsolatkérések?";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "Amíg a szavazás tart, a(z) „%@” még nem a tiéd, és más felhasználók nem találnak meg vele. Adj hozzá egy nem vitatott felhasználónevet, hogy azonnal használhasd a DashPayt. Az véglegesen a tiéd marad — és ha a szavazás neked ítéli a vitatott nevet, mindkét felhasználónéven elérhető leszel.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "Where to Spend";
 
@@ -4628,6 +5732,18 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "Miért kell engedélyeznem?";
+
+/* Username marketplace: history participant is the current user */
+"you" = "te";
+
+/* Username marketplace: contested request already submitted by this identity */
+"You already requested this name — the network vote is in progress. You'll find it under My Names." = "Ezt a nevet már kérelmezted — a hálózati szavazás folyamatban van. A „Neveim” alatt találod.";
+
+/* Username marketplace: purchase confirmation body with seller clarity */
+"You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "Egy független felhasználótól vásárolsz, nem a Dashtól vagy ettől az alkalmazástól. Az árat és a kis hálózati díjat az identitásod egyenlegéről fizetjük, a név pedig azonnal átkerül az identitásodra.";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "Amíg a szavazás tart, nincs felhasználóneved. Regisztrálj most egy nem vitatott felhasználónevet — az a tiéd marad, és ha a szavazás neked ítéli a(z) „%@” nevet, mindkét felhasználónéven elérhető leszel.";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "Why do I see all these transactions?";
@@ -4685,7 +5801,13 @@
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
 
 /* Wallets */
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Írd le ezt a(z) %d szót sorrendben, és tartsd biztonságos helyen. Ez az EGYETLEN módja e tárca helyreállításának. Bárki, akinek megvan, elköltheti a pénzedet.";
+
+/* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
+
+/* Recovery phrase backup: security warning body — keep the phrase written down and private */
+"Write it in a safe place and don’t show it to anyone." = "Írd le, tartsd biztonságos helyen, és ne mutasd meg senkinek.";
 
 /* No comment provided by engineer. */
 "XpEBa5... or BIP21 URI" = "XpEBa5... or BIP21 URI";
@@ -4851,6 +5973,9 @@
 /* Back up wallet */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device.";
 
+/* Recovery phrase backup: security warning title — the phrase is required to restore the wallet */
+"You will NOT be able to restore the wallet without a recovery phrase" = "Helyreállítási kifejezés nélkül NEM tudod visszaállítani a tárcát";
+
 /* Coinbase */
 "You will receive" = "You will receive";
 
@@ -4934,6 +6059,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Az előzményeid, rendezve";
 
+/* Username marketplace */
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Az identitásod egyenlege nem fedezi ezt a vásárlást: %1$@ DASH szükséges (a díjtartalékkal együtt), %2$@ DASH áll rendelkezésre. Töltsd fel az identitásegyenlegedet, és próbáld újra.";
+
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "Az identitásodnak két további kulcsra van szüksége, hogy a kapcsolatkérések titkosíthatók legyenek közted és más felhasználók között. Az engedélyezés egyetlen hálózati tranzakcióval hozzáadja ezeket. Ez csak egyszer történik meg.";
 
@@ -4958,8 +6086,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "A kevert érméidet a Dash-tárcád egyenlegére helyeztük.";
 
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "Ezt a vásárlást nem tudtuk megerősíteni a CTX-nél. Ha a fizetés sikerült, az ajándékkártya rövidesen megjelenik a tranzakciólistádban — nézd meg ott, mielőtt újra vásárolnál.";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "A fizetésed elküldve, de a hálózat még nem erősítette meg. Az ajándékkártyád azonnal megjelenik, amint megerősítést nyer.";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "A kevert érméidet az árnyékolt egyenlegedre helyeztük. A legjobb adatvédelem érdekében várj legalább 2 órát, mielőtt felhasználod ezt a pénzt.";
+
+/* DashSpend */
+"Could not load your gift card" = "Az ajándékkártyádat nem sikerült betölteni";
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
@@ -4975,6 +6112,9 @@
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "A privát egyenleged. Az összegek és a címek titkosítva vannak a láncon, így a vagyonod és az előzményeid bizalmasak maradnak.";
+
+/* Username marketplace: contested request explainer, paragraph 2 */
+"Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "A kérelmed körülbelül két hétre a masternode-ok nyilvános szavazására kerül. Mások is kérelmezhetik ugyanazt a nevet; a szavazás végén a név a győztesé lesz — vagy senkié, ha a hálózat a zárolására szavaz.";
 
 /* Usernames */
 "Your request was cancelled" = "Your request was cancelled";

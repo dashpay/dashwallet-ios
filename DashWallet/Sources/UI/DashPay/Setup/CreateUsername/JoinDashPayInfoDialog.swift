@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 public struct JoinDashPayInfoDialog: View {
     @Environment(\.presentationMode) private var presentationMode
@@ -25,7 +26,7 @@ public struct JoinDashPayInfoDialog: View {
     var onClaimInvitation: (() -> Void)? = nil
 
     public var body: some View {
-        BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
+        DashUIKit.BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
             JoinDashPayScreen(
                 action: {
                     presentationMode.wrappedValue.dismiss()

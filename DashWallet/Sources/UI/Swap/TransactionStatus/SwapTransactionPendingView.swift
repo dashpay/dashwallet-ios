@@ -39,7 +39,7 @@ struct SwapTransactionPendingView: View {
                     .multilineTextAlignment(.center)
 
                 Text(message)
-                    .font(Font.dash.subhead)
+                    .dashFont(.subhead)
                     .foregroundColor(Color.dash.secondaryText)
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)

@@ -219,6 +219,15 @@ struct DashSpendPayScreen: View {
                 showConfirmationDialog = false
                 presentationMode.wrappedValue.dismiss()
                 onPurchaseSuccess?(txId)
+            } catch DashSpendError.paymentStatusUnknown(let txId, let reason) {
+                // Paid, order placed, acceptance verdict missing. The purchase is already
+                // recorded, so route to the card details exactly like a confirmed purchase —
+                // its poller is what turns the pending order into a card. Reporting "Purchase
+                // Failed" here is what previously left customers paying for an invisible card.
+                DWLogger.log("Gift card purchase pending network confirmation: \(reason)")
+                showConfirmationDialog = false
+                presentationMode.wrappedValue.dismiss()
+                onPurchaseSuccess?(txId)
             } catch let error as DashSpendError {
                 showConfirmationDialog = false
                 errorTitle = NSLocalizedString("Purchase Failed", comment: "DashSpend")
@@ -259,28 +268,21 @@ private struct DashSpendPayConfirmationSheet: View {
     
     @ViewBuilder
     var body: some View {
-        let dialog = DashSpendConfirmationDialog(
-            merchantName: merchantName,
-            merchantIconUrl: merchantIconUrl,
-            originalPrice: originalPrice,
-            discount: discount,
-            quantities: quantities,
-            onConfirm: onConfirm,
-            onCancel: onCancel
-        )
-
-        if #available(iOS 16.4, *) {
-            dialog
-                .presentationBackground(Color.dash.primaryBackground)
-                .selfSizingSheet(fallback: 500)
-                .presentationCornerRadius(32)
-                .presentationDragIndicator(.hidden)
-        } else if #available(iOS 16.0, *) {
-            dialog
-                .selfSizingSheet(fallback: 500)
-                .presentationDragIndicator(.hidden)
-        } else {
-            dialog
+        DashUIKit.BottomSheet.selfSizing(
+            title: NSLocalizedString("Confirm", comment: "DashSpend"),
+            showBackButton: .constant(false),
+            fallback: DashSpendConfirmationDialog.sheetFallbackHeight,
+            cornerRadius: 32
+        ) {
+            DashSpendConfirmationDialog(
+                merchantName: merchantName,
+                merchantIconUrl: merchantIconUrl,
+                originalPrice: originalPrice,
+                discount: discount,
+                quantities: quantities,
+                onConfirm: onConfirm,
+                onCancel: onCancel
+            )
         }
     }
 }

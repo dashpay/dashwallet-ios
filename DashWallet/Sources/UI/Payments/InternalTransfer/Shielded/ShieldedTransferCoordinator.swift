@@ -263,6 +263,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case authCancelled
         case authFailed
         case shieldedPoolFeeUnavailable
+        case addressFundingFeeUnavailable
         case platformShieldCapacityChanged(maxShieldableCredits: UInt64?)
         case shieldedSweepWaiting(UInt64)
         case shieldedSweepChanged
@@ -293,6 +294,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString(
                     "There was an error, please try again later",
                     comment: "Core to Shielded pool fee estimate unavailable")
+            case .addressFundingFeeUnavailable:
+                return NSLocalizedString(
+                    "There was an error, please try again later",
+                    comment: "Core to Platform funding fee estimate unavailable")
             case .platformShieldCapacityChanged(let maxShieldableCredits):
                 guard let maxShieldableCredits else {
                     return NSLocalizedString(
@@ -375,7 +380,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         guard allCredits != UInt64.max else { return .unavailable }
 
         let feeForActions: (Int) -> UInt64? = { actionCount in
-            try? PlatformWalletManager.estimateShieldedFee(
+            try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(
                 kind: feeKind,
                 numActions: actionCount)
         }
@@ -563,7 +568,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         stopAssetLockPolling()
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route completed")
         phase = .success
-        ShieldedTxLookup.shared.refresh()
+        await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-completed")
         NotificationCenter.default.post(
             name: .swiftDashSDKTransactionProjectionDidChange,
             object: nil)
@@ -638,7 +643,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // `performShield`). No intermediate signal exists for this opaque call.
         phase = .broadcasting
         phase = terminalPhase
-        ShieldedTxLookup.shared.refresh()
+        await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-resume-completed")
         NotificationCenter.default.post(
             name: .swiftDashSDKTransactionProjectionDidChange,
             object: nil)
@@ -709,9 +714,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Stages: `.signing → .proving → .broadcasting → .success`. No
     /// intermediate signals from the FFI — `.proving` covers the whole opaque
     /// ~30 s call; on return we jump to `.success`.
-    func performShield(amountCredits: UInt64) async {
+    ///
+    /// `recipientRaw43` nil = the wallet's own pool (the internal
+    /// transfer); an external Send passes the recipient's raw 43-byte
+    /// Orchard address and the note funds THAT wallet's pool instead
+    /// (`shieldedShieldToRecipient`). Capacity preflight and fees are
+    /// identical — the recipient does not change input selection.
+    func performShield(amountCredits: UInt64, recipientRaw43: Data? = nil) async {
         guard beginTransfer() else { return }
-        Self.logger.info("🛡️ SHIELD-TX :: shield route amount=\(amountCredits) credits")
+        Self.logger.info("🛡️ SHIELD-TX :: shield route amount=\(amountCredits) credits external=\(recipientRaw43 != nil)")
 
         let env: Environment
         do {
@@ -755,12 +766,22 @@ final class ShieldedTransferCoordinator: ObservableObject {
             network: env.network)
 
         do {
-            try await env.manager.shieldedShield(
-                walletId: env.walletId,
-                shieldedAccount: 0,
-                paymentAccount: 0,
-                amount: amountCredits,
-                addressSigner: signer)
+            if let recipientRaw43 {
+                try await env.manager.shieldedShieldToRecipient(
+                    walletId: env.walletId,
+                    shieldedAccount: 0,
+                    paymentAccount: 0,
+                    recipientRaw43: recipientRaw43,
+                    amount: amountCredits,
+                    addressSigner: signer)
+            } else {
+                try await env.manager.shieldedShield(
+                    walletId: env.walletId,
+                    shieldedAccount: 0,
+                    paymentAccount: 0,
+                    amount: amountCredits,
+                    addressSigner: signer)
+            }
         } catch {
             if case PlatformWalletError.shieldedInsufficientBalance = error {
                 handleFailure(CoordinatorError.platformShieldCapacityChanged(
@@ -999,10 +1020,29 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// (IS/CL-locked) before the funding ST lands. On failure after the lock
     /// committed, `lastAssetLockOutPoint` is captured so "Try again" resumes
     /// that lock via `resumeFundPlatform` instead of stranding it.
-    func performFundPlatform(amountDuffs: UInt64) async {
+    ///
+    /// Fee-on-top: the recipient gets an explicit amount and the funding ST's
+    /// fee is deducted from the sender-owned remainder output, so
+    /// `lockValueDuffs` carries a static reserve on top of
+    /// `recipientAmountDuffs`. This coordinator executes the frozen value
+    /// verbatim and never recomputes it, so the Total the user confirmed is
+    /// exactly the lock executed.
+    func performFundPlatform(recipientAmountDuffs: UInt64, lockValueDuffs: UInt64?) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
-        Self.logger.info("🛡️ SHIELD-TX :: core→platform fund route amount=\(amountDuffs)")
+
+        // Fail closed — a zero amount, a missing/overflowed frozen lock, or
+        // a lock that doesn't carry the amount plus a nonzero reserve must
+        // never submit an un-inflated lock (which could not cover its own
+        // processing cost).
+        guard recipientAmountDuffs > 0,
+              let lockValueDuffs,
+              lockValueDuffs > recipientAmountDuffs
+        else {
+            handleFailure(CoordinatorError.addressFundingFeeUnavailable)
+            return
+        }
+        Self.logger.info("🛡️ SHIELD-TX :: core→platform fund route recipient=\(recipientAmountDuffs) lock=\(lockValueDuffs)")
 
         let env: BasicEnvironment
         do {
@@ -1028,7 +1068,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
             fundingType: Self.addressAssetLockFundingType)
 
         do {
-            try await PlatformAddressSyncCoordinator.shared.fundFromCore(amountDuffs: amountDuffs)
+            try await PlatformAddressSyncCoordinator.shared.fundFromCore(
+                recipientAmountDuffs: recipientAmountDuffs,
+                lockValueDuffs: lockValueDuffs)
         } catch {
             stopAssetLockPolling()
             captureLatestAssetLockOutPoint(
@@ -1050,9 +1092,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Resume of route 5 after its asset lock committed but the address-
     /// funding ST never landed — drives the remaining stages on the SAME
     /// outpoint. Mirrors `resumeAssetLock` on the shielded route.
-    func resumeFundPlatform(outPointTxidWire: Data, outPointVout: UInt32) async {
+    func resumeFundPlatform(
+        outPointTxidWire: Data,
+        outPointVout: UInt32,
+        recipientAmountDuffs: UInt64
+    ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume core→platform fund vout=\(outPointVout)")
+
+        guard recipientAmountDuffs > 0 else {
+            handleFailure(CoordinatorError.addressFundingFeeUnavailable)
+            return
+        }
 
         do {
             _ = try resolveBasicEnvironment()
@@ -1074,7 +1125,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         do {
             try await PlatformAddressSyncCoordinator.shared.resumeFundFromCore(
                 outPointTxid: outPointTxidWire,
-                outPointVout: outPointVout)
+                outPointVout: outPointVout,
+                recipientAmountDuffs: recipientAmountDuffs)
         } catch {
             handleFailure(CoordinatorError.transferFailed(error))
             return

@@ -9,6 +9,9 @@
 /* CrowdNode */
 " Terms of Use " = " Terms of Use ";
 
+/* Username marketplace: listing success — name, then price */
+"%1$@ listed for %2$@ DASH" = "Đã rao bán %1$@ với giá %2$@ DASH";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -20,6 +23,12 @@
 
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "Không tìm thấy %@ trên mạng Dash để gửi yêu cầu liên hệ.";
+
+/* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
+"%@ couldn't be verified on the Dash network. The QR code may be outdated." = "Không xác minh được %@ trên mạng Dash. Mã QR có thể đã cũ.";
+
+/* Username marketplace: contested request cost value — the vote-resolution fund amount */
+"%@ DASH + network fee" = "%@ DASH + phí mạng";
 
 /* Usernames */
 "%@ Dash available" = "%@ Dash khả dụng";
@@ -42,6 +51,9 @@
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@ đã gửi bạn một yêu cầu liên hệ";
 
+/* Username marketplace: delist success */
+"%@ is no longer for sale" = "%@ không còn được rao bán";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
@@ -51,8 +63,17 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
+/* Username marketplace: purchase success */
+"%@ is now yours" = "%@ giờ là của bạn";
+
+/* Username marketplace: registration success */
+"%@ registered" = "Đã đăng ký %@";
+
 /* Testnet faucet */
 "%@ tDash requested — it will arrive shortly" = "%@ tDash requested — it will arrive shortly";
+
+/* Username marketplace: transfer success */
+"%@ transferred" = "Đã chuyển %@";
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
@@ -171,6 +192,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Tên này đã có một cuộc bỏ phiếu đang diễn ra — yêu cầu của bạn sẽ tham gia với tư cách ứng viên. Phí tranh giành bị trừ khi gửi và không được hoàn lại, kể cả khi bạn không giành được tên.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -182,6 +206,9 @@
 
 /* No comment provided by engineer. */
 "About me" = "About me";
+
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "Về số dư tài khoản danh tính";
 
 "Abstain" = "Bỏ phiếu trắng";
 
@@ -235,6 +262,9 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "Thêm một liên hệ";
 
+/* Usernames */
+"Add a temporary username" = "Thêm tên người dùng tạm thời";
+
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
 
@@ -259,6 +289,9 @@
 /* Maya
    SwapKit */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+
+/* No comment provided by engineer. */
+"Advanced" = "Nâng cao";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Bảo mật nâng cao";
@@ -315,6 +348,9 @@
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Amount in Dash";
 
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "Số tiền tính bằng DASH";
+
 /* No comment provided by engineer. */
 "Amount received" = "Amount received";
 
@@ -348,8 +384,14 @@
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved";
 
+/* Recovery phrase backup: security warning body — anyone with the phrase can spend the funds */
+"Anyone that has your recovery phrase can access your funds." = "Bất kỳ ai có cụm từ phục hồi của bạn đều có thể truy cập tiền của bạn.";
+
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Bất cứ ai biết một địa chỉ đều có thể xem lịch sử của địa chỉ đó";
+
+/* Username marketplace: set price sheet body */
+"Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance." = "Bất kỳ ai cũng có thể mua tên này đúng ở mức giá đó. Tiền bán về dưới dạng tín dụng trong số dư danh tính của bạn.";
 
 /* AboutDash */
 "App version" = "App version";
@@ -430,8 +472,17 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "Tự ẩn số dư";
 
+/* DashPay */
+"Available after sync finishes" = "Có sau khi đồng bộ xong";
+
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
+
+/* Username marketplace: unregistered name row */
+"Available — register it on your identity" = "Còn trống — hãy đăng ký tên này cho danh tính của bạn";
+
+/* Username marketplace: unregistered contested-eligible name row */
+"Available — short names are decided by a network vote" = "Còn trống — tên ngắn do mạng bỏ phiếu quyết định";
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
@@ -525,6 +576,9 @@
 /* Voting */
 "Blocked '%@' username" = "Blocked '%@' username";
 
+/* Username marketplace: history — purchase with buyer, seller, price */
+"Bought by %1$@ from %2$@ for %3$@ DASH" = "%1$@ đã mua từ %2$@ với giá %3$@ DASH";
+
 /* Identities: this key only signs for one data contract */
 "Bound to contract" = "Gắn với hợp đồng";
 
@@ -573,6 +627,9 @@
 /* Swap */
 "Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
 
+/* Username marketplace: purchase button */
+"Buy for %@ DASH" = "Mua với giá %@ DASH";
+
 /* DashSpend */
 "Buy gift card" = "Buy gift card";
 
@@ -581,6 +638,12 @@
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+
+/* Username marketplace: purchase confirmation title */
+"Buy “%@”?" = "Mua “%@”?";
+
+/* Username marketplace: Explore row subtitle */
+"Buy, sell and transfer DashPay usernames" = "Mua, bán và chuyển tên người dùng DashPay";
 
 /* Buy/Sell */
 "Buy/Sell" = "Buy/Sell";
@@ -631,6 +694,9 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "Đổi mã PIN";
+
+/* Username marketplace */
+"Change Price" = "Đổi giá";
 
 /* TimeSkew */
 "Check date & time settings" = "Check date & time settings";
@@ -713,6 +779,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "Sắp ra mắt";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "Hoàn tất chuyển";
+
 /* Shielded transfer status */
 "Completed" = "Đã hoàn tất";
 
@@ -782,6 +851,18 @@
 
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "Đã gửi yêu cầu liên hệ tới %@";
+
+/* Usernames */
+"Continue without a temporary username" = "Tiếp tục mà không dùng tên người dùng tạm thời";
+
+/* Identity top-up sheet — body */
+"Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Đổi Dash sang tín dụng danh tính để trả cho các thao tác trên Platform như yêu cầu liên hệ và cập nhật hồ sơ.";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "Không hoàn tất được việc chuyển";
+
+/* Identity top-up sheet — free amount chip */
+"Custom" = "Tuỳ chỉnh";
 
 /* No comment provided by engineer. */
 "Contact Requests" = "Yêu cầu liên hệ";
@@ -1005,6 +1086,9 @@
 /* Uphold Entry Point */
 "Dash balance on Uphold" = "Dash balance on Uphold";
 
+/* Recovery phrase backup: security warning title — Dash Core Group does not store the phrase */
+"Dash Core Group does NOT store this recovery phrase" = "Dash Core Group KHÔNG lưu cụm từ phục hồi này";
+
 /* Dash DEX Portal
    Translate it as short as possible! (24 symbols max) */
 "Dash DEX" = "Dash DEX";
@@ -1042,6 +1126,27 @@
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "Đã bật DashPay";
 
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "Nhập ít nhất %@ DASH";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "Phí ước tính";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "Phí được trừ vào số tiền; nếu trả từ Shielded, một phần dư nhỏ có thể còn lại trong số dư Platform của bạn.";
+
+/* Username marketplace: search segment */
+"Find Names" = "Tìm tên";
+
+/* Username marketplace: listed badge */
+"For sale" = "Đang rao bán";
+
+/* Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app */
+"For sale by an independent user" = "Được một người dùng độc lập rao bán";
+
+/* Identity top-up sheet — linkability warning for transparent-side sources */
+"Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Chi trả từ số dư minh bạch sẽ công khai liên kết những đồng đó với danh tính của bạn trên chuỗi Dash. Để bảo mật riêng tư, hãy trả từ số dư Shielded của bạn.";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "DashPay Invitation";
 
@@ -1062,6 +1167,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "Ngày";
+
+/* History group header for restored shielded operations whose original date is not recoverable */
+"Date unknown" = "Không rõ ngày";
 
 /* Voting */
 "Date: New to old" = "Date: New to old";
@@ -1085,6 +1193,9 @@
 
 /* No comment provided by engineer. */
 "Delete Wallet?" = "Delete Wallet?";
+
+/* SPV diagnostics */
+"Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network." = "Xoá các giao dịch chưa xác nhận của ví này chỉ trên thiết bị này và giải phóng những đồng mà chúng định tiêu. Việc quét lại bộ lọc sẽ khôi phục những giao dịch thực sự có trên blockchain. Không có gì được gửi lên mạng.";
 
 /* Location Service Status */
 "Denied" = "Denied";
@@ -1116,6 +1227,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "THIẾT BỊ NÀY KHÔNG CÒN BẢO MẬT\nBất kỳ ứng dụng 'jailbreak' nào đều có thể truy cập vào dữ liệu chìa khoá của tất cả các ứng dụng khác (và đánh cắp Dash của bạn).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu." = "BẢO MẬT THIẾT BỊ ĐÃ BỊ XÂM PHẠM\nBất kỳ ứng dụng 'jailbreak' nào cũng có thể truy cập dữ liệu keychain của mọi ứng dụng khác (và lấy cắp Dash của bạn). Hãy chuyển tiền sang một ví trên thiết bị an toàn, rồi đặt lại ví này bằng “Đặt lại ví” trong menu Bảo mật.";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "THIẾT BỊ NÀY KHÔNG CÒN BẢO MẬT\nBất kỳ ứng dụng 'jailbreak' nào đều có thể truy cập vào dữ liệu chìa khoá của tất cả các ứng dụng khác (và đánh cắp Dash của bạn). Hãy xoá sạch ví ngày ngay lập trức và khôi phục tính năng bảo mật của thiết bị.";
@@ -1169,6 +1283,27 @@
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
 "DPNS Names" = "DPNS Names";
+
+/* SPV diagnostics */
+"Drop & rescan" = "Bỏ và quét lại";
+
+/* SPV diagnostics */
+"Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network." = "Bỏ khỏi thiết bị này các giao dịch của ví này vẫn đang chờ mạng (chưa từng được khoá hoặc đào), làm cho những đồng mà chúng định tiêu khả dụng trở lại, và quét lại các bộ lọc gần đây. Giao dịch đã bỏ mà thực sự có trên blockchain sẽ tự quay lại trong quá trình quét lại. Không có gì được gửi lên mạng.";
+
+/* SPV diagnostics */
+"Drop Unconfirmed & Rescan" = "Bỏ giao dịch chưa xác nhận và quét lại";
+
+/* SPV diagnostics */
+"Drop unconfirmed transactions?" = "Bỏ các giao dịch chưa xác nhận?";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row." = "Đã bỏ %d giao dịch chưa xác nhận — đang quét lại bộ lọc, hãy theo dõi dòng Bộ lọc.";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above." = "Đã bỏ %d giao dịch chưa xác nhận, nhưng không khởi động được việc quét lại bộ lọc — hãy chạy “Quét lại bộ lọc” ở trên.";
+
+/* SPV diagnostics */
+"Dropping…" = "Đang bỏ…";
 
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Due to CrowdNode’s terms of service users can withdraw no more than:";
@@ -1280,6 +1415,9 @@
 
 /* No comment provided by engineer. */
 "Enter your recovery phrase to reset your PIN" = "Enter your recovery phrase to reset your PIN";
+
+/* No comment provided by engineer. */
+"Enter your recovery phrase to set a new PIN" = "Nhập cụm từ phục hồi của bạn để đặt mã PIN mới";
 
 /* Voting */
 "Enter your voting key" = "Enter your voting key";
@@ -1665,6 +1803,42 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "So với tài khoản Ethereum thì về quyền riêng tư thế nào?";
 
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "Số dư tài khoản danh tính";
+
+/* Username marketplace: section of contested-name requests awaiting the masternode vote */
+"In network vote" = "Đang trong cuộc bỏ phiếu của mạng";
+
+/* Username marketplace: search row for a contested label with an active vote by others */
+"In a network vote — you can join as a contender" = "Đang trong cuộc bỏ phiếu của mạng — bạn có thể tham gia với tư cách ứng viên";
+
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "Trong lúc đó, mọi người vẫn liên hệ được với bạn qua “%1$@”, tên này vẫn là của bạn. Nếu cuộc bỏ phiếu trao “%2$@” cho bạn, mọi người sẽ liên hệ được với bạn qua cả hai tên người dùng.";
+
+/* Username marketplace: search row for a label a past vote locked */
+"Locked by a network vote — nobody can register it" = "Bị khoá bởi một cuộc bỏ phiếu của mạng — không ai đăng ký được";
+
+/* Username marketplace: latest ownership change */
+"Last transferred" = "Lần chuyển gần nhất";
+
+/* Username marketplace: confirm listing button */
+"List For Sale" = "Rao bán";
+
+/* Username marketplace: own listed name */
+"Listed by you" = "Bạn đã rao bán";
+
+/* Username marketplace: history — price set */
+"Listed for %@ DASH" = "Rao bán với giá %@ DASH";
+
+/* Username marketplace: set price fee note */
+"Listing is a network transaction with a small fee, paid from your identity balance." = "Rao bán là một giao dịch mạng có phí nhỏ, được trả từ số dư danh tính của bạn.";
+
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "Danh tính của tôi";
+
+/* Username marketplace: owned names segment */
+"My Names" = "Tên của tôi";
+
 /* DashPay FAQ */
 "How private is DashPay?" = "DashPay riêng tư đến mức nào?";
 
@@ -2027,6 +2201,9 @@
 /* CrowdNode */
 "Leaving the pool" = "Leaving the pool";
 
+/* DashPay Contacts: caption under the user's own QR code */
+"Let another Dash Wallet user scan this code to add you as a contact." = "Hãy để một người dùng Dash Wallet khác quét mã này để thêm bạn làm liên hệ.";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Hãy cho tôi biết khi nó xong";
 
@@ -2099,6 +2276,51 @@
 "Lock" = "Khoá";
 
 "Lock the name" = "Khoá cái tên";
+
+/* Username marketplace: contest voting deadline row */
+"Vote ends" = "Bỏ phiếu kết thúc";
+
+/* Username marketplace: until when other identities can join the contest */
+"New contenders" = "Ứng viên mới";
+
+/* Username marketplace: join deadline still open — value of the New contenders row */
+"can join until %@" = "có thể tham gia đến %@";
+
+/* Username marketplace: the contest's join window has passed — value of the New contenders row */
+"joining closed" = "đã đóng đăng ký tham gia";
+
+/* Username marketplace: masternode vote tally for one contest row */
+"%d votes" = "%d phiếu";
+
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "12 từ là mức tiêu chuẩn. 24 từ mất công ghi lại và khôi phục hơn, nhưng khó bị bẻ khoá hơn hẳn đối với các hệ thống máy tính tiên tiến trong tương lai xa.";
+
+/* Username marketplace: unresolvable transfer recipient */
+"No identity owns that username." = "Không có danh tính nào sở hữu tên người dùng đó.";
+
+/* Username marketplace: names that were sold or transferred away */
+"No longer yours" = "Không còn là của bạn";
+
+/* Identity top-up sheet — missing unshield destination */
+"No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "Chưa có địa chỉ nhận Platform — hãy đợi đồng bộ Platform xong rồi thử lại.";
+
+/* Username marketplace: empty owned list */
+"No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "Danh tính này chưa có tên người dùng nào. Hãy tìm một tên để mua hoặc đăng ký trong tab “Tìm tên”.";
+
+/* Identity top-up sheet — insufficient funding source */
+"Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Số dư này không đủ: cần %@ DASH, hiện có %@ DASH.";
+
+/* Username marketplace: insufficient balance hint */
+"Not enough identity credits for this purchase — top up from My Profile first." = "Không đủ tín dụng danh tính cho giao dịch mua này — hãy nạp thêm ở “Hồ sơ của tôi” trước.";
+
+/* Username marketplace: insufficient balance hint for a contested request */
+"Not enough identity credits for this request — top up from My Profile first." = "Không đủ tín dụng danh tính cho yêu cầu này — hãy nạp thêm ở “Hồ sơ của tôi” trước.";
+
+/* Username marketplace: someone else's unlisted name */
+"Not for sale" = "Không rao bán";
+
+/* Username marketplace: own unlisted name */
+"Not listed for sale" = "Chưa rao bán";
 
 "Lock “%@” so nobody gets it" = "Khoá “%@” để không ai nhận được";
 
@@ -2342,11 +2564,92 @@
 /* SDK identity profile sheet — title */
 "My Profile" = "My Profile";
 
+/* DashPay Contacts: shows the user's own contact QR code */
+"My QR" = "Mã QR của tôi";
+
 /* No comment provided by engineer. */
 "Name" = "Tên";
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Các dịch vụ tên như Unstoppable Domains ánh xạ một cái tên dễ đọc tới một địa chỉ công khai cố định trên chuỗi. Ai cũng có thể phân giải cái tên đó và thấy mọi khoản thanh toán từng gửi tới nó. Tên người dùng DashPay không bao giờ phân giải công khai thành địa chỉ thanh toán — địa chỉ chỉ được tiết lộ bên trong trao đổi đã mã hoá với từng liên hệ, nên tên và tiền của bạn vẫn không liên kết được với nhau dưới mắt người ngoài.";
+
+/* Username marketplace: contested request line — voting deadline */
+"Network vote ends %@" = "Cuộc bỏ phiếu của mạng kết thúc vào %@";
+
+/* Username marketplace: activity overlay while the purchase transition runs */
+"Completing your purchase…" = "Đang hoàn tất giao dịch mua của bạn…";
+
+/* Usernames */
+"Register username" = "Đăng ký tên người dùng";
+
+/* Username marketplace: activity overlay while the delist transition runs */
+"Removing the listing…" = "Đang gỡ tin rao…";
+
+/* Username marketplace: activity overlay while the set-price transition runs */
+"Listing for sale…" = "Đang rao bán…";
+
+/* Usernames */
+"Submit both usernames" = "Gửi cả hai tên người dùng";
+
+/* Usernames */
+"Temporary username" = "Tên người dùng tạm thời";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "Bản thân tên người dùng tạm thời không được là tên phải bỏ phiếu.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Tên này cần được các masternode bỏ phiếu. Phí tranh giành bị trừ khi gửi và không được hoàn lại, kể cả khi bạn không giành được tên.";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "Tên người dùng này cũng sẽ cần bỏ phiếu — hãy thử thêm một chữ số từ 2 đến 9";
+
+/* Username marketplace: activity overlay while the transfer transition runs */
+"Transferring the username…" = "Đang chuyển tên người dùng…";
+
+/* Username marketplace: activity overlay while the registration transition runs */
+"Registering the username…" = "Đang đăng ký tên người dùng…";
+
+/* Username marketplace: activity overlay while the contested request transition runs */
+"Submitting your username request…" = "Đang gửi yêu cầu tên người dùng của bạn…";
+
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "Duyệt";
+
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "Thay đổi giá";
+
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "Giao dịch mua";
+
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "Rao bán với giá %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "Đã bán với giá %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "Đã bán với giá %1$@ DASH · %2$@ · %3$@ → %4$@";
+
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "Hiện không rao bán";
+
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "Không có tên nào đang rao bán trong hoạt động rao gần đây. “Xem thêm” sẽ lùi xa hơn.";
+
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "Chưa có giao dịch mua nào trên mạng.";
+
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "Đang tải hoạt động…";
+
+/* Username marketplace: load older browse activity */
+"Show more" = "Xem thêm";
+
+/* Username marketplace: contest tallies card title */
+"Network vote so far" = "Cuộc bỏ phiếu của mạng tới lúc này";
+
+/* Username marketplace: contest with zero masternode votes so far */
+"No votes cast yet" = "Chưa có phiếu nào được bỏ";
 
 /* Swap route provider
    Swap route provider short */
@@ -2381,6 +2684,9 @@
 
 /* (List of) New (notifications) */
 "New" = "Thêm mới";
+
+/* SPV diagnostics */
+"No unconfirmed transactions to drop." = "Không có giao dịch chưa xác nhận nào để bỏ.";
 
 /* CrowdNode */
 "New CrowdNode Account" = "New CrowdNode Account";
@@ -2563,6 +2869,15 @@
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "Bitcoin không có lớp tên, nên người ta chia sẻ và dùng lại địa chỉ một cách công khai — một khi địa chỉ đã bị biết, mọi thứ nó từng nhận đều có thể liên kết với chủ sở hữu. Với DashPay, tên người dùng của bạn là công khai nhưng không bao giờ trỏ tới địa chỉ thanh toán: địa chỉ được trao đổi riêng tư theo từng liên hệ và luân phiên thay đổi, nên trả tiền theo tên không công bố tiền của bạn đi đâu. Cả hai đều là chuỗi minh bạch, nên phân tích chuỗi vẫn áp dụng cho chính các đồng coin.";
 
+/* DashPay Contacts: search results from DPNS, not the local contact list */
+"On the Dash network" = "Trên mạng Dash";
+
+/* Username marketplace */
+"Owned by you" = "Bạn sở hữu";
+
+/* Identity top-up sheet — funding source picker label */
+"Pay from" = "Trả từ";
+
 /* Identities */
 "On Network" = "Trên mạng";
 
@@ -2731,6 +3046,9 @@
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Thanh toán là riêng tư: các địa chỉ bạn trao đổi với một liên hệ đi trong phần dữ liệu đã mã hoá mà chỉ hai người đọc được và không bao giờ được công bố — nên thanh toán của bạn không dễ liên kết với tên người dùng. Dù vậy, đây vẫn là những khoản thanh toán thông thường trên chuỗi minh bạch: phân tích chuỗi tinh vi vẫn có thể làm lộ thông tin. Shielded DashPay (sắp ra mắt) sẽ khép lại khoảng trống đó. Bản thân các yêu cầu liên hệ hiện KHÔNG riêng tư: ai cũng thấy được hai danh tính có kết nối với nhau. Yêu cầu liên hệ riêng tư là tính năng sắp ra mắt. Tên người dùng và hồ sơ của bạn cũng công khai trên Dash Platform.";
 
+/* Username marketplace: price placeholder */
+"Price in DASH" = "Giá tính bằng DASH";
+
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "Thanh toán được xác nhận trong vài giây nhờ InstantSend";
 
@@ -2788,6 +3106,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Mã PIN luôn được cần đến khi thực hiện giao dịch";
+
+/* No comment provided by engineer. */
+"PIN Not Set" = "Chưa đặt mã PIN";
 
 /* Dash Platform chain */
 "Platform" = "Platform";
@@ -2993,6 +3314,9 @@
 /* Identities: what a public key is used for */
 "Purpose" = "Mục đích";
 
+/* Username marketplace */
+"Put Up For Sale" = "Đưa lên rao bán";
+
 /* DashSpend */
 "Quantity" = "Quantity";
 
@@ -3028,6 +3352,96 @@
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Chỉ đọc";
+
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "Phát lại";
+
+/* Delete a never-accepted transaction from local wallet state */
+"Remove if Not on Network" = "Xoá nếu không có trên mạng";
+
+/* Remove never-accepted transaction: confirmation title */
+"Remove this transaction?" = "Xoá giao dịch này?";
+
+/* Remove never-accepted transaction: destructive confirm button */
+"Remove Transaction" = "Xoá giao dịch";
+
+/* Username marketplace: transfer recipient placeholder */
+"Recipient username or identity ID" = "Tên người dùng hoặc ID danh tính của người nhận";
+
+/* Identity top-up sheet — shielded source note */
+"Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Nên dùng: chuyển hai bước qua địa chỉ Platform của chính bạn sẽ giữ cho danh tính của bạn không bị liên kết với các đồng minh bạch.";
+
+/* Username marketplace: register sheet title */
+"Register “%@”" = "Đăng ký “%@”";
+
+/* Username marketplace: registration date */
+"Registered" = "Đã đăng ký";
+
+/* Username marketplace */
+"Remove From Sale" = "Gỡ khỏi rao bán";
+
+/* Remove never-accepted transaction: progress */
+"Removing transaction…" = "Đang xoá giao dịch…";
+
+/* Username marketplace: delist confirmation title */
+"Remove “%@” from sale?" = "Gỡ “%@” khỏi rao bán?";
+
+/* Username marketplace: history — delist (transfer to self) */
+"Removed from sale" = "Đã gỡ khỏi rao bán";
+
+/* Username marketplace: delist confirmation body */
+"Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "Gỡ tin rao là một giao dịch mạng có phí nhỏ, được trả từ số dư danh tính của bạn. Bạn vẫn giữ tên đó.";
+
+/* Remove never-accepted transaction: refused because the explorer found it */
+"Transaction is known to the network" = "Mạng đã biết giao dịch này";
+
+/* Remove never-accepted transaction: refusal body */
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "Một trình khám phá khối cho biết mạng Dash đã biết giao dịch này. Giao dịch có thể vẫn đang chờ trong mempool hoặc đã nằm trong một khối, nên nó không bị xoá. Ví sẽ tự cập nhật trạng thái xác nhận ngay khi giao dịch nằm trong một khối đã đồng bộ.";
+
+/* Remove never-accepted transaction: success */
+"Transaction removed" = "Đã xoá giao dịch";
+
+/* Remove never-accepted transaction: removed but the recovery rescan did not arm */
+"Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "Đã xoá giao dịch — không khởi động được việc quét lại, hãy chạy “Quét lại bộ lọc” trong Trạng thái đồng bộ Core";
+
+/* Remove never-accepted transaction: confirmation body */
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "Ví sẽ kiểm tra một trình khám phá khối trước. Giao dịch mà mạng đã biết — dù đang chờ trong mempool hay đã nằm trong khối — sẽ không bao giờ bị xoá. Nếu không tìm thấy giao dịch, nó sẽ bị xoá khỏi ví này trên thiết bị này, và những đồng mà nó định tiêu sẽ khả dụng trở lại. Sau đó ví quét lại các khối gần đây để kiểm tra an toàn. Không có gì được gửi lên mạng.";
+
+/* Remove never-accepted transaction: failure title */
+"Couldn't remove the transaction" = "Không xoá được giao dịch";
+
+/* Remove never-accepted transaction: no local row */
+"This transaction is not in the local wallet." = "Giao dịch này không có trong ví cục bộ.";
+
+/* Remove never-accepted transaction: local state says it's on-chain */
+"This transaction is confirmed and can't be removed." = "Giao dịch này đã được xác nhận nên không thể xoá.";
+
+/* Remove never-accepted transaction: explorer unreachable */
+"Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "Không kết nối được tới trình khám phá khối để xác minh rằng giao dịch không có trên blockchain. Hãy kiểm tra kết nối và thử lại.";
+
+/* Username marketplace: contested request cost row */
+"Request cost" = "Chi phí yêu cầu";
+
+/* Username marketplace: contested request success */
+"Request for %@ submitted — masternodes now vote on it" = "Đã gửi yêu cầu cho %@ — các masternode đang bỏ phiếu";
+
+/* Username marketplace: confirm contested request button */
+"Request Username" = "Yêu cầu tên người dùng";
+
+/* Username marketplace: contested register sheet title */
+"Request “%@”" = "Yêu cầu “%@”";
+
+/* Username marketplace: contested request not yet indexed by Platform */
+"Requested — waiting for the network vote" = "Đã yêu cầu — đang chờ cuộc bỏ phiếu của mạng";
+
+/* Username marketplace: search row for a contested label this identity already requested */
+"Requested by you — the network vote is in progress" = "Bạn đã yêu cầu — cuộc bỏ phiếu của mạng đang diễn ra";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "Đang thử chuyển lại…";
+
+/* Username marketplace: screen subtitle */
+"Search usernames, buy ones that are for sale, and sell or transfer your own." = "Tìm tên người dùng, mua những tên đang rao bán, và bán hoặc chuyển tên của chính bạn.";
 
 /* Usernames */
 "Ready around %@" = "Sẵn sàng khoảng %@";
@@ -3082,6 +3496,9 @@
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Cụm từ phục hồi";
+
+/* Recovery phrase length */
+"Recovery phrase length" = "Độ dài cụm từ phục hồi";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Cụm từ phục hồi không đúng";
@@ -3195,6 +3612,9 @@
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
+
+/* No comment provided by engineer. */
+"Completion unknown" = "Không rõ đã hoàn tất chưa";
 
 /* Location Service Status */
 "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "Ví khôi phục không phải lúc nào cũng lấy lại được loại thao tác. Mục này được dựng lại từ dữ liệu ghi chú trên chuỗi.";
@@ -3322,6 +3742,9 @@
 /* Identities: DPP security level of a public key */
 "Security level" = "Mức bảo mật";
 
+/* Username marketplace: transfer sheet body */
+"Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "Gửi tên này cho một danh tính khác miễn phí. Việc chuyển cũng gỡ mọi tin rao bán. Không thể hoàn tác — chủ mới sẽ phải chuyển lại cho bạn.";
+
 /* DashSpend */
 "See card details" = "See card details";
 
@@ -3370,7 +3793,520 @@
 /* Coinbase */
 "Select the coin" = "Select the coin";
 
+/* Identities */
+"Select the username to display for this identity." = "Chọn tên người dùng sẽ hiển thị cho danh tính này.";
+
 "Selecting fewer nodes reveals less about which masternodes you run." = "Chọn ít nút hơn sẽ để lộ ít hơn về việc bạn đang vận hành những masternode nào.";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "Tìm thấy %ld ví trên thiết bị này";
+
+/* No comment provided by engineer. */
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "Có %ld ví từ lần cài đặt trước được lưu trên thiết bị này. “Xoá tất cả” sẽ xoá mọi ví. Hãy sao lưu từng cụm từ phục hồi trước khi xoá.";
+
+/* No comment provided by engineer. */
+"Couldn’t Delete All Wallets" = "Không xoá được tất cả các ví";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Wallets" = "Không đọc được các ví";
+
+/* No comment provided by engineer. */
+"Delete All" = "Xoá tất cả";
+
+/* No comment provided by engineer. */
+"Delete All Wallets?" = "Xoá tất cả các ví?";
+
+/* No comment provided by engineer. */
+"Deleting All Wallets…" = "Đang xoá tất cả các ví…";
+
+/* No comment provided by engineer. */
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "Không xác minh được số lượng ví lưu trên thiết bị này. Muốn tiếp tục thì cần một cụm từ xác nhận do bộ phận Hỗ trợ Dash cung cấp, trước khi bất kỳ ví nào bị xoá.";
+
+/* No comment provided by engineer. */
+"Keep Wallets" = "Giữ lại các ví";
+
+/* No comment provided by engineer. */
+"No stored wallets were found. Nothing was deleted." = "Không tìm thấy ví nào được lưu. Không có gì bị xoá.";
+
+/* No comment provided by engineer. */
+"No Wallets Found" = "Không tìm thấy ví";
+
+/* No comment provided by engineer. */
+"Not all wallets could be deleted. Please try again." = "Không xoá được tất cả các ví. Vui lòng thử lại.";
+
+/* No comment provided by engineer. */
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "Thao tác này xoá vĩnh viễn mọi ví, khoá riêng tư và cụm từ phục hồi mà ứng dụng này lưu trên thiết bị này. Chúng chỉ có thể khôi phục từ bản sao lưu. Không thể hoàn tác.";
+
+/* No comment provided by engineer. */
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "Không xác minh được các ví lưu trên thiết bị này. Không có gì bị xoá. Vui lòng thử lại.";
+
+/* No comment provided by engineer. */
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "Thao tác này sẽ xoá toàn bộ %ld ví lưu trên thiết bị này. Chúng chỉ có thể khôi phục bằng cụm từ phục hồi của chúng. Việc xoá khỏi thiết bị này không thể hoàn tác.";
+
+/* No comment provided by engineer. */
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "Dữ liệu ví từ lần cài đặt trước vẫn còn lưu trên thiết bị này. Bạn muốn tiếp tục dùng các ví này, hay xoá toàn bộ dữ liệu ví và bắt đầu lại? Hãy chắc chắn đã sao lưu mọi cụm từ phục hồi trước khi xoá.";
+
+/* No comment provided by engineer. */
+"Wallets found on this device" = "Ví tìm thấy trên thiết bị này";
+
+/* No comment provided by engineer. */
+"Wipe All Wallets" = "Xoá sạch tất cả các ví";
+
+/* No comment provided by engineer. */
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "Cụm từ phục hồi của một ví không thể cho phép xoá nhiều ví khác nhau.";
+
+/* No comment provided by engineer. */
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "Số dư bằng 0 trên testnet không chứng minh được ví này trống trên mainnet. Hãy nhập cụm từ phục hồi để tiếp tục.";
+
+/* No comment provided by engineer. */
+"Enter the recovery phrase to continue." = "Hãy nhập cụm từ phục hồi để tiếp tục.";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "Chọn ví";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Recovery Phrases" = "Không đọc được các cụm từ phục hồi";
+
+/* No comment provided by engineer. */
+"No Recovery Phrase Found" = "Không tìm thấy cụm từ phục hồi";
+
+/* No comment provided by engineer. */
+"No recovery phrase is stored on this device." = "Không có cụm từ phục hồi nào được lưu trên thiết bị này.";
+
+/* No comment provided by engineer. */
+"Select the wallet whose recovery phrase you want to view." = "Chọn ví mà bạn muốn xem cụm từ phục hồi.";
+
+/* No comment provided by engineer. */
+"The recovery phrases stored on this device could not be read. Please try again." = "Không đọc được các cụm từ phục hồi lưu trên thiết bị này. Vui lòng thử lại.";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address for this network" = "Không phải địa chỉ Dash hợp lệ cho mạng này";
+
+/* No comment provided by engineer. */
+"The claimable balance is too small to cover the Platform withdrawal fee." = "Số dư có thể nhận quá nhỏ để trả phí rút của Platform.";
+
+/* No comment provided by engineer. */
+"You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it." = "Bạn có thể rút tối đa %@ DASH — phần còn lại giữ để trả phí Platform. Chạm “Tối đa” để dùng số đó.";
+
+/* No comment provided by engineer. */
+"The minimum withdrawal is %@ DASH." = "Mức rút tối thiểu là %@ DASH.";
+
+/* No comment provided by engineer. */
+"Payout address key" = "Khoá địa chỉ chi trả";
+
+/* No comment provided by engineer. */
+"Owner key (%@)" = "Khoá chủ sở hữu (%@)";
+
+/* No comment provided by engineer. */
+"Wallet is not ready. Try again in a moment." = "Ví chưa sẵn sàng. Hãy thử lại sau giây lát.";
+
+/* No comment provided by engineer. */
+"%@ · Claimable %@ DASH" = "%@ · Có thể nhận %@ DASH";
+
+/* No comment provided by engineer. */
+"Withdraw to" = "Rút về";
+
+/* No comment provided by engineer. */
+"Enter a Dash address" = "Nhập một địa chỉ Dash";
+
+/* No comment provided by engineer. */
+"Use the payout address" = "Dùng địa chỉ chi trả";
+
+/* No comment provided by engineer. */
+"This is the evonode's registered payout address." = "Đây là địa chỉ chi trả đã đăng ký của evonode.";
+
+/* No comment provided by engineer. */
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "Ví này giữ khoá địa chỉ chi trả của evonode nên có thể rút số dư về bất kỳ địa chỉ Dash nào.";
+
+/* No comment provided by engineer. */
+"Registered payout address" = "Địa chỉ chi trả đã đăng ký";
+
+/* No comment provided by engineer. */
+"This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "Lần rút này được ký bằng khoá chủ sở hữu của evonode. Dash Platform chỉ cho phép khoá chủ sở hữu rút về địa chỉ chi trả đã đăng ký, nên không thể đổi đích đến ở đây. Muốn rút về địa chỉ khác, hãy dùng ví giữ khoá địa chỉ chi trả.";
+
+/* No comment provided by engineer. */
+"How it works" = "Cách hoạt động";
+
+/* No comment provided by engineer. */
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "Dash Platform chi trả khoản rút trên chuỗi Dash — thường trong vòng vài phút. Ngoài số tiền rút, một khoản phí Platform khoảng %@ DASH được trừ từ số dư của evonode, nên “Tối đa” chừa lại một ít để trả phí đó.";
+
+/* No comment provided by engineer. */
+"Confirm withdrawal" = "Xác nhận rút";
+
+/* No comment provided by engineer. */
+"Owner-key withdrawals are always paid to the registered payout address." = "Các lần rút bằng khoá chủ sở hữu luôn được chi trả về địa chỉ chi trả đã đăng ký.";
+
+/* No comment provided by engineer. */
+"Waiting for authorization…" = "Đang chờ uỷ quyền…";
+
+/* No comment provided by engineer. */
+"Submitting to Dash Platform…" = "Đang gửi tới Dash Platform…";
+
+/* No comment provided by engineer. */
+"Withdrawal submitted" = "Đã gửi yêu cầu rút";
+
+/* No comment provided by engineer. */
+"Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "Dash Platform sẽ sớm chi trả trên chuỗi Dash — thường về trong vòng vài phút.";
+
+/* No comment provided by engineer. */
+"Remaining claimable balance: %@ DASH" = "Số dư có thể nhận còn lại: %@ DASH";
+
+/* No comment provided by engineer. */
+"%@ · Platform balance" = "%@ · Số dư Platform";
+
+/* No comment provided by engineer. */
+"Signed with" = "Ký bằng";
+
+/* No comment provided by engineer. */
+"Platform fee" = "Phí Platform";
+
+/* No comment provided by engineer. */
+"%@ (payout address)" = "%@ (địa chỉ chi trả)";
+
+/* No comment provided by engineer. */
+"This wallet holds the payout address key, so you can withdraw to any address." = "Ví này giữ khoá địa chỉ chi trả nên bạn có thể rút về bất kỳ địa chỉ nào.";
+
+/* No comment provided by engineer. */
+"This wallet holds the owner key, so withdrawals go to the registered payout address." = "Ví này giữ khoá chủ sở hữu nên các khoản rút sẽ về địa chỉ chi trả đã đăng ký.";
+
+/* No comment provided by engineer. */
+"This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "Ví này không giữ khoá chủ sở hữu lẫn khoá địa chỉ chi trả của evonode này, nên không thể rút số dư của nó từ đây.";
+
+/* No comment provided by engineer. */
+"Couldn't check which keys of this evonode are in the wallet." = "Không kiểm tra được những khoá nào của evonode này có trong ví.";
+
+/* No comment provided by engineer. */
+"Result not confirmed" = "Kết quả chưa được xác nhận";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "Yêu cầu rút đã được gửi tới Dash Platform, nhưng không xác nhận được kết quả. Có thể nó đã thành công. Đừng gửi lại — hãy kiểm tra số dư có thể nhận và địa chỉ chi trả trước.";
+
+/* No comment provided by engineer. */
+"1 block proposed this epoch" = "Đã đề xuất 1 khối trong kỷ nguyên này";
+
+/* No comment provided by engineer. */
+"%@ blocks proposed this epoch" = "Đã đề xuất %@ khối trong kỷ nguyên này";
+
+/* No comment provided by engineer. */
+"Nodes" = "Nút";
+
+/* No comment provided by engineer. */
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "Nút, ngày %d của kỷ nguyên, đã đề xuất %@ khối trong kỷ nguyên này";
+
+/* No comment provided by engineer. */
+"an evonode has not proposed a block in 2 days" = "một evonode đã 2 ngày không đề xuất khối nào";
+
+/* No comment provided by engineer. */
+"an evonode has no blocks this epoch" = "một evonode không có khối nào trong kỷ nguyên này";
+
+/* No comment provided by engineer. */
+"A key doesn't match this masternode — fix or clear it to continue." = "Có một khoá không khớp với masternode này — hãy sửa hoặc xoá khoá đó để tiếp tục.";
+
+/* No comment provided by engineer. */
+"Add keys" = "Thêm khoá";
+
+/* No comment provided by engineer. */
+"Add masternode" = "Thêm masternode";
+
+/* No comment provided by engineer. */
+"Add this node's owner key or payout address key to withdraw from here." = "Thêm khoá chủ sở hữu hoặc khoá địa chỉ chi trả của nút này để rút từ đây.";
+
+/* No comment provided by engineer. */
+"Already one of this wallet's masternodes — it's in the list above." = "Đã là một trong các masternode của ví này — nó nằm trong danh sách ở trên.";
+
+/* No comment provided by engineer. */
+"Already tracked." = "Đã theo dõi.";
+
+/* No comment provided by engineer. */
+"Any keys you added for it are deleted from this device's keychain too." = "Mọi khoá bạn đã thêm cho nó cũng bị xoá khỏi keychain của thiết bị này.";
+
+/* No comment provided by engineer. */
+"Available" = "Khả dụng";
+
+/* No comment provided by engineer. */
+"BLS private key (hex)" = "Khoá riêng tư BLS (hex)";
+
+/* No comment provided by engineer. */
+"Can't verify yet" = "Chưa xác minh được";
+
+/* No comment provided by engineer. */
+"Could not load the node's registration details — owner and payout keys will verify later." = "Không tải được thông tin đăng ký của nút — khoá chủ sở hữu và khoá chi trả sẽ được xác minh sau.";
+
+/* No comment provided by engineer. */
+"Could not save a key to the keychain. Nothing was lost — try again." = "Không lưu được một khoá vào keychain. Không mất gì cả — hãy thử lại.";
+
+/* No comment provided by engineer. */
+"Destination address (optional)" = "Địa chỉ đích (tuỳ chọn)";
+
+/* No comment provided by engineer. */
+"Doesn't match" = "Không khớp";
+
+/* No comment provided by engineer. */
+"Find" = "Tìm";
+
+/* No comment provided by engineer. */
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "Tìm khoá chủ sở hữu và khoá chi trả, những khoá không có trong danh sách masternode. Gửi dấu vân tay công khai của khoá tới một nút Platform.";
+
+/* No comment provided by engineer. */
+"IP address, proTxHash or private key" = "Địa chỉ IP, proTxHash hoặc khoá riêng tư";
+
+/* No comment provided by engineer. */
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "Khoá được lưu trong keychain của thiết bị này và không bao giờ rời khỏi đó, trừ khi để ký thao tác bạn yêu cầu.";
+
+/* No comment provided by engineer. */
+"Keys on this device" = "Khoá trên thiết bị này";
+
+/* No comment provided by engineer. */
+"Label (optional)" = "Nhãn (tuỳ chọn)";
+
+/* No comment provided by engineer. */
+"Loading registration details…" = "Đang tải thông tin đăng ký…";
+
+/* No comment provided by engineer. */
+"Matches" = "Khớp";
+
+/* No comment provided by engineer. */
+"Matches this node's %@ key" = "Khớp với khoá %@ của nút này";
+
+/* No comment provided by engineer. */
+"No masternode on the list matches that." = "Không masternode nào trong danh sách khớp với nội dung đó.";
+
+/* No comment provided by engineer. */
+"Node key (base64 or hex)" = "Khoá nút (base64 hoặc hex)";
+
+/* No comment provided by engineer. */
+"Not added" = "Chưa thêm";
+
+/* No comment provided by engineer. */
+"On this device" = "Trên thiết bị này";
+
+/* No comment provided by engineer. */
+"Operator payout" = "Chi trả cho nhà vận hành";
+
+/* No comment provided by engineer. */
+"Payout" = "Chi trả";
+
+/* No comment provided by engineer. */
+"Platform could not be reached, so owner and payout keys were not checked." = "Không kết nối được tới Platform nên chưa kiểm tra khoá chủ sở hữu và khoá chi trả.";
+
+/* No comment provided by engineer. */
+"PoSe banned" = "Bị cấm bởi PoSe";
+
+/* No comment provided by engineer. */
+"Private key (WIF or hex)" = "Khoá riêng tư (WIF hoặc hex)";
+
+/* No comment provided by engineer. */
+"Refresh details" = "Làm mới thông tin";
+
+/* No comment provided by engineer. */
+"Refreshing…" = "Đang làm mới…";
+
+/* No comment provided by engineer. */
+"Save keys" = "Lưu khoá";
+
+/* No comment provided by engineer. */
+"Search Platform too" = "Tìm cả trên Platform";
+
+/* No comment provided by engineer. */
+"Searching…" = "Đang tìm…";
+
+/* No comment provided by engineer. */
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "Đang ký bằng khoá chủ sở hữu — khoản rút sẽ về địa chỉ chi trả đã đăng ký.";
+
+/* No comment provided by engineer. */
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "Đang ký bằng khoá địa chỉ chi trả. Để trống đích đến để rút về địa chỉ chi trả.";
+
+/* No comment provided by engineer. */
+"Stop tracking" = "Ngừng theo dõi";
+
+/* No comment provided by engineer. */
+"Stop tracking this masternode?" = "Ngừng theo dõi masternode này?";
+
+/* No comment provided by engineer. */
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "Đó cũng có thể là khoá chủ sở hữu hoặc khoá chi trả — hãy bật “Tìm cả trên Platform” để kiểm tra.";
+
+/* No comment provided by engineer. */
+"The signing key is missing from the keychain — re-add it and try again." = "Keychain thiếu khoá ký — hãy thêm lại rồi thử lần nữa.";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "Yêu cầu rút đã được gửi nhưng không xác nhận được kết quả. Số dư đang được kiểm tra lại — đừng thử lại cho tới khi số dư ổn định.";
+
+/* No comment provided by engineer. */
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "Theo dõi bất kỳ masternode hay evonode nào trên mạng — nó không cần thuộc về ví này.";
+
+/* No comment provided by engineer. */
+"Track this masternode" = "Theo dõi masternode này";
+
+/* No comment provided by engineer. */
+"Tracked" = "Đang theo dõi";
+
+/* No comment provided by engineer. */
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "Đang theo dõi. Hãy thêm khoá của nút này ở bên dưới để bật các thao tác như rút và bỏ phiếu, hoặc kết thúc bây giờ và thêm sau.";
+
+/* No comment provided by engineer. */
+"Withdrawing…" = "Đang rút…";
+
+/* No comment provided by engineer. */
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "Bạn cũng có thể theo dõi bất kỳ masternode nào trên mạng — bằng IP, proTxHash hoặc một trong các khoá của nó — với nút “+”.";
+
+/* No comment provided by engineer. */
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "Không biết địa chỉ DAPI của evonode này nên không thể hỏi trạng thái của nó.";
+
+/* No comment provided by engineer. */
+"Couldn't get the evonode's status." = "Không lấy được trạng thái của evonode.";
+
+/* No comment provided by engineer. */
+"The evonode didn't answer in time." = "Evonode không trả lời kịp thời.";
+
+/* No comment provided by engineer. */
+"Couldn't reach the evonode." = "Không kết nối được tới evonode.";
+
+/* No comment provided by engineer. */
+"The evonode's answer couldn't be read." = "Không đọc được câu trả lời của evonode.";
+
+/* No comment provided by engineer. */
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "Báo cáo của chính nút, chưa được kiểm chứng — là điều nút tự nói về mình, không phải điều mạng đã thống nhất.";
+
+/* No comment provided by engineer. */
+"Asked" = "Thời điểm hỏi";
+
+/* No comment provided by engineer. */
+"Software" = "Phần mềm";
+
+/* No comment provided by engineer. */
+"DAPI" = "DAPI";
+
+/* No comment provided by engineer. */
+"Drive" = "Drive";
+
+/* No comment provided by engineer. */
+"Tenderdash" = "Tenderdash";
+
+/* No comment provided by engineer. */
+"Protocol versions" = "Phiên bản giao thức";
+
+/* No comment provided by engineer. */
+"Tenderdash P2P" = "Tenderdash P2P";
+
+/* No comment provided by engineer. */
+"Tenderdash block" = "Khối Tenderdash";
+
+/* No comment provided by engineer. */
+"Drive current" = "Drive hiện tại";
+
+/* No comment provided by engineer. */
+"Drive latest" = "Drive mới nhất";
+
+/* No comment provided by engineer. */
+"Drive next epoch" = "Drive kỷ nguyên kế tiếp";
+
+/* No comment provided by engineer. */
+"Node ID" = "ID nút";
+
+/* No comment provided by engineer. */
+"Identity check" = "Kiểm tra danh tính";
+
+/* No comment provided by engineer. */
+"Chain" = "Chuỗi";
+
+/* No comment provided by engineer. */
+"Catching up" = "Đang bắt kịp";
+
+/* No comment provided by engineer. */
+"Latest block height" = "Độ cao khối mới nhất";
+
+/* No comment provided by engineer. */
+"Earliest block height" = "Độ cao khối sớm nhất";
+
+/* No comment provided by engineer. */
+"Max peer block height" = "Độ cao khối tối đa của các peer";
+
+/* No comment provided by engineer. */
+"Core chain-locked height" = "Độ cao chain-lock của Core";
+
+/* No comment provided by engineer. */
+"Latest block hash" = "Hash khối mới nhất";
+
+/* No comment provided by engineer. */
+"Latest app hash" = "Hash ứng dụng mới nhất";
+
+/* No comment provided by engineer. */
+"Earliest block hash" = "Hash khối sớm nhất";
+
+/* No comment provided by engineer. */
+"Earliest app hash" = "Hash ứng dụng sớm nhất";
+
+/* No comment provided by engineer. */
+"Chain ID" = "ID chuỗi";
+
+/* No comment provided by engineer. */
+"Peers" = "Peer";
+
+/* No comment provided by engineer. */
+"Listening" = "Đang lắng nghe";
+
+/* No comment provided by engineer. */
+"State sync" = "Đồng bộ trạng thái";
+
+/* No comment provided by engineer. */
+"Total synced time" = "Tổng thời gian đã đồng bộ";
+
+/* No comment provided by engineer. */
+"Remaining time" = "Thời gian còn lại";
+
+/* No comment provided by engineer. */
+"Total snapshots" = "Tổng số ảnh chụp";
+
+/* No comment provided by engineer. */
+"Chunk process avg time" = "Thời gian xử lý mỗi phần trung bình";
+
+/* No comment provided by engineer. */
+"Snapshot height" = "Độ cao ảnh chụp";
+
+/* No comment provided by engineer. */
+"Snapshot chunks" = "Các phần của ảnh chụp";
+
+/* No comment provided by engineer. */
+"Backfilled blocks" = "Khối đã bổ sung";
+
+/* No comment provided by engineer. */
+"Backfill blocks total" = "Tổng số khối cần bổ sung";
+
+/* No comment provided by engineer. */
+"Time" = "Thời gian";
+
+/* No comment provided by engineer. */
+"Node clock" = "Đồng hồ của nút";
+
+/* No comment provided by engineer. */
+"Latest block" = "Khối mới nhất";
+
+/* No comment provided by engineer. */
+"Genesis" = "Genesis";
+
+/* No comment provided by engineer. */
+"Epoch" = "Kỷ nguyên";
+
+/* No comment provided by engineer. */
+"Matches this evonode" = "Khớp với evonode này";
+
+/* No comment provided by engineer. */
+"Differs from this evonode" = "Khác với evonode này";
+
+/* No comment provided by engineer. */
+"Not reported" = "Không báo cáo";
+
+/* No comment provided by engineer. */
+"%.3f s" = "%.3f giây";
+
+/* No comment provided by engineer. */
+"Node status" = "Trạng thái nút";
+
+/* No comment provided by engineer. */
+"Asking the evonode…" = "Đang hỏi evonode…";
+
+/* No comment provided by engineer. */
+"Request status" = "Hỏi trạng thái";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "Self-checkout";
@@ -3444,6 +4380,42 @@
 
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "Gửi yêu cầu liên hệ đầu tiên của bạn";
+
+/* Username marketplace: set price sheet title */
+"Set a price for “%@”" = "Đặt giá cho “%@”";
+
+/* Username marketplace */
+"Short names are decided by a network vote — use Request Username instead." = "Tên ngắn do mạng bỏ phiếu quyết định — hãy dùng “Yêu cầu tên người dùng” thay thế.";
+
+/* Username marketplace: contested request explainer, paragraph 1 */
+"Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them." = "Tên ngắn — từ 19 ký tự trở xuống, chỉ gồm chữ và số — không được đăng ký ngay. Mạng Dash bỏ phiếu để quyết định ai được tên đó.";
+
+/* DashPay Contacts: expands the network search into the full add-contact flow */
+"Show more results" = "Xem thêm kết quả";
+
+/* Username marketplace: departed-name line — buyer identity */
+"Sold to %@" = "Đã bán cho %@";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 1 of 2 — moving Dash out of your Shielded balance…" = "Bước 1/2 — đang chuyển Dash ra khỏi số dư Shielded của bạn…";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 2 of 2 — topping up your identity…" = "Bước 2/2 — đang nạp cho danh tính của bạn…";
+
+/* Username marketplace: contested request cost footnote */
+"The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "Chi phí được trả từ số dư danh tính của bạn. Nó tài trợ cho cuộc bỏ phiếu của mạng và không được hoàn lại nếu một ứng viên khác thắng.";
+
+/* Username marketplace: register sheet body */
+"The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "Tên được đăng ký trực tiếp cho danh tính của bạn. Việc đăng ký là một giao dịch mạng, trả từ số dư danh tính của bạn.";
+
+/* Username marketplace: contested label locked by a past vote */
+"The network voted to lock this name, so nobody can register it. Choose a different name." = "Mạng đã bỏ phiếu khoá tên này nên không ai đăng ký được. Hãy chọn tên khác.";
+
+/* Username marketplace */
+"The recipient identity couldn't be resolved." = "Không phân giải được danh tính người nhận.";
+
+/* Username marketplace */
+"The seller changed the price before your purchase was accepted. Review the new price and try again." = "Người bán đã đổi giá trước khi giao dịch mua của bạn được chấp nhận. Hãy xem giá mới và thử lại.";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Đang gửi";
@@ -3965,6 +4937,66 @@
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "Thao tác này thêm hai khoá vào danh tính của bạn để người dùng khác gửi được yêu cầu liên hệ tới bạn, và để bạn chấp nhận yêu cầu của họ. Việc này chỉ diễn ra một lần.";
 
+/* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
+"This isn't a DashPay user QR code." = "Đây không phải mã QR người dùng DashPay.";
+
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "Số dư này trả phí mạng của Dash Platform — tên người dùng, yêu cầu liên hệ, cập nhật hồ sơ. Nó thuộc về danh tính của bạn chứ không phải ví: khác với các số dư Minh bạch, Platform và Shielded, số dư này không tiêu được như Dash thông thường. Việc nạp sẽ đổi Dash từ số dư bạn chọn — mặc định là Shielded — thành tín dụng danh tính.";
+
+/* Username marketplace: contested label already has an active vote */
+"This name is already in an active network vote. Your request joins it as another contender." = "Tên này đã nằm trong một cuộc bỏ phiếu đang diễn ra của mạng. Yêu cầu của bạn tham gia với tư cách một ứng viên nữa.";
+
+/* Username marketplace */
+"This name is in an active network vote and can't be traded until the contest ends." = "Tên này đang trong một cuộc bỏ phiếu của mạng và không thể giao dịch cho đến khi cuộc tranh giành kết thúc.";
+
+/* Username marketplace: detail for an unregistered name */
+"This name is not registered." = "Tên này chưa được đăng ký.";
+
+/* Username marketplace: seller-clarity callout on the detail sheet */
+"This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "Tên này do một người dùng độc lập trên mạng Dash rao bán — không phải do Dash hay ứng dụng này. Người bán đặt giá.";
+
+/* Username marketplace: listing price exceeds the representable maximum */
+"This price is too high to list." = "Giá này quá cao nên không rao bán được.";
+
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "Không thể thử lại việc chuyển này từ đây.";
+
+/* Username marketplace */
+"This username is not for sale." = "Tên người dùng này không được rao bán.";
+
+/* Username marketplace */
+"This username's record couldn't be read from the network." = "Không đọc được bản ghi của tên người dùng này từ mạng.";
+
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "Ví này không có danh tính nào để nạp.";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "Nạp thêm";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "Nạp số dư danh tính";
+
+/* Username marketplace: timeline card title */
+"Trade history" = "Lịch sử giao dịch";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "Đã chuyển xong";
+
+/* Username marketplace */
+"Transfer to Another Identity" = "Chuyển cho danh tính khác";
+
+/* Username marketplace: transfer sheet title */
+"Transfer “%@”" = "Chuyển “%@”";
+
+/* Username marketplace: history — transfer with both identities */
+"Transferred from %1$@ to %2$@" = "Đã chuyển từ %1$@ sang %2$@";
+
+/* Username marketplace: departed-name line — recipient identity */
+"Transferred to %@" = "Đã chuyển cho %@";
+
+/* Username marketplace */
+"Username Marketplace" = "Chợ tên người dùng";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
@@ -4014,6 +5046,60 @@
 
 /* Usernames */
 "This name requires voting. Your Dash will be locked until voting completes." = "This name requires voting. Your Dash will be locked until voting completes.";
+
+/* Usernames */
+"Vote in progress" = "Đang bỏ phiếu";
+
+/* Usernames */
+"Vote ended" = "Đã kết thúc bỏ phiếu";
+
+/* Usernames */
+"A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender." = "Tên này đã có một cuộc bỏ phiếu của masternode đang diễn ra. Gửi yêu cầu sẽ đưa bạn vào cuộc bỏ phiếu với tư cách ứng viên.";
+
+/* Usernames */
+"A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender." = "Tên này đã có một cuộc bỏ phiếu của masternode đang diễn ra — cuộc bỏ phiếu kết thúc khoảng %@. Gửi yêu cầu sẽ đưa bạn vào cuộc bỏ phiếu với tư cách ứng viên.";
+
+/* Usernames */
+"A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote." = "Tên này đang có một cuộc bỏ phiếu của masternode — cuộc bỏ phiếu kết thúc khoảng %@. Ứng viên mới không thể tham gia cuộc bỏ phiếu này nữa.";
+
+/* Usernames */
+"Username is in a network vote — new contenders can no longer join" = "Tên người dùng đang trong một cuộc bỏ phiếu của mạng — ứng viên mới không thể tham gia nữa";
+
+/* Usernames */
+"The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "Chủ sở hữu tên người dùng này đã rao bán trên Chợ tên người dùng với giá %@ Dash. Bạn có thể mua ở đó.";
+
+/* Usernames */
+"The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance." = "Chủ sở hữu tên người dùng này đã rao bán với giá %@ Dash. Bạn có thể mua ngay — giá được trả từ số dư ví của bạn.";
+
+/* Usernames */
+"The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "Chủ sở hữu tên người dùng này đã rao bán với giá %1$@ Dash. Các giao dịch mua trên %2$@ Dash phải thực hiện từ Chợ tên người dùng — hãy tạm chọn tên khác; bạn có thể quyết định mua tên này sau.";
+
+/* Usernames */
+"Buy for %@ Dash" = "Mua với giá %@ Dash";
+
+/* Usernames */
+"Buy username" = "Mua tên người dùng";
+
+/* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "Không đăng ký được tên người dùng tạm thời “%@” của bạn. Bạn có thể đăng ký tên người dùng khác sau.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "“%1$@” giờ là tên người dùng của bạn. Nếu cuộc bỏ phiếu trao “%2$@” cho bạn, mọi người sẽ liên hệ được với bạn qua cả hai tên người dùng.";
+
+/* Usernames */
+"“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "“%1$@” sẽ được mua với giá %2$@ Dash. Giá được trả từ số dư ví của bạn.";
+
+/* Usernames */
+"Username purchased" = "Đã mua tên người dùng";
+
+/* Usernames */
+"“%@” is now your username." = "“%@” giờ là tên người dùng của bạn.";
+
+/* Usernames */
+"The masternode vote for this name has ended and the result is being finalized. Check back soon." = "Cuộc bỏ phiếu của masternode cho tên này đã kết thúc và kết quả đang được chốt. Hãy quay lại sau ít lâu.";
+
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes." = "Tên này đã có một cuộc bỏ phiếu đang diễn ra — yêu cầu của bạn sẽ tham gia với tư cách ứng viên. Dash của bạn sẽ bị khoá cho đến khi bỏ phiếu xong.";
 
 /* No comment provided by engineer. */
 "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone." = "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.";
@@ -4256,6 +5342,12 @@
 /* Voting */
 "Unblocked '%@' username" = "Unblocked '%@' username";
 
+/* SPV diagnostics */
+"Unconfirmed now" = "Hiện chưa xác nhận";
+
+/* SPV diagnostics */
+"Unconfirmed Transactions" = "Giao dịch chưa xác nhận";
+
 /* DashPay Contacts */
 "Unhide Contact" = "Unhide Contact";
 
@@ -4369,6 +5461,9 @@
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Tên người dùng, không phải địa chỉ";
 
+/* DashPay: banner identity row subtitle */
+"View profile" = "Xem hồ sơ";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Người dùng khớp với %@ và hiện chưa có trong danh bạ của bạn";
 
@@ -4399,11 +5494,17 @@
 /* No comment provided by engineer. */
 "Verified Successfully" = "Đã kiểm tra thành công";
 
+/* DashPay Contacts: spinner after scanning a user QR code */
+"Verifying user…" = "Đang xác minh người dùng…";
+
 /* No comment provided by engineer. */
 "Verify" = "Kiểm tra";
 
 /* CrowdNode */
 "Verify your API Dash address" = "Verify your API Dash address";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "Xác minh cụm từ phục hồi của bạn để đặt mã PIN mới.";
 
 /* Usernames */
 "Verify your identity" = "Verify your identity";
@@ -4618,6 +5719,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "Khi nào yêu cầu liên hệ trở nên riêng tư?";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "Trong lúc cuộc bỏ phiếu đang diễn ra, “%@” chưa thuộc về bạn và người dùng khác không tìm được bạn bằng tên đó. Hãy thêm một tên người dùng không bị tranh giành để dùng DashPay ngay. Tên đó là của bạn vĩnh viễn — và nếu cuộc bỏ phiếu trao tên đang tranh giành cho bạn, mọi người sẽ liên hệ được với bạn qua cả hai tên người dùng.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "Where to Spend";
 
@@ -4628,6 +5732,18 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "Vì sao tôi cần bật nó?";
+
+/* Username marketplace: history participant is the current user */
+"you" = "bạn";
+
+/* Username marketplace: contested request already submitted by this identity */
+"You already requested this name — the network vote is in progress. You'll find it under My Names." = "Bạn đã yêu cầu tên này rồi — cuộc bỏ phiếu của mạng đang diễn ra. Bạn sẽ thấy tên đó trong “Tên của tôi”.";
+
+/* Username marketplace: purchase confirmation body with seller clarity */
+"You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "Bạn đang mua từ một người dùng độc lập, không phải từ Dash hay ứng dụng này. Giá cộng một khoản phí mạng nhỏ được trả từ số dư danh tính của bạn, và tên chuyển sang danh tính của bạn ngay lập tức.";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "Bạn không có tên người dùng trong lúc cuộc bỏ phiếu đang diễn ra. Hãy đăng ký ngay một tên người dùng không bị tranh giành — tên đó là của bạn, và nếu cuộc bỏ phiếu trao “%@” cho bạn, mọi người sẽ liên hệ được với bạn qua cả hai tên người dùng.";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "Why do I see all these transactions?";
@@ -4685,7 +5801,13 @@
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
 
 /* Wallets */
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Hãy ghi %d từ này theo đúng thứ tự và cất ở nơi an toàn. Đó là cách DUY NHẤT để khôi phục ví này. Bất kỳ ai có chúng đều tiêu được tiền của bạn.";
+
+/* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
+
+/* Recovery phrase backup: security warning body — keep the phrase written down and private */
+"Write it in a safe place and don’t show it to anyone." = "Hãy ghi lại và cất ở nơi an toàn, đừng cho ai xem.";
 
 /* No comment provided by engineer. */
 "XpEBa5... or BIP21 URI" = "XpEBa5... or BIP21 URI";
@@ -4851,6 +5973,9 @@
 /* Back up wallet */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device.";
 
+/* Recovery phrase backup: security warning title — the phrase is required to restore the wallet */
+"You will NOT be able to restore the wallet without a recovery phrase" = "Bạn sẽ KHÔNG thể khôi phục ví nếu không có cụm từ phục hồi";
+
 /* Coinbase */
 "You will receive" = "You will receive";
 
@@ -4934,6 +6059,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Lịch sử của bạn, gọn gàng";
 
+/* Username marketplace */
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Số dư danh tính của bạn không đủ cho giao dịch mua này: cần %1$@ DASH (bao gồm khoản dự phòng phí), hiện có %2$@ DASH. Hãy nạp số dư danh tính rồi thử lại.";
+
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "Danh tính của bạn cần thêm hai khoá để yêu cầu liên hệ có thể được mã hoá giữa bạn và người dùng khác. Việc bật sẽ thêm chúng bằng một giao dịch mạng duy nhất. Việc này chỉ diễn ra một lần.";
 
@@ -4958,8 +6086,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "Số coin đã trộn của bạn được chuyển sang số dư ví Dash.";
 
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "Chúng tôi không xác nhận được giao dịch mua này với CTX. Nếu khoản thanh toán đã thành công, thẻ quà tặng sẽ sớm xuất hiện trong danh sách giao dịch của bạn — hãy kiểm tra ở đó trước khi mua lại.";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "Khoản thanh toán của bạn đã được gửi, nhưng mạng chưa xác nhận. Thẻ quà tặng của bạn sẽ xuất hiện ngay khi được xác nhận.";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Số coin đã trộn của bạn được chuyển sang số dư được che chắn. Để riêng tư tốt nhất, hãy đợi ít nhất 2 giờ trước khi dùng số tiền này.";
+
+/* DashSpend */
+"Could not load your gift card" = "Không tải được thẻ quà tặng của bạn";
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
@@ -4975,6 +6112,9 @@
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "Số dư riêng tư của bạn. Số tiền và địa chỉ được mã hoá trên chuỗi, nên tài sản và lịch sử của bạn vẫn được giữ kín.";
+
+/* Username marketplace: contested request explainer, paragraph 2 */
+"Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "Yêu cầu của bạn sẽ vào một cuộc bỏ phiếu công khai của các masternode trong khoảng hai tuần. Người khác cũng có thể yêu cầu cùng tên đó; khi cuộc bỏ phiếu kết thúc, tên thuộc về người thắng — hoặc không thuộc về ai, nếu mạng bỏ phiếu khoá tên đó.";
 
 /* Usernames */
 "Your request was cancelled" = "Your request was cancelled";

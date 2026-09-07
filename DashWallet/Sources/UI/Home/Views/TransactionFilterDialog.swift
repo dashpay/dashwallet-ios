@@ -48,7 +48,7 @@ struct TransactionFilterDialog: View {
     }
 
     var body: some View {
-        BottomSheet(
+        DashUIKit.BottomSheet(
             title: NSLocalizedString("Filter transactions", comment: ""),
             showBackButton: .constant(false)
         ) {

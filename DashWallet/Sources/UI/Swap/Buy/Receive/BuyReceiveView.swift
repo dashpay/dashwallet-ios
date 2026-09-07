@@ -150,18 +150,18 @@ struct BuyReceiveView: View {
         HStack(alignment: .top, spacing: 16) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(Font.dash.caption1)
+                    .dashFont(.caption1)
                     .foregroundColor(Color.dash.secondaryText)
 
                 Text(displayValue)
-                    .font(Font.dash.subhead)
+                    .dashFont(.subhead)
                     .foregroundColor(Color.dash.primaryText)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .textSelection(.enabled)
 
                 if let helper {
                     Text(helper)
-                        .font(Font.dash.caption1)
+                        .dashFont(.caption1)
                         .foregroundColor(helperColor)
                         .lineSpacing(3)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -169,7 +169,7 @@ struct BuyReceiveView: View {
             }
 
             DashUIKit.DashButton(
-                leadingIcon: .custom("copy-outline", bundle: .dashUIKit),
+                leadingIcon: DashIcon.Icons.copyOutline.source,
                 isEnabled: !copyValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, size: .medium,
                 style: .tintedGray,
                 action: {

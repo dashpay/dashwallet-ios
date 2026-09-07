@@ -49,7 +49,7 @@ struct RefundAddressView: View {
                     SystemMessageView(
                         title: NSLocalizedString("The refund address is required", comment: "Dash DEX"),
                         subtitle: NSLocalizedString("Your swap can NOT be processed without a refund address", comment: "Dash DEX"),
-                        icon: .custom("info-rect", bundle: .dashUIKit),
+                        icon: DashIcon.SystemMessage.infoRectSmall.source,
                         backgroundColor: colorScheme == .dark ? Color.dash.blueAlpha10 : Color.dash.blueAlpha5,
                         onClose: {}
                     )

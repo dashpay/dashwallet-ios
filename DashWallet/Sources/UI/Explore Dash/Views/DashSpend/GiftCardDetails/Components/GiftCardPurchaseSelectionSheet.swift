@@ -12,6 +12,11 @@ struct GiftCardPurchaseSelectionSheet: View {
     let cards: [GiftCardDetailsCardItem]
     let isLoadingCardDetails: Bool
     let hasBeenPollingForLongTime: Bool
+    /// Set once the poller gave up on a run of failures — without it this sheet keeps promising
+    /// a card that nothing is fetching any more.
+    var loadingError: Error? = nil
+    /// Offered alongside `loadingError`; nil hides the affordance.
+    var onRetryLoading: (() -> Void)? = nil
 
     let onSelectCard: (Int) -> Void
 
@@ -50,6 +55,22 @@ struct GiftCardPurchaseSelectionSheet: View {
                 SwiftUI.ProgressView()
                     .progressViewStyle(CircularProgressViewStyle())
                     .scaleEffect(0.9)
+            } else if loadingError != nil {
+                VStack(spacing: 6) {
+                    Text(NSLocalizedString("Could not load your gift card", comment: "DashSpend"))
+                        .font(.footnote)
+                        .foregroundColor(.dash.red)
+                        .multilineTextAlignment(.center)
+
+                    if let onRetryLoading {
+                        Button(action: onRetryLoading) {
+                            Text(NSLocalizedString("Retry", comment: "DashSpend"))
+                                .font(.footnote.weight(.medium))
+                                .foregroundColor(.dash.blue)
+                        }
+                    }
+                }
+                .padding(.horizontal, 24)
             } else if hasBeenPollingForLongTime {
                 Text(NSLocalizedString("As soon as your code is generated, it will be displayed here", comment: "DashSpend"))
                     .font(.footnote)

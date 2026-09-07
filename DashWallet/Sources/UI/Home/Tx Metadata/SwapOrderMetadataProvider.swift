@@ -136,7 +136,7 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         return TxRowMetadata(
             title: title,
             details: statusLabel(for: order.status),
-            iconName: .custom("transaction-convert", bundle: .dashUIKit),
+            iconName: .custom(DashIcon.Transaction.convert.assetName, bundle: .dashUIKit),
             secondaryIcon: secondaryIcon(for: order.status)
         )
     }
@@ -148,7 +148,7 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     private func secondaryIcon(for status: SwapOrderStatus) -> IconName? {
         switch status {
         case .refunded, .failed, .expired:
-            return .custom("additional-info-error", bundle: .dashUIKit)
+            return .custom(DashIcon.AdditionalInfo.error.assetName, bundle: .dashUIKit)
         case .notStarted, .pending, .swapping, .unknown, .completed:
             return nil
         }

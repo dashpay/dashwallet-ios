@@ -375,6 +375,24 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     if (self.walletWipeInProgress) {
         return;
     }
+    // The admission gate rejects while another lifecycle operation (network
+    // or wallet switch, removal) is in flight — a concurrent wipe would
+    // mutate wallet state under that operation's teardown/rebuild. On
+    // success the app-wide overlay window shows the blocking wipe card
+    // (shared with network/wallet switches), replacing the screen-local HUD.
+    if (![DWWalletLifecycleOverlayBridge beginWipingWithTitle:nil]) {
+        // A silently swallowed confirm on a destructive action is worse than
+        // a redundant alert — say why nothing happened.
+        UIAlertController *alert =
+            [UIAlertController alertControllerWithTitle:nil
+                                                message:NSLocalizedString(@"Another wallet operation is already in progress.", nil)
+                                         preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
+                                                  style:UIAlertActionStyleCancel
+                                                handler:nil]];
+        [self.currentController presentViewController:alert animated:YES completion:nil];
+        return;
+    }
     self.walletWipeInProgress = YES;
 
     UIViewController *setupController = [self setupController];
@@ -384,26 +402,31 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     [self.model.homeModel walletDidWipe];
     _mainController = nil;
 
-    [setupController.view dw_showProgressHUDWithMessage:NSLocalizedString(@"Deleting All Wallets…", nil)];
-
     __weak typeof(self) weakSelf = self;
     // The SDK delete is synchronous on MainActor. Let UIKit commit the setup
-    // screen and HUD first; otherwise the first visible frame is only drawn
-    // after the blocking deletion has already finished.
+    // screen and the overlay first; otherwise the first visible frame is only
+    // drawn after the blocking deletion has already finished.
     dispatch_time_t startTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC));
     dispatch_after(startTime, dispatch_get_main_queue(), ^{
         typeof(self) strongSelf = weakSelf;
         if (strongSelf == nil) {
+            // The gate was already taken above — release it, or `.wiping`
+            // (and its blocking overlay) would outlive a wipe that never
+            // started.
+            [DWWalletLifecycleOverlayBridge finishWiping];
             return;
         }
 
         [DWSwiftDashSDKWalletWiper wipeWalletWithAuthorization:authorization];
         [DWSwiftDashSDKWalletWiper waitForPendingWipeWithCompletion:^(BOOL wipeSucceeded) {
+            // Drop the overlay before anything self-dependent: the wiping
+            // phase must never outlive the barrier, even if this controller
+            // has gone away by the time it completes.
+            [DWWalletLifecycleOverlayBridge finishWiping];
             typeof(self) completedSelf = weakSelf;
             if (completedSelf == nil) {
                 return;
             }
-            [setupController.view dw_hideProgressHUD];
             completedSelf.walletWipeInProgress = NO;
             if (!wipeSucceeded) {
                 [completedSelf presentWalletWipeFailureForAuthorization:authorization];

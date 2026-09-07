@@ -18,7 +18,7 @@
 //
 
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 final class ExchangeAddressLookupContextTests: XCTestCase {
 

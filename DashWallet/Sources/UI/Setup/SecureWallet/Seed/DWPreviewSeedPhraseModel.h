@@ -25,6 +25,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, class, nonatomic, assign) BOOL shouldVerifyPassphrase;
 
+/// BIP39 word count used when `getOrCreateNewWallet` has to generate a fresh
+/// phrase (12 or 24, as picked on the backup-info screen). Defaults to 12.
+/// Ignored once a phrase exists — it never changes an existing wallet.
+@property (nonatomic, assign) NSUInteger newWalletWordCount;
+
 - (instancetype)initWithExistingSeedPhrase:(NSString *)seedPhrase;
 - (DWSeedPhraseModel *)getOrCreateNewWallet;
 - (void)clearAllWallets;

@@ -76,16 +76,46 @@ public final class WalletEnvironment: NSObject {
         }
     }
 
+    /// Origin of a network switch, carried in the change notification's
+    /// `userInfo` so `SwiftDashSDKWalletRuntime`'s observer can tell a
+    /// managed switch (the runtime's `switchNetwork(to:)` owns the mirror
+    /// zeroing and the lifecycle refresh itself) from an external write
+    /// (recovery, sole-network selection), which still gets the full
+    /// observer behavior. Other listeners (DWRootModel, HomeViewModel,
+    /// CrowdNode, …) ignore `userInfo` and are unaffected.
+    public enum NetworkSwitchSource {
+        case external
+        case managedSwitch(transitionID: String)
+    }
+
+    /// `userInfo` keys of `DWCurrentNetworkDidChangeNotification`.
+    static let networkChangeSourceKey = "DWNetworkChangeSource"
+    static let networkChangeTransitionIDKey = "DWNetworkChangeTransitionID"
+    private static let managedSwitchSourceValue = "managed-switch"
+
+    /// Whether this `DWCurrentNetworkDidChange` notification was posted by a
+    /// managed switch (`switchNetwork(to:)`), i.e. the runtime observer must
+    /// NOT drive the lifecycle for it.
+    nonisolated static func isManagedSwitchNotification(_ note: Notification) -> Bool {
+        note.userInfo?[networkChangeSourceKey] as? String == managedSwitchSourceValue
+    }
+
     /// Switches the persisted network selection. Returns `true` when the app
     /// is on `kind` afterwards (including the already-there no-op), `false`
     /// for `.devnet` (no SDK network exists for it).
     ///
     /// Posting `DWCurrentNetworkDidChangeNotification` is what actually moves
     /// the app: the SDK wallet runtime restarts SPV for the new network and
-    /// DWRootModel rebuilds the home stack.
+    /// DWRootModel rebuilds the home stack. A `.managedSwitch` source marks
+    /// the notification so the runtime observer skips its lifecycle reaction
+    /// (the caller owns exactly one refresh); every other listener behaves
+    /// identically for both sources.
     @MainActor
     @discardableResult
-    public static func switchToNetwork(_ kind: NetworkKind) -> Bool {
+    public static func switchToNetwork(
+        _ kind: NetworkKind,
+        source: NetworkSwitchSource = .external
+    ) -> Bool {
         guard kind != networkKind else { return true }
         guard kind != .devnet else { return false }
 
@@ -101,7 +131,17 @@ public final class WalletEnvironment: NSObject {
         DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted = false
 
         UserDefaults.standard.set(kind.rawValue, forKey: currentChainTypeKey)
-        NotificationCenter.default.post(name: NSNotification.Name.DWCurrentNetworkDidChange, object: nil)
+        var userInfo: [AnyHashable: Any]?
+        if case .managedSwitch(let transitionID) = source {
+            userInfo = [
+                networkChangeSourceKey: managedSwitchSourceValue,
+                networkChangeTransitionIDKey: transitionID,
+            ]
+        }
+        NotificationCenter.default.post(
+            name: NSNotification.Name.DWCurrentNetworkDidChange,
+            object: nil,
+            userInfo: userInfo)
         return true
     }
 

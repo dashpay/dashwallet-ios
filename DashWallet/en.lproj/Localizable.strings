@@ -270,6 +270,7 @@
 "Add at least %@ Dash to your Shielded balance" = "Add at least %@ Dash to your Shielded balance";
 
 /* Usernames */
+"Add this masternode's operator key to unban it from here." = "Add this masternode's operator key to unban it from here.";
 "Add to your Shielded balance now and register your username privately a few hours later" = "Add to your Shielded balance now and register your username privately a few hours later";
 
 /* Wallets */
@@ -287,6 +288,9 @@
 /* Maya
    SwapKit */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+
+/* No comment provided by engineer. */
+"Advanced" = "Advanced";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Advanced Security";
@@ -374,6 +378,9 @@
 
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved";
+
+/* Recovery phrase backup: security warning body — anyone with the phrase can spend the funds */
+"Anyone that has your recovery phrase can access your funds." = "Anyone that has your recovery phrase can access your funds.";
 
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Anyone who knows an address can view its history";
@@ -563,9 +570,12 @@
 "Bound to contract, document type “%@”" = "Bound to contract, document type “%@”";
 
 /* No comment provided by engineer. */
+"Broadcast" = "Broadcast";
 "Broadcasting" = "Broadcasting";
 
 /* InternalTransfer recovery */
+"Broadcasting…" = "Broadcasting…";
+"Build and sign the transaction and show it here, so you can check it before it's broadcast." = "Build and sign the transaction and show it here, so you can check it before it's broadcast.";
 "Building the privacy proof can take up to a minute. Keep the app open." = "Building the privacy proof can take up to a minute. Keep the app open.";
 
 /* Log export */
@@ -583,6 +593,9 @@
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Buy a Gift Card";
+
+/* Username marketplace: profile entry point subtitle */
+"Buy a listed name or register an available one" = "Buy a listed name or register an available one";
 
 /* Dash Service Overview */
 "Buy and convert Dash with another crypto" = "Buy and convert Dash with another crypto";
@@ -663,6 +676,7 @@
 "Challenge" = "Challenge";
 
 /* SPV sync */
+"Change" = "Change";
 "Change peers" = "Change peers";
 
 /* No comment provided by engineer. */
@@ -708,6 +722,7 @@
 "Complete Transfer" = "Complete Transfer";
 
 /* Shielded transfer status */
+"Complete unban" = "Complete unban";
 "Completed" = "Completed";
 
 /* Balance info sheet section */
@@ -732,6 +747,7 @@
 "DashPay enabled" = "DashPay enabled";
 
 /* Identity top-up sheet — custom amount below the floor */
+"Discard" = "Discard";
 "Enter at least %@ DASH" = "Enter at least %@ DASH";
 
 /* Identity top-up sheet — fee estimate line */
@@ -752,7 +768,14 @@
 /* Identity top-up sheet — linkability warning for transparent-side sources */
 "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance.";
 
+/* Username marketplace: profile entry point */
+"Get a username" = "Get a username";
+
+/* Username marketplace: profile entry point */
+"Get another username" = "Get another username";
+
 /* DashPay FAQ */
+"Funds are on the way…" = "Funds are on the way…";
 "How does this compare to Bitcoin in terms of privacy?" = "How does this compare to Bitcoin in terms of privacy?";
 
 /* DashPay FAQ */
@@ -771,6 +794,7 @@
 "In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames.";
 
 /* Username marketplace: search row for a label a past vote locked */
+"Inputs" = "Inputs";
 "Locked by a network vote — nobody can register it" = "Locked by a network vote — nobody can register it";
 
 /* Username marketplace: latest ownership change */
@@ -789,6 +813,8 @@
 "Listing is a network transaction with a small fee, paid from your identity balance." = "Listing is a network transaction with a small fee, paid from your identity balance.";
 
 /* DashPay: banner fallback when the identity has no name yet */
+"Move %@ from shielded balance" = "Move %@ from shielded balance";
+"Moving funds from the shielded balance…" = "Moving funds from the shielded balance…";
 "My identity" = "My identity";
 
 /* Username marketplace: owned names segment */
@@ -804,6 +830,12 @@
 "Completing your purchase…" = "Completing your purchase…";
 
 /* Usernames */
+"Non-standard output" = "Non-standard output";
+"Operator payout address" = "Operator payout address";
+"Operator signature (BLS)" = "Operator signature (BLS)";
+"Platform P2P port" = "Platform P2P port";
+"Provider update payload" = "Provider update payload";
+"Receive some DASH to this wallet, or fund its shielded balance, then return here." = "Receive some DASH to this wallet, or fund its shielded balance, then return here.";
 "Register username" = "Register username";
 
 /* Username marketplace: activity overlay while the delist transition runs */
@@ -813,21 +845,34 @@
 "Listing for sale…" = "Listing for sale…";
 
 /* Usernames */
+"Review transaction first" = "Review transaction first";
 "Submit both usernames" = "Submit both usernames";
 
 /* Usernames */
 "Temporary username" = "Temporary username";
 
 /* Usernames */
+"The masternode list doesn't carry an evonode's Platform P2P port, so it must be confirmed here. 26656 is the standard port — change it only if this node uses another." = "The masternode list doesn't carry an evonode's Platform P2P port, so it must be confirmed here. 26656 is the standard port — change it only if this node uses another.";
+"The masternode list hasn't synced yet. Wait for sync to finish and try again." = "The masternode list hasn't synced yet. Wait for sync to finish and try again.";
+"The masternode should return to the valid list within a few blocks. Refresh its details in a few minutes." = "The masternode should return to the valid list within a few blocks. Refresh its details in a few minutes.";
+"The operator key is missing from the keychain — re-add it and try again." = "The operator key is missing from the keychain — re-add it and try again.";
 "The temporary username must not itself require voting." = "The temporary username must not itself require voting.";
 
 /* Usernames */
+"The transfer settles through the network's withdrawal queue — usually a few minutes. You can close this sheet and come back; the unban resumes where it left off." = "The transfer settles through the network's withdrawal queue — usually a few minutes. You can close this sheet and come back; the unban resumes where it left off.";
+"The unban was sent but its result couldn't be confirmed. Don't retry — check the masternode's status again in a few minutes." = "The unban was sent but its result couldn't be confirmed. Don't retry — check the masternode's status again in a few minutes.";
+"The wallet has no spendable DASH for the network fee." = "The wallet has no spendable DASH for the network fee.";
+"The withdrawal settles through the network's withdrawal queue — usually a few minutes. You can close this sheet; \"Complete unban\" appears on the masternode until it's done." = "The withdrawal settles through the network's withdrawal queue — usually a few minutes. You can close this sheet; \"Complete unban\" appears on the masternode until it's done.";
+"This is the signed transaction, exactly as it will be broadcast." = "This is the signed transaction, exactly as it will be broadcast.";
+"This masternode pays an operator reward, and the update replaces its payout address on-chain — confirm the address the operator reward should keep paying." = "This masternode pays an operator reward, and the update replaces its payout address on-chain — confirm the address the operator reward should keep paying.";
+"This masternode uses extended (v3) network info, which this wallet can't re-assert yet. Unban it with dash-cli instead." = "This masternode uses extended (v3) network info, which this wallet can't re-assert yet. Unban it with dash-cli instead.";
 "This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name.";
 
 /* Usernames */
 "This username would also require voting — try adding a digit between 2 and 9" = "This username would also require voting — try adding a digit between 2 and 9";
 
 /* Username marketplace: activity overlay while the transfer transition runs */
+"This wallet doesn't hold this masternode's operator key, so it can't be unbanned from here." = "This wallet doesn't hold this masternode's operator key, so it can't be unbanned from here.";
 "Transferring the username…" = "Transferring the username…";
 
 /* Username marketplace: activity overlay while the registration transition runs */
@@ -882,6 +927,11 @@
 "Lock the name" = "Lock the name";
 
 /* Username marketplace: contest voting deadline row */
+"Unban" = "Unban";
+"Unban masternode" = "Unban masternode";
+"Unban submitted" = "Unban submitted";
+"Unban submitted — the masternode list updates within a few blocks." = "Unban submitted — the masternode list updates within a few blocks.";
+"Unbanning broadcasts a provider update signed with the operator key, re-asserting the service address shown above. The masternode returns to the valid list within a few blocks." = "Unbanning broadcasts a provider update signed with the operator key, re-asserting the service address shown above. The masternode returns to the valid list within a few blocks.";
 "Vote ends" = "Vote ends";
 
 /* Username marketplace: until when other identities can join the contest */
@@ -895,6 +945,9 @@
 
 /* Username marketplace: masternode vote tally for one contest row */
 "%d votes" = "%d votes";
+
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break.";
 
 /* Username marketplace: unresolvable transfer recipient */
 "No identity owns that username." = "No identity owns that username.";
@@ -1266,6 +1319,9 @@
 /* Uphold Entry Point */
 "Dash balance on Uphold" = "Dash balance on Uphold";
 
+/* Recovery phrase backup: security warning title — Dash Core Group does not store the phrase */
+"Dash Core Group does NOT store this recovery phrase" = "Dash Core Group does NOT store this recovery phrase";
+
 /* Dash DEX Portal
    Translate it as short as possible! (24 symbols max) */
 "Dash DEX" = "Dash DEX";
@@ -1371,7 +1427,7 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu.";
 
 /* Identities: this identity key was disabled on Platform */
 "Disabled" = "Disabled";
@@ -2854,8 +2910,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds.";
 
+/* DashSpend */
+"Could not load your gift card" = "Could not load your gift card";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "Your mixed coins were moved to your Dash Wallet balance.";
+
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again.";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed.";
 
 /* No comment provided by engineer. */
 "Moved from" = "Moved from";
@@ -3552,6 +3617,9 @@
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase length */
+"Recovery phrase length" = "Recovery phrase length";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -5125,7 +5193,10 @@
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
 
 /* Wallets */
-"Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
+
+/* Recovery phrase backup: security warning body — keep the phrase written down and private */
+"Write it in a safe place and don’t show it to anyone." = "Write it in a safe place and don’t show it to anyone.";
 
 /* No comment provided by engineer. */
 "XpEBa5... or BIP21 URI" = "XpEBa5... or BIP21 URI";
@@ -5288,6 +5359,9 @@
 
 /* Back up wallet */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device.";
+
+/* Recovery phrase backup: security warning title — the phrase is required to restore the wallet */
+"You will NOT be able to restore the wallet without a recovery phrase" = "You will NOT be able to restore the wallet without a recovery phrase";
 
 /* Coinbase */
 "You will receive" = "You will receive";
@@ -5633,3 +5707,160 @@
 "Nodes, epoch day %d, %@ blocks proposed this epoch" = "Nodes, epoch day %d, %@ blocks proposed this epoch";
 "an evonode has not proposed a block in 2 days" = "an evonode has not proposed a block in 2 days";
 "an evonode has no blocks this epoch" = "an evonode has no blocks this epoch";
+
+"A key doesn't match this masternode — fix or clear it to continue." = "A key doesn't match this masternode — fix or clear it to continue.";
+
+"Add keys" = "Add keys";
+
+"Add masternode" = "Add masternode";
+
+"Add this node's owner key or payout address key to withdraw from here." = "Add this node's owner key or payout address key to withdraw from here.";
+
+"Already one of this wallet's masternodes — it's in the list above." = "Already one of this wallet's masternodes — it's in the list above.";
+
+"Already tracked." = "Already tracked.";
+
+"Any keys you added for it are deleted from this device's keychain too." = "Any keys you added for it are deleted from this device's keychain too.";
+
+"Available" = "Available";
+
+"BLS private key (hex)" = "BLS private key (hex)";
+
+"Can't verify yet" = "Can't verify yet";
+
+"Could not load the node's registration details — owner and payout keys will verify later." = "Could not load the node's registration details — owner and payout keys will verify later.";
+
+"Could not save a key to the keychain. Nothing was lost — try again." = "Could not save a key to the keychain. Nothing was lost — try again.";
+
+"Destination address (optional)" = "Destination address (optional)";
+
+"Doesn't match" = "Doesn't match";
+
+"Find" = "Find";
+
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node.";
+
+"IP address, proTxHash or private key" = "IP address, proTxHash or private key";
+
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "Keys are stored in this device's keychain and never leave it except to sign the action you request.";
+
+"Keys on this device" = "Keys on this device";
+
+"Label (optional)" = "Label (optional)";
+
+"Loading registration details…" = "Loading registration details…";
+
+"Matches" = "Matches";
+
+"Matches this node's %@ key" = "Matches this node's %@ key";
+
+"No masternode on the list matches that." = "No masternode on the list matches that.";
+
+"Node key (base64 or hex)" = "Node key (base64 or hex)";
+
+"Not added" = "Not added";
+
+"On this device" = "On this device";
+
+"Operator payout" = "Operator payout";
+
+"Payout" = "Payout";
+
+"Platform could not be reached, so owner and payout keys were not checked." = "Platform could not be reached, so owner and payout keys were not checked.";
+
+"PoSe banned" = "PoSe banned";
+
+"Private key (WIF or hex)" = "Private key (WIF or hex)";
+
+"Refresh details" = "Refresh details";
+
+"Refreshing…" = "Refreshing…";
+
+"Save keys" = "Save keys";
+
+"Search Platform too" = "Search Platform too";
+
+"Searching…" = "Searching…";
+
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "Signing with the owner key — the withdrawal goes to the registered payout address.";
+
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "Signing with the payout address key. Leave the destination empty to withdraw to the payout address.";
+
+"Stop tracking" = "Stop tracking";
+
+"Stop tracking this masternode?" = "Stop tracking this masternode?";
+
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "That could also be an owner or payout key — turn on “Search Platform too” to check.";
+
+"The signing key is missing from the keychain — re-add it and try again." = "The signing key is missing from the keychain — re-add it and try again.";
+
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles.";
+
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "Track any masternode or evonode on the network — it doesn't have to belong to this wallet.";
+
+"Track this masternode" = "Track this masternode";
+
+"Tracked" = "Tracked";
+
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later.";
+
+"Withdrawing…" = "Withdrawing…";
+
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button.";
+
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "This evonode's DAPI address isn't known, so it can't be asked for its status.";
+"Couldn't get the evonode's status." = "Couldn't get the evonode's status.";
+"The evonode didn't answer in time." = "The evonode didn't answer in time.";
+"Couldn't reach the evonode." = "Couldn't reach the evonode.";
+"The evonode's answer couldn't be read." = "The evonode's answer couldn't be read.";
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "The node's own report, unverified — what it says about itself, not what the network has agreed on.";
+"Asked" = "Asked";
+"Software" = "Software";
+"DAPI" = "DAPI";
+"Drive" = "Drive";
+"Tenderdash" = "Tenderdash";
+"Protocol versions" = "Protocol versions";
+"Tenderdash P2P" = "Tenderdash P2P";
+"Tenderdash block" = "Tenderdash block";
+"Drive current" = "Drive current";
+"Drive latest" = "Drive latest";
+"Drive next epoch" = "Drive next epoch";
+"Node ID" = "Node ID";
+"Identity check" = "Identity check";
+"Chain" = "Chain";
+"Catching up" = "Catching up";
+"Latest block height" = "Latest block height";
+"Earliest block height" = "Earliest block height";
+"Max peer block height" = "Max peer block height";
+"Core chain-locked height" = "Core chain-locked height";
+"Latest block hash" = "Latest block hash";
+"Latest app hash" = "Latest app hash";
+"Earliest block hash" = "Earliest block hash";
+"Earliest app hash" = "Earliest app hash";
+"Chain ID" = "Chain ID";
+"Peers" = "Peers";
+"Listening" = "Listening";
+"State sync" = "State sync";
+"Total synced time" = "Total synced time";
+"Remaining time" = "Remaining time";
+"Total snapshots" = "Total snapshots";
+"Chunk process avg time" = "Chunk process avg time";
+"Snapshot height" = "Snapshot height";
+"Snapshot chunks" = "Snapshot chunks";
+"Backfilled blocks" = "Backfilled blocks";
+"Backfill blocks total" = "Backfill blocks total";
+"Time" = "Time";
+"Node clock" = "Node clock";
+"Latest block" = "Latest block";
+"Genesis" = "Genesis";
+"Epoch" = "Epoch";
+"Matches this evonode" = "Matches this evonode";
+"Differs from this evonode" = "Differs from this evonode";
+"Not reported" = "Not reported";
+"%.3f s" = "%.3f s";
+"Node status" = "Node status";
+"Asking the evonode…" = "Asking the evonode…";
+"Request status" = "Request status";
+
+/* Receive: the QR image doubles as a copy control */
+"Copy QR code" = "Copy QR code";

@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct SwapKitPortalView: View {
     var onBack: () -> Void
@@ -26,7 +27,7 @@ struct SwapKitPortalView: View {
 
     var body: some View {
         SwapPortalScaffold(
-            logoIcon: .custom("illustration-dash-dex", bundle: .dashUIKit),
+            logoIcon: DashIcon.Illustrations.dashDex.source,
             title: NSLocalizedString("Dash DEX", comment: "Dash DEX Portal"),
             description: NSLocalizedString(
                 "Swap crypto into Dash, or convert Dash to any crypto supported across SwapKit networks",

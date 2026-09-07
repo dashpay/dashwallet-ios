@@ -306,8 +306,29 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
             giftCardNote = response.id
 
-            // CTX uses BIP70 payment request URLs
-            txidWire = try await sendCoinsService.payWithDashUrl(url: url)
+            // CTX uses BIP70 payment request URLs. The acceptance verdict is not awaited: CTX
+            // acknowledges the signed transaction and starts fulfilling the order from it, so
+            // blocking the buyer for the SDK's 30 s acceptance window only delays the card that
+            // is already being issued (the email routinely arrived before the screen moved on).
+            do {
+                txidWire = try await sendCoinsService.payWithDashUrl(url: url, awaitAcceptance: false)
+            } catch DashSpendError.paymentNotAcknowledged(let unacknowledgedTxIdWire, let reason) {
+                // Same loss, one step earlier: the network dropped between posting the payment
+                // and reading the acknowledgement. Record the order — CTX may be fulfilling it
+                // already — but keep the error, since we genuinely cannot say it was received.
+                DWLogger.log("Gift card payment unacknowledged, recording the order anyway: \(reason)")
+                recordPurchase(txidWire: unacknowledgedTxIdWire, giftCardNote: giftCardNote)
+                throw DashSpendError.paymentNotAcknowledged(
+                    txIdWire: unacknowledgedTxIdWire, reason: reason)
+            } catch DashSpendError.paymentStatusUnknown(let unconfirmedTxIdWire, let reason) {
+                // The payment left the device and CTX holds the signed bytes; only the
+                // network's acceptance verdict is missing. Record the purchase against the
+                // txid we do have so the order survives — without this the customer pays,
+                // CTX fulfils the order, and the app keeps no trace of the card at all.
+                DWLogger.log("Gift card payment status unknown, recording the order anyway: \(reason)")
+                recordPurchase(txidWire: unconfirmedTxIdWire, giftCardNote: giftCardNote)
+                throw DashSpendError.paymentStatusUnknown(txIdWire: unconfirmedTxIdWire, reason: reason)
+            }
 
         #if PIGGYCARDS_ENABLED
         case .piggyCards:
@@ -354,11 +375,18 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
 
         // Payment successful - save gift card information
+        recordPurchase(txidWire: txidWire, giftCardNote: giftCardNote)
+
+        return txidWire
+    }
+
+    /// Persist everything that ties a paid order to its transaction: the tax/service metadata,
+    /// the merchant icon, and the `gift_cards` row whose `note` carries the order id the
+    /// details poller needs. Shared by the confirmed and the unconfirmed-broadcast paths.
+    private func recordPurchase(txidWire: Data, giftCardNote: String) {
         markGiftCardTransaction(txId: txidWire, provider: provider.displayName)
         customIconProvider.updateIcon(txId: txidWire, iconUrl: merchantIconUrl)
         saveGiftCardDummy(txHashData: txidWire, giftCardNote: giftCardNote)
-
-        return txidWire
     }
 
     var contactSupportButtonText: String {

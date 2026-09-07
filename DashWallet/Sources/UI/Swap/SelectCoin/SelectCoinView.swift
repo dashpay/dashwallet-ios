@@ -60,7 +60,7 @@ struct SelectCoinView: View {
             VStack(spacing: 0) {
                 DashUIKit.NavigationBar(
                     leading: { DashUIKit.NavigationBarElement.back.button { onBack?() } },
-                    central: { Text(NSLocalizedString("Select coin", comment: "Dash DEX")).font(Font.dash.subheadMedium) }
+                    central: { Text(NSLocalizedString("Select coin", comment: "Dash DEX")).dashFont(.subheadMedium) }
                 )
                 mainContent
             }
@@ -159,7 +159,7 @@ struct SelectCoinView: View {
         VStack {
             VStack(spacing: Layout.emptyStateSpacing) {
                 Text(NSLocalizedString("No coins found", comment: "Dash DEX"))
-                    .font(Font.dash.footnote)
+                    .dashFont(.footnote)
                     .foregroundColor(Color.dash.gray500)
             }
             .padding(10)

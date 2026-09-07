@@ -9,6 +9,9 @@
 /* CrowdNode */
 " Terms of Use " = " Terms of Use ";
 
+/* Username marketplace: listing success — name, then price */
+"%1$@ listed for %2$@ DASH" = "%1$@ har lagts ut för %2$@ DASH";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -20,6 +23,12 @@
 
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "%@ kunde inte hittas på Dash-nätverket för att skicka en kontaktförfrågan.";
+
+/* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
+"%@ couldn't be verified on the Dash network. The QR code may be outdated." = "%@ kunde inte verifieras i Dash-nätverket. QR-koden kan vara inaktuell.";
+
+/* Username marketplace: contested request cost value — the vote-resolution fund amount */
+"%@ DASH + network fee" = "%@ DASH + nätverksavgift";
 
 /* Usernames */
 "%@ Dash available" = "%@ Dash tillgängligt";
@@ -42,6 +51,9 @@
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@ has sent you a contact request";
 
+/* Username marketplace: delist success */
+"%@ is no longer for sale" = "%@ är inte längre till salu";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
@@ -51,8 +63,17 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
+/* Username marketplace: purchase success */
+"%@ is now yours" = "%@ är nu ditt";
+
+/* Username marketplace: registration success */
+"%@ registered" = "%@ registrerat";
+
 /* Testnet faucet */
 "%@ tDash requested — it will arrive shortly" = "%@ tDash requested — it will arrive shortly";
+
+/* Username marketplace: transfer success */
+"%@ transferred" = "%@ överfört";
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
@@ -171,6 +192,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "En röstning om det här namnet pågår redan — din begäran ansluter till den som utmanare. Tävlingsavgiften dras när du skickar in och betalas inte tillbaka, även om du inte vinner namnet.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -182,6 +206,9 @@
 
 /* No comment provided by engineer. */
 "About me" = "About me";
+
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "Om identitetskontots saldo";
 
 "Abstain" = "Avstå";
 
@@ -235,6 +262,9 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "Add a New Contact";
 
+/* Usernames */
+"Add a temporary username" = "Lägg till ett tillfälligt användarnamn";
+
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
 
@@ -259,6 +289,9 @@
 /* Maya
    SwapKit */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+
+/* No comment provided by engineer. */
+"Advanced" = "Avancerat";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Advanced Security";
@@ -315,6 +348,9 @@
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Amount in Dash";
 
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "Belopp i DASH";
+
 /* No comment provided by engineer. */
 "Amount received" = "Amount received";
 
@@ -348,8 +384,14 @@
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved";
 
+/* Recovery phrase backup: security warning body — anyone with the phrase can spend the funds */
+"Anyone that has your recovery phrase can access your funds." = "Vem som helst som har din återställningsfras kan komma åt dina medel.";
+
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Alla som känner till en adress kan se dess historik";
+
+/* Username marketplace: set price sheet body */
+"Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance." = "Vem som helst kommer att kunna köpa namnet till exakt det här priset. Intäkten kommer in som krediter på ditt identitetssaldo.";
 
 /* AboutDash */
 "App version" = "App version";
@@ -430,8 +472,17 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "Autodölj Belopp";
 
+/* DashPay */
+"Available after sync finishes" = "Tillgängligt när synkroniseringen är klar";
+
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
+
+/* Username marketplace: unregistered name row */
+"Available — register it on your identity" = "Ledigt — registrera det på din identitet";
+
+/* Username marketplace: unregistered contested-eligible name row */
+"Available — short names are decided by a network vote" = "Ledigt — korta namn avgörs genom en nätverksröstning";
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
@@ -525,6 +576,9 @@
 /* Voting */
 "Blocked '%@' username" = "Blocked '%@' username";
 
+/* Username marketplace: history — purchase with buyer, seller, price */
+"Bought by %1$@ from %2$@ for %3$@ DASH" = "Köpt av %1$@ från %2$@ för %3$@ DASH";
+
 /* Identities: this key only signs for one data contract */
 "Bound to contract" = "Bunden till kontrakt";
 
@@ -573,6 +627,9 @@
 /* Swap */
 "Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
 
+/* Username marketplace: purchase button */
+"Buy for %@ DASH" = "Köp för %@ DASH";
+
 /* DashSpend */
 "Buy gift card" = "Buy gift card";
 
@@ -581,6 +638,12 @@
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+
+/* Username marketplace: purchase confirmation title */
+"Buy “%@”?" = "Köpa ”%@”?";
+
+/* Username marketplace: Explore row subtitle */
+"Buy, sell and transfer DashPay usernames" = "Köp, sälj och överför DashPay-användarnamn";
 
 /* Buy/Sell */
 "Buy/Sell" = "Buy/Sell";
@@ -631,6 +694,9 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
+
+/* Username marketplace */
+"Change Price" = "Ändra pris";
 
 /* TimeSkew */
 "Check date & time settings" = "Check date & time settings";
@@ -713,6 +779,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "Kommer snart";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "Slutför överföringen";
+
 /* Shielded transfer status */
 "Completed" = "Slutförd";
 
@@ -782,6 +851,18 @@
 
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "Kontaktförfrågan skickad till %@";
+
+/* Usernames */
+"Continue without a temporary username" = "Fortsätt utan tillfälligt användarnamn";
+
+/* Identity top-up sheet — body */
+"Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Växla Dash till identitetskrediter för att betala Platform-åtgärder som kontaktförfrågningar och profiluppdateringar.";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "Överföringen kunde inte slutföras";
+
+/* Identity top-up sheet — free amount chip */
+"Custom" = "Anpassat";
 
 /* No comment provided by engineer. */
 "Contact Requests" = "Kontaktförfrågningar";
@@ -1005,6 +1086,9 @@
 /* Uphold Entry Point */
 "Dash balance on Uphold" = "Dash balance on Uphold";
 
+/* Recovery phrase backup: security warning title — Dash Core Group does not store the phrase */
+"Dash Core Group does NOT store this recovery phrase" = "Dash Core Group lagrar INTE den här återställningsfrasen";
+
 /* Dash DEX Portal
    Translate it as short as possible! (24 symbols max) */
 "Dash DEX" = "Dash DEX";
@@ -1042,6 +1126,27 @@
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "DashPay aktiverat";
 
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "Ange minst %@ DASH";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "Beräknade avgifter";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "Avgifterna dras från beloppet; från Shielded kan en liten rest bli kvar på ditt Platform-saldo.";
+
+/* Username marketplace: search segment */
+"Find Names" = "Hitta namn";
+
+/* Username marketplace: listed badge */
+"For sale" = "Till salu";
+
+/* Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app */
+"For sale by an independent user" = "Till salu av en oberoende användare";
+
+/* Identity top-up sheet — linkability warning for transparent-side sources */
+"Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Att finansiera från ett transparent saldo kopplar de mynten offentligt till din identitet på Dash-kedjan. För integritetens skull, betala från ditt Shielded-saldo.";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "DashPay Invitation";
 
@@ -1062,6 +1167,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "Datum";
+
+/* History group header for restored shielded operations whose original date is not recoverable */
+"Date unknown" = "Okänt datum";
 
 /* Voting */
 "Date: New to old" = "Date: New to old";
@@ -1085,6 +1193,9 @@
 
 /* No comment provided by engineer. */
 "Delete Wallet?" = "Delete Wallet?";
+
+/* SPV diagnostics */
+"Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network." = "Raderar plånbokens obekräftade transaktioner enbart från den här enheten och frigör mynten som de försökte spendera. Omskanningen av filter återställer de av dem som faktiskt finns på blockkedjan. Ingenting skickas till nätverket.";
 
 /* Location Service Status */
 "Denied" = "Denied";
@@ -1116,6 +1227,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu." = "ENHETENS SÄKERHET ÄR KOMPROMETTERAD\nAlla ”jailbreak”-appar kan komma åt andra appars nyckelringsdata (och stjäla dina Dash). Flytta dina medel till en plånbok på en säker enhet och återställ sedan den här plånboken med ”Återställ plånbok” i säkerhetsmenyn.";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.";
@@ -1169,6 +1283,27 @@
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
 "DPNS Names" = "DPNS Names";
+
+/* SPV diagnostics */
+"Drop & rescan" = "Släng och skanna om";
+
+/* SPV diagnostics */
+"Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network." = "Slänger från den här enheten de av plånbokens transaktioner som fortfarande väntar på nätverket (aldrig låsta eller minade), gör mynten som de försökte spendera tillgängliga igen och skannar om de senaste filtren. En slängd transaktion som faktiskt finns på blockkedjan kommer tillbaka av sig själv under omskanningen. Ingenting skickas till nätverket.";
+
+/* SPV diagnostics */
+"Drop Unconfirmed & Rescan" = "Släng obekräftade och skanna om";
+
+/* SPV diagnostics */
+"Drop unconfirmed transactions?" = "Slänga obekräftade transaktioner?";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row." = "Slängde %d obekräftade transaktioner — filtren skannas om, håll koll på raden Filter.";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above." = "Slängde %d obekräftade transaktioner, men omskanningen av filter kunde inte starta — kör ”Skanna om filter” ovan.";
+
+/* SPV diagnostics */
+"Dropping…" = "Slänger…";
 
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Due to CrowdNode’s terms of service users can withdraw no more than:";
@@ -1280,6 +1415,9 @@
 
 /* No comment provided by engineer. */
 "Enter your recovery phrase to reset your PIN" = "Enter your recovery phrase to reset your PIN";
+
+/* No comment provided by engineer. */
+"Enter your recovery phrase to set a new PIN" = "Ange din återställningsfras för att ange en ny PIN-kod";
 
 /* Voting */
 "Enter your voting key" = "Enter your voting key";
@@ -1665,6 +1803,42 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "Hur står sig detta mot Ethereum-konton när det gäller integritet?";
 
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "Identitetskontots saldo";
+
+/* Username marketplace: section of contested-name requests awaiting the masternode vote */
+"In network vote" = "I nätverksröstning";
+
+/* Username marketplace: search row for a contested label with an active vote by others */
+"In a network vote — you can join as a contender" = "I en nätverksröstning — du kan delta som utmanare";
+
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "Under tiden nås du på ”%1$@”, som förblir ditt. Om röstningen tilldelar dig ”%2$@” nås du på båda användarnamnen.";
+
+/* Username marketplace: search row for a label a past vote locked */
+"Locked by a network vote — nobody can register it" = "Låst av en nätverksröstning — ingen kan registrera det";
+
+/* Username marketplace: latest ownership change */
+"Last transferred" = "Senast överfört";
+
+/* Username marketplace: confirm listing button */
+"List For Sale" = "Lägg ut till salu";
+
+/* Username marketplace: own listed name */
+"Listed by you" = "Utlagt av dig";
+
+/* Username marketplace: history — price set */
+"Listed for %@ DASH" = "Utlagt för %@ DASH";
+
+/* Username marketplace: set price fee note */
+"Listing is a network transaction with a small fee, paid from your identity balance." = "Att lägga ut till salu är en nätverkstransaktion med en liten avgift som betalas från ditt identitetssaldo.";
+
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "Min identitet";
+
+/* Username marketplace: owned names segment */
+"My Names" = "Mina namn";
+
 /* DashPay FAQ */
 "How private is DashPay?" = "Hur privat är DashPay?";
 
@@ -2027,6 +2201,9 @@
 /* CrowdNode */
 "Leaving the pool" = "Leaving the pool";
 
+/* DashPay Contacts: caption under the user's own QR code */
+"Let another Dash Wallet user scan this code to add you as a contact." = "Låt en annan Dash Wallet-användare skanna den här koden för att lägga till dig som kontakt.";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Let me know when it’s done";
 
@@ -2099,6 +2276,51 @@
 "Lock" = "Lås";
 
 "Lock the name" = "Lås namnet";
+
+/* Username marketplace: contest voting deadline row */
+"Vote ends" = "Röstningen avslutas";
+
+/* Username marketplace: until when other identities can join the contest */
+"New contenders" = "Nya utmanare";
+
+/* Username marketplace: join deadline still open — value of the New contenders row */
+"can join until %@" = "kan delta till %@";
+
+/* Username marketplace: the contest's join window has passed — value of the New contenders row */
+"joining closed" = "anmälan stängd";
+
+/* Username marketplace: masternode vote tally for one contest row */
+"%d votes" = "%d röster";
+
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "12 ord är standard. 24 ord tar längre tid att skriva ner och återställa, men är avsevärt svårare att knäcka för avancerade datorsystem i en avlägsen framtid.";
+
+/* Username marketplace: unresolvable transfer recipient */
+"No identity owns that username." = "Ingen identitet äger det användarnamnet.";
+
+/* Username marketplace: names that were sold or transferred away */
+"No longer yours" = "Inte längre dina";
+
+/* Identity top-up sheet — missing unshield destination */
+"No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "Ingen Platform-mottagningsadress är tillgänglig ännu — vänta tills Platform-synkroniseringen är klar och försök igen.";
+
+/* Username marketplace: empty owned list */
+"No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "Inga användarnamn på den här identiteten ännu. Hitta ett att köpa eller registrera under fliken ”Hitta namn”.";
+
+/* Identity top-up sheet — insufficient funding source */
+"Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Otillräckliga medel på det här saldot: %@ DASH krävs, %@ DASH tillgängligt.";
+
+/* Username marketplace: insufficient balance hint */
+"Not enough identity credits for this purchase — top up from My Profile first." = "Inte tillräckligt med identitetskrediter för det här köpet — fyll på först via ”Min profil”.";
+
+/* Username marketplace: insufficient balance hint for a contested request */
+"Not enough identity credits for this request — top up from My Profile first." = "Inte tillräckligt med identitetskrediter för den här begäran — fyll på först via ”Min profil”.";
+
+/* Username marketplace: someone else's unlisted name */
+"Not for sale" = "Inte till salu";
+
+/* Username marketplace: own unlisted name */
+"Not listed for sale" = "Inte utlagt till salu";
 
 "Lock “%@” so nobody gets it" = "Lås ”%@” så att ingen får det";
 
@@ -2342,11 +2564,92 @@
 /* SDK identity profile sheet — title */
 "My Profile" = "My Profile";
 
+/* DashPay Contacts: shows the user's own contact QR code */
+"My QR" = "Min QR";
+
 /* No comment provided by engineer. */
 "Name" = "Name";
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Namntjänster som Unstoppable Domains kopplar ett läsbart namn till en fast offentlig adress på kedjan. Vem som helst kan slå upp namnet och se varje betalning som någonsin gjorts till det. Ett DashPay-användarnamn leder aldrig offentligt till en betalningsadress — adresser avslöjas bara inuti det krypterade utbytet med varje kontakt, så ditt namn och dina pengar förblir oförknippade för utomstående.";
+
+/* Username marketplace: contested request line — voting deadline */
+"Network vote ends %@" = "Nätverksröstningen avslutas %@";
+
+/* Username marketplace: activity overlay while the purchase transition runs */
+"Completing your purchase…" = "Slutför ditt köp…";
+
+/* Usernames */
+"Register username" = "Registrera användarnamn";
+
+/* Username marketplace: activity overlay while the delist transition runs */
+"Removing the listing…" = "Tar bort annonsen…";
+
+/* Username marketplace: activity overlay while the set-price transition runs */
+"Listing for sale…" = "Lägger ut till salu…";
+
+/* Usernames */
+"Submit both usernames" = "Skicka in båda användarnamnen";
+
+/* Usernames */
+"Temporary username" = "Tillfälligt användarnamn";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "Det tillfälliga användarnamnet får inte självt kräva röstning.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Det här namnet kräver en masternode-röstning. Tävlingsavgiften dras när du skickar in och betalas inte tillbaka, även om du inte vinner namnet.";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "Det här användarnamnet skulle också kräva röstning — prova att lägga till en siffra mellan 2 och 9";
+
+/* Username marketplace: activity overlay while the transfer transition runs */
+"Transferring the username…" = "Överför användarnamnet…";
+
+/* Username marketplace: activity overlay while the registration transition runs */
+"Registering the username…" = "Registrerar användarnamnet…";
+
+/* Username marketplace: activity overlay while the contested request transition runs */
+"Submitting your username request…" = "Skickar in din begäran om användarnamn…";
+
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "Bläddra";
+
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "Prisändringar";
+
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "Köp";
+
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "Utlagt för %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "Sålt för %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "Sålt för %1$@ DASH · %2$@ · %3$@ → %4$@";
+
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "Inte till salu just nu";
+
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "Inga namn är till salu i den senaste annonsaktiviteten. ”Visa mer” når längre bakåt.";
+
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "Inga köp i nätverket ännu.";
+
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "Läser in aktivitet…";
+
+/* Username marketplace: load older browse activity */
+"Show more" = "Visa mer";
+
+/* Username marketplace: contest tallies card title */
+"Network vote so far" = "Nätverksröstningen hittills";
+
+/* Username marketplace: contest with zero masternode votes so far */
+"No votes cast yet" = "Inga röster har lagts ännu";
 
 /* Swap route provider
    Swap route provider short */
@@ -2381,6 +2684,9 @@
 
 /* (List of) New (notifications) */
 "New" = "New";
+
+/* SPV diagnostics */
+"No unconfirmed transactions to drop." = "Inga obekräftade transaktioner att slänga.";
 
 /* CrowdNode */
 "New CrowdNode Account" = "New CrowdNode Account";
@@ -2563,6 +2869,15 @@
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "På Bitcoin finns inget namnlager, så folk delar och återanvänder adresser helt öppet — när en adress väl är känd kan allt den någonsin tagit emot kopplas till ägaren. Med DashPay är ditt användarnamn offentligt, men det pekar aldrig på en betalningsadress: adresser utbyts privat per kontakt och roterar, så att betala till ett namn avslöjar inte vart dina pengar går. Båda är transparenta kedjor, så kedjeanalys gäller fortfarande själva mynten.";
 
+/* DashPay Contacts: search results from DPNS, not the local contact list */
+"On the Dash network" = "I Dash-nätverket";
+
+/* Username marketplace */
+"Owned by you" = "Ägs av dig";
+
+/* Identity top-up sheet — funding source picker label */
+"Pay from" = "Betala från";
+
 /* Identities */
 "On Network" = "På nätverket";
 
@@ -2731,6 +3046,9 @@
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Betalningarna är privata: adresserna du utbyter med en kontakt färdas i en krypterad nyttolast som bara ni två kan läsa, och publiceras aldrig — därför går dina betalningar inte att enkelt koppla till ditt användarnamn. De är ändå vanliga betalningar på en transparent kedja: avancerad kedjeanalys kan läcka information. Shielded DashPay (kommer snart) täpper till den luckan. Själva kontaktförfrågningarna är för närvarande INTE privata: vem som helst kan se att två identiteter är kopplade. Privata kontaktförfrågningar är en funktion som kommer snart. Ditt användarnamn och din profil är också offentliga på Dash Platform.";
 
+/* Username marketplace: price placeholder */
+"Price in DASH" = "Pris i DASH";
+
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "Betalningar bekräftas på några sekunder med InstantSend";
 
@@ -2788,6 +3106,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN is always required to make a payment";
+
+/* No comment provided by engineer. */
+"PIN Not Set" = "PIN-kod ej angiven";
 
 /* Dash Platform chain */
 "Platform" = "Platform";
@@ -2993,6 +3314,9 @@
 /* Identities: what a public key is used for */
 "Purpose" = "Ändamål";
 
+/* Username marketplace */
+"Put Up For Sale" = "Bjud ut till salu";
+
 /* DashSpend */
 "Quantity" = "Quantity";
 
@@ -3028,6 +3352,96 @@
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Skrivskyddad";
+
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "Sänd om";
+
+/* Delete a never-accepted transaction from local wallet state */
+"Remove if Not on Network" = "Ta bort om den inte finns i nätverket";
+
+/* Remove never-accepted transaction: confirmation title */
+"Remove this transaction?" = "Ta bort den här transaktionen?";
+
+/* Remove never-accepted transaction: destructive confirm button */
+"Remove Transaction" = "Ta bort transaktion";
+
+/* Username marketplace: transfer recipient placeholder */
+"Recipient username or identity ID" = "Mottagarens användarnamn eller identitets-ID";
+
+/* Identity top-up sheet — shielded source note */
+"Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Rekommenderas: en överföring i två steg via din egen Platform-adress håller din identitet frikopplad från dina transparenta mynt.";
+
+/* Username marketplace: register sheet title */
+"Register “%@”" = "Registrera ”%@”";
+
+/* Username marketplace: registration date */
+"Registered" = "Registrerat";
+
+/* Username marketplace */
+"Remove From Sale" = "Ta bort från försäljning";
+
+/* Remove never-accepted transaction: progress */
+"Removing transaction…" = "Tar bort transaktionen…";
+
+/* Username marketplace: delist confirmation title */
+"Remove “%@” from sale?" = "Ta bort ”%@” från försäljning?";
+
+/* Username marketplace: history — delist (transfer to self) */
+"Removed from sale" = "Borttaget från försäljning";
+
+/* Username marketplace: delist confirmation body */
+"Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "Att ta bort annonsen är en nätverkstransaktion med en liten avgift som betalas från ditt identitetssaldo. Du behåller namnet.";
+
+/* Remove never-accepted transaction: refused because the explorer found it */
+"Transaction is known to the network" = "Transaktionen är känd för nätverket";
+
+/* Remove never-accepted transaction: refusal body */
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "En blockutforskare rapporterar att den här transaktionen är känd för Dash-nätverket. Den kan fortfarande vänta i mempoolen eller redan ingå i ett block, så den togs inte bort. Plånboken uppdaterar bekräftelsen automatiskt så snart den ingår i ett synkroniserat block.";
+
+/* Remove never-accepted transaction: success */
+"Transaction removed" = "Transaktionen borttagen";
+
+/* Remove never-accepted transaction: removed but the recovery rescan did not arm */
+"Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "Transaktionen borttagen — omskanningen kunde inte starta, kör ”Skanna om filter” i Core-synkroniseringsstatus";
+
+/* Remove never-accepted transaction: confirmation body */
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "Plånboken kontrollerar först en blockutforskare. En transaktion som är känd för nätverket — vare sig den väntar i mempoolen eller redan ingår i ett block — tas aldrig bort. Om transaktionen inte hittas raderas den från den här plånboken på den här enheten, och mynten som den försökte spendera blir tillgängliga igen. Därefter skannar plånboken om de senaste blocken som säkerhetskontroll. Ingenting skickas till nätverket.";
+
+/* Remove never-accepted transaction: failure title */
+"Couldn't remove the transaction" = "Transaktionen kunde inte tas bort";
+
+/* Remove never-accepted transaction: no local row */
+"This transaction is not in the local wallet." = "Den här transaktionen finns inte i den lokala plånboken.";
+
+/* Remove never-accepted transaction: local state says it's on-chain */
+"This transaction is confirmed and can't be removed." = "Den här transaktionen är bekräftad och kan inte tas bort.";
+
+/* Remove never-accepted transaction: explorer unreachable */
+"Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "Kunde inte nå en blockutforskare för att verifiera att transaktionen inte finns på blockkedjan. Kontrollera din anslutning och försök igen.";
+
+/* Username marketplace: contested request cost row */
+"Request cost" = "Kostnad för begäran";
+
+/* Username marketplace: contested request success */
+"Request for %@ submitted — masternodes now vote on it" = "Begäran om %@ har skickats — masternoderna röstar nu om den";
+
+/* Username marketplace: confirm contested request button */
+"Request Username" = "Begär användarnamn";
+
+/* Username marketplace: contested register sheet title */
+"Request “%@”" = "Begär ”%@”";
+
+/* Username marketplace: contested request not yet indexed by Platform */
+"Requested — waiting for the network vote" = "Begärt — väntar på nätverksröstningen";
+
+/* Username marketplace: search row for a contested label this identity already requested */
+"Requested by you — the network vote is in progress" = "Begärt av dig — nätverksröstningen pågår";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "Försöker överföra igen…";
+
+/* Username marketplace: screen subtitle */
+"Search usernames, buy ones that are for sale, and sell or transfer your own." = "Sök efter användarnamn, köp de som är till salu och sälj eller överför dina egna.";
 
 /* Usernames */
 "Ready around %@" = "Klart omkring %@";
@@ -3082,6 +3496,9 @@
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase length */
+"Recovery phrase length" = "Återställningsfrasens längd";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -3195,6 +3612,9 @@
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
+
+/* No comment provided by engineer. */
+"Completion unknown" = "Okänt slutförande";
 
 /* Location Service Status */
 "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "Återställda plånböcker kan inte alltid återskapa operationstypen. Den här posten rekonstruerades från anteckningsdata på kedjan.";
@@ -3322,6 +3742,9 @@
 /* Identities: DPP security level of a public key */
 "Security level" = "Säkerhetsnivå";
 
+/* Username marketplace: transfer sheet body */
+"Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "Skicka det här namnet till en annan identitet gratis. Överföringen tar även bort eventuell försäljningsannons. Detta går inte att ångra — den nya ägaren skulle behöva överföra det tillbaka.";
+
 /* DashSpend */
 "See card details" = "See card details";
 
@@ -3370,7 +3793,520 @@
 /* Coinbase */
 "Select the coin" = "Select the coin";
 
+/* Identities */
+"Select the username to display for this identity." = "Välj det användarnamn som ska visas för den här identiteten.";
+
 "Selecting fewer nodes reveals less about which masternodes you run." = "Att välja färre noder avslöjar mindre om vilka masternoder du driver.";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "%ld plånböcker hittades på den här enheten";
+
+/* No comment provided by engineer. */
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "%ld plånböcker från en tidigare installation finns lagrade på den här enheten. ”Radera alla” tar bort varje plånbok. Säkerhetskopiera varje återställningsfras innan du raderar.";
+
+/* No comment provided by engineer. */
+"Couldn’t Delete All Wallets" = "Kunde inte radera alla plånböcker";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Wallets" = "Kunde inte läsa plånböckerna";
+
+/* No comment provided by engineer. */
+"Delete All" = "Radera alla";
+
+/* No comment provided by engineer. */
+"Delete All Wallets?" = "Radera alla plånböcker?";
+
+/* No comment provided by engineer. */
+"Deleting All Wallets…" = "Raderar alla plånböcker…";
+
+/* No comment provided by engineer. */
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "Antalet plånböcker som lagras på den här enheten kunde inte verifieras. För att fortsätta krävs en bekräftelsefras från Dash Support innan någon plånbok raderas.";
+
+/* No comment provided by engineer. */
+"Keep Wallets" = "Behåll plånböckerna";
+
+/* No comment provided by engineer. */
+"No stored wallets were found. Nothing was deleted." = "Inga lagrade plånböcker hittades. Ingenting raderades.";
+
+/* No comment provided by engineer. */
+"No Wallets Found" = "Inga plånböcker hittades";
+
+/* No comment provided by engineer. */
+"Not all wallets could be deleted. Please try again." = "Alla plånböcker kunde inte raderas. Försök igen.";
+
+/* No comment provided by engineer. */
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "Detta tar permanent bort alla plånböcker, privata nycklar och återställningsfraser som den här appen lagrar på den här enheten. De kan bara återställas från säkerhetskopior. Detta går inte att ångra.";
+
+/* No comment provided by engineer. */
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "Plånböckerna som lagras på den här enheten kunde inte verifieras. Ingenting raderades. Försök igen.";
+
+/* No comment provided by engineer. */
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "Detta raderar alla %ld plånböcker som lagras på den här enheten. De kan bara återställas med sina återställningsfraser. Att radera dem från den här enheten går inte att ångra.";
+
+/* No comment provided by engineer. */
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "Plånboksdata från en tidigare installation finns fortfarande lagrade på den här enheten. Vill du fortsätta använda dessa plånböcker, eller radera alla plånboksdata och börja om? Se till att varje återställningsfras är säkerhetskopierad innan du raderar.";
+
+/* No comment provided by engineer. */
+"Wallets found on this device" = "Plånböcker som hittats på den här enheten";
+
+/* No comment provided by engineer. */
+"Wipe All Wallets" = "Radera alla plånböcker helt";
+
+/* No comment provided by engineer. */
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "En enskild plånboks återställningsfras kan inte godkänna radering av flera olika plånböcker.";
+
+/* No comment provided by engineer. */
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "Ett nollsaldo på testnet bevisar inte att den här plånboken är tom på mainnet. Ange återställningsfrasen för att fortsätta.";
+
+/* No comment provided by engineer. */
+"Enter the recovery phrase to continue." = "Ange återställningsfrasen för att fortsätta.";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "Välj plånbok";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Recovery Phrases" = "Kunde inte läsa återställningsfraserna";
+
+/* No comment provided by engineer. */
+"No Recovery Phrase Found" = "Ingen återställningsfras hittades";
+
+/* No comment provided by engineer. */
+"No recovery phrase is stored on this device." = "Ingen återställningsfras finns lagrad på den här enheten.";
+
+/* No comment provided by engineer. */
+"Select the wallet whose recovery phrase you want to view." = "Välj den plånbok vars återställningsfras du vill se.";
+
+/* No comment provided by engineer. */
+"The recovery phrases stored on this device could not be read. Please try again." = "Återställningsfraserna som lagras på den här enheten kunde inte läsas. Försök igen.";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address for this network" = "Inte en giltig Dash-adress för det här nätverket";
+
+/* No comment provided by engineer. */
+"The claimable balance is too small to cover the Platform withdrawal fee." = "Det uttagbara saldot är för litet för att täcka Platform-uttagsavgiften.";
+
+/* No comment provided by engineer. */
+"You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it." = "Du kan ta ut upp till %@ DASH — resten blir kvar för att täcka Platform-avgiften. Tryck på ”Max” för att använda det.";
+
+/* No comment provided by engineer. */
+"The minimum withdrawal is %@ DASH." = "Minsta uttag är %@ DASH.";
+
+/* No comment provided by engineer. */
+"Payout address key" = "Nyckel för utbetalningsadress";
+
+/* No comment provided by engineer. */
+"Owner key (%@)" = "Ägarnyckel (%@)";
+
+/* No comment provided by engineer. */
+"Wallet is not ready. Try again in a moment." = "Plånboken är inte redo. Försök igen om en stund.";
+
+/* No comment provided by engineer. */
+"%@ · Claimable %@ DASH" = "%@ · Uttagbart %@ DASH";
+
+/* No comment provided by engineer. */
+"Withdraw to" = "Ta ut till";
+
+/* No comment provided by engineer. */
+"Enter a Dash address" = "Ange en Dash-adress";
+
+/* No comment provided by engineer. */
+"Use the payout address" = "Använd utbetalningsadressen";
+
+/* No comment provided by engineer. */
+"This is the evonode's registered payout address." = "Detta är evonodens registrerade utbetalningsadress.";
+
+/* No comment provided by engineer. */
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "Den här plånboken har evonodens nyckel för utbetalningsadressen, så saldot kan tas ut till valfri Dash-adress.";
+
+/* No comment provided by engineer. */
+"Registered payout address" = "Registrerad utbetalningsadress";
+
+/* No comment provided by engineer. */
+"This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "Det här uttaget signeras med evonodens ägarnyckel. Dash Platform tillåter bara att ägarnyckeln tar ut till den registrerade utbetalningsadressen, så destinationen kan inte ändras här. För uttag till en annan adress, använd plånboken som har nyckeln för utbetalningsadressen.";
+
+/* No comment provided by engineer. */
+"How it works" = "Så fungerar det";
+
+/* No comment provided by engineer. */
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "Dash Platform betalar ut uttaget på Dash-kedjan — vanligtvis inom några minuter. En Platform-avgift på cirka %@ DASH dras från evonodens saldo utöver beloppet, så ”Max” lämnar lite kvar för att täcka den.";
+
+/* No comment provided by engineer. */
+"Confirm withdrawal" = "Bekräfta uttaget";
+
+/* No comment provided by engineer. */
+"Owner-key withdrawals are always paid to the registered payout address." = "Uttag med ägarnyckel betalas alltid till den registrerade utbetalningsadressen.";
+
+/* No comment provided by engineer. */
+"Waiting for authorization…" = "Väntar på auktorisering…";
+
+/* No comment provided by engineer. */
+"Submitting to Dash Platform…" = "Skickar till Dash Platform…";
+
+/* No comment provided by engineer. */
+"Withdrawal submitted" = "Uttaget skickat";
+
+/* No comment provided by engineer. */
+"Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "Dash Platform betalar ut det på Dash-kedjan inom kort — det kommer vanligtvis fram inom några minuter.";
+
+/* No comment provided by engineer. */
+"Remaining claimable balance: %@ DASH" = "Återstående uttagbart saldo: %@ DASH";
+
+/* No comment provided by engineer. */
+"%@ · Platform balance" = "%@ · Platform-saldo";
+
+/* No comment provided by engineer. */
+"Signed with" = "Signerat med";
+
+/* No comment provided by engineer. */
+"Platform fee" = "Platform-avgift";
+
+/* No comment provided by engineer. */
+"%@ (payout address)" = "%@ (utbetalningsadress)";
+
+/* No comment provided by engineer. */
+"This wallet holds the payout address key, so you can withdraw to any address." = "Den här plånboken har nyckeln för utbetalningsadressen, så du kan ta ut till valfri adress.";
+
+/* No comment provided by engineer. */
+"This wallet holds the owner key, so withdrawals go to the registered payout address." = "Den här plånboken har ägarnyckeln, så uttag går till den registrerade utbetalningsadressen.";
+
+/* No comment provided by engineer. */
+"This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "Den här plånboken har varken ägarnyckeln eller nyckeln för utbetalningsadressen till den här evonoden, så dess saldo kan inte tas ut härifrån.";
+
+/* No comment provided by engineer. */
+"Couldn't check which keys of this evonode are in the wallet." = "Kunde inte kontrollera vilka av den här evonodens nycklar som finns i plånboken.";
+
+/* No comment provided by engineer. */
+"Result not confirmed" = "Resultatet är inte bekräftat";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "Uttaget skickades till Dash Platform, men resultatet kunde inte bekräftas. Det kan ha gått igenom. Skicka inte in det igen — kontrollera först det uttagbara saldot och utbetalningsadressen.";
+
+/* No comment provided by engineer. */
+"1 block proposed this epoch" = "1 block föreslaget den här epoken";
+
+/* No comment provided by engineer. */
+"%@ blocks proposed this epoch" = "%@ block föreslagna den här epoken";
+
+/* No comment provided by engineer. */
+"Nodes" = "Noder";
+
+/* No comment provided by engineer. */
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "Noder, epokdag %d, %@ block föreslagna den här epoken";
+
+/* No comment provided by engineer. */
+"an evonode has not proposed a block in 2 days" = "en evonod har inte föreslagit ett block på 2 dagar";
+
+/* No comment provided by engineer. */
+"an evonode has no blocks this epoch" = "en evonod har inga block den här epoken";
+
+/* No comment provided by engineer. */
+"A key doesn't match this masternode — fix or clear it to continue." = "En nyckel matchar inte den här masternoden — rätta eller rensa den för att fortsätta.";
+
+/* No comment provided by engineer. */
+"Add keys" = "Lägg till nycklar";
+
+/* No comment provided by engineer. */
+"Add masternode" = "Lägg till masternode";
+
+/* No comment provided by engineer. */
+"Add this node's owner key or payout address key to withdraw from here." = "Lägg till den här nodens ägarnyckel eller nyckel för utbetalningsadressen för att ta ut härifrån.";
+
+/* No comment provided by engineer. */
+"Already one of this wallet's masternodes — it's in the list above." = "Redan en av den här plånbokens masternoder — den finns i listan ovan.";
+
+/* No comment provided by engineer. */
+"Already tracked." = "Följs redan.";
+
+/* No comment provided by engineer. */
+"Any keys you added for it are deleted from this device's keychain too." = "Alla nycklar du har lagt till för den raderas också från den här enhetens nyckelring.";
+
+/* No comment provided by engineer. */
+"Available" = "Tillgängligt";
+
+/* No comment provided by engineer. */
+"BLS private key (hex)" = "Privat BLS-nyckel (hex)";
+
+/* No comment provided by engineer. */
+"Can't verify yet" = "Kan inte verifieras ännu";
+
+/* No comment provided by engineer. */
+"Could not load the node's registration details — owner and payout keys will verify later." = "Nodens registreringsuppgifter kunde inte läsas in — ägar- och utbetalningsnycklarna verifieras senare.";
+
+/* No comment provided by engineer. */
+"Could not save a key to the keychain. Nothing was lost — try again." = "En nyckel kunde inte sparas i nyckelringen. Ingenting gick förlorat — försök igen.";
+
+/* No comment provided by engineer. */
+"Destination address (optional)" = "Destinationsadress (valfritt)";
+
+/* No comment provided by engineer. */
+"Doesn't match" = "Matchar inte";
+
+/* No comment provided by engineer. */
+"Find" = "Hitta";
+
+/* No comment provided by engineer. */
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "Hittar ägar- och utbetalningsnycklar som inte finns i masternode-listan. Skickar nyckelns publika fingeravtryck till en Platform-nod.";
+
+/* No comment provided by engineer. */
+"IP address, proTxHash or private key" = "IP-adress, proTxHash eller privat nyckel";
+
+/* No comment provided by engineer. */
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "Nycklarna lagras i den här enhetens nyckelring och lämnar den aldrig, förutom för att signera den åtgärd du begär.";
+
+/* No comment provided by engineer. */
+"Keys on this device" = "Nycklar på den här enheten";
+
+/* No comment provided by engineer. */
+"Label (optional)" = "Etikett (valfritt)";
+
+/* No comment provided by engineer. */
+"Loading registration details…" = "Läser in registreringsuppgifter…";
+
+/* No comment provided by engineer. */
+"Matches" = "Matchar";
+
+/* No comment provided by engineer. */
+"Matches this node's %@ key" = "Matchar den här nodens %@-nyckel";
+
+/* No comment provided by engineer. */
+"No masternode on the list matches that." = "Ingen masternode i listan matchar det.";
+
+/* No comment provided by engineer. */
+"Node key (base64 or hex)" = "Nodnyckel (base64 eller hex)";
+
+/* No comment provided by engineer. */
+"Not added" = "Inte tillagd";
+
+/* No comment provided by engineer. */
+"On this device" = "På den här enheten";
+
+/* No comment provided by engineer. */
+"Operator payout" = "Operatörsutbetalning";
+
+/* No comment provided by engineer. */
+"Payout" = "Utbetalning";
+
+/* No comment provided by engineer. */
+"Platform could not be reached, so owner and payout keys were not checked." = "Platform kunde inte nås, så ägar- och utbetalningsnycklarna kontrollerades inte.";
+
+/* No comment provided by engineer. */
+"PoSe banned" = "PoSe-bannlyst";
+
+/* No comment provided by engineer. */
+"Private key (WIF or hex)" = "Privat nyckel (WIF eller hex)";
+
+/* No comment provided by engineer. */
+"Refresh details" = "Uppdatera uppgifter";
+
+/* No comment provided by engineer. */
+"Refreshing…" = "Uppdaterar…";
+
+/* No comment provided by engineer. */
+"Save keys" = "Spara nycklar";
+
+/* No comment provided by engineer. */
+"Search Platform too" = "Sök även på Platform";
+
+/* No comment provided by engineer. */
+"Searching…" = "Söker…";
+
+/* No comment provided by engineer. */
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "Signerar med ägarnyckeln — uttaget går till den registrerade utbetalningsadressen.";
+
+/* No comment provided by engineer. */
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "Signerar med nyckeln för utbetalningsadressen. Lämna destinationen tom för att ta ut till utbetalningsadressen.";
+
+/* No comment provided by engineer. */
+"Stop tracking" = "Sluta följa";
+
+/* No comment provided by engineer. */
+"Stop tracking this masternode?" = "Sluta följa den här masternoden?";
+
+/* No comment provided by engineer. */
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "Det kan också vara en ägar- eller utbetalningsnyckel — slå på ”Sök även på Platform” för att kontrollera.";
+
+/* No comment provided by engineer. */
+"The signing key is missing from the keychain — re-add it and try again." = "Signeringsnyckeln saknas i nyckelringen — lägg till den igen och försök på nytt.";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "Uttaget skickades men resultatet kunde inte bekräftas. Saldot kontrolleras på nytt — försök inte igen förrän det har stabiliserats.";
+
+/* No comment provided by engineer. */
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "Följ vilken masternode eller evonod som helst i nätverket — den behöver inte tillhöra den här plånboken.";
+
+/* No comment provided by engineer. */
+"Track this masternode" = "Följ den här masternoden";
+
+/* No comment provided by engineer. */
+"Tracked" = "Följs";
+
+/* No comment provided by engineer. */
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "Följs. Lägg till den här nodens nycklar nedan för att aktivera åtgärder som uttag och röstning, eller avsluta nu och lägg till dem senare.";
+
+/* No comment provided by engineer. */
+"Withdrawing…" = "Tar ut…";
+
+/* No comment provided by engineer. */
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "Du kan även följa vilken masternode som helst i nätverket — via IP, proTxHash eller en av dess nycklar — med ”+”-knappen.";
+
+/* No comment provided by engineer. */
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "Den här evonodens DAPI-adress är okänd, så den kan inte tillfrågas om sin status.";
+
+/* No comment provided by engineer. */
+"Couldn't get the evonode's status." = "Kunde inte hämta evonodens status.";
+
+/* No comment provided by engineer. */
+"The evonode didn't answer in time." = "Evonoden svarade inte i tid.";
+
+/* No comment provided by engineer. */
+"Couldn't reach the evonode." = "Kunde inte nå evonoden.";
+
+/* No comment provided by engineer. */
+"The evonode's answer couldn't be read." = "Evonodens svar kunde inte läsas.";
+
+/* No comment provided by engineer. */
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "Nodens egen, overifierade rapport — vad den säger om sig själv, inte vad nätverket har enats om.";
+
+/* No comment provided by engineer. */
+"Asked" = "Tillfrågad";
+
+/* No comment provided by engineer. */
+"Software" = "Programvara";
+
+/* No comment provided by engineer. */
+"DAPI" = "DAPI";
+
+/* No comment provided by engineer. */
+"Drive" = "Drive";
+
+/* No comment provided by engineer. */
+"Tenderdash" = "Tenderdash";
+
+/* No comment provided by engineer. */
+"Protocol versions" = "Protokollversioner";
+
+/* No comment provided by engineer. */
+"Tenderdash P2P" = "Tenderdash P2P";
+
+/* No comment provided by engineer. */
+"Tenderdash block" = "Tenderdash-block";
+
+/* No comment provided by engineer. */
+"Drive current" = "Drive aktuell";
+
+/* No comment provided by engineer. */
+"Drive latest" = "Drive senaste";
+
+/* No comment provided by engineer. */
+"Drive next epoch" = "Drive nästa epok";
+
+/* No comment provided by engineer. */
+"Node ID" = "Nod-ID";
+
+/* No comment provided by engineer. */
+"Identity check" = "Identitetskontroll";
+
+/* No comment provided by engineer. */
+"Chain" = "Kedja";
+
+/* No comment provided by engineer. */
+"Catching up" = "Kommer ikapp";
+
+/* No comment provided by engineer. */
+"Latest block height" = "Höjd för senaste block";
+
+/* No comment provided by engineer. */
+"Earliest block height" = "Höjd för tidigaste block";
+
+/* No comment provided by engineer. */
+"Max peer block height" = "Max blockhöjd hos noder";
+
+/* No comment provided by engineer. */
+"Core chain-locked height" = "Core chain-locked-höjd";
+
+/* No comment provided by engineer. */
+"Latest block hash" = "Hash för senaste block";
+
+/* No comment provided by engineer. */
+"Latest app hash" = "Hash för senaste app";
+
+/* No comment provided by engineer. */
+"Earliest block hash" = "Hash för tidigaste block";
+
+/* No comment provided by engineer. */
+"Earliest app hash" = "Hash för tidigaste app";
+
+/* No comment provided by engineer. */
+"Chain ID" = "Kedje-ID";
+
+/* No comment provided by engineer. */
+"Peers" = "Noder i nätverket";
+
+/* No comment provided by engineer. */
+"Listening" = "Lyssnar";
+
+/* No comment provided by engineer. */
+"State sync" = "Tillståndssynkronisering";
+
+/* No comment provided by engineer. */
+"Total synced time" = "Total synkroniserad tid";
+
+/* No comment provided by engineer. */
+"Remaining time" = "Återstående tid";
+
+/* No comment provided by engineer. */
+"Total snapshots" = "Totalt antal ögonblicksbilder";
+
+/* No comment provided by engineer. */
+"Chunk process avg time" = "Genomsn. bearbetningstid per del";
+
+/* No comment provided by engineer. */
+"Snapshot height" = "Ögonblicksbildens höjd";
+
+/* No comment provided by engineer. */
+"Snapshot chunks" = "Ögonblicksbildens delar";
+
+/* No comment provided by engineer. */
+"Backfilled blocks" = "Ifyllda block";
+
+/* No comment provided by engineer. */
+"Backfill blocks total" = "Totalt antal block att fylla i";
+
+/* No comment provided by engineer. */
+"Time" = "Tid";
+
+/* No comment provided by engineer. */
+"Node clock" = "Nodens klocka";
+
+/* No comment provided by engineer. */
+"Latest block" = "Senaste block";
+
+/* No comment provided by engineer. */
+"Genesis" = "Genesis";
+
+/* No comment provided by engineer. */
+"Epoch" = "Epok";
+
+/* No comment provided by engineer. */
+"Matches this evonode" = "Matchar den här evonoden";
+
+/* No comment provided by engineer. */
+"Differs from this evonode" = "Skiljer sig från den här evonoden";
+
+/* No comment provided by engineer. */
+"Not reported" = "Ej rapporterat";
+
+/* No comment provided by engineer. */
+"%.3f s" = "%.3f s";
+
+/* No comment provided by engineer. */
+"Node status" = "Nodens status";
+
+/* No comment provided by engineer. */
+"Asking the evonode…" = "Frågar evonoden…";
+
+/* No comment provided by engineer. */
+"Request status" = "Begär status";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "Self-checkout";
@@ -3444,6 +4380,42 @@
 
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "Skicka din första kontaktförfrågan";
+
+/* Username marketplace: set price sheet title */
+"Set a price for “%@”" = "Ange ett pris för ”%@”";
+
+/* Username marketplace */
+"Short names are decided by a network vote — use Request Username instead." = "Korta namn avgörs genom en nätverksröstning — använd ”Begär användarnamn” i stället.";
+
+/* Username marketplace: contested request explainer, paragraph 1 */
+"Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them." = "Korta namn — högst 19 tecken, endast bokstäver och siffror — registreras inte direkt. Dash-nätverket röstar om vem som får dem.";
+
+/* DashPay Contacts: expands the network search into the full add-contact flow */
+"Show more results" = "Visa fler resultat";
+
+/* Username marketplace: departed-name line — buyer identity */
+"Sold to %@" = "Sålt till %@";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 1 of 2 — moving Dash out of your Shielded balance…" = "Steg 1 av 2 — flyttar Dash ut från ditt Shielded-saldo…";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 2 of 2 — topping up your identity…" = "Steg 2 av 2 — fyller på din identitet…";
+
+/* Username marketplace: contested request cost footnote */
+"The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "Kostnaden betalas från ditt identitetssaldo. Den finansierar nätverksröstningen och betalas inte tillbaka om en annan utmanare vinner.";
+
+/* Username marketplace: register sheet body */
+"The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "Namnet registreras direkt på din identitet. Registreringen är en nätverkstransaktion som betalas från ditt identitetssaldo.";
+
+/* Username marketplace: contested label locked by a past vote */
+"The network voted to lock this name, so nobody can register it. Choose a different name." = "Nätverket röstade för att låsa det här namnet, så ingen kan registrera det. Välj ett annat namn.";
+
+/* Username marketplace */
+"The recipient identity couldn't be resolved." = "Mottagarens identitet kunde inte fastställas.";
+
+/* Username marketplace */
+"The seller changed the price before your purchase was accepted. Review the new price and try again." = "Säljaren ändrade priset innan ditt köp godkändes. Granska det nya priset och försök igen.";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Sending";
@@ -3965,6 +4937,66 @@
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "Detta lägger till två nycklar i din identitet så att andra användare kan skicka kontaktförfrågningar till dig, och så att du kan acceptera deras. Det sker bara en gång.";
 
+/* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
+"This isn't a DashPay user QR code." = "Det här är inte en QR-kod för en DashPay-användare.";
+
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "Det här saldot betalar Dash Platforms nätverksavgifter — användarnamn, kontaktförfrågningar, profiluppdateringar. Det tillhör din identitet, inte din plånbok: till skillnad från dina Transparent-, Platform- och Shielded-saldon kan det inte spenderas som vanliga Dash. Påfyllning växlar Dash från ett saldo du väljer — Shielded som standard — till identitetskrediter.";
+
+/* Username marketplace: contested label already has an active vote */
+"This name is already in an active network vote. Your request joins it as another contender." = "Det här namnet är redan föremål för en aktiv nätverksröstning. Din begäran ansluter till den som ytterligare en utmanare.";
+
+/* Username marketplace */
+"This name is in an active network vote and can't be traded until the contest ends." = "Det här namnet är föremål för en aktiv nätverksröstning och kan inte handlas förrän tävlingen är slut.";
+
+/* Username marketplace: detail for an unregistered name */
+"This name is not registered." = "Det här namnet är inte registrerat.";
+
+/* Username marketplace: seller-clarity callout on the detail sheet */
+"This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "Det här namnet erbjuds av en oberoende användare i Dash-nätverket — inte av Dash eller den här appen. Säljaren bestämmer priset.";
+
+/* Username marketplace: listing price exceeds the representable maximum */
+"This price is too high to list." = "Det här priset är för högt för att läggas ut.";
+
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "Den här överföringen kan inte göras om härifrån.";
+
+/* Username marketplace */
+"This username is not for sale." = "Det här användarnamnet är inte till salu.";
+
+/* Username marketplace */
+"This username's record couldn't be read from the network." = "Posten för det här användarnamnet kunde inte läsas från nätverket.";
+
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "Den här plånboken har ingen identitet att fylla på.";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "Fyll på";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "Fyll på identitetssaldot";
+
+/* Username marketplace: timeline card title */
+"Trade history" = "Handelshistorik";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "Överföringen slutförd";
+
+/* Username marketplace */
+"Transfer to Another Identity" = "Överför till en annan identitet";
+
+/* Username marketplace: transfer sheet title */
+"Transfer “%@”" = "Överför ”%@”";
+
+/* Username marketplace: history — transfer with both identities */
+"Transferred from %1$@ to %2$@" = "Överfört från %1$@ till %2$@";
+
+/* Username marketplace: departed-name line — recipient identity */
+"Transferred to %@" = "Överfört till %@";
+
+/* Username marketplace */
+"Username Marketplace" = "Marknadsplats för användarnamn";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
@@ -4014,6 +5046,60 @@
 
 /* Usernames */
 "This name requires voting. Your Dash will be locked until voting completes." = "This name requires voting. Your Dash will be locked until voting completes.";
+
+/* Usernames */
+"Vote in progress" = "Röstning pågår";
+
+/* Usernames */
+"Vote ended" = "Röstningen avslutad";
+
+/* Usernames */
+"A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender." = "En masternode-röstning om det här namnet pågår redan. Att skicka in en begäran gör dig till utmanare i röstningen.";
+
+/* Usernames */
+"A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender." = "En masternode-röstning om det här namnet pågår redan — röstningen avslutas omkring %@. Att skicka in en begäran gör dig till utmanare i röstningen.";
+
+/* Usernames */
+"A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote." = "En masternode-röstning om det här namnet pågår — röstningen avslutas omkring %@. Nya utmanare kan inte längre delta i den här röstningen.";
+
+/* Usernames */
+"Username is in a network vote — new contenders can no longer join" = "Användarnamnet är föremål för en nätverksröstning — nya utmanare kan inte längre delta";
+
+/* Usernames */
+"The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "Ägaren till det här användarnamnet har lagt ut det på Marknadsplatsen för användarnamn för %@ Dash. Du kan köpa det där i stället.";
+
+/* Usernames */
+"The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance." = "Ägaren till det här användarnamnet har lagt ut det för %@ Dash. Du kan köpa det direkt — priset betalas från ditt plånbokssaldo.";
+
+/* Usernames */
+"The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "Ägaren till det här användarnamnet har lagt ut det för %1$@ Dash. Köp över %2$@ Dash måste göras via Marknadsplatsen för användarnamn — välj ett annat användarnamn tills vidare; du kan bestämma dig för att köpa det här senare.";
+
+/* Usernames */
+"Buy for %@ Dash" = "Köp för %@ Dash";
+
+/* Usernames */
+"Buy username" = "Köp användarnamn";
+
+/* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "Ditt tillfälliga användarnamn ”%@” kunde inte registreras. Du kan registrera ett annat användarnamn senare.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "”%1$@” är nu ditt användarnamn. Om röstningen tilldelar dig ”%2$@” nås du på båda användarnamnen.";
+
+/* Usernames */
+"“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "”%1$@” kommer att köpas för %2$@ Dash. Priset betalas från ditt plånbokssaldo.";
+
+/* Usernames */
+"Username purchased" = "Användarnamn köpt";
+
+/* Usernames */
+"“%@” is now your username." = "”%@” är nu ditt användarnamn.";
+
+/* Usernames */
+"The masternode vote for this name has ended and the result is being finalized. Check back soon." = "Masternode-röstningen om det här namnet är avslutad och resultatet fastställs. Titta tillbaka snart.";
+
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes." = "En röstning om det här namnet pågår redan — din begäran ansluter till den som utmanare. Dina Dash låses tills röstningen är klar.";
 
 /* No comment provided by engineer. */
 "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone." = "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.";
@@ -4256,6 +5342,12 @@
 /* Voting */
 "Unblocked '%@' username" = "Unblocked '%@' username";
 
+/* SPV diagnostics */
+"Unconfirmed now" = "Obekräftade just nu";
+
+/* SPV diagnostics */
+"Unconfirmed Transactions" = "Obekräftade transaktioner";
+
 /* DashPay Contacts */
 "Unhide Contact" = "Unhide Contact";
 
@@ -4369,6 +5461,9 @@
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Användarnamn, inte adresser";
 
+/* DashPay: banner identity row subtitle */
+"View profile" = "Visa profil";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Användare som matchar %@ och som för närvarande inte finns bland dina kontakter";
 
@@ -4399,11 +5494,17 @@
 /* No comment provided by engineer. */
 "Verified Successfully" = "Verified Successfully";
 
+/* DashPay Contacts: spinner after scanning a user QR code */
+"Verifying user…" = "Verifierar användare…";
+
 /* No comment provided by engineer. */
 "Verify" = "Verify";
 
 /* CrowdNode */
 "Verify your API Dash address" = "Verify your API Dash address";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "Verifiera din återställningsfras för att ange en ny PIN-kod.";
 
 /* Usernames */
 "Verify your identity" = "Verify your identity";
@@ -4618,6 +5719,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "När blir kontaktförfrågningar privata?";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "Så länge röstningen pågår tillhör ”%@” inte dig ännu, och andra användare kan inte hitta dig via det. Lägg till ett obestritt användarnamn för att använda DashPay direkt. Det förblir ditt permanent — och om röstningen tilldelar dig det bestridda namnet nås du på båda användarnamnen.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "Where to Spend";
 
@@ -4628,6 +5732,18 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "Varför måste jag aktivera det?";
+
+/* Username marketplace: history participant is the current user */
+"you" = "du";
+
+/* Username marketplace: contested request already submitted by this identity */
+"You already requested this name — the network vote is in progress. You'll find it under My Names." = "Du har redan begärt det här namnet — nätverksröstningen pågår. Du hittar det under ”Mina namn”.";
+
+/* Username marketplace: purchase confirmation body with seller clarity */
+"You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "Du köper av en oberoende användare, inte av Dash eller den här appen. Priset plus en liten nätverksavgift betalas från ditt identitetssaldo, och namnet flyttas omedelbart till din identitet.";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "Du har inget användarnamn så länge röstningen pågår. Registrera nu ett obestritt användarnamn — det förblir ditt, och om röstningen tilldelar dig ”%@” nås du på båda användarnamnen.";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "Why do I see all these transactions?";
@@ -4685,7 +5801,13 @@
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
 
 /* Wallets */
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Skriv ner de här %d orden i ordning och förvara dem på ett säkert ställe. De är det ENDA sättet att återställa den här plånboken. Vem som helst som har dem kan spendera dina medel.";
+
+/* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
+
+/* Recovery phrase backup: security warning body — keep the phrase written down and private */
+"Write it in a safe place and don’t show it to anyone." = "Skriv ner den på ett säkert ställe och visa den inte för någon.";
 
 /* No comment provided by engineer. */
 "XpEBa5... or BIP21 URI" = "XpEBa5... or BIP21 URI";
@@ -4851,6 +5973,9 @@
 /* Back up wallet */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device.";
 
+/* Recovery phrase backup: security warning title — the phrase is required to restore the wallet */
+"You will NOT be able to restore the wallet without a recovery phrase" = "Du kommer INTE att kunna återställa plånboken utan en återställningsfras";
+
 /* Coinbase */
 "You will receive" = "You will receive";
 
@@ -4934,6 +6059,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Din historik, ordnad";
 
+/* Username marketplace */
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Ditt identitetssaldo täcker inte det här köpet: %1$@ DASH krävs (inklusive en avgiftsreserv), %2$@ DASH tillgängligt. Fyll på ditt identitetssaldo och försök igen.";
+
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "Din identitet behöver två extra nycklar för att kontaktförfrågningar ska kunna krypteras mellan dig och andra användare. Aktiveringen lägger till dem med en enda nätverkstransaktion. Det sker bara en gång.";
 
@@ -4958,8 +6086,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "Dina blandade mynt har flyttats till saldot i din Dash-plånbok.";
 
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "Vi kunde inte bekräfta det här köpet hos CTX. Om betalningen gick igenom dyker presentkortet upp i din transaktionslista inom kort — kontrollera där innan du köper igen.";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "Din betalning har skickats, men nätverket har inte bekräftat den ännu. Ditt presentkort visas så snart den bekräftas.";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Dina blandade mynt har flyttats till ditt skyddade saldo. För bästa integritet, vänta minst 2 timmar innan du använder de här medlen.";
+
+/* DashSpend */
+"Could not load your gift card" = "Ditt presentkort kunde inte läsas in";
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
@@ -4975,6 +6112,9 @@
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "Ditt privata saldo. Belopp och adresser är krypterade på kedjan, så ditt innehav och din historik förblir konfidentiella.";
+
+/* Username marketplace: contested request explainer, paragraph 2 */
+"Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "Din begäran går in i en offentlig röstning bland masternoderna i ungefär två veckor. Andra kan begära samma namn; när röstningen avslutas går namnet till vinnaren — eller till ingen, om nätverket röstar för att låsa det.";
 
 /* Usernames */
 "Your request was cancelled" = "Your request was cancelled";

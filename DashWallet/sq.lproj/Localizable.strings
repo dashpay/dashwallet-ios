@@ -9,6 +9,9 @@
 /* CrowdNode */
 " Terms of Use " = " Terms of Use ";
 
+/* Username marketplace: listing success — name, then price */
+"%1$@ listed for %2$@ DASH" = "%1$@ u vu në shitje për %2$@ DASH";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -20,6 +23,12 @@
 
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "%@ nuk u gjet në rrjetin Dash për t'i dërguar një kërkesë kontakti.";
+
+/* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
+"%@ couldn't be verified on the Dash network. The QR code may be outdated." = "%@ nuk u verifikua dot në rrjetin Dash. Kodi QR mund të jetë i vjetëruar.";
+
+/* Username marketplace: contested request cost value — the vote-resolution fund amount */
+"%@ DASH + network fee" = "%@ DASH + tarifa e rrjetit";
 
 /* Usernames */
 "%@ Dash available" = "%@ Dash në dispozicion";
@@ -42,6 +51,9 @@
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@ has sent you a contact request";
 
+/* Username marketplace: delist success */
+"%@ is no longer for sale" = "%@ nuk është më në shitje";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
@@ -51,8 +63,17 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
+/* Username marketplace: purchase success */
+"%@ is now yours" = "%@ tani është i yti";
+
+/* Username marketplace: registration success */
+"%@ registered" = "%@ u regjistrua";
+
 /* Testnet faucet */
 "%@ tDash requested — it will arrive shortly" = "%@ tDash requested — it will arrive shortly";
+
+/* Username marketplace: transfer success */
+"%@ transferred" = "%@ u transferua";
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
@@ -171,6 +192,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Për këtë emër është tashmë një votim në vazhdim — kërkesa jote do t'i bashkohet si konkurrent. Tarifa e garës shpenzohet kur dërgon dhe nuk kthehet, edhe nëse nuk e fiton emrin.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -182,6 +206,9 @@
 
 /* No comment provided by engineer. */
 "About me" = "About me";
+
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "Rreth balancës së llogarisë së identitetit";
 
 "Abstain" = "Abstenoni";
 
@@ -235,6 +262,9 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "Add a New Contact";
 
+/* Usernames */
+"Add a temporary username" = "Shto një emër përdoruesi të përkohshëm";
+
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
 
@@ -259,6 +289,9 @@
 /* Maya
    SwapKit */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+
+/* No comment provided by engineer. */
+"Advanced" = "Të avancuara";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Advanced Security";
@@ -315,6 +348,9 @@
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Amount in Dash";
 
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "Shuma në DASH";
+
 /* No comment provided by engineer. */
 "Amount received" = "Amount received";
 
@@ -348,8 +384,14 @@
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved";
 
+/* Recovery phrase backup: security warning body — anyone with the phrase can spend the funds */
+"Anyone that has your recovery phrase can access your funds." = "Kushdo që ka frazën tënde të rikuperimit mund të hyjë te fondet e tua.";
+
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Kushdo që di një adresë mund të shohë historikun e saj";
+
+/* Username marketplace: set price sheet body */
+"Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance." = "Kushdo do të mund ta blejë emrin pikërisht me këtë çmim. Të ardhurat arrijnë si kredite në balancën e identitetit tënd.";
 
 /* AboutDash */
 "App version" = "App version";
@@ -430,8 +472,17 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "Autohide Balance";
 
+/* DashPay */
+"Available after sync finishes" = "E disponueshme pasi të përfundojë sinkronizimi";
+
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
+
+/* Username marketplace: unregistered name row */
+"Available — register it on your identity" = "E lirë — regjistroje te identiteti yt";
+
+/* Username marketplace: unregistered contested-eligible name row */
+"Available — short names are decided by a network vote" = "E lirë — emrat e shkurtër vendosen me një votim të rrjetit";
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
@@ -525,6 +576,9 @@
 /* Voting */
 "Blocked '%@' username" = "Blocked '%@' username";
 
+/* Username marketplace: history — purchase with buyer, seller, price */
+"Bought by %1$@ from %2$@ for %3$@ DASH" = "Blerë nga %1$@ te %2$@ për %3$@ DASH";
+
 /* Identities: this key only signs for one data contract */
 "Bound to contract" = "E lidhur me kontratë";
 
@@ -573,6 +627,9 @@
 /* Swap */
 "Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
 
+/* Username marketplace: purchase button */
+"Buy for %@ DASH" = "Bli për %@ DASH";
+
 /* DashSpend */
 "Buy gift card" = "Buy gift card";
 
@@ -581,6 +638,12 @@
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+
+/* Username marketplace: purchase confirmation title */
+"Buy “%@”?" = "Të blihet „%@“?";
+
+/* Username marketplace: Explore row subtitle */
+"Buy, sell and transfer DashPay usernames" = "Bli, shit dhe transfero emra përdoruesi të DashPay";
 
 /* Buy/Sell */
 "Buy/Sell" = "Buy/Sell";
@@ -631,6 +694,9 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
+
+/* Username marketplace */
+"Change Price" = "Ndrysho çmimin";
 
 /* TimeSkew */
 "Check date & time settings" = "Check date & time settings";
@@ -713,6 +779,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "Së shpejti";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "Përfundo transferimin";
+
 /* Shielded transfer status */
 "Completed" = "Përfunduar";
 
@@ -782,6 +851,18 @@
 
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "Kërkesa për kontakt u dërgua te %@";
+
+/* Usernames */
+"Continue without a temporary username" = "Vazhdo pa një emër përdoruesi të përkohshëm";
+
+/* Identity top-up sheet — body */
+"Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Konverto Dash në kredite identiteti për të paguar veprime të Platform si kërkesat për kontakt dhe përditësimet e profilit.";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "Transferimi nuk përfundoi dot";
+
+/* Identity top-up sheet — free amount chip */
+"Custom" = "I personalizuar";
 
 /* No comment provided by engineer. */
 "Contact Requests" = "Kërkesa për kontakt";
@@ -1005,6 +1086,9 @@
 /* Uphold Entry Point */
 "Dash balance on Uphold" = "Dash balance on Uphold";
 
+/* Recovery phrase backup: security warning title — Dash Core Group does not store the phrase */
+"Dash Core Group does NOT store this recovery phrase" = "Dash Core Group NUK e ruan këtë frazë rikuperimi";
+
 /* Dash DEX Portal
    Translate it as short as possible! (24 symbols max) */
 "Dash DEX" = "Dash DEX";
@@ -1042,6 +1126,27 @@
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "DashPay u aktivizua";
 
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "Fut të paktën %@ DASH";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "Tarifat e vlerësuara";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "Tarifat zbriten nga shuma; nga Shielded, një mbetje e vogël mund të qëndrojë në balancën tënde Platform.";
+
+/* Username marketplace: search segment */
+"Find Names" = "Gjej emra";
+
+/* Username marketplace: listed badge */
+"For sale" = "Në shitje";
+
+/* Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app */
+"For sale by an independent user" = "Në shitje nga një përdorues i pavarur";
+
+/* Identity top-up sheet — linkability warning for transparent-side sources */
+"Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Financimi nga një balancë transparente i lidh publikisht ato monedha me identitetin tënd në zinxhirin Dash. Për privatësi, paguaj nga balanca jote Shielded.";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "DashPay Invitation";
 
@@ -1062,6 +1167,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "Date";
+
+/* History group header for restored shielded operations whose original date is not recoverable */
+"Date unknown" = "Datë e panjohur";
 
 /* Voting */
 "Date: New to old" = "Date: New to old";
@@ -1085,6 +1193,9 @@
 
 /* No comment provided by engineer. */
 "Delete Wallet?" = "Delete Wallet?";
+
+/* SPV diagnostics */
+"Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network." = "Fshin transaksionet e pakonfirmuara të këtij portofoli vetëm nga kjo pajisje dhe çliron monedhat që ato po përpiqeshin të shpenzonin. Riskanimi i filtrave rikthen ato që janë vërtet në blockchain. Asgjë nuk dërgohet në rrjet.";
 
 /* Location Service Status */
 "Denied" = "Denied";
@@ -1116,6 +1227,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Move your funds to a wallet on a secure device, then reset this wallet using Reset Wallet in the Security menu." = "SIGURIA E PAJISJES ËSHTË KOMPROMETUAR\nÇdo aplikacion „jailbreak“ mund të hyjë te të dhënat e keychain të çdo aplikacioni tjetër (dhe të vjedhë Dash-in tënd). Zhvendos fondet e tua në një portofol në një pajisje të sigurt, pastaj rivendos këtë portofol me „Rivendos portofolin“ te menyja Siguria.";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.";
@@ -1169,6 +1283,27 @@
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
 "DPNS Names" = "DPNS Names";
+
+/* SPV diagnostics */
+"Drop & rescan" = "Hidh poshtë dhe riskano";
+
+/* SPV diagnostics */
+"Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network." = "Hedh poshtë nga kjo pajisje transaksionet e këtij portofoli që ende presin rrjetin (kurrë të kyçura apo të minuara), i bën përsëri të disponueshme monedhat që ato po përpiqeshin të shpenzonin dhe riskanon filtrat e fundit. Një transaksion i hedhur poshtë që është vërtet në blockchain kthehet vetë gjatë riskanimit. Asgjë nuk dërgohet në rrjet.";
+
+/* SPV diagnostics */
+"Drop Unconfirmed & Rescan" = "Hidh poshtë të pakonfirmuarat dhe riskano";
+
+/* SPV diagnostics */
+"Drop unconfirmed transactions?" = "Të hidhen poshtë transaksionet e pakonfirmuara?";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row." = "U hodhën poshtë %d transaksione të pakonfirmuara — filtrat po riskanohen, shiko rreshtin „Filtrat“.";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above." = "U hodhën poshtë %d transaksione të pakonfirmuara, por riskanimi i filtrave nuk nisi dot — ekzekuto „Riskano filtrat“ më sipër.";
+
+/* SPV diagnostics */
+"Dropping…" = "Po hedhim poshtë…";
 
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Due to CrowdNode’s terms of service users can withdraw no more than:";
@@ -1280,6 +1415,9 @@
 
 /* No comment provided by engineer. */
 "Enter your recovery phrase to reset your PIN" = "Enter your recovery phrase to reset your PIN";
+
+/* No comment provided by engineer. */
+"Enter your recovery phrase to set a new PIN" = "Fut frazën tënde të rikuperimit për të vendosur një PIN të ri";
 
 /* Voting */
 "Enter your voting key" = "Enter your voting key";
@@ -1665,6 +1803,42 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "Si krahasohet kjo me llogaritë Ethereum sa i përket privatësisë?";
 
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "Balanca e llogarisë së identitetit";
+
+/* Username marketplace: section of contested-name requests awaiting the masternode vote */
+"In network vote" = "Në votim të rrjetit";
+
+/* Username marketplace: search row for a contested label with an active vote by others */
+"In a network vote — you can join as a contender" = "Në një votim të rrjetit — mund të bashkohesh si konkurrent";
+
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "Ndërkohë je i arritshëm te „%1$@“, i cili mbetet i yti. Nëse votimi ta jep „%2$@“, do të jesh i arritshëm me të dy emrat e përdoruesit.";
+
+/* Username marketplace: search row for a label a past vote locked */
+"Locked by a network vote — nobody can register it" = "I kyçur nga një votim i rrjetit — askush nuk mund ta regjistrojë";
+
+/* Username marketplace: latest ownership change */
+"Last transferred" = "Transferimi i fundit";
+
+/* Username marketplace: confirm listing button */
+"List For Sale" = "Vër në shitje";
+
+/* Username marketplace: own listed name */
+"Listed by you" = "Vënë në shitje nga ti";
+
+/* Username marketplace: history — price set */
+"Listed for %@ DASH" = "Në shitje për %@ DASH";
+
+/* Username marketplace: set price fee note */
+"Listing is a network transaction with a small fee, paid from your identity balance." = "Vënia në shitje është një transaksion rrjeti me një tarifë të vogël, që paguhet nga balanca e identitetit tënd.";
+
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "Identiteti im";
+
+/* Username marketplace: owned names segment */
+"My Names" = "Emrat e mi";
+
 /* DashPay FAQ */
 "How private is DashPay?" = "Sa privat është DashPay?";
 
@@ -2027,6 +2201,9 @@
 /* CrowdNode */
 "Leaving the pool" = "Leaving the pool";
 
+/* DashPay Contacts: caption under the user's own QR code */
+"Let another Dash Wallet user scan this code to add you as a contact." = "Lëre një përdorues tjetër të Dash Wallet ta skanojë këtë kod për të të shtuar si kontakt.";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Let me know when it’s done";
 
@@ -2099,6 +2276,51 @@
 "Lock" = "Kyç";
 
 "Lock the name" = "Kyç emrin";
+
+/* Username marketplace: contest voting deadline row */
+"Vote ends" = "Votimi përfundon";
+
+/* Username marketplace: until when other identities can join the contest */
+"New contenders" = "Konkurrentë të rinj";
+
+/* Username marketplace: join deadline still open — value of the New contenders row */
+"can join until %@" = "mund të bashkohen deri më %@";
+
+/* Username marketplace: the contest's join window has passed — value of the New contenders row */
+"joining closed" = "regjistrimi u mbyll";
+
+/* Username marketplace: masternode vote tally for one contest row */
+"%d votes" = "%d vota";
+
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "12 fjalë është standardi. 24 fjalë kërkojnë më shumë kohë për t'u shkruar dhe rikthyer, por janë dukshëm më të vështira për t'u thyer nga sistemet e avancuara kompjuterike të së ardhmes së largët.";
+
+/* Username marketplace: unresolvable transfer recipient */
+"No identity owns that username." = "Asnjë identitet nuk e zotëron atë emër përdoruesi.";
+
+/* Username marketplace: names that were sold or transferred away */
+"No longer yours" = "Nuk janë më të tutë";
+
+/* Identity top-up sheet — missing unshield destination */
+"No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "Ende nuk ka një adresë marrjeje Platform në dispozicion — prit derisa të përfundojë sinkronizimi me Platform dhe provo përsëri.";
+
+/* Username marketplace: empty owned list */
+"No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "Ky identitet ende nuk ka emra përdoruesi. Gjej një për ta blerë ose regjistruar te skeda „Gjej emra“.";
+
+/* Identity top-up sheet — insufficient funding source */
+"Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Fonde të pamjaftueshme në këtë balancë: duhen %@ DASH, në dispozicion %@ DASH.";
+
+/* Username marketplace: insufficient balance hint */
+"Not enough identity credits for this purchase — top up from My Profile first." = "Nuk ke kredite identiteti të mjaftueshme për këtë blerje — mbush më parë nga „Profili im“.";
+
+/* Username marketplace: insufficient balance hint for a contested request */
+"Not enough identity credits for this request — top up from My Profile first." = "Nuk ke kredite identiteti të mjaftueshme për këtë kërkesë — mbush më parë nga „Profili im“.";
+
+/* Username marketplace: someone else's unlisted name */
+"Not for sale" = "Nuk është në shitje";
+
+/* Username marketplace: own unlisted name */
+"Not listed for sale" = "Nuk është vënë në shitje";
 
 "Lock “%@” so nobody gets it" = "Kyç „%@“ që të mos e marrë askush";
 
@@ -2342,11 +2564,92 @@
 /* SDK identity profile sheet — title */
 "My Profile" = "My Profile";
 
+/* DashPay Contacts: shows the user's own contact QR code */
+"My QR" = "QR-ja ime";
+
 /* No comment provided by engineer. */
 "Name" = "Name";
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Shërbimet e emrave si Unstoppable Domains e lidhin një emër të lexueshëm me një adresë publike fikse në zinxhir. Kushdo mund ta zbërthejë emrin dhe të shohë çdo pagesë të bërë ndonjëherë ndaj tij. Një emër përdoruesi DashPay nuk zbërthehet kurrë publikisht në një adresë pagese — adresat zbulohen vetëm brenda shkëmbimit të fshehtëzuar me çdo kontakt, kështu që emri dhe paratë tuaja mbeten të palidhura për vëzhguesit e jashtëm.";
+
+/* Username marketplace: contested request line — voting deadline */
+"Network vote ends %@" = "Votimi i rrjetit përfundon më %@";
+
+/* Username marketplace: activity overlay while the purchase transition runs */
+"Completing your purchase…" = "Po përfundojmë blerjen tënde…";
+
+/* Usernames */
+"Register username" = "Regjistro emrin e përdoruesit";
+
+/* Username marketplace: activity overlay while the delist transition runs */
+"Removing the listing…" = "Po heqim shpalljen…";
+
+/* Username marketplace: activity overlay while the set-price transition runs */
+"Listing for sale…" = "Po e vëmë në shitje…";
+
+/* Usernames */
+"Submit both usernames" = "Dërgo të dy emrat e përdoruesit";
+
+/* Usernames */
+"Temporary username" = "Emër përdoruesi i përkohshëm";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "Emri i përkohshëm i përdoruesit nuk duhet të kërkojë vetë votim.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Ky emër kërkon një votim të masternodeve. Tarifa e garës shpenzohet kur dërgon dhe nuk kthehet, edhe nëse nuk e fiton emrin.";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "Edhe ky emër përdoruesi do të kërkonte votim — provo të shtosh një shifër nga 2 deri në 9";
+
+/* Username marketplace: activity overlay while the transfer transition runs */
+"Transferring the username…" = "Po transferojmë emrin e përdoruesit…";
+
+/* Username marketplace: activity overlay while the registration transition runs */
+"Registering the username…" = "Po regjistrojmë emrin e përdoruesit…";
+
+/* Username marketplace: activity overlay while the contested request transition runs */
+"Submitting your username request…" = "Po dërgojmë kërkesën tënde për emër përdoruesi…";
+
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "Shfleto";
+
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "Ndryshime çmimi";
+
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "Blerje";
+
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "Në shitje për %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "Shitur për %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "Shitur për %1$@ DASH · %2$@ · %3$@ → %4$@";
+
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "Tani nuk është në shitje";
+
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "Asnjë emër nuk është në shitje në aktivitetin e fundit të shpalljeve. „Shfaq më shumë“ shkon më larg në të kaluarën.";
+
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "Ende nuk ka blerje në rrjet.";
+
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "Po ngarkojmë aktivitetin…";
+
+/* Username marketplace: load older browse activity */
+"Show more" = "Shfaq më shumë";
+
+/* Username marketplace: contest tallies card title */
+"Network vote so far" = "Votimi i rrjetit deri tani";
+
+/* Username marketplace: contest with zero masternode votes so far */
+"No votes cast yet" = "Ende nuk është hedhur asnjë votë";
 
 /* Swap route provider
    Swap route provider short */
@@ -2381,6 +2684,9 @@
 
 /* (List of) New (notifications) */
 "New" = "New";
+
+/* SPV diagnostics */
+"No unconfirmed transactions to drop." = "Nuk ka transaksione të pakonfirmuara për t'u hedhur poshtë.";
 
 /* CrowdNode */
 "New CrowdNode Account" = "New CrowdNode Account";
@@ -2563,6 +2869,15 @@
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "Në Bitcoin nuk ka një shtresë emrash, prandaj njerëzit i ndajnë dhe i ripërdorin adresat haptazi — sapo një adresë njihet, gjithçka që ka marrë ndonjëherë mund të lidhet me pronarin e saj. Me DashPay emri juaj i përdoruesit është publik, por nuk tregon kurrë te një adresë pagese: adresat shkëmbehen privatisht me çdo kontakt dhe ndërrohen, kështu që pagesa me emër nuk e bën publike se ku shkojnë paratë tuaja. Të dyja janë zinxhirë transparentë, prandaj analiza e zinxhirit vlen ende për vetë monedhat.";
 
+/* DashPay Contacts: search results from DPNS, not the local contact list */
+"On the Dash network" = "Në rrjetin Dash";
+
+/* Username marketplace */
+"Owned by you" = "Zotërohet nga ti";
+
+/* Identity top-up sheet — funding source picker label */
+"Pay from" = "Paguaj nga";
+
 /* Identities */
 "On Network" = "Në rrjet";
 
@@ -2731,6 +3046,9 @@
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Pagesat janë private: adresat që shkëmbeni me një kontakt udhëtojnë brenda një përmbajtjeje të fshehtëzuar që vetëm ju të dy mund ta lexoni dhe nuk botohen kurrë — prandaj pagesat tuaja nuk lidhen lehtë me emrin tuaj të përdoruesit. Megjithatë ato mbeten pagesa të zakonshme në një zinxhir transparent: një analizë e sofistikuar e zinxhirit mund të nxjerrë informacion. Shielded DashPay (së shpejti) do ta mbyllë atë boshllëk. Vetë kërkesat për kontakt aktualisht NUK janë private: kushdo mund të shohë se dy identitete janë të lidhura. Kërkesat private për kontakt janë një veçori që vjen së shpejti. Emri juaj i përdoruesit dhe profili janë gjithashtu publikë në Dash Platform.";
 
+/* Username marketplace: price placeholder */
+"Price in DASH" = "Çmimi në DASH";
+
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "Pagesat konfirmohen brenda sekondash me InstantSend";
 
@@ -2788,6 +3106,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN is always required to make a payment";
+
+/* No comment provided by engineer. */
+"PIN Not Set" = "PIN-i nuk është caktuar";
 
 /* Dash Platform chain */
 "Platform" = "Platform";
@@ -2993,6 +3314,9 @@
 /* Identities: what a public key is used for */
 "Purpose" = "Qëllimi";
 
+/* Username marketplace */
+"Put Up For Sale" = "Ofro për shitje";
+
 /* DashSpend */
 "Quantity" = "Quantity";
 
@@ -3028,6 +3352,96 @@
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Vetëm për lexim";
+
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "Ritransmeto";
+
+/* Delete a never-accepted transaction from local wallet state */
+"Remove if Not on Network" = "Hiqe nëse nuk është në rrjet";
+
+/* Remove never-accepted transaction: confirmation title */
+"Remove this transaction?" = "Të hiqet ky transaksion?";
+
+/* Remove never-accepted transaction: destructive confirm button */
+"Remove Transaction" = "Hiq transaksionin";
+
+/* Username marketplace: transfer recipient placeholder */
+"Recipient username or identity ID" = "Emri i përdoruesit ose ID-ja e identitetit e marrësit";
+
+/* Identity top-up sheet — shielded source note */
+"Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Rekomandohet: një transferim me dy hapa përmes adresës sate Platform e mban identitetin tënd të palidhur me monedhat e tua transparente.";
+
+/* Username marketplace: register sheet title */
+"Register “%@”" = "Regjistro „%@“";
+
+/* Username marketplace: registration date */
+"Registered" = "I regjistruar";
+
+/* Username marketplace */
+"Remove From Sale" = "Hiq nga shitja";
+
+/* Remove never-accepted transaction: progress */
+"Removing transaction…" = "Po heqim transaksionin…";
+
+/* Username marketplace: delist confirmation title */
+"Remove “%@” from sale?" = "Të hiqet „%@“ nga shitja?";
+
+/* Username marketplace: history — delist (transfer to self) */
+"Removed from sale" = "Hequr nga shitja";
+
+/* Username marketplace: delist confirmation body */
+"Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "Heqja e shpalljes është një transaksion rrjeti me një tarifë të vogël, që paguhet nga balanca e identitetit tënd. Emri mbetet i yti.";
+
+/* Remove never-accepted transaction: refused because the explorer found it */
+"Transaction is known to the network" = "Transaksioni njihet nga rrjeti";
+
+/* Remove never-accepted transaction: refusal body */
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "Një eksplorues blloqesh raporton se ky transaksion njihet nga rrjeti Dash. Mund të jetë ende duke pritur në mempool ose të jetë përfshirë tashmë në një bllok, prandaj nuk u hoq. Portofoli do ta përditësojë konfirmimin automatikisht sapo të përfshihet në një bllok të sinkronizuar.";
+
+/* Remove never-accepted transaction: success */
+"Transaction removed" = "Transaksioni u hoq";
+
+/* Remove never-accepted transaction: removed but the recovery rescan did not arm */
+"Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "Transaksioni u hoq — riskanimi nuk nisi dot, ekzekuto „Riskano filtrat“ te Statusi i sinkronizimit të Core";
+
+/* Remove never-accepted transaction: confirmation body */
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "Portofoli së pari kontrollon një eksplorues blloqesh. Një transaksion i njohur nga rrjeti — qoftë duke pritur në mempool ose tashmë në një bllok — nuk hiqet kurrë. Nëse transaksioni nuk gjendet, ai fshihet nga ky portofol në këtë pajisje dhe monedhat që po përpiqej të shpenzonte bëhen përsëri të disponueshme. Më pas portofoli riskanon blloqet e fundit si kontroll sigurie. Asgjë nuk dërgohet në rrjet.";
+
+/* Remove never-accepted transaction: failure title */
+"Couldn't remove the transaction" = "Transaksioni nuk u hoq dot";
+
+/* Remove never-accepted transaction: no local row */
+"This transaction is not in the local wallet." = "Ky transaksion nuk është në portofolin lokal.";
+
+/* Remove never-accepted transaction: local state says it's on-chain */
+"This transaction is confirmed and can't be removed." = "Ky transaksion është i konfirmuar dhe nuk mund të hiqet.";
+
+/* Remove never-accepted transaction: explorer unreachable */
+"Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "Nuk u arrit dot një eksplorues blloqesh për të verifikuar se transaksioni nuk është në blockchain. Kontrollo lidhjen dhe provo përsëri.";
+
+/* Username marketplace: contested request cost row */
+"Request cost" = "Kostoja e kërkesës";
+
+/* Username marketplace: contested request success */
+"Request for %@ submitted — masternodes now vote on it" = "Kërkesa për %@ u dërgua — masternodet po votojnë tani";
+
+/* Username marketplace: confirm contested request button */
+"Request Username" = "Kërko emër përdoruesi";
+
+/* Username marketplace: contested register sheet title */
+"Request “%@”" = "Kërko „%@“";
+
+/* Username marketplace: contested request not yet indexed by Platform */
+"Requested — waiting for the network vote" = "E kërkuar — po pritet votimi i rrjetit";
+
+/* Username marketplace: search row for a contested label this identity already requested */
+"Requested by you — the network vote is in progress" = "E kërkuar nga ti — votimi i rrjetit është në vazhdim";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "Po riprovojmë transferimin…";
+
+/* Username marketplace: screen subtitle */
+"Search usernames, buy ones that are for sale, and sell or transfer your own." = "Kërko emra përdoruesi, bli ata që janë në shitje dhe shit ose transfero të tutë.";
 
 /* Usernames */
 "Ready around %@" = "Gati rreth %@";
@@ -3082,6 +3496,9 @@
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase length */
+"Recovery phrase length" = "Gjatësia e frazës së rikuperimit";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -3195,6 +3612,9 @@
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
+
+/* No comment provided by engineer. */
+"Completion unknown" = "Përfundimi i panjohur";
 
 /* Location Service Status */
 "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "Kuletat e rikthyera nuk mund ta rikuperojnë gjithmonë llojin e veprimit. Ky zë u rindërtua nga të dhënat e shënimit në zinxhir.";
@@ -3322,6 +3742,9 @@
 /* Identities: DPP security level of a public key */
 "Security level" = "Niveli i sigurisë";
 
+/* Username marketplace: transfer sheet body */
+"Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "Dërgoje këtë emër te një identitet tjetër falas. Transferimi heq gjithashtu çdo shpallje shitjeje. Kjo nuk mund të zhbëhet — pronari i ri do të duhej ta transferonte prapa.";
+
 /* DashSpend */
 "See card details" = "See card details";
 
@@ -3370,7 +3793,520 @@
 /* Coinbase */
 "Select the coin" = "Select the coin";
 
+/* Identities */
+"Select the username to display for this identity." = "Zgjidh emrin e përdoruesit që do të shfaqet për këtë identitet.";
+
 "Selecting fewer nodes reveals less about which masternodes you run." = "Zgjedhja e më pak nyjeve zbulon më pak se cilët masternode-t drejtoni.";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "U gjetën %ld portofolë në këtë pajisje";
+
+/* No comment provided by engineer. */
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "Në këtë pajisje janë ruajtur %ld portofolë nga një instalim i mëparshëm. „Fshi të gjithë“ heq çdo portofol. Bëj kopje rezervë të çdo fraze rikuperimi para se të fshish.";
+
+/* No comment provided by engineer. */
+"Couldn’t Delete All Wallets" = "Nuk u fshinë dot të gjithë portofolët";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Wallets" = "Portofolët nuk u lexuan dot";
+
+/* No comment provided by engineer. */
+"Delete All" = "Fshi të gjithë";
+
+/* No comment provided by engineer. */
+"Delete All Wallets?" = "Të fshihen të gjithë portofolët?";
+
+/* No comment provided by engineer. */
+"Deleting All Wallets…" = "Po fshijmë të gjithë portofolët…";
+
+/* No comment provided by engineer. */
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "Numri i portofolëve të ruajtur në këtë pajisje nuk u verifikua dot. Për të vazhduar duhet një frazë konfirmimi e dhënë nga Mbështetja e Dash, para se të fshihet ndonjë portofol.";
+
+/* No comment provided by engineer. */
+"Keep Wallets" = "Mbaj portofolët";
+
+/* No comment provided by engineer. */
+"No stored wallets were found. Nothing was deleted." = "Nuk u gjetën portofolë të ruajtur. Nuk u fshi asgjë.";
+
+/* No comment provided by engineer. */
+"No Wallets Found" = "Nuk u gjetën portofolë";
+
+/* No comment provided by engineer. */
+"Not all wallets could be deleted. Please try again." = "Nuk u fshinë dot të gjithë portofolët. Provo përsëri.";
+
+/* No comment provided by engineer. */
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "Kjo heq përgjithmonë të gjithë portofolët, çelësat privatë dhe frazat e rikuperimit që ky aplikacion ruan në këtë pajisje. Ato mund të rikthehen vetëm nga kopjet rezervë. Kjo nuk mund të zhbëhet.";
+
+/* No comment provided by engineer. */
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "Portofolët e ruajtur në këtë pajisje nuk u verifikuan dot. Nuk u fshi asgjë. Provo përsëri.";
+
+/* No comment provided by engineer. */
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "Kjo do të fshijë të gjithë %ld portofolët e ruajtur në këtë pajisje. Ata mund të rikthehen vetëm me frazat e tyre të rikuperimit. Fshirja e tyre nga kjo pajisje nuk mund të zhbëhet.";
+
+/* No comment provided by engineer. */
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "Në këtë pajisje janë ende të ruajtura të dhëna portofoli nga një instalim i mëparshëm. Të vazhdosh t'i përdorësh këta portofolë, apo të fshish të gjitha të dhënat dhe të fillosh nga e para? Sigurohu që çdo frazë rikuperimi ka kopje rezervë para se të fshish.";
+
+/* No comment provided by engineer. */
+"Wallets found on this device" = "Portofolë të gjetur në këtë pajisje";
+
+/* No comment provided by engineer. */
+"Wipe All Wallets" = "Fshi plotësisht të gjithë portofolët";
+
+/* No comment provided by engineer. */
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "Fraza e rikuperimit e një portofoli të vetëm nuk mund të autorizojë fshirjen e disa portofolëve të ndryshëm.";
+
+/* No comment provided by engineer. */
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "Një balancë zero në testnet nuk provon se ky portofol është bosh në mainnet. Fut frazën e rikuperimit për të vazhduar.";
+
+/* No comment provided by engineer. */
+"Enter the recovery phrase to continue." = "Fut frazën e rikuperimit për të vazhduar.";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "Zgjidh portofolin";
+
+/* No comment provided by engineer. */
+"Couldn’t Read Recovery Phrases" = "Frazat e rikuperimit nuk u lexuan dot";
+
+/* No comment provided by engineer. */
+"No Recovery Phrase Found" = "Nuk u gjet asnjë frazë rikuperimi";
+
+/* No comment provided by engineer. */
+"No recovery phrase is stored on this device." = "Në këtë pajisje nuk është ruajtur asnjë frazë rikuperimi.";
+
+/* No comment provided by engineer. */
+"Select the wallet whose recovery phrase you want to view." = "Zgjidh portofolin, frazën e rikuperimit të të cilit dëshiron të shohësh.";
+
+/* No comment provided by engineer. */
+"The recovery phrases stored on this device could not be read. Please try again." = "Frazat e rikuperimit të ruajtura në këtë pajisje nuk u lexuan dot. Provo përsëri.";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address for this network" = "Nuk është një adresë Dash e vlefshme për këtë rrjet";
+
+/* No comment provided by engineer. */
+"The claimable balance is too small to cover the Platform withdrawal fee." = "Balanca e kërkueshme është shumë e vogël për të mbuluar tarifën e tërheqjes së Platform.";
+
+/* No comment provided by engineer. */
+"You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it." = "Mund të tërheqësh deri në %@ DASH — pjesa tjetër mbetet për të mbuluar tarifën e Platform. Prek „Maks“ për ta përdorur.";
+
+/* No comment provided by engineer. */
+"The minimum withdrawal is %@ DASH." = "Tërheqja minimale është %@ DASH.";
+
+/* No comment provided by engineer. */
+"Payout address key" = "Çelësi i adresës së pagesës";
+
+/* No comment provided by engineer. */
+"Owner key (%@)" = "Çelësi i pronarit (%@)";
+
+/* No comment provided by engineer. */
+"Wallet is not ready. Try again in a moment." = "Portofoli nuk është gati. Provo përsëri pas pak.";
+
+/* No comment provided by engineer. */
+"%@ · Claimable %@ DASH" = "%@ · E kërkueshme %@ DASH";
+
+/* No comment provided by engineer. */
+"Withdraw to" = "Tërhiq te";
+
+/* No comment provided by engineer. */
+"Enter a Dash address" = "Fut një adresë Dash";
+
+/* No comment provided by engineer. */
+"Use the payout address" = "Përdor adresën e pagesës";
+
+/* No comment provided by engineer. */
+"This is the evonode's registered payout address." = "Kjo është adresa e regjistruar e pagesës e evonode-it.";
+
+/* No comment provided by engineer. */
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "Ky portofol e ka çelësin e adresës së pagesës të evonode-it, prandaj balanca mund të tërhiqet në çdo adresë Dash.";
+
+/* No comment provided by engineer. */
+"Registered payout address" = "Adresë pagese e regjistruar";
+
+/* No comment provided by engineer. */
+"This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "Kjo tërheqje nënshkruhet me çelësin e pronarit të evonode-it. Dash Platform e lejon çelësin e pronarit të tërheqë vetëm te adresa e regjistruar e pagesës, prandaj destinacioni nuk mund të ndryshohet këtu. Për të tërhequr te një adresë tjetër, përdor portofolin që ka çelësin e adresës së pagesës.";
+
+/* No comment provided by engineer. */
+"How it works" = "Si funksionon";
+
+/* No comment provided by engineer. */
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "Dash Platform e paguan tërheqjen në zinxhirin Dash — zakonisht brenda pak minutash. Një tarifë Platform prej rreth %@ DASH merret nga balanca e evonode-it përveç shumës, prandaj „Maks“ lë pak për ta mbuluar.";
+
+/* No comment provided by engineer. */
+"Confirm withdrawal" = "Konfirmo tërheqjen";
+
+/* No comment provided by engineer. */
+"Owner-key withdrawals are always paid to the registered payout address." = "Tërheqjet me çelësin e pronarit paguhen gjithmonë te adresa e regjistruar e pagesës.";
+
+/* No comment provided by engineer. */
+"Waiting for authorization…" = "Po presim autorizimin…";
+
+/* No comment provided by engineer. */
+"Submitting to Dash Platform…" = "Po dërgojmë te Dash Platform…";
+
+/* No comment provided by engineer. */
+"Withdrawal submitted" = "Tërheqja u dërgua";
+
+/* No comment provided by engineer. */
+"Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "Dash Platform do ta paguajë së shpejti në zinxhirin Dash — zakonisht mbërrin brenda pak minutash.";
+
+/* No comment provided by engineer. */
+"Remaining claimable balance: %@ DASH" = "Balanca e mbetur e kërkueshme: %@ DASH";
+
+/* No comment provided by engineer. */
+"%@ · Platform balance" = "%@ · Balanca Platform";
+
+/* No comment provided by engineer. */
+"Signed with" = "Nënshkruar me";
+
+/* No comment provided by engineer. */
+"Platform fee" = "Tarifa Platform";
+
+/* No comment provided by engineer. */
+"%@ (payout address)" = "%@ (adresa e pagesës)";
+
+/* No comment provided by engineer. */
+"This wallet holds the payout address key, so you can withdraw to any address." = "Ky portofol e ka çelësin e adresës së pagesës, prandaj mund të tërheqësh te çdo adresë.";
+
+/* No comment provided by engineer. */
+"This wallet holds the owner key, so withdrawals go to the registered payout address." = "Ky portofol e ka çelësin e pronarit, prandaj tërheqjet shkojnë te adresa e regjistruar e pagesës.";
+
+/* No comment provided by engineer. */
+"This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "Ky portofol nuk e ka as çelësin e pronarit as çelësin e adresës së pagesës të këtij evonode-i, prandaj balanca e tij nuk mund të tërhiqet nga këtu.";
+
+/* No comment provided by engineer. */
+"Couldn't check which keys of this evonode are in the wallet." = "Nuk u kontrollua dot se cilët çelësa të këtij evonode-i janë në portofol.";
+
+/* No comment provided by engineer. */
+"Result not confirmed" = "Rezultati nuk u konfirmua";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "Tërheqja u dërgua te Dash Platform, por rezultati i saj nuk u konfirmua dot. Mund të ketë kaluar. Mos e dërgo sërish — kontrollo më parë balancën e kërkueshme dhe adresën e pagesës.";
+
+/* No comment provided by engineer. */
+"1 block proposed this epoch" = "1 bllok i propozuar në këtë epokë";
+
+/* No comment provided by engineer. */
+"%@ blocks proposed this epoch" = "%@ blloqe të propozuara në këtë epokë";
+
+/* No comment provided by engineer. */
+"Nodes" = "Nyjet";
+
+/* No comment provided by engineer. */
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "Nyjet, dita %d e epokës, %@ blloqe të propozuara në këtë epokë";
+
+/* No comment provided by engineer. */
+"an evonode has not proposed a block in 2 days" = "një evonode nuk ka propozuar bllok prej 2 ditësh";
+
+/* No comment provided by engineer. */
+"an evonode has no blocks this epoch" = "një evonode nuk ka blloqe në këtë epokë";
+
+/* No comment provided by engineer. */
+"A key doesn't match this masternode — fix or clear it to continue." = "Një çelës nuk përputhet me këtë masternode — korrigjoje ose pastroje për të vazhduar.";
+
+/* No comment provided by engineer. */
+"Add keys" = "Shto çelësa";
+
+/* No comment provided by engineer. */
+"Add masternode" = "Shto masternode";
+
+/* No comment provided by engineer. */
+"Add this node's owner key or payout address key to withdraw from here." = "Shto çelësin e pronarit ose çelësin e adresës së pagesës të kësaj nyjeje për të tërhequr nga këtu.";
+
+/* No comment provided by engineer. */
+"Already one of this wallet's masternodes — it's in the list above." = "Është tashmë një nga masternodet e këtij portofoli — ndodhet në listën më sipër.";
+
+/* No comment provided by engineer. */
+"Already tracked." = "Tashmë po ndiqet.";
+
+/* No comment provided by engineer. */
+"Any keys you added for it are deleted from this device's keychain too." = "Të gjithë çelësat që shtove për të fshihen gjithashtu nga keychain i kësaj pajisjeje.";
+
+/* No comment provided by engineer. */
+"Available" = "E disponueshme";
+
+/* No comment provided by engineer. */
+"BLS private key (hex)" = "Çelës privat BLS (hex)";
+
+/* No comment provided by engineer. */
+"Can't verify yet" = "Ende nuk mund të verifikohet";
+
+/* No comment provided by engineer. */
+"Could not load the node's registration details — owner and payout keys will verify later." = "Të dhënat e regjistrimit të nyjes nuk u ngarkuan dot — çelësat e pronarit dhe të pagesës do të verifikohen më vonë.";
+
+/* No comment provided by engineer. */
+"Could not save a key to the keychain. Nothing was lost — try again." = "Një çelës nuk u ruajt dot te keychain. Asgjë nuk humbi — provo përsëri.";
+
+/* No comment provided by engineer. */
+"Destination address (optional)" = "Adresa e destinacionit (opsionale)";
+
+/* No comment provided by engineer. */
+"Doesn't match" = "Nuk përputhet";
+
+/* No comment provided by engineer. */
+"Find" = "Gjej";
+
+/* No comment provided by engineer. */
+"Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "Gjen çelësat e pronarit dhe të pagesës, të cilët nuk janë në listën e masternodeve. Dërgon gjurmën publike të çelësit te një nyje Platform.";
+
+/* No comment provided by engineer. */
+"IP address, proTxHash or private key" = "Adresë IP, proTxHash ose çelës privat";
+
+/* No comment provided by engineer. */
+"Keys are stored in this device's keychain and never leave it except to sign the action you request." = "Çelësat ruhen te keychain i kësaj pajisjeje dhe nuk e lënë kurrë atë, përveçse për të nënshkruar veprimin që kërkon ti.";
+
+/* No comment provided by engineer. */
+"Keys on this device" = "Çelësat në këtë pajisje";
+
+/* No comment provided by engineer. */
+"Label (optional)" = "Etiketë (opsionale)";
+
+/* No comment provided by engineer. */
+"Loading registration details…" = "Po ngarkojmë të dhënat e regjistrimit…";
+
+/* No comment provided by engineer. */
+"Matches" = "Përputhet";
+
+/* No comment provided by engineer. */
+"Matches this node's %@ key" = "Përputhet me çelësin %@ të kësaj nyjeje";
+
+/* No comment provided by engineer. */
+"No masternode on the list matches that." = "Asnjë masternode në listë nuk përputhet me atë.";
+
+/* No comment provided by engineer. */
+"Node key (base64 or hex)" = "Çelësi i nyjes (base64 ose hex)";
+
+/* No comment provided by engineer. */
+"Not added" = "Nuk u shtua";
+
+/* No comment provided by engineer. */
+"On this device" = "Në këtë pajisje";
+
+/* No comment provided by engineer. */
+"Operator payout" = "Pagesa e operatorit";
+
+/* No comment provided by engineer. */
+"Payout" = "Pagesa";
+
+/* No comment provided by engineer. */
+"Platform could not be reached, so owner and payout keys were not checked." = "Platform nuk u arrit dot, prandaj çelësat e pronarit dhe të pagesës nuk u kontrolluan.";
+
+/* No comment provided by engineer. */
+"PoSe banned" = "I bllokuar nga PoSe";
+
+/* No comment provided by engineer. */
+"Private key (WIF or hex)" = "Çelës privat (WIF ose hex)";
+
+/* No comment provided by engineer. */
+"Refresh details" = "Rifresko të dhënat";
+
+/* No comment provided by engineer. */
+"Refreshing…" = "Po rifreskojmë…";
+
+/* No comment provided by engineer. */
+"Save keys" = "Ruaj çelësat";
+
+/* No comment provided by engineer. */
+"Search Platform too" = "Kërko edhe në Platform";
+
+/* No comment provided by engineer. */
+"Searching…" = "Po kërkojmë…";
+
+/* No comment provided by engineer. */
+"Signing with the owner key — the withdrawal goes to the registered payout address." = "Po nënshkruhet me çelësin e pronarit — tërheqja shkon te adresa e regjistruar e pagesës.";
+
+/* No comment provided by engineer. */
+"Signing with the payout address key. Leave the destination empty to withdraw to the payout address." = "Po nënshkruhet me çelësin e adresës së pagesës. Lëre destinacionin bosh për të tërhequr te adresa e pagesës.";
+
+/* No comment provided by engineer. */
+"Stop tracking" = "Ndalo ndjekjen";
+
+/* No comment provided by engineer. */
+"Stop tracking this masternode?" = "Të ndalohet ndjekja e këtij masternode-i?";
+
+/* No comment provided by engineer. */
+"That could also be an owner or payout key — turn on “Search Platform too” to check." = "Ai mund të jetë edhe një çelës pronari ose pagese — aktivizo „Kërko edhe në Platform“ për ta kontrolluar.";
+
+/* No comment provided by engineer. */
+"The signing key is missing from the keychain — re-add it and try again." = "Çelësi i nënshkrimit mungon te keychain — shtoje sërish dhe provo përsëri.";
+
+/* No comment provided by engineer. */
+"The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles." = "Tërheqja u dërgua por rezultati i saj nuk u konfirmua dot. Balanca po rikontrollohet — mos provo përsëri derisa të stabilizohet.";
+
+/* No comment provided by engineer. */
+"Track any masternode or evonode on the network — it doesn't have to belong to this wallet." = "Ndiq çdo masternode ose evonode në rrjet — nuk është e nevojshme t'i përkasë këtij portofoli.";
+
+/* No comment provided by engineer. */
+"Track this masternode" = "Ndiq këtë masternode";
+
+/* No comment provided by engineer. */
+"Tracked" = "Po ndiqet";
+
+/* No comment provided by engineer. */
+"Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later." = "Po ndiqet. Shto më poshtë çelësat e kësaj nyjeje për të aktivizuar veprime si tërheqja dhe votimi, ose përfundo tani dhe shtoji më vonë.";
+
+/* No comment provided by engineer. */
+"Withdrawing…" = "Po tërheqim…";
+
+/* No comment provided by engineer. */
+"You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button." = "Mund të ndjekësh edhe çdo masternode në rrjet — sipas IP-së, proTxHash-it ose një prej çelësave të tij — me butonin „+“.";
+
+/* No comment provided by engineer. */
+"This evonode's DAPI address isn't known, so it can't be asked for its status." = "Adresa DAPI e këtij evonode-i nuk njihet, prandaj nuk mund t'i kërkohet statusi.";
+
+/* No comment provided by engineer. */
+"Couldn't get the evonode's status." = "Statusi i evonode-it nuk u mor dot.";
+
+/* No comment provided by engineer. */
+"The evonode didn't answer in time." = "Evonode-i nuk u përgjigj në kohë.";
+
+/* No comment provided by engineer. */
+"Couldn't reach the evonode." = "Evonode-i nuk u arrit dot.";
+
+/* No comment provided by engineer. */
+"The evonode's answer couldn't be read." = "Përgjigjja e evonode-it nuk u lexua dot.";
+
+/* No comment provided by engineer. */
+"The node's own report, unverified — what it says about itself, not what the network has agreed on." = "Raporti i vetë nyjes, i paverifikuar — ajo që thotë për veten, jo ajo për të cilën rrjeti është dakordësuar.";
+
+/* No comment provided by engineer. */
+"Asked" = "E pyetur";
+
+/* No comment provided by engineer. */
+"Software" = "Softuer";
+
+/* No comment provided by engineer. */
+"DAPI" = "DAPI";
+
+/* No comment provided by engineer. */
+"Drive" = "Drive";
+
+/* No comment provided by engineer. */
+"Tenderdash" = "Tenderdash";
+
+/* No comment provided by engineer. */
+"Protocol versions" = "Versionet e protokollit";
+
+/* No comment provided by engineer. */
+"Tenderdash P2P" = "Tenderdash P2P";
+
+/* No comment provided by engineer. */
+"Tenderdash block" = "Blloku i Tenderdash";
+
+/* No comment provided by engineer. */
+"Drive current" = "Drive aktuale";
+
+/* No comment provided by engineer. */
+"Drive latest" = "Drive më e reja";
+
+/* No comment provided by engineer. */
+"Drive next epoch" = "Drive epoka tjetër";
+
+/* No comment provided by engineer. */
+"Node ID" = "ID-ja e nyjes";
+
+/* No comment provided by engineer. */
+"Identity check" = "Kontrolli i identitetit";
+
+/* No comment provided by engineer. */
+"Chain" = "Zinxhiri";
+
+/* No comment provided by engineer. */
+"Catching up" = "Po arrin";
+
+/* No comment provided by engineer. */
+"Latest block height" = "Lartësia e bllokut më të ri";
+
+/* No comment provided by engineer. */
+"Earliest block height" = "Lartësia e bllokut më të hershëm";
+
+/* No comment provided by engineer. */
+"Max peer block height" = "Lartësia maks. e bllokut te bashkëmoshatarët";
+
+/* No comment provided by engineer. */
+"Core chain-locked height" = "Lartësia chain-locked e Core";
+
+/* No comment provided by engineer. */
+"Latest block hash" = "Hash-i i bllokut më të ri";
+
+/* No comment provided by engineer. */
+"Latest app hash" = "Hash-i i aplikacionit më të ri";
+
+/* No comment provided by engineer. */
+"Earliest block hash" = "Hash-i i bllokut më të hershëm";
+
+/* No comment provided by engineer. */
+"Earliest app hash" = "Hash-i i aplikacionit më të hershëm";
+
+/* No comment provided by engineer. */
+"Chain ID" = "ID-ja e zinxhirit";
+
+/* No comment provided by engineer. */
+"Peers" = "Bashkëmoshatarët";
+
+/* No comment provided by engineer. */
+"Listening" = "Po dëgjon";
+
+/* No comment provided by engineer. */
+"State sync" = "Sinkronizimi i gjendjes";
+
+/* No comment provided by engineer. */
+"Total synced time" = "Koha totale e sinkronizuar";
+
+/* No comment provided by engineer. */
+"Remaining time" = "Koha e mbetur";
+
+/* No comment provided by engineer. */
+"Total snapshots" = "Gjithsej fotografi çasti";
+
+/* No comment provided by engineer. */
+"Chunk process avg time" = "Koha mes. e përpunimit të copës";
+
+/* No comment provided by engineer. */
+"Snapshot height" = "Lartësia e fotografisë së çastit";
+
+/* No comment provided by engineer. */
+"Snapshot chunks" = "Copat e fotografisë së çastit";
+
+/* No comment provided by engineer. */
+"Backfilled blocks" = "Blloqe të plotësuara";
+
+/* No comment provided by engineer. */
+"Backfill blocks total" = "Gjithsej blloqe për t'u plotësuar";
+
+/* No comment provided by engineer. */
+"Time" = "Ora";
+
+/* No comment provided by engineer. */
+"Node clock" = "Ora e nyjes";
+
+/* No comment provided by engineer. */
+"Latest block" = "Blloku më i ri";
+
+/* No comment provided by engineer. */
+"Genesis" = "Genesis";
+
+/* No comment provided by engineer. */
+"Epoch" = "Epoka";
+
+/* No comment provided by engineer. */
+"Matches this evonode" = "Përputhet me këtë evonode";
+
+/* No comment provided by engineer. */
+"Differs from this evonode" = "Ndryshon nga ky evonode";
+
+/* No comment provided by engineer. */
+"Not reported" = "Nuk u raportua";
+
+/* No comment provided by engineer. */
+"%.3f s" = "%.3f s";
+
+/* No comment provided by engineer. */
+"Node status" = "Statusi i nyjes";
+
+/* No comment provided by engineer. */
+"Asking the evonode…" = "Po pyesim evonode-in…";
+
+/* No comment provided by engineer. */
+"Request status" = "Kërko statusin";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "Self-checkout";
@@ -3444,6 +4380,42 @@
 
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "Dërgoni kërkesën tuaj të parë për kontakt";
+
+/* Username marketplace: set price sheet title */
+"Set a price for “%@”" = "Vendos një çmim për „%@“";
+
+/* Username marketplace */
+"Short names are decided by a network vote — use Request Username instead." = "Emrat e shkurtër vendosen me një votim të rrjetit — përdor „Kërko emër përdoruesi“ në vend të kësaj.";
+
+/* Username marketplace: contested request explainer, paragraph 1 */
+"Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them." = "Emrat e shkurtër — 19 karaktere ose më pak, vetëm shkronja dhe numra — nuk regjistrohen menjëherë. Rrjeti Dash voton se kush i merr.";
+
+/* DashPay Contacts: expands the network search into the full add-contact flow */
+"Show more results" = "Shfaq më shumë rezultate";
+
+/* Username marketplace: departed-name line — buyer identity */
+"Sold to %@" = "Shitur te %@";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 1 of 2 — moving Dash out of your Shielded balance…" = "Hapi 1 nga 2 — po nxjerrim Dash nga balanca jote Shielded…";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 2 of 2 — topping up your identity…" = "Hapi 2 nga 2 — po mbushim identitetin tënd…";
+
+/* Username marketplace: contested request cost footnote */
+"The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "Kostoja paguhet nga balanca e identitetit tënd. Ajo financon votimin e rrjetit dhe nuk kthehet nëse fiton një konkurrent tjetër.";
+
+/* Username marketplace: register sheet body */
+"The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "Emri regjistrohet drejtpërdrejt te identiteti yt. Regjistrimi është një transaksion rrjeti që paguhet nga balanca e identitetit tënd.";
+
+/* Username marketplace: contested label locked by a past vote */
+"The network voted to lock this name, so nobody can register it. Choose a different name." = "Rrjeti votoi ta kyçë këtë emër, prandaj askush nuk mund ta regjistrojë. Zgjidh një emër tjetër.";
+
+/* Username marketplace */
+"The recipient identity couldn't be resolved." = "Identiteti i marrësit nuk u përcaktua dot.";
+
+/* Username marketplace */
+"The seller changed the price before your purchase was accepted. Review the new price and try again." = "Shitësi ndryshoi çmimin para se blerja jote të pranohej. Shiko çmimin e ri dhe provo përsëri.";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Sending";
@@ -3965,6 +4937,66 @@
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "Kjo i shton identitetit tuaj dy çelësa që përdoruesit e tjerë t'ju dërgojnë kërkesa për kontakt dhe që ju të pranoni të tyret. Kjo ndodh vetëm një herë.";
 
+/* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
+"This isn't a DashPay user QR code." = "Ky nuk është një kod QR i një përdoruesi DashPay.";
+
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "Kjo balancë paguan tarifat e rrjetit të Dash Platform — emra përdoruesi, kërkesa për kontakt, përditësime profili. I përket identitetit tënd, jo portofolit: ndryshe nga balancat Transparente, Platform dhe Shielded, nuk mund të shpenzohet si Dash i zakonshëm. Mbushja konverton Dash nga një balancë që zgjedh ti — Shielded si parazgjedhje — në kredite identiteti.";
+
+/* Username marketplace: contested label already has an active vote */
+"This name is already in an active network vote. Your request joins it as another contender." = "Për këtë emër është tashmë një votim aktiv i rrjetit. Kërkesa jote i bashkohet si një konkurrent tjetër.";
+
+/* Username marketplace */
+"This name is in an active network vote and can't be traded until the contest ends." = "Ky emër është në një votim aktiv të rrjetit dhe nuk mund të tregtohet derisa të përfundojë gara.";
+
+/* Username marketplace: detail for an unregistered name */
+"This name is not registered." = "Ky emër nuk është i regjistruar.";
+
+/* Username marketplace: seller-clarity callout on the detail sheet */
+"This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "Këtë emër e ofron një përdorues i pavarur në rrjetin Dash — jo Dash apo ky aplikacion. Shitësi e cakton çmimin.";
+
+/* Username marketplace: listing price exceeds the representable maximum */
+"This price is too high to list." = "Ky çmim është shumë i lartë për t'u shpallur.";
+
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "Ky transferim nuk mund të riprovohet nga këtu.";
+
+/* Username marketplace */
+"This username is not for sale." = "Ky emër përdoruesi nuk është në shitje.";
+
+/* Username marketplace */
+"This username's record couldn't be read from the network." = "Regjistrimi i këtij emri përdoruesi nuk u lexua dot nga rrjeti.";
+
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "Ky portofol nuk ka identitet për të mbushur.";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "Mbush";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "Mbush balancën e identitetit";
+
+/* Username marketplace: timeline card title */
+"Trade history" = "Historiku i tregtimit";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "Transferimi përfundoi";
+
+/* Username marketplace */
+"Transfer to Another Identity" = "Transfero te një identitet tjetër";
+
+/* Username marketplace: transfer sheet title */
+"Transfer “%@”" = "Transfero „%@“";
+
+/* Username marketplace: history — transfer with both identities */
+"Transferred from %1$@ to %2$@" = "Transferuar nga %1$@ te %2$@";
+
+/* Username marketplace: departed-name line — recipient identity */
+"Transferred to %@" = "Transferuar te %@";
+
+/* Username marketplace */
+"Username Marketplace" = "Tregu i emrave të përdoruesit";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
@@ -4014,6 +5046,60 @@
 
 /* Usernames */
 "This name requires voting. Your Dash will be locked until voting completes." = "This name requires voting. Your Dash will be locked until voting completes.";
+
+/* Usernames */
+"Vote in progress" = "Votimi në vazhdim";
+
+/* Usernames */
+"Vote ended" = "Votimi përfundoi";
+
+/* Usernames */
+"A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender." = "Për këtë emër është tashmë një votim i masternodeve në vazhdim. Dërgimi i një kërkese të fut në votim si konkurrent.";
+
+/* Usernames */
+"A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender." = "Për këtë emër është tashmë një votim i masternodeve në vazhdim — votimi përfundon rreth %@. Dërgimi i një kërkese të fut në votim si konkurrent.";
+
+/* Usernames */
+"A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote." = "Për këtë emër është një votim i masternodeve në vazhdim — votimi përfundon rreth %@. Konkurrentët e rinj nuk mund të bashkohen më në këtë votim.";
+
+/* Usernames */
+"Username is in a network vote — new contenders can no longer join" = "Emri i përdoruesit është në një votim të rrjetit — konkurrentët e rinj nuk mund të bashkohen më";
+
+/* Usernames */
+"The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "Pronari i këtij emri përdoruesi e ka vënë në shitje te Tregu i emrave të përdoruesit për %@ Dash. Mund ta blesh atje.";
+
+/* Usernames */
+"The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance." = "Pronari i këtij emri përdoruesi e ka vënë në shitje për %@ Dash. Mund ta blesh menjëherë — çmimi paguhet nga balanca e portofolit tënd.";
+
+/* Usernames */
+"The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "Pronari i këtij emri përdoruesi e ka vënë në shitje për %1$@ Dash. Blerjet mbi %2$@ Dash duhen bërë nga Tregu i emrave të përdoruesit — zgjidh një emër tjetër përdoruesi tani për tani; për blerjen e këtij mund të vendosësh më vonë.";
+
+/* Usernames */
+"Buy for %@ Dash" = "Bli për %@ Dash";
+
+/* Usernames */
+"Buy username" = "Bli emër përdoruesi";
+
+/* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "Emri yt i përkohshëm i përdoruesit „%@“ nuk u regjistrua dot. Mund të regjistrosh një emër tjetër përdoruesi më vonë.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "„%1$@“ tani është emri yt i përdoruesit. Nëse votimi ta jep „%2$@“, do të jesh i arritshëm me të dy emrat e përdoruesit.";
+
+/* Usernames */
+"“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "„%1$@“ do të blihet për %2$@ Dash. Çmimi paguhet nga balanca e portofolit tënd.";
+
+/* Usernames */
+"Username purchased" = "Emri i përdoruesit u ble";
+
+/* Usernames */
+"“%@” is now your username." = "„%@“ tani është emri yt i përdoruesit.";
+
+/* Usernames */
+"The masternode vote for this name has ended and the result is being finalized. Check back soon." = "Votimi i masternodeve për këtë emër ka përfunduar dhe rezultati po finalizohet. Kontrollo sërish së shpejti.";
+
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes." = "Për këtë emër është tashmë një votim në vazhdim — kërkesa jote do t'i bashkohet si konkurrent. Dash-i yt do të mbetet i kyçur derisa votimi të përfundojë.";
 
 /* No comment provided by engineer. */
 "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone." = "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.";
@@ -4256,6 +5342,12 @@
 /* Voting */
 "Unblocked '%@' username" = "Unblocked '%@' username";
 
+/* SPV diagnostics */
+"Unconfirmed now" = "Të pakonfirmuara tani";
+
+/* SPV diagnostics */
+"Unconfirmed Transactions" = "Transaksione të pakonfirmuara";
+
 /* DashPay Contacts */
 "Unhide Contact" = "Unhide Contact";
 
@@ -4369,6 +5461,9 @@
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Emra përdoruesish, jo adresa";
 
+/* DashPay: banner identity row subtitle */
+"View profile" = "Shiko profilin";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Përdorues që përputhen me %@ dhe që aktualisht nuk janë te kontaktet tuaja";
 
@@ -4399,11 +5494,17 @@
 /* No comment provided by engineer. */
 "Verified Successfully" = "Verified Successfully";
 
+/* DashPay Contacts: spinner after scanning a user QR code */
+"Verifying user…" = "Po verifikojmë përdoruesin…";
+
 /* No comment provided by engineer. */
 "Verify" = "Verify";
 
 /* CrowdNode */
 "Verify your API Dash address" = "Verify your API Dash address";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "Verifiko frazën tënde të rikuperimit për të vendosur një PIN të ri.";
 
 /* Usernames */
 "Verify your identity" = "Verify your identity";
@@ -4618,6 +5719,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "Kur do të bëhen private kërkesat për kontakt?";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "Ndërsa votimi është në vazhdim, „%@“ ende nuk të përket dhe përdoruesit e tjerë nuk të gjejnë dot me të. Shto një emër përdoruesi pa garë për ta përdorur DashPay menjëherë. Ai mbetet i yti përgjithmonë — dhe nëse votimi ta jep emrin në garë, do të jesh i arritshëm me të dy emrat e përdoruesit.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "Where to Spend";
 
@@ -4628,6 +5732,18 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "Pse duhet ta aktivizoj?";
+
+/* Username marketplace: history participant is the current user */
+"you" = "ti";
+
+/* Username marketplace: contested request already submitted by this identity */
+"You already requested this name — the network vote is in progress. You'll find it under My Names." = "E ke kërkuar tashmë këtë emër — votimi i rrjetit është në vazhdim. Do ta gjesh te „Emrat e mi“.";
+
+/* Username marketplace: purchase confirmation body with seller clarity */
+"You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "Po blen nga një përdorues i pavarur, jo nga Dash apo nga ky aplikacion. Çmimi plus një tarifë e vogël rrjeti paguhen nga balanca e identitetit tënd, dhe emri kalon menjëherë te identiteti yt.";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "Nuk ke emër përdoruesi ndërsa votimi është në vazhdim. Regjistro tani një emër përdoruesi pa garë — ai mbetet i yti, dhe nëse votimi ta jep „%@“, do të jesh i arritshëm me të dy emrat e përdoruesit.";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "Why do I see all these transactions?";
@@ -4685,7 +5801,13 @@
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
 
 /* Wallets */
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Shkruaj këto %d fjalë me radhë dhe ruaji në një vend të sigurt. Ato janë E VETMJA mënyrë për ta rikuperuar këtë portofol. Kushdo që i ka mund të shpenzojë fondet e tua.";
+
+/* Wallets */
 "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
+
+/* Recovery phrase backup: security warning body — keep the phrase written down and private */
+"Write it in a safe place and don’t show it to anyone." = "Shkruaje në një vend të sigurt dhe mos ia trego askujt.";
 
 /* No comment provided by engineer. */
 "XpEBa5... or BIP21 URI" = "XpEBa5... or BIP21 URI";
@@ -4851,6 +5973,9 @@
 /* Back up wallet */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device.";
 
+/* Recovery phrase backup: security warning title — the phrase is required to restore the wallet */
+"You will NOT be able to restore the wallet without a recovery phrase" = "NUK do të mund ta rikuperosh portofolin pa një frazë rikuperimi";
+
 /* Coinbase */
 "You will receive" = "You will receive";
 
@@ -4934,6 +6059,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Historiku juaj, i organizuar";
 
+/* Username marketplace */
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Balanca e identitetit tënd nuk e mbulon këtë blerje: duhen %1$@ DASH (përfshirë një rezervë për tarifat), në dispozicion %2$@ DASH. Mbush balancën e identitetit dhe provo përsëri.";
+
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "Identiteti juaj ka nevojë për dy çelësa shtesë që kërkesat për kontakt të mund të fshehtëzohen mes jush dhe përdoruesve të tjerë. Aktivizimi i shton ata me një transaksion të vetëm rrjeti. Kjo ndodh vetëm një herë.";
 
@@ -4958,8 +6086,17 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "Monedhat tuaja të përziera u zhvendosën te balanca e kuletës suaj Dash.";
 
+/* DashSpend */
+"We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again." = "Nuk arritëm ta konfirmojmë këtë blerje te CTX. Nëse pagesa kaloi, karta e dhuratës do të shfaqet së shpejti në listën tënde të transaksioneve — kontrollo atje para se të blesh sërish.";
+
+/* DashSpend */
+"Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "Pagesa jote u dërgua, por rrjeti ende nuk e ka konfirmuar. Karta jote e dhuratës do të shfaqet sapo të konfirmohet.";
+
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Monedhat tuaja të përziera u zhvendosën te balanca juaj e mbrojtur. Për privatësinë më të mirë, prisni të paktën 2 orë para se t'i përdorni këto fonde.";
+
+/* DashSpend */
+"Could not load your gift card" = "Karta jote e dhuratës nuk u ngarkua dot";
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
@@ -4975,6 +6112,9 @@
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "Balanca juaj private. Shumat dhe adresat janë të fshehtëzuara në zinxhir, kështu që zotërimet dhe historiku juaj mbeten konfidenciale.";
+
+/* Username marketplace: contested request explainer, paragraph 2 */
+"Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "Kërkesa jote hyn në një votim publik të masternodeve për rreth dy javë. Të tjerët mund të kërkojnë të njëjtin emër; kur votimi mbaron, emri i shkon fituesit — ose askujt, nëse rrjeti voton ta kyçë.";
 
 /* Usernames */
 "Your request was cancelled" = "Your request was cancelled";

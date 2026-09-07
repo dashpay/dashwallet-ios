@@ -16,13 +16,14 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 public struct MerchantTypesDialog: View {
     @Environment(\.presentationMode) private var presentationMode
     var action: (() -> Void)? = nil
     
     public var body: some View {
-        BottomSheet(showBackButton: .constant(false)) {
+        DashUIKit.BottomSheet(showBackButton: .constant(false)) {
             TextIntro(
                 icon: .custom("image.merchant"),
                 buttonLabel: NSLocalizedString("Ok", comment: ""),

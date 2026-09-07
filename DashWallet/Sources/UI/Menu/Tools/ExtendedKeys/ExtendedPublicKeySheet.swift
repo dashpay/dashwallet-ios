@@ -73,7 +73,6 @@ private struct ShareSheet: UIViewControllerRepresentable {
 
 struct ExtendedPublicKeySheet: View {
     @StateObject private var viewModel = ExtendedPublicKeySheetViewModel()
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var isCopied = false
@@ -81,19 +80,6 @@ struct ExtendedPublicKeySheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Grabber
-            VStack {
-                RoundedRectangle(cornerRadius: 5, style: .continuous)
-                    .fill(Color.dash.gray300.opacity(0.5))
-                    .frame(width: 36, height: 5)
-            }
-            .frame(maxWidth: .infinity, minHeight: 18)
-
-            // Close button
-            NavBarClose {
-                dismiss()
-            }
-
             // QR code
             Group {
                 if let qrImage = viewModel.qrImage {
@@ -162,7 +148,6 @@ struct ExtendedPublicKeySheet: View {
             .padding(.horizontal, 60)
             .padding(.bottom, 20)
         }
-        .background(Color.dash.secondaryBackground)
         .sheet(isPresented: $showShareSheet) {
             if !viewModel.keyValue.isEmpty {
                 ShareSheet(items: [viewModel.keyValue])

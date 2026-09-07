@@ -20,8 +20,8 @@
 //  limitations under the License.
 //
 
-import SwiftUI
 import DashUIKit
+import SwiftUI
 
 struct NavigationBar<Leading: View, Central: View, Trailing: View>: View {
     private let leading: Leading
@@ -293,7 +293,7 @@ struct NavBarClose: View {
                        .stroke(Color.dash.gray300Alpha30, lineWidth: 1.5)
                        .frame(width: 34, height: 34)
 
-                   Image("toolbar-close")
+                   Image(dash: .custom("navigationbar-close", bundle: .dashUIKit))
                        .resizable()
                        .aspectRatio(contentMode: .fit)
                        .frame(height: 11)

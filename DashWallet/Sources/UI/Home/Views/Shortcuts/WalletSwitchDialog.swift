@@ -23,7 +23,7 @@ struct WalletSwitchDialog: View {
     }
 
     var body: some View {
-        BottomSheet(
+        DashUIKit.BottomSheet(
             title: NSLocalizedString("Switch Wallet", comment: "Wallets"),
             showBackButton: .constant(false)
         ) {

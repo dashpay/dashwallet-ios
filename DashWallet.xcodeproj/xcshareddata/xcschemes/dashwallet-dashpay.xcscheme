@@ -50,26 +50,6 @@
                ReferencedContainer = "container:DashWallet.xcodeproj">
             </BuildableReference>
          </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "31D68B4F1C23B6C10030FAAA"
-               BuildableName = "DashWalletUITests.xctest"
-               BlueprintName = "DashWalletUITests"
-               ReferencedContainer = "container:DashWallet.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "2A4662FF2279DC2F0027533B"
-               BuildableName = "DashWalletScreenshotsUITests.xctest"
-               BlueprintName = "DashWalletScreenshotsUITests"
-               ReferencedContainer = "container:DashWallet.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

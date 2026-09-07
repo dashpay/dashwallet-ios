@@ -99,11 +99,11 @@ class GiftCardMetadataProvider: MetadataProvider, @unchecked Sendable {
 
                 if txRowMetadata != nil {
                     txRowMetadata!.title = title
-                    txRowMetadata!.secondaryIcon = .custom("transaction-gift-card", bundle: .dashUIKit)
+                    txRowMetadata!.secondaryIcon = .custom(DashIcon.Transaction.giftCard.assetName, bundle: .dashUIKit)
                 } else {
                     txRowMetadata = TxRowMetadata(
                         title: title,
-                        secondaryIcon: .custom("transaction-gift-card", bundle: .dashUIKit)
+                        secondaryIcon: .custom(DashIcon.Transaction.giftCard.assetName, bundle: .dashUIKit)
                     )
                 }
 
@@ -128,11 +128,11 @@ class GiftCardMetadataProvider: MetadataProvider, @unchecked Sendable {
             
             if txRowMetadata != nil {
                 txRowMetadata!.title = title
-                txRowMetadata!.secondaryIcon = .custom("transaction-gift-card", bundle: .dashUIKit)
+                txRowMetadata!.secondaryIcon = .custom(DashIcon.Transaction.giftCard.assetName, bundle: .dashUIKit)
             } else {
                 txRowMetadata = TxRowMetadata(
                     title: title,
-                    secondaryIcon: .custom("transaction-gift-card", bundle: .dashUIKit)
+                    secondaryIcon: .custom(DashIcon.Transaction.giftCard.assetName, bundle: .dashUIKit)
                 )
             }
             

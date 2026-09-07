@@ -75,7 +75,7 @@ struct ShortcutSelectionView: View {
     VStack {
         Color.dash.secondaryBackground.ignoresSafeArea()
             .sheet(isPresented: .constant(true)) {
-                let sheet = BottomSheet(title: NSLocalizedString("Select option", comment: ""), showBackButton: .constant(false)) {
+                let sheet = DashUIKit.BottomSheet(title: NSLocalizedString("Select option", comment: ""), showBackButton: .constant(false)) {
                     ShortcutSelectionView(usedTypes: [.receive, .send, .spend]) { _ in }
                 }
 

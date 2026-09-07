@@ -65,10 +65,10 @@ struct SwapPortalScaffold: View {
                     action: { guard isOnline else { return }; onBuyDash?() },
                     label: {
                         DashUIKit.MenuItem(
-                            leadingIcon: .custom("menu-receive", bundle: .dashUIKit),
+                            leadingIcon: DashIcon.Menu.receive.source,
                             isEnabled: isOnline,
                             disabledLeadingIcon: disabledMenuIcon(
-                                assetName: "menu-receive.disabled",
+                                assetName: DashIcon.Menu.receiveDisabled.assetName,
                                 fallbackName: "menu-receive"
                             ),
                             title: NSLocalizedString("Buy Dash", comment: "Dash DEX Portal"),
@@ -87,10 +87,10 @@ struct SwapPortalScaffold: View {
                 action: { guard isOnline else { return }; onSellDash?() },
                 label: {
                     DashUIKit.MenuItem(
-                        leadingIcon: .custom("menu-send", bundle: .dashUIKit),
+                        leadingIcon: DashIcon.Menu.send.source,
                         isEnabled: isOnline,
                         disabledLeadingIcon: disabledMenuIcon(
-                            assetName: "menu-send.disabled",
+                            assetName: DashIcon.Menu.sendDisabled.assetName,
                             fallbackName: "menu-send"
                         ),
                         title: NSLocalizedString("Sell Dash", comment: "Dash DEX Portal"),
@@ -116,11 +116,11 @@ struct SwapPortalScaffold: View {
     private var descriptionBlock: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(Font.dash.title2)
+                .dashFont(.title2)
                 .foregroundColor(Color.dash.primaryText)
 
             Text(description)
-                .font(Font.dash.footnote)
+                .dashFont(.footnote)
                 .foregroundColor(Color.dash.secondaryText)
                 .multilineTextAlignment(.leading)
                 .lineSpacing(2)

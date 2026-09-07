@@ -52,7 +52,7 @@ struct SwapConvertView: View {
         }
         .dexOfflineToast(isOnline: viewModel.isOnline)
         .sheet(isPresented: $showLocalCurrency) {
-            let dialog = BottomSheet(
+            let dialog = DashUIKit.BottomSheet(
                 showBackButton: Binding<Bool>.constant(false)
             ) {
                 LocalCurrencyView { code in
@@ -79,7 +79,7 @@ struct SwapConvertView: View {
                 options: viewModel.currencyOptions,
                 onMax: { viewModel.setMax() },
                 onCurrencyTap: { showLocalCurrency = true },
-                hidesSelectedOption: true
+                hidesSelectedOption: false
             )
             .frame(height: 70)
             conversionCard
@@ -131,16 +131,16 @@ struct SwapConvertView: View {
                     // An error (e.g. insufficient balance after coin-mode gross-up) supersedes the
                     // receive estimate — both can be set at once, so show the error first.
                     Text(error)
-                        .font(Font.dash.caption1)
+                        .dashFont(.caption1)
                         .foregroundColor(Color.dash.red)
                         .multilineTextAlignment(.center)
                 } else if let amount = viewModel.receiveAmount {
                     Text(NSLocalizedString("Receive amount", comment: "Dash DEX"))
-                        .font(Font.dash.caption1)
+                        .dashFont(.caption1)
                         .foregroundStyle(Color.dash.tertiaryText)
 
                     Text("~ \(amount)")
-                        .font(Font.dash.subhead)
+                        .dashFont(.subhead)
                         .foregroundStyle(Color.dash.primaryText)
                 }
             }
@@ -152,7 +152,7 @@ struct SwapConvertView: View {
     // MARK: - Keyboard
 
     private var keyboard: some View {
-        NumericKeyboardView(
+        HardwareNumericKeyboardView(
             value: Binding(
                 get: { viewModel.inputValue },
                 set: { viewModel.setInput($0) }
@@ -163,11 +163,6 @@ struct SwapConvertView: View {
             inProgress: viewModel.isLoading,
             actionHandler: onContinue
         )
-        .frame(maxWidth: .infinity, maxHeight: 320)
-        .padding(.horizontal, Layout.hPadding)
-        .background(Color.dash.secondaryBackground)
-        .clipShape(.rect(cornerRadius: 20))
-        .background(Color.dash.secondaryBackground, ignoresSafeAreaEdges: .bottom)
     }
 }
 

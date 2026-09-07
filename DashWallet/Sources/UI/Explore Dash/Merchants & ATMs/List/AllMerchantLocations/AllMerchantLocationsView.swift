@@ -106,13 +106,17 @@ private struct MerchantHeaderView: View {
         HStack(spacing: Layout.contentSpacing) {
             Group {
                 if let logoUrl = pointOfUse.logoLocation, let url = URL(string: logoUrl) {
-                    WebImage(url: url)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
+                    // The placeholder also covers load failures (a 404 or a timeout leaves
+                    // the image nil), so a broken logo URL still renders the empty asset.
+                    WebImage(url: url) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    } placeholder: {
+                        emptyLogo
+                    }
                 } else {
-                    Image(pointOfUse.emptyLogoImageName)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
+                    emptyLogo
                 }
             }
             .frame(width: Layout.logoSize, height: Layout.logoSize)
@@ -132,6 +136,12 @@ private struct MerchantHeaderView: View {
 
             Spacer()
         }
+    }
+
+    // Rounded square, so the text may use almost the whole box — same fraction as the
+    // POI details header.
+    private var emptyLogo: some View {
+        MerchantLogoPlaceholder(merchantName: pointOfUse.name, usableFraction: 0.84)
     }
 }
 

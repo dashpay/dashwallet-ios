@@ -6,7 +6,7 @@
 import Foundation
 import SwiftDashSDK
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 final class DashPayIdentityKeysTests: XCTestCase {
 

@@ -18,7 +18,7 @@
 //
 
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 class SwapAddressValidatorTests: XCTestCase {
 
@@ -114,6 +114,62 @@ class SwapAddressValidatorTests: XCTestCase {
         XCTAssertFalse(SwapAddressValidator.isValid(address: "", for: thorCoin))
         XCTAssertFalse(SwapAddressValidator.isValid(address: "thor1", for: thorCoin))  // too short
         XCTAssertFalse(SwapAddressValidator.isValid(address: "kujira1r8egcurpwxftegr07gjv9gwffw4fk00960dj4f", for: thorCoin))  // wrong prefix
+    }
+
+    // MARK: - Dash destination guard
+
+    // A Dash address is never a valid swap destination (DASH is filtered out of the sell coin
+    // list). Previously a pasted Dash address slipped through the permissive `default` branch for
+    // loosely-validated chains, the swap was created, then failed on-chain ("Conversion failed").
+
+    /// Real mainnet Dash addresses, Base58Check-valid down to the checksum: P2PKH (version byte
+    /// 76, always `X…`) and P2SH (version byte 16, always `7…`).
+    private let dashP2PKHAddress = "Xrt6xwqYD4PQWbwwnJ9e2ejR1KX94b9EZe"
+    private let dashP2SHAddress = "7U4ufNc6Mp3LKe7AfSPkvr67ZVwyFWueeq"
+
+    private let zecCoin = SwapCryptoCurrency(id: "zec", code: "ZEC", name: "Zcash", swapAsset: "ZEC.ZEC", chain: "ZEC")
+    private let xrpCoin = SwapCryptoCurrency(id: "xrp", code: "XRP", name: "XRP", swapAsset: "XRP.XRP", chain: "XRP")
+    private let tronCoin = SwapCryptoCurrency(id: "trx", code: "TRX", name: "Tron", swapAsset: "TRON.TRX", chain: "TRON")
+    private let solCoin = SwapCryptoCurrency(id: "sol", code: "SOL", name: "Solana", swapAsset: "SOL.SOL", chain: "SOL")
+    private let dashCoin = SwapCryptoCurrency(id: "dash", code: "DASH", name: "Dash", swapAsset: "DASH.DASH", chain: "DASH")
+
+    func testDashAddress_rejectedForDefaultBranchChains() {
+        // These chains hit the permissive `default` branch — the source of the original bug.
+        // Before the guard, `default: return true` accepted these Dash strings, so each
+        // assertion here fails without the fix.
+        for coin in [zecCoin, xrpCoin, tronCoin, solCoin] {
+            XCTAssertFalse(SwapAddressValidator.isValid(address: dashP2PKHAddress, for: coin),
+                           "Dash P2PKH address must be rejected for \(coin.code)")
+            XCTAssertFalse(SwapAddressValidator.isValid(address: dashP2SHAddress, for: coin),
+                           "Dash P2SH address must be rejected for \(coin.code)")
+        }
+    }
+
+    func testDashChain_stillAcceptsDashAddresses() {
+        // The guard is scoped to non-DASH destinations. DASH is filtered out of the sell coin list
+        // today, so this path is unreachable from the UI — the assertion exists to keep the
+        // `chain != "DASH"` bypass from being dropped as dead code in a later refactor.
+        XCTAssertTrue(SwapAddressValidator.isValid(address: dashP2PKHAddress, for: dashCoin),
+                      "A Dash P2PKH address must stay valid when the destination chain is DASH")
+        XCTAssertTrue(SwapAddressValidator.isValid(address: dashP2SHAddress, for: dashCoin),
+                      "A Dash P2SH address must stay valid when the destination chain is DASH")
+    }
+
+    func testSolana_acceptsRealAddress_rejectsDashAddress() {
+        // SOL is a `default`-branch chain: a real Solana address must still pass while a Dash
+        // address is rejected. This is the exact scenario reproduced on device (Sell DASH → SOL).
+        let realSolanaAddress = "9A7Nbez3va6r9Z6tG8cuPTcrMR8HfdHYMv2FUX3sQVDY"
+        XCTAssertTrue(SwapAddressValidator.isValid(address: realSolanaAddress, for: solCoin),
+                      "A real Solana address must be accepted for SOL")
+        XCTAssertFalse(SwapAddressValidator.isValid(address: dashP2PKHAddress, for: solCoin),
+                       "A Dash address must be rejected for SOL")
+    }
+
+    func testDashGuard_doesNotRejectLegitimateDestinationAddresses() {
+        // The guard must not create false positives for real destination addresses.
+        XCTAssertTrue(SwapAddressValidator.isValid(address: "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2", for: btcCoin))
+        XCTAssertTrue(SwapAddressValidator.isValid(address: "0x742d35Cc6634C0532925a3b844Bc9e7595f2bD73", for: ethCoin))
+        XCTAssertTrue(SwapAddressValidator.isValid(address: "thor166n4w5039meulfa3p6ydg60ve6ueac7tlt0jws", for: thorCoin))
     }
 
     // MARK: - Edge Cases

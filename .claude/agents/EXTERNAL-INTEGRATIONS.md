@@ -27,24 +27,13 @@ DSTransaction *transaction = [wallet transactionForAmounts:amounts
 ```
 
 ### Firebase Services
-**Dependencies**: `Firebase/DynamicLinks`, `FirebaseStorage`
+**Dependencies**: `Firebase/CoreOnly`, `FirebaseStorage`
 **Configuration**: `GoogleService-Info.plist`
 
-**Dynamic Links Integration:**
-```swift
-// Handle incoming dynamic links
-func application(_ app: UIApplication, 
-                open url: URL, 
-                options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-    
-    if let dynamicLink = DynamicLinks.dynamicLinks().dynamicLink(fromCustomSchemeURL: url) {
-        handleDynamicLink(dynamicLink)
-        return true
-    }
-    
-    return false
-}
-```
+Firebase Dynamic Links was removed (the service was shut down by Google in
+August 2025 and nothing in the app used it). Invitation universal links are
+routed directly in `AppDelegate continueUserActivity:` via
+`DWInvitationLinkNormalizer`.
 
 **Storage Integration:**
 - Profile image storage for DashPay
@@ -228,7 +217,7 @@ class HTTPClient<ResponseType: Codable> {
 ```
 
 ### Image Processing
-**Libraries**: `SDWebImage`, `SDWebImageSwiftUI`, `TOCropViewController`, `CocoaImageHashing`
+**Libraries**: `SDWebImage`, `SDWebImageSwiftUI`, `TOCropViewController`
 
 **SDWebImage Integration:**
 ```swift
@@ -328,35 +317,8 @@ class JWTManager {
 ```
 
 ### Animation and UI
-**Libraries**: `lottie-ios`, `MBProgressHUD`
+**Libraries**: `MBProgressHUD`
 
-**Lottie Integration:**
-```swift
-import Lottie
-
-class AnimatedLoadingView: UIView {
-    private let animationView = LottieAnimationView()
-    
-    func setupAnimation() {
-        if let animation = LottieAnimation.named("loading_animation") {
-            animationView.animation = animation
-            animationView.loopMode = .loop
-            animationView.contentMode = .scaleAspectFit
-            
-            addSubview(animationView)
-            // Setup constraints...
-        }
-    }
-    
-    func startAnimating() {
-        animationView.play()
-    }
-    
-    func stopAnimating() {
-        animationView.stop()
-    }
-}
-```
 
 ## API Integration Patterns
 

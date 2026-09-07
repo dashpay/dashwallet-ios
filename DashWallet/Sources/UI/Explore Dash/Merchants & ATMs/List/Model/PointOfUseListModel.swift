@@ -136,11 +136,18 @@ final class PointOfUseListModel {
             return segmentFilters[currentSegment]
         }
         set {
-            if let newValue = newValue {
-                segmentFilters[currentSegment] = newValue
-            } else {
-                segmentFilters.removeValue(forKey: currentSegment)
-            }
+            setFilters(newValue, for: currentSegment)
+        }
+    }
+
+    /// Stores filters for a segment without fetching. Lets callers configure a segment's
+    /// filters before making it current, so the fetch triggered by the segment switch
+    /// already runs with them.
+    func setFilters(_ newFilters: PointOfUseListFilters?, for segment: PointOfUseListSegment) {
+        if let newFilters {
+            segmentFilters[segment] = newFilters
+        } else {
+            segmentFilters.removeValue(forKey: segment)
         }
     }
 
@@ -161,11 +168,9 @@ final class PointOfUseListModel {
         // Use the search center if available (map center when panning)
         // Otherwise fall back to device's GPS location
         if let searchCenter = searchCenterCoordinate {
-            print("🔍 MODEL: Using searchCenterCoordinate = \(searchCenter.latitude), \(searchCenter.longitude)")
             return searchCenter
         }
         let location = DWLocationManager.shared.currentLocation
-        print("🔍 MODEL: Using device GPS location = \(location?.coordinate.latitude ?? 0), \(location?.coordinate.longitude ?? 0)")
         return location?.coordinate
     }
 
@@ -204,13 +209,15 @@ final class PointOfUseListModel {
 
     var territories: [Territory] = []
 
-    init(segments: [PointOfUseListSegment]) {
+    init(segments: [PointOfUseListSegment], initialSegment: PointOfUseListSegment? = nil,
+         initialFilters: PointOfUseListFilters? = nil) {
         self.segments = segments
         for segment in segments {
             dataProviders[segment] = segment.dataProvider
         }
 
-        currentSegment = segments.first!
+        currentSegment = initialSegment ?? segments.first!
+        setFilters(initialFilters, for: currentSegment)
         segmentDidUpdate()
     }
 

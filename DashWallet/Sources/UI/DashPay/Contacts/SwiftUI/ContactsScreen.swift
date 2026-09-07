@@ -305,13 +305,16 @@ struct ContactsScreen: View {
                     }
                 }
             ) {
-                EnableDashPaySuccessSheet(onSendFirstRequest: {
-                    pendingFirstContactRequest = true
-                    viewModel.showEnableSuccess = false
-                })
+                DashUIKit.BottomSheet(showBackButton: .constant(false)) {
+                    EnableDashPaySuccessSheet(onSendFirstRequest: {
+                        pendingFirstContactRequest = true
+                        viewModel.showEnableSuccess = false
+                    })
+                }
                 // .medium can clip at large Dynamic Type sizes; the sheet
                 // content scrolls and .large stays reachable.
                 .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.hidden)
             }
             .sheet(item: $selectedContact) { contact in
                 ContactProfileSheet(contact: contact)
@@ -341,10 +344,13 @@ struct ContactsScreen: View {
                 viewModel: viewModel,
                 showingEnableDashPay: $showingEnableDashPay)
                 .sheet(isPresented: $showingEnableDashPay) {
-                    EnableDashPayConfirmSheet(viewModel: viewModel)
+                    DashUIKit.BottomSheet(showBackButton: .constant(false)) {
+                        EnableDashPayConfirmSheet(viewModel: viewModel)
+                    }
                         // .medium can clip at large Dynamic Type sizes; the
                         // sheet content scrolls and .large stays reachable.
                         .presentationDetents([.medium, .large])
+                        .presentationDragIndicator(.hidden)
                 }
         } else {
             VStack(spacing: 0) {

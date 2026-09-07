@@ -80,7 +80,7 @@ final class ContestedNamesService {
     /// reported end time sort last.
     func activeContests() async throws -> [DPNSContest] {
         let sdk = try requireSDK()
-        let contests = try sdk.dpnsActiveContests(limit: Self.activeContestLimit)
+        let contests = try await sdk.dpnsActiveContests(limit: Self.activeContestLimit)
 
         if contests.count >= Int(Self.activeContestLimit) {
             Self.logger.warning(

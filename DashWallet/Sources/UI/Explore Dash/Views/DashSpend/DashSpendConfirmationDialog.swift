@@ -20,6 +20,12 @@ import DashUIKit
 import SDWebImageSwiftUI
 
 struct DashSpendConfirmationDialog: View {
+    /// Detent used before `selfSizingSheet` has measured the sheet, so it doesn't
+    /// present short and then jump. Covers this dialog's own natural height plus
+    /// `DashUIKit.BottomSheet`'s chrome — an 18pt grabber and a 64pt navigation bar.
+    /// Both presenters share this value; keep it here so they can't drift apart.
+    static let sheetFallbackHeight: CGFloat = 582
+
     let merchantName: String
     let merchantIconUrl: String
     let originalPrice: Decimal
@@ -54,17 +60,6 @@ struct DashSpendConfirmationDialog: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Capsule()
-                .fill(Color.dash.grabberFill)
-                .frame(width: 36, height: 5)
-                .padding(.top, 6)
-                .padding(.bottom, 13)
-
-            Text(NSLocalizedString("Confirm", comment: "DashSpend"))
-                .font(.calloutMedium)
-                .foregroundColor(.dash.primaryText)
-                .frame(height: 44)
-
             VStack(spacing: 20) {
                 DashSpendAmountView(
                     currencySymbol: fiatFormatter.currencySymbol,
@@ -87,13 +82,23 @@ struct DashSpendConfirmationDialog: View {
 
                     detailsRow(title: NSLocalizedString("To", comment: "DashSpend")) {
                         HStack(spacing: 8) {
-                            WebImage(url: URL(string: merchantIconUrl))
-                                .resizable()
-                                .indicator(.activity)
-                                .transition(.fade(duration: 0.3))
-                                .scaledToFit()
-                                .frame(width: 20, height: 20)
-                                .clipShape(RoundedRectangle(cornerRadius: 7))
+                            // The placeholder stands in while loading and on failure, so a
+                            // missing or broken icon URL still shows the merchant's initials.
+                            WebImage(url: URL(string: merchantIconUrl)) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFit()
+                            } placeholder: {
+                                // Rounded-rect clip (below), so the text may fill almost the
+                                // whole box. Initials rather than the full name — at 20pt the
+                                // name style hits the 6pt font floor and clips.
+                                MerchantLogoPlaceholder(merchantName: merchantName,
+                                                        style: .initials,
+                                                        usableFraction: 0.84)
+                            }
+                            .transition(.fade(duration: 0.3))
+                            .frame(width: 20, height: 20)
+                            .clipShape(RoundedRectangle(cornerRadius: 7))
                             Text(merchantName)
                                 .font(.subhead)
                                 .foregroundColor(.dash.primaryText)
@@ -153,20 +158,9 @@ struct DashSpendConfirmationDialog: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 20)
         }
-        // Publish the natural height so `.selfSizingSheet()` (which reads
-        // `BottomSheetHeightPreferenceKey`) can size the sheet. This dialog is not a `BottomSheet`,
-        // so without this the modifier never gets a measurement and falls back to `.medium`, which
-        // is too short and lets the content overflow above the sheet. `.fixedSize(vertical:)` keeps
-        // the measurement stable (decoupled from the offered height) like the BottomSheet does.
+        // Keep the natural height independent of the offered detent so DashUIKit's
+        // `.selfSizingSheet()` can measure a stable intrinsic height.
         .fixedSize(horizontal: false, vertical: true)
-        .background(
-            GeometryReader { proxy in
-                Color.clear.preference(
-                    key: BottomSheetHeightPreferenceKey.self,
-                    value: proxy.size.height
-                )
-            }
-        )
     }
 
     private func detailsRow(title: String, @ViewBuilder value: () -> some View) -> some View {
@@ -204,28 +198,21 @@ private struct DashSpendConfirmationDialogPreview: View {
                 .onTapGesture { isPresented = true }
         }
         .sheet(isPresented: $isPresented) {
-            let content = DashSpendConfirmationDialog(
-                merchantName: "Amazon",
-                merchantIconUrl: "",
-                originalPrice: 75.70,
-                discount: 0.10,
-                quantities: [50: 1, 25: 2],
-                onConfirm: {},
-                onCancel: {}
-            )
-
-            if #available(iOS 16.4, *) {
-                content
-                    .presentationBackground(Color.dash.primaryBackground)
-                    .selfSizingSheet()
-                    .presentationCornerRadius(32)
-                    .presentationDragIndicator(.hidden)
-            } else if #available(iOS 16.0, *) {
-                content
-                    .selfSizingSheet()
-                    .presentationDragIndicator(.hidden)
-            } else {
-                content
+            DashUIKit.BottomSheet.selfSizing(
+                title: NSLocalizedString("Confirm", comment: "DashSpend"),
+                showBackButton: .constant(false),
+                fallback: DashSpendConfirmationDialog.sheetFallbackHeight,
+                cornerRadius: 32
+            ) {
+                DashSpendConfirmationDialog(
+                    merchantName: "Amazon",
+                    merchantIconUrl: "",
+                    originalPrice: 75.70,
+                    discount: 0.10,
+                    quantities: [50: 1, 25: 2],
+                    onConfirm: {},
+                    onCancel: {}
+                )
             }
         }
     }

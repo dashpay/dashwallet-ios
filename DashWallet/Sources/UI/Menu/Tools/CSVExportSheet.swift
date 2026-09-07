@@ -22,23 +22,10 @@ import DashUIKit
 
 struct CSVExportSheet: View {
     @Environment(\.presentationMode) private var presentationMode
-    @Environment(\.colorScheme) private var colorScheme
     let onExport: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
-            // Grabber
-            Capsule()
-                .fill(colorScheme == .dark ? Color.dash.whiteAlpha20 : Color.dash.gray300Alpha50)
-                .frame(width: 36, height: 5)
-                .padding(.top, 6)
-                .padding(.bottom, 6)
-
-            // Close button
-            NavBarClose {
-                presentationMode.wrappedValue.dismiss()
-            }
-
             // Content
             VStack(spacing: 0) {
                 // Icon
@@ -89,7 +76,6 @@ struct CSVExportSheet: View {
             .padding(.top, 20)
             .padding(.bottom, 20)
         }
-        .background(Color.dash.secondaryBackground)
     }
 }
 

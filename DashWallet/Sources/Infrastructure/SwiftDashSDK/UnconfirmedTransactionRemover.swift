@@ -299,7 +299,7 @@ struct UnconfirmedTransactionRemover {
         }
 
         // App caches that mirror the deleted rows.
-        ShieldedTxLookup.shared.refresh()
+        await ShieldedTxLookup.shared.refresh(reason: "transaction-removal-completed")
         return rescanArmed
     }
 
@@ -308,26 +308,10 @@ struct UnconfirmedTransactionRemover {
     /// (including transport failure) refuses the removal rather than
     /// guessing.
     private static func explorerKnowsTransaction(displayTxid: String, network: Network) async throws -> Bool {
-        let base = network == .mainnet
-            ? "https://insight.dash.org/insight-api"
-            : "https://insight.testnet.networks.dash.org/insight-api"
-        guard let url = URL(string: "\(base)/tx/\(displayTxid)") else {
+        guard let result = await InsightExplorerAPI.transaction(displayTxid: displayTxid, network: network) else {
             throw RemovalError.verificationUnavailable
         }
-        var request = URLRequest(url: url)
-        request.timeoutInterval = 20
-        request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
-        let http: HTTPURLResponse
-        do {
-            let (_, response) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw RemovalError.verificationUnavailable
-            }
-            http = httpResponse
-        } catch {
-            throw RemovalError.verificationUnavailable
-        }
-        switch http.statusCode {
+        switch result.statusCode {
         case 200: return true
         case 404: return false
         default: throw RemovalError.verificationUnavailable
