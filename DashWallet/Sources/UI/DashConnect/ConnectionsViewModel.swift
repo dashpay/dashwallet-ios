@@ -60,6 +60,24 @@ final class ConnectionsViewModel: ObservableObject {
     private var pendingLoginRequest: DashKeyRequest?
     private var cancellables = Set<AnyCancellable>()
 
+    /// Serializes inbound requests.
+    ///
+    /// A QR scan arrives one at a time, but a deep link does not: any installed
+    /// app can open `dash-key:` / `dash-st:` whenever it likes, and each one used
+    /// to start its own untracked task. `pendingLoginRequest` was published
+    /// BEFORE the Platform metadata lookup that builds the sheet's contents, so
+    /// a second request landing inside that await replaced it while the first
+    /// went on to publish the sheet — the user then approved what B asked for
+    /// while reading what A said, and the login credential was encrypted to B's
+    /// ephemeral key. Every request now takes a generation, and only the newest
+    /// one is allowed to publish anything.
+    private var requestGeneration = 0
+
+    /// Whether a request is mid-flight. A newer request may supersede one that
+    /// is still resolving, but nothing may interrupt an approval or a key
+    /// registration, which are already committing to the network.
+    private var isResolvingRequest = false
+
     init(
         dataSource: (any DashConnectDataSource)? = nil,
         featureUnavailable: Bool? = nil
@@ -79,16 +97,42 @@ final class ConnectionsViewModel: ObservableObject {
     func onQRScanned(_ content: String) {
         guard !featureUnavailable else { return }
 
+        // Work that is already committing to the network owns the screen until
+        // it finishes. Dropping the newcomer with a visible message beats
+        // silently reshuffling state underneath an approval the user is
+        // partway through.
+        guard !isApproving, !isProcessingKeyRegistration else {
+            message = ConnectionsScreenMessage(
+                kind: .error,
+                text: NSLocalizedString("Finish the current DashConnect request first, then try again.",
+                                        comment: "DashConnect: a second request arrived while one was being approved")
+            )
+            return
+        }
+
+        requestGeneration &+= 1
+        let generation = requestGeneration
+        isResolvingRequest = true
+
         Task {
+            defer { if generation == requestGeneration { isResolvingRequest = false } }
             do {
                 pendingRequest = nil
                 pendingLoginRequest = nil
 
                 switch try await dataSource.parseQR(content) {
                 case let .login(request):
+                    // Resolve first, publish second, and publish the pair
+                    // together. Between these two lines a newer request may
+                    // have arrived; if it has, this one is stale and must
+                    // publish nothing — the sheet and the key it authorizes
+                    // have to describe the same request.
+                    let connectionRequest = await dataSource.makeConnectionRequest(from: request)
+                    guard generation == requestGeneration else { return }
                     pendingLoginRequest = request
-                    pendingRequest = await dataSource.makeConnectionRequest(from: request)
+                    pendingRequest = connectionRequest
                 case let .keyRegistration(request):
+                    guard generation == requestGeneration else { return }
                     isProcessingKeyRegistration = true
                     defer { isProcessingKeyRegistration = false }
 
@@ -99,6 +143,7 @@ final class ConnectionsViewModel: ObservableObject {
                     )
                 }
             } catch {
+                guard generation == requestGeneration else { return }
                 message = ConnectionsScreenMessage(
                     kind: .error,
                     text: String(
@@ -117,7 +162,10 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     func approvePendingRequest() {
-        guard pendingRequest != nil, let pendingLoginRequest, !isApproving else { return }
+        // `isResolvingRequest` guards the window where a newer request has been
+        // accepted but has not published yet: approving during it would
+        // authorize the request on screen moments before it is replaced.
+        guard pendingRequest != nil, let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
 
         isApproving = true
         approveError = nil

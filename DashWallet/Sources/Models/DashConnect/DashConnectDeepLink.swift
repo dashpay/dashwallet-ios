@@ -25,6 +25,24 @@ import Foundation
 /// the wallet to scan, so it opens the identical `dash-key:` / `dash-st:`
 /// payload as a link instead. Both carriers hand the same string to
 /// `ConnectionsViewModel`.
+///
+/// ## What this carrier does not establish
+///
+/// A custom URL scheme carries no authenticated caller and no web origin, so
+/// nothing here identifies which app opened the link. The request supplies both
+/// the contract id the approval sheet brands itself from and the ephemeral
+/// public key the login credential is encrypted to, and those two are not tied
+/// to each other: a request may pair a legitimate app's contract id with a key
+/// the sender controls, and the sheet would show the legitimate app.
+///
+/// The QR protocol has the same gap — a photographed code is no more attributed
+/// than a tapped link — but this carrier widens who can deliver one from "an app
+/// that can put a code on a screen the user is looking at" to "any installed app,
+/// or any tapped link". Closing it needs a session proof bound to
+/// `appEphemeralPubKeyHash`, or an origin-bound channel, which is a protocol
+/// change on both sides rather than something this boundary can add.
+/// Size limits, which this boundary CAN enforce, live in `DashConnectUri` so
+/// every carrier inherits them.
 @objc(DWDashConnectDeepLink)
 final class DashConnectDeepLink: NSObject {
     /// The DashConnect URI `url` carries, or `nil` when it is not one.
