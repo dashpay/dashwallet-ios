@@ -449,14 +449,12 @@ final class WalletSendService: NSObject {
         contactIdentityId: Data,
         amount: UInt64,
         memo: String? = nil,
-        recipient: ContactPaymentRecipient? = nil
+        recipient: ContactPaymentRecipient
     ) async throws -> (txid: Data, feeDuffs: UInt64) {
         Self.logger.info("💸 TXSEND :: pay-to-contact starting — \(amount, privacy: .public) duffs")
-        if let recipient {
-            try await MainActor.run { try Self.validateContactRecipient(recipient) }
-            guard recipient.identityId == contactIdentityId else {
-                throw Self.makeError(code: .dashPayPaymentUnavailable, description: "The payment recipient changed. Reopen the payment and try again.")
-            }
+        try await MainActor.run { try Self.validateContactRecipient(recipient) }
+        guard recipient.identityId == contactIdentityId else {
+            throw Self.makeError(code: .dashPayPaymentUnavailable, description: "The payment recipient changed. Reopen the payment and try again.")
         }
         try Self.ensureInitialRestoreSyncCompleted()
         // spendAmount engages the biometric spending limit (C7.4) —
@@ -465,7 +463,7 @@ final class WalletSendService: NSObject {
         try await sendAuthorizer.authorizeSend(spendAmount: amount)
 
         let context: (wallet: ManagedPlatformWallet, ourId: Data)? = try await MainActor.run {
-            if let recipient { try Self.validateContactRecipient(recipient) }
+            try Self.validateContactRecipient(recipient)
             guard let wallet = SwiftDashSDKHost.shared.wallet,
                   let ourId = DWCurrentUserIdentityInfo.shared.identityId else {
                 return nil
