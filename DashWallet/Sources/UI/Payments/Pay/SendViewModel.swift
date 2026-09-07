@@ -94,10 +94,19 @@ final class SendViewModel: ObservableObject {
         }
     }
     @Published private(set) var clipboardSuggestion: ClipboardSuggestion? = nil
-    private var isClipboardMonitoringEnabled = false
-    /// Hosts with animated tabs must also check selection: the outgoing view
-    /// can remain alive briefly after another tab has been selected.
-    var isClipboardReadAllowed: () -> Bool = { true }
+    /// One token per address form that currently wants automatic reads. A set
+    /// rather than a flag because a host with animated tabs keeps the outgoing
+    /// form alive after the incoming one appeared: both are registered at
+    /// once, and the outgoing one's removal drops only its own registration.
+    private var clipboardMonitors: Set<UUID> = []
+    /// The "Send to Address" shortcut's intent, held until a read this screen
+    /// was actually allowed to make has run — a deferred or denied read must
+    /// not silently consume it.
+    private var appliesClipboardSuggestionWhenAvailable = false
+    /// Granted by the host for as long as its send surface is on screen.
+    /// Closed by default: a host that never opts in must not have the user's
+    /// pasteboard read behind its back.
+    var isClipboardReadAllowed: () -> Bool = { false }
 
     // Balances — same feeds as `InternalTransferViewModel` (BIP44 duffs,
     // DIP-17 credits, Orchard credits).
@@ -427,25 +436,60 @@ final class SendViewModel: ObservableObject {
         let kind: DestinationKind
     }
 
-    /// Only the visible address form enables automatic reads. This model also
-    /// exists behind Receive/Internal and is reused by later send steps.
-    func setClipboardMonitoringEnabled(_ enabled: Bool) {
-        guard isClipboardMonitoringEnabled != enabled else { return }
-        isClipboardMonitoringEnabled = enabled
+    /// Only a visible address form registers for automatic reads. This model
+    /// also exists behind Receive/Internal and is reused by later send steps.
+    ///
+    /// `token` identifies the registering form. Reads run while at least one
+    /// registration stands, so a form being removed can never switch off the
+    /// monitoring another form just switched on.
+    func setClipboardMonitoring(_ enabled: Bool, token: UUID) {
+        let wasMonitoring = !clipboardMonitors.isEmpty
         if enabled {
-            refreshClipboardSuggestion()
+            clipboardMonitors.insert(token)
         } else {
+            clipboardMonitors.remove(token)
+        }
+
+        if !clipboardMonitors.isEmpty {
+            refreshClipboardSuggestion()
+        } else if wasMonitoring {
             clipboardSuggestion = nil
+            appliesClipboardSuggestionWhenAvailable = false
         }
     }
 
+    /// The "Send to Address" shortcut: fill the address field from the
+    /// clipboard as soon as a permitted read runs. The host calls this on
+    /// appearance, before the form has registered, so the intent waits for
+    /// that first read instead of being spent on a read that cannot happen.
+    func applyClipboardSuggestionWhenAvailable() {
+        appliesClipboardSuggestionWhenAvailable = true
+        refreshClipboardSuggestion()
+    }
+
     private func refreshClipboardSuggestion() {
-        guard isClipboardMonitoringEnabled, isClipboardReadAllowed() else { return }
-        guard let raw = UIPasteboard.general.string else {
+        guard !clipboardMonitors.isEmpty, isClipboardReadAllowed() else {
+            // Not allowed to read is also not allowed to keep offering what an
+            // earlier read found: the pasteboard may have changed since, and
+            // the chip must not outlive the screen that produced it.
             clipboardSuggestion = nil
             return
         }
-        clipboardSuggestion = Self.detect(in: raw)
+
+        if let raw = UIPasteboard.general.string {
+            clipboardSuggestion = Self.detect(in: raw)
+        } else {
+            clipboardSuggestion = nil
+        }
+
+        guard appliesClipboardSuggestionWhenAvailable else { return }
+        // Spent by the first permitted read, whatever it found — a denied
+        // prompt or an empty clipboard has no retry to wait for.
+        appliesClipboardSuggestionWhenAvailable = false
+        // An explicit prefill (a scan-routed address, applied on load) wins
+        // over the clipboard, as it did when both ran in `viewDidLoad`.
+        guard trimmedAddress.isEmpty else { return }
+        useClipboardSuggestion()
     }
 
     func useClipboardSuggestion() {

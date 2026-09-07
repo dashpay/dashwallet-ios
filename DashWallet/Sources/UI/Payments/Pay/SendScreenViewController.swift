@@ -26,6 +26,11 @@ final class SendScreenViewController: DWBasePayViewController {
     private var prefillAddress: String?
     private var prefillAmountDuffs: UInt64 = 0
 
+    /// Grants the model its pasteboard reads. The SwiftUI form below stays
+    /// alive while a later send step is pushed over it, so appearance — not
+    /// the form's lifetime — is what says the screen is on screen.
+    private var isOnScreen = false
+
     private let sendViewModel = SendViewModel()
     private lazy var hostingController: UIHostingController<SendScreen> = {
         let screen = SendScreen(
@@ -60,6 +65,8 @@ final class SendScreenViewController: DWBasePayViewController {
         ])
         hostingController.didMove(toParent: self)
 
+        sendViewModel.isClipboardReadAllowed = { [weak self] in self?.isOnScreen == true }
+
         if let prefillAddress {
             sendViewModel.addressText = prefillAddress
             if prefillAmountDuffs > 0 {
@@ -71,11 +78,19 @@ final class SendScreenViewController: DWBasePayViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        isOnScreen = true
         if prefillsFromClipboard {
             prefillsFromClipboard = false
-            sendViewModel.setClipboardMonitoringEnabled(true)
-            sendViewModel.useClipboardSuggestion()
+            // The form registers for reads shortly after this (its entrance
+            // animation is deferred), so the intent is handed to the model
+            // rather than acted on against a suggestion that cannot exist yet.
+            sendViewModel.applyClipboardSuggestionWhenAvailable()
         }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        isOnScreen = false
     }
 
     // MARK: - QR scan
