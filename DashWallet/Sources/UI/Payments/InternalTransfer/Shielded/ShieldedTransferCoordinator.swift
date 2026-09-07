@@ -1374,7 +1374,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         try WalletSendService.validateContactRecipient(recipient)
         guard let walletId = recipient.walletId,
               let ownerId = recipient.ownerIdentityId else {
-            throw WalletSendService.makeError(code: .dashPayPaymentUnavailable, description: "Wallet or DashPay identity is not ready")
+            throw CoordinatorError.noWallet
         }
         let entry = try DashPayWithdrawalStore.shared.begin(
             scope: .init(networkRaw: recipient.network.rawValue, walletId: walletId, ownerIdentityId: ownerId),
