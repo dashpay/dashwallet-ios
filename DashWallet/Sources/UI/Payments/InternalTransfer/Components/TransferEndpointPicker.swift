@@ -209,7 +209,8 @@ private struct TransferBalanceHelpButton: View {
     let title: String
     let network: ChainNetwork?
 
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.dynamicTypeSize)
+    private var dynamicTypeSize
     @State private var isPresented = false
 
     var body: some View {
