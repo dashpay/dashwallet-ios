@@ -122,7 +122,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         // The pooled figure, not `balance.spendable`: Max filling from the
         // wallet-wide balance is the same lie the amount gate told, one tap
         // more convincing.
-        let spendable = pooledSpendableDuffs
+        let spendable = sendableDuffs
         let reserve = SwiftDashSDKTransactionSender.maxSendFeeReserveDuffs()
         return spendable > reserve ? spendable - reserve : 0
     }
@@ -171,7 +171,22 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// funds" against a visibly larger balance. Reservations are not subtracted
     /// (the SDK cannot read them yet), so this stays optimistic by whatever an
     /// in-flight build holds — transient, unlike the account-set difference.
-    @Published public private(set) var pooledSpendableDuffs: UInt64 = 0
+    ///
+    /// `nil` until the SDK has answered once, and again whenever a read fails.
+    /// It must never be 0 *because* the read failed: on the 2026-09-03 QA build
+    /// the FFI refused every call (it looked the core-wallet handle up in the
+    /// platform-wallet table), the failure was swallowed, and a permanent 0
+    /// here zeroed Max and blocked every send in the app. Consumers read
+    /// `sendableDuffs`, which falls back to the wallet-wide figure while this
+    /// is unknown — over-offering is the pre-#1107 behaviour and recoverable;
+    /// a silent 0 is neither.
+    @Published public private(set) var pooledSpendableDuffs: UInt64?
+
+    /// The amount gates and Max should read: the pooled figure when the SDK
+    /// has supplied one, else `balance.spendable`.
+    public var sendableDuffs: UInt64 {
+        pooledSpendableDuffs ?? balance?.spendable ?? 0
+    }
 
     // MARK: - Obj-C bridge
 
@@ -359,15 +374,38 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// balance event, like the CoinJoin tally beside it.
     @MainActor
     public func refreshPooledSpendableBalance() {
-        guard let wallet = SwiftDashSDKHost.shared.wallet,
-              let core = try? wallet.coreWallet(),
-              let duffs = try? core.pooledSpendableBalance()
-        else { return }
+        guard let wallet = SwiftDashSDKHost.shared.wallet else {
+            markPooledSpendableUnavailable(reason: "no active wallet")
+            return
+        }
+        let duffs: UInt64
+        do {
+            duffs = try wallet.coreWallet().pooledSpendableBalance()
+        } catch {
+            markPooledSpendableUnavailable(reason: String(describing: error))
+            return
+        }
+        hasLoggedPooledSpendableOutage = false
         if pooledSpendableDuffs != duffs {
             pooledSpendableDuffs = duffs
             Self.logger.info("💰 WALLET :: pooledSpendableDuffs=\(duffs, privacy: .public)")
         }
     }
+
+    /// Drop the pooled figure so `sendableDuffs` falls back to the wallet-wide
+    /// balance, and say why — once per outage, not once per balance tick. A
+    /// failure that repeats every tick is the signature to look for when Max
+    /// or the amount gate misbehave.
+    @MainActor
+    private func markPooledSpendableUnavailable(reason: String) {
+        guard pooledSpendableDuffs != nil || !hasLoggedPooledSpendableOutage else { return }
+        hasLoggedPooledSpendableOutage = true
+        pooledSpendableDuffs = nil
+        Self.logger.error(
+            "💰 WALLET :: pooledSpendableDuffs unavailable, falling back to balance.spendable: \(reason, privacy: .public)")
+    }
+
+    @MainActor private var hasLoggedPooledSpendableOutage = false
 
     @MainActor
     public func refreshCoinJoinBalance() {
@@ -425,6 +463,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             }
             self?.platformPaymentCredits = 0
             self?.coinJoinBalanceDuffs = 0
+            self?.pooledSpendableDuffs = nil
             NotificationCenter.default.post(
                 name: SwiftDashSDKWalletState.balanceDidChangeNotification,
                 object: nil)
@@ -443,6 +482,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             }
             self?.platformPaymentCredits = 0
             self?.coinJoinBalanceDuffs = 0
+            self?.pooledSpendableDuffs = nil
             NotificationCenter.default.post(
                 name: SwiftDashSDKWalletState.balanceDidChangeNotification,
                 object: nil)
