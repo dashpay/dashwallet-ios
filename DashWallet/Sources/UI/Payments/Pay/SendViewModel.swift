@@ -434,6 +434,8 @@ final class SendViewModel: ObservableObject {
         isClipboardMonitoringEnabled = enabled
         if enabled {
             refreshClipboardSuggestion()
+        } else {
+            clipboardSuggestion = nil
         }
     }
 
