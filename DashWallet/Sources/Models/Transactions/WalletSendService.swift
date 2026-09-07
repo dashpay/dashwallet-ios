@@ -501,6 +501,9 @@ final class WalletSendService: NSObject {
               recipient.identityId.count == 32,
               ownerId.count == 32,
               walletId == SwiftDashSDKHost.shared.wallet?.walletId,
+              walletId == WalletEnvironment.activeWalletId(for: recipient.network),
+              SwiftDashSDKHost.shared.runningNetwork != nil,
+              SwiftDashSDKHost.shared.runningNetwork == WalletEnvironment.network,
               ownerId == DWCurrentUserIdentityInfo.shared.identityId,
               recipient.network == WalletEnvironment.networkKind else {
             throw makeError(
