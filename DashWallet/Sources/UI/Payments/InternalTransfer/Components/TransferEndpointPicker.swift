@@ -209,6 +209,7 @@ private struct TransferBalanceHelpButton: View {
     let title: String
     let network: ChainNetwork?
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var isPresented = false
 
     var body: some View {
@@ -225,20 +226,37 @@ private struct TransferBalanceHelpButton: View {
         .accessibilityLabel(String(format: NSLocalizedString(
             "About %@ balance", comment: "Balance help button; placeholder is the balance name"), title))
         .popover(isPresented: $isPresented) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(title)
-                    .font(.headline)
-                    .foregroundColor(.dash.primaryText)
-                Text(explanation)
-                    .font(.subheadline)
-                    .foregroundColor(.dash.primaryText)
-                    .fixedSize(horizontal: false, vertical: true)
+            Group {
+                if dynamicTypeSize.isAccessibilitySize {
+                    ScrollView {
+                        helpContent
+                        Button(NSLocalizedString("Got it", comment: "Dismiss balance help")) {
+                            isPresented = false
+                        }
+                        .font(.body)
+                        .padding(20)
+                    }
+                } else {
+                    helpContent
+                        .frame(idealWidth: 280, maxWidth: 300)
+                }
             }
-            .padding(20)
-            .frame(idealWidth: 280, maxWidth: 300)
             .presentationBackground(Color.dash.primaryBackground)
-            .presentationCompactAdaptation(.popover)
+            .presentationCompactAdaptation(dynamicTypeSize.isAccessibilitySize ? .sheet : .popover)
         }
+    }
+
+    private var helpContent: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.headline)
+                .foregroundColor(.dash.primaryText)
+            Text(explanation)
+                .font(.subheadline)
+                .foregroundColor(.dash.primaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(20)
     }
 
     private var explanation: String {
