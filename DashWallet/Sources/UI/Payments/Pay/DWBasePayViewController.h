@@ -55,10 +55,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Hand an already-built input to the classic payment processor.
 ///
-/// Declared for the Swift subclasses that shadow the scan delegate to fill a
-/// form instead: an input their form cannot hold — a BIP70 request, which
-/// carries a fetched confirmation rather than an address — still has to go
-/// somewhere, and this is where the base class sends it.
+/// Declared for the Swift subclasses that override `didScanPaymentInput:` to
+/// fill a form instead: an input their form cannot hold — a BIP70 request,
+/// which carries a fetched confirmation rather than an address — still has to
+/// go somewhere, and this is where the base class sends it. The QR router uses
+/// it too, to keep a merchant request's outputs and metadata intact.
 - (void)processPaymentInput:(DWPaymentInput *)input;
 
 /// Leave a send that has finished: dismiss the modal that hosts it, or pop the
