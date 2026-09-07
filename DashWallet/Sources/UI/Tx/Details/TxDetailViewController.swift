@@ -302,6 +302,11 @@ extension TXDetailViewController {
                     // retry; say only that, so the wallet never reports a
                     // completion it did not witness.
                     toast = (NSLocalizedString("Already spent — nothing to transfer", comment: "Asset-lock retry found the lock already consumed"), .info)
+                case .submittedAwaitingSync:
+                    // Accepted, result not readable yet. Re-submitting risks a
+                    // double-spend, so say what is true and point at the sync
+                    // rather than inviting another tap.
+                    toast = (NSLocalizedString("Submitted — waiting for the network to confirm", comment: "Asset-lock retry submitted but its result could not be read back"), .info)
                 }
             } catch DWIdentityAuthorizer.AuthError.cancelled {
                 // Backing out of the PIN prompt is not an error state.

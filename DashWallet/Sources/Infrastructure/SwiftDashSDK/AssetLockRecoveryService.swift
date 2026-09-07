@@ -113,6 +113,13 @@ struct AssetLockRecoveryService {
         /// do without proving this particular transfer succeeded — say that
         /// rather than claiming a completion we did not witness.
         case completionUnconfirmed
+        /// The transition was accepted but its result could not be read back
+        /// (`shieldedSpendUnconfirmed`). Distinct from both of the above: the
+        /// transfer may well be settling right now, so this is neither a
+        /// completion nor an answer about the outpoint. Re-submitting risks a
+        /// double-spend, so the retry is suppressed for this pass and the next
+        /// shielded sync is what resolves it.
+        case submittedAwaitingSync
     }
 
     /// Retry the transfer for the tracked lock at (`txidWire`, `vout`).
@@ -161,7 +168,15 @@ struct AssetLockRecoveryService {
             // back — persisting an already-spent probe for it would report
             // "Already spent" for a transfer that may still be settling, and
             // would suppress the retry that settles it.
-            if coordinator.lastResumeReport == .alreadyConsumed {
+            if coordinator.phase == .submittedUnconfirmed,
+               coordinator.lastResumeReport != .alreadyConsumed {
+                // The other producer of that phase: accepted, result unread.
+                // No probe — nothing here is evidence about the outpoint, and
+                // recording one would report "Already spent" for a transfer
+                // that may still be settling and suppress the retry that
+                // settles it. Reporting `.completed` would be worse still.
+                outcome = .submittedAwaitingSync
+            } else if coordinator.lastResumeReport == .alreadyConsumed {
                 // Platform reported this outpoint already spent. The SDK keeps
                 // the lock at `RecoveredFromChain` (the report is not
                 // quorum-authenticated), so record the probe here — otherwise
@@ -197,6 +212,9 @@ struct AssetLockRecoveryService {
     struct BulkOutcome {
         var completed = 0
         var alreadySpent = 0
+        /// Submitted, result not yet readable. Neither a win nor a failure —
+        /// counted apart so the summary never folds it into "finished".
+        var awaitingSync = 0
         var failed = 0
         var cancelled = false
         /// First failure's message, surfaced so a run that mostly failed says
@@ -210,7 +228,7 @@ struct AssetLockRecoveryService {
         /// distinct from `cancelled`, which means the user backed out.
         var authFailureMessage: String?
 
-        var attempted: Int { completed + alreadySpent + failed }
+        var attempted: Int { completed + alreadySpent + awaitingSync + failed }
     }
 
     /// Consecutive failures after which the pass stops. A network refusing one
@@ -225,6 +243,7 @@ struct AssetLockRecoveryService {
     enum BulkStep: Equatable {
         case completed
         case alreadySpent
+        case awaitingSync
         case cancelled
         case failed(String)
     }
@@ -246,6 +265,12 @@ struct AssetLockRecoveryService {
             // same reason a completion does.
             consecutiveFailures = 0
             outcome.alreadySpent += 1
+        case .awaitingSync:
+            // The network took it; only the read-back is missing. Also not a
+            // failure, so it resets the run too — a batch of these must not
+            // trip the stop rule.
+            consecutiveFailures = 0
+            outcome.awaitingSync += 1
         case .cancelled:
             outcome.cancelled = true
             return true
@@ -352,7 +377,12 @@ struct AssetLockRecoveryService {
                     // a full lookup rebuild on top of the one `resumeAssetLock`
                     // already does, and nothing between iterations reads it.
                     refreshLookup: false)
-                let step: BulkStep = result == .completed ? .completed : .alreadySpent
+                let step: BulkStep
+                switch result {
+                case .completed: step = .completed
+                case .completionUnconfirmed: step = .alreadySpent
+                case .submittedAwaitingSync: step = .awaitingSync
+                }
                 Self.apply(step, to: &outcome, consecutiveFailures: &consecutiveFailures)
                 DWLogger.log("LOCK-RETRY bulk \(index + 1)/\(pending.count) \(txidDisplay)… -> \(result)")
             } catch DWIdentityAuthorizer.AuthError.cancelled {
@@ -377,8 +407,8 @@ struct AssetLockRecoveryService {
             progress(index + 1, pending.count)
         }
 
-        DWLogger.log("LOCK-RETRY bulk finished completed=\(outcome.completed) alreadySpent=\(outcome.alreadySpent) failed=\(outcome.failed)")
-        Self.logger.info("🔁 LOCK-RETRY :: bulk finished completed=\(outcome.completed, privacy: .public) alreadySpent=\(outcome.alreadySpent, privacy: .public) failed=\(outcome.failed, privacy: .public)")
+        DWLogger.log("LOCK-RETRY bulk finished completed=\(outcome.completed) alreadySpent=\(outcome.alreadySpent) awaitingSync=\(outcome.awaitingSync) failed=\(outcome.failed)")
+        Self.logger.info("🔁 LOCK-RETRY :: bulk finished completed=\(outcome.completed, privacy: .public) alreadySpent=\(outcome.alreadySpent, privacy: .public) awaitingSync=\(outcome.awaitingSync, privacy: .public) failed=\(outcome.failed, privacy: .public)")
         return outcome
     }
 

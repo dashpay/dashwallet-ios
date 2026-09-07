@@ -147,6 +147,31 @@ final class StuckAssetLockRetryTests: XCTestCase {
         return (outcome, nil)
     }
 
+    func testAwaitingSyncIsNeitherACompletionNorAFailure() {
+        // `.submittedUnconfirmed` has two producers. This is the one that says
+        // nothing about the outpoint: the transition was accepted but its
+        // result could not be read back, so the transfer may be settling right
+        // now. Counting it as finished would claim a completion nobody
+        // witnessed; counting it as a failure would invite a re-submit that
+        // risks a double-spend.
+        let (outcome, stoppedAt) = fold([.completed, .awaitingSync, .alreadySpent])
+        XCTAssertNil(stoppedAt)
+        XCTAssertEqual(outcome.completed, 1)
+        XCTAssertEqual(outcome.awaitingSync, 1)
+        XCTAssertEqual(outcome.alreadySpent, 1)
+        XCTAssertEqual(outcome.failed, 0)
+        XCTAssertEqual(outcome.attempted, 3, "every bucket has to reach the attempted total")
+    }
+
+    func testAwaitingSyncResetsTheFailureRun() {
+        // The network took it; only the read-back is missing. A batch of these
+        // must not trip the stop rule.
+        let (outcome, stoppedAt) = fold([.failed("a"), .failed("b"), .awaitingSync, .failed("c"), .failed("d")])
+        XCTAssertNil(stoppedAt)
+        XCTAssertEqual(outcome.awaitingSync, 1)
+        XCTAssertEqual(outcome.failed, 4)
+    }
+
     func testCompletionsAndAlreadySpentAreCountedApart() {
         let (outcome, stoppedAt) = fold([.completed, .alreadySpent, .completed])
         XCTAssertNil(stoppedAt)

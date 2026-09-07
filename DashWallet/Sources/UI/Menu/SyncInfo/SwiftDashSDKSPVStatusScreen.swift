@@ -866,6 +866,11 @@ extension SwiftDashSDKSPVStatusScreen {
                     format: NSLocalizedString("%d already spent", comment: "SPV diagnostics"),
                     outcome.alreadySpent))
             }
+            if outcome.awaitingSync > 0 {
+                parts.append(String(
+                    format: NSLocalizedString("%d waiting for the network", comment: "SPV diagnostics"),
+                    outcome.awaitingSync))
+            }
             if outcome.failed > 0 {
                 parts.append(String(
                     format: NSLocalizedString("%d could not be reached", comment: "SPV diagnostics"),
