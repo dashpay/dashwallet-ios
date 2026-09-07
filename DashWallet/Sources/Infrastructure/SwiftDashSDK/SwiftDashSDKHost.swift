@@ -994,7 +994,14 @@ final class SwiftDashSDKHost {
             Self.logger.info("🪺 HOST :: stage 2/4 ModelContainer \(cached.reused ? "reused" : "created", privacy: .public) for \(network.rawValue, privacy: .public)")
             DWLogger.log("HOST stage 2/4 ModelContainer \(cached.reused ? "reused" : "created") for \(network.rawValue) in \(ms)ms")
         } catch {
-            Self.logger.error("🪺 HOST :: ModelContainer build failed: \(String(describing: error), privacy: .public)")
+            if case DashModelContainerError.storeFromNewerBuild(let reason) = error {
+                // Deliberate SDK refusal, not a corrupt store: this build cannot
+                // open a database a newer build wrote without losing data.
+                Self.logger.error("🪺 HOST :: store written by a newer build; refusing to open it (\(reason, privacy: .public))")
+                DWLogger.log("HOST store written by a newer build; refusing to open it (\(reason))")
+            } else {
+                Self.logger.error("🪺 HOST :: ModelContainer build failed: \(String(describing: error), privacy: .public)")
+            }
             throw HostError.modelContainerFailed(error)
         }
 
@@ -1314,10 +1321,14 @@ final class SwiftDashSDKHost {
 
     /// Through `DashModelContainer.open` rather than a bare
     /// `ModelContainer(for:configurations:)`: that is where the SDK records
-    /// the open (`core_store_open_result`) and where a store the staged
-    /// migration plan rejects as an unknown version — every v4.2.0-dev.1
-    /// store, until the remaining V1/V2 shapes are frozen — is opened through
-    /// inferred migration instead of throwing into a launch crash. See
+    /// the open (`core_store_open_result`, `store_verdict`), and where a
+    /// store written by a registered version whose live models have since
+    /// drifted — every v4.2.0-dev.1 store, until the remaining V1/V2 shapes
+    /// are frozen — is opened through inferred migration instead of throwing
+    /// into a launch crash. A store written by a NEWER build is refused with
+    /// `DashModelContainerError.storeFromNewerBuild` (the bare container used
+    /// to open it and drop what that build wrote); the error's message tells
+    /// the user to update or reset, and the reset route stays reachable. See
     /// dashpay/platform#4580.
     private func buildModelContainer(at url: URL) throws -> ModelContainer {
         try DashModelContainer.open(
@@ -1330,7 +1341,7 @@ final class SwiftDashSDKHost {
 
     /// Filesystem path for the per-network shielded Orchard commitment-tree
     /// SQLite file, handed to `PlatformWalletManager.configureShielded(dbPath:)`.
-    /// Mirrors `buildModelContainer`'s `documents/SwiftDashSDK/<subsystem>/<network>/`
+    /// Mirrors `modelStoreURL(for:)`'s `documents/SwiftDashSDK/<subsystem>/<network>/`
     /// convention in a sibling `Shielded/` directory; creates the directory if
     /// needed. The manager is rebuilt per network (`buildRuntime`), so a
     /// per-network path keeps `configureShielded` idempotent — it throws only

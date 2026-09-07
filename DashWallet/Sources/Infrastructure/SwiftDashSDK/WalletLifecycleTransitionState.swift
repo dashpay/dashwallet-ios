@@ -60,12 +60,15 @@ final class WalletLifecycleTransitionState: ObservableObject {
         /// `finish()`), so there is no failed-wipe phase.
         case wiping(title: String?)
         /// A diagnostic log export in flight (`DiagnosticLogExporter`). Not a
-        /// lifecycle operation, but it holds the SDK's persistence serial
-        /// queue for its duration (dashpay/platform#4580), so it takes the
-        /// same blocking card and the same admission gate: no wallet switch
-        /// may start under it, and it may not start under one. Finishes on
-        /// its own; there is no failure phase — a failed export is reported
-        /// by the screen that asked for it.
+        /// lifecycle operation, but its wallet snapshot holds the SDK's
+        /// persistence serial queue while it runs (dashpay/platform#4580),
+        /// so a wallet switch must not start under it and it must not start
+        /// under one; the card stays up for the rest of the export — flush,
+        /// capture, zip — only because the user is waiting for one result and
+        /// must not start a second. The card offers Cancel, and `.wiping` is
+        /// admitted from here like from every failure phase: an export can
+        /// never wall the user off from Reset. No failure phase — a failed
+        /// export is reported by the screen that asked for it.
         case exportingDiagnostics
 
         /// Compact form for gate/telemetry log lines (no wallet ids beyond
@@ -123,7 +126,12 @@ final class WalletLifecycleTransitionState: ObservableObject {
              // with reinstalling as the only exit.
              (.failedNetworkSwitch, .wiping),
              (.failedWalletSwitch, .wiping),
-             (.failedWalletRemoval, .wiping):
+             (.failedWalletRemoval, .wiping),
+             // An export is the one busy phase whose wall time is not the
+             // app's to bound (the SDK snapshot on a large wallet), so the
+             // reset route stays open through it too. Shutdown cancels the
+             // snapshot's remaining native reads (platform#4580).
+             (.exportingDiagnostics, .wiping):
             phase = next
             return true
         default:

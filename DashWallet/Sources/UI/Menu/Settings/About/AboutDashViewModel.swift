@@ -138,7 +138,7 @@ final class AboutDashViewModel: ObservableObject {
         isExportingLogs = true
 
         Task { [weak self] in
-            let result = await DiagnosticLogExporter.exportArchive()
+            let result = await DiagnosticLogExporter.exportArchive(includingWalletSnapshot: false)
             guard let self else { return }
             self.isExportingLogs = false
             switch result {

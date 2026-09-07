@@ -132,6 +132,10 @@ NSString *DWCurrentThreadName(void) {
     return [logFiles copy];
 }
 
++ (void)flush {
+    [DDLog flushLog];
+}
+
 + (void)log:(NSString *)message {
     DDLogInfo(@"%@", message);
 }

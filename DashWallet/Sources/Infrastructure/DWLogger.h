@@ -70,6 +70,13 @@ NSString *DWCurrentThreadName(void);
 
 - (NSArray<NSURL *> *)logFiles;
 
+/// Drains CocoaLumberjack's asynchronous log queue and the file logger's
+/// buffer so `logFiles` reflect every line logged so far. The diagnostic
+/// export copies those files moments after calling this; without it the
+/// newest lines — the ones a support ticket is about — are still in the
+/// queue when the copy is taken.
++ (void)flush;
+
 /** @fn log:
  *  @brief This method logs a message with default class name
  *  @param message Final message to log

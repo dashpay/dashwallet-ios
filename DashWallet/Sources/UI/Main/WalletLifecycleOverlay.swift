@@ -44,7 +44,14 @@ final class WalletLifecycleOverlayPresenter {
         guard phaseCancellable == nil else { return }
         phaseCancellable = WalletLifecycleTransitionState.shared.$phase
             .sink { phase in
-                Task { @MainActor in
+                // `phase` is only ever set on the main actor (the state is
+                // MainActor-bound) and `@Published` delivers synchronously on
+                // the setting thread, so this IS the main actor. Applying
+                // here rather than on a hopped Task means `.idle` tears the
+                // window down before the caller's next statement runs — a
+                // screen presented right after `finish()` never lands under
+                // the scrim and is never hidden mid-transition.
+                MainActor.assumeIsolated {
                     WalletLifecycleOverlayPresenter.shared.apply(phase)
                 }
             }
@@ -161,6 +168,13 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     func dismissRemovalFailure() {
         WalletLifecycleTransitionState.shared.finish()
     }
+
+    /// Stop waiting for the export. The SDK snapshot cannot be interrupted;
+    /// the exporter discards its result when it arrives instead of
+    /// presenting it late.
+    func cancelDiagnosticsExport() {
+        DiagnosticLogExporter.cancelWaiting()
+    }
 }
 
 struct WalletLifecycleOverlayView: View {
@@ -204,11 +218,23 @@ struct WalletLifecycleOverlayView: View {
                     title: title ?? NSLocalizedString("Deleting All Wallets…", comment: ""),
                     subtitle: nil)
             case .exportingDiagnostics:
-                progressCard(
-                    title: NSLocalizedString("Preparing logs…", comment: "Diagnostic log export overlay"),
-                    subtitle: NSLocalizedString(
+                // The one busy phase whose duration the app cannot bound, so
+                // the one busy card with a way out.
+                card {
+                    SwiftUI.ProgressView()
+                        .controlSize(.large)
+                    Text(NSLocalizedString("Preparing logs…", comment: "Diagnostic log export overlay"))
+                        .font(.headline)
+                    Text(NSLocalizedString(
                         "Collecting wallet diagnostics. This may take a few seconds.",
                         comment: "Diagnostic log export overlay"))
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                    actionButton(NSLocalizedString("Cancel", comment: ""), prominent: false) {
+                        viewModel.cancelDiagnosticsExport()
+                    }
+                }
             case let .failedNetworkSwitch(from, target, message):
                 card {
                     failureHeader(

@@ -60,12 +60,14 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
     }
 
     /// No begin is admitted while any operation is busy — except the add
-    /// flow's own composite continuation into its post-add switch.
+    /// flow's own composite continuation into its post-add switch, and the
+    /// reset route out of an export, whose duration the app cannot bound.
     func testBusyPhasesRejectEveryBegin() {
         for (busyLabel, busy) in Self.begins {
             for (nextLabel, next) in Self.begins {
                 let state = makeState(in: busy)
-                let expected = busyLabel == "addingWallet" && nextLabel == "switchingWallet"
+                let expected = (busyLabel == "addingWallet" && nextLabel == "switchingWallet")
+                    || (busyLabel == "exportingDiagnostics" && nextLabel == "wiping")
                 XCTAssertEqual(
                     state.tryBegin(next), expected,
                     "\(busyLabel) → \(nextLabel): expected admitted=\(expected)")

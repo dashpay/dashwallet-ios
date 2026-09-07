@@ -43,68 +43,53 @@ final class DiagnosticLogExporterTests: XCTestCase {
     // MARK: - SDK session selection
 
     @MainActor
-    func testPreparationSnapshotsThenFlushesBeforeCopy() async {
-        var events: [String] = []
+    // MARK: - Lifecycle gate
 
-        let captured = await DiagnosticLogExporter.prepareLogsForExport(
-            emitDiagnostics: {
-                events.append("snapshot-start")
-                await Task.yield()
-                events.append("snapshot-finished")
-            },
-            flush: {
-                events.append("flush")
-            },
-            capture: {
-                events.append("copy")
-                return "captured"
-            })
+    /// The gate is what makes "no switch under an export" a guarantee: a
+    /// busy lifecycle phase refuses the export, and the refusal must leave
+    /// that phase untouched.
+    @MainActor
+    func testExportIsRefusedWhileAnotherLifecycleOperationIsBusy() async {
+        let state = WalletLifecycleTransitionState.shared
+        XCTAssertEqual(state.phase, .idle, "test precondition")
+        XCTAssertTrue(state.tryBegin(.switchingWallet(targetName: "A")))
+        defer { state.finish() }
 
-        XCTAssertEqual(captured, "captured")
-        XCTAssertEqual(events, [
-            "snapshot-start",
-            "snapshot-finished",
-            "flush",
-            "copy",
-        ])
+        let result = await DiagnosticLogExporter.exportArchive(includingWalletSnapshot: false)
+        guard case .failure(let error) = result else {
+            return XCTFail("an export under a wallet switch must be refused")
+        }
+        XCTAssertEqual(error as? DiagnosticLogExportError, .anotherOperationInProgress)
+        XCTAssertEqual(state.phase, .switchingWallet(targetName: "A"))
     }
 
+    /// Whatever the export returns — an archive, or `noLogsFound` on a host
+    /// with no sessions — the phase it took is released when it returns.
     @MainActor
-    func testPreparationStillFlushesWhenThereIsNoRuntimeToSnapshot() async {
-        var events: [String] = []
-
-        _ = await DiagnosticLogExporter.prepareLogsForExport(
-            emitDiagnostics: {},
-            flush: { events.append("flush") },
-            capture: { events.append("copy") })
-
-        XCTAssertEqual(events, ["flush", "copy"])
+    func testExportReleasesTheGateWhenItReturns() async {
+        let state = WalletLifecycleTransitionState.shared
+        XCTAssertEqual(state.phase, .idle, "test precondition")
+        _ = await DiagnosticLogExporter.exportArchive(includingWalletSnapshot: false)
+        XCTAssertEqual(state.phase, .idle)
     }
 
+    /// Cancel drops the card now (phase-guarded, so it never clears a phase
+    /// the export does not own) and is a no-op when nothing is exporting.
     @MainActor
-    func testSupportExportUsesTheSharedArchiveOnSuccess() async {
-        let expected = URL(fileURLWithPath: "/tmp/diagnostics.zip")
-        var failureWasReported = false
+    func testCancelWaitingReleasesOnlyAnExportPhase() {
+        let state = WalletLifecycleTransitionState.shared
+        XCTAssertEqual(state.phase, .idle, "test precondition")
+        DiagnosticLogExporter.cancelWaiting()
+        XCTAssertEqual(state.phase, .idle)
 
-        let archive = await DiagnosticLogExporter.exportArchiveForSupport(
-            using: { .success(expected) },
-            onFailure: { _ in failureWasReported = true })
+        XCTAssertTrue(state.tryBegin(.exportingDiagnostics))
+        DiagnosticLogExporter.cancelWaiting()
+        XCTAssertEqual(state.phase, .idle)
 
-        XCTAssertEqual(archive, expected)
-        XCTAssertFalse(failureWasReported)
-    }
-
-    @MainActor
-    func testSupportExportFailureHasNoAlternativeAttachment() async {
-        struct ExportFailure: Error {}
-        var failureWasReported = false
-
-        let archive = await DiagnosticLogExporter.exportArchiveForSupport(
-            using: { .failure(ExportFailure()) },
-            onFailure: { _ in failureWasReported = true })
-
-        XCTAssertNil(archive)
-        XCTAssertTrue(failureWasReported)
+        XCTAssertTrue(state.tryBegin(.removingWallet))
+        DiagnosticLogExporter.cancelWaiting()
+        XCTAssertEqual(state.phase, .removingWallet, "cancel must not touch another operation's phase")
+        state.finish()
     }
 
     func testCurrentSessionIsFirstEvenWhenOlderStampedThanOthers() {

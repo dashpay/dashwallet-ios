@@ -19,6 +19,12 @@ import Intents
 import UIKit
 import MessageUI
 
+/// Stored state an extension cannot carry: whether a support export is in
+/// flight (see `presentSupportEmailController`).
+private enum SupportExport {
+    @MainActor static var inFlight = false
+}
+
 @objc
 extension UIViewController {
     /// The tab bar controller somewhere at or under this one, searching
@@ -83,45 +89,83 @@ extension UIViewController {
     }
 
     @objc func presentSupportEmailController() {
-        // Use the same snapshot -> flush -> single-archive path as Tools and
-        // About. If export fails, support remains reachable without silently
-        // substituting a different, partial set of loose log attachments.
+        // One support export at a time. The lifecycle gate cannot close this
+        // window on its own: the overlay appears a turn after `tryBegin`, and
+        // a second tap in between would be refused straight into a log-less
+        // composer while the first export's composer is later dropped by
+        // UIKit as "already presenting".
+        guard !SupportExport.inFlight else { return }
+        SupportExport.inFlight = true
         Task { [weak self] in
-            let logsArchive = await DiagnosticLogExporter.exportArchiveForSupport()
-            self?.presentSupportEmailController(logsArchive: logsArchive)
+            defer { SupportExport.inFlight = false }
+            let result = await DiagnosticLogExporter.exportArchive(includingWalletSnapshot: true)
+            guard let self else { return }
+            switch result {
+            case .success(let archive):
+                await self.presentSupportEmailController(logsArchive: archive)
+            case .failure(let error):
+                if (error as? DiagnosticLogExportError) == .cancelled { return }
+                // Never compose silently without the logs the user believes
+                // are attached: say what is missing and let them decide.
+                let alert = UIAlertController(
+                    title: NSLocalizedString("Logs could not be attached", comment: "Support"),
+                    message: error.localizedDescription,
+                    preferredStyle: .alert)
+                alert.addAction(UIAlertAction(
+                    title: NSLocalizedString("Send Without Logs", comment: "Support"),
+                    style: .default) { [weak self] _ in
+                        Task { await self?.presentSupportEmailController(logsArchive: nil) }
+                    })
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel))
+                self.present(alert, animated: true)
+            }
         }
     }
 
-    private func presentSupportEmailController(logsArchive: URL?) {
-        if MFMailComposeViewController.canSendMail() {
+    /// Mail rejects attachments over roughly this size at send time — after
+    /// the user has written the report — so larger archives go out through
+    /// the share sheet, which hands the file over by URL.
+    private static let maxMailAttachmentBytes: UInt64 = 25 * 1024 * 1024
+
+    private func presentSupportEmailController(logsArchive: URL?) async {
+        let email = Bundle.main.infoDictionary?["SupportEmail"] as? String ?? ""
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+        let subject = String(format: NSLocalizedString("iOS Dash Wallet: %@ Reported issue", comment: ""), version)
+        let archiveBytes = logsArchive
+            .flatMap { try? $0.resourceValues(forKeys: [.fileSizeKey]).fileSize }
+            .map { UInt64(max(0, $0)) } ?? 0
+
+        if MFMailComposeViewController.canSendMail(), archiveBytes <= Self.maxMailAttachmentBytes {
+            // The read is file I/O of up to the cap: off the main actor.
+            var zipData: Data?
+            if let logsArchive {
+                zipData = await Task.detached(priority: .userInitiated) {
+                    try? Data(contentsOf: logsArchive)
+                }.value
+            }
             let mailComposer = MFMailComposeViewController()
             mailComposer.mailComposeDelegate = self as? MFMailComposeViewControllerDelegate
-
-            let email = Bundle.main.infoDictionary?["SupportEmail"] as? String ?? ""
-            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
             mailComposer.setToRecipients([email])
-            mailComposer.setSubject(String(format: NSLocalizedString("iOS Dash Wallet: %@ Reported issue", comment: ""), version))
-
-            if let logsArchive, let zipData = try? Data(contentsOf: logsArchive) {
+            mailComposer.setSubject(subject)
+            if let logsArchive, let zipData {
                 mailComposer.addAttachmentData(
                     zipData,
                     mimeType: "application/zip",
                     fileName: logsArchive.lastPathComponent)
             }
-
             present(mailComposer, animated: true)
         }
         else {
+            if archiveBytes > Self.maxMailAttachmentBytes {
+                DWLogger.log("Support archive is \(archiveBytes) bytes, over the mail attachment limit; sharing by URL instead")
+            }
             // No Apple Mail account configured (common when the customer lives in Gmail), so
-            // `MFMailComposeViewController` is unavailable and the logs go out through the share
-            // sheet instead. Lead with a mail item carrying the support address and subject:
-            // handlers that understand `mailto:` prefill the recipient from it, and the rest at
-            // least show the address in the composed body — the previous items were log files
-            // only, which is why reports arrived with an empty "To" field.
-            let email = Bundle.main.infoDictionary?["SupportEmail"] as? String ?? ""
-            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
-            let subject = String(format: NSLocalizedString("iOS Dash Wallet: %@ Reported issue", comment: ""), version)
-
+            // `MFMailComposeViewController` is unavailable — or the archive is too large for
+            // it — and the logs go out through the share sheet instead. Lead with a mail item
+            // carrying the support address and subject: handlers that understand `mailto:`
+            // prefill the recipient from it, and the rest at least show the address in the
+            // composed body — the previous items were log files only, which is why reports
+            // arrived with an empty "To" field.
             var activityItems: [Any] = []
             if !email.isEmpty {
                 activityItems.append(SupportRecipientActivityItem(email: email, subject: subject))

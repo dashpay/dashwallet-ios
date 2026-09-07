@@ -29,12 +29,15 @@
 import Foundation
 import SwiftDashSDK
 
-enum DiagnosticLogExportError: LocalizedError {
+enum DiagnosticLogExportError: LocalizedError, Equatable {
     case noLogsFound
     case zipFailed(String)
     /// The lifecycle admission gate is held by a wallet switch, removal,
     /// creation or wipe; the export must not run under one.
     case anotherOperationInProgress
+    /// The user tapped Cancel on the overlay. Whatever the export produced
+    /// afterwards is discarded; callers show nothing for this.
+    case cancelled
 
     var errorDescription: String? {
         switch self {
@@ -42,6 +45,8 @@ enum DiagnosticLogExportError: LocalizedError {
             return NSLocalizedString(
                 "Another wallet operation is in progress. Try again in a moment.",
                 comment: "Log export")
+        case .cancelled:
+            return NSLocalizedString("Log export cancelled.", comment: "Log export")
         case .noLogsFound:
             return NSLocalizedString(
                 "No diagnostic logs were found on this device. Logs are written from the next launch onward.",
@@ -78,20 +83,6 @@ struct DiagnosticLogExporter {
         let appVersion: String
         let currentSession: URL?
         let appLogFiles: [URL]
-    }
-
-    /// Keep the pre-export ordering explicit and independently testable.
-    /// Diagnostics are best-effort at the call site; flushing still runs when
-    /// there is no active SDK runtime to snapshot.
-    @MainActor
-    static func prepareLogsForExport<Context>(
-        emitDiagnostics: () async -> Void,
-        flush: () -> Void,
-        capture: () -> Context
-    ) async -> Context {
-        await emitDiagnostics()
-        flush()
-        return capture()
     }
 
     /// Blocking (file I/O + compression) — call off the main actor.
@@ -207,39 +198,38 @@ struct DiagnosticLogExporter {
         return zipURL
     }
 
-    /// The export holds the SDK's persistence serial queue for its whole
-    /// duration (`PlatformWalletManager.emitCoreWalletDiagnostics(for:)`,
-    /// dashpay/platform#4580): any screen that reads wallet state through the
-    /// SDK meanwhile would stall the main thread behind it. So it runs behind
-    /// the app-wide lifecycle overlay — the same blocking window a wallet
-    /// switch or creation uses, hosted in its own `UIWindow`, so the view
-    /// models that call this need no view of their own — and under the same
-    /// admission gate: it cannot start under a switch in flight, and no switch
-    /// can start under it. A refused gate is reported to the caller, never
-    /// waited out.
+    /// The archive every export screen produces. `includingWalletSnapshot`
+    /// adds the SDK's Core-wallet diagnostics (`emitCoreWalletDiagnostics`,
+    /// dashpay/platform#4580) to the session log first; the support composer
+    /// asks for it, the About shake and the Tools row do not, because that
+    /// snapshot holds the SDK's persistence serial queue while it runs and on
+    /// a large wallet is the whole cost of the export.
+    ///
+    /// Runs behind the app-wide lifecycle overlay — the same blocking window a
+    /// wallet switch or creation uses, in its own `UIWindow` — under the same
+    /// admission gate: it cannot start under a switch in flight, and no
+    /// switch can start under it (a wipe can: the reset route stays open).
+    /// The queue is held only during the snapshot; the card stays up through
+    /// flush, capture and zip because the user is waiting for one result and
+    /// must not start a second. A refused gate is reported to the caller, not
+    /// waited out; Cancel on the card stops the wait and discards the result.
     @MainActor
-    static func exportArchive() async -> Result<URL, Error> {
+    static func exportArchive(includingWalletSnapshot: Bool) async -> Result<URL, Error> {
         WalletLifecycleOverlayPresenter.shared.ensureActive()
         let state = WalletLifecycleTransitionState.shared
         guard state.tryBegin(.exportingDiagnostics) else {
             return .failure(DiagnosticLogExportError.anotherOperationInProgress)
         }
+        let generation = waitGeneration
         defer {
-            // Phase-guarded like `finishWiping`: never clear a phase this
-            // export does not own.
-            if case .exportingDiagnostics = state.phase {
+            // Phase-guarded like `finishWiping`, and generation-guarded: a
+            // cancelled export must not clear the phase of the export the
+            // user may have started since.
+            if waitGeneration == generation, case .exportingDiagnostics = state.phase {
                 state.finish()
             }
         }
-        return await exportArchiveUnguarded()
-    }
 
-    /// Main-actor entry point: captures the context that must be read on
-    /// the main actor, then runs the blocking staging + zip detached.
-    /// Shared by every caller that offers a log export (Tools menu row,
-    /// About-screen shake gesture) so the capture rules live in one place.
-    @MainActor
-    private static func exportArchiveUnguarded() async -> Result<URL, Error> {
         // Pin the runtime identity before the awaited snapshot. Main-actor
         // reentrancy can otherwise switch networks while diagnostics are
         // reading SwiftData, producing an archive labelled with a different
@@ -248,37 +238,31 @@ struct DiagnosticLogExporter {
         let walletId = SwiftDashSDKHost.shared.wallet?.walletId
         let capturedNetwork = SwiftDashSDKHost.shared.runningNetwork
             .map { String(describing: $0) } ?? "unknown"
-        let context = await prepareLogsForExport(
-            emitDiagnostics: {
-                // The SDK owns all diagnostic error handling. Missing runtime
-                // handles simply mean there is no live state to add; neither
-                // condition is allowed to prevent the existing logs export.
-                guard let manager, let walletId else {
-                    return
-                }
-                await manager.emitCoreWalletDiagnostics(for: walletId)
-            },
-            flush: {
-                // Make the structured Swift log durable before we capture the
-                // session directory and hand file copying to the detached task.
-                SDKLogger.flush()
-            },
-            capture: {
-                let bundle = Bundle.main
-                let short = bundle.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
-                let build = bundle.infoDictionary?["CFBundleVersion"] as? String ?? "?"
-                return ExportContext(
-                    network: capturedNetwork,
-                    appVersion: "\(short) (\(build))",
-                    // Authoritative record of which directory this run is
-                    // writing to; timestamp sorting can be fooled by a clock
-                    // rollback or a stale future-dated directory.
-                    currentSession: LoggingPreferences.currentSessionDirectory,
-                    appLogFiles: DWLogger.sharedInstance().logFiles()
-                )
-            })
+        // The SDK owns all diagnostic error handling. Missing runtime handles
+        // simply mean there is no live state to add; neither condition is
+        // allowed to prevent the existing logs export.
+        if includingWalletSnapshot, let manager, let walletId {
+            await manager.emitCoreWalletDiagnostics(for: walletId)
+        }
+        // Both log streams durable before the session directory and the app
+        // log files are captured and handed to the detached copy: the SDK's
+        // structured log, and CocoaLumberjack's queued app log.
+        SDKLogger.flush()
+        DWLogger.flush()
+        let bundle = Bundle.main
+        let short = bundle.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = bundle.infoDictionary?["CFBundleVersion"] as? String ?? "?"
+        let context = ExportContext(
+            network: capturedNetwork,
+            appVersion: "\(short) (\(build))",
+            // Authoritative record of which directory this run is writing
+            // to; timestamp sorting can be fooled by a clock rollback or a
+            // stale future-dated directory.
+            currentSession: LoggingPreferences.currentSessionDirectory,
+            appLogFiles: DWLogger.sharedInstance().logFiles()
+        )
 
-        return await Task.detached(priority: .userInitiated) {
+        let result = await Task.detached(priority: .userInitiated) {
             Result {
                 try export(
                     network: context.network,
@@ -288,26 +272,26 @@ struct DiagnosticLogExporter {
                 )
             }
         }.value
+        guard waitGeneration == generation else {
+            return .failure(DiagnosticLogExportError.cancelled)
+        }
+        return result
     }
 
-    /// Shared best-effort bridge for the support composer. Support uses the
-    /// exact same archive as the Tools and About screens; a failed export is
-    /// reported locally and never falls back to a different attachment set.
+    /// Bumped by `cancelWaiting`. `exportArchive` captures it before its
+    /// awaits and compares after: a mismatch means the user stopped waiting,
+    /// and the result — which still arrives, since the SDK snapshot cannot be
+    /// interrupted — is discarded rather than presented late.
+    @MainActor private static var waitGeneration = 0
+
+    /// The overlay card's Cancel. Drops the card now; the export in flight
+    /// returns `.cancelled` when it completes.
     @MainActor
-    static func exportArchiveForSupport(
-        using exporter: () async -> Result<URL, Error> = {
-            await DiagnosticLogExporter.exportArchive()
-        },
-        onFailure: (Error) -> Void = { error in
-            DWLogger.log("Support diagnostic archive export failed: \(error.localizedDescription)")
-        }
-    ) async -> URL? {
-        switch await exporter() {
-        case .success(let archiveURL):
-            return archiveURL
-        case .failure(let error):
-            onFailure(error)
-            return nil
+    static func cancelWaiting() {
+        waitGeneration += 1
+        let state = WalletLifecycleTransitionState.shared
+        if case .exportingDiagnostics = state.phase {
+            state.finish()
         }
     }
 
