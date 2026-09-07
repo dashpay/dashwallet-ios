@@ -78,13 +78,6 @@ struct DiagnosticLogExporter {
         let bytes: UInt64
     }
 
-    private struct ExportContext: Sendable {
-        let network: String
-        let appVersion: String
-        let currentSession: URL?
-        let appLogFiles: [URL]
-    }
-
     /// Blocking (file I/O + compression) — call off the main actor.
     ///
     /// - Parameters:
@@ -158,24 +151,49 @@ struct DiagnosticLogExporter {
         defer { try? fm.removeItem(at: scratch) }
 
         try fm.createDirectory(at: staging, withIntermediateDirectories: true)
+        // Best effort per item. The SDK sessions and the app logs are
+        // independent evidence: a session directory pruned mid-copy, a name
+        // collision or a full disk must not take the other group down with
+        // it, and one bad file must not cost the archive. What could not be
+        // copied is named in `summary.txt`; only nothing at all is a failure.
+        var skipped: [String] = []
+        var copiedCount = 0
         for session in selectedSessions {
-            try fm.copyItem(
-                at: session.url,
-                to: staging.appendingPathComponent(session.url.lastPathComponent, isDirectory: true)
-            )
+            do {
+                try fm.copyItem(
+                    at: session.url,
+                    to: staging.appendingPathComponent(session.url.lastPathComponent, isDirectory: true)
+                )
+                copiedCount += 1
+            } catch {
+                skipped.append("sdk-session \(session.url.lastPathComponent): \(error.localizedDescription)")
+            }
         }
         if !selectedAppLogs.isEmpty {
             let appLogsDir = staging.appendingPathComponent("app-logs", isDirectory: true)
-            try fm.createDirectory(at: appLogsDir, withIntermediateDirectories: true)
-            for file in selectedAppLogs {
-                try fm.copyItem(
-                    at: file,
-                    to: appLogsDir.appendingPathComponent(file.lastPathComponent)
-                )
+            do {
+                try fm.createDirectory(at: appLogsDir, withIntermediateDirectories: true)
+                for file in selectedAppLogs {
+                    do {
+                        try fm.copyItem(
+                            at: file,
+                            to: appLogsDir.appendingPathComponent(file.lastPathComponent)
+                        )
+                        copiedCount += 1
+                    } catch {
+                        skipped.append("app-log \(file.lastPathComponent): \(error.localizedDescription)")
+                    }
+                }
+            } catch {
+                skipped.append("app-logs directory: \(error.localizedDescription)")
             }
         }
+        guard copiedCount > 0 else {
+            throw DiagnosticLogExportError.zipFailed(
+                "nothing could be copied (\(skipped.joined(separator: "; ")))")
+        }
 
-        let summary = summaryText(
+        var summary = summaryText(
             network: network,
             appVersion: appVersion,
             selectedSessions: selectedSessions,
@@ -184,6 +202,10 @@ struct DiagnosticLogExporter {
             appLogCount: selectedAppLogs.count,
             totalAppLogsOnDevice: appLogFiles.count
         )
+        if !skipped.isEmpty {
+            summary += "\n\nSkipped (could not be copied):\n"
+                + skipped.map { "  - \($0)" }.joined(separator: "\n") + "\n"
+        }
         try summary.write(
             to: staging.appendingPathComponent("summary.txt"),
             atomically: true,
@@ -212,24 +234,27 @@ struct DiagnosticLogExporter {
     /// The queue is held only during the snapshot; the card stays up through
     /// flush, capture and zip because the user is waiting for one result and
     /// must not start a second. A refused gate is reported to the caller, not
-    /// waited out. Cancel on the card hides the card and discards the result;
-    /// the admission is held until this returns, because the snapshot may
-    /// still hold the persistence queue and the pinned manager — a switch
-    /// must not rebind under it. So no second export can overlap this one,
-    /// and the `defer` below needs only the phase guard.
+    /// waited out. Cancel on the card hides the card; the admission is held
+    /// until this returns, because the snapshot may still hold the
+    /// persistence queue and the pinned manager — a switch must not rebind
+    /// under it. The phase carries this export's generation: release and
+    /// delivery happen only if the phase is still this export's own — a
+    /// cancelled export superseded by a wipe and a newer export must neither
+    /// open that export's gate when it finally returns nor deliver an archive
+    /// of a wallet the wipe removed.
     @MainActor
     static func exportArchive(includingWalletSnapshot: Bool) async -> Result<URL, Error> {
         WalletLifecycleOverlayPresenter.shared.ensureActive()
         let state = WalletLifecycleTransitionState.shared
-        guard state.tryBegin(.exportingDiagnostics(dismissed: false)) else {
+        nextExportGeneration += 1
+        let generation = nextExportGeneration
+        guard state.tryBegin(.exportingDiagnostics(dismissed: false, generation: generation)) else {
             return .failure(DiagnosticLogExportError.anotherOperationInProgress)
         }
-        let generation = waitGeneration
         defer {
-            // Phase-guarded like `finishWiping`: release the export phase,
-            // dismissed or not, and never a `.wiping` that was admitted
-            // through it.
-            if case .exportingDiagnostics = state.phase {
+            // Only this export's phase — never a `.wiping` admitted through
+            // it, and never a successor's export phase.
+            if case .exportingDiagnostics(_, let owner) = state.phase, owner == generation {
                 state.finish()
             }
         }
@@ -248,55 +273,58 @@ struct DiagnosticLogExporter {
         if includingWalletSnapshot, let manager, let walletId {
             await manager.emitCoreWalletDiagnostics(for: walletId)
         }
-        // Both log streams durable before the session directory and the app
-        // log files are captured and handed to the detached copy: the SDK's
-        // structured log, and CocoaLumberjack's queued app log.
-        SDKLogger.flush()
-        DWLogger.flush()
         let bundle = Bundle.main
         let short = bundle.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
         let build = bundle.infoDictionary?["CFBundleVersion"] as? String ?? "?"
-        let context = ExportContext(
-            network: capturedNetwork,
-            appVersion: "\(short) (\(build))",
-            // Authoritative record of which directory this run is writing
-            // to; timestamp sorting can be fooled by a clock rollback or a
-            // stale future-dated directory.
-            currentSession: LoggingPreferences.currentSessionDirectory,
-            appLogFiles: DWLogger.sharedInstance().logFiles()
-        )
+        let appVersion = "\(short) (\(build))"
+        // Authoritative record of which directory this run is writing to;
+        // timestamp sorting can be fooled by a clock rollback or a stale
+        // future-dated directory. A property read, not I/O.
+        let currentSession = LoggingPreferences.currentSessionDirectory
 
-        let result = await Task.detached(priority: .userInitiated) {
-            Result {
+        let result = await Task.detached(priority: .userInitiated) { () -> Result<URL, Error> in
+            // Both flushes block their calling thread on the loggers' queues
+            // — deepest right after the snapshot wrote its audit — and the
+            // app-log listing enumerates a directory. None of it belongs on
+            // the main actor; ordering is kept, since this body runs them
+            // before the copy.
+            SDKLogger.flush()
+            DWLogger.flush()
+            let appLogFiles = DWLogger.sharedInstance().logFiles()
+            return Result {
                 try export(
-                    network: context.network,
-                    appVersion: context.appVersion,
-                    currentSession: context.currentSession,
-                    appLogFiles: context.appLogFiles
+                    network: capturedNetwork,
+                    appVersion: appVersion,
+                    currentSession: currentSession,
+                    appLogFiles: appLogFiles
                 )
             }
         }.value
-        guard waitGeneration == generation else {
+
+        // Deliver only if this export still owns an undismissed phase.
+        // Cancel dismissed it; a wipe admitted through it moved the phase
+        // on, and the wallet the archive describes may be gone by now.
+        guard case .exportingDiagnostics(dismissed: false, generation: let owner) = state.phase,
+              owner == generation
+        else {
             return .failure(DiagnosticLogExportError.cancelled)
         }
         return result
     }
 
-    /// Bumped by `cancelWaiting`. `exportArchive` captures it before its
-    /// awaits and compares after: a mismatch means the user stopped waiting,
-    /// and the result — which still arrives, since the SDK snapshot cannot be
-    /// interrupted — is discarded rather than presented late.
-    @MainActor private static var waitGeneration = 0
+    /// Names each export. The phase carries it, so release and delivery can
+    /// be scoped to the export that took the phase.
+    @MainActor private static var nextExportGeneration: UInt64 = 0
 
-    /// The overlay card's Cancel. Drops the card now and marks the result
-    /// for discard; the export in flight keeps its admission and returns
-    /// `.cancelled` when it completes. A no-op unless a card is showing.
+    /// The overlay card's Cancel. Drops the card now; the export in flight
+    /// keeps its admission and, seeing its phase dismissed when it returns,
+    /// discards its result as `.cancelled`. A no-op unless a card is showing.
     @MainActor
     static func cancelWaiting() {
         let state = WalletLifecycleTransitionState.shared
-        guard case .exportingDiagnostics(dismissed: false) = state.phase else { return }
-        waitGeneration += 1
-        state.advance(to: .exportingDiagnostics(dismissed: true))
+        guard case .exportingDiagnostics(dismissed: false, generation: let owner) = state.phase
+        else { return }
+        state.advance(to: .exportingDiagnostics(dismissed: true, generation: owner))
     }
 
     /// Pure SDK-session selection policy, split out for unit testing.

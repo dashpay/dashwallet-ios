@@ -105,21 +105,26 @@ extension UIViewController {
                 await self.presentSupportEmailController(logsArchive: archive)
             case .failure(let error):
                 if (error as? DiagnosticLogExportError) == .cancelled { return }
-                // Never compose silently without the logs the user believes
-                // are attached: say what is missing and let them decide.
-                let alert = UIAlertController(
-                    title: NSLocalizedString("Logs could not be attached", comment: "Support"),
-                    message: error.localizedDescription,
-                    preferredStyle: .alert)
-                alert.addAction(UIAlertAction(
-                    title: NSLocalizedString("Send Without Logs", comment: "Support"),
-                    style: .default) { [weak self] _ in
-                        Task { await self?.presentSupportEmailController(logsArchive: nil) }
-                    })
-                alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel))
-                self.present(alert, animated: true)
+                self.presentLogsNotAttachedAlert(message: error.localizedDescription)
             }
         }
+    }
+
+    /// Never compose silently without the logs the user believes are
+    /// attached: say what is missing and let them decide. Reached from an
+    /// export failure and from an archive that exists but could not be read.
+    private func presentLogsNotAttachedAlert(message: String) {
+        let alert = UIAlertController(
+            title: NSLocalizedString("Logs could not be attached", comment: "Support"),
+            message: message,
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(
+            title: NSLocalizedString("Send Without Logs", comment: "Support"),
+            style: .default) { [weak self] _ in
+                Task { await self?.presentSupportEmailController(logsArchive: nil) }
+            })
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel))
+        present(alert, animated: true)
     }
 
     /// Mail rejects attachments over roughly this size at send time — after
@@ -131,17 +136,33 @@ extension UIViewController {
         let email = Bundle.main.infoDictionary?["SupportEmail"] as? String ?? ""
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
         let subject = String(format: NSLocalizedString("iOS Dash Wallet: %@ Reported issue", comment: ""), version)
-        let archiveBytes = logsArchive
-            .flatMap { try? $0.resourceValues(forKeys: [.fileSizeKey]).fileSize }
-            .map { UInt64(max(0, $0)) } ?? 0
+        // `nil` is "size unknown", which must land on the share-sheet side of
+        // the cap: an unreadable size on a large-wallet archive is exactly
+        // the case where an in-memory read and a mail attachment would fail
+        // — silently, and after the user has written the report.
+        let archiveBytes: UInt64? = logsArchive.flatMap {
+            (try? $0.resourceValues(forKeys: [.fileSizeKey]).fileSize).map { UInt64(max(0, $0)) }
+        }
+        let fitsInMail = logsArchive == nil
+            || (archiveBytes.map { $0 <= Self.maxMailAttachmentBytes } ?? false)
 
-        if MFMailComposeViewController.canSendMail(), archiveBytes <= Self.maxMailAttachmentBytes {
+        if MFMailComposeViewController.canSendMail(), fitsInMail {
             // The read is file I/O of up to the cap: off the main actor.
             var zipData: Data?
             if let logsArchive {
                 zipData = await Task.detached(priority: .userInitiated) {
                     try? Data(contentsOf: logsArchive)
                 }.value
+                // The archive exists but could not be read (memory pressure,
+                // temp file evicted): that is the log-less send the alert
+                // exists to prevent, not a case to fall through.
+                guard zipData != nil else {
+                    DWLogger.log("Support archive could not be read for attachment; asking before composing without it")
+                    presentLogsNotAttachedAlert(message: NSLocalizedString(
+                        "The diagnostic archive could not be read.",
+                        comment: "Support"))
+                    return
+                }
             }
             let mailComposer = MFMailComposeViewController()
             mailComposer.mailComposeDelegate = self as? MFMailComposeViewControllerDelegate
@@ -156,8 +177,8 @@ extension UIViewController {
             present(mailComposer, animated: true)
         }
         else {
-            if archiveBytes > Self.maxMailAttachmentBytes {
-                DWLogger.log("Support archive is \(archiveBytes) bytes, over the mail attachment limit; sharing by URL instead")
+            if let logsArchive, !fitsInMail {
+                DWLogger.log("Support archive \(archiveBytes.map { "is \($0) bytes, over" } ?? "has an unreadable size, treated as over") the mail attachment limit; sharing \(logsArchive.lastPathComponent) by URL instead")
             }
             // No Apple Mail account configured (common when the customer lives in Gmail), so
             // `MFMailComposeViewController` is unavailable — or the archive is too large for

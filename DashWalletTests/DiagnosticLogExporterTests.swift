@@ -80,12 +80,12 @@ final class DiagnosticLogExporterTests: XCTestCase {
         DiagnosticLogExporter.cancelWaiting()
         XCTAssertEqual(state.phase, .idle, "no card, nothing to cancel")
 
-        XCTAssertTrue(state.tryBegin(.exportingDiagnostics(dismissed: false)))
+        XCTAssertTrue(state.tryBegin(.exportingDiagnostics(dismissed: false, generation: 7)))
         DiagnosticLogExporter.cancelWaiting()
-        XCTAssertEqual(state.phase, .exportingDiagnostics(dismissed: true))
+        XCTAssertEqual(state.phase, .exportingDiagnostics(dismissed: true, generation: 7), "same owner, now dismissed")
         XCTAssertFalse(state.tryBegin(.switchingWallet(targetName: "A")), "still busy after cancel")
         DiagnosticLogExporter.cancelWaiting()
-        XCTAssertEqual(state.phase, .exportingDiagnostics(dismissed: true), "a second cancel changes nothing")
+        XCTAssertEqual(state.phase, .exportingDiagnostics(dismissed: true, generation: 7), "a second cancel changes nothing")
         state.finish()
 
         XCTAssertTrue(state.tryBegin(.removingWallet))

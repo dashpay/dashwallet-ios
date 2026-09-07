@@ -76,7 +76,12 @@ final class WalletLifecycleTransitionState: ObservableObject {
         /// the phase stays busy, and the admission with it, until
         /// `exportArchive()` returns. Visibility and admission are two
         /// different things; only the first ends at Cancel.
-        case exportingDiagnostics(dismissed: Bool)
+        ///
+        /// `generation` names the export that owns the phase. A cancelled
+        /// export can be superseded — wipe admitted through it, then a new
+        /// export — while it is still running; when it finally returns it
+        /// must release and deliver only if the phase is still its own.
+        case exportingDiagnostics(dismissed: Bool, generation: UInt64)
 
         /// Compact form for gate/telemetry log lines (no wallet ids beyond
         /// what the operation logs themselves already include).
@@ -91,8 +96,8 @@ final class WalletLifecycleTransitionState: ObservableObject {
             case .failedWalletSwitch: return "failedWalletSwitch"
             case .failedWalletRemoval: return "failedWalletRemoval"
             case .wiping: return "wiping"
-            case .exportingDiagnostics(let dismissed):
-                return dismissed ? "exportingDiagnostics(dismissed)" : "exportingDiagnostics"
+            case .exportingDiagnostics(let dismissed, let generation):
+                return "exportingDiagnostics#\(generation)" + (dismissed ? "(dismissed)" : "")
             }
         }
     }
@@ -119,7 +124,7 @@ final class WalletLifecycleTransitionState: ObservableObject {
              (.idle, .removingWallet),
              (.idle, .addingWallet),
              (.idle, .wiping),
-             (.idle, .exportingDiagnostics(dismissed: false)),
+             (.idle, .exportingDiagnostics(dismissed: false, generation: _)),
              (.failedNetworkSwitch, .switchingNetwork),
              (.failedWalletSwitch, .switchingWallet),
              // Composite add → switch: the add flow's own continuation into

@@ -44,22 +44,29 @@ final class WalletLifecycleOverlayPresenter {
         guard phaseCancellable == nil else { return }
         phaseCancellable = WalletLifecycleTransitionState.shared.$phase
             .sink { phase in
-                // `phase` is only ever set on the main actor (the state is
-                // MainActor-bound) and `@Published` delivers synchronously on
-                // the setting thread, so this IS the main actor. Applying
-                // here rather than on a hopped Task means `.idle` tears the
-                // window down before the caller's next statement runs — a
-                // screen presented right after `finish()` never lands under
-                // the scrim and is never hidden mid-transition.
-                MainActor.assumeIsolated {
-                    WalletLifecycleOverlayPresenter.shared.apply(phase)
+                // Apply synchronously when the emission is already on the
+                // main thread — every Swift caller of the state is
+                // MainActor-bound — so `.idle` tears the window down before
+                // the caller's next statement runs and a screen presented
+                // right after `finish()` never lands under the scrim. The
+                // Obj-C bridge (`beginWiping` / `finishWiping`) has no
+                // compile-time isolation, so an off-main emission hops rather
+                // than traps; it merely loses the same-turn teardown.
+                if Thread.isMainThread {
+                    MainActor.assumeIsolated {
+                        WalletLifecycleOverlayPresenter.shared.apply(phase)
+                    }
+                } else {
+                    Task { @MainActor in
+                        WalletLifecycleOverlayPresenter.shared.apply(phase)
+                    }
                 }
             }
     }
 
     private func apply(_ phase: WalletLifecycleTransitionState.Phase) {
         switch phase {
-        case .idle, .exportingDiagnostics(dismissed: true):
+        case .idle, .exportingDiagnostics(dismissed: true, generation: _):
             // A dismissed export is still busy for admission purposes — see
             // the phase doc — but the user has asked to stop waiting, so the
             // window goes; a wipe admitted from here brings a new one.
@@ -68,12 +75,16 @@ final class WalletLifecycleOverlayPresenter {
         case .switchingNetwork, .failedNetworkSwitch,
              .switchingWallet, .removingWallet, .addingWallet,
              .failedWalletSwitch, .failedWalletRemoval,
-             .wiping, .exportingDiagnostics(dismissed: false):
-            presentIfNeeded()
+             .wiping, .exportingDiagnostics(dismissed: false, generation: _):
+            presentIfNeeded(for: phase)
         }
     }
 
-    private func presentIfNeeded() {
+    /// `phase` is the value being applied, passed down rather than re-read:
+    /// `@Published` emits from `willSet`, so the state still holds the
+    /// previous phase while this runs, and a view seeded from it would draw
+    /// the previous card (or no card, over a full scrim).
+    private func presentIfNeeded(for phase: WalletLifecycleTransitionState.Phase) {
         guard overlayWindow == nil else { return }
         let scene = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
@@ -82,7 +93,8 @@ final class WalletLifecycleOverlayPresenter {
 
         let window = scene.map { UIWindow(windowScene: $0) } ?? UIWindow(frame: UIScreen.main.bounds)
         window.windowLevel = .alert + 1
-        window.rootViewController = UIHostingController(rootView: WalletLifecycleOverlayView())
+        window.rootViewController = UIHostingController(
+            rootView: WalletLifecycleOverlayView(initialPhase: phase))
         window.rootViewController?.view.backgroundColor = .clear
         window.backgroundColor = .clear
         window.isHidden = false
@@ -130,10 +142,16 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
 
     private var phaseCancellable: AnyCancellable?
 
-    init() {
-        let transitionState = WalletLifecycleTransitionState.shared
-        phase = transitionState.phase
-        phaseCancellable = transitionState.$phase
+    /// Seeded from the phase the presenter is applying, not from the state:
+    /// this can be created inside `@Published`'s `willSet`, where the state
+    /// still holds the previous phase and the projected publisher replays
+    /// that previous value to a new subscriber — hence `dropFirst()`, which
+    /// skips exactly that replay (outside `willSet` it skips a value equal
+    /// to the seed) and leaves every later change flowing.
+    init(initialPhase: WalletLifecycleTransitionState.Phase) {
+        phase = initialPhase
+        phaseCancellable = WalletLifecycleTransitionState.shared.$phase
+            .dropFirst()
             .sink { [weak self] phase in
                 self?.phase = phase
             }
@@ -182,7 +200,11 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
 }
 
 struct WalletLifecycleOverlayView: View {
-    @StateObject private var viewModel = WalletLifecycleOverlayViewModel()
+    @StateObject private var viewModel: WalletLifecycleOverlayViewModel
+
+    init(initialPhase: WalletLifecycleTransitionState.Phase) {
+        _viewModel = StateObject(wrappedValue: WalletLifecycleOverlayViewModel(initialPhase: initialPhase))
+    }
 
     var body: some View {
         ZStack {
@@ -221,11 +243,11 @@ struct WalletLifecycleOverlayView: View {
                 progressCard(
                     title: title ?? NSLocalizedString("Deleting All Wallets…", comment: ""),
                     subtitle: nil)
-            case .exportingDiagnostics(dismissed: true):
+            case .exportingDiagnostics(dismissed: true, generation: _):
                 // No window exists for this phase (the presenter tears it
                 // down); nothing to draw if a view is ever asked.
                 EmptyView()
-            case .exportingDiagnostics(dismissed: false):
+            case .exportingDiagnostics(dismissed: false, generation: _):
                 // The one busy phase whose duration the app cannot bound, so
                 // the one busy card with a way out.
                 card {

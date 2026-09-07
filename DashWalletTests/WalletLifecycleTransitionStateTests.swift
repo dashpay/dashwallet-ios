@@ -25,7 +25,7 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         ("removingWallet", .removingWallet),
         ("addingWallet", .addingWallet(isImport: false)),
         ("wiping", .wiping(title: nil)),
-        ("exportingDiagnostics", .exportingDiagnostics(dismissed: false)),
+        ("exportingDiagnostics", .exportingDiagnostics(dismissed: false, generation: 0)),
     ]
 
     private static let failures: [(label: String, phase: Phase)] = [
@@ -105,8 +105,8 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
     /// still busy: nothing begins under it except the reset route.
     func testDismissedExportStaysBusyExceptForWipe() {
         for (nextLabel, next) in Self.begins {
-            let state = makeState(in: .exportingDiagnostics(dismissed: false))
-            state.advance(to: .exportingDiagnostics(dismissed: true))
+            let state = makeState(in: .exportingDiagnostics(dismissed: false, generation: 0))
+            state.advance(to: .exportingDiagnostics(dismissed: true, generation: 0))
             XCTAssertEqual(
                 state.tryBegin(next), nextLabel == "wiping",
                 "dismissed export → \(nextLabel)")
