@@ -497,12 +497,12 @@ private struct RemoveWalletSheet: View {
 
 // MARK: - Add Wallet sheet
 
-/// "Add Wallet" flow: a chooser between creating a brand-new wallet (generate a
-/// 12- or 24-word phrase, show it, require a written-down confirmation) and importing
-/// one from an existing recovery phrase. Both paths add the wallet additively
-/// via `WalletsViewModel.addWallet` and switch to it on success. All SDK work
-/// (generate / validate / add / switch) lives in the ViewModel; this view only
-/// drives the steps and renders (SwiftUI-first guardrail).
+/// "Add Wallet" flow: a chooser between creating a brand-new wallet (optional
+/// name, generated 12- or 24-word phrase, written-down confirmation) and
+/// importing one from an existing recovery phrase with an optional name. Both
+/// paths add the wallet additively via `WalletsViewModel.addWallet` and switch
+/// to it on success. All SDK work (generate / validate / add / switch) lives in
+/// the ViewModel; this view only drives the steps and renders.
 private struct AddWalletSheet: View {
     @ObservedObject var viewModel: WalletsViewModel
     let onFinished: () -> Void
@@ -616,13 +616,14 @@ private struct AddWalletSheet: View {
 
 // MARK: - Create wallet step
 
-/// Generates a 12- or 24-word phrase (user's pick; switching regenerates), shows
-/// it in a grid, and requires an explicit "I've written it down" confirmation
-/// before adding the wallet.
+/// Accepts an optional name, generates a 12- or 24-word phrase (user's pick;
+/// switching regenerates), shows it in a grid, and requires an explicit "I've
+/// written it down" confirmation before adding the wallet.
 private struct CreateWalletView: View {
     @ObservedObject var viewModel: WalletsViewModel
     let onFinished: () -> Void
 
+    @State private var name: String = ""
     @State private var mnemonic: String? = nil
     @State private var confirmedWrittenDown = false
     @State private var phraseLength: RecoveryPhraseLength = .default
@@ -634,6 +635,10 @@ private struct CreateWalletView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
+                WalletNameField(
+                    name: $name,
+                    isDisabled: viewModel.addInProgress || viewModel.switchInProgress)
+
                 RecoveryPhraseLengthPicker(selection: $phraseLength)
                     .disabled(viewModel.addInProgress || viewModel.switchInProgress)
 
@@ -718,7 +723,10 @@ private struct CreateWalletView: View {
     private func create() {
         guard let mnemonic else { return }
         Task {
-            let outcome = await viewModel.addWallet(mnemonic: mnemonic, isImported: false)
+            let outcome = await viewModel.addWallet(
+                mnemonic: mnemonic,
+                isImported: false,
+                name: name)
             if outcome == .switched { onFinished() }
             // A brand-new phrase can't already exist, and on error the sheet
             // stays open (the ViewModel surfaces the message).
@@ -728,14 +736,15 @@ private struct CreateWalletView: View {
 
 // MARK: - Import wallet step
 
-/// Multiline recovery-phrase entry with BIP39 validation. On import, if the
-/// derived wallet is already on this device, offers switching to it instead of
-/// reporting a fabricated success.
+/// Optional wallet name plus multiline recovery-phrase entry with BIP39
+/// validation. On import, if the derived wallet is already on this device,
+/// offers switching to it instead of reporting a fabricated success.
 private struct ImportWalletView: View {
     @ObservedObject var viewModel: WalletsViewModel
     let onFinished: () -> Void
     let onSwitchToExisting: (Data) -> Void
 
+    @State private var name: String = ""
     @State private var phrase: String = ""
     @State private var existingWalletId: Data? = nil
 
@@ -747,6 +756,10 @@ private struct ImportWalletView: View {
                     comment: "Wallets"))
                     .font(.subheadline)
                     .foregroundColor(.dash.secondaryText)
+
+                WalletNameField(
+                    name: $name,
+                    isDisabled: viewModel.addInProgress || viewModel.switchInProgress)
 
                 TextEditor(text: $phrase)
                     .frame(minHeight: 120)
@@ -799,7 +812,10 @@ private struct ImportWalletView: View {
     private func importWallet() {
         existingWalletId = nil
         Task {
-            let outcome = await viewModel.addWallet(mnemonic: phrase, isImported: true)
+            let outcome = await viewModel.addWallet(
+                mnemonic: phrase,
+                isImported: true,
+                name: name)
             switch outcome {
             case .switched:
                 onFinished()
@@ -808,6 +824,39 @@ private struct ImportWalletView: View {
             case .none:
                 break // error surfaced by the ViewModel; sheet stays open
             }
+        }
+    }
+}
+
+// MARK: - Optional wallet name
+
+private struct WalletNameField: View {
+    @Binding var name: String
+    let isDisabled: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(NSLocalizedString("Wallet name (optional)", comment: "Wallets"))
+                .font(.subheadline)
+                .foregroundColor(.dash.primaryText)
+
+            TextField(
+                NSLocalizedString("e.g. Spending", comment: "Wallets — optional wallet name placeholder"),
+                text: $name)
+                .textInputAutocapitalization(.words)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 11)
+                .background(Color.dash.secondaryBackground)
+                .cornerRadius(10)
+                .disabled(isDisabled)
+
+            Text(String(
+                format: NSLocalizedString(
+                    "Leave blank to use \"%@\". You can change this later from the wallet menu.",
+                    comment: "Wallets"),
+                SwiftDashSDKHost.defaultWalletName))
+                .font(.footnote)
+                .foregroundColor(.dash.secondaryText)
         }
     }
 }

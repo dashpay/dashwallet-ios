@@ -250,6 +250,24 @@ final class StoredWalletInventoryTests: XCTestCase {
     }
 }
 
+final class WalletNameNormalizationTests: XCTestCase {
+    func testBlankWalletNamesHaveNoExplicitUserValue() {
+        XCTAssertNil(WalletsViewModel.normalizedWalletName(nil))
+        XCTAssertNil(WalletsViewModel.normalizedWalletName(""))
+        XCTAssertNil(WalletsViewModel.normalizedWalletName("  \n\t  "))
+    }
+
+    func testDefaultWalletNameRemainsDashwallet() {
+        XCTAssertEqual(SwiftDashSDKHost.defaultWalletName, "dashwallet")
+    }
+
+    func testWalletNameTrimsOuterWhitespace() {
+        XCTAssertEqual(
+            WalletsViewModel.normalizedWalletName("  Holiday Fund \n"),
+            "Holiday Fund")
+    }
+}
+
 final class LegacyMnemonicSelectionTests: XCTestCase {
     func testTargetedCleanupSelectsOnlyMatchingNormalizedSeed() {
         let target = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"

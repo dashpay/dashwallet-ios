@@ -309,12 +309,13 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// `switchWallet` is deliberately a SECOND, sequential chain op (the
     /// caller awaits this method first), never nested inside it.
     @MainActor
-    func performAddWallet(mnemonic: String, isImported: Bool) async throws
+    func performAddWallet(mnemonic: String, isImported: Bool, name: String?) async throws
         -> SwiftDashSDKHost.AddWalletResult {
         try await lifecycleQueue.enqueueAwaitable {
             try await SwiftDashSDKHost.shared.addWallet(
                 mnemonic: mnemonic,
-                isImported: isImported)
+                isImported: isImported,
+                name: name)
         }
     }
 
