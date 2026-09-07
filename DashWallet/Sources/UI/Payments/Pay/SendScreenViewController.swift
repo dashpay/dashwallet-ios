@@ -85,6 +85,8 @@ final class SendScreenViewController: DWBasePayViewController {
             // animation is deferred), so the intent is handed to the model
             // rather than acted on against a suggestion that cannot exist yet.
             sendViewModel.applyClipboardSuggestionWhenAvailable()
+        } else {
+            sendViewModel.refreshClipboardSuggestion()
         }
     }
 

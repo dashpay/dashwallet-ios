@@ -467,7 +467,9 @@ final class SendViewModel: ObservableObject {
         refreshClipboardSuggestion()
     }
 
-    private func refreshClipboardSuggestion() {
+    /// Refreshes when a host becomes visible or the clipboard changes. Both
+    /// the form registration and the host's permission must allow the read.
+    func refreshClipboardSuggestion() {
         guard !clipboardMonitors.isEmpty, isClipboardReadAllowed() else {
             // Not allowed to read is also not allowed to keep offering what an
             // earlier read found: the pasteboard may have changed since, and

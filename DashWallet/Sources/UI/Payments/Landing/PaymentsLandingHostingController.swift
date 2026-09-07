@@ -255,6 +255,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         // same receive session (or start a fresh "Receive another" session).
         viewModel.setReceiptWatchingObscured(false)
         isSurfaceOnScreen = true
+        embeddedSendViewModel.refreshClipboardSuggestion()
         isPushingReceiveStep = false
         receiveStepObservers.removeAll()
         viewModel.setReceiveSurfaceVisible(true)
