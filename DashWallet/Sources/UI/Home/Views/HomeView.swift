@@ -57,9 +57,6 @@ final class HomeView: UIView {
     let viewModel: HomeViewModel
     #if DASHPAY
     let joinDPViewModel = JoinDashPayViewModel(initialState: .callToAction)
-    /// Owns the registration tile that replaces the Join DashPay banner while a
-    /// username is being created. Built here, alongside its rival for the slot.
-    let usernameTileModel = UsernameRegistrationTileModel()
     #endif
 
     var model: DWHomeProtocol?
@@ -96,7 +93,6 @@ final class HomeView: UIView {
         let content = HomeViewContent(
             viewModel: self.viewModel,
             joinDPViewModel: self.joinDPViewModel,
-            usernameTileModel: self.usernameTileModel,
             delegate: self.delegate,
             performShortcut: performShortcut,
             headerView: { UIViewWrapper(uiView: self.headerView) }
@@ -133,16 +129,6 @@ final class HomeView: UIView {
                                                object: nil)
         
         #if DASHPAY
-        // Keep the banner policy in step with whoever holds the slot. Seeded
-        // immediately because the tile can already be showing at construction
-        // time — a registration interrupted by a previous launch.
-        viewModel.usernameTileOccupiesHomeSlot = usernameTileModel.state.occupiesHomeSlot
-        usernameTileModel.onStateChange = { [weak self] in
-            guard let self else { return }
-            self.viewModel.usernameTileOccupiesHomeSlot = self.usernameTileModel.state.occupiesHomeSlot
-            self.viewModel.checkJoinDashPay()
-        }
-
         joinDPViewModel.$state
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
@@ -273,7 +259,6 @@ struct HomeViewContent<Content: View>: View {
     @StateObject private var balanceModel = BalanceModel()
     #if DASHPAY
     @ObservedObject var joinDPViewModel: JoinDashPayViewModel
-    @ObservedObject var usernameTileModel: UsernameRegistrationTileModel
     #endif
     weak var delegate: HomeViewDelegate?
     /// Resolves the shortcuts delegate at tap time. A stored weak delegate
@@ -349,46 +334,28 @@ struct HomeViewContent<Content: View>: View {
                     })
 
                     #if DASHPAY
-                    // The tile and the banner are two reports on the same
-                    // subject, so only one may hold this slot. `else if` makes
-                    // co-display structurally impossible regardless of how the
-                    // policy below happens to be timed.
-                    if usernameTileModel.state.occupiesHomeSlot {
-                        UsernameRegistrationTile(
-                            state: usernameTileModel.state,
-                            onTap: {
-                                switch usernameTileModel.state {
-                                case .success:
-                                    usernameTileModel.acknowledgeSuccess()
-                                    delegate?.homeViewEditProfile()
-                                case .failed, .interrupted:
-                                    // Back to the form: a retry re-enters the
-                                    // PIN gate and may re-spend, which deserves
-                                    // a screen rather than a one-tap tile
-                                    // action. Its recovery machinery takes over
-                                    // from there.
-                                    delegate?.homeViewRequestUsername()
-                                case .hidden, .inProgress:
-                                    break
-                                }
-                                viewModel.checkJoinDashPay()
-                            },
-                            onDismiss: {
-                                usernameTileModel.dismiss()
-                                viewModel.checkJoinDashPay()
-                            })
-                            .padding(.horizontal, 20)
-                    } else if viewModel.showJoinDashpay {
+                    if viewModel.showJoinDashpay {
                         JoinDashPayMenuItem(
                             viewModel: joinDPViewModel,
                             // The row is the action now — this is what the
                             // Upgrade/Edit/Retry button used to do.
                             onTap: { state in
-                                if state == .approved {
+                                switch state {
+                                case .approved:
                                     delegate?.homeViewEditProfile()
                                     joinDPViewModel.markAsDismissed()
                                     viewModel.checkJoinDashPay()
-                                } else {
+                                case .creating:
+                                    // Nothing to act on while it runs.
+                                    break
+                                case .creationFailed, .interrupted:
+                                    // Back to the form: a retry re-enters the
+                                    // PIN gate and may re-spend, which deserves
+                                    // a screen rather than a one-tap action.
+                                    // Its recovery machinery takes over from
+                                    // there.
+                                    delegate?.homeViewRequestUsername()
+                                case .none, .callToAction, .voting, .failed, .blocked, .contested, .registered:
                                     // TODO: ? MOCK_DASHPAY if failed, maybe need to call model?.dashPayModel.retry()
                                     // Always open the info dialog. It carries the
                                     // only "Have an invitation?" entry in the app,

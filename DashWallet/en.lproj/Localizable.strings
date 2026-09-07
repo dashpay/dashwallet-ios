@@ -2670,6 +2670,9 @@
 /* Username marketplace: registration date */
 "Registered" = "Registered";
 
+/* Usernames — Home row title while a username is being registered */
+"Creating – %@" = "Creating – %@";
+
 /* Usernames — the app closed before the registration finished */
 "Registration was interrupted" = "Registration was interrupted";
 
@@ -3744,9 +3747,6 @@
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Retain Mutual Transaction History";
-
-/* Usernames — continue an interrupted registration */
-"Resume" = "Resume";
 
 /* No comment provided by engineer. */
 /* Masternode status */

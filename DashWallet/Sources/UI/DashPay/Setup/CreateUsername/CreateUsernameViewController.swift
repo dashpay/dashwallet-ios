@@ -761,8 +761,8 @@ struct CreateUsernameView: View {
         // ends in the voting explanation, which has nowhere else to live, and an
         // invitation claim carries the inviter contact request afterwards —
         // both on this screen, and the invitation path bypasses the bridge the
-        // tile reads.
-        let handsOffToHomeTile = !viewModel.isInvitationMode
+        // Home row reads.
+        let handsOffToHomeRow = !viewModel.isInvitationMode
             && !DWContestedNameStatusService.isContestedLabel(
                 viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines))
         Task {
@@ -775,13 +775,13 @@ struct CreateUsernameView: View {
             var didHandOff = false
             let outcome = await viewModel.submitUsernameRequest(temporaryUsername: temporaryUsername) {
                 isTextInputFocused = false
-                if handsOffToHomeTile {
+                if handsOffToHomeRow {
                     // Fires once the registration is actually running — after
                     // the PIN gate, which `startCreateUsername` passes before
                     // any phase change. The work itself lives in the
                     // app-scoped coordinator and outlives this screen.
                     didHandOff = true
-                    UsernameRegistrationTileModel.markHandedOff(
+                    JoinDashPayViewModel.markRegistrationHandedOff(
                         username: viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines))
                     finish()
                 } else {
@@ -790,7 +790,7 @@ struct CreateUsernameView: View {
             }
             inProgress = false
 
-            // The tile owns the outcome now; alerts from a dismissed screen
+            // The Home row owns the outcome now; alerts from a dismissed screen
             // would either be invisible or land on top of Home.
             guard !didHandOff else { return }
 

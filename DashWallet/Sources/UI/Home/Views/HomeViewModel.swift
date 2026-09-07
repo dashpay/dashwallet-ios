@@ -226,11 +226,6 @@ class HomeViewModel: ObservableObject {
 
 #if DASHPAY
     var joinDashPayState: JoinDashPayState = .callToAction
-    /// Mirrors `UsernameRegistrationTileModel.state.occupiesHomeSlot`, pushed in
-    /// by `HomeView`. The tile owns the slot the Join DashPay banner wants, and
-    /// the banner policy has to know that — otherwise `showJoinDashpay` stays
-    /// true underneath a tile that merely happens to be drawn on top of it.
-    var usernameTileOccupiesHomeSlot: Bool = false
 #endif
     
     private lazy var syncModel = SyncModelImpl()
@@ -3087,13 +3082,18 @@ enum JoinDashPayBannerPolicy {
         syncDone: Bool,
         dismissed: Bool,
         hasRegisteredUsername: Bool,
-        hasRegistrationInProgress: Bool
+        hasRegistrationInProgress: Bool,
+        reportsRegistration: Bool = false
     ) -> Bool {
-        contextReady &&
-            syncDone &&
-            !dismissed &&
-            !hasRegisteredUsername &&
-            !hasRegistrationInProgress
+        // A registration this wallet started is reported on the same row, and
+        // that report is its only surface once the create screen has stepped
+        // aside — so it shows whether or not the call to action was dismissed.
+        reportsRegistration ||
+            (contextReady &&
+                syncDone &&
+                !dismissed &&
+                !hasRegisteredUsername &&
+                !hasRegistrationInProgress)
     }
 }
 
@@ -3134,11 +3134,8 @@ extension HomeViewModel {
             syncDone: true,
             dismissed: UsernamePrefs.shared.joinDashPayDismissed,
             hasRegisteredUsername: hasRegisteredUsername,
-            // A registration reported by the Home tile counts as in progress
-            // too — including the failed and interrupted tiles, which are still
-            // that registration's surface and must not be doubled by a call to
-            // action inviting the user to start another one.
-            hasRegistrationInProgress: identityScopedRegistrationState || usernameTileOccupiesHomeSlot)
+            hasRegistrationInProgress: identityScopedRegistrationState,
+            reportsRegistration: joinDashPayState.isRegistrationReport)
     }
     
     private func observeDashPay() {

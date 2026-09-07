@@ -437,6 +437,12 @@ struct MainMenuScreen: View {
             // Not registered (or the attempt failed): open the join flow,
             // which also carries the "Have an invitation?" entry.
             handleJoinButtonAction()
+        case .creationFailed, .interrupted:
+            // Back to the form, whose recovery machinery picks the attempt up.
+            handleJoinButtonAction()
+        case .creating:
+            // Nothing to act on while it runs.
+            break
         case .approved, .registered:
             editProfile()
         case .voting:
