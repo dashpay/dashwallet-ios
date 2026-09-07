@@ -9,6 +9,17 @@ import Foundation
 import OSLog
 import SwiftDashSDK
 
+/// Immutable recipient and wallet context retained throughout a contact payment.
+/// A wallet/identity switch while a sheet or authentication prompt is open must
+/// invalidate the payment rather than spend from the newly selected wallet.
+struct ContactPaymentRecipient {
+    let identityId: Data
+    let displayName: String
+    let walletId: Data?
+    let ownerIdentityId: Data?
+    let network: WalletEnvironment.NetworkKind
+}
+
 /// Core-chain transaction constants the app needs without DashSync.
 enum CoreTxConstants {
     /// DashSync's TX_MIN_OUTPUT_AMOUNT: TX_FEE_PER_B(1) × 3 × (TX_OUTPUT_SIZE(34) +
@@ -437,16 +448,24 @@ final class WalletSendService: NSObject {
     func sendToContact(
         contactIdentityId: Data,
         amount: UInt64,
-        memo: String? = nil
+        memo: String? = nil,
+        recipient: ContactPaymentRecipient? = nil
     ) async throws -> (txid: Data, feeDuffs: UInt64) {
         Self.logger.info("💸 TXSEND :: pay-to-contact starting — \(amount, privacy: .public) duffs")
+        if let recipient {
+            try await MainActor.run { try Self.validateContactRecipient(recipient) }
+            guard recipient.identityId == contactIdentityId else {
+                throw Self.makeError(code: .dashPayPaymentUnavailable, description: "The payment recipient changed. Reopen the payment and try again.")
+            }
+        }
         try Self.ensureInitialRestoreSyncCompleted()
         // spendAmount engages the biometric spending limit (C7.4) —
         // without it the gate is non-monetary and Face ID alone would
         // authorize a contact payment of any size.
         try await sendAuthorizer.authorizeSend(spendAmount: amount)
 
-        let context: (wallet: ManagedPlatformWallet, ourId: Data)? = await MainActor.run {
+        let context: (wallet: ManagedPlatformWallet, ourId: Data)? = try await MainActor.run {
+            if let recipient { try Self.validateContactRecipient(recipient) }
             guard let wallet = SwiftDashSDKHost.shared.wallet,
                   let ourId = DWCurrentUserIdentityInfo.shared.identityId else {
                 return nil
@@ -474,6 +493,47 @@ final class WalletSendService: NSObject {
         return (txid: txid, feeDuffs: feeDuffs)
     }
 #endif
+
+    @MainActor
+    static func validateContactRecipient(_ recipient: ContactPaymentRecipient) throws {
+        guard let walletId = recipient.walletId,
+              let ownerId = recipient.ownerIdentityId,
+              recipient.identityId.count == 32,
+              ownerId.count == 32,
+              walletId == SwiftDashSDKHost.shared.wallet?.walletId,
+              ownerId == DWCurrentUserIdentityInfo.shared.identityId,
+              recipient.network == WalletEnvironment.networkKind else {
+            throw makeError(
+                code: .dashPayPaymentUnavailable,
+                description: NSLocalizedString("Your wallet or DashPay identity changed. Reopen the payment and try again.", comment: "DashPay send context changed"))
+        }
+    }
+
+    /// Called only after explicit confirmation. Authorize the monetary spend,
+    /// then reserve a fresh contact address through the SDK's authoritative pool.
+    @MainActor
+    func prepareContactWithdrawal(
+        recipient: ContactPaymentRecipient,
+        amountDuffs: UInt64
+    ) async throws -> String {
+        try Self.validateContactRecipient(recipient)
+        try Self.ensureOnline()
+        try await sendAuthorizer.authorizeSend(spendAmount: amountDuffs)
+        try Self.validateContactRecipient(recipient)
+        guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let ownerId = recipient.ownerIdentityId else {
+            throw Self.makeError(code: .dashPayPaymentUnavailable, description: "Wallet or DashPay identity is not ready")
+        }
+        do {
+            let address = try await wallet.reserveDashPayPaymentAddress(
+                fromIdentityId: ownerId,
+                toContactIdentityId: recipient.identityId)
+            try Self.validateContactRecipient(recipient)
+            return address
+        } catch {
+            throw Self.contactPaymentError(from: error)
+        }
+    }
 
     @objc(prepareStandardSendForConfirmationWithAddress:amount:completion:)
     func prepareStandardSendForConfirmation(

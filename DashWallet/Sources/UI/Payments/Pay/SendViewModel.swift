@@ -158,6 +158,7 @@ final class SendViewModel: ObservableObject {
     /// that balance can't pay surfaces as a mismatch (`pinnedSourceMismatch`)
     /// rather than silently re-picking the source.
     let pinnedSource: ChainNetwork?
+    let contactRecipient: ContactPaymentRecipient?
 
     deinit {
         // The monitor holds observers strongly — without this the VM (and
@@ -165,8 +166,9 @@ final class SendViewModel: ObservableObject {
         SyncingActivityMonitor.shared.remove(observer: self)
     }
 
-    init(pinnedSource: ChainNetwork? = nil) {
+    init(pinnedSource: ChainNetwork? = nil, contactRecipient: ContactPaymentRecipient? = nil) {
         self.pinnedSource = pinnedSource
+        self.contactRecipient = contactRecipient
         if let pinnedSource {
             source = pinnedSource
         }
@@ -214,6 +216,13 @@ final class SendViewModel: ObservableObject {
                 self?.refreshShieldedSpendCeiling()
             }
             .store(in: &cancellables)
+        if contactRecipient != nil {
+            // DashPay currently receives at a DIP-15 Core address. Resolve the
+            // actual address only after confirmation, so browsing consumes none.
+            destination = .core
+            setSourceWithoutClaimingUserIntent(validSources.first { balanceDuffs(of: $0) > 0 } ?? .core)
+            routeDidChange()
+        }
     }
 
     /// Fee kind for the pool-spending routes; `nil` for every other route.
@@ -261,6 +270,7 @@ final class SendViewModel: ObservableObject {
     }
 
     private func destinationDidChange() {
+        guard contactRecipient == nil else { return }
         let sanitized = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
         if sanitized != addressText {
             addressText = sanitized
