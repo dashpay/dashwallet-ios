@@ -222,6 +222,25 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Cleared when a transfer starts and on `reset()`.
     private(set) var lastFailure: Error?
 
+    /// What a resume established beyond its terminal phase. `.submittedUnconfirmed`
+    /// has two producers — `alreadyConsumedAssetLockResumePhase` (Platform says
+    /// this outpoint is already spent) and `handleSpendError`
+    /// (`shieldedSpendUnconfirmed`: the transition was accepted but its result
+    /// could not be read back) — and only the first is evidence about the
+    /// outpoint. Callers that persist a verdict, such as
+    /// `AssetLockRecoveryService` writing an already-spent probe, must branch on
+    /// this rather than on the phase, which cannot tell the two apart.
+    /// Cleared when a transfer starts and on `reset()`.
+    private(set) var lastResumeReport: ResumeReport?
+
+    /// The distinctions a terminal phase flattens away.
+    enum ResumeReport: Equatable {
+        /// Platform reported this exact outpoint already consumed. Not
+        /// quorum-authenticated, so it proves there is nothing left to retry
+        /// without proving this transfer is what spent it.
+        case alreadyConsumed
+    }
+
     private static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.shielded-transfer")
@@ -634,6 +653,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             // the ChainLock proof and records nonterminal consumption-unknown
             // state, so suppress retries without claiming verified success.
             terminalPhase = mappedPhase
+            lastResumeReport = .alreadyConsumed
             Self.logger.info("🛡️ SHIELD-TX :: resume found asset lock reported consumed — completion remains unconfirmed")
         }
 
@@ -1309,6 +1329,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         stopAssetLockPolling()
         lastAssetLockOutPoint = nil
         lastFailure = nil
+        lastResumeReport = nil
         phase = .idle
     }
 
@@ -1380,6 +1401,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     private func beginTransfer() -> Bool {
         guard phase == .idle else { return false }
         lastFailure = nil
+        lastResumeReport = nil
         phase = .signing
         return true
     }

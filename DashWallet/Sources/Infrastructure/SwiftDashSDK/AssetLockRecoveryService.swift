@@ -64,8 +64,48 @@ struct AssetLockRecoveryService {
         [1, 2, 4, 5].contains(fundingTypeRaw)
     }
 
+    /// `AssetLockStatus::RecoveredFromChain` as it crosses the FFI — a lock
+    /// reconstructed from a chain-locked record (a restore, or an
+    /// unauthenticated already-consumed report), whose Platform-side
+    /// consumption is unknown.
+    nonisolated static let recoveredFromChainStatus = 5
+
+    /// Asset-lock statuses whose transfer has not been shown to be finished,
+    /// and which therefore still deserve a retry action. Pure predicate so the
+    /// rule is testable without a `TxDetailModel` and its lookups; the view
+    /// model calls this rather than owning it, so the service and its tests are
+    /// the single source of truth for what a retry is offered on.
+    nonisolated static func statusAllowsRetry(_ statusRaw: Int) -> Bool {
+        (0...3).contains(statusRaw) || statusRaw == recoveredFromChainStatus
+    }
+
+    /// The bulk pass is deliberately narrower than the per-row action.
+    ///
+    /// Route: type 5 (Core → Shielded) only. It is the route this feature
+    /// exists for, and the only one whose resume classifies an already-consumed
+    /// lock as a non-failure. A restore rebuilds identity top-ups (1/2) and
+    /// Core → Platform address fundings (4) as `RecoveredFromChain` too, but
+    /// `resumeTopUpWithAssetLock` surfaces an already-consumed lock as an
+    /// opaque consensus rejection and `resumeFundPlatform` flattens every error
+    /// into `.failed`. Those locks would therefore fail on every run, never earn
+    /// a probe, never leave `pendingRecoveries()` — and, since the snapshot is
+    /// dictionary-ordered, could burn the consecutive-failure budget before the
+    /// pass reaches a single recoverable shielded lock. They keep their per-row
+    /// "Rebroadcast" action, where one failure costs one tap.
+    nonisolated static let bulkFundingTypeRaw = 5
+
+    /// Statuses the bulk pass acts on: chain-final on Core, Platform side still
+    /// open. 0 and 1 are excluded even though the per-row action offers them —
+    /// an unlocked lock re-broadcasts and then blocks on the IS/CL wait, so one
+    /// transaction evicted from every mempool can hold "Finishing 3 of 23"
+    /// indefinitely with nothing to skip it. Re-broadcasting is a per-row
+    /// decision; a batch is not the place to wait on the network.
+    nonisolated static func bulkStatusAllowsRecovery(_ statusRaw: Int) -> Bool {
+        [2, 3, recoveredFromChainStatus].contains(statusRaw)
+    }
+
     /// What a resume that did not throw actually established.
-    enum Outcome {
+    enum Outcome: Equatable {
         /// The transfer finished on Platform during this call.
         case completed
         /// Platform reported the outpoint already spent. That report is not
@@ -82,7 +122,10 @@ struct AssetLockRecoveryService {
     /// Returns only after the resume ran to completion, which for a
     /// still-unlocked transaction includes the IS/CL wait.
     @discardableResult
-    func retry(fundingTypeRaw: Int, txidWire: Data, vout: UInt32) async throws -> Outcome {
+    func retry(fundingTypeRaw: Int,
+               txidWire: Data,
+               vout: UInt32,
+               refreshLookup: Bool = true) async throws -> Outcome {
         // Resolved before the resume suspends: a wallet switch during the
         // round-trip must not file this probe under whatever wallet is active
         // when the answer arrives.
@@ -111,10 +154,14 @@ struct AssetLockRecoveryService {
                 await coordinator.resumeAssetLock(outPointTxidWire: txidWire, outPointVout: vout)
             }
             try Self.checkTerminalPhase(coordinator)
-            // The coordinator parks an unauthenticated already-consumed
-            // report at `.submittedUnconfirmed` instead of `.success`; carry
-            // that distinction out rather than flattening it into "done".
-            if coordinator.phase == .submittedUnconfirmed {
+            // Branch on the coordinator's typed report, NOT on
+            // `.submittedUnconfirmed`: that phase has two producers and only one
+            // of them says anything about this outpoint. `shieldedSpendUnconfirmed`
+            // means the transition was accepted but its result could not be read
+            // back — persisting an already-spent probe for it would report
+            // "Already spent" for a transfer that may still be settling, and
+            // would suppress the retry that settles it.
+            if coordinator.lastResumeReport == .alreadyConsumed {
                 // Platform reported this outpoint already spent. The SDK keeps
                 // the lock at `RecoveredFromChain` (the report is not
                 // quorum-authenticated), so record the probe here — otherwise
@@ -129,7 +176,9 @@ struct AssetLockRecoveryService {
         default:
             throw RecoveryError.unsupportedRoute
         }
-        await ShieldedTxLookup.shared.refresh(reason: "asset-lock-recovery-completed")
+        if refreshLookup {
+            await ShieldedTxLookup.shared.refresh(reason: "asset-lock-recovery-completed")
+        }
         Self.logger.info(
             "🔁 LOCK-RETRY :: completed type=\(fundingTypeRaw, privacy: .public) outcome=\(String(describing: outcome), privacy: .public)")
         return outcome
@@ -167,7 +216,52 @@ struct AssetLockRecoveryService {
     /// Consecutive failures after which the pass stops. A network refusing one
     /// lock will refuse the next; grinding through dozens of proof builds
     /// against it wastes minutes and tells the user nothing new.
-    private static let consecutiveFailureLimit = 3
+    static let consecutiveFailureLimit = 3
+
+    /// What one lock in the pass turned out to be. Separated from the loop so
+    /// the tally and the stop rule are a pure function of the sequence of
+    /// results — testable without a wallet, a network or a PIN prompt, which is
+    /// the only reason this bookkeeping was previously unpinned.
+    enum BulkStep: Equatable {
+        case completed
+        case alreadySpent
+        case cancelled
+        case failed(String)
+    }
+
+    /// Fold one step into the running tally. Returns `true` when the pass must
+    /// stop — the user cancelled, or the failure run hit
+    /// `consecutiveFailureLimit`.
+    @discardableResult
+    static func apply(_ step: BulkStep,
+                      to outcome: inout BulkOutcome,
+                      consecutiveFailures: inout Int) -> Bool {
+        switch step {
+        case .completed:
+            consecutiveFailures = 0
+            outcome.completed += 1
+        case .alreadySpent:
+            // Not a failure: the pass asked, got an answer, and there is
+            // nothing left to do for this lock. It must reset the run for the
+            // same reason a completion does.
+            consecutiveFailures = 0
+            outcome.alreadySpent += 1
+        case .cancelled:
+            outcome.cancelled = true
+            return true
+        case .failed(let message):
+            outcome.failed += 1
+            consecutiveFailures += 1
+            if outcome.firstFailureMessage == nil {
+                outcome.firstFailureMessage = message
+            }
+            if consecutiveFailures >= consecutiveFailureLimit {
+                outcome.stoppedAfterRepeatedFailures = true
+                return true
+            }
+        }
+        return false
+    }
 
     /// Every tracked funding lock still worth retrying: a status that is not a
     /// finished transfer, a route this service handles, and no recorded
@@ -185,8 +279,8 @@ struct AssetLockRecoveryService {
         guard let activeWalletId = SwiftDashSDKHost.shared.wallet?.walletId else { return [] }
         return ShieldedTxLookup.shared.allEntries().compactMap { entry in
             guard entry.info.walletId == activeWalletId,
-                  TxDetailModel.statusAllowsRetry(entry.info.statusRaw),
-                  supportsRetry(fundingTypeRaw: entry.info.fundingTypeRaw),
+                  entry.info.fundingTypeRaw == bulkFundingTypeRaw,
+                  bulkStatusAllowsRecovery(entry.info.statusRaw),
                   let txidWire = txidWire(fromDisplayHex: entry.txidHex),
                   !AssetLockProbeStore.shared.contains(txidWire)
             else { return nil }
@@ -229,9 +323,13 @@ struct AssetLockRecoveryService {
             return outcome
         }
 
-        return await DWIdentityAuthorizer.preauthorized { [self] in
+        let result = await DWIdentityAuthorizer.preauthorized { [self] in
             await runRecoveries(pending, into: outcome, progress: progress)
         }
+        // Once for the pass. Each `retry` suppressed its own refresh, and
+        // nothing between iterations reads the lookup.
+        await ShieldedTxLookup.shared.refresh(reason: "asset-lock-recovery-completed")
+        return result
     }
 
     private func runRecoveries(_ pending: [PendingRecovery],
@@ -249,32 +347,28 @@ struct AssetLockRecoveryService {
                 let result = try await retry(
                     fundingTypeRaw: item.fundingTypeRaw,
                     txidWire: item.txidWire,
-                    vout: item.vout)
-                consecutiveFailures = 0
-                switch result {
-                case .completed: outcome.completed += 1
-                case .completionUnconfirmed: outcome.alreadySpent += 1
-                }
+                    vout: item.vout,
+                    // One refresh for the pass, in `recoverAll`. Per item it is
+                    // a full lookup rebuild on top of the one `resumeAssetLock`
+                    // already does, and nothing between iterations reads it.
+                    refreshLookup: false)
+                let step: BulkStep = result == .completed ? .completed : .alreadySpent
+                Self.apply(step, to: &outcome, consecutiveFailures: &consecutiveFailures)
                 DWLogger.log("LOCK-RETRY bulk \(index + 1)/\(pending.count) \(txidDisplay)… -> \(result)")
             } catch DWIdentityAuthorizer.AuthError.cancelled {
-                outcome.cancelled = true
+                Self.apply(.cancelled, to: &outcome, consecutiveFailures: &consecutiveFailures)
                 DWLogger.log("LOCK-RETRY bulk cancelled at \(index + 1)/\(pending.count)")
                 return outcome
             } catch {
-                outcome.failed += 1
-                consecutiveFailures += 1
                 let message = (error as? LocalizedError)?.errorDescription
                     ?? error.localizedDescription
-                if outcome.firstFailureMessage == nil {
-                    outcome.firstFailureMessage = message
-                }
+                let stop = Self.apply(.failed(message), to: &outcome, consecutiveFailures: &consecutiveFailures)
                 // File logger, not just OSLog: a bulk pass that fails is
                 // exactly what a diagnostic export needs to carry.
                 DWLogger.log("LOCK-RETRY bulk \(index + 1)/\(pending.count) \(txidDisplay)… FAILED: \(message)")
                 Self.logger.error("🔁 LOCK-RETRY :: bulk item failed: \(String(describing: error), privacy: .public)")
 
-                if consecutiveFailures >= Self.consecutiveFailureLimit {
-                    outcome.stoppedAfterRepeatedFailures = true
+                if stop {
                     DWLogger.log("LOCK-RETRY bulk stopped after \(consecutiveFailures) consecutive failures")
                     progress(index + 1, pending.count)
                     return outcome
@@ -291,7 +385,11 @@ struct AssetLockRecoveryService {
     /// Display-order hex ("as shown in the UI") to the 32-byte wire-order txid
     /// the resume entry points expect. Mirrors
     /// `ShieldedTransferCoordinator.parseOutPoint`'s reversal.
-    private static func txidWire(fromDisplayHex hex: String) -> Data? {
+    ///
+    /// Not private: a byte-order slip here makes every bulk resume fail with
+    /// "not tracked by this wallet" and the pass reports a network problem it
+    /// never had, so it is pinned by a test.
+    static func txidWire(fromDisplayHex hex: String) -> Data? {
         guard hex.count == 64 else { return nil }
         var display = Data(capacity: 32)
         var idx = hex.startIndex

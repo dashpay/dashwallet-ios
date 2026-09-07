@@ -542,7 +542,11 @@ extension TxDetailModel {
         // nothing left to try. Bare "Completion unknown" is reserved for locks
         // nobody has asked about yet.
         if statusRaw == Self.recoveredFromChainStatus, wasProbedAlreadySpent {
-            return NSLocalizedString("Completed — not verified", comment: "A restored asset lock the network reports spent, without a verifiable proof")
+            // "Already spent", not "Completed": the network reported the
+            // outpoint spent, which is not the same claim as this transfer
+            // having completed — and it is the claim the toast and the bulk
+            // summary already make. All three surfaces now say one thing.
+            return NSLocalizedString("Already spent — not verified", comment: "A restored asset lock the network reports spent, without a verifiable proof")
         }
         return Self.lockStatusText(statusRaw)
     }
@@ -553,11 +557,10 @@ extension TxDetailModel {
         AssetLockProbeStore.shared.contains(transaction.txHashData)
     }
 
-    /// `AssetLockStatus::RecoveredFromChain` as it crosses the FFI — a lock
-    /// reconstructed from a chain-locked record (a restore, or an
-    /// unauthenticated already-consumed report), whose Platform-side
-    /// consumption is unknown.
-    static let recoveredFromChainStatus = 5
+    /// `AssetLockStatus::RecoveredFromChain` as it crosses the FFI. Owned by
+    /// `AssetLockRecoveryService` — the layer that acts on it — so the rule and
+    /// its tests live together.
+    static var recoveredFromChainStatus: Int { AssetLockRecoveryService.recoveredFromChainStatus }
 
     /// User-facing name of an asset-lock status (shared by the shielded and
     /// platform funding routes).
@@ -584,11 +587,11 @@ extension TxDetailModel {
 
     // MARK: Stuck asset-lock retry
 
-    /// Asset-lock statuses whose transfer has not been shown to be finished,
-    /// and which therefore still deserve a retry action. Pure predicate so
-    /// the rule is testable without a `TxDetailModel` and its lookups.
+    /// Asset-lock statuses that still deserve a retry action. Defined by
+    /// `AssetLockRecoveryService`, which performs the retry; this view model
+    /// asks rather than mirrors, so the two cannot drift.
     static func statusAllowsRetry(_ statusRaw: Int) -> Bool {
-        (0...3).contains(statusRaw) || statusRaw == recoveredFromChainStatus
+        AssetLockRecoveryService.statusAllowsRetry(statusRaw)
     }
 
     struct StuckAssetLockRetry {

@@ -282,10 +282,10 @@ extension TXDetailViewController {
         view.dw_showProgressHUD(withMessage: NSLocalizedString("Retrying transfer…", comment: "Asset-lock retry in progress"))
         Task { [weak self] in
             // The outcome is decided here and rendered only after the
-            // spinner is down: `dw_hideProgressHUD` hides whichever HUD is
-            // topmost on the view rather than the progress one specifically,
-            // so anything shown while the spinner is still up would be
-            // dismissed in its place and leave the spinner running.
+            // spinner is down. Ordering, not a workaround: the retry can run
+            // for minutes, and a toast raised underneath a modal spinner would
+            // spend that time invisible and expire before the user could read
+            // it. Collect the result, drop the HUD, then show it.
             var toast: (message: String, style: ToastStyle)?
             var failure: Error?
             do {
@@ -313,7 +313,7 @@ extension TXDetailViewController {
             self.isRetryingAssetLock = false
             self.view.dw_hideProgressHUD()
             if let toast {
-                self.presentToast(style: toast.style, message: toast.message)
+                self.presentDashUIKitToast(style: toast.style, message: toast.message)
             }
             if let failure {
                 self.presentRetryFailure(failure)
@@ -322,53 +322,6 @@ extension TXDetailViewController {
             // have advanced the lock (e.g. broadcast landed, Platform
             // submit didn't), and the status row should say so.
             self.reloadDataSource()
-        }
-    }
-
-    /// Bottom-anchored design-system toast, hosted from this UIKit screen.
-    /// `DashUIKit.Toast` is a SwiftUI view with no presenter of its own, so
-    /// the hosting is done here; it is used rather than the app-local
-    /// `showToast` because it sizes its own icon (16×16 in a 24×24 slot) and
-    /// resolves it from the DashUIKit bundle, where the toast imagesets live.
-    /// Geometry matches the SwiftUI call sites (`dexOfflineToast`,
-    /// `SelectCoinView`): bottom overlay, 20pt sides, 16pt above the safe area.
-    /// `onDismiss` stays nil — the toast auto-dismisses, so it carries no
-    /// close button.
-    ///
-    /// Hosted on the outermost controller of this screen's own hierarchy, not
-    /// on `view`: this screen is a `UIViewControllerRepresentable`
-    /// (`TXDetailVCWrapper`) inside a `DashUIKit.BottomSheet`, so its own view
-    /// ends where the sheet's content ends and a toast pinned to it lands
-    /// mid-screen instead of at the bottom edge the other toasts share.
-    ///
-    /// The child controller is parented to that same controller. Adding a
-    /// child's view to a hierarchy its parent does not own — the window, say —
-    /// trips UIKit's `_associatedViewControllerForwardsAppearanceCallbacks`
-    /// check and raises.
-    private func presentToast(style: ToastStyle, message: String, duration: TimeInterval = 3.5) {
-        var owner: UIViewController = self
-        while let parent = owner.parent { owner = parent }
-
-        let host = UIHostingController(rootView: DashUIKit.Toast(style: style, message: message))
-        host.view.backgroundColor = .clear
-        host.view.translatesAutoresizingMaskIntoConstraints = false
-        owner.addChild(host)
-        owner.view.addSubview(host.view)
-        NSLayoutConstraint.activate([
-            host.view.leadingAnchor.constraint(equalTo: owner.view.leadingAnchor, constant: 20),
-            host.view.trailingAnchor.constraint(equalTo: owner.view.trailingAnchor, constant: -20),
-            host.view.bottomAnchor.constraint(equalTo: owner.view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
-        ])
-        host.didMove(toParent: owner)
-
-        host.view.alpha = 0
-        UIView.animate(withDuration: 0.3) { host.view.alpha = 1 }
-        UIView.animate(withDuration: 0.3, delay: duration, options: .curveEaseOut) {
-            host.view.alpha = 0
-        } completion: { _ in
-            host.willMove(toParent: nil)
-            host.view.removeFromSuperview()
-            host.removeFromParent()
         }
     }
 

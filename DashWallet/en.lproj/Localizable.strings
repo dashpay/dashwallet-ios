@@ -5858,7 +5858,7 @@
 
 /* Asset-lock recovery */
 "Already spent — nothing to transfer" = "Already spent — nothing to transfer";
-"Completed — not verified" = "Completed — not verified";
+"Already spent — not verified" = "Already spent — not verified";
 "Unfinished Transfers" = "Unfinished Transfers";
 "Restoring a wallet loses the local record of whether each balance transfer finished on Platform, so they come back marked unknown. This asks the network about every one of them at once, finishing the transfers that are still open and marking the rest as already spent. It never builds a new transaction, so it cannot spend anything twice." = "Restoring a wallet loses the local record of whether each balance transfer finished on Platform, so they come back marked unknown. This asks the network about every one of them at once, finishing the transfers that are still open and marking the rest as already spent. It never builds a new transaction, so it cannot spend anything twice.";
 "Awaiting completion" = "Awaiting completion";
