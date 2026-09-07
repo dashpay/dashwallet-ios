@@ -27,6 +27,7 @@
 //
 
 import Foundation
+import UIKit
 import SwiftDashSDK
 
 enum DiagnosticLogExportError: LocalizedError {
@@ -200,12 +201,37 @@ struct DiagnosticLogExporter {
         return zipURL
     }
 
+    /// The export holds the SDK's persistence serial queue for its whole
+    /// duration (`PlatformWalletManager.emitCoreWalletDiagnostics(for:)`,
+    /// dashpay/platform#4580): any screen that reads wallet state through the
+    /// SDK meanwhile would stall the main thread behind it. A window-level
+    /// progress HUD — the same blocking HUD the app uses for sends and wallet
+    /// deletion — keeps the user from navigating into one, and from tapping
+    /// export twice, until the archive is ready. Anchored on the key window so
+    /// the view models that call this, which own no view, get it too.
+    @MainActor
+    static func exportArchive() async -> Result<URL, Error> {
+        await withBlockingProgress { await exportArchiveUnguarded() }
+    }
+
+    @MainActor
+    private static func withBlockingProgress<T>(_ body: () async -> T) async -> T {
+        let anchor = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .first(where: \.isKeyWindow)
+        anchor?.dw_showProgressHUD(
+            withMessage: NSLocalizedString("Preparing logs…", comment: "Diagnostic log export in progress"))
+        defer { anchor?.dw_hideProgressHUD() }
+        return await body()
+    }
+
     /// Main-actor entry point: captures the context that must be read on
     /// the main actor, then runs the blocking staging + zip detached.
     /// Shared by every caller that offers a log export (Tools menu row,
     /// About-screen shake gesture) so the capture rules live in one place.
     @MainActor
-    static func exportArchive() async -> Result<URL, Error> {
+    private static func exportArchiveUnguarded() async -> Result<URL, Error> {
         // Pin the runtime identity before the awaited snapshot. Main-actor
         // reentrancy can otherwise switch networks while diagnostics are
         // reading SwiftData, producing an archive labelled with a different
