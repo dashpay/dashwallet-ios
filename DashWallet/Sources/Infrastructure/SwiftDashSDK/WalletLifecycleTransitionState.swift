@@ -69,7 +69,14 @@ final class WalletLifecycleTransitionState: ObservableObject {
         /// admitted from here like from every failure phase: an export can
         /// never wall the user off from Reset. No failure phase — a failed
         /// export is reported by the screen that asked for it.
-        case exportingDiagnostics
+        ///
+        /// `dismissed` is Cancel's effect: the card is gone and the result
+        /// will be discarded, but the export is still running — its snapshot
+        /// may still hold the persistence queue and its pinned manager — so
+        /// the phase stays busy, and the admission with it, until
+        /// `exportArchive()` returns. Visibility and admission are two
+        /// different things; only the first ends at Cancel.
+        case exportingDiagnostics(dismissed: Bool)
 
         /// Compact form for gate/telemetry log lines (no wallet ids beyond
         /// what the operation logs themselves already include).
@@ -84,7 +91,8 @@ final class WalletLifecycleTransitionState: ObservableObject {
             case .failedWalletSwitch: return "failedWalletSwitch"
             case .failedWalletRemoval: return "failedWalletRemoval"
             case .wiping: return "wiping"
-            case .exportingDiagnostics: return "exportingDiagnostics"
+            case .exportingDiagnostics(let dismissed):
+                return dismissed ? "exportingDiagnostics(dismissed)" : "exportingDiagnostics"
             }
         }
     }
@@ -111,7 +119,7 @@ final class WalletLifecycleTransitionState: ObservableObject {
              (.idle, .removingWallet),
              (.idle, .addingWallet),
              (.idle, .wiping),
-             (.idle, .exportingDiagnostics),
+             (.idle, .exportingDiagnostics(dismissed: false)),
              (.failedNetworkSwitch, .switchingNetwork),
              (.failedWalletSwitch, .switchingWallet),
              // Composite add → switch: the add flow's own continuation into
@@ -129,8 +137,10 @@ final class WalletLifecycleTransitionState: ObservableObject {
              (.failedWalletRemoval, .wiping),
              // An export is the one busy phase whose wall time is not the
              // app's to bound (the SDK snapshot on a large wallet), so the
-             // reset route stays open through it too. Shutdown cancels the
-             // snapshot's remaining native reads (platform#4580).
+             // reset route stays open through it too — dismissed or not.
+             // Shutdown cancels the snapshot's remaining native reads
+             // (platform#4580). Nothing else is admitted from a dismissed
+             // export: the snapshot may still hold the queue.
              (.exportingDiagnostics, .wiping):
             phase = next
             return true

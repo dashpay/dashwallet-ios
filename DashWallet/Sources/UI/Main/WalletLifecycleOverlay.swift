@@ -59,13 +59,16 @@ final class WalletLifecycleOverlayPresenter {
 
     private func apply(_ phase: WalletLifecycleTransitionState.Phase) {
         switch phase {
-        case .idle:
+        case .idle, .exportingDiagnostics(dismissed: true):
+            // A dismissed export is still busy for admission purposes — see
+            // the phase doc — but the user has asked to stop waiting, so the
+            // window goes; a wipe admitted from here brings a new one.
             overlayWindow?.isHidden = true
             overlayWindow = nil
         case .switchingNetwork, .failedNetworkSwitch,
              .switchingWallet, .removingWallet, .addingWallet,
              .failedWalletSwitch, .failedWalletRemoval,
-             .wiping, .exportingDiagnostics:
+             .wiping, .exportingDiagnostics(dismissed: false):
             presentIfNeeded()
         }
     }
@@ -169,9 +172,10 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
         WalletLifecycleTransitionState.shared.finish()
     }
 
-    /// Stop waiting for the export. The SDK snapshot cannot be interrupted;
-    /// the exporter discards its result when it arrives instead of
-    /// presenting it late.
+    /// Stop waiting for the export: the card goes, the result is discarded
+    /// when it arrives. The export itself keeps running and keeps its
+    /// admission until it returns — the SDK snapshot cannot be interrupted
+    /// and may still hold the persistence queue.
     func cancelDiagnosticsExport() {
         DiagnosticLogExporter.cancelWaiting()
     }
@@ -217,7 +221,11 @@ struct WalletLifecycleOverlayView: View {
                 progressCard(
                     title: title ?? NSLocalizedString("Deleting All Wallets…", comment: ""),
                     subtitle: nil)
-            case .exportingDiagnostics:
+            case .exportingDiagnostics(dismissed: true):
+                // No window exists for this phase (the presenter tears it
+                // down); nothing to draw if a view is ever asked.
+                EmptyView()
+            case .exportingDiagnostics(dismissed: false):
                 // The one busy phase whose duration the app cannot bound, so
                 // the one busy card with a way out.
                 card {

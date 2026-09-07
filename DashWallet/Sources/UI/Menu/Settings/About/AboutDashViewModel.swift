@@ -145,6 +145,8 @@ final class AboutDashViewModel: ObservableObject {
             case .success(let url):
                 self.exportedLogsURL = url
             case .failure(let error):
+                // The overlay's Cancel is the user's choice, not a failure.
+                if (error as? DiagnosticLogExportError) == .cancelled { return }
                 self.logExportErrorMessage = error.localizedDescription
             }
         }

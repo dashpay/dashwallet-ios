@@ -25,7 +25,7 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         ("removingWallet", .removingWallet),
         ("addingWallet", .addingWallet(isImport: false)),
         ("wiping", .wiping(title: nil)),
-        ("exportingDiagnostics", .exportingDiagnostics),
+        ("exportingDiagnostics", .exportingDiagnostics(dismissed: false)),
     ]
 
     private static let failures: [(label: String, phase: Phase)] = [
@@ -98,6 +98,18 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
                     state.tryBegin(next), expected,
                     "\(failureLabel) → \(nextLabel): expected admitted=\(expected)")
             }
+        }
+    }
+
+    /// A dismissed export — the card gone, the export still running — is
+    /// still busy: nothing begins under it except the reset route.
+    func testDismissedExportStaysBusyExceptForWipe() {
+        for (nextLabel, next) in Self.begins {
+            let state = makeState(in: .exportingDiagnostics(dismissed: false))
+            state.advance(to: .exportingDiagnostics(dismissed: true))
+            XCTAssertEqual(
+                state.tryBegin(next), nextLabel == "wiping",
+                "dismissed export → \(nextLabel)")
         }
     }
 

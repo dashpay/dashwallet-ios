@@ -40,9 +40,6 @@ final class DiagnosticLogExporterTests: XCTestCase {
         )
     }
 
-    // MARK: - SDK session selection
-
-    @MainActor
     // MARK: - Lifecycle gate
 
     /// The gate is what makes "no switch under an export" a guarantee: a
@@ -73,24 +70,31 @@ final class DiagnosticLogExporterTests: XCTestCase {
         XCTAssertEqual(state.phase, .idle)
     }
 
-    /// Cancel drops the card now (phase-guarded, so it never clears a phase
-    /// the export does not own) and is a no-op when nothing is exporting.
+    /// Cancel hides the card but keeps the admission: the phase moves to
+    /// `dismissed`, not to idle, so no switch can start under a snapshot that
+    /// may still hold the queue. It is a no-op unless a card is showing.
     @MainActor
-    func testCancelWaitingReleasesOnlyAnExportPhase() {
+    func testCancelWaitingHidesTheCardButKeepsTheAdmission() {
         let state = WalletLifecycleTransitionState.shared
         XCTAssertEqual(state.phase, .idle, "test precondition")
         DiagnosticLogExporter.cancelWaiting()
-        XCTAssertEqual(state.phase, .idle)
+        XCTAssertEqual(state.phase, .idle, "no card, nothing to cancel")
 
-        XCTAssertTrue(state.tryBegin(.exportingDiagnostics))
+        XCTAssertTrue(state.tryBegin(.exportingDiagnostics(dismissed: false)))
         DiagnosticLogExporter.cancelWaiting()
-        XCTAssertEqual(state.phase, .idle)
+        XCTAssertEqual(state.phase, .exportingDiagnostics(dismissed: true))
+        XCTAssertFalse(state.tryBegin(.switchingWallet(targetName: "A")), "still busy after cancel")
+        DiagnosticLogExporter.cancelWaiting()
+        XCTAssertEqual(state.phase, .exportingDiagnostics(dismissed: true), "a second cancel changes nothing")
+        state.finish()
 
         XCTAssertTrue(state.tryBegin(.removingWallet))
         DiagnosticLogExporter.cancelWaiting()
         XCTAssertEqual(state.phase, .removingWallet, "cancel must not touch another operation's phase")
         state.finish()
     }
+
+    // MARK: - SDK session selection
 
     func testCurrentSessionIsFirstEvenWhenOlderStampedThanOthers() {
         // A stale future-dated directory sorts lexicographically after

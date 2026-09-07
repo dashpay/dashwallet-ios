@@ -212,20 +212,24 @@ struct DiagnosticLogExporter {
     /// The queue is held only during the snapshot; the card stays up through
     /// flush, capture and zip because the user is waiting for one result and
     /// must not start a second. A refused gate is reported to the caller, not
-    /// waited out; Cancel on the card stops the wait and discards the result.
+    /// waited out. Cancel on the card hides the card and discards the result;
+    /// the admission is held until this returns, because the snapshot may
+    /// still hold the persistence queue and the pinned manager — a switch
+    /// must not rebind under it. So no second export can overlap this one,
+    /// and the `defer` below needs only the phase guard.
     @MainActor
     static func exportArchive(includingWalletSnapshot: Bool) async -> Result<URL, Error> {
         WalletLifecycleOverlayPresenter.shared.ensureActive()
         let state = WalletLifecycleTransitionState.shared
-        guard state.tryBegin(.exportingDiagnostics) else {
+        guard state.tryBegin(.exportingDiagnostics(dismissed: false)) else {
             return .failure(DiagnosticLogExportError.anotherOperationInProgress)
         }
         let generation = waitGeneration
         defer {
-            // Phase-guarded like `finishWiping`, and generation-guarded: a
-            // cancelled export must not clear the phase of the export the
-            // user may have started since.
-            if waitGeneration == generation, case .exportingDiagnostics = state.phase {
+            // Phase-guarded like `finishWiping`: release the export phase,
+            // dismissed or not, and never a `.wiping` that was admitted
+            // through it.
+            if case .exportingDiagnostics = state.phase {
                 state.finish()
             }
         }
@@ -284,15 +288,15 @@ struct DiagnosticLogExporter {
     /// interrupted — is discarded rather than presented late.
     @MainActor private static var waitGeneration = 0
 
-    /// The overlay card's Cancel. Drops the card now; the export in flight
-    /// returns `.cancelled` when it completes.
+    /// The overlay card's Cancel. Drops the card now and marks the result
+    /// for discard; the export in flight keeps its admission and returns
+    /// `.cancelled` when it completes. A no-op unless a card is showing.
     @MainActor
     static func cancelWaiting() {
-        waitGeneration += 1
         let state = WalletLifecycleTransitionState.shared
-        if case .exportingDiagnostics = state.phase {
-            state.finish()
-        }
+        guard case .exportingDiagnostics(dismissed: false) = state.phase else { return }
+        waitGeneration += 1
+        state.advance(to: .exportingDiagnostics(dismissed: true))
     }
 
     /// Pure SDK-session selection policy, split out for unit testing.
