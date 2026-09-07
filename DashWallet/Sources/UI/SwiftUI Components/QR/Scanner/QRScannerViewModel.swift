@@ -244,7 +244,7 @@ final class QRScannerViewModel: ObservableObject {
     /// the router opens the Send screen prefilled, which a BIP70-only
     /// payload can't do. Those fall through to the invalid state.
     private func offerPaymentRedirect(_ parsed: ParsedPaymentURI, fallbackMessage: String?) {
-        guard parsed.isAddressValidForCurrentNetwork, parsed.address != nil else {
+        guard parsed.isAddressPayableForCurrentNetwork, parsed.address != nil else {
             showInvalid(message: fallbackMessage ?? invalidQRMessage(for: parsed))
             return
         }
@@ -274,8 +274,10 @@ final class QRScannerViewModel: ObservableObject {
     func acceptOffer() {
         guard case .offer(let payload, _, _) = status else { return }
         switch payload {
-        case .payment(let parsed):
-            finish(.payment(inputBuilder.paymentInput(withParsedURI: parsed, source: .scanQR)))
+        case .payment:
+            // Use the same BIP70 fetch/verification and address fallback as
+            // the payment scanner before handing the result to the router.
+            processForPayment(payload, allowsCrossContextRouting: true)
         #if DASHPAY
         case .dashPayUser(let link):
             finish(.dashPayUser(link))
