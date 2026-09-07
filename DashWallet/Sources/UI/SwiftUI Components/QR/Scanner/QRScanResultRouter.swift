@@ -53,19 +53,27 @@ enum QRScanResultRouter {
 
     /// Present the Send screen prefilled — same chrome as
     /// `DWBasePayViewController routeScannedBech32Address:`. Only
-    /// address-carrying intents are routable here; the scanner never
-    /// offers a redirect for BIP70-only payloads.
+    /// address-carrying intents and verified BIP70 confirmations reach here.
+    /// Merchant requests are fetched by the scanner before routing.
     private static func routePayment(_ input: DWPaymentInput, from presenter: UIViewController?) {
-        guard let presenter,
-              let parsed = input.parsedURI,
-              let address = parsed.address else { return }
+        guard let presenter else { return }
 
         let controller = SendScreenViewController()
-        controller.prefill(address: address, amountDuffs: parsed.amount)
+        if let parsed = input.parsedURI, let address = parsed.address {
+            controller.prefill(address: address, amountDuffs: parsed.amount)
+        } else if input.bip70Confirmation == nil {
+            return
+        }
         let navigationController = BaseNavigationController(rootViewController: controller)
         navigationController.isNavigationBarHidden = true
         navigationController.modalPresentationStyle = .fullScreen
-        presenter.topController().present(navigationController, animated: true)
+        presenter.topController().present(navigationController, animated: true) {
+            // Keep the verified merchant outputs and acknowledgment metadata
+            // intact. Wait for a visible anchor before presenting confirmation.
+            if input.bip70Confirmation != nil {
+                controller.processPaymentInput(input)
+            }
+        }
     }
 
     #if DASHPAY

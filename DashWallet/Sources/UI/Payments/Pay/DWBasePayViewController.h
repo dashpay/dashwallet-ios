@@ -44,6 +44,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performNFCReadingAction;
 - (void)performPayToURL:(NSURL *)url;
 
+/// Process a complete payment input from an already-presented controller,
+/// preserving merchant requests and their payment-protocol metadata.
+- (void)processPaymentInput:(DWPaymentInput *)input;
+
 /// Scanner completion — dismisses the scanner and processes the input.
 /// Subclasses override to take ownership of the scanned input (the send
 /// screen and payments landing feed their own view models instead).
