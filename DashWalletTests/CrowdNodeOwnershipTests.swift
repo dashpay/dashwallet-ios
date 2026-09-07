@@ -50,9 +50,13 @@ final class CrowdNodeOwnershipTests: XCTestCase {
     }
 
     func testScanExhaustionIsUnknownNotForeign() {
-        // The address decodes fine; the scan simply did not reach its index.
-        // Ticket 32026: a long-lived wallet holds its account address past the
-        // 300-index bound, and answering `false` here tore the link down.
+        // The address decodes fine; the scan simply did not find it. This case
+        // stubs a generic miss and fixes neither an index nor a derivation
+        // path — on the wallet in ticket 32026 the account address was most
+        // likely missed because the scanned derivation paths do not reproduce
+        // it, not because its index ran past the bound (that wallet had issued
+        // only ~105 addresses). Either way the answer must be "unknown":
+        // answering `false` tore a live link down.
         let owns = CrowdNodeMessageSigner.ownsAddress(
             mainnetAddress,
             using: lookup(hash160: mainnetHash160, path: nil))
@@ -119,5 +123,110 @@ final class CrowdNodeOwnershipTests: XCTestCase {
         XCTAssertEqual(verdict, .unproven)
         XCTAssertNotEqual(verdict, .trusted, "an unproven address must not activate an account")
         XCTAssertNotEqual(verdict, .alien, "an unproven address must not destroy stored data")
+    }
+
+    // MARK: metadata stored beside the address
+
+    // The second blocking finding: `validatePrefs` correctly PRESERVES an
+    // unproven address, but the saved online state and cached balance stored
+    // beside it come from the same legacy globals. Proving an address from this
+    // wallet's history proves nothing about them.
+
+    private let storedAddress = "XhpXm8bjSKVGaXAKeGRNHDRg9W1o22PLJH"
+    private let otherAddress = "XwrJyFbdLBGuHhLBrTuUXQPGF7YXBhzRfN"
+
+    func testProvenOwnershipKeepsTheMetadata() {
+        XCTAssertTrue(CrowdNode.metadataSurvivesReconstruction(
+            ownership: true, storedAddress: storedAddress, recoveredAddress: otherAddress),
+            "a proven stored address is this wallet's, so its metadata is too")
+    }
+
+    func testUnprovenMetadataIsDroppedWhenAnotherAddressIsRecovered() {
+        // Wallet B's own history recovers B's account; the stored address (and
+        // therefore the balance and online state beside it) was A's.
+        XCTAssertFalse(CrowdNode.metadataSurvivesReconstruction(
+            ownership: nil, storedAddress: storedAddress, recoveredAddress: otherAddress))
+    }
+
+    func testUnprovenMetadataSurvivesWhenTheSameAddressIsRecovered() {
+        // The history proves the address the metadata was stored against —
+        // that is the account-specific evidence it was missing.
+        XCTAssertTrue(CrowdNode.metadataSurvivesReconstruction(
+            ownership: nil, storedAddress: storedAddress, recoveredAddress: storedAddress))
+    }
+
+    func testUnprovenMetadataIsDroppedWhenNothingIsRecovered() {
+        XCTAssertFalse(CrowdNode.metadataSurvivesReconstruction(
+            ownership: nil, storedAddress: storedAddress, recoveredAddress: nil))
+    }
+
+    func testMissingOrEmptyStoredAddressCarriesNoMetadata() {
+        XCTAssertFalse(CrowdNode.metadataSurvivesReconstruction(
+            ownership: nil, storedAddress: nil, recoveredAddress: otherAddress))
+        XCTAssertFalse(CrowdNode.metadataSurvivesReconstruction(
+            ownership: nil, storedAddress: "", recoveredAddress: ""),
+            "an empty stored address must not match an empty recovered one")
+    }
+
+    func testRefutedOwnershipNeverKeepsMetadata() {
+        XCTAssertFalse(CrowdNode.metadataSurvivesReconstruction(
+            ownership: false, storedAddress: storedAddress, recoveredAddress: otherAddress))
+    }
+
+    // MARK: the two unknowns, told apart
+
+    // Reviewer finding 3: `Bool?` flattened "the wallet isn't up" and "the scan
+    // ran out" into one `nil`. Only the second is a verdict about this wallet,
+    // and the restore's fruitless-pass memo must not be written on the first.
+
+    func testWalletNotUpIsDistinctFromScanExhaustion() {
+        XCTAssertEqual(
+            CrowdNodeMessageSigner.ownership(of: mainnetAddress, using: nil),
+            .walletUnavailable)
+        XCTAssertEqual(
+            CrowdNodeMessageSigner.ownership(
+                of: mainnetAddress,
+                using: lookup(hash160: mainnetHash160, path: nil)),
+            .notFoundWithinBound)
+    }
+
+    func testOnlyAWalletThatWasUpProducesACheckedVerdict() {
+        XCTAssertFalse(CrowdNodeMessageSigner.Ownership.walletUnavailable.wasChecked,
+                       "a pass built on this must not be memoized as fruitless")
+        for verdict: CrowdNodeMessageSigner.Ownership in [.owned, .foreign, .notFoundWithinBound] {
+            XCTAssertTrue(verdict.wasChecked)
+        }
+    }
+
+    func testFourCaseVerdictAgreesWithTheBoolBridge() {
+        // The bridge stays lossy on purpose; what it must never do is disagree
+        // about trust or about destruction.
+        XCTAssertEqual(
+            CrowdNodeMessageSigner.ownership(
+                of: mainnetAddress, using: lookup(hash160: mainnetHash160, path: "m/44'/5'/0'/0/7")),
+            .owned)
+        XCTAssertEqual(
+            CrowdNodeMessageSigner.ownsAddress(
+                mainnetAddress, using: lookup(hash160: mainnetHash160, path: "m/44'/5'/0'/0/7")),
+            true)
+        XCTAssertNil(CrowdNodeMessageSigner.ownsAddress(mainnetAddress, using: nil))
+    }
+
+    func testBothUnknownsLeaveTheStoredAccountUnproven() {
+        // Neither may trust the account, and neither may destroy it.
+        for verdict: CrowdNodeMessageSigner.Ownership in [.walletUnavailable, .notFoundWithinBound] {
+            XCTAssertEqual(CrowdNode.storedAccountVerdict(ownership: verdict), .unproven)
+        }
+        XCTAssertEqual(CrowdNode.storedAccountVerdict(ownership: .owned), .trusted)
+        XCTAssertEqual(CrowdNode.storedAccountVerdict(ownership: .foreign), .alien)
+    }
+
+    func testNoStoredAddressIsNotTheSameAsUnknownOwnership() {
+        // `validatePrefs` returns nil for "nothing stored"; there is nothing to
+        // trust and nothing to destroy.
+        let verdict = CrowdNode.storedAccountVerdict(
+            ownership: CrowdNodeMessageSigner.Ownership?.none)
+        XCTAssertEqual(verdict, .unproven)
+        XCTAssertNotEqual(verdict, .alien, "an absent address must never trigger a reset")
     }
 }

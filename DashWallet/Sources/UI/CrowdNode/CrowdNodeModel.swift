@@ -377,9 +377,10 @@ extension CrowdNodeModel {
 /// re-derives public keys along `m/44'/<coin>'/0'/<chain>/<index>` and
 /// matches the address's hash160. The scan is bounded, and the two callers
 /// treat exhaustion differently: `sign` fails closed with nil (never a
-/// wrong-key signature), while `ownsAddress` answers nil (unknown) — a
-/// long-lived wallet can hold its account address beyond the bound
-/// (ticket 32026), so exhaustion is not evidence the address is foreign.
+/// wrong-key signature), while the ownership check answers "not found within
+/// the bound" — the scan can miss an address the wallet owns (ticket 32026;
+/// whether through the index bound or the set of derivation paths it walks is
+/// not established), so exhaustion is not evidence the address is foreign.
 @MainActor
 enum CrowdNodeMessageSigner {
     private static let scanLimit: UInt32 = 300
@@ -410,6 +411,47 @@ enum CrowdNodeMessageSigner {
         let derivationPath: (String) -> String?
     }
 
+    /// Why the ownership check answered what it did.
+    ///
+    /// `ownsAddress`'s `Bool?` collapsed two very different unknowns into
+    /// `nil`: the wallet not being up yet, and the bounded scan running out.
+    /// They deserve different handling — a scan that ran out is a durable
+    /// verdict for this wallet, while a wallet that is not up means the check
+    /// never ran, and a restore must not memoize a pass built on it as
+    /// fruitless.
+    enum Ownership: Equatable {
+        /// The scan found the key: this address is the active wallet's.
+        case owned
+        /// The address cannot be this wallet's — not a P2PKH address of the
+        /// running network. The only answer that justifies destroying prefs.
+        case foreign
+        /// The SDK wallet or the network is not up, so nothing was checked.
+        case walletUnavailable
+        /// The scan ran to its bound without finding the address. Not evidence
+        /// the address is foreign (ticket 32026) — the bound exists for cost.
+        case notFoundWithinBound
+
+        /// Whether this verdict came from a check that actually ran.
+        var wasChecked: Bool { self != .walletUnavailable }
+    }
+
+    /// Four-case ownership check. Prefer this over `ownsAddress`, which
+    /// flattens `walletUnavailable` and `notFoundWithinBound` into `nil`.
+    static func ownership(of address: String) -> Ownership {
+        ownership(of: address, using: liveOwnership())
+    }
+
+    /// The verdict rule on its own, with the wallet reduced to two closures so
+    /// it can be pinned without an SDK host: a nil `lookup` is "the wallet
+    /// isn't up".
+    static func ownership(of address: String, using lookup: OwnershipLookup?) -> Ownership {
+        guard let lookup else { return .walletUnavailable }
+        guard let targetHash160 = lookup.hash160OfAddress(address) else {
+            return .foreign // not a P2PKH address of this network ⇒ not ours
+        }
+        return lookup.derivationPath(targetHash160) != nil ? .owned : .notFoundWithinBound
+    }
+
     /// Tri-state wallet-ownership check for a persisted CrowdNode account
     /// address (a BIP44 acct-0 receive address, so the same bounded scan the
     /// signer uses can find it): `true` when the scan finds the key; `false`
@@ -424,17 +466,15 @@ enum CrowdNodeMessageSigner {
         ownsAddress(address, using: liveOwnership())
     }
 
-    /// The verdict rule on its own, with the wallet reduced to two closures
-    /// so the tri-state contract can be pinned without an SDK host: a nil
-    /// `lookup` is "the wallet isn't up".
+    /// Lossy bridge over `ownership(of:using:)` for callers that only need the
+    /// trust decision. Both unknowns become `nil`; anything that must tell them
+    /// apart calls `ownership` directly.
     static func ownsAddress(_ address: String, using lookup: OwnershipLookup?) -> Bool? {
-        guard let lookup else { return nil }
-        guard let targetHash160 = lookup.hash160OfAddress(address) else {
-            return false // not a P2PKH address of this network ⇒ not ours
+        switch ownership(of: address, using: lookup) {
+        case .owned: return true
+        case .foreign: return false
+        case .walletUnavailable, .notFoundWithinBound: return nil
         }
-        // Scan exhaustion is "unknown", never "not mine" — the bound exists
-        // for cost, not as an ownership horizon.
-        return lookup.derivationPath(targetHash160) != nil ? true : nil
     }
 
     private static func liveOwnership() -> OwnershipLookup? {

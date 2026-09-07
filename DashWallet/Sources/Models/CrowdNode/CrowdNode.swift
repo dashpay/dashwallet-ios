@@ -218,7 +218,8 @@ extension CrowdNode {
 
         DWLogger.log("restoring CrowdNode state")
         signUpState = SignUpState.notStarted
-        // nil ⇒ the stored address is kept but unproven. `CrowdNodeDefaults`
+        // Anything but `.owned` keeps the stored address but leaves it
+        // unproven. `CrowdNodeDefaults`
         // seeds a new wallet's per-wallet keys from the retained pre-multi-wallet
         // globals (account address, saved online state, last known balance), so
         // an unproven address can be the *previous* wallet's. The signup scan
@@ -236,11 +237,50 @@ extension CrowdNode {
         let observed = TransactionObserver
             .fetchObserved(firstSeenAtOrAfter: FullCrowdNodeSignUpTxSet.januaryFirst2022Epoch)
 
+        // `validatePrefs` preserves an unproven stored address rather than
+        // destroying it — but the metadata stored BESIDE it (saved online state,
+        // last known balance) came from the same legacy globals and is just as
+        // unproven. The reconstruction below proves an ADDRESS from this
+        // wallet's own history; it proves nothing about that metadata. Left in
+        // place, `setFinished` would publish another wallet's cached balance
+        // and `restoreCreatedOnlineAccount` would publish its `.done`/`.creating`
+        // online state under this one. So quarantine it across the
+        // reconstruction and hand it back only to an address that turns out to
+        // be the same one it was stored against.
+        let storedAddress = prefs.accountAddress
+        let quarantinedOnlineState = prefs.savedOnlineAccountState
+        let quarantinedBalance = prefs.lastKnownBalance
+        let metadataIsUnproven =
+            CrowdNode.storedAccountVerdict(ownership: ownsStoredAddress) != .trusted
+        if metadataIsUnproven {
+            prefs.savedOnlineAccountState = .none
+            prefs.lastKnownBalance = 0
+        }
+
         if tryRestoreSignUp(observed) {
+            if CrowdNode.metadataSurvivesReconstruction(
+                ownership: ownsStoredAddress,
+                storedAddress: storedAddress,
+                recoveredAddress: prefs.accountAddress) {
+                // This wallet's own history recovered the very address the
+                // metadata was stored against. That is the account-specific
+                // evidence it was missing, so it is this wallet's after all.
+                prefs.savedOnlineAccountState = quarantinedOnlineState
+                prefs.lastKnownBalance = quarantinedBalance
+            }
             refreshWithdrawalLimits()
             refreshFees()
             restoreCreatedOnlineAccount(accountAddress)
             return
+        }
+
+        // No signup in this wallet's history, so nothing was replaced and the
+        // stored values are still merely unproven — which is the state
+        // `validatePrefs` deliberately leaves them in, and which the
+        // online-account path below handles on its own terms (`trustStoredAddress`).
+        if metadataIsUnproven {
+            prefs.savedOnlineAccountState = quarantinedOnlineState
+            prefs.lastKnownBalance = quarantinedBalance
         }
 
         var onlineState = prefs.savedOnlineAccountState
@@ -286,7 +326,13 @@ extension CrowdNode {
             // count means the SDK container wasn't up and the scans were
             // vacuous: nothing to memoize, and don't clobber a prior launch's
             // valid memo with it.
-            if let txCountBeforeScans {
+            // A pass whose ownership check never ran (the SDK wallet was not
+            // up) is not evidence about this history either: it sends the
+            // stored address down the confirmation-tx lookup, which on
+            // unsynced history finds nothing for reasons that have nothing to
+            // do with the rows. Memoizing that would short-circuit the next
+            // restore, which is the one that would have had a wallet.
+            if let txCountBeforeScans, ownsStoredAddress?.wasChecked != false {
                 prefs.fruitlessRestoreTxCount = txCountBeforeScans
             }
         }
@@ -363,7 +409,49 @@ extension CrowdNode {
         /// it from another wallet on the same network.
         case unproven
         /// The address cannot be this wallet's — the account is reset.
+        ///
+        /// Nearly unreachable for real data: prefs only ever hold addresses
+        /// this app produced, so a stored value that is not a P2PKH address of
+        /// the running network means a network switch or corrupted defaults.
+        /// The live defence against another wallet's account is `.unproven`
+        /// plus `trustStoredAddress` — NOT this case. Read `reset()` here as a
+        /// backstop, not as the guard doing the work.
         case alien
+    }
+
+    /// Whether the saved online state and cached balance stored beside an
+    /// account address may be published for the address the restore ended up
+    /// with. Pure so the rule is testable without a wallet, a keychain or the
+    /// network.
+    ///
+    /// `true` ownership is proof for the stored address, so its metadata stands.
+    /// Otherwise the metadata is only as good as the address it was stored
+    /// against: it survives only if this wallet's own history recovered that
+    /// same address. A different recovered address means the two were never
+    /// related — `CrowdNodeDefaults` seeds a new wallet's keys from the retained
+    /// pre-multi-wallet globals, so the pair can easily be another wallet's.
+    static func metadataSurvivesReconstruction(ownership owns: Bool?,
+                                               storedAddress: String?,
+                                               recoveredAddress: String?) -> Bool {
+        metadataSurvives(verdict: storedAccountVerdict(ownership: owns),
+                         storedAddress: storedAddress,
+                         recoveredAddress: recoveredAddress)
+    }
+
+    static func metadataSurvivesReconstruction(ownership owns: CrowdNodeMessageSigner.Ownership?,
+                                               storedAddress: String?,
+                                               recoveredAddress: String?) -> Bool {
+        metadataSurvives(verdict: storedAccountVerdict(ownership: owns),
+                         storedAddress: storedAddress,
+                         recoveredAddress: recoveredAddress)
+    }
+
+    private static func metadataSurvives(verdict: StoredAccountVerdict,
+                                         storedAddress: String?,
+                                         recoveredAddress: String?) -> Bool {
+        if verdict == .trusted { return true }
+        guard let storedAddress, !storedAddress.isEmpty else { return false }
+        return storedAddress == recoveredAddress
     }
 
     static func storedAccountVerdict(ownership owns: Bool?) -> StoredAccountVerdict {
@@ -374,16 +462,33 @@ extension CrowdNode {
         }
     }
 
+    /// Four-case form. `nil` means there is no stored address at all — nothing
+    /// to trust and nothing to destroy — which the `Bool?` form cannot express
+    /// separately from "unknown".
+    static func storedAccountVerdict(
+        ownership owns: CrowdNodeMessageSigner.Ownership?
+    ) -> StoredAccountVerdict {
+        switch owns {
+        case .owned: return .trusted
+        case .foreign: return .alien
+        case .walletUnavailable, .notFoundWithinBound, nil: return .unproven
+        }
+    }
+
     /// Validate the stored account address against the active wallet and
     /// report the verdict to the restore that called it.
     ///
-    /// Returns `true` when the scan proved the address is this wallet's,
-    /// `false` when it proved it is not (the account is reset), and `nil`
-    /// when the scan proved nothing — the SDK wallet isn't up yet, or the
-    /// address sits beyond the bounded scan. `nil` keeps the stored account
-    /// on disk but leaves it unproven, and the caller must not activate it
-    /// on trust alone.
-    private func validatePrefs() -> Bool? {
+    /// `nil` means there is no stored address at all — distinct from a stored
+    /// address whose ownership is unknown, which is what the earlier `Bool?`
+    /// return conflated it with. Otherwise the four-case verdict:
+    /// `.owned` proves the address is this wallet's, `.foreign` proves it is
+    /// not (the account is reset), and `.walletUnavailable` /
+    /// `.notFoundWithinBound` prove nothing. The last two keep the stored
+    /// account on disk but leave it unproven, and the caller must not activate
+    /// it on trust alone. They are kept apart because only
+    /// `.walletUnavailable` means the check never ran, which the restore's
+    /// fruitless-pass memo has to know.
+    private func validatePrefs() -> CrowdNodeMessageSigner.Ownership? {
         guard let accountAddress = prefs.accountAddress else { return nil }
 
         // SDK-native ownership check (BIP44 acct-0 scan — the same one the
@@ -392,13 +497,13 @@ extension CrowdNode {
         // the stored account rather than resetting it. false is returned only
         // for an address that cannot belong to this wallet (not a P2PKH
         // address of the running network).
-        let owns: Bool?
+        let owns: CrowdNodeMessageSigner.Ownership
         if Thread.isMainThread {
-            owns = MainActor.assumeIsolated { CrowdNodeMessageSigner.ownsAddress(accountAddress) }
+            owns = MainActor.assumeIsolated { CrowdNodeMessageSigner.ownership(of: accountAddress) }
         } else {
-            var captured: Bool?
+            var captured: CrowdNodeMessageSigner.Ownership = .walletUnavailable
             DispatchQueue.main.sync {
-                captured = MainActor.assumeIsolated { CrowdNodeMessageSigner.ownsAddress(accountAddress) }
+                captured = MainActor.assumeIsolated { CrowdNodeMessageSigner.ownership(of: accountAddress) }
             }
             owns = captured
         }
@@ -1115,7 +1220,16 @@ extension CrowdNode {
                   let apiAddress = confirmationTx.ownOutputAddresses.first {
             prefs.accountAddress = apiAddress
             signUpState = .linkedOnline
-            prefs.savedOnlineAccountState = .linking
+            // Persist the downgrade only when this is genuinely a different
+            // account. When the confirmation recovers the address already
+            // stored, the stored state describes THIS account and is further
+            // along; overwriting it with `.linking` would be a backward write
+            // driven by a transient condition — and on the population this
+            // guard exists for the verdict is unproven on every launch, so it
+            // would repeat forever and park an offline account at `.linking`.
+            if apiAddress != savedAddress {
+                prefs.savedOnlineAccountState = .linking
+            }
 
             return apiAddress
         }
