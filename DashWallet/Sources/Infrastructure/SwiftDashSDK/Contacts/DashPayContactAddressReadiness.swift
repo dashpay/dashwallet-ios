@@ -72,6 +72,11 @@ enum DashPayContactAddressReadiness {
         }
         do {
             var outcome = try await manager.startWalletSubsystems(wallet: wallet, budget: probeBudget)
+            // Captured before a re-run can replace `outcome`: the re-run reuses
+            // the identity the probe just persisted (`discoveryAttempts == 0`),
+            // and the coordinator must still see this start as the identity's
+            // first sight on this install.
+            var discoveredThisStart = outcome.discoveryAttempts > 0
             if probeBudget != nil, outcome.identityId != nil {
                 // The seed owns an identity after all: the probe budget must
                 // never apply to this wallet again, whether or not the probe
@@ -85,13 +90,14 @@ enum DashPayContactAddressReadiness {
                     logger.info(
                         "👥 DP-READY :: probe found an identity but was cut short — re-running with the default budget")
                     outcome = try await manager.startWalletSubsystems(wallet: wallet)
+                    discoveredThisStart = discoveredThisStart || outcome.discoveryAttempts > 0
                 }
             }
             log(outcome, network: network, phase: .verdict)
             recovery.recordStartupDiscovery(
                 status: outcome.status,
                 identityId: outcome.identityId,
-                discoveredThisStart: outcome.discoveryAttempts > 0,
+                discoveredThisStart: discoveredThisStart,
                 walletId: walletId,
                 network: network)
         } catch {

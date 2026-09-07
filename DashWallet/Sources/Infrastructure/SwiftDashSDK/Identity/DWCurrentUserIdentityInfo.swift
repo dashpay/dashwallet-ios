@@ -905,15 +905,25 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         "\(network.rawValue):" + walletId.hexEncodedString()
     }
 
-    /// Existence check for the startup-budget decision: a `fetchCount` over
-    /// the identity rows of `walletId`, so the wallet-switch path never
-    /// faults in and sorts the identity set it would only test for emptiness.
+    /// Existence check for the startup-budget decision. Queried from the
+    /// wallet side, like `computeSnapshot`: a `#Predicate` over
+    /// `identity.wallet?.walletId` compiles to a relationship traversal that
+    /// silently misses rows on cold launch until the inverse edge is
+    /// hydrated, and this runs BEFORE `startWalletSubsystems` — a miss would
+    /// hand a wallet that does own a local identity the short probe budget.
+    /// `walletId` is a direct attribute on `PersistentWallet`, and reading
+    /// `.identities` hydrates the inverse on demand; `isEmpty` faults the
+    /// relationship but skips the sort and the `[Data]` copy
+    /// `localIdentityIds` builds for callers that need the ids.
     static func hasLocalIdentity(walletId: Data, modelContainer: ModelContainer) -> Bool {
-        var descriptor = FetchDescriptor<PersistentIdentity>(
-            predicate: #Predicate { $0.wallet?.walletId == walletId }
+        var descriptor = FetchDescriptor<PersistentWallet>(
+            predicate: #Predicate { $0.walletId == walletId }
         )
         descriptor.fetchLimit = 1
-        return ((try? modelContainer.mainContext.fetchCount(descriptor)) ?? 0) > 0
+        guard let persistedWallet = try? modelContainer.mainContext.fetch(descriptor).first else {
+            return false
+        }
+        return !persistedWallet.identities.isEmpty
     }
 
     private static func localIdentityIds(
