@@ -53,14 +53,15 @@ enum DashPayContactAddressReadiness {
     ) async {
         // A mnemonic generated on this device with no local identity gets a
         // short budget instead of the SDK default. That budget caps the
-        // whole sequence, so it only serves as a probe: when the probe DOES
-        // find an identity, the marker is dropped and the sequence runs
-        // again with the default budget — the identity is local by then, so
-        // the second run skips discovery and spends its budget on the
-        // contact sync and the contact-account drain that the first one cut
-        // short. The final verdict goes to the same-seed recovery
-        // coordinator so the BLAST-side backstop does not repeat the
-        // discovery this pass just ran.
+        // whole sequence, so it only serves as a probe: when the probe finds
+        // an identity the marker is dropped, and if the probe was also cut
+        // short (`probeNeedsFullRerun`: contact sync or contact-account
+        // drain unfinished) the sequence runs again with the default budget
+        // — the identity is local by then, so the second run skips discovery
+        // and spends its budget on the steps the first one cut short. The
+        // final verdict goes to the same-seed recovery coordinator, which
+        // decides whether its backstop still has anything to do in this
+        // start (`StartupIdentityRecoveryPolicy.decision`).
         let recovery = DWSameSeedIdentityRecoveryCoordinator.shared
         let walletId = wallet.walletId
         let probeBudget = SwiftDashSDKHost.shared.modelContainer.flatMap {
@@ -130,13 +131,14 @@ enum DashPayContactAddressReadiness {
             logger.info(
                 "\(tag, privacy: .public)no identity for this seed; nothing to prepare before SPV")
         case .partialNoIdentity:
-            // Not an error: Platform was unreachable, so the question is still
-            // open and the next runtime start asks again.
+            // Not an error: Platform (or the scan key) was unreachable, so the
+            // question is still open; the same-seed recovery backstop asks
+            // again in this start, and the next runtime start asks again too.
             logger.warning(
                 """
                 \(tag, privacy: .public)could not reach Platform in \(seconds, privacy: .public)s \
                 after \(outcome.discoveryAttempts, privacy: .public) scan(s); \
-                starting SPV, identity recovery retries on the next start
+                starting SPV, the same-seed recovery backstop retries in this start
                 """)
         case .partialAccountsPending:
             logger.warning(
@@ -147,12 +149,14 @@ enum DashPayContactAddressReadiness {
                 """)
         case .discoveryFailed:
             // A local wallet/persistence fault, not the network. Logged at
-            // error because unlike every other outcome here, nothing in this
-            // session or the next will clear it on its own.
+            // error because a retry of the same sequence will not clear it;
+            // the same-seed recovery backstop still tries its own discovery
+            // entry point in this start.
             logger.error(
                 """
                 \(tag, privacy: .public)identity discovery failed locally after \
-                \(seconds, privacy: .public)s; starting SPV without DashPay state
+                \(seconds, privacy: .public)s; starting SPV, the same-seed recovery \
+                backstop retries with its own scan
                 """)
         case .seedBindingUnverified:
             // Never derive contact addresses when the available seed cannot be
@@ -164,15 +168,16 @@ enum DashPayContactAddressReadiness {
                 starting SPV without deriving contact accounts
                 """)
         case .identityScanIncomplete:
-            // An identity was found, but the scan left indices unanswered.
-            // The SDK records that verdict so the next launch retries instead
-            // of treating the local identity set as complete.
+            // An identity was found (the backstop adopts it in this start),
+            // but the scan left indices unanswered. The SDK records that
+            // verdict so the next runtime start rescans instead of treating
+            // the local identity set as complete.
             logger.warning(
                 """
                 \(tag, privacy: .public)identity scan incomplete after \
                 \(outcome.discoveryAttempts, privacy: .public) scan(s) and \
-                \(seconds, privacy: .public)s; starting SPV, discovery retries \
-                on the next start
+                \(seconds, privacy: .public)s; starting SPV, the gap rescan \
+                runs on the next start
                 """)
         @unknown default:
             logger.warning(

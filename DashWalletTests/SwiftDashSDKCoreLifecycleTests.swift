@@ -254,13 +254,41 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             identityFound: false, dashPaySyncRan: false, contactAccountsPending: 0))
     }
 
-    func testShortStartupBudgetOnlyForGeneratedWalletWithoutLocalIdentity() {
+    func testShortStartupBudgetOnlyForGeneratedWalletKnownToHaveNoLocalIdentity() {
         XCTAssertEqual(
             StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: true, hasLocalIdentity: false),
             StartupIdentityRecoveryPolicy.generatedWalletStartupBudget)
         XCTAssertNil(StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: true, hasLocalIdentity: true))
+        // Inconclusive lookup (fetch failed, no wallet row) keeps the default.
+        XCTAssertNil(StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: true, hasLocalIdentity: nil))
         XCTAssertNil(StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: false, hasLocalIdentity: false))
         XCTAssertNil(StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: false, hasLocalIdentity: true))
+        XCTAssertNil(StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: false, hasLocalIdentity: nil))
+    }
+
+    func testSameSeedIdentityRecoveryUsesReadinessIdentityWhenTheStoreLags() async throws {
+        // Readiness discovered the identity but the persister has not landed
+        // the row yet: the pipeline must refresh + adopt on the known id and
+        // never run a second discovery scan.
+        let identityId = Data(repeating: 0x19, count: 32)
+        var discoveryCalls = 0
+        var refreshedIdentityIds: [Data] = []
+
+        let outcome = try await SameSeedIdentityRecoveryPipeline.run(
+            knownIdentityIds: [identityId],
+            localIdentityIds: { [] },
+            discover: {
+                discoveryCalls += 1
+                return []
+            },
+            refreshNames: { refreshedIdentityIds = $0 },
+            adopt: { true })
+
+        XCTAssertEqual(discoveryCalls, 0)
+        XCTAssertEqual(refreshedIdentityIds, [identityId])
+        XCTAssertEqual(
+            outcome,
+            .init(discoveredCount: 0, identityCount: 1, adopted: true))
     }
 
     // MARK: - GeneratedWalletIdentityMarker

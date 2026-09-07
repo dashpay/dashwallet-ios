@@ -603,7 +603,12 @@ enum SameSeedIdentityRecoveryPipeline {
         let adopted: Bool
     }
 
+    /// `knownIdentityIds`: identities the readiness pass already discovered
+    /// and persisted in this start. They stand in for an empty local read —
+    /// the persister normally lands the rows before the readiness call
+    /// returns, but a lagging store must not trigger a second discovery scan.
     static func run(
+        knownIdentityIds: [Data] = [],
         localIdentityIds: () -> [Data],
         discover: () async throws -> [Data],
         refreshNames: ([Data]) async throws -> Void,
@@ -611,6 +616,10 @@ enum SameSeedIdentityRecoveryPipeline {
     ) async throws -> Outcome {
         var identityIds = localIdentityIds()
         var discoveredIds: [Data] = []
+
+        if identityIds.isEmpty, !knownIdentityIds.isEmpty {
+            identityIds = knownIdentityIds
+        }
 
         if identityIds.isEmpty {
             discoveredIds = try await discover()
@@ -713,9 +722,12 @@ enum StartupIdentityRecoveryPolicy {
         identityFound && (!dashPaySyncRan || contactAccountsPending > 0)
     }
 
-    /// `nil` = the SDK default budget.
-    static func startupBudget(isGeneratedOnDevice: Bool, hasLocalIdentity: Bool) -> TimeInterval? {
-        guard isGeneratedOnDevice, !hasLocalIdentity else { return nil }
+    /// `nil` = the SDK default budget. `hasLocalIdentity == nil` means the
+    /// lookup was inconclusive (fetch failed, no wallet row): the probe is
+    /// only ever applied to a wallet KNOWN to have no local identity, so the
+    /// unknown case keeps the default budget.
+    static func startupBudget(isGeneratedOnDevice: Bool, hasLocalIdentity: Bool?) -> TimeInterval? {
+        guard isGeneratedOnDevice, hasLocalIdentity == false else { return nil }
         return generatedWalletStartupBudget
     }
 }
@@ -811,11 +823,20 @@ final class DWSameSeedIdentityRecoveryCoordinator {
             // pipeline's discovery and name refresh would only repeat SDK
             // work. Adopt app-side and settle — a known identity adopts even
             // for a context settled earlier in this process.
+            // The marker goes regardless (the seed owns an identity; the
+            // default budget is the safe direction), but the context settles
+            // only on a successful adoption — `reconcileRecoveredIdentity`
+            // returns false while the host or the snapshot is still
+            // hydrating, and that must stay retryable.
             GeneratedWalletIdentityMarker.clear(walletId: walletId)
             let adopted = DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
+            guard adopted else {
+                Self.logger.warning(
+                    "🪪 IDENT-RECOVERY :: identity re-confirmed by startup readiness but not adopted yet; leaving the context open")
+                return
+            }
             completedContexts.insert(contextKey)
-            Self.logger.info(
-                "🪪 IDENT-RECOVERY :: adopted the identity startup readiness re-confirmed adopted=\(adopted, privacy: .public)")
+            Self.logger.info("🪪 IDENT-RECOVERY :: adopted the identity startup readiness re-confirmed")
             return
         case .skipSettled:
             completedContexts.insert(contextKey)
@@ -836,6 +857,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
 
         do {
             let outcome = try await SameSeedIdentityRecoveryPipeline.run(
+                knownIdentityIds: verdict?.identityId.map { [$0] } ?? [],
                 localIdentityIds: {
                     Self.localIdentityIds(walletId: walletId, modelContainer: modelContainer)
                 },
@@ -915,13 +937,15 @@ final class DWSameSeedIdentityRecoveryCoordinator {
     /// `.identities` hydrates the inverse on demand; `isEmpty` faults the
     /// relationship but skips the sort and the `[Data]` copy
     /// `localIdentityIds` builds for callers that need the ids.
-    static func hasLocalIdentity(walletId: Data, modelContainer: ModelContainer) -> Bool {
+    /// `nil` when the answer is unknown — the fetch threw or there is no
+    /// wallet row to ask — so the caller can fail towards the default budget.
+    static func hasLocalIdentity(walletId: Data, modelContainer: ModelContainer) -> Bool? {
         var descriptor = FetchDescriptor<PersistentWallet>(
             predicate: #Predicate { $0.walletId == walletId }
         )
         descriptor.fetchLimit = 1
         guard let persistedWallet = try? modelContainer.mainContext.fetch(descriptor).first else {
-            return false
+            return nil
         }
         return !persistedWallet.identities.isEmpty
     }
