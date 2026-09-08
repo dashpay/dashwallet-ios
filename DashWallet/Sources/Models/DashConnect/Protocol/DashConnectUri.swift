@@ -86,8 +86,11 @@ enum DashConnectUri {
     /// of it once per input character, so its cost is quadratic in the encoded
     /// length. A QR code bounds that by its own capacity; a URL does not — any
     /// installed app, or a tapped remote link, can hand this an arbitrarily long
-    /// run of valid Base58 characters and spend the main actor's time on it,
-    /// once per link. The bound belongs here rather than at the URL boundary so
+    /// run of valid Base58 characters, once per link. `parseQR` is `nonisolated
+    /// async`, so that work runs on the cooperative pool rather than the main
+    /// actor: it does not freeze the UI by itself, but it does burn CPU and
+    /// battery on threads the rest of the app shares, and a burst of links
+    /// starves them. The bound belongs here rather than at the URL boundary so
     /// every carrier, including ones added later, inherits it.
     ///
     /// Base58 expands by log(256)/log(58) ≈ 1.366 characters per byte; the

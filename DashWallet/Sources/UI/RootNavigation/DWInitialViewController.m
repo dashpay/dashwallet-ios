@@ -88,9 +88,13 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 
 - (void)handleURL:(NSURL *)url {
-    // A cold launch delivers the URL before the root controller exists — an
-    // opened link must not be dropped on the way in, so it waits like a
-    // deeplink does.
+    // `application:openURL:` is delivered after `didFinishLaunching` has made
+    // the window key, so `viewDidLoad` has normally already built the root
+    // controller. What is left is onboarding still holding the screen: a
+    // reinstall keeps the wallet in the Keychain, so `allowsURLHandling`
+    // passes while the Keep/Delete choice runs and the root controller does
+    // not exist yet. The link waits there, like a deeplink does, instead of
+    // being dropped.
     if (self.rootController) {
         [self.rootController handleURL:url];
     }
