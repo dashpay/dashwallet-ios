@@ -63,6 +63,11 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// suspends watching the moment that screen is pushed, so nothing is
     /// detected while the user is on the very screen they are handing over.
     private var isPushingReceiveStep = false
+    /// Whether this landing is the screen the user is on. Gates the Send
+    /// tab's pasteboard reads: unlike the receive session, a pushed step is
+    /// not "still here" for the clipboard, so this one tracks plain
+    /// appearance and ignores `isPushingReceiveStep`.
+    private var isSurfaceOnScreen = false
     /// The specify-amount sheet while it is up, so a receipt can dismiss it.
     private weak var requestAmountController: RequestAmountHostingController?
     /// Kept apart from `cancellables`: these live exactly as long as that sheet
@@ -168,6 +173,15 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         super.viewDidLoad()
         view.backgroundColor = .dw_background()
 
+        // Reads need both halves: this landing on screen (a pushed send step
+        // or a dismissal revokes it, and the model is reused by those steps)
+        // and the Send tab selected. The tab check alone is not enough — the
+        // outgoing form stays alive through its slide-out transition.
+        embeddedSendViewModel.isClipboardReadAllowed = { [weak self] in
+            guard let self else { return false }
+            return self.isSurfaceOnScreen && self.viewModel.activeTab == .send
+        }
+
         addChild(hostingController)
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         hostingController.view.backgroundColor = .clear
@@ -240,6 +254,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         // here as well so returning from transaction details can resume the
         // same receive session (or start a fresh "Receive another" session).
         viewModel.setReceiptWatchingObscured(false)
+        isSurfaceOnScreen = true
+        embeddedSendViewModel.refreshClipboardSuggestion()
         isPushingReceiveStep = false
         receiveStepObservers.removeAll()
         viewModel.setReceiveSurfaceVisible(true)
@@ -251,6 +267,9 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        // Set before the receive-step exemption below: for the clipboard,
+        // every way of leaving this screen counts, pushed step included.
+        isSurfaceOnScreen = false
         // Stepping deeper into the receive flow is not leaving it. Everything
         // else — a tab change, a dismissal, a pop — still puts the session to
         // sleep.
