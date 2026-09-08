@@ -530,6 +530,7 @@ final class SwiftDashSDKHost {
                 mnemonic: mnemonic,
                 manager: handles.manager,
                 network: handles.network,
+                isImported: isImported,
                 // Imported mnemonics may hold history from long before
                 // this device: scan from the network's import floor
                 // (genesis on testnet, block 200,000 on mainnet — see
@@ -562,6 +563,7 @@ final class SwiftDashSDKHost {
                             mnemonic: mnemonic,
                             manager: targetManager,
                             network: targetNetwork,
+                            isImported: isImported,
                             birthHeight: isImported
                                 ? Self.importedWalletBirthHeight(for: targetNetwork)
                                 : nil,
@@ -707,6 +709,7 @@ final class SwiftDashSDKHost {
                     mnemonic: mnemonic,
                     manager: targetManager,
                     network: targetNetwork,
+                    isImported: isImported,
                     // Same semantics as `createOrImportWallet`: imports scan
                     // from each network's import floor, freshly generated
                     // wallets from that network's tip.
@@ -757,10 +760,15 @@ final class SwiftDashSDKHost {
     /// runtime; `createOrImportWallet` is NOT queue-serialized (the
     /// migrator is awaited by refresh itself — enqueueing would deadlock),
     /// so it must keep the MainActor-atomic critical section.
+    /// `isImported` drives `GeneratedWalletIdentityMarker`: a generated
+    /// mnemonic marks its walletId, an imported one clears it (walletIds are
+    /// deterministic per mnemonic+network, so a removed-then-re-imported
+    /// phrase must not inherit a stale marker).
     private func createAndPersist(
         mnemonic: String,
         manager: PlatformWalletManager,
         network: Network,
+        isImported: Bool,
         birthHeight: UInt32?,
         offMainCreate: Bool
     ) async throws -> ManagedPlatformWallet {
@@ -786,7 +794,7 @@ final class SwiftDashSDKHost {
         }
 
         do {
-            return try await MnemonicFirstWalletCreation.run(
+            let created = try await MnemonicFirstWalletCreation.run(
                 mnemonic: mnemonic,
                 persistMnemonic: {
                     try storage.storeMnemonic(mnemonic, for: walletId)
@@ -828,6 +836,12 @@ final class SwiftDashSDKHost {
                     }
                     return try syncCreate()
                 })
+            if isImported {
+                GeneratedWalletIdentityMarker.clear(walletId: walletId)
+            } else {
+                GeneratedWalletIdentityMarker.mark(walletId: walletId)
+            }
+            return created
         } catch MnemonicFirstWalletCreationError.mnemonicRoundTripMismatch {
             Self.logger.error("🪺 HOST :: mnemonic persistence round-trip mismatch")
             throw HostError.mnemonicRoundTripMismatch
@@ -1497,5 +1511,40 @@ final class SwiftDashSDKHost {
         return dir
             .appendingPathComponent("commitment-tree.sqlite", isDirectory: false)
             .path
+    }
+}
+
+/// Per-wallet "this mnemonic was generated on this device" marker, keyed by
+/// the network-scoped walletId (`Data.hexEncodedString()`, the same helper
+/// the runtime's wallet logging uses). Written by
+/// `SwiftDashSDKHost.createAndPersist` for a generated mnemonic and cleared
+/// there for an imported one, on wallet deletion
+/// (`SwiftDashSDKWalletWiper.deleteWalletFromSDK`), when username
+/// registration completes, and by the DashPay bring-up as soon as any path
+/// finds an identity for the seed. The identity bring-up reads it to pick a
+/// short startup probe budget (`StartupIdentityRecoveryPolicy`). Lives here,
+/// not in the DASHPAY-only identity file, because both writers compile into
+/// every target. `defaults` is injectable so the mark/clear matrix is
+/// testable against a throwaway suite.
+///
+/// Deliberately NOT restored by `recoverPersistedWallet` (reinstall with a
+/// surviving Keychain mnemonic): UserDefaults die with the app, and a
+/// recovered wallet's origin is unknown — an imported seed must keep the
+/// default budget, so the safe direction is the slower one.
+enum GeneratedWalletIdentityMarker {
+    private static func key(walletId: Data) -> String {
+        "DWGeneratedWalletNoIdentity." + walletId.hexEncodedString()
+    }
+
+    static func mark(walletId: Data, defaults: UserDefaults = .standard) {
+        defaults.set(true, forKey: key(walletId: walletId))
+    }
+
+    static func isMarked(walletId: Data, defaults: UserDefaults = .standard) -> Bool {
+        defaults.bool(forKey: key(walletId: walletId))
+    }
+
+    static func clear(walletId: Data, defaults: UserDefaults = .standard) {
+        defaults.removeObject(forKey: key(walletId: walletId))
     }
 }

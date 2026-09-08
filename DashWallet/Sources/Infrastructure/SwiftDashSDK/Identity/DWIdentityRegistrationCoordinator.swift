@@ -158,13 +158,26 @@ enum PlatformPaymentIdentityFundingPolicy {
             fundingDuffs: fundingDuffs)
     }
 
-    /// Builds inputs in PlatformAddress/BTreeMap order. Rust's derived order
-    /// compares the address variant first (P2PKH before P2SH), then its
-    /// 20-byte hash.
-    static func makeInputs(
-        candidates: [Candidate],
-        targetCredits: UInt64
-    ) throws -> [ManagedPlatformWallet.IdentityAddressInput] {
+    /// Saturating credit total of `candidates`.
+    private static func totalCredits(of candidates: [Candidate]) -> UInt64 {
+        candidates.reduce(UInt64(0)) {
+            let (sum, overflow) = $0.addingReportingOverflow($1.balance)
+            return overflow ? .max : sum
+        }
+    }
+
+    /// The candidates `makeInputs` can actually plan from, in
+    /// PlatformAddress/BTreeMap order (Rust's derived order compares the
+    /// address variant first — P2PKH before P2SH — then the 20-byte hash),
+    /// plus their saturating credit total.
+    ///
+    /// Any selected address before the fee source would become BTreeMap
+    /// input 0 itself, so leading addresses that cannot retain the reserve
+    /// are skipped and the plan draws exclusively from the viable suffix.
+    /// `nil` when no address can be the fee source.
+    private static func usableSelection(
+        candidates: [Candidate]
+    ) -> (usable: [Candidate], availableCredits: UInt64)? {
         let sorted = candidates
             .filter { $0.balance > 0 }
             .sorted { lhs, rhs in
@@ -173,29 +186,40 @@ enum PlatformPaymentIdentityFundingPolicy {
                 }
                 return lhs.hash.lexicographicallyPrecedes(rhs.hash)
             }
-        let totalAvailable = sorted.reduce(UInt64(0)) {
-            let (sum, overflow) = $0.addingReportingOverflow($1.balance)
-            return overflow ? .max : sum
-        }
+        guard let feeSourceIndex = sorted.firstIndex(where: {
+            $0.balance > feeHeadroomCredits
+        }) else { return nil }
+        let usable = Array(sorted[feeSourceIndex...])
+        return (usable, totalCredits(of: usable))
+    }
+
+    /// Largest funding amount `makeInputs` can plan from `candidates`, in
+    /// whole duffs (floored, so the ceiling never overstates what the
+    /// credit-denominated planner accepts). Input 0 contributes
+    /// `balance − reserve` and every later input its full balance, so the
+    /// ceiling is the usable total minus the retained fee headroom. 0 when
+    /// no address qualifies as the fee source.
+    static func maxFundableDuffs(candidates: [Candidate]) -> UInt64 {
+        guard let (_, availableCredits) = usableSelection(candidates: candidates),
+              availableCredits > feeHeadroomCredits
+        else { return 0 }
+        return (availableCredits - feeHeadroomCredits) / creditsPerDuff
+    }
+
+    /// Builds inputs from the usable selection above.
+    static func makeInputs(
+        candidates: [Candidate],
+        targetCredits: UInt64
+    ) throws -> [ManagedPlatformWallet.IdentityAddressInput] {
         let required = {
             let (sum, overflow) = targetCredits.addingReportingOverflow(feeHeadroomCredits)
             return overflow ? UInt64.max : sum
         }()
 
-        // Any selected address before the fee source would become BTreeMap
-        // input 0 itself. Skip leading addresses that cannot retain the
-        // reserve, then plan exclusively from the viable suffix.
-        guard let feeSourceIndex = sorted.firstIndex(where: {
-            $0.balance > feeHeadroomCredits
-        }) else {
+        guard let (usable, usableAvailable) = usableSelection(candidates: candidates) else {
             throw PlanningError.insufficient(
                 required: required,
-                available: totalAvailable)
-        }
-        let usable = Array(sorted[feeSourceIndex...])
-        let usableAvailable = usable.reduce(UInt64(0)) {
-            let (sum, overflow) = $0.addingReportingOverflow($1.balance)
-            return overflow ? .max : sum
+                available: totalCredits(of: candidates))
         }
         guard usableAvailable >= required else {
             throw PlanningError.insufficient(
@@ -285,6 +309,11 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// Username being registered. Stashed at submit time so the
     /// `.completed` mirror can write DWGlobalOptions.dashpayUsername.
     private(set) var currentUsername: String?
+
+    /// Wallet the in-flight attempt registers for. Stashed at submit time
+    /// because `.completed` arrives after awaited Platform work, during
+    /// which a wallet switch can rebind `SwiftDashSDKHost.shared.wallet`.
+    private var registrationWalletId: Data?
 
     /// Funding source for the in-flight attempt (the value the
     /// coordinator's caller passed into `startCreateUsername(_:fundingSource:)`).
@@ -512,6 +541,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         resetState()
 
         currentUsername = username
+        registrationWalletId = wallet.walletId
         // A persisted identity-registration lock always wins over the
         // newly-selected funding source. The original Core payment has
         // already happened; presenting PP / shielded progress here would
@@ -939,6 +969,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         }
         resetState()
         currentUsername = name
+        registrationWalletId = wallet.walletId
         currentFundingSource = .core
 
         let newController = DWIdentityRegistrationController()
@@ -1346,6 +1377,16 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             }
         }
 
+        // The registering wallet now owns an identity: drop its
+        // generated-on-device marker so the next runtime start runs the
+        // full pre-SPV bring-up (hygiene — the budget gate also checks local
+        // rows). Independent of the username mirror above, and keyed by the
+        // wallet this attempt started for, not the host's current wallet,
+        // which a switch may have rebound meanwhile.
+        if case .completed = newPhase, let walletId = registrationWalletId {
+            GeneratedWalletIdentityMarker.clear(walletId: walletId)
+        }
+
         // Stop asset-lock polling on terminal phases — no further
         // statusRaw transitions will arrive.
         switch newPhase {
@@ -1409,6 +1450,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         failedAtPhase = nil
         lastErrorMessage = nil
         currentUsername = nil
+        registrationWalletId = nil
         currentFundingSource = .core
         registeredTemporaryUsername = nil
         temporaryUsernameError = nil

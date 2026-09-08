@@ -305,6 +305,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         CoinJoinRecovery.shared.resetForWipe()
         CoinJoinWithdrawalStore.shared.resetForWipe()
         ShieldedWithdrawalStore.shared.resetForWipe()
+        AssetLockProbeStore.shared.resetForWipe()
         SPVChainResyncMarker.resetForWipe()
         // Without this a contested submission outlived the wallet that made it:
         // reset mid-vote, create a new wallet, and the new wallet reported the
@@ -653,6 +654,19 @@ final class SwiftDashSDKWalletWiper: NSObject {
             CrowdNodeDefaults.shared.clearPerWalletKeys(forWalletIdHex: walletIdHex)
             CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
+            AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletIdHex)
         }
+
+        // Per-wallet identity bookkeeping, not app-state cleanup: it runs on
+        // every deletion regardless of the injected `clearAppState` seam.
+        // walletIds are deterministic per mnemonic+network, so the same
+        // phrase re-imported later must inherit neither the generated-wallet
+        // marker (a short probe budget on an imported seed) nor this
+        // wallet's settled identity-recovery context (a backstop that never
+        // runs).
+        GeneratedWalletIdentityMarker.clear(walletId: walletId)
+#if DASHPAY
+        DWSameSeedIdentityRecoveryCoordinator.shared.forgetWallet(walletId: walletId)
+#endif
     }
 }
