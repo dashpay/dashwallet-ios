@@ -152,16 +152,58 @@ final class PaymentsLandingViewModel: ObservableObject {
 
     let allowsTransactionDetails: Bool
 
-    private struct ReceiptSession {
+    /// What already existed on the rail when the session opened, so a receipt
+    /// is only ever raised for something that arrived after.
+    ///
+    /// One case per rail rather than three flat fields: they were always
+    /// mutually exclusive — two of them zero on every session — and nothing
+    /// said so, which left every construction restating the two that did not
+    /// apply.
+    private enum ReceiptBaseline {
+        case core(transactionIds: Set<Data>)
+        case platform(activityCursor: Int64)
+        case shielded(activityIds: Set<String>)
+    }
+
+    /// Everything about a session that is known before its baseline is read.
+    /// Separate because the shielded baseline is resolved off the main actor,
+    /// and these have to be captured before that suspension.
+    private struct ReceiptSessionSeed {
         let generation: UInt64
         let rail: ChainNetwork
         let address: String
         let walletId: Data
         let environment: Network
         let startedAt: Date
-        let coreTransactionIds: Set<Data>
-        let platformActivityCursor: Int64
-        let shieldedActivityIds: Set<String>
+    }
+
+    private struct ReceiptSession {
+        let seed: ReceiptSessionSeed
+        let baseline: ReceiptBaseline
+
+        var generation: UInt64 { seed.generation }
+        var rail: ChainNetwork { seed.rail }
+        var address: String { seed.address }
+        var walletId: Data { seed.walletId }
+        var environment: Network { seed.environment }
+        var startedAt: Date { seed.startedAt }
+
+        // Read by the rail's own watcher, which only runs when the baseline is
+        // that rail's case; the empty fallbacks are unreachable in practice.
+        var coreTransactionIds: Set<Data> {
+            guard case .core(let ids) = baseline else { return [] }
+            return ids
+        }
+
+        var platformActivityCursor: Int64 {
+            guard case .platform(let cursor) = baseline else { return 0 }
+            return cursor
+        }
+
+        var shieldedActivityIds: Set<String> {
+            guard case .shielded(let ids) = baseline else { return [] }
+            return ids
+        }
     }
 
     private var cancellables = Set<AnyCancellable>()
@@ -480,42 +522,32 @@ final class PaymentsLandingViewModel: ObservableObject {
         if receiptSessionRail == network { return }
 
         generation &+= 1
-        let sessionGeneration = generation
         let rail = network
         // Stamped once, above the baseline reads rather than below them. Both
         // the Core snapshot's floor and the subscription's own floor derive
         // from it, and a transaction persisted between two separately-stamped
         // instants would land in neither.
-        let startedAt = Date()
+        let seed = ReceiptSessionSeed(
+            generation: generation,
+            rail: rail,
+            address: address,
+            walletId: walletId,
+            environment: environment,
+            startedAt: Date())
+        let sessionGeneration = seed.generation
 
         switch rail {
         case .core:
             // Bounded by the floor the subscription will scan from: anything
             // older cannot be emitted, so it does not need excluding.
-            beginSession(
-                generation: sessionGeneration,
-                rail: rail,
-                address: address,
-                walletId: walletId,
-                environment: environment,
-                startedAt: startedAt,
-                coreTransactionIds: TransactionObserver.persistedTransactionIDs(
-                    firstSeenAtOrAfter: TransactionObserver.matchFloor(after: startedAt)),
-                platformActivityCursor: 0,
-                shieldedActivityIds: [])
+            beginSession(seed, baseline: .core(
+                transactionIds: TransactionObserver.persistedTransactionIDs(
+                    firstSeenAtOrAfter: TransactionObserver.matchFloor(after: seed.startedAt))))
         case .platform:
-            beginSession(
-                generation: sessionGeneration,
-                rail: rail,
-                address: address,
-                walletId: walletId,
-                environment: environment,
-                startedAt: startedAt,
-                coreTransactionIds: [],
-                platformActivityCursor: PlatformAddressActivityDAO.shared.latestActivityId(
+            beginSession(seed, baseline: .platform(
+                activityCursor: PlatformAddressActivityDAO.shared.latestActivityId(
                     walletId: walletId,
-                    networkRaw: Int64(environment.rawValue)),
-                shieldedActivityIds: [])
+                    networkRaw: Int64(environment.rawValue))))
         case .shielded:
             // The only baseline that cannot be a cheap read: it walks the
             // wallet's notes and rebuilds the whole projected activity list.
@@ -538,16 +570,7 @@ final class PaymentsLandingViewModel: ObservableObject {
                       self.canActivelyWatch,
                       self.session == nil
                 else { return }
-                self.beginSession(
-                    generation: sessionGeneration,
-                    rail: rail,
-                    address: address,
-                    walletId: walletId,
-                    environment: environment,
-                    startedAt: startedAt,
-                    coreTransactionIds: [],
-                    platformActivityCursor: 0,
-                    shieldedActivityIds: ids)
+                self.beginSession(seed, baseline: .shielded(activityIds: ids))
             }
         }
     }
@@ -555,28 +578,9 @@ final class PaymentsLandingViewModel: ObservableObject {
     /// Installs the session and starts watching on it. Split out so the rails
     /// whose baseline is a cheap read and the one that has to leave the main
     /// actor for it arrive at the same place.
-    private func beginSession(
-        generation sessionGeneration: UInt64,
-        rail: ChainNetwork,
-        address: String,
-        walletId: Data,
-        environment: Network,
-        startedAt: Date,
-        coreTransactionIds: Set<Data>,
-        platformActivityCursor: Int64,
-        shieldedActivityIds: Set<String>
-    ) {
-        session = ReceiptSession(
-            generation: sessionGeneration,
-            rail: rail,
-            address: address,
-            walletId: walletId,
-            environment: environment,
-            startedAt: startedAt,
-            coreTransactionIds: coreTransactionIds,
-            platformActivityCursor: platformActivityCursor,
-            shieldedActivityIds: shieldedActivityIds)
-        displayedAddress = address
+    private func beginSession(_ seed: ReceiptSessionSeed, baseline: ReceiptBaseline) {
+        session = ReceiptSession(seed: seed, baseline: baseline)
+        displayedAddress = seed.address
         resumeReceiptWatching()
     }
 

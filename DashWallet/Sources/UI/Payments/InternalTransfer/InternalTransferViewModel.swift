@@ -632,23 +632,25 @@ final class InternalTransferViewModel: ObservableObject {
     /// every balance is a valid FROM for a top-up, so there is nothing to
     /// sanitise away from.
     func selectStandaloneDestination(_ destination: TransferDestination) {
-        switch destination {
-        case .balance(let network):
-            isIdentityDestination = false
-            // With the identity on the FROM side, `source` is not in play and
-            // `selectStandaloneTarget`'s collision sanitising would move a
-            // balance the transfer never touches.
-            if isIdentitySource {
-                sendTarget = network
-            } else {
-                selectStandaloneTarget(network)
+        applyingRouteChange {
+            switch destination {
+            case .balance(let network):
+                isIdentityDestination = false
+                // With the identity on the FROM side, `source` is not in play
+                // and `selectStandaloneTarget`'s collision sanitising would
+                // move a balance the transfer never touches.
+                if isIdentitySource {
+                    sendTarget = network
+                } else {
+                    selectStandaloneTarget(network)
+                }
+            case .identity:
+                // An identity cannot fund itself: taking the TO side releases
+                // the FROM side back to a balance.
+                isIdentitySource = false
+                isIdentityDestination = true
+                refreshIdentitySnapshot()
             }
-        case .identity:
-            // An identity cannot fund itself: taking the TO side releases
-            // the FROM side back to a balance.
-            isIdentitySource = false
-            isIdentityDestination = true
-            refreshIdentitySnapshot()
         }
     }
 
@@ -657,22 +659,24 @@ final class InternalTransferViewModel: ObservableObject {
     /// to a balance and moves it off Shielded, which no single transition
     /// reaches from an identity.
     func selectStandaloneSource(_ source: TransferSource) {
-        switch source {
-        case .balance(let network):
-            isIdentitySource = false
-            if isIdentityDestination {
-                // Top-up mode: every balance is a valid funding source, and
-                // the TO side is the identity, so there is no collision to
-                // sanitise.
-                self.source = network
-            } else {
-                selectStandaloneSource(network)
+        applyingRouteChange {
+            switch source {
+            case .balance(let network):
+                isIdentitySource = false
+                if isIdentityDestination {
+                    // Top-up mode: every balance is a valid funding source,
+                    // and the TO side is the identity, so there is no
+                    // collision to sanitise.
+                    self.source = network
+                } else {
+                    selectStandaloneSource(network)
+                }
+            case .identity:
+                isIdentityDestination = false
+                isIdentitySource = true
+                sendTarget = Self.sanitizedWithdrawalTarget(sendTarget)
+                refreshIdentitySnapshot()
             }
-        case .identity:
-            isIdentityDestination = false
-            isIdentitySource = true
-            sendTarget = Self.sanitizedWithdrawalTarget(sendTarget)
-            refreshIdentitySnapshot()
         }
     }
 
@@ -838,17 +842,23 @@ final class InternalTransferViewModel: ObservableObject {
         isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
         guard !isAdvancedMode else { return }
 
-        isIdentitySource = false
-        isIdentityDestination = false
+        // Withdrawing the mode retires both identity overlays and moves every
+        // endpoint that was sitting on Platform — up to five in a row, and one
+        // recompute each, all but the last against a route the next line
+        // replaced.
+        applyingRouteChange {
+            isIdentitySource = false
+            isIdentityDestination = false
 
-        if source == .platform {
-            source = .core
-        }
-        if sendTarget == .platform {
-            sendTarget = Self.defaultDestination(for: source)
-        }
-        if receiveSource == .platform {
-            receiveSource = .shielded
+            if source == .platform {
+                source = .core
+            }
+            if sendTarget == .platform {
+                sendTarget = Self.defaultDestination(for: source)
+            }
+            if receiveSource == .platform {
+                receiveSource = .shielded
+            }
         }
     }
 
