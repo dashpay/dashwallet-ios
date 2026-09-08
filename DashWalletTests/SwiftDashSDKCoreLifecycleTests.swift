@@ -194,88 +194,95 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
 
     func testPipelineRunsWhenNoReadinessPassRan() {
         for discovered in Self.flags {
-            for bookmarks in Self.flags {
-                XCTAssertEqual(
-                    StartupIdentityRecoveryPolicy.decision(
-                        readinessStatus: nil, readinessIdentityId: nil,
-                        readinessDiscoveredThisStart: discovered, contestedBookmarksRebuilt: bookmarks),
-                    .runPipeline)
-            }
+            XCTAssertEqual(
+                StartupIdentityRecoveryPolicy.decision(
+                    readinessStatus: nil, readinessIdentityId: nil, readinessDiscoveredThisStart: discovered),
+                .runPipeline)
         }
     }
 
-    func testKnownIdentityIsNeverRediscoveredNorSkipped() {
+    func testKnownIdentityAlwaysReachesThePipeline() {
         // The guard behind adoption: whatever the status says, an identity the
-        // readiness pass knows about reaches adoption. Adopt-only needs BOTH
-        // an identity already on file and this install's bookmarks rebuilt;
-        // anything else owes the name refresh.
+        // readiness pass knows about goes through the pipeline (name refresh
+        // then adopt) — past the memo when it was discovered in this start,
+        // under the memo when it was already on file. Never a skip, never an
+        // adoption without the name refresh.
         let identityId = Data(repeating: 0x18, count: 32)
         for status in Self.allStatuses {
             XCTAssertEqual(
                 StartupIdentityRecoveryPolicy.decision(
-                    readinessStatus: status, readinessIdentityId: identityId,
-                    readinessDiscoveredThisStart: false, contestedBookmarksRebuilt: true),
-                .adoptOnly,
+                    readinessStatus: status, readinessIdentityId: identityId, readinessDiscoveredThisStart: false),
+                .runPipeline,
                 "\(status)")
             XCTAssertEqual(
                 StartupIdentityRecoveryPolicy.decision(
-                    readinessStatus: status, readinessIdentityId: identityId,
-                    readinessDiscoveredThisStart: false, contestedBookmarksRebuilt: false),
+                    readinessStatus: status, readinessIdentityId: identityId, readinessDiscoveredThisStart: true),
                 .refreshNamesAndAdopt,
-                "\(status) bookmarks missing")
-            for bookmarks in Self.flags {
-                XCTAssertEqual(
-                    StartupIdentityRecoveryPolicy.decision(
-                        readinessStatus: status, readinessIdentityId: identityId,
-                        readinessDiscoveredThisStart: true, contestedBookmarksRebuilt: bookmarks),
-                    .refreshNamesAndAdopt,
-                    "\(status) discovered bookmarks=\(bookmarks)")
-            }
+                "\(status) discovered")
         }
     }
 
     func testOnlyProvenAbsenceSettlesTheBackstop() {
         for discovered in Self.flags {
-            for bookmarks in Self.flags {
-                XCTAssertEqual(
-                    StartupIdentityRecoveryPolicy.decision(
-                        readinessStatus: .noIdentity, readinessIdentityId: nil,
-                        readinessDiscoveredThisStart: discovered, contestedBookmarksRebuilt: bookmarks),
-                    .skipSettled)
-            }
+            XCTAssertEqual(
+                StartupIdentityRecoveryPolicy.decision(
+                    readinessStatus: .noIdentity, readinessIdentityId: nil, readinessDiscoveredThisStart: discovered),
+                .skipSettled)
+        }
+    }
+
+    func testLocalDiscoveryFaultSkipsWithoutSettling() {
+        // The SDK says a rescan cannot answer it (`discoveryWorthRetrying ==
+        // false`, `identityIsSettled == false`): no unbudgeted scan, and the
+        // next runtime start asks again.
+        for discovered in Self.flags {
+            XCTAssertEqual(
+                StartupIdentityRecoveryPolicy.decision(
+                    readinessStatus: .discoveryFailed, readinessIdentityId: nil, readinessDiscoveredThisStart: discovered),
+                .skipNotRetryable)
         }
     }
 
     func testEveryOtherIdentitylessStatusRunsThePipeline() {
         // `.partialNoIdentity` (Platform or scan key unreachable, and the
-        // decoder's fallback for unknown FFI statuses) and `.discoveryFailed`
-        // (a local fault) are the SDK's "ask again", not verdicts.
-        for status in Self.allStatuses where status != .noIdentity {
+        // decoder's fallback for unknown FFI statuses) is the SDK's "ask
+        // again"; the settled statuses without an identity are unexpected
+        // pairs and fail towards the pipeline.
+        for status in Self.allStatuses where status != .noIdentity && status != .discoveryFailed {
             for discovered in Self.flags {
                 XCTAssertEqual(
                     StartupIdentityRecoveryPolicy.decision(
-                        readinessStatus: status, readinessIdentityId: nil,
-                        readinessDiscoveredThisStart: discovered, contestedBookmarksRebuilt: false),
+                        readinessStatus: status, readinessIdentityId: nil, readinessDiscoveredThisStart: discovered),
                     .runPipeline,
                     "\(status) discovered=\(discovered)")
             }
         }
     }
 
-    func testProbeRerunOnlyWhenTheSequenceWasCutShort() {
+    func testProbeRerunOnlyWhenTheContactStepsAloneWereCutShort() {
         XCTAssertFalse(StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
-            identityFound: true, dashPaySyncRan: true, contactAccountsPending: 0, seedBindingUnverified: false))
+            identityFound: true, dashPaySyncRan: true, contactAccountsPending: 0,
+            seedBindingUnverified: false, identityScanIncomplete: false))
         XCTAssertTrue(StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
-            identityFound: true, dashPaySyncRan: false, contactAccountsPending: 0, seedBindingUnverified: false))
+            identityFound: true, dashPaySyncRan: false, contactAccountsPending: 0,
+            seedBindingUnverified: false, identityScanIncomplete: false))
         XCTAssertTrue(StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
-            identityFound: true, dashPaySyncRan: true, contactAccountsPending: 2, seedBindingUnverified: false))
+            identityFound: true, dashPaySyncRan: true, contactAccountsPending: 2,
+            seedBindingUnverified: false, identityScanIncomplete: false))
         // Nothing to re-run for: the probe found no identity.
         XCTAssertFalse(StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
-            identityFound: false, dashPaySyncRan: false, contactAccountsPending: 0, seedBindingUnverified: false))
+            identityFound: false, dashPaySyncRan: false, contactAccountsPending: 0,
+            seedBindingUnverified: false, identityScanIncomplete: false))
         // The drain was skipped for an unverified seed binding: the SDK fails
         // that closed on every budget, so a re-run would be pure latency.
         XCTAssertFalse(StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
-            identityFound: true, dashPaySyncRan: false, contactAccountsPending: 3, seedBindingUnverified: true))
+            identityFound: true, dashPaySyncRan: false, contactAccountsPending: 3,
+            seedBindingUnverified: true, identityScanIncomplete: false))
+        // The probe's own scan was cut off: a re-run would rescan from scratch
+        // under the default budget instead of reusing the identity.
+        XCTAssertFalse(StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
+            identityFound: true, dashPaySyncRan: false, contactAccountsPending: 0,
+            seedBindingUnverified: false, identityScanIncomplete: true))
     }
 
     func testShortStartupBudgetOnlyForGeneratedWalletKnownToHaveNoLocalIdentity() {
@@ -311,6 +318,27 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(discoveryCalls, 0)
         XCTAssertEqual(refreshedIdentityIds, [identityId])
         // The store never confirmed the row: the caller must not settle on it.
+        XCTAssertEqual(
+            outcome,
+            .init(discoveredCount: 0, identityCount: 1, adopted: true, identitiesPersisted: false))
+    }
+
+    func testSameSeedIdentityRecoveryPersistenceIsPerActedOnIdentityNotPerWallet() async throws {
+        // The wallet already has identity A on file; the readiness verdict
+        // carries a new identity B whose row never landed. A must not vouch
+        // for B.
+        let identityA = Data(repeating: 0x1b, count: 32)
+        let identityB = Data(repeating: 0x1c, count: 32)
+        var localIds: [Data] = []
+        let outcome = try await SameSeedIdentityRecoveryPipeline.run(
+            knownIdentityIds: [identityB],
+            localIdentityIds: {
+                defer { localIds = [identityA] }   // A shows up on the re-read only
+                return localIds
+            },
+            discover: { XCTFail("known identity must not be rediscovered"); return [] },
+            refreshNames: { XCTAssertEqual($0, [identityB]) },
+            adopt: { true })
         XCTAssertEqual(
             outcome,
             .init(discoveredCount: 0, identityCount: 1, adopted: true, identitiesPersisted: false))

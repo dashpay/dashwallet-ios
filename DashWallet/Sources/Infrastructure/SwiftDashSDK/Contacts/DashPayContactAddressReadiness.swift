@@ -54,14 +54,17 @@ enum DashPayContactAddressReadiness {
         // A mnemonic generated on this device with no local identity gets a
         // short budget instead of the SDK default. That budget caps the
         // whole sequence, so it only serves as a probe: when the probe finds
-        // an identity the marker is dropped, and if the probe was also cut
-        // short (`probeNeedsFullRerun`: contact sync or contact-account
-        // drain unfinished) the sequence runs again with the default budget
-        // — the identity is local by then, so the second run skips discovery
-        // and spends its budget on the steps the first one cut short. The
-        // final verdict goes to the same-seed recovery coordinator, which
-        // decides whether its backstop still has anything to do in this
-        // start (`StartupIdentityRecoveryPolicy.decision`).
+        // an identity the marker is dropped, and if the probe completed its
+        // scan but was cut short before the contact steps
+        // (`probeNeedsFullRerun`) the sequence runs again with the default
+        // budget — with a complete scan on record the SDK reuses the local
+        // identity, so the second run spends its budget on the steps the
+        // first one cut short. A probe whose own scan was cut off is not
+        // re-run: the SDK would rescan from scratch, so that start leaves
+        // the contact steps to the DIP-15 rescan and the next start asks
+        // again. The final verdict goes to the same-seed recovery
+        // coordinator, which decides whether its backstop still has
+        // anything to do in this start (`StartupIdentityRecoveryPolicy`).
         let recovery = DWSameSeedIdentityRecoveryCoordinator.shared
         let walletId = wallet.walletId
         let probeBudget = SwiftDashSDKHost.shared.modelContainer.flatMap {
@@ -87,7 +90,8 @@ enum DashPayContactAddressReadiness {
                     identityFound: true,
                     dashPaySyncRan: outcome.dashPaySyncRan,
                     contactAccountsPending: outcome.contactAccountsPending,
-                    seedBindingUnverified: outcome.seedBindingUnverified) {
+                    seedBindingUnverified: outcome.seedBindingUnverified,
+                    identityScanIncomplete: outcome.identityScanIncomplete) {
                     log(outcome, network: network, phase: .probe)
                     logger.info(
                         "👥 DP-READY :: probe found an identity but was cut short — re-running with the default budget")

@@ -601,10 +601,11 @@ enum SameSeedIdentityRecoveryPipeline {
         let discoveredCount: Int
         let identityCount: Int
         let adopted: Bool
-        /// Whether the identity rows were found in the local store AFTER the
-        /// name refresh. `false` means the ids came from a discovery result
-        /// or from the readiness verdict and the persister has not landed
-        /// them (yet) — the caller must not treat the identity as settled.
+        /// Whether EVERY identity this run acted on was found in the local
+        /// store after the name refresh. `false` means at least one id came
+        /// from a discovery result or from the readiness verdict and the
+        /// persister has not landed it (yet) — the caller must not treat the
+        /// identity as settled, whatever other rows the wallet already has.
         let identitiesPersisted: Bool
     }
 
@@ -645,8 +646,10 @@ enum SameSeedIdentityRecoveryPipeline {
         try await refreshNames(identityIds)
         // Re-read rather than trust the ids we acted on: `knownIdentityIds`
         // came from a different call, and even a discovery result can
-        // outrun its own persistence.
-        let identitiesPersisted = !localIdentityIds().isEmpty
+        // outrun its own persistence. Intersected with the acted-on ids so
+        // a row the wallet already had cannot vouch for a new one.
+        let persistedIds = Set(localIdentityIds())
+        let identitiesPersisted = identityIds.allSatisfy { persistedIds.contains($0) }
         return Outcome(
             discoveredCount: discoveredIds.count,
             identityCount: identityIds.count,
@@ -675,74 +678,79 @@ enum StartupIdentityRecoveryPolicy {
     /// What the backstop does with the readiness verdict of this start.
     enum Decision: Equatable {
         /// Run the full pipeline (discover if needed → refresh names → adopt),
-        /// subject to the per-process settled memo.
+        /// subject to the per-process settled memo. Also the answer for an
+        /// identity readiness re-confirmed on file: the pipeline's DPNS name
+        /// refresh is the only code path that rebuilds contested-label
+        /// bookmarks and keeps the name cache `reconcileRecoveredIdentity`
+        /// reads, so adoption is never taken without it — once per process
+        /// per wallet, as before this policy existed.
         case runPipeline
-        /// Readiness knows the identity but this install has not yet
-        /// rebuilt the contested-label bookmarks for it (first sight after a
-        /// discovery, or a name refresh that failed on an earlier start).
-        /// The pipeline runs regardless of the settled memo — its discovery
-        /// finds the rows already there, and its name refresh rebuilds the
-        /// bookmarks a new install has no other source for.
+        /// Readiness discovered and persisted the identity in THIS start: a
+        /// second install's first sight of it. The pipeline runs regardless
+        /// of the settled memo (the memo may hold a `.noIdentity` from
+        /// earlier in the process) — its discovery finds the rows already
+        /// there, and its name refresh rebuilds the bookmarks.
         case refreshNamesAndAdopt
-        /// Readiness re-confirmed an identity that was already local AND the
-        /// bookmarks were rebuilt on this install: only the app-side
-        /// adoption can be missing, so the pipeline's DPNS round trips are
-        /// skipped on the switch's critical path.
-        case adoptOnly
-        /// Platform confirmed the seed owns no identity; nothing to do.
+        /// Platform confirmed the seed owns no identity; settled for the
+        /// process.
         case skipSettled
+        /// The SDK reports the question unanswered AND not worth asking
+        /// again (`.discoveryFailed`: a local wallet/persistence fault):
+        /// nothing runs, nothing settles, the next runtime start asks again.
+        case skipNotRetryable
     }
 
     /// `nil` status = no readiness pass ran in this start (a Platform-sync
     /// re-arm, the storage explorer's direct BLAST start, a thrown or elided
-    /// pass): the pipeline runs as before. Only `.noIdentity` settles the
-    /// question; every other identity-less status — `.partialNoIdentity`
-    /// (Platform or the Keychain scan key not reachable, also what the SDK
-    /// decodes an unrecognised FFI status into), `.discoveryFailed` (a local
-    /// fault the pipeline's own discovery entry point may not share) and the
-    /// rest — is the SDK's "ask again", answered by the pipeline unless the
-    /// wallet was already settled in this process (the per-process memo);
-    /// every runtime start asks the SDK again regardless.
+    /// pass): the pipeline runs as before. A known identity runs the
+    /// pipeline too (past the memo when it was discovered in this start).
+    /// Without an identity the SDK's own verdict properties decide:
+    /// `.noIdentity` settles; a status that is `discoveryWorthRetrying`
+    /// (`.partialNoIdentity` — Platform or the Keychain scan key not
+    /// reachable, also what the SDK decodes an unrecognised FFI status into
+    /// — and `.identityScanIncomplete`) or otherwise `identityIsSettled`
+    /// runs the pipeline unless the wallet was already settled in this
+    /// process; a status that is neither (`.discoveryFailed`) is skipped
+    /// without settling. Every runtime start asks the SDK again regardless.
     /// `readinessDiscoveredThisStart` is `discoveryAttempts > 0`: the SDK
     /// ran a scan rather than reusing an identity already on file.
-    /// `contestedBookmarksRebuilt` is this install's record of a completed
-    /// name refresh for the wallet.
     static func decision(
         readinessStatus: WalletStartupStatus?,
         readinessIdentityId: Data?,
-        readinessDiscoveredThisStart: Bool,
-        contestedBookmarksRebuilt: Bool
+        readinessDiscoveredThisStart: Bool
     ) -> Decision {
         guard let readinessStatus else { return .runPipeline }
         if readinessIdentityId != nil {
-            return !readinessDiscoveredThisStart && contestedBookmarksRebuilt
-                ? .adoptOnly
-                : .refreshNamesAndAdopt
+            return readinessDiscoveredThisStart ? .refreshNamesAndAdopt : .runPipeline
         }
-        switch readinessStatus {
-        case .noIdentity:
-            return .skipSettled
-        case .partialNoIdentity, .discoveryFailed, .ready, .partialAccountsPending,
-             .seedBindingUnverified, .identityScanIncomplete:
-            return .runPipeline
-        @unknown default:
+        if readinessStatus == .noIdentity { return .skipSettled }
+        if readinessStatus.discoveryWorthRetrying || readinessStatus.identityIsSettled {
             return .runPipeline
         }
+        return .skipNotRetryable
     }
 
     /// Whether a short-budget probe found an identity but ran out of budget
     /// before the contact-request pass and the contact-account drain
     /// completed — the two steps the readiness pass exists to guarantee
     /// before the first SPV filter set is built. Never when the drain was
-    /// skipped for `seedBindingUnverified`: the SDK fails that closed on
-    /// every budget, so a re-run would be pure latency.
+    /// skipped for `seedBindingUnverified` (the SDK fails that closed on
+    /// every budget), and never when the probe's own scan was cut off
+    /// (`identityScanIncomplete`): the SDK then rescans on the next start
+    /// instead of reusing the identity, so a re-run would pay a fresh full
+    /// discovery on the switch path — the cost this budget exists to avoid.
+    /// Those two cases leave the contact steps to the DIP-15 rescan.
     static func probeNeedsFullRerun(
         identityFound: Bool,
         dashPaySyncRan: Bool,
         contactAccountsPending: UInt32,
-        seedBindingUnverified: Bool
+        seedBindingUnverified: Bool,
+        identityScanIncomplete: Bool
     ) -> Bool {
-        identityFound && !seedBindingUnverified && (!dashPaySyncRan || contactAccountsPending > 0)
+        identityFound
+            && !seedBindingUnverified
+            && !identityScanIncomplete
+            && (!dashPaySyncRan || contactAccountsPending > 0)
     }
 
     /// `nil` = the SDK default budget. `hasLocalIdentity == nil` means the
@@ -810,24 +818,6 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         let suffix = ":" + walletId.hexEncodedString()
         completedContexts = completedContexts.filter { !$0.hasSuffix(suffix) }
         startupVerdicts = startupVerdicts.filter { !$0.key.hasSuffix(suffix) }
-        UserDefaults.standard.removeObject(forKey: Self.bookmarksRebuiltKey(walletId: walletId))
-    }
-
-    /// Per-install record that the pipeline's name refresh — the only code
-    /// path that rebuilds `DWContestedNameStatusService` submission
-    /// bookmarks from Platform — completed for `walletId`. UserDefaults on
-    /// purpose: a reinstall starts without bookmarks and must rebuild them
-    /// once, and a refresh that failed on one start stays due on the next.
-    private static func bookmarksRebuiltKey(walletId: Data) -> String {
-        "DWContestedBookmarksRebuilt." + walletId.hexEncodedString()
-    }
-
-    private static func contestedBookmarksRebuilt(walletId: Data) -> Bool {
-        UserDefaults.standard.bool(forKey: bookmarksRebuiltKey(walletId: walletId))
-    }
-
-    private static func recordContestedBookmarksRebuilt(walletId: Data) {
-        UserDefaults.standard.set(true, forKey: bookmarksRebuiltKey(walletId: walletId))
     }
 
     /// Startup budget for the SDK's pre-SPV sequence, or `nil` for the SDK
@@ -853,11 +843,12 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         guard !activeContexts.contains(contextKey) else { return }
 
         // Consumed here. A branch that settles the context keeps it
-        // consumed; a branch that ends without settling — adoption not
-        // possible yet, a thrown pipeline — puts it back, so the retry
-        // decides on the same verdict instead of degrading to a verdict-less
-        // pipeline run. Only an identity that turned out NOT to be persisted
-        // leaves without either: there the retry must rediscover.
+        // consumed; every branch that returns without settling — the memo
+        // early return, a thrown pipeline — puts it back, so a later call in
+        // the same start decides on the same verdict instead of a
+        // verdict-less one. The one exception is a pipeline run whose
+        // identity the store never confirmed: there the verdict stays
+        // consumed so the retry rediscovers.
         let verdict = startupVerdicts.removeValue(forKey: contextKey)
         func restoreVerdict() {
             if let verdict { startupVerdicts[contextKey] = verdict }
@@ -866,54 +857,33 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         switch StartupIdentityRecoveryPolicy.decision(
             readinessStatus: verdict?.status,
             readinessIdentityId: verdict?.identityId,
-            readinessDiscoveredThisStart: verdict?.discovered ?? false,
-            contestedBookmarksRebuilt: Self.contestedBookmarksRebuilt(walletId: walletId)) {
-        case .adoptOnly:
-            // Readiness re-confirmed an identity already on file and this
-            // install has its bookmarks; the pipeline's discovery and name
-            // refresh would only repeat SDK work. Adopt app-side and settle
-            // — a known identity adopts even for a context settled earlier
-            // in this process. The marker goes regardless (the seed owns an
-            // identity; the default budget is the safe direction), but the
-            // context settles only on a successful adoption —
-            // `reconcileRecoveredIdentity` returns false while the host or
-            // the snapshot is still hydrating, and that must stay retryable.
-            GeneratedWalletIdentityMarker.clear(walletId: walletId)
-            let adopted = DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
-            guard adopted else {
-                restoreVerdict()
-                Self.logger.warning(
-                    "🪪 IDENT-RECOVERY :: identity re-confirmed by startup readiness but not adopted yet; leaving the context open")
-                return
-            }
-            completedContexts.insert(contextKey)
-            Self.logger.info("🪪 IDENT-RECOVERY :: adopted the identity startup readiness re-confirmed")
-            return
+            readinessDiscoveredThisStart: verdict?.discovered ?? false) {
         case .skipSettled:
             completedContexts.insert(contextKey)
             Self.logger.info(
                 "🪪 IDENT-RECOVERY :: skipped — startup readiness proved this seed owns no identity")
             return
+        case .skipNotRetryable:
+            restoreVerdict()
+            Self.logger.error(
+                "🪪 IDENT-RECOVERY :: skipped — startup readiness hit a local fault a rescan cannot clear; the next runtime start asks again")
+            return
         case .refreshNamesAndAdopt:
-            // Identity known but this install still owes it a name refresh:
-            // run the pipeline past the settled memo (its discovery finds the
-            // rows readiness persisted; the name refresh rebuilds the
-            // contested bookmarks).
+            // First sight of this identity on this install: run the pipeline
+            // past the settled memo (its discovery finds the rows readiness
+            // persisted; the name refresh rebuilds the contested bookmarks).
             break
         case .runPipeline:
-            guard !completedContexts.contains(contextKey) else { return }
+            guard !completedContexts.contains(contextKey) else {
+                restoreVerdict()
+                return
+            }
         }
 
         activeContexts.insert(contextKey)
         defer { activeContexts.remove(contextKey) }
 
         do {
-            // The contested-name half of `refreshNames` is best-effort per
-            // identity (a throw there must not fail the restore), so its
-            // success has to be carried out separately: the bookmark record
-            // below may only be written when every identity's contested
-            // refresh actually completed.
-            var contestedRefreshCompleted = true
             let outcome = try await SameSeedIdentityRecoveryPipeline.run(
                 knownIdentityIds: verdict?.identityId.map { [$0] } ?? [],
                 localIdentityIds: {
@@ -947,7 +917,6 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                                     label: recoveredPending)
                             }
                         } catch {
-                            contestedRefreshCompleted = false
                             Self.logger.warning(
                                 """
                                 🪪 IDENT-RECOVERY :: contested-name refresh failed: \
@@ -965,12 +934,6 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                 // run the full pre-SPV bring-up, not the generated-wallet
                 // probe.
                 GeneratedWalletIdentityMarker.clear(walletId: walletId)
-                // The bookmarks exist on this install only if the contested
-                // refresh completed for every identity; otherwise the next
-                // start with a known identity owes the name refresh again.
-                if contestedRefreshCompleted {
-                    Self.recordContestedBookmarksRebuilt(walletId: walletId)
-                }
             }
             if outcome.identityCount == 0 || outcome.identitiesPersisted {
                 completedContexts.insert(contextKey)
