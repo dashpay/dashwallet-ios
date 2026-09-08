@@ -69,7 +69,7 @@ struct ApproveTokenPurchaseSheet: View {
                         )
                         DashConnectDetailRow(
                             label: NSLocalizedString("Total price", comment: "DashConnect token purchase"),
-                            value: request.totalPriceDash.formattedDashAmount
+                            value: request.totalPriceDashText
                         )
                     }
 

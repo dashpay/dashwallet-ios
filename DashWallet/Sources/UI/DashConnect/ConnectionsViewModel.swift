@@ -234,10 +234,29 @@ final class ConnectionsViewModel: ObservableObject {
                     kind: .success,
                     text: NSLocalizedString("Token purchase completed.", comment: "DashConnect")
                 )
+            } catch DashConnectTokenPurchaseFailure.outcomeUnknown(let underlying) {
+                // The transition was signed and submitted, and only the wait
+                // for its outcome failed — Platform may well have accepted it.
+                // Approving again would build a second purchase on the next
+                // nonce and could buy the tokens twice, so the sheet closes
+                // rather than offering a retry, and the user is told what to
+                // check before starting over.
+                self.pendingTokenPurchase = nil
+                self.purchaseApproveError = nil
+                message = ConnectionsScreenMessage(
+                    kind: .error,
+                    text: String(
+                        format: NSLocalizedString(
+                            "The purchase was submitted but its result is unknown: %@. Check this identity's tokens and credit balance before buying again — approving a second time would pay twice.",
+                            comment: "DashConnect token purchase"),
+                        underlying.localizedDescription
+                    )
+                )
             } catch {
-                // Keep the sheet up so the user can retry without rescanning
-                // the QR. Failures — including "the identity has no CRITICAL
-                // key" from the SDK — surface here as the sheet's error text.
+                // Refused before anything was signed or sent (a cancelled
+                // authentication, a wrong identity, "the identity has no
+                // CRITICAL key"): nothing was charged, so keep the sheet up
+                // and let the user retry without rescanning the QR.
                 self.purchaseApproveError = String(
                     format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
                     error.localizedDescription

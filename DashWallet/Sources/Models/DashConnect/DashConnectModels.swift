@@ -53,20 +53,29 @@ struct DashConnectTokenPurchaseRequest: Equatable {
     let tokenId: Data
     let tokenContractPosition: UInt16
     let tokenCount: UInt64
-    /// Total price in Platform credits; passed to `tokenPurchase(...)` as
-    /// `expectedTotalCost` so the shown and charged amounts cannot diverge.
+    /// Total price in Platform credits, as the payload asked for it. Passed
+    /// to `tokenPurchase(...)` as `expectedTotalCost`, which is the MAXIMUM
+    /// the user approves: Platform rejects the transition if the current
+    /// price is higher, and charges the lower amount if it is lower.
     let totalAgreedPriceCredits: UInt64
     let walletUsername: String?
     let walletIdentityId: String
 }
 
 extension DashConnectTokenPurchaseRequest {
-    /// Platform credits per DASH (1e11 — 1e8 duffs x 1000 credits per duff).
-    static let creditsPerDash: Decimal = 100_000_000_000
-
-    /// The total price converted to DASH for display.
+    /// The total price converted to DASH for display, over the one
+    /// credits-per-DASH definition this module already has. A second copy of
+    /// the divisor is how a money display drifts from the money.
     var totalPriceDash: Decimal {
-        Decimal(totalAgreedPriceCredits) / Self.creditsPerDash
+        Decimal(totalAgreedPriceCredits) / Decimal(PlatformCreditsFormatter.creditsPerDash)
+    }
+
+    /// The total price rendered for the approval sheet, at the full credit
+    /// precision. Credits are 1e11 per DASH, so an eight-digit rendering
+    /// silently rounds away a sub-duff remainder that is nevertheless
+    /// charged — not something a money-authorization surface should hide.
+    var totalPriceDashText: String {
+        PlatformCreditsFormatter.dashString(totalAgreedPriceCredits)
     }
 }
 

@@ -207,6 +207,61 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(appTransition.disablePublicKeyIds, [4, 8])
     }
 
+    func testParserMapsATokenPurchaseTransition() throws {
+        let ownerId = Data(repeating: 0x21, count: 32)
+        let contractId = Data(repeating: 0x22, count: 32)
+        let tokenId = Data(repeating: 0x23, count: 32)
+        let parser = PlatformWalletDashConnectStateTransitionParser { _ in
+            .tokenPurchase(ManagedPlatformWallet.ParsedTokenPurchaseTransition(
+                ownerId: ownerId,
+                dataContractId: contractId,
+                tokenId: tokenId,
+                tokenContractPosition: 3,
+                tokenCount: 100,
+                totalAgreedPrice: 100_000_000
+            ))
+        }
+
+        guard case let .tokenPurchase(purchase) = try parser.parse(Data([0x00])) else {
+            return XCTFail("Expected a token purchase")
+        }
+        XCTAssertEqual(purchase.ownerId, ownerId)
+        XCTAssertEqual(purchase.dataContractId, contractId)
+        XCTAssertEqual(purchase.tokenId, tokenId)
+        XCTAssertEqual(purchase.tokenContractPosition, 3)
+        XCTAssertEqual(purchase.tokenCount, 100)
+        XCTAssertEqual(purchase.totalAgreedPrice, 100_000_000)
+    }
+
+    func testTokenPurchasePriceConvertsCreditsToDash() {
+        // 1e11 credits = 1 DASH; 1e3 credits = 1 duff.
+        XCTAssertEqual(Self.purchaseRequest(credits: 0).totalPriceDash, 0)
+        XCTAssertEqual(Self.purchaseRequest(credits: 100_000_000_000).totalPriceDash, 1)
+        XCTAssertEqual(
+            Self.purchaseRequest(credits: 100_000).totalPriceDash,
+            Decimal(string: "0.000001"))
+        // Sub-duff precision survives: 1 credit is a thousandth of a duff,
+        // which an eight-decimal rendering would round away even though it
+        // is charged.
+        XCTAssertEqual(
+            Self.purchaseRequest(credits: 1).totalPriceDash,
+            Decimal(string: "0.00000000001"))
+    }
+
+    private static func purchaseRequest(credits: UInt64) -> DashConnectTokenPurchaseRequest {
+        DashConnectTokenPurchaseRequest(
+            appName: nil,
+            ownerId: Data(repeating: 0x21, count: 32),
+            dataContractId: Data(repeating: 0x22, count: 32),
+            tokenId: Data(repeating: 0x23, count: 32),
+            tokenContractPosition: 0,
+            tokenCount: 1,
+            totalAgreedPriceCredits: credits,
+            walletUsername: nil,
+            walletIdentityId: "identity"
+        )
+    }
+
     func testBuildLoginKeyResponseDraftProducesExactFieldsAndWipesEphemeralPrivateKey() throws {
         let loginKey = Data(repeating: 0x11, count: 32)
         let appContractId = Data(repeating: 0xcd, count: 32)

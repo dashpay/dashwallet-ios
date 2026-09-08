@@ -69,6 +69,7 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case keyRegistrationUnexpectedMutation
     case keyRegistrationMismatchedDerivedKey(KeyPurpose)
     case tokenPurchaseWrongIdentity
+    case tokenPurchaseTokenIdMismatch
     case ephemeralKeyGenerationFailed
     case ambiguousKeyRegistrationConnection
     case devnetLoginContractNotConfigured
@@ -114,6 +115,8 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
             return "The scanned key-registration transition adds a \(purpose.name) key we did not derive."
         case .tokenPurchaseWrongIdentity:
             return "The scanned token purchase targets a different identity."
+        case .tokenPurchaseTokenIdMismatch:
+            return "The scanned token purchase names a token that does not belong to the contract and position it would buy from."
         case .devnetLoginContractNotConfigured:
             return NSLocalizedString(
                 "The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings.",
@@ -643,6 +646,23 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
 
         let contractIdBase58 = purchase.dataContractId.toBase58String()
+
+        // The sheet shows the token id the payload claims, but the purchase
+        // is rebuilt from the contract id and position alone — the SDK
+        // derives the real token id from those and never sees the claimed
+        // one. Without this check a crafted payload could display one token
+        // while buying another. `calculateTokenId` is the protocol formula
+        // (double_sha256("dash_token" || contract_id || u16_be(position))),
+        // so what is displayed is what will be bought.
+        let derivedTokenId = try context.sdk.calculateTokenId(
+            contractId: contractIdBase58,
+            position: purchase.tokenContractPosition)
+        guard derivedTokenId == purchase.tokenId.toBase58String() else {
+            Self.logger.error(
+                "🔗 DASHCONNECT :: token purchase names a token id the contract/position does not derive")
+            throw DashConnectPlatformError.tokenPurchaseTokenIdMismatch
+        }
+
         return DashConnectTokenPurchaseRequest(
             // A connection approved earlier for the same contract names the
             // app; otherwise the sheet falls back to the contract id.
@@ -659,31 +679,53 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws {
-        let context = try await requireContext()
-        // Re-checked at approve time: the sheet can sit open while the
-        // wallet's identity changes, and the purchase must only ever debit
-        // the identity the user saw on the sheet.
-        guard request.ownerId == context.identityId else {
-            throw DashConnectPlatformError.tokenPurchaseWrongIdentity
+        let context: Context
+        let signer: KeychainSigner
+        do {
+            context = try await requireContext()
+            // Re-checked at approve time: the sheet can sit open while the
+            // wallet's identity changes, and the purchase must only ever debit
+            // the identity the user saw on the sheet.
+            guard request.ownerId == context.identityId else {
+                throw DashConnectPlatformError.tokenPurchaseWrongIdentity
+            }
+
+            try await authorize()
+            signer = KeychainSigner(modelContainer: context.modelContainer)
+        } catch {
+            // Everything above happens before anything is signed or sent, so
+            // the purchase provably did not start and the caller may offer it
+            // again.
+            throw DashConnectTokenPurchaseFailure.beforeSubmission(error)
         }
 
-        try await authorize()
-
-        let signer = KeychainSigner(modelContainer: context.modelContainer)
         // `expectedTotalCost` is the same credits figure the approval sheet
-        // rendered — Platform rejects the transition if the on-chain price
-        // disagrees, so the charged amount cannot diverge from the shown one.
+        // rendered, and it is a CEILING: Platform rejects the transition when
+        // the on-chain price is higher, and charges the lower amount when it
+        // is lower. So the user can never be charged more than what they
+        // approved, but they may be charged less.
         // `signingKeyId` is left at its default: the signer selects a
         // CRITICAL key itself and fails with a clear error when the identity
         // has none.
-        try await context.wallet.tokenPurchase(
-            identityId: context.identityId,
-            contractId: request.dataContractId,
-            tokenPosition: request.tokenContractPosition,
-            amount: request.tokenCount,
-            expectedTotalCost: request.totalAgreedPriceCredits,
-            signer: signer
-        )
+        do {
+            try await context.wallet.tokenPurchase(
+                identityId: context.identityId,
+                contractId: request.dataContractId,
+                tokenPosition: request.tokenContractPosition,
+                amount: request.tokenCount,
+                expectedTotalCost: request.totalAgreedPriceCredits,
+                signer: signer
+            )
+        } catch {
+            // One opaque error covers "the transition was rejected" and "it
+            // was submitted and the wait for its outcome failed", and nothing
+            // in the FFI result separates them. Report the ambiguity rather
+            // than guess: a purchase that did land must not be offered for a
+            // retry that would buy the tokens again on the next nonce.
+            Self.logger.error(
+                "🔗 DASHCONNECT :: token purchase failed after submission; outcome unknown: \(String(describing: error), privacy: .public)")
+            throw DashConnectTokenPurchaseFailure.outcomeUnknown(error)
+        }
     }
 
     func remove(id: String) async {

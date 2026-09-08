@@ -173,6 +173,12 @@
 /* Explore Dash: Filters */
 "80 km" = "80 km";
 
+/* DashConnect token purchase */
+"Approve token purchase?" = "Approve token purchase?";
+
+/* DashConnect token purchase */
+"Approving pays the total price from this identity's Platform credits." = "Approving pays the total price from this identity's Platform credits.";
+
 /* DashConnect */
 "Available on test networks only" = "Available on test networks only";
 
@@ -182,8 +188,14 @@
 /* Devnet */
 "Base58 identifier (optional)" = "Base58 identifier (optional)";
 
+/* DashConnect token purchase */
+"Contract %@" = "Contract %@";
+
 /* Devnet */
 "DashConnect Contract ID" = "DashConnect Contract ID";
+
+/* DashConnect */
+"Deny" = "Deny";
 
 /* Wallet network */
 "Devnet" = "Devnet";
@@ -229,6 +241,21 @@
 
 /* Devnet */
 "The loginKeyResponse data contract id registered on this devnet. Only needed for DashConnect logins; leave empty otherwise." = "The loginKeyResponse data contract id registered on this devnet. Only needed for DashConnect logins; leave empty otherwise.";
+
+/* DashConnect token purchase */
+"The purchase was submitted but its result is unknown: %@. Check this identity's tokens and credit balance before buying again — approving a second time would pay twice." = "The purchase was submitted but its result is unknown: %@. Check this identity's tokens and credit balance before buying again — approving a second time would pay twice.";
+
+/* DashConnect token purchase */
+"Token ID" = "Token ID";
+
+/* DashConnect */
+"Token purchase completed." = "Token purchase completed.";
+
+/* DashConnect token purchase */
+"Tokens" = "Tokens";
+
+/* DashConnect token purchase */
+"Total price" = "Total price";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" is not a recovery phrase word";

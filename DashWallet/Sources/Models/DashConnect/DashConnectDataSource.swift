@@ -31,9 +31,42 @@ protocol DashConnectDataSource {
     /// explicit user approval via `approveTokenPurchase(_:)`.
     func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction
     /// Rebuilds, signs and submits a token purchase the user approved.
+    ///
+    /// Throws `DashConnectTokenPurchaseFailure`, which says whether the
+    /// transition could already have reached Platform — the caller must not
+    /// offer a retry when it could have.
     func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws
     func disconnect(id: String) async
     func remove(id: String) async
+}
+
+/// Why a token purchase failed, and — the part that decides what the UI may
+/// offer next — whether the transition could already have reached Platform.
+///
+/// A purchase is not idempotent: each approval builds and signs a new direct
+/// purchase against the identity's next nonce. Retrying after a failure that
+/// only looked like a failure buys the tokens a second time and debits the
+/// credits a second time, so "did this reach Platform?" has to survive as far
+/// as the screen.
+enum DashConnectTokenPurchaseFailure: LocalizedError {
+    /// Refused before anything was signed or submitted — a wrong identity, a
+    /// mismatched token id, a cancelled authentication, a missing runtime.
+    /// Nothing was charged and approving again is safe.
+    case beforeSubmission(Error)
+    /// The transition was signed and handed to Platform, and the failure came
+    /// out of that call. Platform may have accepted it anyway (a finality
+    /// timeout, a dropped DAPI response), so the purchase must be treated as
+    /// possibly complete.
+    case outcomeUnknown(Error)
+
+    var underlying: Error {
+        switch self {
+        case .beforeSubmission(let error), .outcomeUnknown(let error):
+            return error
+        }
+    }
+
+    var errorDescription: String? { underlying.localizedDescription }
 }
 
 enum DashConnectMockError: LocalizedError, Equatable {
@@ -202,7 +235,8 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     }
 
     func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws {
-        throw DashConnectMockError.stateTransitionNotSupported
+        throw DashConnectTokenPurchaseFailure.beforeSubmission(
+            DashConnectMockError.stateTransitionNotSupported)
     }
 
     func disconnect(id: String) async {
