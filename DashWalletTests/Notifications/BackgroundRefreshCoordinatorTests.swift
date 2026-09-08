@@ -258,10 +258,10 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
 
         let task = try await runTask()
 
-        // No sync-done inside the deadline means the producers never saw an
-        // open sync gate this run — no notification work finished, so the
-        // run does not report success. Rows the sync did persist are picked
-        // up by the producer's store and freshness rules on the next open.
+        // No sync-done inside the deadline means the awaited sweep never
+        // ran, so the run does not report success. Rows the sync did
+        // persist are picked up by the producer's store and freshness rules
+        // on the next open.
         XCTAssertEqual(task.completions, [false])
         XCTAssertEqual(sweepCalls, 0)
         XCTAssertEqual(runtimeStopCalls, 1)

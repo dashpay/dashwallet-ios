@@ -143,7 +143,8 @@ final class BackgroundRefreshCoordinator {
     /// return promptly when the surrounding task is cancelled.
     private let waitForSyncDone: () async -> Void
     /// One transaction-producer scan, awaited after `.syncDone` so rows the
-    /// producer's sync gate dropped mid-sync are posted before teardown.
+    /// sync persisted are posted before the runtime is torn down, rather
+    /// than racing teardown on a signal-driven scan's own task.
     private let postSyncProducerSweep: () async -> Void
     /// Cancellable sleep; the deadline clock.
     private let sleep: (TimeInterval) async -> Void

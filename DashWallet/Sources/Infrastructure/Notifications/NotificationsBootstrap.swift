@@ -41,6 +41,9 @@ final class NotificationsBootstrap: NSObject {
     let inactivityReminderScheduler: InactivityReminderScheduler
     /// Registers and runs the BGAppRefresh bounded background sync.
     let backgroundRefresh: BackgroundRefreshCoordinator
+    /// Keeps the process alive for a few seconds after backgrounding, so a
+    /// payment arriving right after the user leaves is still notified.
+    let backgroundGrace: BackgroundGraceHold
     #if DASHPAY
     /// Posts contact-request and request-accepted notifications.
     let contactsProducer: DashPayContactsNotificationProducer
@@ -69,10 +72,12 @@ final class NotificationsBootstrap: NSObject {
         self.lifecycle = lifecycle
         self.transactionProducer = transactionProducer
         // After a bounded background sync reaches sync-done, one awaited
-        // producer scan posts the rows whose mid-sync signals the producer's
-        // sync gate dropped — before the task tears the runtime down.
+        // producer scan runs before the task tears the runtime down — it
+        // catches rows whose persist landed after the last signal-driven
+        // scan, or whose scan the teardown would otherwise have raced.
         self.backgroundRefresh = BackgroundRefreshCoordinator(
             postSyncProducerSweep: { await transactionProducer.scanAndNotify() })
+        self.backgroundGrace = BackgroundGraceHold(permissions: permissionCoordinator)
         self.crowdNodeProducer = CrowdNodeNotificationProducer(dispatcher: dispatcher)
         // Foreground terminal-swap banners are suppressed only while the
         // live swap-status screen is on screen (it marks itself visible on
@@ -101,6 +106,7 @@ final class NotificationsBootstrap: NSObject {
         // `application(_:didFinishLaunching:)` returns; the bootstrap is
         // constructed inside it.
         backgroundRefresh.start()
+        backgroundGrace.start()
         lifecycle.inactivityReminderHandler = inactivityReminderScheduler
 
         // Post-grant catch-up: while authorization was `.notDetermined` the
