@@ -205,6 +205,30 @@ final class SwiftDashSDKTransactionSender: NSObject {
 
     // MARK: - CoinJoin Sweep
 
+    /// Outcome of a chunked CoinJoin sweep.
+    ///
+    /// Each chunk is an independent transaction, so a sweep can end up partly
+    /// done: some chunks broadcast while another fails to build, sign or
+    /// broadcast. The txids alone cannot express that — a caller that only sees
+    /// a non-empty array reports "your mixed coins were moved" while the failed
+    /// chunks are still sitting in the CoinJoin account. So the failure travels
+    /// with them, and the caller records the accepted transactions *and* still
+    /// surfaces the partial state.
+    struct CoinJoinSweepOutcome {
+        /// Wire-order txids of the chunks that broadcast, in chunk order —
+        /// ready to record in `CoinJoinWithdrawalStore` (matches
+        /// `Transaction.txHashData`).
+        let txids: [Data]
+        /// How many chunks did not broadcast.
+        let failedChunkCount: Int
+        /// The first failed chunk's error; nil when every chunk broadcast.
+        let firstFailure: Error?
+
+        /// Some chunks broadcast and some did not: coins remain in the CoinJoin
+        /// account, and a re-run sweeps the remainder.
+        var isPartial: Bool { !txids.isEmpty && failedChunkCount > 0 }
+    }
+
     /// Sweep the entire CoinJoin-account balance to `address` (the user's own
     /// BIP44 receive address), fully emptying the CoinJoin account across one or
     /// more transactions.
@@ -222,13 +246,12 @@ final class SwiftDashSDKTransactionSender: NSObject {
     ///
     /// - Parameter address: Destination Dash address (the user's own BIP44
     ///   receive address, resolved via `SwiftDashSDKReceiveAddressReader`).
-    /// - Returns: The **wire-order** txids of the broadcast sweep transactions
-    ///   (one per chunk) — ready to record in `CoinJoinWithdrawalStore`
-    ///   (matches `Transaction.txHashData`).
-    static func sweepCoinJoin(to address: String) throws -> [Data] {
+    /// - Returns: A `CoinJoinSweepOutcome` carrying the broadcast chunks' txids
+    ///   and any chunk failure. Throws only when nothing broadcast at all.
+    static func sweepCoinJoin(to address: String) throws -> CoinJoinSweepOutcome {
         logger.info("💸 TXSEND :: sweeping CoinJoin account → spendable balance")
 
-        let sweep = { @MainActor () throws -> [Data] in
+        let sweep = { @MainActor () throws -> CoinJoinSweepOutcome in
             let host = SwiftDashSDKHost.shared
             guard let wallet = host.wallet, let manager = host.manager,
                   let network = host.runningNetwork else {
@@ -243,13 +266,15 @@ final class SwiftDashSDKTransactionSender: NSObject {
             guard let cjBalance = manager.accountBalances(for: walletId).first(where: {
                 $0.typeTag == Self.coinJoinTypeTag && $0.index == Self.coinJoinAccountIndex
             }) else {
-                return []
+                return CoinJoinSweepOutcome(txids: [], failedChunkCount: 0, firstFailure: nil)
             }
 
             // Snapshot the account's spendable UTXOs (after the recovery scan has
             // materialized deep `/0/` + `/1/` addresses).
             let utxos = manager.accountUtxos(for: walletId, balance: cjBalance)
-            guard !utxos.isEmpty else { return [] }
+            guard !utxos.isEmpty else {
+                return CoinJoinSweepOutcome(txids: [], failedChunkCount: 0, firstFailure: nil)
+            }
 
             // Drain each balanced ≤500-input chunk to `address`. `useOnlyAddedInputs`
             // is what makes the chunk the transaction's input set — the finalizer
@@ -259,7 +284,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
             // dual-chain `/0/`+`/1/` signing.
             // Partial-failure tolerant: keep the txs that broadcast, log the rest, and
             // throw only if nothing broadcast at all (a re-run sweeps the remainder).
+            // A mixed outcome is reported through `CoinJoinSweepOutcome`, not swallowed.
             var txids: [Data] = []
+            var failedChunkCount = 0
             var firstError: Error?
             for (index, chunk) in Self.balancedChunks(utxos).enumerated() {
                 do {
@@ -289,32 +316,34 @@ final class SwiftDashSDKTransactionSender: NSObject {
                     // so reverse it back to wire order.
                     txids.append(Data(Self.computeTxHash(from: txData).reversed()))
                 } catch {
+                    failedChunkCount += 1
                     firstError = firstError ?? error
                     Self.logger.error(
                         "💸 TXSEND :: coinjoin sweep chunk \(index + 1, privacy: .public) failed to broadcast, continuing: \(String(describing: error), privacy: .public)")
                 }
             }
             if txids.isEmpty, let error = firstError { throw error }
-            return txids
+            return CoinJoinSweepOutcome(
+                txids: txids, failedChunkCount: failedChunkCount, firstFailure: firstError)
         }
 
-        let txids: [Data]
+        let outcome: CoinJoinSweepOutcome
         if Thread.isMainThread {
-            txids = try MainActor.assumeIsolated { try sweep() }
+            outcome = try MainActor.assumeIsolated { try sweep() }
         } else {
-            var captured: Result<[Data], Error> = .failure(SendError.walletNotReady("uninitialized result"))
+            var captured: Result<CoinJoinSweepOutcome, Error> = .failure(SendError.walletNotReady("uninitialized result"))
             DispatchQueue.main.sync {
                 captured = Result { try MainActor.assumeIsolated { try sweep() } }
             }
-            txids = try captured.get()
+            outcome = try captured.get()
         }
 
         // Log display-order hex (byte-reversed wire order) to match explorers.
-        let hexes = txids.map { txid -> String in
+        let hexes = outcome.txids.map { txid -> String in
             Data(txid.reversed()).map { String(format: "%02x", $0) }.joined()
         }
-        logger.info("💸 TXSEND :: coinjoin sweep broadcast — \(txids.count, privacy: .public) tx(s): \(hexes.joined(separator: ","), privacy: .public)")
-        return txids
+        logger.info("💸 TXSEND :: coinjoin sweep broadcast — \(outcome.txids.count, privacy: .public) tx(s), \(outcome.failedChunkCount, privacy: .public) chunk(s) failed: \(hexes.joined(separator: ","), privacy: .public)")
+        return outcome
     }
 
     // MARK: - Selected-input send (CrowdNode signal txs)
