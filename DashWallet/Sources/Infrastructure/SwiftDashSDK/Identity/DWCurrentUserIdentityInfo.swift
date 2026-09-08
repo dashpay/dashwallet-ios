@@ -856,13 +856,14 @@ final class DWSameSeedIdentityRecoveryCoordinator {
     }
 
     /// Startup budget for the SDK's pre-SPV sequence, or `nil` for the SDK
-    /// default — see `StartupIdentityRecoveryPolicy.startupBudget`. The
-    /// SwiftData existence check only runs for a marked wallet.
-    func startupBudget(walletId: Data, modelContainer: ModelContainer) -> TimeInterval? {
-        guard GeneratedWalletIdentityMarker.isMarked(walletId: walletId) else { return nil }
-        return StartupIdentityRecoveryPolicy.startupBudget(
-            isGeneratedOnDevice: true,
-            hasLocalIdentity: Self.hasLocalIdentity(walletId: walletId, modelContainer: modelContainer))
+    /// default — see `StartupIdentityRecoveryPolicy.startupBudget`. Takes
+    /// the store reading rather than repeating it: the caller needs the
+    /// same value to tell a first sight from a re-confirmation, and this
+    /// runs on the pre-SPV main-thread path.
+    func startupBudget(walletId: Data, hasLocalIdentity: Bool?) -> TimeInterval? {
+        StartupIdentityRecoveryPolicy.startupBudget(
+            isGeneratedOnDevice: GeneratedWalletIdentityMarker.isMarked(walletId: walletId),
+            hasLocalIdentity: hasLocalIdentity)
     }
 
     func recoverIfNeeded(
@@ -885,9 +886,12 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         // identity the store never confirmed: there the verdict stays
         // consumed so the retry rediscovers.
         let verdict = startupVerdicts.removeValue(forKey: contextKey)
-        // Restores only into an empty slot: a verdict recorded (or a clear
-        // performed by `fullReset`) while this call was suspended is newer
-        // than the one this call took, and wins.
+        // Restores only into an empty slot, so a verdict RECORDED while this
+        // call was suspended wins over the one this call took. It does not
+        // distinguish "cleared by `fullReset`" from "never recorded" — both
+        // leave the slot nil. That case is handled by ordering instead:
+        // every non-elided refresh runs `fullReset` before the readiness
+        // pass that records the next verdict.
         func restoreVerdict() {
             if let verdict, startupVerdicts[contextKey] == nil { startupVerdicts[contextKey] = verdict }
         }

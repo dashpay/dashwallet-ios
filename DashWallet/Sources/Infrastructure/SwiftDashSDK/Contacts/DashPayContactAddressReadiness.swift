@@ -75,9 +75,9 @@ enum DashPayContactAddressReadiness {
         let hadLocalIdentity = container.flatMap {
             DWSameSeedIdentityRecoveryCoordinator.hasLocalIdentity(walletId: walletId, modelContainer: $0)
         }
-        let probeBudget = container.flatMap {
-            recovery.startupBudget(walletId: walletId, modelContainer: $0)
-        }
+        // Reuses the reading above — this runs on the pre-SPV main-thread
+        // path, so the store is not asked twice.
+        let probeBudget = recovery.startupBudget(walletId: walletId, hasLocalIdentity: hadLocalIdentity)
         if let probeBudget {
             logger.info(
                 "👥 DP-READY :: wallet generated on this device, no local identity — budget \(Int(probeBudget), privacy: .public)s")
