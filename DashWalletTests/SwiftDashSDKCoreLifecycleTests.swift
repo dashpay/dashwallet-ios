@@ -231,16 +231,28 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         }
     }
 
-    func testLocalDiscoveryFaultSkipsWithoutSettling() {
+    func testLocalDiscoveryFaultRunsThePipelineWithoutAScan() {
         // The SDK says a rescan cannot answer it (`discoveryWorthRetrying ==
-        // false`, `identityIsSettled == false`): no unbudgeted scan, and the
-        // next runtime start asks again.
+        // false`, `identityIsSettled == false`): no unbudgeted scan, but the
+        // rows that do exist locally are still refreshed and adopted.
         for discovered in Self.flags {
             XCTAssertEqual(
                 StartupIdentityRecoveryPolicy.decision(
                     readinessStatus: .discoveryFailed, readinessIdentityId: nil, readinessDiscoveredThisStart: discovered),
-                .skipNotRetryable)
+                .runPipelineWithoutDiscovery)
         }
+    }
+
+    func testSameSeedIdentityRecoveryNeverScansWhenDiscoveryIsNotAllowed() async throws {
+        let outcome = try await SameSeedIdentityRecoveryPipeline.run(
+            allowDiscovery: false,
+            localIdentityIds: { [] },
+            discover: { XCTFail("must not scan"); return [] },
+            refreshNames: { _ in XCTFail("nothing to refresh") },
+            adopt: { XCTFail("nothing to adopt"); return false })
+        XCTAssertEqual(
+            outcome,
+            .init(discoveredCount: 0, identityCount: 0, adopted: false, identitiesPersisted: false))
     }
 
     func testEveryOtherIdentitylessStatusRunsThePipeline() {
@@ -259,30 +271,30 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         }
     }
 
-    func testProbeRerunOnlyWhenTheContactStepsAloneWereCutShort() {
-        XCTAssertFalse(StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
-            identityFound: true, dashPaySyncRan: true, contactAccountsPending: 0,
-            seedBindingUnverified: false, identityScanIncomplete: false))
-        XCTAssertTrue(StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
-            identityFound: true, dashPaySyncRan: false, contactAccountsPending: 0,
-            seedBindingUnverified: false, identityScanIncomplete: false))
-        XCTAssertTrue(StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
-            identityFound: true, dashPaySyncRan: true, contactAccountsPending: 2,
-            seedBindingUnverified: false, identityScanIncomplete: false))
+    func testProbeRerunOnlyWhenTheBudgetCutTheContactStepsShort() {
+        func rerun(
+            budgetExhausted: Bool = true, dashPaySyncRan: Bool = false, pending: UInt32 = 0,
+            seedUnverified: Bool = false, scanIncomplete: Bool = false, found: Bool = true
+        ) -> Bool {
+            StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
+                identityFound: found, budgetExhausted: budgetExhausted, dashPaySyncRan: dashPaySyncRan,
+                contactAccountsPending: pending, seedBindingUnverified: seedUnverified,
+                identityScanIncomplete: scanIncomplete)
+        }
+        XCTAssertTrue(rerun())
+        XCTAssertTrue(rerun(dashPaySyncRan: true, pending: 2))
+        XCTAssertFalse(rerun(dashPaySyncRan: true, pending: 0))
+        // The contact pass was degraded or failed by Platform, not cut by the
+        // budget: a re-run under the default budget hits the same error.
+        XCTAssertFalse(rerun(budgetExhausted: false))
         // Nothing to re-run for: the probe found no identity.
-        XCTAssertFalse(StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
-            identityFound: false, dashPaySyncRan: false, contactAccountsPending: 0,
-            seedBindingUnverified: false, identityScanIncomplete: false))
+        XCTAssertFalse(rerun(found: false))
         // The drain was skipped for an unverified seed binding: the SDK fails
         // that closed on every budget, so a re-run would be pure latency.
-        XCTAssertFalse(StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
-            identityFound: true, dashPaySyncRan: false, contactAccountsPending: 3,
-            seedBindingUnverified: true, identityScanIncomplete: false))
+        XCTAssertFalse(rerun(pending: 3, seedUnverified: true))
         // The probe's own scan was cut off: a re-run would rescan from scratch
         // under the default budget instead of reusing the identity.
-        XCTAssertFalse(StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
-            identityFound: true, dashPaySyncRan: false, contactAccountsPending: 0,
-            seedBindingUnverified: false, identityScanIncomplete: true))
+        XCTAssertFalse(rerun(scanIncomplete: true))
     }
 
     func testShortStartupBudgetOnlyForGeneratedWalletKnownToHaveNoLocalIdentity() {

@@ -613,8 +613,12 @@ enum SameSeedIdentityRecoveryPipeline {
     /// and persisted in this start. They stand in for an empty local read —
     /// the persister normally lands the rows before the readiness call
     /// returns, but a lagging store must not trigger a second discovery scan.
+    /// `allowDiscovery: false` adopts and refreshes whatever identity rows
+    /// exist locally without ever scanning — for a readiness verdict that
+    /// says a scan cannot succeed (`.discoveryFailed`).
     static func run(
         knownIdentityIds: [Data] = [],
+        allowDiscovery: Bool = true,
         localIdentityIds: () -> [Data],
         discover: () async throws -> [Data],
         refreshNames: ([Data]) async throws -> Void,
@@ -627,7 +631,7 @@ enum SameSeedIdentityRecoveryPipeline {
             identityIds = knownIdentityIds
         }
 
-        if identityIds.isEmpty {
+        if identityIds.isEmpty, allowDiscovery {
             discoveredIds = try await discover()
             identityIds = localIdentityIds()
             // The SDK persister normally makes the rows visible before the
@@ -695,9 +699,11 @@ enum StartupIdentityRecoveryPolicy {
         /// process.
         case skipSettled
         /// The SDK reports the question unanswered AND not worth asking
-        /// again (`.discoveryFailed`: a local wallet/persistence fault):
-        /// nothing runs, nothing settles, the next runtime start asks again.
-        case skipNotRetryable
+        /// again (`.discoveryFailed`: a local wallet/persistence fault): no
+        /// scan, but the pipeline still refreshes and adopts whatever
+        /// identity rows exist locally, under the memo. The next runtime
+        /// start asks the SDK again.
+        case runPipelineWithoutDiscovery
     }
 
     /// `nil` status = no readiness pass ran in this start (a Platform-sync
@@ -710,10 +716,12 @@ enum StartupIdentityRecoveryPolicy {
     /// reachable, also what the SDK decodes an unrecognised FFI status into
     /// — and `.identityScanIncomplete`) or otherwise `identityIsSettled`
     /// runs the pipeline unless the wallet was already settled in this
-    /// process; a status that is neither (`.discoveryFailed`) is skipped
-    /// without settling. Every runtime start asks the SDK again regardless.
-    /// `readinessDiscoveredThisStart` is `discoveryAttempts > 0`: the SDK
-    /// ran a scan rather than reusing an identity already on file.
+    /// process; a status that is neither (`.discoveryFailed`) runs the
+    /// pipeline without its scan. Every runtime start asks the SDK again.
+    /// `readinessDiscoveredThisStart` means the wallet had NO local
+    /// identity before the readiness pass and has one after it — measured
+    /// by the caller from the store, not from `discoveryAttempts`, which
+    /// the SDK also increments when it rescans an identity already on file.
     static func decision(
         readinessStatus: WalletStartupStatus?,
         readinessIdentityId: Data?,
@@ -727,31 +735,42 @@ enum StartupIdentityRecoveryPolicy {
         if readinessStatus.discoveryWorthRetrying || readinessStatus.identityIsSettled {
             return .runPipeline
         }
-        return .skipNotRetryable
+        return .runPipelineWithoutDiscovery
     }
 
-    /// Whether a short-budget probe found an identity but ran out of budget
-    /// before the contact-request pass and the contact-account drain
-    /// completed — the two steps the readiness pass exists to guarantee
-    /// before the first SPV filter set is built. Never when the drain was
-    /// skipped for `seedBindingUnverified` (the SDK fails that closed on
-    /// every budget), and never when the probe's own scan was cut off
-    /// (`identityScanIncomplete`): the SDK then rescans on the next start
-    /// instead of reusing the identity, so a re-run would pay a fresh full
-    /// discovery on the switch path — the cost this budget exists to avoid.
-    /// Those two cases leave the contact steps to the DIP-15 rescan.
+    /// Whether a short-budget probe found an identity and the BUDGET — not
+    /// a Platform error — cut the sequence short before the contact-request
+    /// pass and the contact-account drain completed, the two steps the
+    /// readiness pass exists to guarantee before the first SPV filter set is
+    /// built. `budgetExhausted` is the caller's reading of `elapsed` against
+    /// the budget it passed: the SDK clears `dashPaySyncRan` for a degraded
+    /// or failed contact pass too, and a re-run cannot fix those. Never when
+    /// the drain was skipped for `seedBindingUnverified` (the SDK fails that
+    /// closed on every budget), and never when the probe's own scan was cut
+    /// off (`identityScanIncomplete`): the SDK then rescans on the next
+    /// start instead of reusing the identity, so a re-run would pay a fresh
+    /// full discovery on the switch path. Those cases leave the contact
+    /// steps to the DIP-15 rescan.
     static func probeNeedsFullRerun(
         identityFound: Bool,
+        budgetExhausted: Bool,
         dashPaySyncRan: Bool,
         contactAccountsPending: UInt32,
         seedBindingUnverified: Bool,
         identityScanIncomplete: Bool
     ) -> Bool {
         identityFound
+            && budgetExhausted
             && !seedBindingUnverified
             && !identityScanIncomplete
             && (!dashPaySyncRan || contactAccountsPending > 0)
     }
+
+    /// Attempts the backstop makes on an identity the store keeps failing
+    /// to confirm before it settles the context for the process anyway.
+    /// Bounds a SwiftData mirror that never lands the row: without a cap
+    /// every re-arm in the process would pay the unbudgeted scan.
+    static let maxUnpersistedAttempts = 2
 
     /// `nil` = the SDK default budget. `hasLocalIdentity == nil` means the
     /// lookup was inconclusive (fetch failed, no wallet row): the probe is
@@ -786,6 +805,9 @@ final class DWSameSeedIdentityRecoveryCoordinator {
     /// its context on entry, before any early return, so one verdict is
     /// consulted at most once.
     private var startupVerdicts: [String: (status: WalletStartupStatus, identityId: Data?, discovered: Bool)] = [:]
+    /// Pipeline runs per context that acted on an identity the store did
+    /// not confirm (see `maxUnpersistedAttempts`).
+    private var unpersistedAttempts: [String: Int] = [:]
 
     private init() {}
 
@@ -818,6 +840,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         let suffix = ":" + walletId.hexEncodedString()
         completedContexts = completedContexts.filter { !$0.hasSuffix(suffix) }
         startupVerdicts = startupVerdicts.filter { !$0.key.hasSuffix(suffix) }
+        unpersistedAttempts = unpersistedAttempts.filter { !$0.key.hasSuffix(suffix) }
     }
 
     /// Startup budget for the SDK's pre-SPV sequence, or `nil` for the SDK
@@ -850,10 +873,14 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         // identity the store never confirmed: there the verdict stays
         // consumed so the retry rediscovers.
         let verdict = startupVerdicts.removeValue(forKey: contextKey)
+        // Restores only into an empty slot: a verdict recorded (or a clear
+        // performed by `fullReset`) while this call was suspended is newer
+        // than the one this call took, and wins.
         func restoreVerdict() {
-            if let verdict { startupVerdicts[contextKey] = verdict }
+            if let verdict, startupVerdicts[contextKey] == nil { startupVerdicts[contextKey] = verdict }
         }
 
+        let allowDiscovery: Bool
         switch StartupIdentityRecoveryPolicy.decision(
             readinessStatus: verdict?.status,
             readinessIdentityId: verdict?.identityId,
@@ -863,17 +890,22 @@ final class DWSameSeedIdentityRecoveryCoordinator {
             Self.logger.info(
                 "🪪 IDENT-RECOVERY :: skipped — startup readiness proved this seed owns no identity")
             return
-        case .skipNotRetryable:
-            restoreVerdict()
-            Self.logger.error(
-                "🪪 IDENT-RECOVERY :: skipped — startup readiness hit a local fault a rescan cannot clear; the next runtime start asks again")
-            return
         case .refreshNamesAndAdopt:
             // First sight of this identity on this install: run the pipeline
             // past the settled memo (its discovery finds the rows readiness
             // persisted; the name refresh rebuilds the contested bookmarks).
-            break
+            allowDiscovery = true
         case .runPipeline:
+            allowDiscovery = true
+            guard !completedContexts.contains(contextKey) else {
+                restoreVerdict()
+                return
+            }
+        case .runPipelineWithoutDiscovery:
+            // A local fault blocked the SDK's scan and a rescan cannot clear
+            // it: adopt and refresh whatever identity rows exist locally,
+            // never scan.
+            allowDiscovery = false
             guard !completedContexts.contains(contextKey) else {
                 restoreVerdict()
                 return
@@ -886,6 +918,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         do {
             let outcome = try await SameSeedIdentityRecoveryPipeline.run(
                 knownIdentityIds: verdict?.identityId.map { [$0] } ?? [],
+                allowDiscovery: allowDiscovery,
                 localIdentityIds: {
                     Self.localIdentityIds(walletId: walletId, modelContainer: modelContainer)
                 },
@@ -937,12 +970,24 @@ final class DWSameSeedIdentityRecoveryCoordinator {
             }
             if outcome.identityCount == 0 || outcome.identitiesPersisted {
                 completedContexts.insert(contextKey)
+                unpersistedAttempts[contextKey] = nil
             } else {
                 // Acted on ids the store has not confirmed: leave the context
                 // open (and the verdict consumed) so the next attempt runs
-                // the discovery that repopulates the store.
-                Self.logger.warning(
-                    "🪪 IDENT-RECOVERY :: identity acted on but not yet persisted locally; leaving the context open")
+                // the discovery that repopulates the store — a bounded
+                // number of times, then settle for the process anyway so a
+                // mirror that never lands the row cannot buy an unbudgeted
+                // scan on every re-arm.
+                let attempts = (unpersistedAttempts[contextKey] ?? 0) + 1
+                unpersistedAttempts[contextKey] = attempts
+                if attempts >= StartupIdentityRecoveryPolicy.maxUnpersistedAttempts {
+                    completedContexts.insert(contextKey)
+                    Self.logger.error(
+                        "🪪 IDENT-RECOVERY :: identity still not persisted after \(attempts, privacy: .public) attempt(s); settling for this process")
+                } else {
+                    Self.logger.warning(
+                        "🪪 IDENT-RECOVERY :: identity acted on but not yet persisted locally; leaving the context open")
+                }
             }
             Self.logger.info(
                 """

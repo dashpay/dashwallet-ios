@@ -67,7 +67,15 @@ enum DashPayContactAddressReadiness {
         // anything to do in this start (`StartupIdentityRecoveryPolicy`).
         let recovery = DWSameSeedIdentityRecoveryCoordinator.shared
         let walletId = wallet.walletId
-        let probeBudget = SwiftDashSDKHost.shared.modelContainer.flatMap {
+        let container = SwiftDashSDKHost.shared.modelContainer
+        // "First sight" is measured from the store, before the pass: the SDK
+        // increments `discoveryAttempts` for a rescan of an identity already
+        // on file too, so that counter cannot tell a new identity from a
+        // re-confirmed one.
+        let hadLocalIdentity = container.flatMap {
+            DWSameSeedIdentityRecoveryCoordinator.hasLocalIdentity(walletId: walletId, modelContainer: $0)
+        }
+        let probeBudget = container.flatMap {
             recovery.startupBudget(walletId: walletId, modelContainer: $0)
         }
         if let probeBudget {
@@ -76,18 +84,14 @@ enum DashPayContactAddressReadiness {
         }
         do {
             var outcome = try await manager.startWalletSubsystems(wallet: wallet, budget: probeBudget)
-            // Captured before a re-run can replace `outcome`: the re-run reuses
-            // the identity the probe just persisted (`discoveryAttempts == 0`),
-            // and the coordinator must still see this start as the identity's
-            // first sight on this install.
-            var discoveredThisStart = outcome.discoveryAttempts > 0
-            if probeBudget != nil, outcome.identityId != nil {
+            if let probeBudget, outcome.identityId != nil {
                 // The seed owns an identity after all: the probe budget must
                 // never apply to this wallet again, whether or not the probe
                 // itself completed.
                 GeneratedWalletIdentityMarker.clear(walletId: walletId)
                 if StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
                     identityFound: true,
+                    budgetExhausted: outcome.elapsed >= probeBudget - 0.5,
                     dashPaySyncRan: outcome.dashPaySyncRan,
                     contactAccountsPending: outcome.contactAccountsPending,
                     seedBindingUnverified: outcome.seedBindingUnverified,
@@ -95,12 +99,19 @@ enum DashPayContactAddressReadiness {
                     log(outcome, network: network, phase: .probe)
                     logger.info(
                         "👥 DP-READY :: probe found an identity but was cut short — re-running with the default budget")
-                    // A re-run that throws (a manager unconfigured mid-switch,
-                    // a locked Keychain) must not cost the probe's verdict:
-                    // the identity it found is still the start's answer.
+                    // The probe's identity is the start's answer unless the
+                    // re-run also has one: a re-run that throws, or comes
+                    // back without an identity (Platform went away, scan key
+                    // unavailable), must not cost it.
                     do {
-                        outcome = try await manager.startWalletSubsystems(wallet: wallet)
-                        discoveredThisStart = discoveredThisStart || outcome.discoveryAttempts > 0
+                        let rerun = try await manager.startWalletSubsystems(wallet: wallet)
+                        if rerun.identityId != nil {
+                            outcome = rerun
+                        } else {
+                            log(rerun, network: network, phase: .probe)
+                            logger.warning(
+                                "👥 DP-READY :: default-budget re-run lost the identity; keeping the probe verdict")
+                        }
                     } catch {
                         logger.warning(
                             "👥 DP-READY :: default-budget re-run failed; keeping the probe verdict: \(String(describing: error), privacy: .public)")
@@ -111,7 +122,7 @@ enum DashPayContactAddressReadiness {
             recovery.recordStartupDiscovery(
                 status: outcome.status,
                 identityId: outcome.identityId,
-                discoveredThisStart: discoveredThisStart,
+                discoveredThisStart: outcome.identityId != nil && hadLocalIdentity != true,
                 walletId: walletId,
                 network: network)
         } catch {
@@ -163,15 +174,15 @@ enum DashPayContactAddressReadiness {
                 """)
         case .discoveryFailed:
             // A local wallet/persistence fault, not the network. Logged at
-            // error because a retry of the same sequence will not clear it;
-            // the same-seed recovery backstop tries its own discovery entry
-            // point in this start unless this wallet was already settled in
-            // this process.
+            // error because a rescan cannot clear it; the same-seed recovery
+            // backstop adopts whatever identity rows exist locally without
+            // scanning, unless this wallet was already settled in this
+            // process. The next runtime start asks the SDK again.
             logger.error(
                 """
                 \(tag, privacy: .public)identity discovery failed locally after \
                 \(seconds, privacy: .public)s; starting SPV, the recovery backstop \
-                retries with its own scan unless already settled this process
+                adopts local rows without a scan
                 """)
         case .seedBindingUnverified:
             // Never derive contact addresses when the available seed cannot be
