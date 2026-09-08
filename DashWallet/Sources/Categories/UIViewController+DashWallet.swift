@@ -104,7 +104,10 @@ extension UIViewController {
             case .success(let archive):
                 await self.presentSupportEmailController(logsArchive: archive)
             case .failure(let error):
-                if (error as? DiagnosticLogExportError) == .cancelled { return }
+                // Cancel is the user's own choice, and a refusal whose owner
+                // is still on screen is already explained by that card — this
+                // alert would be drawn under the overlay window either way.
+                if DiagnosticLogExporter.shouldStaySilent(about: error) { return }
                 self.presentLogsNotAttachedAlert(message: error.localizedDescription)
             }
         }

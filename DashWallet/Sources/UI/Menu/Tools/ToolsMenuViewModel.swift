@@ -195,8 +195,9 @@ class ToolsMenuViewModel: ObservableObject {
             case .success(let url):
                 self.exportedLogsURL = url
             case .failure(let error):
-                // The overlay's Cancel is the user's choice, not a failure.
-                if (error as? DiagnosticLogExportError) == .cancelled { return }
+                // The overlay's Cancel is the user's choice, not a failure,
+                // and a refusal explained by a card on screen is not an alert.
+                if DiagnosticLogExporter.shouldStaySilent(about: error) { return }
                 self.logExportErrorMessage = error.localizedDescription
             }
         }

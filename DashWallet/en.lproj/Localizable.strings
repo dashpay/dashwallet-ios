@@ -5858,3 +5858,16 @@
 
 /* Receive: the QR image doubles as a copy control */
 "Copy QR code" = "Copy QR code";
+
+/* Diagnostic log export overlay */
+"Preparing logs…" = "Preparing logs…";
+"Collecting wallet diagnostics. This may take a few seconds." = "Collecting wallet diagnostics. This may take a few seconds.";
+
+/* Support: the diagnostic archive could not be produced or read */
+"Logs could not be attached" = "Logs could not be attached";
+"Send Without Logs" = "Send Without Logs";
+"The diagnostic archive could not be read." = "The diagnostic archive could not be read.";
+
+/* Log export */
+"Another wallet operation is in progress. Try again in a moment." = "Another wallet operation is in progress. Try again in a moment.";
+"Log export cancelled." = "Log export cancelled.";

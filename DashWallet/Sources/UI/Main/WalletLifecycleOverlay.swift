@@ -64,14 +64,30 @@ final class WalletLifecycleOverlayPresenter {
             }
     }
 
+    /// True while a lifecycle card is on screen. The overlay owns a window at
+    /// `.alert + 1`, above the level `UIAlertController` presents at, so a
+    /// caller about to raise an alert can ask whether it would be drawn under
+    /// the card.
+    var isPresenting: Bool { overlayWindow != nil }
+
     private func apply(_ phase: WalletLifecycleTransitionState.Phase) {
         switch phase {
         case .idle, .exportingDiagnostics(dismissed: true, generation: _):
             // A dismissed export is still busy for admission purposes — see
             // the phase doc — but the user has asked to stop waiting, so the
             // window goes; a wipe admitted from here brings a new one.
-            overlayWindow?.isHidden = true
+            //
+            // Hidden now (that same-turn teardown is the whole point of
+            // applying synchronously), released next turn. This runs on the
+            // caller's stack, and for the card's own buttons that stack is the
+            // SwiftUI action closure of the view graph this window owns —
+            // dropping the last reference here would free the hosting view,
+            // and the `@StateObject` view model, out from under the touch
+            // still being handled.
+            guard let window = overlayWindow else { return }
             overlayWindow = nil
+            window.isHidden = true
+            DispatchQueue.main.async { withExtendedLifetime(window) {} }
         case .switchingNetwork, .failedNetworkSwitch,
              .switchingWallet, .removingWallet, .addingWallet,
              .failedWalletSwitch, .failedWalletRemoval,
@@ -145,9 +161,20 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     /// Seeded from the phase the presenter is applying, not from the state:
     /// this can be created inside `@Published`'s `willSet`, where the state
     /// still holds the previous phase and the projected publisher replays
-    /// that previous value to a new subscriber — hence `dropFirst()`, which
-    /// skips exactly that replay (outside `willSet` it skips a value equal
-    /// to the seed) and leaves every later change flowing.
+    /// that previous value to a new subscriber. `dropFirst()` skips exactly
+    /// that stale replay.
+    ///
+    /// It cannot be the whole answer, because this initializer does not
+    /// reliably run inside `willSet`: `StateObject.init(wrappedValue:)` takes
+    /// an autoclosure that SwiftUI evaluates lazily, at the view's first body
+    /// render, which is a later runloop turn. By then the replayed value is
+    /// the committed phase — usually the seed, but a LATER phase whenever the
+    /// operation already moved on (a wallet switch that fails before its first
+    /// real suspension does exactly this), and dropping that would strand the
+    /// card on a progress spinner behind a blocking scrim with no way out.
+    /// So the committed phase is re-read once the current turn is over: a
+    /// no-op in the `willSet` case, and the change that was dropped in the
+    /// lazy one.
     init(initialPhase: WalletLifecycleTransitionState.Phase) {
         phase = initialPhase
         phaseCancellable = WalletLifecycleTransitionState.shared.$phase
@@ -155,6 +182,13 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
             .sink { [weak self] phase in
                 self?.phase = phase
             }
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            let committed = WalletLifecycleTransitionState.shared.phase
+            if committed != self.phase {
+                self.phase = committed
+            }
+        }
     }
 
     func retryNetworkSwitch(to target: WalletEnvironment.NetworkKind) {

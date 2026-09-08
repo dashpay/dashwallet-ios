@@ -166,7 +166,7 @@ struct DiagnosticLogExporter {
                 )
                 copiedCount += 1
             } catch {
-                skipped.append("sdk-session \(session.url.lastPathComponent): \(error.localizedDescription)")
+                skipped.append("sdk-session \(session.url.lastPathComponent): \(failureDetail(error))")
             }
         }
         if !selectedAppLogs.isEmpty {
@@ -181,16 +181,19 @@ struct DiagnosticLogExporter {
                         )
                         copiedCount += 1
                     } catch {
-                        skipped.append("app-log \(file.lastPathComponent): \(error.localizedDescription)")
+                        skipped.append("app-log \(file.lastPathComponent): \(failureDetail(error))")
                     }
                 }
             } catch {
-                skipped.append("app-logs directory: \(error.localizedDescription)")
+                skipped.append("app-logs directory: \(failureDetail(error))")
             }
         }
         guard copiedCount > 0 else {
-            throw DiagnosticLogExportError.zipFailed(
-                "nothing could be copied (\(skipped.joined(separator: "; ")))")
+            // This reason reaches a user-visible alert and there is one entry
+            // per failed item, so it is bounded rather than joined whole.
+            let head = skipped.prefix(3).joined(separator: "; ")
+            let rest = skipped.count > 3 ? "; +\(skipped.count - 3) more" : ""
+            throw DiagnosticLogExportError.zipFailed("nothing could be copied (\(head)\(rest))")
         }
 
         var summary = summaryText(
@@ -212,12 +215,46 @@ struct DiagnosticLogExporter {
             encoding: .utf8
         )
 
-        let zipURL = fm.temporaryDirectory.appendingPathComponent("\(archiveName).zip")
-        if fm.fileExists(atPath: zipURL.path) {
-            try? fm.removeItem(at: zipURL)
-        }
+        // Its own directory per export. `archiveName` derives from the SDK
+        // session stamp, which is fixed for the process lifetime, so a single
+        // path would be rewritten by every export in a launch — including
+        // under a live consumer, since the over-25 MB route hands this URL to
+        // the share sheet, which reads it lazily and by reference. The
+        // directory is also the unit `discardArchive` deletes.
+        let archiveDirectory = fm.temporaryDirectory
+            .appendingPathComponent("\(archiveDirectoryPrefix)\(UUID().uuidString)", isDirectory: true)
+        try fm.createDirectory(at: archiveDirectory, withIntermediateDirectories: true)
+        let zipURL = archiveDirectory.appendingPathComponent("\(archiveName).zip")
         try zipDirectory(at: staging, to: zipURL)
         return zipURL
+    }
+
+    /// Names the directory `export` writes its zip into.
+    private static let archiveDirectoryPrefix = "LogArchive-"
+
+    /// What a failed copy may say in a file that is mailed to support.
+    /// Cocoa's `localizedDescription` embeds the full sandbox path of the item
+    /// it failed on, and the SDK redacts store paths out of the very telemetry
+    /// this archive carries (`core_store_open_result` is emitted
+    /// `redacting: [storeURL.path]`); the host holds the same line. Domain and
+    /// code are what a triager acts on anyway.
+    private static func failureDetail(_ error: Error) -> String {
+        let nsError = error as NSError
+        return "\(nsError.domain) \(nsError.code)"
+    }
+
+    /// Delete an archive nobody will receive, with the per-export directory
+    /// holding it — up to the mail cap per undelivered export, on a device
+    /// whose disk pressure is one of the things the export exists to diagnose.
+    private static func discardArchive(at url: URL) {
+        let fm = FileManager.default
+        let directory = url.deletingLastPathComponent()
+        guard directory.lastPathComponent.hasPrefix(archiveDirectoryPrefix) else {
+            // Not one of ours: never take a directory down with the file.
+            try? fm.removeItem(at: url)
+            return
+        }
+        try? fm.removeItem(at: directory)
     }
 
     /// The archive every export screen produces. `includingWalletSnapshot`
@@ -307,6 +344,7 @@ struct DiagnosticLogExporter {
         guard case .exportingDiagnostics(dismissed: false, generation: let owner) = state.phase,
               owner == generation
         else {
+            if case .success(let archive) = result { discardArchive(at: archive) }
             return .failure(DiagnosticLogExportError.cancelled)
         }
         return result
@@ -316,15 +354,65 @@ struct DiagnosticLogExporter {
     /// be scoped to the export that took the phase.
     @MainActor private static var nextExportGeneration: UInt64 = 0
 
+    /// How long a dismissed export may keep the admission gate after its card
+    /// is gone. Past this the gate opens even though the export is still
+    /// running, because the gate is not what makes that safe: `shutdown()` —
+    /// which every wallet switch reaches through the runtime's stop/rebind —
+    /// cancels the diagnostics pass and drains its native op before taking the
+    /// handle (platform#4580), so a switch started here waits on that drain
+    /// instead of racing it. The gate exists to stop the user queueing a
+    /// second operation behind a visible one, and after Cancel there is
+    /// nothing visible left: a refusal would have no owner on screen to
+    /// explain it, and an export wedged behind the persistence queue would
+    /// otherwise hold every other operation out until the app is relaunched.
+    static let dismissedExportGateTimeout: Duration = .seconds(30)
+
     /// The overlay card's Cancel. Drops the card now; the export in flight
     /// keeps its admission and, seeing its phase dismissed when it returns,
-    /// discards its result as `.cancelled`. A no-op unless a card is showing.
+    /// discards its result as `.cancelled`. That hold is bounded by
+    /// `dismissedExportGateTimeout` — a stuck export degrades to a failed
+    /// export, not to a gate nothing can open. A no-op unless a card is
+    /// showing.
     @MainActor
     static func cancelWaiting() {
         let state = WalletLifecycleTransitionState.shared
         guard case .exportingDiagnostics(dismissed: false, generation: let owner) = state.phase
         else { return }
         state.advance(to: .exportingDiagnostics(dismissed: true, generation: owner))
+        Task { @MainActor in
+            try? await Task.sleep(for: dismissedExportGateTimeout)
+            // Only if this export still owns a dismissed phase: it may have
+            // returned and released, or been superseded by a wipe and a
+            // successor export, in which case the gate is not ours to open.
+            guard case .exportingDiagnostics(dismissed: true, generation: let stillOwner) = state.phase,
+                  stillOwner == owner
+            else { return }
+            DWLogger.log(
+                "🚦 LIFECYCLE releasing the gate of dismissed export #\(owner) after \(dismissedExportGateTimeout); the export has not returned")
+            state.finish()
+        }
+    }
+
+    /// Failures the asking screen must stay silent about.
+    ///
+    /// `.cancelled` is the user's own Cancel. `.anotherOperationInProgress` is
+    /// silent only while the operation that refused it is on screen: the
+    /// overlay window sits at `.alert + 1`, above the level
+    /// `UIAlertController` presents at, so an alert raised now is drawn under
+    /// the card — invisible while it is true, and stale by the time the card
+    /// drops. The card is the explanation. With no card up (a dismissed export
+    /// still holding the gate) the alert is the only explanation there is, and
+    /// it shows.
+    @MainActor
+    static func shouldStaySilent(about error: Error) -> Bool {
+        switch error as? DiagnosticLogExportError {
+        case .cancelled:
+            return true
+        case .anotherOperationInProgress:
+            return WalletLifecycleOverlayPresenter.shared.isPresenting
+        default:
+            return false
+        }
     }
 
     /// Pure SDK-session selection policy, split out for unit testing.
