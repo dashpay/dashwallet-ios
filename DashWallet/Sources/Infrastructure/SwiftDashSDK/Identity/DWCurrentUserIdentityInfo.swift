@@ -912,6 +912,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
     ) async {
         let walletId = wallet.walletId
         let contextKey = Self.contextKey(walletId: walletId, network: network)
+        let walletHex = walletId.hexEncodedString()
 
         // An in-flight run for this context keeps its verdict untouched: the
         // call that started it settles or returns it.

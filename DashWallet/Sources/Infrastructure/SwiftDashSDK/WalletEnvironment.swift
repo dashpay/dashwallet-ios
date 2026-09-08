@@ -187,6 +187,50 @@ public final class WalletEnvironment: NSObject {
         return true
     }
 
+    /// The registry kind for an SDK `Network`. Total over the three
+    /// selectable networks; `.regtest` (which nothing can persist a wallet
+    /// on) falls back to testnet rather than silently claiming mainnet.
+    static func networkKind(for network: SwiftDashSDK.Network) -> NetworkKind {
+        switch network {
+        case .mainnet: return .mainnet
+        case .testnet: return .testnet
+        case .devnet: return .devnet
+        default: return .testnet
+        }
+    }
+
+    // MARK: - Devnet first-entry provisioning
+
+    private static let devnetProvisioningSourceWalletIdKey =
+        "DW_DEVNET_PROVISIONING_SOURCE_WALLET_ID"
+
+    /// The wallet that was active when the user asked to enter devnet.
+    ///
+    /// First devnet entry provisions the phrase the user was actually on and
+    /// binds its devnet twin. Which wallet that is used to be read only from
+    /// `WalletLifecycleTransitionState`, which is in-memory: kill the app
+    /// mid-switch — the switch persists the network selection before it
+    /// awaits discovery and startup — and the next launch would come up on
+    /// devnet with no source, provision every stored phrase, and pin an
+    /// arbitrary `firstWallet`. Persisting the id here is what survives that
+    /// suspension.
+    ///
+    /// Kept (not cleared) after provisioning: a devnet→devnet restart, such
+    /// as pointing the app at a different devnet, is not a network switch
+    /// and would otherwise fall back to the same arbitrary pin. It is
+    /// overwritten on the next switch into devnet, and a stale id whose
+    /// mnemonic is gone simply resolves to nil.
+    static var devnetProvisioningSourceWalletId: Data? {
+        get { UserDefaults.standard.data(forKey: devnetProvisioningSourceWalletIdKey) }
+        set {
+            if let newValue {
+                UserDefaults.standard.set(newValue, forKey: devnetProvisioningSourceWalletIdKey)
+            } else {
+                UserDefaults.standard.removeObject(forKey: devnetProvisioningSourceWalletIdKey)
+            }
+        }
+    }
+
     /// SwiftDashSDK wallet presence — a mnemonic persisted in `WalletStorage`'s
     /// keychain (see `SwiftDashSDKHost.hasPersistedSDKWallet`). The SDK
     /// runtime's own start gate; app-level existence checks use `hasWallet`.

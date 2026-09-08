@@ -197,8 +197,64 @@ final class StoredWalletInventoryTests: XCTestCase {
     func testLogicalWalletIdsAreNetworkScoped() throws {
         let ids = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: seedA)
 
-        XCTAssertEqual(ids.count, 2)
-        XCTAssertNotEqual(ids[.mainnet], ids[.testnet])
+        XCTAssertEqual(
+            ids.count,
+            SwiftDashSDKStoredWalletNetworkResolver.storableNetworks.count)
+        // All three ids distinct, not just mainnet vs testnet: a collision
+        // would make one network's deletion remove another network's wallet.
+        let distinctIds = Set(ids.values)
+        XCTAssertEqual(distinctIds.count, ids.count)
+    }
+
+    // MARK: - Devnet configuration
+
+    func testDevnetNameRejectsWhitespaceAndSlash() {
+        // Mirrors `platform_wallet_manager_spv_start`, which rejects both —
+        // after the runtime has already been torn down, hence the pre-check.
+        XCTAssertNotNil(DevnetConfiguration.devnetNameValidationError("mou tai"))
+        XCTAssertNotNil(DevnetConfiguration.devnetNameValidationError(" moutai"))
+        XCTAssertNotNil(DevnetConfiguration.devnetNameValidationError("moutai "))
+        XCTAssertNotNil(DevnetConfiguration.devnetNameValidationError("a/b"))
+    }
+
+    func testDevnetNameAcceptsAPlainNameAndDeliberateClearing() {
+        XCTAssertNil(DevnetConfiguration.devnetNameValidationError("moutai"))
+        // Empty is not an error: clearing the field is how devnet is
+        // deliberately unconfigured.
+        XCTAssertNil(DevnetConfiguration.devnetNameValidationError(""))
+    }
+
+    func testDevnetProvisionsOnlyItself() throws {
+        XCTAssertEqual(
+            try SwiftDashSDKHost.missingWalletNetworks(
+                mnemonic: seedA,
+                persistedWalletIds: [],
+                currentNetwork: .devnet),
+            [.devnet])
+    }
+
+    func testMainnetProvisioningNeverMirrorsToDevnet() throws {
+        // Devnet exists only in internal builds, and a devnet wallet row is
+        // useless without devnet coordinates — creating one as a side effect
+        // of onboarding on mainnet would also demand a devnet SDK.
+        XCTAssertFalse(
+            try SwiftDashSDKHost.missingWalletNetworks(
+                mnemonic: seedA,
+                persistedWalletIds: [],
+                currentNetwork: .mainnet)
+                .contains(.devnet))
+    }
+
+    func testDevnetProvisioningSkipsAnAlreadyStoredDevnetWallet() throws {
+        let ids = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: seedA)
+        let devnetId = try XCTUnwrap(ids[.devnet])
+
+        XCTAssertEqual(
+            try SwiftDashSDKHost.missingWalletNetworks(
+                mnemonic: seedA,
+                persistedWalletIds: [devnetId],
+                currentNetwork: .devnet),
+            [])
     }
 
     func testAddWalletCreatesCurrentNetworkThenMissingMirror() throws {

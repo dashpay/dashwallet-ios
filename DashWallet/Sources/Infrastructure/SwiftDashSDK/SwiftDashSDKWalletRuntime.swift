@@ -227,6 +227,16 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         guard WalletLifecycleTransitionState.shared.tryBegin(.switchingNetwork(from: from, to: kind)) else {
             throw SwitchError.switchInProgress
         }
+        // Record which wallet devnet is being entered FROM before the network
+        // key moves. The transition phase carries the same fact, but only in
+        // memory: this switch persists the selection and then awaits peer
+        // discovery and a full runtime start, and a termination inside that
+        // window would otherwise relaunch on devnet with no source wallet.
+        // See `WalletEnvironment.devnetProvisioningSourceWalletId`.
+        if kind == .devnet, from != .devnet {
+            WalletEnvironment.devnetProvisioningSourceWalletId =
+                WalletEnvironment.activeWalletId(for: from)
+        }
         let transitionID = String(UUID().uuidString.prefix(8))
         let started = CFAbsoluteTimeGetCurrent()
         // Thread stamp deliberately absent: this method is MainActor-bound
@@ -355,12 +365,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// the `default` maps to `.testnet` defensively to keep the return
     /// non-optional.
     private func registryNetworkKind(for network: Network) -> WalletEnvironment.NetworkKind {
-        switch network {
-        case .mainnet: return .mainnet
-        case .testnet: return .testnet
-        case .devnet: return .devnet
-        default: return .testnet
-        }
+        WalletEnvironment.networkKind(for: network)
     }
 
     /// The SDK `Network` for an app `NetworkKind` — the inverse of

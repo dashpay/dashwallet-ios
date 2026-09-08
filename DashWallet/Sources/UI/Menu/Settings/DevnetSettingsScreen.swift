@@ -33,6 +33,10 @@ final class DevnetSettingsViewModel: ObservableObject {
     @Published var devnetName: String
     @Published var dashConnectContractId: String
     @Published var statusMessage: String?
+    /// Why the typed devnet name was refused, shown under the field. Nil
+    /// while the name is usable — including while it is empty, which is how
+    /// devnet is deliberately unconfigured.
+    @Published var devnetNameError: String?
 
     /// The last-applied values, to detect whether a save changed anything
     /// the running devnet SDK/SPV depends on. Refreshed after each save so a
@@ -51,6 +55,17 @@ final class DevnetSettingsViewModel: ObservableObject {
     }
 
     func save() {
+        // The native SPV start rejects a name with whitespace or "/", and it
+        // does so after the runtime has already been torn down. Refuse it
+        // here instead, beside the field, and leave everything as it was.
+        let trimmedName = devnetName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let error = DevnetConfiguration.devnetNameValidationError(trimmedName) {
+            devnetNameError = error
+            statusMessage = nil
+            return
+        }
+        devnetNameError = nil
+
         DevnetConfiguration.setQuorumURL(quorumURL)
         DevnetConfiguration.setDevnetName(devnetName)
         DevnetConfiguration.setDashConnectContractId(dashConnectContractId)
@@ -89,6 +104,13 @@ final class DevnetSettingsViewModel: ObservableObject {
         // same effect a network switch has, without changing the selection.
         // (`startIfReady` alone would elide the refresh while the runtime is
         // ready, so the explicit stop comes first.)
+        //
+        // Naming a different devnet is a different chain, not a reconnect:
+        // the Platform store, the shielded commitment tree and the SPV data
+        // directory are all scoped by `Network.persistenceScope`, so the
+        // restart opens that chain's own state rather than reinterpreting
+        // the previous one's records against new peers. Nothing is deleted —
+        // switching back finds the earlier chain's state where it was.
         SwiftDashSDKWalletRuntime.stop()
         SwiftDashSDKWalletRuntime.startIfReady()
         statusMessage = NSLocalizedString(
@@ -136,8 +158,9 @@ struct DevnetSettingsScreen: View {
                         text: $viewModel.devnetName,
                         keyboard: .default,
                         helper: NSLocalizedString(
-                            "The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it.",
-                            comment: "Devnet"))
+                            "The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history.",
+                            comment: "Devnet"),
+                        error: viewModel.devnetNameError)
 
                     field(
                         title: NSLocalizedString("DashConnect Contract ID", comment: "Devnet"),
@@ -182,7 +205,8 @@ struct DevnetSettingsScreen: View {
         placeholder: String,
         text: Binding<String>,
         keyboard: UIKeyboardType,
-        helper: String
+        helper: String,
+        error: String? = nil
     ) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
@@ -197,6 +221,13 @@ struct DevnetSettingsScreen: View {
                 .padding(10)
                 .background(Color.dash.primaryBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+            if let error {
+                Text(error)
+                    .dashFont(.caption1)
+                    .foregroundColor(Color.dash.errorText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
 
             Text(helper)
                 .dashFont(.caption1)
