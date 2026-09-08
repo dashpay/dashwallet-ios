@@ -538,13 +538,19 @@ struct DiagnosticLogExporter {
         switch error as? DiagnosticLogExportError {
         case .cancelled:
             return true
-        case .anotherOperationInProgress:
+        case .anotherOperationInProgress, .snapshotStillRunning:
+            // Same rule for both, and for the same reason: an alert raised
+            // while the overlay window is up at `.alert + 1` is drawn beneath
+            // it. Invisible is not the worst of it — an invisible
+            // presentation is still a presentation, so UIKit later drops the
+            // successful export's mail composer as "already presenting" and
+            // the good archive is thrown away with nothing on screen.
+            //
+            // A second Contact Support tap really can race the first export's
+            // card, so this is asked rather than assumed. With no card up (the
+            // post-cancel and post-timeout cases) the alert shows, which is
+            // the whole point of these two errors having distinct text.
             return WalletLifecycleOverlayPresenter.shared.isPresenting
-        case .snapshotStillRunning:
-            // No card can be up for this one — a running snapshot whose card
-            // is still showing would have blocked the tap — so it always
-            // shows, and it is the only explanation available.
-            return false
         default:
             return false
         }
