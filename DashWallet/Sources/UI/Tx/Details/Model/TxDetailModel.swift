@@ -537,8 +537,30 @@ extension TxDetailModel {
         guard let statusRaw = ShieldedTxLookup.shared.info(forTxidHex: transactionId)?.statusRaw else {
             return nil
         }
+        // A restored lock we already probed reads as the weaker claim it earns:
+        // the network says spent, we could not verify that, and there is
+        // nothing left to try. Bare "Completion unknown" is reserved for locks
+        // nobody has asked about yet.
+        if statusRaw == Self.recoveredFromChainStatus, wasProbedAlreadySpent {
+            // "Already spent", not "Completed": the network reported the
+            // outpoint spent, which is not the same claim as this transfer
+            // having completed — and it is the claim the toast and the bulk
+            // summary already make. All three surfaces now say one thing.
+            return NSLocalizedString("Already spent — not verified", comment: "A restored asset lock the network reports spent, without a verifiable proof")
+        }
         return Self.lockStatusText(statusRaw)
     }
+
+    /// Whether this transaction's funding lock has already been probed and
+    /// answered "already spent" (see `AssetLockProbeStore`).
+    private var wasProbedAlreadySpent: Bool {
+        AssetLockProbeStore.shared.contains(transaction.txHashData)
+    }
+
+    /// `AssetLockStatus::RecoveredFromChain` as it crosses the FFI. Owned by
+    /// `AssetLockRecoveryService` — the layer that acts on it — so the rule and
+    /// its tests live together.
+    static var recoveredFromChainStatus: Int { AssetLockRecoveryService.recoveredFromChainStatus }
 
     /// User-facing name of an asset-lock status (shared by the shielded and
     /// platform funding routes).
@@ -554,7 +576,9 @@ extension TxDetailModel {
             // RecoveredFromChain: the lock is final on Core, but whether it
             // completed on Platform is unknown after a restore or an
             // unauthenticated already-consumed report. Claiming neither
-            // "Pending" nor "Completed" is deliberate.
+            // "Pending" nor "Completed" is deliberate — the "Complete
+            // Transfer" action below is what resolves the unknown, by asking
+            // Platform rather than by guessing here.
             return NSLocalizedString("Completion unknown", comment: "Status of a chain-locked asset lock whose Platform-side consumption cannot be authenticated")
         default:
             return nil
@@ -563,13 +587,21 @@ extension TxDetailModel {
 
     // MARK: Stuck asset-lock retry
 
+    /// Asset-lock statuses that still deserve a retry action. Defined by
+    /// `AssetLockRecoveryService`, which performs the retry; this view model
+    /// asks rather than mirrors, so the two cannot drift.
+    static func statusAllowsRetry(_ statusRaw: Int) -> Bool {
+        AssetLockRecoveryService.statusAllowsRetry(statusRaw)
+    }
+
     struct StuckAssetLockRetry {
         let fundingTypeRaw: Int
         let statusRaw: Int
         let vout: UInt32
 
         /// Button title matching what actually remains: an unlocked
-        /// transaction is re-broadcast; a locked one only needs the
+        /// transaction is re-broadcast; a locked one — including a restored
+        /// one, which is chain-final by construction — only needs the
         /// Platform side finished.
         var actionTitle: String {
             statusRaw <= 1
@@ -579,7 +611,9 @@ extension TxDetailModel {
 
         /// Local removal is offered only while the network has shown no
         /// acceptance at all (built/broadcast). An IS/CL-locked lock is
-        /// proven on-chain — removing it locally could only corrupt state.
+        /// proven on-chain — removing it locally could only corrupt state,
+        /// and so is a restored one, which only ever enters that status
+        /// alongside a chain proof.
         var supportsRemoval: Bool { statusRaw <= 1 }
     }
 
@@ -594,18 +628,30 @@ extension TxDetailModel {
         transaction.state == .processing
     }
 
-    /// Non-nil when this transaction is a funding asset lock parked in a
-    /// non-terminal state (built/broadcast/IS-locked/CL-locked but never
-    /// consumed) on a route `AssetLockRecoveryService` can retry. Status
-    /// 4 (consumed) and 5 (restored, completion unknown) never qualify:
-    /// 4 is done, and a restored lock has no tracked local state to
-    /// resume from.
+    /// Non-nil when this transaction is a funding asset lock whose transfer
+    /// has not been shown to be finished, on a route
+    /// `AssetLockRecoveryService` can retry: 0…3 (built/broadcast/IS-locked/
+    /// CL-locked but never consumed) and 5 (RecoveredFromChain).
+    ///
+    /// 5 qualifies because "completion unknown" is not "completed". A lock
+    /// rebuilt from chain after a restore keeps its outpoint and its proof,
+    /// which is everything `resume_asset_lock` needs — its `RecoveredFromChain`
+    /// arm exists precisely to try consuming such a lock, and Platform answers
+    /// an already-spent outpoint with a typed error rather than a double
+    /// spend. Leaving 5 out stranded the value of every shield interrupted
+    /// before the app was reinstalled (ticket 32104).
+    ///
+    /// Only 4 (consumed) never qualifies — that one is done.
     var stuckAssetLockRetry: StuckAssetLockRetry? {
         let info = transaction.identityFundingLockInfo
             ?? transaction.platformFundingLockInfo
             ?? ShieldedTxLookup.shared.info(forTxidHex: transactionId)
         guard let info,
-              (0...3).contains(info.statusRaw),
+              Self.statusAllowsRetry(info.statusRaw),
+              // Asked once, told "already spent": repeating the probe cannot
+              // change the answer, so the action retires instead of standing
+              // on every restored row forever.
+              !wasProbedAlreadySpent,
               AssetLockRecoveryService.supportsRetry(fundingTypeRaw: info.fundingTypeRaw)
         else { return nil }
         return StuckAssetLockRetry(
