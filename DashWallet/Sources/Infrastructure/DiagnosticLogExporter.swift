@@ -227,9 +227,17 @@ struct DiagnosticLogExporter {
         // was self-cleaning by being overwritten, and without a sweep three
         // support exports leave three archives of up to the mail cap behind,
         // on a device whose free space is one of the things they diagnose.
-        pruneOldArchiveDirectories()
         let archiveDirectory = fm.temporaryDirectory
             .appendingPathComponent("\(archiveDirectoryPrefix)\(UUID().uuidString)", isDirectory: true)
+        // Claimed BEFORE the sweep and before the directory exists, so a
+        // concurrent export's sweep can already see it. Exports really can
+        // overlap: an ungated one (About, Tools) takes no lifecycle phase and
+        // blocks nothing on screen, so Tools → Export and Contact Support can
+        // be in flight together.
+        let archiveDirectoryName = archiveDirectory.lastPathComponent
+        claimArchiveDirectory(archiveDirectoryName)
+        defer { releaseArchiveDirectory(archiveDirectoryName) }
+        pruneOldArchiveDirectories()
         try fm.createDirectory(at: archiveDirectory, withIntermediateDirectories: true)
         let zipURL = archiveDirectory.appendingPathComponent("\(archiveName).zip")
         try zipDirectory(at: staging, to: zipURL)
@@ -239,18 +247,45 @@ struct DiagnosticLogExporter {
     /// Names the directory `export` writes its zip into.
     private static let archiveDirectoryPrefix = "LogArchive-"
 
-    /// Remove the archive directories previous exports left in `tmp`. Best
-    /// effort per directory: one that is still open elsewhere must not stop
-    /// the rest being swept, and the OS reclaims `tmp` eventually anyway.
+    /// Archive directories an export is currently writing into. `export` runs
+    /// off the main actor on a detached task and two can overlap, so this is
+    /// lock-guarded rather than actor-isolated.
+    private static let inFlightArchivesLock = NSLock()
+    private static var inFlightArchiveNames: Set<String> = []
+
+    private static func claimArchiveDirectory(_ name: String) {
+        inFlightArchivesLock.withLock { _ = inFlightArchiveNames.insert(name) }
+    }
+
+    private static func releaseArchiveDirectory(_ name: String) {
+        inFlightArchivesLock.withLock { _ = inFlightArchiveNames.remove(name) }
+    }
+
+    /// Remove the archive directories previous exports left in `tmp`, skipping
+    /// any an export is still writing into — deleting one mid-`zipDirectory`
+    /// would fail that export, or leave its share sheet holding a URL to a
+    /// file that is gone.
+    ///
+    /// A *delivered* archive is fair game, which is the deliberate part: it is
+    /// the only moment anything can collect them, since the share sheet takes
+    /// the URL by reference and may read it after this call returns. That
+    /// sheet is modal, so it has been dismissed before another export can
+    /// start — the cost of being wrong is one unreadable attachment, against a
+    /// leak of up to the mail cap per export otherwise.
+    ///
+    /// Best effort per directory: one that cannot be removed must not stop the
+    /// rest being swept.
     private static func pruneOldArchiveDirectories() {
         let fm = FileManager.default
+        let live = inFlightArchivesLock.withLock { inFlightArchiveNames }
         guard let entries = try? fm.contentsOfDirectory(
             at: fm.temporaryDirectory,
             includingPropertiesForKeys: nil,
             options: [.skipsHiddenFiles]
         ) else { return }
         for entry in entries
-        where entry.lastPathComponent.hasPrefix(archiveDirectoryPrefix) {
+        where entry.lastPathComponent.hasPrefix(archiveDirectoryPrefix)
+            && !live.contains(entry.lastPathComponent) {
             try? fm.removeItem(at: entry)
         }
     }
@@ -313,14 +348,24 @@ struct DiagnosticLogExporter {
         let state = WalletLifecycleTransitionState.shared
         var generation: UInt64 = 0
         if includingWalletSnapshot {
+            guard !snapshotInFlight else {
+                return .failure(DiagnosticLogExportError.anotherOperationInProgress)
+            }
             WalletLifecycleOverlayPresenter.shared.ensureActive()
             nextExportGeneration += 1
             generation = nextExportGeneration
             guard state.tryBegin(.exportingDiagnostics(dismissed: false, generation: generation)) else {
                 return .failure(DiagnosticLogExportError.anotherOperationInProgress)
             }
+            snapshotInFlight = true
         }
         defer {
+            if includingWalletSnapshot {
+                snapshotInFlight = false
+                // The gate's timer has nothing left to release.
+                dismissedGateTimer?.cancel()
+                dismissedGateTimer = nil
+            }
             // Only this export's phase — never a `.wiping` admitted through
             // it, and never a successor's export phase. `generation` is 0 for
             // an ungated export, which no phase can carry.
@@ -389,6 +434,28 @@ struct DiagnosticLogExporter {
     /// be scoped to the export that took the phase.
     @MainActor private static var nextExportGeneration: UInt64 = 0
 
+    /// True for the whole life of a snapshot export — through Cancel, and
+    /// through the gate's timeout.
+    ///
+    /// The lifecycle phase deliberately cannot carry this. That phase is
+    /// released at `dismissedExportGateTimeout` so the rest of the app can move
+    /// again, and a wallet switch started there is safe because it reaches
+    /// `manager.shutdown()`, which cancels the diagnostics pass and drains it
+    /// before taking the handle. A second SNAPSHOT is the one thing that is
+    /// not: it never goes through `shutdown()`, so it would run
+    /// `emitCoreWalletDiagnostics` against the same pinned manager and contend
+    /// with the first on the SDK's persistence serial queue — on the large
+    /// wallet where the first one already failed to finish.
+    ///
+    /// This is also what makes a tap after the timeout audible: the export is
+    /// refused, no card is up, so `shouldStaySilent` lets the alert through.
+    @MainActor private static var snapshotInFlight = false
+
+    /// The gate's release timer, held so it can be cancelled when the export
+    /// returns on its own. Unheld, it lingered its full delay poking the
+    /// shared phase after everything it guarded was over.
+    @MainActor private static var dismissedGateTimer: Task<Void, Never>?
+
     /// How long a dismissed export may keep the admission gate after its card
     /// is gone. Past this the gate opens even though the export is still
     /// running, because the gate is not what makes that safe: `shutdown()` —
@@ -400,6 +467,11 @@ struct DiagnosticLogExporter {
     /// nothing visible left: a refusal would have no owner on screen to
     /// explain it, and an export wedged behind the persistence queue would
     /// otherwise hold every other operation out until the app is relaunched.
+    ///
+    /// What the release does NOT permit is a second snapshot — the one
+    /// operation that reaches the SDK without passing through `shutdown()`.
+    /// `snapshotInFlight` keeps that refused for as long as the first pass
+    /// runs, whatever the phase says.
     static let dismissedExportGateTimeout: Duration = .seconds(30)
 
     /// The overlay card's Cancel. Drops the card now; the export in flight
@@ -414,7 +486,8 @@ struct DiagnosticLogExporter {
         guard case .exportingDiagnostics(dismissed: false, generation: let owner) = state.phase
         else { return }
         state.advance(to: .exportingDiagnostics(dismissed: true, generation: owner))
-        Task { @MainActor in
+        dismissedGateTimer?.cancel()
+        dismissedGateTimer = Task { @MainActor in
             try? await Task.sleep(for: dismissedExportGateTimeout)
             // Only if this export still owns a dismissed phase: it may have
             // returned and released, or been superseded by a wipe and a
@@ -426,20 +499,6 @@ struct DiagnosticLogExporter {
                 "🚦 LIFECYCLE releasing the gate of dismissed export #\(owner) after \(dismissedExportGateTimeout); the export has not returned")
             state.finish()
         }
-    }
-
-    /// True while an export the user has abandoned is still running. Its gate
-    /// is still held, so a fresh attempt will be refused — but it has to be
-    /// allowed to *make* that attempt: the card is gone, so the refusal alert
-    /// is the only feedback left, and a screen whose own re-entry guard is
-    /// still closed swallows the tap and shows nothing at all.
-    @MainActor
-    static var waitWasCancelled: Bool {
-        if case .exportingDiagnostics(dismissed: true, generation: _) =
-            WalletLifecycleTransitionState.shared.phase {
-            return true
-        }
-        return false
     }
 
     /// Failures the asking screen must stay silent about.

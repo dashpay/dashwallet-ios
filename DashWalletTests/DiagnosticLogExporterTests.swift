@@ -45,6 +45,11 @@ final class DiagnosticLogExporterTests: XCTestCase {
     /// The gate is what makes "no switch under an export" a guarantee: a
     /// busy lifecycle phase refuses the export, and the refusal must leave
     /// that phase untouched.
+    ///
+    /// `includingWalletSnapshot: true` is the only configuration this can be
+    /// asked of, and the only one where it means anything: the gate exists
+    /// because the snapshot holds the SDK's persistence queue, so an export
+    /// that takes no snapshot takes no phase either and runs regardless.
     @MainActor
     func testExportIsRefusedWhileAnotherLifecycleOperationIsBusy() async {
         let state = WalletLifecycleTransitionState.shared
@@ -52,7 +57,7 @@ final class DiagnosticLogExporterTests: XCTestCase {
         XCTAssertTrue(state.tryBegin(.switchingWallet(targetName: "A")))
         defer { state.finish() }
 
-        let result = await DiagnosticLogExporter.exportArchive(includingWalletSnapshot: false)
+        let result = await DiagnosticLogExporter.exportArchive(includingWalletSnapshot: true)
         guard case .failure(let error) = result else {
             return XCTFail("an export under a wallet switch must be refused")
         }
@@ -66,8 +71,30 @@ final class DiagnosticLogExporterTests: XCTestCase {
     func testExportReleasesTheGateWhenItReturns() async {
         let state = WalletLifecycleTransitionState.shared
         XCTAssertEqual(state.phase, .idle, "test precondition")
-        _ = await DiagnosticLogExporter.exportArchive(includingWalletSnapshot: false)
+        _ = await DiagnosticLogExporter.exportArchive(includingWalletSnapshot: true)
         XCTAssertEqual(state.phase, .idle)
+    }
+
+    /// An export that takes no snapshot takes no phase: it never touches the
+    /// SDK's persistence queue, so gating it would freeze the app behind a
+    /// scrim for a directory copy and refuse it under any switch — which is
+    /// what the About and Tools exports did before this branch, and do again.
+    @MainActor
+    func testAnExportWithoutASnapshotIsNeitherGatedNorGating() async {
+        let state = WalletLifecycleTransitionState.shared
+        XCTAssertEqual(state.phase, .idle, "test precondition")
+        XCTAssertTrue(state.tryBegin(.switchingWallet(targetName: "A")))
+        defer { state.finish() }
+
+        let result = await DiagnosticLogExporter.exportArchive(includingWalletSnapshot: false)
+        if case .failure(let error) = result {
+            XCTAssertNotEqual(
+                error as? DiagnosticLogExportError,
+                .anotherOperationInProgress,
+                "an ungated export must never consult the lifecycle gate"
+            )
+        }
+        XCTAssertEqual(state.phase, .switchingWallet(targetName: "A"), "and must not touch it")
     }
 
     /// Cancel hides the card but keeps the admission: the phase moves to

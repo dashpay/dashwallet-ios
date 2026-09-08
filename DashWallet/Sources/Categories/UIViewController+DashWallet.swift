@@ -19,12 +19,6 @@ import Intents
 import UIKit
 import MessageUI
 
-/// Stored state an extension cannot carry: whether a support export is in
-/// flight (see `presentSupportEmailController`).
-private enum SupportExport {
-    @MainActor static var inFlight = false
-}
-
 @objc
 extension UIViewController {
     /// The tab bar controller somewhere at or under this one, searching
@@ -89,19 +83,14 @@ extension UIViewController {
     }
 
     @objc func presentSupportEmailController() {
-        // One support export at a time. The lifecycle gate cannot close this
-        // window on its own: the overlay appears a turn after `tryBegin`, and
-        // a second tap in between would be refused straight into a log-less
-        // composer while the first export's composer is later dropped by
-        // UIKit as "already presenting".
-        // …but a cancelled export keeps running with its gate held and no card
-        // on screen, and this guard would then swallow every further tap in
-        // silence. Let those through: `exportArchive` refuses them, and that
-        // refusal is the only explanation the user can still be given.
-        guard !SupportExport.inFlight || DiagnosticLogExporter.waitWasCancelled else { return }
-        SupportExport.inFlight = true
+        // No screen-local re-entry flag. `exportArchive` owns the only fact
+        // that decides it — a snapshot still in flight — and holds it for the
+        // whole pass, past Cancel and past the gate's timeout, which a flag
+        // cleared when the export returns cannot match. Every tap therefore
+        // reaches the exporter: refused silently while its card is up (the
+        // card is the explanation), and refused into the alert once it is
+        // gone, which is the only feedback left at that point.
         Task { [weak self] in
-            defer { SupportExport.inFlight = false }
             let result = await DiagnosticLogExporter.exportArchive(includingWalletSnapshot: true)
             guard let self else { return }
             switch result {
