@@ -282,8 +282,11 @@ struct WalletLifecycleOverlayView: View {
                 // down); nothing to draw if a view is ever asked.
                 EmptyView()
             case .exportingDiagnostics(dismissed: false, generation: _):
-                // The one busy phase whose duration the app cannot bound, so
-                // the one busy card with a way out.
+                // Only the support export takes this phase — the About and
+                // Tools exports collect no diagnostics and are not gated — so
+                // the copy can say what is actually happening. The one busy
+                // phase whose duration the app cannot bound, hence the one
+                // busy card with a way out.
                 card {
                     SwiftUI.ProgressView()
                         .controlSize(.large)

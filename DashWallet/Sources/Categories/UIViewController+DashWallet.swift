@@ -94,7 +94,11 @@ extension UIViewController {
         // a second tap in between would be refused straight into a log-less
         // composer while the first export's composer is later dropped by
         // UIKit as "already presenting".
-        guard !SupportExport.inFlight else { return }
+        // …but a cancelled export keeps running with its gate held and no card
+        // on screen, and this guard would then swallow every further tap in
+        // silence. Let those through: `exportArchive` refuses them, and that
+        // refusal is the only explanation the user can still be given.
+        guard !SupportExport.inFlight || DiagnosticLogExporter.waitWasCancelled else { return }
         SupportExport.inFlight = true
         Task { [weak self] in
             defer { SupportExport.inFlight = false }

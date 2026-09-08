@@ -221,6 +221,13 @@ struct DiagnosticLogExporter {
         // under a live consumer, since the over-25 MB route hands this URL to
         // the share sheet, which reads it lazily and by reference. The
         // directory is also the unit `discardArchive` deletes.
+        // Nothing can delete an archive after delivery: the share sheet takes
+        // the URL by reference and may read it long after this returns. So the
+        // previous ones are swept here instead — the fixed path this replaced
+        // was self-cleaning by being overwritten, and without a sweep three
+        // support exports leave three archives of up to the mail cap behind,
+        // on a device whose free space is one of the things they diagnose.
+        pruneOldArchiveDirectories()
         let archiveDirectory = fm.temporaryDirectory
             .appendingPathComponent("\(archiveDirectoryPrefix)\(UUID().uuidString)", isDirectory: true)
         try fm.createDirectory(at: archiveDirectory, withIntermediateDirectories: true)
@@ -231,6 +238,22 @@ struct DiagnosticLogExporter {
 
     /// Names the directory `export` writes its zip into.
     private static let archiveDirectoryPrefix = "LogArchive-"
+
+    /// Remove the archive directories previous exports left in `tmp`. Best
+    /// effort per directory: one that is still open elsewhere must not stop
+    /// the rest being swept, and the OS reclaims `tmp` eventually anyway.
+    private static func pruneOldArchiveDirectories() {
+        let fm = FileManager.default
+        guard let entries = try? fm.contentsOfDirectory(
+            at: fm.temporaryDirectory,
+            includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        ) else { return }
+        for entry in entries
+        where entry.lastPathComponent.hasPrefix(archiveDirectoryPrefix) {
+            try? fm.removeItem(at: entry)
+        }
+    }
 
     /// What a failed copy may say in a file that is mailed to support.
     /// Cocoa's `localizedDescription` embeds the full sandbox path of the item
@@ -264,10 +287,16 @@ struct DiagnosticLogExporter {
     /// snapshot holds the SDK's persistence serial queue while it runs and on
     /// a large wallet is the whole cost of the export.
     ///
-    /// Runs behind the app-wide lifecycle overlay — the same blocking window a
-    /// wallet switch or creation uses, in its own `UIWindow` — under the same
-    /// admission gate: it cannot start under a switch in flight, and no
-    /// switch can start under it (a wipe can: the reset route stays open).
+    /// The snapshot — and ONLY the snapshot — runs behind the app-wide
+    /// lifecycle overlay, the same blocking window a wallet switch or creation
+    /// uses, in its own `UIWindow`, under the same admission gate: it cannot
+    /// start under a switch in flight, and no switch can start under it (a
+    /// wipe can: the reset route stays open). `includingWalletSnapshot: false`
+    /// takes neither. Those callers copy log files and zip them; they never
+    /// touch the SDK's persistence queue, which is the gate's whole
+    /// justification, and freezing the app behind a full-screen scrim for a
+    /// directory copy — or refusing it because a switch is running, where the
+    /// pre-PR export simply ran — would be a cost with nothing bought.
     /// The queue is held only during the snapshot; the card stays up through
     /// flush, capture and zip because the user is waiting for one result and
     /// must not start a second. A refused gate is reported to the caller, not
@@ -281,16 +310,20 @@ struct DiagnosticLogExporter {
     /// of a wallet the wipe removed.
     @MainActor
     static func exportArchive(includingWalletSnapshot: Bool) async -> Result<URL, Error> {
-        WalletLifecycleOverlayPresenter.shared.ensureActive()
         let state = WalletLifecycleTransitionState.shared
-        nextExportGeneration += 1
-        let generation = nextExportGeneration
-        guard state.tryBegin(.exportingDiagnostics(dismissed: false, generation: generation)) else {
-            return .failure(DiagnosticLogExportError.anotherOperationInProgress)
+        var generation: UInt64 = 0
+        if includingWalletSnapshot {
+            WalletLifecycleOverlayPresenter.shared.ensureActive()
+            nextExportGeneration += 1
+            generation = nextExportGeneration
+            guard state.tryBegin(.exportingDiagnostics(dismissed: false, generation: generation)) else {
+                return .failure(DiagnosticLogExportError.anotherOperationInProgress)
+            }
         }
         defer {
             // Only this export's phase — never a `.wiping` admitted through
-            // it, and never a successor's export phase.
+            // it, and never a successor's export phase. `generation` is 0 for
+            // an ungated export, which no phase can carry.
             if case .exportingDiagnostics(_, let owner) = state.phase, owner == generation {
                 state.finish()
             }
@@ -340,7 +373,9 @@ struct DiagnosticLogExporter {
 
         // Deliver only if this export still owns an undismissed phase.
         // Cancel dismissed it; a wipe admitted through it moved the phase
-        // on, and the wallet the archive describes may be gone by now.
+        // on, and the wallet the archive describes may be gone by now. An
+        // ungated export took no phase and has nothing to lose it to.
+        guard includingWalletSnapshot else { return result }
         guard case .exportingDiagnostics(dismissed: false, generation: let owner) = state.phase,
               owner == generation
         else {
@@ -391,6 +426,20 @@ struct DiagnosticLogExporter {
                 "🚦 LIFECYCLE releasing the gate of dismissed export #\(owner) after \(dismissedExportGateTimeout); the export has not returned")
             state.finish()
         }
+    }
+
+    /// True while an export the user has abandoned is still running. Its gate
+    /// is still held, so a fresh attempt will be refused — but it has to be
+    /// allowed to *make* that attempt: the card is gone, so the refusal alert
+    /// is the only feedback left, and a screen whose own re-entry guard is
+    /// still closed swallows the tap and shows nothing at all.
+    @MainActor
+    static var waitWasCancelled: Bool {
+        if case .exportingDiagnostics(dismissed: true, generation: _) =
+            WalletLifecycleTransitionState.shared.phase {
+            return true
+        }
+        return false
     }
 
     /// Failures the asking screen must stay silent about.
