@@ -59,6 +59,12 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
 @dynamic coinbaseInfoShown;
 @dynamic shortcutBannerState;
 @dynamic inactivityReminderDisabled;
+// Without this the compiler synthesizes an ivar-backed accessor, `class_addMethod`
+// in DSDynamicOptions silently loses the race for the selector, and the property
+// stops being a user default: the registered @YES never applies (so notifications
+// read as switched off on every launch) and the user's own choice is forgotten at
+// termination.
+@dynamic localNotificationsEnabled;
 
 #ifdef DASHPAY
 @dynamic dashpayUsername;
