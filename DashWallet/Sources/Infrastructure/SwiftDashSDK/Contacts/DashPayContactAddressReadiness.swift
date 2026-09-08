@@ -91,7 +91,16 @@ enum DashPayContactAddressReadiness {
                 GeneratedWalletIdentityMarker.clear(walletId: walletId)
                 if StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
                     identityFound: true,
-                    budgetExhausted: outcome.elapsed >= probeBudget - 0.5,
+                    // No slack on purpose: the SDK reports no "deadline
+                    // fired" flag, so this is an approximation, and the two
+                    // ways it can be wrong are not equal. A false positive
+                    // costs a second full-budget sequence on the switch
+                    // path; a false negative leaves the contact steps to the
+                    // DIP-15 rescan, the fallback this pass documents
+                    // anyway. Erring towards the cheap side.
+                    // TODO(platform-wallet): expose a deadline-fired flag on
+                    // `WalletStartupOutcome` and use it here.
+                    budgetExhausted: outcome.elapsed >= probeBudget,
                     dashPaySyncRan: outcome.dashPaySyncRan,
                     contactAccountsPending: outcome.contactAccountsPending,
                     seedBindingUnverified: outcome.seedBindingUnverified,
