@@ -229,4 +229,49 @@ final class CrowdNodeOwnershipTests: XCTestCase {
         XCTAssertEqual(verdict, .unproven)
         XCTAssertNotEqual(verdict, .alien, "an absent address must never trigger a reset")
     }
+
+    // MARK: which address the online restore acts on
+
+    // The remaining reviewer finding lives in `getOnlineAccountAddress`, not in
+    // the verdict: with trust withheld it reaches the API-confirmation branch
+    // WITH a saved address present, which it never could before this change.
+    // Both decisions it makes there are pinned here.
+
+    func testAnUnprovenStoredAddressIsNeverTakenHoweverFarAlongItLooks() {
+        // Wallet A's address and its `.done` copied into wallet B by the legacy
+        // per-wallet key seeding. B must re-derive from its own history instead.
+        for state: CrowdNode.OnlineAccountState in [.done, .creating, .signingUp, .linking, .validating] {
+            XCTAssertFalse(CrowdNode.trustsStoredOnlineAddress(
+                trustStoredAddress: false, storedAddress: storedAddress, state: state), "\(state)")
+        }
+    }
+
+    func testAProvenStoredAddressIsTakenOnlyWithAnOnlineAccount() {
+        XCTAssertTrue(CrowdNode.trustsStoredOnlineAddress(
+            trustStoredAddress: true, storedAddress: storedAddress, state: .done))
+        XCTAssertFalse(CrowdNode.trustsStoredOnlineAddress(
+            trustStoredAddress: true, storedAddress: storedAddress, state: .none),
+            "no online account to restore")
+        XCTAssertFalse(CrowdNode.trustsStoredOnlineAddress(
+            trustStoredAddress: true, storedAddress: nil, state: .done),
+            "nothing stored to take")
+    }
+
+    func testRecoveringTheStoredAddressDoesNotWriteTheStateBackwards() {
+        // The verdict is unproven on every launch for the population this
+        // guard exists for, so a downgrade here would repeat forever and park
+        // an offline account at `.linking`.
+        XCTAssertFalse(CrowdNode.persistsLinkingDowngrade(
+            confirmationAddress: storedAddress, storedAddress: storedAddress))
+    }
+
+    func testRecoveringADifferentAddressPersistsTheLinking() {
+        // A genuinely different account: this wallet has only just found its
+        // first evidence of it, and `.linking` is what that evidence supports.
+        XCTAssertTrue(CrowdNode.persistsLinkingDowngrade(
+            confirmationAddress: otherAddress, storedAddress: storedAddress))
+        XCTAssertTrue(CrowdNode.persistsLinkingDowngrade(
+            confirmationAddress: otherAddress, storedAddress: nil),
+            "nothing stored, so nothing is being written backwards")
+    }
 }

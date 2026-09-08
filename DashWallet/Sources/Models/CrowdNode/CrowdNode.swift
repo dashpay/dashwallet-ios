@@ -454,6 +454,34 @@ extension CrowdNode {
         return storedAddress == recoveredAddress
     }
 
+    /// Whether the online restore may take the stored account address at face
+    /// value, or has to re-derive one from this wallet's own history.
+    ///
+    /// The stored address is taken only when ownership was actually proven AND
+    /// the stored state says an online account exists. An unproven address is
+    /// never taken however far along its stored state claims to be — that state
+    /// can have been copied from another wallet by the legacy per-wallet key
+    /// seeding, and taking it is exactly what published another wallet's
+    /// account in ticket 32026.
+    static func trustsStoredOnlineAddress(trustStoredAddress: Bool,
+                                          storedAddress: String?,
+                                          state: OnlineAccountState) -> Bool {
+        trustStoredAddress && storedAddress != nil && state != .none
+    }
+
+    /// Whether the untrusted path may persist its `.linking` downgrade.
+    ///
+    /// Only when the API confirmation recovered a genuinely different account.
+    /// Recovering the address already stored means the stored state describes
+    /// THIS account and is further along, so writing `.linking` over it is a
+    /// backward write driven by a transient condition — and on the population
+    /// this guard exists for the verdict is unproven on every launch, so it
+    /// would repeat forever and park an offline account at `.linking`.
+    static func persistsLinkingDowngrade(confirmationAddress: String,
+                                         storedAddress: String?) -> Bool {
+        confirmationAddress != storedAddress
+    }
+
     static func storedAccountVerdict(ownership owns: Bool?) -> StoredAccountVerdict {
         switch owns {
         case true?: return .trusted
@@ -1214,20 +1242,17 @@ extension CrowdNode {
                                          trustStoredAddress: Bool) -> String? {
         let savedAddress = prefs.accountAddress
 
-        if trustStoredAddress, savedAddress != nil, state != .none {
+        if CrowdNode.trustsStoredOnlineAddress(trustStoredAddress: trustStoredAddress,
+                                               storedAddress: savedAddress,
+                                               state: state) {
             return savedAddress
         } else if let confirmationTx = getApiAddressConfirmationTx(in: observed),
                   let apiAddress = confirmationTx.ownOutputAddresses.first {
             prefs.accountAddress = apiAddress
             signUpState = .linkedOnline
-            // Persist the downgrade only when this is genuinely a different
-            // account. When the confirmation recovers the address already
-            // stored, the stored state describes THIS account and is further
-            // along; overwriting it with `.linking` would be a backward write
-            // driven by a transient condition — and on the population this
-            // guard exists for the verdict is unproven on every launch, so it
-            // would repeat forever and park an offline account at `.linking`.
-            if apiAddress != savedAddress {
+
+            if CrowdNode.persistsLinkingDowngrade(confirmationAddress: apiAddress,
+                                                  storedAddress: savedAddress) {
                 prefs.savedOnlineAccountState = .linking
             }
 
