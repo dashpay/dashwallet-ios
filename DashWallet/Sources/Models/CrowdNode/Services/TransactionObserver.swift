@@ -64,6 +64,9 @@ extension ObservedTransaction {
         // as the fallback for rows restored from chain data.
         let ts: UInt64 = row.firstSeen != 0 ? row.firstSeen : UInt64(row.blockTimestamp)
         timestamp = ts == 0 ? nil : Date(timeIntervalSince1970: TimeInterval(ts))
+        blockHeight = row.blockHeight
+        let mined = UInt64(row.blockTimestamp)
+        minedAt = mined == 0 ? nil : Date(timeIntervalSince1970: TimeInterval(mined))
         wrapped = Transaction(persistentTransaction: row)
     }
 }

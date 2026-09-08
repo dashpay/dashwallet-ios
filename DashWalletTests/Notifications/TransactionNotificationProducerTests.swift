@@ -36,7 +36,6 @@ final class TransactionNotificationProducerTests: XCTestCase {
     private var dispatcher: NotificationDispatcher!
     private var appState: FakeAppStateProvider!
     private var rows: [ObservedTransaction] = []
-    private var syncState: SyncingActivityMonitor.State = .syncDone
     private var watchBodies: [String] = []
     private var producer: TransactionNotificationProducer!
 
@@ -47,7 +46,6 @@ final class TransactionNotificationProducerTests: XCTestCase {
         preferences = FakeNotificationPreferenceStore()
         appState = FakeAppStateProvider()
         rows = []
-        syncState = .syncDone
         watchBodies = []
         let permissions = NotificationPermissionCoordinator(client: client, preferences: preferences)
         dispatcher = NotificationDispatcher(client: client, store: store, permissions: permissions)
@@ -55,7 +53,6 @@ final class TransactionNotificationProducerTests: XCTestCase {
             dispatcher: dispatcher,
             store: store,
             rowSource: { [weak self] _ in self?.rows ?? [] },
-            syncState: { [weak self] in self?.syncState ?? .unknown },
             appState: appState,
             watchBridge: { [weak self] body in self?.watchBodies.append(body) },
             now: { Self.referenceNow })
@@ -63,11 +60,17 @@ final class TransactionNotificationProducerTests: XCTestCase {
 
     /// A synthetic decoded row. `directionRaw` uses the FFI encoding the
     /// wrapper classifies from: 0=incoming, 1=outgoing, 2=internal.
+    ///
+    /// `age` is the row's device-clock `firstSeen`; `minedAge`, when given,
+    /// makes the row mined (`blockHeight` 1) with that block timestamp —
+    /// the two diverge exactly the way a restore burst makes them diverge.
     private func makeRow(txidByte: UInt8 = 0xab,
                          directionRaw: UInt32 = 0,
                          netAmount: Int64 = 150_000,
                          age: TimeInterval = 60,
-                         hasTimestamp: Bool = true) -> ObservedTransaction {
+                         hasTimestamp: Bool = true,
+                         minedAge: TimeInterval? = nil,
+                         blockHeight: UInt32? = nil) -> ObservedTransaction {
         let txid = Data(repeating: txidByte, count: 32)
         let timestamp = Self.referenceNow.addingTimeInterval(-age)
         let wrapped = Transaction(
@@ -83,6 +86,8 @@ final class TransactionNotificationProducerTests: XCTestCase {
             outputs: [],
             inputAddresses: [],
             timestamp: hasTimestamp ? timestamp : nil,
+            blockHeight: blockHeight ?? (minedAge == nil ? 0 : 1),
+            minedAt: minedAge.map { Self.referenceNow.addingTimeInterval(-$0) },
             ownOutputsAmount: netAmount > 0 ? UInt64(netAmount) : 0,
             ownOutputAddresses: [],
             isChainAccepted: true,
@@ -150,18 +155,6 @@ final class TransactionNotificationProducerTests: XCTestCase {
 
     // MARK: Replay guard
 
-    func testNoPostWhileSyncIsNotDone() async {
-        rows = [makeRow()]
-
-        for state in [SyncingActivityMonitor.State.syncing, .syncFailed, .noConnection, .unknown] {
-            syncState = state
-            await producer.scanAndNotify()
-        }
-
-        XCTAssertTrue(client.addedRequests.isEmpty)
-        XCTAssertTrue(watchBodies.isEmpty)
-    }
-
     func testStaleOrUndatedRowsAreDropped() async {
         rows = [
             makeRow(txidByte: 0x03, age: 11 * 60),
@@ -179,6 +172,52 @@ final class TransactionNotificationProducerTests: XCTestCase {
         await producer.scanAndNotify()
 
         XCTAssertEqual(client.addedRequests.count, 1)
+    }
+
+    /// The restore/rescan shape: the persister stamps a historical
+    /// transaction with a device-clock `firstSeen` of *now*, but its block
+    /// is old. `firstSeen` must not be able to vouch for it.
+    func testMinedRowWithOldBlockDoesNotPostDespiteFreshFirstSeen() async {
+        rows = [makeRow(age: 0, minedAge: 30 * 24 * 60 * 60)]
+
+        await producer.scanAndNotify()
+
+        XCTAssertTrue(client.addedRequests.isEmpty)
+        XCTAssertTrue(watchBodies.isEmpty)
+    }
+
+    /// A row that claims a block but carries no block timestamp proves
+    /// nothing about when it arrived.
+    func testMinedRowWithoutBlockTimestampDoesNotPost() async {
+        rows = [makeRow(age: 0, blockHeight: 2_500_000)]
+
+        await producer.scanAndNotify()
+
+        XCTAssertTrue(client.addedRequests.isEmpty)
+    }
+
+    /// A payment mined into a block that was just found still notifies.
+    func testFreshlyMinedRowPosts() async {
+        rows = [makeRow(age: 0, minedAge: 30)]
+
+        await producer.scanAndNotify()
+
+        XCTAssertEqual(client.addedRequests.count, 1)
+    }
+
+    /// The regression this producer was rewritten for: a payment arriving
+    /// while the SDK is mid-sync (which is what an incoming transaction
+    /// makes it do) is unmined, so nothing about the sync state may stop
+    /// it. No sync seam is injected at all — the default production
+    /// `SyncingActivityMonitor` state in a unit-test process is
+    /// `.unknown`, and this posts regardless.
+    func testUnminedRowPostsRegardlessOfSyncState() async {
+        rows = [makeRow(txidByte: 0x07, age: 5)]
+
+        await producer.scanAndNotify()
+
+        XCTAssertEqual(client.addedRequests.count, 1)
+        XCTAssertEqual(client.addedRequests[0].identifier, expectedId(txidByte: 0x07))
     }
 
     // MARK: App-state policy

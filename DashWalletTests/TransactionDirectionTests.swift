@@ -122,6 +122,8 @@ final class TransactionDirectionTests: XCTestCase {
             outputs: [output],
             inputAddresses: [],
             timestamp: wrapped.date,
+            blockHeight: 1,
+            minedAt: wrapped.date,
             ownOutputsAmount: 0,
             ownOutputAddresses: [],
             isChainAccepted: true,

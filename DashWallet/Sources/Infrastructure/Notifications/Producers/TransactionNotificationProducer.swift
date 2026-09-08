@@ -67,13 +67,15 @@ final class UIApplicationStateProvider: AppStateProvider {
 /// during `application(_:didFinishLaunching:)`, before the wallet runtime is
 /// up. That is safe because every signal is a `NotificationCenter` name
 /// (subscribing needs no SDK handle), rows only exist once the SDK's
-/// persister writes them, and the replay guard below keeps initial sync,
-/// restore, and rescan bursts from notifying.
+/// persister writes them, and the per-row replay guard below keeps initial
+/// sync, restore, and rescan bursts from notifying.
 final class TransactionNotificationProducer {
-    /// A row must prove it is at most this recent to notify — together with
-    /// the sync gate this is the replay guard (Android's `isReplayedTx`
-    /// parity): initial sync, restore, and rescan write historical rows in
-    /// bulk, and none of them may fire a notification.
+    /// A row must prove it is at most this recent to notify — this is the
+    /// replay guard (Android's `isReplayedTx` parity): initial sync,
+    /// restore, and rescan write historical rows in bulk, and none of them
+    /// may fire a notification. What "recent" is measured against is the
+    /// point `freshnessStamp(for:)` picks: for a mined row it is the
+    /// block's own timestamp, which a replay cannot forge.
     static let freshnessWindow: TimeInterval = 10 * 60
 
     /// Rows admitted per scan. The freshness floor already bounds the
@@ -84,7 +86,6 @@ final class TransactionNotificationProducer {
     private let store: NotifiedEventStoring
     /// Recent rows, given a `firstSeen` floor (epoch seconds).
     private let rowSource: (UInt64) -> [ObservedTransaction]
-    private let syncState: () -> SyncingActivityMonitor.State
     private let appState: AppStateProvider
     /// Mirrors a posted notification's body to the Apple Watch app.
     private let watchBridge: (String) -> Void
@@ -96,7 +97,6 @@ final class TransactionNotificationProducer {
     init(dispatcher: NotificationDispatcher,
          store: NotifiedEventStoring,
          rowSource: @escaping (UInt64) -> [ObservedTransaction] = TransactionNotificationProducer.defaultRowSource,
-         syncState: @escaping () -> SyncingActivityMonitor.State = { SyncingActivityMonitor.shared.state },
          appState: AppStateProvider = UIApplicationStateProvider(),
          watchBridge: @escaping (String) -> Void = TransactionNotificationProducer.defaultWatchBridge,
          fiatFormatter: @escaping (Decimal) async -> String = TransactionNotificationProducer.defaultFiatFormatter,
@@ -104,7 +104,6 @@ final class TransactionNotificationProducer {
         self.dispatcher = dispatcher
         self.store = store
         self.rowSource = rowSource
-        self.syncState = syncState
         self.appState = appState
         self.watchBridge = watchBridge
         self.fiatFormatter = fiatFormatter
@@ -151,33 +150,58 @@ final class TransactionNotificationProducer {
     // MARK: Scanning
 
     /// One bounded pass: recent rows in, per-row notification decisions out.
+    ///
+    /// Deliberately not gated on `SyncingActivityMonitor`: dash-spv leaves
+    /// `.syncDone` for every new block (see the "Synced is only a transient
+    /// window" note in `SyncingActivityMonitor.handleCoordinatorUpdate`),
+    /// and an incoming payment *is* what opens such a window — so a
+    /// sync-state gate drops precisely the rows this producer exists for,
+    /// with nothing rescanning once the state settles. The replay guard is
+    /// per row instead.
     func scanAndNotify() async {
-        // Replay guard, part 1: while sync is running the persister writes
-        // historical rows in bulk and none of them may notify. Checked
-        // before scanning at all — no row can pass, so don't fetch any.
-        guard syncState() == .syncDone else { return }
-
         let cutoff = now().addingTimeInterval(-Self.freshnessWindow)
         let floor = UInt64(max(0, cutoff.timeIntervalSince1970))
-        for row in rowSource(floor) {
-            await process(row, cutoff: cutoff)
+        let rows = rowSource(floor)
+        guard !rows.isEmpty else { return }
+
+        // One line per scan, not per row: a restore burst hands back up to
+        // `scanFetchLimit` rows on every save signal.
+        var outcomes: [Outcome: Int] = [:]
+        for row in rows {
+            outcomes[await process(row, cutoff: cutoff), default: 0] += 1
         }
+        let tally = Outcome.allCases
+            .compactMap { outcome in outcomes[outcome].map { "\(outcome.rawValue) \($0)" } }
+            .joined(separator: ", ")
+        DWLogger.log("TransactionNotificationProducer: scanned \(rows.count) recent row(s) — \(tally)")
     }
 
-    private func process(_ tx: ObservedTransaction, cutoff: Date) async {
+    /// What one row's pass decided, for the scan's log line.
+    private enum Outcome: String, CaseIterable {
+        case posted
+        case notReceived = "not-received"
+        case notFresh = "not-fresh"
+        case zeroAmount = "zero-amount"
+        /// Suppressed because the app is frontmost (and consumed, so a
+        /// later scan cannot resurrect it).
+        case appActive = "app-active"
+        /// The dispatcher declined it — permission gate or already notified;
+        /// it logs the reason itself.
+        case dropped
+    }
+
+    @discardableResult
+    private func process(_ tx: ObservedTransaction, cutoff: Date) async -> Outcome {
         // Incoming only — the SDK direction classifier is authoritative.
         // `.moved` (internal legs: shielded transfers, CoinJoin, self-sends)
         // and sends never notify.
-        guard tx.wrapped.direction == .received else { return }
+        guard tx.wrapped.direction == .received else { return .notReceived }
 
-        // Replay guard, part 2: even after syncDone a scan can hand back old
-        // rows, and the scan floor cannot vouch for rows whose timestamp
-        // fell back to `blockTimestamp`. A row that cannot prove it is
-        // fresh does not notify.
-        guard let timestamp = tx.timestamp, timestamp >= cutoff else { return }
+        // Replay guard: a row that cannot prove it is fresh does not notify.
+        guard let stamp = Self.freshnessStamp(for: tx), stamp >= cutoff else { return .notFresh }
 
         let amount = tx.wrapped.dashAmount
-        guard amount > 0 else { return }
+        guard amount > 0 else { return .zeroAmount }
 
         let notification = await notification(for: tx, amount: amount)
 
@@ -189,13 +213,33 @@ final class TransactionNotificationProducer {
         // arrive. CrowdNode deposits post in every app state.
         if notification.topic != .crowdnode, appState.isApplicationActive {
             await store.consume(id: notification.id, topic: notification.topic)
-            return
+            return .appActive
         }
 
-        if await dispatcher.post(notification) {
-            // The watch mirrors exactly the rows that produced a post.
-            watchBridge(notification.body)
+        guard await dispatcher.post(notification) else { return .dropped }
+        // The watch mirrors exactly the rows that produced a post.
+        watchBridge(notification.body)
+        return .posted
+    }
+
+    /// The point in time a row must prove is recent.
+    ///
+    /// A mined row is judged by its block's timestamp, never by `firstSeen`:
+    /// restore and rescan persist historical transactions with a fresh
+    /// device-clock `firstSeen`, so `firstSeen` cannot tell "just arrived"
+    /// apart from "history replayed" — while consensus data can. A row that
+    /// claims a block but carries no block timestamp proves nothing, so it
+    /// is dropped (nil).
+    ///
+    /// An unmined row (mempool, or InstantSend-locked but not yet in a
+    /// block) has no consensus stamp and needs none: it can only have
+    /// entered the wallet's view just now, which is exactly the payment
+    /// this producer notifies about.
+    static func freshnessStamp(for tx: ObservedTransaction) -> Date? {
+        if tx.blockHeight > 0 || tx.minedAt != nil {
+            return tx.minedAt
         }
+        return tx.timestamp
     }
 
     /// Classification picks copy, topic, sound, and route only — the
