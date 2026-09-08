@@ -107,9 +107,12 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.wallet-state")
 
-    /// Latest wallet balance from SwiftDashSDK. `nil` until either
-    /// `seedInitialBalance(walletManager:walletId:)` succeeds or the
-    /// first `applyBalance(_:)` call arrives. Updated on the main queue.
+    /// Latest wallet balance from SwiftDashSDK. `nil` until the first
+    /// `applyBalance(_:)` call arrives, which `SwiftDashSDKSPVCoordinator`'s
+    /// balance bridge makes as soon as the host has bound the wallet — before
+    /// SPV starts, so the persisted balance renders without a network. `nil`
+    /// means "not known yet" and must never be read as an empty wallet.
+    /// Updated on the main queue.
     @Published public private(set) var balance: WalletBalance? = nil
 
     /// Fee-aware "Max" / all-funds amount for a core send: spendable minus a
@@ -345,37 +348,6 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         if coinJoinBalanceDuffs != duffs {
             coinJoinBalanceDuffs = duffs
             Self.logger.info("💰 WALLET :: coinJoinBalanceDuffs=\(duffs, privacy: .public)")
-        }
-    }
-
-    // MARK: - Seed (called from coordinator after wallet import)
-
-    /// Called from `SwiftDashSDKSPVCoordinator.performStart` after
-    /// `walletManager.importWallet` succeeds. The FFI does not emit an
-    /// `onBalanceUpdated` event on `startSync` for a wallet with zero
-    /// new activity, so without this seed the home screen would sit on
-    /// `nil` until the first relevant tx (potentially hours into a
-    /// fresh sync).
-    ///
-    /// `WalletManager.getWalletBalance` returns only `(confirmed, unconfirmed)`
-    /// — the `immature`/`locked` fields aren't exposed by this API surface.
-    /// They default to 0 in the seed and are populated properly by the
-    /// first live `applyBalance(_:)` call. Mining wallets are unaffected
-    /// (we don't support them).
-    ///
-    /// Non-fatal — if the FFI call fails, live updates eventually catch up.
-    public func seedInitialBalance(walletManager: WalletManager, walletId: Data) {
-        do {
-            let tuple = try walletManager.getWalletBalance(walletId: walletId)
-            let initial = WalletBalance(
-                confirmed: tuple.confirmed,
-                unconfirmed: tuple.unconfirmed,
-                immature: 0,
-                locked: 0)
-            Self.logger.info("💰 WALLET :: initial balance seed: confirmed=\(initial.confirmed, privacy: .public) unconfirmed=\(initial.unconfirmed, privacy: .public) total=\(initial.total, privacy: .public)")
-            applyBalance(initial)
-        } catch {
-            Self.logger.warning("💰 WALLET :: initial balance seed failed (non-fatal): \(String(describing: error), privacy: .public)")
         }
     }
 

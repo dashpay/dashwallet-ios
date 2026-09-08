@@ -100,7 +100,14 @@ final class BalanceModel: ObservableObject {
             options.balanceChangedDate = Date()
         }
 
-        options.userHasBalance = balanceValue > 0
+        // Only write when the balance is actually known. `userHasBalance` is
+        // persisted per wallet and is an input to the default shortcut bar, so
+        // writing `false` for a not-yet-loaded balance let a single launch
+        // before the wallet was bound permanently drop a shortcut from a funded
+        // wallet's bar. `nil` means "not known yet", never "empty".
+        if let total = walletBalance?.total {
+            options.userHasBalance = total > 0
+        }
         isBalanceHidden = DWGlobalOptions.sharedInstance().balanceHidden
     }
     

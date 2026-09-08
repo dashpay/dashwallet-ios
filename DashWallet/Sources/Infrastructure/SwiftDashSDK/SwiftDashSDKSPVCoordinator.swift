@@ -239,6 +239,15 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             return .failure(StartError.walletImport(error))
         }
 
+        // Publish the persisted balance before any network work. `host.start`
+        // has run `loadFromPersistor` (HOST stage 4/4), which hydrates the core
+        // wallet's balance from SwiftData, and `coreWallet().balance()` reads
+        // that in memory — no SPV client, no peers, no I/O. Without this the
+        // home screen sits on 0.00 until the DashPay readiness pass and
+        // `startSpv` both complete, and stays there for the whole session when
+        // either fails: exactly the offline "wallet shows 0" report.
+        refreshBalanceBridge()
+
 #if DASHPAY
         // Startup order: identity → contacts → contact accounts → core sync.
         // A contact's DIP-15 addresses must be watched before the first filter

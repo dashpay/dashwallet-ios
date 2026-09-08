@@ -262,6 +262,48 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 hasWalletManager: true))
     }
 
+    /// A Platform outage must not cost the user a working Core runtime: with
+    /// Core up and Platform down, the triggers that fire on their own (launch,
+    /// foreground, the sync strip's Retry, "Sync Now") elide the rebuild whose
+    /// `fullReset` would stop SPV, clear the balance and empty the home
+    /// transaction list. This is the offline-launch regression in table form.
+    func testCoreOnlyTriggersElideTheRebuildWhilePlatformIsDown() {
+        typealias Trigger = SwiftDashSDKWalletRuntime.RefreshTrigger
+
+        // Core up, Platform down.
+        for trigger in [Trigger.startIfReady, .platformSyncRearm] {
+            XCTAssertTrue(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: true, isFullyReady: false),
+                "\(trigger.rawValue) must not rebuild a healthy Core because Platform is down")
+        }
+
+        // A network switch still rebuilds on Core alone — it detached the SPV
+        // subscriptions that only a rebuild re-attaches.
+        XCTAssertFalse(
+            RuntimeRefreshPolicy.shouldSkipRebuild(
+                trigger: .networkDidChange, isCoreReady: true, isFullyReady: false))
+        XCTAssertTrue(
+            RuntimeRefreshPolicy.shouldSkipRebuild(
+                trigger: .networkDidChange, isCoreReady: true, isFullyReady: true))
+
+        // A wallet change never elides, however ready the runtime looks.
+        for trigger in [Trigger.walletMaterialChanged, .walletDidChange] {
+            XCTAssertFalse(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: true, isFullyReady: true),
+                "\(trigger.rawValue) must always rebind the wallet")
+        }
+
+        // Nothing elides when Core itself is down.
+        for trigger in [Trigger.startIfReady, .platformSyncRearm, .networkDidChange] {
+            XCTAssertFalse(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: false, isFullyReady: false),
+                "\(trigger.rawValue) must rebuild when Core is not running")
+        }
+    }
+
     func testWalletWithoutPlatformPaymentAccountUsesNeutralState() {
         let availability = PlatformAccountAvailabilityPolicy.resolve(
             hasWalletRecord: true,

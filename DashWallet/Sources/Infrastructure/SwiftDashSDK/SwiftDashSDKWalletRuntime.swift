@@ -57,6 +57,45 @@ final class SerialAsyncLifecycleQueue {
     }
 }
 
+/// Which readiness each refresh trigger is allowed to elide a rebuild on.
+///
+/// Separated from the runtime so the routing can be exercised without a live
+/// host, SPV client or BLAST — same shape as `PlatformSyncRearmPolicy`.
+struct RuntimeRefreshPolicy {
+    /// Whether `trigger` may skip the teardown-and-rebuild.
+    ///
+    /// `.startIfReady` and `.platformSyncRearm` elide on Core readiness alone:
+    /// a launch/foreground kick, the sync strip's Retry and "Sync Now" must
+    /// never tear down a running Core sync because Platform is down. The
+    /// rebuild's `fullReset` stops SPV, clears the published balance and nils
+    /// the host's `modelContainer`, which is what the home transaction list
+    /// reads — so eliding on Core is what keeps an offline wallet legible.
+    /// `refresh` starts Platform separately in the elided branch, so a degraded
+    /// Platform still recovers.
+    ///
+    /// `.networkDidChange` requires full readiness because its callers run
+    /// `prepareForNetworkSwitch()` first, detaching the SPV progress/balance
+    /// subscriptions that only a rebuild re-attaches.
+    ///
+    /// A wallet change never elides: the registry was repointed to a different
+    /// wallet on the same network, so a network-equality check would wrongly
+    /// elide the rebind.
+    static func shouldSkipRebuild(
+        trigger: SwiftDashSDKWalletRuntime.RefreshTrigger,
+        isCoreReady: Bool,
+        isFullyReady: Bool
+    ) -> Bool {
+        switch trigger {
+        case .walletMaterialChanged, .walletDidChange:
+            return false
+        case .startIfReady, .platformSyncRearm:
+            return isCoreReady
+        case .networkDidChange:
+            return isFullyReady
+        }
+    }
+}
+
 @objc(DWSwiftDashSDKWalletRuntime)
 @MainActor
 final class SwiftDashSDKWalletRuntime: NSObject {
@@ -87,7 +126,38 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     private var observerToken: NSObjectProtocol?
     private let lifecycleQueue = SerialAsyncLifecycleQueue()
+
+    /// The network Core is bound to, set once Core SPV has started and BEFORE
+    /// Platform/BLAST is asked to start. It means "Core is bound", not
+    /// "everything is up" — read it through `isCoreRuntimeReady(for:)` or
+    /// `isRuntimeReady(for:)`, never raw.
     private var currentNetwork: Network?
+
+    /// What the last Platform/BLAST start produced for the network Core is
+    /// bound to. `.degraded` is the runtime's stable "Core running, Platform
+    /// not running" state: refresh elision reads Core readiness only, so the
+    /// runtime stays in it instead of rebuilding a healthy Core, and the retry
+    /// paths call `startPlatform(for:)` again. Reset by `fullReset`.
+    ///
+    /// Carries no error text: the concrete BLAST failure lives in
+    /// `PlatformAddressSyncCoordinator.lastError`, which is what the Sync Info
+    /// screen and the switch-failure detail already read.
+    private enum PlatformPhase: Equatable {
+        case notStarted
+        case running(Network)
+        case degraded(Network)
+
+        /// Compact form for the network-switch telemetry line.
+        var logLabel: String {
+            switch self {
+            case .notStarted: return "not-started"
+            case .running(let network): return "running(\(network.rawValue))"
+            case .degraded(let network): return "degraded(\(network.rawValue))"
+            }
+        }
+    }
+
+    private var platformPhase: PlatformPhase = .notStarted
 
     private override init() {
         super.init()
@@ -244,9 +314,16 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         }.value
 
         let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
-        if isRuntimeReady(for: targetNetwork) {
+        // The switch's verdict is Core: the destination host, wallet, balance
+        // and transaction list are what the user switched for. A Platform
+        // outage must not raise a blocking, Retry-only failure card over a
+        // runtime that works — a degraded Platform is reported by the Sync Info
+        // screen (`PlatformAddressSyncCoordinator.lastError`), not here. The
+        // no-op check above stays on full readiness, so an explicit tap on the
+        // already-selected network still self-heals through a full rebuild.
+        if isCoreRuntimeReady(for: targetNetwork) {
             WalletLifecycleTransitionState.shared.finish()
-            DWLogger.log("🔀 NETSWITCH [\(transitionID)] ready in \(ms)ms")
+            DWLogger.log("🔀 NETSWITCH [\(transitionID)] ready in \(ms)ms platform=\(platformPhase.logLabel)")
         } else {
             let detail = SwiftDashSDKSPVCoordinator.shared.lastError
                 ?? PlatformAddressSyncCoordinator.shared.lastError
@@ -431,6 +508,12 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         case .success(let network):
             if shouldSkipRefresh(for: network, trigger: trigger) {
                 Self.logger.info("🧭 RUNTIME :: refresh is already satisfied for \(network.rawValue, privacy: .public)")
+                // Core is up, so the rebuild is elided — but Platform may be
+                // down from a degraded start or a stop issued out of band.
+                // Bring it up here so a launch/foreground kick, the sync
+                // strip's Retry and "Sync Now" all recover Platform without
+                // taking a working Core sync down with it.
+                await startPlatformIfNotRunning(for: network)
                 return
             }
 
@@ -455,25 +538,64 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 return
             }
 
+            // Core and Platform start in separate `do/catch` blocks on
+            // purpose. A shared one made a Platform failure run `fullReset`,
+            // which stops Core SPV, clears the published balance and nils the
+            // host's `modelContainer` — the SwiftData handle the home
+            // transaction list reads. Offline that turned a reachable Platform
+            // outage into an empty wallet with no retry.
             do {
                 try await SwiftDashSDKSPVCoordinator.shared.startAsync(for: network)
-                try await PlatformAddressSyncCoordinator.shared.startAsync(for: network)
-                currentNetwork = network
-                if trigger == .walletMaterialChanged {
-                    publishActiveWalletDidChange(reason: "wallet-started")
-                } else if trigger == .networkDidChange {
-                    // The same walletId can exist on both networks, but its
-                    // SwiftData container and identity set are network-scoped.
-                    // Publish only after the destination runtime is fully
-                    // bound so identity/banner consumers re-read destination
-                    // state instead of the cleared transition mirror.
-                    publishActiveWalletDidChange(reason: "network-changed")
-                }
             } catch {
-                Self.logger.error("🧭 RUNTIME :: start failed: \(String(describing: error), privacy: .public)")
+                Self.logger.error("🧭 RUNTIME :: Core start failed: \(String(describing: error), privacy: .public)")
                 await fullReset(lastError: error.localizedDescription, forWipe: false)
+                return
             }
+
+            // Core owns `currentNetwork`, and it is recorded before Platform is
+            // asked to start: a Platform failure must leave a runtime that
+            // still reports itself bound to `network` (`isCoreRuntimeReady`),
+            // or every later `startIfReady` would rebuild a healthy Core.
+            currentNetwork = network
+
+            // Published before the Platform start for the same reason: every
+            // consumer keys off the host's bound wallet and `modelContainer`,
+            // both established by Core. The same walletId can exist on both
+            // networks, but its SwiftData container and identity set are
+            // network-scoped, so identity/banner consumers re-read destination
+            // state instead of the cleared transition mirror.
+            if trigger == .walletMaterialChanged {
+                publishActiveWalletDidChange(reason: "wallet-started")
+            } else if trigger == .networkDidChange {
+                publishActiveWalletDidChange(reason: "network-changed")
+            }
+
+            await startPlatform(for: network)
         }
+    }
+
+    /// Start Platform/BLAST for `network` and record the verdict in
+    /// `platformPhase`. A Platform failure is contained here: the host, Core
+    /// SPV, the published balance and the SwiftData handles the home
+    /// transaction list reads all stay up.
+    private func startPlatform(for network: Network) async {
+        do {
+            try await PlatformAddressSyncCoordinator.shared.startAsync(for: network)
+            platformPhase = .running(network)
+        } catch {
+            platformPhase = .degraded(network)
+            Self.logger.error(
+                "🧭 RUNTIME :: Platform start failed; Core stays up: \(String(describing: error), privacy: .public)")
+        }
+    }
+
+    /// Start Platform/BLAST unless it already runs on `network`. The retry
+    /// entry point for a runtime sitting in `.degraded` and for a BLAST stopped
+    /// out of band (the Sync Info screen) — neither may rebuild Core.
+    private func startPlatformIfNotRunning(for network: Network) async {
+        let blast = PlatformAddressSyncCoordinator.shared
+        guard !(blast.isRunning && blast.runningNetwork == network) else { return }
+        await startPlatform(for: network)
     }
 
     /// Deterministic teardown: BLAST → SPV → wallet state → host.
@@ -494,6 +616,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         // so switch telemetry survives into diagnostic exports.
         await SwiftDashSDKHost.shared.stopAsync()
         currentNetwork = nil
+        platformPhase = .notStarted
         if forWipe {
             DWCurrentUserIdentityInfo.shared.resetForWalletRemoval()
             publishActiveWalletDidChange(reason: "wallet-removed")
@@ -526,23 +649,29 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     }
 
     private func shouldSkipRefresh(for network: Network, trigger: RefreshTrigger) -> Bool {
-        switch trigger {
-        case .walletMaterialChanged, .walletDidChange:
-            // A runtime wallet switch always rebuilds — the active-wallet
-            // registry was repointed to a different wallet on the SAME
-            // network, so `currentNetwork == network` would otherwise wrongly
-            // elide the rebind.
-            return false
-        case .startIfReady, .networkDidChange, .platformSyncRearm:
-            return isRuntimeReady(for: network)
-        }
+        RuntimeRefreshPolicy.shouldSkipRebuild(
+            trigger: trigger,
+            isCoreReady: isCoreRuntimeReady(for: network),
+            isFullyReady: isRuntimeReady(for: network))
     }
 
-    /// Whether the runtime is fully bound and running for `network`: host has
-    /// a bound wallet, SPV runs, and BLAST runs on that same network. The one
-    /// readiness predicate shared by refresh elision (`shouldSkipRefresh`)
-    /// and `switchNetwork(to:)`'s no-op / ready checks — a persisted network
-    /// key alone never counts as "ready".
+    /// Whether Core is bound and running for `network`: the host has a bound
+    /// wallet and Core SPV runs on the network the runtime last brought up.
+    ///
+    /// This is what decides whether a refresh may be elided. Platform/BLAST is
+    /// deliberately excluded: a Platform outage must not make a healthy Core
+    /// runtime look rebuildable, because the rebuild's `fullReset` stops SPV,
+    /// clears the published balance and nils the host's `modelContainer` —
+    /// which is what the home transaction list reads.
+    func isCoreRuntimeReady(for network: Network) -> Bool {
+        currentNetwork == network
+            && SwiftDashSDKHost.shared.wallet != nil
+            && SwiftDashSDKSPVCoordinator.shared.isRunning
+    }
+
+    /// Core ready AND BLAST running on that same network — a persisted network
+    /// key alone never counts as "ready". Used by `switchNetwork(to:)`'s no-op
+    /// check and by the `.networkDidChange` refresh elision.
     ///
     /// Consulting live coordinator state matters beyond switches too:
     /// external callers (PlatformSyncStatusScreen, StorageExplorerUnavailableView,
@@ -551,11 +680,9 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// stop would leave the user without the sync they triggered.
     func isRuntimeReady(for network: Network) -> Bool {
         let blast = PlatformAddressSyncCoordinator.shared
-        return currentNetwork == network
-            && SwiftDashSDKHost.shared.wallet != nil
+        return isCoreRuntimeReady(for: network)
             && blast.isRunning
             && blast.runningNetwork == network
-            && SwiftDashSDKSPVCoordinator.shared.isRunning
     }
 
     /// Internal (was private): reused by CrowdNode's TransactionObserver row
@@ -634,7 +761,10 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         Self.logger.info("🧭 RUNTIME :: registered DWCurrentNetworkDidChangeNotification observer")
     }
 
-    private enum RefreshTrigger: String {
+    /// Internal (was private) so `RuntimeRefreshPolicy` can be exercised
+    /// directly from the lifecycle tests — the routing it encodes is the part
+    /// of this file most likely to regress.
+    enum RefreshTrigger: String {
         case startIfReady
         case networkDidChange
         case walletMaterialChanged
