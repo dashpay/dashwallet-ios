@@ -649,6 +649,13 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 unconfirmed: core.unconfirmed,
                 immature: core.immature,
                 locked: core.locked)
+            if SwiftDashSDKWalletState.shared.balance == nil {
+                // First publish of the session. Logged because a "my wallet
+                // shows 0" report is answered by whether this line appeared
+                // and what it carried.
+                Self.logger.info(
+                    "🛰️ SPVCOORD :: first balance published total=\(mapped.total, privacy: .public) spv=\(self.isRunning, privacy: .public)")
+            }
             SwiftDashSDKWalletState.shared.applyBalance(mapped)
         } catch {
             Self.logger.warning(
