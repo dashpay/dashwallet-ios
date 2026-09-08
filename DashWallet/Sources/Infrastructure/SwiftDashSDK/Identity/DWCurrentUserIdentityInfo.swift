@@ -698,11 +698,13 @@ enum StartupIdentityRecoveryPolicy {
         /// Platform confirmed the seed owns no identity; settled for the
         /// process.
         case skipSettled
-        /// The SDK reports the question unanswered AND not worth asking
-        /// again (`.discoveryFailed`: a local wallet/persistence fault): no
-        /// scan, but the pipeline still refreshes and adopts whatever
-        /// identity rows exist locally, under the memo. The next runtime
-        /// start asks the SDK again.
+        /// Platform answered the network side and a scan would add nothing
+        /// — either it proved absence while the local store may still hold
+        /// rows, or the SDK reports a local fault a rescan cannot clear
+        /// (`.discoveryFailed`). No scan, but the pipeline still refreshes
+        /// and adopts whatever identity rows exist locally, under the memo.
+        /// A run that finds none settles nothing; the next runtime start
+        /// asks the SDK again.
         case runPipelineWithoutDiscovery
     }
 
@@ -722,16 +724,26 @@ enum StartupIdentityRecoveryPolicy {
     /// identity before the readiness pass and has one after it — measured
     /// by the caller from the store, not from `discoveryAttempts`, which
     /// the SDK also increments when it rescans an identity already on file.
+    /// `hasLocalIdentity` is the same store reading the startup budget uses,
+    /// `nil` when the lookup was inconclusive. A proof of absence only
+    /// settles a wallet the store agrees has no identity: the two can
+    /// disagree (a SwiftData mirror outliving a Rust-side store reset, a
+    /// watch-only wallet Rust answers for without a signer), and rows on
+    /// disk still deserve adoption — without a scan, since Platform already
+    /// answered the network side.
     static func decision(
         readinessStatus: WalletStartupStatus?,
         readinessIdentityId: Data?,
-        readinessDiscoveredThisStart: Bool
+        readinessDiscoveredThisStart: Bool,
+        hasLocalIdentity: Bool?
     ) -> Decision {
         guard let readinessStatus else { return .runPipeline }
         if readinessIdentityId != nil {
             return readinessDiscoveredThisStart ? .refreshNamesAndAdopt : .runPipeline
         }
-        if readinessStatus == .noIdentity { return .skipSettled }
+        if readinessStatus == .noIdentity {
+            return hasLocalIdentity == false ? .skipSettled : .runPipelineWithoutDiscovery
+        }
         if readinessStatus.discoveryWorthRetrying || readinessStatus.identityIsSettled {
             return .runPipeline
         }
@@ -884,7 +896,8 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         switch StartupIdentityRecoveryPolicy.decision(
             readinessStatus: verdict?.status,
             readinessIdentityId: verdict?.identityId,
-            readinessDiscoveredThisStart: verdict?.discovered ?? false) {
+            readinessDiscoveredThisStart: verdict?.discovered ?? false,
+            hasLocalIdentity: Self.hasLocalIdentity(walletId: walletId, modelContainer: modelContainer)) {
         case .skipSettled:
             completedContexts.insert(contextKey)
             Self.logger.info(

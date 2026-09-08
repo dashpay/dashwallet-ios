@@ -196,7 +196,7 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         for discovered in Self.flags {
             XCTAssertEqual(
                 StartupIdentityRecoveryPolicy.decision(
-                    readinessStatus: nil, readinessIdentityId: nil, readinessDiscoveredThisStart: discovered),
+                    readinessStatus: nil, readinessIdentityId: nil, readinessDiscoveredThisStart: discovered, hasLocalIdentity: false),
                 .runPipeline)
         }
     }
@@ -211,14 +211,30 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         for status in Self.allStatuses {
             XCTAssertEqual(
                 StartupIdentityRecoveryPolicy.decision(
-                    readinessStatus: status, readinessIdentityId: identityId, readinessDiscoveredThisStart: false),
+                    readinessStatus: status, readinessIdentityId: identityId, readinessDiscoveredThisStart: false, hasLocalIdentity: true),
                 .runPipeline,
                 "\(status)")
             XCTAssertEqual(
                 StartupIdentityRecoveryPolicy.decision(
-                    readinessStatus: status, readinessIdentityId: identityId, readinessDiscoveredThisStart: true),
+                    readinessStatus: status, readinessIdentityId: identityId, readinessDiscoveredThisStart: true, hasLocalIdentity: false),
                 .refreshNamesAndAdopt,
                 "\(status) discovered")
+        }
+    }
+
+    func testProvenAbsenceOnlySettlesWhenTheStoreAgrees() {
+        // Rust proved the seed owns no identity, but the SwiftData mirror
+        // still holds rows (or the lookup was inconclusive): adopt them
+        // without a scan rather than retiring the backstop for the process.
+        for discovered in Self.flags {
+            for local: Bool? in [true, nil] {
+                XCTAssertEqual(
+                    StartupIdentityRecoveryPolicy.decision(
+                        readinessStatus: .noIdentity, readinessIdentityId: nil,
+                        readinessDiscoveredThisStart: discovered, hasLocalIdentity: local),
+                    .runPipelineWithoutDiscovery,
+                    "local=\(String(describing: local))")
+            }
         }
     }
 
@@ -226,7 +242,8 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         for discovered in Self.flags {
             XCTAssertEqual(
                 StartupIdentityRecoveryPolicy.decision(
-                    readinessStatus: .noIdentity, readinessIdentityId: nil, readinessDiscoveredThisStart: discovered),
+                    readinessStatus: .noIdentity, readinessIdentityId: nil,
+                    readinessDiscoveredThisStart: discovered, hasLocalIdentity: false),
                 .skipSettled)
         }
     }
@@ -238,7 +255,8 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         for discovered in Self.flags {
             XCTAssertEqual(
                 StartupIdentityRecoveryPolicy.decision(
-                    readinessStatus: .discoveryFailed, readinessIdentityId: nil, readinessDiscoveredThisStart: discovered),
+                    readinessStatus: .discoveryFailed, readinessIdentityId: nil,
+                    readinessDiscoveredThisStart: discovered, hasLocalIdentity: false),
                 .runPipelineWithoutDiscovery)
         }
     }
@@ -264,7 +282,8 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             for discovered in Self.flags {
                 XCTAssertEqual(
                     StartupIdentityRecoveryPolicy.decision(
-                        readinessStatus: status, readinessIdentityId: nil, readinessDiscoveredThisStart: discovered),
+                        readinessStatus: status, readinessIdentityId: nil,
+                        readinessDiscoveredThisStart: discovered, hasLocalIdentity: false),
                     .runPipeline,
                     "\(status) discovered=\(discovered)")
             }

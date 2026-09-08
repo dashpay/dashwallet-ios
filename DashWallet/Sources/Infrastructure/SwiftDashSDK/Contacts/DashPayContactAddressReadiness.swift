@@ -131,7 +131,12 @@ enum DashPayContactAddressReadiness {
             recovery.recordStartupDiscovery(
                 status: outcome.status,
                 identityId: outcome.identityId,
-                discoveredThisStart: outcome.identityId != nil && hadLocalIdentity != true,
+                // `hadLocalIdentity == false`, not `!= true`: an
+                // inconclusive lookup must not be read as "the wallet had
+                // none", which would claim a first sight and send every
+                // later switch past the settled memo into the DPNS refresh.
+                // Same conservative reading `startupBudget` uses.
+                discoveredThisStart: outcome.identityId != nil && hadLocalIdentity == false,
                 walletId: walletId,
                 network: network)
         } catch {
