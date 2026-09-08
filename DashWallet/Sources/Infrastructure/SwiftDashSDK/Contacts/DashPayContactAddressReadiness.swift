@@ -86,12 +86,21 @@ enum DashPayContactAddressReadiness {
                 if StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
                     identityFound: true,
                     dashPaySyncRan: outcome.dashPaySyncRan,
-                    contactAccountsPending: outcome.contactAccountsPending) {
+                    contactAccountsPending: outcome.contactAccountsPending,
+                    seedBindingUnverified: outcome.seedBindingUnverified) {
                     log(outcome, network: network, phase: .probe)
                     logger.info(
                         "👥 DP-READY :: probe found an identity but was cut short — re-running with the default budget")
-                    outcome = try await manager.startWalletSubsystems(wallet: wallet)
-                    discoveredThisStart = discoveredThisStart || outcome.discoveryAttempts > 0
+                    // A re-run that throws (a manager unconfigured mid-switch,
+                    // a locked Keychain) must not cost the probe's verdict:
+                    // the identity it found is still the start's answer.
+                    do {
+                        outcome = try await manager.startWalletSubsystems(wallet: wallet)
+                        discoveredThisStart = discoveredThisStart || outcome.discoveryAttempts > 0
+                    } catch {
+                        logger.warning(
+                            "👥 DP-READY :: default-budget re-run failed; keeping the probe verdict: \(String(describing: error), privacy: .public)")
+                    }
                 }
             }
             log(outcome, network: network, phase: .verdict)
@@ -132,13 +141,14 @@ enum DashPayContactAddressReadiness {
                 "\(tag, privacy: .public)no identity for this seed; nothing to prepare before SPV")
         case .partialNoIdentity:
             // Not an error: Platform (or the scan key) was unreachable, so the
-            // question is still open; the same-seed recovery backstop asks
-            // again in this start, and the next runtime start asks again too.
+            // question is still open. The same-seed recovery backstop asks
+            // again in this start unless this wallet was already settled in
+            // this process; every runtime start asks the SDK again.
             logger.warning(
                 """
                 \(tag, privacy: .public)could not reach Platform in \(seconds, privacy: .public)s \
                 after \(outcome.discoveryAttempts, privacy: .public) scan(s); \
-                starting SPV, the same-seed recovery backstop retries in this start
+                starting SPV, the recovery backstop retries unless already settled this process
                 """)
         case .partialAccountsPending:
             logger.warning(
@@ -150,13 +160,14 @@ enum DashPayContactAddressReadiness {
         case .discoveryFailed:
             // A local wallet/persistence fault, not the network. Logged at
             // error because a retry of the same sequence will not clear it;
-            // the same-seed recovery backstop still tries its own discovery
-            // entry point in this start.
+            // the same-seed recovery backstop tries its own discovery entry
+            // point in this start unless this wallet was already settled in
+            // this process.
             logger.error(
                 """
                 \(tag, privacy: .public)identity discovery failed locally after \
-                \(seconds, privacy: .public)s; starting SPV, the same-seed recovery \
-                backstop retries with its own scan
+                \(seconds, privacy: .public)s; starting SPV, the recovery backstop \
+                retries with its own scan unless already settled this process
                 """)
         case .seedBindingUnverified:
             // Never derive contact addresses when the available seed cannot be

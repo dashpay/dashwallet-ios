@@ -641,13 +641,18 @@ final class SwiftDashSDKWalletWiper: NSObject {
             CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletIdHex)
-            GeneratedWalletIdentityMarker.clear(walletId: walletId)
-#if DASHPAY
-            // walletIds are deterministic per mnemonic+network: the same
-            // phrase re-imported later must not inherit this wallet's settled
-            // identity-recovery context.
-            DWSameSeedIdentityRecoveryCoordinator.shared.forgetWallet(walletId: walletId)
-#endif
         }
+
+        // Per-wallet identity bookkeeping, not app-state cleanup: it runs on
+        // every deletion regardless of the injected `clearAppState` seam.
+        // walletIds are deterministic per mnemonic+network, so the same
+        // phrase re-imported later must inherit neither the generated-wallet
+        // marker (a short probe budget on an imported seed) nor this
+        // wallet's settled identity-recovery context (a backstop that never
+        // runs).
+        GeneratedWalletIdentityMarker.clear(walletId: walletId)
+#if DASHPAY
+        DWSameSeedIdentityRecoveryCoordinator.shared.forgetWallet(walletId: walletId)
+#endif
     }
 }

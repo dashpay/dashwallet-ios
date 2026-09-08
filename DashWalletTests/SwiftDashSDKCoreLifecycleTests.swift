@@ -159,7 +159,7 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(events, ["discover", "refresh", "adopt"])
         XCTAssertEqual(
             outcome,
-            .init(discoveredCount: 1, identityCount: 1, adopted: true))
+            .init(discoveredCount: 1, identityCount: 1, adopted: true, identitiesPersisted: true))
     }
 
     func testSameSeedIdentityRecoveryUsesPersistedIdentityWithoutRescanning() async throws {
@@ -180,7 +180,7 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(refreshedIdentityIds, [identityId])
         XCTAssertEqual(
             outcome,
-            .init(discoveredCount: 0, identityCount: 1, adopted: true))
+            .init(discoveredCount: 0, identityCount: 1, adopted: true, identitiesPersisted: true))
     }
 
     // MARK: - StartupIdentityRecoveryPolicy
@@ -190,40 +190,59 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         .discoveryFailed, .seedBindingUnverified, .identityScanIncomplete,
     ]
 
+    private static let flags = [false, true]
+
     func testPipelineRunsWhenNoReadinessPassRan() {
-        for discovered in [false, true] {
-            XCTAssertEqual(
-                StartupIdentityRecoveryPolicy.decision(
-                    readinessStatus: nil, readinessIdentityId: nil, readinessDiscoveredThisStart: discovered),
-                .runPipeline)
+        for discovered in Self.flags {
+            for bookmarks in Self.flags {
+                XCTAssertEqual(
+                    StartupIdentityRecoveryPolicy.decision(
+                        readinessStatus: nil, readinessIdentityId: nil,
+                        readinessDiscoveredThisStart: discovered, contestedBookmarksRebuilt: bookmarks),
+                    .runPipeline)
+            }
         }
     }
 
     func testKnownIdentityIsNeverRediscoveredNorSkipped() {
         // The guard behind adoption: whatever the status says, an identity the
-        // readiness pass knows about reaches adoption. Re-confirmed on file →
-        // adopt only; discovered in this start → refresh names + adopt.
+        // readiness pass knows about reaches adoption. Adopt-only needs BOTH
+        // an identity already on file and this install's bookmarks rebuilt;
+        // anything else owes the name refresh.
         let identityId = Data(repeating: 0x18, count: 32)
         for status in Self.allStatuses {
             XCTAssertEqual(
                 StartupIdentityRecoveryPolicy.decision(
-                    readinessStatus: status, readinessIdentityId: identityId, readinessDiscoveredThisStart: false),
+                    readinessStatus: status, readinessIdentityId: identityId,
+                    readinessDiscoveredThisStart: false, contestedBookmarksRebuilt: true),
                 .adoptOnly,
                 "\(status)")
             XCTAssertEqual(
                 StartupIdentityRecoveryPolicy.decision(
-                    readinessStatus: status, readinessIdentityId: identityId, readinessDiscoveredThisStart: true),
+                    readinessStatus: status, readinessIdentityId: identityId,
+                    readinessDiscoveredThisStart: false, contestedBookmarksRebuilt: false),
                 .refreshNamesAndAdopt,
-                "\(status)")
+                "\(status) bookmarks missing")
+            for bookmarks in Self.flags {
+                XCTAssertEqual(
+                    StartupIdentityRecoveryPolicy.decision(
+                        readinessStatus: status, readinessIdentityId: identityId,
+                        readinessDiscoveredThisStart: true, contestedBookmarksRebuilt: bookmarks),
+                    .refreshNamesAndAdopt,
+                    "\(status) discovered bookmarks=\(bookmarks)")
+            }
         }
     }
 
     func testOnlyProvenAbsenceSettlesTheBackstop() {
-        for discovered in [false, true] {
-            XCTAssertEqual(
-                StartupIdentityRecoveryPolicy.decision(
-                    readinessStatus: .noIdentity, readinessIdentityId: nil, readinessDiscoveredThisStart: discovered),
-                .skipSettled)
+        for discovered in Self.flags {
+            for bookmarks in Self.flags {
+                XCTAssertEqual(
+                    StartupIdentityRecoveryPolicy.decision(
+                        readinessStatus: .noIdentity, readinessIdentityId: nil,
+                        readinessDiscoveredThisStart: discovered, contestedBookmarksRebuilt: bookmarks),
+                    .skipSettled)
+            }
         }
     }
 
@@ -232,10 +251,11 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         // decoder's fallback for unknown FFI statuses) and `.discoveryFailed`
         // (a local fault) are the SDK's "ask again", not verdicts.
         for status in Self.allStatuses where status != .noIdentity {
-            for discovered in [false, true] {
+            for discovered in Self.flags {
                 XCTAssertEqual(
                     StartupIdentityRecoveryPolicy.decision(
-                        readinessStatus: status, readinessIdentityId: nil, readinessDiscoveredThisStart: discovered),
+                        readinessStatus: status, readinessIdentityId: nil,
+                        readinessDiscoveredThisStart: discovered, contestedBookmarksRebuilt: false),
                     .runPipeline,
                     "\(status) discovered=\(discovered)")
             }
@@ -244,14 +264,18 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
 
     func testProbeRerunOnlyWhenTheSequenceWasCutShort() {
         XCTAssertFalse(StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
-            identityFound: true, dashPaySyncRan: true, contactAccountsPending: 0))
+            identityFound: true, dashPaySyncRan: true, contactAccountsPending: 0, seedBindingUnverified: false))
         XCTAssertTrue(StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
-            identityFound: true, dashPaySyncRan: false, contactAccountsPending: 0))
+            identityFound: true, dashPaySyncRan: false, contactAccountsPending: 0, seedBindingUnverified: false))
         XCTAssertTrue(StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
-            identityFound: true, dashPaySyncRan: true, contactAccountsPending: 2))
+            identityFound: true, dashPaySyncRan: true, contactAccountsPending: 2, seedBindingUnverified: false))
         // Nothing to re-run for: the probe found no identity.
         XCTAssertFalse(StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
-            identityFound: false, dashPaySyncRan: false, contactAccountsPending: 0))
+            identityFound: false, dashPaySyncRan: false, contactAccountsPending: 0, seedBindingUnverified: false))
+        // The drain was skipped for an unverified seed binding: the SDK fails
+        // that closed on every budget, so a re-run would be pure latency.
+        XCTAssertFalse(StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
+            identityFound: true, dashPaySyncRan: false, contactAccountsPending: 3, seedBindingUnverified: true))
     }
 
     func testShortStartupBudgetOnlyForGeneratedWalletKnownToHaveNoLocalIdentity() {
@@ -286,9 +310,24 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
 
         XCTAssertEqual(discoveryCalls, 0)
         XCTAssertEqual(refreshedIdentityIds, [identityId])
+        // The store never confirmed the row: the caller must not settle on it.
         XCTAssertEqual(
             outcome,
-            .init(discoveredCount: 0, identityCount: 1, adopted: true))
+            .init(discoveredCount: 0, identityCount: 1, adopted: true, identitiesPersisted: false))
+    }
+
+    func testSameSeedIdentityRecoveryReportsPersistenceFromTheStoreNotTheIds() async throws {
+        // Discovery returned an id the persister never landed: acted on as a
+        // hydration fallback, but reported as not persisted.
+        let identityId = Data(repeating: 0x1a, count: 32)
+        let outcome = try await SameSeedIdentityRecoveryPipeline.run(
+            localIdentityIds: { [] },
+            discover: { [identityId] },
+            refreshNames: { _ in },
+            adopt: { true })
+        XCTAssertEqual(
+            outcome,
+            .init(discoveredCount: 1, identityCount: 1, adopted: true, identitiesPersisted: false))
     }
 
     // MARK: - GeneratedWalletIdentityMarker
