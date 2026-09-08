@@ -968,7 +968,17 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                 // probe.
                 GeneratedWalletIdentityMarker.clear(walletId: walletId)
             }
-            if outcome.identityCount == 0 || outcome.identitiesPersisted {
+            if outcome.identityCount == 0, !allowDiscovery {
+                // Nothing was established: this run was forbidden from
+                // scanning (a local fault the SDK says a rescan cannot
+                // clear) and found no local rows to adopt. Settling here
+                // would retire the backstop for the process on a transient
+                // fault, so leave the context open and hand the verdict back
+                // for a later start whose readiness has improved.
+                restoreVerdict()
+                Self.logger.warning(
+                    "🪪 IDENT-RECOVERY :: no local identity to adopt and scanning was not allowed; leaving the context open")
+            } else if outcome.identityCount == 0 || outcome.identitiesPersisted {
                 completedContexts.insert(contextKey)
                 unpersistedAttempts[contextKey] = nil
             } else {
