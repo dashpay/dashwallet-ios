@@ -262,6 +262,21 @@ final class DashConnectUriTests: XCTestCase {
         }
     }
 
+    func testAnStPayloadAtTheCeilingIsAccepted() throws {
+        // The ceiling is several times what an IdentityUpdateTransition adding
+        // two login keys needs, so a payload sitting exactly on it must parse.
+        let payload = Data(repeating: 0x7f, count: 4 * 1024)
+        let request = try DashConnectUri.parseStRequest(stUri(payload: payload))
+        XCTAssertEqual(request.transitionBytes, payload)
+    }
+
+    func testAnStPayloadOverTheCeilingIsRejected() {
+        let payload = Data(repeating: 0x7f, count: 4 * 1024 + 1)
+        XCTAssertThrowsError(try DashConnectUri.parseStRequest(stUri(payload: payload))) { error in
+            XCTAssertEqual(error as? DashConnectUriError, .bodyTooLong)
+        }
+    }
+
     func testAKeyBodyWithinTheFormatIsNotRejectedForLength() {
         // A body that is too short to be a valid payload must fail on its own
         // merits, never on length — the ceiling must not clip legitimate URIs.

@@ -75,10 +75,21 @@ enum DashConnectUri {
     /// Largest payloads the two formats can legitimately carry.
     ///
     /// `dash-key:` is fully specified: version + compressed point + contract id
-    /// + label length + label. `dash-st:` carries a serialized state
-    /// transition, which Platform caps well below this.
+    /// + label length + label.
+    ///
+    /// `dash-st:` carries one `IdentityUpdateTransition` that adds the two
+    /// login keys: identity id, revision, nonce, two key entries with their
+    /// contract bounds and per-key signatures, and the transition signature —
+    /// well under a kilobyte. The ceiling is deliberately not Platform's own
+    /// state-transition limit, which is far larger than this format ever needs
+    /// and which the decode below cannot afford: its cost is quadratic in the
+    /// encoded length, so a 32 KiB ceiling would admit a ~44,800-character body
+    /// worth ~1.5 billion inner iterations — seconds of CPU per link, from any
+    /// installed app. 4 KiB costs ~23 million, tens of milliseconds, and still
+    /// leaves several times the headroom a longer key form or an added field
+    /// would need.
     private static let maxKeyPayloadLength = minKeyPayloadLength + maxLabelLength
-    private static let maxStPayloadLength = 32 * 1024
+    private static let maxStPayloadLength = 4 * 1024
 
     /// Encoded-length ceilings, enforced BEFORE decoding.
     ///
@@ -90,8 +101,10 @@ enum DashConnectUri {
     /// async`, so that work runs on the cooperative pool rather than the main
     /// actor: it does not freeze the UI by itself, but it does burn CPU and
     /// battery on threads the rest of the app shares, and a burst of links
-    /// starves them. The bound belongs here rather than at the URL boundary so
-    /// every carrier, including ones added later, inherits it.
+    /// starves them. That is why the payload ceilings above are the smallest
+    /// each format can be given rather than the largest Platform would accept.
+    /// The bound belongs here rather than at the URL boundary so every carrier,
+    /// including ones added later, inherits it.
     ///
     /// Base58 expands by log(256)/log(58) ≈ 1.366 characters per byte; the
     /// integer form below rounds up, and the +8 absorbs the leading-zero

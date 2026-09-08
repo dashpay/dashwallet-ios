@@ -97,15 +97,19 @@ final class ConnectionsViewModel: ObservableObject {
     func onQRScanned(_ content: String) {
         guard !featureUnavailable else { return }
 
-        // Work that is already committing to the network owns the screen until
-        // it finishes. Dropping the newcomer with a visible message beats
-        // silently reshuffling state underneath an approval the user is
-        // partway through. Each branch reports where the user is actually
-        // looking: the approve sheet covers the screen, so a screen-level
-        // `.alert` would only be seen after the sheet is gone.
-        guard !isApproving else {
+        // A request the user is already looking at owns the screen until they
+        // answer it. `pendingRequest` covers both halves of that: the approve
+        // sheet is presented exactly while it is set, and an approval in
+        // flight keeps it set. Refusing the newcomer beats replacing a request
+        // mid-read — and beats what replacing used to cost, since resolving
+        // the newcomer starts by clearing the sheet, so an unparseable link
+        // could dismiss a legitimate approval on its way to failing.
+        //
+        // The refusal has to appear where the user is looking: the sheet
+        // covers the screen, and a screen-level `.alert` cannot show over it.
+        guard pendingRequest == nil else {
             approveError = NSLocalizedString("Another DashConnect request arrived. Finish this one first, then try again.",
-                                             comment: "DashConnect: a second request arrived while one was being approved")
+                                             comment: "DashConnect: a second request arrived while one was on screen")
             return
         }
 
@@ -125,9 +129,9 @@ final class ConnectionsViewModel: ObservableObject {
         Task {
             defer { if generation == requestGeneration { isResolvingRequest = false } }
             do {
-                pendingRequest = nil
-                pendingLoginRequest = nil
-
+                // Nothing to clear: the guard above refuses a request while one
+                // is on screen, and bumping the generation stops any request
+                // still resolving from publishing one.
                 switch try await dataSource.parseQR(content) {
                 case let .login(request):
                     // Resolve first, publish second, and publish the pair
