@@ -18,6 +18,7 @@
 //
 
 import Foundation
+import SwiftDashSDK
 
 /// The user-editable devnet coordinates, over UserDefaults.
 ///
@@ -83,10 +84,41 @@ enum DevnetConfiguration {
         return normalized(UserDefaults.standard.string(forKey: quorumURLKey))
     }
 
-    /// The devnet chain name (`dashd -devnet=<name>`), or nil when unset/blank.
+    /// The devnet chain name (`dashd -devnet=<name>`), or nil when unset,
+    /// blank, or malformed.
+    ///
+    /// Malformed is filtered here as well as at the point of entry: a name
+    /// that violates the native contract cannot start SPV, so letting it
+    /// read as "configured" would only trade an inline error for a failed
+    /// network switch. `DevnetSettingsScreen` refuses to save one, so this
+    /// path is reached only by a value an earlier build stored.
     static var devnetName: String? {
         ensureDefaultsRegistered()
-        return normalized(UserDefaults.standard.string(forKey: devnetNameKey))
+        guard let trimmed = normalized(UserDefaults.standard.string(forKey: devnetNameKey)),
+              devnetNameValidationError(trimmed) == nil else { return nil }
+        return trimmed
+    }
+
+    /// Why `name` cannot be used as a devnet chain name, or nil when it can.
+    ///
+    /// Mirrors `platform_wallet_manager_spv_start`, which rejects an empty
+    /// name, any whitespace (leading, trailing or interior — a
+    /// `devnet.devnet- foo ` user agent is silently dropped by Dash Core
+    /// peers), and `/`. Rejecting rather than repairing keeps the rule the
+    /// same on both sides of the FFI. An empty string is not an error here:
+    /// clearing the field is how the user deliberately unconfigures devnet,
+    /// and `isConfigured` reports that.
+    static func devnetNameValidationError(_ name: String) -> String? {
+        guard !name.isEmpty else { return nil }
+        if name.rangeOfCharacter(from: .whitespacesAndNewlines) != nil {
+            return NSLocalizedString(
+                "The devnet name cannot contain spaces.", comment: "Devnet")
+        }
+        if name.contains("/") {
+            return NSLocalizedString(
+                "The devnet name cannot contain a slash.", comment: "Devnet")
+        }
+        return nil
     }
 
     /// The devnet DashConnect `loginKeyResponse` contract id (base58), or nil
@@ -126,5 +158,30 @@ enum DevnetConfiguration {
         guard let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines),
               !trimmed.isEmpty else { return nil }
         return trimmed
+    }
+}
+
+extension SwiftDashSDK.Network {
+    /// Directory (and process-cache) scope for this network's persisted
+    /// chain state: the Platform SwiftData store, the shielded commitment
+    /// tree, and the SPV data directory.
+    ///
+    /// Mainnet and testnet return `networkName` unchanged, so their existing
+    /// paths are byte-identical. Devnet appends the configured chain name,
+    /// because "devnet" is not one chain: switching from devnet A to devnet B
+    /// would otherwise open A's wallet, identity, SPV and shielded state
+    /// against B's peers, where none of those records mean anything. Each
+    /// devnet therefore gets its own directory, and moving between them is
+    /// just a different path rather than a reset.
+    ///
+    /// The name is safe to place in a path because `DevnetConfiguration`
+    /// rejects whitespace and `/` before it is ever stored. An unconfigured
+    /// devnet falls back to the bare `networkName` — nothing can start on it,
+    /// so the scope is never actually opened.
+    var persistenceScope: String {
+        guard self == .devnet, let name = DevnetConfiguration.devnetName else {
+            return networkName
+        }
+        return "\(networkName)-\(name)"
     }
 }

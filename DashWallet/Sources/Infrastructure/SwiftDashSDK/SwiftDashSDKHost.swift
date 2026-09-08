@@ -530,6 +530,7 @@ final class SwiftDashSDKHost {
                 mnemonic: mnemonic,
                 manager: handles.manager,
                 network: handles.network,
+                isImported: isImported,
                 // Imported mnemonics may hold history from long before
                 // this device: scan from the network's import floor
                 // (genesis on testnet, block 200,000 on mainnet — see
@@ -562,6 +563,7 @@ final class SwiftDashSDKHost {
                             mnemonic: mnemonic,
                             manager: targetManager,
                             network: targetNetwork,
+                            isImported: isImported,
                             birthHeight: isImported
                                 ? Self.importedWalletBirthHeight(for: targetNetwork)
                                 : nil,
@@ -707,6 +709,7 @@ final class SwiftDashSDKHost {
                     mnemonic: mnemonic,
                     manager: targetManager,
                     network: targetNetwork,
+                    isImported: isImported,
                     // Same semantics as `createOrImportWallet`: imports scan
                     // from each network's import floor, freshly generated
                     // wallets from that network's tip.
@@ -757,10 +760,15 @@ final class SwiftDashSDKHost {
     /// runtime; `createOrImportWallet` is NOT queue-serialized (the
     /// migrator is awaited by refresh itself — enqueueing would deadlock),
     /// so it must keep the MainActor-atomic critical section.
+    /// `isImported` drives `GeneratedWalletIdentityMarker`: a generated
+    /// mnemonic marks its walletId, an imported one clears it (walletIds are
+    /// deterministic per mnemonic+network, so a removed-then-re-imported
+    /// phrase must not inherit a stale marker).
     private func createAndPersist(
         mnemonic: String,
         manager: PlatformWalletManager,
         network: Network,
+        isImported: Bool,
         birthHeight: UInt32?,
         offMainCreate: Bool
     ) async throws -> ManagedPlatformWallet {
@@ -786,7 +794,7 @@ final class SwiftDashSDKHost {
         }
 
         do {
-            return try await MnemonicFirstWalletCreation.run(
+            let created = try await MnemonicFirstWalletCreation.run(
                 mnemonic: mnemonic,
                 persistMnemonic: {
                     try storage.storeMnemonic(mnemonic, for: walletId)
@@ -828,6 +836,12 @@ final class SwiftDashSDKHost {
                     }
                     return try syncCreate()
                 })
+            if isImported {
+                GeneratedWalletIdentityMarker.clear(walletId: walletId)
+            } else {
+                GeneratedWalletIdentityMarker.mark(walletId: walletId)
+            }
+            return created
         } catch MnemonicFirstWalletCreationError.mnemonicRoundTripMismatch {
             Self.logger.error("🪺 HOST :: mnemonic persistence round-trip mismatch")
             throw HostError.mnemonicRoundTripMismatch
@@ -1005,7 +1019,9 @@ final class SwiftDashSDKHost {
             // cached (reused) path should be ~0ms; only the first build of a
             // network's container in the process pays the store-open cost.
             let started = CFAbsoluteTimeGetCurrent()
-            let cached = try modelContainerCache.value(for: network.networkName) {
+            // Keyed by `persistenceScope`, not `networkName`: two devnets are
+            // two chains and must never share one container.
+            let cached = try modelContainerCache.value(for: network.persistenceScope) {
                 try buildModelContainer(for: network)
             }
             let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
@@ -1034,6 +1050,31 @@ final class SwiftDashSDKHost {
             sdk: newSDK,
             manager: newManager,
             modelContainer: container,
+            network: network)
+    }
+
+    /// A persistence handler over `network`'s SwiftData store, built without
+    /// an SDK.
+    ///
+    /// The deletion path normally goes through a `PlatformWalletManager`, and
+    /// a manager needs an SDK. On devnet an SDK needs the quorum service:
+    /// `SDK.init` discovers its DAPI addresses there and refuses to build
+    /// without them. That makes erasing local recovery material depend on an
+    /// external service — an offline device, a retired devnet or a cleared
+    /// quorum URL would otherwise leave the material undeletable. This is the
+    /// store-only fallback for that case; the same process-cached container
+    /// the manager would have used, so it cannot open the store twice.
+    ///
+    /// Only safe while no manager holds `network`, which is exactly when the
+    /// caller reaches for it (the manager could not be built).
+    func storeOnlyPersistenceHandler(
+        for network: Network
+    ) throws -> PlatformWalletPersistenceHandler {
+        let cached = try modelContainerCache.value(for: network.persistenceScope) {
+            try buildModelContainer(for: network)
+        }
+        return PlatformWalletPersistenceHandler(
+            modelContainer: cached.value,
             network: network)
     }
 
@@ -1337,19 +1378,28 @@ final class SwiftDashSDKHost {
 
         let sourcePhrase = devnetProvisioningSourcePhrase()
         var provisionedCount = 0
-        if let sourcePhrase, await createDevnetWallet(phrase: sourcePhrase, manager: handles.manager) {
+        if let sourcePhrase {
+            // A source wallet IS known, so this is the only phrase that may
+            // be provisioned. Falling back to every stored phrase here would
+            // silently mount a seed the user did not choose and then pin an
+            // arbitrary one of them; failing instead surfaces the lifecycle
+            // overlay's failure card, where the switch can be retried or
+            // abandoned.
+            guard await createDevnetWallet(phrase: sourcePhrase, manager: handles.manager) else {
+                Self.logger.error(
+                    "🪺 HOST :: devnet create failed for the source wallet's phrase; refusing to substitute another seed")
+                return nil
+            }
             provisionedCount = 1
         } else {
-            if sourcePhrase != nil {
-                Self.logger.error(
-                    "🪺 HOST :: devnet create failed for the FROM-network active phrase; provisioning every stored phrase instead")
-            }
+            // No recorded source: provision what is stored so devnet is
+            // usable at all, and leave the binding to `resolveActiveWallet`.
+            // Deduplicated because the same phrase is stored once per
+            // network-scoped walletId.
             var attemptedPhrases = Set<String>()
-            if let sourcePhrase { attemptedPhrases.insert(sourcePhrase) }
             for entry in Self.persistedMnemonics() {
                 let phrase = Mnemonic.normalizePhrase(entry.mnemonic)
-                guard Mnemonic.validate(phrase), !attemptedPhrases.contains(phrase) else { continue }
-                attemptedPhrases.insert(phrase)
+                guard Mnemonic.validate(phrase), attemptedPhrases.insert(phrase).inserted else { continue }
                 if await createDevnetWallet(phrase: phrase, manager: handles.manager) {
                     provisionedCount += 1
                 }
@@ -1379,38 +1429,45 @@ final class SwiftDashSDKHost {
         return resolved
     }
 
-    /// The normalized mnemonic of the wallet active on the network a managed
-    /// devnet switch is coming FROM, or nil when it cannot be resolved. The
-    /// FROM side is read from `WalletLifecycleTransitionState`:
-    /// `switchNetwork(to:)` holds `.switchingNetwork(from:to:)` for the whole
-    /// lifecycle refresh this provisioning runs inside, so no extra plumbing
-    /// carries it here. Nil paths (each logged): no managed switch from
-    /// another network in flight (cold start with the persisted network
-    /// already devnet, an external network-key write, or the devnet→devnet
-    /// dead-runtime self-heal), an unset FROM-network active-wallet registry,
-    /// a registry id with no stored mnemonic, or a stored mnemonic that fails
-    /// validation.
+    /// The normalized mnemonic of the wallet devnet is being entered from, or
+    /// nil when it cannot be resolved.
+    ///
+    /// Two sources, in order. A managed switch in flight carries the FROM
+    /// network in `WalletLifecycleTransitionState`, which is the freshest
+    /// answer. Failing that — a cold start on devnet, an external
+    /// network-key write, or a devnet→devnet restart such as repointing at
+    /// another devnet — the id persisted by `switchNetwork(to: .devnet)`
+    /// answers instead, which is what makes the choice survive the app being
+    /// killed mid-switch.
+    ///
+    /// Nil paths (each logged): no source recorded at all, a source id with
+    /// no stored mnemonic (the wallet was deleted), or a stored mnemonic that
+    /// fails validation.
     private func devnetProvisioningSourcePhrase() -> String? {
-        guard case let .switchingNetwork(from, to) = WalletLifecycleTransitionState.shared.phase,
-              to == .devnet, from != .devnet else {
+        let sourceWalletId: Data
+        if case let .switchingNetwork(from, to) = WalletLifecycleTransitionState.shared.phase,
+           to == .devnet, from != .devnet,
+           let activeWalletId = WalletEnvironment.activeWalletId(for: from) {
+            sourceWalletId = activeWalletId
+        } else if let persisted = WalletEnvironment.devnetProvisioningSourceWalletId {
+            Self.logger.info(
+                "🪺 HOST :: devnet provisioning source taken from the persisted switch record")
+            sourceWalletId = persisted
+        } else {
             Self.logger.notice(
-                "🪺 HOST :: devnet provisioning without a managed switch from another network in flight; no FROM-network active phrase")
+                "🪺 HOST :: devnet provisioning has no recorded source wallet; no FROM-network active phrase")
             return nil
         }
-        guard let activeWalletId = WalletEnvironment.activeWalletId(for: from) else {
+
+        guard let entry = Self.persistedMnemonics().first(where: { $0.walletId == sourceWalletId }) else {
             Self.logger.notice(
-                "🪺 HOST :: devnet provisioning: \(String(describing: from), privacy: .public) active-wallet registry unset; no FROM-network active phrase")
-            return nil
-        }
-        guard let entry = Self.persistedMnemonics().first(where: { $0.walletId == activeWalletId }) else {
-            Self.logger.notice(
-                "🪺 HOST :: devnet provisioning: \(String(describing: from), privacy: .public) active wallet has no stored mnemonic; no FROM-network active phrase")
+                "🪺 HOST :: devnet provisioning: the source wallet has no stored mnemonic; no FROM-network active phrase")
             return nil
         }
         let phrase = Mnemonic.normalizePhrase(entry.mnemonic)
         guard Mnemonic.validate(phrase) else {
             Self.logger.notice(
-                "🪺 HOST :: devnet provisioning: \(String(describing: from), privacy: .public) active wallet's stored mnemonic failed validation; no FROM-network active phrase")
+                "🪺 HOST :: devnet provisioning: the source wallet's stored mnemonic failed validation; no FROM-network active phrase")
             return nil
         }
         return phrase
@@ -1426,6 +1483,11 @@ final class SwiftDashSDKHost {
                 mnemonic: phrase,
                 manager: manager,
                 network: .devnet,
+                // The phrase already exists on another network, so devnet is
+                // never the seed's origin: scan devnet from genesis and leave
+                // the identity probe on the imported (full) budget, matching
+                // `birthHeight: 0` below.
+                isImported: true,
                 birthHeight: 0,
                 // `start` is a lifecycle-queue op, so the async create's
                 // suspension between persist and create cannot interleave
@@ -1458,7 +1520,7 @@ final class SwiftDashSDKHost {
         let dir = documents
             .appendingPathComponent("SwiftDashSDK", isDirectory: true)
             .appendingPathComponent("Platform", isDirectory: true)
-            .appendingPathComponent(network.networkName, isDirectory: true)
+            .appendingPathComponent(network.persistenceScope, isDirectory: true)
         try FileManager.default.createDirectory(
             at: dir,
             withIntermediateDirectories: true)
@@ -1476,7 +1538,7 @@ final class SwiftDashSDKHost {
 
     /// Filesystem path for the per-network shielded Orchard commitment-tree
     /// SQLite file, handed to `PlatformWalletManager.configureShielded(dbPath:)`.
-    /// Mirrors `buildModelContainer`'s `documents/SwiftDashSDK/<subsystem>/<network>/`
+    /// Mirrors `buildModelContainer`'s `documents/SwiftDashSDK/<subsystem>/<scope>/`
     /// convention in a sibling `Shielded/` directory; creates the directory if
     /// needed. The manager is rebuilt per network (`buildRuntime`), so a
     /// per-network path keeps `configureShielded` idempotent — it throws only
@@ -1490,12 +1552,47 @@ final class SwiftDashSDKHost {
         let dir = documents
             .appendingPathComponent("SwiftDashSDK", isDirectory: true)
             .appendingPathComponent("Shielded", isDirectory: true)
-            .appendingPathComponent(network.networkName, isDirectory: true)
+            .appendingPathComponent(network.persistenceScope, isDirectory: true)
         try FileManager.default.createDirectory(
             at: dir,
             withIntermediateDirectories: true)
         return dir
             .appendingPathComponent("commitment-tree.sqlite", isDirectory: false)
             .path
+    }
+}
+
+/// Per-wallet "this mnemonic was generated on this device" marker, keyed by
+/// the network-scoped walletId (`Data.hexEncodedString()`, the same helper
+/// the runtime's wallet logging uses). Written by
+/// `SwiftDashSDKHost.createAndPersist` for a generated mnemonic and cleared
+/// there for an imported one, on wallet deletion
+/// (`SwiftDashSDKWalletWiper.deleteWalletFromSDK`), when username
+/// registration completes, and by the DashPay bring-up as soon as any path
+/// finds an identity for the seed. The identity bring-up reads it to pick a
+/// short startup probe budget (`StartupIdentityRecoveryPolicy`). Lives here,
+/// not in the DASHPAY-only identity file, because both writers compile into
+/// every target. `defaults` is injectable so the mark/clear matrix is
+/// testable against a throwaway suite.
+///
+/// Deliberately NOT restored by `recoverPersistedWallet` (reinstall with a
+/// surviving Keychain mnemonic): UserDefaults die with the app, and a
+/// recovered wallet's origin is unknown — an imported seed must keep the
+/// default budget, so the safe direction is the slower one.
+enum GeneratedWalletIdentityMarker {
+    private static func key(walletId: Data) -> String {
+        "DWGeneratedWalletNoIdentity." + walletId.hexEncodedString()
+    }
+
+    static func mark(walletId: Data, defaults: UserDefaults = .standard) {
+        defaults.set(true, forKey: key(walletId: walletId))
+    }
+
+    static func isMarked(walletId: Data, defaults: UserDefaults = .standard) -> Bool {
+        defaults.bool(forKey: key(walletId: walletId))
+    }
+
+    static func clear(walletId: Data, defaults: UserDefaults = .standard) {
+        defaults.removeObject(forKey: key(walletId: walletId))
     }
 }

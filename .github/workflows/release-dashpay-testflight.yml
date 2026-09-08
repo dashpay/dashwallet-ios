@@ -45,6 +45,11 @@ on:
         required: true
         default: "New beta build."
         type: string
+      expose_devnet:
+        description: "Expose Devnet in the build. Internal builds only — never for a build that will be promoted to the App Store."
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -552,8 +557,19 @@ jobs:
           API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
           EFFECTIVE_VERSION: ${{ steps.release-version.outputs.effective_version }}
           BUILD_NUMBER: ${{ steps.release-build.outputs.build_number }}
+          EXPOSE_DEVNET: ${{ inputs.expose_devnet }}
         run: |
           set -euo pipefail
+
+          # Devnet is compiled in only when this run explicitly asks for it.
+          # The Release configuration defaults the setting to empty, so an
+          # ordinary build — including the one promoted to the App Store —
+          # carries no devnet UI at all.
+          devnet_flags=""
+          if [[ "$EXPOSE_DEVNET" == "true" ]]; then
+            devnet_flags="DASH_DEVNET"
+            echo "::warning::Devnet is exposed in this build. Do not promote it to the App Store."
+          fi
 
           xcodebuild archive \
             -workspace DashWallet.xcworkspace \
@@ -571,7 +587,8 @@ jobs:
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             CODE_SIGN_STYLE=Automatic \
             MARKETING_VERSION="$EFFECTIVE_VERSION" \
-            CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+            DASH_DEVNET_FLAGS="$devnet_flags"
 
       - name: Read archived app version
         id: app-version

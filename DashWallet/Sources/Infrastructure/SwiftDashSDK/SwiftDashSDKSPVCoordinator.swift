@@ -794,6 +794,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     // MARK: - Filesystem
 
+    /// `documents/SPV/<scope>/`. Scoped by `persistenceScope` rather than the
+    /// network name so two devnets keep separate headers and filters — see
+    /// the `Network.persistenceScope` doc.
     private func makeSPVDataDirectory(for network: Network) throws -> URL {
         let documents = try FileManager.default.url(
             for: .documentDirectory,
@@ -802,7 +805,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             create: true)
         let dir = documents
             .appendingPathComponent("SPV", isDirectory: true)
-            .appendingPathComponent(network.networkName, isDirectory: true)
+            .appendingPathComponent(network.persistenceScope, isDirectory: true)
         try FileManager.default.createDirectory(
             at: dir,
             withIntermediateDirectories: true)

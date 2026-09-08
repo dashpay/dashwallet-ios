@@ -305,16 +305,22 @@ final class SwiftDashSDKWalletWiper: NSObject {
         CoinJoinRecovery.shared.resetForWipe()
         CoinJoinWithdrawalStore.shared.resetForWipe()
         ShieldedWithdrawalStore.shared.resetForWipe()
+        AssetLockProbeStore.shared.resetForWipe()
         SPVChainResyncMarker.resetForWipe()
         // Without this a contested submission outlived the wallet that made it:
         // reset mid-vote, create a new wallet, and the new wallet reported the
         // old one's name as still in voting.
         DWContestedNameStatusService.resetForWipe()
 
-        // Clear both network-scoped active-wallet registry entries only after
-        // both network stores and the global SDK Keychain inventory are empty.
+        // Clear every network-scoped active-wallet registry entry only after
+        // the network stores and the global SDK Keychain inventory are empty.
+        // Devnet included: its ids are network-scoped, so a surviving
+        // DW_ACTIVE_WALLET_ID_2 would point at deleted material.
         WalletEnvironment.setActiveWalletId(nil, for: .mainnet)
         WalletEnvironment.setActiveWalletId(nil, for: .testnet)
+        WalletEnvironment.setActiveWalletId(nil, for: .devnet)
+        // The wallet devnet was last entered from is gone too.
+        WalletEnvironment.devnetProvisioningSourceWalletId = nil
 
         let elapsed = startedAt.duration(to: .now)
         logger.info(
@@ -406,6 +412,90 @@ final class SwiftDashSDKWalletWiper: NSObject {
         return distinct.first
     }
 
+    // MARK: - Deletion backend
+
+    /// How one network's persisted wallet material is removed.
+    ///
+    /// The manager case is the normal path and the only one that also drops
+    /// the wallet from the native registry. The offline case exists because
+    /// building a devnet manager requires an SDK, and a devnet SDK requires
+    /// the quorum service: without this, an offline device or a retired
+    /// devnet would make locally stored recovery material undeletable. It
+    /// deletes exactly what `PlatformWalletManager.deleteWallet` deletes —
+    /// identity keychain items, SwiftData rows, then the Keychain
+    /// mnemonic/metadata once no row for the id survives — minus the native
+    /// removal, which has no meaning when no native manager holds the wallet.
+    private enum DeletionBackend {
+        case manager(PlatformWalletManager, isTemporary: Bool)
+        case offline(PlatformWalletPersistenceHandler)
+
+        /// Wallet ids the backend itself knows about. Only a live manager
+        /// has a loaded set; the offline path relies entirely on the
+        /// Keychain inventory the caller passes in.
+        @MainActor
+        var loadedWalletIds: Set<Data> {
+            switch self {
+            case .manager(let manager, _): return Set(manager.wallets.keys)
+            case .offline: return []
+            }
+        }
+
+        @MainActor
+        func delete(_ walletId: Data) throws {
+            switch self {
+            case .manager(let manager, _):
+                try manager.deleteWallet(walletId: walletId)
+            case .offline(let handler):
+                let identityIds = try handler.identityIdsForWallet(walletId: walletId)
+                // Keychain before SwiftData, for the same retry-safety reason
+                // the SDK's own deletion gives: once the identity rows are
+                // gone, the keys they name can no longer be found.
+                for identityId in identityIds {
+                    try KeychainManager.shared.deleteAllKeychainItems(forIdentityId: identityId)
+                }
+                try KeychainManager.shared.deleteAllIdentityPrivateKeys(forWalletId: walletId)
+                try handler.deleteWalletData(walletId: walletId)
+                if try handler.walletRowCountAcrossNetworks(walletId: walletId) == 0 {
+                    let storage = WalletStorage()
+                    // Metadata first so the mnemonic stays available for a retry.
+                    try storage.deleteMetadata(for: walletId)
+                    try storage.deleteMnemonic(for: walletId)
+                }
+            }
+        }
+
+        /// Tears down a manager this backend owns. No-op for a borrowed live
+        /// manager (the runtime's) and for the offline path, which holds only
+        /// the process-cached container.
+        func shutDownIfOwned() async {
+            if case .manager(let manager, let isTemporary) = self, isTemporary {
+                await manager.shutdown()
+            }
+        }
+    }
+
+    /// The backend for `network`, preferring a manager and falling back to
+    /// the store-only path.
+    ///
+    /// The fallback is devnet-only on purpose: mainnet and testnet build
+    /// their SDK from local parameters, so a failure there is a real fault
+    /// and must not be papered over by a weaker deletion path.
+    @MainActor
+    private static func deletionBackend(for network: Network) async throws -> DeletionBackend {
+        let host = SwiftDashSDKHost.shared
+        do {
+            let (manager, isTemporary) = try await host.managerForWipe(network: network)
+            return .manager(manager, isTemporary: isTemporary)
+        } catch {
+            guard network == .devnet else { throw error }
+            logger.error(
+                """
+                devnet manager unavailable for deletion                 (\(String(describing: error), privacy: .public));                 deleting devnet material from the store directly
+                """)
+            return .offline(try host.storeOnlyPersistenceHandler(for: network))
+        }
+    }
+
     /// Run synchronous full deletion through the manager belonging to each
     /// network. Manager-persisted ids are unioned with the Keychain inventory
     /// so a previous partial wipe's seedless SwiftData wallet is removed too.
@@ -426,9 +516,10 @@ final class SwiftDashSDKWalletWiper: NSObject {
             let host = SwiftDashSDKHost.shared
             var networks: [Network] = [.mainnet, .testnet]
             // Devnet joins the wipe only when a devnet-scoped entry exists:
-            // building a devnet manager needs the quorum service, so paying
-            // that (and risking its failure) is only justified when there is
-            // devnet data to delete.
+            // preparing a devnet deletion reaches for the quorum service
+            // first, so paying that is only justified when there is devnet
+            // data to delete. When the service is unreachable the deletion
+            // still happens, through the store-only backend.
             if !(storedWalletIdsByNetwork[.devnet] ?? []).isEmpty {
                 networks.append(.devnet)
             }
@@ -440,8 +531,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
 
             for network in networks {
                 do {
-                    let (manager, isTemporary) = try await host.managerForWipe(network: network)
-                    var walletIds = Set(manager.wallets.keys)
+                    let backend = try await deletionBackend(for: network)
+                    var walletIds = backend.loadedWalletIds
                     walletIds.formUnion(storedWalletIdsByNetwork[network] ?? [])
 
                     for walletId in walletIds.sorted(by: {
@@ -451,7 +542,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
                             try deleteWalletFromSDK(
                                 walletId,
                                 deleteWallet: { id in
-                                    try manager.deleteWallet(walletId: id)
+                                    try backend.delete(id)
                                 })
                         } catch {
                             result.recordFailure()
@@ -464,9 +555,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
                     // process-cached ModelContainer. The live published
                     // manager (isTemporary == false) is the runtime's to
                     // tear down.
-                    if isTemporary {
-                        await manager.shutdown()
-                    }
+                    await backend.shutDownIfOwned()
                 } catch {
                     result.recordFailure()
                     logger.error(
@@ -546,8 +635,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         struct PendingDeletion {
             let network: Network
             let walletId: Data
-            let manager: PlatformWalletManager
-            let isTemporary: Bool
+            let backend: DeletionBackend
         }
 
         var deletions: [PendingDeletion] = []
@@ -558,8 +646,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // teardown to the fire-and-forget deinit fallback, racing any
         // follow-up rebuild over the same process-cached ModelContainer).
         func shutDownTemporaryManagers() async {
-            for deletion in deletions where deletion.isTemporary {
-                await deletion.manager.shutdown()
+            for deletion in deletions {
+                await deletion.backend.shutDownIfOwned()
             }
             deletions.removeAll()
         }
@@ -567,18 +655,17 @@ final class SwiftDashSDKWalletWiper: NSObject {
         do {
             for network in networks {
                 guard let walletId = walletIds[network] else { continue }
-                let (manager, isTemporary) = try await host.managerForWipe(network: network)
-                if storedWalletIds.contains(walletId) || manager.wallets[walletId] != nil {
+                let backend = try await deletionBackend(for: network)
+                if storedWalletIds.contains(walletId) || backend.loadedWalletIds.contains(walletId) {
                     deletions.append(PendingDeletion(
                         network: network,
                         walletId: walletId,
-                        manager: manager,
-                        isTemporary: isTemporary))
-                } else if isTemporary {
+                        backend: backend))
+                } else {
                     // Built a detached manager only to find nothing to delete on
                     // this network — shut it down now rather than leaving it to
                     // the deinit fallback.
-                    await manager.shutdown()
+                    await backend.shutDownIfOwned()
                 }
             }
 
@@ -586,11 +673,10 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 try deleteWalletFromSDK(
                     deletion.walletId,
                     deleteWallet: { walletId in
-                        try deletion.manager.deleteWallet(walletId: walletId)
+                        try deletion.backend.delete(walletId)
                     })
 
-                let kind: WalletEnvironment.NetworkKind =
-                    deletion.network == .mainnet ? .mainnet : .testnet
+                let kind = WalletEnvironment.networkKind(for: deletion.network)
                 if WalletEnvironment.activeWalletId(for: kind) == deletion.walletId {
                     WalletEnvironment.setActiveWalletId(nil, for: kind)
                 }
@@ -653,6 +739,19 @@ final class SwiftDashSDKWalletWiper: NSObject {
             CrowdNodeDefaults.shared.clearPerWalletKeys(forWalletIdHex: walletIdHex)
             CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
+            AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletIdHex)
         }
+
+        // Per-wallet identity bookkeeping, not app-state cleanup: it runs on
+        // every deletion regardless of the injected `clearAppState` seam.
+        // walletIds are deterministic per mnemonic+network, so the same
+        // phrase re-imported later must inherit neither the generated-wallet
+        // marker (a short probe budget on an imported seed) nor this
+        // wallet's settled identity-recovery context (a backstop that never
+        // runs).
+        GeneratedWalletIdentityMarker.clear(walletId: walletId)
+#if DASHPAY
+        DWSameSeedIdentityRecoveryCoordinator.shared.forgetWallet(walletId: walletId)
+#endif
     }
 }
