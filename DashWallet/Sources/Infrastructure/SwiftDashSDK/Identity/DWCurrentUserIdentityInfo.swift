@@ -908,6 +908,12 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         defer { activeContexts.remove(contextKey) }
 
         do {
+            // The contested-name half of `refreshNames` is best-effort per
+            // identity (a throw there must not fail the restore), so its
+            // success has to be carried out separately: the bookmark record
+            // below may only be written when every identity's contested
+            // refresh actually completed.
+            var contestedRefreshCompleted = true
             let outcome = try await SameSeedIdentityRecoveryPipeline.run(
                 knownIdentityIds: verdict?.identityId.map { [$0] } ?? [],
                 localIdentityIds: {
@@ -941,6 +947,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                                     label: recoveredPending)
                             }
                         } catch {
+                            contestedRefreshCompleted = false
                             Self.logger.warning(
                                 """
                                 🪪 IDENT-RECOVERY :: contested-name refresh failed: \
@@ -956,10 +963,14 @@ final class DWSameSeedIdentityRecoveryCoordinator {
             if outcome.identityCount > 0 {
                 // The seed owns an identity after all; the next start must
                 // run the full pre-SPV bring-up, not the generated-wallet
-                // probe. And the name refresh completed for it, so the
-                // contested bookmarks exist on this install.
+                // probe.
                 GeneratedWalletIdentityMarker.clear(walletId: walletId)
-                Self.recordContestedBookmarksRebuilt(walletId: walletId)
+                // The bookmarks exist on this install only if the contested
+                // refresh completed for every identity; otherwise the next
+                // start with a known identity owes the name refresh again.
+                if contestedRefreshCompleted {
+                    Self.recordContestedBookmarksRebuilt(walletId: walletId)
+                }
             }
             if outcome.identityCount == 0 || outcome.identitiesPersisted {
                 completedContexts.insert(contextKey)
