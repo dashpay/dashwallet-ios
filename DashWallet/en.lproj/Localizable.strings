@@ -5890,3 +5890,7 @@
 /* Log export */
 "Another wallet operation is in progress. Try again in a moment." = "Another wallet operation is in progress. Try again in a moment.";
 "Log export cancelled." = "Log export cancelled.";
+
+/* Support: composing without the diagnostic archive */
+"The app's own logs will still be attached." = "The app's own logs will still be attached.";
+"Collecting wallet diagnostics is still running from an earlier attempt. Restart the app if this does not clear." = "Collecting wallet diagnostics is still running from an earlier attempt. Restart the app if this does not clear.";

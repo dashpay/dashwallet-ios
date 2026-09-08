@@ -109,10 +109,21 @@ extension UIViewController {
     /// Never compose silently without the logs the user believes are
     /// attached: say what is missing and let them decide. Reached from an
     /// export failure and from an archive that exists but could not be read.
+    ///
+    /// "Without logs" means without the archive, not without evidence: the
+    /// composer still attaches the app's own CocoaLumberjack files, which is
+    /// what the pre-archive build guaranteed. Say so, or the user declines a
+    /// report that would in fact have carried something to read.
     private func presentLogsNotAttachedAlert(message: String) {
+        var body = message
+        if !DWLogger.sharedInstance().logFiles().isEmpty {
+            body += "\n\n" + NSLocalizedString(
+                "The app's own logs will still be attached.",
+                comment: "Support")
+        }
         let alert = UIAlertController(
             title: NSLocalizedString("Logs could not be attached", comment: "Support"),
-            message: message,
+            message: body,
             preferredStyle: .alert)
         alert.addAction(UIAlertAction(
             title: NSLocalizedString("Send Without Logs", comment: "Support"),
@@ -127,6 +138,27 @@ extension UIViewController {
     /// the user has written the report — so larger archives go out through
     /// the share sheet, which hands the file over by URL.
     private static let maxMailAttachmentBytes: UInt64 = 25 * 1024 * 1024
+
+    /// Attach the app's own log files individually, newest-first under the
+    /// exporter's byte cap. The fallback when there is no archive; reads are
+    /// file I/O, so they happen off the main actor.
+    private func attachAppLogs(to composer: MFMailComposeViewController) async {
+        let files = DiagnosticLogExporter.selectAppLogs(DWLogger.sharedInstance().logFiles())
+        guard !files.isEmpty else { return }
+        let payloads = await Task.detached(priority: .userInitiated) {
+            files.compactMap { url -> (name: String, data: Data)? in
+                guard let data = try? Data(contentsOf: url) else { return nil }
+                return (name: url.lastPathComponent, data: data)
+            }
+        }.value
+        for payload in payloads {
+            composer.addAttachmentData(
+                payload.data,
+                mimeType: "text/plain",
+                fileName: payload.name)
+        }
+        DWLogger.log("Support composed without an archive; attached \(payloads.count) app log file(s)")
+    }
 
     private func presentSupportEmailController(logsArchive: URL?) async {
         let email = Bundle.main.infoDictionary?["SupportEmail"] as? String ?? ""
@@ -169,6 +201,14 @@ extension UIViewController {
                     zipData,
                     mimeType: "application/zip",
                     fileName: logsArchive.lastPathComponent)
+            } else {
+                // No archive: attach the app's own logs directly, which is
+                // what this screen did before the archive existed. Everything
+                // riding on one zip meant a single throw in `export()` — a
+                // rolled session directory, a full disk, `noLogsFound` on the
+                // first launch after an update — sent support a ticket with
+                // nothing in it, on the device where something had gone wrong.
+                await attachAppLogs(to: mailComposer)
             }
             present(mailComposer, animated: true)
         }
@@ -189,6 +229,11 @@ extension UIViewController {
             }
             if let logsArchive {
                 activityItems.append(logsArchive)
+            } else {
+                // Same fallback as the mail path: the share sheet takes the
+                // app log files by URL, so no read is needed here.
+                activityItems.append(contentsOf: DiagnosticLogExporter.selectAppLogs(
+                    DWLogger.sharedInstance().logFiles()))
             }
             dw_presentActivityViewController(activityItems: activityItems)
         }

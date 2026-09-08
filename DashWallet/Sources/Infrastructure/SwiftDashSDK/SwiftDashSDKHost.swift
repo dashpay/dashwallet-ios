@@ -994,14 +994,11 @@ final class SwiftDashSDKHost {
             Self.logger.info("🪺 HOST :: stage 2/4 ModelContainer \(cached.reused ? "reused" : "created", privacy: .public) for \(network.rawValue, privacy: .public)")
             DWLogger.log("HOST stage 2/4 ModelContainer \(cached.reused ? "reused" : "created") for \(network.rawValue) in \(ms)ms")
         } catch {
-            if case DashModelContainerError.storeFromNewerBuild(let reason) = error {
-                // Deliberate SDK refusal, not a corrupt store: this build cannot
-                // open a database a newer build wrote without losing data.
-                Self.logger.error("🪺 HOST :: store written by a newer build; refusing to open it (\(reason, privacy: .public))")
-                DWLogger.log("HOST store written by a newer build; refusing to open it (\(reason))")
-            } else {
-                Self.logger.error("🪺 HOST :: ModelContainer build failed: \(String(describing: error), privacy: .public)")
-            }
+            // The SDK no longer distinguishes a refusal it can explain from a
+            // plain failure: nothing observable about a store says which build
+            // wrote it, so `core_store_open_result`'s `store_verdict` carries
+            // whatever was determined and this stays one message.
+            Self.logger.error("🪺 HOST :: ModelContainer build failed: \(String(describing: error), privacy: .public)")
             throw HostError.modelContainerFailed(error)
         }
 
@@ -1325,10 +1322,11 @@ final class SwiftDashSDKHost {
     /// store written by a registered version whose live models have since
     /// drifted — every v4.2.0-dev.1 store, until the remaining V1/V2 shapes
     /// are frozen — is opened through inferred migration instead of throwing
-    /// into a launch crash. A store written by a NEWER build is refused with
-    /// `DashModelContainerError.storeFromNewerBuild` (the bare container used
-    /// to open it and drop what that build wrote); the error's message tells
-    /// the user to update or reset, and the reset route stays reachable. See
+    /// into a launch crash. Every other store the plan cannot place is
+    /// refused, with SwiftData's own error passed through: the SDK does not
+    /// claim a store came from a newer build, because nothing it can observe
+    /// tells older from newer (an entity this schema lacks may be a rename it
+    /// performed itself). The verdict is in `core_store_open_result`. See
     /// dashpay/platform#4580.
     private func buildModelContainer(at url: URL) throws -> ModelContainer {
         try DashModelContainer.open(

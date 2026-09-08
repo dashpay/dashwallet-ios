@@ -35,6 +35,11 @@ enum DiagnosticLogExportError: LocalizedError, Equatable {
     /// The lifecycle admission gate is held by a wallet switch, removal,
     /// creation or wipe; the export must not run under one.
     case anotherOperationInProgress
+    /// An earlier diagnostic collection has not returned. Distinct from
+    /// `anotherOperationInProgress` because no wallet operation is running and
+    /// "try again in a moment" would be a lie: the SDK snapshot is behind the
+    /// persistence queue, and a second one would only queue behind the first.
+    case snapshotStillRunning
     /// The user tapped Cancel on the overlay. Whatever the export produced
     /// afterwards is discarded; callers show nothing for this.
     case cancelled
@@ -44,6 +49,11 @@ enum DiagnosticLogExportError: LocalizedError, Equatable {
         case .anotherOperationInProgress:
             return NSLocalizedString(
                 "Another wallet operation is in progress. Try again in a moment.",
+                comment: "Log export")
+        case .snapshotStillRunning:
+            return NSLocalizedString(
+                "Collecting wallet diagnostics is still running from an earlier attempt. "
+                    + "Restart the app if this does not clear.",
                 comment: "Log export")
         case .cancelled:
             return NSLocalizedString("Log export cancelled.", comment: "Log export")
@@ -349,7 +359,7 @@ struct DiagnosticLogExporter {
         var generation: UInt64 = 0
         if includingWalletSnapshot {
             guard !snapshotInFlight else {
-                return .failure(DiagnosticLogExportError.anotherOperationInProgress)
+                return .failure(DiagnosticLogExportError.snapshotStillRunning)
             }
             WalletLifecycleOverlayPresenter.shared.ensureActive()
             nextExportGeneration += 1
@@ -448,7 +458,19 @@ struct DiagnosticLogExporter {
     /// wallet where the first one already failed to finish.
     ///
     /// This is also what makes a tap after the timeout audible: the export is
-    /// refused, no card is up, so `shouldStaySilent` lets the alert through.
+    /// refused, no card is up, so `shouldStaySilent` lets the alert through —
+    /// as `snapshotStillRunning`, which says what actually happened rather
+    /// than blaming a wallet operation that is not running.
+    ///
+    /// Deliberately NOT bounded the way the lifecycle phase is. The phase's
+    /// timeout exists to let *other* operations proceed, and they can. A
+    /// second snapshot cannot: `emitCoreWalletDiagnostics` runs on the SDK's
+    /// persistence serial queue, so releasing this flag would not start a
+    /// concurrent pass, it would enqueue one behind the wedged first — more
+    /// queued work, no new evidence, and a second admission held. When the
+    /// first pass never returns, the queue it is on is stuck, which is a
+    /// broken app rather than a busy one, and relaunching is the only real
+    /// remedy. The error text says that instead of inviting a retry loop.
     @MainActor private static var snapshotInFlight = false
 
     /// The gate's release timer, held so it can be cancelled when the export
@@ -518,6 +540,11 @@ struct DiagnosticLogExporter {
             return true
         case .anotherOperationInProgress:
             return WalletLifecycleOverlayPresenter.shared.isPresenting
+        case .snapshotStillRunning:
+            // No card can be up for this one — a running snapshot whose card
+            // is still showing would have blocked the tap — so it always
+            // shows, and it is the only explanation available.
+            return false
         default:
             return false
         }
