@@ -169,6 +169,12 @@ final class PaymentsLandingViewModel: ObservableObject {
     private var platformReceiptCancellable: AnyCancellable?
     private var shieldedReceiptCancellable: AnyCancellable?
     private var attendedRefreshTask: Task<Void, Never>?
+    /// In-flight shielded baseline read. Held so leaving the surface, or a
+    /// route change, cancels the session it was about to open.
+    private var receiptSessionTask: Task<Void, Never>?
+    /// Which rail that in-flight read is for, so a reconcile arriving while it
+    /// runs can tell "already being started" from "needs starting".
+    private var receiptSessionRail: ChainNetwork?
     private var shieldedProjectionTask: Task<Void, Never>?
     private var shieldedProjectionRefreshPending = false
     private var shieldedProjectionGeneration: UInt64 = 0
@@ -467,30 +473,106 @@ final class PaymentsLandingViewModel: ObservableObject {
             return
         }
 
+        // A baseline for this rail is already being read. Let it land rather
+        // than cancelling and re-reading: `reconcileReceiptWatching` is driven
+        // by publishers that tick faster than the read completes, and
+        // restarting on each tick would mean it never completes at all.
+        if receiptSessionRail == network { return }
+
         generation &+= 1
         let sessionGeneration = generation
-        var coreTransactionIds = Set<Data>()
-        var platformActivityCursor: Int64 = 0
-        var shieldedActivityIds = Set<String>()
+        let rail = network
+        // Stamped once, above the baseline reads rather than below them. Both
+        // the Core snapshot's floor and the subscription's own floor derive
+        // from it, and a transaction persisted between two separately-stamped
+        // instants would land in neither.
+        let startedAt = Date()
 
-        switch network {
+        switch rail {
         case .core:
-            coreTransactionIds = TransactionObserver.persistedTransactionIDs()
-        case .platform:
-            platformActivityCursor = PlatformAddressActivityDAO.shared.latestActivityId(
+            // Bounded by the floor the subscription will scan from: anything
+            // older cannot be emitted, so it does not need excluding.
+            beginSession(
+                generation: sessionGeneration,
+                rail: rail,
+                address: address,
                 walletId: walletId,
-                networkRaw: Int64(environment.rawValue))
+                environment: environment,
+                startedAt: startedAt,
+                coreTransactionIds: TransactionObserver.persistedTransactionIDs(
+                    firstSeenAtOrAfter: TransactionObserver.matchFloor(after: startedAt)),
+                platformActivityCursor: 0,
+                shieldedActivityIds: [])
+        case .platform:
+            beginSession(
+                generation: sessionGeneration,
+                rail: rail,
+                address: address,
+                walletId: walletId,
+                environment: environment,
+                startedAt: startedAt,
+                coreTransactionIds: [],
+                platformActivityCursor: PlatformAddressActivityDAO.shared.latestActivityId(
+                    walletId: walletId,
+                    networkRaw: Int64(environment.rawValue)),
+                shieldedActivityIds: [])
         case .shielded:
-            shieldedActivityIds = Set(Self.projectedShieldedActivity().map(\.id))
+            // The only baseline that cannot be a cheap read: it walks the
+            // wallet's notes and rebuilds the whole projected activity list.
+            // Off the main actor, exactly as every later refresh of the same
+            // projection already is — and the session is created in the
+            // completion rather than left to be filled in, so a note that was
+            // already there can never be admitted as a new payment.
+            receiptSessionTask?.cancel()
+            receiptSessionRail = rail
+            receiptSessionTask = Task { [weak self] in
+                let ids = await Task.detached(priority: .userInitiated) {
+                    Set(Self.projectedShieldedActivity().map(\.id))
+                }.value
+                guard let self, !Task.isCancelled else { return }
+                self.receiptSessionTask = nil
+                self.receiptSessionRail = nil
+                // The route can have moved while the notes were being walked.
+                guard self.generation == sessionGeneration,
+                      self.network == rail,
+                      self.canActivelyWatch,
+                      self.session == nil
+                else { return }
+                self.beginSession(
+                    generation: sessionGeneration,
+                    rail: rail,
+                    address: address,
+                    walletId: walletId,
+                    environment: environment,
+                    startedAt: startedAt,
+                    coreTransactionIds: [],
+                    platformActivityCursor: 0,
+                    shieldedActivityIds: ids)
+            }
         }
+    }
 
+    /// Installs the session and starts watching on it. Split out so the rails
+    /// whose baseline is a cheap read and the one that has to leave the main
+    /// actor for it arrive at the same place.
+    private func beginSession(
+        generation sessionGeneration: UInt64,
+        rail: ChainNetwork,
+        address: String,
+        walletId: Data,
+        environment: Network,
+        startedAt: Date,
+        coreTransactionIds: Set<Data>,
+        platformActivityCursor: Int64,
+        shieldedActivityIds: Set<String>
+    ) {
         session = ReceiptSession(
             generation: sessionGeneration,
-            rail: network,
+            rail: rail,
             address: address,
             walletId: walletId,
             environment: environment,
-            startedAt: Date(),
+            startedAt: startedAt,
             coreTransactionIds: coreTransactionIds,
             platformActivityCursor: platformActivityCursor,
             shieldedActivityIds: shieldedActivityIds)
@@ -749,6 +831,9 @@ final class PaymentsLandingViewModel: ObservableObject {
 
     private func suspendReceiptWatching() {
         isWatchingForReceipt = false
+        receiptSessionTask?.cancel()
+        receiptSessionTask = nil
+        receiptSessionRail = nil
         coreReceiptCancellable?.cancel()
         coreReceiptCancellable = nil
         platformReceiptCancellable?.cancel()
