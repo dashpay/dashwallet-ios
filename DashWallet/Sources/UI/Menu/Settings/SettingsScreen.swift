@@ -99,11 +99,14 @@ struct SettingsScreen: View {
                     }
                 }
             }
-            Button(NSLocalizedString("Devnet", comment: "")) {
-                Task {
-                    let success = await viewModel.switchToDevnet()
-                    if success {
-                        updateView()
+            // Internal builds only — see `WalletEnvironment.isDevnetAvailable`.
+            if WalletEnvironment.isDevnetAvailable {
+                Button(NSLocalizedString("Devnet", comment: "")) {
+                    Task {
+                        let success = await viewModel.switchToDevnet()
+                        if success {
+                            updateView()
+                        }
                     }
                 }
             }

@@ -24,7 +24,8 @@ import SwiftDashSDK
 /// UserDefaults integer holding a DashSync `ChainType_Tag` raw value
 /// (`0` mainnet / `1` testnet / `2` devnet; `dash_shared_core.h`).
 /// `switchToNetwork(_:)` is the sole writer of the key; everything else here
-/// is a static reader. All three networks are selectable; devnet additionally
+/// is a static reader. Mainnet and testnet are always selectable; devnet is
+/// offered only by internal builds (`isDevnetAvailable`) and additionally
 /// requires the user-supplied coordinates in `DevnetConfiguration` before the
 /// runtime can start on it.
 ///
@@ -42,15 +43,36 @@ public final class WalletEnvironment: NSObject {
 
     private static let currentChainTypeKey = "CURRENT_CHAIN_TYPE_KEY"
 
+    /// Whether this build offers devnet at all.
+    ///
+    /// Devnet is a development network whose coordinates the user types in;
+    /// it exists only in internal builds, which compile with `DASH_DEVNET`
+    /// (see the `DASH_DEVNET_FLAGS` build setting). Shipping builds define
+    /// nothing, and then the network is unreachable end to end:
+    /// `networkKind` never resolves to it, `switchToNetwork(_:)` refuses it,
+    /// and neither the network-picker entry nor the Devnet Settings row is
+    /// built.
+    #if DASH_DEVNET
+    public static let isDevnetAvailable = true
+    #else
+    public static let isDevnetAvailable = false
+    #endif
+
     /// The persisted network selection. A missing key means mainnet —
     /// testnet/devnet are reached only through `switchToNetwork(_:)`, the
     /// key's sole writer. Unknown raw values (which the writer never
     /// produces) classify as `.mainnet`, same as a missing key — devnet is a
     /// real, startable network now, so garbage must not select it.
+    ///
+    /// A persisted devnet selection also classifies as `.mainnet` in a build
+    /// without `DASH_DEVNET`: an internal build can be replaced in place by
+    /// a shipping one, and the shipping one has no UI left to switch back.
     public static var networkKind: NetworkKind {
         let defaults = UserDefaults.standard
         guard defaults.object(forKey: currentChainTypeKey) != nil else { return .mainnet }
-        return NetworkKind(rawValue: defaults.integer(forKey: currentChainTypeKey)) ?? .mainnet
+        let kind = NetworkKind(rawValue: defaults.integer(forKey: currentChainTypeKey)) ?? .mainnet
+        guard kind != .devnet || isDevnetAvailable else { return .mainnet }
+        return kind
     }
 
     @objc public static var isMainnet: Bool { networkKind == .mainnet }
@@ -113,10 +135,10 @@ public final class WalletEnvironment: NSObject {
     }
 
     /// Switches the persisted network selection. Returns `true` when the app
-    /// is on `kind` afterwards (including the already-there no-op). All
-    /// three kinds are accepted; whether devnet can actually START is the
-    /// runtime's concern (`DevnetConfiguration.isConfigured`), not this
-    /// key's.
+    /// is on `kind` afterwards (including the already-there no-op). Devnet is
+    /// rejected outright in a build without `DASH_DEVNET`; where it is
+    /// offered, whether it can actually START is the runtime's concern
+    /// (`DevnetConfiguration.isConfigured`), not this key's.
     ///
     /// Posting `DWCurrentNetworkDidChangeNotification` is what actually moves
     /// the app: the SDK wallet runtime restarts SPV for the new network and
@@ -130,6 +152,9 @@ public final class WalletEnvironment: NSObject {
         _ kind: NetworkKind,
         source: NetworkSwitchSource = .external
     ) -> Bool {
+        // Devnet exists only in internal builds. Refuse it elsewhere rather
+        // than persisting a selection nothing downstream can act on.
+        guard kind != .devnet || isDevnetAvailable else { return false }
         guard kind != networkKind else { return true }
 
         // The DashPay mirror (username + registration flag) is a single

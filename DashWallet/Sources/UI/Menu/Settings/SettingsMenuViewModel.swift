@@ -140,14 +140,24 @@ class SettingsMenuViewModel: ObservableObject {
                     self?.navigationDestination = .network
                 }
             ),
-            MenuItemModel(
-                title: NSLocalizedString("Devnet Settings", comment: "Devnet"),
-                subtitle: NSLocalizedString("Quorum URL, name and contract ids", comment: "Devnet"),
-                icon: .custom("image.network.monitor", maxHeight: 30),
-                action: { [weak self] in
-                    self?.navigationDestination = .devnetSettings
-                }
-            ),
+        ]
+
+        // Devnet is offered by internal builds only, so its settings row does
+        // not exist in a shipping one — see `WalletEnvironment.isDevnetAvailable`.
+        if WalletEnvironment.isDevnetAvailable {
+            items.append(
+                MenuItemModel(
+                    title: NSLocalizedString("Devnet Settings", comment: "Devnet"),
+                    subtitle: NSLocalizedString("Quorum URL, name and contract ids", comment: "Devnet"),
+                    icon: .custom("image.network.monitor", maxHeight: 30),
+                    action: { [weak self] in
+                        self?.navigationDestination = .devnetSettings
+                    }
+                )
+            )
+        }
+
+        items.append(
             MenuItemModel(
                 title: NSLocalizedString("About", comment: ""),
                 icon: .custom("image.about", maxHeight: 30),
@@ -155,7 +165,7 @@ class SettingsMenuViewModel: ObservableObject {
                     self?.navigationDestination = .about
                 }
             )
-        ]
+        )
 
         // Conditional migration row: only while leftover CoinJoin funds exist.
         if hasCoinJoinLeftover {
