@@ -229,6 +229,10 @@ struct HomeViewContent<Content: View>: View {
     @State private var navigateToDashPayFlow: Bool = false
     @State private var navigateToClaimInvitation: Bool = false
     @State private var pendingShieldedRecovery: Transaction? = nil
+    /// An internal transfer runs past the screen that started it, and the
+    /// confirm sheet closes the moment it begins — so its outcome is
+    /// announced here, where the user lands.
+    @ObservedObject private var internalTransfers = InternalTransferRunner.shared
     /// Balance whose explainer sheet is up (tap on a breakdown row's body).
     @State private var balanceInfoNetwork: ChainNetwork? = nil
 
@@ -489,6 +493,7 @@ struct HomeViewContent<Content: View>: View {
                 }
             }
         }
+        .internalTransferToast(runner: internalTransfers)
         .sheet(item: $selectedTxDataItem) { item in
             TransactionDetailsSheet(item: item)
         }

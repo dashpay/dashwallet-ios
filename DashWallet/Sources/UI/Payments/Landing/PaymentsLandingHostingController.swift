@@ -4,7 +4,6 @@
 //
 
 import Combine
-import DashUIKit
 import SwiftUI
 import UIKit
 
@@ -64,6 +63,11 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// suspends watching the moment that screen is pushed, so nothing is
     /// detected while the user is on the very screen they are handing over.
     private var isPushingReceiveStep = false
+    /// Whether this landing is the screen the user is on. Gates the Send
+    /// tab's pasteboard reads: unlike the receive session, a pushed step is
+    /// not "still here" for the clipboard, so this one tracks plain
+    /// appearance and ignores `isPushingReceiveStep`.
+    private var isSurfaceOnScreen = false
     /// The specify-amount sheet while it is up, so a receipt can dismiss it.
     private weak var requestAmountController: RequestAmountHostingController?
     /// Kept apart from `cancellables`: these live exactly as long as that sheet
@@ -169,6 +173,15 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         super.viewDidLoad()
         view.backgroundColor = .dw_background()
 
+        // Reads need both halves: this landing on screen (a pushed send step
+        // or a dismissal revokes it, and the model is reused by those steps)
+        // and the Send tab selected. The tab check alone is not enough — the
+        // outgoing form stays alive through its slide-out transition.
+        embeddedSendViewModel.isClipboardReadAllowed = { [weak self] in
+            guard let self else { return false }
+            return self.isSurfaceOnScreen && self.viewModel.activeTab == .send
+        }
+
         addChild(hostingController)
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         hostingController.view.backgroundColor = .clear
@@ -208,6 +221,22 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
                     }
                 }
                 .store(in: &cancellables)
+
+            // The endpoints move after the tab opens — the form starts on one
+            // route and the user picks another — and the sheet is gated on a
+            // shielded end. Watching the tab alone would mean anyone who
+            // arrived on a transparent route never saw it at all.
+            //
+            // `objectWillChange` fires before the value lands, so the check is
+            // deferred a turn to read the new endpoints. It is cheap and
+            // self-limiting: the first thing it does is consult the flag.
+            embeddedTransferViewModel.objectWillChange
+                .receive(on: RunLoop.main)
+                .sink { [weak self] _ in
+                    guard let self, self.view.window != nil else { return }
+                    self.presentTransferTimingSheetIfNeeded()
+                }
+                .store(in: &cancellables)
         }
     }
 
@@ -225,6 +254,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         // here as well so returning from transaction details can resume the
         // same receive session (or start a fresh "Receive another" session).
         viewModel.setReceiptWatchingObscured(false)
+        isSurfaceOnScreen = true
+        embeddedSendViewModel.refreshClipboardSuggestion()
         isPushingReceiveStep = false
         receiveStepObservers.removeAll()
         viewModel.setReceiveSurfaceVisible(true)
@@ -236,6 +267,9 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        // Set before the receive-step exemption below: for the clipboard,
+        // every way of leaving this screen counts, pushed step included.
+        isSurfaceOnScreen = false
         // Stepping deeper into the receive flow is not leaving it. Everything
         // else — a tab change, a dismissal, a pop — still puts the session to
         // sleep.
@@ -325,6 +359,9 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         }
     }
 
+    /// First-ever visit to the free-form Internal tab: explain transfer
+    /// timing before the user composes a transfer. The form is already
+    /// embedded underneath; "I got it" (not the X) acknowledges for good.
     /// Puts the landing on `tab` without rebuilding it — the tab-bar entry
     /// points select this controller rather than presenting a copy.
     func select(tab: PaymentsLandingTab) {
@@ -446,26 +483,61 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         navigationController?.pushViewController(controller, animated: true)
     }
 
-    /// First-ever visit to the free-form Internal tab: explain transfer
-    /// timing before the user composes a transfer. The form is already
-    /// embedded underneath; "I got it" (not the X) acknowledges for good.
+    /// Whether a shielded balance is one of the transfer's two ends.
+    ///
+    /// The sheet explains why a shielded transfer takes longer, so it has
+    /// nothing to say about a route that does not touch one.
+    private var transferTouchesShieldedBalance: Bool {
+        embeddedTransferViewModel.source == .shielded
+            || embeddedTransferViewModel.destination == .balance(.shielded)
+    }
+
     private func presentTransferTimingSheetIfNeeded() {
         guard !UserDefaults.standard.bool(forKey: Self.shieldedBalanceTimingShownKey),
+              viewModel.activeTab == .internalTransfer,
+              transferTouchesShieldedBalance,
               presentedViewController == nil
         else { return }
+        // Written on presentation, not on the confirm button. The sheet is a
+        // `pageSheet` and can be swiped away; recording it only when the button
+        // is tapped meant anyone who dismisses that way was told again, and
+        // again, every time they opened the tab. "Shown once" is the rule, and
+        // showing it is what satisfies it.
+        UserDefaults.standard.set(true, forKey: Self.shieldedBalanceTimingShownKey)
         viewModel.setReceiptWatchingObscured(true)
         let host = UIHostingController(
-            rootView: DashUIKit.BottomSheet(showBackButton: .constant(false)) {
-                TransferTimingSheet(onConfirm: { [weak self] in
-                    UserDefaults.standard.set(true, forKey: Self.shieldedBalanceTimingShownKey)
-                    self?.dismiss(animated: true) {
-                        self?.viewModel.setReceiptWatchingObscured(false)
-                    }
-                })
-            })
+            rootView: TransferTimingSheet(onConfirm: { [weak self] in
+                self?.dismiss(animated: true) {
+                    self?.viewModel.setReceiptWatchingObscured(false)
+                }
+            }))
+        host.modalPresentationStyle = .pageSheet
+        // Fill the whole sheet, including the bottom safe-area strip, with the
+        // sheet background — the detent paints that strip itself.
+        host.view.backgroundColor = UIColor(Color.dash.primaryBackground)
+
         if let sheet = host.sheetPresentationController {
-            sheet.detents = [.medium()]
+            // `BottomSheet` draws its own grabber.
             sheet.prefersGrabberVisible = false
+            if #unavailable(iOS 26.0) {
+                sheet.preferredCornerRadius = 24
+            }
+            // SwiftUI's `.presentationDetents` does not bridge to a
+            // `UIHostingController` presented with `present()` — UIKit falls
+            // back to `.large` — so the content is measured here and given a
+            // matching detent. Mirrors `HomeViewController`'s reminder sheet.
+            if #available(iOS 16.0, *) {
+                let width = view.bounds.width
+                let bottomInset = view.window?.safeAreaInsets.bottom ?? 0
+                let contentHeight = host
+                    .sizeThatFits(in: CGSize(width: width, height: .greatestFiniteMagnitude))
+                    .height
+                sheet.detents = [.custom { context in
+                    min(contentHeight + bottomInset, context.maximumDetentValue)
+                }]
+            } else {
+                sheet.detents = [.medium()]
+            }
         }
         present(host, animated: true) { [weak self, weak host] in
             host?.presentationController?.delegate = self
