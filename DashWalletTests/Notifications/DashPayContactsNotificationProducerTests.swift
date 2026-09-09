@@ -30,12 +30,18 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
     /// to it.
     private static let referenceNow = Date(timeIntervalSince1970: 1_756_000_000)
 
+    /// Two receiving identities sharing one app-wide `NotifiedEventStore`.
+    static let ownerA = Data(repeating: 0x01, count: 32)
+    static let ownerB = Data(repeating: 0x02, count: 32)
+    static let ownerAHex = ownerA.hexEncodedString()
+    static let ownerBHex = ownerB.hexEncodedString()
+
     private var client: FakeUserNotificationCenterClient!
     private var store: InMemoryNotifiedEventStore!
     private var preferences: FakeNotificationPreferenceStore!
     private var dispatcher: NotificationDispatcher!
     private var appState: FakeAppStateProvider!
-    private var snapshot = DashPayContactsNotificationProducer.ContactsSnapshot(incomingRequests: [], contacts: [])
+    private var snapshot = DashPayContactsNotificationProducer.ContactsSnapshot(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [], contacts: [])
     private var lastViewed: Date?
     private var producer: DashPayContactsNotificationProducer!
 
@@ -45,7 +51,7 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
         store = InMemoryNotifiedEventStore()
         preferences = FakeNotificationPreferenceStore()
         appState = FakeAppStateProvider()
-        snapshot = DashPayContactsNotificationProducer.ContactsSnapshot(incomingRequests: [], contacts: [])
+        snapshot = DashPayContactsNotificationProducer.ContactsSnapshot(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [], contacts: [])
         lastViewed = nil
         let permissions = NotificationPermissionCoordinator(client: client, preferences: preferences)
         dispatcher = NotificationDispatcher(client: client, store: store, permissions: permissions)
@@ -53,7 +59,7 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
             dispatcher: dispatcher,
             store: store,
             snapshot: { [weak self] in
-                self?.snapshot ?? DashPayContactsNotificationProducer.ContactsSnapshot(incomingRequests: [], contacts: [])
+                self?.snapshot ?? DashPayContactsNotificationProducer.ContactsSnapshot(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [], contacts: [])
             },
             lastViewedDate: { [weak self] in self?.lastViewed },
             appState: appState,
@@ -85,14 +91,14 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
 
     func testFreshIncomingRequestPostsOnceAcrossTwoChangeSignals() async {
         let item = makeItem(relationship: .incoming, incomingAge: 60)
-        snapshot = .init(incomingRequests: [item], contacts: [])
+        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [item], contacts: [])
 
         await producer.scanAndNotify()
         await producer.scanAndNotify()
 
         XCTAssertEqual(client.addedRequests.count, 1)
         let request = client.addedRequests[0]
-        XCTAssertEqual(request.identifier, "contact.request.\(idHex(0xaa))")
+        XCTAssertEqual(request.identifier, "contact.request.\(DashPayContactsNotificationProducerTests.ownerAHex).\(idHex(0xaa))")
         XCTAssertEqual(request.content.threadIdentifier, NotificationTopic.dashpay.rawValue)
         XCTAssertEqual(request.content.body,
                        String(format: NSLocalizedString("%@ has sent you a contact request", comment: "DashPay Notifications"), "alice"))
@@ -101,11 +107,31 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
                        NotificationForegroundBehavior.suppress.rawValue)
     }
 
+    func testTheSameCounterpartyNotifiesEachOwnerSeparately() async {
+        // One app-wide store, two receiving identities. Keyed on the
+        // counterparty alone, owner B's fresh request reused owner A's id
+        // and was dropped as a duplicate.
+        let item = makeItem(relationship: .incoming, incomingAge: 60)
+        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA,
+                         incomingRequests: [item], contacts: [])
+        await producer.scanAndNotify()
+
+        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerB,
+                         incomingRequests: [item], contacts: [])
+        await producer.scanAndNotify()
+
+        XCTAssertEqual(client.addedRequests.count, 2)
+        XCTAssertEqual(client.addedRequests.map(\.identifier), [
+            "contact.request.\(DashPayContactsNotificationProducerTests.ownerAHex).\(idHex(0xaa))",
+            "contact.request.\(DashPayContactsNotificationProducerTests.ownerBHex).\(idHex(0xaa))",
+        ])
+    }
+
     func testHistoricalRequestDoesNotPost() async {
         // A freshly synced identity replays its request history — an item
         // outside the freshness window is not news.
         let item = makeItem(relationship: .incoming, age: 11 * 60, incomingAge: 11 * 60)
-        snapshot = .init(incomingRequests: [item], contacts: [])
+        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [item], contacts: [])
 
         await producer.scanAndNotify()
 
@@ -116,7 +142,7 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
         // The user opened the notifications screen after this request
         // arrived — the bell's read marker makes it old news.
         let item = makeItem(relationship: .incoming, age: 120, incomingAge: 120)
-        snapshot = .init(incomingRequests: [item], contacts: [])
+        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [item], contacts: [])
         lastViewed = Self.referenceNow.addingTimeInterval(-60)
 
         await producer.scanAndNotify()
@@ -131,13 +157,13 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
         let item = makeItem(idByte: 0xbb, relationship: .established,
                             username: "bob", age: 60,
                             incomingAge: 60, outgoingAge: 3_600)
-        snapshot = .init(incomingRequests: [], contacts: [item])
+        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [], contacts: [item])
 
         await producer.scanAndNotify()
 
         XCTAssertEqual(client.addedRequests.count, 1)
         let request = client.addedRequests[0]
-        XCTAssertEqual(request.identifier, "contact.accepted.\(idHex(0xbb))")
+        XCTAssertEqual(request.identifier, "contact.accepted.\(DashPayContactsNotificationProducerTests.ownerAHex).\(idHex(0xbb))")
         XCTAssertEqual(request.content.body,
                        String(format: NSLocalizedString("%@ accepted your contact request", comment: "DashPay Notifications"), "bob"))
         XCTAssertEqual(DeepLinkRoute.decode(fromUserInfo: request.content.userInfo), .dashPayNotifications)
@@ -148,7 +174,7 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
         // themselves, nothing to announce.
         let item = makeItem(idByte: 0xcc, relationship: .established,
                             age: 60, incomingAge: 3_600, outgoingAge: 60)
-        snapshot = .init(incomingRequests: [], contacts: [item])
+        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [], contacts: [item])
 
         await producer.scanAndNotify()
 
@@ -160,14 +186,14 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
     func testForegroundSuppressPathConsumes() async {
         appState.isApplicationActive = true
         let item = makeItem(relationship: .incoming, incomingAge: 60)
-        snapshot = .init(incomingRequests: [item], contacts: [])
+        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [item], contacts: [])
 
         await producer.scanAndNotify()
 
         XCTAssertTrue(client.addedRequests.isEmpty)
         // Consumed: the bell showed it live, so a scan after backgrounding
         // cannot post it and the badge never counts it.
-        XCTAssertEqual(store.events["contact.request.\(idHex(0xaa))"]?.seen, true)
+        XCTAssertEqual(store.events["contact.request.\(DashPayContactsNotificationProducerTests.ownerAHex).\(idHex(0xaa))"]?.seen, true)
 
         appState.isApplicationActive = false
         await producer.scanAndNotify()

@@ -22,9 +22,37 @@ import UserNotifications
 /// `UNNotificationRequest`. Every feature posts through here, so permission
 /// gating, dedup, grouping, and the badge number are applied in one place.
 final class NotificationDispatcher {
+    /// Runs each submission to completion before the next one starts.
+    ///
+    /// The unseen-count read and the `client.add` that carries it are one
+    /// logical operation, and nothing above enforces that:
+    /// `TransactionNotificationProducer` explicitly allows overlapping
+    /// scans. Two posts could read counts 1 and 2 and then reach the
+    /// notification center in the opposite order, leaving the badge at 1
+    /// with two unseen events in the store — and the store is what every
+    /// later badge is computed from, so the drift persisted.
+    ///
+    /// An actor alone would not fix it: actors are reentrant at `await`, so
+    /// a multi-await sequence still interleaves. Chaining each unit onto the
+    /// previous one is what makes the sequence atomic.
+    private actor SubmissionQueue {
+        private var tail: Task<Void, Never>?
+
+        func run<T: Sendable>(_ body: @escaping @Sendable () async -> T) async -> T {
+            let previous = tail
+            let work = Task { () -> T in
+                await previous?.value
+                return await body()
+            }
+            tail = Task { _ = await work.value }
+            return await work.value
+        }
+    }
+
     private let client: UserNotificationCenterClient
     private let store: NotifiedEventStoring
     private let permissions: NotificationPermissionCoordinator
+    private let submissions = SubmissionQueue()
 
     init(client: UserNotificationCenterClient,
          store: NotifiedEventStoring,
@@ -74,49 +102,54 @@ final class NotificationDispatcher {
             DWLogger.log("NotificationDispatcher: dropped \(notification.id) — permission state \(state)")
             return false
         }
-        guard await store.markIfNew(id: notification.id, topic: notification.topic) else {
-            DWLogger.log("NotificationDispatcher: dropped \(notification.id) — already notified")
-            return false
-        }
-        // The just-marked event is unseen, so the count includes it.
-        let unseen = await store.unseenCount()
+        // Serialized end to end: the mark, the count it implies, and the
+        // request that carries that count must not interleave with another
+        // post's, or the badge lands out of order (see `SubmissionQueue`).
+        return await submissions.run { [store, client] in
+            guard await store.markIfNew(id: notification.id, topic: notification.topic) else {
+                DWLogger.log("NotificationDispatcher: dropped \(notification.id) — already notified")
+                return false
+            }
+            // The just-marked event is unseen, so the count includes it.
+            let unseen = await store.unseenCount()
 
-        let content = UNMutableNotificationContent()
-        if let title = notification.title {
-            content.title = title
-        }
-        content.body = notification.body
-        content.sound = notification.sound
-        content.threadIdentifier = notification.topic.rawValue
-        content.categoryIdentifier = notification.topic.rawValue
-        // Badge truth is the store's unseen count — never incremental
-        // arithmetic on `applicationIconBadgeNumber`, so
-        // `NotificationLifecycle` can reconcile it to zero.
-        content.badge = NSNumber(value: unseen)
-        content.interruptionLevel = notification.topic == .transactions ? .timeSensitive : .active
+            let content = UNMutableNotificationContent()
+            if let title = notification.title {
+                content.title = title
+            }
+            content.body = notification.body
+            content.sound = notification.sound
+            content.threadIdentifier = notification.topic.rawValue
+            content.categoryIdentifier = notification.topic.rawValue
+            // Badge truth is the store's unseen count — never incremental
+            // arithmetic on `applicationIconBadgeNumber`, so
+            // `NotificationLifecycle` can reconcile it to zero.
+            content.badge = NSNumber(value: unseen)
+            content.interruptionLevel = notification.topic == .transactions ? .timeSensitive : .active
 
-        var userInfo: [String: Any] = [
-            NotificationUserInfoKey.foregroundBehavior: notification.foregroundBehavior.rawValue,
-        ]
-        if let routeData = notification.route?.encodedForUserInfo() {
-            userInfo[NotificationUserInfoKey.route] = routeData
-        }
-        content.userInfo = userInfo
+            var userInfo: [String: Any] = [
+                NotificationUserInfoKey.foregroundBehavior: notification.foregroundBehavior.rawValue,
+            ]
+            if let routeData = notification.route?.encodedForUserInfo() {
+                userInfo[NotificationUserInfoKey.route] = routeData
+            }
+            content.userInfo = userInfo
 
-        // Deliver immediately: a delayed trigger races the user's return to
-        // the foreground.
-        let request = UNNotificationRequest(identifier: notification.id, content: content, trigger: nil)
-        do {
-            try await client.add(request)
-            DWLogger.log("NotificationDispatcher: posted \(notification.id) (topic \(notification.topic.rawValue))")
-            return true
-        } catch {
-            DWLogger.log("NotificationDispatcher: failed to post \(notification.id): \(error)")
-            // Roll the dedup mark back: nothing was delivered, so a retry
-            // post must be able to reach the center. (The mark stays before
-            // `add` above — it is the concurrent-duplicate guard.)
-            await store.unmark(id: notification.id)
-            return false
+            // Deliver immediately: a delayed trigger races the user's return
+            // to the foreground.
+            let request = UNNotificationRequest(identifier: notification.id, content: content, trigger: nil)
+            do {
+                try await client.add(request)
+                DWLogger.log("NotificationDispatcher: posted \(notification.id) (topic \(notification.topic.rawValue))")
+                return true
+            } catch {
+                DWLogger.log("NotificationDispatcher: failed to post \(notification.id): \(error)")
+                // Roll the dedup mark back: nothing was delivered, so a retry
+                // post must be able to reach the center. (The mark stays
+                // before `add` above — it is the concurrent-duplicate guard.)
+                await store.unmark(id: notification.id)
+                return false
+            }
         }
     }
 }

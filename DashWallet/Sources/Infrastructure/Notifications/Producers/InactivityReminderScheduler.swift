@@ -82,20 +82,31 @@ final class InactivityReminderScheduler {
     private let client: UserNotificationCenterClient
     private let permissions: NotificationPermissionCoordinator
     private let preferences: InactivityReminderPreferenceStore
-    /// Total wallet balance in duffs.
-    private let totalBalance: () -> UInt64
+    /// Total wallet balance in duffs, or `nil` while the live balance has
+    /// not loaded yet — NOT zero. "Remind me later" is registered without
+    /// `.foreground`, so acting on it can cold-launch the app in the
+    /// background and reach `scheduleReminder()` before the runtime has
+    /// published a balance; collapsing that to zero silently scheduled
+    /// nothing, and the reminder that prompted it had already fired.
+    private let totalBalance: () -> UInt64?
+    /// Last known "this wallet held funds", persisted per wallet — the
+    /// fallback for the unknown case above. `BalanceModel` writes it on
+    /// every balance it renders.
+    private let hadBalance: () -> Bool
     private let now: () -> Date
     private var observers: [NSObjectProtocol] = []
 
     init(client: UserNotificationCenterClient,
          permissions: NotificationPermissionCoordinator,
          preferences: InactivityReminderPreferenceStore = GlobalOptionsInactivityReminderPreferenceStore(),
-         totalBalance: @escaping () -> UInt64 = { SwiftDashSDKWalletState.shared.balance?.total ?? 0 },
+         totalBalance: @escaping () -> UInt64? = { SwiftDashSDKWalletState.shared.balance?.total },
+         hadBalance: @escaping () -> Bool = { DWGlobalOptions.sharedInstance().userHasBalance },
          now: @escaping () -> Date = Date.init) {
         self.client = client
         self.permissions = permissions
         self.preferences = preferences
         self.totalBalance = totalBalance
+        self.hadBalance = hadBalance
         self.now = now
     }
 
@@ -135,14 +146,20 @@ final class InactivityReminderScheduler {
     func scheduleReminder() async {
         guard !preferences.isOptedOut else { return }
         guard await permissions.effectiveState() == .on else { return }
-        let balance = totalBalance()
-        guard balance > 0 else { return }
+        // Skip only on a balance KNOWN to be empty. An unknown balance falls
+        // back to the persisted flag, so a background cold launch from
+        // "Remind me later" reschedules instead of silently dropping the
+        // reminder.
+        guard totalBalance().map({ $0 > 0 }) ?? hadBalance() else { return }
 
         let content = UNMutableNotificationContent()
-        content.body = String(
-            format: NSLocalizedString("It's been a while since you opened Dash Wallet. You still have %@ in your wallet.",
-                                      comment: "Inactivity reminder"),
-            balance.formattedDashAmount)
+        // Deliberately no amount: this is delivered by the OS up to 30 days
+        // later and shows in a lock-screen preview, where a passer-by would
+        // read the wallet's total holdings without unlocking anything. The
+        // user can also have "Autohide Balance" on, which every in-app
+        // surface honours and a scheduled notification cannot.
+        content.body = NSLocalizedString("It's been a while since you opened Dash Wallet.",
+                                         comment: "Inactivity reminder")
         content.sound = .default
         content.threadIdentifier = NotificationTopic.system.rawValue
         content.categoryIdentifier = NotificationTopic.system.rawValue

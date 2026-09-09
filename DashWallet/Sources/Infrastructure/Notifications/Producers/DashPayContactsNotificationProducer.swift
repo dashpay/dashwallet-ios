@@ -27,9 +27,9 @@ import UserNotifications
 /// Signal: `SwiftDashSDKContactsService.contactsDidChangeNotification`,
 /// posted after every published-snapshot rebuild (the SDK's 15 s DashPay
 /// sync loop lands the rows). Each signal triggers a scan of the current
-/// snapshots; the store dedup on the identity-scoped ids
-/// ("contact.request.<id>" / "contact.accepted.<id>") IS the new-vs-known
-/// detector — no second seen-set.
+/// snapshots; the store dedup on the owner- and counterparty-scoped ids
+/// ("contact.request.<owner>.<id>" / "contact.accepted.<owner>.<id>") IS
+/// the new-vs-known detector — no second seen-set.
 ///
 /// Replay guard (same thinking as `TransactionNotificationProducer`): a
 /// freshly synced identity replays its whole request history, and none of
@@ -44,6 +44,12 @@ final class DashPayContactsNotificationProducer {
     /// The two contact snapshots a scan reads — a value type so tests can
     /// feed synthetic items without the contacts service singleton.
     struct ContactsSnapshot {
+        /// The identity the snapshot was built for. `SwiftDashSDKContactsService`
+        /// rebuilds its lists against the new owner on every active-wallet
+        /// change, while the app keeps ONE `NotifiedEventStore` — so without
+        /// this in the key, a request from the same counterparty to a second
+        /// owner reuses the first owner's id and is suppressed as a duplicate.
+        let ownerIdentityId: Data?
         /// Pending incoming requests (they asked us).
         let incomingRequests: [ContactItem]
         /// Established (mutual) contacts.
@@ -64,7 +70,10 @@ final class DashPayContactsNotificationProducer {
          store: NotifiedEventStoring,
          snapshot: @escaping @MainActor () -> ContactsSnapshot = {
              let service = SwiftDashSDKContactsService.shared
-             return ContactsSnapshot(incomingRequests: service.incomingRequests, contacts: service.contacts)
+             return ContactsSnapshot(
+                 ownerIdentityId: DWCurrentUserIdentityInfo.shared.identityId,
+                 incomingRequests: service.incomingRequests,
+                 contacts: service.contacts)
          },
          lastViewedDate: @escaping () -> Date? = { DWGlobalOptions.sharedInstance().mostRecentViewedNotificationDate },
          appState: AppStateProvider = UIApplicationStateProvider(),
@@ -99,12 +108,16 @@ final class DashPayContactsNotificationProducer {
         let current = snapshot()
         let cutoff = now().addingTimeInterval(-Self.freshnessWindow)
         let lastViewed = lastViewedDate() ?? .distantPast
+        // Scopes every key below to the receiving identity. An unknown owner
+        // gets its own bucket rather than silently sharing the wallet-less
+        // one, so a snapshot taken mid-rebind cannot consume a real owner's id.
+        let owner = current.ownerIdentityId?.hexEncodedString() ?? "unknown-owner"
 
         for item in current.incomingRequests {
             await process(
                 item,
                 eventDate: item.createdAt,
-                id: "contact.request.\(item.contactIdentityId.hexEncodedString())",
+                id: "contact.request.\(owner).\(item.contactIdentityId.hexEncodedString())",
                 bodyFormat: NSLocalizedString("%@ has sent you a contact request", comment: "DashPay Notifications"),
                 cutoff: cutoff,
                 lastViewed: lastViewed)
@@ -116,7 +129,7 @@ final class DashPayContactsNotificationProducer {
             await process(
                 item,
                 eventDate: item.createdAt,
-                id: "contact.accepted.\(item.contactIdentityId.hexEncodedString())",
+                id: "contact.accepted.\(owner).\(item.contactIdentityId.hexEncodedString())",
                 bodyFormat: NSLocalizedString("%@ accepted your contact request", comment: "DashPay Notifications"),
                 cutoff: cutoff,
                 lastViewed: lastViewed)

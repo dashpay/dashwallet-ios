@@ -35,6 +35,13 @@ extern NSNotificationName const DWAdvancedModeDidChangeNotification;
 
 @property (nonatomic, assign) BOOL walletNeedsBackup;
 @property (nonatomic, assign) BOOL userHasBalance;
+
+/// Per-wallet: the instant the notification producers last completed a
+/// catch-up scan for the active wallet. `nil` until the first one runs.
+/// `TransactionNotificationProducer` widens its freshness window back to
+/// this, so a payment mined while the process was suspended is still news
+/// when a delayed background refresh finally runs.
+@property (nonatomic, strong, nullable) NSDate *notificationCatchUpDate;
 @property (nullable, nonatomic, strong) NSDate *balanceChangedDate;
 @property (nonatomic, assign) BOOL walletBackupReminderWasShown;
 

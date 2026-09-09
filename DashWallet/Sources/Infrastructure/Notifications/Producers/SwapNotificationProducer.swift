@@ -52,7 +52,7 @@ final class SwapNotificationProducer {
     private let appState: AppStateProvider
     /// True while the user is watching a live swap-status screen; deferred
     /// closure for the same reason as `ordersPublisher` (and for tests).
-    private let swapUIVisible: () -> Bool
+    private let swapUIVisible: (String) -> Bool
     private let now: () -> Date
     private var cancellables = Set<AnyCancellable>()
 
@@ -61,7 +61,7 @@ final class SwapNotificationProducer {
          ordersPublisher: @escaping () -> AnyPublisher<[SwapOrder], Never> = { SwapOrdersDAOImpl.shared.observeAll() },
          currentOrders: @escaping () async -> [SwapOrder] = { await SwapOrdersDAOImpl.shared.all() },
          appState: AppStateProvider = UIApplicationStateProvider(),
-         swapUIVisible: @escaping () -> Bool = { SwapTrackingService.shared.isStatusUIVisible },
+         swapUIVisible: @escaping (String) -> Bool = { SwapTrackingService.shared.isStatusUIVisible(forOrderID: $0) },
          now: @escaping () -> Date = Date.init) {
         self.dispatcher = dispatcher
         self.store = store
@@ -119,12 +119,16 @@ final class SwapNotificationProducer {
         }
 
         // App-state policy: consume only a transition the user is
-        // actually watching happen — foregrounded AND on the live
-        // swap-status screen — so a later emission (relaunch, next poll)
-        // cannot resurrect it. Anywhere else in the foreground the post
+        // actually watching happen — foregrounded AND on the live status
+        // screen FOR THIS ORDER — so a later emission (relaunch, next
+        // poll) cannot resurrect it. Scoped by id because this producer
+        // processes every terminal order `observeAll` emits: an app-wide
+        // visibility flag consumed an order the user was not watching
+        // while some other swap's screen was up, and dedup then kept it
+        // suppressed for good. Anywhere else in the foreground the post
         // below surfaces as a banner (`foregroundBehavior: .banner` is
         // obeyed by `NotificationLifecycle.willPresent`).
-        if appState.isApplicationActive && swapUIVisible() {
+        if appState.isApplicationActive && swapUIVisible(order.id) {
             await store.consume(id: id, topic: .swap)
             return
         }

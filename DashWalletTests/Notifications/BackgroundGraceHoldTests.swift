@@ -40,8 +40,13 @@ final class BackgroundGraceHoldTests: XCTestCase {
             return nextIdentifier
         }
 
+        /// Fulfilled on every `endBackgroundTask`, so a test can await the
+        /// resumed task's release instead of sleeping past it.
+        var onEnd: (() -> Void)?
+
         func endBackgroundTask(_ identifier: UIBackgroundTaskIdentifier) {
             endedIdentifiers.append(identifier)
+            onEnd?()
         }
     }
 
@@ -103,11 +108,15 @@ final class BackgroundGraceHoldTests: XCTestCase {
         hold.beginHold()
         await fulfillment(of: [started], timeout: 1)
 
+        // Awaited, not slept past: `Task.sleep` suspends only this task, so
+        // the resumed one could still be scheduled when the assertion runs.
+        let ended = expectation(description: "background task ended")
+        host.onEnd = { ended.fulfill() }
+
         resumeWait?()
         resumeWait = nil
 
-        // Let the resumed task run to its `endHold`.
-        try? await Task.sleep(nanoseconds: 50_000_000)
+        await fulfillment(of: [ended], timeout: 1)
         XCTAssertEqual(host.endedIdentifiers, [host.nextIdentifier])
         XCTAssertFalse(hold.isHolding)
     }

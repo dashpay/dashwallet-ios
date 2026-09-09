@@ -33,7 +33,8 @@ final class InactivityReminderSchedulerTests: XCTestCase {
     private var client: FakeUserNotificationCenterClient!
     private var notificationPreferences: FakeNotificationPreferenceStore!
     private var reminderPreferences: FakeInactivityReminderPreferenceStore!
-    private var balance: UInt64 = 250_000
+    private var balance: UInt64? = 250_000
+    private var hadBalance = true
     private var scheduler: InactivityReminderScheduler!
 
     override func setUp() async throws {
@@ -42,13 +43,15 @@ final class InactivityReminderSchedulerTests: XCTestCase {
         notificationPreferences = FakeNotificationPreferenceStore()
         reminderPreferences = FakeInactivityReminderPreferenceStore()
         balance = 250_000
+        hadBalance = true
         let permissions = NotificationPermissionCoordinator(client: client,
                                                             preferences: notificationPreferences)
         scheduler = InactivityReminderScheduler(
             client: client,
             permissions: permissions,
             preferences: reminderPreferences,
-            totalBalance: { [weak self] in self?.balance ?? 0 })
+            totalBalance: { [weak self] in self?.balance ?? nil },
+            hadBalance: { [weak self] in self?.hadBalance ?? false })
     }
 
     override func tearDown() async throws {
@@ -60,7 +63,7 @@ final class InactivityReminderSchedulerTests: XCTestCase {
 
     // MARK: Scheduling
 
-    func testSchedulesCalendarTriggerThirtyDaysOutWithBalanceInBody() async throws {
+    func testSchedulesCalendarTriggerThirtyDaysOutWithoutTheBalance() async throws {
         await scheduler.scheduleReminder()
 
         XCTAssertEqual(client.addedRequests.count, 1)
@@ -69,7 +72,11 @@ final class InactivityReminderSchedulerTests: XCTestCase {
         XCTAssertEqual(request.identifier, "system.inactivity")
         XCTAssertEqual(request.content.categoryIdentifier, NotificationTopic.system.rawValue)
         XCTAssertEqual(request.content.threadIdentifier, NotificationTopic.system.rawValue)
-        XCTAssertTrue(request.content.body.contains(UInt64(250_000).formattedDashAmount))
+        // The amount must never reach OS-scheduled content: it renders in a
+        // lock-screen preview 30 days later, and "Autohide Balance" cannot
+        // reach it there.
+        XCTAssertFalse(request.content.body.contains(UInt64(250_000).formattedDashAmount))
+        XCTAssertFalse(request.content.body.contains("DASH"))
         XCTAssertEqual(DeepLinkRoute.decode(fromUserInfo: request.content.userInfo), .home)
 
         let trigger = try XCTUnwrap(request.trigger as? UNCalendarNotificationTrigger)
@@ -81,6 +88,27 @@ final class InactivityReminderSchedulerTests: XCTestCase {
 
     func testZeroBalanceSchedulesNothing() async {
         balance = 0
+
+        await scheduler.scheduleReminder()
+
+        XCTAssertTrue(client.addedRequests.isEmpty)
+    }
+
+    func testUnknownBalanceStillSchedulesWhenTheWalletHeldFunds() async {
+        // A background cold launch from "Remind me later": the runtime has
+        // not published a balance yet. Treating that as zero dropped the
+        // reminder the user just asked to postpone.
+        balance = nil
+        hadBalance = true
+
+        await scheduler.scheduleReminder()
+
+        XCTAssertEqual(client.addedRequests.count, 1)
+    }
+
+    func testUnknownBalanceSchedulesNothingForAWalletThatNeverHeldFunds() async {
+        balance = nil
+        hadBalance = false
 
         await scheduler.scheduleReminder()
 

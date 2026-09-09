@@ -177,7 +177,7 @@
 "Don't remind me again" = "Don't remind me again";
 
 /* Inactivity reminder */
-"It's been a while since you opened Dash Wallet. You still have %@ in your wallet." = "It's been a while since you opened Dash Wallet. You still have %@ in your wallet.";
+"It's been a while since you opened Dash Wallet." = "It's been a while since you opened Dash Wallet.";
 
 /* DashPay Notifications */
 "No notifications match your search" = "No notifications match your search";

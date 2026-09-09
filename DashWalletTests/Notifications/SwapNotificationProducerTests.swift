@@ -34,7 +34,7 @@ final class SwapNotificationProducerTests: XCTestCase {
     private var preferences: FakeNotificationPreferenceStore!
     private var dispatcher: NotificationDispatcher!
     private var appState: FakeAppStateProvider!
-    private var swapUIVisible = false
+    private var visibleOrderIDs: Set<String> = []
     private var ordersSubject: PassthroughSubject<[SwapOrder], Never>!
     /// What `rescan()` reads — the DAO's current table in production.
     private var currentOrders: [SwapOrder] = []
@@ -46,7 +46,7 @@ final class SwapNotificationProducerTests: XCTestCase {
         store = InMemoryNotifiedEventStore()
         preferences = FakeNotificationPreferenceStore()
         appState = FakeAppStateProvider()
-        swapUIVisible = false
+        visibleOrderIDs = []
         ordersSubject = PassthroughSubject()
         let permissions = NotificationPermissionCoordinator(client: client, preferences: preferences)
         dispatcher = NotificationDispatcher(client: client, store: store, permissions: permissions)
@@ -56,7 +56,7 @@ final class SwapNotificationProducerTests: XCTestCase {
             ordersPublisher: { [ordersSubject] in ordersSubject!.eraseToAnyPublisher() },
             currentOrders: { [weak self] in self?.currentOrders ?? [] },
             appState: appState,
-            swapUIVisible: { [weak self] in self?.swapUIVisible ?? false },
+            swapUIVisible: { [weak self] id in self?.visibleOrderIDs.contains(id) ?? false },
             now: { Self.referenceNow })
     }
 
@@ -169,7 +169,7 @@ final class SwapNotificationProducerTests: XCTestCase {
 
     func testForegroundOnSwapUIIsConsumedAndStaysSilentAfterBackgrounding() async {
         appState.isApplicationActive = true
-        swapUIVisible = true
+        visibleOrderIDs = ["order-1"]
         let order = makeOrder(status: .completed)
 
         await producer.process([order])
@@ -180,15 +180,29 @@ final class SwapNotificationProducerTests: XCTestCase {
         // The user watched the swap-status screen finish; a re-emission
         // after backgrounding cannot resurrect it.
         appState.isApplicationActive = false
-        swapUIVisible = false
+        visibleOrderIDs = []
         await producer.process([order])
 
         XCTAssertTrue(client.addedRequests.isEmpty)
     }
 
+    func testAVisibleOrderDoesNotSuppressADifferentOrdersBanner() async {
+        // Order A's status screen is up while order B reaches a terminal
+        // state. An app-wide visibility flag consumed B silently, and dedup
+        // then kept it suppressed for the life of the install.
+        appState.isApplicationActive = true
+        visibleOrderIDs = ["order-A"]
+
+        await producer.process([makeOrder(id: "order-B", status: .completed)])
+
+        XCTAssertEqual(client.addedRequests.count, 1)
+        XCTAssertEqual(client.addedRequests[0].identifier, "swap.order-B")
+        XCTAssertNil(store.events["swap.order-B"]?.seen)
+    }
+
     func testForegroundOffSwapUIPostsBanner() async {
         appState.isApplicationActive = true
-        swapUIVisible = false
+        visibleOrderIDs = []
 
         await producer.process([makeOrder(status: .completed)])
 
@@ -206,7 +220,7 @@ final class SwapNotificationProducerTests: XCTestCase {
         // the app was backgrounded — viewWillDisappear never fires) must
         // not suppress: visibility only matters while active.
         appState.isApplicationActive = false
-        swapUIVisible = true
+        visibleOrderIDs = ["order-1"]
 
         await producer.process([makeOrder(status: .completed)])
 
@@ -230,40 +244,52 @@ final class SwapNotificationProducerTests: XCTestCase {
 
 // MARK: - SwapStatusUIVisibilityTests
 
-/// Exercises the visible-screen counter on `SwapTrackingService.shared`
-/// (the production `swapUIVisible` source). The singleton's counter is
-/// process-global, so every path here rebalances it back to zero.
+/// Exercises the per-order visible-screen counters on
+/// `SwapTrackingService.shared` (the production `swapUIVisible` source).
+/// The singleton's map is process-global, so every path here rebalances it
+/// back to empty.
 final class SwapStatusUIVisibilityTests: XCTestCase {
     func testStackedScreensKeepVisibilityUntilTheLastDisappears() {
         let service = SwapTrackingService.shared
-        XCTAssertFalse(service.isStatusUIVisible)
+        XCTAssertFalse(service.isStatusUIVisible(forOrderID: "order-1"))
 
         // Two status screens overlap mid-transition (retry rebuilds the
         // stack): one screen leaving must not clear the other's mark.
-        service.statusScreenWillAppear()
-        service.statusScreenWillAppear()
-        XCTAssertTrue(service.isStatusUIVisible)
+        service.statusScreenWillAppear(orderID: "order-1")
+        service.statusScreenWillAppear(orderID: "order-1")
+        XCTAssertTrue(service.isStatusUIVisible(forOrderID: "order-1"))
 
-        service.statusScreenWillDisappear()
-        XCTAssertTrue(service.isStatusUIVisible)
+        service.statusScreenWillDisappear(orderID: "order-1")
+        XCTAssertTrue(service.isStatusUIVisible(forOrderID: "order-1"))
 
-        service.statusScreenWillDisappear()
-        XCTAssertFalse(service.isStatusUIVisible)
+        service.statusScreenWillDisappear(orderID: "order-1")
+        XCTAssertFalse(service.isStatusUIVisible(forOrderID: "order-1"))
+    }
+
+    func testVisibilityIsScopedToTheOrderOnScreen() {
+        let service = SwapTrackingService.shared
+        service.statusScreenWillAppear(orderID: "order-A")
+
+        XCTAssertTrue(service.isStatusUIVisible(forOrderID: "order-A"))
+        XCTAssertFalse(service.isStatusUIVisible(forOrderID: "order-B"))
+
+        service.statusScreenWillDisappear(orderID: "order-A")
+        XCTAssertFalse(service.isStatusUIVisible(forOrderID: "order-A"))
     }
 
     func testUnbalancedDisappearCannotPreCancelALaterAppear() {
         let service = SwapTrackingService.shared
-        XCTAssertFalse(service.isStatusUIVisible)
+        XCTAssertFalse(service.isStatusUIVisible(forOrderID: "order-1"))
 
         // The count clamps at zero, so a stray disappear leaves the next
         // appear/disappear pair working normally.
-        service.statusScreenWillDisappear()
-        XCTAssertFalse(service.isStatusUIVisible)
+        service.statusScreenWillDisappear(orderID: "order-1")
+        XCTAssertFalse(service.isStatusUIVisible(forOrderID: "order-1"))
 
-        service.statusScreenWillAppear()
-        XCTAssertTrue(service.isStatusUIVisible)
+        service.statusScreenWillAppear(orderID: "order-1")
+        XCTAssertTrue(service.isStatusUIVisible(forOrderID: "order-1"))
 
-        service.statusScreenWillDisappear()
-        XCTAssertFalse(service.isStatusUIVisible)
+        service.statusScreenWillDisappear(orderID: "order-1")
+        XCTAssertFalse(service.isStatusUIVisible(forOrderID: "order-1"))
     }
 }

@@ -78,6 +78,11 @@ final class TransactionNotificationProducer {
     /// block's own timestamp, which a replay cannot forge.
     static let freshnessWindow: TimeInterval = 10 * 60
 
+    /// Hard floor for a catch-up boundary. A wallet left closed for weeks
+    /// must not have its whole backlog announced the first time a refresh
+    /// finally runs.
+    static let maxCatchUpWindow: TimeInterval = 24 * 60 * 60
+
     /// Rows admitted per scan. The freshness floor already bounds the
     /// window; this guards a resync burst that lands many rows at once.
     static let scanFetchLimit = 100
@@ -158,8 +163,23 @@ final class TransactionNotificationProducer {
     /// sync-state gate drops precisely the rows this producer exists for,
     /// with nothing rescanning once the state settles. The replay guard is
     /// per row instead.
-    func scanAndNotify() async {
-        let cutoff = now().addingTimeInterval(-Self.freshnessWindow)
+    /// `since` widens the window for a catch-up scan: the background
+    /// refresh runs no earlier than 15 minutes after backgrounding and iOS
+    /// delays it further, so a payment mined two minutes after suspension is
+    /// already outside the default 10-minute window by the time the sweep
+    /// gets to run. The caller passes the persisted boundary
+    /// (`DWGlobalOptions.notificationCatchUpDate`); the same value bounds
+    /// both the fetch floor and the per-row freshness test, so the two
+    /// cannot disagree.
+    ///
+    /// Historical-restore suppression is unaffected: a restored row is
+    /// judged by `minedAt` (see `freshnessStamp`), which stays old however
+    /// recent its `firstSeen` is, and the boundary is floored at
+    /// `maxCatchUpWindow` so a long-dormant install cannot replay weeks.
+    func scanAndNotify(since boundary: Date? = nil) async {
+        let defaultCutoff = now().addingTimeInterval(-Self.freshnessWindow)
+        let earliest = now().addingTimeInterval(-Self.maxCatchUpWindow)
+        let cutoff = min(defaultCutoff, max(boundary ?? defaultCutoff, earliest))
         let floor = UInt64(max(0, cutoff.timeIntervalSince1970))
         let rows = rowSource(floor)
         guard !rows.isEmpty else { return }

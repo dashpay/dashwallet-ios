@@ -76,7 +76,16 @@ final class NotificationsBootstrap: NSObject {
         // catches rows whose persist landed after the last signal-driven
         // scan, or whose scan the teardown would otherwise have raced.
         self.backgroundRefresh = BackgroundRefreshCoordinator(
-            postSyncProducerSweep: { await transactionProducer.scanAndNotify() })
+            postSyncProducerSweep: {
+                // The catch-up sweep, not an ordinary scan: it reaches back
+                // to the persisted boundary because the refresh it belongs
+                // to can run long after the payment was mined. The boundary
+                // advances only on a sweep that completed, so a run the
+                // system cut short is retried by the next one.
+                let options = DWGlobalOptions.sharedInstance()
+                await transactionProducer.scanAndNotify(since: options.notificationCatchUpDate)
+                options.notificationCatchUpDate = Date()
+            })
         self.backgroundGrace = BackgroundGraceHold(permissions: permissionCoordinator)
         self.crowdNodeProducer = CrowdNodeNotificationProducer(dispatcher: dispatcher)
         // Foreground terminal-swap banners are suppressed only while the
@@ -85,7 +94,7 @@ final class NotificationsBootstrap: NSObject {
         self.swapProducer = SwapNotificationProducer(
             dispatcher: dispatcher,
             store: store,
-            swapUIVisible: { SwapTrackingService.shared.isStatusUIVisible })
+            swapUIVisible: { SwapTrackingService.shared.isStatusUIVisible(forOrderID: $0) })
         self.inactivityReminderScheduler = InactivityReminderScheduler(client: client,
                                                                        permissions: permissionCoordinator)
         #if DASHPAY

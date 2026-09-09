@@ -53,15 +53,19 @@ final class SwapTrackingService {
     private let dao = SwapOrdersDAOImpl.shared
     private var trackingTask: Task<Void, Never>?
 
-    /// Guards `visibleStatusScreenCount`: written from the main thread
+    /// Guards `visibleStatusOrderIDs`: written from the main thread
     /// (view lifecycle), read from `SwapNotificationProducer`'s
     /// background task.
     private let visibilityLock = NSLock()
-    /// A counter, not a Bool: during a stack transition the incoming and
-    /// outgoing screens' lifecycle callbacks interleave, and a Bool
-    /// cleared by the outgoing screen would mark a still-visible
-    /// replacement as gone.
-    private var visibleStatusScreenCount = 0
+    /// Counted PER ORDER, not a single tally: the producer processes every
+    /// terminal order `observeAll` emits, so an app-wide count let an order
+    /// the user is NOT watching be consumed silently while some other
+    /// order's screen happened to be up — and dedup then kept it suppressed
+    /// for good. Counts rather than a set for the original reason: during a
+    /// stack transition the incoming and outgoing screens' lifecycle
+    /// callbacks interleave, and removing on the outgoing screen's
+    /// disappear would mark a still-visible replacement as gone.
+    private var visibleStatusOrderIDs: [String: Int] = [:]
 
     private init() {}
 
@@ -77,31 +81,41 @@ final class SwapTrackingService {
 
     // MARK: - Public: live-status UI visibility
 
-    /// True while at least one live swap-status screen
+    /// True while a live status screen for THIS order
     /// (`SwapTransactionStatusHostingController`) is on screen.
-    /// `SwapNotificationProducer` reads this to consume — instead of
-    /// banner — a terminal order the user is already watching finish.
-    var isStatusUIVisible: Bool {
+    /// `SwapNotificationProducer` reads it to consume — instead of banner —
+    /// a terminal order the user is already watching finish. Any other
+    /// order still gets its banner.
+    func isStatusUIVisible(forOrderID orderID: String) -> Bool {
         visibilityLock.lock()
         defer { visibilityLock.unlock() }
-        return visibleStatusScreenCount > 0
+        return (visibleStatusOrderIDs[orderID] ?? 0) > 0
     }
 
     /// Called from a status screen's `viewWillAppear`; each call must be
-    /// balanced by `statusScreenWillDisappear()`.
-    func statusScreenWillAppear() {
+    /// balanced by `statusScreenWillDisappear(orderID:)`. A screen with no
+    /// order id yet (nothing submitted) registers nothing, so the producer
+    /// banners rather than silently consuming.
+    func statusScreenWillAppear(orderID: String?) {
+        guard let orderID, !orderID.isEmpty else { return }
         visibilityLock.lock()
         defer { visibilityLock.unlock() }
-        visibleStatusScreenCount += 1
+        visibleStatusOrderIDs[orderID, default: 0] += 1
     }
 
     /// Called from a status screen's `viewWillDisappear`. Clamped at
     /// zero so an unbalanced disappear can only under-report visibility
     /// for its own screen, never pre-cancel a later screen's appear.
-    func statusScreenWillDisappear() {
+    func statusScreenWillDisappear(orderID: String?) {
+        guard let orderID, !orderID.isEmpty else { return }
         visibilityLock.lock()
         defer { visibilityLock.unlock() }
-        visibleStatusScreenCount = max(0, visibleStatusScreenCount - 1)
+        guard let count = visibleStatusOrderIDs[orderID] else { return }
+        if count <= 1 {
+            visibleStatusOrderIDs.removeValue(forKey: orderID)
+        } else {
+            visibleStatusOrderIDs[orderID] = count - 1
+        }
     }
 
     // MARK: - Private: Poll loop

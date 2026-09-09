@@ -299,7 +299,12 @@ final class BackgroundRefreshCoordinator {
 
         let ready = await runtimeStart()
         var success = false
-        if ready, await syncDoneWithinDeadline() {
+        // Re-checked here and not only inside `syncDoneWithinDeadline()`:
+        // expiration can land between that check and the sweep, and the
+        // expiration handler has already completed the task with
+        // `success: false` by then. Sweeping after that spends time the
+        // system has stopped granting.
+        if ready, await syncDoneWithinDeadline(), !Task.isCancelled {
             await postSyncProducerSweep()
             success = true
         }
@@ -353,11 +358,38 @@ final class BackgroundRefreshCoordinator {
     }
 
     /// Poll `SyncingActivityMonitor` until `.syncDone` (the module's sync
-    /// gate — never SPV `state == .synced`). Cancellation exits the loop on
-    /// the next tick; the caller's deadline bounds it regardless.
+    /// gate — never SPV `state == .synced`), and only for a `.syncDone`
+    /// that belongs to THIS refresh.
+    ///
+    /// A suspended process resumes with the monitor still holding the
+    /// previous session's `.syncDone`: backgrounding does not invalidate it,
+    /// and `runtimeStart` cannot be relied on to clear it either, because
+    /// `SwiftDashSDKWalletRuntime.shouldSkipRefresh` elides the rebuild
+    /// while the host, SPV and Platform coordinators are still marked
+    /// running. Returning on that cached value completed the task
+    /// immediately and handed back the execution window the refresh exists
+    /// to use.
+    ///
+    /// So when the monitor is ALREADY done on entry, this waits for the
+    /// runtime to prove it is live in this run — the tip advancing, or a
+    /// fresh cycle that ends in `.syncDone` again. Nothing to catch up on is
+    /// a legitimate outcome: the caller's deadline bounds the wait and its
+    /// expiry is not treated as failure by itself.
     static func defaultSyncDoneWait() async {
-        while SyncingActivityMonitor.shared.state != .syncDone {
+        let monitor = SyncingActivityMonitor.shared
+        let startedDone = monitor.state == .syncDone
+        let tipAtStart = SwiftDashSDKSPVCoordinator.shared.tipHeight
+        var leftDone = false
+
+        while true {
             if Task.isCancelled { return }
+            let state = monitor.state
+            if state != .syncDone {
+                leftDone = true
+            } else if !startedDone || leftDone
+                || SwiftDashSDKSPVCoordinator.shared.tipHeight > tipAtStart {
+                return
+            }
             try? await Task.sleep(nanoseconds: 250_000_000)
             if Task.isCancelled { return }
         }
