@@ -239,22 +239,29 @@ extension CrowdNode {
 
         // `validatePrefs` preserves an unproven stored address rather than
         // destroying it — but the metadata stored BESIDE it (saved online state,
-        // last known balance) came from the same legacy globals and is just as
-        // unproven. The reconstruction below proves an ADDRESS from this
-        // wallet's own history; it proves nothing about that metadata. Left in
-        // place, `setFinished` would publish another wallet's cached balance
-        // and `restoreCreatedOnlineAccount` would publish its `.done`/`.creating`
-        // online state under this one. So quarantine it across the
-        // reconstruction and hand it back only to an address that turns out to
-        // be the same one it was stored against.
+        // last known balance, primary address) came from the same legacy globals
+        // and is just as unproven. The reconstruction below proves an ADDRESS
+        // from this wallet's own history; it proves nothing about that metadata.
+        // Left in place, `setFinished` would publish another wallet's cached
+        // balance, `restoreCreatedOnlineAccount` would publish its
+        // `.done`/`.creating` online state under this one, and
+        // `tryRestoreLinkedOnlineAccount` would copy its primary address into
+        // `primaryAddress` — which the portal's account-details screen shows and
+        // copies to the pasteboard, synchronously, before the `isAddressInUse`
+        // lookup that would replace it has returned (and it stays if that lookup
+        // fails). So quarantine all three across the reconstruction and hand
+        // them back only to an address that turns out to be the same one they
+        // were stored against.
         let storedAddress = prefs.accountAddress
         let quarantinedOnlineState = prefs.savedOnlineAccountState
         let quarantinedBalance = prefs.lastKnownBalance
+        let quarantinedPrimaryAddress = prefs.crowdNodePrimaryAddress
         let metadataIsUnproven =
             CrowdNode.storedAccountVerdict(ownership: ownsStoredAddress) != .trusted
         if metadataIsUnproven {
             prefs.savedOnlineAccountState = .none
             prefs.lastKnownBalance = 0
+            prefs.crowdNodePrimaryAddress = nil
         }
 
         if tryRestoreSignUp(observed) {
@@ -267,6 +274,7 @@ extension CrowdNode {
                 // evidence it was missing, so it is this wallet's after all.
                 prefs.savedOnlineAccountState = quarantinedOnlineState
                 prefs.lastKnownBalance = quarantinedBalance
+                prefs.crowdNodePrimaryAddress = quarantinedPrimaryAddress
             }
             refreshWithdrawalLimits()
             refreshFees()
@@ -313,8 +321,18 @@ extension CrowdNode {
                     recoveredAddress: address) {
                     prefs.savedOnlineAccountState = quarantinedOnlineState
                     prefs.lastKnownBalance = quarantinedBalance
+                    prefs.crowdNodePrimaryAddress = quarantinedPrimaryAddress
                 } else {
                     prefs.lastKnownBalance = 0
+                    // Left nil, not restored: a different recovered address
+                    // means the stored primary belonged to the other wallet.
+                    // `tryRestoreLinkedOnlineAccount` therefore has nothing to
+                    // seed `primaryAddress` from, and the `.linking` state this
+                    // path forces sends it through `checkIfAddressIsInUse`,
+                    // which fills the field from CrowdNode's own answer for
+                    // THIS account. A failed lookup leaves it empty, which is
+                    // the honest state — an empty field cannot be copied to the
+                    // pasteboard as if it were the user's.
                 }
             }
 
@@ -351,6 +369,7 @@ extension CrowdNode {
             if metadataIsUnproven {
                 prefs.savedOnlineAccountState = quarantinedOnlineState
                 prefs.lastKnownBalance = quarantinedBalance
+                prefs.crowdNodePrimaryAddress = quarantinedPrimaryAddress
             }
             DWLogger.log("CrowdNode: account not found")
             // Nothing found by either the signup scan or the online-account
