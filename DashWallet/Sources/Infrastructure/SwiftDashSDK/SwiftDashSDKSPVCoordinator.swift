@@ -137,6 +137,18 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// complete when nothing remains to recover. `nil` when no widen is active.
     private var coinJoinRecoveryWidenedNetwork: Network?
 
+    /// Whether the manager publishers that feed progress, peers and the
+    /// balance bridge are currently detached.
+    ///
+    /// `prepareForNetworkSwitch()` detaches them and clears wallet state
+    /// WITHOUT clearing `runningNetwork`, so `isRunning` alone would still
+    /// report a usable Core while nothing is feeding it. Readiness has to
+    /// consult this too, or a refresh queued between the preparation and the
+    /// switch's own rebuild can elide that rebuild and strand the runtime with
+    /// no subscriptions and a cleared balance.
+    @MainActor
+    private(set) var subscriptionsDetached: Bool = false
+
     @MainActor
     var isRunning: Bool { runningNetwork != nil }
 
@@ -353,6 +365,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// pre-switch silencing can never drift from the real teardown.
     @MainActor
     private func detachManagerSubscriptions() {
+        subscriptionsDetached = true
         progressCancellable?.cancel()
         progressCancellable = nil
         peersCancellable?.cancel()
@@ -524,6 +537,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     @MainActor
     private func subscribeToManagerProgress(manager: PlatformWalletManager) {
+        subscriptionsDetached = false
         progressCancellable = manager.$spvProgress
             .receive(on: RunLoop.main)
             .sink { [weak self] platformProgress in
@@ -653,8 +667,12 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 // First publish of the session. Logged because a "my wallet
                 // shows 0" report is answered by whether this line appeared
                 // and what it carried.
+                // The amount is `.private`: this line ships in release builds
+                // and lands in diagnostic captures, where the aggregate balance
+                // would be readable without unlocking the wallet. The event and
+                // the SPV flag are what answer a "wallet shows 0" report.
                 Self.logger.info(
-                    "🛰️ SPVCOORD :: first balance published total=\(mapped.total, privacy: .public) spv=\(self.isRunning, privacy: .public)")
+                    "🛰️ SPVCOORD :: first balance published total=\(mapped.total, privacy: .private) spv=\(self.isRunning, privacy: .public)")
             }
             SwiftDashSDKWalletState.shared.applyBalance(mapped)
         } catch {

@@ -617,6 +617,11 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         await SwiftDashSDKHost.shared.stopAsync()
         currentNetwork = nil
         platformPhase = .notStarted
+#if DASHPAY
+        // A readiness verdict belongs to the start that produced it. The
+        // coordinator's settled contexts stay: they are per process.
+        DWSameSeedIdentityRecoveryCoordinator.shared.clearStartupVerdicts()
+#endif
         if forWipe {
             DWCurrentUserIdentityInfo.shared.resetForWalletRemoval()
             publishActiveWalletDidChange(reason: "wallet-removed")
@@ -655,18 +660,29 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             isFullyReady: isRuntimeReady(for: network))
     }
 
-    /// Whether Core is bound and running for `network`: the host has a bound
-    /// wallet and Core SPV runs on the network the runtime last brought up.
+    /// Whether Core is bound, running and actually feeding the UI for
+    /// `network`: the host has a bound wallet, Core SPV runs on the network the
+    /// runtime last brought up, and its manager subscriptions are attached.
     ///
     /// This is what decides whether a refresh may be elided. Platform/BLAST is
     /// deliberately excluded: a Platform outage must not make a healthy Core
     /// runtime look rebuildable, because the rebuild's `fullReset` stops SPV,
     /// clears the published balance and nils the host's `modelContainer` —
     /// which is what the home transaction list reads.
+    ///
+    /// `subscriptionsDetached` is part of it because `prepareForNetworkSwitch()`
+    /// detaches the progress/peer/balance publishers and clears wallet state
+    /// while leaving Core's running flag set. Without this term, a refresh
+    /// queued between that preparation and the switch's own rebuild would elide
+    /// the rebuild, and the `.networkDidChange` behind it would then see "full
+    /// readiness" and elide too — stranding the runtime with no subscriptions
+    /// and a cleared balance that no later refresh repairs.
     func isCoreRuntimeReady(for network: Network) -> Bool {
-        currentNetwork == network
+        let spv = SwiftDashSDKSPVCoordinator.shared
+        return currentNetwork == network
             && SwiftDashSDKHost.shared.wallet != nil
-            && SwiftDashSDKSPVCoordinator.shared.isRunning
+            && spv.isRunning
+            && !spv.subscriptionsDetached
     }
 
     /// Core ready AND BLAST running on that same network — a persisted network
