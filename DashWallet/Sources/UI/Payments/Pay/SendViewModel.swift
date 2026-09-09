@@ -282,8 +282,8 @@ final class SendViewModel: ObservableObject {
         // `pinnedSourceMismatch`.
         let valid = validSources
         if pinnedSource == nil, !valid.isEmpty, !userPickedSource || !valid.contains(source) {
-            let preferred = valid.first { balanceDuffs(of: $0) > 0 } ?? valid[0]
-            if preferred != source {
+            if let preferred = valid.first(where: { balanceDuffs(of: $0) > 0 }) ?? valid.first,
+               preferred != source {
                 setSourceWithoutClaimingUserIntent(preferred)
             }
         }

@@ -87,6 +87,14 @@ class SettingsMenuViewModel: ObservableObject {
         setupCoinJoinObservers()
         setupSyncStateObserver()
         setupCurrencyChangeObserver()
+        NotificationCenter.default.publisher(for: .advancedModeDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.advancedModeEnabled = DWGlobalOptions.sharedInstance().advancedModeEnabled
+                self.refreshMenuItems()
+            }
+            .store(in: &cancellableBag)
     }
     
     func resetNavigation() {
@@ -225,11 +233,9 @@ class SettingsMenuViewModel: ObservableObject {
     /// the value when it appeared would keep showing the old state until it
     /// was rebuilt for some unrelated reason.
     func setAdvancedMode(_ enabled: Bool) {
-        guard enabled != advancedModeEnabled else { return }
+        DWGlobalOptions.sharedInstance().updateAdvancedModeEnabled(enabled)
         advancedModeEnabled = enabled
-        DWGlobalOptions.sharedInstance().advancedModeEnabled = enabled
         DWLogger.log("Settings: advanced mode \(enabled ? "enabled" : "disabled")")
-        NotificationCenter.default.post(name: .advancedModeDidChange, object: nil)
         refreshMenuItems()
     }
 

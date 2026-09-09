@@ -52,13 +52,23 @@ extern NSNotificationName const DWAdvancedModeDidChangeNotification;
 @property (nonatomic, assign) BOOL balanceHidden;
 @property (nonatomic, assign) BOOL tapToHideBalanceShown;
 
-/// Opt-in to the advanced surfaces across the app. Off by default: the
-/// screens it unlocks assume the user knows what a UTXO or a derivation path
-/// is, and showing them unasked is how an ordinary wallet stops looking
-/// ordinary. Read it anywhere, but observe
+/// Advanced surfaces are off by default and enabled once when a wallet first
+/// shows a positive Platform address balance. Users can subsequently disable
+/// them. Read it anywhere, but observe
 /// `Notification.Name.advancedModeDidChange` rather than caching the value —
 /// it can be flipped from Settings while any screen is on display.
 @property (nonatomic, assign) BOOL advancedModeEnabled;
+
+/// Persists the preference and announces an actual change to all open screens.
+- (void)updateAdvancedModeEnabled:(BOOL)enabled;
+
+/// Handles the first positive balance per wallet/network, even if already on.
+/// Zero balances leave the check pending; subsequent observations respect a
+/// manual disable. Call on the main thread with the balance's own context.
+- (void)enableAdvancedModeForPlatformBalance:(uint64_t)balance
+                                 walletIdHex:(NSString *)walletIdHex
+                                     network:(NSString *)network;
+- (void)clearAdvancedModeBalanceHistoryForWalletIdHex:(NSString *)walletIdHex;
 
 @property (nonatomic, assign) BOOL shouldDisplayOnboarding;
 @property (nonatomic, assign) BOOL shouldDisplayReclassifyYourTransactionsFlow;

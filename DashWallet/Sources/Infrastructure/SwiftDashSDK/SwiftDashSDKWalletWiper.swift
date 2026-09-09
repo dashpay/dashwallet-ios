@@ -637,6 +637,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
             clearAppState(walletId)
         } else {
             let walletIdHex = walletId.map { String(format: "%02x", $0) }.joined()
+            DWGlobalOptions.sharedInstance().clearAdvancedModeBalanceHistory(forWalletIdHex: walletIdHex)
             CrowdNodeDefaults.shared.clearPerWalletKeys(forWalletIdHex: walletIdHex)
             CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)

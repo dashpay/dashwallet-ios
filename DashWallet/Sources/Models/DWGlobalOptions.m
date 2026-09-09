@@ -36,6 +36,7 @@ static NSString *const LEGACY_USER_HAS_BALANCE_KEY = @"DW_GLOB_userHasBalance";
 // scoped by the active wallet (`DWWalletEnvironment.activeWalletIdHex`).
 static NSString *const PER_WALLET_NEEDS_BACKUP_PREFIX = @"DW_WALLET_NEEDS_BACKUP_";
 static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_";
+static NSString *const PLATFORM_ADVANCED_MODE_HISTORY_KEY = @"DW_PLATFORM_ADVANCED_MODE_HISTORY";
 
 @implementation DWGlobalOptions
 
@@ -224,6 +225,43 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
 
 NSNotificationName const DWAdvancedModeDidChangeNotification = @"org.dash.advanced-mode-did-change";
 
+- (void)updateAdvancedModeEnabled:(BOOL)enabled {
+    if (self.advancedModeEnabled == enabled) {
+        return;
+    }
+    self.advancedModeEnabled = enabled;
+    [[NSNotificationCenter defaultCenter] postNotificationName:DWAdvancedModeDidChangeNotification object:nil];
+}
+
+- (void)enableAdvancedModeForPlatformBalance:(uint64_t)balance
+                                 walletIdHex:(NSString *)walletIdHex
+                                     network:(NSString *)network {
+    if (balance == 0 || walletIdHex.length == 0 || network.length == 0) {
+        return;
+    }
+    NSMutableDictionary *history = [[self.userDefaults dictionaryForKey:PLATFORM_ADVANCED_MODE_HISTORY_KEY] mutableCopy];
+    if (history == nil) {
+        history = [NSMutableDictionary dictionary];
+    }
+    NSArray *networks = history[walletIdHex] ?: @[];
+    if ([networks containsObject:network]) {
+        return;
+    }
+    // Mark before notifying observers, including when the mode is already on.
+    // A later manual disable must survive another sync or app launch.
+    history[walletIdHex] = [networks arrayByAddingObject:network];
+    [self.userDefaults setObject:history forKey:PLATFORM_ADVANCED_MODE_HISTORY_KEY];
+    [self updateAdvancedModeEnabled:YES];
+}
+
+- (void)clearAdvancedModeBalanceHistoryForWalletIdHex:(NSString *)walletIdHex {
+    NSMutableDictionary *history = [[self.userDefaults dictionaryForKey:PLATFORM_ADVANCED_MODE_HISTORY_KEY] mutableCopy];
+    [history removeObjectForKey:walletIdHex];
+    if (history != nil) {
+        [self.userDefaults setObject:history forKey:PLATFORM_ADVANCED_MODE_HISTORY_KEY];
+    }
+}
+
 - (void)restoreToDefaults {
     const BOOL advancedModeWasEnabled = self.advancedModeEnabled;
     self.walletNeedsBackup = YES;
@@ -234,6 +272,7 @@ NSNotificationName const DWAdvancedModeDidChangeNotification = @"org.dash.advanc
     self.localNotificationsEnabled = YES;
     self.balanceHidden = NO;
     self.advancedModeEnabled = NO;
+    [self.userDefaults removeObjectForKey:PLATFORM_ADVANCED_MODE_HISTORY_KEY];
     self.tapToHideBalanceShown = NO;
     self.resyncingWallet = NO;
     self.selectedPaymentCurrency = DWPaymentCurrencyDash;
