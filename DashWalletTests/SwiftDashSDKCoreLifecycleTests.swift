@@ -543,14 +543,43 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
     /// no subscriptions and a cleared balance that no later refresh repairs.
     func testNoTriggerElidesWhileSwitchPreparationHasDetachedSubscriptions() {
         typealias Trigger = SwiftDashSDKWalletRuntime.RefreshTrigger
+        let target = Network.testnet
 
-        // Detached subscriptions ⇒ Core not ready ⇒ not fully ready either.
+        // The state `prepareForNetworkSwitch()` leaves behind: host still bound,
+        // Core SPV still flagged running on the target, publishers detached.
+        // Readiness is computed here rather than asserted as a literal, so
+        // dropping the `subscriptionsDetached` term from the predicate fails
+        // this test instead of silently restoring the defect.
+        let preparedCoreReady = RuntimeReadinessPolicy.isCoreReady(
+            boundNetwork: target, target: target, hasBoundWallet: true,
+            isSPVRunning: true, subscriptionsDetached: true)
+        XCTAssertFalse(preparedCoreReady, "detached subscriptions must make Core unready")
+
+        let preparedFullyReady = RuntimeReadinessPolicy.isFullyReady(
+            isCoreReady: preparedCoreReady, isBlastRunning: true,
+            blastNetwork: target, target: target)
+        XCTAssertFalse(preparedFullyReady, "full readiness must not outrank detached Core")
+
+        // With those computed values, nothing may elide the rebuild.
         for trigger in [Trigger.startIfReady, .platformSyncRearm, .networkDidChange,
                         .walletMaterialChanged, .walletDidChange] {
             XCTAssertFalse(
                 RuntimeRefreshPolicy.shouldSkipRebuild(
-                    trigger: trigger, isCoreReady: false, isFullyReady: false),
+                    trigger: trigger, isCoreReady: preparedCoreReady, isFullyReady: preparedFullyReady),
                 "\(trigger.rawValue) must rebuild while the switch preparation has detached the subscriptions")
+        }
+
+        // Re-attaching the publishers makes the same runtime ready again, and
+        // the Core-only triggers go back to eliding.
+        let reattachedCoreReady = RuntimeReadinessPolicy.isCoreReady(
+            boundNetwork: target, target: target, hasBoundWallet: true,
+            isSPVRunning: true, subscriptionsDetached: false)
+        XCTAssertTrue(reattachedCoreReady, "re-attached subscriptions must restore Core readiness")
+
+        for trigger in [Trigger.startIfReady, .platformSyncRearm] {
+            XCTAssertTrue(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: reattachedCoreReady, isFullyReady: false))
         }
     }
 

@@ -96,6 +96,44 @@ struct RuntimeRefreshPolicy {
     }
 }
 
+/// How the runtime decides that Core, and then the whole runtime, is ready for
+/// a network. Separated from the singletons it reads so the composition itself
+/// is testable — the terms below are the fix for a real defect, and a policy
+/// that only ever sees pre-computed booleans cannot guard them.
+struct RuntimeReadinessPolicy {
+    /// Core is bound, running, and actually feeding the UI.
+    ///
+    /// `subscriptionsDetached` is a term because `prepareForNetworkSwitch()`
+    /// cancels the progress/peer/balance publishers and clears wallet state
+    /// while leaving Core's running flag set. Without it, a refresh queued
+    /// between that preparation and the switch's own rebuild elides the
+    /// rebuild, the `.networkDidChange` behind it then sees full readiness and
+    /// elides too, and the runtime is stranded with no subscriptions and a
+    /// cleared balance that no later refresh repairs.
+    static func isCoreReady(
+        boundNetwork: Network?,
+        target: Network,
+        hasBoundWallet: Bool,
+        isSPVRunning: Bool,
+        subscriptionsDetached: Bool
+    ) -> Bool {
+        boundNetwork == target
+            && hasBoundWallet
+            && isSPVRunning
+            && !subscriptionsDetached
+    }
+
+    /// Core ready AND Platform/BLAST running on that same network.
+    static func isFullyReady(
+        isCoreReady: Bool,
+        isBlastRunning: Bool,
+        blastNetwork: Network?,
+        target: Network
+    ) -> Bool {
+        isCoreReady && isBlastRunning && blastNetwork == target
+    }
+}
+
 @objc(DWSwiftDashSDKWalletRuntime)
 @MainActor
 final class SwiftDashSDKWalletRuntime: NSObject {
@@ -679,10 +717,12 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// and a cleared balance that no later refresh repairs.
     func isCoreRuntimeReady(for network: Network) -> Bool {
         let spv = SwiftDashSDKSPVCoordinator.shared
-        return currentNetwork == network
-            && SwiftDashSDKHost.shared.wallet != nil
-            && spv.isRunning
-            && !spv.subscriptionsDetached
+        return RuntimeReadinessPolicy.isCoreReady(
+            boundNetwork: currentNetwork,
+            target: network,
+            hasBoundWallet: SwiftDashSDKHost.shared.wallet != nil,
+            isSPVRunning: spv.isRunning,
+            subscriptionsDetached: spv.subscriptionsDetached)
     }
 
     /// Core ready AND BLAST running on that same network — a persisted network
@@ -696,9 +736,11 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// stop would leave the user without the sync they triggered.
     func isRuntimeReady(for network: Network) -> Bool {
         let blast = PlatformAddressSyncCoordinator.shared
-        return isCoreRuntimeReady(for: network)
-            && blast.isRunning
-            && blast.runningNetwork == network
+        return RuntimeReadinessPolicy.isFullyReady(
+            isCoreReady: isCoreRuntimeReady(for: network),
+            isBlastRunning: blast.isRunning,
+            blastNetwork: blast.runningNetwork,
+            target: network)
     }
 
     /// Internal (was private): reused by CrowdNode's TransactionObserver row
