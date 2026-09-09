@@ -80,6 +80,17 @@
 				<string>dashpay</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>org.dashfoundation.dash.dashconnect</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>dash-key</string>
+				<string>dash-st</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>

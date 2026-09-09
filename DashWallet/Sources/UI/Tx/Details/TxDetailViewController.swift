@@ -281,25 +281,52 @@ extension TXDetailViewController {
         let txidWire = model.transaction.txHashData
         view.dw_showProgressHUD(withMessage: NSLocalizedString("Retrying transfer…", comment: "Asset-lock retry in progress"))
         Task { [weak self] in
-            defer {
-                self?.isRetryingAssetLock = false
-                self?.view.dw_hideProgressHUD()
-            }
+            // The outcome is decided here and rendered only after the
+            // spinner is down. Ordering, not a workaround: the retry can run
+            // for minutes, and a toast raised underneath a modal spinner would
+            // spend that time invisible and expire before the user could read
+            // it. Collect the result, drop the HUD, then show it.
+            var toast: (message: String, style: ToastStyle)?
+            var failure: Error?
             do {
-                try await AssetLockRecoveryService().retry(
+                let outcome = try await AssetLockRecoveryService().retry(
                     fundingTypeRaw: retry.fundingTypeRaw,
                     txidWire: txidWire,
                     vout: retry.vout)
-                self?.view.dw_showInfoHUD(withText: NSLocalizedString("Transfer completed", comment: "Asset-lock retry finished"))
+                switch outcome {
+                case .completed:
+                    toast = (NSLocalizedString("Transfer completed", comment: "Asset-lock retry finished"), .success)
+                case .completionUnconfirmed:
+                    // Platform said the outpoint is already spent, but that
+                    // report is not quorum-authenticated. Nothing is left to
+                    // retry; say only that, so the wallet never reports a
+                    // completion it did not witness.
+                    toast = (NSLocalizedString("Already spent — nothing to transfer", comment: "Asset-lock retry found the lock already consumed"), .info)
+                case .submittedAwaitingSync:
+                    // Accepted, result not readable yet. Re-submitting risks a
+                    // double-spend, so say what is true and point at the sync
+                    // rather than inviting another tap.
+                    toast = (NSLocalizedString("Submitted — waiting for the network to confirm", comment: "Asset-lock retry submitted but its result could not be read back"), .info)
+                }
             } catch DWIdentityAuthorizer.AuthError.cancelled {
                 // Backing out of the PIN prompt is not an error state.
             } catch {
-                self?.presentRetryFailure(error)
+                failure = error
+            }
+
+            guard let self else { return }
+            self.isRetryingAssetLock = false
+            self.view.dw_hideProgressHUD()
+            if let toast {
+                self.presentDashUIKitToast(style: toast.style, message: toast.message)
+            }
+            if let failure {
+                self.presentRetryFailure(failure)
             }
             // Re-derive the rows either way — even a failed retry can
             // have advanced the lock (e.g. broadcast landed, Platform
             // submit didn't), and the status row should say so.
-            self?.reloadDataSource()
+            self.reloadDataSource()
         }
     }
 

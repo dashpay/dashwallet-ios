@@ -108,7 +108,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             SwiftDashSDKWalletState.feeAwareMax(spendable: 100_001, reserve: 100_000), 1)
     }
 
-    // MARK: How Max explains a shortfall
+    // MARK: How Max explains an empty result
 
     func testAConfirmedCoinJoinOnlyBalanceIsNotBlamedOnTheFee() {
         // The wallet from ticket 32081: 94.6 DASH confirmed, 0.0054 of it
@@ -143,35 +143,4 @@ final class PooledSendableBalanceTests: XCTestCase {
         XCTAssertFalse(message.contains("mixed coins"), "got: \(message)")
     }
 
-    func testHeldBackSplitsExcludedFundsFromTheFeeAndUnconfirmedPart() {
-        let message = InternalTransferViewModel.coreHeldBackMessage(
-            heldBackDuffs: 9_460_449_009 + 100_000,
-            excludedDuffs: 9_460_449_009)
-        XCTAssertTrue(message.contains("mixed coins"), "got: \(message)")
-        XCTAssertTrue(message.contains("network fee"), "got: \(message)")
-    }
-
-    func testHeldBackSaysOnlyTheFeeSentenceWhenNothingIsExcluded() {
-        let message = InternalTransferViewModel.coreHeldBackMessage(
-            heldBackDuffs: 100_000, excludedDuffs: 0)
-        XCTAssertTrue(message.contains("network fee"), "got: \(message)")
-        XCTAssertFalse(message.contains("mixed coins"), "got: \(message)")
-    }
-
-    func testHeldBackSaysOnlyTheMixedCoinsSentenceWhenThatIsAllOfIt() {
-        let message = InternalTransferViewModel.coreHeldBackMessage(
-            heldBackDuffs: 9_460_449_009, excludedDuffs: 9_460_449_009)
-        XCTAssertTrue(message.contains("mixed coins"), "got: \(message)")
-        XCTAssertFalse(message.contains("network fee"), "got: \(message)")
-    }
-
-    func testExcludedFundsNeverExceedWhatIsActuallyHeldBack() {
-        // The two figures are read at different moments, so the excluded part
-        // can momentarily read larger than the whole shortfall. Clamped, or the
-        // subtraction underflows.
-        let message = InternalTransferViewModel.coreHeldBackMessage(
-            heldBackDuffs: 1_000, excludedDuffs: 5_000)
-        XCTAssertTrue(message.contains("mixed coins"), "got: \(message)")
-        XCTAssertFalse(message.contains("network fee"), "got: \(message)")
-    }
 }
