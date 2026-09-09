@@ -119,7 +119,7 @@ final class CrowdNodeOwnershipTests: XCTestCase {
         // `true` at the restore's trust decision, so legacy state copied from
         // another wallet of the same network published `.linkedOnline` and
         // showed that wallet's CrowdNode balance under this one.
-        let verdict = CrowdNode.storedAccountVerdict(ownership: nil)
+        let verdict = CrowdNode.storedAccountVerdict(ownership: Bool?.none)
         XCTAssertEqual(verdict, .unproven)
         XCTAssertNotEqual(verdict, .trusted, "an unproven address must not activate an account")
         XCTAssertNotEqual(verdict, .alien, "an unproven address must not destroy stored data")
@@ -145,26 +145,26 @@ final class CrowdNodeOwnershipTests: XCTestCase {
         // Wallet B's own history recovers B's account; the stored address (and
         // therefore the balance and online state beside it) was A's.
         XCTAssertFalse(CrowdNode.metadataSurvivesReconstruction(
-            ownership: nil, storedAddress: storedAddress, recoveredAddress: otherAddress))
+            ownership: Bool?.none, storedAddress: storedAddress, recoveredAddress: otherAddress))
     }
 
     func testUnprovenMetadataSurvivesWhenTheSameAddressIsRecovered() {
         // The history proves the address the metadata was stored against —
         // that is the account-specific evidence it was missing.
         XCTAssertTrue(CrowdNode.metadataSurvivesReconstruction(
-            ownership: nil, storedAddress: storedAddress, recoveredAddress: storedAddress))
+            ownership: Bool?.none, storedAddress: storedAddress, recoveredAddress: storedAddress))
     }
 
     func testUnprovenMetadataIsDroppedWhenNothingIsRecovered() {
         XCTAssertFalse(CrowdNode.metadataSurvivesReconstruction(
-            ownership: nil, storedAddress: storedAddress, recoveredAddress: nil))
+            ownership: Bool?.none, storedAddress: storedAddress, recoveredAddress: nil))
     }
 
     func testMissingOrEmptyStoredAddressCarriesNoMetadata() {
         XCTAssertFalse(CrowdNode.metadataSurvivesReconstruction(
-            ownership: nil, storedAddress: nil, recoveredAddress: otherAddress))
+            ownership: Bool?.none, storedAddress: nil, recoveredAddress: otherAddress))
         XCTAssertFalse(CrowdNode.metadataSurvivesReconstruction(
-            ownership: nil, storedAddress: "", recoveredAddress: ""),
+            ownership: Bool?.none, storedAddress: "", recoveredAddress: ""),
             "an empty stored address must not match an empty recovered one")
     }
 

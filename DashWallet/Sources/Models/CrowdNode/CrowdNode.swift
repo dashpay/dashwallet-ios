@@ -274,16 +274,20 @@ extension CrowdNode {
             return
         }
 
-        // No signup in this wallet's history, so nothing was replaced and the
-        // stored values are still merely unproven — which is the state
-        // `validatePrefs` deliberately leaves them in, and which the
-        // online-account path below handles on its own terms (`trustStoredAddress`).
-        if metadataIsUnproven {
-            prefs.savedOnlineAccountState = quarantinedOnlineState
-            prefs.lastKnownBalance = quarantinedBalance
-        }
-
-        var onlineState = prefs.savedOnlineAccountState
+        // No signup in this wallet's history — but nothing is settled yet
+        // either: the online lookup below can still replace the stored address
+        // with one recovered from this wallet's own API-confirmation history.
+        // So the quarantine HOLDS across that lookup and is resolved on the
+        // other side of it, against the address we actually ended on. Handing
+        // the metadata back here instead would publish another wallet's cached
+        // balance under this one — `refreshBalance(seedFromCache:)` defaults to
+        // true, and `CrowdNodePortalController.viewDidLoad` takes that default,
+        // so a failed API request leaves that figure on screen.
+        //
+        // The saved state is still needed as an INPUT to the lookup — it is how
+        // `trustsStoredOnlineAddress` knows an online account was claimed at all
+        // — so read it locally rather than un-quarantining prefs.
+        var onlineState = metadataIsUnproven ? quarantinedOnlineState : prefs.savedOnlineAccountState
 
         let trustStoredAddress =
             CrowdNode.storedAccountVerdict(ownership: ownsStoredAddress) == .trusted
@@ -292,6 +296,27 @@ extension CrowdNode {
             observed: observed,
             trustStoredAddress: trustStoredAddress) {
             prefs.accountAddress = address
+
+            // The address is settled now, so the quarantine resolves — by the
+            // same rule the signup branch uses, just against the address the
+            // online lookup recovered. Same address: this wallet's history has
+            // proven the one the metadata was stored against, so it stands.
+            // Different address: the stored pair was another wallet's, and the
+            // cached balance is cleared for good rather than left for the next
+            // cache-seeded refresh to publish. The online state needs no
+            // matching write — `getOnlineAccountAddress` already persisted the
+            // `.linking` its own evidence supports.
+            if metadataIsUnproven {
+                if CrowdNode.metadataSurvivesReconstruction(
+                    ownership: ownsStoredAddress,
+                    storedAddress: storedAddress,
+                    recoveredAddress: address) {
+                    prefs.savedOnlineAccountState = quarantinedOnlineState
+                    prefs.lastKnownBalance = quarantinedBalance
+                } else {
+                    prefs.lastKnownBalance = 0
+                }
+            }
 
             // Without trust, the address came from this wallet's own API
             // confirmation transaction, and that lookup already downgraded the
@@ -319,6 +344,14 @@ extension CrowdNode {
                 DWLogger.log("Failure while restoring linked CrowdNode account: \(error.localizedDescription)")
             }
         } else {
+            // Nothing recovered by either scan, so the stored address is
+            // untouched and its metadata is exactly as unproven as
+            // `validatePrefs` deliberately leaves it — hand it back to the
+            // address it still belongs to.
+            if metadataIsUnproven {
+                prefs.savedOnlineAccountState = quarantinedOnlineState
+                prefs.lastKnownBalance = quarantinedBalance
+            }
             DWLogger.log("CrowdNode: account not found")
             // Nothing found by either the signup scan or the online-account
             // lookup, so this whole pass was a no-op — memoize it against the
