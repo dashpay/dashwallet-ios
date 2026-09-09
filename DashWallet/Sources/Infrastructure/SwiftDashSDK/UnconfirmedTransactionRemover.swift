@@ -266,27 +266,41 @@ struct UnconfirmedTransactionRemover {
             }
         }
 
+        // How deep the recovery rescan reaches is decided HERE, before the
+        // reload, because the reload stops SPV and `resetPublishedState`
+        // zeroes the coordinator's `tipHeight`; the restarted client only
+        // re-seeds it on a later progress tick, so a post-reload read finds 0
+        // and arms nothing. Anchoring on the pre-reload tip is the safe
+        // direction — the tip only advances, so the older value rewinds
+        // deeper, never shallower.
+        //
+        // The window reaches back past the OLDEST removed transaction's first
+        // appearance — uncapped in depth, because this is the step that
+        // restores a removed tx that actually IS mined (the bulk path never
+        // explorer-checked, and the single path's explorer can be wrong). The
+        // SDK floors the rescan at the wallet's birth height and the locally
+        // stored chain data; a row with no usable first-seen time rescans from
+        // the floor.
+        let tip = SwiftDashSDKSPVCoordinator.shared.tipHeight
+        let rescanFromHeight: UInt32? = {
+            guard tip > 0 else { return nil }
+            let ageSeconds = max(0, Date().timeIntervalSince1970 - TimeInterval(oldestFirstSeen))
+            let ageBlocks = UInt32(clamping: Int(ageSeconds / 150)) + rescanMarginBlocks
+            let blocksBack = max(minRescanBlocks, ageBlocks)
+            return tip > blocksBack ? tip - blocksBack : 1
+        }()
+
         // Full runtime reload — the same serialized stop → load → start
         // lifecycle a network switch runs. The reloaded Rust wallet
         // rebuilds its tx set, UTXOs and spent_outpoints from the rows as
         // they now are, and dash-spv's mempool tracker (which kept
         // rebroadcasting) restarts without the removed transactions.
-        await SwiftDashSDKWalletRuntime.shared.rearmPlatformSync()
+        await SwiftDashSDKWalletRuntime.shared.reloadAfterWalletRowsChanged()
 
-        // Rescan compact filters, reaching back past the OLDEST removed
-        // transaction's first appearance — uncapped in depth, because
-        // this is the step that restores a removed tx that actually IS
-        // mined (the bulk path never explorer-checked, and the single
-        // path's explorer can be wrong). The SDK floors the rescan at
-        // the wallet's birth height and the locally stored chain data;
-        // a row with no usable first-seen time rescans from the floor.
+        // Rewind the compact-filter checkpoint on the manager the reload just
+        // built — the previous instance died with the old runtime.
         var rescanArmed = false
-        let tip = SwiftDashSDKSPVCoordinator.shared.tipHeight
-        if tip > 0, let manager = SwiftDashSDKHost.shared.manager {
-            let ageSeconds = max(0, Date().timeIntervalSince1970 - TimeInterval(oldestFirstSeen))
-            let ageBlocks = UInt32(clamping: Int(ageSeconds / 150)) + rescanMarginBlocks
-            let blocksBack = max(minRescanBlocks, ageBlocks)
-            let fromHeight = tip > blocksBack ? tip - blocksBack : 1
+        if let fromHeight = rescanFromHeight, let manager = SwiftDashSDKHost.shared.manager {
             do {
                 try manager.spvRescanFilters(walletId: walletId, fromHeight: fromHeight)
                 rescanArmed = true
@@ -294,8 +308,10 @@ struct UnconfirmedTransactionRemover {
             } catch {
                 logger.error("🗑️ TX-REMOVE :: filter rescan arm failed: \(String(describing: error), privacy: .public)")
             }
+        } else if rescanFromHeight == nil {
+            logger.error("🗑️ TX-REMOVE :: filter rescan skipped — no chain tip when the removal started")
         } else {
-            logger.error("🗑️ TX-REMOVE :: filter rescan skipped — SPV not running after reload")
+            logger.error("🗑️ TX-REMOVE :: filter rescan skipped — no manager after the reload")
         }
 
         // App caches that mirror the deleted rows.

@@ -157,10 +157,23 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// turn "Sync Now" into a real in-session recovery action after Stop or a
     /// recover-time binding race.
     func rearmPlatformSync() async {
-        let task = enqueueAwaitable { [weak self] in
-            await self?.refresh(trigger: .platformSyncRearm)
-        }
-        await task.value
+        await awaitRefresh(trigger: .platformSyncRearm)
+    }
+
+    /// Rebuild the shared runtime after the SwiftData rows it loaded from were
+    /// edited underneath it, and return once that rebuild has settled (started,
+    /// or failed back to a stopped runtime).
+    ///
+    /// Runs the same serialized stop → load → start the lifecycle queue drives
+    /// for a network or wallet switch: on load the Rust wallet rehydrates its
+    /// tx set, UTXOs and `spent_outpoints` from the rows as they now are, and
+    /// dash-spv's mempool tracker restarts without the deleted transactions.
+    ///
+    /// `.walletRowsChanged` is never elided by `shouldSkipRefresh`: a runtime
+    /// that still looks ready is precisely the one holding the pre-edit state
+    /// this call exists to discard.
+    func reloadAfterWalletRowsChanged() async {
+        await awaitRefresh(trigger: .walletRowsChanged)
     }
 
     /// Restart Core SPV to dial a fresh peer set ("sync too slow? change
@@ -393,6 +406,16 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         }
     }
 
+    /// Awaiting sibling of `enqueueRefresh`: appends the same single
+    /// `refresh(trigger:)` op to the serial chain and returns only once it —
+    /// and every op queued ahead of it — has finished. Callers that must
+    /// observe the rebuilt runtime go through here.
+    private func awaitRefresh(trigger: RefreshTrigger) async {
+        await enqueueAwaitable { [weak self] in
+            await self?.refresh(trigger: trigger)
+        }.value
+    }
+
     private func enqueueFullReset(lastError: String?, forWipe: Bool) {
         enqueue { [weak self] in
             await self?.fullReset(lastError: lastError, forWipe: forWipe)
@@ -527,11 +550,14 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     private func shouldSkipRefresh(for network: Network, trigger: RefreshTrigger) -> Bool {
         switch trigger {
-        case .walletMaterialChanged, .walletDidChange:
+        case .walletMaterialChanged, .walletDidChange, .walletRowsChanged:
             // A runtime wallet switch always rebuilds — the active-wallet
             // registry was repointed to a different wallet on the SAME
             // network, so `currentNetwork == network` would otherwise wrongly
-            // elide the rebind.
+            // elide the rebind. A rows-changed rebuild always runs for the
+            // mirror-image reason: the SwiftData rows were edited behind a
+            // runtime that never stopped, so a runtime that looks ready is
+            // exactly the one still holding the pre-edit in-memory wallet.
             return false
         case .startIfReady, .networkDidChange, .platformSyncRearm:
             return isRuntimeReady(for: network)
@@ -639,6 +665,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         case networkDidChange
         case walletMaterialChanged
         case walletDidChange
+        case walletRowsChanged
         case platformSyncRearm
     }
 
