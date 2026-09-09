@@ -494,6 +494,11 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         // so switch telemetry survives into diagnostic exports.
         await SwiftDashSDKHost.shared.stopAsync()
         currentNetwork = nil
+#if DASHPAY
+        // A readiness verdict belongs to the start that produced it. The
+        // coordinator's settled contexts stay: they are per process.
+        DWSameSeedIdentityRecoveryCoordinator.shared.clearStartupVerdicts()
+#endif
         if forWipe {
             DWCurrentUserIdentityInfo.shared.resetForWalletRemoval()
             publishActiveWalletDidChange(reason: "wallet-removed")

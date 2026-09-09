@@ -150,6 +150,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         NSURL *paymentURL = [(DWURLPayAction *)action paymentURL];
         [self.mainController performPayTo:paymentURL];
     }
+    else if ([action isKindOfClass:DWURLDashConnectAction.class]) {
+        [self.mainController openDashConnect:[(DWURLDashConnectAction *)action uri]];
+    }
     else {
         NSAssert(NO, @"Unhandled action", action);
     }

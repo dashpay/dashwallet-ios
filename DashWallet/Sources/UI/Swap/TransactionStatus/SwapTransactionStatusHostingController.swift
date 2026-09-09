@@ -207,17 +207,5 @@ private struct SwapTransactionStatusView: View {
     }
 }
 
-private extension UIViewController {
-    /// Finds the first UITabBarController in the view-controller hierarchy reachable from `self`
-    /// (children + presented), used to switch back to the Home tab when the flow was pushed.
-    func dw_firstTabBarController() -> UITabBarController? {
-        if let tab = self as? UITabBarController { return tab }
-        for child in children {
-            if let tab = child.dw_firstTabBarController() { return tab }
-        }
-        if let presented = presentedViewController {
-            return presented.dw_firstTabBarController()
-        }
-        return nil
-    }
-}
+// `dw_firstTabBarController()` now lives on the shared `UIViewController`
+// category next to `topController()`, where a third caller could reach it.
