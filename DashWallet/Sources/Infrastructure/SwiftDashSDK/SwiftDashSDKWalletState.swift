@@ -108,11 +108,11 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         category: "swift-sdk-migration.wallet-state")
 
     /// Latest wallet balance from SwiftDashSDK. `nil` until the first
-    /// `applyBalance(_:)` call arrives, which `SwiftDashSDKSPVCoordinator`'s
-    /// balance bridge makes as soon as the host has bound the wallet — before
-    /// SPV starts, so the persisted balance renders without a network. `nil`
-    /// means "not known yet" and must never be read as an empty wallet.
-    /// Updated on the main queue.
+    /// publication arrives, which `SwiftDashSDKSPVCoordinator`'s balance bridge
+    /// makes through `applyBalanceOnMainActor(_:)` as soon as the host has
+    /// bound the wallet — before SPV starts, so the persisted balance renders
+    /// without a network. `nil` means "not known yet" and must never be read as
+    /// an empty wallet. Updated on the main actor.
     @Published public private(set) var balance: WalletBalance? = nil
 
     /// Fee-aware "Max" / all-funds amount for a core send: spendable minus a
@@ -202,26 +202,31 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// on every relevant block / mempool tx / InstantSend confirmation.
     /// Marshals to the main queue so SwiftUI/Combine consumers receive
     /// updates on the right thread.
-    /// A caller already on the main queue publishes synchronously; everyone
-    /// else marshals. The synchronous path matters for the startup publication
-    /// in `SwiftDashSDKSPVCoordinator.performStart`: that runs on the
-    /// MainActor and is followed by main-actor startup work that can occupy
-    /// the actor for seconds before reaching any suspension point — the
-    /// DashPay readiness budget lookup, and on the non-DASHPAY build the
-    /// CoinJoin recovery-gap widening, which pre-generates addresses.
-    /// Deferring the assignment behind that would leave the home screen on
-    /// 0.00 for exactly that long, which is the symptom this publication
-    /// exists to remove. Delivery is never later than the previous
-    /// always-async behaviour.
+    /// MainActor-isolated callers use `applyBalanceOnMainActor(_:)` instead,
+    /// which publishes synchronously.
     public func applyBalance(_ snapshot: WalletBalance) {
-        if Thread.isMainThread {
-            MainActor.assumeIsolated { publishBalance(snapshot) }
-            return
-        }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             MainActor.assumeIsolated { self.publishBalance(snapshot) }
         }
+    }
+
+    /// Publish from a caller the compiler already knows is MainActor-isolated:
+    /// `SwiftDashSDKSPVCoordinator`'s balance bridge. Isolation is checked
+    /// statically here, so no `Thread.isMainThread` proxy stands in for it and
+    /// nothing can trap on a main-thread callback that is not running on the
+    /// MainActor's executor.
+    ///
+    /// Synchronous on purpose. The startup publication is followed by
+    /// main-actor work that can hold the actor for seconds before reaching any
+    /// suspension point — the DashPay readiness budget lookup, and on the
+    /// non-DASHPAY build the CoinJoin recovery-gap widening, which
+    /// pre-generates addresses. Marshalling would park the assignment behind
+    /// that and leave the home screen on 0.00 for exactly as long, which is the
+    /// symptom this publication exists to remove.
+    @MainActor
+    public func applyBalanceOnMainActor(_ snapshot: WalletBalance) {
+        publishBalance(snapshot)
     }
 
     /// The single publication path, main-actor bound. Both refresh methods

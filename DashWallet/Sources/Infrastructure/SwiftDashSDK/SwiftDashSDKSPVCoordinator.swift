@@ -653,7 +653,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     }
 
     /// Pull the latest core-wallet balance via FFI and republish through
-    /// `SwiftDashSDKWalletState.shared.applyBalance(_:)` so the home screen
+    /// `SwiftDashSDKWalletState.shared.applyBalanceOnMainActor(_:)` so the home screen
     /// `BalanceModel` and friends keep working off the same `@Published`
     /// surface they always did. The legacy callback that used to feed this
     /// publisher was removed in the SDK refactor, so the bridge replaces it.
@@ -692,7 +692,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 Self.logger.info(
                     "🛰️ SPVCOORD :: first balance published total=\(mapped.total, privacy: .private) spv=\(self.isRunning, privacy: .public)")
             }
-            SwiftDashSDKWalletState.shared.applyBalance(mapped)
+            SwiftDashSDKWalletState.shared.applyBalanceOnMainActor(mapped)
         } catch {
             Self.logger.warning(
                 "🛰️ SPVCOORD :: balance bridge fetch failed: \(String(describing: error), privacy: .public)")
