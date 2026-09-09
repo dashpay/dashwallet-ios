@@ -202,25 +202,40 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// on every relevant block / mempool tx / InstantSend confirmation.
     /// Marshals to the main queue so SwiftUI/Combine consumers receive
     /// updates on the right thread.
+    /// A caller already on the main queue publishes synchronously; everyone
+    /// else marshals. The synchronous path matters for the startup publication
+    /// in `SwiftDashSDKSPVCoordinator.performStart`: that runs on the
+    /// MainActor and is followed by main-actor startup work that can occupy
+    /// the actor for seconds before reaching any suspension point — the
+    /// DashPay readiness budget lookup, and on the non-DASHPAY build the
+    /// CoinJoin recovery-gap widening, which pre-generates addresses.
+    /// Deferring the assignment behind that would leave the home screen on
+    /// 0.00 for exactly that long, which is the symptom this publication
+    /// exists to remove. Delivery is never later than the previous
+    /// always-async behaviour.
     public func applyBalance(_ snapshot: WalletBalance) {
+        if Thread.isMainThread {
+            MainActor.assumeIsolated { publishBalance(snapshot) }
+            return
+        }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            self.balance = snapshot
-            // Both refresh methods are @MainActor (they read
-            // MainActor-isolated `SwiftDashSDKHost.shared` state).
-            // We're already on the main queue here, so
-            // `assumeIsolated` is the synchronous, zero-hop way to
-            // satisfy the isolation requirement. The credits refresh
-            // only schedules a throttled background tally, so this
-            // stays cheap even during sync-burst balance events.
-            MainActor.assumeIsolated {
-                self.refreshPlatformPaymentCredits()
-                self.refreshCoinJoinBalance()
-            }
-            NotificationCenter.default.post(
-                name: SwiftDashSDKWalletState.balanceDidChangeNotification,
-                object: nil)
+            MainActor.assumeIsolated { self.publishBalance(snapshot) }
         }
+    }
+
+    /// The single publication path, main-actor bound. Both refresh methods
+    /// read MainActor-isolated `SwiftDashSDKHost.shared` state; the credits
+    /// refresh only schedules a throttled background tally, so this stays
+    /// cheap even during sync-burst balance events.
+    @MainActor
+    private func publishBalance(_ snapshot: WalletBalance) {
+        balance = snapshot
+        refreshPlatformPaymentCredits()
+        refreshCoinJoinBalance()
+        NotificationCenter.default.post(
+            name: SwiftDashSDKWalletState.balanceDidChangeNotification,
+            object: nil)
     }
 
     /// Non-nil while a Platform-credit tally (plus its 1 s cool-down)
