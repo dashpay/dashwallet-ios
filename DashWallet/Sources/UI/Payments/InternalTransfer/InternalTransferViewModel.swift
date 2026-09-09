@@ -1038,13 +1038,16 @@ final class InternalTransferViewModel: ObservableObject {
             if coreSpendableDuffs == 0 {
                 maxNotice = Self.coreZeroMaxMessage(
                     totalDuffs: coreBalanceDuffs,
-                    confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0)
+                    confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0,
+                    excludedFromPoolDuffs: SwiftDashSDKWalletState.shared.excludedFromSendPoolDuffs)
             } else if sourceDuffs == 0 {
                 maxNotice = Self.feeReserveExceedsBalanceMessage(route.source)
             } else {
                 // The balance card shows the total, so a Max that lands below
                 // it reads as a bug unless the held-back part is accounted for.
-                maxNotice = Self.coreHeldBackMessage(coreBalanceDuffs - sourceDuffs)
+                maxNotice = Self.coreHeldBackMessage(
+                    heldBackDuffs: coreBalanceDuffs - sourceDuffs,
+                    excludedDuffs: SwiftDashSDKWalletState.shared.excludedFromSendPoolDuffs)
             }
         case .coreToPlatform:
             // Fee-aware max: spendable minus the send fee reserve (mirrors
@@ -1054,11 +1057,14 @@ final class InternalTransferViewModel: ObservableObject {
             if sourceDuffs == 0 {
                 maxNotice = Self.coreZeroMaxMessage(
                     totalDuffs: coreBalanceDuffs,
-                    confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0)
+                    confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0,
+                    excludedFromPoolDuffs: SwiftDashSDKWalletState.shared.excludedFromSendPoolDuffs)
             } else if sourceDuffs < coreBalanceDuffs {
                 // The balance card shows the total, so a Max that lands below
                 // it reads as a bug unless the held-back part is accounted for.
-                maxNotice = Self.coreHeldBackMessage(coreBalanceDuffs - sourceDuffs)
+                maxNotice = Self.coreHeldBackMessage(
+                    heldBackDuffs: coreBalanceDuffs - sourceDuffs,
+                    excludedDuffs: SwiftDashSDKWalletState.shared.excludedFromSendPoolDuffs)
             }
         case .platformToShielded:
             // Handled above because an unresolved async preflight must preserve
@@ -1365,15 +1371,42 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
-    /// The part of the Core balance Max cannot offer: unconfirmed/immature
-    /// coins plus the reserved L1 fee.
-    private static func coreHeldBackMessage(_ duffs: UInt64) -> String {
-        let formatted = duffs.formattedDashAmountWithoutCurrencySymbol
-        return String.localizedStringWithFormat(
-            NSLocalizedString(
-                "%@ DASH is held back for the network fee and unconfirmed coins.",
-                comment: "Core Max holds back fee and unconfirmed funds"),
-            formatted)
+    /// The part of the Core balance Max cannot offer, told apart by *why*.
+    ///
+    /// `excludedDuffs` is money in accounts the send pool does not draw on —
+    /// the CoinJoin account. It is neither reserved for a fee nor waiting on
+    /// confirmations, so folding it into the fee sentence misattributes it, and
+    /// at the scale this happens (94 of 94.6 DASH on the ticket-32081 wallet)
+    /// the sentence stops being an explanation and becomes a wrong one. The
+    /// user's next step for those coins is the mixed-coins move, not waiting.
+    ///
+    /// Two single-argument sentences rather than one two-argument format: a
+    /// translation that reorders positional specifiers crashes, and this string
+    /// is on a path every Max tap reaches.
+    ///
+    /// `nonisolated` for the same reason as `coreZeroMaxMessage`: the body is
+    /// pure string work, and the tests that pin the wording are not main-actor
+    /// bound.
+    nonisolated static func coreHeldBackMessage(heldBackDuffs: UInt64, excludedDuffs: UInt64) -> String {
+        let excluded = min(excludedDuffs, heldBackDuffs)
+        let forFeesAndUnconfirmed = heldBackDuffs - excluded
+
+        var sentences: [String] = []
+        if excluded > 0 {
+            sentences.append(String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "%@ DASH is in mixed coins, which a send cannot use — move them to your spendable balance first.",
+                    comment: "Core Max holds back CoinJoin funds the send pool excludes"),
+                excluded.formattedDashAmountWithoutCurrencySymbol))
+        }
+        if forFeesAndUnconfirmed > 0 {
+            sentences.append(String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "%@ DASH is held back for the network fee and unconfirmed coins.",
+                    comment: "Core Max holds back fee and unconfirmed funds"),
+                forFeesAndUnconfirmed.formattedDashAmountWithoutCurrencySymbol))
+        }
+        return sentences.joined(separator: " ")
     }
 
     /// Why a Core Max produced nothing, told apart by the three states that
@@ -1386,7 +1419,8 @@ final class InternalTransferViewModel: ObservableObject {
     /// is not main-actor bound — can reach it; the body is pure string work.
     nonisolated static func coreZeroMaxMessage(
         totalDuffs: UInt64,
-        confirmedSpendableDuffs: UInt64
+        confirmedSpendableDuffs: UInt64,
+        excludedFromPoolDuffs: UInt64 = 0
     ) -> String {
         guard totalDuffs > 0 else { return emptyBalanceMessage(.core) }
         guard confirmedSpendableDuffs > 0 else {
@@ -1395,6 +1429,19 @@ final class InternalTransferViewModel: ObservableObject {
                     "None of your %@ DASH is spendable yet — it is still confirming.",
                     comment: "Core Max has nothing confirmed to spend"),
                 totalDuffs.formattedDashAmountWithoutCurrencySymbol)
+        }
+        // Confirmed, but none of it in an account a send draws on — the
+        // CoinJoin-only wallet. Saying the balance cannot cover the fee would
+        // be false: it is large enough, it is simply the wrong kind of money,
+        // and no amount of waiting changes that.
+        let poolable = confirmedSpendableDuffs
+            - min(excludedFromPoolDuffs, confirmedSpendableDuffs)
+        guard poolable > 0 else {
+            return String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "Your %@ DASH is in mixed coins, which a send cannot use — move them to your spendable balance first.",
+                    comment: "Core Max has only CoinJoin funds, which the send pool excludes"),
+                confirmedSpendableDuffs.formattedDashAmountWithoutCurrencySymbol)
         }
         return feeReserveExceedsBalanceMessage(.core)
     }

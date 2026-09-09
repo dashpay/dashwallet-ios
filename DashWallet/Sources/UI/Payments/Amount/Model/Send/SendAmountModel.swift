@@ -76,7 +76,27 @@ class SendAmountModel: BaseAmountModel {
         super.init()
 
         initializeSyncingActivityMonitor()
+        observeSendableCeiling()
         checkAmountForErrors()
+    }
+
+    /// The ceiling can move while this screen is open and the amount is
+    /// untouched — a pooled read landing for the first time, or recovering from
+    /// an outage and replacing the wallet-wide fallback with a much smaller
+    /// transparent balance. `BaseAmountModel`'s balance subscription only
+    /// refreshes `walletBalance`, and the view refreshes its button off
+    /// `$amount`, so nothing revalidates an amount typed before the drop.
+    private func observeSendableCeiling() {
+        SwiftDashSDKWalletState.shared.$pooledSpendableDuffs
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.error = nil
+                self.checkAmountForErrors()
+                self.validationDidChangeHandler?()
+            }
+            .store(in: &cancellableBag)
     }
 
     override func selectAllFunds() {
@@ -100,11 +120,16 @@ class SendAmountModel: BaseAmountModel {
             // small to also cover the fee were indistinguishable from a dead
             // button. Same three states, same wording, as the internal
             // transfer's Core Max.
-            let balance = SwiftDashSDKWalletState.shared.balance
+            let state = SwiftDashSDKWalletState.shared
+            let balance = state.balance
             error = SendAmountError.maxUnavailable(
                 InternalTransferViewModel.coreZeroMaxMessage(
                     totalDuffs: balance?.total ?? 0,
-                    confirmedSpendableDuffs: balance?.spendable ?? 0))
+                    confirmedSpendableDuffs: balance?.spendable ?? 0,
+                    // Without this a CoinJoin-only wallet is told its balance
+                    // is too small to cover the fee, which is not why Max is
+                    // empty — the pool simply cannot draw on mixed coins.
+                    excludedFromPoolDuffs: state.excludedFromSendPoolDuffs))
             return
         }
 

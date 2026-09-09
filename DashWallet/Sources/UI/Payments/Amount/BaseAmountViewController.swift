@@ -85,6 +85,10 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
         model.amountInputItemsChangeHandler = { [weak self] in
             self?.amountView.inputTypeSwitcher.reloadData()
         }
+
+        model.validationDidChangeHandler = { [weak self] in
+            self?.amountDidChange()
+        }
     }
 
     internal func errorInfoButtonDidTap() {

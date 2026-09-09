@@ -52,6 +52,20 @@ final class ProvideAmountViewController: SendAmountViewController {
     override func actionButtonAction(sender: UIView) {
         guard validateInputAmount() else { return }
 
+        // The ceiling can have dropped since the amount was typed — a pooled
+        // read landing, or recovering from an outage and replacing the
+        // wallet-wide fallback. The button state is refreshed when that
+        // happens, but a tap can still race it, and forwarding the amount here
+        // is what produces the late builder failure this screen exists to
+        // prevent. So affordability is re-checked at the boundary, not trusted
+        // from the last edit.
+        guard !sendAmountModel.canShowInsufficientFunds else {
+            sendAmountModel.checkAmountForErrors()
+            actionButton?.isEnabled = sendAmountModel.isAllowedToContinue
+            showErrorIfNeeded()
+            return
+        }
+
         checkLeftoverBalance { [weak self] canContinue in
             guard canContinue, let wSelf = self else { return }
 

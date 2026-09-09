@@ -122,9 +122,16 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         // The pooled figure, not `balance.spendable`: Max filling from the
         // wallet-wide balance is the same lie the amount gate told, one tap
         // more convincing.
-        let spendable = sendableDuffs
-        let reserve = SwiftDashSDKTransactionSender.maxSendFeeReserveDuffs()
-        return spendable > reserve ? spendable - reserve : 0
+        Self.feeAwareMax(
+            spendable: sendableDuffs,
+            reserve: SwiftDashSDKTransactionSender.maxSendFeeReserveDuffs())
+    }
+
+    /// `feeAwareMaxSendable`'s arithmetic, separated from the SDK reads so the
+    /// flooring is testable: a spendable balance at or below the reserve has no
+    /// Max at all, rather than wrapping or offering an unsendable amount.
+    static func feeAwareMax(spendable: UInt64, reserve: UInt64) -> UInt64 {
+        spendable > reserve ? spendable - reserve : 0
     }
 
     /// Total DIP-17 Platform Payment credit balance across every
@@ -185,7 +192,44 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// The amount gates and Max should read: the pooled figure when the SDK
     /// has supplied one, else `balance.spendable`.
     public var sendableDuffs: UInt64 {
-        pooledSpendableDuffs ?? balance?.spendable ?? 0
+        Self.sendableDuffs(pooled: pooledSpendableDuffs, walletSpendable: balance?.spendable)
+    }
+
+    /// The confirmed balance a plain send CANNOT draw on: what
+    /// `balance.spendable` counts and the funding pool does not.
+    ///
+    /// In practice this is the CoinJoin account, which the pool excludes by
+    /// design (spending mixed outputs alongside transparent ones undoes the
+    /// mixing). It matters to the Max explanations: these funds are not held
+    /// back for fees and are not waiting on confirmations, so saying either
+    /// misattributes them — on the wallet in ticket 32081 that would be ~94 of
+    /// the 94.6 DASH on screen. Getting them back needs the mixed-coins move,
+    /// which is a different instruction entirely.
+    ///
+    /// Zero while the pooled figure is unknown: an outage is not evidence that
+    /// anything is excluded, and `sendableDuffs` is falling back to the
+    /// wallet-wide number anyway, so nothing is being held back from Max either.
+    public var excludedFromSendPoolDuffs: UInt64 {
+        Self.excludedFromSendPool(pooled: pooledSpendableDuffs, walletSpendable: balance?.spendable)
+    }
+
+    /// The fallback policy, as a function of its two inputs, so it can be
+    /// pinned by tests without a wallet, an SDK handle or the network.
+    ///
+    /// A *successful* zero must NOT fall back — that is the SDK answering
+    /// "nothing here", which is exactly the CoinJoin-only case this ticket is
+    /// about. Only `nil`, which means the read failed, falls back.
+    static func sendableDuffs(pooled: UInt64?, walletSpendable: UInt64?) -> UInt64 {
+        pooled ?? walletSpendable ?? 0
+    }
+
+    /// The pooled shortfall, as a function of its two inputs. Never negative,
+    /// and zero whenever the pooled figure is unknown or is not the smaller of
+    /// the two (a pooled figure above the wallet-wide one would mean the two
+    /// were read at different moments, not that funds are excluded).
+    static func excludedFromSendPool(pooled: UInt64?, walletSpendable: UInt64?) -> UInt64 {
+        guard let pooled, let walletSpendable, walletSpendable > pooled else { return 0 }
+        return walletSpendable - pooled
     }
 
     // MARK: - Obj-C bridge
