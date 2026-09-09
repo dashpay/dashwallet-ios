@@ -366,13 +366,16 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         }
     }
 
-    // MARK: - Clear (called from wallet wiper)
+    // MARK: - Clear
 
-    /// Called from `SwiftDashSDKWalletWiper.performWipe` after the wallet
-    /// state has been deleted from keychain-backed storage. Without this, the
-    /// published value would keep showing the previous wallet's balance
-    /// across a wipe-then-recover or wipe-then-create flow until the new
-    /// wallet's first balance event arrives.
+    /// Drop the published balance back to "not known yet".
+    ///
+    /// Called by `SwiftDashSDKSPVCoordinator` when Core SPV stops and when the
+    /// balance bridge finds no wallet bound to the host — NOT on the wipe path,
+    /// which resets per-wallet options through
+    /// `DWGlobalOptions.restoreToDefaults()` in `SwiftDashSDKWalletWiper`.
+    /// Without this the published value would keep showing the previous
+    /// wallet's balance until the next balance event arrives.
     @objc public func clearBalance() {
         DispatchQueue.main.async { [weak self] in
             Self.logger.info("💰 WALLET :: clearing balance")

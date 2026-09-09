@@ -152,6 +152,24 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @MainActor
     var isRunning: Bool { runningNetwork != nil }
 
+    /// Whether the SDK's SPV client is actually running — not merely whether
+    /// this coordinator believes it started one.
+    ///
+    /// `isRunning` is a Swift-side flag: set when this coordinator starts a
+    /// client, cleared when it stops one. A client that dies inside the SDK
+    /// never clears it, so `isRunning` alone reports a dead Core as healthy.
+    /// Readiness must ask the SDK, or every self-firing trigger — launch, the
+    /// sync strip's Retry, "Sync Now", the connectivity-return kick — elides
+    /// the very rebuild that would revive it, and the session has no way back.
+    /// `isAlreadyRunning(manager:network:)` asks the same question of a manager
+    /// the caller already holds; this one resolves the manager from the host.
+    @MainActor
+    var isSPVClientRunning: Bool {
+        guard runningNetwork != nil,
+              let manager = SwiftDashSDKHost.shared.manager else { return false }
+        return (try? manager.isSpvRunning()) == true
+    }
+
     // MARK: - Init
 
     private override init() {

@@ -721,7 +721,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             boundNetwork: currentNetwork,
             target: network,
             hasBoundWallet: SwiftDashSDKHost.shared.wallet != nil,
-            isSPVRunning: spv.isRunning,
+            isSPVRunning: spv.isSPVClientRunning,
             subscriptionsDetached: spv.subscriptionsDetached)
     }
 
