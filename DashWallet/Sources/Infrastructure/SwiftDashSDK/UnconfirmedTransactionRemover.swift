@@ -56,6 +56,22 @@ struct UnconfirmedTransactionRemover {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.unconfirmed-tx-remover")
 
+    /// What the removal achieved beyond deleting the rows. The rows are gone
+    /// in every case; the cases differ in how much of the recovery path behind
+    /// them ran, so a caller never has to claim more than actually happened.
+    enum RemovalOutcome {
+        /// Runtime reloaded and the recovery filter rescan is running.
+        case rescanArmed
+        /// Runtime reloaded, but the rescan did not arm (no chain tip to
+        /// anchor on, or the arm threw). Rescan Filters still works.
+        case rescanUnavailable
+        /// The reload took the runtime down and it did not come back: a BLAST
+        /// start failure makes `refresh` fall back to `fullReset`, which stops
+        /// the host and Core SPV too. Rescan Filters refuses while SPV is
+        /// stopped, so this case must NOT point the user at it.
+        case runtimeStopped
+    }
+
     enum RemovalError: LocalizedError {
         case notReady
         case transactionNotFound
@@ -89,13 +105,13 @@ struct UnconfirmedTransactionRemover {
     /// estimate (~1 day), covering clock skew and variable block times.
     private static let rescanMarginBlocks: UInt32 = 576
 
-    /// - Returns: whether the recovery filter rescan was armed. `false`
-    ///   means the removal itself succeeded but the rescan didn't start
-    ///   (SPV not running / arm threw) — the caller should tell the user
-    ///   to run Rescan Filters manually so the safety net isn't silently
-    ///   skipped.
+    /// - Returns: how far past the row deletion the removal got. Anything
+    ///   other than `.rescanArmed` means the safety net didn't start, and
+    ///   `.runtimeStopped` additionally means the wallet runtime is down —
+    ///   the caller must say so rather than pointing at Rescan Filters,
+    ///   which refuses while SPV is stopped.
     @discardableResult
-    func remove(txidWire: Data) async throws -> Bool {
+    func remove(txidWire: Data) async throws -> RemovalOutcome {
         guard let container = SwiftDashSDKHost.shared.modelContainer,
               let network = WalletEnvironment.network,
               let walletId = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) else {
@@ -161,19 +177,19 @@ struct UnconfirmedTransactionRemover {
     /// a dropped transaction that IS on the blockchain is re-matched and
     /// restored by it. Nothing is sent to the network.
     ///
-    /// - Returns: how many transactions were dropped (0 = nothing to
-    ///   drop; no reload or rescan runs, so `rescanArmed` is `false`),
-    ///   and whether the recovery rescan was armed — `false` after a
-    ///   non-zero drop means the caller must tell the user to run
-    ///   Rescan Filters manually.
-    func dropAllUnconfirmedAndRescan() async throws -> (dropped: Int, rescanArmed: Bool) {
+    /// - Returns: how many transactions were dropped (0 = nothing to drop;
+    ///   no reload or rescan runs, so the outcome is `.rescanUnavailable`),
+    ///   and how far the removal tail got. `.runtimeStopped` after a
+    ///   non-zero drop means the wallet runtime is down, so the caller must
+    ///   not offer Rescan Filters as the remedy.
+    func dropAllUnconfirmedAndRescan() async throws -> (dropped: Int, outcome: RemovalOutcome) {
         guard let container = SwiftDashSDKHost.shared.modelContainer,
               let walletId = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) else {
             throw RemovalError.notReady
         }
         let context = container.mainContext
         let rows = try Self.unconfirmedRows(in: context, walletId: walletId)
-        guard !rows.isEmpty else { return (dropped: 0, rescanArmed: false) }
+        guard !rows.isEmpty else { return (dropped: 0, outcome: .rescanUnavailable) }
 
         var oldestFirstSeen = UInt64.max
         var displayTxids: [String] = []
@@ -188,9 +204,9 @@ struct UnconfirmedTransactionRemover {
         try context.save()
         Self.logger.notice("🗑️ TX-REMOVE :: bulk-dropped \(rows.count, privacy: .public) unconfirmed tx(s): \(displayTxids.joined(separator: ","), privacy: .public)")
 
-        let rescanArmed = await Self.finishRemoval(
+        let outcome = await Self.finishRemoval(
             txidsWire: txidsWire, walletId: walletId, oldestFirstSeen: oldestFirstSeen)
-        return (dropped: rows.count, rescanArmed: rescanArmed)
+        return (dropped: rows.count, outcome: outcome)
     }
 
     /// The active wallet's unconfirmed (mempool-context, no block) rows —
@@ -250,13 +266,12 @@ struct UnconfirmedTransactionRemover {
 
     /// Shared removal tail, after the rows are deleted and saved:
     /// app-side metadata cleanup, full runtime reload, filter rescan,
-    /// and cache refresh. Returns whether the rescan was armed — the
-    /// rescan is the recovery step that restores a wrongly-removed
-    /// on-chain transaction, so callers surface `false` to the user
-    /// instead of claiming a complete recovery.
+    /// and cache refresh. The rescan is the recovery step that restores a
+    /// wrongly-removed on-chain transaction, so anything short of
+    /// `.rescanArmed` is surfaced instead of claiming a complete recovery.
     private static func finishRemoval(
         txidsWire: [Data], walletId: Data, oldestFirstSeen: UInt64
-    ) async -> Bool {
+    ) async -> RemovalOutcome {
         // App-side metadata (tax category override) keyed by the same
         // hash — a fresh install knows nothing about a removed tx, and
         // neither should this one.
@@ -297,26 +312,42 @@ struct UnconfirmedTransactionRemover {
         // rebroadcasting) restarts without the removed transactions.
         await SwiftDashSDKWalletRuntime.shared.reloadAfterWalletRowsChanged()
 
-        // Rewind the compact-filter checkpoint on the manager the reload just
-        // built — the previous instance died with the old runtime.
-        var rescanArmed = false
-        if let fromHeight = rescanFromHeight, let manager = SwiftDashSDKHost.shared.manager {
+        // Did the reload actually bring the runtime back? `refresh` starts
+        // Core SPV and then BLAST, and falls back to `fullReset` if EITHER
+        // throws — so a Platform outage, which has nothing to do with the
+        // Core-side row the user just repaired, stops the host and Core SPV
+        // as well. The rows are already deleted and stay deleted; what this
+        // decides is which remedy the caller can honestly offer, because
+        // Rescan Filters refuses while SPV is stopped.
+        let runtimeReady = WalletEnvironment.network
+            .map { SwiftDashSDKWalletRuntime.shared.isRuntimeReady(for: $0) } ?? false
+
+        let outcome: RemovalOutcome
+        if !runtimeReady {
+            outcome = .runtimeStopped
+            logger.error("🗑️ TX-REMOVE :: runtime did not come back after the reload — rows deleted, wallet stopped")
+        } else if let fromHeight = rescanFromHeight, let manager = SwiftDashSDKHost.shared.manager {
+            // Rewind the compact-filter checkpoint on the manager the reload
+            // just built — the previous instance died with the old runtime.
             do {
                 try manager.spvRescanFilters(walletId: walletId, fromHeight: fromHeight)
-                rescanArmed = true
+                outcome = .rescanArmed
                 logger.notice("🗑️ TX-REMOVE :: filter rescan armed from height \(fromHeight, privacy: .public) (tip \(tip, privacy: .public))")
             } catch {
+                outcome = .rescanUnavailable
                 logger.error("🗑️ TX-REMOVE :: filter rescan arm failed: \(String(describing: error), privacy: .public)")
             }
         } else if rescanFromHeight == nil {
+            outcome = .rescanUnavailable
             logger.error("🗑️ TX-REMOVE :: filter rescan skipped — no chain tip when the removal started")
         } else {
+            outcome = .rescanUnavailable
             logger.error("🗑️ TX-REMOVE :: filter rescan skipped — no manager after the reload")
         }
 
         // App caches that mirror the deleted rows.
         await ShieldedTxLookup.shared.refresh(reason: "transaction-removal-completed")
-        return rescanArmed
+        return outcome
     }
 
     /// One GET against the network's Insight API. 200 = the explorer

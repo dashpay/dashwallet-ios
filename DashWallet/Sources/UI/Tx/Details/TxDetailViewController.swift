@@ -368,12 +368,20 @@ extension TXDetailViewController {
                 self?.view.dw_hideProgressHUD()
             }
             do {
-                let rescanArmed = try await UnconfirmedTransactionRemover().remove(txidWire: txidWire)
-                // Never claim the rescan safety net ran when it didn't —
-                // point at the manual Rescan Filters action instead.
-                self?.view.dw_showInfoHUD(withText: rescanArmed
-                    ? NSLocalizedString("Transaction removed", comment: "Remove never-accepted transaction: success")
-                    : NSLocalizedString("Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status", comment: "Remove never-accepted transaction: removed but the recovery rescan did not arm"))
+                let outcome = try await UnconfirmedTransactionRemover().remove(txidWire: txidWire)
+                // Never claim the rescan safety net ran when it didn't, and
+                // never send the user to Rescan Filters when the runtime is
+                // down — that control refuses while SPV is stopped.
+                let message: String
+                switch outcome {
+                case .rescanArmed:
+                    message = NSLocalizedString("Transaction removed", comment: "Remove never-accepted transaction: success")
+                case .rescanUnavailable:
+                    message = NSLocalizedString("Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status", comment: "Remove never-accepted transaction: removed but the recovery rescan did not arm")
+                case .runtimeStopped:
+                    message = NSLocalizedString("Transaction removed, but the wallet stopped — reopen the app, or tap Sync Now in Sync Info to restart it", comment: "Remove never-accepted transaction: removed but the runtime reload left the wallet stopped")
+                }
+                self?.view.dw_showInfoHUD(withText: message)
                 // The row this sheet describes no longer exists.
                 self?.closeAction()
             } catch UnconfirmedTransactionRemover.RemovalError.transactionOnChain {

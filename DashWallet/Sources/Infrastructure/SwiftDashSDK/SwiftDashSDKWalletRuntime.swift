@@ -491,6 +491,17 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                     // bound so identity/banner consumers re-read destination
                     // state instead of the cleared transition mirror.
                     publishActiveWalletDidChange(reason: "network-changed")
+                } else if trigger == .walletRowsChanged {
+                    // A rows-changed rebuild rebinds the wallet just like the
+                    // two above, and it can resolve a network key that an
+                    // interactive switch has ALREADY flipped while its own
+                    // refresh is still queued behind this one. That switch's
+                    // refresh then finds the destination runtime ready and
+                    // elides, taking its "network-changed" publish with it —
+                    // so publish here too, or consumers that listen only for
+                    // this notification (SwiftDashSDKContactsService) keep a
+                    // pre-switch snapshot.
+                    publishActiveWalletDidChange(reason: "wallet-rows-changed")
                 }
             } catch {
                 Self.logger.error("🧭 RUNTIME :: start failed: \(String(describing: error), privacy: .public)")
