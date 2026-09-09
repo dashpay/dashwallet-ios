@@ -51,23 +51,18 @@ final class ProvideAmountViewController: SendAmountViewController {
 
     override func actionButtonAction(sender: UIView) {
         guard validateInputAmount() else { return }
-
-        // The ceiling can have dropped since the amount was typed — a pooled
-        // read landing, or recovering from an outage and replacing the
-        // wallet-wide fallback. The button state is refreshed when that
-        // happens, but a tap can still race it, and forwarding the amount here
-        // is what produces the late builder failure this screen exists to
-        // prevent. So affordability is re-checked at the boundary, not trusted
-        // from the last edit.
-        guard !sendAmountModel.canShowInsufficientFunds else {
-            sendAmountModel.checkAmountForErrors()
-            actionButton?.isEnabled = sendAmountModel.isAllowedToContinue
-            showErrorIfNeeded()
-            return
-        }
+        // Cheap rejection before the leftover-balance alert: no reason to ask
+        // the user to confirm emptying their wallet for an amount that cannot
+        // be funded anyway.
+        guard amountIsStillAffordable() else { return }
 
         checkLeftoverBalance { [weak self] canContinue in
             guard canContinue, let wSelf = self else { return }
+            // ...and again here, because `checkLeftoverBalance` presents its own
+            // Continue/Cancel alert and the ceiling can drop while that alert is
+            // open. This is the last statement before the amount leaves the
+            // screen, so this is where affordability has to be settled.
+            guard wSelf.amountIsStillAffordable() else { return }
 
             wSelf.showActivityIndicator()
             let paymentCurrency: DWPaymentCurrency = wSelf.sendAmountModel.activeAmountType == .main ? .dash : .fiat
@@ -76,6 +71,25 @@ final class ProvideAmountViewController: SendAmountViewController {
             wSelf.delegate?.provideAmountViewControllerDidInput(amount: wSelf.model.amount.plainAmount,
                                                                 selectedCurrency: wSelf.model.supplementaryCurrencyCode)
         }
+    }
+
+    /// Whether the entered amount is still within what the funding pool can
+    /// spend, refreshing the validation message and the button when it is not.
+    ///
+    /// The ceiling moves on its own — a pooled read landing, or recovering from
+    /// an outage and replacing the wallet-wide fallback with a much smaller
+    /// transparent balance. `SendAmountModel` refreshes the button when that
+    /// happens, but the button is not the guarantee: a tap can race the
+    /// refresh, and any modal presented in between holds the flow open across
+    /// the change. Forwarding an amount the pool cannot fund is exactly the
+    /// late builder failure this screen exists to prevent, so every path out of
+    /// here asks again rather than trusting the last amount edit.
+    private func amountIsStillAffordable() -> Bool {
+        guard sendAmountModel.canShowInsufficientFunds else { return true }
+        sendAmountModel.checkAmountForErrors()
+        actionButton?.isEnabled = sendAmountModel.isAllowedToContinue
+        showErrorIfNeeded()
+        return false
     }
 
     override func configureHierarchy() {
