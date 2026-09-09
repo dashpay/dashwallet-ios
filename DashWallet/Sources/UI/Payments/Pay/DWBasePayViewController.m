@@ -119,22 +119,38 @@ NS_ASSUME_NONNULL_BEGIN
     // Presented as a modal there is something to dismiss; inside the payments
     // tab there is not, and the way back is the stack plus the tab. The tab
     // change waits for the pop — run together they animate over each other.
+    //
+    // `presentingViewController` answers for the whole modal: a controller
+    // inside a presented navigation stack reports the presenter of that stack,
+    // and `dismiss` on it is forwarded to the same place.
     if (self.presentingViewController) {
         [self dismissViewControllerAnimated:YES completion:nil];
         return;
     }
 
+    // Both read before the pop — it takes `self` off the stack, and with it
+    // the container references below.
+    UINavigationController *navigationController = self.navigationController;
     MainTabbarController *tabBarController =
         [self.tabBarController isKindOfClass:MainTabbarController.class]
             ? (MainTabbarController *)self.tabBarController
             : nil;
 
-    [CATransaction begin];
-    [CATransaction setCompletionBlock:^{
+    [navigationController popToRootViewControllerAnimated:YES];
+
+    // The pop's own coordinator, not a CATransaction completion: a navigation
+    // animation is run by the transition coordinator and is not guaranteed to
+    // belong to the transaction open at the call site.
+    id<UIViewControllerTransitionCoordinator> coordinator = navigationController.transitionCoordinator;
+    if (coordinator) {
+        [coordinator animateAlongsideTransition:nil
+                                     completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+                                         [tabBarController showHome];
+                                     }];
+    }
+    else {
         [tabBarController showHome];
-    }];
-    [self.navigationController popToRootViewControllerAnimated:YES];
-    [CATransaction commit];
+    }
 }
 
 #pragma mark -  DWQRScanModelDelegate

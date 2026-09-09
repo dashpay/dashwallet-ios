@@ -251,7 +251,11 @@ private struct ConfirmPaymentSheet: View {
             HStack(spacing: 20) {
                 DashUIKit.DashButton(
                     text: NSLocalizedString("Cancel", comment: "Payment confirmation"),
-                    isEnabled: state.isSendingEnabled,
+                    // Deliberately not `state.isSendingEnabled`: confirming
+                    // also sets `isModalInPresentation`, so disabling Cancel
+                    // too would leave a send that never resolves with no way
+                    // off the sheet. Only the confirm button locks, as before.
+                    isEnabled: true,
                     fillsWidth: true,
                     size: .large,
                     style: .tintedGray,

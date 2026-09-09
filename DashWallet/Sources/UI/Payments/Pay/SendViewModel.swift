@@ -86,13 +86,15 @@ final class SendViewModel: ObservableObject {
     private var isApplyingMax = false
     @Published var amountText: String = "0" {
         didSet {
-            guard !isApplyingMax else { return }
-            clearShieldedMaxSelection()
             #if DASHPAY
-            // A new amount is a new attempt; the previous failure described an
-            // amount that is no longer on screen.
+            // A new amount is a new attempt — including one Max filled in, so
+            // this precedes the guard below. The previous failure described an
+            // amount that is no longer on screen, and it is read ahead of
+            // every affordability check in `amountValidationMessage`.
             contactSendError = nil
             #endif
+            guard !isApplyingMax else { return }
+            clearShieldedMaxSelection()
         }
     }
     @Published private(set) var isFullShieldedSweep = false

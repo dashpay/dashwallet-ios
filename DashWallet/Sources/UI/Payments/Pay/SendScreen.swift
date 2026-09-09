@@ -770,6 +770,11 @@ private struct SendContactIntro: View {
                         eyeIcon
                     }
                     .buttonStyle(.plain)
+                    // `eyeIcon` is two icons in a ZStack and carries no text,
+                    // so VoiceOver would announce this control unnamed.
+                    .accessibilityLabel(Text(balanceHidden
+                        ? NSLocalizedString("Show balance", comment: "Send screen: reveal the funding balance")
+                        : NSLocalizedString("Hide balance", comment: "Send screen: mask the funding balance")))
                 }
                 .font(.subheadline)
                 .foregroundColor(Color.dash.secondaryText)

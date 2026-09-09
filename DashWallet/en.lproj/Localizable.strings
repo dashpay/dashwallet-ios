@@ -5892,3 +5892,9 @@
 
 /* Send: the contact step's back control */
 "Back" = "Back";
+
+/* Send screen: mask the funding balance */
+"Hide balance" = "Hide balance";
+
+/* Send screen: reveal the funding balance */
+"Show balance" = "Show balance";
