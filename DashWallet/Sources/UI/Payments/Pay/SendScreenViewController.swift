@@ -10,7 +10,7 @@ import UIKit
 @objc(DWSendScreenViewController)
 final class SendScreenViewController: DWBasePayViewController {
 
-    /// Set by the "Send to Address" shortcut entry: on load, a valid address
+    /// Set by the "Send to Address" shortcut entry: on appearance, a valid address
     /// on the clipboard is applied to the address field directly — the same
     /// action as tapping the clipboard suggestion chip.
     var prefillsFromClipboard = false
@@ -60,6 +60,11 @@ final class SendScreenViewController: DWBasePayViewController {
         return controller
     }
 
+    /// Grants the model its pasteboard reads. The SwiftUI form below stays
+    /// alive while a later send step is pushed over it, so appearance — not
+    /// the form's lifetime — is what says the screen is on screen.
+    private var isOnScreen = false
+
     private let sendViewModel = SendViewModel()
     private lazy var hostingController: UIHostingController<SendScreen> = {
         var screen = SendScreen(
@@ -99,9 +104,26 @@ final class SendScreenViewController: DWBasePayViewController {
         ])
         hostingController.didMove(toParent: self)
 
+        sendViewModel.isClipboardReadAllowed = { [weak self] in self?.isOnScreen == true }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        isOnScreen = true
         if prefillsFromClipboard {
-            sendViewModel.useClipboardSuggestion()
+            prefillsFromClipboard = false
+            // The form registers for reads shortly after this (its entrance
+            // animation is deferred), so the intent is handed to the model
+            // rather than acted on against a suggestion that cannot exist yet.
+            sendViewModel.applyClipboardSuggestionWhenAvailable()
+        } else {
+            sendViewModel.refreshClipboardSuggestion()
         }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        isOnScreen = false
     }
 
     // MARK: - QR scan

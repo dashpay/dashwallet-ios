@@ -45,6 +45,9 @@ struct InternalTransferConfirmSheet: View {
         amountDuffsUnsigned: UInt64,
         creditsAmount: UInt64,
         fiatText: String,
+        networkFeeCredits: UInt64? = nil,
+        totalDuffs: Int64? = nil,
+        coreToPlatformLockDuffs: UInt64? = nil,
         withdrawalFeeCredits: UInt64? = nil,
         isFullPlatformWithdrawal: Bool = false,
         isFullShieldedSweep: Bool = false,
@@ -63,6 +66,9 @@ struct InternalTransferConfirmSheet: View {
             amountDuffsUnsigned: amountDuffsUnsigned,
             creditsAmount: creditsAmount,
             fiatText: fiatText,
+            networkFeeCredits: networkFeeCredits,
+            totalDuffs: totalDuffs,
+            coreToPlatformLockDuffs: coreToPlatformLockDuffs,
             withdrawalFeeCredits: withdrawalFeeCredits,
             isFullPlatformWithdrawal: isFullPlatformWithdrawal,
             isFullShieldedSweep: isFullShieldedSweep,
@@ -165,12 +171,15 @@ struct InternalTransferConfirmSheet: View {
 /// are previewed through `ShieldedTransferStepList` and
 /// `ShieldedSubmittedUnconfirmedView` below.
 ///
-/// Network-fee and total rows ask the SDK to price the route; without a wallet
-/// those return `nil` and the rows render "—". `.coreToPlatform` prices from a
-/// constant, so it is the route to use when the fee row itself matters.
+/// The fee and total rows are the screen's frozen figures rather than anything
+/// the sheet prices, so a canvas passes them in. A balance route gets a stand-in
+/// fee and the matching fee-on-top total (`nil` for either is the em-dash
+/// state); the identity samples pass neither, since those two rows are resolved
+/// from the transfer itself.
 private func confirmSheetSample(
     route: InternalTransferRoute?,
     dash: Decimal = 0.5,
+    feeDuffs: Int64 = 56_000,
     withdrawalFeeCredits: UInt64? = nil,
     isFullPlatformWithdrawal: Bool = false,
     isFullShieldedSweep: Bool = false,
@@ -178,12 +187,20 @@ private func confirmSheetSample(
     identityWithdrawal: IdentityWithdrawalTransfer? = nil
 ) -> some View {
     let duffs = Int64(truncating: NSDecimalNumber(decimal: dash * 100_000_000))
+    // Only the Core-funded routes charge on top of the amount; the others'
+    // total is the amount itself, as the ViewModel resolves it.
+    let chargesFeeOnTop = route == .coreToPlatform || route == .coreToShielded
+    let isRoute = identityTopUp == nil && identityWithdrawal == nil
     return InternalTransferConfirmSheet(
         route: route,
         dashDuffs: duffs,
         amountDuffsUnsigned: UInt64(duffs),
         creditsAmount: UInt64(duffs) * 1000,
         fiatText: "$32.75",
+        networkFeeCredits: isRoute ? UInt64(feeDuffs) * 1000 : nil,
+        totalDuffs: isRoute ? (chargesFeeOnTop ? duffs + feeDuffs : duffs) : nil,
+        coreToPlatformLockDuffs: route == .coreToPlatform
+            ? UInt64(duffs + feeDuffs) : nil,
         withdrawalFeeCredits: withdrawalFeeCredits,
         isFullPlatformWithdrawal: isFullPlatformWithdrawal,
         isFullShieldedSweep: isFullShieldedSweep,
@@ -221,8 +238,8 @@ private func identityConfirmSheetSample(source: ChainNetwork) -> some View {
     confirmSheetSample(route: .shieldedToCore, isFullShieldedSweep: true)
 }
 
-/// Full-balance withdrawal: the fee is already netted out of the payout, and
-/// the preflight fee is the only one the sheet can show.
+/// Full-balance withdrawal: the fee is already netted out of the payout, so the
+/// figure the screen freezes into the fee row is the preflight's.
 @available(iOS 17, *)
 #Preview("Platform → Core · full") {
     confirmSheetSample(

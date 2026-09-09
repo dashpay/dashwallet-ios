@@ -357,6 +357,12 @@ final class WalletSendService: NSObject {
     /// CoinJoin-balance re-tally so both surfaces self-clear without waiting
     /// for the next SPV balance event.
     ///
+    /// A heavy mixer's account is swept across several independent chunk
+    /// transactions, so the sweep can end up partly done. In that case the
+    /// accepted chunks are recorded and the balance re-tallied exactly as on a
+    /// full sweep, and only then does this throw `.coinJoinSweepPartial` — the
+    /// caller must not show "moved" over coins that are still in the account.
+    ///
     /// - Returns: the CoinJoin balance (duffs) that was swept, for the success
     ///   message; the on-chain amount delivered is this minus the network fee.
     @discardableResult
@@ -380,7 +386,8 @@ final class WalletSendService: NSObject {
         }
 
         Self.logger.info("💸 TXSEND :: CoinJoin sweep destination resolved \(destination, privacy: .public)")
-        let txids = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination)
+        let outcome = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination)
+        let txids = outcome.txids
         guard !txids.isEmpty else {
             // A reported-success sweep that produced no transaction is treated
             // as a failure, so the caller surfaces an error (the sweep alert)
@@ -414,6 +421,20 @@ final class WalletSendService: NSObject {
             // sweep may be partial across chunks and does NOT imply the wide scan
             // completed, so it must not mark recovered here — doing so would suppress
             // a legitimate re-widen after an interrupted scan.
+        }
+
+        // Everything above ran for the accepted chunks — the txids are in the
+        // withdrawal store and the balance is re-tallied — so it is safe to fail
+        // here. Reported as a failure because the coins the failed chunks hold
+        // are still in the CoinJoin account: a re-run sweeps the remainder, and
+        // a success screen would tell the user there is nothing left to move.
+        if outcome.isPartial {
+            Self.logger.error(
+                "💸 TXSEND :: CoinJoin sweep partial — \(txids.count, privacy: .public) chunk(s) broadcast, \(outcome.failedChunkCount, privacy: .public) failed: \(String(describing: outcome.firstFailure), privacy: .public)")
+            throw Self.makeError(
+                code: .coinJoinSweepPartial,
+                description: "CoinJoin sweep moved \(txids.count) of \(txids.count + outcome.failedChunkCount) transactions"
+            )
         }
         return amount
     }
@@ -535,8 +556,18 @@ final class WalletSendService: NSObject {
     /// User-facing message for a CoinJoin sweep failure, or nil if the user
     /// simply cancelled authentication (callers stay silent). Centralizes the
     /// cancel predicate + copy so every sweep entry point behaves identically.
+    ///
+    /// A partial sweep gets its own copy: "try again" is still the right
+    /// action, but telling the user nothing moved would contradict the
+    /// transactions already in their history.
     static func coinJoinSweepUserMessage(for error: Error) -> String? {
-        guard !isAuthenticationCancelledError(error as NSError) else { return nil }
+        let nsError = error as NSError
+        guard !isAuthenticationCancelledError(nsError) else { return nil }
+        if nsError.domain == errorDomain, nsError.code == ErrorCode.coinJoinSweepPartial.rawValue {
+            return NSLocalizedString(
+                "Some of your CoinJoin funds were moved. Please try again to move the rest.",
+                comment: "CoinJoin")
+        }
         return NSLocalizedString(
             "Couldn't move your CoinJoin funds. Please try again.", comment: "CoinJoin")
     }
@@ -669,6 +700,7 @@ private extension WalletSendService {
         case broadcastRejected = 9
         case broadcastUnknown = 10
         case invalidSwapMemo = 11
+        case coinJoinSweepPartial = 12
     }
 
     static let errorDomain = "org.dashfoundation.dash.wallet-send-service"

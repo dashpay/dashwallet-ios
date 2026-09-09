@@ -66,6 +66,11 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// suspends watching the moment that screen is pushed, so nothing is
     /// detected while the user is on the very screen they are handing over.
     private var isPushingReceiveStep = false
+    /// Whether this landing is the screen the user is on. Gates the Send
+    /// tab's pasteboard reads: unlike the receive session, a pushed step is
+    /// not "still here" for the clipboard, so this one tracks plain
+    /// appearance and ignores `isPushingReceiveStep`.
+    private var isSurfaceOnScreen = false
     /// The specify-amount sheet while it is up, so a receipt can dismiss it.
     private weak var requestAmountController: RequestAmountHostingController?
     /// Kept apart from `cancellables`: these live exactly as long as that sheet
@@ -171,6 +176,15 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         super.viewDidLoad()
         view.backgroundColor = .dw_background()
 
+        // Reads need both halves: this landing on screen (a pushed send step
+        // or a dismissal revokes it, and the model is reused by those steps)
+        // and the Send tab selected. The tab check alone is not enough — the
+        // outgoing form stays alive through its slide-out transition.
+        embeddedSendViewModel.isClipboardReadAllowed = { [weak self] in
+            guard let self else { return false }
+            return self.isSurfaceOnScreen && self.viewModel.activeTab == .send
+        }
+
         addChild(hostingController)
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         hostingController.view.backgroundColor = .clear
@@ -243,6 +257,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         // here as well so returning from transaction details can resume the
         // same receive session (or start a fresh "Receive another" session).
         viewModel.setReceiptWatchingObscured(false)
+        isSurfaceOnScreen = true
+        embeddedSendViewModel.refreshClipboardSuggestion()
         isPushingReceiveStep = false
         receiveStepObservers.removeAll()
         viewModel.setReceiveSurfaceVisible(true)
@@ -254,6 +270,9 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        // Set before the receive-step exemption below: for the clipboard,
+        // every way of leaving this screen counts, pushed step included.
+        isSurfaceOnScreen = false
         // Stepping deeper into the receive flow is not leaving it. Everything
         // else — a tab change, a dismissal, a pop — still puts the session to
         // sleep.
@@ -419,16 +438,44 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     private func pushSendToContact() {}
     #endif
 
+    /// The tab bar controller this landing belongs to.
+    ///
+    /// `tabBarController` alone is not enough any more: the landing is
+    /// presented as a sheet, and a presented controller is outside the tab
+    /// bar's hierarchy, so that property is nil. Walking the presenter chain
+    /// finds it whether this was pushed inside a tab or shown over one.
+    private var mainTabBarController: MainTabbarController? {
+        if let tabBarController = tabBarController as? MainTabbarController {
+            return tabBarController
+        }
+        // Searched down from the window's root, not up the presenter chain:
+        // the presenter is whichever screen happened to call `present`, and
+        // the window root is a container rather than the tab bar itself.
+        return view.window?.rootViewController?.dw_firstTabBarController() as? MainTabbarController
+    }
+
     /// The X above the Internal form. Dismisses where something presented this
     /// landing, and leaves for the history where nothing did — as the payments
     /// tab's root, `dismiss` is a no-op, which is the bug the receive receipt's
     /// Done button had.
     private func leaveLanding() {
-        if presentingViewController != nil {
+        if isPresentedModally {
             dismiss(animated: true)
         } else {
-            (tabBarController as? MainTabbarController)?.showHome()
+            mainTabBarController?.showHome()
         }
+    }
+
+    /// Whether this landing was presented rather than being the payments tab's
+    /// own root.
+    ///
+    /// Asked of the navigation controller as well as of self: every modal
+    /// presentation of this screen wraps it in a `BaseNavigationController`, so
+    /// the container is what UIKit presented. `presentingViewController` does
+    /// resolve through the container, but naming both makes the intent survive
+    /// a future re-parenting rather than depending on that inheritance.
+    private var isPresentedModally: Bool {
+        presentingViewController != nil || navigationController?.presentingViewController != nil
     }
 
     /// The tab bar goes while the landing is up, and the X above the selector
@@ -477,10 +524,10 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// appeared dead. Leaving for the history is what finishing means there,
     /// and it is where the receipt's transaction shows up.
     private func finishReceiving() {
-        if presentingViewController != nil {
+        if isPresentedModally {
             dismiss(animated: true)
         } else {
-            (tabBarController as? MainTabbarController)?.showHome()
+            mainTabBarController?.showHome()
         }
     }
 

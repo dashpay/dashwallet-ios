@@ -108,6 +108,31 @@ final class DashConnectUriTests: XCTestCase {
         assertStError("dash-st:?n=t&v=1", .emptyBody)
     }
 
+    // MARK: - Deep links
+
+    func testDeepLinkAcceptsBothDashConnectSchemes() throws {
+        let keyUri = try validKeyUri()
+        let stUri = validStUri()
+
+        XCTAssertEqual(DashConnectDeepLink.uri(from: try url(keyUri)), keyUri)
+        XCTAssertEqual(DashConnectDeepLink.uri(from: try url(stUri)), stUri)
+        XCTAssertTrue(DashConnectDeepLink.canHandle(try url(keyUri)))
+    }
+
+    func testDeepLinkRejectsTheAppsOtherSchemes() throws {
+        for uri in [
+            "dash:XnhkeQZLtHqzYqbxLXaAvB9RLnKGrRWKgy?amount=0.1",
+            "dashwallet://scanqr",
+            "dashpay://invite/abc",
+            "pay:XnhkeQZLtHqzYqbxLXaAvB9RLnKGrRWKgy",
+            "https://yap.pr/login",
+        ] {
+            XCTAssertNil(DashConnectDeepLink.uri(from: try url(uri)), uri)
+            XCTAssertFalse(DashConnectDeepLink.canHandle(try url(uri)), uri)
+        }
+    }
+
+
     private func assertKeyError(_ uri: String, _ expected: DashConnectUriError) {
         XCTAssertThrowsError(try DashConnectUri.parseKeyRequest(uri)) { error in
             XCTAssertEqual(error as? DashConnectUriError, expected)
@@ -195,5 +220,69 @@ final class DashConnectUriTests: XCTestCase {
             result.append(chunk)
         }
         return result
+    }
+
+    private func url(_ string: String) throws -> URL {
+        try XCTUnwrap(URL(string: string), "not a URL: \(string)")
+    }
+
+    // MARK: payload size limits
+
+    // The decoder's cost is quadratic in the encoded length. A QR code bounds
+    // that by its own capacity; a link does not, so the bound is enforced here
+    // and every carrier inherits it.
+
+    private func keyUri(body: String) -> String { "dash-key:\(body)?v=1&n=t" }
+    private func stUri(body: String) -> String { "dash-st:\(body)?v=1&n=t" }
+
+    func testOversizedKeyBodyIsRejectedBeforeDecoding() {
+        // 131 bytes is the largest legal dash-key payload; 4096 Base58
+        // characters is far past its encoded ceiling.
+        let body = String(repeating: "z", count: 4096)
+        XCTAssertThrowsError(try DashConnectUri.parseKeyRequest(keyUri(body: body))) { error in
+            XCTAssertEqual(error as? DashConnectUriError, .bodyTooLong)
+        }
+    }
+
+    func testOversizedStBodyIsRejectedBeforeDecoding() {
+        let body = String(repeating: "z", count: 200_000)
+        XCTAssertThrowsError(try DashConnectUri.parseStRequest(stUri(body: body))) { error in
+            XCTAssertEqual(error as? DashConnectUriError, .bodyTooLong)
+        }
+    }
+
+    func testTheLimitIsCheckedCheaply() {
+        // The guard must fire on length alone, not after a decode: a body of
+        // characters that are not even Base58 must still be rejected as too
+        // long, which is only possible if the check precedes the decode.
+        let body = String(repeating: "0", count: 500_000)   // '0' is not in the alphabet
+        XCTAssertThrowsError(try DashConnectUri.parseStRequest(stUri(body: body))) { error in
+            XCTAssertEqual(error as? DashConnectUriError, .bodyTooLong,
+                           "a length check that ran after the decode would report invalidBase58")
+        }
+    }
+
+    func testAnStPayloadAtTheCeilingIsAccepted() throws {
+        // The ceiling is several times what an IdentityUpdateTransition adding
+        // two login keys needs, so a payload sitting exactly on it must parse.
+        let payload = Data(repeating: 0x7f, count: 4 * 1024)
+        let request = try DashConnectUri.parseStRequest(stUri(payload: payload))
+        XCTAssertEqual(request.transitionBytes, payload)
+    }
+
+    func testAnStPayloadOverTheCeilingIsRejected() {
+        let payload = Data(repeating: 0x7f, count: 4 * 1024 + 1)
+        XCTAssertThrowsError(try DashConnectUri.parseStRequest(stUri(payload: payload))) { error in
+            XCTAssertEqual(error as? DashConnectUriError, .bodyTooLong)
+        }
+    }
+
+    func testAKeyBodyWithinTheFormatIsNotRejectedForLength() {
+        // A body that is too short to be a valid payload must fail on its own
+        // merits, never on length — the ceiling must not clip legitimate URIs.
+        let body = String(repeating: "z", count: 32)
+        XCTAssertThrowsError(try DashConnectUri.parseKeyRequest(keyUri(body: body))) { error in
+            XCTAssertNotEqual(error as? DashConnectUriError, .bodyTooLong)
+        }
     }
 }

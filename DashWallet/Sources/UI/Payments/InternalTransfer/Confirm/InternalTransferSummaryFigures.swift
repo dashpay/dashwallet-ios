@@ -9,10 +9,15 @@ import SwiftDashSDK
 /// The numbers and names the confirm sheet's summary card shows, derived from
 /// the route.
 ///
-/// Lifted out of the sheet because it is fee math: the SDK is asked to price
-/// four of the six routes, and Core → Shielded reconstructs the executed lock
-/// value. A SwiftUI `View` is the wrong place for that — it is also the reason
-/// none of it could be exercised without rendering a sheet.
+/// Lifted out of the sheet because it is fee math: the identity routes ask the
+/// SDK to price the transfer, and every figure has to be formatted the same way
+/// wherever it came from. A SwiftUI `View` is the wrong place for that — it is
+/// also the reason none of it could be exercised without rendering a sheet.
+///
+/// The balance routes' own fee and total are NOT resolved here: they are
+/// `InternalTransferViewModel.confirmNetworkFeeCredits` / `confirmTotalDuffs`,
+/// frozen into the submission at Continue so the Total the user confirms is
+/// exactly what executes. This type only formats them.
 ///
 /// Every value fails closed. An unavailable estimate is `nil`, which the sheet
 /// renders as "—" rather than a number it cannot stand behind; `canContinue`
@@ -23,49 +28,18 @@ enum InternalTransferSummaryFigures {
     /// Platform credits per DASH (1e11).
     private static let creditsPerDash: Decimal = 100_000_000_000
 
-    /// Flat fee estimate (credits) for `route`, computed offline by the SDK
-    /// against the latest protocol version, so it matches the fee the SDK will
-    /// charge. `nil` when the estimate is unavailable.
-    ///
-    /// `withdrawalFeeCredits` is only read for `.platformToCore`, where the
-    /// preflight has already netted the exact transition fee out of the payout.
-    static func networkFeeCredits(
-        route: InternalTransferRoute,
-        withdrawalFeeCredits: UInt64?
-    ) -> UInt64? {
-        switch route {
-        case .coreToShielded:
-            // The lock charges the fee rounded UP to a whole duff — report
-            // that, so Amount + Network fee equals Total exactly.
-            return CoreToShieldedAmountPolicy.currentPoolFeeDuffs.map { $0 * 1000 }
-        case .platformToShielded:
-            // Shield (Type 15): base shielded fee. Real metered storage is
-            // extra and only knowable on-chain, so this is a lower bound.
-            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .transfer, numActions: 2)
-        case .shieldedToCore:
-            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .withdrawal, numActions: 2)
-        case .shieldedToPlatform:
-            return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .unshield, numActions: 2)
-        case .coreToPlatform:
-            // Address-funding asset lock: the required processing balance (the
-            // same 50k-duff base the Rust side reserves for address funding).
-            // The funding ST's metered fee is extra and only knowable
-            // on-chain, so this is a lower bound.
-            return CoreToShieldedAmountPolicy.assetLockBaseCostCredits
-        case .platformToCore:
-            return withdrawalFeeCredits
-        }
+    /// A frozen fee (credits) as fiat (e.g. "~ $0.08"), or `nil` when the
+    /// ViewModel could not price the route.
+    static func networkFeeFiat(credits: UInt64?) -> String? {
+        credits.map(feeFiatString(credits:))
     }
 
-    /// The fee as fiat (e.g. "~ $0.08"), or `nil` when it cannot be priced.
-    static func networkFeeFiat(
-        route: InternalTransferRoute,
-        withdrawalFeeCredits: UInt64?
-    ) -> String? {
-        networkFeeCredits(
-            route: route,
-            withdrawalFeeCredits: withdrawalFeeCredits)
-            .map(feeFiatString(credits:))
+    /// The fee row's label. Core → Platform pays a Platform-side funding fee
+    /// out of its lock rather than an L1 network fee, and says so.
+    static func feeRowLabel(route: InternalTransferRoute?) -> String {
+        route == .coreToPlatform
+            ? NSLocalizedString("Platform fee", comment: "")
+            : NSLocalizedString("Network fee", comment: "")
     }
 
     private static func feeFiatString(credits: UInt64) -> String {
@@ -115,26 +89,13 @@ enum InternalTransferSummaryFigures {
 
     /// What actually leaves the source balance, formatted.
     ///
-    /// Core → Shielded charges the pool fee ON TOP of the amount, so its total
-    /// is the executed lock value; every other route's total is the amount
-    /// itself. `nil` when the pool fee is unavailable — the row must never show
-    /// the un-inflated number.
-    static func totalLeavingSource(
-        route: InternalTransferRoute,
-        dashDuffs: Int64,
-        amountDuffsUnsigned: UInt64
-    ) -> String? {
-        guard route == .coreToShielded else {
-            return dashDuffs.formattedDashAmount
-        }
-        guard let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
-              let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
-                  forAmountDuffs: amountDuffsUnsigned,
-                  poolFeeCredits: poolFeeCredits),
-              let signedLockDuffs = Int64(exactly: lockDuffs)
-        else { return nil }
-
-        return signedLockDuffs.formattedDashAmount
+    /// The number is `InternalTransferViewModel.confirmTotalDuffs`, frozen at
+    /// Continue: both Core-funded asset-lock routes charge their fee on top of
+    /// the amount, so their total is the executed lock value rather than the
+    /// amount. `nil` when the ViewModel could not resolve it — the row must
+    /// never show the un-inflated number.
+    static func totalLeavingSource(totalDuffs: Int64?) -> String? {
+        totalDuffs?.formattedDashAmount
     }
 
     // MARK: - Endpoints

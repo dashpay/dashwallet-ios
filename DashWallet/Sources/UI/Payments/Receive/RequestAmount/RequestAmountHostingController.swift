@@ -56,12 +56,19 @@ final class RequestAmountHostingController: UIViewController {
         @Published var copiedToastVisible = false
         /// Driven by the presenter's attended receive session, when it has one.
         @Published var isWatchingForReceipt = false
+        /// The requested amount in fiat. Published rather than computed in the
+        /// view: rates can land after this sheet is on screen, and the view
+        /// redraws on this object alone.
+        @Published var fiatAmount: String = ""
     }
 
     /// The content's natural height, as `BottomSheet(fillsHeight: false)`
     /// publishes it. Seeded before presentation and updated on every layout —
     /// the QR arriving, the username row appearing, Dynamic Type changing.
     fileprivate var measuredHeight: CGFloat = 0
+
+    /// Handle for the exchange-rate subscription, released in `deinit`.
+    private var exchangerObserver: CurrencyExchangerObserver?
 
     init(model: DWReceiveModelProtocol) {
         self.model = model
@@ -144,6 +151,23 @@ final class RequestAmountHostingController: UIViewController {
             selector: #selector(checkRequestStatus),
             name: SwiftDashSDKWalletState.balanceDidChangeNotification,
             object: nil)
+
+        // Rates can land after this sheet is up — the exchanger keeps its own
+        // observer list rather than posting a notification, so subscribe to it
+        // and restate the fiat line when it does.
+        exchangerObserver = CurrencyExchanger.shared.addObserver { [weak self] _ in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                self.state.fiatAmount = CurrencyExchanger.shared
+                    .fiatAmountString(for: self.model.amount.dashAmount)
+            }
+        }
+    }
+
+    deinit {
+        if let exchangerObserver {
+            CurrencyExchanger.shared.removeObserver(exchangerObserver)
+        }
     }
 
     // MARK: - Content
@@ -211,6 +235,7 @@ final class RequestAmountHostingController: UIViewController {
     private func reloadFromModel() {
         state.qrCodeImage = model.qrCodeImage
         state.paymentAddress = model.paymentAddress
+        state.fiatAmount = CurrencyExchanger.shared.fiatAmountString(for: model.amount.dashAmount)
         #if DASHPAY
         state.username = model.username
         #endif
@@ -295,7 +320,7 @@ private struct RequestAmountScreenContainer: View {
     var body: some View {
         RequestAmountScreen(
             amountDuffs: amountDuffs,
-            fiatAmount: CurrencyExchanger.shared.fiatAmountString(for: amountDuffs.dashAmount),
+            fiatAmount: state.fiatAmount,
             qrCodeImage: state.qrCodeImage,
             paymentAddress: state.paymentAddress,
             username: state.username,

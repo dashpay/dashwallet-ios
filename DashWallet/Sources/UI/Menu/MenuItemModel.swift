@@ -32,7 +32,15 @@ class MenuItemModel: Identifiable, Equatable, Hashable {
     /// rather than decorate the title.
     var infoAction: (() -> Void)? = nil
     
-    init(title: String, subtitle: String? = nil, details: String? = nil, icon: IconName? = nil, showInfo: Bool = false, showToggle: Bool = false, isToggled: Bool = false, action: (() -> Void)? = nil, infoAction: (() -> Void)? = nil) {
+    init(title: String,
+         subtitle: String? = nil,
+         details: String? = nil,
+         icon: IconName? = nil,
+         showInfo: Bool = false,
+         showToggle: Bool = false,
+         isToggled: Bool = false,
+         action: (() -> Void)? = nil,
+         infoAction: (() -> Void)? = nil) {
         self.title = title
         self.subtitle = subtitle
         self.details = details

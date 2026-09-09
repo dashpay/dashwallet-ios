@@ -28,6 +28,9 @@ import DashUIKit
 struct TransferSummaryCard: View {
     let from: String
     let to: String
+    /// The fee row's label travels with its value: what a transfer is charged
+    /// for is not the same on every route.
+    let networkFeeLabel: String
     let networkFee: String
     let total: String
 
@@ -35,13 +38,21 @@ struct TransferSummaryCard: View {
         self.init(
             from: summary.from,
             to: summary.to,
+            networkFeeLabel: summary.networkFeeLabel,
             networkFee: summary.networkFee,
             total: summary.total)
     }
 
-    init(from: String, to: String, networkFee: String, total: String) {
+    init(
+        from: String,
+        to: String,
+        networkFeeLabel: String = NSLocalizedString("Network fee", comment: ""),
+        networkFee: String,
+        total: String
+    ) {
         self.from = from
         self.to = to
+        self.networkFeeLabel = networkFeeLabel
         self.networkFee = networkFee
         self.total = total
     }
@@ -50,7 +61,7 @@ struct TransferSummaryCard: View {
         VStack(alignment: .leading, spacing: 2) {
             row(label: NSLocalizedString("From", comment: ""), value: from)
             row(label: NSLocalizedString("To", comment: ""), value: to)
-            row(label: NSLocalizedString("Network fee", comment: ""), value: networkFee)
+            row(label: networkFeeLabel, value: networkFee)
             row(label: NSLocalizedString("Total", comment: ""), value: total)
         }
         .modifier(MenuViewModifier())
