@@ -56,6 +56,16 @@ NS_ASSUME_NONNULL_BEGIN
 /// somewhere, and this is where the base class sends it.
 - (void)processPaymentInput:(DWPaymentInput *)input;
 
+/// Leave a send that has finished: dismiss the modal that hosts it, or pop the
+/// payments stack and go to Home where the flow was pushed into a tab.
+///
+/// Declared for the Swift subclasses that own the newer send routes. Those
+/// confirm and broadcast inside `SendConfirmSheet` and never reach the success
+/// screen's delegate, so a dismissal-only completion left the paid recipient
+/// and amount on screen wherever the flow had been pushed rather than
+/// presented. Both endings go through here.
+- (void)finishSendFlow;
+
 /// Present the shared send-success screen for an already-broadcast
 /// transaction. `txidWire` is the wire-order txid (`Transaction.txHashData`
 /// byte order).

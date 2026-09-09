@@ -405,6 +405,9 @@ struct ExternalSendAmountScreen: View {
     var onSendCompleted: () -> Void
 
     @State private var showConfirm = false
+    /// Set by the confirm sheet's Done so `onDismiss` can tell a finished send
+    /// from a cancelled one — both close the sheet the same way.
+    @State private var didCompleteSend = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -467,7 +470,15 @@ struct ExternalSendAmountScreen: View {
         }
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
-        .sheet(isPresented: $showConfirm) {
+        // `onDismiss`, not the sheet's own completion closure: leaving the flow
+        // pops the steps under this sheet, and doing that while it is still
+        // presented tears down the presenter mid-dismissal. A cancel dismisses
+        // the same way and must not unwind, so the outcome is carried across.
+        .sheet(isPresented: $showConfirm, onDismiss: {
+            guard didCompleteSend else { return }
+            didCompleteSend = false
+            onSendCompleted()
+        }) {
             if let route = viewModel.route, route != .coreToCore {
                 SendConfirmSheet(
                     route: route,
@@ -481,8 +492,8 @@ struct ExternalSendAmountScreen: View {
                     isFullShieldedSweep: viewModel.isFullShieldedSweep,
                     onCancel: { showConfirm = false },
                     onCompleted: {
+                        didCompleteSend = true
                         showConfirm = false
-                        onSendCompleted()
                     })
                     .presentationDetents([.large])
                     .presentationDragIndicator(.hidden)

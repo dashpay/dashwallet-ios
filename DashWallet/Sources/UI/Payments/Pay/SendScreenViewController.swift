@@ -55,7 +55,7 @@ final class SendScreenViewController: DWBasePayViewController {
     @objc func makeSourceStep() -> UIViewController {
         let controller = makeExternalSendSource(
             viewModel: sendViewModel,
-            onSendCompleted: { [weak self] in self?.dismiss(animated: true) })
+            onSendCompleted: { [weak self] in self?.finishSendFlow() })
         controller.hidesBottomBarWhenPushed = true
         return controller
     }
@@ -75,7 +75,7 @@ final class SendScreenViewController: DWBasePayViewController {
                 guard let self else { return }
                 self.pushExternalSendSource(
                     viewModel: self.sendViewModel,
-                    onSendCompleted: { [weak self] in self?.dismiss(animated: true) })
+                    onSendCompleted: { [weak self] in self?.finishSendFlow() })
             })
         // Pushed from the payments landing there is somewhere to go back to;
         // presented as the "Send to Address" shortcut there is not.

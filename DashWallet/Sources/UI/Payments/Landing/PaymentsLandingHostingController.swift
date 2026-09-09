@@ -41,7 +41,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
                 guard let self else { return }
                 self.pushExternalSendSource(
                     viewModel: self.embeddedSendViewModel,
-                    onSendCompleted: { [weak self] in self?.dismiss(animated: true) })
+                    onSendCompleted: { [weak self] in self?.finishSendFlow() })
             },
             onSendToAddress: { [weak self] in self?.pushSendToAddress() },
             onSendToUsername: { [weak self] in self?.pushSendToContact() },

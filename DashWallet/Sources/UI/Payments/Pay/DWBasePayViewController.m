@@ -44,11 +44,25 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     NSParameterAssert(self.payModel);
+}
 
-    self.paymentController = [[PaymentController alloc] init];
-    _paymentController.delegate = self;
-    _paymentController.locksBalance = self.locksBalance;
-    _paymentController.presentationContextProvider = self;
+/// Built on first use rather than in `viewDidLoad`.
+///
+/// A send flow can be opened PAST its address step — a scanned address
+/// installs the source picker with this screen behind it, and a controller
+/// that is never the top of the stack never loads its view. Continue on the
+/// step above then reached `processPaymentInput:` with a nil controller, and
+/// ObjC drops the message: no confirmation, no send, nothing on screen.
+/// Going Back loaded the view and hid it. Paying must not depend on whether
+/// the screen was ever shown.
+- (PaymentController *)paymentController {
+    if (_paymentController == nil) {
+        _paymentController = [[PaymentController alloc] init];
+        _paymentController.delegate = self;
+        _paymentController.locksBalance = self.locksBalance;
+        _paymentController.presentationContextProvider = self;
+    }
+    return _paymentController;
 }
 
 
@@ -111,10 +125,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)txDetailViewControllerDidFinishWithController:(SuccessTxDetailViewController *)controller {
     // The success screen has already dismissed itself; what is left underneath
-    // is the send that produced it — an amount step, a source picker, an
-    // address field. Handing those back would offer to redo a payment that has
-    // just happened, so leave for the history, which is where the transaction
-    // now is.
+    // is the send that produced it.
+    [self finishSendFlow];
+}
+
+#pragma mark - Leaving a finished send
+
+- (void)finishSendFlow {
+    // What is left on screen is the send that just happened — an amount step,
+    // a source picker, an address field. Handing those back would offer to
+    // redo a payment already made, so leave for the history, which is where
+    // the transaction now is.
     //
     // Presented as a modal there is something to dismiss; inside the payments
     // tab there is not, and the way back is the stack plus the tab. The tab
