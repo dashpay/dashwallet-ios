@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import Foundation
 
 // MARK: - SendAmountError
@@ -86,9 +87,18 @@ class SendAmountModel: BaseAmountModel {
     /// transparent balance. `BaseAmountModel`'s balance subscription only
     /// refreshes `walletBalance`, and the view refreshes its button off
     /// `$amount`, so nothing revalidates an amount typed before the drop.
+    ///
+    /// Both inputs matter, not just the pooled one: through a persistent pooled
+    /// outage that value stays `nil` and `removeDuplicates` swallows every
+    /// repeat, while `balance` keeps moving the fallback ceiling underneath.
+    /// Deduplicating the RESOLVED ceiling instead reacts to whichever half
+    /// changed, and still ignores updates that leave it where it was.
     private func observeSendableCeiling() {
-        SwiftDashSDKWalletState.shared.$pooledSpendableDuffs
-            .removeDuplicates()
+        let state = SwiftDashSDKWalletState.shared
+        SwiftDashSDKWalletState
+            .sendableCeilingPublisher(
+                pooled: state.$pooledSpendableDuffs.eraseToAnyPublisher(),
+                walletSpendable: state.$balance.map { $0?.spendable }.eraseToAnyPublisher())
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self else { return }

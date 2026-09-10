@@ -195,6 +195,27 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         Self.sendableDuffs(pooled: pooledSpendableDuffs, walletSpendable: balance?.spendable)
     }
 
+    /// The ceiling an open amount screen validates against, as a stream.
+    ///
+    /// Derived from BOTH inputs and deduplicated on the RESOLVED value: through
+    /// a pooled outage the pooled figure stays `nil` while the wallet balance
+    /// keeps moving the fallback, so a subscription to the pooled publisher
+    /// alone goes silent exactly when the ceiling is moving. Deduplicating the
+    /// result instead reacts to whichever half changed and stays quiet when
+    /// neither moved the answer.
+    ///
+    /// Takes its inputs as parameters so the wiring is testable without the
+    /// shared instance; `observeSendableCeiling` passes the published ones.
+    static func sendableCeilingPublisher(
+        pooled: AnyPublisher<UInt64?, Never>,
+        walletSpendable: AnyPublisher<UInt64?, Never>
+    ) -> AnyPublisher<UInt64, Never> {
+        Publishers.CombineLatest(pooled, walletSpendable)
+            .map { sendableDuffs(pooled: $0, walletSpendable: $1) }
+            .removeDuplicates()
+            .eraseToAnyPublisher()
+    }
+
     /// The confirmed balance a plain send CANNOT draw on: what
     /// `balance.spendable` counts and the funding pool does not.
     ///
@@ -416,25 +437,74 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// reader detects the main thread and reads synchronously.
     /// Re-read the pooled spendable balance from the SDK. Refreshed with every
     /// balance event, like the CoinJoin tally beside it.
+    ///
+    /// The read itself is NOT done here. `pooledSpendableBalance()` bridges
+    /// synchronously into Rust, waits on the wallet-manager read lock and walks
+    /// every funding account's UTXO set — on the main actor that is a stall
+    /// behind whatever writer holds the lock (block processing, a finalizing
+    /// build), during exactly the balance-event bursts that call this. The
+    /// wallet handle is captured here, the read runs off-main, and the result
+    /// is published back on the main actor only if it still describes the
+    /// wallet that asked for it.
+    ///
+    /// Overlapping requests coalesce the way the Platform-credit tally does:
+    /// one read in flight, and a request arriving during it schedules exactly
+    /// one re-run rather than another concurrent read.
     @MainActor
     public func refreshPooledSpendableBalance() {
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
+            pooledSpendableReadTask?.cancel()
+            pooledSpendableReadTask = nil
+            pooledSpendableRerunRequested = false
             markPooledSpendableUnavailable(reason: "no active wallet")
             return
         }
-        let duffs: UInt64
-        do {
-            duffs = try wallet.coreWallet().pooledSpendableBalance()
-        } catch {
-            markPooledSpendableUnavailable(reason: String(describing: error))
+        if pooledSpendableReadTask != nil {
+            pooledSpendableRerunRequested = true
             return
         }
-        hasLoggedPooledSpendableOutage = false
-        if pooledSpendableDuffs != duffs {
-            pooledSpendableDuffs = duffs
-            Self.logger.info("💰 WALLET :: pooledSpendableDuffs=\(duffs, privacy: .public)")
+
+        let walletId = wallet.walletId
+        let network = SwiftDashSDKHost.shared.runningNetwork
+        pooledSpendableReadTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            let outcome: Result<UInt64, Error> = await Task.detached(priority: .utility) {
+                do {
+                    return .success(try wallet.coreWallet().pooledSpendableBalance())
+                } catch {
+                    return .failure(error)
+                }
+            }.value
+
+            self.pooledSpendableReadTask = nil
+            // A wallet switch or network change while the read was in flight
+            // makes its answer describe someone else's funding pool.
+            let stillCurrent = SwiftDashSDKHost.shared.wallet?.walletId == walletId
+                && SwiftDashSDKHost.shared.runningNetwork == network
+            if stillCurrent, !Task.isCancelled {
+                switch outcome {
+                case .success(let duffs):
+                    self.hasLoggedPooledSpendableOutage = false
+                    if self.pooledSpendableDuffs != duffs {
+                        self.pooledSpendableDuffs = duffs
+                        Self.logger.info("💰 WALLET :: pooledSpendableDuffs=\(duffs, privacy: .public)")
+                    }
+                case .failure(let error):
+                    self.markPooledSpendableUnavailable(reason: String(describing: error))
+                }
+            }
+
+            if self.pooledSpendableRerunRequested {
+                self.pooledSpendableRerunRequested = false
+                self.refreshPooledSpendableBalance()
+            }
         }
     }
+
+    /// Non-nil while a pooled read is in flight; requests arriving during that
+    /// window flip `pooledSpendableRerunRequested` instead of piling up.
+    @MainActor private var pooledSpendableReadTask: Task<Void, Never>?
+    @MainActor private var pooledSpendableRerunRequested = false
 
     /// Drop the pooled figure so `sendableDuffs` falls back to the wallet-wide
     /// balance, and say why — once per outage, not once per balance tick. A

@@ -17,6 +17,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import XCTest
 @testable import dashpay
 
@@ -141,6 +142,69 @@ final class PooledSendableBalanceTests: XCTestCase {
         let message = InternalTransferViewModel.coreZeroMaxMessage(
             totalDuffs: 50_000, confirmedSpendableDuffs: 50_000, excludedFromPoolDuffs: 0)
         XCTAssertFalse(message.contains("mixed coins"), "got: \(message)")
+        // Naming the reason, not merely NOT naming the wrong one: without this
+        // the assertion above also passes for an empty or unrelated message.
+        XCTAssertTrue(message.lowercased().contains("fee"), "got: \(message)")
+    }
+
+    // MARK: - The ceiling publisher the amount screen validates against
+
+    /// `SendAmountModel.observeSendableCeiling` subscribes to this. A test over
+    /// the pure `sendableDuffs` arithmetic cannot tell a live subscription from
+    /// a missing one, so the derived publisher is what these exercise.
+
+    func testTheCeilingEmitsWhenThePooledFigureArrives() {
+        let pooled = CurrentValueSubject<UInt64?, Never>(nil)
+        let spendable = CurrentValueSubject<UInt64?, Never>(94_000_000)
+        var seen: [UInt64] = []
+        let token = SwiftDashSDKWalletState
+            .sendableCeilingPublisher(pooled: pooled.eraseToAnyPublisher(),
+                                      walletSpendable: spendable.eraseToAnyPublisher())
+            .sink { seen.append($0) }
+
+        pooled.send(120_000)
+
+        XCTAssertEqual(seen, [94_000_000, 120_000],
+                       "the fallback ceiling, then the pooled one that replaces it")
+        token.cancel()
+    }
+
+    func testTheCeilingEmitsWhenOnlyTheFallbackMovesDuringAPooledOutage() {
+        // The case a `$pooledSpendableDuffs`-only subscription misses: through
+        // an outage the pooled value stays nil and `removeDuplicates` swallows
+        // every repeat, while the wallet balance keeps moving the ceiling.
+        let pooled = CurrentValueSubject<UInt64?, Never>(nil)
+        let spendable = CurrentValueSubject<UInt64?, Never>(10_000)
+        var seen: [UInt64] = []
+        let token = SwiftDashSDKWalletState
+            .sendableCeilingPublisher(pooled: pooled.eraseToAnyPublisher(),
+                                      walletSpendable: spendable.eraseToAnyPublisher())
+            .sink { seen.append($0) }
+
+        spendable.send(4_000)
+        pooled.send(nil)
+
+        XCTAssertEqual(seen, [10_000, 4_000],
+                       "the drop reaches the screen, and the repeated nil adds nothing")
+        token.cancel()
+    }
+
+    func testTheCeilingIgnoresAnUpdateThatLeavesItWhereItWas() {
+        let pooled = CurrentValueSubject<UInt64?, Never>(120_000)
+        let spendable = CurrentValueSubject<UInt64?, Never>(94_000_000)
+        var seen: [UInt64] = []
+        let token = SwiftDashSDKWalletState
+            .sendableCeilingPublisher(pooled: pooled.eraseToAnyPublisher(),
+                                      walletSpendable: spendable.eraseToAnyPublisher())
+            .sink { seen.append($0) }
+
+        // The wallet-wide figure moves, but the pooled one rules — the screen
+        // has nothing to revalidate.
+        spendable.send(80_000_000)
+        pooled.send(120_000)
+
+        XCTAssertEqual(seen, [120_000], "a ceiling that did not move must not churn validation")
+        token.cancel()
     }
 
 }
