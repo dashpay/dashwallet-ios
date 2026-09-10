@@ -974,6 +974,7 @@
 		75FFD6C82BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
 		76766A50AFDB7BC138F569DC /* NetworkUnavailableStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487C4C2E6AC61005536FF85E /* NetworkUnavailableStateView.swift */; };
 		7A30000230A1000000000002 /* TransactionDirectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30000130A1000000000001 /* TransactionDirectionTests.swift */; };
+		7A30002230A2000000000022 /* CrowdNodeOwnershipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30002130A2000000000021 /* CrowdNodeOwnershipTests.swift */; };
 		7A31000230A2000000000002 /* CoinJoinMoveDestinationPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A31000130A2000000000001 /* CoinJoinMoveDestinationPolicyTests.swift */; };
 		7A30001230A1000000000012 /* StuckAssetLockRetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */; };
 		7B18F4580CB3D24E417435DE /* StorageRecordDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCBA057E553F81F54ACE6E1 /* StorageRecordDetailViews.swift */; };
@@ -3165,6 +3166,7 @@
 		7708BBFDD14AFF237FB72D71 /* MayaConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaConstants.swift; sourceTree = "<group>"; };
 		797D9070BF54A3533190584E /* libPods-dashwallet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-dashwallet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7A30000130A1000000000001 /* TransactionDirectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionDirectionTests.swift; sourceTree = "<group>"; };
+		7A30002130A2000000000021 /* CrowdNodeOwnershipTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeOwnershipTests.swift; sourceTree = "<group>"; };
 		7A31000130A2000000000001 /* CoinJoinMoveDestinationPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinMoveDestinationPolicyTests.swift; sourceTree = "<group>"; };
 		7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StuckAssetLockRetryTests.swift; sourceTree = "<group>"; };
 		7B56B94951BA51EAC9E0A6E1 /* libPods-DashWalletScreenshotsUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletScreenshotsUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -7388,6 +7390,7 @@
 				CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */,
 				CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */,
 				7A30000130A1000000000001 /* TransactionDirectionTests.swift */,
+				7A30002130A2000000000021 /* CrowdNodeOwnershipTests.swift */,
 				7A31000130A2000000000001 /* CoinJoinMoveDestinationPolicyTests.swift */,
 				7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */,
 				CB9200012FE3000000000001 /* PassiveWalletStateUITailTests.swift */,
@@ -10625,6 +10628,7 @@
 				CB9000022FE1000000000002 /* CoinbaseTransactionMetadataTests.swift in Sources */,
 				CB9100022FE2000000000002 /* CoinbaseTransferAmountTests.swift in Sources */,
 				7A30000230A1000000000002 /* TransactionDirectionTests.swift in Sources */,
+				7A30002230A2000000000022 /* CrowdNodeOwnershipTests.swift in Sources */,
 				7A31000230A2000000000002 /* CoinJoinMoveDestinationPolicyTests.swift in Sources */,
 				7A30001230A1000000000012 /* StuckAssetLockRetryTests.swift in Sources */,
 				CB9200022FE3000000000002 /* PassiveWalletStateUITailTests.swift in Sources */,
