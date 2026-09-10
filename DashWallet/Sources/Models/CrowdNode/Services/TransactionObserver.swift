@@ -167,8 +167,19 @@ public final class TransactionObserver {
         if let floor = firstSeenAtOrAfter {
             // `firstSeen` is indexed, so this is what turns the scan from a
             // full-table join into an index range.
+            //
+            // Unconfirmed rows join it regardless of the floor, because
+            // `firstSeen` is not immutable: once a transaction is mined the
+            // persister adopts the BLOCK timestamp in its place. An existing
+            // payment that sat below the floor while unconfirmed therefore
+            // rises above it the moment it confirms, becomes emittable, and —
+            // if it was not in this snapshot — is presented as a new receipt.
+            // Reachable in one session: receive to the Core address, switch
+            // rails until the payment ages past the window, come back before
+            // it is mined. Only unconfirmed rows can move, and there are few
+            // of them, so this keeps the index range and closes the hole.
             descriptor.predicate = #Predicate {
-                $0.firstSeen >= floor &&
+                ($0.firstSeen >= floor || $0.blockHeight == 0) &&
                     ($0.outputs.contains { $0.walletId == walletId } ||
                         $0.inputs.contains { $0.walletId == walletId })
             }

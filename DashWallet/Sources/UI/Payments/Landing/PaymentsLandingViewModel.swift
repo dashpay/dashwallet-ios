@@ -376,6 +376,17 @@ final class PaymentsLandingViewModel: ObservableObject {
         if session?.rail == network, let displayedAddress {
             return displayedAddress
         }
+        // A rail whose baseline is still being built has no session yet, and
+        // handing out its address anyway put the QR and every receive action
+        // on screen ahead of one. Two ways that loses a payment: one persisted
+        // while the notes are being walked is folded INTO the baseline and
+        // excluded for the whole session, and sharing suspends watching, which
+        // cancels the pending baseline so the replacement — built afterwards —
+        // contains it too. Shielded is the only rail whose baseline cannot be
+        // a cheap read, so it is the only one that ever waits here.
+        if receiptSessionRail == network {
+            return nil
+        }
         return candidateAddress(for: network)
     }
 
