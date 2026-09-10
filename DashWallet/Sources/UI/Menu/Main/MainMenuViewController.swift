@@ -443,7 +443,18 @@ struct MainMenuScreen: View {
         case .creating:
             // Nothing to act on while it runs.
             break
-        case .approved, .registered:
+        case .approved:
+            // Acknowledge the report as well as acting on it. Without this
+            // `completedTileUsername` stays persisted, and since More's row is
+            // now kept visible by that record (`reportsRegistration`), the
+            // completed-registration row would come back after the user had
+            // already opened the profile from it — including on the next
+            // launch. `handleJoinDashPayAction` is a different entry point and
+            // this row does not go through it.
+            editProfile()
+            joinDPViewModel.markAsDismissed()
+            viewModel.refreshJoinDashPayBanner()
+        case .registered:
             editProfile()
         case .voting:
             showUsernameRequestStatus()
