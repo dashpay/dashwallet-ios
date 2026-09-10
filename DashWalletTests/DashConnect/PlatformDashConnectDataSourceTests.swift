@@ -196,13 +196,107 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(tagless.addPublicKeys.map(\.keyId), tagged.addPublicKeys.map(\.keyId))
         XCTAssertEqual(tagless.disablePublicKeyIds, tagged.disablePublicKeyIds)
 
-        let appParser = PlatformWalletDashConnectKeyRegistrationParser { bytes in
-            try wallet.parseIdentityUpdateTransition(bytes)
+        let appParser = PlatformWalletDashConnectStateTransitionParser { bytes in
+            .identityUpdate(try wallet.parseIdentityUpdateTransition(bytes))
         }
-        let appTransition = try appParser.parse(taglessBytes)
+        guard case let .keyRegistration(appTransition) = try appParser.parse(taglessBytes) else {
+            return XCTFail("Expected a key-registration transition")
+        }
         XCTAssertEqual(appTransition.identityId, tagged.identityId)
         XCTAssertEqual(appTransition.addPublicKeys.map(\.keyId), [17, 18])
         XCTAssertEqual(appTransition.disablePublicKeyIds, [4, 8])
+    }
+
+    func testParserMapsATokenPurchaseTransition() throws {
+        let ownerId = Data(repeating: 0x21, count: 32)
+        let contractId = Data(repeating: 0x22, count: 32)
+        let tokenId = Data(repeating: 0x23, count: 32)
+        let parser = PlatformWalletDashConnectStateTransitionParser { _ in
+            .tokenPurchase(ManagedPlatformWallet.ParsedTokenPurchaseTransition(
+                ownerId: ownerId,
+                dataContractId: contractId,
+                tokenId: tokenId,
+                tokenContractPosition: 3,
+                tokenCount: 100,
+                totalAgreedPrice: 100_000_000
+            ))
+        }
+
+        guard case let .tokenPurchase(purchase) = try parser.parse(Data([0x00])) else {
+            return XCTFail("Expected a token purchase")
+        }
+        XCTAssertEqual(purchase.ownerId, ownerId)
+        XCTAssertEqual(purchase.dataContractId, contractId)
+        XCTAssertEqual(purchase.tokenId, tokenId)
+        XCTAssertEqual(purchase.tokenContractPosition, 3)
+        XCTAssertEqual(purchase.tokenCount, 100)
+        XCTAssertEqual(purchase.totalAgreedPrice, 100_000_000)
+    }
+
+    func testTokenPurchasePriceConvertsCreditsToDash() {
+        // 1e11 credits = 1 DASH; 1e3 credits = 1 duff.
+        XCTAssertEqual(Self.purchaseRequest(credits: 0).totalPriceDash, 0)
+        XCTAssertEqual(Self.purchaseRequest(credits: 100_000_000_000).totalPriceDash, 1)
+        XCTAssertEqual(
+            Self.purchaseRequest(credits: 100_000).totalPriceDash,
+            Decimal(string: "0.000001"))
+        // Sub-duff precision survives: 1 credit is a thousandth of a duff,
+        // which an eight-decimal rendering would round away even though it
+        // is charged.
+        XCTAssertEqual(
+            Self.purchaseRequest(credits: 1).totalPriceDash,
+            Decimal(string: "0.00000000001"))
+    }
+
+    private static func purchaseRequest(
+        credits: UInt64,
+        tokenCount: UInt64 = 1,
+        tokenDecimals: Int? = nil
+    ) -> DashConnectTokenPurchaseRequest {
+        DashConnectTokenPurchaseRequest(
+            appName: nil,
+            ownerId: Data(repeating: 0x21, count: 32),
+            dataContractId: Data(repeating: 0x22, count: 32),
+            tokenId: Data(repeating: 0x23, count: 32),
+            tokenContractPosition: 0,
+            tokenCount: tokenCount,
+            tokenDecimals: tokenDecimals,
+            tokenName: nil,
+            totalAgreedPriceCredits: credits,
+            walletUsername: nil,
+            walletIdentityId: "identity"
+        )
+    }
+
+    // MARK: - Token quantity denomination
+
+    func testAQuantityIsScaledByTheContractsDecimals() {
+        // 100,000,000 base units of an eight-decimal token is one token — the
+        // number the user is authorizing.
+        let request = Self.purchaseRequest(credits: 1, tokenCount: 100_000_000, tokenDecimals: 8)
+        XCTAssertEqual(request.tokenQuantity.text, "1")
+        XCTAssertFalse(request.tokenQuantity.isBaseUnits)
+    }
+
+    func testAZeroDecimalTokenReadsAsAWholeCount() {
+        let request = Self.purchaseRequest(credits: 1, tokenCount: 250, tokenDecimals: 0)
+        XCTAssertEqual(request.tokenQuantity.text, "250")
+        XCTAssertFalse(request.tokenQuantity.isBaseUnits)
+    }
+
+    func testAnUnknownDenominationIsReportedAsBaseUnits() {
+        // The wallet does not hold the contract, so it cannot scale. Assuming
+        // zero decimals here would overstate an eight-decimal token by 1e8 on
+        // a money-authorization screen.
+        let request = Self.purchaseRequest(credits: 1, tokenCount: 100_000_000, tokenDecimals: nil)
+        XCTAssertEqual(request.tokenQuantity.text, "100000000")
+        XCTAssertTrue(request.tokenQuantity.isBaseUnits)
+    }
+
+    func testAFractionalQuantityKeepsItsDeclaredPrecision() {
+        let request = Self.purchaseRequest(credits: 1, tokenCount: 150_000_000, tokenDecimals: 8)
+        XCTAssertEqual(request.tokenQuantity.text, "1.5")
+        XCTAssertFalse(request.tokenQuantity.isBaseUnits)
     }
 
     func testBuildLoginKeyResponseDraftProducesExactFieldsAndWipesEphemeralPrivateKey() throws {

@@ -26,9 +26,47 @@ protocol DashConnectDataSource {
     func parseQR(_ content: String) async throws -> DashConnectQr
     func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest
     func approveLogin(_ request: DashKeyRequest) async throws -> DAppConnection
-    func completeKeyRegistration(_ request: DashStRequest) async throws
+    /// Parses a scanned `dash-st:` payload and either completes key
+    /// registration immediately or returns a token purchase that awaits
+    /// explicit user approval via `approveTokenPurchase(_:)`.
+    func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction
+    /// Rebuilds, signs and submits a token purchase the user approved.
+    ///
+    /// Throws `DashConnectTokenPurchaseFailure`, which says whether the
+    /// transition could already have reached Platform — the caller must not
+    /// offer a retry when it could have.
+    func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws
     func disconnect(id: String) async
     func remove(id: String) async
+}
+
+/// Why a token purchase failed, and — the part that decides what the UI may
+/// offer next — whether the transition could already have reached Platform.
+///
+/// A purchase is not idempotent: each approval builds and signs a new direct
+/// purchase against the identity's next nonce. Retrying after a failure that
+/// only looked like a failure buys the tokens a second time and debits the
+/// credits a second time, so "did this reach Platform?" has to survive as far
+/// as the screen.
+enum DashConnectTokenPurchaseFailure: LocalizedError {
+    /// Refused before anything was signed or submitted — a wrong identity, a
+    /// mismatched token id, a cancelled authentication, a missing runtime.
+    /// Nothing was charged and approving again is safe.
+    case beforeSubmission(Error)
+    /// The transition was signed and handed to Platform, and the failure came
+    /// out of that call. Platform may have accepted it anyway (a finality
+    /// timeout, a dropped DAPI response), so the purchase must be treated as
+    /// possibly complete.
+    case outcomeUnknown(Error)
+
+    var underlying: Error {
+        switch self {
+        case .beforeSubmission(let error), .outcomeUnknown(let error):
+            return error
+        }
+    }
+
+    var errorDescription: String? { underlying.localizedDescription }
 }
 
 enum DashConnectMockError: LocalizedError, Equatable {
@@ -36,7 +74,7 @@ enum DashConnectMockError: LocalizedError, Equatable {
     case approveFailed
     case notDashConnectQrCode
     case unsupportedNetwork(expected: DashConnectNetwork, actual: DashConnectNetwork)
-    case keyRegistrationNotSupported
+    case stateTransitionNotSupported
 
     var errorDescription: String? {
         switch self {
@@ -48,8 +86,8 @@ enum DashConnectMockError: LocalizedError, Equatable {
             return "This QR code is not a DashConnect QR code."
         case let .unsupportedNetwork(expected, actual):
             return "This DashConnect QR is for \(Self.displayName(for: actual)), but this wallet currently supports \(Self.displayName(for: expected)) only."
-        case .keyRegistrationNotSupported:
-            return "Key registration is not supported by the mock."
+        case .stateTransitionNotSupported:
+            return "State transitions are not supported by the mock."
         }
     }
 
@@ -150,7 +188,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         if DashConnectUri.isStUri(trimmed) {
             let request = try DashConnectUri.parseStRequest(trimmed)
             try validateNetwork(request.network)
-            return .keyRegistration(request)
+            return .stateTransition(request)
         }
 
         throw DashConnectMockError.notDashConnectQrCode
@@ -191,9 +229,14 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         )
     }
 
-    func completeKeyRegistration(_ request: DashStRequest) async throws {
+    func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction {
         try await Task.sleep(nanoseconds: 400_000_000)
-        throw DashConnectMockError.keyRegistrationNotSupported
+        throw DashConnectMockError.stateTransitionNotSupported
+    }
+
+    func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws {
+        throw DashConnectTokenPurchaseFailure.beforeSubmission(
+            DashConnectMockError.stateTransitionNotSupported)
     }
 
     func disconnect(id: String) async {
