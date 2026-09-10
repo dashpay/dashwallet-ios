@@ -147,6 +147,18 @@ final class PooledSendableBalanceTests: XCTestCase {
         XCTAssertTrue(message.lowercased().contains("fee"), "got: \(message)")
     }
 
+    func testTheCeilingTakesTheLowerOfTwoKnownFigures() {
+        // The two are independent snapshots: `applyBalance` publishes the
+        // wallet-wide figure while the pooled read is still in flight, so a
+        // pooled value from before a spend can outlive the wallet-wide one
+        // that already reflects it. Gating on the stale higher number accepts
+        // an amount the builder then refuses.
+        XCTAssertEqual(
+            SwiftDashSDKWalletState.sendableDuffs(pooled: 9_000_000, walletSpendable: 1_000_000),
+            1_000_000,
+            "a pooled figure above the wallet-wide one is stale, not a larger pool")
+    }
+
     // MARK: - The ceiling publisher the amount screen validates against
 
     /// `SendAmountModel.observeSendableCeiling` subscribes to this. A test over

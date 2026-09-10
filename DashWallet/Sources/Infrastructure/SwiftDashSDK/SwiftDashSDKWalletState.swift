@@ -241,7 +241,16 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// "nothing here", which is exactly the CoinJoin-only case this ticket is
     /// about. Only `nil`, which means the read failed, falls back.
     static func sendableDuffs(pooled: UInt64?, walletSpendable: UInt64?) -> UInt64 {
-        pooled ?? walletSpendable ?? 0
+        // The lower of the two when both are known. They are independent
+        // snapshots taken at different moments: `applyBalance` publishes the
+        // wallet-wide figure immediately while the pooled read is still in
+        // flight, so a pooled value from before a spend can outlive the
+        // wallet-wide one that already reflects it. Gating on the stale
+        // higher number lets the screen accept an amount the builder — which
+        // selects from current funds — then refuses.
+        guard let pooled else { return walletSpendable ?? 0 }
+        guard let walletSpendable else { return pooled }
+        return min(pooled, walletSpendable)
     }
 
     /// The pooled shortfall, as a function of its two inputs. Never negative,
@@ -453,9 +462,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     @MainActor
     public func refreshPooledSpendableBalance() {
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
-            pooledSpendableReadTask?.cancel()
-            pooledSpendableReadTask = nil
-            pooledSpendableRerunRequested = false
+            cancelPooledSpendableRead()
             markPooledSpendableUnavailable(reason: "no active wallet")
             return
         }
@@ -505,6 +512,21 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// window flip `pooledSpendableRerunRequested` instead of piling up.
     @MainActor private var pooledSpendableReadTask: Task<Void, Never>?
     @MainActor private var pooledSpendableRerunRequested = false
+
+    /// Drop any in-flight pooled read so it cannot publish after a clear.
+    ///
+    /// The completion's wallet/network check is not enough on its own: through
+    /// `prepareForNetworkSwitch` and the wipe paths the host still reports the
+    /// same wallet and network while the published state has already been
+    /// cleared, so a read issued before the clear would pass that check and
+    /// republish the outgoing ceiling into the new state. Same shape as
+    /// `cancelPlatformCreditsTally`, and called from the same places.
+    @MainActor
+    private func cancelPooledSpendableRead() {
+        pooledSpendableReadTask?.cancel()
+        pooledSpendableReadTask = nil
+        pooledSpendableRerunRequested = false
+    }
 
     /// Drop the pooled figure so `sendableDuffs` falls back to the wallet-wide
     /// balance, and say why — once per outage, not once per balance tick. A
@@ -574,6 +596,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             self?.balance = nil
             MainActor.assumeIsolated {
                 self?.cancelPlatformCreditsTally()
+                self?.cancelPooledSpendableRead()
             }
             self?.platformPaymentCredits = 0
             self?.coinJoinBalanceDuffs = 0
@@ -593,6 +616,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             self?.balance = nil
             MainActor.assumeIsolated {
                 self?.cancelPlatformCreditsTally()
+                self?.cancelPooledSpendableRead()
             }
             self?.platformPaymentCredits = 0
             self?.coinJoinBalanceDuffs = 0
