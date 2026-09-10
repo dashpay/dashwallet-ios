@@ -520,7 +520,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             return .keyRegistrationCompleted
         case .tokenPurchase(let purchase):
             return .tokenPurchaseApprovalRequired(
-                try makeTokenPurchaseRequest(purchase, context: context)
+                try await makeTokenPurchaseRequest(purchase, context: context)
             )
         }
     }
@@ -638,7 +638,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private func makeTokenPurchaseRequest(
         _ purchase: DashConnectTokenPurchaseTransition,
         context: Context
-    ) throws -> DashConnectTokenPurchaseRequest {
+    ) async throws -> DashConnectTokenPurchaseRequest {
         // Checked before anything is shown: a purchase that would charge a
         // different identity must be refused, not rendered for approval.
         guard purchase.ownerId == context.identityId else {
@@ -668,10 +668,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // through and `tokenPurchase(amount:)` spends base units, so without
         // this the sheet would name a quantity that can be wrong by orders of
         // magnitude.
-        let denomination = Self.tokenDenomination(
+        let denomination = await Self.tokenDenomination(
+            sdk: context.sdk,
             contractId: purchase.dataContractId,
-            position: Int(purchase.tokenContractPosition),
-            modelContainer: context.modelContainer)
+            position: Int(purchase.tokenContractPosition))
 
         return DashConnectTokenPurchaseRequest(
             // A connection approved earlier for the same contract names the
@@ -690,28 +690,49 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         )
     }
 
-    /// The token's declared decimals and name, read from the wallet's own
-    /// persisted contract row. `nil` when the wallet does not hold that
-    /// contract — the caller then says the quantity is base units rather than
-    /// assuming a denomination.
+    /// The token's declared decimals and name, from the contract as Platform
+    /// holds it NOW.
+    ///
+    /// Deliberately not the wallet's persisted `PersistentToken` row: token
+    /// denomination is mutable on Platform, so a row written at the last sync
+    /// can describe a different denomination than the one the base-unit amount
+    /// will be spent under — and this number goes on a screen where the user
+    /// authorizes money. `nil` when the contract cannot be fetched or carries
+    /// no token at that position; the sheet then shows base units and says so,
+    /// rather than implying a denominated quantity nobody verified.
     private static func tokenDenomination(
+        sdk: SDK,
         contractId: Data,
-        position: Int,
-        modelContainer: ModelContainer
-    ) -> (decimals: Int, name: String)? {
-        var descriptor = FetchDescriptor<PersistentToken>(
-            predicate: #Predicate { $0.contractId == contractId && $0.position == position })
-        descriptor.fetchLimit = 1
-        let context = ModelContext(modelContainer)
-        guard let token = try? context.fetch(descriptor).first else {
-            logger.info("🔗 DASHCONNECT :: token purchase: no local contract row, quantity shown as base units")
+        position: Int
+    ) async -> (decimals: Int, name: String)? {
+        let id = contractId.toBase58String()
+        do {
+            let contract = try await sdk.dataContractGet(id: id)
+            guard let tokens = contract["tokens"] as? [String: Any],
+                  let tokenDict = tokens[String(position)] as? [String: Any] else {
+                logger.info("🔗 DASHCONNECT :: token purchase: contract \(id, privacy: .public) has no token at position \(position, privacy: .public); quantity shown as base units")
+                return nil
+            }
+            // `conventions.decimals` wins where both are present — the same
+            // precedence `DataContractParser.parseTokenConfiguration` applies
+            // when it writes the persisted row.
+            let conventions = tokenDict["conventions"] as? [String: Any]
+            guard let decimals = (conventions?["decimals"] as? Int) ?? (tokenDict["decimals"] as? Int) else {
+                logger.info("🔗 DASHCONNECT :: token purchase: contract \(id, privacy: .public) declares no decimals; quantity shown as base units")
+                return nil
+            }
+            let name = (tokenDict["name"] as? String)
+                ?? (conventions?["name"] as? String)
+                ?? ""
+            return (decimals, name)
+        } catch {
+            logger.error("🔗 DASHCONNECT :: token purchase: contract fetch failed for \(id, privacy: .public): \(String(describing: error), privacy: .public); quantity shown as base units")
             return nil
         }
-        return (token.decimals, token.name)
     }
 
     func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws {
-        let context: Context
+        var context: Context
         let signer: KeychainSigner
         do {
             context = try await requireContext()
@@ -723,7 +744,19 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
 
             try await authorize()
-            signer = KeychainSigner(modelContainer: context.modelContainer)
+
+            // Re-resolved AFTER the prompt, not before it. `authorize()` waits
+            // on the user, and the active wallet or identity can change while
+            // it is open — a switch, a wipe-and-restore. Building the signer
+            // from the context captured beforehand would sign for an identity
+            // the user never saw on the sheet and debit its credits.
+            let authorized = try await requireContext()
+            guard authorized.identityId == request.ownerId,
+                  authorized.identityId == context.identityId else {
+                throw DashConnectPlatformError.tokenPurchaseWrongIdentity
+            }
+            context = authorized
+            signer = KeychainSigner(modelContainer: authorized.modelContainer)
         } catch {
             // Everything above happens before anything is signed or sent, so
             // the purchase provably did not start and the caller may offer it
