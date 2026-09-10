@@ -363,3 +363,40 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
         XCTAssertTrue(scheduler.submissions.isEmpty)
     }
 }
+
+// MARK: - SyncCatchUpPolicy
+
+/// The production rule `defaultSyncDoneWait` applies. The coordinator's own
+/// tests drive the wait through an injected seam, so without these the rule
+/// that decides whether a refresh hands its window back unused is untested.
+final class SyncCatchUpPolicyTests: XCTestCase {
+    func testAColdStartReturnsAsSoonAsSyncCompletes() {
+        // The monitor was not done when the wait began, so the `.syncDone` now
+        // on offer can only have been produced during this refresh.
+        XCTAssertTrue(SyncCatchUpPolicy.completionIsFresh(
+            startedDone: false, leftDone: false, tipHeight: 100, tipAtStart: 100))
+    }
+
+    func testAWarmResumeDoesNotAcceptThePreviousSessionsCompletion() {
+        // A process resumed from suspension: the monitor still holds the
+        // `.syncDone` it reached before backgrounding, and nothing new has
+        // arrived. Returning here completes the BGTask immediately and gives
+        // back the execution time the catch-up exists to use.
+        XCTAssertFalse(SyncCatchUpPolicy.completionIsFresh(
+            startedDone: true, leftDone: false, tipHeight: 100, tipAtStart: 100))
+    }
+
+    func testAWarmResumeAcceptsCompletionOnceTheTipAdvances() {
+        // Progress arriving later is the proof the run is live, for a resume
+        // where the chain moves without the monitor ever leaving `.syncDone`.
+        XCTAssertTrue(SyncCatchUpPolicy.completionIsFresh(
+            startedDone: true, leftDone: false, tipHeight: 101, tipAtStart: 100))
+    }
+
+    func testAWarmResumeAcceptsCompletionAfterAFreshSyncCycle() {
+        // The monitor left `.syncDone` and came back, so this reading belongs
+        // to a cycle inside this refresh.
+        XCTAssertTrue(SyncCatchUpPolicy.completionIsFresh(
+            startedDone: true, leftDone: true, tipHeight: 100, tipAtStart: 100))
+    }
+}

@@ -90,6 +90,35 @@ final class SystemBackgroundTaskScheduler: BackgroundTaskScheduling {
     }
 }
 
+// MARK: - SyncCatchUpPolicy
+
+/// When a `.syncDone` reading may be treated as belonging to THIS background
+/// refresh.
+///
+/// Extracted from `BackgroundRefreshCoordinator.defaultSyncDoneWait` because
+/// that function reads two shared singletons and the coordinator's tests drive
+/// the wait through an injected seam — so the production rule, which is the
+/// part that decides whether the task hands its execution window back
+/// unused, had no coverage of its own.
+enum SyncCatchUpPolicy {
+    /// - `startedDone`: the monitor already read `.syncDone` when the wait
+    ///   began — the warm-resume case, where the value can be the previous
+    ///   session's and backgrounding never invalidated it.
+    /// - `leftDone`: the monitor has since left `.syncDone`, so the reading
+    ///   now on offer was produced by a cycle inside this refresh.
+    /// - `tipHeight` / `tipAtStart`: an advancing tip is the other proof that
+    ///   this run is live, for a resume where the chain moves without the
+    ///   monitor ever leaving `.syncDone`.
+    static func completionIsFresh(
+        startedDone: Bool,
+        leftDone: Bool,
+        tipHeight: UInt32,
+        tipAtStart: UInt32
+    ) -> Bool {
+        !startedDone || leftDone || tipHeight > tipAtStart
+    }
+}
+
 // MARK: - BackgroundRefreshCoordinator
 
 /// Owns the `BGAppRefreshTask` that runs a bounded sync while the app is
@@ -413,8 +442,11 @@ final class BackgroundRefreshCoordinator {
             let state = monitor.state
             if state != .syncDone {
                 leftDone = true
-            } else if !startedDone || leftDone
-                || SwiftDashSDKSPVCoordinator.shared.tipHeight > tipAtStart {
+            } else if SyncCatchUpPolicy.completionIsFresh(
+                startedDone: startedDone,
+                leftDone: leftDone,
+                tipHeight: SwiftDashSDKSPVCoordinator.shared.tipHeight,
+                tipAtStart: tipAtStart) {
                 return
             }
             try? await Task.sleep(nanoseconds: 250_000_000)
