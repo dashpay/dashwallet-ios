@@ -28,6 +28,7 @@ import UserNotifications
 final class InactivityReminderSchedulerTests: XCTestCase {
     private final class FakeInactivityReminderPreferenceStore: InactivityReminderPreferenceStore {
         var isOptedOut = false
+        var walletHadBalance = false
     }
 
     private var client: FakeUserNotificationCenterClient!
@@ -112,6 +113,38 @@ final class InactivityReminderSchedulerTests: XCTestCase {
 
         await scheduler.scheduleReminder()
 
+        XCTAssertTrue(client.addedRequests.isEmpty)
+    }
+
+    func testLatchedEligibilitySurvivesTheLegacyFlagBeingErased() async {
+        // `BalanceModel.reloadBalance` maps an unavailable SDK balance to zero
+        // and writes `userHasBalance = false`, which a cold launch can do
+        // before this scheduler runs. Eligibility must come from what the
+        // scheduler itself last saw, not from that flag.
+        balance = 250_000
+        await scheduler.scheduleReminder()
+        XCTAssertTrue(reminderPreferences.walletHadBalance)
+
+        client.addedRequests.removeAll()
+        balance = nil
+        hadBalance = false
+
+        await scheduler.scheduleReminder()
+
+        XCTAssertEqual(client.addedRequests.count, 1)
+    }
+
+    func testKnownEmptyBalanceClearsTheLatch() async {
+        balance = 250_000
+        await scheduler.scheduleReminder()
+        XCTAssertTrue(reminderPreferences.walletHadBalance)
+
+        client.addedRequests.removeAll()
+        balance = 0
+
+        await scheduler.scheduleReminder()
+
+        XCTAssertFalse(reminderPreferences.walletHadBalance)
         XCTAssertTrue(client.addedRequests.isEmpty)
     }
 

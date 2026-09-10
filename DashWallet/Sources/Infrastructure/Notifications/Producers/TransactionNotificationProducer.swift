@@ -91,6 +91,9 @@ final class TransactionNotificationProducer {
     private let store: NotifiedEventStoring
     /// Recent rows, given a `firstSeen` floor (epoch seconds).
     private let rowSource: (UInt64) -> [ObservedTransaction]
+    /// Incoming Platform-address payments, which live in the app's own SQLite
+    /// ledger rather than in SwiftData — `rowSource` cannot see them.
+    private let platformActivitySource: (Date) -> [PlatformAddressActivityRecord]
     private let appState: AppStateProvider
     /// Mirrors a posted notification's body to the Apple Watch app.
     private let watchBridge: (String) -> Void
@@ -102,6 +105,8 @@ final class TransactionNotificationProducer {
     init(dispatcher: NotificationDispatcher,
          store: NotifiedEventStoring,
          rowSource: @escaping (UInt64) -> [ObservedTransaction] = TransactionNotificationProducer.defaultRowSource,
+         platformActivitySource: @escaping (Date) -> [PlatformAddressActivityRecord] =
+             TransactionNotificationProducer.defaultPlatformActivitySource,
          appState: AppStateProvider = UIApplicationStateProvider(),
          watchBridge: @escaping (String) -> Void = TransactionNotificationProducer.defaultWatchBridge,
          fiatFormatter: @escaping (Decimal) async -> String = TransactionNotificationProducer.defaultFiatFormatter,
@@ -109,6 +114,7 @@ final class TransactionNotificationProducer {
         self.dispatcher = dispatcher
         self.store = store
         self.rowSource = rowSource
+        self.platformActivitySource = platformActivitySource
         self.appState = appState
         self.watchBridge = watchBridge
         self.fiatFormatter = fiatFormatter
@@ -182,6 +188,12 @@ final class TransactionNotificationProducer {
         let cutoff = min(defaultCutoff, max(boundary ?? defaultCutoff, earliest))
         let floor = UInt64(max(0, cutoff.timeIntervalSince1970))
         let rows = rowSource(floor)
+        // The `.platformAddressActivityRecorded` signal this producer
+        // subscribes to is posted by `PlatformAddressActivityRecorder`, which
+        // writes the app-owned activity ledger and creates NO
+        // `PersistentTransaction` — so an incoming `dash1`/`tdash1` payment
+        // woke the scan and was then absent from the rows it looked at.
+        await scanPlatformActivity(cutoff: cutoff)
         guard !rows.isEmpty else { return }
 
         // One line per scan, not per row: a restore burst hands back up to
@@ -194,6 +206,50 @@ final class TransactionNotificationProducer {
             .compactMap { outcome in outcomes[outcome].map { "\(outcome.rawValue) \($0)" } }
             .joined(separator: ", ")
         DWLogger.log("TransactionNotificationProducer: scanned \(rows.count) recent row(s) — \(tally)")
+    }
+
+    /// The Platform half of a scan: incoming payments recorded against the
+    /// wallet's Platform receive addresses.
+    ///
+    /// Identity is the ledger's own row id — append-only and stable, so the
+    /// dispatcher's dedup holds across relaunches and a re-scan of the same
+    /// window cannot post twice. Freshness is `observedAt`, which the
+    /// recorder stamps when it first SEES the balance increase, so a restore
+    /// that rebuilds baselines cannot backdate a payment into the window (it
+    /// records nothing) and cannot replay one either.
+    private func scanPlatformActivity(cutoff: Date) async {
+        let records = platformActivitySource(cutoff)
+        guard !records.isEmpty else { return }
+
+        var posted = 0
+        for record in records where record.amountDuffs > 0 && record.observedAt >= cutoff {
+            let amount = UInt64(record.amountDuffs)
+            let amountText = amount.formattedDashAmount
+            let fiatText = await fiatFormatter(amount.dashAmount)
+            let notification = AppNotification(
+                id: "platform-activity.\(record.id)",
+                topic: .transactions,
+                title: nil,
+                body: String(format: NSLocalizedString("Received %@ (%@)", comment: ""), amountText, fiatText),
+                sound: UNNotificationSound(named: UNNotificationSoundName(rawValue: "coinflip.aiff")),
+                // No txid to open: a Platform-address receive has no Core
+                // transaction of its own, so this lands on the feed.
+                route: .home,
+                foregroundBehavior: .banner)
+
+            // Same app-state policy as a received Core payment: consumed, not
+            // dropped, so a later scan cannot re-post what the user watched
+            // arrive in the foreground.
+            if appState.isApplicationActive {
+                await store.consume(id: notification.id, topic: notification.topic)
+                continue
+            }
+            if await dispatcher.post(notification) {
+                watchBridge(notification.body)
+                posted += 1
+            }
+        }
+        DWLogger.log("TransactionNotificationProducer: scanned \(records.count) platform activity row(s) — posted \(posted)")
     }
 
     /// What one row's pass decided, for the scan's log line.
@@ -315,6 +371,28 @@ final class TransactionNotificationProducer {
     /// injected seam.
     static func defaultRowSource(firstSeenAtOrAfter floor: UInt64) -> [ObservedTransaction] {
         TransactionObserver.fetchObserved(fetchLimit: scanFetchLimit, firstSeenAtOrAfter: floor)
+    }
+
+    /// Production Platform activity: the active wallet's ledger rows on the
+    /// current network, filtered to the scan window. Returns nothing when no
+    /// wallet is resolved — a scan during teardown must not read another
+    /// wallet's ledger.
+    static func defaultPlatformActivitySource(since cutoff: Date) -> [PlatformAddressActivityRecord] {
+        // Same resolution `SwiftDashSDKWalletSource.fetchPlatformActivity`
+        // uses, through the same main-thread trampoline: the
+        // handles are read on the main actor, the DAO's own SQLite connection
+        // serializes the query from whatever executor the scan landed on.
+        let handles: (walletId: Data, networkRaw: Int64)? = SwiftDashSDKWalletSource.onMain {
+            guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+                  let network = SwiftDashSDKHost.shared.runningNetwork else {
+                return nil
+            }
+            return (walletId, Int64(network.rawValue))
+        }
+        guard let handles else { return [] }
+        return PlatformAddressActivityDAO.shared
+            .activities(walletId: handles.walletId, networkRaw: handles.networkRaw)
+            .filter { $0.observedAt >= cutoff }
     }
 
     /// Production fiat copy, formatted on the main actor. Scans run on

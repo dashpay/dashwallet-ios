@@ -54,13 +54,21 @@ final class NotificationsBootstrap: NSObject {
         let client = SystemUserNotificationCenterClient()
         let store = NotifiedEventStore.onSharedDatabase()
         let permissionCoordinator = NotificationPermissionCoordinator(client: client)
+        // One queue for both: posting reads the store's unseen count and
+        // submits a request carrying it, activation clears the tray and zeroes
+        // that count, and the two must not interleave.
+        let submissions = NotificationSerialQueue()
         let dispatcher = NotificationDispatcher(client: client,
                                                 store: store,
-                                                permissions: permissionCoordinator)
+                                                permissions: permissionCoordinator,
+                                                submissions: submissions)
         let router = NotificationRouter(presentingController: { [weak window] in
             window?.rootViewController
         })
-        let lifecycle = NotificationLifecycle(client: client, store: store, router: router)
+        let lifecycle = NotificationLifecycle(client: client,
+                                              store: store,
+                                              router: router,
+                                              submissions: submissions)
 
         let transactionProducer = TransactionNotificationProducer(dispatcher: dispatcher,
                                                                   store: store)

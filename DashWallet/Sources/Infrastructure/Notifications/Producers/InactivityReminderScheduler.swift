@@ -37,6 +37,10 @@ protocol InactivityReminderActionHandling: AnyObject {
 /// Storage seam for the reminder opt-out.
 protocol InactivityReminderPreferenceStore: AnyObject {
     var isOptedOut: Bool { get set }
+    /// Whether the wallet was last seen holding funds. Latched by the
+    /// scheduler from balances it knows to be real; see
+    /// `DWGlobalOptions.inactivityReminderWalletHadBalance`.
+    var walletHadBalance: Bool { get set }
 }
 
 /// Production storage: a `DWGlobalOptions` dynamic property — the reminder
@@ -48,6 +52,11 @@ final class GlobalOptionsInactivityReminderPreferenceStore: InactivityReminderPr
     var isOptedOut: Bool {
         get { DWGlobalOptions.sharedInstance().inactivityReminderDisabled }
         set { DWGlobalOptions.sharedInstance().inactivityReminderDisabled = newValue }
+    }
+
+    var walletHadBalance: Bool {
+        get { DWGlobalOptions.sharedInstance().inactivityReminderWalletHadBalance }
+        set { DWGlobalOptions.sharedInstance().inactivityReminderWalletHadBalance = newValue }
     }
 }
 
@@ -147,10 +156,25 @@ final class InactivityReminderScheduler {
         guard !preferences.isOptedOut else { return }
         guard await permissions.effectiveState() == .on else { return }
         // Skip only on a balance KNOWN to be empty. An unknown balance falls
-        // back to the persisted flag, so a background cold launch from
+        // back to the flag latched below, so a background cold launch from
         // "Remind me later" reschedules instead of silently dropping the
         // reminder.
-        guard totalBalance().map({ $0 > 0 }) ?? hadBalance() else { return }
+        //
+        // The fallback is this scheduler's OWN flag, not `userHasBalance`:
+        // that one is written by `BalanceModel.reloadBalance`, which maps an
+        // unavailable SDK balance to zero — a cold reminder-action launch
+        // could therefore erase the eligibility it was about to read. This
+        // flag only ever moves on a balance the SDK actually reported, and
+        // `hadBalance()` seeds it for wallets that predate it.
+        let known = totalBalance()
+        if let known {
+            preferences.walletHadBalance = known > 0
+        } else if hadBalance() {
+            // First run after the upgrade, with no balance to latch from:
+            // adopt the legacy flag rather than start out ineligible.
+            preferences.walletHadBalance = true
+        }
+        guard known.map({ $0 > 0 }) ?? preferences.walletHadBalance else { return }
 
         let content = UNMutableNotificationContent()
         // Deliberately no amount: this is delivered by the OS up to 30 days

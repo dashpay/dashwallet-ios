@@ -58,6 +58,15 @@ extern NSNotificationName const DWAdvancedModeDidChangeNotification;
 /// The "Don't remind me again" opt-out of the inactivity reminder
 /// (`InactivityReminderScheduler`).
 @property (nonatomic, assign) BOOL inactivityReminderDisabled;
+/// Whether the wallet was last SEEN to hold funds, latched by
+/// `InactivityReminderScheduler` from balances it knows to be real.
+///
+/// Deliberately not `userHasBalance`: that flag is written by
+/// `BalanceModel.reloadBalance`, which maps an unavailable SDK balance to zero
+/// — so a cold launch from the reminder's own "Remind me later" action could
+/// erase the eligibility it was about to read and drop the reminder for a
+/// funded wallet. This one only ever moves on a balance the scheduler knows.
+@property (nonatomic, assign) BOOL inactivityReminderWalletHadBalance;
 
 @property (nonatomic, assign) BOOL balanceHidden;
 @property (nonatomic, assign) BOOL tapToHideBalanceShown;

@@ -113,6 +113,17 @@ final class SystemBackgroundTaskScheduler: BackgroundTaskScheduling {
 /// task had run.
 @MainActor
 final class BackgroundRefreshCoordinator {
+    /// Production boundary stamp: only for a wallet whose foreground sync
+    /// actually finished. Mid-sync the app has not seen everything up to now,
+    /// so moving the floor forward would skip whatever the sync had not
+    /// reached; leaving it put makes the next completed sweep cover it.
+    nonisolated static let defaultMarkForegroundCaughtUp: () -> Void = {
+        MainActor.assumeIsolated {
+            guard SyncingActivityMonitor.shared.state == .syncDone else { return }
+            DWGlobalOptions.sharedInstance().notificationCatchUpDate = Date()
+        }
+    }
+
     /// Must match the `BGTaskSchedulerPermittedIdentifiers` entry in both
     /// app Info.plists (`DashWallet/Info.plist`, `DashPay/dashpay-info.plist`).
     /// Those plists must also keep `fetch` in `UIBackgroundModes`: it is the
@@ -130,6 +141,10 @@ final class BackgroundRefreshCoordinator {
     nonisolated static let syncDeadline: TimeInterval = 20
 
     private let scheduler: BackgroundTaskScheduling
+    /// Records the instant the foreground app stopped watching, as the floor
+    /// for the next catch-up sweep. Injected so tests can observe it without
+    /// touching user defaults.
+    private let markForegroundCaughtUp: () -> Void
     private let hasWallet: () -> Bool
     /// Ensure the runtime is up via the serialized lifecycle; returns
     /// whether it is ready afterwards.
@@ -169,9 +184,11 @@ final class BackgroundRefreshCoordinator {
          runtimeRearm: @escaping () -> Void = { SwiftDashSDKWalletRuntime.startIfReady() },
          waitForSyncDone: @escaping () async -> Void = BackgroundRefreshCoordinator.defaultSyncDoneWait,
          postSyncProducerSweep: @escaping () async -> Void,
+         markForegroundCaughtUp: @escaping () -> Void = BackgroundRefreshCoordinator.defaultMarkForegroundCaughtUp,
          sleep: @escaping (TimeInterval) async -> Void = BackgroundRefreshCoordinator.defaultSleep,
          now: @escaping () -> Date = Date.init) {
         self.scheduler = scheduler
+        self.markForegroundCaughtUp = markForegroundCaughtUp
         self.hasWallet = hasWallet
         self.runtimeStart = runtimeStart
         self.runtimeStop = runtimeStop
@@ -232,6 +249,16 @@ final class BackgroundRefreshCoordinator {
     /// Backgrounding: submit the next refresh request. Skipped without a
     /// wallet — there is nothing to sync and nothing to notify about.
     func noteDidEnterBackground() {
+        // Give the catch-up sweep a boundary BEFORE the process suspends.
+        //
+        // Without one the first background refresh on a fresh or upgraded
+        // install falls back to the producer's ten-minute freshness cutoff,
+        // and iOS routinely runs that refresh much later than fifteen
+        // minutes: a payment mined shortly after suspension is already too
+        // old to pass, is dropped, and is then skipped for good when the
+        // sweep advances the boundary to now. Stamping the moment the
+        // foreground app stopped watching leaves nothing between the two.
+        markForegroundCaughtUp()
         scheduleNextRefresh()
     }
 

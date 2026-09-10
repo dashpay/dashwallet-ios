@@ -40,6 +40,7 @@ final class NotificationLifecycle: NSObject {
     private let client: UserNotificationCenterClient
     private let store: NotifiedEventStoring
     private let router: NotificationRouting
+    private let submissions: NotificationSerialQueue
     private var didBecomeActiveObserver: NSObjectProtocol?
 
     /// Target of the inactivity reminder's category actions. Weak and
@@ -47,12 +48,17 @@ final class NotificationLifecycle: NSObject {
     /// after both objects exist.
     weak var inactivityReminderHandler: InactivityReminderActionHandling?
 
+    /// `submissions` is the dispatcher's queue, handed in by the composition
+    /// root: clearing has to take the same boundary posts take, or a post that
+    /// has already read its badge count lands after the clear.
     init(client: UserNotificationCenterClient,
          store: NotifiedEventStoring,
-         router: NotificationRouting) {
+         router: NotificationRouting,
+         submissions: NotificationSerialQueue = NotificationSerialQueue()) {
         self.client = client
         self.store = store
         self.router = router
+        self.submissions = submissions
         super.init()
 
         didBecomeActiveObserver = NotificationCenter.default.addObserver(
@@ -82,9 +88,18 @@ final class NotificationLifecycle: NSObject {
     /// record left behind would otherwise resurface in the badge alongside
     /// the next new event.
     func reconcileAfterBecomingActive() async {
-        client.setBadgeCount(0)
-        await clearTray(topic: .transactions, extraIdentifiers: [Self.legacyTransactionIdentifier])
-        await store.markAllSeen()
+        // One item on the dispatcher's queue, not three steps racing it: a
+        // post that has already read its unseen count must either finish
+        // before this runs or read the cleared store afterwards. Split, it
+        // could submit a stale badge onto a tray this had just emptied.
+        await submissions.run { [client, store] in
+            client.setBadgeCount(0)
+            await Self.clearTray(topic: .transactions,
+                                 extraIdentifiers: [Self.legacyTransactionIdentifier],
+                                 client: client,
+                                 store: store)
+            await store.markAllSeen()
+        }
     }
 
     #if DASHPAY
@@ -97,14 +112,23 @@ final class NotificationLifecycle: NSObject {
     /// badge is untouched (this is not an activation, and the become-active
     /// pass already zeroed it).
     func reconcileAfterDashPayNotificationsViewed() async {
-        await clearTray(topic: .dashpay)
+        await submissions.run { [client, store] in
+            await Self.clearTray(topic: .dashpay, client: client, store: store)
+        }
     }
     #endif
 
     /// Removes the delivered notifications on `topic`'s thread (plus any
     /// `extraIdentifiers` regardless of thread — legacy identifiers
     /// delivered by older builds) and marks the topic seen in the store.
-    private func clearTray(topic: NotificationTopic, extraIdentifiers: Set<String> = []) async {
+    ///
+    /// Static so it can be called from inside the serial queue's `@Sendable`
+    /// closure with the two dependencies it needs, rather than capturing an
+    /// `NSObject` subclass.
+    private static func clearTray(topic: NotificationTopic,
+                                  extraIdentifiers: Set<String> = [],
+                                  client: UserNotificationCenterClient,
+                                  store: NotifiedEventStoring) async {
         let thread = topic.rawValue
         let delivered = await client.deliveredNotificationSummaries()
         let identifiers = delivered

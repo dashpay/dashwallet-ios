@@ -60,6 +60,7 @@ static NSString *const PER_WALLET_NOTIFICATION_CATCH_UP_PREFIX = @"DW_WALLET_NOT
 @dynamic coinbaseInfoShown;
 @dynamic shortcutBannerState;
 @dynamic inactivityReminderDisabled;
+@dynamic inactivityReminderWalletHadBalance;
 // Without this the compiler synthesizes an ivar-backed accessor, `class_addMethod`
 // in DSDynamicOptions silently loses the race for the selector, and the property
 // stops being a user default: the registered @YES never applies (so notifications
@@ -83,6 +84,7 @@ static NSString *const PER_WALLET_NOTIFICATION_CATCH_UP_PREFIX = @"DW_WALLET_NOT
         DW_KEYPATH(self, walletNeedsBackup) : @YES,
         DW_KEYPATH(self, userHasBalance) : @NO,
         DW_KEYPATH(self, localNotificationsEnabled) : @YES,
+        DW_KEYPATH(self, inactivityReminderWalletHadBalance) : @NO,
         DW_KEYPATH(self, autoLockAppInterval) : @60, // 1 min
         DW_KEYPATH(self, shouldDisplayOnboarding) : @YES,
         DW_KEYPATH(self, shouldDisplayReclassifyYourTransactionsFlow) : @YES,
@@ -269,6 +271,7 @@ NSNotificationName const DWAdvancedModeDidChangeNotification = @"org.dash.advanc
     self.shortcuts = nil;
     self.localNotificationsEnabled = YES;
     self.inactivityReminderDisabled = NO;
+    self.inactivityReminderWalletHadBalance = NO;
     self.balanceHidden = NO;
     self.advancedModeEnabled = NO;
     self.tapToHideBalanceShown = NO;

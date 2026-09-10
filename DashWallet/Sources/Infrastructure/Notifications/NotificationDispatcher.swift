@@ -35,31 +35,22 @@ final class NotificationDispatcher {
     /// An actor alone would not fix it: actors are reentrant at `await`, so
     /// a multi-await sequence still interleaves. Chaining each unit onto the
     /// previous one is what makes the sequence atomic.
-    private actor SubmissionQueue {
-        private var tail: Task<Void, Never>?
-
-        func run<T: Sendable>(_ body: @escaping @Sendable () async -> T) async -> T {
-            let previous = tail
-            let work = Task { () -> T in
-                await previous?.value
-                return await body()
-            }
-            tail = Task { _ = await work.value }
-            return await work.value
-        }
-    }
-
     private let client: UserNotificationCenterClient
     private let store: NotifiedEventStoring
     private let permissions: NotificationPermissionCoordinator
-    private let submissions = SubmissionQueue()
+    private let submissions: NotificationSerialQueue
 
+    /// `submissions` is shared with `NotificationLifecycle` by the composition
+    /// root: posting and clearing are two halves of one ordering problem, and a
+    /// queue private to this class only orders the first half.
     init(client: UserNotificationCenterClient,
          store: NotifiedEventStoring,
-         permissions: NotificationPermissionCoordinator) {
+         permissions: NotificationPermissionCoordinator,
+         submissions: NotificationSerialQueue = NotificationSerialQueue()) {
         self.client = client
         self.store = store
         self.permissions = permissions
+        self.submissions = submissions
     }
 
     /// Registers one `UNNotificationCategory` per topic, so every request's
