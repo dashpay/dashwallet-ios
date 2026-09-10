@@ -248,18 +248,55 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             Decimal(string: "0.00000000001"))
     }
 
-    private static func purchaseRequest(credits: UInt64) -> DashConnectTokenPurchaseRequest {
+    private static func purchaseRequest(
+        credits: UInt64,
+        tokenCount: UInt64 = 1,
+        tokenDecimals: Int? = nil
+    ) -> DashConnectTokenPurchaseRequest {
         DashConnectTokenPurchaseRequest(
             appName: nil,
             ownerId: Data(repeating: 0x21, count: 32),
             dataContractId: Data(repeating: 0x22, count: 32),
             tokenId: Data(repeating: 0x23, count: 32),
             tokenContractPosition: 0,
-            tokenCount: 1,
+            tokenCount: tokenCount,
+            tokenDecimals: tokenDecimals,
+            tokenName: nil,
             totalAgreedPriceCredits: credits,
             walletUsername: nil,
             walletIdentityId: "identity"
         )
+    }
+
+    // MARK: - Token quantity denomination
+
+    func testAQuantityIsScaledByTheContractsDecimals() {
+        // 100,000,000 base units of an eight-decimal token is one token — the
+        // number the user is authorizing.
+        let request = Self.purchaseRequest(credits: 1, tokenCount: 100_000_000, tokenDecimals: 8)
+        XCTAssertEqual(request.tokenQuantity.text, "1")
+        XCTAssertFalse(request.tokenQuantity.isBaseUnits)
+    }
+
+    func testAZeroDecimalTokenReadsAsAWholeCount() {
+        let request = Self.purchaseRequest(credits: 1, tokenCount: 250, tokenDecimals: 0)
+        XCTAssertEqual(request.tokenQuantity.text, "250")
+        XCTAssertFalse(request.tokenQuantity.isBaseUnits)
+    }
+
+    func testAnUnknownDenominationIsReportedAsBaseUnits() {
+        // The wallet does not hold the contract, so it cannot scale. Assuming
+        // zero decimals here would overstate an eight-decimal token by 1e8 on
+        // a money-authorization screen.
+        let request = Self.purchaseRequest(credits: 1, tokenCount: 100_000_000, tokenDecimals: nil)
+        XCTAssertEqual(request.tokenQuantity.text, "100000000")
+        XCTAssertTrue(request.tokenQuantity.isBaseUnits)
+    }
+
+    func testAFractionalQuantityKeepsItsDeclaredPrecision() {
+        let request = Self.purchaseRequest(credits: 1, tokenCount: 150_000_000, tokenDecimals: 8)
+        XCTAssertEqual(request.tokenQuantity.text, "1.5")
+        XCTAssertFalse(request.tokenQuantity.isBaseUnits)
     }
 
     func testBuildLoginKeyResponseDraftProducesExactFieldsAndWipesEphemeralPrivateKey() throws {

@@ -5964,3 +5964,6 @@
 /* Receive: the QR image doubles as a copy control */
 "Copy QR code" = "Copy QR code";
 "Couldn't authenticate: %@" = "Couldn't authenticate: %@";
+
+/* DashConnect token purchase: the wallet has no local contract row, so the payload's raw quantity cannot be scaled */
+"Tokens (base units)" = "Tokens (base units)";

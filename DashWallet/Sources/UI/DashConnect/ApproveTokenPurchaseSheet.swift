@@ -60,8 +60,8 @@ struct ApproveTokenPurchaseSheet: View {
 
                     detailBox {
                         DashConnectDetailRow(
-                            label: NSLocalizedString("Tokens", comment: "DashConnect token purchase"),
-                            value: tokenCountText
+                            label: tokenQuantityLabel,
+                            value: request.tokenQuantity.text
                         )
                         DashConnectDetailRow(
                             label: NSLocalizedString("Token ID", comment: "DashConnect token purchase"),
@@ -146,8 +146,18 @@ struct ApproveTokenPurchaseSheet: View {
         )
     }
 
-    private var tokenCountText: String {
-        Decimal(request.tokenCount).string
+    /// Names the row for what the number actually is. A token's contract
+    /// declares its decimals; when the wallet does not hold that contract it
+    /// cannot scale the payload's base units, and calling them "Tokens" would
+    /// overstate the quantity by up to the token's full denomination.
+    private var tokenQuantityLabel: String {
+        if request.tokenQuantity.isBaseUnits {
+            return NSLocalizedString("Tokens (base units)", comment: "DashConnect token purchase")
+        }
+        if let name = request.tokenName, !name.isEmpty {
+            return name
+        }
+        return NSLocalizedString("Tokens", comment: "DashConnect token purchase")
     }
 
     private func detailBox(@ViewBuilder content: () -> some View) -> some View {
@@ -173,7 +183,10 @@ private let sampleTokenPurchaseRequest = DashConnectTokenPurchaseRequest(
     dataContractId: Data(repeating: 0xcd, count: 32),
     tokenId: Data(repeating: 0xab, count: 32),
     tokenContractPosition: 0,
-    tokenCount: 100,
+    // Base units of an 8-decimal token: the sheet shows "1", not "100000000".
+    tokenCount: 100_000_000,
+    tokenDecimals: 8,
+    tokenName: "Yappr Points",
     totalAgreedPriceCredits: 50_000_000_000,
     walletUsername: "dashuser",
     walletIdentityId: "5DbLwAxEWR695MsqP4KybNQD5n7CUDWydJYNg63FzUo8"

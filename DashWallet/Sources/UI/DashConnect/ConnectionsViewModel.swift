@@ -114,8 +114,17 @@ final class ConnectionsViewModel: ObservableObject {
         // The refusal has to appear where the user is looking: the sheet
         // covers the screen, and a screen-level `.alert` cannot show over it.
         guard pendingRequest == nil, pendingTokenPurchase == nil else {
-            approveError = NSLocalizedString("Another DashConnect request arrived. Finish this one first, then try again.",
-                                             comment: "DashConnect: a second request arrived while one was on screen")
+            let refusal = NSLocalizedString("Another DashConnect request arrived. Finish this one first, then try again.",
+                                            comment: "DashConnect: a second request arrived while one was on screen")
+            // Onto the sheet that is actually up: the purchase sheet reads
+            // `purchaseApproveError` alone, so a refusal parked in
+            // `approveError` while a purchase is on screen is invisible — the
+            // request would look silently dropped.
+            if pendingTokenPurchase != nil {
+                purchaseApproveError = refusal
+            } else {
+                approveError = refusal
+            }
             return
         }
 

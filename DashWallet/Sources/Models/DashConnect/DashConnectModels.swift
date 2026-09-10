@@ -52,7 +52,17 @@ struct DashConnectTokenPurchaseRequest: Equatable {
     let dataContractId: Data
     let tokenId: Data
     let tokenContractPosition: UInt16
+    /// The quantity as the payload asked for it: BASE UNITS, which is also
+    /// what `tokenPurchase(amount:)` spends. It is a display quantity only
+    /// once `tokenDecimals` says how to scale it.
     let tokenCount: UInt64
+    /// Decimal places declared by the token's contract, when the wallet holds
+    /// that contract locally. `nil` means the wallet cannot say — never
+    /// assume zero: for an eight-decimal token that turns one token into a
+    /// hundred million on an authorization screen.
+    let tokenDecimals: Int?
+    /// The token's declared name, when known locally. Display only.
+    let tokenName: String?
     /// Total price in Platform credits, as the payload asked for it. Passed
     /// to `tokenPurchase(...)` as `expectedTotalCost`, which is the MAXIMUM
     /// the user approves: Platform rejects the transition if the current
@@ -76,6 +86,36 @@ extension DashConnectTokenPurchaseRequest {
     /// charged — not something a money-authorization surface should hide.
     var totalPriceDashText: String {
         PlatformCreditsFormatter.dashString(totalAgreedPriceCredits)
+    }
+
+    /// The quantity as the user should read it, and whether it is a real
+    /// token amount or the raw base units the wallet could not scale.
+    ///
+    /// `tokenCount` is base units. Rendering it as "Tokens" without the
+    /// contract's decimals states a quantity that can be wrong by orders of
+    /// magnitude — 100,000,000 base units of an eight-decimal token is one
+    /// token. When the decimals are unknown the number is still shown, but
+    /// named for what it is rather than dressed as something else.
+    var tokenQuantity: (text: String, isBaseUnits: Bool) {
+        guard let decimals = tokenDecimals, decimals > 0 else {
+            return (Decimal(tokenCount).string, tokenDecimals == nil)
+        }
+        let scaled = Decimal(tokenCount) / pow(Decimal(10), decimals)
+        return (scaled.formattedTokenAmount(fractionDigits: decimals), false)
+    }
+}
+
+extension Decimal {
+    /// Plain decimal rendering with no grouping and no exponent, trimmed of
+    /// trailing zeros — a token quantity, not a currency.
+    fileprivate func formattedTokenAmount(fractionDigits: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.usesGroupingSeparator = false
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = fractionDigits
+        formatter.roundingMode = .down
+        return formatter.string(from: self as NSDecimalNumber) ?? Decimal(0).string
     }
 }
 

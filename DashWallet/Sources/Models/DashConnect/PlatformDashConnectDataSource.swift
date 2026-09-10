@@ -663,6 +663,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             throw DashConnectPlatformError.tokenPurchaseTokenIdMismatch
         }
 
+        // Denomination from the wallet's own contract row, when it holds one.
+        // Nothing else on this path resolves it: the parser copies the count
+        // through and `tokenPurchase(amount:)` spends base units, so without
+        // this the sheet would name a quantity that can be wrong by orders of
+        // magnitude.
+        let denomination = Self.tokenDenomination(
+            contractId: purchase.dataContractId,
+            position: Int(purchase.tokenContractPosition),
+            modelContainer: context.modelContainer)
+
         return DashConnectTokenPurchaseRequest(
             // A connection approved earlier for the same contract names the
             // app; otherwise the sheet falls back to the contract id.
@@ -672,10 +682,32 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             tokenId: purchase.tokenId,
             tokenContractPosition: purchase.tokenContractPosition,
             tokenCount: purchase.tokenCount,
+            tokenDecimals: denomination?.decimals,
+            tokenName: denomination?.name,
             totalAgreedPriceCredits: purchase.totalAgreedPrice,
             walletUsername: context.storedUsername,
             walletIdentityId: context.identityId.toBase58String()
         )
+    }
+
+    /// The token's declared decimals and name, read from the wallet's own
+    /// persisted contract row. `nil` when the wallet does not hold that
+    /// contract — the caller then says the quantity is base units rather than
+    /// assuming a denomination.
+    private static func tokenDenomination(
+        contractId: Data,
+        position: Int,
+        modelContainer: ModelContainer
+    ) -> (decimals: Int, name: String)? {
+        var descriptor = FetchDescriptor<PersistentToken>(
+            predicate: #Predicate { $0.contractId == contractId && $0.position == position })
+        descriptor.fetchLimit = 1
+        let context = ModelContext(modelContainer)
+        guard let token = try? context.fetch(descriptor).first else {
+            logger.info("🔗 DASHCONNECT :: token purchase: no local contract row, quantity shown as base units")
+            return nil
+        }
+        return (token.decimals, token.name)
     }
 
     func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws {
