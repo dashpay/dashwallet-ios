@@ -32,7 +32,16 @@ enum QRCodeGenerator {
         "\(Int(size.rounded()))|\(string)" as NSString
     }
 
-    static func image(for string: String, size: CGFloat = 280) -> UIImage? {
+    /// The size the key rounds to, so the cached image is the image that key
+    /// describes. Rendering the fractional request while keying the rounded
+    /// one let `280.4` and `280.49` share an entry and hand back an image
+    /// rendered for a different width.
+    private static func normalizedSize(_ size: CGFloat) -> CGFloat {
+        size.rounded()
+    }
+
+    static func image(for string: String, size requestedSize: CGFloat = 280) -> UIImage? {
+        let size = normalizedSize(requestedSize)
         let key = cacheKey(string, size)
         if let cached = cache.object(forKey: key) { return cached }
 

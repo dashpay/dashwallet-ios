@@ -167,28 +167,67 @@ public final class TransactionObserver {
         if let floor = firstSeenAtOrAfter {
             // `firstSeen` is indexed, so this is what turns the scan from a
             // full-table join into an index range.
-            //
-            // Unconfirmed rows join it regardless of the floor, because
-            // `firstSeen` is not immutable: once a transaction is mined the
-            // persister adopts the BLOCK timestamp in its place. An existing
-            // payment that sat below the floor while unconfirmed therefore
-            // rises above it the moment it confirms, becomes emittable, and —
-            // if it was not in this snapshot — is presented as a new receipt.
-            // Reachable in one session: receive to the Core address, switch
-            // rails until the payment ages past the window, come back before
-            // it is mined. Only unconfirmed rows can move, and there are few
-            // of them, so this keeps the index range and closes the hole.
             descriptor.predicate = #Predicate {
-                ($0.firstSeen >= floor || $0.blockHeight == 0) &&
+                $0.firstSeen >= floor &&
                     ($0.outputs.contains { $0.walletId == walletId } ||
                         $0.inputs.contains { $0.walletId == walletId })
             }
         }
         descriptor.propertiesToFetch = [\.txid]
         do {
-            return Set(try context.fetch(descriptor).map(\.txid))
+            var ids = Set(try context.fetch(descriptor).map(\.txid))
+            if let floor = firstSeenAtOrAfter {
+                ids.formUnion(unconfirmedIDs(context: context, walletId: walletId, floor: floor))
+            }
+            return ids
         } catch {
             logger.error("🅾 OBSERVER :: txid snapshot failed: \(String(describing: error), privacy: .public)")
+            return []
+        }
+    }
+
+    /// How far below a subscription's floor the unconfirmed sweep reaches.
+    ///
+    /// `firstSeen` is not immutable: once a transaction is mined the persister
+    /// adopts the BLOCK timestamp in its place. A payment that sat below the
+    /// floor while unconfirmed therefore rises above it on confirmation,
+    /// becomes emittable, and — absent from the exclusion snapshot — is
+    /// presented as a new receipt. Reachable in one session: receive to the
+    /// Core address, switch rails until it ages past the match window, return
+    /// before it is mined.
+    ///
+    /// Only unconfirmed rows can move, so only they need sweeping. The sweep
+    /// is a SECOND indexed range rather than an `OR blockHeight == 0` branch
+    /// on the first: `blockHeight` carries no index, so that branch made
+    /// SQLite evaluate the correlated wallet relationship across the whole
+    /// table — the full history scan this snapshot exists to avoid.
+    ///
+    /// The bound is the stated limit of the fix: a transaction that has been
+    /// unconfirmed for longer than this and then confirms mid-session can
+    /// still surface as a receipt. A day is far past normal confirmation, and
+    /// the alternative is scanning history on every entry to the Receive tab.
+    private static let unconfirmedLookback: UInt64 = 24 * 60 * 60
+
+    /// Wallet transactions still unmined, within `unconfirmedLookback` of
+    /// `floor`. Same indexed `firstSeen` range shape as the main snapshot.
+    private static func unconfirmedIDs(
+        context: ModelContext,
+        walletId: Data,
+        floor: UInt64
+    ) -> Set<Data> {
+        let sweepFloor = floor > unconfirmedLookback ? floor - unconfirmedLookback : 0
+        var descriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate {
+                $0.firstSeen >= sweepFloor &&
+                    $0.blockHeight == 0 &&
+                    ($0.outputs.contains { $0.walletId == walletId } ||
+                        $0.inputs.contains { $0.walletId == walletId })
+            })
+        descriptor.propertiesToFetch = [\.txid]
+        do {
+            return Set(try context.fetch(descriptor).map(\.txid))
+        } catch {
+            logger.error("🅾 OBSERVER :: unconfirmed sweep failed: \(String(describing: error), privacy: .public)")
             return []
         }
     }
