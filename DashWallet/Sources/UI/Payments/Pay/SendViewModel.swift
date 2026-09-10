@@ -492,9 +492,21 @@ final class SendViewModel: ObservableObject {
     ///   `nil` when it failed or the user cancelled the PIN prompt. A
     ///   cancellation leaves `contactSendError` clear — backing out of the
     ///   prompt is not an error.
+    /// Set when a contact broadcast came back with an unknown outcome. The
+    /// send may have happened, so this screen must not offer it again.
+    @Published private(set) var contactSendOutcomeIsUnknown = false
+
+    static let contactSendUnknownOutcomeMessage = NSLocalizedString(
+        "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.",
+        comment: "Send to contact: the broadcast outcome is unknown")
+
     func sendToContact() async -> Data? {
-        guard let contact = contactRecipient, canContinue else { return nil }
-        let duffs = dashDuffsUnsigned
+        guard let contact = contactRecipient,
+              canContinue,
+              // Re-asked here rather than trusting the gate: this is the value
+              // that gets spent.
+              let duffs = dashDuffsIfRepresentable
+        else { return nil }
         isSendingToContact = true
         contactSendError = nil
         defer { isSendingToContact = false }
@@ -513,6 +525,16 @@ final class SendViewModel: ObservableObject {
             let nsError = error as NSError
             if !WalletSendService.isAuthenticationCancelledError(nsError) {
                 contactSendError = error.localizedDescription
+            }
+            // An ambiguous broadcast is terminal, not a failure to retry: the
+            // request may well have reached the network and only its response
+            // was lost. Leaving the button live invites a second, duplicate
+            // payment for a spend that already happened, which no later
+            // correction can undo. The message already says to wait for
+            // synchronization rather than resend; this makes the screen agree
+            // with it.
+            if WalletSendService.isBroadcastUnknownError(nsError) {
+                contactSendOutcomeIsUnknown = true
             }
             return nil
         }
@@ -728,6 +750,13 @@ final class SendViewModel: ObservableObject {
     /// processor. Callers that open this screen for a scan check first —
     /// otherwise the scan lands on an empty form.
     static func scannedAddress(in paymentInput: DWPaymentInput) -> String? {
+        // A verified payment request first, before anything is read out of the
+        // input: its outputs and acknowledgment are the merchant's, and only
+        // the classic processor honours them. Everything reachable from here
+        // is merchant-controlled text — a memo or fallback line that happens to
+        // classify as an address would otherwise become the destination, and
+        // the form would pay it INSTEAD of the confirmed payment output.
+        guard paymentInput.bip70Confirmation == nil else { return nil }
         if let address = paymentInput.parsedURI?.address, !address.isEmpty {
             return address
         }
@@ -780,6 +809,19 @@ final class SendViewModel: ObservableObject {
 
     var dashDuffsUnsigned: UInt64 {
         parsedDashAmount.plainDashAmount
+    }
+
+    /// The entered amount in duffs, or `nil` when it does not fit in `UInt64`.
+    ///
+    /// `plainDashAmount` scales by the duff factor and then takes
+    /// `uint64Value`, which does not report a value that no longer fits — it
+    /// wraps. An amount above `UInt64.max` duffs therefore arrives as a small
+    /// number that passes an affordability check and is spent. Every gate on
+    /// an amount the user typed should ask this instead.
+    var dashDuffsIfRepresentable: UInt64? {
+        let scaled = (parsedDashAmount * .duffs).whole
+        guard scaled >= 0, scaled <= Decimal(UInt64.max) else { return nil }
+        return NSDecimalNumber(decimal: scaled).uint64Value
     }
 
     /// Credit amount handed to the SDK, aligned to duff precision (1 duff =
@@ -919,6 +961,11 @@ final class SendViewModel: ObservableObject {
         // be sent on this channel, the second reports the attempt that just
         // failed (cleared the moment the amount changes, so it can't go stale).
         if isContactPaymentUnavailable { return Self.contactPaymentsUnavailableMessage }
+        // Ahead of `contactSendError`, and NOT cleared when the amount
+        // changes: an unknown outcome disables this screen for good, so the
+        // reason has to outlive the next keystroke or the button reads as
+        // dead for no stated reason.
+        if contactSendOutcomeIsUnknown { return Self.contactSendUnknownOutcomeMessage }
         if let contactSendError { return contactSendError }
         #endif
         if let shieldedMaxNotice { return shieldedMaxNotice }
@@ -1101,6 +1148,14 @@ final class SendViewModel: ObservableObject {
     }
 
     var canContinue: Bool {
+        #if DASHPAY
+        // Terminal for the rest of this screen's life: see `sendToContact`.
+        if contactSendOutcomeIsUnknown { return false }
+        #endif
+        // An amount that cannot be represented in duffs is not spendable on
+        // any route — checked before the routes, because the wrapped value the
+        // conversion would otherwise produce is small enough to pass them.
+        guard dashDuffsIfRepresentable != nil else { return false }
         #if DASHPAY
         if isSendingToContact || isContactPaymentUnavailable { return false }
         #endif

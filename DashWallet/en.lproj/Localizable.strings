@@ -5898,3 +5898,9 @@
 
 /* Send screen: reveal the funding balance */
 "Show balance" = "Show balance";
+
+/* Send to contact: the exact fee is reported once the payment is sent */
+"Taken from your balance" = "Taken from your balance";
+
+/* Send to contact: the broadcast outcome is unknown */
+"We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history." = "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.";

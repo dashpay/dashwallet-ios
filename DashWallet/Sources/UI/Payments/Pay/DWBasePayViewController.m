@@ -141,11 +141,20 @@ NS_ASSUME_NONNULL_BEGIN
     // tab there is not, and the way back is the stack plus the tab. The tab
     // change waits for the pop — run together they animate over each other.
     //
-    // `presentingViewController` answers for the whole modal: a controller
-    // inside a presented navigation stack reports the presenter of that stack,
-    // and `dismiss` on it is forwarded to the same place.
-    if (self.presentingViewController) {
-        [self dismissViewControllerAnimated:YES completion:nil];
+    // Asked of the container as well as of self. A controller inside a
+    // presented navigation stack does not reliably report a presenter of its
+    // own — the navigation controller owns the presentation — and reading only
+    // `self.presentingViewController` then took the in-tab branch: it popped a
+    // controller that was already the root and called `showHome` on a tab
+    // controller that is nil or someone else's, leaving the send modal on
+    // screen after a payment that had gone through.
+    UIViewController *presentedContainer = self.presentingViewController
+                                               ? self
+                                               : (self.navigationController.presentingViewController
+                                                      ? self.navigationController
+                                                      : nil);
+    if (presentedContainer) {
+        [presentedContainer dismissViewControllerAnimated:YES completion:nil];
         return;
     }
 

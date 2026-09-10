@@ -408,6 +408,8 @@ struct ExternalSendAmountScreen: View {
     /// Set by the confirm sheet's Done so `onDismiss` can tell a finished send
     /// from a cancelled one — both close the sheet the same way.
     @State private var didCompleteSend = false
+    /// Pre-send review for the DashPay contact route.
+    @State private var showContactConfirm = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -474,6 +476,22 @@ struct ExternalSendAmountScreen: View {
         // pops the steps under this sheet, and doing that while it is still
         // presented tears down the presenter mid-dismissal. A cancel dismisses
         // the same way and must not unwind, so the outcome is carried across.
+        #if DASHPAY
+        .sheet(isPresented: $showContactConfirm) {
+            if let contact = viewModel.contactRecipient {
+                ConfirmContactSendSheet(
+                    contact: contact,
+                    amountText: viewModel.dashDuffsUnsigned.formattedDashAmount,
+                    fiatText: viewModel.fiatAmountString,
+                    onCancel: { showContactConfirm = false },
+                    onSend: {
+                        showContactConfirm = false
+                        onContinueContact()
+                    })
+                    .presentationDetents([.medium])
+            }
+        }
+        #endif
         .sheet(isPresented: $showConfirm, onDismiss: {
             guard didCompleteSend else { return }
             didCompleteSend = false
@@ -544,7 +562,11 @@ struct ExternalSendAmountScreen: View {
 
     private func continueAction() {
         if isContactSend {
-            onContinueContact()
+            // Never straight to the broadcast: `sendToContact` authorizes,
+            // builds, signs and sends in one irreversible call, so this is the
+            // last point at which the user can still read back what they are
+            // about to pay.
+            showContactConfirm = true
             return
         }
         guard let route = viewModel.route else { return }
@@ -979,6 +1001,75 @@ private func destinationTitle(_ destination: SendViewModel.DestinationKind) -> S
     case .shielded: return NSLocalizedString("Shielded address", comment: "Send screen destination type")
     }
 }
+
+#if DASHPAY
+/// Pre-send review for a DashPay contact payment.
+///
+/// The other redesigned routes confirm on `SendConfirmSheet`, which can state
+/// an exact fee because their execution is split into prepare and send. The
+/// contact route has no such split: `sendDashPayPayment` authorizes, builds,
+/// signs and broadcasts in one call and reports the fee only afterwards. So
+/// this states the fee for what it is — deducted from the balance, known once
+/// the payment is sent — rather than showing a number nobody computed.
+private struct ConfirmContactSendSheet: View {
+    let contact: ContactItem
+    let amountText: String
+    let fiatText: String
+    var onCancel: () -> Void
+    var onSend: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Text(NSLocalizedString("Confirm", comment: "Payment confirmation"))
+                .font(.headline)
+                .padding(.top, 20)
+
+            VStack(spacing: 6) {
+                Text(amountText)
+                    .font(.largeTitle.weight(.medium))
+                Text(fiatText)
+                    .font(.subheadline)
+                    .foregroundColor(.secondaryText)
+            }
+            .padding(.top, 24)
+
+            VStack(spacing: 0) {
+                DashUIKit.MenuItem(
+                    title: NSLocalizedString("To", comment: "Payment confirmation"),
+                    accessory: .text(contact.displayTitle))
+                DashUIKit.MenuItem(
+                    title: NSLocalizedString("Network fee", comment: "Payment confirmation"),
+                    accessory: .text(NSLocalizedString(
+                        "Taken from your balance",
+                        comment: "Send to contact: the exact fee is reported once the payment is sent")))
+            }
+            .modifier(MenuViewModifier())
+            .padding(.top, 24)
+            .padding(.horizontal, 20)
+
+            Spacer(minLength: 20)
+
+            HStack(spacing: 20) {
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Cancel", comment: ""),
+                    fillsWidth: true,
+                    size: .large,
+                    style: .tintedGray,
+                    action: onCancel)
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Send", comment: ""),
+                    fillsWidth: true,
+                    size: .large,
+                    style: .filledBlue,
+                    action: onSend)
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 20)
+        }
+        .background(Color.dash.primaryBackground)
+    }
+}
+#endif
 
 /// Middle-truncated address display shared by the screen's clipboard chip
 /// and the confirm sheet's To row.
