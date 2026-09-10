@@ -126,7 +126,20 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
             // the user actually has a username, not when they dismiss it.
             dismissed: false,
             hasRegisteredUsername: hasUsername,
-            hasRegistrationInProgress: hasPendingRecoveredName)
+            hasRegistrationInProgress: hasPendingRecoveredName,
+            // Same override Home applies. A registration started from More
+            // returns to More, and the row is where its progress and its
+            // outcome are reported — but this model's status observer sees
+            // `hasRegisteredUsername` the moment registration succeeds and
+            // hid the row, so the promised completed report (with its profile
+            // action) vanished at the instant it became true, and stayed
+            // hidden after relaunch. The persisted records are the same
+            // wallet/network-scoped ones the row itself reads.
+            reportsRegistration: MainActor.assumeIsolated {
+                let prefs = UsernamePrefs.shared
+                return prefs.inFlightRegistrationUsername?.isEmpty == false
+                    || prefs.completedTileUsername?.isEmpty == false
+            })
     }
 
     /// Re-evaluates the menu banner after a local preference change such as

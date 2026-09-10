@@ -182,6 +182,18 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
             pushCreateUsernameForm(invitationURL: invitationURL, definedUsername: definedUsername)
             return
         }
+        // A registration waiting to be recovered goes straight to the form.
+        // A Core-funded attempt that failed with a recoverable asset lock has
+        // already spent the registration amount, so the remaining balance is
+        // routinely below the minimum: the interstitial would then disable
+        // Continue and hide the transparent-funding escape, sealing off the
+        // one screen that recognizes `hasPendingRegistrationRecovery` and
+        // waives the balance requirement. The recovery IS the funding.
+        if DWIdentityRegistrationCoordinator.shared.hasPendingRegistrationRecovery() {
+            pushCreateUsernameForm(invitationURL: nil, definedUsername: definedUsername)
+            return
+        }
+
         // Route through the shielded get-ready interstitial whenever
         // the privacy-preserving funding path isn't ready (needs funds
         // / maturing / pool below minimum) so the privacy clock starts

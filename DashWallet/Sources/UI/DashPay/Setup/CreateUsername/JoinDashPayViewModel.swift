@@ -109,9 +109,36 @@ class JoinDashPayViewModel: ObservableObject {
     /// not contested and so cannot be told apart by inspecting the label.
     /// Without this gate the user would get a Home report and a blocking
     /// screen for one operation.
+    /// Which wallet and network the registration the BRIDGE is currently
+    /// running belongs to.
+    ///
+    /// The persisted handoff is already wallet/network-scoped, but the bridge
+    /// is a process-global whose username and terminal state survive a network
+    /// switch. Two scopes can hold the same label — a registration that fails
+    /// on mainnet and the same name succeeding on testnet — and the label alone
+    /// then lets mainnet read testnet's completion as its own, clearing its
+    /// pending report and persisting a success for an identity it does not
+    /// have. Process-global like the bridge it qualifies, so a relaunch clears
+    /// both together and the persisted record decides instead.
+    @MainActor private static var handedOffScope: RegistrationScope?
+
+    private struct RegistrationScope: Equatable {
+        let networkRawValue: Int
+        let walletIdHex: String?
+
+        @MainActor
+        static var current: RegistrationScope {
+            RegistrationScope(
+                networkRawValue: WalletEnvironment.networkKind.rawValue,
+                walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+        }
+    }
+
+    @MainActor
     static func markRegistrationHandedOff(username: String) {
         let trimmed = username.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
+        handedOffScope = RegistrationScope.current
         UsernamePrefs.shared.inFlightRegistrationUsername = trimmed
         UsernamePrefs.shared.completedTileUsername = nil
         // Without this the row would wait for the registration's next phase
@@ -140,7 +167,10 @@ class JoinDashPayViewModel: ObservableObject {
         // not raise a second report here.
         if let username = bridge.currentUsername,
            !username.isEmpty,
-           username == handedOff {
+           username == handedOff,
+           // The bridge's state belongs to whichever wallet and network
+           // started it; on any other, this label is a different attempt.
+           Self.handedOffScope == RegistrationScope.current {
             if bridge.isCompleted {
                 return complete(username)
             }
