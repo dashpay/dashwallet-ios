@@ -1067,11 +1067,18 @@ final class SwiftDashSDKHost {
     ///
     /// Only safe while no manager holds `network`, which is exactly when the
     /// caller reaches for it (the manager could not be built).
+    /// `scope` overrides the directory the store is opened from. Deletion needs
+    /// it: `persistenceScope` names the CURRENT devnet, and a device that has
+    /// been pointed at more than one holds a store per devnet — the others have
+    /// to be opened by name or their rows outlive the shared mnemonic that
+    /// would have found them.
     func storeOnlyPersistenceHandler(
-        for network: Network
+        for network: Network,
+        scope: String? = nil
     ) throws -> PlatformWalletPersistenceHandler {
-        let cached = try modelContainerCache.value(for: network.persistenceScope) {
-            try buildModelContainer(for: network)
+        let scope = scope ?? network.persistenceScope
+        let cached = try modelContainerCache.value(for: scope) {
+            try buildModelContainer(for: network, scope: scope)
         }
         return PlatformWalletPersistenceHandler(
             modelContainer: cached.value,
@@ -1511,7 +1518,7 @@ final class SwiftDashSDKHost {
 
     // MARK: - ModelContainer
 
-    private func buildModelContainer(for network: Network) throws -> ModelContainer {
+    private func buildModelContainer(for network: Network, scope: String? = nil) throws -> ModelContainer {
         let documents = try FileManager.default.url(
             for: .documentDirectory,
             in: .userDomainMask,
@@ -1520,7 +1527,7 @@ final class SwiftDashSDKHost {
         let dir = documents
             .appendingPathComponent("SwiftDashSDK", isDirectory: true)
             .appendingPathComponent("Platform", isDirectory: true)
-            .appendingPathComponent(network.persistenceScope, isDirectory: true)
+            .appendingPathComponent(scope ?? network.persistenceScope, isDirectory: true)
         try FileManager.default.createDirectory(
             at: dir,
             withIntermediateDirectories: true)

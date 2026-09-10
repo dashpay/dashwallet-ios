@@ -132,6 +132,10 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     @objc(handleWalletMaterialChanged)
     nonisolated static func handleWalletMaterialChanged() {
+        // The app-level wallet gate caches which networks the stored phrases
+        // belong to (deriving that is expensive); material changing is exactly
+        // when the answer can change.
+        WalletEnvironment.invalidateWalletMaterialCache()
         dispatchOnPipeline { shared.enqueueRefresh(trigger: .walletMaterialChanged) }
     }
 

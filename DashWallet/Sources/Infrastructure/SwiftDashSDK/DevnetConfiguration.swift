@@ -161,6 +161,45 @@ enum DevnetConfiguration {
     }
 }
 
+extension DevnetConfiguration {
+    /// Every devnet persistence scope this device holds state for, newest
+    /// configuration included even when nothing has been written under it yet.
+    ///
+    /// The configured name is only ever the CURRENT devnet. A device that has
+    /// been pointed at devnet A and then at devnet B holds two scoped stores,
+    /// and a deletion that walks only the current one leaves the other behind —
+    /// with its wallet and identity rows intact while the shared devnet-scoped
+    /// mnemonic is gone, so nothing can enumerate them afterwards.
+    ///
+    /// Discovered from the Platform store directory rather than from a
+    /// remembered list: the directories ARE the inventory, so a scope written
+    /// by an older build (or by a name since cleared) is still found.
+    static func persistedDevnetScopes() -> [String] {
+        var scopes: Set<String> = []
+        if let current = devnetName {
+            scopes.insert("\(SwiftDashSDK.Network.devnet.networkName)-\(current)")
+        }
+        if let documents = try? FileManager.default.url(
+            for: .documentDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: false) {
+            let platform = documents
+                .appendingPathComponent("SwiftDashSDK", isDirectory: true)
+                .appendingPathComponent("Platform", isDirectory: true)
+            let contents = (try? FileManager.default.contentsOfDirectory(
+                at: platform,
+                includingPropertiesForKeys: [.isDirectoryKey],
+                options: [.skipsHiddenFiles])) ?? []
+            for url in contents
+                where url.lastPathComponent.hasPrefix("\(SwiftDashSDK.Network.devnet.networkName)-") {
+                scopes.insert(url.lastPathComponent)
+            }
+        }
+        return scopes.sorted()
+    }
+}
+
 extension SwiftDashSDK.Network {
     /// Directory (and process-cache) scope for this network's persisted
     /// chain state: the Platform SwiftData store, the shielded commitment

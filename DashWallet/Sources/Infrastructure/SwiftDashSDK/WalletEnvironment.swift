@@ -286,8 +286,48 @@ public final class WalletEnvironment: NSObject {
     /// App-level wallet existence is the SDK-owned mnemonic store. Upgrade-time
     /// DashSync mnemonics are imported by `SwiftDashSDKKeyMigrator` before the
     /// wallet runtime starts.
+    ///
+    /// Material this build cannot select does not count. A devnet-only
+    /// inventory is reachable in an internal build and invisible in a shipping
+    /// one: `networkKind` maps the persisted devnet selection to mainnet,
+    /// `switchToNetwork` refuses devnet, and `recoverPersistedWallet` rightly
+    /// refuses to replay a devnet id through a mainnet or testnet manager. If
+    /// this gate still claimed a wallet, startup would fail `walletNotFound`
+    /// with no onboarding offered — a dead end with the user's phrase sitting
+    /// in the keychain. Reporting "no wallet" routes them to restore, and the
+    /// devnet material is left untouched for the next internal build.
     @objc public static var hasWallet: Bool {
-        hasSDKWallet
+        guard hasSDKWallet else { return false }
+        guard !isDevnetAvailable else { return true }
+        return hasSelectableWalletMaterial
+    }
+
+    /// Whether any persisted wallet belongs to a network this build can
+    /// select. Cached: the answer needs `SwiftDashSDKStoredWalletNetworkResolver`
+    /// to derive ids from each stored phrase, which is far too expensive for a
+    /// gate read on every launch and background-task path. Invalidated by
+    /// `invalidateWalletMaterialCache()` wherever wallet material changes.
+    private static var cachedSelectableWalletMaterial: Bool?
+
+    private static var hasSelectableWalletMaterial: Bool {
+        if let cached = cachedSelectableWalletMaterial { return cached }
+        let selectable: Bool
+        do {
+            let networks = try SwiftDashSDKHost.persistedSDKWalletNetworks()
+            selectable = networks.contains { $0 != .devnet }
+        } catch {
+            // Unknown, not empty: a keychain read failure must not present a
+            // funded install as a fresh one.
+            selectable = true
+        }
+        cachedSelectableWalletMaterial = selectable
+        return selectable
+    }
+
+    /// Drop the cached verdict above. Called wherever wallet material is
+    /// created, imported or deleted.
+    @objc public static func invalidateWalletMaterialCache() {
+        cachedSelectableWalletMaterial = nil
     }
 
     private override init() {}
