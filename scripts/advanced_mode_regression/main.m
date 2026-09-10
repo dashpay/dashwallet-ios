@@ -25,11 +25,22 @@ static void check(BOOL condition, NSString *message) {
     printf("PASS: %s\n", message.UTF8String);
 }
 
+static NSMutableArray<NSString *> *usedSuites;
+
+static NSString *freshSuite(void) {
+    NSString *suite = [@"org.dash.advanced-mode-tests." stringByAppendingString:NSUUID.UUID.UUIDString];
+    [usedSuites addObject:suite];
+    return suite;
+}
+
+static DWGlobalOptions *optionsForSuite(NSString *suite) {
+    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
+    return [[DWGlobalOptions alloc] initWithUserDefaults:defaults defaults:nil];
+}
+
 int main(void) {
     @autoreleasepool {
-        NSString *suite = [@"org.dash.advanced-mode-tests." stringByAppendingString:NSUUID.UUID.UUIDString];
-        NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suite];
-        DWGlobalOptions *options = [[DWGlobalOptions alloc] initWithUserDefaults:defaults defaults:nil];
+        usedSuites = [NSMutableArray array];
         __block NSUInteger notifications = 0;
         id observer = [NSNotificationCenter.defaultCenter addObserverForName:DWAdvancedModeDidChangeNotification
                                                                       object:nil
@@ -37,47 +48,66 @@ int main(void) {
                                                                   usingBlock:^(NSNotification *note) {
                                                                       notifications++;
                                                                   }];
+
+        // The upgrade path: no saved preference, a wallet that already holds
+        // Platform credits, and the first sighting of them.
+        NSString *suite = freshSuite();
+        DWGlobalOptions *options = optionsForSuite(suite);
         check(!options.advancedModeEnabled, @"Upgrade without saved preference starts off");
-        [options enableAdvancedModeForPlatformBalance:0 walletIdHex:@"a" network:@"testnet"];
+        check(!options.advancedModeUserManaged, @"Upgrade without saved preference is not user-managed");
+        [options enableAdvancedModeForPlatformBalance:0];
         check(!options.advancedModeEnabled && notifications == 0, @"Zero balance leaves automatic enablement pending");
-        [options enableAdvancedModeForPlatformBalance:1 walletIdHex:@"" network:@"testnet"];
-        [options enableAdvancedModeForPlatformBalance:1 walletIdHex:@"a" network:@""];
-        check(!options.advancedModeEnabled, @"Missing wallet/network context cannot enable mode");
-        [options enableAdvancedModeForPlatformBalance:1 walletIdHex:@"a" network:@"testnet"];
+        [options enableAdvancedModeForPlatformBalance:1];
         check(options.advancedModeEnabled && notifications == 1, @"One raw credit enables mode and notifies once");
-        [options enableAdvancedModeForPlatformBalance:200000 walletIdHex:@"a" network:@"testnet"];
+        check(!options.advancedModeUserManaged, @"The automatic enable does not claim the preference for the user");
+        [options enableAdvancedModeForPlatformBalance:200000];
         check(notifications == 1, @"Repeated positive snapshots do not notify again");
-        [options updateAdvancedModeEnabled:NO];
+
+        // A manual disable hands the preference to the user for good.
+        [options setAdvancedModeEnabledByUser:NO];
         check(!options.advancedModeEnabled && notifications == 2, @"Manual disable persists and notifies");
-        options = [[DWGlobalOptions alloc] initWithUserDefaults:[[NSUserDefaults alloc] initWithSuiteName:suite] defaults:nil];
-        [options enableAdvancedModeForPlatformBalance:0 walletIdHex:@"a" network:@"testnet"];
-        [options enableAdvancedModeForPlatformBalance:999999 walletIdHex:@"a" network:@"testnet"];
-        check(!options.advancedModeEnabled && notifications == 2, @"New options instance, resync and refund respect manual disable");
-        [options enableAdvancedModeForPlatformBalance:1 walletIdHex:@"a" network:@"mainnet"];
-        check(options.advancedModeEnabled, @"Another network has independent first-funding history");
-        [options updateAdvancedModeEnabled:NO];
-        [options enableAdvancedModeForPlatformBalance:1 walletIdHex:@"b" network:@"testnet"];
-        check(options.advancedModeEnabled, @"Another wallet has independent first-funding history");
+        check(options.advancedModeUserManaged, @"Manual disable claims the preference for the user");
+        options = optionsForSuite(suite);
+        check(options.advancedModeUserManaged, @"The claim survives a new options instance");
+        [options enableAdvancedModeForPlatformBalance:0];
+        [options enableAdvancedModeForPlatformBalance:999999];
+        check(!options.advancedModeEnabled && notifications == 2, @"Resync and refund respect the manual disable");
+        // No per-wallet state: a wallet seen funded for the first time is the
+        // same call, and it must not reopen a decision the user has made.
+        [options enableAdvancedModeForPlatformBalance:1];
+        check(!options.advancedModeEnabled, @"A newly funded wallet cannot undo the manual disable");
+
+        // The ordering the per-wallet marker got wrong: an opt-out recorded
+        // before any Platform funds ever arrived.
+        suite = freshSuite();
+        options = optionsForSuite(suite);
+        [options setAdvancedModeEnabledByUser:YES];
+        check(options.advancedModeEnabled && notifications == 3, @"Manual enable persists and notifies");
+        [options setAdvancedModeEnabledByUser:NO];
+        check(!options.advancedModeEnabled && notifications == 4, @"Manual disable before any funding persists");
+        [options enableAdvancedModeForPlatformBalance:1];
+        check(!options.advancedModeEnabled && notifications == 4, @"First funding respects an opt-out made before it");
+
+        // Re-affirming the current value changes nothing on screen but still
+        // settles who owns the preference.
+        suite = freshSuite();
+        options = optionsForSuite(suite);
         NSUInteger before = notifications;
-        [options enableAdvancedModeForPlatformBalance:1 walletIdHex:@"c" network:@"testnet"];
-        check(notifications == before, @"Already-enabled mode does not emit redundant notification");
-        [options updateAdvancedModeEnabled:NO];
-        [options enableAdvancedModeForPlatformBalance:1 walletIdHex:@"c" network:@"testnet"];
-        check(!options.advancedModeEnabled, @"Already-enabled first funding still records history");
-        [options clearAdvancedModeBalanceHistoryForWalletIdHex:@"b"];
-        [options enableAdvancedModeForPlatformBalance:1 walletIdHex:@"a" network:@"testnet"];
-        check(!options.advancedModeEnabled, @"Removing wallet B preserves wallet A history");
-        [options enableAdvancedModeForPlatformBalance:1 walletIdHex:@"b" network:@"testnet"];
-        check(options.advancedModeEnabled, @"Removed wallet can auto-enable after reimport");
+        [options setAdvancedModeEnabledByUser:NO];
+        check(notifications == before, @"Writing an unchanged preference does not notify");
+        [options enableAdvancedModeForPlatformBalance:1];
+        check(!options.advancedModeEnabled, @"An unchanged manual write still claims the preference");
+
+        // A full wipe returns the wallet to a state that can auto-enable again.
         [options restoreToDefaults];
-        check(!options.advancedModeEnabled, @"Full wipe resets advanced mode");
-        [options enableAdvancedModeForPlatformBalance:1 walletIdHex:@"a" network:@"testnet"];
-        check(options.advancedModeEnabled, @"Full wipe clears first-funding history");
-        before = notifications;
-        [options updateAdvancedModeEnabled:YES];
-        check(notifications == before, @"Writing unchanged preference does not notify");
+        check(!options.advancedModeEnabled && !options.advancedModeUserManaged, @"Full wipe resets mode and ownership");
+        [options enableAdvancedModeForPlatformBalance:1];
+        check(options.advancedModeEnabled, @"Automatic enablement works again after a full wipe");
+
         [NSNotificationCenter.defaultCenter removeObserver:observer];
-        [defaults removePersistentDomainForName:suite];
+        for (NSString *usedSuite in usedSuites) {
+            [NSUserDefaults.standardUserDefaults removePersistentDomainForName:usedSuite];
+        }
         printf("%lu regression checks passed\n", (unsigned long)checks);
     }
     return 0;

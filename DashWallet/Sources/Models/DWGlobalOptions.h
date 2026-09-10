@@ -52,23 +52,29 @@ extern NSNotificationName const DWAdvancedModeDidChangeNotification;
 @property (nonatomic, assign) BOOL balanceHidden;
 @property (nonatomic, assign) BOOL tapToHideBalanceShown;
 
-/// Advanced surfaces are off by default and enabled once when a wallet first
-/// shows a positive Platform address balance. Users can subsequently disable
-/// them. Read it anywhere, but observe
+/// Advanced surfaces are off by default and turned on once, automatically,
+/// when a wallet is first seen holding a positive Platform balance — the
+/// screens that show and move those funds live behind this flag, so leaving
+/// it off hides money the wallet already has. Read it anywhere, but observe
 /// `Notification.Name.advancedModeDidChange` rather than caching the value —
 /// it can be flipped from Settings while any screen is on display.
-@property (nonatomic, assign) BOOL advancedModeEnabled;
+/// Read-only by design: every write goes through one of the two methods
+/// below, so no caller can move the flag without announcing it.
+@property (nonatomic, readonly, assign) BOOL advancedModeEnabled;
 
-/// Persists the preference and announces an actual change to all open screens.
-- (void)updateAdvancedModeEnabled:(BOOL)enabled;
+/// YES once the user has set Advanced mode themselves. From that point the
+/// automatic policy never moves the flag again, in either direction.
+@property (nonatomic, readonly, assign) BOOL advancedModeUserManaged;
 
-/// Handles the first positive balance per wallet/network, even if already on.
-/// Zero balances leave the check pending; subsequent observations respect a
-/// manual disable. Call on the main thread with the balance's own context.
-- (void)enableAdvancedModeForPlatformBalance:(uint64_t)balance
-                                 walletIdHex:(NSString *)walletIdHex
-                                     network:(NSString *)network;
-- (void)clearAdvancedModeBalanceHistoryForWalletIdHex:(NSString *)walletIdHex;
+/// The user's own choice, from Settings. Persists it, hands them the
+/// preference for good, and announces an actual change to all open screens.
+- (void)setAdvancedModeEnabledByUser:(BOOL)enabled;
+
+/// Turns Advanced mode on the first time a wallet is observed funded on
+/// Platform, unless the user has already taken the preference over. A zero
+/// balance leaves the decision pending; repeat observations are no-ops.
+/// Call on the main thread.
+- (void)enableAdvancedModeForPlatformBalance:(uint64_t)balance;
 
 @property (nonatomic, assign) BOOL shouldDisplayOnboarding;
 @property (nonatomic, assign) BOOL shouldDisplayReclassifyYourTransactionsFlow;

@@ -828,7 +828,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
         // Seed from persisted state before kicking the sync loop, so the UI has
         // something to show immediately on relaunch.
-        seedFromPersistedState(manager: manager, walletId: resolvedWallet.walletId, network: network)
+        seedFromPersistedState(manager: manager, walletId: resolvedWallet.walletId)
 
         do {
             if try !manager.isPlatformAddressSyncRunning() {
@@ -1354,9 +1354,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                     balance: row.balance)
             }
             platformBalance = rows.reduce(0) { $0 + $1.balance }
-            if let network = runningNetwork {
-                enableAdvancedModeIfFunded(balance: platformBalance, walletId: walletId, network: network)
-            }
+            enableAdvancedModeIfFunded(balance: platformBalance)
             activeAddressCount = rows.reduce(0) { $1.balance > 0 ? $0 + 1 : $0 }
             // Observed-payment ledger: diff this snapshot against the
             // persisted baseline and record unattributed increases as
@@ -1375,7 +1373,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     // MARK: - Seed from persistence
 
-    private func seedFromPersistedState(manager: PlatformWalletManager, walletId: Data, network: Network) {
+    private func seedFromPersistedState(manager: PlatformWalletManager, walletId: Data) {
         guard let handler = manager.persistence else { return }
 
         let cached = handler.loadCachedBalances(walletId: walletId)
@@ -1387,7 +1385,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                 if balance > 0 { nonZero += 1 }
             }
             platformBalance = total
-            enableAdvancedModeIfFunded(balance: total, walletId: walletId, network: network)
+            enableAdvancedModeIfFunded(balance: total)
             activeAddressCount = nonZero
         }
 
@@ -1403,11 +1401,13 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     // MARK: - Helpers
 
-    private func enableAdvancedModeIfFunded(balance: UInt64, walletId: Data, network: Network) {
-        DWGlobalOptions.sharedInstance().enableAdvancedMode(
-            forPlatformBalance: balance,
-            walletIdHex: walletId.map { String(format: "%02x", $0) }.joined(),
-            network: String(network.rawValue))
+    /// The Platform surfaces live behind Advanced mode, so a wallet that holds
+    /// credits with the mode off shows the user nothing and offers no way to
+    /// move them. Both callers pass the balance they just published — the
+    /// cached one at start-up and the freshly summed one after a sync — and
+    /// the policy itself decides whether that is the first funded sighting.
+    private func enableAdvancedModeIfFunded(balance: UInt64) {
+        DWGlobalOptions.sharedInstance().enableAdvancedMode(forPlatformBalance: balance)
     }
 
     private func resolvePlatformAccountAvailability(

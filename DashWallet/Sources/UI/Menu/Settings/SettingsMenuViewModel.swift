@@ -87,11 +87,18 @@ class SettingsMenuViewModel: ObservableObject {
         setupCoinJoinObservers()
         setupSyncStateObserver()
         setupCurrencyChangeObserver()
+        // The flag can move without this screen touching it — the first
+        // funded Platform balance turns it on while Settings is open. The
+        // guard keeps that the only work this does: a change made *here*
+        // has already updated the row, and rebuilding the menu a second
+        // time on the next main-loop turn would be pure churn.
         NotificationCenter.default.publisher(for: .advancedModeDidChange)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 guard let self else { return }
-                self.advancedModeEnabled = DWGlobalOptions.sharedInstance().advancedModeEnabled
+                let enabled = DWGlobalOptions.sharedInstance().advancedModeEnabled
+                guard enabled != self.advancedModeEnabled else { return }
+                self.advancedModeEnabled = enabled
                 self.refreshMenuItems()
             }
             .store(in: &cancellableBag)
@@ -231,9 +238,12 @@ class SettingsMenuViewModel: ObservableObject {
     /// Write the flag, then announce it. The announcement is the point: the
     /// setting reaches far beyond this screen, and a consumer that only read
     /// the value when it appeared would keep showing the old state until it
-    /// was rebuilt for some unrelated reason.
+    /// was rebuilt for some unrelated reason. This is also the only path that
+    /// marks the preference as the user's, which retires the automatic
+    /// first-funding enable for good.
     func setAdvancedMode(_ enabled: Bool) {
-        DWGlobalOptions.sharedInstance().updateAdvancedModeEnabled(enabled)
+        guard enabled != advancedModeEnabled else { return }
+        DWGlobalOptions.sharedInstance().setAdvancedModeEnabledByUser(enabled)
         advancedModeEnabled = enabled
         DWLogger.log("Settings: advanced mode \(enabled ? "enabled" : "disabled")")
         refreshMenuItems()
