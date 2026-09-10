@@ -96,6 +96,65 @@ public struct WalletBalance: Equatable, Sendable {
     public var maxSendable: UInt64 { spendable > Self.sendFeeReserveDuffs ? spendable - Self.sendFeeReserveDuffs : 0 }
 }
 
+/// The single-flight bookkeeping behind
+/// `SwiftDashSDKWalletState.refreshPooledSpendableBalance`, separated from the
+/// `Task` machinery so the ownership rule can be exercised without a wallet, an
+/// SDK handle or a live task.
+///
+/// A `Task` reference alone cannot express ownership: cancelling a read and
+/// starting its replacement leaves the cancelled read still scheduled, and when
+/// it resumes it looks exactly like the read that owns the slot. Clearing the
+/// slot from there frees it for a third read while the second is still in
+/// flight, and the two then publish in whatever order they happen to finish —
+/// which for this value means the send ceiling can settle on a stale figure.
+///
+/// A generation makes "who owns the slot" answerable: it moves on every claim
+/// and on every cancel, so a read can compare the generation it was issued
+/// under with the current one and step aside when it is no longer the owner.
+struct PooledReadSlot {
+    private(set) var generation: UInt64 = 0
+    private(set) var isReading = false
+    private(set) var rerunRequested = false
+
+    /// Claim the slot for a new read, or `nil` when one is already in flight —
+    /// in which case the request is recorded as a single pending rerun rather
+    /// than a second concurrent read.
+    mutating func begin() -> UInt64? {
+        guard !isReading else {
+            rerunRequested = true
+            return nil
+        }
+        generation &+= 1
+        isReading = true
+        return generation
+    }
+
+    /// Whether the read issued under `candidate` still owns the slot. One that
+    /// does not must publish nothing, clear nothing, consume no rerun and start
+    /// no rerun: all four belong to whoever holds the slot now.
+    func owns(_ candidate: UInt64) -> Bool {
+        isReading && candidate == generation
+    }
+
+    /// Release the slot on behalf of the owning read. Returns `true` when a
+    /// request arrived while it ran and a rerun should now start.
+    mutating func finish(_ candidate: UInt64) -> Bool {
+        guard owns(candidate) else { return false }
+        isReading = false
+        let rerun = rerunRequested
+        rerunRequested = false
+        return rerun
+    }
+
+    /// Abandon whatever is in flight. The generation moves, so the running read
+    /// cannot own the slot when it resumes — and cannot take a replacement's.
+    mutating func cancel() {
+        generation &+= 1
+        isReading = false
+        rerunRequested = false
+    }
+}
+
 // MARK: - SwiftDashSDKWalletState
 
 @objc(DWSwiftDashSDKWalletState)
@@ -466,10 +525,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             markPooledSpendableUnavailable(reason: "no active wallet")
             return
         }
-        if pooledSpendableReadTask != nil {
-            pooledSpendableRerunRequested = true
-            return
-        }
+        guard let generation = pooledReadSlot.begin() else { return }
 
         let walletId = wallet.walletId
         let network = SwiftDashSDKHost.shared.runningNetwork
@@ -483,6 +539,12 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
                 }
             }.value
 
+            // A read that was cancelled, or superseded by a later one, no
+            // longer owns any of what follows. Without this it would clear the
+            // REPLACEMENT read's task slot on its way out, which lets a third
+            // read start while the second is still running — and then the two
+            // publish in whatever order they finish.
+            guard self.pooledReadSlot.owns(generation) else { return }
             self.pooledSpendableReadTask = nil
             // A wallet switch or network change while the read was in flight
             // makes its answer describe someone else's funding pool.
@@ -501,17 +563,17 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
                 }
             }
 
-            if self.pooledSpendableRerunRequested {
-                self.pooledSpendableRerunRequested = false
+            if self.pooledReadSlot.finish(generation) {
                 self.refreshPooledSpendableBalance()
             }
         }
     }
 
-    /// Non-nil while a pooled read is in flight; requests arriving during that
-    /// window flip `pooledSpendableRerunRequested` instead of piling up.
+    /// Non-nil while a pooled read is in flight, purely so it can be cancelled.
+    /// Which read is entitled to publish, clear the slot or start a rerun is
+    /// decided by `pooledReadSlot`, not by this reference.
     @MainActor private var pooledSpendableReadTask: Task<Void, Never>?
-    @MainActor private var pooledSpendableRerunRequested = false
+    @MainActor private var pooledReadSlot = PooledReadSlot()
 
     /// Drop any in-flight pooled read so it cannot publish after a clear.
     ///
@@ -525,7 +587,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     private func cancelPooledSpendableRead() {
         pooledSpendableReadTask?.cancel()
         pooledSpendableReadTask = nil
-        pooledSpendableRerunRequested = false
+        pooledReadSlot.cancel()
     }
 
     /// Drop the pooled figure so `sendableDuffs` falls back to the wallet-wide

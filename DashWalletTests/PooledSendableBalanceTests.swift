@@ -219,4 +219,63 @@ final class PooledSendableBalanceTests: XCTestCase {
         token.cancel()
     }
 
+
+    // MARK: Single-flight ownership of the pooled read
+
+    func testASecondRequestDuringAReadCoalescesIntoOneRerun() {
+        var slot = PooledReadSlot()
+        let first = slot.begin()
+        XCTAssertNotNil(first)
+        XCTAssertNil(slot.begin(), "a second read must not run concurrently")
+        XCTAssertNil(slot.begin(), "and a third must not queue a second rerun")
+        XCTAssertTrue(slot.finish(first!), "the pending request becomes exactly one rerun")
+        XCTAssertFalse(slot.rerunRequested)
+    }
+
+    func testAFinishedReadWithNoRequestsStartsNoRerun() {
+        var slot = PooledReadSlot()
+        let generation = slot.begin()!
+        XCTAssertFalse(slot.finish(generation))
+    }
+
+    /// The reviewed race, in order: a read is cancelled, its replacement starts,
+    /// and the cancelled one completes last. Before the generation guard it
+    /// cleared the replacement's slot on its way out, which freed the slot for a
+    /// third read while the second was still in flight — and the two then
+    /// published in whatever order they finished.
+    func testACancelledReadCompletingLastCannotTakeItsReplacementsSlot() {
+        var slot = PooledReadSlot()
+        let cancelled = slot.begin()!
+
+        slot.cancel()
+        let replacement = slot.begin()!
+        XCTAssertNotEqual(cancelled, replacement)
+
+        // The cancelled read resumes here, after the replacement has started.
+        XCTAssertFalse(slot.owns(cancelled), "a cancelled read owns nothing")
+        XCTAssertFalse(slot.finish(cancelled), "and cannot release the slot")
+        XCTAssertTrue(slot.owns(replacement), "the replacement still holds it")
+
+        XCTAssertFalse(slot.finish(replacement))
+        XCTAssertNotNil(slot.begin(), "the slot is free once its owner releases it")
+    }
+
+    func testACancelledReadCannotConsumeTheReplacementsRerun() {
+        var slot = PooledReadSlot()
+        let cancelled = slot.begin()!
+        slot.cancel()
+        let replacement = slot.begin()!
+
+        // A request arrives while the replacement runs, and belongs to it.
+        XCTAssertNil(slot.begin())
+        XCTAssertFalse(slot.finish(cancelled), "the cancelled read must not swallow it")
+        XCTAssertTrue(slot.rerunRequested)
+        XCTAssertTrue(slot.finish(replacement))
+    }
+
+    func testCancellingWithNothingInFlightLeavesTheSlotClaimable() {
+        var slot = PooledReadSlot()
+        slot.cancel()
+        XCTAssertNotNil(slot.begin())
+    }
 }
