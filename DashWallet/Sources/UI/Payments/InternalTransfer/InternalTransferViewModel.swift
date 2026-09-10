@@ -1906,7 +1906,8 @@ final class InternalTransferViewModel: ObservableObject {
             if coreSpendableDuffs == 0 {
                 maxNotice = Self.coreZeroMaxMessage(
                     totalDuffs: coreBalanceDuffs,
-                    confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0)
+                    confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0,
+                    excludedFromPoolDuffs: SwiftDashSDKWalletState.shared.excludedFromSendPoolDuffs)
             } else if sourceDuffs == 0 {
                 maxNotice = Self.feeReserveExceedsBalanceMessage(route.source)
             }
@@ -1927,7 +1928,8 @@ final class InternalTransferViewModel: ObservableObject {
             if coreSpendableDuffs == 0 {
                 maxNotice = Self.coreZeroMaxMessage(
                     totalDuffs: coreBalanceDuffs,
-                    confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0)
+                    confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0,
+                    excludedFromPoolDuffs: SwiftDashSDKWalletState.shared.excludedFromSendPoolDuffs)
             } else if sourceDuffs == 0 {
                 // New with the fee-on-top reserve: a balance that cannot carry
                 // the reserve fills 0, which needs a reason like the shielded
@@ -2286,7 +2288,8 @@ final class InternalTransferViewModel: ObservableObject {
     /// is not main-actor bound — can reach it; the body is pure string work.
     nonisolated static func coreZeroMaxMessage(
         totalDuffs: UInt64,
-        confirmedSpendableDuffs: UInt64
+        confirmedSpendableDuffs: UInt64,
+        excludedFromPoolDuffs: UInt64 = 0
     ) -> String {
         guard totalDuffs > 0 else { return emptyBalanceMessage(.core) }
         guard confirmedSpendableDuffs > 0 else {
@@ -2295,6 +2298,19 @@ final class InternalTransferViewModel: ObservableObject {
                     "None of your %@ DASH is spendable yet — it is still confirming.",
                     comment: "Core Max has nothing confirmed to spend"),
                 totalDuffs.formattedDashAmountWithoutCurrencySymbol)
+        }
+        // Confirmed, but none of it in an account a send draws on — the
+        // CoinJoin-only wallet. Saying the balance cannot cover the fee would
+        // be false: it is large enough, it is simply the wrong kind of money,
+        // and no amount of waiting changes that.
+        let poolable = confirmedSpendableDuffs
+            - min(excludedFromPoolDuffs, confirmedSpendableDuffs)
+        guard poolable > 0 else {
+            return String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "Your %@ DASH is in mixed coins, which a send cannot use — move them to your spendable balance first.",
+                    comment: "Core Max has only CoinJoin funds, which the send pool excludes"),
+                confirmedSpendableDuffs.formattedDashAmountWithoutCurrencySymbol)
         }
         return feeReserveExceedsBalanceMessage(.core)
     }

@@ -96,6 +96,65 @@ public struct WalletBalance: Equatable, Sendable {
     public var maxSendable: UInt64 { spendable > Self.sendFeeReserveDuffs ? spendable - Self.sendFeeReserveDuffs : 0 }
 }
 
+/// The single-flight bookkeeping behind
+/// `SwiftDashSDKWalletState.refreshPooledSpendableBalance`, separated from the
+/// `Task` machinery so the ownership rule can be exercised without a wallet, an
+/// SDK handle or a live task.
+///
+/// A `Task` reference alone cannot express ownership: cancelling a read and
+/// starting its replacement leaves the cancelled read still scheduled, and when
+/// it resumes it looks exactly like the read that owns the slot. Clearing the
+/// slot from there frees it for a third read while the second is still in
+/// flight, and the two then publish in whatever order they happen to finish —
+/// which for this value means the send ceiling can settle on a stale figure.
+///
+/// A generation makes "who owns the slot" answerable: it moves on every claim
+/// and on every cancel, so a read can compare the generation it was issued
+/// under with the current one and step aside when it is no longer the owner.
+struct PooledReadSlot {
+    private(set) var generation: UInt64 = 0
+    private(set) var isReading = false
+    private(set) var rerunRequested = false
+
+    /// Claim the slot for a new read, or `nil` when one is already in flight —
+    /// in which case the request is recorded as a single pending rerun rather
+    /// than a second concurrent read.
+    mutating func begin() -> UInt64? {
+        guard !isReading else {
+            rerunRequested = true
+            return nil
+        }
+        generation &+= 1
+        isReading = true
+        return generation
+    }
+
+    /// Whether the read issued under `candidate` still owns the slot. One that
+    /// does not must publish nothing, clear nothing, consume no rerun and start
+    /// no rerun: all four belong to whoever holds the slot now.
+    func owns(_ candidate: UInt64) -> Bool {
+        isReading && candidate == generation
+    }
+
+    /// Release the slot on behalf of the owning read. Returns `true` when a
+    /// request arrived while it ran and a rerun should now start.
+    mutating func finish(_ candidate: UInt64) -> Bool {
+        guard owns(candidate) else { return false }
+        isReading = false
+        let rerun = rerunRequested
+        rerunRequested = false
+        return rerun
+    }
+
+    /// Abandon whatever is in flight. The generation moves, so the running read
+    /// cannot own the slot when it resumes — and cannot take a replacement's.
+    mutating func cancel() {
+        generation &+= 1
+        isReading = false
+        rerunRequested = false
+    }
+}
+
 // MARK: - SwiftDashSDKWalletState
 
 @objc(DWSwiftDashSDKWalletState)
@@ -122,9 +181,19 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// core-send "Max" call site so the sent amount tracks the real fee instead
     /// of stranding ~0.001 DASH as change.
     public func feeAwareMaxSendable() -> UInt64 {
-        let spendable = balance?.spendable ?? 0
-        let reserve = SwiftDashSDKTransactionSender.maxSendFeeReserveDuffs()
-        return spendable > reserve ? spendable - reserve : 0
+        // The pooled figure, not `balance.spendable`: Max filling from the
+        // wallet-wide balance is the same lie the amount gate told, one tap
+        // more convincing.
+        Self.feeAwareMax(
+            spendable: sendableDuffs,
+            reserve: SwiftDashSDKTransactionSender.maxSendFeeReserveDuffs())
+    }
+
+    /// `feeAwareMaxSendable`'s arithmetic, separated from the SDK reads so the
+    /// flooring is testable: a spendable balance at or below the reserve has no
+    /// Max at all, rather than wrapping or offering an unsendable amount.
+    static func feeAwareMax(spendable: UInt64, reserve: UInt64) -> UInt64 {
+        spendable > reserve ? spendable - reserve : 0
     }
 
     /// Total DIP-17 Platform Payment credit balance across every
@@ -160,6 +229,100 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// gate their visibility on `> dust`. Bound here — NOT to the legacy
     /// DashSync `CoinJoinService`, which is being removed.
     @Published public private(set) var coinJoinBalanceDuffs: UInt64 = 0
+
+    /// What a plain send could actually draw on: the accounts `.allSpendable`
+    /// pools — BIP44@0, BIP32@0 and the DashPay receiving accounts — counting
+    /// only UTXOs coin selection accepts.
+    ///
+    /// `balance.spendable` is a strict superset: it sums every funding account
+    /// the wallet has, CoinJoin included. Gating on it offers money the builder
+    /// then refuses, which is what surfaced as "insufficient unreserved core
+    /// funds" against a visibly larger balance. Reservations are not subtracted
+    /// (the SDK cannot read them yet), so this stays optimistic by whatever an
+    /// in-flight build holds — transient, unlike the account-set difference.
+    ///
+    /// `nil` until the SDK has answered once, and again whenever a read fails.
+    /// It must never be 0 *because* the read failed: on the 2026-09-03 QA build
+    /// the FFI refused every call (it looked the core-wallet handle up in the
+    /// platform-wallet table), the failure was swallowed, and a permanent 0
+    /// here zeroed Max and blocked every send in the app. Consumers read
+    /// `sendableDuffs`, which falls back to the wallet-wide figure while this
+    /// is unknown — over-offering is the pre-#1107 behaviour and recoverable;
+    /// a silent 0 is neither.
+    @Published public private(set) var pooledSpendableDuffs: UInt64?
+
+    /// The amount gates and Max should read: the pooled figure when the SDK
+    /// has supplied one, else `balance.spendable`.
+    public var sendableDuffs: UInt64 {
+        Self.sendableDuffs(pooled: pooledSpendableDuffs, walletSpendable: balance?.spendable)
+    }
+
+    /// The ceiling an open amount screen validates against, as a stream.
+    ///
+    /// Derived from BOTH inputs and deduplicated on the RESOLVED value: through
+    /// a pooled outage the pooled figure stays `nil` while the wallet balance
+    /// keeps moving the fallback, so a subscription to the pooled publisher
+    /// alone goes silent exactly when the ceiling is moving. Deduplicating the
+    /// result instead reacts to whichever half changed and stays quiet when
+    /// neither moved the answer.
+    ///
+    /// Takes its inputs as parameters so the wiring is testable without the
+    /// shared instance; `observeSendableCeiling` passes the published ones.
+    static func sendableCeilingPublisher(
+        pooled: AnyPublisher<UInt64?, Never>,
+        walletSpendable: AnyPublisher<UInt64?, Never>
+    ) -> AnyPublisher<UInt64, Never> {
+        Publishers.CombineLatest(pooled, walletSpendable)
+            .map { sendableDuffs(pooled: $0, walletSpendable: $1) }
+            .removeDuplicates()
+            .eraseToAnyPublisher()
+    }
+
+    /// The confirmed balance a plain send CANNOT draw on: what
+    /// `balance.spendable` counts and the funding pool does not.
+    ///
+    /// In practice this is the CoinJoin account, which the pool excludes by
+    /// design (spending mixed outputs alongside transparent ones undoes the
+    /// mixing). It matters to the Max explanations: these funds are not held
+    /// back for fees and are not waiting on confirmations, so saying either
+    /// misattributes them — on the wallet in ticket 32081 that would be ~94 of
+    /// the 94.6 DASH on screen. Getting them back needs the mixed-coins move,
+    /// which is a different instruction entirely.
+    ///
+    /// Zero while the pooled figure is unknown: an outage is not evidence that
+    /// anything is excluded, and `sendableDuffs` is falling back to the
+    /// wallet-wide number anyway, so nothing is being held back from Max either.
+    public var excludedFromSendPoolDuffs: UInt64 {
+        Self.excludedFromSendPool(pooled: pooledSpendableDuffs, walletSpendable: balance?.spendable)
+    }
+
+    /// The fallback policy, as a function of its two inputs, so it can be
+    /// pinned by tests without a wallet, an SDK handle or the network.
+    ///
+    /// A *successful* zero must NOT fall back — that is the SDK answering
+    /// "nothing here", which is exactly the CoinJoin-only case this ticket is
+    /// about. Only `nil`, which means the read failed, falls back.
+    static func sendableDuffs(pooled: UInt64?, walletSpendable: UInt64?) -> UInt64 {
+        // The lower of the two when both are known. They are independent
+        // snapshots taken at different moments: `applyBalance` publishes the
+        // wallet-wide figure immediately while the pooled read is still in
+        // flight, so a pooled value from before a spend can outlive the
+        // wallet-wide one that already reflects it. Gating on the stale
+        // higher number lets the screen accept an amount the builder — which
+        // selects from current funds — then refuses.
+        guard let pooled else { return walletSpendable ?? 0 }
+        guard let walletSpendable else { return pooled }
+        return min(pooled, walletSpendable)
+    }
+
+    /// The pooled shortfall, as a function of its two inputs. Never negative,
+    /// and zero whenever the pooled figure is unknown or is not the smaller of
+    /// the two (a pooled figure above the wallet-wide one would mean the two
+    /// were read at different moments, not that funds are excluded).
+    static func excludedFromSendPool(pooled: UInt64?, walletSpendable: UInt64?) -> UInt64 {
+        guard let pooled, let walletSpendable, walletSpendable > pooled else { return 0 }
+        return walletSpendable - pooled
+    }
 
     // MARK: - Obj-C bridge
 
@@ -238,6 +401,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         balance = snapshot
         refreshPlatformPaymentCredits()
         refreshCoinJoinBalance()
+        refreshPooledSpendableBalance()
         NotificationCenter.default.post(
             name: SwiftDashSDKWalletState.balanceDidChangeNotification,
             object: nil)
@@ -362,6 +526,108 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     ///
     /// `@MainActor` for symmetry with `refreshPlatformPaymentCredits`; the
     /// reader detects the main thread and reads synchronously.
+    /// Re-read the pooled spendable balance from the SDK. Refreshed with every
+    /// balance event, like the CoinJoin tally beside it.
+    ///
+    /// The read itself is NOT done here. `pooledSpendableBalance()` bridges
+    /// synchronously into Rust, waits on the wallet-manager read lock and walks
+    /// every funding account's UTXO set — on the main actor that is a stall
+    /// behind whatever writer holds the lock (block processing, a finalizing
+    /// build), during exactly the balance-event bursts that call this. The
+    /// wallet handle is captured here, the read runs off-main, and the result
+    /// is published back on the main actor only if it still describes the
+    /// wallet that asked for it.
+    ///
+    /// Overlapping requests coalesce the way the Platform-credit tally does:
+    /// one read in flight, and a request arriving during it schedules exactly
+    /// one re-run rather than another concurrent read.
+    @MainActor
+    public func refreshPooledSpendableBalance() {
+        guard let wallet = SwiftDashSDKHost.shared.wallet else {
+            cancelPooledSpendableRead()
+            markPooledSpendableUnavailable(reason: "no active wallet")
+            return
+        }
+        guard let generation = pooledReadSlot.begin() else { return }
+
+        let walletId = wallet.walletId
+        let network = SwiftDashSDKHost.shared.runningNetwork
+        pooledSpendableReadTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            let outcome: Result<UInt64, Error> = await Task.detached(priority: .utility) {
+                do {
+                    return .success(try wallet.coreWallet().pooledSpendableBalance())
+                } catch {
+                    return .failure(error)
+                }
+            }.value
+
+            // A read that was cancelled, or superseded by a later one, no
+            // longer owns any of what follows. Without this it would clear the
+            // REPLACEMENT read's task slot on its way out, which lets a third
+            // read start while the second is still running — and then the two
+            // publish in whatever order they finish.
+            guard self.pooledReadSlot.owns(generation) else { return }
+            self.pooledSpendableReadTask = nil
+            // A wallet switch or network change while the read was in flight
+            // makes its answer describe someone else's funding pool.
+            let stillCurrent = SwiftDashSDKHost.shared.wallet?.walletId == walletId
+                && SwiftDashSDKHost.shared.runningNetwork == network
+            if stillCurrent, !Task.isCancelled {
+                switch outcome {
+                case .success(let duffs):
+                    self.hasLoggedPooledSpendableOutage = false
+                    if self.pooledSpendableDuffs != duffs {
+                        self.pooledSpendableDuffs = duffs
+                        Self.logger.info("💰 WALLET :: pooledSpendableDuffs=\(duffs, privacy: .public)")
+                    }
+                case .failure(let error):
+                    self.markPooledSpendableUnavailable(reason: String(describing: error))
+                }
+            }
+
+            if self.pooledReadSlot.finish(generation) {
+                self.refreshPooledSpendableBalance()
+            }
+        }
+    }
+
+    /// Non-nil while a pooled read is in flight, purely so it can be cancelled.
+    /// Which read is entitled to publish, clear the slot or start a rerun is
+    /// decided by `pooledReadSlot`, not by this reference.
+    @MainActor private var pooledSpendableReadTask: Task<Void, Never>?
+    @MainActor private var pooledReadSlot = PooledReadSlot()
+
+    /// Drop any in-flight pooled read so it cannot publish after a clear.
+    ///
+    /// The completion's wallet/network check is not enough on its own: through
+    /// `prepareForNetworkSwitch` and the wipe paths the host still reports the
+    /// same wallet and network while the published state has already been
+    /// cleared, so a read issued before the clear would pass that check and
+    /// republish the outgoing ceiling into the new state. Same shape as
+    /// `cancelPlatformCreditsTally`, and called from the same places.
+    @MainActor
+    private func cancelPooledSpendableRead() {
+        pooledSpendableReadTask?.cancel()
+        pooledSpendableReadTask = nil
+        pooledReadSlot.cancel()
+    }
+
+    /// Drop the pooled figure so `sendableDuffs` falls back to the wallet-wide
+    /// balance, and say why — once per outage, not once per balance tick. A
+    /// failure that repeats every tick is the signature to look for when Max
+    /// or the amount gate misbehave.
+    @MainActor
+    private func markPooledSpendableUnavailable(reason: String) {
+        guard pooledSpendableDuffs != nil || !hasLoggedPooledSpendableOutage else { return }
+        hasLoggedPooledSpendableOutage = true
+        pooledSpendableDuffs = nil
+        Self.logger.error(
+            "💰 WALLET :: pooledSpendableDuffs unavailable, falling back to balance.spendable: \(reason, privacy: .public)")
+    }
+
+    @MainActor private var hasLoggedPooledSpendableOutage = false
+
     @MainActor
     public func refreshCoinJoinBalance() {
         let duffs = SwiftDashSDKCoinJoinBalanceReader.coinJoinSpendableDuffs()
@@ -387,9 +653,11 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             self?.balance = nil
             MainActor.assumeIsolated {
                 self?.cancelPlatformCreditsTally()
+                self?.cancelPooledSpendableRead()
             }
             self?.platformPaymentCredits = 0
             self?.coinJoinBalanceDuffs = 0
+            self?.pooledSpendableDuffs = nil
             NotificationCenter.default.post(
                 name: SwiftDashSDKWalletState.balanceDidChangeNotification,
                 object: nil)
@@ -405,9 +673,11 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             self?.balance = nil
             MainActor.assumeIsolated {
                 self?.cancelPlatformCreditsTally()
+                self?.cancelPooledSpendableRead()
             }
             self?.platformPaymentCredits = 0
             self?.coinJoinBalanceDuffs = 0
+            self?.pooledSpendableDuffs = nil
             NotificationCenter.default.post(
                 name: SwiftDashSDKWalletState.balanceDidChangeNotification,
                 object: nil)
