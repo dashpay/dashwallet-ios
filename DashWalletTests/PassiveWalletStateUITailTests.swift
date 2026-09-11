@@ -94,7 +94,14 @@ final class PassiveWalletStateUITailTests: XCTestCase {
 
         let backupReminderDate = options.balanceChangedDate
         await clearBalance(expecting: model)
-        XCTAssertFalse(options.userHasBalance)
+        // `userHasBalance` deliberately survives a cleared balance. `nil` means
+        // "not known yet" — Core SPV stopped, or no wallet bound to the host —
+        // never "this wallet is empty", and the flag is persisted per wallet and
+        // feeds the default shortcut bar. Writing `false` here let one offline
+        // launch permanently drop a shortcut from a funded wallet. The wipe path
+        // is what legitimately resets it, through
+        // `DWGlobalOptions.restoreToDefaults()` in `SwiftDashSDKWalletWiper`.
+        XCTAssertTrue(options.userHasBalance)
         XCTAssertEqual(options.balanceChangedDate, backupReminderDate)
         XCTAssertTrue(model.isBalanceHidden)
 

@@ -492,6 +492,97 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 hasWalletManager: true))
     }
 
+    /// A Platform outage must not cost the user a working Core runtime: with
+    /// Core up and Platform down, the triggers that fire on their own (launch,
+    /// foreground, the sync strip's Retry, "Sync Now") elide the rebuild whose
+    /// `fullReset` would stop SPV, clear the balance and empty the home
+    /// transaction list. This is the offline-launch regression in table form.
+    func testCoreOnlyTriggersElideTheRebuildWhilePlatformIsDown() {
+        typealias Trigger = SwiftDashSDKWalletRuntime.RefreshTrigger
+
+        // Core up, Platform down.
+        for trigger in [Trigger.startIfReady, .platformSyncRearm] {
+            XCTAssertTrue(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: true, isFullyReady: false),
+                "\(trigger.rawValue) must not rebuild a healthy Core because Platform is down")
+        }
+
+        // A network switch still rebuilds on Core alone — it detached the SPV
+        // subscriptions that only a rebuild re-attaches.
+        XCTAssertFalse(
+            RuntimeRefreshPolicy.shouldSkipRebuild(
+                trigger: .networkDidChange, isCoreReady: true, isFullyReady: false))
+        XCTAssertTrue(
+            RuntimeRefreshPolicy.shouldSkipRebuild(
+                trigger: .networkDidChange, isCoreReady: true, isFullyReady: true))
+
+        // A wallet change never elides, however ready the runtime looks.
+        for trigger in [Trigger.walletMaterialChanged, .walletDidChange] {
+            XCTAssertFalse(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: true, isFullyReady: true),
+                "\(trigger.rawValue) must always rebind the wallet")
+        }
+
+        // Nothing elides when Core itself is down.
+        for trigger in [Trigger.startIfReady, .platformSyncRearm, .networkDidChange] {
+            XCTAssertFalse(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: false, isFullyReady: false),
+                "\(trigger.rawValue) must rebuild when Core is not running")
+        }
+    }
+
+    /// `switchNetwork(to:)` detaches the SPV progress/peer/balance publishers and
+    /// clears wallet state BEFORE its own refresh reaches the lifecycle queue,
+    /// without clearing Core's running flag. A refresh queued in that window
+    /// must not elide: `isCoreRuntimeReady` reports `false` there because
+    /// `subscriptionsDetached` is set, so every trigger rebuilds and the
+    /// publishers are re-attached. Eliding instead would strand the runtime with
+    /// no subscriptions and a cleared balance that no later refresh repairs.
+    func testNoTriggerElidesWhileSwitchPreparationHasDetachedSubscriptions() {
+        typealias Trigger = SwiftDashSDKWalletRuntime.RefreshTrigger
+        let target = Network.testnet
+
+        // The state `prepareForNetworkSwitch()` leaves behind: host still bound,
+        // Core SPV still flagged running on the target, publishers detached.
+        // Readiness is computed here rather than asserted as a literal, so
+        // dropping the `subscriptionsDetached` term from the predicate fails
+        // this test instead of silently restoring the defect.
+        let preparedCoreReady = RuntimeReadinessPolicy.isCoreReady(
+            boundNetwork: target, target: target, hasBoundWallet: true,
+            isSPVRunning: true, subscriptionsDetached: true)
+        XCTAssertFalse(preparedCoreReady, "detached subscriptions must make Core unready")
+
+        let preparedFullyReady = RuntimeReadinessPolicy.isFullyReady(
+            isCoreReady: preparedCoreReady, isBlastRunning: true,
+            blastNetwork: target, target: target)
+        XCTAssertFalse(preparedFullyReady, "full readiness must not outrank detached Core")
+
+        // With those computed values, nothing may elide the rebuild.
+        for trigger in [Trigger.startIfReady, .platformSyncRearm, .networkDidChange,
+                        .walletMaterialChanged, .walletDidChange] {
+            XCTAssertFalse(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: preparedCoreReady, isFullyReady: preparedFullyReady),
+                "\(trigger.rawValue) must rebuild while the switch preparation has detached the subscriptions")
+        }
+
+        // Re-attaching the publishers makes the same runtime ready again, and
+        // the Core-only triggers go back to eliding.
+        let reattachedCoreReady = RuntimeReadinessPolicy.isCoreReady(
+            boundNetwork: target, target: target, hasBoundWallet: true,
+            isSPVRunning: true, subscriptionsDetached: false)
+        XCTAssertTrue(reattachedCoreReady, "re-attached subscriptions must restore Core readiness")
+
+        for trigger in [Trigger.startIfReady, .platformSyncRearm] {
+            XCTAssertTrue(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: reattachedCoreReady, isFullyReady: false))
+        }
+    }
+
     func testWalletWithoutPlatformPaymentAccountUsesNeutralState() {
         let availability = PlatformAccountAvailabilityPolicy.resolve(
             hasWalletRecord: true,

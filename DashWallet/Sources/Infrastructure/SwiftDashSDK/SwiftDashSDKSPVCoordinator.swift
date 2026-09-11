@@ -137,8 +137,38 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// complete when nothing remains to recover. `nil` when no widen is active.
     private var coinJoinRecoveryWidenedNetwork: Network?
 
+    /// Whether the manager publishers that feed progress, peers and the
+    /// balance bridge are currently detached.
+    ///
+    /// `prepareForNetworkSwitch()` detaches them and clears wallet state
+    /// WITHOUT clearing `runningNetwork`, so `isRunning` alone would still
+    /// report a usable Core while nothing is feeding it. Readiness has to
+    /// consult this too, or a refresh queued between the preparation and the
+    /// switch's own rebuild can elide that rebuild and strand the runtime with
+    /// no subscriptions and a cleared balance.
+    @MainActor
+    private(set) var subscriptionsDetached: Bool = false
+
     @MainActor
     var isRunning: Bool { runningNetwork != nil }
+
+    /// Whether the SDK's SPV client is actually running — not merely whether
+    /// this coordinator believes it started one.
+    ///
+    /// `isRunning` is a Swift-side flag: set when this coordinator starts a
+    /// client, cleared when it stops one. A client that dies inside the SDK
+    /// never clears it, so `isRunning` alone reports a dead Core as healthy.
+    /// Readiness must ask the SDK, or every self-firing trigger — launch, the
+    /// sync strip's Retry, "Sync Now", the connectivity-return kick — elides
+    /// the very rebuild that would revive it, and the session has no way back.
+    /// `isAlreadyRunning(manager:network:)` asks the same question of a manager
+    /// the caller already holds; this one resolves the manager from the host.
+    @MainActor
+    var isSPVClientRunning: Bool {
+        guard runningNetwork != nil,
+              let manager = SwiftDashSDKHost.shared.manager else { return false }
+        return (try? manager.isSpvRunning()) == true
+    }
 
     // MARK: - Init
 
@@ -238,6 +268,15 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             Self.logger.error("🛰️ SPVCOORD :: host.start failed: \(String(describing: error), privacy: .public)")
             return .failure(StartError.walletImport(error))
         }
+
+        // Publish the persisted balance before any network work. `host.start`
+        // has run `loadFromPersistor` (HOST stage 4/4), which hydrates the core
+        // wallet's balance from SwiftData, and `coreWallet().balance()` reads
+        // that in memory — no SPV client, no peers, no I/O. Without this the
+        // home screen sits on 0.00 until the DashPay readiness pass and
+        // `startSpv` both complete, and stays there for the whole session when
+        // either fails: exactly the offline "wallet shows 0" report.
+        refreshBalanceBridge()
 
 #if DASHPAY
         // Startup order: identity → contacts → contact accounts → core sync.
@@ -344,6 +383,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// pre-switch silencing can never drift from the real teardown.
     @MainActor
     private func detachManagerSubscriptions() {
+        subscriptionsDetached = true
         progressCancellable?.cancel()
         progressCancellable = nil
         peersCancellable?.cancel()
@@ -515,6 +555,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     @MainActor
     private func subscribeToManagerProgress(manager: PlatformWalletManager) {
+        subscriptionsDetached = false
         progressCancellable = manager.$spvProgress
             .receive(on: RunLoop.main)
             .sink { [weak self] platformProgress in
@@ -612,7 +653,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     }
 
     /// Pull the latest core-wallet balance via FFI and republish through
-    /// `SwiftDashSDKWalletState.shared.applyBalance(_:)` so the home screen
+    /// `SwiftDashSDKWalletState.shared.applyBalanceOnMainActor(_:)` so the home screen
     /// `BalanceModel` and friends keep working off the same `@Published`
     /// surface they always did. The legacy callback that used to feed this
     /// publisher was removed in the SDK refactor, so the bridge replaces it.
@@ -640,7 +681,21 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 unconfirmed: core.unconfirmed,
                 immature: core.immature,
                 locked: core.locked)
-            SwiftDashSDKWalletState.shared.applyBalance(mapped)
+            if SwiftDashSDKWalletState.shared.balance == nil {
+                // First publish after each bind — not once per session:
+                // `clearAllState()` restores `nil` on every network switch,
+                // wallet switch and wipe, so one support capture can carry
+                // several of these. Logged because a "my wallet shows 0"
+                // report is answered by whether this line appeared and what it
+                // carried.
+                // The amount is `.private`: this line ships in release builds
+                // and lands in diagnostic captures, where the aggregate balance
+                // would be readable without unlocking the wallet. The event and
+                // the SPV flag are what answer a "wallet shows 0" report.
+                Self.logger.info(
+                    "🛰️ SPVCOORD :: first balance published total=\(mapped.total, privacy: .private) spv=\(self.isRunning, privacy: .public)")
+            }
+            SwiftDashSDKWalletState.shared.applyBalanceOnMainActor(mapped)
         } catch {
             Self.logger.warning(
                 "🛰️ SPVCOORD :: balance bridge fetch failed: \(String(describing: error), privacy: .public)")

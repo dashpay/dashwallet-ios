@@ -166,9 +166,12 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.wallet-state")
 
-    /// Latest wallet balance from SwiftDashSDK. `nil` until either
-    /// `seedInitialBalance(walletManager:walletId:)` succeeds or the
-    /// first `applyBalance(_:)` call arrives. Updated on the main queue.
+    /// Latest wallet balance from SwiftDashSDK. `nil` until the first
+    /// publication arrives, which `SwiftDashSDKSPVCoordinator`'s balance bridge
+    /// makes through `applyBalanceOnMainActor(_:)` as soon as the host has
+    /// bound the wallet — before SPV starts, so the persisted balance renders
+    /// without a network. `nil` means "not known yet" and must never be read as
+    /// an empty wallet. Updated on the main actor.
     @Published public private(set) var balance: WalletBalance? = nil
 
     /// Fee-aware "Max" / all-funds amount for a core send: spendable minus a
@@ -362,26 +365,46 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// on every relevant block / mempool tx / InstantSend confirmation.
     /// Marshals to the main queue so SwiftUI/Combine consumers receive
     /// updates on the right thread.
+    /// MainActor-isolated callers use `applyBalanceOnMainActor(_:)` instead,
+    /// which publishes synchronously.
     public func applyBalance(_ snapshot: WalletBalance) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            self.balance = snapshot
-            // Both refresh methods are @MainActor (they read
-            // MainActor-isolated `SwiftDashSDKHost.shared` state).
-            // We're already on the main queue here, so
-            // `assumeIsolated` is the synchronous, zero-hop way to
-            // satisfy the isolation requirement. The credits refresh
-            // only schedules a throttled background tally, so this
-            // stays cheap even during sync-burst balance events.
-            MainActor.assumeIsolated {
-                self.refreshPlatformPaymentCredits()
-                self.refreshCoinJoinBalance()
-                self.refreshPooledSpendableBalance()
-            }
-            NotificationCenter.default.post(
-                name: SwiftDashSDKWalletState.balanceDidChangeNotification,
-                object: nil)
+            MainActor.assumeIsolated { self.publishBalance(snapshot) }
         }
+    }
+
+    /// Publish from a caller the compiler already knows is MainActor-isolated:
+    /// `SwiftDashSDKSPVCoordinator`'s balance bridge. Isolation is checked
+    /// statically here, so no `Thread.isMainThread` proxy stands in for it and
+    /// nothing can trap on a main-thread callback that is not running on the
+    /// MainActor's executor.
+    ///
+    /// Synchronous on purpose. The startup publication is followed by
+    /// main-actor work that can hold the actor for seconds before reaching any
+    /// suspension point — the DashPay readiness budget lookup, and on the
+    /// non-DASHPAY build the CoinJoin recovery-gap widening, which
+    /// pre-generates addresses. Marshalling would park the assignment behind
+    /// that and leave the home screen on 0.00 for exactly as long, which is the
+    /// symptom this publication exists to remove.
+    @MainActor
+    public func applyBalanceOnMainActor(_ snapshot: WalletBalance) {
+        publishBalance(snapshot)
+    }
+
+    /// The single publication path, main-actor bound. Both refresh methods
+    /// read MainActor-isolated `SwiftDashSDKHost.shared` state; the credits
+    /// refresh only schedules a throttled background tally, so this stays
+    /// cheap even during sync-burst balance events.
+    @MainActor
+    private func publishBalance(_ snapshot: WalletBalance) {
+        balance = snapshot
+        refreshPlatformPaymentCredits()
+        refreshCoinJoinBalance()
+        refreshPooledSpendableBalance()
+        NotificationCenter.default.post(
+            name: SwiftDashSDKWalletState.balanceDidChangeNotification,
+            object: nil)
     }
 
     /// Non-nil while a Platform-credit tally (plus its 1 s cool-down)
@@ -614,44 +637,16 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         }
     }
 
-    // MARK: - Seed (called from coordinator after wallet import)
+    // MARK: - Clear
 
-    /// Called from `SwiftDashSDKSPVCoordinator.performStart` after
-    /// `walletManager.importWallet` succeeds. The FFI does not emit an
-    /// `onBalanceUpdated` event on `startSync` for a wallet with zero
-    /// new activity, so without this seed the home screen would sit on
-    /// `nil` until the first relevant tx (potentially hours into a
-    /// fresh sync).
+    /// Drop the published balance back to "not known yet".
     ///
-    /// `WalletManager.getWalletBalance` returns only `(confirmed, unconfirmed)`
-    /// — the `immature`/`locked` fields aren't exposed by this API surface.
-    /// They default to 0 in the seed and are populated properly by the
-    /// first live `applyBalance(_:)` call. Mining wallets are unaffected
-    /// (we don't support them).
-    ///
-    /// Non-fatal — if the FFI call fails, live updates eventually catch up.
-    public func seedInitialBalance(walletManager: WalletManager, walletId: Data) {
-        do {
-            let tuple = try walletManager.getWalletBalance(walletId: walletId)
-            let initial = WalletBalance(
-                confirmed: tuple.confirmed,
-                unconfirmed: tuple.unconfirmed,
-                immature: 0,
-                locked: 0)
-            Self.logger.info("💰 WALLET :: initial balance seed: confirmed=\(initial.confirmed, privacy: .public) unconfirmed=\(initial.unconfirmed, privacy: .public) total=\(initial.total, privacy: .public)")
-            applyBalance(initial)
-        } catch {
-            Self.logger.warning("💰 WALLET :: initial balance seed failed (non-fatal): \(String(describing: error), privacy: .public)")
-        }
-    }
-
-    // MARK: - Clear (called from wallet wiper)
-
-    /// Called from `SwiftDashSDKWalletWiper.performWipe` after the wallet
-    /// state has been deleted from keychain-backed storage. Without this, the
-    /// published value would keep showing the previous wallet's balance
-    /// across a wipe-then-recover or wipe-then-create flow until the new
-    /// wallet's first balance event arrives.
+    /// Called by `SwiftDashSDKSPVCoordinator` when Core SPV stops and when the
+    /// balance bridge finds no wallet bound to the host — NOT on the wipe path,
+    /// which resets per-wallet options through
+    /// `DWGlobalOptions.restoreToDefaults()` in `SwiftDashSDKWalletWiper`.
+    /// Without this the published value would keep showing the previous
+    /// wallet's balance until the next balance event arrives.
     @objc public func clearBalance() {
         DispatchQueue.main.async { [weak self] in
             Self.logger.info("💰 WALLET :: clearing balance")

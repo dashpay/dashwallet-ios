@@ -65,10 +65,11 @@ struct UnconfirmedTransactionRemover {
         /// Runtime reloaded, but the rescan did not arm (no chain tip to
         /// anchor on, or the arm threw). Rescan Filters still works.
         case rescanUnavailable
-        /// The reload took the runtime down and it did not come back: a BLAST
-        /// start failure makes `refresh` fall back to `fullReset`, which stops
-        /// the host and Core SPV too. Rescan Filters refuses while SPV is
-        /// stopped, so this case must NOT point the user at it.
+        /// The reload took Core down and it did not come back — a Core start
+        /// failure, which `refresh` still answers with `fullReset`. A Platform
+        /// outage alone no longer lands here: it is contained and leaves SPV
+        /// running. Rescan Filters refuses while SPV is stopped, so this case
+        /// must NOT point the user at it.
         case runtimeStopped
     }
 
@@ -312,15 +313,19 @@ struct UnconfirmedTransactionRemover {
         // rebroadcasting) restarts without the removed transactions.
         await SwiftDashSDKWalletRuntime.shared.reloadAfterWalletRowsChanged()
 
-        // Did the reload actually bring the runtime back? `refresh` starts
-        // Core SPV and then BLAST, and falls back to `fullReset` if EITHER
-        // throws — so a Platform outage, which has nothing to do with the
-        // Core-side row the user just repaired, stops the host and Core SPV
-        // as well. The rows are already deleted and stay deleted; what this
-        // decides is which remedy the caller can honestly offer, because
-        // Rescan Filters refuses while SPV is stopped.
+        // Did the reload actually bring Core back? Core readiness is the right
+        // question, not full readiness: the rows are already deleted and stay
+        // deleted, and what this decides is which remedy the caller can
+        // honestly offer — Rescan Filters refuses while SPV is stopped, and
+        // cares about nothing else. `refresh` now contains a Platform start
+        // failure instead of running `fullReset`, so a Platform outage, which
+        // has nothing to do with the Core-side row the user just repaired,
+        // leaves SPV running and the rescan armable. Asking `isRuntimeReady`
+        // here would report the wallet stopped and withhold the rescan that
+        // this type calls the only on-chain safety check the dropped
+        // transactions ever get.
         let runtimeReady = WalletEnvironment.network
-            .map { SwiftDashSDKWalletRuntime.shared.isRuntimeReady(for: $0) } ?? false
+            .map { SwiftDashSDKWalletRuntime.shared.isCoreRuntimeReady(for: $0) } ?? false
 
         let outcome: RemovalOutcome
         if !runtimeReady {
