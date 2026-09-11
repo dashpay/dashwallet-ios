@@ -212,6 +212,30 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         dispatchOnPipeline { shared.enqueueRefresh(trigger: .startIfReady) }
     }
 
+    /// Connectivity-return recovery, used by `SyncingActivityMonitor` when the
+    /// path flips back to online.
+    ///
+    /// Separate from `startIfReady()` because the lifecycle phase has to hold
+    /// until the op actually runs, not merely when it is queued: this hops
+    /// through `entryQueue` and then waits its turn on the serial lifecycle
+    /// queue, and a network switch can begin AND fail in that window. Rebuilding
+    /// then would heal the runtime with nothing calling `finish()`, leaving a
+    /// blocking failure card over a working wallet. The phase is therefore
+    /// re-read on the lifecycle queue, where an interactive transition either
+    /// owns the runtime or does not.
+    nonisolated static func startIfReadyWhenLifecycleIdle() {
+        dispatchOnPipeline {
+            shared.enqueue {
+                guard WalletLifecycleTransitionState.shared.phase == .idle else {
+                    Self.logger.info(
+                        "🧭 RUNTIME :: connectivity-return kick skipped — a lifecycle transition owns the runtime")
+                    return
+                }
+                await shared.refresh(trigger: .startIfReady)
+            }
+        }
+    }
+
     @objc(stop)
     nonisolated static func stop() {
         dispatchOnPipeline { shared.enqueueFullReset(lastError: nil, forWipe: false) }
@@ -310,6 +334,18 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         // lifecycle operation — network switch, wallet switch, or removal —
         // is in flight, replacing the old network-only `.switching` guard.
         if WalletEnvironment.networkKind == kind, isRuntimeReady(for: targetNetwork) {
+            // A failure card toward this very target is now obsolete: the
+            // runtime is bound and running on the network the user asked for,
+            // so the switch they retried has effectively completed. Without
+            // this, Retry reaches the no-op, returns without touching the
+            // transition state, and the blocking card can never be dismissed —
+            // whatever healed the runtime in the meantime.
+            if case .failedNetworkSwitch(_, let failedTarget, _) =
+                WalletLifecycleTransitionState.shared.phase, failedTarget == kind {
+                Self.logger.info("🧭 RUNTIME :: switchNetwork — runtime already ready on the failed target; finishing the transition")
+                WalletLifecycleTransitionState.shared.finish()
+                return
+            }
             Self.logger.info("🧭 RUNTIME :: switchNetwork — already on \(String(describing: kind), privacy: .public) with a ready runtime; no-op")
             return
         }

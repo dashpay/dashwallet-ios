@@ -545,21 +545,16 @@ extension SyncingActivityMonitor {
                 // starts Platform on its own, so this brings a degraded
                 // Platform back without stopping a healthy Core sync.
                 //
-                // Held back while a wallet-lifecycle transition is in flight or
-                // parked on a failure card: that state machine owns recovery.
-                // A rebuild behind its back would heal the runtime with nothing
-                // calling `finish()`, leaving a blocking failure card over a
-                // working wallet — and its Retry would then hit
-                // `switchNetwork`'s ready-runtime no-op and do nothing, so the
-                // card could not be dismissed at all. The card's own Retry is
-                // the recovery path in that state.
+                // `startIfReadyWhenLifecycleIdle` rather than `startIfReady`:
+                // the recovery must be held back while a wallet-lifecycle
+                // transition owns the runtime, and that has to be true when the
+                // op RUNS, not when it is queued. Checking here would race — a
+                // network switch can begin and fail while the op waits its turn
+                // on the lifecycle queue.
                 let previous = self.lastNetworkStatus
                 self.lastNetworkStatus = status
-                let lifecycleIsIdle = MainActor.assumeIsolated {
-                    WalletLifecycleTransitionState.shared.phase == .idle
-                }
-                if status == .online, previous != .online, lifecycleIsIdle {
-                    SwiftDashSDKWalletRuntime.startIfReady()
+                if status == .online, previous != .online {
+                    SwiftDashSDKWalletRuntime.startIfReadyWhenLifecycleIdle()
                 }
 
                 let coord = SwiftDashSDKSPVCoordinator.shared
