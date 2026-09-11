@@ -972,11 +972,15 @@ extension SwiftDashSDKSPVStatusScreen {
                             outcome.dropped)
                     case .runtimeStopped:
                         // Rescan Filters above is disabled while SPV is
-                        // stopped, so it is not the remedy to offer here.
+                        // stopped, so restarting comes first — and it has to
+                        // be followed by the rescan, which restarting does
+                        // not replay. This path never explorer-checked, so
+                        // that rescan is the only on-chain safety check the
+                        // dropped transactions ever get.
                         dropResultIsError = true
                         dropResultMessage = String(
                             format: NSLocalizedString(
-                                "Dropped %d unconfirmed transaction(s), but the wallet stopped — reopen the app, or tap Sync Now in Platform sync to restart it.",
+                                "Dropped %d unconfirmed transaction(s), but the wallet stopped and the filter rescan never ran. Restart the wallet (reopen the app, or Sync Now in Platform sync), then run Rescan Filters above.",
                                 comment: "SPV diagnostics"),
                             outcome.dropped)
                     }

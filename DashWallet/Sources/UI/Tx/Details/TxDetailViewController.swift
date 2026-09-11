@@ -369,21 +369,24 @@ extension TXDetailViewController {
             }
             do {
                 let outcome = try await UnconfirmedTransactionRemover().remove(txidWire: txidWire)
-                // Never claim the rescan safety net ran when it didn't, and
-                // never send the user to Rescan Filters when the runtime is
-                // down — that control refuses while SPV is stopped.
-                let message: String
                 switch outcome {
                 case .rescanArmed:
-                    message = NSLocalizedString("Transaction removed", comment: "Remove never-accepted transaction: success")
+                    self?.view.dw_showInfoHUD(withText: NSLocalizedString("Transaction removed", comment: "Remove never-accepted transaction: success"))
+                    // The row this sheet describes no longer exists.
+                    self?.closeAction()
                 case .rescanUnavailable:
-                    message = NSLocalizedString("Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status", comment: "Remove never-accepted transaction: removed but the recovery rescan did not arm")
+                    // Never claim the rescan safety net ran when it didn't.
+                    self?.view.dw_showInfoHUD(withText: NSLocalizedString("Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status", comment: "Remove never-accepted transaction: removed but the recovery rescan did not arm"))
+                    self?.closeAction()
                 case .runtimeStopped:
-                    message = NSLocalizedString("Transaction removed, but the wallet stopped — reopen the app, or tap Sync Now in Sync Info to restart it", comment: "Remove never-accepted transaction: removed but the runtime reload left the wallet stopped")
+                    // A HUD would not survive this: it is added to this
+                    // controller's own view, which `closeAction` tears down.
+                    // The stopped wallet needs an acknowledged alert that
+                    // dismisses the sheet only once the user has read it —
+                    // and it must name BOTH steps, because restarting the
+                    // runtime does not replay this removal's rescan.
+                    self?.presentRemovalLeftWalletStopped()
                 }
-                self?.view.dw_showInfoHUD(withText: message)
-                // The row this sheet describes no longer exists.
-                self?.closeAction()
             } catch UnconfirmedTransactionRemover.RemovalError.transactionOnChain {
                 self?.presentRemovalRefused()
             } catch {
@@ -395,6 +398,24 @@ extension TXDetailViewController {
                 self?.present(alert, animated: true)
             }
         }
+    }
+
+    /// The rows are deleted, but reloading the runtime left the wallet
+    /// stopped (Core SPV is torn down when the Platform side fails to come
+    /// back). Both recovery steps are spelled out: restarting the runtime
+    /// does NOT replay the rescan this removal skipped, so the transaction's
+    /// on-chain safety check still has to be run by hand afterwards. The
+    /// sheet is dismissed only after the user acknowledges.
+    private func presentRemovalLeftWalletStopped() {
+        let alert = UIAlertController(
+            title: NSLocalizedString("Transaction removed, but the wallet stopped", comment: "Remove never-accepted transaction: removed but the runtime reload left the wallet stopped"),
+            message: NSLocalizedString("The transaction was deleted from this device. Reloading the wallet didn't finish, so the wallet is stopped and the rescan that double-checks the blockchain never ran.\n\nRestart the wallet — reopen the app, or tap Sync Now in Sync Info — and then run Rescan Filters in Core Sync Status. Restarting alone does not repeat the rescan.", comment: "Remove never-accepted transaction: both recovery steps after a failed runtime reload"),
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel) { [weak self] _ in
+            // The row this sheet describes no longer exists.
+            self?.closeAction()
+        })
+        present(alert, animated: true)
     }
 
     /// The explorer knows the transaction, either from the mempool or a
