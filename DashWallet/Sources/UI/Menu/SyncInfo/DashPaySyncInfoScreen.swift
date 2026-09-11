@@ -208,10 +208,18 @@ struct DashPaySyncInfoScreen: View {
             } else if let lastSync = viewModel.lastSync {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
-                Text(String(format: NSLocalizedString("Last sync: %@", comment: "Sync diagnostics - %@ is a relative time such as 2 hours ago"),
-                          lastSync.formatted(.relative(presentation: .numeric))))
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.dash.primaryText)
+                // Re-render on a timer: `formatted(.relative:)` bakes in the
+                // offset at render time, so without a schedule the value drifts
+                // stale for as long as the screen stays open.
+                TimelineView(.periodic(from: .now, by: 30)) { _ in
+                    Text(String(
+                        format: NSLocalizedString(
+                            "Last sync: %@",
+                            comment: "Sync diagnostics - %@ is a relative time such as 2 hours ago"),
+                        lastSync.formatted(.relative(presentation: .numeric))))
+                }
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.dash.primaryText)
             } else {
                 Image(systemName: "circle.dashed")
                     .foregroundColor(Color.dash.secondaryText)

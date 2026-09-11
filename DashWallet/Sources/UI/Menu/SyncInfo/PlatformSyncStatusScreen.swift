@@ -104,10 +104,18 @@ struct PlatformSyncStatusScreen: View {
             } else if let lastSync = coordinator.lastSyncTime {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
-                Text(String(format: NSLocalizedString("Last sync: %@", comment: "Sync diagnostics - %@ is a relative time such as 2 hours ago"),
-                          lastSync.formatted(.relative(presentation: .numeric))))
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.dash.primaryText)
+                // Re-render on a timer: `formatted(.relative:)` bakes in the
+                // offset at render time, so without a schedule the value drifts
+                // stale for as long as the screen stays open.
+                TimelineView(.periodic(from: .now, by: 30)) { _ in
+                    Text(String(
+                        format: NSLocalizedString(
+                            "Last sync: %@",
+                            comment: "Sync diagnostics - %@ is a relative time such as 2 hours ago"),
+                        lastSync.formatted(.relative(presentation: .numeric))))
+                }
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.dash.primaryText)
             } else {
                 Image(systemName: "circle.dashed")
                     .foregroundColor(Color.dash.secondaryText)
@@ -151,8 +159,11 @@ struct PlatformSyncStatusScreen: View {
     private var addressesCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text(String(format: NSLocalizedString("Platform Addresses (%d)", comment: "Sync diagnostics - count of derived Platform addresses"),
-                          coordinator.derivedAddresses.count))
+                Text(String(
+                    format: NSLocalizedString(
+                        "Platform Addresses (%d)",
+                        comment: "Sync diagnostics - count of derived Platform addresses"),
+                    coordinator.derivedAddresses.count))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
@@ -185,7 +196,11 @@ struct PlatformSyncStatusScreen: View {
                     .foregroundColor(.dash.primaryText)
                 HStack(spacing: 6) {
                     Text("#\(addr.accountIndex)/\(addr.addressIndex)")
-                    if addr.isUsed { Text(NSLocalizedString("• used", comment: "Sync diagnostics - marks a derived address that has already been used")) }
+                    if addr.isUsed {
+                        Text(NSLocalizedString(
+                            "• used",
+                            comment: "Sync diagnostics - marks a derived address that has already been used"))
+                    }
                     if addr.balance > 0 {
                         Text("• \(PlatformCreditsFormatter.dashString(addr.balance))")
                     }
@@ -246,8 +261,11 @@ struct PlatformSyncStatusScreen: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
-                Text(String(format: NSLocalizedString("%d syncs", comment: "Sync diagnostics - number of syncs since app launch"),
-                          coordinator.syncCountSinceLaunch))
+                Text(String(
+                    format: NSLocalizedString(
+                        "%d syncs",
+                        comment: "Sync diagnostics - number of syncs since app launch"),
+                    coordinator.syncCountSinceLaunch))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(Color.dash.secondaryText)
             }
@@ -303,7 +321,9 @@ struct PlatformSyncStatusScreen: View {
                 // trunk/branch rescan — not just a display reset.
                 Task { await coordinator.clearLocalState() }
             }) {
-                Text(NSLocalizedString("Clear", comment: "Sync diagnostics - button that wipes the local Platform sync state"))
+                Text(NSLocalizedString(
+                    "Clear",
+                    comment: "Sync diagnostics - button that wipes the local Platform sync state"))
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
