@@ -79,14 +79,17 @@ struct RuntimeRefreshPolicy {
     ///
     /// A wallet change never elides: the registry was repointed to a different
     /// wallet on the same network, so a network-equality check would wrongly
-    /// elide the rebind.
+    /// elide the rebind. A rows-changed rebuild never elides for the
+    /// mirror-image reason — the SwiftData rows were edited behind a runtime
+    /// that never stopped, so a runtime that looks ready is exactly the one
+    /// still holding the pre-edit in-memory wallet.
     static func shouldSkipRebuild(
         trigger: SwiftDashSDKWalletRuntime.RefreshTrigger,
         isCoreReady: Bool,
         isFullyReady: Bool
     ) -> Bool {
         switch trigger {
-        case .walletMaterialChanged, .walletDidChange:
+        case .walletMaterialChanged, .walletDidChange, .walletRowsChanged:
             return false
         case .startIfReady, .platformSyncRearm:
             return isCoreReady
@@ -289,10 +292,23 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// turn "Sync Now" into a real in-session recovery action after Stop or a
     /// recover-time binding race.
     func rearmPlatformSync() async {
-        let task = enqueueAwaitable { [weak self] in
-            await self?.refresh(trigger: .platformSyncRearm)
-        }
-        await task.value
+        await awaitRefresh(trigger: .platformSyncRearm)
+    }
+
+    /// Rebuild the shared runtime after the SwiftData rows it loaded from were
+    /// edited underneath it, and return once that rebuild has settled (started,
+    /// or failed back to a stopped runtime).
+    ///
+    /// Runs the same serialized stop → load → start the lifecycle queue drives
+    /// for a network or wallet switch: on load the Rust wallet rehydrates its
+    /// tx set, UTXOs and `spent_outpoints` from the rows as they now are, and
+    /// dash-spv's mempool tracker restarts without the deleted transactions.
+    ///
+    /// `.walletRowsChanged` is never elided by `shouldSkipRefresh`: a runtime
+    /// that still looks ready is precisely the one holding the pre-edit state
+    /// this call exists to discard.
+    func reloadAfterWalletRowsChanged() async {
+        await awaitRefresh(trigger: .walletRowsChanged)
     }
 
     /// Restart Core SPV to dial a fresh peer set ("sync too slow? change
@@ -544,6 +560,16 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         }
     }
 
+    /// Awaiting sibling of `enqueueRefresh`: appends the same single
+    /// `refresh(trigger:)` op to the serial chain and returns only once it —
+    /// and every op queued ahead of it — has finished. Callers that must
+    /// observe the rebuilt runtime go through here.
+    private func awaitRefresh(trigger: RefreshTrigger) async {
+        await enqueueAwaitable { [weak self] in
+            await self?.refresh(trigger: trigger)
+        }.value
+    }
+
     private func enqueueFullReset(lastError: String?, forWipe: Bool) {
         enqueue { [weak self] in
             await self?.fullReset(lastError: lastError, forWipe: forWipe)
@@ -642,6 +668,16 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 publishActiveWalletDidChange(reason: "wallet-started")
             } else if trigger == .networkDidChange {
                 publishActiveWalletDidChange(reason: "network-changed")
+            } else if trigger == .walletRowsChanged {
+                // A rows-changed rebuild rebinds the wallet just like the two
+                // above, and it can resolve a network key that an interactive
+                // switch has ALREADY flipped while its own refresh is still
+                // queued behind this one. That switch's refresh then finds the
+                // destination runtime ready and elides, taking its
+                // "network-changed" publish with it — so publish here too, or
+                // consumers that listen only for this notification
+                // (SwiftDashSDKContactsService) keep a pre-switch snapshot.
+                publishActiveWalletDidChange(reason: "wallet-rows-changed")
             }
 
             await startPlatform(for: network)
@@ -863,6 +899,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         case networkDidChange
         case walletMaterialChanged
         case walletDidChange
+        case walletRowsChanged
         case platformSyncRearm
     }
 
