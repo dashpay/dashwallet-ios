@@ -58,7 +58,7 @@ struct PlatformSyncStatusScreen: View {
 
             // Header
             HStack {
-                Text("Platform Sync Status")
+                Text(NSLocalizedString("Platform Sync Status", comment: "Sync diagnostics"))
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.dash.primaryText)
@@ -98,13 +98,14 @@ struct PlatformSyncStatusScreen: View {
         HStack(spacing: 8) {
             if coordinator.isSyncing {
                 SwiftUI.ProgressView().scaleEffect(0.7)
-                Text("Syncing…")
+                Text(NSLocalizedString("Syncing…", comment: "Sync diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
             } else if let lastSync = coordinator.lastSyncTime {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
-                Text("Last sync: \(lastSync, style: .relative) ago")
+                Text(String(format: NSLocalizedString("Last sync: %@", comment: "Sync diagnostics - %@ is a relative time such as 2 hours ago"),
+                          lastSync.formatted(.relative(presentation: .numeric))))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
             } else {
@@ -150,13 +151,14 @@ struct PlatformSyncStatusScreen: View {
     private var addressesCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Platform Addresses (\(coordinator.derivedAddresses.count))")
+                Text(String(format: NSLocalizedString("Platform Addresses (%d)", comment: "Sync diagnostics - count of derived Platform addresses"),
+                          coordinator.derivedAddresses.count))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
             }
             if coordinator.derivedAddresses.isEmpty {
-                Text("No addresses derived yet")
+                Text(NSLocalizedString("No addresses derived yet", comment: "Sync diagnostics"))
                     .font(.system(size: 12))
                     .foregroundColor(Color.dash.secondaryText)
             } else {
@@ -183,7 +185,7 @@ struct PlatformSyncStatusScreen: View {
                     .foregroundColor(.dash.primaryText)
                 HStack(spacing: 6) {
                     Text("#\(addr.accountIndex)/\(addr.addressIndex)")
-                    if addr.isUsed { Text("• used") }
+                    if addr.isUsed { Text(NSLocalizedString("• used", comment: "Sync diagnostics - marks a derived address that has already been used")) }
                     if addr.balance > 0 {
                         Text("• \(PlatformCreditsFormatter.dashString(addr.balance))")
                     }
@@ -219,7 +221,7 @@ struct PlatformSyncStatusScreen: View {
             }
             if let blockTime = coordinator.lastSyncBlockTime {
                 HStack {
-                    Text("Block Time")
+                    Text(NSLocalizedString("Block Time", comment: "Sync diagnostics"))
                         .font(.system(size: 13))
                         .foregroundColor(.dash.primaryText)
                     Spacer()
@@ -240,11 +242,12 @@ struct PlatformSyncStatusScreen: View {
     private var queriesCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Queries Since Launch")
+                Text(NSLocalizedString("Queries Since Launch", comment: "Sync diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
-                Text("\(coordinator.syncCountSinceLaunch) syncs")
+                Text(String(format: NSLocalizedString("%d syncs", comment: "Sync diagnostics - number of syncs since app launch"),
+                          coordinator.syncCountSinceLaunch))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(Color.dash.secondaryText)
             }
@@ -262,7 +265,7 @@ struct PlatformSyncStatusScreen: View {
 
     private func errorCard(message: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Last Error")
+            Text(NSLocalizedString("Last Error", comment: "Sync diagnostics"))
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.red)
             Text(message)
@@ -283,7 +286,7 @@ struct PlatformSyncStatusScreen: View {
             }) {
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.clockwise")
-                    Text("Sync Now")
+                    Text(NSLocalizedString("Sync Now", comment: "Sync diagnostics"))
                 }
                 .font(.system(size: 14, weight: .semibold))
                 .frame(maxWidth: .infinity)
@@ -300,7 +303,7 @@ struct PlatformSyncStatusScreen: View {
                 // trunk/branch rescan — not just a display reset.
                 Task { await coordinator.clearLocalState() }
             }) {
-                Text("Clear")
+                Text(NSLocalizedString("Clear", comment: "Sync diagnostics - button that wipes the local Platform sync state"))
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
@@ -313,7 +316,7 @@ struct PlatformSyncStatusScreen: View {
             Button(action: {
                 PlatformAddressSyncCoordinator.stop()
             }) {
-                Text("Stop")
+                Text(NSLocalizedString("Stop", comment: "Sync diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
