@@ -144,9 +144,14 @@ final class PreparedStandardSend: NSObject {
                 txidWire: Data(txHash.reversed()), address: address, amount: amount, fee: fee)
 
         case .rejected(_, let reason):
+            // Nothing reached the network, so the money is provably still
+            // here — say that, because "wasn't sent" alone reads as a loss.
             let error = WalletSendService.makeError(
                 code: .broadcastRejected,
-                description: "The transaction wasn't sent. You can try again. \(reason)"
+                description: NSLocalizedString(
+                    "The transaction wasn't sent, so nothing left your wallet. You can try again.",
+                    comment: "Send failed before any bytes reached the network"),
+                diagnostic: reason
             )
             claimLock.lock()
             broadcastState = .ready
@@ -154,9 +159,23 @@ final class PreparedStandardSend: NSObject {
             throw error
 
         case .unknown(_, let reason):
+            // The old copy told the user to "wait for wallet synchronization"
+            // without saying that the wallet is the thing doing the waiting —
+            // and it appended the SDK's internal reason, so the dialog ended
+            // in "SPV broadcast saw no acceptance signal before dash-spv's
+            // acceptance timeout". Neither was actionable, and neither was
+            // localized, so a customer on a non-English device got a wall of
+            // English (support ticket 32189).
+            //
+            // The retry promise is now true rather than aspirational: the
+            // send is re-registered for rebroadcast at every launch, so it
+            // survives closing the app.
             let error = WalletSendService.makeError(
                 code: .broadcastUnknown,
-                description: "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)"
+                description: NSLocalizedString(
+                    "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying on its own, and your balance will update as soon as it goes through.",
+                    comment: "Send dispatched but no network acceptance signal arrived"),
+                diagnostic: reason
             )
             claimLock.lock()
             broadcastState = .unknown(error)
@@ -727,11 +746,25 @@ private extension WalletSendService {
                 comment: "DashPay Contacts"))
     }
 
-    static func makeError(code: ErrorCode, description: String) -> NSError {
-        NSError(
+    /// `userInfo` key carrying the SDK's own explanation of a broadcast
+    /// outcome. Deliberately not `NSLocalizedDescriptionKey`: it is
+    /// engineer-facing text and must never reach a dialog, but support
+    /// still wants it on the error that gets logged.
+    static let diagnosticKey = "org.dashfoundation.dash.send.diagnostic"
+
+    static func makeError(
+        code: ErrorCode,
+        description: String,
+        diagnostic: String? = nil
+    ) -> NSError {
+        var userInfo: [String: Any] = [NSLocalizedDescriptionKey: description]
+        if let diagnostic, !diagnostic.isEmpty {
+            userInfo[diagnosticKey] = diagnostic
+        }
+        return NSError(
             domain: errorDomain,
             code: code.rawValue,
-            userInfo: [NSLocalizedDescriptionKey: description]
+            userInfo: userInfo
         )
     }
 }
