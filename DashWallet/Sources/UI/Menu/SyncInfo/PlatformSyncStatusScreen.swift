@@ -58,7 +58,7 @@ struct PlatformSyncStatusScreen: View {
 
             // Header
             HStack {
-                Text("Platform Sync Status")
+                Text(NSLocalizedString("Platform Sync Status", comment: "Sync diagnostics"))
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.dash.primaryText)
@@ -98,15 +98,24 @@ struct PlatformSyncStatusScreen: View {
         HStack(spacing: 8) {
             if coordinator.isSyncing {
                 SwiftUI.ProgressView().scaleEffect(0.7)
-                Text("Syncing…")
+                Text(NSLocalizedString("Syncing…", comment: "Sync diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
             } else if let lastSync = coordinator.lastSyncTime {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
-                Text("Last sync: \(lastSync, style: .relative) ago")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.dash.primaryText)
+                // Re-render on a timer: `formatted(.relative:)` bakes in the
+                // offset at render time, so without a schedule the value drifts
+                // stale for as long as the screen stays open.
+                TimelineView(.periodic(from: .now, by: 30)) { _ in
+                    Text(String(
+                        format: NSLocalizedString(
+                            "Last sync: %@",
+                            comment: "Sync diagnostics - %@ is a relative time such as 2 hours ago"),
+                        lastSync.formatted(.relative(presentation: .numeric))))
+                }
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.dash.primaryText)
             } else {
                 Image(systemName: "circle.dashed")
                     .foregroundColor(Color.dash.secondaryText)
@@ -128,18 +137,20 @@ struct PlatformSyncStatusScreen: View {
 
     private var stateDescription: String {
         if coordinator.platformAccountAvailability == .unavailable {
-            return "No Platform wallet on this account"
+            return NSLocalizedString("No Platform wallet on this account", comment: "Sync diagnostics")
         }
-        return coordinator.isRunning ? "Not synced yet" : "Idle"
+        return coordinator.isRunning
+            ? NSLocalizedString("Not synced yet", comment: "Sync diagnostics")
+            : NSLocalizedString("Idle", comment: "Sync diagnostics")
     }
 
     private var balanceCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             row(
-                title: "Platform Balance",
+                title: NSLocalizedString("Platform Balance", comment: "Sync diagnostics"),
                 value: PlatformCreditsFormatter.dashString(coordinator.platformBalance))
             row(
-                title: "Active Addresses",
+                title: NSLocalizedString("Active Addresses", comment: "Sync diagnostics"),
                 value: "\(coordinator.activeAddressCount)")
         }
         .padding(16)
@@ -150,13 +161,17 @@ struct PlatformSyncStatusScreen: View {
     private var addressesCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Platform Addresses (\(coordinator.derivedAddresses.count))")
+                Text(String(
+                    format: NSLocalizedString(
+                        "Platform Addresses (%d)",
+                        comment: "Sync diagnostics - count of derived Platform addresses"),
+                    coordinator.derivedAddresses.count))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
             }
             if coordinator.derivedAddresses.isEmpty {
-                Text("No addresses derived yet")
+                Text(NSLocalizedString("No addresses derived yet", comment: "Sync diagnostics"))
                     .font(.system(size: 12))
                     .foregroundColor(Color.dash.secondaryText)
             } else {
@@ -183,7 +198,11 @@ struct PlatformSyncStatusScreen: View {
                     .foregroundColor(.dash.primaryText)
                 HStack(spacing: 6) {
                     Text("#\(addr.accountIndex)/\(addr.addressIndex)")
-                    if addr.isUsed { Text("• used") }
+                    if addr.isUsed {
+                        Text(NSLocalizedString(
+                            "• used",
+                            comment: "Sync diagnostics - marks a derived address that has already been used"))
+                    }
                     if addr.balance > 0 {
                         Text("• \(PlatformCreditsFormatter.dashString(addr.balance))")
                     }
@@ -207,19 +226,23 @@ struct PlatformSyncStatusScreen: View {
     private var heightsCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             if coordinator.chainTipHeight > 0 {
-                row(title: "Chain Tip Height", value: formattedHeight(coordinator.chainTipHeight))
+                row(title: NSLocalizedString("Chain Tip Height", comment: "Sync diagnostics"),
+                    value: formattedHeight(coordinator.chainTipHeight))
             }
             if coordinator.checkpointHeight > 0 {
-                row(title: "Sync Checkpoint", value: formattedHeight(coordinator.checkpointHeight))
+                row(title: NSLocalizedString("Sync Checkpoint", comment: "Sync diagnostics"),
+                    value: formattedHeight(coordinator.checkpointHeight))
             }
             if coordinator.lastKnownRecentBlock > 0 {
-                row(title: "Last Recent Block", value: formattedHeight(coordinator.lastKnownRecentBlock))
+                row(title: NSLocalizedString("Last Recent Block", comment: "Sync diagnostics"),
+                    value: formattedHeight(coordinator.lastKnownRecentBlock))
             } else {
-                row(title: "Last Recent Block", value: "None found")
+                row(title: NSLocalizedString("Last Recent Block", comment: "Sync diagnostics"),
+                    value: NSLocalizedString("None found", comment: "Sync diagnostics"))
             }
             if let blockTime = coordinator.lastSyncBlockTime {
                 HStack {
-                    Text("Block Time")
+                    Text(NSLocalizedString("Block Time", comment: "Sync diagnostics"))
                         .font(.system(size: 13))
                         .foregroundColor(.dash.primaryText)
                     Spacer()
@@ -240,19 +263,29 @@ struct PlatformSyncStatusScreen: View {
     private var queriesCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Queries Since Launch")
+                Text(NSLocalizedString("Queries Since Launch", comment: "Sync diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
-                Text("\(coordinator.syncCountSinceLaunch) syncs")
+                Text(String(
+                    format: NSLocalizedString(
+                        "%d syncs",
+                        comment: "Sync diagnostics - number of syncs since app launch"),
+                    coordinator.syncCountSinceLaunch))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(Color.dash.secondaryText)
             }
             HStack(spacing: 8) {
-                queryBadge(label: "Trunk", count: coordinator.totalTrunkQueries, detail: nil, color: .blue)
-                queryBadge(label: "Branch", count: coordinator.totalBranchQueries, detail: nil, color: .indigo)
-                queryBadge(label: "Compacted", count: coordinator.totalCompactedQueries, detail: coordinator.totalCompactedEntries, color: .orange)
-                queryBadge(label: "Recent", count: coordinator.totalRecentQueries, detail: coordinator.totalRecentEntries, color: .green)
+                queryBadge(label: NSLocalizedString("Trunk", comment: "Sync diagnostics"),
+                           count: coordinator.totalTrunkQueries, detail: nil, color: .blue)
+                queryBadge(label: NSLocalizedString("Branch", comment: "Sync diagnostics"),
+                           count: coordinator.totalBranchQueries, detail: nil, color: .indigo)
+                queryBadge(label: NSLocalizedString("Compacted", comment: "Sync diagnostics"),
+                           count: coordinator.totalCompactedQueries,
+                           detail: coordinator.totalCompactedEntries, color: .orange)
+                queryBadge(label: NSLocalizedString("Recent", comment: "Sync diagnostics"),
+                           count: coordinator.totalRecentQueries,
+                           detail: coordinator.totalRecentEntries, color: .green)
             }
         }
         .padding(16)
@@ -262,7 +295,7 @@ struct PlatformSyncStatusScreen: View {
 
     private func errorCard(message: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Last Error")
+            Text(NSLocalizedString("Last Error", comment: "Sync diagnostics"))
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.red)
             Text(message)
@@ -283,7 +316,7 @@ struct PlatformSyncStatusScreen: View {
             }) {
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.clockwise")
-                    Text("Sync Now")
+                    Text(NSLocalizedString("Sync Now", comment: "Sync diagnostics"))
                 }
                 .font(.system(size: 14, weight: .semibold))
                 .frame(maxWidth: .infinity)
@@ -300,7 +333,9 @@ struct PlatformSyncStatusScreen: View {
                 // trunk/branch rescan — not just a display reset.
                 Task { await coordinator.clearLocalState() }
             }) {
-                Text("Clear")
+                Text(NSLocalizedString(
+                    "Clear",
+                    comment: "Sync diagnostics - button that wipes the local Platform sync state"))
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
@@ -313,7 +348,7 @@ struct PlatformSyncStatusScreen: View {
             Button(action: {
                 PlatformAddressSyncCoordinator.stop()
             }) {
-                Text("Stop")
+                Text(NSLocalizedString("Stop", comment: "Sync diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
