@@ -54,11 +54,11 @@ class CreateUsernameViewController: UIViewController {
 
         self.view.backgroundColor = UIColor.dw_secondaryBackground()
 
-        let content = CreateUsernameView(
-            invitationURI: invitationURI,
-            definedUsername: definedUsername,
-            suppressShieldedHint: suppressShieldedHint
-        ) {
+        // Unwinding is shared; reporting an outcome is not. `finish` ends a
+        // registration whose result is known here, `handOffToHomeRow` leaves a
+        // running one to the Home row without claiming anything about it.
+        let leaveFlow: () -> Void = { [weak self] in
+            guard let self else { return }
             let navigationController = self.navigationController
             #if DASHPAY
             let mainTabController = self.tabBarController as? MainTabbarController
@@ -71,7 +71,6 @@ class CreateUsernameViewController: UIViewController {
             // unwinding to that root is the correct destination for all of
             // them (Home for the home/deep-link entries, More for the menu).
             navigationController?.popToRootViewController(animated: true)
-            self.completionHandler?(true)
             #if DASHPAY
             if let transitionCoordinator = navigationController?.transitionCoordinator {
                 transitionCoordinator.animate(alongsideTransition: nil) { _ in
@@ -82,6 +81,16 @@ class CreateUsernameViewController: UIViewController {
             }
             #endif
         }
+
+        let content = CreateUsernameView(
+            invitationURI: invitationURI,
+            definedUsername: definedUsername,
+            suppressShieldedHint: suppressShieldedHint,
+            finish: { [weak self] in
+                leaveFlow()
+                self?.completionHandler?(true)
+            },
+            handOffToHomeRow: leaveFlow)
         let swiftUIController = UIHostingController(rootView: content)
         swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
         self.dw_embedChild(swiftUIController)
@@ -162,6 +171,13 @@ struct CreateUsernameView: View {
     /// so the form must not re-tease private registration.
     var suppressShieldedHint: Bool = false
     var finish: () -> Void
+    /// Leaves the flow WITHOUT reporting an outcome. A handoff happens while
+    /// the registration is still running — `preparingKeys`/`inFlight`, before
+    /// payment has even settled — so routing it through `finish` showed
+    /// "Username was successfully requested" for an attempt that can still
+    /// fail, and the later failure would arrive only on the Home row,
+    /// contradicting a HUD the user had already seen.
+    var handOffToHomeRow: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -756,17 +772,48 @@ struct CreateUsernameView: View {
             DWIdentityRegistrationBridge.shared.preferredFundingSource =
                 viewModel.hasPendingRegistrationRecovery ? .core : fundingSource
         }
+        // A plain name reports its progress on Home and this screen steps
+        // aside. The other two keep the blocking flow: a contested submission
+        // ends in the voting explanation, which has nowhere else to live, and an
+        // invitation claim carries the inviter contact request afterwards —
+        // both on this screen, and the invitation path bypasses the bridge the
+        // Home row reads.
+        let handsOffToHomeRow = !viewModel.isInvitationMode
+            && !DWContestedNameStatusService.isContestedLabel(
+                viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines))
         Task {
-            // `inProgress` keeps the Continue spinner up — and the screen
-            // alive — across the PIN gate and the whole registration. The
+            // `inProgress` keeps the Continue spinner up across the PIN gate.
+            // Where the screen hands off, that is all it still does; otherwise
+            // it also holds the screen alive for the whole registration and the
             // bridge completion resolves the outcome at the terminal phase.
             inProgress = true
             screenLockedAfterAuth = false
+            var didHandOff = false
             let outcome = await viewModel.submitUsernameRequest(temporaryUsername: temporaryUsername) {
                 isTextInputFocused = false
-                screenLockedAfterAuth = true
+                if handsOffToHomeRow {
+                    // Fires once the registration is actually running — after
+                    // the PIN gate, which `startCreateUsername` passes before
+                    // any phase change. The work itself lives in the
+                    // app-scoped coordinator and outlives this screen.
+                    didHandOff = true
+                    // The label the registration actually went out under, not
+                    // a second normalization of the field: the two must name
+                    // the same attempt or the row reports an interruption for
+                    // a registration that is running.
+                    JoinDashPayViewModel.markRegistrationHandedOff(
+                        username: viewModel.submittedRegistrationUsername
+                            ?? viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines))
+                    handOffToHomeRow()
+                } else {
+                    screenLockedAfterAuth = true
+                }
             }
             inProgress = false
+
+            // The Home row owns the outcome now; alerts from a dismissed screen
+            // would either be invisible or land on top of Home.
+            guard !didHandOff else { return }
 
             switch outcome {
             case .success:

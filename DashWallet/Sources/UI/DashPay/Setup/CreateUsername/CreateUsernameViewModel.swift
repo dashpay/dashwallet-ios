@@ -54,7 +54,9 @@ class CreateUsernameViewModel: ObservableObject {
     /// query that distinguishes a locked name from one mid-vote.
     private let marketplaceService = UsernameMarketplaceService()
     private let illegalChars = TemporaryUsernameFieldModel.illegalCharacters
-    private var submittedRegistrationUsername: String?
+    /// The normalized label the running registration was submitted under.
+    /// Read by the form for its handoff so both name the same attempt.
+    private(set) var submittedRegistrationUsername: String?
     private var didNotifyRegistrationStarted = false
     private var onRegistrationStarted: (@MainActor () -> Void)?
     /// In-flight DPNS availability check. Cancelled and replaced when
@@ -362,7 +364,14 @@ class CreateUsernameViewModel: ObservableObject {
         // check and put the spinner back up mid-submission.
         coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
 
-        let submittedUsername = username
+        // Normalized ONCE, here, and used for everything that follows:
+        // registration, the phase match below, and the handoff label the Home
+        // row is keyed by. `validateUsername` trims only its local argument, so
+        // a pasted label can reach this point with surrounding whitespace —
+        // registering the raw form while the handoff persists the trimmed one
+        // leaves the row reporting an interrupted registration for an attempt
+        // that is actually running.
+        let submittedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
         submittedRegistrationUsername = submittedUsername
         didNotifyRegistrationStarted = false
         self.onRegistrationStarted = onRegistrationStarted

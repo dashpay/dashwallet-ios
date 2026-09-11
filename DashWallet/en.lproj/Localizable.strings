@@ -2670,6 +2670,12 @@
 /* Username marketplace: registration date */
 "Registered" = "Registered";
 
+/* Usernames — Home row title while a username is being registered */
+"Creating – %@" = "Creating – %@";
+
+/* Usernames — the app closed before the registration finished */
+"Registration was interrupted" = "Registration was interrupted";
+
 /* Username marketplace */
 "Remove From Sale" = "Remove From Sale";
 

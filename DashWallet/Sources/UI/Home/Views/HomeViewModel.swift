@@ -3069,13 +3069,18 @@ enum JoinDashPayBannerPolicy {
         syncDone: Bool,
         dismissed: Bool,
         hasRegisteredUsername: Bool,
-        hasRegistrationInProgress: Bool
+        hasRegistrationInProgress: Bool,
+        reportsRegistration: Bool = false
     ) -> Bool {
-        contextReady &&
-            syncDone &&
-            !dismissed &&
-            !hasRegisteredUsername &&
-            !hasRegistrationInProgress
+        // A registration this wallet started is reported on the same row, and
+        // that report is its only surface once the create screen has stepped
+        // aside — so it shows whether or not the call to action was dismissed.
+        reportsRegistration ||
+            (contextReady &&
+                syncDone &&
+                !dismissed &&
+                !hasRegisteredUsername &&
+                !hasRegistrationInProgress)
     }
 }
 
@@ -3116,7 +3121,8 @@ extension HomeViewModel {
             syncDone: true,
             dismissed: UsernamePrefs.shared.joinDashPayDismissed,
             hasRegisteredUsername: hasRegisteredUsername,
-            hasRegistrationInProgress: identityScopedRegistrationState)
+            hasRegistrationInProgress: identityScopedRegistrationState,
+            reportsRegistration: joinDashPayState.isRegistrationReport)
     }
     
     private func observeDashPay() {
