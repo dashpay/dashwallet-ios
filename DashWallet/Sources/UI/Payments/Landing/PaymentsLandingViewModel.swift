@@ -165,9 +165,8 @@ final class PaymentsLandingViewModel: ObservableObject {
         case shielded(activityIds: Set<String>)
     }
 
-    /// Everything about a session that is known before its baseline is read.
-    /// Separate because the shielded baseline is resolved off the main actor,
-    /// and these have to be captured before that suspension.
+    /// Everything about a session other than its baseline, captured before
+    /// the baseline is read.
     private struct ReceiptSessionSeed {
         let generation: UInt64
         let rail: ChainNetwork
@@ -211,12 +210,6 @@ final class PaymentsLandingViewModel: ObservableObject {
     private var platformReceiptCancellable: AnyCancellable?
     private var shieldedReceiptCancellable: AnyCancellable?
     private var attendedRefreshTask: Task<Void, Never>?
-    /// In-flight shielded baseline read. Held so leaving the surface, or a
-    /// route change, cancels the session it was about to open.
-    private var receiptSessionTask: Task<Void, Never>?
-    /// Which rail that in-flight read is for, so a reconcile arriving while it
-    /// runs can tell "already being started" from "needs starting".
-    private var receiptSessionRail: ChainNetwork?
     private var shieldedProjectionTask: Task<Void, Never>?
     private var shieldedProjectionRefreshPending = false
     private var shieldedProjectionGeneration: UInt64 = 0
@@ -376,17 +369,6 @@ final class PaymentsLandingViewModel: ObservableObject {
         if session?.rail == network, let displayedAddress {
             return displayedAddress
         }
-        // A rail whose baseline is still being built has no session yet, and
-        // handing out its address anyway put the QR and every receive action
-        // on screen ahead of one. Two ways that loses a payment: one persisted
-        // while the notes are being walked is folded INTO the baseline and
-        // excluded for the whole session, and sharing suspends watching, which
-        // cancels the pending baseline so the replacement — built afterwards —
-        // contains it too. Shielded is the only rail whose baseline cannot be
-        // a cheap read, so it is the only one that ever waits here.
-        if receiptSessionRail == network {
-            return nil
-        }
         return candidateAddress(for: network)
     }
 
@@ -526,72 +508,47 @@ final class PaymentsLandingViewModel: ObservableObject {
             return
         }
 
-        // A baseline for this rail is already being read. Let it land rather
-        // than cancelling and re-reading: `reconcileReceiptWatching` is driven
-        // by publishers that tick faster than the read completes, and
-        // restarting on each tick would mean it never completes at all.
-        if receiptSessionRail == network { return }
-
         generation &+= 1
-        let rail = network
-        // Stamped once, above the baseline reads rather than below them. Both
+        // Stamped once, above the baseline read rather than below it. Both
         // the Core snapshot's floor and the subscription's own floor derive
         // from it, and a transaction persisted between two separately-stamped
         // instants would land in neither.
         let seed = ReceiptSessionSeed(
             generation: generation,
-            rail: rail,
+            rail: network,
             address: address,
             walletId: walletId,
             environment: environment,
             startedAt: Date())
-        let sessionGeneration = seed.generation
 
-        switch rail {
+        // Every rail's baseline is a cheap read, so the session exists before
+        // the address can be acted on and nothing is ever withheld waiting
+        // for one.
+        let baseline: ReceiptBaseline
+        switch network {
         case .core:
             // Bounded by the floor the subscription will scan from: anything
             // older cannot be emitted, so it does not need excluding.
-            beginSession(seed, baseline: .core(
+            baseline = .core(
                 transactionIds: TransactionObserver.persistedTransactionIDs(
-                    firstSeenAtOrAfter: TransactionObserver.matchFloor(after: seed.startedAt))))
+                    firstSeenAtOrAfter: TransactionObserver.matchFloor(after: seed.startedAt)))
         case .platform:
-            beginSession(seed, baseline: .platform(
+            baseline = .platform(
                 activityCursor: PlatformAddressActivityDAO.shared.latestActivityId(
                     walletId: walletId,
-                    networkRaw: Int64(environment.rawValue))))
+                    networkRaw: Int64(environment.rawValue)))
         case .shielded:
-            // The only baseline that cannot be a cheap read: it walks the
-            // wallet's notes and rebuilds the whole projected activity list.
-            // Off the main actor, exactly as every later refresh of the same
-            // projection already is — and the session is created in the
-            // completion rather than left to be filled in, so a note that was
-            // already there can never be admitted as a new payment.
-            receiptSessionTask?.cancel()
-            receiptSessionRail = rail
-            receiptSessionTask = Task { [weak self] in
-                let ids = await Task.detached(priority: .userInitiated) {
-                    Set(Self.projectedShieldedActivity().map(\.id))
-                }.value
-                guard let self, !Task.isCancelled else { return }
-                self.receiptSessionTask = nil
-                self.receiptSessionRail = nil
-                // The route can have moved while the notes were being walked.
-                guard self.generation == sessionGeneration,
-                      self.network == rail,
-                      self.canActivelyWatch,
-                      self.session == nil
-                else { return }
-                self.beginSession(seed, baseline: .shielded(activityIds: ids))
-            }
+            // The persisted rows' ids, not the projected activity list: the
+            // projection materializes the wallet's whole Core history to
+            // reconcile against. A row that exists now is not a new payment
+            // whatever the projection later makes of it, so the unprojected
+            // superset is the right thing to exclude.
+            baseline = .shielded(
+                activityIds: SwiftDashSDKWalletSource.persistedShieldedActivityIds())
         }
-    }
 
-    /// Installs the session and starts watching on it. Split out so the rails
-    /// whose baseline is a cheap read and the one that has to leave the main
-    /// actor for it arrive at the same place.
-    private func beginSession(_ seed: ReceiptSessionSeed, baseline: ReceiptBaseline) {
         session = ReceiptSession(seed: seed, baseline: baseline)
-        displayedAddress = seed.address
+        displayedAddress = address
         resumeReceiptWatching()
     }
 
@@ -846,9 +803,6 @@ final class PaymentsLandingViewModel: ObservableObject {
 
     private func suspendReceiptWatching() {
         isWatchingForReceipt = false
-        receiptSessionTask?.cancel()
-        receiptSessionTask = nil
-        receiptSessionRail = nil
         coreReceiptCancellable?.cancel()
         coreReceiptCancellable = nil
         platformReceiptCancellable?.cancel()
