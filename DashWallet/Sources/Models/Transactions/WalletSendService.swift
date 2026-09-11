@@ -148,9 +148,7 @@ final class PreparedStandardSend: NSObject {
             // here — say that, because "wasn't sent" alone reads as a loss.
             let error = WalletSendService.makeError(
                 code: .broadcastRejected,
-                description: NSLocalizedString(
-                    "The transaction wasn't sent, so nothing left your wallet. You can try again.",
-                    comment: "Send failed before any bytes reached the network"),
+                description: WalletSendService.BroadcastOutcomeCopy.rejected,
                 diagnostic: reason
             )
             claimLock.lock()
@@ -172,9 +170,7 @@ final class PreparedStandardSend: NSObject {
             // survives closing the app.
             let error = WalletSendService.makeError(
                 code: .broadcastUnknown,
-                description: NSLocalizedString(
-                    "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying on its own, and your balance will update as soon as it goes through.",
-                    comment: "Send dispatched but no network acceptance signal arrived"),
+                description: WalletSendService.BroadcastOutcomeCopy.unknown,
                 diagnostic: reason
             )
             claimLock.lock()
@@ -332,12 +328,14 @@ final class WalletSendService: NSObject {
             } catch SwiftDashSDKTransactionSender.SendError.transactionRejected(_, let reason) {
                 throw Self.makeError(
                     code: .broadcastRejected,
-                    description: "The transaction wasn't sent. You can try again. \(reason)"
+                    description: BroadcastOutcomeCopy.rejected,
+                    diagnostic: reason
                 )
             } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(_, let reason) {
                 throw Self.makeError(
                     code: .broadcastUnknown,
-                    description: "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)"
+                    description: BroadcastOutcomeCopy.unknown,
+                    diagnostic: reason
                 )
             }
         }
@@ -751,6 +749,33 @@ private extension WalletSendService {
     /// engineer-facing text and must never reach a dialog, but support
     /// still wants it on the error that gets logged.
     static let diagnosticKey = "org.dashfoundation.dash.send.diagnostic"
+
+    /// The two broadcast outcomes a user can be shown, in one place.
+    ///
+    /// Every send route ends in one of these, and there is more than one route
+    /// — the prepared standard send and the selected-input / sweep path, which
+    /// broadcasts inside `buildAndSignFromAddress` and never reaches
+    /// `PreparedStandardSend.broadcast()`. They used to build the strings
+    /// independently and drifted apart, so one route kept showing unlocalized
+    /// English with the SDK's internal reason appended.
+    enum BroadcastOutcomeCopy {
+        /// Nothing reached the network, so the money is provably still here —
+        /// say that, because "wasn't sent" alone reads as a loss.
+        static var rejected: String {
+            NSLocalizedString(
+                "The transaction wasn't sent, so nothing left your wallet. You can try again.",
+                comment: "Send failed before any bytes reached the network")
+        }
+
+        /// The transaction went out and no acceptance signal came back. The
+        /// retry promise is real: an unconfirmed send is re-registered for
+        /// rebroadcast at every launch, so it survives closing the app.
+        static var unknown: String {
+            NSLocalizedString(
+                "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying on its own, and your balance will update as soon as it goes through.",
+                comment: "Send dispatched but no network acceptance signal arrived")
+        }
+    }
 
     static func makeError(
         code: ErrorCode,
