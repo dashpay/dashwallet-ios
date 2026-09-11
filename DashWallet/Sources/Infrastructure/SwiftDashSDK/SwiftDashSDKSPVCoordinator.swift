@@ -682,9 +682,12 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 immature: core.immature,
                 locked: core.locked)
             if SwiftDashSDKWalletState.shared.balance == nil {
-                // First publish of the session. Logged because a "my wallet
-                // shows 0" report is answered by whether this line appeared
-                // and what it carried.
+                // First publish after each bind — not once per session:
+                // `clearAllState()` restores `nil` on every network switch,
+                // wallet switch and wipe, so one support capture can carry
+                // several of these. Logged because a "my wallet shows 0"
+                // report is answered by whether this line appeared and what it
+                // carried.
                 // The amount is `.private`: this line ships in release builds
                 // and lands in diagnostic captures, where the aggregate balance
                 // would be readable without unlocking the wallet. The event and

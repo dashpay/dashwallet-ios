@@ -540,7 +540,13 @@ extension SyncingActivityMonitor {
                 guard let self else { return }
 
                 // `handlePathUpdate` posts on every path update, not only on a
-                // change, so act on the transition INTO `.online` alone.
+                // change, so act on `.offline → .online` alone. Specifically
+                // `previous == .offline`, not `previous != .online`: the field
+                // starts at `.unknown`, so the looser test made the first path
+                // report of every cold launch look like connectivity returning.
+                // That fired a refresh the launch path had already queued, and
+                // during onboarding it reached `refresh`'s unconditional
+                // `fullReset` before the `hasSDKWallet` guard could bail.
                 // `startIfReady` elides the rebuild when Core is already up and
                 // starts Platform on its own, so this brings a degraded
                 // Platform back without stopping a healthy Core sync.
@@ -553,7 +559,7 @@ extension SyncingActivityMonitor {
                 // on the lifecycle queue.
                 let previous = self.lastNetworkStatus
                 self.lastNetworkStatus = status
-                if status == .online, previous != .online {
+                if status == .online, previous == .offline {
                     SwiftDashSDKWalletRuntime.startIfReadyWhenLifecycleIdle()
                 }
 
