@@ -393,6 +393,9 @@
 /* Masternode status */
 "Active" = "Aktywny";
 
+/* Sync diagnostics */
+"Active Addresses" = "Active Addresses";
+
 /* No comment provided by engineer. */
 "Activity" = "Aktywność";
 
@@ -809,6 +812,9 @@
 "Block height" = "Block height";
 
 /* Sync diagnostics */
+"Block Height" = "Block Height";
+
+/* Sync diagnostics */
 "Block Time" = "Block Time";
 
 /* No comment provided by engineer. */
@@ -822,6 +828,9 @@
 
 /* Identities: this key only signs one document type of one data contract */
 "Bound to contract, document type “%@”" = "Powiązany z kontraktem, typ dokumentu „%@”";
+
+/* Sync diagnostics */
+"Branch" = "Branch";
 
 /* Masternode unban */
 "Broadcast" = "Broadcast";
@@ -960,6 +969,9 @@
 /* No comment provided by engineer. */
 "Chain ID" = "ID łańcucha";
 
+/* Sync diagnostics */
+"Chain Tip Height" = "Chain Tip Height";
+
 /* Receive payment status */
 "ChainLocked" = "ChainLocked";
 
@@ -986,6 +998,9 @@
 
 /* DashSpend */
 "Check your email and enter the verification code." = "Sprawdź swoją pocztę e-mail i wprowadź kod weryfikacyjny";
+
+/* Sync diagnostics */
+"Checked" = "Checked";
 
 /* Dash DEX */
 "Checking amount…" = "Checking amount…";
@@ -1077,6 +1092,9 @@
 
 /* DashPay intro: feature title */
 "Coming soon" = "Wkrótce";
+
+/* Sync diagnostics */
+"Compacted" = "Compacted";
 
 /* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
 "Complete Transfer" = "Dokończ transfer";
@@ -1659,6 +1677,9 @@
 
 /* Send confirm sheet */
 "Double-check the address" = "Sprawdź adres jeszcze raz";
+
+/* Sync diagnostics */
+"Downloaded" = "Downloaded";
 
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
@@ -2323,6 +2344,9 @@
 /* About screen tech info: SPV state */
 "idle" = "idle";
 
+/* Sync diagnostics */
+"Idle" = "Idle";
+
 /* Usernames */
 "If enough of the network feels that a username is inappropriate, they can block it" = "Jeśli wystarczająca liczba użytkowników sieci uzna, że nazwa użytkownika jest nieodpowiednia, mogą ją zablokować.";
 
@@ -2597,8 +2621,14 @@
 /* Sync diagnostics */
 "Last Manual Pass" = "Last Manual Pass";
 
+/* Sync diagnostics */
+"Last Recent Block" = "Last Recent Block";
+
 /* Explore Dash */
 "Last server update" = "Ostatni update serwera";
+
+/* Sync diagnostics */
+"Last Sync Duration" = "Last Sync Duration";
 
 /* Sync diagnostics - %@ is a relative time such as 2 hours ago */
 "Last sync: %@" = "Last sync: %@";
@@ -2802,6 +2832,9 @@
 
 /* Maya */
 "Long press to paste" = "Long press to paste";
+
+/* Sync diagnostics */
+"Longest Pass" = "Longest Pass";
 
 /* Leftover balance warning */
 "Looks like you are emptying your Dash Wallet" = "Wygląda na to że opróżniasz swój portfel Dash";
@@ -3181,6 +3214,9 @@
 /* Identity top-up sheet — missing unshield destination */
 "No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "Adres odbioru Platform nie jest jeszcze dostępny — poczekaj na zakończenie synchronizacji Platform i spróbuj ponownie.";
 
+/* Sync diagnostics */
+"No Platform wallet on this account" = "No Platform wallet on this account";
+
 /* Username marketplace: empty purchases feed */
 "No purchases on the network yet." = "Brak zakupów w sieci.";
 
@@ -3255,6 +3291,9 @@
 
 /* adjective, security level */
 "None" = "Żaden";
+
+/* Sync diagnostics */
+"None found" = "None found";
 
 /* Voting */
 "None of the selected usernames can take this vote any more — reopen them to see their current requests." = "None of the selected usernames can take this vote any more — reopen them to see their current requests.";
@@ -3345,6 +3384,9 @@
 
 /* DashPay Contacts */
 "Note" = "Note";
+
+/* Sync diagnostics */
+"Notes Synced" = "Notes Synced";
 
 /* Voting */
 "Nothing is left to cast." = "Nothing is left to cast.";
@@ -3636,6 +3678,9 @@
 
 /* The Dash Platform credits balance */
 "Platform balance" = "Saldo Platform";
+
+/* Sync diagnostics */
+"Platform Balance" = "Platform Balance";
 
 /* No comment provided by engineer. */
 "Platform could not be reached, so owner and payout keys were not checked." = "Nie udało się połączyć z Platform, więc klucze właściciela i wypłaty nie zostały sprawdzone.";
@@ -3961,6 +4006,9 @@
 /* CrowdNode */
 "Receiving rewards" = "Otrzymywanie wynagrodzenia";
 
+/* Sync diagnostics */
+"Recent" = "Recent";
+
 /* Username marketplace: transfer recipient placeholder */
 "Recipient username or identity ID" = "Nazwa użytkownika lub ID tożsamości odbiorcy";
 
@@ -3990,6 +4038,9 @@
 
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Hasła odzyskiwania muszą mieć 12, 15, 18, 21 lub 24 slowa";
+
+/* Sync diagnostics */
+"Recurring" = "Recurring";
 
 /* Masternodes */
 "Refresh" = "Odśwież";
@@ -4251,6 +4302,9 @@
 
 /* No comment provided by engineer. */
 "Scan to Send" = "Skanuj by Wysłać";
+
+/* Sync diagnostics */
+"Scanned" = "Scanned";
 
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "Wykryto Zrzut Ekranu. Nowe Frazy Odzyskiwania:";
@@ -4687,6 +4741,9 @@
 /* Explore Dash/Merchants/Filters */
 "Spending options" = "Opcje wydania";
 
+/* Sync diagnostics */
+"Spent" = "Spent";
+
 /* ex., SPV: syncing (87%) */
 "SPV: %@ (%d%%)" = "SPV: %1$@ (%2$d%%)";
 
@@ -4722,6 +4779,9 @@
 
 /* No comment provided by engineer. */
 "Stop tracking this masternode?" = "Przestać śledzić tego masternoda?";
+
+/* Sync diagnostics */
+"Stopped" = "Stopped";
 
 /* SPV diagnostics */
 "stopped after repeated failures" = "stopped after repeated failures";
@@ -4818,6 +4878,9 @@
 
 /* Wallets */
 "Switching wallet…" = "Switching wallet…";
+
+/* Sync diagnostics */
+"Sync Checkpoint" = "Sync Checkpoint";
 
 /* No comment provided by engineer. */
 "Sync Failed" = "Synchronizacja Zawiodła";
@@ -5434,6 +5497,9 @@
 /* Wallet accounts */
 "Total Balance" = "Total Balance";
 
+/* Sync diagnostics */
+"Total Shielded Balance" = "Total Shielded Balance";
+
 /* No comment provided by engineer. */
 "Total snapshots" = "Łącznie migawek";
 
@@ -5579,6 +5645,9 @@
 
 /* Transfer of own funds into the private shielded balance */
 "Transparent → Shielded" = "Transparentne → Osłonięte";
+
+/* Sync diagnostics */
+"Trunk" = "Trunk";
 
 /* An action */
 "Try again" = "Spróbuj jeszcze raz";
@@ -6031,8 +6100,14 @@
 /* Wallets */
 "Wallets" = "Wallets";
 
+/* Sync diagnostics */
+"Wallets Failed" = "Wallets Failed";
+
 /* No comment provided by engineer. */
 "Wallets found on this device" = "Portfele znalezione na tym urządzeniu";
+
+/* Sync diagnostics */
+"Wallets Synced" = "Wallets Synced";
 
 /* No comment provided by engineer. */
 "Warning" = "Ostrzeżenie";

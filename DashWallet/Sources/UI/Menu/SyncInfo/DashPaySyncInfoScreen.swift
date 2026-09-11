@@ -67,7 +67,7 @@ final class DashPaySyncInfoViewModel: ObservableObject {
 
     func syncNow() async {
         guard let manager = PlatformAddressSyncCoordinator.shared.platformWalletManager else {
-            lastError = "Platform sync is not running"
+            lastError = NSLocalizedString("Platform sync is not running", comment: "Sync diagnostics")
             return
         }
         lastError = nil
@@ -229,7 +229,9 @@ struct DashPaySyncInfoScreen: View {
             }
             Spacer()
             if let running = viewModel.isLoopRunning {
-                Text(running ? "Recurring" : "Stopped")
+                Text(running
+                     ? NSLocalizedString("Recurring", comment: "Sync diagnostics")
+                     : NSLocalizedString("Stopped", comment: "Sync diagnostics"))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(running ? .secondary : .orange)
             }
@@ -247,8 +249,10 @@ struct DashPaySyncInfoScreen: View {
                     .foregroundColor(.dash.primaryText)
                 Spacer()
             }
-            row(title: "Wallets Synced", value: "\(summary.success)")
-            row(title: "Wallets Failed", value: "\(summary.errors)")
+            row(title: NSLocalizedString("Wallets Synced", comment: "Sync diagnostics"),
+                value: "\(summary.success)")
+            row(title: NSLocalizedString("Wallets Failed", comment: "Sync diagnostics"),
+                value: "\(summary.errors)")
         }
         .padding(16)
         .background(Color.dash.secondaryBackground)

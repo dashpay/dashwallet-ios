@@ -393,6 +393,9 @@
 /* Masternode status */
 "Active" = "Aktívny";
 
+/* Sync diagnostics */
+"Active Addresses" = "Active Addresses";
+
 /* No comment provided by engineer. */
 "Activity" = "Aktivita";
 
@@ -809,6 +812,9 @@
 "Block height" = "Block height";
 
 /* Sync diagnostics */
+"Block Height" = "Block Height";
+
+/* Sync diagnostics */
 "Block Time" = "Block Time";
 
 /* No comment provided by engineer. */
@@ -822,6 +828,9 @@
 
 /* Identities: this key only signs one document type of one data contract */
 "Bound to contract, document type “%@”" = "Viazaný na kontrakt, typ dokumentu „%@“";
+
+/* Sync diagnostics */
+"Branch" = "Branch";
 
 /* Masternode unban */
 "Broadcast" = "Broadcast";
@@ -960,6 +969,9 @@
 /* No comment provided by engineer. */
 "Chain ID" = "ID reťazca";
 
+/* Sync diagnostics */
+"Chain Tip Height" = "Chain Tip Height";
+
 /* Receive payment status */
 "ChainLocked" = "ChainLocked";
 
@@ -986,6 +998,9 @@
 
 /* DashSpend */
 "Check your email and enter the verification code." = "Skontrolujte svoj e-mail a zadajte overovací kód.";
+
+/* Sync diagnostics */
+"Checked" = "Checked";
 
 /* Dash DEX */
 "Checking amount…" = "Checking amount…";
@@ -1077,6 +1092,9 @@
 
 /* DashPay intro: feature title */
 "Coming soon" = "Už čoskoro";
+
+/* Sync diagnostics */
+"Compacted" = "Compacted";
 
 /* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
 "Complete Transfer" = "Dokončiť prevod";
@@ -1659,6 +1677,9 @@
 
 /* Send confirm sheet */
 "Double-check the address" = "Skontrolujte adresu ešte raz";
+
+/* Sync diagnostics */
+"Downloaded" = "Downloaded";
 
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
@@ -2323,6 +2344,9 @@
 /* About screen tech info: SPV state */
 "idle" = "idle";
 
+/* Sync diagnostics */
+"Idle" = "Idle";
+
 /* Usernames */
 "If enough of the network feels that a username is inappropriate, they can block it" = "Ak dostatočný počet členov siete považuje používateľské meno za nevhodné, môže ho zablokovať.";
 
@@ -2597,8 +2621,14 @@
 /* Sync diagnostics */
 "Last Manual Pass" = "Last Manual Pass";
 
+/* Sync diagnostics */
+"Last Recent Block" = "Last Recent Block";
+
 /* Explore Dash */
 "Last server update" = "Posledná synchronizácia servera";
+
+/* Sync diagnostics */
+"Last Sync Duration" = "Last Sync Duration";
 
 /* Sync diagnostics - %@ is a relative time such as 2 hours ago */
 "Last sync: %@" = "Last sync: %@";
@@ -2802,6 +2832,9 @@
 
 /* Maya */
 "Long press to paste" = "Long press to paste";
+
+/* Sync diagnostics */
+"Longest Pass" = "Longest Pass";
 
 /* Leftover balance warning */
 "Looks like you are emptying your Dash Wallet" = "Zdá sa, že vyprázdňujete svoju Dash peňaženku";
@@ -3181,6 +3214,9 @@
 /* Identity top-up sheet — missing unshield destination */
 "No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "Zatiaľ nie je k dispozícii žiadna prijímacia adresa Platform — počkajte na dokončenie synchronizácie Platform a skúste to znova.";
 
+/* Sync diagnostics */
+"No Platform wallet on this account" = "No Platform wallet on this account";
+
 /* Username marketplace: empty purchases feed */
 "No purchases on the network yet." = "V sieti zatiaľ nie sú žiadne nákupy.";
 
@@ -3255,6 +3291,9 @@
 
 /* adjective, security level */
 "None" = "Žiadne";
+
+/* Sync diagnostics */
+"None found" = "None found";
 
 /* Voting */
 "None of the selected usernames can take this vote any more — reopen them to see their current requests." = "None of the selected usernames can take this vote any more — reopen them to see their current requests.";
@@ -3345,6 +3384,9 @@
 
 /* DashPay Contacts */
 "Note" = "Note";
+
+/* Sync diagnostics */
+"Notes Synced" = "Notes Synced";
 
 /* Voting */
 "Nothing is left to cast." = "Nothing is left to cast.";
@@ -3636,6 +3678,9 @@
 
 /* The Dash Platform credits balance */
 "Platform balance" = "Zostatok Platform";
+
+/* Sync diagnostics */
+"Platform Balance" = "Platform Balance";
 
 /* No comment provided by engineer. */
 "Platform could not be reached, so owner and payout keys were not checked." = "Platform sa nepodarilo kontaktovať, preto kľúče vlastníka a výplaty neboli skontrolované.";
@@ -3961,6 +4006,9 @@
 /* CrowdNode */
 "Receiving rewards" = "Prijímané odmeny";
 
+/* Sync diagnostics */
+"Recent" = "Recent";
+
 /* Username marketplace: transfer recipient placeholder */
 "Recipient username or identity ID" = "Používateľské meno alebo ID identity príjemcu";
 
@@ -3990,6 +4038,9 @@
 
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Fráza pre obnovenie musí mať 12, 15, 18, 21 alebo 24 slov";
+
+/* Sync diagnostics */
+"Recurring" = "Recurring";
 
 /* Masternodes */
 "Refresh" = "Obnoviť";
@@ -4251,6 +4302,9 @@
 
 /* No comment provided by engineer. */
 "Scan to Send" = "Skenovať a poslať";
+
+/* Sync diagnostics */
+"Scanned" = "Scanned";
 
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "Snímka obrazovky detekovaná. Nová fráza pre obnovenie účtu:";
@@ -4687,6 +4741,9 @@
 /* Explore Dash/Merchants/Filters */
 "Spending options" = "Možnosti výdavkov";
 
+/* Sync diagnostics */
+"Spent" = "Spent";
+
 /* ex., SPV: syncing (87%) */
 "SPV: %@ (%d%%)" = "SPV: %1$@ (%2$d%%)";
 
@@ -4722,6 +4779,9 @@
 
 /* No comment provided by engineer. */
 "Stop tracking this masternode?" = "Prestať sledovať tento masternode?";
+
+/* Sync diagnostics */
+"Stopped" = "Stopped";
 
 /* SPV diagnostics */
 "stopped after repeated failures" = "stopped after repeated failures";
@@ -4818,6 +4878,9 @@
 
 /* Wallets */
 "Switching wallet…" = "Switching wallet…";
+
+/* Sync diagnostics */
+"Sync Checkpoint" = "Sync Checkpoint";
 
 /* No comment provided by engineer. */
 "Sync Failed" = "Synchronizácia zlyhala";
@@ -5434,6 +5497,9 @@
 /* Wallet accounts */
 "Total Balance" = "Total Balance";
 
+/* Sync diagnostics */
+"Total Shielded Balance" = "Total Shielded Balance";
+
 /* No comment provided by engineer. */
 "Total snapshots" = "Snímok celkovo";
 
@@ -5579,6 +5645,9 @@
 
 /* Transfer of own funds into the private shielded balance */
 "Transparent → Shielded" = "Transparentný → Tienený";
+
+/* Sync diagnostics */
+"Trunk" = "Trunk";
 
 /* An action */
 "Try again" = "Skúsiť znova";
@@ -6031,8 +6100,14 @@
 /* Wallets */
 "Wallets" = "Wallets";
 
+/* Sync diagnostics */
+"Wallets Failed" = "Wallets Failed";
+
 /* No comment provided by engineer. */
 "Wallets found on this device" = "Peňaženky nájdené na tomto zariadení";
+
+/* Sync diagnostics */
+"Wallets Synced" = "Wallets Synced";
 
 /* No comment provided by engineer. */
 "Warning" = "Upozornenie";

@@ -137,18 +137,20 @@ struct PlatformSyncStatusScreen: View {
 
     private var stateDescription: String {
         if coordinator.platformAccountAvailability == .unavailable {
-            return "No Platform wallet on this account"
+            return NSLocalizedString("No Platform wallet on this account", comment: "Sync diagnostics")
         }
-        return coordinator.isRunning ? "Not synced yet" : "Idle"
+        return coordinator.isRunning
+            ? NSLocalizedString("Not synced yet", comment: "Sync diagnostics")
+            : NSLocalizedString("Idle", comment: "Sync diagnostics")
     }
 
     private var balanceCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             row(
-                title: "Platform Balance",
+                title: NSLocalizedString("Platform Balance", comment: "Sync diagnostics"),
                 value: PlatformCreditsFormatter.dashString(coordinator.platformBalance))
             row(
-                title: "Active Addresses",
+                title: NSLocalizedString("Active Addresses", comment: "Sync diagnostics"),
                 value: "\(coordinator.activeAddressCount)")
         }
         .padding(16)
@@ -224,15 +226,19 @@ struct PlatformSyncStatusScreen: View {
     private var heightsCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             if coordinator.chainTipHeight > 0 {
-                row(title: "Chain Tip Height", value: formattedHeight(coordinator.chainTipHeight))
+                row(title: NSLocalizedString("Chain Tip Height", comment: "Sync diagnostics"),
+                    value: formattedHeight(coordinator.chainTipHeight))
             }
             if coordinator.checkpointHeight > 0 {
-                row(title: "Sync Checkpoint", value: formattedHeight(coordinator.checkpointHeight))
+                row(title: NSLocalizedString("Sync Checkpoint", comment: "Sync diagnostics"),
+                    value: formattedHeight(coordinator.checkpointHeight))
             }
             if coordinator.lastKnownRecentBlock > 0 {
-                row(title: "Last Recent Block", value: formattedHeight(coordinator.lastKnownRecentBlock))
+                row(title: NSLocalizedString("Last Recent Block", comment: "Sync diagnostics"),
+                    value: formattedHeight(coordinator.lastKnownRecentBlock))
             } else {
-                row(title: "Last Recent Block", value: "None found")
+                row(title: NSLocalizedString("Last Recent Block", comment: "Sync diagnostics"),
+                    value: NSLocalizedString("None found", comment: "Sync diagnostics"))
             }
             if let blockTime = coordinator.lastSyncBlockTime {
                 HStack {
@@ -270,10 +276,16 @@ struct PlatformSyncStatusScreen: View {
                     .foregroundColor(Color.dash.secondaryText)
             }
             HStack(spacing: 8) {
-                queryBadge(label: "Trunk", count: coordinator.totalTrunkQueries, detail: nil, color: .blue)
-                queryBadge(label: "Branch", count: coordinator.totalBranchQueries, detail: nil, color: .indigo)
-                queryBadge(label: "Compacted", count: coordinator.totalCompactedQueries, detail: coordinator.totalCompactedEntries, color: .orange)
-                queryBadge(label: "Recent", count: coordinator.totalRecentQueries, detail: coordinator.totalRecentEntries, color: .green)
+                queryBadge(label: NSLocalizedString("Trunk", comment: "Sync diagnostics"),
+                           count: coordinator.totalTrunkQueries, detail: nil, color: .blue)
+                queryBadge(label: NSLocalizedString("Branch", comment: "Sync diagnostics"),
+                           count: coordinator.totalBranchQueries, detail: nil, color: .indigo)
+                queryBadge(label: NSLocalizedString("Compacted", comment: "Sync diagnostics"),
+                           count: coordinator.totalCompactedQueries,
+                           detail: coordinator.totalCompactedEntries, color: .orange)
+                queryBadge(label: NSLocalizedString("Recent", comment: "Sync diagnostics"),
+                           count: coordinator.totalRecentQueries,
+                           detail: coordinator.totalRecentEntries, color: .green)
             }
         }
         .padding(16)

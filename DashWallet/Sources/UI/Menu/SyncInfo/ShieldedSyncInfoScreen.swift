@@ -144,10 +144,10 @@ struct ShieldedSyncInfoScreen: View {
     private var balanceCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             row(
-                title: "Total Shielded Balance",
+                title: NSLocalizedString("Total Shielded Balance", comment: "Sync diagnostics"),
                 value: PlatformCreditsFormatter.dashString(coordinator.shieldedBalance))
             row(
-                title: "Notes Synced",
+                title: NSLocalizedString("Notes Synced", comment: "Sync diagnostics"),
                 value: formattedCount(monitor.notesSynced))
         }
         .padding(16)
@@ -171,16 +171,17 @@ struct ShieldedSyncInfoScreen: View {
             }
             if monitor.currentSyncScanned != nil || monitor.currentTreeCommitted != nil {
                 dualProgressRow(
-                    label: "Downloaded",
+                    label: NSLocalizedString("Downloaded", comment: "Sync diagnostics"),
                     value: monitor.currentSyncScanned,
                     total: monitor.currentTreeTotal)
                 dualProgressRow(
-                    label: "Checked",
+                    label: NSLocalizedString("Checked", comment: "Sync diagnostics"),
                     value: monitor.currentTreeCommitted,
                     total: monitor.currentTreeTotal)
             }
             if let height = monitor.currentSyncBlockHeight, height > 0 {
-                row(title: "Block Height", value: formattedCount(height))
+                row(title: NSLocalizedString("Block Height", comment: "Sync diagnostics"),
+                    value: formattedCount(height))
             }
         }
         .padding(16)
@@ -191,10 +192,12 @@ struct ShieldedSyncInfoScreen: View {
     private var durationsCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             if let last = monitor.lastSyncDuration {
-                row(title: "Last Sync Duration", value: String(format: "%.2f s", last))
+                row(title: NSLocalizedString("Last Sync Duration", comment: "Sync diagnostics"),
+                    value: String(format: "%.2f s", last))
                 // Only worth a row when it meaningfully exceeds the last pass.
                 if let longest = monitor.longestSyncDuration, longest > last + 0.05 {
-                    row(title: "Longest Pass", value: String(format: "%.2f s", longest))
+                    row(title: NSLocalizedString("Longest Pass", comment: "Sync diagnostics"),
+                        value: String(format: "%.2f s", longest))
                 }
             }
         }
@@ -219,9 +222,12 @@ struct ShieldedSyncInfoScreen: View {
                     .foregroundColor(Color.dash.secondaryText)
             }
             HStack(spacing: 8) {
-                counterBadge(label: "Scanned", count: monitor.totalScanned, color: .blue)
-                counterBadge(label: "New", count: monitor.totalNewNotes, color: .purple)
-                counterBadge(label: "Spent", count: monitor.totalNewlySpent, color: .orange)
+                counterBadge(label: NSLocalizedString("Scanned", comment: "Sync diagnostics"),
+                             count: monitor.totalScanned, color: .blue)
+                counterBadge(label: NSLocalizedString("New", comment: "Sync diagnostics"),
+                             count: monitor.totalNewNotes, color: .purple)
+                counterBadge(label: NSLocalizedString("Spent", comment: "Sync diagnostics"),
+                             count: monitor.totalNewlySpent, color: .orange)
             }
         }
         .padding(16)
