@@ -635,11 +635,16 @@ struct ContactProfileSheet: View {
                 ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
                 .foregroundColor(payment.direction == .sent ? .dash.blue : .dashGreen)
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(payment.direction == .sent ? "-" : "+")\(Self.dashString(duffs: payment.amountDuffs)) DASH")
+                Text("\(payment.amountIsEstimate ? "≈ " : "")\(payment.direction == .sent ? "-" : "+")\(Self.dashString(duffs: payment.amountDuffs)) DASH")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.dash.primaryText)
                 if let fiat = payment.fiatString {
                     Text(fiat)
+                        .font(.system(size: 12))
+                        .foregroundColor(.dash.secondaryText)
+                }
+                if let status = payment.withdrawalStatus {
+                    Text(status)
                         .font(.system(size: 12))
                         .foregroundColor(.dash.secondaryText)
                 }
@@ -706,6 +711,55 @@ struct ContactProfileSheet: View {
 
 // MARK: - PayContactSheet
 
+/// Contact payments share the address-send source picker and withdrawal flow.
+/// Transparent payments keep the SDK's atomic DIP-15 Core send.
+struct PayContactSheet: View {
+    let contact: ContactItem
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var viewModel: SendViewModel
+    @State private var showsAmount = false
+    @State private var showsCorePayment = false
+
+    init(contact: ContactItem) {
+        self.contact = contact
+        let recipient = ContactPaymentRecipient(
+            identityId: contact.contactIdentityId,
+            displayName: contact.displayTitle,
+            walletId: SwiftDashSDKHost.shared.wallet?.walletId,
+            ownerIdentityId: DWCurrentUserIdentityInfo.shared.identityId,
+            network: WalletEnvironment.networkKind)
+        _viewModel = StateObject(wrappedValue: SendViewModel(contactRecipient: recipient))
+    }
+
+    var body: some View {
+        NavigationStack {
+            SendSourceScreen(
+                viewModel: viewModel,
+                onBack: { dismiss() },
+                onContinue: {
+                    if viewModel.source == .core {
+                        showsCorePayment = true
+                    } else {
+                        showsAmount = true
+                    }
+                })
+                .navigationDestination(isPresented: $showsAmount) {
+                    ExternalSendAmountScreen(
+                        viewModel: viewModel,
+                        onBack: { showsAmount = false },
+                        onContinueCore: { _, _ in },
+                        onSendCompleted: { dismiss() })
+                }
+                .sheet(isPresented: $showsCorePayment) {
+                    if let recipient = viewModel.contactRecipient {
+                        CoreContactPaymentSheet(contact: contact, recipient: recipient)
+                    }
+                }
+        }
+        .presentationDetents([.large])
+    }
+}
+
 /// Minimal pay-to-contact amount sheet (Row #18 phase 6). The Pay
 /// button is the explicit user confirmation; tapping it runs the
 /// spend-auth gate and then the single-shot SDK payment (which
@@ -714,8 +768,9 @@ struct ContactProfileSheet: View {
 /// SDK on top of the entered amount — the cap below uses
 /// `maxSendable` (spendable minus a conservative fee reserve) so the
 /// fee can't push the send over the balance.
-struct PayContactSheet: View {
+struct CoreContactPaymentSheet: View {
     let contact: ContactItem
+    let recipient: ContactPaymentRecipient
 
     @Environment(\.dismiss) private var dismiss
     @StateObject private var walletState = SwiftDashSDKWalletState.shared
@@ -881,7 +936,8 @@ struct PayContactSheet: View {
             do {
                 let (txid, feeDuffs) = try await WalletSendService.shared.sendToContact(
                     contactIdentityId: contact.contactIdentityId,
-                    amount: duffs)
+                    amount: duffs,
+                    recipient: recipient)
                 sentTxid = txid
                 sentFeeDuffs = feeDuffs
                 sentAmountDuffs = duffs

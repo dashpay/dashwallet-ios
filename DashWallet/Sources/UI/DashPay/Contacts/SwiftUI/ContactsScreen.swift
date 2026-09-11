@@ -811,7 +811,7 @@ private struct DashPayFAQSheet: View {
             Item(
                 question: NSLocalizedString("How private is DashPay?", comment: "DashPay FAQ"),
                 answer: NSLocalizedString(
-                    "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.",
+                    "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. You can pay from your Transparent, Platform, or Shielded balance. Platform and Shielded payments withdraw directly to your contact’s DashPay address. The recipient still receives a transparent-chain payment, so the payout is public. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.",
                     comment: "DashPay FAQ")),
             Item(
                 question: NSLocalizedString("When will contact requests become private?", comment: "DashPay FAQ"),
@@ -841,7 +841,7 @@ private struct DashPayFAQSheet: View {
             Item(
                 question: NSLocalizedString("What's coming next?", comment: "DashPay FAQ"),
                 answer: NSLocalizedString(
-                    "Private contact requests (so who you connect with stays private), Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are all coming soon.",
+                    "Private contact requests (so who you connect with stays private), payments that remain Shielded for the recipient, and paying users who aren't in your contacts yet are all coming soon.",
                     comment: "DashPay FAQ")),
         ]
     }

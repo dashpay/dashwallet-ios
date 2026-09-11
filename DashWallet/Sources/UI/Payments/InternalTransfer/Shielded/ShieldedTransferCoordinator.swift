@@ -207,6 +207,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case failed(String)
     }
 
+    @Published private(set) var contactWithdrawalStatusUnknown = false
+
     enum Source {
         case core
         case platform
@@ -858,7 +860,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
     func performWithdraw(
         amountCredits: UInt64,
         sweepAll: Bool = false,
-        toCoreAddress destinationOverride: String? = nil
+        toCoreAddress destinationOverride: String? = nil,
+        contactRecipient: ContactPaymentRecipient? = nil
     ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: withdraw route amount=\(amountCredits) credits external=\(destinationOverride != nil)")
@@ -893,9 +896,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // the phase — same ordering as `resolveEnvironment()`. The reader is
         // main-actor-safe and we're already on @MainActor, so call it
         // directly (no GCD hop).
-        let coreAddress: String
+        var coreAddress: String
         let paysOwnWallet: Bool
-        if let destinationOverride, !destinationOverride.isEmpty {
+        if contactRecipient != nil {
+            coreAddress = ""
+            paysOwnWallet = false
+        } else if let destinationOverride, !destinationOverride.isEmpty {
             coreAddress = destinationOverride
             paysOwnWallet = false
         } else {
@@ -909,7 +915,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
 
         do {
-            try await authorize()
+            if let contactRecipient {
+                coreAddress = try await WalletSendService.shared.prepareContactWithdrawal(
+                    recipient: contactRecipient, amountDuffs: submittedAmount / 1000)
+            } else {
+                try await authorize()
+            }
         } catch {
             handleFailure(error)
             return
@@ -918,16 +929,21 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .proving
 
         do {
-            try await env.manager.shieldedWithdraw(
-                walletId: env.walletId,
-                // Per-operation Orchard spend authority (seedless shielded
-                // bind, platform #4125/#4126); the SDK holds the resolver
-                // alive across the FFI call via withExtendedLifetime.
-                resolver: MnemonicResolver(),
-                account: 0,
-                toCoreAddress: coreAddress,
-                amount: submittedAmount)
+            try await submitWithdrawal(
+                recipient: contactRecipient, address: coreAddress,
+                amountDuffs: submittedAmount / 1000, source: .shielded
+            ) {
+                try await env.manager.shieldedWithdraw(
+                    walletId: env.walletId,
+                    // Per-operation Orchard spend authority; the SDK keeps
+                    // the resolver alive across the FFI call.
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    toCoreAddress: coreAddress,
+                    amount: submittedAmount)
+            }
         } catch {
+            if handleContactWithdrawalUncertainty(error) { return }
             // shieldedSpendUnconfirmed means the spend may already be on
             // chain (non-retryable), so its payout can still arrive — tag
             // the destination so the incoming tx classifies as a shielded
@@ -1191,7 +1207,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         amountCredits: UInt64,
         fullBalance: Bool,
         feeHeadroomCredits: UInt64?,
-        toCoreAddress destinationOverride: String? = nil
+        toCoreAddress destinationOverride: String? = nil,
+        contactRecipient: ContactPaymentRecipient? = nil
     ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: platform→core withdraw route full=\(fullBalance) amount=\(amountCredits) external=\(destinationOverride != nil)")
@@ -1199,8 +1216,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // Destination Core (BIP44, Base58Check) address — for the internal
         // transfer, the wallet's own receive address (same resolution as the
         // shielded withdraw route).
-        let coreAddress: String
-        if let destinationOverride, !destinationOverride.isEmpty {
+        var coreAddress: String
+        if contactRecipient != nil {
+            coreAddress = ""
+        } else if let destinationOverride, !destinationOverride.isEmpty {
             coreAddress = destinationOverride
         } else {
             guard let ownAddress = SwiftDashSDKReceiveAddressReader.receiveAddress(),
@@ -1212,7 +1231,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
 
         do {
-            try await authorize()
+            if let contactRecipient {
+                coreAddress = try await WalletSendService.shared.prepareContactWithdrawal(
+                    recipient: contactRecipient, amountDuffs: amountCredits / 1000)
+            } else {
+                try await authorize()
+            }
         } catch {
             handleFailure(error)
             return
@@ -1221,15 +1245,21 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .broadcasting
 
         do {
-            if fullBalance {
-                try await PlatformAddressSyncCoordinator.shared.withdrawAllToCore(address: coreAddress)
-            } else {
-                try await PlatformAddressSyncCoordinator.shared.withdrawToCore(
-                    amountCredits: amountCredits,
-                    address: coreAddress,
-                    feeHeadroomCredits: feeHeadroomCredits)
+            try await submitWithdrawal(
+                recipient: contactRecipient, address: coreAddress,
+                amountDuffs: amountCredits / 1000, amountIsEstimate: fullBalance, source: .platform
+            ) {
+                if fullBalance {
+                    try await PlatformAddressSyncCoordinator.shared.withdrawAllToCore(address: coreAddress)
+                } else {
+                    try await PlatformAddressSyncCoordinator.shared.withdrawToCore(
+                        amountCredits: amountCredits,
+                        address: coreAddress,
+                        feeHeadroomCredits: feeHeadroomCredits)
+                }
             }
         } catch {
+            if handleContactWithdrawalUncertainty(error) { return }
             handleFailure(CoordinatorError.transferFailed(error))
             return
         }
@@ -1340,6 +1370,61 @@ final class ShieldedTransferCoordinator: ObservableObject {
         schedulePlatformResync()
     }
 
+    private enum ContactWithdrawalError: Error {
+        case submissionUncertain
+    }
+
+    /// Persist intent before entering the opaque withdrawal call. A thrown
+    /// result after that boundary is conservatively non-retryable: Platform
+    /// may have accepted it even when the response never reached this device.
+    private func submitWithdrawal(
+        recipient: ContactPaymentRecipient?,
+        address: String,
+        amountDuffs: UInt64,
+        amountIsEstimate: Bool = false,
+        source: DashPayWithdrawalStore.Source,
+        operation: () async throws -> Void
+    ) async throws {
+        guard let recipient else {
+            try await operation()
+            return
+        }
+        try WalletSendService.validateContactRecipient(recipient)
+        guard let walletId = recipient.walletId,
+              let ownerId = recipient.ownerIdentityId else {
+            throw CoordinatorError.noWallet
+        }
+        let entry = try DashPayWithdrawalStore.shared.begin(
+            scope: .init(networkRaw: recipient.network.rawValue, walletId: walletId, ownerIdentityId: ownerId),
+            contactIdentityId: recipient.identityId,
+            address: address,
+            amountDuffs: amountDuffs,
+            amountIsEstimate: amountIsEstimate,
+            source: source)
+        do {
+            try await operation()
+        } catch {
+            // The pre-submit .submitting record is durable even if this second
+            // write fails; on restart it is displayed as status unknown.
+            try? DashPayWithdrawalStore.shared.update(entry, status: .unconfirmed)
+            throw ContactWithdrawalError.submissionUncertain
+        }
+        // Never turn an accepted withdrawal into a retryable error because its
+        // local status update failed. The original intent remains recoverable.
+        try? DashPayWithdrawalStore.shared.update(entry, status: .submitted)
+    }
+
+    private func handleContactWithdrawalUncertainty(_ error: Error) -> Bool {
+        guard case ContactWithdrawalError.submissionUncertain = error else { return false }
+        contactWithdrawalStatusUnknown = true
+        phase = .submittedUnconfirmed
+        schedulePlatformResync()
+        if let manager = SwiftDashSDKHost.shared.manager {
+            scheduleShieldedResync(manager: manager)
+        }
+        return true
+    }
+
     /// Reset to `.idle` so the user can retry from a `.failed` state.
     /// Keeps no in-flight observers — the FFI calls themselves are
     /// uncancellable, so this just resets UI state.
@@ -1348,6 +1433,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         lastAssetLockOutPoint = nil
         lastFailure = nil
         lastResumeReport = nil
+        contactWithdrawalStatusUnknown = false
         phase = .idle
     }
 
