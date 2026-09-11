@@ -232,6 +232,15 @@ final class WalletSendService: NSObject {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.wallet-send-service")
 
+    /// `userInfo` key carrying the SDK's own explanation of a broadcast
+    /// outcome.
+    ///
+    /// Deliberately not `NSLocalizedDescriptionKey`: it is engineer-facing
+    /// text and must never reach a dialog. Internal rather than file-private
+    /// because the point of keeping it is that logging, error inspection and
+    /// tests in other files can read it back.
+    static let diagnosticKey = "org.dashfoundation.dash.send.diagnostic"
+
     /// See `RecentSendsRegistry` — the send-success screen's fallback source.
     let recentSends = RecentSendsRegistry()
 
@@ -744,12 +753,6 @@ private extension WalletSendService {
                 comment: "DashPay Contacts"))
     }
 
-    /// `userInfo` key carrying the SDK's own explanation of a broadcast
-    /// outcome. Deliberately not `NSLocalizedDescriptionKey`: it is
-    /// engineer-facing text and must never reach a dialog, but support
-    /// still wants it on the error that gets logged.
-    static let diagnosticKey = "org.dashfoundation.dash.send.diagnostic"
-
     /// The two broadcast outcomes a user can be shown, in one place.
     ///
     /// Every send route ends in one of these, and there is more than one route
@@ -767,12 +770,22 @@ private extension WalletSendService {
                 comment: "Send failed before any bytes reached the network")
         }
 
-        /// The transaction went out and no acceptance signal came back. The
-        /// retry promise is real: an unconfirmed send is re-registered for
-        /// rebroadcast at every launch, so it survives closing the app.
+        /// The transaction went out and no acceptance signal came back.
+        ///
+        /// The retry this promises is the one the shipped SDK actually
+        /// performs: dash-spv keeps rebroadcasting a transaction it is
+        /// tracking, for as long as the process lives. That is also why the
+        /// copy says "while it's open" rather than making an unqualified
+        /// promise — closing the app ends the retry today, and telling the
+        /// user otherwise would be worse than the old wording, because they
+        /// would close it believing the wallet had the situation in hand.
+        ///
+        /// dashpay/platform#4659 re-registers unconfirmed sends for rebroadcast
+        /// at every launch, which makes closing the app harmless. This sentence
+        /// stays true either way; it can lose the qualifier once that ships.
         static var unknown: String {
             NSLocalizedString(
-                "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying on its own, and your balance will update as soon as it goes through.",
+                "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through.",
                 comment: "Send dispatched but no network acceptance signal arrived")
         }
     }
