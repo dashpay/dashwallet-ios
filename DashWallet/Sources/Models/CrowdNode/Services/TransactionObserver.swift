@@ -155,8 +155,12 @@ public final class TransactionObserver {
     /// of rows on the main thread on every entry to the Receive tab. `nil`
     /// keeps the unbounded behaviour for a caller that genuinely wants the
     /// whole history.
-    static func persistedTransactionIDs(firstSeenAtOrAfter: UInt64? = nil) -> Set<Data> {
-        guard let resolved = resolveHostHandles() else { return [] }
+    ///
+    /// Returns nil when the snapshot could not be read — no host yet, or a
+    /// failed fetch — so that a caller using it as an exclusion set can tell
+    /// that apart from a wallet with nothing to exclude.
+    static func persistedTransactionIDs(firstSeenAtOrAfter: UInt64? = nil) -> Set<Data>? {
+        guard let resolved = resolveHostHandles() else { return nil }
         let context = ModelContext(resolved.container)
         let walletId = resolved.walletId
         var descriptor = FetchDescriptor<PersistentTransaction>(
@@ -177,12 +181,12 @@ public final class TransactionObserver {
         do {
             var ids = Set(try context.fetch(descriptor).map(\.txid))
             if let floor = firstSeenAtOrAfter {
-                ids.formUnion(unconfirmedIDs(context: context, walletId: walletId, floor: floor))
+                ids.formUnion(try unconfirmedIDs(context: context, walletId: walletId, floor: floor))
             }
             return ids
         } catch {
             logger.error("🅾 OBSERVER :: txid snapshot failed: \(String(describing: error), privacy: .public)")
-            return []
+            return nil
         }
     }
 
@@ -210,11 +214,13 @@ public final class TransactionObserver {
 
     /// Wallet transactions still unmined, within `unconfirmedLookback` of
     /// `floor`. Same indexed `firstSeen` range shape as the main snapshot.
+    /// Throws rather than returning a partial set: half a snapshot is as
+    /// unusable as none.
     private static func unconfirmedIDs(
         context: ModelContext,
         walletId: Data,
         floor: UInt64
-    ) -> Set<Data> {
+    ) throws -> Set<Data> {
         let sweepFloor = floor > unconfirmedLookback ? floor - unconfirmedLookback : 0
         var descriptor = FetchDescriptor<PersistentTransaction>(
             predicate: #Predicate {
@@ -224,12 +230,7 @@ public final class TransactionObserver {
                         $0.inputs.contains { $0.walletId == walletId })
             })
         descriptor.propertiesToFetch = [\.txid]
-        do {
-            return Set(try context.fetch(descriptor).map(\.txid))
-        } catch {
-            logger.error("🅾 OBSERVER :: unconfirmed sweep failed: \(String(describing: error), privacy: .public)")
-            return []
-        }
+        return Set(try context.fetch(descriptor).map(\.txid))
     }
 
     /// Total persisted transaction count, or nil when the SDK host has no

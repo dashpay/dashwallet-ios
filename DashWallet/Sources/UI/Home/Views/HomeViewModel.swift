@@ -2098,12 +2098,16 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// projection later makes of it. It reads two columns of one small table
     /// and never touches the Core history, where the projection materializes
     /// every wallet transaction to reconcile against.
-    static func persistedShieldedActivityIds() -> Set<String> {
-        guard let (container, walletId) = hostHandles() else { return [] }
+    ///
+    /// Nil when the rows could not be read (no host yet, or a failed fetch),
+    /// never an empty set standing in for one: as an exclusion set, empty
+    /// would admit every existing row as new.
+    static func persistedShieldedActivityIds() -> Set<String>? {
+        guard let (container, walletId) = hostHandles() else { return nil }
         var descriptor = FetchDescriptor<PersistentShieldedActivity>(
             predicate: #Predicate { $0.walletId == walletId })
         descriptor.propertiesToFetch = [\.entryId, \.accountIndex]
-        guard let rows = try? ModelContext(container).fetch(descriptor) else { return [] }
+        guard let rows = try? ModelContext(container).fetch(descriptor) else { return nil }
         return Set(rows.map {
             ShieldedActivityItem.id(entryId: $0.entryId, accountIndex: $0.accountIndex)
         })
