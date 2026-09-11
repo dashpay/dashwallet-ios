@@ -2076,6 +2076,26 @@ class SwiftDashSDKWalletSource: TransactionSource {
         return SwiftDashSDKWalletTransactionSnapshot(walletId: walletId, transactions: transactions)
     }
 
+    /// Ids, in `ShieldedActivityItem.id` form, of every shielded activity row
+    /// the active wallet has persisted. Safe from any thread.
+    ///
+    /// A superset of what `fetchShieldedActivity` projects — no row is
+    /// dropped or deduped here — which is what a "what already existed"
+    /// baseline needs: a row present now is not a new payment, whatever the
+    /// projection later makes of it. It reads two columns of one small table
+    /// and never touches the Core history, where the projection materializes
+    /// every wallet transaction to reconcile against.
+    static func persistedShieldedActivityIds() -> Set<String> {
+        guard let (container, walletId) = hostHandles() else { return [] }
+        var descriptor = FetchDescriptor<PersistentShieldedActivity>(
+            predicate: #Predicate { $0.walletId == walletId })
+        descriptor.propertiesToFetch = [\.entryId, \.accountIndex]
+        guard let rows = try? ModelContext(container).fetch(descriptor) else { return [] }
+        return Set(rows.map {
+            ShieldedActivityItem.id(entryId: $0.entryId, accountIndex: $0.accountIndex)
+        })
+    }
+
     /// The active wallet's shielded operations as history items, for
     /// interleaving with the Core rows. Safe from any thread.
     ///

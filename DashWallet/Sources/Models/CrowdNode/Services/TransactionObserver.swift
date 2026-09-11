@@ -88,6 +88,18 @@ public final class TransactionObserver {
     /// request (e.g. an earlier deposit's ack) out of this wait while never
     /// dropping a response that raced the subscription.
     private static let matchFloorSkew: TimeInterval = 120
+
+    /// The `firstSeen` floor a subscription started at `after` will scan from.
+    ///
+    /// Public because the exclusion snapshot a caller passes to
+    /// `observeUpdates` has to be bounded by the SAME floor: a transaction
+    /// below it can never be emitted, so carrying its txid in the exclusion
+    /// set is work with no effect on the outcome. Two independently derived
+    /// floors could drift apart and silently start admitting rows the snapshot
+    /// no longer covers, so there is exactly one.
+    static func matchFloor(after: Date) -> UInt64 {
+        UInt64(max(0, after.timeIntervalSince1970 - matchFloorSkew))
+    }
     /// Rows admitted per rescan; the floor predicate already bounds the
     /// window, this guards a resync burst mid-wait.
     private static let rescanFetchLimit = 200
@@ -132,7 +144,18 @@ public final class TransactionObserver {
     /// sessions snapshot these at start so a restore burst cannot present an
     /// already-persisted transaction as a new payment merely because its
     /// device-clock `firstSeen` is recent.
-    static func persistedTransactionIDs() -> Set<Data> {
+    ///
+    /// `firstSeenAtOrAfter` must be the subscription's own floor
+    /// (`matchFloor(after:)`). Rows below it are already unreachable — the
+    /// rescan predicate drops them before any filter runs — so excluding them
+    /// again changes nothing and costs everything: unbounded, this walked
+    /// every transaction the wallet has ever persisted, materialized each one
+    /// (SwiftData's `propertiesToFetch` does not spare the object), and did it
+    /// on whichever thread asked. A restored wallet turned that into thousands
+    /// of rows on the main thread on every entry to the Receive tab. `nil`
+    /// keeps the unbounded behaviour for a caller that genuinely wants the
+    /// whole history.
+    static func persistedTransactionIDs(firstSeenAtOrAfter: UInt64? = nil) -> Set<Data> {
         guard let resolved = resolveHostHandles() else { return [] }
         let context = ModelContext(resolved.container)
         let walletId = resolved.walletId
@@ -141,11 +164,70 @@ public final class TransactionObserver {
                 $0.outputs.contains { $0.walletId == walletId } ||
                     $0.inputs.contains { $0.walletId == walletId }
             })
+        if let floor = firstSeenAtOrAfter {
+            // `firstSeen` is indexed, so this is what turns the scan from a
+            // full-table join into an index range.
+            descriptor.predicate = #Predicate {
+                $0.firstSeen >= floor &&
+                    ($0.outputs.contains { $0.walletId == walletId } ||
+                        $0.inputs.contains { $0.walletId == walletId })
+            }
+        }
+        descriptor.propertiesToFetch = [\.txid]
+        do {
+            var ids = Set(try context.fetch(descriptor).map(\.txid))
+            if let floor = firstSeenAtOrAfter {
+                ids.formUnion(unconfirmedIDs(context: context, walletId: walletId, floor: floor))
+            }
+            return ids
+        } catch {
+            logger.error("🅾 OBSERVER :: txid snapshot failed: \(String(describing: error), privacy: .public)")
+            return []
+        }
+    }
+
+    /// How far below a subscription's floor the unconfirmed sweep reaches.
+    ///
+    /// `firstSeen` is not immutable: once a transaction is mined the persister
+    /// adopts the BLOCK timestamp in its place. A payment that sat below the
+    /// floor while unconfirmed therefore rises above it on confirmation,
+    /// becomes emittable, and — absent from the exclusion snapshot — is
+    /// presented as a new receipt. Reachable in one session: receive to the
+    /// Core address, switch rails until it ages past the match window, return
+    /// before it is mined.
+    ///
+    /// Only unconfirmed rows can move, so only they need sweeping. The sweep
+    /// is a SECOND indexed range rather than an `OR blockHeight == 0` branch
+    /// on the first: `blockHeight` carries no index, so that branch made
+    /// SQLite evaluate the correlated wallet relationship across the whole
+    /// table — the full history scan this snapshot exists to avoid.
+    ///
+    /// The bound is the stated limit of the fix: a transaction that has been
+    /// unconfirmed for longer than this and then confirms mid-session can
+    /// still surface as a receipt. A day is far past normal confirmation, and
+    /// the alternative is scanning history on every entry to the Receive tab.
+    private static let unconfirmedLookback: UInt64 = 24 * 60 * 60
+
+    /// Wallet transactions still unmined, within `unconfirmedLookback` of
+    /// `floor`. Same indexed `firstSeen` range shape as the main snapshot.
+    private static func unconfirmedIDs(
+        context: ModelContext,
+        walletId: Data,
+        floor: UInt64
+    ) -> Set<Data> {
+        let sweepFloor = floor > unconfirmedLookback ? floor - unconfirmedLookback : 0
+        var descriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate {
+                $0.firstSeen >= sweepFloor &&
+                    $0.blockHeight == 0 &&
+                    ($0.outputs.contains { $0.walletId == walletId } ||
+                        $0.inputs.contains { $0.walletId == walletId })
+            })
         descriptor.propertiesToFetch = [\.txid]
         do {
             return Set(try context.fetch(descriptor).map(\.txid))
         } catch {
-            logger.error("🅾 OBSERVER :: txid snapshot failed: \(String(describing: error), privacy: .public)")
+            logger.error("🅾 OBSERVER :: unconfirmed sweep failed: \(String(describing: error), privacy: .public)")
             return []
         }
     }
@@ -266,7 +348,7 @@ public final class TransactionObserver {
         filters: [TransactionFilter],
         after: Date
     ) -> AnyPublisher<ObservedTransaction, Never> {
-        let floor = UInt64(max(0, after.timeIntervalSince1970 - Self.matchFloorSkew))
+        let floor = Self.matchFloor(after: after)
         return NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
             .map { _ in () }
             .prepend(()) // immediate initial scan

@@ -7,7 +7,44 @@ import CoreImage.CIFilterBuiltins
 import UIKit
 
 enum QRCodeGenerator {
-    static func image(for string: String, size: CGFloat = 280) -> UIImage? {
+    /// One context for the whole app. `CIContext()` allocates a rendering
+    /// context (Metal device, caches and all) on every call, which is most of
+    /// what a render here costs — and the receive screen was building one per
+    /// SwiftUI `body`. `CIContext` is documented thread-safe.
+    private static let ciContext = CIContext()
+
+    /// Rendered codes, keyed by payload and size.
+    ///
+    /// The QR for an address is a pure function of that address, but it was
+    /// being recomputed from inside a `body` — so every publication on the
+    /// screen (a balance tick, a sync pass, the watching spinner) redrew a
+    /// bitmap that could not have changed. `NSCache` rather than a dictionary:
+    /// it is thread-safe on its own and gives the images back under memory
+    /// pressure, which a receive screen that has shown a few addresses should
+    /// not be holding onto.
+    private static let cache: NSCache<NSString, UIImage> = {
+        let cache = NSCache<NSString, UIImage>()
+        cache.countLimit = 16
+        return cache
+    }()
+
+    private static func cacheKey(_ string: String, _ size: CGFloat) -> NSString {
+        "\(Int(size.rounded()))|\(string)" as NSString
+    }
+
+    /// The size the key rounds to, so the cached image is the image that key
+    /// describes. Rendering the fractional request while keying the rounded
+    /// one let `280.4` and `280.49` share an entry and hand back an image
+    /// rendered for a different width.
+    private static func normalizedSize(_ size: CGFloat) -> CGFloat {
+        size.rounded()
+    }
+
+    static func image(for string: String, size requestedSize: CGFloat = 280) -> UIImage? {
+        let size = normalizedSize(requestedSize)
+        let key = cacheKey(string, size)
+        if let cached = cache.object(forKey: key) { return cached }
+
         let data = Data(string.utf8)
         let filter = CIFilter.qrCodeGenerator()
         filter.setValue(data, forKey: "inputMessage")
@@ -17,11 +54,12 @@ enum QRCodeGenerator {
         let scale = size / output.extent.width
         let scaled = output.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
 
-        let context = CIContext()
-        guard let cgImage = context.createCGImage(scaled, from: scaled.extent) else {
+        guard let cgImage = ciContext.createCGImage(scaled, from: scaled.extent) else {
             return nil
         }
-        return UIImage(cgImage: cgImage)
+        let image = UIImage(cgImage: cgImage)
+        cache.setObject(image, forKey: key)
+        return image
     }
 
     // MARK: - Dash-branded rendering
@@ -139,8 +177,7 @@ enum QRCodeGenerator {
         filter.setValue(data, forKey: "inputMessage")
         filter.setValue("H", forKey: "inputCorrectionLevel")
         guard let output = filter.outputImage else { return nil }
-        let context = CIContext()
-        guard let cgImage = context.createCGImage(output, from: output.extent) else { return nil }
+        guard let cgImage = ciContext.createCGImage(output, from: output.extent) else { return nil }
 
         let width = cgImage.width
         let height = cgImage.height
