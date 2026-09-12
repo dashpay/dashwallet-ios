@@ -4470,8 +4470,11 @@
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
-/* Dash DEX / dex_enter_amount_invalid */
-"This amount can't be swapped right now. Try a different amount, or try again shortly." = "This amount can't be swapped right now. Try a different amount, or try again shortly.";
+/* Dash DEX / dex_error_amount_too_small */
+"This amount is below the minimum for this swap. Please enter a larger amount." = "This amount is below the minimum for this swap. Please enter a larger amount.";
+
+/* Dash DEX / maya_max_amount_error */
+"Max %@" = "Max %@";
 
 /* DashSpend */
 "This card works only in the United States." = "This card works only in the United States.";
