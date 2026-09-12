@@ -492,6 +492,13 @@ final class WalletSendService: NSObject {
             throw Self.contactPaymentError(from: error)
         }
         Self.logger.info("💸 TXSEND :: pay-to-contact broadcast, txid \(txid.map { String(format: "%02x", $0) }.joined(), privacy: .public), fee \(feeDuffs, privacy: .public) duffs")
+        // The send-success screen resolves the amount from this registry while
+        // the Rust persister hasn't written the transaction row yet — same as
+        // every other broadcast-success point. `txid` is already wire order
+        // (Rust hands back `to_raw_hash().to_byte_array()`), which is the
+        // registry's key convention. No address: the DIP-15 receive address is
+        // derived inside Rust and never crosses the FFI boundary.
+        recentSends.record(txidWire: txid, address: nil, amount: amount, fee: feeDuffs)
         return (txid: txid, feeDuffs: feeDuffs)
     }
 #endif

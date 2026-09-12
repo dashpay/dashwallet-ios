@@ -21,6 +21,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWPaymentInput;
 @protocol DWPayModelProtocol;
 
 @interface DWBasePayViewController : UIViewController
@@ -37,6 +38,46 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performPayToPasteboardAction;
 - (void)performNFCReadingAction;
 - (void)performPayToURL:(NSURL *)url;
+/// Pay a send this flow has already fully specified — the address and the
+/// amount are both known and there is nothing left to ask for.
+///
+/// Deliberately not `performPayToURL:` with a `dash:…?amount=` string: that
+/// classifies a URI carrying a valid address as a DEEP LINK, and the processor
+/// answers a deep link by pushing the legacy amount screen — prefilled with the
+/// number the caller already collected. This routes straight to the
+/// confirmation with the real fee instead.
+- (void)performPayToAddress:(NSString *)address amount:(uint64_t)amount;
+
+/// Hand an already-built input to the classic payment processor.
+///
+/// Declared for the Swift subclasses that shadow the scan delegate to fill a
+/// form instead: an input their form cannot hold — a BIP70 request, which
+/// carries a fetched confirmation rather than an address — still has to go
+/// somewhere, and this is where the base class sends it.
+- (void)processPaymentInput:(DWPaymentInput *)input;
+
+/// Leave a send that has finished: dismiss the modal that hosts it, or pop the
+/// payments stack and go to Home where the flow was pushed into a tab.
+///
+/// Declared for the Swift subclasses that own the newer send routes. Those
+/// confirm and broadcast inside `SendConfirmSheet` and never reach the success
+/// screen's delegate, so a dismissal-only completion left the paid recipient
+/// and amount on screen wherever the flow had been pushed rather than
+/// presented. Both endings go through here.
+- (void)finishSendFlow;
+
+/// Present the shared send-success screen for an already-broadcast
+/// transaction. `txidWire` is the wire-order txid (`Transaction.txHashData`
+/// byte order).
+///
+/// Declared for the Swift subclasses whose send does NOT run through the
+/// classic payment processor and therefore never reaches
+/// `paymentControllerDidFinishTransaction:txidWire:` — the DashPay
+/// pay-to-contact step, whose SDK call builds, signs and broadcasts in one
+/// shot. This is the same presentation (and the same Close handling behind
+/// it) an address send gets; the delegate wiring lives in the base class,
+/// which is where the conformance is.
+- (void)presentSendSuccessWithTxidWire:(NSData *)txidWire;
 
 @end
 

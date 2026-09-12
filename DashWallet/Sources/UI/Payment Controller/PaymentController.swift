@@ -175,12 +175,18 @@ extension PaymentController: DWPaymentProcessorDelegate {
         presentationAnchor?.topController().view.dw_hideProgressHUD()
 
         let finishBlock = {
+            // The pop is for the LEGACY amount screen, which the redesigned
+            // send flow never pushes: it collects the amount on its own step
+            // and hands the processor an address and a value together. Telling
+            // the delegate the send finished is not conditional on that screen
+            // — it used to sit inside this check, so a flow without one sent
+            // successfully and then showed nothing at all.
             if let vc = self.presentationAnchor?.navigationController?.topViewController as? AmountProviding {
                 vc.navigationController?.popViewController(animated: true)
+            }
 
-                DispatchQueue.main.async {
-                    self.delegate?.paymentControllerDidFinishTransaction(self, txidWire: txidWire)
-                }
+            DispatchQueue.main.async {
+                self.delegate?.paymentControllerDidFinishTransaction(self, txidWire: txidWire)
             }
         }
 

@@ -54,6 +54,21 @@ final class SendViewModel: ObservableObject {
         didSet { destinationDidChange() }
     }
     @Published private(set) var destination: DestinationKind? = nil
+    #if DASHPAY
+    /// The DashPay contact this send pays, when the flow was opened from the
+    /// contact picker instead of the address field.
+    ///
+    /// Mutually exclusive with `addressText`: a contact payment has no address
+    /// to type, so `trimmedAddress` stays empty for this send's whole life and
+    /// the recipient is rendered from the contact instead.
+    @Published private(set) var contactRecipient: ContactItem?
+    /// True while `sendToContact()` is in flight — the amount step's Send
+    /// button shows progress, and `canContinue` refuses a second tap.
+    @Published private(set) var isSendingToContact = false
+    /// Failure from the last contact send, surfaced by
+    /// `amountValidationMessage`. A cancelled PIN prompt never lands here.
+    @Published private(set) var contactSendError: String?
+    #endif
     /// The balance the user is sending FROM. Constrained to
     /// `validSources`; re-picked automatically when the destination changes.
     @Published var source: ChainNetwork = .core {
@@ -71,6 +86,13 @@ final class SendViewModel: ObservableObject {
     private var isApplyingMax = false
     @Published var amountText: String = "0" {
         didSet {
+            #if DASHPAY
+            // A new amount is a new attempt — including one Max filled in, so
+            // this precedes the guard below. The previous failure described an
+            // amount that is no longer on screen, and it is read ahead of
+            // every affordability check in `amountValidationMessage`.
+            contactSendError = nil
+            #endif
             guard !isApplyingMax else { return }
             clearShieldedMaxSelection()
         }
@@ -134,6 +156,14 @@ final class SendViewModel: ObservableObject {
     /// same semantics as the internal transfer's: `nil` while unknown,
     /// affordability fails closed.
     @Published private(set) var withdrawalPreflight: ManagedPlatformAddressWallet.WithdrawalPreflight?
+    /// True when the last withdrawal preflight ATTEMPT failed (threw), as
+    /// opposed to still resolving — the same distinction
+    /// `shieldPreflightFailed` draws below, and for the same reason: a
+    /// permanently failed preflight left the amount screen silent, so a
+    /// disabled Continue had nothing explaining it. An empty Platform
+    /// balance is the ordinary way to get there (`preflightWithdrawal`
+    /// throws `noFundedAddress` when no address holds credits).
+    @Published private(set) var withdrawalPreflightFailed = false
     private var preflightTask: Task<Void, Never>?
 
     /// Live result of `preflightShield()` for the Platform → Shielded route —
@@ -149,9 +179,18 @@ final class SendViewModel: ObservableObject {
 
     /// Drives the one-time restore gate reactively. A normal catch-up may set
     /// this to false, but it only blocks while the recovery marker is active.
-    @Published private(set) var isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
+    ///
+    /// Seeded from the monitor in `init()` rather than here: a property default
+    /// runs in EVERY initializer, and the preview initializer must not spin up
+    /// the sync monitor singleton.
+    @Published private(set) var isChainSynced = false
 
     private var cancellables = Set<AnyCancellable>()
+
+    #if DEBUG
+    /// True only for `makeForPreview` instances — see the guard in `deinit`.
+    private var isPreviewInstance = false
+    #endif
 
     /// Set by the balance-row send sheet: the source is fixed to the tapped
     /// balance instead of being user-pickable, and an address whose type
@@ -160,6 +199,11 @@ final class SendViewModel: ObservableObject {
     let pinnedSource: ChainNetwork?
 
     deinit {
+        #if DEBUG
+        // Preview instances never registered — building the monitor here just
+        // to unregister would start reachability inside the canvas.
+        if isPreviewInstance { return }
+        #endif
         // The monitor holds observers strongly — without this the VM (and
         // its Combine pipelines) outlive the screen.
         SyncingActivityMonitor.shared.remove(observer: self)
@@ -171,6 +215,7 @@ final class SendViewModel: ObservableObject {
             source = pinnedSource
         }
         SyncingActivityMonitor.shared.add(observer: self)
+        isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
 
         NotificationCenter.default.publisher(for: UIPasteboard.changedNotification)
             .receive(on: RunLoop.main)
@@ -215,6 +260,64 @@ final class SendViewModel: ObservableObject {
             }
             .store(in: &cancellables)
     }
+
+    #if DEBUG
+    /// Lightweight initializer used only by SwiftUI previews. Sets the balances
+    /// and the typed destination directly and skips the sync-monitor,
+    /// pasteboard and wallet-state wiring the real `init()` sets up.
+    ///
+    /// Property observers do not fire during initialization, so assigning
+    /// `addressText` here also skips the destination parse and preflight the
+    /// real screen would run on every keystroke.
+    private init(
+        previewPinnedSource: ChainNetwork?,
+        previewSource: ChainNetwork,
+        previewAddressText: String,
+        previewAmountText: String,
+        previewCoreDuffs: UInt64,
+        previewPlatformCredits: UInt64,
+        previewShieldedCredits: UInt64,
+        previewIsChainSynced: Bool
+    ) {
+        pinnedSource = previewPinnedSource
+        isPreviewInstance = true
+        source = previewSource
+        addressText = previewAddressText
+        amountText = previewAmountText
+        coreBalanceDuffs = previewCoreDuffs
+        platformCredits = previewPlatformCredits
+        shieldedBalance = previewShieldedCredits
+        isChainSynced = previewIsChainSynced
+    }
+
+    /// Preview view model with stubbed balances. Core is in duffs (1e8 per
+    /// DASH), Platform and Shielded in credits (1e11 per DASH); the defaults
+    /// are 2.45 / 1.2 / 0.785 DASH.
+    ///
+    /// `destination` stays `nil` because the address parse never runs here, so
+    /// the screen renders its address-entry step rather than a resolved
+    /// recipient.
+    static func makeForPreview(
+        pinnedSource: ChainNetwork? = nil,
+        source: ChainNetwork = .core,
+        addressText: String = "",
+        amountText: String = "0",
+        coreDuffs: UInt64 = 245_000_000,
+        platformCredits: UInt64 = 120_000_000_000,
+        shieldedCredits: UInt64 = 78_500_000_000,
+        isChainSynced: Bool = true
+    ) -> SendViewModel {
+        SendViewModel(
+            previewPinnedSource: pinnedSource,
+            previewSource: source,
+            previewAddressText: addressText,
+            previewAmountText: amountText,
+            previewCoreDuffs: coreDuffs,
+            previewPlatformCredits: platformCredits,
+            previewShieldedCredits: shieldedCredits,
+            previewIsChainSynced: isChainSynced)
+    }
+    #endif
 
     /// Fee kind for the pool-spending routes; `nil` for every other route.
     private func shieldedFeeKind(for route: Route?) -> PlatformWalletManager.ShieldedFeeKind? {
@@ -261,6 +364,12 @@ final class SendViewModel: ObservableObject {
     }
 
     private func destinationDidChange() {
+        #if DASHPAY
+        // A contact send has no address. Its destination was set outright by
+        // `setContactRecipient`, so it must not be re-derived from the empty
+        // address field.
+        if contactRecipient != nil { return }
+        #endif
         let sanitized = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
         if sanitized != addressText {
             addressText = sanitized
@@ -299,14 +408,10 @@ final class SendViewModel: ObservableObject {
 
     /// Localized name of the pinned source balance, for the mismatch label.
     var pinnedSourceTitle: String {
-        switch pinnedSource {
-        case .core, nil:
-            return NSLocalizedString("Transparent", comment: "Balance breakdown")
-        case .platform:
-            return NSLocalizedString("Platform", comment: "Dash Platform chain")
-        case .shielded:
-            return NSLocalizedString("Shielded", comment: "")
-        }
+        // `balanceName` rather than a second copy of the same three strings:
+        // simple mode renames the Core balance, and one of these lists would
+        // have been forgotten.
+        (pinnedSource ?? .core).balanceName
     }
 
     private func sourceDidChange() {
@@ -324,6 +429,118 @@ final class SendViewModel: ObservableObject {
         source = network
     }
 
+    // MARK: - Contact recipient
+
+    #if DASHPAY
+    /// Open this send on a DashPay contact instead of an address. Called by
+    /// the contact picker before the amount step is pushed; the address step
+    /// and the From step are both skipped, because neither has anything left
+    /// to ask.
+    ///
+    /// The destination is assigned rather than parsed — there is no text to
+    /// parse — and the source is put on Core, the only balance
+    /// `contactValidSources` admits.
+    func setContactRecipient(_ contact: ContactItem) {
+        contactRecipient = contact
+        destination = .core
+        // Not the user's pick: it is the only legal source, and recording it
+        // as a pick would let it survive a later destination change.
+        setSourceWithoutClaimingUserIntent(.core)
+    }
+
+    /// A contact payment can only be funded from the transparent balance.
+    ///
+    /// Not a property of DashPay but of the SDK seam as it stands:
+    /// `sendDashPayPayment` derives the contact's DIP-15 receive address
+    /// inside Rust and builds, signs and broadcasts the L1 transaction there —
+    /// the address itself never crosses the FFI boundary. `platformToCore` and
+    /// `shieldedToCore` both need a Core address to pay to, so there is
+    /// nothing to hand them.
+    ///
+    /// TODO(dashpay-contact-address): when the SDK exposes the derived
+    /// address, a contact becomes an ordinary Core destination — this list
+    /// then matches the one `.core` addresses already get in `validSources`,
+    /// and `route` stops needing its own contact branch.
+    static let contactValidSources: [ChainNetwork] = [.core]
+
+    /// The SDK gave up permanently on this contact's DIP-15 payment channel
+    /// (`ContactItem.paymentChannelBroken`), so no amount can be sent on it.
+    /// Only a fresh contact request from the CONTACT clears the flag.
+    ///
+    /// The picker refuses to open such a contact; this is what covers a flag
+    /// that arrives from a background sync while the amount step is already up.
+    var isContactPaymentUnavailable: Bool {
+        contactRecipient?.paymentChannelBroken == true
+    }
+
+    /// Shown both on the picker row and in place of the amount validation, so
+    /// the two say the same thing.
+    static let contactPaymentsUnavailableMessage = NSLocalizedString(
+        "Payments unavailable — ask them to send you a new contact request.",
+        comment: "DashPay: contact whose payment channel could not be built")
+
+    /// Execute the pay-to-contact spend.
+    ///
+    /// There is no prepare/confirm split on this path —
+    /// `WalletSendService.sendToContact` runs the spend-auth gate and the
+    /// SDK's single-shot build+sign+broadcast — so the Send tap on the amount
+    /// step is the confirmation, and this is the only route the amount step
+    /// executes itself rather than handing on to the L1 payment processor or
+    /// `SendConfirmSheet`.
+    ///
+    /// - Returns: the broadcast transaction's wire-order txid on success;
+    ///   `nil` when it failed or the user cancelled the PIN prompt. A
+    ///   cancellation leaves `contactSendError` clear — backing out of the
+    ///   prompt is not an error.
+    /// Set when a contact broadcast came back with an unknown outcome. The
+    /// send may have happened, so this screen must not offer it again.
+    @Published private(set) var contactSendOutcomeIsUnknown = false
+
+    static let contactSendUnknownOutcomeMessage = NSLocalizedString(
+        "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.",
+        comment: "Send to contact: the broadcast outcome is unknown")
+
+    func sendToContact() async -> Data? {
+        guard let contact = contactRecipient,
+              canContinue,
+              // Re-asked here rather than trusting the gate: this is the value
+              // that gets spent.
+              let duffs = dashDuffsIfRepresentable
+        else { return nil }
+        isSendingToContact = true
+        contactSendError = nil
+        defer { isSendingToContact = false }
+
+        do {
+            let (txid, _) = try await WalletSendService.shared.sendToContact(
+                contactIdentityId: contact.contactIdentityId,
+                amount: duffs)
+            // Project the freshly recorded Sent entry to SwiftData right away
+            // — the entry lives only in Rust memory until a projection runs,
+            // and an app kill before one would lose it permanently (the SDK
+            // cannot re-derive sent history).
+            SwiftDashSDKContactsService.shared.refreshPaymentsProjection()
+            return txid
+        } catch {
+            let nsError = error as NSError
+            if !WalletSendService.isAuthenticationCancelledError(nsError) {
+                contactSendError = error.localizedDescription
+            }
+            // An ambiguous broadcast is terminal, not a failure to retry: the
+            // request may well have reached the network and only its response
+            // was lost. Leaving the button live invites a second, duplicate
+            // payment for a spend that already happened, which no later
+            // correction can undo. The message already says to wait for
+            // synchronization rather than resend; this makes the screen agree
+            // with it.
+            if WalletSendService.isBroadcastUnknownError(nsError) {
+                contactSendOutcomeIsUnknown = true
+            }
+            return nil
+        }
+    }
+    #endif
+
     // MARK: - Sources & route
 
     /// Which balances can fund a send to the entered destination.
@@ -333,6 +550,9 @@ final class SendViewModel: ObservableObject {
     /// pool (`shieldedTransfer`), the Core balance (asset-lock shield), or
     /// Platform credits (`shieldedShieldToRecipient`).
     var validSources: [ChainNetwork] {
+        #if DASHPAY
+        if contactRecipient != nil { return Self.contactValidSources }
+        #endif
         switch destination {
         case .core: return [.core, .platform, .shielded]
         case .platform: return [.platform, .shielded]
@@ -342,6 +562,14 @@ final class SendViewModel: ObservableObject {
     }
 
     var route: Route? {
+        #if DASHPAY
+        if contactRecipient != nil {
+            // A contact payment is a transparent L1 spend; `contactValidSources`
+            // admits nothing else, so any other source is not a route this flow
+            // can execute.
+            return source == .core ? .coreToCore : nil
+        }
+        #endif
         guard let destination else { return nil }
         switch (source, destination) {
         case (.core, .core): return .coreToCore
@@ -373,10 +601,12 @@ final class SendViewModel: ObservableObject {
             return
         }
         guard preflightTask == nil else { return }
+        withdrawalPreflightFailed = false
         preflightTask = Task { [weak self] in
             let result = try? await PlatformAddressSyncCoordinator.shared.preflightWithdrawal()
             guard let self, !Task.isCancelled else { return }
             self.withdrawalPreflight = result
+            self.withdrawalPreflightFailed = result == nil
             self.preflightTask = nil
         }
     }
@@ -512,22 +742,43 @@ final class SendViewModel: ObservableObject {
         return nil
     }
 
+    /// The address a scanned input would put in the address field, or nil for
+    /// one this form cannot hold.
+    ///
+    /// A BIP70 payment request is the nil case: it carries a fetched
+    /// confirmation instead of an address, and belongs to the classic payment
+    /// processor. Callers that open this screen for a scan check first —
+    /// otherwise the scan lands on an empty form.
+    static func scannedAddress(in paymentInput: DWPaymentInput) -> String? {
+        // A verified payment request first, before anything is read out of the
+        // input: its outputs and acknowledgment are the merchant's, and only
+        // the classic processor honours them. Everything reachable from here
+        // is merchant-controlled text — a memo or fallback line that happens to
+        // classify as an address would otherwise become the destination, and
+        // the form would pay it INSTEAD of the confirmed payment output.
+        guard paymentInput.bip70Confirmation == nil else { return nil }
+        if let address = paymentInput.parsedURI?.address, !address.isEmpty {
+            return address
+        }
+        if let raw = paymentInput.userDetails, classify(raw) != nil {
+            return raw
+        }
+        return nil
+    }
+
     /// Scanned QR → address text. The classifier decides what it is; a
     /// BIP21 `dash:` URI contributes its address (and its amount when the
     /// screen's amount is still untouched).
-    func ingestScannedInput(_ paymentInput: DWPaymentInput) {
-        if let address = paymentInput.parsedURI?.address, !address.isEmpty {
-            addressText = address
-            let scannedAmount = paymentInput.parsedURI?.amount ?? 0
-            if scannedAmount > 0, dashDuffsUnsigned == 0 {
-                unit = .dash
-                amountText = scannedAmount.formattedDashAmountWithoutCurrencySymbol
-            }
-            return
+    @discardableResult
+    func ingestScannedInput(_ paymentInput: DWPaymentInput) -> Bool {
+        guard let address = Self.scannedAddress(in: paymentInput) else { return false }
+        addressText = address
+        let scannedAmount = paymentInput.parsedURI?.amount ?? 0
+        if scannedAmount > 0, dashDuffsUnsigned == 0 {
+            unit = .dash
+            amountText = scannedAmount.formattedDashAmountWithoutCurrencySymbol
         }
-        if let raw = paymentInput.userDetails, Self.classify(raw) != nil {
-            addressText = raw
-        }
+        return true
     }
 
     // MARK: - Amount
@@ -558,6 +809,19 @@ final class SendViewModel: ObservableObject {
 
     var dashDuffsUnsigned: UInt64 {
         parsedDashAmount.plainDashAmount
+    }
+
+    /// The entered amount in duffs, or `nil` when it does not fit in `UInt64`.
+    ///
+    /// `plainDashAmount` scales by the duff factor and then takes
+    /// `uint64Value`, which does not report a value that no longer fits — it
+    /// wraps. An amount above `UInt64.max` duffs therefore arrives as a small
+    /// number that passes an affordability check and is spent. Every gate on
+    /// an amount the user typed should ask this instead.
+    var dashDuffsIfRepresentable: UInt64? {
+        let scaled = (parsedDashAmount * .duffs).whole
+        guard scaled >= 0, scaled <= Decimal(UInt64.max) else { return nil }
+        return NSDecimalNumber(decimal: scaled).uint64Value
     }
 
     /// Credit amount handed to the SDK, aligned to duff precision (1 duff =
@@ -692,6 +956,18 @@ final class SendViewModel: ObservableObject {
     /// Inline explanation for an amount rejected before Confirm. Keep zero
     /// quiet until the user types.
     var amountValidationMessage: String? {
+        #if DASHPAY
+        // Both are independent of the amount: the first says nothing can ever
+        // be sent on this channel, the second reports the attempt that just
+        // failed (cleared the moment the amount changes, so it can't go stale).
+        if isContactPaymentUnavailable { return Self.contactPaymentsUnavailableMessage }
+        // Ahead of `contactSendError`, and NOT cleared when the amount
+        // changes: an unknown outcome disables this screen for good, so the
+        // reason has to outlive the next keystroke or the button reads as
+        // dead for no stated reason.
+        if contactSendOutcomeIsUnknown { return Self.contactSendUnknownOutcomeMessage }
+        if let contactSendError { return contactSendError }
+        #endif
         if let shieldedMaxNotice { return shieldedMaxNotice }
         guard dashDuffsUnsigned > 0, let route else { return nil }
 
@@ -718,7 +994,7 @@ final class SendViewModel: ObservableObject {
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
                 requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: coreBalanceDuffs)
+                spendableDuffs: coreToCoreSpendableDuffs)
 
         case .coreToShielded:
             // The pool fee rides on top of the amount, so the spendable
@@ -793,9 +1069,29 @@ final class SendViewModel: ObservableObject {
                 feeReserveCredits: reserve)
 
         case .platformToCore:
-            // Stay quiet while the preflight is still resolving: Continue is
+            // The balance envelope first. A request the balance cannot cover
+            // is unaffordable whatever the preflight would have said — and
+            // with an EMPTY balance the preflight never says anything: it
+            // throws `noFundedAddress`, because a zero balance leaves no
+            // funded address to preflight. That is how asking to withdraw
+            // from an empty Platform balance used to reach a disabled
+            // Continue with nothing on screen explaining it.
+            if let message = TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: balanceName,
+                requestedCredits: creditsPreview,
+                balanceCredits: platformCredits,
+                feeReserveCredits: 0) {
+                return message
+            }
+            // Stay quiet while the preflight is still RESOLVING: Continue is
             // disabled, but the amount is not yet known to be unaffordable.
-            guard let preflight = withdrawalPreflight else { return nil }
+            // An attempt that already failed is named instead — the same
+            // rule the shield branch below follows.
+            guard let preflight = withdrawalPreflight else {
+                return withdrawalPreflightFailed
+                    ? InternalTransferViewModel.platformWithdrawalPreflightUnavailableMessage
+                    : nil
+            }
             guard preflight.canWithdraw else {
                 return String.localizedStringWithFormat(
                     NSLocalizedString(
@@ -835,13 +1131,38 @@ final class SendViewModel: ObservableObject {
         destination != nil && !pinnedSourceMismatch
     }
 
+    /// Affordability ceiling for the Core → Core route.
+    ///
+    /// A typed address rides the L1 payment processor, which rejects an
+    /// unfundable send with its own error, so the raw balance is enough of a
+    /// gate there. A contact payment has no such backstop —
+    /// `sendDashPayPayment` builds, signs and broadcasts in one SDK call and
+    /// charges the fee on top of the amount — so it is held to the fee-aware
+    /// envelope, which is also the cap `WalletSendService.sendToContact`
+    /// documents for its callers and the one Max already fills.
+    private var coreToCoreSpendableDuffs: UInt64 {
+        #if DASHPAY
+        if contactRecipient != nil { return coreSpendableDuffs }
+        #endif
+        return coreBalanceDuffs
+    }
+
     var canContinue: Bool {
+        #if DASHPAY
+        // Terminal for the rest of this screen's life: see `sendToContact`.
+        if contactSendOutcomeIsUnknown { return false }
+        #endif
+        // An amount that cannot be represented in duffs is not spendable on
+        // any route — checked before the routes, because the wrapped value the
+        // conversion would otherwise produce is small enough to pass them.
+        guard dashDuffsIfRepresentable != nil else { return false }
+        #if DASHPAY
+        if isSendingToContact || isContactPaymentUnavailable { return false }
+        #endif
         guard dashDuffsUnsigned > 0, let route, !isBlockedBySync else { return false }
         switch route {
         case .coreToCore:
-            // The L1 fee rides on top; the payment processor rejects an
-            // unfundable send with its own error, so gate on the balance only.
-            return dashDuffsUnsigned <= coreBalanceDuffs
+            return dashDuffsUnsigned <= coreToCoreSpendableDuffs
         case .coreToShielded:
             // Fee-on-top: the lock value is amount + pool fee, and the
             // asset-lock funding is an L1 spend — validate against the
@@ -1012,10 +1333,16 @@ final class SendViewModel: ObservableObject {
             formatted)
     }
 
+    /// Why Max offered less than the balance card shows — `nil` when the answer
+    /// is "tap Max again in a minute".
+    ///
+    /// A remainder a later sweep can move is not worth a line in the slot that
+    /// carries errors; one that no sweep can ever move is, or the balance keeps
+    /// promising what the wallet will never offer to send.
     private static func shieldedRemainderMessage(
         _ credits: UInt64,
         followUpCredits: UInt64
-    ) -> String {
+    ) -> String? {
         let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
         guard followUpCredits > 0 else {
             // Spending these notes costs more than they hold, so no later
@@ -1026,11 +1353,7 @@ final class SendViewModel: ObservableObject {
                     comment: "Shielded Max dust remainder"),
                 formatted)
         }
-        return String.localizedStringWithFormat(
-            NSLocalizedString(
-                "%@ DASH is held in notes that don't fit in one transaction. Use Max again after this one settles to send the rest.",
-                comment: "Shielded Max multi-bundle remainder"),
-            formatted)
+        return nil
     }
 
     // MARK: - Conversion on unit toggle
