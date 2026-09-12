@@ -384,6 +384,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             .contains { !$0.spentNullifiers.isEmpty }
 
         let balanceCoordinator = PlatformAddressSyncCoordinator.shared
+        guard balanceCoordinator.shieldedBalanceState.isAvailable else { return .unavailable }
         if hasPendingSpend || balanceCoordinator.isShieldedBalanceReconciling {
             return .waitingForConfirmation(balanceCoordinator.shieldedBalance)
         }

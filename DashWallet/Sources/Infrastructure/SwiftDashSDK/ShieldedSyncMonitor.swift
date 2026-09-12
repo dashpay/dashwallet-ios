@@ -152,19 +152,11 @@ final class ShieldedSyncMonitor: ObservableObject {
 
     // MARK: - Actions (Shielded Sync Info screen)
 
-    /// Run one shielded sync pass now. Errors surface via `lastError`.
+    /// Request a coalesced recovery/pass. Initialization errors surface via the
+    /// coordinator; completed sync errors continue to arrive on this monitor.
     func syncNow() async {
-        guard let manager else {
-            lastError = "Platform sync is not running"
-            return
-        }
         lastError = nil
-        do {
-            try await manager.syncShieldedNow()
-        } catch {
-            lastError = error.localizedDescription
-            Self.logger.error("🛡️ SHIELD-MON :: syncShieldedNow threw: \(String(describing: error), privacy: .public)")
-        }
+        PlatformAddressSyncCoordinator.shared.recoverShieldedNow()
     }
 
     /// Reset the displayed since-launch counters and timings. Purely a

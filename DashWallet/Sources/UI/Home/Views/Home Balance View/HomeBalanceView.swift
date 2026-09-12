@@ -63,7 +63,7 @@ struct HomeBalanceView: View {
     var onNotificationsTap: () -> Void = {}
 
     private var platformDuffs: UInt64 { platformSync.platformBalance / 1_000 }
-    private var shieldedDuffs: UInt64 { platformSync.shieldedBalance / 1_000 }
+    private var shieldedDuffs: UInt64? { platformSync.shieldedBalanceState.credits.map { $0 / 1_000 } }
     /// The hero figure is the sum of the rows below it — including Platform
     /// only while that row is on screen.
     ///
@@ -71,8 +71,9 @@ struct HomeBalanceView: View {
     /// internal transfer's endpoints exclude them too, so counting them in a
     /// total whose breakdown cannot show them would state a number the user
     /// can neither see the parts of nor reach.
-    private var totalDuffs: UInt64 {
-        viewModel.value + shieldedDuffs + (showsPlatformBalance ? platformDuffs : 0)
+    private var totalDuffs: UInt64? {
+        guard let shieldedDuffs else { return nil }
+        return viewModel.value + shieldedDuffs + (showsPlatformBalance ? platformDuffs : 0)
     }
 
     var body: some View {
@@ -123,11 +124,20 @@ struct HomeBalanceView: View {
                         .frame(width: 58, height: 58)
                 } else {
                     VStack(spacing: 0) {
-                        DashAmount(amount: Int64(totalDuffs), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
-                            .foregroundColor(Color.dash.whiteText)
-                        Text(viewModel.fiatString(forDuffs: totalDuffs))
-                            .font(.subhead)
-                            .foregroundColor(Color.dash.whiteText)
+                        if let totalDuffs {
+                            DashAmount(amount: Int64(totalDuffs), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
+                                .foregroundColor(Color.dash.whiteText)
+                            Text(viewModel.fiatString(forDuffs: totalDuffs))
+                                .font(.subhead)
+                                .foregroundColor(Color.dash.whiteText)
+                        } else {
+                            Text("—")
+                                .font(.largeTitle)
+                                .foregroundColor(Color.dash.whiteText)
+                            Text(NSLocalizedString("Balance unavailable", comment: "Balance not restored"))
+                                .font(.subhead)
+                                .foregroundColor(Color.dash.whiteText)
+                        }
 
                         ZStack {
                             if viewModel.shouldShowTapToHideBalance {
@@ -151,7 +161,7 @@ struct HomeBalanceView: View {
                 onLongPress()
             }
 
-            if !viewModel.isBalanceHidden && platformSync.isRunning {
+            if !viewModel.isBalanceHidden {
                 breakdownCard
                     .padding(.horizontal, 16)
                     .padding(.top, 12)
@@ -265,7 +275,7 @@ struct HomeBalanceView: View {
     private func balanceRow(
         icon: String,
         title: String,
-        duffs: UInt64,
+        duffs: UInt64?,
         isSyncing: Bool = false,
         infoAction: @escaping () -> Void
     ) -> some View {
@@ -291,14 +301,19 @@ struct HomeBalanceView: View {
                     Text(
                         isSyncing
                             ? NSLocalizedString("Syncing", comment: "Shielded balance")
-                            : viewModel.fiatString(forDuffs: duffs)
+                            : duffs.map { viewModel.fiatString(forDuffs: $0) }
+                                ?? NSLocalizedString("Balance unavailable", comment: "Balance not restored")
                     )
                         .font(.caption2)
                         .foregroundColor(.white.opacity(0.7))
                 }
                 Spacer(minLength: 8)
-                DashAmount(amount: Int64(duffs), font: .footnote, dashSymbolFactor: 0.8, showDirection: false)
-                    .foregroundColor(Color.dash.whiteText)
+                if let duffs {
+                    DashAmount(amount: Int64(duffs), font: .footnote, dashSymbolFactor: 0.8, showDirection: false)
+                        .foregroundColor(Color.dash.whiteText)
+                } else {
+                    Text("—").foregroundColor(Color.dash.whiteText)
+                }
             }
             .contentShape(Rectangle())
             .onTapGesture { infoAction() }
