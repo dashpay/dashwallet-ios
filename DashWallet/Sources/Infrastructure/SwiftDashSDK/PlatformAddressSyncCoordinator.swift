@@ -1354,6 +1354,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                     balance: row.balance)
             }
             platformBalance = rows.reduce(0) { $0 + $1.balance }
+            enableAdvancedModeIfFunded(balance: platformBalance)
             activeAddressCount = rows.reduce(0) { $1.balance > 0 ? $0 + 1 : $0 }
             // Observed-payment ledger: diff this snapshot against the
             // persisted baseline and record unattributed increases as
@@ -1384,6 +1385,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                 if balance > 0 { nonZero += 1 }
             }
             platformBalance = total
+            enableAdvancedModeIfFunded(balance: total)
             activeAddressCount = nonZero
         }
 
@@ -1398,6 +1400,15 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     }
 
     // MARK: - Helpers
+
+    /// The Platform surfaces live behind Advanced mode, so a wallet that holds
+    /// credits with the mode off shows the user nothing and offers no way to
+    /// move them. Both callers pass the balance they just published — the
+    /// cached one at start-up and the freshly summed one after a sync — and
+    /// the policy itself decides whether that is the first funded sighting.
+    private func enableAdvancedModeIfFunded(balance: UInt64) {
+        DWGlobalOptions.sharedInstance().enableAdvancedMode(forPlatformBalance: balance)
+    }
 
     private func resolvePlatformAccountAvailability(
         walletId: Data
