@@ -106,7 +106,8 @@ final class SendViewModel: ObservableObject {
         SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
     }
     @Published private(set) var platformCredits: UInt64 = 0
-    @Published private(set) var shieldedBalance: UInt64 = 0
+    @Published private(set) var shieldedBalanceState: ShieldedBalanceState = .unavailable
+    var shieldedBalance: UInt64 { shieldedBalanceState.credits ?? 0 }
 
     /// Largest amount the pool can fund inside ONE transition — the same
     /// note-aware number Max produces. A typed amount above this needs more
@@ -194,11 +195,11 @@ final class SendViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        shieldedBalance = PlatformAddressSyncCoordinator.shared.shieldedBalance
-        PlatformAddressSyncCoordinator.shared.$shieldedBalance
+        shieldedBalanceState = PlatformAddressSyncCoordinator.shared.shieldedBalanceState
+        PlatformAddressSyncCoordinator.shared.$shieldedBalanceState
             .receive(on: RunLoop.main)
-            .sink { [weak self] credits in
-                self?.shieldedBalance = credits
+            .sink { [weak self] state in
+                self?.shieldedBalanceState = state
                 self?.refreshShieldedSpendCeiling()
             }
             .store(in: &cancellables)
@@ -526,7 +527,8 @@ final class SendViewModel: ObservableObject {
     }
 
     var shieldedBalanceFormatted: String {
-        InternalTransferViewModel.cardBalanceString(duffs: shieldedBalance / 1000)
+        guard shieldedBalanceState.isAvailable else { return "—" }
+        return InternalTransferViewModel.cardBalanceString(duffs: shieldedBalance / 1000)
     }
 
     /// A source's balance normalised to duffs, for the "first source with
@@ -630,6 +632,9 @@ final class SendViewModel: ObservableObject {
     /// Inline explanation for an amount rejected before Confirm. Keep zero
     /// quiet until the user types.
     var amountValidationMessage: String? {
+        if source == .shielded, !shieldedBalanceState.isAvailable {
+            return NSLocalizedString("Balance unavailable", comment: "Shielded balance not restored")
+        }
         if let shieldedMaxNotice { return shieldedMaxNotice }
         guard dashDuffsUnsigned > 0, let route else { return nil }
 
@@ -774,6 +779,7 @@ final class SendViewModel: ObservableObject {
     }
 
     var canContinue: Bool {
+        if source == .shielded, !shieldedBalanceState.isAvailable { return false }
         guard dashDuffsUnsigned > 0, let route, !isBlockedBySync else { return false }
         switch route {
         case .coreToCore:
@@ -823,6 +829,7 @@ final class SendViewModel: ObservableObject {
 
     /// Source-aware Max fill — same envelopes as the internal transfer.
     func fillMaxFromWallet() {
+        if source == .shielded, !shieldedBalanceState.isAvailable { return }
         clearShieldedMaxSelection()
         let sourceDuffs: UInt64
         switch route {

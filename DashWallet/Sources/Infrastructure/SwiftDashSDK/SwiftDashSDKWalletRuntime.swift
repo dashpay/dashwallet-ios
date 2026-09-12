@@ -156,8 +156,11 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// sync is bound again (or the start has failed). Sync Info uses this to
     /// turn "Sync Now" into a real in-session recovery action after Stop or a
     /// recover-time binding race.
-    func rearmPlatformSync() async {
+    func rearmPlatformSync(if shouldStart: @escaping @MainActor () -> Bool = { true }) async {
         let task = enqueueAwaitable { [weak self] in
+            // Recovery may have been stopped while waiting behind another
+            // lifecycle operation. Do not let its queued re-arm undo Stop/wipe.
+            guard shouldStart() else { return }
             await self?.refresh(trigger: .platformSyncRearm)
         }
         await task.value
@@ -284,6 +287,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             return
         }
 
+        PlatformAddressSyncCoordinator.shared.prepareForNetworkSwitch()
         WalletEnvironment.setActiveWalletId(walletId, for: kind)
 
         // Same stop/clear/load/start sequence as a network switch, enqueued on
@@ -434,7 +438,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 return
             }
 
-            await fullReset(lastError: nil, forWipe: false)
+            await fullReset(lastError: nil, forWipe: false, preservingShieldedRecovery: true)
 
             // A reinstall clears the selected-network UserDefaults key but
             // preserves SDK mnemonics. If every stored wallet belongs to the
@@ -451,11 +455,16 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // handleWalletMaterialChanged) — and the migrator is awaited
             // above, so a legacy-upgrade launch has its mnemonic by this line.
             guard WalletEnvironment.hasSDKWallet else {
+                PlatformAddressSyncCoordinator.shared.stopShieldedRecoveryMonitoring()
                 Self.logger.info("🧭 RUNTIME :: no SDK wallet persisted; leaving runtime stopped for \(network.rawValue, privacy: .public)")
                 return
             }
 
+            PlatformAddressSyncCoordinator.shared.startShieldedRecoveryMonitoring()
             do {
+                let (manager, wallet) = try await SwiftDashSDKHost.shared.start(network: network)
+                await PlatformAddressSyncCoordinator.shared.prepareLocalShieldedState(
+                    manager: manager, walletId: wallet.walletId, network: network)
                 try await SwiftDashSDKSPVCoordinator.shared.startAsync(for: network)
                 try await PlatformAddressSyncCoordinator.shared.startAsync(for: network)
                 currentNetwork = network
@@ -471,7 +480,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 }
             } catch {
                 Self.logger.error("🧭 RUNTIME :: start failed: \(String(describing: error), privacy: .public)")
-                await fullReset(lastError: error.localizedDescription, forWipe: false)
+                await fullReset(lastError: error.localizedDescription, forWipe: false, preservingShieldedRecovery: true)
             }
         }
     }
@@ -481,11 +490,13 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// the FFI handle while either tokio task is still running would be a
     /// use-after-free, so the host stop happens strictly after both
     /// coordinators have settled.
-    private func fullReset(lastError: String?, forWipe: Bool) async {
+    private func fullReset(
+        lastError: String?, forWipe: Bool, preservingShieldedRecovery: Bool = false
+    ) async {
         if forWipe {
             await PlatformAddressSyncCoordinator.stopForWipeAsync()
         } else {
-            await PlatformAddressSyncCoordinator.shared.stopAsync()
+            await PlatformAddressSyncCoordinator.shared.stopAsync(preservingRecovery: preservingShieldedRecovery)
         }
         await SwiftDashSDKSPVCoordinator.shared.stopAsync(lastError: lastError)
         SwiftDashSDKWalletState.shared.clearAllState()
