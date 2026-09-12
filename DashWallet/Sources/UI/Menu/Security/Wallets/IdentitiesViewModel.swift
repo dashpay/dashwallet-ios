@@ -356,7 +356,7 @@ final class IdentitiesViewModel: ObservableObject {
         let title = alias
             ?? displayedName
             ?? (pendingBelongsToIdentity ? pendingLabel : nil)
-            ?? (String(identity.identityIdString.prefix(12)) + "...")
+            ?? (String(identity.identityIdBase58.prefix(12)) + "...")
         let hasName = alias != nil || mainName != nil || preferredName != nil || !ownedNames.isEmpty
         // Balance is stored as Int64 bit-pattern of the UInt64 credits.
         let credits = UInt64(bitPattern: identity.balance)
