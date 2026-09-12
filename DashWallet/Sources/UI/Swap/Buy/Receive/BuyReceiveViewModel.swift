@@ -103,10 +103,7 @@ final class BuyReceiveViewModel: ObservableObject {
 
     private static func generateQRCode(from string: String) -> UIImage? {
         let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty,
-              let data = trimmed.data(using: .utf8) else {
-            return nil
-        }
-        return UIImage.dw_image(withQRCodeData: data, color: CIColor(color: UIColor.label))
+        guard !trimmed.isEmpty else { return nil }
+        return QRCodeGenerator.image(for: Data(trimmed.utf8), foregroundColor: .label)
     }
 }

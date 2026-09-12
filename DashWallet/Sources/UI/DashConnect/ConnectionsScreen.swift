@@ -134,17 +134,9 @@ struct ConnectionsScreen: View {
     // MARK: - Actions
 
     private func showScanner() {
-        let scanner = GenericQRScannerController()
-
-        scanner.onQRCodeScanned = { value in
-            vc.dismiss(animated: true) {
-                viewModel.onQRScanned(value)
-            }
+        let scanner = QRScannerController.addressScanner(expectsDashAddress: false) { value in
+            viewModel.onQRScanned(value)
         }
-        scanner.onCancel = {
-            vc.dismiss(animated: true)
-        }
-
         vc.present(scanner, animated: true)
     }
 

@@ -192,10 +192,17 @@ struct ClaimInvitationScreen: View {
             content
         }
         .sheet(isPresented: $showScanner) {
-            GenericQRScannerView(
-                onQRCodeScanned: { value in
-                    viewModel.input = value
+            QRScannerView(
+                mode: .invitation,
+                onResult: { result in
                     showScanner = false
+                    if case .invitation(let url) = result {
+                        viewModel.input = url.absoluteString
+                    } else {
+                        // Accepted redirect offer — the QR belongs to
+                        // another flow.
+                        QRScanResultRouter.route(result)
+                    }
                 },
                 onCancel: { showScanner = false })
         }

@@ -38,6 +38,7 @@ static const bool _SNAPSHOT = 0;
 #import "UIViewController+KeyboardAdditions.h"
 #import "SFSafariViewController+DashWallet.h"
 #import "UIFont+DWFont.h"
+#import "UIColor+DWDashPay.h"
 #import "CALayer+DWShadow.h"
 #import "DWAlertController.h"
 #import "DWHomeProtocol.h"
@@ -53,12 +54,10 @@ static const bool _SNAPSHOT = 0;
 #import "DWVerifySeedPhraseViewController.h"
 
 //MARK: Payment flow
-#import "DWQRScanModel.h"
 #import "DWPayOptionModel.h"
 #import "DWPayModelProtocol.h"
 #import "DWReceiveModelProtocol.h"
 #import "DWReceiveModel.h"
-#import "DWQRScanViewController.h"
 #import "DWRequestAmountViewController.h"
 #import "UIViewController+DWShareReceiveInfo.h"
 #import "DWPaymentProcessor.h"
