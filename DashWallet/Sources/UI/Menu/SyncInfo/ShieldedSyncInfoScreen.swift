@@ -73,7 +73,7 @@ struct ShieldedSyncInfoScreen: View {
                     if monitor.syncCountSinceLaunch > 0 {
                         countersCard
                     }
-                    if let lastError = monitor.lastError {
+                    if let lastError = coordinator.shieldedRecoveryError ?? coordinator.shieldedInitializationError ?? monitor.lastError {
                         errorCard(message: lastError)
                     }
                     controlsCard
@@ -136,7 +136,7 @@ struct ShieldedSyncInfoScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             row(
                 title: "Total Shielded Balance",
-                value: PlatformCreditsFormatter.dashString(coordinator.shieldedBalance))
+                value: coordinator.shieldedBalanceState.credits.map(PlatformCreditsFormatter.dashString) ?? "—")
             row(
                 title: "Notes Synced",
                 value: formattedCount(monitor.notesSynced))

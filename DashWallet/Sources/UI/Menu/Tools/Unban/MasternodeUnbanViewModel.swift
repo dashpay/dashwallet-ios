@@ -151,7 +151,8 @@ final class MasternodeUnbanViewModel: ObservableObject {
     }
 
     var canTopUp: Bool {
-        shieldedBalanceCredits >= Self.topUpCredits
+        PlatformAddressSyncCoordinator.shared.shieldedBalanceState.isAvailable
+            && shieldedBalanceCredits >= Self.topUpCredits
     }
 
     /// Refresh the funding preflight: spendable L1 balance vs the fee floor,
