@@ -5876,4 +5876,13 @@
 "Nothing to finish." = "Nothing to finish.";
 /* Receive: the QR image doubles as a copy control */
 "Copy QR code" = "Copy QR code";
+
+/* Brief help in the internal transfer balance picker */
+"Transfer from" = "Transfer from";
+"Transfer to" = "Transfer to";
+"About %@ balance" = "About %@ balance";
+"Your everyday Dash balance. Use it to pay merchants or send to other Dash wallets and exchanges; amounts and addresses are public." = "Your everyday Dash balance. Use it to pay merchants or send to other Dash wallets and exchanges; amounts and addresses are public.";
+"Dash for payments on Dash Platform. Keep funds here to send to Platform addresses or move into your Shielded or Identity balance." = "Dash for payments on Dash Platform. Keep funds here to send to Platform addresses or move into your Shielded or Identity balance.";
+"Dash held privately, with your balance hidden from public view. Use it for private payments to other shielded addresses." = "Dash held privately, with your balance hidden from public view. Use it for private payments to other shielded addresses.";
+"Credits that power your Dash identity. Add funds here to register usernames and pay for actions in apps that use your identity." = "Credits that power your Dash identity. Add funds here to register usernames and pay for actions in apps that use your identity.";
 "Couldn't authenticate: %@" = "Couldn't authenticate: %@";
