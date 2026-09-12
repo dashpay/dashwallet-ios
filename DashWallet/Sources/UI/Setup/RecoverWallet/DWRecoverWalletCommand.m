@@ -75,8 +75,11 @@ NS_ASSUME_NONNULL_BEGIN
     else if (DWWalletEnvironment.isTestnet) {
         network = DWSwiftDashSDKNetworkTestnet;
     }
+    else if (DWWalletEnvironment.isDevnet) {
+        network = DWSwiftDashSDKNetworkDevnet;
+    }
     else {
-        return; // devnet/regtest unsupported in v1
+        return; // unreachable: networkKind is total over the three cases
     }
 
     [DWSwiftDashSDKWalletCreator importWalletWithMnemonic:phrase pin:pin network:network];

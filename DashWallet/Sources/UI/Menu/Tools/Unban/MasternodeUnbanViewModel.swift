@@ -406,7 +406,8 @@ final class MasternodeUnbanViewModel: ObservableObject {
     ) throws -> Preview {
         let bytes = try prepared.serializedData()
         let parsed = try ParsedRawTransaction(data: bytes)
-        let network: PaymentNetwork = WalletEnvironment.isTestnet ? .testnet : .mainnet
+        // Devnet shares testnet's address version bytes.
+        let network: PaymentNetwork = WalletEnvironment.isMainnet ? .mainnet : .testnet
         let outputs = parsed.outputs.map { output in
             (address: ScriptAddressCodec.address(forScript: output.scriptPubKey, network: network)
                 ?? NSLocalizedString("Non-standard output", comment: "Masternode unban"),

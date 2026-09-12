@@ -10,13 +10,16 @@
 import Foundation
 
 enum PaymentNetworkResolver {
-    /// The active network, or throws `.walletNotReady` if it isn't a supported BIP70 network
-    /// (devnet/unsupported).
+    /// The active network's `PaymentNetwork` token. The token encodes address
+    /// version bytes (see `ScriptAddressCodec`), and devnet shares testnet's,
+    /// so devnet maps to `.testnet` — this keeps the selected-input send and
+    /// script/address codecs working on devnet. (No BIP70 merchant exists on
+    /// a devnet; such a request simply fails at the network layer.)
     static func current() throws -> PaymentNetwork {
         switch WalletEnvironment.networkKind {
         case .mainnet: return .mainnet
         case .testnet: return .testnet
-        case .devnet: throw BIP70Error.walletNotReady
+        case .devnet: return .testnet
         }
     }
 }

@@ -27,6 +27,9 @@ private struct NetworkChoiceAlert: ViewModifier {
     @Binding var isPresented: Bool
     let onMainnet: () -> Void
     let onTestnet: () -> Void
+    /// Devnet is offered only by internal builds, so the caller passes `nil`
+    /// where the network does not exist and the button is not drawn at all.
+    let onDevnet: (() -> Void)?
 
     func body(content: Content) -> some View {
         content.alert(
@@ -35,7 +38,36 @@ private struct NetworkChoiceAlert: ViewModifier {
         ) {
             Button(NSLocalizedString("Mainnet", comment: ""), action: onMainnet)
             Button(NSLocalizedString("Testnet", comment: ""), action: onTestnet)
+            if let onDevnet {
+                Button(NSLocalizedString("Devnet", comment: ""), action: onDevnet)
+            }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+        }
+    }
+}
+
+/// A network switch refused before anything was torn down — today only devnet
+/// selected without its coordinates.
+///
+/// Separate from `NetworkChoiceAlert` because it is not part of the choice: a
+/// failure *during* a switch renders in the lifecycle overlay's failure card,
+/// and only a refusal that never started has nowhere else to go. `message`
+/// doubles as the presentation flag, so there is no way to show it empty.
+private struct NetworkSwitchErrorAlert: ViewModifier {
+    @Binding var message: String?
+
+    func body(content: Content) -> some View {
+        content.alert(
+            NSLocalizedString("Network", comment: ""),
+            isPresented: Binding(
+                get: { message != nil },
+                set: { if !$0 { message = nil } }
+            ),
+            presenting: message
+        ) { _ in
+            Button(NSLocalizedString("OK", comment: "")) { message = nil }
+        } message: { text in
+            Text(text)
         }
     }
 }
@@ -91,12 +123,18 @@ extension View {
     func networkChoiceAlert(
         isPresented: Binding<Bool>,
         onMainnet: @escaping () -> Void,
-        onTestnet: @escaping () -> Void
+        onTestnet: @escaping () -> Void,
+        onDevnet: (() -> Void)? = nil
     ) -> some View {
         modifier(NetworkChoiceAlert(
             isPresented: isPresented,
             onMainnet: onMainnet,
-            onTestnet: onTestnet))
+            onTestnet: onTestnet,
+            onDevnet: onDevnet))
+    }
+
+    func networkSwitchErrorAlert(message: Binding<String?>) -> some View {
+        modifier(NetworkSwitchErrorAlert(message: message))
     }
 
     func coinJoinSweepAlerts(

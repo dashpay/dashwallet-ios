@@ -120,7 +120,16 @@ final class KeychainWalletRecoveryCoordinator: NSObject {
         }
 
         Task { @MainActor in
-            let kind: WalletEnvironment.NetworkKind = network == .mainnet ? .mainnet : .testnet
+            let kind: WalletEnvironment.NetworkKind
+            switch network {
+            case .mainnet: kind = .mainnet
+            case .testnet: kind = .testnet
+            case .devnet: kind = .devnet
+            case .regtest:
+                // No regtest wallet can be stored; keep the current network.
+                completion(true)
+                return
+            }
             _ = WalletEnvironment.switchToNetwork(kind)
             completion(true)
         }

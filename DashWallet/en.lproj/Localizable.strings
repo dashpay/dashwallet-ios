@@ -173,6 +173,63 @@
 /* Explore Dash: Filters */
 "80 km" = "80 km";
 
+/* DashConnect */
+"Available on test networks only" = "Available on test networks only";
+
+/* Devnet */
+"Base URL of the devnet's quorum-list server. SPV peers and Platform (DAPI) nodes are both auto-discovered from {Quorum URL}/masternodes — no manual peer entry." = "Base URL of the devnet's quorum-list server. SPV peers and Platform (DAPI) nodes are both auto-discovered from {Quorum URL}/masternodes — no manual peer entry.";
+
+/* Devnet */
+"Base58 identifier (optional)" = "Base58 identifier (optional)";
+
+/* Devnet */
+"DashConnect Contract ID" = "DashConnect Contract ID";
+
+/* Wallet network */
+"Devnet" = "Devnet";
+
+/* Devnet */
+"Devnet Name" = "Devnet Name";
+
+/* Devnet */
+"Devnet Settings" = "Devnet Settings";
+
+/* Devnet */
+"Devnet is not configured. Enter a Quorum URL and Devnet Name in Settings → Devnet Settings first." = "Devnet is not configured. Enter a Quorum URL and Devnet Name in Settings → Devnet Settings first.";
+
+/* Devnet */
+"Quorum URL" = "Quorum URL";
+
+/* Devnet */
+"Quorum URL, name and contract ids" = "Quorum URL, name and contract ids";
+
+/* Devnet */
+"Saved, but Devnet needs both a Quorum URL and a Devnet Name — syncing will fail until both are set." = "Saved, but Devnet needs both a Quorum URL and a Devnet Name — syncing will fail until both are set.";
+
+/* Devnet */
+"Saved." = "Saved.";
+
+/* Devnet */
+"Saved. Devnet is reconnecting with the new settings." = "Saved. Devnet is reconnecting with the new settings.";
+
+/* Devnet */
+"Saved. The values apply when you switch to Devnet." = "Saved. The values apply when you switch to Devnet.";
+
+/* DashConnect */
+"The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings." = "The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings.";
+
+/* Devnet */
+"The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history." = "The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history.";
+
+/* Devnet */
+"The devnet name cannot contain a slash." = "The devnet name cannot contain a slash.";
+
+/* Devnet */
+"The devnet name cannot contain spaces." = "The devnet name cannot contain spaces.";
+
+/* Devnet */
+"The loginKeyResponse data contract id registered on this devnet. Only needed for DashConnect logins; leave empty otherwise." = "The loginKeyResponse data contract id registered on this devnet. Only needed for DashConnect logins; leave empty otherwise.";
+
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" is not a recovery phrase word";
 
@@ -939,6 +996,9 @@
 
 /* Username marketplace: join deadline still open — value of the New contenders row */
 "can join until %@" = "can join until %@";
+
+/* Devnet */
+"e.g. moutai (matches dashd -devnet=<name>)" = "e.g. moutai (matches dashd -devnet=<name>)";
 
 /* Username marketplace: the contest's join window has passed — value of the New contenders row */
 "joining closed" = "joining closed";

@@ -502,8 +502,7 @@ final class WalletsViewModel: ObservableObject {
 
     private func activeWalletId() -> Data? {
         SwiftDashSDKHost.shared.wallet?.walletId
-            ?? WalletEnvironment.activeWalletId(
-                for: WalletEnvironment.isTestnet ? .testnet : .mainnet)
+            ?? WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind)
     }
 
     /// Collapse a user-entered recovery phrase to canonical form: trim, then

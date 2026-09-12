@@ -70,6 +70,8 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case keyRegistrationMismatchedDerivedKey(KeyPurpose)
     case ephemeralKeyGenerationFailed
     case ambiguousKeyRegistrationConnection
+    case devnetLoginContractNotConfigured
+    case loginContractUnavailable
 
     var errorDescription: String? {
         switch self {
@@ -82,7 +84,7 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
         case .noSDK:
             return "DashConnect requires the SwiftDashSDK runtime."
         case .unsupportedRuntimeNetwork(let network):
-            return "DashConnect Platform publish is testnet-only right now, but the app runtime is on \(Self.displayName(for: network))."
+            return "DashConnect cannot publish from this wallet: the app runtime is on \(Self.displayName(for: network)), which does not match the network DashConnect is configured for."
         case let .unsupportedRequestNetwork(expected, actual):
             return "This DashConnect QR is for \(Self.displayName(for: actual)), but this wallet currently supports \(Self.displayName(for: expected)) only."
         case .authorizationCancelled:
@@ -109,6 +111,12 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
             return "Could not tell which approved app this login belongs to. Scan the app's QR code again."
         case .keyRegistrationMismatchedDerivedKey(let purpose):
             return "The scanned key-registration transition adds a \(purpose.name) key we did not derive."
+        case .devnetLoginContractNotConfigured:
+            return NSLocalizedString(
+                "The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings.",
+                comment: "DashConnect")
+        case .loginContractUnavailable:
+            return "The DashConnect login contract is not available on this network."
         }
     }
 
@@ -247,7 +255,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         subsystem: "org.dashfoundation.dash",
         category: "dashconnect.platform-data-source")
 
-    static let loginKeyExchangeContractId: Data = {
+    /// The pinned TESTNET `loginKeyResponse` contract id. Compile-time
+    /// constant, so the length check can never fire at runtime.
+    static let testnetLoginKeyExchangeContractId: Data = {
         guard let data = Data.identifier(fromBase58: "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P"),
               data.count == 32 else {
             fatalError("DashConnect loginKeyResponse contract id must be a 32-byte identifier.")
@@ -263,14 +273,28 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private let keyRegistrationParser: any DashConnectKeyRegistrationParsing
     private let now: () -> Date
 
+    /// The DashConnect network matching the app's current network selection —
+    /// what the default data source serves. Mainnet maps to `.mainnet` for
+    /// completeness, but the real data source is never constructed there
+    /// (the feature is unavailable on mainnet; the mock is used instead).
+    static func currentEnvironmentNetwork() -> DashConnectNetwork {
+        switch WalletEnvironment.networkKind {
+        case .mainnet: return .mainnet
+        case .testnet: return .testnet
+        case .devnet: return .devnet
+        }
+    }
+
     init(
-        supportedNetwork: DashConnectNetwork = .testnet,
+        supportedNetwork: DashConnectNetwork = PlatformDashConnectDataSource.currentEnvironmentNetwork(),
         store: (any DashConnectStore)? = nil,
         authorizer: DWIdentityAuthorizer = DWIdentityAuthorizer(),
         keyRegistrationParser: any DashConnectKeyRegistrationParsing = PlatformWalletDashConnectKeyRegistrationParser(),
         now: @escaping () -> Date = Date.init
     ) {
-        assert(supportedNetwork == .testnet, "DashConnect Platform publish is currently testnet-only.")
+        assert(
+            supportedNetwork == .testnet || supportedNetwork == .devnet,
+            "DashConnect Platform publish runs on testnet and devnet only.")
         self.supportedNetwork = supportedNetwork
         self.store = store ?? UserDefaultsDashConnectStore(network: supportedNetwork)
         self.authorizer = authorizer
@@ -869,6 +893,29 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return approved[0]
     }
 
+    /// The `loginKeyResponse` contract id for the network this data source
+    /// serves. Testnet is pinned; devnet reads the user-entered id from
+    /// `DevnetConfiguration` and throws a normal, user-visible error when it
+    /// is absent or not a 32-byte base58 identifier — never a crash on
+    /// user input.
+    private func loginKeyExchangeContractId() throws -> Data {
+        switch supportedNetwork {
+        case .testnet:
+            return Self.testnetLoginKeyExchangeContractId
+        case .devnet:
+            guard let raw = DevnetConfiguration.dashConnectContractId,
+                  let data = Data.identifier(fromBase58: raw),
+                  data.count == 32 else {
+                throw DashConnectPlatformError.devnetLoginContractNotConfigured
+            }
+            return data
+        case .mainnet:
+            // Unreachable through the app (mainnet gets the mock data
+            // source); fail closed rather than publish against a guess.
+            throw DashConnectPlatformError.loginContractUnavailable
+        }
+    }
+
     private func validateNetwork(_ network: DashConnectNetwork) throws {
         guard network == supportedNetwork else {
             throw DashConnectPlatformError.unsupportedRequestNetwork(
@@ -916,8 +963,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             Self.logger.error("🔗 DASHCONNECT :: context missing: runningNetwork")
             throw DashConnectPlatformError.noWallet
         }
-        guard network == .testnet else {
-            Self.logger.error("🔗 DASHCONNECT :: wallet is on \(String(describing: network), privacy: .public), DashConnect is testnet-only")
+        let expectedRuntimeNetwork: Network = supportedNetwork == .devnet ? .devnet : .testnet
+        guard network == expectedRuntimeNetwork else {
+            Self.logger.error("🔗 DASHCONNECT :: wallet is on \(String(describing: network), privacy: .public), DashConnect here expects \(String(describing: expectedRuntimeNetwork), privacy: .public)")
             throw DashConnectPlatformError.unsupportedRuntimeNetwork(network)
         }
         guard let identityId = runtime.identityId else {
@@ -989,7 +1037,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             )
             _ = try await context.wallet.replaceDocument(
                 ownerIdentityId: context.identityId,
-                contractId: Self.loginKeyExchangeContractId,
+                contractId: try loginKeyExchangeContractId(),
                 documentType: Self.loginKeyExchangeDocumentType,
                 documentId: documentId,
                 propertiesJSON: propertiesJSON,
@@ -1010,7 +1058,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         do {
             _ = try await context.wallet.createDocument(
                 ownerIdentityId: context.identityId,
-                contractId: Self.loginKeyExchangeContractId,
+                contractId: try loginKeyExchangeContractId(),
                 documentType: Self.loginKeyExchangeDocumentType,
                 propertiesJSON: propertiesJSON,
                 signer: signer
@@ -1045,7 +1093,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         """
 
         let response = try await sdk.documentList(
-            dataContractId: Self.loginKeyExchangeContractId.toBase58String(),
+            dataContractId: try loginKeyExchangeContractId().toBase58String(),
             documentType: Self.loginKeyExchangeDocumentType,
             whereClause: whereClause,
             limit: 1

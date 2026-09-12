@@ -66,7 +66,9 @@ final class CoinJoinRecovery: NSObject {
     // MARK: - Per-network UserDefaults keys
 
     private func networkTag(_ network: Network) -> String {
-        network == .mainnet ? "mainnet" : "testnet"
+        // Same "mainnet"/"testnet" strings as before; devnet gets its own
+        // tag instead of colliding with testnet's keys.
+        network.networkName
     }
     /// Terminal per-network flag: set once the first full wide-gap scan
     /// completes (the deep coins it found are persisted thereafter) or the
@@ -143,8 +145,10 @@ final class CoinJoinRecovery: NSObject {
         lock.lock(); defer { lock.unlock() }
         defaults.removeObject(forKey: recoveredKey(.mainnet))
         defaults.removeObject(forKey: recoveredKey(.testnet))
+        defaults.removeObject(forKey: recoveredKey(.devnet))
         defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.mainnet))
         defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.testnet))
+        defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.devnet))
         Self.logger.info(
             "🪙 CJRECOV :: recovery flags cleared on wipe — next wallet re-runs the one-time wide scan")
     }

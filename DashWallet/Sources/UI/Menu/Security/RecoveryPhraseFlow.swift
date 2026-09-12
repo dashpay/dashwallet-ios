@@ -28,12 +28,14 @@ import UIKit
 enum RecoveryPhraseWalletNetwork: Int, CaseIterable, Hashable {
     case mainnet
     case testnet
+    case devnet
 
     init?(sdkNetwork: Network) {
         switch sdkNetwork {
         case .mainnet: self = .mainnet
         case .testnet: self = .testnet
-        case .devnet, .regtest: return nil
+        case .devnet: self = .devnet
+        case .regtest: return nil
         }
     }
 
@@ -41,7 +43,15 @@ enum RecoveryPhraseWalletNetwork: Int, CaseIterable, Hashable {
         switch environmentKind {
         case .mainnet: self = .mainnet
         case .testnet: self = .testnet
-        case .devnet: return nil
+        case .devnet: self = .devnet
+        }
+    }
+
+    var environmentKind: WalletEnvironment.NetworkKind {
+        switch self {
+        case .mainnet: return .mainnet
+        case .testnet: return .testnet
+        case .devnet: return .devnet
         }
     }
 
@@ -49,6 +59,7 @@ enum RecoveryPhraseWalletNetwork: Int, CaseIterable, Hashable {
         switch self {
         case .mainnet: return NSLocalizedString("Mainnet", comment: "Wallet network")
         case .testnet: return NSLocalizedString("Testnet", comment: "Wallet network")
+        case .devnet: return NSLocalizedString("Devnet", comment: "Wallet network")
         }
     }
 }
@@ -139,8 +150,7 @@ enum RecoveryPhraseInventory {
         })
         let activeWalletIds: [RecoveryPhraseWalletNetwork: Data] = Dictionary(
             uniqueKeysWithValues: RecoveryPhraseWalletNetwork.allCases.compactMap { network in
-                let kind: WalletEnvironment.NetworkKind = network == .mainnet ? .mainnet : .testnet
-                return WalletEnvironment.activeWalletId(for: kind).map { (network, $0) }
+                WalletEnvironment.activeWalletId(for: network.environmentKind).map { (network, $0) }
             })
 
         return try makeDescriptors(

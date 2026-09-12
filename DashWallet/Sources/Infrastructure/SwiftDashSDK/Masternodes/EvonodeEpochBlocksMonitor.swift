@@ -96,7 +96,9 @@ final class EvonodeEpochBlocksMonitor: ObservableObject {
     /// Activity is kept per network: the same wallet runs different
     /// masternodes on testnet and mainnet.
     private static func activityStore() -> EvonodeProposalActivityStore {
-        EvonodeProposalActivityStore(network: WalletEnvironment.isTestnet ? "testnet" : "mainnet")
+        // `networkName` keeps the existing "mainnet"/"testnet" store keys
+        // and gives devnet its own instead of colliding with mainnet's.
+        EvonodeProposalActivityStore(network: WalletEnvironment.network?.networkName ?? "mainnet")
     }
 
     /// The wallet's evonodes still on the network (not retired), by stored
