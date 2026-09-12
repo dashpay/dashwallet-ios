@@ -45,7 +45,9 @@ struct SyncingHeaderView: View {
             if model.state == .syncing {
                 Button(action: onSyncTap) {
                     HStack(spacing: 4) {
-                        Text(NSLocalizedString("Syncing", comment: ""))
+                        Text(model.isPersistingScannedHistory
+                            ? NSLocalizedString("Processing transactions", comment: "Sync phase: scan finished, transactions still being written")
+                            : NSLocalizedString("Syncing", comment: ""))
                             .font(.subheadline)
                         
                         if model.progress > 0 {
