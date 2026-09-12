@@ -178,8 +178,10 @@ extension BaseNavigationController: UINavigationControllerDelegate {
             backButton.frame = .init(x: 0, y: 0, width: 30, height: 30)
             backButton.setImage(UIImage(systemName: "arrow.backward"), for: .normal)
             backButton.tintColor = backButtonTintColor
+            backButton.accessibilityLabel = NSLocalizedString("Back", comment: "Accessibility label for the navigation bar back button")
             backButton.addTarget(self, action: #selector(backButtonAction), for: .touchUpInside)
             let item = UIBarButtonItem(customView: backButton)
+            item.accessibilityLabel = backButton.accessibilityLabel
 
             viewController.navigationItem.leftBarButtonItem = item
             viewController.navigationItem.leftItemsSupplementBackButton = false

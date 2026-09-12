@@ -49,6 +49,11 @@ struct DashAmount: View {
                 DashSymbol()
                     .padding(.leading, 2)
             }
+            // The currency symbol is an image, so the stack is collapsed into a
+            // single element with a spoken label; child-by-child, VoiceOver
+            // reads the digits and then the image asset name, never "Dash".
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(spokenAmount(cleanedAbsAmount)))
         }
     }
     
@@ -70,6 +75,32 @@ struct DashAmount: View {
         }
     }
     
+    /// The VoiceOver utterance for the rendered row: the same formatted number
+    /// that is displayed, followed by the currency name. The "+"/"-" glyphs
+    /// become spoken words only when `showDirection` renders them, so the
+    /// utterance always matches what is visible.
+    private func spokenAmount(_ cleanedAbsAmount: String) -> String {
+        // "Dash" is the currency's proper name and is deliberately left
+        // unlocalized, matching the wordmark label in HomeBalanceView.
+        let unsignedAmount = "\(cleanedAbsAmount.trimmingCharacters(in: .whitespaces)) Dash"
+
+        guard showDirection else {
+            return unsignedAmount
+        }
+
+        if amount > 0 {
+            return String(
+                format: NSLocalizedString("Plus %@", comment: "VoiceOver-only label for an incoming amount; %@ is the amount with its currency, e.g. 'Plus 0.05 Dash'"),
+                unsignedAmount)
+        } else if amount < 0 {
+            return String(
+                format: NSLocalizedString("Minus %@", comment: "VoiceOver-only label for an outgoing amount; %@ is the amount with its currency, e.g. 'Minus 0.05 Dash'"),
+                unsignedAmount)
+        } else {
+            return unsignedAmount
+        }
+    }
+
     private func cleanAmount(_ amount: String) -> String {
         var result = amount
         
