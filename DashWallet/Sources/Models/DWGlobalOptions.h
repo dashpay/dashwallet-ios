@@ -35,6 +35,13 @@ extern NSNotificationName const DWAdvancedModeDidChangeNotification;
 
 @property (nonatomic, assign) BOOL walletNeedsBackup;
 @property (nonatomic, assign) BOOL userHasBalance;
+
+/// Per-wallet: the instant the notification producers last completed a
+/// catch-up scan for the active wallet. `nil` until the first one runs.
+/// `TransactionNotificationProducer` widens its freshness window back to
+/// this, so a payment mined while the process was suspended is still news
+/// when a delayed background refresh finally runs.
+@property (nonatomic, strong, nullable) NSDate *notificationCatchUpDate;
 @property (nullable, nonatomic, strong) NSDate *balanceChangedDate;
 @property (nonatomic, assign) BOOL walletBackupReminderWasShown;
 
@@ -48,6 +55,18 @@ extern NSNotificationName const DWAdvancedModeDidChangeNotification;
 @property (nullable, nonatomic, copy) NSArray<NSNumber *> *shortcuts;
 
 @property (nonatomic, assign) BOOL localNotificationsEnabled;
+/// The "Don't remind me again" opt-out of the inactivity reminder
+/// (`InactivityReminderScheduler`).
+@property (nonatomic, assign) BOOL inactivityReminderDisabled;
+/// Whether the wallet was last SEEN to hold funds, latched by
+/// `InactivityReminderScheduler` from balances it knows to be real.
+///
+/// Deliberately not `userHasBalance`: that flag is written by
+/// `BalanceModel.reloadBalance`, which maps an unavailable SDK balance to zero
+/// — so a cold launch from the reminder's own "Remind me later" action could
+/// erase the eligibility it was about to read and drop the reminder for a
+/// funded wallet. This one only ever moves on a balance the scheduler knows.
+@property (nonatomic, assign) BOOL inactivityReminderWalletHadBalance;
 
 @property (nonatomic, assign) BOOL balanceHidden;
 @property (nonatomic, assign) BOOL tapToHideBalanceShown;

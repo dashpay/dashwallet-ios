@@ -72,7 +72,7 @@ final class DWContestedNameStatusServiceTests: XCTestCase {
             network: .testnet,
             submittedAt: submittedAt)
 
-        service.recordVotingEndTime(authoritativeEnd, network: .testnet)
+        service.recordVotingEndTime(authoritativeEnd, label: "Gamma", network: .testnet)
 
         XCTAssertEqual(
             service.pendingVotingEndTime(for: .testnet),

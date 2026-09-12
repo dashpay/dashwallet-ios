@@ -53,6 +53,20 @@ final class SwapTrackingService {
     private let dao = SwapOrdersDAOImpl.shared
     private var trackingTask: Task<Void, Never>?
 
+    /// Guards `visibleStatusOrderIDs`: written from the main thread
+    /// (view lifecycle), read from `SwapNotificationProducer`'s
+    /// background task.
+    private let visibilityLock = NSLock()
+    /// Counted PER ORDER, not a single tally: the producer processes every
+    /// terminal order `observeAll` emits, so an app-wide count let an order
+    /// the user is NOT watching be consumed silently while some other
+    /// order's screen happened to be up — and dedup then kept it suppressed
+    /// for good. Counts rather than a set for the original reason: during a
+    /// stack transition the incoming and outgoing screens' lifecycle
+    /// callbacks interleave, and removing on the outgoing screen's
+    /// disappear would mark a still-visible replacement as gone.
+    private var visibleStatusOrderIDs: [String: Int] = [:]
+
     private init() {}
 
     // MARK: - Public
@@ -63,6 +77,45 @@ final class SwapTrackingService {
         trackingTask?.cancel()
         trackingTask = Task { await pollLoop() }
         DWLogger.log("SwapTrackingService: started")
+    }
+
+    // MARK: - Public: live-status UI visibility
+
+    /// True while a live status screen for THIS order
+    /// (`SwapTransactionStatusHostingController`) is on screen.
+    /// `SwapNotificationProducer` reads it to consume — instead of banner —
+    /// a terminal order the user is already watching finish. Any other
+    /// order still gets its banner.
+    func isStatusUIVisible(forOrderID orderID: String) -> Bool {
+        visibilityLock.lock()
+        defer { visibilityLock.unlock() }
+        return (visibleStatusOrderIDs[orderID] ?? 0) > 0
+    }
+
+    /// Called from a status screen's `viewWillAppear`; each call must be
+    /// balanced by `statusScreenWillDisappear(orderID:)`. A screen with no
+    /// order id yet (nothing submitted) registers nothing, so the producer
+    /// banners rather than silently consuming.
+    func statusScreenWillAppear(orderID: String?) {
+        guard let orderID, !orderID.isEmpty else { return }
+        visibilityLock.lock()
+        defer { visibilityLock.unlock() }
+        visibleStatusOrderIDs[orderID, default: 0] += 1
+    }
+
+    /// Called from a status screen's `viewWillDisappear`. Clamped at
+    /// zero so an unbalanced disappear can only under-report visibility
+    /// for its own screen, never pre-cancel a later screen's appear.
+    func statusScreenWillDisappear(orderID: String?) {
+        guard let orderID, !orderID.isEmpty else { return }
+        visibilityLock.lock()
+        defer { visibilityLock.unlock() }
+        guard let count = visibleStatusOrderIDs[orderID] else { return }
+        if count <= 1 {
+            visibleStatusOrderIDs.removeValue(forKey: orderID)
+        } else {
+            visibleStatusOrderIDs[orderID] = count - 1
+        }
     }
 
     // MARK: - Private: Poll loop

@@ -295,31 +295,50 @@ final class SwiftDashSDKContactsService: ObservableObject {
 
     // MARK: - Notifications read-state (bell badge)
 
+    /// Injected by `NotificationsBootstrap` — the same static-injection
+    /// seam shape as `CrowdNode.notificationProducer`, because this
+    /// singleton is created before the notifications graph exists and must
+    /// not depend on the module directly. Fired by every
+    /// `markNotificationsViewed`, so the notifications module can clear
+    /// the tray's dashpay thread and its store seen-state whenever the
+    /// bell screen was viewed. `nil` until the graph is built (and in
+    /// builds without it): viewing then only advances the marker.
+    static var notificationsViewedHandler: (() -> Void)?
+
     /// Contact events newer than the last time the user viewed the
-    /// notifications screen: pending incoming requests plus
-    /// established-contact events. Read-state lives in the same
+    /// notifications screen: pending incoming and outgoing requests plus
+    /// established-contact events — every row the notifications screen
+    /// renders. Read-state lives in the same
     /// `DWGlobalOptions.mostRecentViewedNotificationDate` slot the
     /// legacy `DWNotificationsModel` used, so upgrade installs don't
     /// re-badge everything the user already saw.
     var unreadNotificationCount: Int {
-        let lastViewed = DWGlobalOptions.sharedInstance().mostRecentViewedNotificationDate ?? .distantPast
-        let unreadIncoming = incomingRequests.filter { $0.createdAt > lastViewed }.count
-        let unreadEstablished = contacts.filter { $0.createdAt > lastViewed }.count
-        return unreadIncoming + unreadEstablished
+        DashPayNotificationsReadState.unreadCount(
+            incoming: incomingRequests,
+            outgoing: outgoingRequests,
+            contacts: contacts,
+            lastViewed: DWGlobalOptions.sharedInstance().mostRecentViewedNotificationDate)
     }
 
-    /// Advance the read-state marker to the newest event currently
-    /// shown (mirrors the legacy model, which tracked the max
-    /// displayed item date rather than `Date()` — future-dated
-    /// events stay unread). Reposts the change notification so the
-    /// bell badge re-renders.
+    /// Advance the read-state marker over every rendered event list —
+    /// incoming, outgoing, established — to the newest event currently
+    /// shown (mirrors the legacy model, which tracked the max displayed
+    /// item date rather than `Date()` — future-dated events stay unread;
+    /// the marker never moves backward, so re-firing on multiple exit
+    /// paths is harmless). Reposts the change notification so the bell
+    /// badge re-renders, and always fires `notificationsViewedHandler` —
+    /// stale delivered dashpay notifications must clear whenever the
+    /// screen was viewed, whether or not the marker could advance.
     func markNotificationsViewed() {
-        guard let newest = (incomingRequests + contacts).map(\.createdAt).max() else { return }
+        defer { Self.notificationsViewedHandler?() }
         let options = DWGlobalOptions.sharedInstance()
-        if (options.mostRecentViewedNotificationDate ?? .distantPast) < newest {
-            options.mostRecentViewedNotificationDate = newest
-            NotificationCenter.default.post(name: Self.contactsDidChangeNotification, object: nil)
-        }
+        guard let advanced = DashPayNotificationsReadState.advancedMarker(
+            incoming: incomingRequests,
+            outgoing: outgoingRequests,
+            contacts: contacts,
+            lastViewed: options.mostRecentViewedNotificationDate) else { return }
+        options.mostRecentViewedNotificationDate = advanced
+        NotificationCenter.default.post(name: Self.contactsDidChangeNotification, object: nil)
     }
 
     /// On-demand sync pass (pull-to-refresh). The background loop

@@ -6,7 +6,7 @@
 import DashUIKit
 import Foundation
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 final class CoinbaseTransactionMetadataTests: XCTestCase {
     func testDirectCoinbaseHashConvertsDisplayOrderToWireOrder() {
@@ -117,14 +117,14 @@ final class CoinbaseTransactionMetadataTests: XCTestCase {
             against: emptySnapshot)
         XCTAssertEqual(first.unresolved, [pending])
 
-        let transaction = makeRecord(id: 1)
+        let record = makeRecord(id: 1)
         let second = CoinbaseTransactionMetadataResolver.resolve(
             pendingTransfers: first.unresolved,
             against: CoinbaseWalletTransactionSnapshot(
                 walletId: walletId,
-                transactions: [transaction]))
+                transactions: [record]))
 
-        XCTAssertEqual(second.matchedTxHashes, [transaction.txHashData])
+        XCTAssertEqual(second.matchedTxHashes, [record.txHashData])
         XCTAssertTrue(second.unresolved.isEmpty)
     }
 

@@ -642,10 +642,7 @@ struct ContactsScreen: View {
     private var trimmedFilter: String { filterText.trimmingCharacters(in: .whitespaces) }
 
     private func matches(_ item: ContactItem) -> Bool {
-        let trimmed = trimmedFilter
-        guard !trimmed.isEmpty else { return true }
-        return item.displayTitle.localizedCaseInsensitiveContains(trimmed)
-            || (item.username?.localizedCaseInsensitiveContains(trimmed) ?? false)
+        item.matches(searchQuery: filterText)
     }
 
     private var filteredContacts: [ContactItem] { viewModel.contacts.filter { !$0.isHidden && matches($0) } }
