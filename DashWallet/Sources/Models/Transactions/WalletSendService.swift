@@ -165,9 +165,12 @@ final class PreparedStandardSend: NSObject {
             // localized, so a customer on a non-English device got a wall of
             // English (support ticket 32189).
             //
-            // The retry promise is now true rather than aspirational: the
-            // send is re-registered for rebroadcast at every launch, so it
-            // survives closing the app.
+            // What the copy promises is what the shipped SDK does: dash-spv
+            // keeps retrying while the wallet is open. It deliberately does
+            // NOT promise that retries survive closing the app —
+            // launch-time re-registration is dashpay/platform#4659 and is
+            // not in the SDK this builds against. See
+            // `BroadcastOutcomeCopy.unknown` for when that qualifier can go.
             let error = WalletSendService.makeError(
                 code: .broadcastUnknown,
                 description: WalletSendService.BroadcastOutcomeCopy.unknown,
