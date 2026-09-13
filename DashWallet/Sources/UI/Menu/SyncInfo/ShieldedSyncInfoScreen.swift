@@ -265,7 +265,7 @@ struct ShieldedSyncInfoScreen: View {
     }
 
     private var syncNowDisabled: Bool {
-        monitor.isSyncing || !coordinator.isRunning
+        monitor.isSyncing || WalletEnvironment.network == nil || !WalletEnvironment.hasSDKWallet
     }
 
     // MARK: - Row builders

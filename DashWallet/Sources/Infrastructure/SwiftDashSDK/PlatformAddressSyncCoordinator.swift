@@ -202,7 +202,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     private var shieldedRecoveryObservers = Set<AnyCancellable>()
     private var shieldedSyncStateCancellable: AnyCancellable?
     private let networkStatus: NetworkStatusProviding = NetworkStatusService.shared
-    private lazy var shieldedRecovery = ShieldedRecoveryController(
+    private lazy var shieldedRecovery: ShieldedRecoveryController = ShieldedRecoveryController(
         prepare: { [weak self] in
             guard let self else { throw CancellationError() }
             try await self.prepareShieldedForRecovery()
@@ -211,7 +211,18 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             guard let self, let manager = self.walletManager else { throw CancellationError() }
             try await manager.syncShieldedNow()
         },
-        isSyncing: { [weak self] in self?.walletManager?.shieldedSyncIsSyncing ?? false })
+        isSyncing: { [weak self] in self?.walletManager?.shieldedSyncIsSyncing ?? false },
+        shouldRefreshOnForeground: { [weak self] in
+            guard let self else { return false }
+            // A failed/stopped runtime still needs preparation immediately.
+            guard let manager = self.walletManager, self.isRunning,
+                  self.shieldedBalances.isPrepared else { return true }
+            return ShieldedSyncFreshnessPolicy.shouldRefreshOnForeground(
+                now: Date(), lastFullScanAt: self.lastFullShieldedSyncAt,
+                monitoringStartedAt: self.shieldedMonitoringStartedAt,
+                isSyncing: manager.shieldedSyncIsSyncing,
+                refreshInFlight: self.shieldedRecovery.isRecovering)
+        })
 
     // MARK: - Init
 
@@ -300,9 +311,13 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
               let network = runningNetwork else {
             throw StartError.failed(lastError ?? "Wallet runtime is unavailable")
         }
+        guard isSelectedShieldedScope(walletId: walletId, network: network) else {
+            throw CancellationError()
+        }
         await prepareLocalShieldedState(manager: manager, walletId: walletId, network: network)
         try Task.checkCancellation()
-        guard walletManager === manager, wallet?.walletId == walletId, runningNetwork == network else {
+        guard walletManager === manager, wallet?.walletId == walletId, runningNetwork == network,
+              isSelectedShieldedScope(walletId: walletId, network: network) else {
             throw CancellationError()
         }
         guard shieldedBalances.isPrepared else {
@@ -947,7 +962,6 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         seedFromPersistedState(manager: manager, walletId: resolvedWallet.walletId)
 
         await prepareLocalShieldedState(manager: manager, walletId: resolvedWallet.walletId, network: network)
-        guard isSelectedShieldedScope(walletId: resolvedWallet.walletId, network: network) else { return }
 
         var platformLoopError: String?
         do {
@@ -959,7 +973,10 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             platformLoopError = "startPlatformAddressSync failed: \(error.localizedDescription)"
         }
 
-        if shieldedBalances.isPrepared {
+        // Shielded ownership only gates its own loop. A missing selection or
+        // unsupported shielded network must not disable DashPay/DPNS/Platform.
+        if isSelectedShieldedScope(walletId: resolvedWallet.walletId, network: network),
+           shieldedPreparedManager === manager, shieldedBalances.isPrepared {
             do {
                 if try !manager.isShieldedSyncRunning() { try manager.startShieldedSync() }
             } catch {
@@ -1274,7 +1291,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             lastFullScanAt: lastFullShieldedSyncAt,
             monitoringStartedAt: shieldedMonitoringStartedAt,
             isSyncing: manager.shieldedSyncIsSyncing,
-            refreshInFlight: false)
+            refreshInFlight: shieldedRecovery.isRecovering)
         guard shouldRefresh else { return }
         requestShieldedRefresh(using: manager, reason: "stale watchdog")
     }

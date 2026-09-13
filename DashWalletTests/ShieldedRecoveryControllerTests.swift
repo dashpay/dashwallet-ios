@@ -1,6 +1,8 @@
 import Foundation
 import XCTest
-#if canImport(dashpay)
+#if canImport(dashwallet)
+@testable import dashwallet
+#elseif canImport(dashpay)
 @testable import dashpay
 #else
 @testable import ShieldedBalanceHarness
@@ -29,6 +31,108 @@ private final class RecoveryTestClock {
 
 @MainActor
 final class ShieldedRecoveryControllerTests: XCTestCase {
+    func testAbandonedPreparationEndsQuietlyAndAllowsANewRequest() async {
+        let abandoned = expectation(description: "obsolete scope abandoned")
+        let prepared = expectation(description: "new request prepared")
+        var attempts = 0
+        let controller = ShieldedRecoveryController(
+            prepare: {
+                attempts += 1
+                if attempts == 1 {
+                    abandoned.fulfill()
+                    // Scope invalidation can throw without cancelling the Task.
+                    XCTAssertFalse(Task.isCancelled)
+                    throw CancellationError()
+                }
+                prepared.fulfill()
+            },
+            sync: { XCTFail("Offline requests must not sync") },
+            isSyncing: { false },
+            sleep: { _ in XCTFail("Abandoned work must not schedule backoff") })
+        controller.start(isForeground: true)
+        await fulfillment(of: [abandoned], timeout: 2)
+        XCTAssertNil(controller.lastError)
+        XCTAssertFalse(controller.isRecovering)
+        controller.request(forceSync: false)
+        await fulfillment(of: [prepared], timeout: 2)
+        XCTAssertEqual(attempts, 2)
+        XCTAssertNil(controller.lastError)
+        controller.stop()
+    }
+
+    func testAbandonedSyncEndsQuietlyWithoutRetryingTheOldScope() async {
+        let prepared = expectation(description: "prepared")
+        let abandoned = expectation(description: "old sync abandoned")
+        let synced = expectation(description: "new request synced")
+        var preparations = 0
+        var syncs = 0
+        var sleeps: [TimeInterval] = []
+        let controller = ShieldedRecoveryController(
+            prepare: {
+                preparations += 1
+                if preparations == 1 { prepared.fulfill() }
+            },
+            sync: {
+                syncs += 1
+                if syncs == 1 {
+                    abandoned.fulfill()
+                    XCTAssertFalse(Task.isCancelled)
+                    throw CancellationError()
+                }
+                synced.fulfill()
+            },
+            isSyncing: { false }, sleep: { sleeps.append($0) })
+        controller.start(isForeground: true)
+        await fulfillment(of: [prepared], timeout: 2)
+        controller.connectivityChanged(isOnline: true)
+        await fulfillment(of: [abandoned], timeout: 2)
+        XCTAssertNil(controller.lastError)
+        XCTAssertFalse(controller.isRecovering)
+        XCTAssertEqual(syncs, 1)
+        XCTAssertEqual(sleeps, [0.5], "Only the connectivity debounce should run")
+        controller.request()
+        await fulfillment(of: [synced], timeout: 2)
+        XCTAssertEqual(syncs, 2)
+        controller.stop()
+    }
+
+    func testFreshForegroundPreparesWithoutForcingAnotherScan() async {
+        let initial = expectation(description: "initial preparation")
+        let connected = expectation(description: "reconnect scan")
+        let foreground = expectation(description: "fresh foreground preparation")
+        let stale = expectation(description: "stale foreground scan")
+        var preparations = 0
+        var syncs = 0
+        var shouldRefresh = false
+        let controller = ShieldedRecoveryController(
+            prepare: {
+                preparations += 1
+                if preparations == 1 { initial.fulfill() }
+                if preparations == 3 { foreground.fulfill() }
+            },
+            sync: {
+                syncs += 1
+                if syncs == 1 { connected.fulfill() }
+                if syncs == 2 { stale.fulfill() }
+            },
+            isSyncing: { false }, shouldRefreshOnForeground: { shouldRefresh },
+            sleep: { _ in })
+        controller.start(isForeground: true)
+        await fulfillment(of: [initial], timeout: 2)
+        controller.connectivityChanged(isOnline: true)
+        await fulfillment(of: [connected], timeout: 2)
+        controller.foregroundChanged(isForeground: false)
+        controller.foregroundChanged(isForeground: true)
+        await fulfillment(of: [foreground], timeout: 2)
+        XCTAssertEqual(syncs, 1, "A recent scan must survive a quick app switch")
+        shouldRefresh = true
+        controller.foregroundChanged(isForeground: false)
+        controller.foregroundChanged(isForeground: true)
+        await fulfillment(of: [stale], timeout: 2)
+        XCTAssertEqual(syncs, 2)
+        controller.stop()
+    }
+
     func testOfflinePreparesLocallyThenOnlineRefreshesOnce() async {
         let prepared = expectation(description: "prepared offline")
         let refreshed = expectation(description: "refreshed online")

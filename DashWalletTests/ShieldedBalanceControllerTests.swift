@@ -1,6 +1,8 @@
 import Foundation
 import XCTest
-#if canImport(dashpay)
+#if canImport(dashwallet)
+@testable import dashwallet
+#elseif canImport(dashpay)
 @testable import dashpay
 #else
 @testable import ShieldedBalanceHarness

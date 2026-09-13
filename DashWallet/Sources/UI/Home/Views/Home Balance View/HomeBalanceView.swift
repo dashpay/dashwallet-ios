@@ -27,9 +27,9 @@ enum HomeBalanceViewState: Int {
 
 // MARK: - HomeBalanceView
 
-/// Home header: the combined total (transparent + platform + shielded)
-/// as the hero amount, and a row per balance with its fiat value. Advanced
-/// mode decides how many rows, not whether there are any.
+/// Home header: the sum of known balances as the hero amount, and a row per
+/// balance with its fiat value. Unavailable components label the total partial.
+/// Advanced mode controls whether Platform credits are included.
 ///
 /// The rows are a readout, not a control surface. They used to carry an
 /// in/out arrow pair opening the pinned receive/send sheets; the transfer
@@ -43,11 +43,9 @@ struct HomeBalanceView: View {
     var onLongPress: () -> Void
     /// Tap on a row: opens the what-is-this-balance info sheet.
     var onInfo: (ChainNetwork) -> Void = { _ in }
-    /// Advanced mode adds the Platform row. The other two are shown either
-    /// way: a wallet that can hold shielded funds has to be able to say how
-    /// much of the total is shielded, whatever mode it is in. Platform holds
-    /// credits rather than spendable Dash, which is the part simple mode has
-    /// no vocabulary for.
+    /// Advanced mode adds Platform credits while its runtime is running.
+    /// Shielded balances remain visible after local restoration even offline;
+    /// an uninitialized runtime does not add empty subsystem rows.
     var showsPlatformBalance: Bool = true
 
     // Header nav-bar (SB-11) inputs, threaded in by HomeView from the same
@@ -64,16 +62,20 @@ struct HomeBalanceView: View {
 
     private var platformDuffs: UInt64 { platformSync.platformBalance / 1_000 }
     private var shieldedDuffs: UInt64? { platformSync.shieldedBalanceState.credits.map { $0 / 1_000 } }
-    /// The hero figure is the sum of the rows below it — including Platform
-    /// only while that row is on screen.
+    /// Preserve the known components while shielded state is unavailable.
+    /// Count Platform only while its row is shown; label a partial total.
     ///
     /// Simple mode hides Platform credits everywhere, not just here: the
     /// internal transfer's endpoints exclude them too, so counting them in a
     /// total whose breakdown cannot show them would state a number the user
     /// can neither see the parts of nor reach.
-    private var totalDuffs: UInt64? {
-        guard let shieldedDuffs else { return nil }
-        return viewModel.value + shieldedDuffs + (showsPlatformBalance ? platformDuffs : 0)
+    private var showsPlatformRow: Bool { showsPlatformBalance && platformSync.isRunning }
+    private var showsBreakdown: Bool { platformSync.isRunning || shieldedDuffs != nil }
+    private var isPartialBalance: Bool {
+        shieldedDuffs == nil || (showsPlatformBalance && !platformSync.isRunning)
+    }
+    private var totalDuffs: UInt64 {
+        viewModel.value + (shieldedDuffs ?? 0) + (showsPlatformRow ? platformDuffs : 0)
     }
 
     var body: some View {
@@ -124,19 +126,15 @@ struct HomeBalanceView: View {
                         .frame(width: 58, height: 58)
                 } else {
                     VStack(spacing: 0) {
-                        if let totalDuffs {
-                            DashAmount(amount: Int64(totalDuffs), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
-                                .foregroundColor(Color.dash.whiteText)
-                            Text(viewModel.fiatString(forDuffs: totalDuffs))
-                                .font(.subhead)
-                                .foregroundColor(Color.dash.whiteText)
-                        } else {
-                            Text("—")
-                                .font(.largeTitle)
-                                .foregroundColor(Color.dash.whiteText)
-                            Text(NSLocalizedString("Balance unavailable", comment: "Balance not restored"))
-                                .font(.subhead)
-                                .foregroundColor(Color.dash.whiteText)
+                        DashAmount(amount: Int64(totalDuffs), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
+                            .foregroundColor(Color.dash.whiteText)
+                        Text(viewModel.fiatString(forDuffs: totalDuffs))
+                            .font(.subhead)
+                            .foregroundColor(Color.dash.whiteText)
+                        if isPartialBalance {
+                            Text(NSLocalizedString("Known balance", comment: "Total excludes unavailable balances"))
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.7))
                         }
 
                         ZStack {
@@ -161,7 +159,7 @@ struct HomeBalanceView: View {
                 onLongPress()
             }
 
-            if !viewModel.isBalanceHidden {
+            if !viewModel.isBalanceHidden && showsBreakdown {
                 breakdownCard
                     .padding(.horizontal, 16)
                     .padding(.top, 12)
@@ -233,7 +231,7 @@ struct HomeBalanceView: View {
                 title: ChainNetwork.core.balanceName,
                 duffs: viewModel.value,
                 infoAction: { onInfo(.core) })
-            if showsPlatformBalance {
+            if showsPlatformRow {
                 rowDivider
                 balanceRow(
                     icon: "cloud",

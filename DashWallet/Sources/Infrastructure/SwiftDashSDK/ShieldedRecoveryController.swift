@@ -14,6 +14,7 @@ final class ShieldedRecoveryController: ObservableObject {
     private var isForeground = true
     private(set) var generation: UInt64 = 0
     private var operation: Task<Void, Never>?
+    var isRecovering: Bool { operation != nil }
     private var debounce: Task<Void, Never>?
     private var retry: Task<Void, Never>?
     private var retryAttempt = 0
@@ -21,12 +22,14 @@ final class ShieldedRecoveryController: ObservableObject {
     private let prepare: @MainActor () async throws -> Void
     private let sync: @MainActor () async throws -> Void
     private let isSyncing: @MainActor () -> Bool
+    private let shouldRefreshOnForeground: @MainActor () -> Bool
     private let sleep: Sleep
 
     init(
         prepare: @escaping @MainActor () async throws -> Void,
         sync: @escaping @MainActor () async throws -> Void,
         isSyncing: @escaping @MainActor () -> Bool,
+        shouldRefreshOnForeground: @escaping @MainActor () -> Bool = { true },
         sleep: @escaping Sleep = { seconds in
             try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
         }
@@ -34,6 +37,7 @@ final class ShieldedRecoveryController: ObservableObject {
         self.prepare = prepare
         self.sync = sync
         self.isSyncing = isSyncing
+        self.shouldRefreshOnForeground = shouldRefreshOnForeground
         self.sleep = sleep
     }
 
@@ -67,7 +71,7 @@ final class ShieldedRecoveryController: ObservableObject {
     func foregroundChanged(isForeground: Bool) {
         self.isForeground = isForeground
         if isForeground {
-            request()
+            request(forceSync: shouldRefreshOnForeground())
         } else {
             retry?.cancel()
             retry = nil
@@ -85,6 +89,9 @@ final class ShieldedRecoveryController: ObservableObject {
             guard let self, !Task.isCancelled, self.generation == expectedGeneration else { return }
             do {
                 try await self.prepare()
+            } catch is CancellationError {
+                self.abandonOperation(generation: expectedGeneration)
+                return
             } catch {
                 guard !Task.isCancelled, self.generation == expectedGeneration else { return }
                 self.lastError = error.localizedDescription
@@ -104,6 +111,9 @@ final class ShieldedRecoveryController: ObservableObject {
                     try await self.sync()
                     guard !Task.isCancelled, self.generation == expectedGeneration else { return }
                     self.lastError = nil
+                } catch is CancellationError {
+                    self.abandonOperation(generation: expectedGeneration)
+                    return
                 } catch {
                     guard !Task.isCancelled, self.generation == expectedGeneration else { return }
                     self.lastError = error.localizedDescription
@@ -141,6 +151,16 @@ final class ShieldedRecoveryController: ObservableObject {
         debounce = nil
         retry?.cancel()
         retry = nil
+        lastError = nil
+    }
+
+    /// Scope changes deliberately abandon work without cancelling its Task.
+    /// Do not surface those as errors or retry the obsolete wallet's pass.
+    private func abandonOperation(generation expectedGeneration: UInt64) {
+        guard generation == expectedGeneration else { return }
+        operation = nil
+        pendingSync = false
+        retryAttempt = 0
         lastError = nil
     }
 
