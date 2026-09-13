@@ -477,13 +477,13 @@ final class InternalTransferViewModel: ObservableObject {
     /// because most users have BIP44 funds before they have Platform or
     /// Shielded balance.
     @Published var source: ChainNetwork = .core {
-        didSet { guard oldValue != source else { return }; routeDidChange() }
+        didSet { guard oldValue != source else { return }; routeEndpointDidChange() }
     }
 
     /// Fixed destination when this VM drives the receive sheet's embedded
     /// form: the balance being received into. `nil` = the standalone form.
     @Published private(set) var receiveTarget: ChainNetwork? = nil {
-        didSet { guard oldValue != receiveTarget else { return }; routeDidChange() }
+        didSet { guard oldValue != receiveTarget else { return }; routeEndpointDidChange() }
     }
 
     /// Fixed source when this VM drives the send sheet's embedded form
@@ -491,20 +491,20 @@ final class InternalTransferViewModel: ObservableObject {
     /// rows pick `sendTarget` among the other two balances. Mutually
     /// exclusive with `receiveTarget`; `nil` = not the send sheet.
     @Published private(set) var sendSource: ChainNetwork? = nil {
-        didSet { guard oldValue != sendSource else { return }; routeDidChange() }
+        didSet { guard oldValue != sendSource else { return }; routeEndpointDidChange() }
     }
 
     /// The destination balance picked on the send sheet's To rows. Only
     /// meaningful while `sendSource` is set, but reused by the standalone
     /// screen as the selected To balance as well.
     @Published var sendTarget: ChainNetwork = .shielded {
-        didSet { guard oldValue != sendTarget else { return }; routeDidChange() }
+        didSet { guard oldValue != sendTarget else { return }; routeEndpointDidChange() }
     }
 
     /// The source balance picked on the receive sheet's From rows. Only
     /// meaningful while `receiveTarget` is set.
     @Published var receiveSource: ChainNetwork = .shielded {
-        didSet { guard oldValue != receiveSource else { return }; routeDidChange() }
+        didSet { guard oldValue != receiveSource else { return }; routeEndpointDidChange() }
     }
 
     /// True while the standalone destination is the DashPay identity rather
@@ -514,7 +514,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// execution go through the identity top-up path instead. Standalone
     /// only; the send/receive-pinned variants stay balance-to-balance.
     @Published private(set) var isIdentityDestination = false {
-        didSet { guard oldValue != isIdentityDestination else { return }; routeDidChange() }
+        didSet { guard oldValue != isIdentityDestination else { return }; routeEndpointDidChange() }
     }
 
     /// Standalone screen: the FROM side is the identity's credit balance
@@ -523,7 +523,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// balance pair and only `identityWithdrawalTransfer` describes the
     /// transfer, exactly as with the destination overlay.
     @Published private(set) var isIdentitySource = false {
-        didSet { guard oldValue != isIdentitySource else { return }; routeDidChange() }
+        didSet { guard oldValue != isIdentitySource else { return }; routeEndpointDidChange() }
     }
 
     /// The 32-byte id of the identity a transfer would top up, loaded when
@@ -590,9 +590,11 @@ final class InternalTransferViewModel: ObservableObject {
     /// Pins the route for the receive sheet: a transfer INTO `target`.
     /// The From rows then pick the source among the other two balances.
     func applyReceiveRoute(into target: ChainNetwork) {
-        sendSource = nil
-        receiveTarget = target
-        receiveSource = Self.sanitizedSource(into: target, proposed: receiveSource)
+        applyingRouteChange {
+            sendSource = nil
+            receiveTarget = target
+            receiveSource = Self.sanitizedSource(into: target, proposed: receiveSource)
+        }
     }
 
     /// Pins the route for the send sheet: a transfer OUT OF `from`. The To
@@ -601,22 +603,28 @@ final class InternalTransferViewModel: ObservableObject {
     /// Platform default to Shielded (privacy-forward); Shielded defaults
     /// to Core.
     func applySendRoute(from source: ChainNetwork) {
-        receiveTarget = nil
-        sendSource = source
-        sendTarget = Self.sanitizedDestination(from: source, proposed: sendTarget)
+        applyingRouteChange {
+            receiveTarget = nil
+            sendSource = source
+            sendTarget = Self.sanitizedDestination(from: source, proposed: sendTarget)
+        }
     }
 
     /// Endpoint picks always apply. A pick that collides with the opposite
     /// endpoint moves THAT endpoint to its default instead — the two sides
     /// can never be the same balance.
     func selectStandaloneSource(_ network: ChainNetwork) {
-        source = network
-        sendTarget = Self.sanitizedDestination(from: network, proposed: sendTarget)
+        applyingRouteChange {
+            source = network
+            sendTarget = Self.sanitizedDestination(from: network, proposed: sendTarget)
+        }
     }
 
     func selectStandaloneTarget(_ network: ChainNetwork) {
-        sendTarget = network
-        source = Self.sanitizedSource(into: network, proposed: source)
+        applyingRouteChange {
+            sendTarget = network
+            source = Self.sanitizedSource(into: network, proposed: source)
+        }
     }
 
     /// Destination-typed standalone pick: a balance keeps the pre-existing
@@ -624,23 +632,25 @@ final class InternalTransferViewModel: ObservableObject {
     /// every balance is a valid FROM for a top-up, so there is nothing to
     /// sanitise away from.
     func selectStandaloneDestination(_ destination: TransferDestination) {
-        switch destination {
-        case .balance(let network):
-            isIdentityDestination = false
-            // With the identity on the FROM side, `source` is not in play and
-            // `selectStandaloneTarget`'s collision sanitising would move a
-            // balance the transfer never touches.
-            if isIdentitySource {
-                sendTarget = network
-            } else {
-                selectStandaloneTarget(network)
+        applyingRouteChange {
+            switch destination {
+            case .balance(let network):
+                isIdentityDestination = false
+                // With the identity on the FROM side, `source` is not in play
+                // and `selectStandaloneTarget`'s collision sanitising would
+                // move a balance the transfer never touches.
+                if isIdentitySource {
+                    sendTarget = network
+                } else {
+                    selectStandaloneTarget(network)
+                }
+            case .identity:
+                // An identity cannot fund itself: taking the TO side releases
+                // the FROM side back to a balance.
+                isIdentitySource = false
+                isIdentityDestination = true
+                refreshIdentitySnapshot()
             }
-        case .identity:
-            // An identity cannot fund itself: taking the TO side releases
-            // the FROM side back to a balance.
-            isIdentitySource = false
-            isIdentityDestination = true
-            refreshIdentitySnapshot()
         }
     }
 
@@ -649,22 +659,24 @@ final class InternalTransferViewModel: ObservableObject {
     /// to a balance and moves it off Shielded, which no single transition
     /// reaches from an identity.
     func selectStandaloneSource(_ source: TransferSource) {
-        switch source {
-        case .balance(let network):
-            isIdentitySource = false
-            if isIdentityDestination {
-                // Top-up mode: every balance is a valid funding source, and
-                // the TO side is the identity, so there is no collision to
-                // sanitise.
-                self.source = network
-            } else {
-                selectStandaloneSource(network)
+        applyingRouteChange {
+            switch source {
+            case .balance(let network):
+                isIdentitySource = false
+                if isIdentityDestination {
+                    // Top-up mode: every balance is a valid funding source,
+                    // and the TO side is the identity, so there is no
+                    // collision to sanitise.
+                    self.source = network
+                } else {
+                    selectStandaloneSource(network)
+                }
+            case .identity:
+                isIdentityDestination = false
+                isIdentitySource = true
+                sendTarget = Self.sanitizedWithdrawalTarget(sendTarget)
+                refreshIdentitySnapshot()
             }
-        case .identity:
-            isIdentityDestination = false
-            isIdentitySource = true
-            sendTarget = Self.sanitizedWithdrawalTarget(sendTarget)
-            refreshIdentitySnapshot()
         }
     }
 
@@ -733,33 +745,37 @@ final class InternalTransferViewModel: ObservableObject {
     func swapStandaloneEndpoints() {
         guard canSwapEndpoints else { return }
 
-        if isIdentitySource {
-            // Withdrawal → top-up: the target balance becomes the funding
-            // source. Read the target before clearing the overlay, since
-            // `resolvedWithdrawalTarget` is only meaningful while it is on.
-            let fundingSource = resolvedWithdrawalTarget.network
-            isIdentitySource = false
-            isIdentityDestination = true
-            source = fundingSource
-            refreshIdentitySnapshot()
-            return
-        }
+        // Every branch below moves two or three endpoints; the `return`s exit
+        // the batch, exactly as they exited the function before.
+        applyingRouteChange {
+            if isIdentitySource {
+                // Withdrawal → top-up: the target balance becomes the funding
+                // source. Read the target before clearing the overlay, since
+                // `resolvedWithdrawalTarget` is only meaningful while it is on.
+                let fundingSource = resolvedWithdrawalTarget.network
+                isIdentitySource = false
+                isIdentityDestination = true
+                source = fundingSource
+                refreshIdentitySnapshot()
+                return
+            }
 
-        if isIdentityDestination {
-            // Top-up → withdrawal: the funding balance becomes the payout
-            // target. `canSwapEndpoints` has already ruled out Shielded.
-            let payoutTarget = source
-            isIdentityDestination = false
-            isIdentitySource = true
-            sendTarget = Self.sanitizedWithdrawalTarget(payoutTarget)
-            refreshIdentitySnapshot()
-            return
-        }
+            if isIdentityDestination {
+                // Top-up → withdrawal: the funding balance becomes the payout
+                // target. `canSwapEndpoints` has already ruled out Shielded.
+                let payoutTarget = source
+                isIdentityDestination = false
+                isIdentitySource = true
+                sendTarget = Self.sanitizedWithdrawalTarget(payoutTarget)
+                refreshIdentitySnapshot()
+                return
+            }
 
-        let newSource = resolvedSendTarget
-        let newTarget = source
-        source = newSource
-        sendTarget = newTarget
+            let newSource = resolvedSendTarget
+            let newTarget = source
+            source = newSource
+            sendTarget = newTarget
+        }
     }
 
     func selectSendTarget(_ network: ChainNetwork) {
@@ -826,17 +842,23 @@ final class InternalTransferViewModel: ObservableObject {
         isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
         guard !isAdvancedMode else { return }
 
-        isIdentitySource = false
-        isIdentityDestination = false
+        // Withdrawing the mode retires both identity overlays and moves every
+        // endpoint that was sitting on Platform — up to five in a row, and one
+        // recompute each, all but the last against a route the next line
+        // replaced.
+        applyingRouteChange {
+            isIdentitySource = false
+            isIdentityDestination = false
 
-        if source == .platform {
-            source = .core
-        }
-        if sendTarget == .platform {
-            sendTarget = Self.defaultDestination(for: source)
-        }
-        if receiveSource == .platform {
-            receiveSource = .shielded
+            if source == .platform {
+                source = .core
+            }
+            if sendTarget == .platform {
+                sendTarget = Self.defaultDestination(for: source)
+            }
+            if receiveSource == .platform {
+                receiveSource = .shielded
+            }
         }
     }
 
@@ -884,6 +906,47 @@ final class InternalTransferViewModel: ObservableObject {
     /// input-selection envelope. While the destination is Identity, `route`
     /// is a stale balance pair, so the route preflights stay down and the
     /// identity ceiling refreshes instead.
+    /// True while one user action is moving more than one endpoint.
+    private var isApplyingRouteChange = false
+    /// Set when an endpoint moved during such an action, so the recompute
+    /// runs once at the end instead of once per endpoint.
+    private var routeChangeIsPending = false
+
+    /// Every endpoint `didSet` reports here rather than straight to
+    /// `routeDidChange`.
+    ///
+    /// Pinning a route moves two endpoints — the pinned side and the other
+    /// side sanitised against it — and each move used to recompute all of the
+    /// route-dependent state: the shielded spend ceiling (two SwiftData
+    /// fetches plus a run of `estimateShieldedFee` calls across the FFI) and
+    /// whichever Platform preflight the route needs. Twice, for one tap, with
+    /// the first pass computed against a half-applied route that the second
+    /// immediately replaced.
+    private func routeEndpointDidChange() {
+        guard !isApplyingRouteChange else {
+            routeChangeIsPending = true
+            return
+        }
+        routeDidChange()
+    }
+
+    /// Applies a multi-endpoint change as one route change.
+    private func applyingRouteChange(_ mutate: () -> Void) {
+        // Re-entrant callers (a standalone pick made from inside another) must
+        // not close the outer batch early.
+        guard !isApplyingRouteChange else {
+            mutate()
+            return
+        }
+        isApplyingRouteChange = true
+        routeChangeIsPending = false
+        mutate()
+        isApplyingRouteChange = false
+        guard routeChangeIsPending else { return }
+        routeChangeIsPending = false
+        routeDidChange()
+    }
+
     private func routeDidChange() {
         clearMaxSelection()
         refreshShieldedSpendCeiling()

@@ -152,16 +152,57 @@ final class PaymentsLandingViewModel: ObservableObject {
 
     let allowsTransactionDetails: Bool
 
-    private struct ReceiptSession {
+    /// What already existed on the rail when the session opened, so a receipt
+    /// is only ever raised for something that arrived after.
+    ///
+    /// One case per rail rather than three flat fields: they were always
+    /// mutually exclusive — two of them zero on every session — and nothing
+    /// said so, which left every construction restating the two that did not
+    /// apply.
+    private enum ReceiptBaseline {
+        case core(transactionIds: Set<Data>)
+        case platform(activityCursor: Int64)
+        case shielded(activityIds: Set<String>)
+    }
+
+    /// Everything about a session other than its baseline, captured before
+    /// the baseline is read.
+    private struct ReceiptSessionSeed {
         let generation: UInt64
         let rail: ChainNetwork
         let address: String
         let walletId: Data
         let environment: Network
         let startedAt: Date
-        let coreTransactionIds: Set<Data>
-        let platformActivityCursor: Int64
-        let shieldedActivityIds: Set<String>
+    }
+
+    private struct ReceiptSession {
+        let seed: ReceiptSessionSeed
+        let baseline: ReceiptBaseline
+
+        var generation: UInt64 { seed.generation }
+        var rail: ChainNetwork { seed.rail }
+        var address: String { seed.address }
+        var walletId: Data { seed.walletId }
+        var environment: Network { seed.environment }
+        var startedAt: Date { seed.startedAt }
+
+        // Read by the rail's own watcher, which only runs when the baseline is
+        // that rail's case; the empty fallbacks are unreachable in practice.
+        var coreTransactionIds: Set<Data> {
+            guard case .core(let ids) = baseline else { return [] }
+            return ids
+        }
+
+        var platformActivityCursor: Int64 {
+            guard case .platform(let cursor) = baseline else { return 0 }
+            return cursor
+        }
+
+        var shieldedActivityIds: Set<String> {
+            guard case .shielded(let ids) = baseline else { return [] }
+            return ids
+        }
     }
 
     private var cancellables = Set<AnyCancellable>()
@@ -467,35 +508,68 @@ final class PaymentsLandingViewModel: ObservableObject {
             return
         }
 
-        generation &+= 1
-        let sessionGeneration = generation
-        var coreTransactionIds = Set<Data>()
-        var platformActivityCursor: Int64 = 0
-        var shieldedActivityIds = Set<String>()
+        // Stamped once, above the baseline read rather than below it. Both
+        // the Core snapshot's floor and the subscription's own floor derive
+        // from it, and a transaction persisted between two separately-stamped
+        // instants would land in neither.
+        let startedAt = Date()
 
-        switch network {
-        case .core:
-            coreTransactionIds = TransactionObserver.persistedTransactionIDs()
-        case .platform:
-            platformActivityCursor = PlatformAddressActivityDAO.shared.latestActivityId(
-                walletId: walletId,
-                networkRaw: Int64(environment.rawValue))
-        case .shielded:
-            shieldedActivityIds = Set(Self.projectedShieldedActivity().map(\.id))
+        // Fail closed. An unreadable baseline must not stand in as an empty
+        // one — that would present everything already on the rail as a new
+        // payment. With no session there is no watcher, so the worst case is
+        // a receipt that never shows; the next reconcile tries again.
+        guard let baseline = readReceiptBaseline(
+            for: network, walletId: walletId, environment: environment, startedAt: startedAt)
+        else {
+            isWatchingForReceipt = false
+            return
         }
 
-        session = ReceiptSession(
-            generation: sessionGeneration,
+        generation &+= 1
+        let seed = ReceiptSessionSeed(
+            generation: generation,
             rail: network,
             address: address,
             walletId: walletId,
             environment: environment,
-            startedAt: Date(),
-            coreTransactionIds: coreTransactionIds,
-            platformActivityCursor: platformActivityCursor,
-            shieldedActivityIds: shieldedActivityIds)
+            startedAt: startedAt)
+        session = ReceiptSession(seed: seed, baseline: baseline)
         displayedAddress = address
         resumeReceiptWatching()
+    }
+
+    /// What already exists on `rail`, or nil when it could not be read.
+    ///
+    /// Every rail's baseline is a cheap read, so the session exists before
+    /// the address can be acted on and nothing is ever withheld waiting for
+    /// one.
+    private func readReceiptBaseline(
+        for rail: ChainNetwork,
+        walletId: Data,
+        environment: Network,
+        startedAt: Date
+    ) -> ReceiptBaseline? {
+        switch rail {
+        case .core:
+            // Bounded by the floor the subscription will scan from: anything
+            // older cannot be emitted, so it does not need excluding.
+            return TransactionObserver.persistedTransactionIDs(
+                firstSeenAtOrAfter: TransactionObserver.matchFloor(after: startedAt))
+                .map { .core(transactionIds: $0) }
+        case .platform:
+            return PlatformAddressActivityDAO.shared.latestActivityId(
+                walletId: walletId,
+                networkRaw: Int64(environment.rawValue))
+                .map { .platform(activityCursor: $0) }
+        case .shielded:
+            // The persisted rows' ids, not the projected activity list: the
+            // projection materializes the wallet's whole Core history to
+            // reconcile against. A row that exists now is not a new payment
+            // whatever the projection later makes of it, so the unprojected
+            // superset is the right thing to exclude.
+            return SwiftDashSDKWalletSource.persistedShieldedActivityIds()
+                .map { .shielded(activityIds: $0) }
+        }
     }
 
     private func resumeReceiptWatching() {
