@@ -656,6 +656,8 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // outage into an empty wallet with no retry.
             do {
                 let (manager, wallet) = try await SwiftDashSDKHost.shared.start(network: network)
+                PlatformAddressSyncCoordinator.shared.prepareLocalPlatformState(
+                    manager: manager, walletId: wallet.walletId, network: network)
                 await PlatformAddressSyncCoordinator.shared.prepareLocalShieldedState(
                     manager: manager, walletId: wallet.walletId, network: network)
                 try await SwiftDashSDKSPVCoordinator.shared.startAsync(for: network)

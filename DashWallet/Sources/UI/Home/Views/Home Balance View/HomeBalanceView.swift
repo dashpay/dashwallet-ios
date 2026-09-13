@@ -43,9 +43,8 @@ struct HomeBalanceView: View {
     var onLongPress: () -> Void
     /// Tap on a row: opens the what-is-this-balance info sheet.
     var onInfo: (ChainNetwork) -> Void = { _ in }
-    /// Advanced mode adds Platform credits while its runtime is running.
-    /// Shielded balances remain visible after local restoration even offline;
-    /// an uninitialized runtime does not add empty subsystem rows.
+    /// Advanced mode includes Platform credits even before sync starts.
+    /// Unavailable amounts use a placeholder until their local read succeeds.
     var showsPlatformBalance: Bool = true
 
     // Header nav-bar (SB-11) inputs, threaded in by HomeView from the same
@@ -60,21 +59,12 @@ struct HomeBalanceView: View {
     var onProfileTap: () -> Void = {}
     var onNotificationsTap: () -> Void = {}
 
-    private var platformDuffs: UInt64 { platformSync.platformBalance / 1_000 }
-    private var shieldedDuffs: UInt64? { platformSync.shieldedBalanceState.credits.map { $0 / 1_000 } }
-    /// Preserve the known components while shielded state is unavailable.
-    /// Count Platform only while its row is shown; label a partial total.
-    ///
-    /// Simple mode hides Platform credits everywhere, not just here: the
-    /// internal transfer's endpoints exclude them too, so counting them in a
-    /// total whose breakdown cannot show them would state a number the user
-    /// can neither see the parts of nor reach.
-    private var showsPlatformRow: Bool { showsPlatformBalance && platformSync.isRunning }
-    private var isPartialBalance: Bool {
-        shieldedDuffs == nil || (showsPlatformBalance && !platformSync.isRunning)
-    }
-    private var totalDuffs: UInt64 {
-        viewModel.value + (shieldedDuffs ?? 0) + (showsPlatformRow ? platformDuffs : 0)
+    private var balance: HomeBalancePresentation {
+        HomeBalancePresentation(
+            transparentDuffs: viewModel.value,
+            platformState: platformSync.platformBalanceState,
+            shieldedCredits: platformSync.shieldedBalanceState.credits,
+            showsPlatformBalance: showsPlatformBalance)
     }
 
     var body: some View {
@@ -125,12 +115,12 @@ struct HomeBalanceView: View {
                         .frame(width: 58, height: 58)
                 } else {
                     VStack(spacing: 0) {
-                        DashAmount(amount: Int64(totalDuffs), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
+                        DashAmount(amount: Int64(balance.totalDuffs), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
                             .foregroundColor(Color.dash.whiteText)
-                        Text(viewModel.fiatString(forDuffs: totalDuffs))
+                        Text(viewModel.fiatString(forDuffs: balance.totalDuffs))
                             .font(.subhead)
                             .foregroundColor(Color.dash.whiteText)
-                        if isPartialBalance {
+                        if balance.isPartial {
                             Text(NSLocalizedString("Known balance", comment: "Total excludes unavailable balances"))
                                 .font(.caption)
                                 .foregroundColor(.white.opacity(0.7))
@@ -230,19 +220,19 @@ struct HomeBalanceView: View {
                 title: ChainNetwork.core.balanceName,
                 duffs: viewModel.value,
                 infoAction: { onInfo(.core) })
-            if showsPlatformRow {
+            if showsPlatformBalance {
                 rowDivider
                 balanceRow(
                     icon: "cloud",
                     title: ChainNetwork.platform.balanceName,
-                    duffs: platformDuffs,
+                    duffs: balance.platformDuffs,
                     infoAction: { onInfo(.platform) })
             }
             rowDivider
             balanceRow(
                 icon: "shield",
                 title: ChainNetwork.shielded.balanceName,
-                duffs: shieldedDuffs,
+                duffs: balance.shieldedDuffs,
                 isSyncing: shieldedSync.isSyncing || platformSync.isShieldedBalanceReconciling,
                 infoAction: { onInfo(.shielded) })
         }
