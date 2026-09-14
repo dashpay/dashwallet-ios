@@ -622,6 +622,8 @@
 		51AA00092F970009005A0009 /* DashPaySyncInfoScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA00072F970007005A0007 /* DashPaySyncInfoScreen.swift */; };
 		51AA000B2F97000B005A000B /* ShieldedSyncInfoScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA000A2F97000A005A000A /* ShieldedSyncInfoScreen.swift */; };
 		51AA000C2F97000C005A000C /* ShieldedSyncInfoScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA000A2F97000A005A000A /* ShieldedSyncInfoScreen.swift */; };
+		51AA583EAAC4535077FB2C0A /* LastSyncLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA9F29BCD7FB5E6967D9E8 /* LastSyncLabel.swift */; };
+		51AAD4CABECCCFC892529F2F /* LastSyncLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA9F29BCD7FB5E6967D9E8 /* LastSyncLabel.swift */; };
 		51AA000E2F97000E005A000E /* ShieldedSyncMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA000D2F97000D005A000D /* ShieldedSyncMonitor.swift */; };
 		51AA000F2F97000F005A000F /* ShieldedSyncMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA000D2F97000D005A000D /* ShieldedSyncMonitor.swift */; };
 		51AA00212F970021005A0021 /* MasternodesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA00202F970020005A0020 /* MasternodesScreen.swift */; };
@@ -2941,6 +2943,7 @@
 		51AA00042F970004005A0004 /* SyncInfoMenuViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncInfoMenuViewModel.swift; sourceTree = "<group>"; };
 		51AA00072F970007005A0007 /* DashPaySyncInfoScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DashPaySyncInfoScreen.swift; sourceTree = "<group>"; };
 		51AA000A2F97000A005A000A /* ShieldedSyncInfoScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedSyncInfoScreen.swift; sourceTree = "<group>"; };
+		51AA9F29BCD7FB5E6967D9E8 /* LastSyncLabel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LastSyncLabel.swift; sourceTree = "<group>"; };
 		51AA000D2F97000D005A000D /* ShieldedSyncMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedSyncMonitor.swift; sourceTree = "<group>"; };
 		51AA00202F970020005A0020 /* MasternodesScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MasternodesScreen.swift; sourceTree = "<group>"; };
 		5AEDE0012F9B000000000001 /* EvonodeWithdrawalViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeWithdrawalViewModel.swift; sourceTree = "<group>"; };
@@ -6991,6 +6994,7 @@
 				51AA00042F970004005A0004 /* SyncInfoMenuViewModel.swift */,
 				51AA00072F970007005A0007 /* DashPaySyncInfoScreen.swift */,
 				51AA000A2F97000A005A000A /* ShieldedSyncInfoScreen.swift */,
+				51AA9F29BCD7FB5E6967D9E8 /* LastSyncLabel.swift */,
 				E90D495F8DF1E8EE8A84C8E8 /* SwiftDashSDKSPVStatusScreen.swift */,
 				5A58BF094C42E410DD1A71B6 /* PlatformSyncStatusScreen.swift */,
 			);
@@ -10513,6 +10517,7 @@
 				51AA00052F970005005A0005 /* SyncInfoMenuViewModel.swift in Sources */,
 				51AA00082F970008005A0008 /* DashPaySyncInfoScreen.swift in Sources */,
 				51AA000B2F97000B005A000B /* ShieldedSyncInfoScreen.swift in Sources */,
+				51AA583EAAC4535077FB2C0A /* LastSyncLabel.swift in Sources */,
 				51AA000E2F97000E005A000E /* ShieldedSyncMonitor.swift in Sources */,
 				E16E2BA180551E3B6661B9F4 /* PlatformCreditsFormatter.swift in Sources */,
 				F1F870569B75C5B1452C5D65 /* ChainNetworkToggle.swift in Sources */,
@@ -11580,6 +11585,7 @@
 				51AA00062F970006005A0006 /* SyncInfoMenuViewModel.swift in Sources */,
 				51AA00092F970009005A0009 /* DashPaySyncInfoScreen.swift in Sources */,
 				51AA000C2F97000C005A000C /* ShieldedSyncInfoScreen.swift in Sources */,
+				51AAD4CABECCCFC892529F2F /* LastSyncLabel.swift in Sources */,
 				51AA000F2F97000F005A000F /* ShieldedSyncMonitor.swift in Sources */,
 				3705C73F15BCD91AF70940B9 /* PlatformCreditsFormatter.swift in Sources */,
 				56F5C9FD51AE5508BB5E579B /* ChainNetworkToggle.swift in Sources */,

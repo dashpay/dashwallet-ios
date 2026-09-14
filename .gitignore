@@ -57,6 +57,15 @@ TODO.md
 # Transifex CLI binary (repo root only; a bare `tx` also matched
 # DashWallet/Sources/UI/Tx/ on case-insensitive filesystems)
 /tx
+
+# genstrings scratch output at the repo root. The real catalogs live in
+# DashWallet/*.lproj/ and are the only Transifex source (see .tx/config);
+# a stray root copy rode in on an evil merge (3e5e78302) and sat there
+# for months looking like the source.
+/Localizable.strings
+/Localizable.stringsdict
+/tmpstrings/
+
 DashWalletScreenshotsUITests/refund-addresses.csv
 
 
