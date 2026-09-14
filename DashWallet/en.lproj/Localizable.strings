@@ -5886,3 +5886,6 @@
 "Shielded sync is not running" = "Shielded sync is not running";
 
 "Wallet sync is not ready. Start wallet sync and try again." = "Wallet sync is not ready. Start wallet sync and try again.";
+
+/* Shielded manual sync requires an internet connection */
+"You are offline. Connect to the internet and try again." = "You are offline. Connect to the internet and try again.";

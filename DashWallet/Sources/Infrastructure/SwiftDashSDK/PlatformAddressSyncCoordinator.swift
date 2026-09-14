@@ -251,7 +251,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         walletId: Data,
         network: Network
     ) async {
-        guard isSelectedShieldedScope(walletId: walletId, network: network) else { return }
+        guard isSelectedWalletScope(walletId: walletId, network: network) else { return }
         shieldedPreparedManager = manager
         let scope = ShieldedBalanceController.Scope(walletId: walletId, network: String(network.rawValue))
         await shieldedBalances.restore(scope: scope, owner: ObjectIdentifier(manager), bind: { [self, manager] in
@@ -261,7 +261,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }) { [self, manager] in
             let state = try await ShieldedBalanceController.readLocalSnapshot(
                 load: {
-                    guard self.isSelectedShieldedScope(walletId: walletId, network: network),
+                    guard self.isSelectedWalletScope(walletId: walletId, network: network),
                           SwiftDashSDKHost.shared.manager === manager else { throw CancellationError() }
                     return try await manager.localShieldedBalanceSnapshot(walletId: walletId)
                 },
@@ -296,9 +296,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// full runtime rebuild. Core lifecycle events own retries until it is ready.
     func startShieldedRecoveryMonitoring() {
         guard let network = WalletEnvironment.network,
-              SwiftDashSDKWalletRuntime.shared.isCoreRuntimeReady(for: network),
-              shieldedRecoveryObservers.isEmpty else { return }
+              SwiftDashSDKWalletRuntime.shared.isCoreRuntimeReady(for: network) else { return }
         shieldedRecovery.start(isForeground: UIApplication.shared.applicationState != .background)
+        guard shieldedRecoveryObservers.isEmpty else { return }
         networkStatus.statusPublisher
             .removeDuplicates()
             .sink { [weak self] status in
@@ -329,10 +329,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     @discardableResult
     func recoverShieldedNow() -> Bool {
-        guard canRecoverShielded else { return false }
+        guard canRecoverShielded, networkStatus.isOnline else { return false }
         startShieldedRecoveryMonitoring()
-        shieldedRecovery.request()
-        return true
+        return shieldedRecovery.requestManualSync()
     }
 
     private func prepareShieldedForRecovery() async throws {
@@ -352,13 +351,13 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
               let network = runningNetwork else {
             throw StartError.failed(lastError ?? "Wallet runtime is unavailable")
         }
-        guard isSelectedShieldedScope(walletId: walletId, network: network) else {
+        guard isSelectedWalletScope(walletId: walletId, network: network) else {
             throw CancellationError()
         }
         await prepareLocalShieldedState(manager: manager, walletId: walletId, network: network)
         try Task.checkCancellation()
         guard walletManager === manager, wallet?.walletId == walletId, runningNetwork == network,
-              isSelectedShieldedScope(walletId: walletId, network: network) else {
+              isSelectedWalletScope(walletId: walletId, network: network) else {
             throw CancellationError()
         }
         guard shieldedPreparedManager === manager, shieldedBalances.isBound else {
@@ -369,7 +368,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         shieldedBalances.recordSyncStarted()
     }
 
-    private func isSelectedShieldedScope(walletId: Data, network: Network) -> Bool {
+    /// Shared lifecycle guard: rejects an obsolete wallet/network after an
+    /// await. Shielded binding/readiness is checked separately for its own loop.
+    private func isSelectedWalletScope(walletId: Data, network: Network) -> Bool {
         guard WalletEnvironment.network == network else { return false }
         let kind: WalletEnvironment.NetworkKind = network == .mainnet ? .mainnet : .testnet
         return WalletEnvironment.activeWalletId(for: kind) == walletId
@@ -950,7 +951,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     private func performStart(network: Network) async {
         if let manager = walletManager, let walletId = wallet?.walletId,
            runningNetwork == network, SwiftDashSDKHost.shared.manager === manager,
-           isSelectedShieldedScope(walletId: walletId, network: network) {
+           isSelectedWalletScope(walletId: walletId, network: network) {
             // Platform owns only its own loop. A retry must not stop healthy
             // Shielded, DashPay or DPNS services sharing this manager.
             do {
@@ -986,7 +987,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }
 
         guard lifecycleGeneration == generation, SwiftDashSDKHost.shared.manager === manager,
-              isSelectedShieldedScope(walletId: resolvedWallet.walletId, network: network) else { return }
+              isSelectedWalletScope(walletId: resolvedWallet.walletId, network: network) else { return }
 
         let accountAvailability = resolvePlatformAccountAvailability(
             walletId: resolvedWallet.walletId)
@@ -1026,7 +1027,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         await prepareLocalShieldedState(manager: manager, walletId: resolvedWallet.walletId, network: network)
 
         guard lifecycleGeneration == generation, SwiftDashSDKHost.shared.manager === manager,
-              isSelectedShieldedScope(walletId: resolvedWallet.walletId, network: network) else { return }
+              isSelectedWalletScope(walletId: resolvedWallet.walletId, network: network) else { return }
 
         var platformLoopError: String?
         do {
@@ -1040,7 +1041,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
         // Shielded ownership only gates its own loop. A missing selection or
         // unsupported shielded network must not disable DashPay/DPNS/Platform.
-        if isSelectedShieldedScope(walletId: resolvedWallet.walletId, network: network),
+        if isSelectedWalletScope(walletId: resolvedWallet.walletId, network: network),
            shieldedPreparedManager === manager, shieldedBalances.isBound {
             do {
                 if try !manager.isShieldedSyncRunning() { try manager.startShieldedSync() }
@@ -1104,7 +1105,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         startShieldedRecoveryMonitoring()
         await subscribeToManager(manager: manager, walletId: resolvedWallet.walletId)
         guard lifecycleGeneration == generation, walletManager === manager,
-              isSelectedShieldedScope(walletId: resolvedWallet.walletId, network: network) else { return }
+              isSelectedWalletScope(walletId: resolvedWallet.walletId, network: network) else { return }
         refreshDerivedAddresses()
 
         // Hand the shielded diagnostics monitor the new manager generation.
@@ -1141,7 +1142,11 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     private func performStop(deletingPersistedWallet: Bool, preservingRecovery: Bool = false) async {
         lifecycleGeneration &+= 1
         isShieldedRunning = false
-        if !preservingRecovery { stopShieldedRecoveryMonitoring() }
+        if preservingRecovery {
+            shieldedRecovery.suspendForRuntimeRestart()
+        } else {
+            stopShieldedRecoveryMonitoring()
+        }
         // Detach the shielded diagnostics monitor before the manager handles
         // drop, so it never observes a manager whose loops are being torn down.
         ShieldedSyncMonitor.shared.detach()
@@ -1318,7 +1323,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                 guard let self,
                       self.walletManager === manager,
                       let network = self.runningNetwork,
-                      self.isSelectedShieldedScope(walletId: walletId, network: network),
+                      self.isSelectedWalletScope(walletId: walletId, network: network),
                       let result = event?.result(for: walletId) else { return }
                 guard result.success, !result.skipped, !result.cooldownSkip else {
                     if !result.success { self.shieldedBalances.markStale() }

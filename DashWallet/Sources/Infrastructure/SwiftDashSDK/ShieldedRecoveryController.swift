@@ -12,6 +12,7 @@ final class ShieldedRecoveryController: ObservableObject {
     private(set) var isActive = false
     private(set) var isOnline = false
     private var isForeground = true
+    private var isSuspended = false
     private(set) var generation: UInt64 = 0
     private var operation: Task<Void, Never>?
     var isRecovering: Bool { operation != nil }
@@ -45,8 +46,9 @@ final class ShieldedRecoveryController: ObservableObject {
     }
 
     func start(isForeground: Bool) {
-        guard !isActive else { return }
+        guard !isActive || isSuspended else { return }
         isActive = true
+        isSuspended = false
         self.isForeground = isForeground
         request(forceSync: false)
     }
@@ -60,6 +62,10 @@ final class ShieldedRecoveryController: ObservableObject {
             return
         }
         guard isActive, cameOnline else { return }
+        if isSuspended {
+            pendingSync = true
+            return
+        }
         let expectedGeneration = generation
         debounce?.cancel()
         debounce = Task { [weak self] in
@@ -83,8 +89,17 @@ final class ShieldedRecoveryController: ObservableObject {
         }
     }
 
+    /// A manual network action must not acknowledge an offline no-op. Local
+    /// preparation and reconnect recovery continue to use request directly.
+    @discardableResult
+    func requestManualSync() -> Bool {
+        guard isActive, !isSuspended, isOnline, isForeground, canPrepare() else { return false }
+        request()
+        return true
+    }
+
     func request(forceSync: Bool = true) {
-        guard isActive, isForeground, canPrepare() else { return }
+        guard isActive, !isSuspended, isForeground, canPrepare() else { return }
         pendingSync = pendingSync || forceSync
         guard operation == nil else { return }
         retry?.cancel()
@@ -145,22 +160,39 @@ final class ShieldedRecoveryController: ObservableObject {
 
     /// Also guards work waiting on the runtime's separate lifecycle queue.
     func isCurrentSession(_ expectedGeneration: UInt64) -> Bool {
-        isActive && generation == expectedGeneration
+        isActive && !isSuspended && generation == expectedGeneration
+    }
+
+    /// Keep lifecycle observation and retry intent, but abandon work tied to
+    /// the old runtime. Do not await operation: preparation may itself be
+    /// waiting on the lifecycle queue that is performing this restart. Native
+    /// operations are stopped/drained by the coordinator and SDK shutdown.
+    func suspendForRuntimeRestart() {
+        guard isActive else { return }
+        generation &+= 1
+        isSuspended = true
+        pendingSync = pendingSync || operation != nil
+        cancelTasks()
     }
 
     func stop() {
         generation &+= 1
         isActive = false
+        isSuspended = false
         isOnline = false
         pendingSync = false
         retryAttempt = 0
+        cancelTasks()
+        lastError = nil
+    }
+
+    private func cancelTasks() {
         operation?.cancel()
         operation = nil
         debounce?.cancel()
         debounce = nil
         retry?.cancel()
         retry = nil
-        lastError = nil
     }
 
     /// Scope changes deliberately abandon work without cancelling its Task.
@@ -174,7 +206,7 @@ final class ShieldedRecoveryController: ObservableObject {
     }
 
     private func scheduleInitializationRetry() {
-        guard isActive, isForeground else { return }
+        guard isActive, !isSuspended, isForeground else { return }
         let delays: [TimeInterval] = [1, 2, 4, 8, 16, 30]
         let delay = delays[min(retryAttempt, delays.count - 1)]
         retryAttempt = min(retryAttempt + 1, delays.count - 1)

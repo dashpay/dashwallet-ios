@@ -31,6 +31,136 @@ private final class RecoveryTestClock {
 
 @MainActor
 final class ShieldedRecoveryControllerTests: XCTestCase {
+    func testRestartSuspendsPreparationAndRejectsOldQueuedRearm() async {
+        let started = expectation(description: "old preparation queued")
+        let returned = expectation(description: "cancelled preparation returned")
+        let restarted = expectation(description: "replacement prepared")
+        var continuation: CheckedContinuation<Void, Never>?
+        var attempts = 0
+        var controller: ShieldedRecoveryController!
+        controller = ShieldedRecoveryController(
+            prepare: {
+                attempts += 1
+                guard attempts == 1 else { restarted.fulfill(); return }
+                let generation = controller.generation
+                await withCheckedContinuation { continuation = $0; started.fulfill() }
+                XCTAssertTrue(Task.isCancelled)
+                XCTAssertFalse(controller.isCurrentSession(generation))
+                returned.fulfill()
+                throw NSError(domain: "obsolete preparation", code: 1)
+            },
+            sync: { XCTFail("Offline restart must only prepare locally") },
+            isSyncing: { false }, sleep: { _ in XCTFail("No retry during restart") })
+        controller.start(isForeground: true)
+        await fulfillment(of: [started], timeout: 2)
+        controller.suspendForRuntimeRestart()
+        XCTAssertTrue(controller.isActive)
+        XCTAssertFalse(controller.isRecovering)
+        controller.request()
+        controller.foregroundChanged(isForeground: true)
+        for _ in 0..<10 { await Task.yield() }
+        XCTAssertEqual(attempts, 1)
+        controller.start(isForeground: true)
+        await fulfillment(of: [restarted], timeout: 2)
+        continuation?.resume()
+        await fulfillment(of: [returned], timeout: 2)
+        XCTAssertNil(controller.lastError)
+        controller.stop()
+        controller = nil
+    }
+
+    func testRestartCancelsPassButRetainsOnlineRecoveryIntent() async {
+        let started = expectation(description: "old pass started")
+        let restarted = expectation(description: "replacement pass started")
+        let returned = expectation(description: "old pass returned")
+        var oldPass: CheckedContinuation<Void, Never>?
+        var newPass: CheckedContinuation<Void, Never>?
+        var syncs = 0
+        let controller = ShieldedRecoveryController(
+            prepare: {},
+            sync: {
+                syncs += 1
+                if syncs == 1 {
+                    await withCheckedContinuation { oldPass = $0; started.fulfill() }
+                    XCTAssertTrue(Task.isCancelled)
+                    returned.fulfill()
+                    throw NSError(domain: "obsolete pass", code: 1)
+                }
+                await withCheckedContinuation { newPass = $0; restarted.fulfill() }
+            },
+            isSyncing: { false }, sleep: { _ in })
+        controller.start(isForeground: true)
+        controller.connectivityChanged(isOnline: true)
+        await fulfillment(of: [started], timeout: 2)
+        controller.suspendForRuntimeRestart()
+        XCTAssertTrue(controller.isOnline)
+        XCTAssertFalse(controller.requestManualSync())
+        controller.syncDidFinish()
+        controller.start(isForeground: true)
+        await fulfillment(of: [restarted], timeout: 2)
+        oldPass?.resume()
+        await fulfillment(of: [returned], timeout: 2)
+        XCTAssertTrue(controller.isRecovering, "Old completion must not clear the replacement task")
+        XCTAssertNil(controller.lastError)
+        newPass?.resume()
+        controller.stop()
+    }
+
+    func testRestartCancelsBackoffUntilCoreResumes() async {
+        let clock = RecoveryTestClock()
+        let backoff = expectation(description: "old backoff waiting")
+        let prepared = expectation(description: "new runtime prepared")
+        var attempts = 0
+        clock.onSleep = { backoff.fulfill() }
+        let controller = ShieldedRecoveryController(
+            prepare: {
+                attempts += 1
+                if attempts == 1 { throw NSError(domain: "bind failure", code: 1) }
+                prepared.fulfill()
+            },
+            sync: { XCTFail("Offline restart must not sync") },
+            isSyncing: { false }, sleep: clock.sleep)
+        controller.start(isForeground: true)
+        await fulfillment(of: [backoff], timeout: 2)
+        let error = controller.lastError
+        controller.suspendForRuntimeRestart()
+        clock.advance()
+        for _ in 0..<10 { await Task.yield() }
+        XCTAssertEqual(attempts, 1)
+        XCTAssertEqual(controller.lastError, error)
+        controller.start(isForeground: true)
+        await fulfillment(of: [prepared], timeout: 2)
+        XCTAssertNil(controller.lastError)
+        controller.stop()
+    }
+
+    func testManualOfflineRequestPreservesErrorAndLocalRetry() async {
+        let clock = RecoveryTestClock()
+        let backoff = expectation(description: "local restore failed")
+        let restored = expectation(description: "local retry succeeded offline")
+        var attempts = 0
+        clock.onSleep = { backoff.fulfill() }
+        let controller = ShieldedRecoveryController(
+            prepare: {
+                attempts += 1
+                if attempts == 1 { throw NSError(domain: "local restore failure", code: 1) }
+                restored.fulfill()
+            },
+            sync: { XCTFail("Manual offline request must not enqueue a scan") },
+            isSyncing: { false }, sleep: clock.sleep)
+        controller.start(isForeground: true)
+        await fulfillment(of: [backoff], timeout: 2)
+        let error = controller.lastError
+        XCTAssertNotNil(error)
+        XCTAssertFalse(controller.requestManualSync())
+        XCTAssertEqual(controller.lastError, error)
+        XCTAssertEqual(attempts, 1)
+        clock.advance()
+        await fulfillment(of: [restored], timeout: 2)
+        XCTAssertNil(controller.lastError)
+        controller.stop()
+    }
+
     func testCoreFailureDoesNotSchedulePreparationOrRebuildRetries() async {
         var coreReady = false
         var attempts = 0

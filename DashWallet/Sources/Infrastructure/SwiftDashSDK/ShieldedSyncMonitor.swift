@@ -155,6 +155,14 @@ final class ShieldedSyncMonitor: ObservableObject {
     /// Request a coalesced recovery/pass. Initialization errors surface via the
     /// coordinator; completed sync errors continue to arrive on this monitor.
     func syncNow() {
+        guard NetworkStatusService.shared.isOnline else {
+            if lastError == nil {
+                lastError = NSLocalizedString(
+                    "You are offline. Connect to the internet and try again.",
+                    comment: "Shielded manual sync requires an internet connection")
+            }
+            return
+        }
         if PlatformAddressSyncCoordinator.shared.recoverShieldedNow() {
             lastError = nil
         } else if lastError == nil {
