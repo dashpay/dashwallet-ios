@@ -137,7 +137,7 @@ struct PlatformSyncStatusScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             row(
                 title: "Platform Balance",
-                value: PlatformCreditsFormatter.dashString(coordinator.platformBalance))
+                value: coordinator.platformBalanceState.credits.map(PlatformCreditsFormatter.dashString) ?? "—")
             row(
                 title: "Active Addresses",
                 value: "\(coordinator.activeAddressCount)")
@@ -305,10 +305,10 @@ struct PlatformSyncStatusScreen: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(Color.dash.gray300.opacity(0.3))
-                    .foregroundColor(coordinator.isClearing ? .secondary : .dash.primaryText)
+                    .foregroundColor(coordinator.canClearLocalState ? .dash.primaryText : .secondary)
                     .cornerRadius(8)
             }
-            .disabled(coordinator.isClearing || coordinator.isSyncing)
+            .disabled(!coordinator.canClearLocalState)
 
             Button(action: {
                 PlatformAddressSyncCoordinator.stop()

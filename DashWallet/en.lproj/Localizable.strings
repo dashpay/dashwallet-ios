@@ -5889,3 +5889,4 @@
 
 /* Shielded manual sync requires an internet connection */
 "You are offline. Connect to the internet and try again." = "You are offline. Connect to the internet and try again.";
+"Start Platform sync before clearing its local state" = "Start Platform sync before clearing its local state";

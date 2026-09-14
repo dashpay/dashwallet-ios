@@ -6,6 +6,8 @@ public enum PlatformBalanceState: Equatable, Sendable {
     case unavailable
     case available(UInt64)
 
+    public var isAvailable: Bool { credits != nil }
+
     public var credits: UInt64? {
         guard case .available(let credits) = self else { return nil }
         return credits
@@ -62,6 +64,10 @@ final class PlatformBalanceController: ObservableObject {
     func detach() {
         generation &+= 1
         session = nil
+    }
+
+    func invalidateUnless(scope selectedScope: Scope?) {
+        if scope != selectedScope { clear() }
     }
 
     func clear() {

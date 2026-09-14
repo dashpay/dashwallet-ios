@@ -110,4 +110,28 @@ final class PlatformBalanceControllerTests: XCTestCase {
         controller.read(using: session) { nil }
         XCTAssertEqual(controller.state, .unavailable)
     }
+    func testSuccessfulClearPublishesLocalZeroAndRejectsPreClearEvents() {
+        let controller = PlatformBalanceController()
+        let original = controller.begin(scope: scope, owner: ObjectIdentifier(owner))
+        controller.read(using: original) { 42 }
+        controller.clear()
+        let cleared = controller.begin(scope: scope, owner: ObjectIdentifier(owner))
+        controller.read(using: cleared) { 0 }
+        XCTAssertEqual(controller.state, .available(0))
+        XCTAssertFalse(controller.read(using: original) { 42 })
+        XCTAssertThrowsError(try controller.read(using: cleared) { throw Failure.read })
+        XCTAssertEqual(controller.state, .available(0))
+    }
+
+    func testWalletMaterialChangePreservesOnlyTheSameSelection() {
+        let controller = PlatformBalanceController()
+        let session = controller.begin(scope: scope, owner: ObjectIdentifier(owner))
+        controller.read(using: session) { 42 }
+        controller.invalidateUnless(scope: scope)
+        XCTAssertEqual(controller.state.credits, 42)
+        controller.invalidateUnless(scope: .init(walletId: scope.walletId, network: "another network"))
+        XCTAssertNil(controller.state.credits)
+        XCTAssertFalse(controller.isCurrent(session))
+    }
+
 }

@@ -110,4 +110,18 @@ final class PlatformBalanceReaderTests: XCTestCase {
         addAddress(to: container, wallet: wallet, index: 1, credits: 1)
         XCTAssertThrowsError(try PlatformBalanceReader.read(container: container, walletId: walletId, network: .testnet))
     }
+    func testIncompleteLocalAccountDoesNotClaimZeroBeforeDiscovery() throws {
+        let container = try DashModelContainer.createInMemory()
+        let wallet = addWallet(to: container, id: walletId, hasAccount: false)
+        // A wallet row can precede account discovery/persistence. Its absence
+        // is not evidence that the imported seed has no Platform funds.
+        XCTAssertNil(try PlatformBalanceReader.read(container: container, walletId: walletId, network: .testnet))
+        let account = PersistentAccount(wallet: wallet, accountType: 14, accountIndex: 0, accountTypeName: "PlatformPayment")
+        container.mainContext.insert(account)
+        wallet.accounts = [account]
+        addAddress(to: container, wallet: wallet, index: 0, credits: 42)
+        try container.mainContext.save()
+        XCTAssertEqual(try PlatformBalanceReader.read(container: container, walletId: walletId, network: .testnet)?.credits, 42)
+    }
+
 }

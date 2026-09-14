@@ -331,6 +331,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             }
         }
         shieldedBalances.invalidateUnless(scope: selectedScope)
+        platformBalances.invalidateUnless(scope: selectedScope.map {
+            .init(walletId: $0.walletId, network: $0.network)
+        })
     }
 
     /// Platform recovery must never turn a failed Core start into a periodic
@@ -847,6 +850,13 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             recipients: [recipient, remainder])
     }
 
+    var canClearLocalState: Bool {
+        guard !isClearing, !isSyncing, walletManager != nil, modelContainer != nil,
+              let session = platformBalanceSession, let network = runningNetwork else { return false }
+        return platformBalances.isCurrent(session)
+            && isSelectedWalletScope(walletId: session.scope.walletId, network: network)
+    }
+
     /// Full local wipe of the platform-address sync state — the Sync Info
     /// screen's "Clear" button. Ported from the SwiftExampleApp
     /// `PlatformBalanceSyncService.clearLocalState` contract:
@@ -869,14 +879,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     ///    (the Rust reset deliberately leaves it stopped).
     public func clearLocalState() async {
         guard !isClearing else { return }
-        guard let manager = walletManager,
+        guard let manager = walletManager, let container = modelContainer,
               let session = platformBalanceSession,
               let network = runningNetwork,
               platformBalances.isCurrent(session),
               isSelectedWalletScope(walletId: session.scope.walletId, network: network) else {
             // Local restoration can precede BLAST. A display-only clear here
             // would resurrect the untouched cache as soon as BLAST starts.
-            lastError = "Start Platform sync before clearing its local state"
+            lastError = NSLocalizedString("Start Platform sync before clearing its local state", comment: "Platform Clear requires a bound wallet")
             return
         }
         isClearing = true
@@ -894,44 +904,50 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         // Its destination must never be cleared by this outgoing operation.
         guard walletManager === manager, platformBalances.isCurrent(session),
               isSelectedWalletScope(walletId: session.scope.walletId, network: network) else { return }
+        isRunning = false // The successful native reset leaves its loop stopped.
 
-        if let container = modelContainer, let network = runningNetwork {
-            do {
-                let context = container.mainContext
-                let networkRaw = network.rawValue
-                let wallets = try context.fetch(FetchDescriptor<PersistentWallet>(
-                    predicate: #Predicate { $0.networkRaw == networkRaw }))
-                let walletIds = Set(wallets.map(\.walletId))
-                let addresses = try context.fetch(FetchDescriptor<PersistentPlatformAddress>())
-                for row in addresses where walletIds.contains(row.walletId) {
-                    row.balance = 0
-                    row.nonce = 0
-                    row.isUsed = false
-                    row.firstSeenHeight = 0
-                    row.lastSeenHeight = 0
-                    row.lastUpdated = Date()
-                }
-                let syncStates = try context.fetch(FetchDescriptor<PersistentPlatformAddressesSyncState>())
-                for row in syncStates where row.networkRaw == networkRaw {
-                    context.delete(row)
-                }
-                try context.save()
-            } catch {
-                lastError = "Failed to clear persisted platform-address state: \(error.localizedDescription)"
-                Self.logger.error("🛰️ PLATFORM-ADDR :: clear persist failed: \(String(describing: error), privacy: .public)")
-                return
+        do {
+            let context = container.mainContext
+            let networkRaw = network.rawValue
+            let wallets = try context.fetch(FetchDescriptor<PersistentWallet>(
+                predicate: #Predicate { $0.networkRaw == networkRaw }))
+            let walletIds = Set(wallets.map(\.walletId))
+            let addresses = try context.fetch(FetchDescriptor<PersistentPlatformAddress>())
+            for row in addresses where walletIds.contains(row.walletId) {
+                row.balance = 0
+                row.nonce = 0
+                row.isUsed = false
+                row.firstSeenHeight = 0
+                row.lastSeenHeight = 0
+                row.lastUpdated = Date()
             }
+            let syncStates = try context.fetch(FetchDescriptor<PersistentPlatformAddressesSyncState>())
+            for row in syncStates where row.networkRaw == networkRaw {
+                context.delete(row)
+            }
+            try context.save()
+        } catch {
+            lastError = "Failed to clear persisted platform-address state: \(error.localizedDescription)"
+            Self.logger.error("🛰️ PLATFORM-ADDR :: clear persist failed: \(String(describing: error), privacy: .public)")
+            return
         }
 
         detachPlatformSubscriptions()
         clearDisplay(preservingShieldedBalance: true)
         if let walletId = wallet?.walletId, let network = runningNetwork {
             subscribeToPlatformUpdates(manager: manager, walletId: walletId, network: network)
+            if let clearedSession = platformBalanceSession {
+                // The successful local clear establishes a known zero even
+                // offline; do not wait for a network pass to publish it.
+                readPlatformBalance(container: container, session: clearedSession, network: network)
+            }
         }
 
         do {
             try manager.startPlatformAddressSync()
+            isRunning = true
         } catch {
+            isRunning = false
             lastError = "startPlatformAddressSync failed after clear: \(error.localizedDescription)"
             Self.logger.error("🛰️ PLATFORM-ADDR :: post-clear restart failed: \(String(describing: error), privacy: .public)")
         }
@@ -1352,8 +1368,10 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     private func subscribeToPlatformUpdates(
         manager: PlatformWalletManager, walletId: Data, network: Network
     ) {
+        guard walletManager === manager, SwiftDashSDKHost.shared.manager === manager,
+              wallet?.walletId == walletId, runningNetwork == network,
+              isSelectedWalletScope(walletId: walletId, network: network) else { return }
         detachPlatformSubscriptions()
-        guard isSelectedWalletScope(walletId: walletId, network: network) else { return }
         let session = beginPlatformBalanceSession(manager: manager, walletId: walletId, network: network)
         syncStateCancellable = manager.$platformAddressSyncIsSyncing
             .receive(on: RunLoop.main)
@@ -1589,13 +1607,6 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         } else {
             lastError = result.errorMessage ?? "Platform address sync failed"
         }
-    }
-
-    private func refreshBalanceSnapshot() async {
-        // Source of truth is SwiftData — the FFI `addressesWithBalances()` /
-        // `totalCredits()` pair lags behind the BLAST persistence callbacks
-        // and can report zero while the DB already holds the funded rows.
-        refreshDerivedAddresses()
     }
 
     private func refreshDerivedAddresses() {

@@ -4,6 +4,9 @@ import SwiftData
 
 /// Both launch restoration and live readback use the persisted address rows.
 /// Fetch failures throw; a missing wallet or Platform account returns nil.
+/// A missing persisted account is not proof that an imported seed has no
+/// Platform funds: the wallet row can precede account discovery/persistence.
+/// A present account with an empty address pool is a successful known zero.
 /// The caller supplies the network-specific container from SwiftDashSDKHost.
 /// Address rows are wallet-scoped within that separate database.
 @MainActor
