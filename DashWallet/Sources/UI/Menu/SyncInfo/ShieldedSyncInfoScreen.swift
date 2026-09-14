@@ -110,18 +110,7 @@ struct ShieldedSyncInfoScreen: View {
             } else if let lastSync = monitor.lastSyncTime {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
-                // Re-render on a timer: `formatted(.relative:)` bakes in the
-                // offset at render time, so without a schedule the value drifts
-                // stale for as long as the screen stays open.
-                TimelineView(.periodic(from: .now, by: 30)) { _ in
-                    Text(String(
-                        format: NSLocalizedString(
-                            "Last sync: %@",
-                            comment: "Sync diagnostics - %@ is a relative time such as 2 hours ago"),
-                        lastSync.formatted(.relative(presentation: .numeric))))
-                }
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.dash.primaryText)
+                LastSyncLabel(date: lastSync)
             } else {
                 Image(systemName: "circle.dashed")
                     .foregroundColor(Color.dash.secondaryText)
@@ -213,8 +202,8 @@ struct ShieldedSyncInfoScreen: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
-                Text(String(
-                    format: NSLocalizedString(
+                Text(String.localizedStringWithFormat(
+                    NSLocalizedString(
                         "%d syncs",
                         comment: "Sync diagnostics - number of syncs since app launch"),
                     monitor.syncCountSinceLaunch))
@@ -322,7 +311,7 @@ struct ShieldedSyncInfoScreen: View {
                     .monospacedDigit()
             } else if let value {
                 SwiftUI.ProgressView().scaleEffect(0.6)
-                Text(String(format: NSLocalizedString("%@ notes", comment: "Sync diagnostics - shielded note count"),
+                Text(String.localizedStringWithFormat(NSLocalizedString("%@ notes", comment: "Sync diagnostics - shielded note count"),
                             formattedCount(value), value))
                     .font(.system(size: 11))
                     .foregroundColor(Color.dash.secondaryText)

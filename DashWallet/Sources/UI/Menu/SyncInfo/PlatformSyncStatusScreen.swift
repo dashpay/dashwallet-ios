@@ -104,18 +104,7 @@ struct PlatformSyncStatusScreen: View {
             } else if let lastSync = coordinator.lastSyncTime {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
-                // Re-render on a timer: `formatted(.relative:)` bakes in the
-                // offset at render time, so without a schedule the value drifts
-                // stale for as long as the screen stays open.
-                TimelineView(.periodic(from: .now, by: 30)) { _ in
-                    Text(String(
-                        format: NSLocalizedString(
-                            "Last sync: %@",
-                            comment: "Sync diagnostics - %@ is a relative time such as 2 hours ago"),
-                        lastSync.formatted(.relative(presentation: .numeric))))
-                }
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.dash.primaryText)
+                LastSyncLabel(date: lastSync)
             } else {
                 Image(systemName: "circle.dashed")
                     .foregroundColor(Color.dash.secondaryText)
@@ -161,8 +150,8 @@ struct PlatformSyncStatusScreen: View {
     private var addressesCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text(String(
-                    format: NSLocalizedString(
+                Text(String.localizedStringWithFormat(
+                    NSLocalizedString(
                         "Platform Addresses (%d)",
                         comment: "Sync diagnostics - count of derived Platform addresses"),
                     coordinator.derivedAddresses.count))
@@ -199,8 +188,10 @@ struct PlatformSyncStatusScreen: View {
                 HStack(spacing: 6) {
                     Text("#\(addr.accountIndex)/\(addr.addressIndex)")
                     if addr.isUsed {
-                        Text(NSLocalizedString(
-                            "• used",
+                        // Bullet stays outside the translatable unit, matching the
+                        // sibling "• \(balance)" row — translators drop stray glyphs.
+                        Text("• " + NSLocalizedString(
+                            "used",
                             comment: "Sync diagnostics - marks a derived address that has already been used"))
                     }
                     if addr.balance > 0 {
@@ -267,8 +258,8 @@ struct PlatformSyncStatusScreen: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
-                Text(String(
-                    format: NSLocalizedString(
+                Text(String.localizedStringWithFormat(
+                    NSLocalizedString(
                         "%d syncs",
                         comment: "Sync diagnostics - number of syncs since app launch"),
                     coordinator.syncCountSinceLaunch))

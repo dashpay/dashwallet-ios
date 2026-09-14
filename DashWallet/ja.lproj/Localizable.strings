@@ -6713,6 +6713,3 @@
 
 /* Usernames */
 "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username." = "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username.";
-
-/* Sync diagnostics - marks a derived address that has already been used */
-"• used" = "• used";
