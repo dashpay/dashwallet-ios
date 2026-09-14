@@ -5877,3 +5877,15 @@
 /* Receive: the QR image doubles as a copy control */
 "Copy QR code" = "Copy QR code";
 "Couldn't authenticate: %@" = "Couldn't authenticate: %@";
+
+/* Cached wallet balance availability */
+"Known balance" = "Known balance";
+"Balance unavailable" = "Balance unavailable";
+"Shielded balance is unavailable. Try again after syncing." = "Shielded balance is unavailable. Try again after syncing.";
+
+"Shielded sync is not running" = "Shielded sync is not running";
+
+"Wallet sync is not ready. Start wallet sync and try again." = "Wallet sync is not ready. Start wallet sync and try again.";
+
+/* Shielded manual sync requires an internet connection */
+"You are offline. Connect to the internet and try again." = "You are offline. Connect to the internet and try again.";

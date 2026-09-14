@@ -267,7 +267,10 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     @objc(handleWalletMaterialChanged)
     nonisolated static func handleWalletMaterialChanged() {
-        dispatchOnPipeline { shared.enqueueRefresh(trigger: .walletMaterialChanged) }
+        dispatchOnPipeline {
+            PlatformAddressSyncCoordinator.shared.invalidateBalancesIfSelectionChanged()
+            shared.enqueueRefresh(trigger: .walletMaterialChanged)
+        }
     }
 
     /// Tear down the runtime after a completed wipe and report when that
@@ -291,8 +294,13 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// sync is bound again (or the start has failed). Sync Info uses this to
     /// turn "Sync Now" into a real in-session recovery action after Stop or a
     /// recover-time binding race.
-    func rearmPlatformSync() async {
-        await awaitRefresh(trigger: .platformSyncRearm)
+    func rearmPlatformSync(if shouldStart: @escaping @MainActor () -> Bool = { true }) async {
+        let task = enqueueAwaitable { [weak self] in
+            // A queued recovery must not undo a later Stop or wallet wipe.
+            guard shouldStart() else { return }
+            await self?.refresh(trigger: .platformSyncRearm)
+        }
+        await task.value
     }
 
     /// Rebuild the shared runtime after the SwiftData rows it loaded from were
@@ -451,6 +459,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             return
         }
 
+        PlatformAddressSyncCoordinator.shared.prepareForNetworkSwitch()
         WalletEnvironment.setActiveWalletId(walletId, for: kind)
 
         // Same stop/clear/load/start sequence as a network switch, enqueued on
@@ -617,7 +626,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 return
             }
 
-            await fullReset(lastError: nil, forWipe: false)
+            await fullReset(lastError: nil, forWipe: false, preservingShieldedRecovery: true)
 
             // A reinstall clears the selected-network UserDefaults key but
             // preserves SDK mnemonics. If every stored wallet belongs to the
@@ -634,6 +643,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // handleWalletMaterialChanged) — and the migrator is awaited
             // above, so a legacy-upgrade launch has its mnemonic by this line.
             guard WalletEnvironment.hasSDKWallet else {
+                PlatformAddressSyncCoordinator.shared.stopShieldedRecoveryMonitoring()
                 Self.logger.info("🧭 RUNTIME :: no SDK wallet persisted; leaving runtime stopped for \(network.rawValue, privacy: .public)")
                 return
             }
@@ -645,6 +655,9 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // transaction list reads. Offline that turned a reachable Platform
             // outage into an empty wallet with no retry.
             do {
+                let (manager, wallet) = try await SwiftDashSDKHost.shared.start(network: network)
+                await PlatformAddressSyncCoordinator.shared.prepareLocalShieldedState(
+                    manager: manager, walletId: wallet.walletId, network: network)
                 try await SwiftDashSDKSPVCoordinator.shared.startAsync(for: network)
             } catch {
                 Self.logger.error("🧭 RUNTIME :: Core start failed: \(String(describing: error), privacy: .public)")
@@ -657,6 +670,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // still reports itself bound to `network` (`isCoreRuntimeReady`),
             // or every later `startIfReady` would rebuild a healthy Core.
             currentNetwork = network
+            PlatformAddressSyncCoordinator.shared.startShieldedRecoveryMonitoring()
 
             // Published before the Platform start for the same reason: every
             // consumer keys off the host's bound wallet and `modelContainer`,
@@ -713,11 +727,13 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// the FFI handle while either tokio task is still running would be a
     /// use-after-free, so the host stop happens strictly after both
     /// coordinators have settled.
-    private func fullReset(lastError: String?, forWipe: Bool) async {
+    private func fullReset(
+        lastError: String?, forWipe: Bool, preservingShieldedRecovery: Bool = false
+    ) async {
         if forWipe {
             await PlatformAddressSyncCoordinator.stopForWipeAsync()
         } else {
-            await PlatformAddressSyncCoordinator.shared.stopAsync()
+            await PlatformAddressSyncCoordinator.shared.stopAsync(preservingRecovery: preservingShieldedRecovery)
         }
         await SwiftDashSDKSPVCoordinator.shared.stopAsync(lastError: lastError)
         SwiftDashSDKWalletState.shared.clearAllState()
