@@ -115,15 +115,24 @@ struct HomeBalanceView: View {
                         .frame(width: 58, height: 58)
                 } else {
                     VStack(spacing: 0) {
-                        DashAmount(amount: Int64(balance.totalDuffs), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
-                            .foregroundColor(Color.dash.whiteText)
-                        Text(viewModel.fiatString(forDuffs: balance.totalDuffs))
-                            .font(.subhead)
-                            .foregroundColor(Color.dash.whiteText)
-                        if balance.isPartial {
-                            Text(NSLocalizedString("Known balance", comment: "Total excludes unavailable balances"))
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.7))
+                        if let totalDuffs = balance.totalDuffs {
+                            DashAmount(amount: Int64(totalDuffs), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
+                                .foregroundColor(Color.dash.whiteText)
+                            Text(viewModel.fiatString(forDuffs: totalDuffs))
+                                .font(.subhead)
+                                .foregroundColor(Color.dash.whiteText)
+                            if balance.isPartial {
+                                Text(NSLocalizedString("Known balance", comment: "Total excludes unavailable balances"))
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+                        } else {
+                            Text("—")
+                                .font(.largeTitle)
+                                .foregroundColor(Color.dash.whiteText)
+                            Text(NSLocalizedString("Balance unavailable", comment: "Balance not restored"))
+                                .font(.subhead)
+                                .foregroundColor(Color.dash.whiteText)
                         }
 
                         ZStack {
