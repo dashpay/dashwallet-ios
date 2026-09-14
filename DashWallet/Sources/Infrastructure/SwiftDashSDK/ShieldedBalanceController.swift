@@ -87,6 +87,27 @@ final class ShieldedBalanceController: ObservableObject {
         if generation == expectedGeneration { restoration = nil }
     }
 
+    /// The app can deliver two successful binds during launch. Retry only the
+    /// snapshot read when its delivery crossed a bind, before starting SPV;
+    /// configuration and binding themselves must not be repeated here.
+    static func readLocalSnapshot<Value>(
+        load: @MainActor () async throws -> Value,
+        isBindingChange: (Error) -> Bool
+    ) async throws -> Value {
+        var remainingBindRetries = 2
+        while true {
+            try Task.checkCancellation()
+            do {
+                return try await load()
+            } catch {
+                try Task.checkCancellation()
+                guard !(error is CancellationError), remainingBindRetries > 0,
+                      isBindingChange(error) else { throw error }
+                remainingBindRetries -= 1
+            }
+        }
+    }
+
     func accept(credits: UInt64) {
         revision &+= 1
         state = .refreshed(credits)

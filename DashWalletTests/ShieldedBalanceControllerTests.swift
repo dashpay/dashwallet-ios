@@ -134,6 +134,78 @@ final class ShieldedBalanceControllerTests: XCTestCase {
         XCTAssertEqual(controller.state, .restored(30))
     }
 
+    private enum SnapshotTestError: Error {
+        case bindingChanged, storageFailed
+    }
+
+    func testLaunchSnapshotRetriesBothBindDeliveries() async throws {
+        var reads = 0
+        let amount = try await ShieldedBalanceController.readLocalSnapshot(
+            load: {
+                reads += 1
+                if reads <= 2 { throw SnapshotTestError.bindingChanged }
+                return UInt64(123)
+            },
+            isBindingChange: { ($0 as? SnapshotTestError) == .bindingChanged })
+        XCTAssertEqual(amount, 123)
+        XCTAssertEqual(reads, 3)
+    }
+
+    func testSnapshotBindingChurnIsBounded() async {
+        var reads = 0
+        do {
+            let _: UInt64 = try await ShieldedBalanceController.readLocalSnapshot(
+                load: { reads += 1; throw SnapshotTestError.bindingChanged },
+                isBindingChange: { ($0 as? SnapshotTestError) == .bindingChanged })
+            XCTFail("Repeated binding changes must stop retrying")
+        } catch {
+            XCTAssertEqual(error as? SnapshotTestError, .bindingChanged)
+        }
+        XCTAssertEqual(reads, 3)
+    }
+
+    func testSnapshotStorageFailureAndScopeCancellationDoNotRetry() async {
+        for failure: Error in [SnapshotTestError.storageFailed, CancellationError()] {
+            var reads = 0
+            do {
+                let _: UInt64 = try await ShieldedBalanceController.readLocalSnapshot(
+                    load: { reads += 1; throw failure },
+                    isBindingChange: { ($0 as? SnapshotTestError) == .bindingChanged })
+                XCTFail("Non-bind failures must propagate")
+            } catch {
+                XCTAssertEqual(reads, 1)
+                XCTAssertEqual(error is CancellationError, failure is CancellationError)
+            }
+        }
+    }
+
+    func testCancelledSnapshotDoesNotRetryAReportedBindChange() async {
+        let started = expectation(description: "snapshot read started")
+        var finish: CheckedContinuation<UInt64, Error>?
+        var reads = 0
+        let task = Task {
+            try await ShieldedBalanceController.readLocalSnapshot(
+                load: {
+                    reads += 1
+                    return try await withCheckedThrowingContinuation {
+                        finish = $0
+                        started.fulfill()
+                    }
+                },
+                isBindingChange: { ($0 as? SnapshotTestError) == .bindingChanged })
+        }
+        await fulfillment(of: [started], timeout: 2)
+        task.cancel()
+        finish?.resume(throwing: SnapshotTestError.bindingChanged)
+        do {
+            _ = try await task.value
+            XCTFail("Cancellation must win over binding retry")
+        } catch {
+            XCTAssertTrue(error is CancellationError)
+        }
+        XCTAssertEqual(reads, 1)
+    }
+
     func testNoHistoryIsPreparedButDoesNotPublishFalseZero() async {
         let controller = ShieldedBalanceController()
         let owner = NSObject()

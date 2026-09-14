@@ -254,7 +254,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             let dbPath = try SwiftDashSDKHost.shared.shieldedTreeDBPath(for: network)
             try manager.configureShielded(dbPath: dbPath)
             try manager.bindShielded(walletId: walletId, resolver: shieldedResolver)
-            switch try await manager.localShieldedBalanceSnapshot(walletId: walletId) {
+            let state = try await ShieldedBalanceController.readLocalSnapshot(
+                load: {
+                    guard self.isSelectedShieldedScope(walletId: walletId, network: network),
+                          SwiftDashSDKHost.shared.manager === manager else { throw CancellationError() }
+                    return try await manager.localShieldedBalanceSnapshot(walletId: walletId)
+                },
+                isBindingChange: { ($0 as? ShieldedLocalBalanceReadError) == .bindingChanged })
+            switch state {
             case .unbound, .restoreIncomplete:
                 throw StartError.failed("Shielded wallet restoration is incomplete")
             case .ready(let snapshot):
