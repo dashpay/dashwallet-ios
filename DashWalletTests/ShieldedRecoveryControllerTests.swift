@@ -161,6 +161,18 @@ final class ShieldedRecoveryControllerTests: XCTestCase {
         controller.stop()
     }
 
+    func testInitialOnlineManualRequestDoesNotWaitForPublisherDelivery() async {
+        let synced = expectation(description: "initial manual request synced")
+        let controller = ShieldedRecoveryController(
+            prepare: {}, sync: { synced.fulfill() }, isSyncing: { false },
+            sleep: { _ in XCTFail("Seeding connectivity before start needs no debounce") })
+        controller.connectivityChanged(isOnline: true)
+        controller.start(isForeground: true)
+        XCTAssertTrue(controller.requestManualSync())
+        await fulfillment(of: [synced], timeout: 2)
+        controller.stop()
+    }
+
     func testCoreFailureDoesNotSchedulePreparationOrRebuildRetries() async {
         var coreReady = false
         var attempts = 0

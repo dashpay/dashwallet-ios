@@ -297,6 +297,11 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     func startShieldedRecoveryMonitoring() {
         guard let network = WalletEnvironment.network,
               SwiftDashSDKWalletRuntime.shared.isCoreRuntimeReady(for: network) else { return }
+        if shieldedRecoveryObservers.isEmpty {
+            // The publisher delivers its initial value asynchronously. Seed
+            // connectivity so a first online manual request is admitted now.
+            shieldedRecovery.connectivityChanged(isOnline: networkStatus.isOnline)
+        }
         shieldedRecovery.start(isForeground: UIApplication.shared.applicationState != .background)
         guard shieldedRecoveryObservers.isEmpty else { return }
         networkStatus.statusPublisher
