@@ -267,7 +267,10 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     @objc(handleWalletMaterialChanged)
     nonisolated static func handleWalletMaterialChanged() {
-        dispatchOnPipeline { shared.enqueueRefresh(trigger: .walletMaterialChanged) }
+        dispatchOnPipeline {
+            PlatformAddressSyncCoordinator.shared.invalidateBalancesIfSelectionChanged()
+            shared.enqueueRefresh(trigger: .walletMaterialChanged)
+        }
     }
 
     /// Tear down the runtime after a completed wipe and report when that

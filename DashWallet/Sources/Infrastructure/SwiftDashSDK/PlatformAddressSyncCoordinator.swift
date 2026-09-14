@@ -112,6 +112,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     // MARK: - Published state
 
     @Published public private(set) var isRunning: Bool = false
+    @Published public private(set) var isShieldedRunning: Bool = false
+    private var lifecycleGeneration: UInt64 = 0
     @Published public private(set) var runningNetwork: Network? = nil
 
     @Published public private(set) var isSyncing: Bool = false
@@ -219,7 +221,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         shouldRefreshOnForeground: { [weak self] in
             guard let self else { return false }
             // A failed/stopped runtime still needs preparation immediately.
-            guard let manager = self.walletManager, self.isRunning,
+            guard let manager = self.walletManager, self.isShieldedRunning,
                   self.shieldedBalances.isPrepared else { return true }
             return ShieldedSyncFreshnessPolicy.shouldRefreshOnForeground(
                 now: Date(), lastFullScanAt: self.lastFullShieldedSyncAt,
@@ -250,10 +252,11 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         guard isSelectedShieldedScope(walletId: walletId, network: network) else { return }
         shieldedPreparedManager = manager
         let scope = ShieldedBalanceController.Scope(walletId: walletId, network: String(network.rawValue))
-        await shieldedBalances.restore(scope: scope, owner: ObjectIdentifier(manager)) { [self, manager] in
+        await shieldedBalances.restore(scope: scope, owner: ObjectIdentifier(manager), bind: { [self, manager] in
             let dbPath = try SwiftDashSDKHost.shared.shieldedTreeDBPath(for: network)
             try manager.configureShielded(dbPath: dbPath)
             try manager.bindShielded(walletId: walletId, resolver: shieldedResolver)
+        }) { [self, manager] in
             let state = try await ShieldedBalanceController.readLocalSnapshot(
                 load: {
                     guard self.isSelectedShieldedScope(walletId: walletId, network: network),
@@ -275,6 +278,16 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                 }
             }
         }
+    }
+
+    func invalidateBalancesIfSelectionChanged() {
+        let selectedScope = WalletEnvironment.network.flatMap { network -> ShieldedBalanceController.Scope? in
+            let kind: WalletEnvironment.NetworkKind = network == .mainnet ? .mainnet : .testnet
+            return WalletEnvironment.activeWalletId(for: kind).map {
+                ShieldedBalanceController.Scope(walletId: $0, network: String(network.rawValue))
+            }
+        }
+        shieldedBalances.invalidateUnless(scope: selectedScope)
     }
 
     /// Platform recovery must never turn a failed Core start into a periodic
@@ -307,9 +320,17 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         shieldedRecoveryObservers.removeAll()
     }
 
-    func recoverShieldedNow() {
+    var canRecoverShielded: Bool {
+        guard let network = WalletEnvironment.network, WalletEnvironment.hasSDKWallet else { return false }
+        return SwiftDashSDKWalletRuntime.shared.isCoreRuntimeReady(for: network)
+    }
+
+    @discardableResult
+    func recoverShieldedNow() -> Bool {
+        guard canRecoverShielded else { return false }
         startShieldedRecoveryMonitoring()
         shieldedRecovery.request()
+        return true
     }
 
     private func prepareShieldedForRecovery() async throws {
@@ -338,11 +359,11 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
               isSelectedShieldedScope(walletId: walletId, network: network) else {
             throw CancellationError()
         }
-        guard shieldedBalances.isPrepared else {
+        guard shieldedPreparedManager === manager, shieldedBalances.isBound else {
             throw StartError.failed(shieldedInitializationError ?? "Shielded wallet restoration is incomplete")
         }
         if try !manager.isShieldedSyncRunning() { try manager.startShieldedSync() }
-        shieldedInitializationError = nil
+        isShieldedRunning = true
     }
 
     private func isSelectedShieldedScope(walletId: Data, network: Network) -> Bool {
@@ -879,6 +900,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// until then — so the home screen would otherwise show the old network's
     /// funds for the whole transition.
     public func prepareForNetworkSwitch() {
+        lifecycleGeneration &+= 1
+        isShieldedRunning = false
         stopShieldedRecoveryMonitoring()
         detachSyncSubscriptions()
         clearDisplay()
@@ -922,15 +945,29 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     }
 
     private func performStart(network: Network) async {
-        if isRunning && runningNetwork == network {
+        if let manager = walletManager, let walletId = wallet?.walletId,
+           runningNetwork == network, SwiftDashSDKHost.shared.manager === manager,
+           isSelectedShieldedScope(walletId: walletId, network: network) {
+            // Platform owns only its own loop. A retry must not stop healthy
+            // Shielded, DashPay or DPNS services sharing this manager.
+            do {
+                if try !manager.isPlatformAddressSyncRunning() { try manager.startPlatformAddressSync() }
+                isRunning = true
+                lastError = addressWalletStartupError
+            } catch {
+                isRunning = false
+                lastError = "startPlatformAddressSync failed: \(error.localizedDescription)"
+            }
             shieldedRecovery.request(forceSync: false)
-            Self.logger.info("🛰️ PLATFORM-ADDR :: start ignored — already running on \(network.rawValue, privacy: .public)")
             return
         }
 
         if walletManager != nil {
             await performStop(deletingPersistedWallet: false)
         }
+
+        lifecycleGeneration &+= 1
+        let generation = lifecycleGeneration
 
         Self.logger.info("🛰️ PLATFORM-ADDR :: starting for \(network.rawValue, privacy: .public)")
 
@@ -939,10 +976,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         do {
             (manager, resolvedWallet) = try await SwiftDashSDKHost.shared.start(network: network)
         } catch {
+            guard lifecycleGeneration == generation else { return }
             Self.logger.error("🛰️ PLATFORM-ADDR :: host.start failed: \(String(describing: error), privacy: .public)")
             lastError = error.localizedDescription
             return
         }
+
+        guard lifecycleGeneration == generation, SwiftDashSDKHost.shared.manager === manager,
+              isSelectedShieldedScope(walletId: resolvedWallet.walletId, network: network) else { return }
 
         let accountAvailability = resolvePlatformAccountAvailability(
             walletId: resolvedWallet.walletId)
@@ -981,6 +1022,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
         await prepareLocalShieldedState(manager: manager, walletId: resolvedWallet.walletId, network: network)
 
+        guard lifecycleGeneration == generation, SwiftDashSDKHost.shared.manager === manager,
+              isSelectedShieldedScope(walletId: resolvedWallet.walletId, network: network) else { return }
+
         var platformLoopError: String?
         do {
             if try !manager.isPlatformAddressSyncRunning() {
@@ -994,9 +1038,10 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         // Shielded ownership only gates its own loop. A missing selection or
         // unsupported shielded network must not disable DashPay/DPNS/Platform.
         if isSelectedShieldedScope(walletId: resolvedWallet.walletId, network: network),
-           shieldedPreparedManager === manager, shieldedBalances.isPrepared {
+           shieldedPreparedManager === manager, shieldedBalances.isBound {
             do {
                 if try !manager.isShieldedSyncRunning() { try manager.startShieldedSync() }
+                isShieldedRunning = true
             } catch {
                 shieldedInitializationError = error.localizedDescription
                 Self.logger.error("Shielded sync start failed: \(String(describing: error), privacy: .public)")
@@ -1054,6 +1099,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
         startShieldedRecoveryMonitoring()
         await subscribeToManager(manager: manager, walletId: resolvedWallet.walletId)
+        guard lifecycleGeneration == generation, walletManager === manager,
+              isSelectedShieldedScope(walletId: resolvedWallet.walletId, network: network) else { return }
         refreshDerivedAddresses()
 
         // Hand the shielded diagnostics monitor the new manager generation.
@@ -1088,6 +1135,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     }
 
     private func performStop(deletingPersistedWallet: Bool, preservingRecovery: Bool = false) async {
+        lifecycleGeneration &+= 1
+        isShieldedRunning = false
         if !preservingRecovery { stopShieldedRecoveryMonitoring() }
         // Detach the shielded diagnostics monitor before the manager handles
         // drop, so it never observes a manager whose loops are being torn down.

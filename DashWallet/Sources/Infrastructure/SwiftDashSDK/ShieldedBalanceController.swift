@@ -34,6 +34,8 @@ final class ShieldedBalanceController: ObservableObject {
     @Published private(set) var state: ShieldedBalanceState = .unavailable
     @Published private(set) var lastError: String?
     private(set) var isPrepared = false
+    /// Native binding can succeed even when a local balance read times out.
+    private(set) var isBound = false
     private var scope: Scope?
     private var owner: ObjectIdentifier?
     private var generation: UInt64 = 0
@@ -43,6 +45,7 @@ final class ShieldedBalanceController: ObservableObject {
     func restore(
         scope nextScope: Scope,
         owner nextOwner: ObjectIdentifier,
+        bind: @escaping @MainActor () throws -> Void = {},
         load: @escaping @MainActor () async throws -> ShieldedBalanceState
     ) async {
         if scope == nextScope, owner == nextOwner {
@@ -67,8 +70,13 @@ final class ShieldedBalanceController: ObservableObject {
         let task = Task { [weak self] in
             do {
                 try Task.checkCancellation()
+                guard let self, self.generation == expectedGeneration else { return }
+                if !self.isBound {
+                    try bind()
+                    self.isBound = true
+                }
                 let loaded = try await load()
-                guard let self, !Task.isCancelled,
+                guard !Task.isCancelled,
                       self.generation == expectedGeneration else { return }
                 self.isPrepared = true
                 self.lastError = nil
@@ -124,7 +132,12 @@ final class ShieldedBalanceController: ObservableObject {
         restoration = nil
         owner = nil
         isPrepared = false
+        isBound = false
         markStale()
+    }
+
+    func invalidateUnless(scope selectedScope: Scope?) {
+        if scope != selectedScope { clear() }
     }
 
     func clear() {

@@ -216,4 +216,53 @@ final class ShieldedBalanceControllerTests: XCTestCase {
         controller.markStale()
         XCTAssertEqual(controller.state, .restored(0))
     }
+    func testSnapshotFailureAllowsNetworkRepairWithoutRebinding() async {
+        let controller = ShieldedBalanceController()
+        let owner = NSObject()
+        var binds = 0
+        await controller.restore(scope: wallet, owner: ObjectIdentifier(owner), bind: { binds += 1 }) {
+            throw NSError(domain: "local read timed out", code: 1)
+        }
+        XCTAssertTrue(controller.isBound)
+        XCTAssertFalse(controller.isPrepared)
+        XCTAssertNil(controller.state.credits)
+        controller.accept(credits: 42)
+        await controller.restore(scope: wallet, owner: ObjectIdentifier(owner), bind: { binds += 1 }) {
+            .refreshed(42)
+        }
+        XCTAssertEqual(binds, 1)
+        XCTAssertEqual(controller.state.credits, 42)
+        XCTAssertNil(controller.lastError)
+    }
+
+    func testFailedBindingNeverAdmitsNetworkRepair() async {
+        let controller = ShieldedBalanceController()
+        let owner = NSObject()
+        await controller.restore(scope: wallet, owner: ObjectIdentifier(owner), bind: {
+            throw NSError(domain: "bind failed", code: 1)
+        }) {
+            XCTFail("A failed bind must not read the snapshot")
+            return .restored(99)
+        }
+        XCTAssertFalse(controller.isBound)
+        XCTAssertFalse(controller.isPrepared)
+        XCTAssertNil(controller.state.credits)
+        await controller.restore(scope: wallet, owner: ObjectIdentifier(owner), bind: {}) { .restored(99) }
+        XCTAssertTrue(controller.isBound)
+        controller.detach()
+        XCTAssertFalse(controller.isBound)
+        XCTAssertEqual(controller.state.credits, 99)
+    }
+
+    func testMaterialChangeOnlyInvalidatesDifferentSelection() async {
+        let controller = ShieldedBalanceController()
+        let owner = NSObject()
+        await controller.restore(scope: wallet, owner: ObjectIdentifier(owner)) { .restored(99) }
+        controller.invalidateUnless(scope: wallet)
+        XCTAssertEqual(controller.state.credits, 99)
+        controller.invalidateUnless(scope: .init(walletId: Data([2]), network: wallet.network))
+        XCTAssertNil(controller.state.credits)
+        XCTAssertFalse(controller.isBound)
+    }
+
 }

@@ -90,7 +90,7 @@ struct ShieldedSyncInfoScreen: View {
 
     private var stateCard: some View {
         HStack(spacing: 8) {
-            if !coordinator.isRunning {
+            if !coordinator.isShieldedRunning {
                 Image(systemName: "exclamationmark.circle")
                     .foregroundColor(.orange)
                 Text("Platform sync is not running")
@@ -265,7 +265,7 @@ struct ShieldedSyncInfoScreen: View {
     }
 
     private var syncNowDisabled: Bool {
-        monitor.isSyncing || WalletEnvironment.network == nil || !WalletEnvironment.hasSDKWallet
+        monitor.isSyncing || !coordinator.canRecoverShielded
     }
 
     // MARK: - Row builders

@@ -155,8 +155,7 @@ final class ShieldedSyncMonitor: ObservableObject {
     /// Request a coalesced recovery/pass. Initialization errors surface via the
     /// coordinator; completed sync errors continue to arrive on this monitor.
     func syncNow() async {
-        lastError = nil
-        PlatformAddressSyncCoordinator.shared.recoverShieldedNow()
+        if PlatformAddressSyncCoordinator.shared.recoverShieldedNow() { lastError = nil }
     }
 
     /// Reset the displayed since-launch counters and timings. Purely a

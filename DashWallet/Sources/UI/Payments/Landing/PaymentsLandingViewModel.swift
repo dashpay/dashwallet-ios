@@ -238,6 +238,11 @@ final class PaymentsLandingViewModel: ObservableObject {
             .sink { [weak self] _, _ in self?.reconcileReceiptWatching() }
             .store(in: &cancellables)
 
+        PlatformAddressSyncCoordinator.shared.$isShieldedRunning.removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.reconcileReceiptWatching() }
+            .store(in: &cancellables)
+
         platformAddress = PlatformAddressSyncCoordinator.shared
             .derivedAddresses.nextReceiveAddress?.address
 
@@ -520,7 +525,7 @@ final class PaymentsLandingViewModel: ObservableObject {
             isWatchingForReceipt = true
             attachPlatformObserverIfNeeded(session: session)
         case .shielded:
-            guard PlatformAddressSyncCoordinator.shared.isRunning,
+            guard PlatformAddressSyncCoordinator.shared.isShieldedRunning,
                   PlatformAddressSyncCoordinator.shared.platformWalletManager != nil else {
                 isWatchingForReceipt = false
                 return
