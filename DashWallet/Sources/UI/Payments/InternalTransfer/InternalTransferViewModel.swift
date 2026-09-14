@@ -1291,13 +1291,19 @@ final class InternalTransferViewModel: ObservableObject {
         return DWGlobalOptions.sharedInstance().isResyncingWallet
     }
 
+    /// Embedded send/receive sheets pin the route independently of `source`.
+    /// Identity top-ups keep their separate funding-source selection.
+    private var sourceBalanceNetwork: ChainNetwork {
+        isIdentityDestination ? source : route.source
+    }
+
     /// Inline, user-facing explanation for an amount rejected before Confirm.
     /// Zero stays quiet while the user has not entered an amount; a
     /// fee-estimation failure fails closed with a generic retry.
     var amountValidationMessage: String? {
         if let maxNotice { return maxNotice }
         guard dashDuffsUnsigned > 0 else { return nil }
-        if !isIdentitySource && source == .shielded, !shieldedBalanceState.isAvailable {
+        if !isIdentitySource && sourceBalanceNetwork == .shielded, !shieldedBalanceState.isAvailable {
             return NSLocalizedString("Balance unavailable", comment: "Shielded balance not restored")
         }
 
@@ -1548,7 +1554,7 @@ final class InternalTransferViewModel: ObservableObject {
         comment: "Internal transfer fee estimate unavailable")
 
     var canContinue: Bool {
-        if !isIdentitySource && source == .shielded, !shieldedBalanceState.isAvailable { return false }
+        if !isIdentitySource && sourceBalanceNetwork == .shielded, !shieldedBalanceState.isAvailable { return false }
         // Gate on duffs, not raw DASH: a sub-duff amount (e.g. 1e-9 DASH)
         // renders as 0 in the confirm sheet, so it must not enable Continue —
         // otherwise the credit routes would submit a nonzero amount while the
@@ -1886,7 +1892,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// Source-aware Max fill. Keeps the same unit semantics — DASH or fiat —
     /// but draws the upper bound from whichever bucket the user picked.
     func fillMaxFromWallet() {
-        if !isIdentitySource && source == .shielded, !shieldedBalanceState.isAvailable {
+        if !isIdentitySource && sourceBalanceNetwork == .shielded, !shieldedBalanceState.isAvailable {
             clearMaxSelection()
             maxNotice = NSLocalizedString("Balance unavailable", comment: "Max requires a known source balance")
             return

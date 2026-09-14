@@ -31,6 +31,48 @@ private final class RecoveryTestClock {
 
 @MainActor
 final class ShieldedRecoveryControllerTests: XCTestCase {
+    func testBackgroundCancelsPreparationAndPassWithoutClobberingForegroundWork() async {
+        for duringPreparation in [true, false] {
+            let started = expectation(description: "old operation started")
+            let restarted = expectation(description: "foreground replacement started")
+            let returned = expectation(description: "old operation returned")
+            var oldOperation: CheckedContinuation<Void, Never>?
+            var newOperation: CheckedContinuation<Void, Never>?
+            var calls = 0
+            let operation: @MainActor () async throws -> Void = {
+                calls += 1
+                if calls == 1 {
+                    await withCheckedContinuation { oldOperation = $0; started.fulfill() }
+                    XCTAssertTrue(Task.isCancelled)
+                    returned.fulfill()
+                    throw CancellationError()
+                }
+                await withCheckedContinuation { newOperation = $0; restarted.fulfill() }
+            }
+            let controller = ShieldedRecoveryController(
+                prepare: { if duringPreparation { try await operation() } },
+                sync: { if !duringPreparation { try await operation() } },
+                isSyncing: { false }, sleep: { _ in })
+            controller.connectivityChanged(isOnline: true)
+            controller.start(isForeground: true)
+            XCTAssertTrue(controller.requestManualSync())
+            await fulfillment(of: [started], timeout: 2)
+            let generation = controller.generation
+            controller.foregroundChanged(isForeground: false)
+            XCTAssertFalse(controller.isCurrentSession(generation))
+            XCTAssertFalse(controller.isRecovering)
+            XCTAssertFalse(controller.requestManualSync())
+            controller.foregroundChanged(isForeground: true)
+            await fulfillment(of: [restarted], timeout: 2)
+            oldOperation?.resume()
+            await fulfillment(of: [returned], timeout: 2)
+            XCTAssertTrue(controller.isRecovering, "Old completion must not clear foreground work")
+            XCTAssertNil(controller.lastError)
+            newOperation?.resume()
+            controller.stop()
+        }
+    }
+
     func testRestartSuspendsPreparationAndRejectsOldQueuedRearm() async {
         let started = expectation(description: "old preparation queued")
         let returned = expectation(description: "cancelled preparation returned")

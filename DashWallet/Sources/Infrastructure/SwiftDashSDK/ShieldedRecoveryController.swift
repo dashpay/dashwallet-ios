@@ -82,10 +82,9 @@ final class ShieldedRecoveryController: ObservableObject {
         if isForeground {
             request(forceSync: shouldRefreshOnForeground())
         } else {
-            debounce?.cancel()
-            debounce = nil
-            retry?.cancel()
-            retry = nil
+            pendingSync = pendingSync || operation != nil
+            generation &+= 1
+            cancelTasks()
         }
     }
 
