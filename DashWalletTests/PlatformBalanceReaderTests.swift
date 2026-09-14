@@ -50,6 +50,19 @@ final class PlatformBalanceReaderTests: XCTestCase {
         XCTAssertEqual(snapshot.addresses.map(\.addressIndex), [0, 1, 2])
     }
 
+    func testMissingNetworkMetadataDoesNotHidePersistedBalanceOrKnownZero() throws {
+        let container = try DashModelContainer.createInMemory()
+        let wallet = addWallet(to: container, id: walletId)
+        wallet.networkRaw = nil
+        addAddress(to: container, wallet: wallet, index: 0, credits: 42)
+        try container.mainContext.save()
+        let snapshot = try XCTUnwrap(PlatformBalanceReader.read(container: container, walletId: walletId, network: .testnet))
+        XCTAssertEqual(snapshot.credits, 42)
+        snapshot.addresses[0].balance = 0
+        try container.mainContext.save()
+        XCTAssertEqual(try PlatformBalanceReader.read(container: container, walletId: walletId, network: .testnet)?.credits, 0)
+    }
+
     func testEmptyAccountIsKnownZero() throws {
         let container = try DashModelContainer.createInMemory()
         _ = addWallet(to: container, id: walletId)

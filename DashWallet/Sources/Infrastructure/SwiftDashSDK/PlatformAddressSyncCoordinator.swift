@@ -851,9 +851,11 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     }
 
     var canClearLocalState: Bool {
-        guard !isClearing, !isSyncing, walletManager != nil, modelContainer != nil,
+        guard !isClearing, !isSyncing, let manager = walletManager,
+              SwiftDashSDKHost.shared.manager === manager, modelContainer != nil,
               let session = platformBalanceSession, let network = runningNetwork else { return false }
-        return platformBalances.isCurrent(session)
+        return wallet?.walletId == session.scope.walletId
+            && platformBalances.isCurrent(session)
             && isSelectedWalletScope(walletId: session.scope.walletId, network: network)
     }
 
@@ -879,8 +881,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     ///    (the Rust reset deliberately leaves it stopped).
     public func clearLocalState() async {
         guard !isClearing else { return }
-        guard let manager = walletManager, let container = modelContainer,
-              let session = platformBalanceSession,
+        guard let manager = walletManager, SwiftDashSDKHost.shared.manager === manager,
+              let container = modelContainer, let session = platformBalanceSession,
+              wallet?.walletId == session.scope.walletId,
               let network = runningNetwork,
               platformBalances.isCurrent(session),
               isSelectedWalletScope(walletId: session.scope.walletId, network: network) else {
@@ -902,15 +905,19 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
         // A wallet/network switch can finish while the native reset awaits.
         // Its destination must never be cleared by this outgoing operation.
-        guard walletManager === manager, platformBalances.isCurrent(session),
+        guard walletManager === manager, SwiftDashSDKHost.shared.manager === manager,
+              wallet?.walletId == session.scope.walletId, runningNetwork == network,
+              platformBalances.isCurrent(session),
               isSelectedWalletScope(walletId: session.scope.walletId, network: network) else { return }
         isRunning = false // The successful native reset leaves its loop stopped.
 
         do {
             let context = container.mainContext
             let networkRaw = network.rawValue
+            // Match local restoration: missing network metadata belongs to
+            // this network-specific container and must be cleared as well.
             let wallets = try context.fetch(FetchDescriptor<PersistentWallet>(
-                predicate: #Predicate { $0.networkRaw == networkRaw }))
+                predicate: #Predicate { $0.networkRaw == networkRaw || $0.networkRaw == nil }))
             let walletIds = Set(wallets.map(\.walletId))
             let addresses = try context.fetch(FetchDescriptor<PersistentPlatformAddress>())
             for row in addresses where walletIds.contains(row.walletId) {
@@ -1002,12 +1009,12 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         if !preservingPlatformBalance {
             platformBalances.clear()
             platformBalanceSession = nil
+            activeAddressCount = 0
+            derivedAddresses = []
         }
         if !preservingShieldedBalance { shieldedBalances.clear() }
         latestObservedShieldedBalance = shieldedBalance
         isShieldedBalanceReconciling = false
-        activeAddressCount = 0
-        derivedAddresses = []
         checkpointHeight = 0
         chainTipHeight = 0
         lastSyncHeight = 0

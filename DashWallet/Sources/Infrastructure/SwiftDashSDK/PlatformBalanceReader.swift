@@ -26,9 +26,13 @@ enum PlatformBalanceReader {
     ) throws -> Snapshot? {
         let networkRaw = network.rawValue
         var walletQuery = FetchDescriptor<PersistentWallet>(
-            predicate: #Predicate { $0.walletId == walletId && $0.networkRaw == networkRaw })
+            predicate: #Predicate { $0.walletId == walletId })
         walletQuery.fetchLimit = 1
+        // Changesets can create the row before network metadata is filled in.
+        // The supplied container already selects the network; only reject a
+        // known conflicting network, not missing metadata.
         guard let wallet = try container.mainContext.fetch(walletQuery).first,
+              wallet.networkRaw == nil || wallet.networkRaw == networkRaw,
               wallet.accounts.contains(where: { $0.accountType == 14 }) else { return nil }
 
         let addresses = try container.mainContext.fetch(FetchDescriptor<PersistentPlatformAddress>(
