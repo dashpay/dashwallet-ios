@@ -205,6 +205,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
         /// the next shielded sync.
         case submittedUnconfirmed
         case failed(String)
+
+        /// Work is running: the sheet must stay up and a tap must not start a
+        /// second attempt.
+        var isInFlight: Bool {
+            switch self {
+            case .signing, .locking, .proving, .broadcasting: return true
+            case .idle, .success, .submittedUnconfirmed, .failed: return false
+            }
+        }
     }
 
     enum Source {
@@ -1417,7 +1426,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// `.signing` write run with no suspension point between them — the
     /// first caller wins atomically and the second sees `.signing` + bails.
     private func beginTransfer() -> Bool {
-        guard phase == .idle else { return false }
+        guard phase == .idle else {
+            // Logged so a tap that starts nothing is visible in the export.
+            Self.logger.info("🛡️ SHIELD-TX :: begin refused phase=\(String(describing: self.phase), privacy: .public)")
+            return false
+        }
         lastFailure = nil
         lastResumeReport = nil
         phase = .signing

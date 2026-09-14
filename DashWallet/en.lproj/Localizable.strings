@@ -577,6 +577,7 @@
 "Broadcasting…" = "Broadcasting…";
 "Build and sign the transaction and show it here, so you can check it before it's broadcast." = "Build and sign the transaction and show it here, so you can check it before it's broadcast.";
 "Building the privacy proof can take up to a minute. Keep the app open." = "Building the privacy proof can take up to a minute. Keep the app open.";
+"Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open." = "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open.";
 
 /* Log export */
 "Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files" = "Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files";
