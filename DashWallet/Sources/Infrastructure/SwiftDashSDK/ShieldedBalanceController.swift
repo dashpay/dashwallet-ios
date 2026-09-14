@@ -53,7 +53,10 @@ final class ShieldedBalanceController: ObservableObject {
             if isPrepared { return }
         } else {
             detach()
-            if scope != nextScope { state = .unavailable }
+            if scope != nextScope {
+                state = .unavailable
+                lastError = nil
+            }
             scope = nextScope
             owner = nextOwner
         }
@@ -93,20 +96,20 @@ final class ShieldedBalanceController: ObservableObject {
         state = state.cached
     }
 
-    /// A manager retry does not erase the selected wallet's last known amount.
+    /// A manager retry preserves the selected wallet's amount and failure reason.
     func detach() {
         generation &+= 1
         restoration?.cancel()
         restoration = nil
         owner = nil
         isPrepared = false
-        lastError = nil
         markStale()
     }
 
     func clear() {
         detach()
         scope = nil
+        lastError = nil
         state = .unavailable
     }
 }

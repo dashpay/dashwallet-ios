@@ -39,6 +39,27 @@ final class ShieldedBalanceControllerTests: XCTestCase {
         XCTAssertNotNil(controller.lastError)
     }
 
+    func testManagerDetachKeepsRestoreFailureUntilClearOrSuccessfulRead() async {
+        let controller = ShieldedBalanceController()
+        let owner = NSObject()
+        await controller.restore(scope: wallet, owner: ObjectIdentifier(owner)) {
+            throw NSError(domain: "restore incomplete", code: 1)
+        }
+        let failure = controller.lastError
+        XCTAssertNotNil(failure)
+        controller.detach()
+        XCTAssertEqual(controller.lastError, failure)
+        await controller.restore(scope: wallet, owner: ObjectIdentifier(owner)) { .restored(0) }
+        XCTAssertNil(controller.lastError)
+        controller.detach()
+        await controller.restore(scope: wallet, owner: ObjectIdentifier(owner)) {
+            throw NSError(domain: "restore incomplete", code: 2)
+        }
+        XCTAssertNotNil(controller.lastError)
+        controller.clear()
+        XCTAssertNil(controller.lastError)
+    }
+
     func testFailedInitializationCanBeRetriedOnSameManager() async {
         let controller = ShieldedBalanceController()
         let owner = NSObject()

@@ -1295,11 +1295,11 @@ final class InternalTransferViewModel: ObservableObject {
     /// Zero stays quiet while the user has not entered an amount; a
     /// fee-estimation failure fails closed with a generic retry.
     var amountValidationMessage: String? {
+        if let maxNotice { return maxNotice }
+        guard dashDuffsUnsigned > 0 else { return nil }
         if !isIdentitySource && source == .shielded, !shieldedBalanceState.isAvailable {
             return NSLocalizedString("Balance unavailable", comment: "Shielded balance not restored")
         }
-        if let maxNotice { return maxNotice }
-        guard dashDuffsUnsigned > 0 else { return nil }
 
         if isIdentitySource { return identityWithdrawalValidationMessage }
         if isIdentityDestination { return identityAmountValidationMessage }

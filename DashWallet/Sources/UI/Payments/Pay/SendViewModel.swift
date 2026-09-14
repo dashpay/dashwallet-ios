@@ -694,11 +694,11 @@ final class SendViewModel: ObservableObject {
     /// Inline explanation for an amount rejected before Confirm. Keep zero
     /// quiet until the user types.
     var amountValidationMessage: String? {
+        if let shieldedMaxNotice { return shieldedMaxNotice }
+        guard dashDuffsUnsigned > 0, let route else { return nil }
         if source == .shielded, !shieldedBalanceState.isAvailable {
             return NSLocalizedString("Balance unavailable", comment: "Shielded balance not restored")
         }
-        if let shieldedMaxNotice { return shieldedMaxNotice }
-        guard dashDuffsUnsigned > 0, let route else { return nil }
 
         // The Core → Shielded pool fee rides on top of the amount, so there
         // is no route minimum — but without the estimate the lock value

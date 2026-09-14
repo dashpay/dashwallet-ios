@@ -76,13 +76,15 @@ final class ShieldedRecoveryController: ObservableObject {
         if isForeground {
             request(forceSync: shouldRefreshOnForeground())
         } else {
+            debounce?.cancel()
+            debounce = nil
             retry?.cancel()
             retry = nil
         }
     }
 
     func request(forceSync: Bool = true) {
-        guard isActive, canPrepare() else { return }
+        guard isActive, isForeground, canPrepare() else { return }
         pendingSync = pendingSync || forceSync
         guard operation == nil else { return }
         retry?.cancel()
@@ -90,7 +92,7 @@ final class ShieldedRecoveryController: ObservableObject {
         let expectedGeneration = generation
         operation = Task { [weak self] in
             guard let self, !Task.isCancelled, self.generation == expectedGeneration else { return }
-            guard self.canPrepare() else {
+            guard self.isForeground, self.canPrepare() else {
                 self.abandonOperation(generation: expectedGeneration)
                 return
             }

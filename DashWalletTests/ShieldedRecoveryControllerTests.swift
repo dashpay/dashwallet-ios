@@ -304,6 +304,28 @@ final class ShieldedRecoveryControllerTests: XCTestCase {
         XCTAssertNil(controller.lastError)
     }
 
+    func testBackgroundCancelsReconnectDebounceBeforePreparation() async {
+        let clock = RecoveryTestClock()
+        let prepared = expectation(description: "initial preparation")
+        let debouncing = expectation(description: "reconnect waiting")
+        var attempts = 0
+        let controller = ShieldedRecoveryController(
+            prepare: { attempts += 1; if attempts == 1 { prepared.fulfill() } },
+            sync: { XCTFail("Background reconnect must not sync") },
+            isSyncing: { false }, sleep: clock.sleep)
+        controller.start(isForeground: true)
+        await fulfillment(of: [prepared], timeout: 2)
+        clock.onSleep = { debouncing.fulfill() }
+        controller.connectivityChanged(isOnline: true)
+        await fulfillment(of: [debouncing], timeout: 2)
+        controller.foregroundChanged(isForeground: false)
+        clock.advance()
+        for _ in 0..<10 { await Task.yield() }
+        XCTAssertEqual(attempts, 1)
+        XCTAssertFalse(controller.isRecovering)
+        controller.stop()
+    }
+
     func testBackgroundCancelsInitializationRetryUntilForeground() async {
         let clock = RecoveryTestClock()
         let backoff = expectation(description: "retry waiting")

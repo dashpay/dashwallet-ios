@@ -213,7 +213,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         },
         isSyncing: { [weak self] in self?.walletManager?.shieldedSyncIsSyncing ?? false },
         canPrepare: {
-            SwiftDashSDKWalletRuntime.shared.isCoreRuntimeReady(for: WalletEnvironment.network)
+            guard let network = WalletEnvironment.network else { return false }
+            return SwiftDashSDKWalletRuntime.shared.isCoreRuntimeReady(for: network)
         },
         shouldRefreshOnForeground: { [weak self] in
             guard let self else { return false }
@@ -272,7 +273,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// Platform recovery must never turn a failed Core start into a periodic
     /// full runtime rebuild. Core lifecycle events own retries until it is ready.
     func startShieldedRecoveryMonitoring() {
-        guard SwiftDashSDKWalletRuntime.shared.isCoreRuntimeReady(for: WalletEnvironment.network),
+        guard let network = WalletEnvironment.network,
+              SwiftDashSDKWalletRuntime.shared.isCoreRuntimeReady(for: network),
               shieldedRecoveryObservers.isEmpty else { return }
         shieldedRecovery.start(isForeground: UIApplication.shared.applicationState != .background)
         networkStatus.statusPublisher
@@ -304,8 +306,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     }
 
     private func prepareShieldedForRecovery() async throws {
-        let recoveryNetwork = WalletEnvironment.network
-        guard SwiftDashSDKWalletRuntime.shared.isCoreRuntimeReady(for: recoveryNetwork) else {
+        guard let recoveryNetwork = WalletEnvironment.network,
+              SwiftDashSDKWalletRuntime.shared.isCoreRuntimeReady(for: recoveryNetwork) else {
             throw CancellationError()
         }
         if walletManager == nil {
