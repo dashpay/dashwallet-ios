@@ -17,11 +17,49 @@ final class HomeBalancePresentationTests: XCTestCase {
         }
     }
 
-    func testUnknownTransparentKeepsKnownComponentsInPartialTotal() {
+    func testUnknownTransparentKeepsKnownRowsButHasNoTotal() {
         let balance = HomeBalancePresentation(transparentDuffs: nil, platformState: .available(20_000), shieldedCredits: 30_000, showsPlatformBalance: true)
         XCTAssertNil(balance.transparentDuffs)
-        XCTAssertEqual(balance.totalDuffs, 50)
+        XCTAssertEqual(balance.platformDuffs, 20)
+        XCTAssertEqual(balance.shieldedDuffs, 30)
+        XCTAssertNil(balance.totalDuffs)
         XCTAssertTrue(balance.isPartial)
+    }
+
+    func testKnownZeroComponentsCannotProvideTotalBeforeTransparentRead() {
+        let restoredComponents: [(PlatformBalanceState, UInt64?)] = [
+            (.available(0), nil),
+            (.unavailable, 0),
+            (.available(0), 0),
+        ]
+        for showsPlatform in [false, true] {
+            for (platform, shielded) in restoredComponents {
+                let balance = HomeBalancePresentation(transparentDuffs: nil, platformState: platform, shieldedCredits: shielded, showsPlatformBalance: showsPlatform)
+                XCTAssertNil(balance.totalDuffs)
+                XCTAssertTrue(balance.isPartial)
+            }
+        }
+    }
+
+    func testClearedTransparentHidesTotalUntilReseedWithRetainedComponents() {
+        for showsPlatform in [false, true] {
+            for credits: UInt64 in [0, 20_000] {
+                func presentation(_ transparent: UInt64?) -> HomeBalancePresentation {
+                    HomeBalancePresentation(transparentDuffs: transparent, platformState: .available(credits), shieldedCredits: credits, showsPlatformBalance: showsPlatform)
+                }
+                let retainedDuffs = (credits / 1_000) * (showsPlatform ? 2 : 1)
+                // A cached Platform/shielded read can arrive before Core at launch.
+                XCTAssertNil(presentation(nil).totalDuffs)
+                XCTAssertEqual(presentation(9_000).totalDuffs, 9_000 + retainedDuffs)
+                // A runtime restart clears Core while retaining other amounts.
+                let cleared = presentation(nil)
+                XCTAssertNil(cleared.totalDuffs)
+                XCTAssertEqual(cleared.platformDuffs, credits / 1_000)
+                XCTAssertEqual(cleared.shieldedDuffs, credits / 1_000)
+                XCTAssertEqual(presentation(4_000).totalDuffs, 4_000 + retainedDuffs)
+                XCTAssertEqual(presentation(0).totalDuffs, retainedDuffs)
+            }
+        }
     }
 
     func testRestoredTransparentZeroIsKnown() {
@@ -37,9 +75,10 @@ final class HomeBalancePresentationTests: XCTestCase {
         XCTAssertTrue(balance.isPartial)
     }
 
-    func testUnknownTransparentInSimpleModeKeepsKnownShielded() {
+    func testUnknownTransparentInSimpleModeKeepsShieldedRowButHasNoTotal() {
         let balance = HomeBalancePresentation(transparentDuffs: nil, platformState: .available(20_000), shieldedCredits: 30_000, showsPlatformBalance: false)
-        XCTAssertEqual(balance.totalDuffs, 30)
+        XCTAssertEqual(balance.shieldedDuffs, 30)
+        XCTAssertNil(balance.totalDuffs)
         XCTAssertTrue(balance.isPartial)
     }
 

@@ -27,8 +27,9 @@ enum HomeBalanceViewState: Int {
 
 // MARK: - HomeBalanceView
 
-/// Home header: the sum of known balances as the hero amount, and a row per
-/// balance with its fiat value. Unavailable components label the total partial.
+/// Home header: the hero waits for the transparent balance, then sums the known
+/// balances. Each balance has a row with its fiat value; missing amounts stay
+/// unavailable and label an otherwise known total partial.
 /// Advanced mode controls whether Platform credits are included.
 ///
 /// The rows are a readout, not a control surface. They used to carry an

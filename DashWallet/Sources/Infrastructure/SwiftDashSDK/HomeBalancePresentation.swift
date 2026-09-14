@@ -11,12 +11,12 @@ struct HomeBalancePresentation {
         transparentDuffs == nil || shieldedDuffs == nil
             || (showsPlatformBalance && platformDuffs == nil)
     }
-    /// A partial total contains only known, visible amounts. Before any of
-    /// those reads succeeds there is no total to display, even as zero.
+    /// Wait for Core even if Platform or shielded restores first or survives
+    /// a runtime restart. Their amounts cannot establish the transparent balance.
+    /// Once Core is known, the total includes the other known, visible amounts.
     var totalDuffs: UInt64? {
-        guard transparentDuffs != nil || shieldedDuffs != nil
-            || (showsPlatformBalance && platformDuffs != nil) else { return nil }
-        return (transparentDuffs ?? 0) + (shieldedDuffs ?? 0)
+        guard let transparentDuffs else { return nil }
+        return transparentDuffs + (shieldedDuffs ?? 0)
             + (showsPlatformBalance ? (platformDuffs ?? 0) : 0)
     }
 }
