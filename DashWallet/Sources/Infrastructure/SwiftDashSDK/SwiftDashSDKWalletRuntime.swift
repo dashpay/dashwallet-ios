@@ -651,7 +651,6 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // host's `modelContainer` — the SwiftData handle the home
             // transaction list reads. Offline that turned a reachable Platform
             // outage into an empty wallet with no retry.
-            PlatformAddressSyncCoordinator.shared.startShieldedRecoveryMonitoring()
             do {
                 let (manager, wallet) = try await SwiftDashSDKHost.shared.start(network: network)
                 await PlatformAddressSyncCoordinator.shared.prepareLocalShieldedState(
@@ -659,7 +658,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 try await SwiftDashSDKSPVCoordinator.shared.startAsync(for: network)
             } catch {
                 Self.logger.error("🧭 RUNTIME :: Core start failed: \(String(describing: error), privacy: .public)")
-                await fullReset(lastError: error.localizedDescription, forWipe: false, preservingShieldedRecovery: true)
+                await fullReset(lastError: error.localizedDescription, forWipe: false)
                 return
             }
 
@@ -668,6 +667,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // still reports itself bound to `network` (`isCoreRuntimeReady`),
             // or every later `startIfReady` would rebuild a healthy Core.
             currentNetwork = network
+            PlatformAddressSyncCoordinator.shared.startShieldedRecoveryMonitoring()
 
             // Published before the Platform start for the same reason: every
             // consumer keys off the host's bound wallet and `modelContainer`,

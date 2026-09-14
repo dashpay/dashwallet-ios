@@ -3,7 +3,7 @@ import Foundation
 
 /// Coalesces lifecycle recovery and forced passes. The injected operations
 /// resolve the current runtime when called; this controller retains no SDK
-/// handles and can also recover a runtime that failed before manager creation.
+/// handles. Preparation is admitted only when the owning Core runtime is ready.
 @MainActor
 final class ShieldedRecoveryController: ObservableObject {
     typealias Sleep = @MainActor (TimeInterval) async throws -> Void
@@ -19,6 +19,7 @@ final class ShieldedRecoveryController: ObservableObject {
     private var retry: Task<Void, Never>?
     private var retryAttempt = 0
     private var pendingSync = false
+    private let canPrepare: @MainActor () -> Bool
     private let prepare: @MainActor () async throws -> Void
     private let sync: @MainActor () async throws -> Void
     private let isSyncing: @MainActor () -> Bool
@@ -29,11 +30,13 @@ final class ShieldedRecoveryController: ObservableObject {
         prepare: @escaping @MainActor () async throws -> Void,
         sync: @escaping @MainActor () async throws -> Void,
         isSyncing: @escaping @MainActor () -> Bool,
+        canPrepare: @escaping @MainActor () -> Bool = { true },
         shouldRefreshOnForeground: @escaping @MainActor () -> Bool = { true },
         sleep: @escaping Sleep = { seconds in
             try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
         }
     ) {
+        self.canPrepare = canPrepare
         self.prepare = prepare
         self.sync = sync
         self.isSyncing = isSyncing
@@ -79,7 +82,7 @@ final class ShieldedRecoveryController: ObservableObject {
     }
 
     func request(forceSync: Bool = true) {
-        guard isActive else { return }
+        guard isActive, canPrepare() else { return }
         pendingSync = pendingSync || forceSync
         guard operation == nil else { return }
         retry?.cancel()
@@ -87,6 +90,10 @@ final class ShieldedRecoveryController: ObservableObject {
         let expectedGeneration = generation
         operation = Task { [weak self] in
             guard let self, !Task.isCancelled, self.generation == expectedGeneration else { return }
+            guard self.canPrepare() else {
+                self.abandonOperation(generation: expectedGeneration)
+                return
+            }
             do {
                 try await self.prepare()
             } catch is CancellationError {

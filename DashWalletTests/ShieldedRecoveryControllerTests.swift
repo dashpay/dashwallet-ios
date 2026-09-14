@@ -31,6 +31,47 @@ private final class RecoveryTestClock {
 
 @MainActor
 final class ShieldedRecoveryControllerTests: XCTestCase {
+    func testCoreFailureDoesNotSchedulePreparationOrRebuildRetries() async {
+        var coreReady = false
+        var attempts = 0
+        let prepared = expectation(description: "Core became ready")
+        let controller = ShieldedRecoveryController(
+            prepare: { attempts += 1; prepared.fulfill() },
+            sync: { XCTFail("Offline preparation must not sync") },
+            isSyncing: { false },
+            canPrepare: { coreReady },
+            sleep: { _ in XCTFail("Core failure must not schedule Shielded retries") })
+        controller.start(isForeground: true)
+        for _ in 0..<3 {
+            controller.request()
+            controller.foregroundChanged(isForeground: true)
+            await Task.yield()
+        }
+        XCTAssertEqual(attempts, 0)
+        XCTAssertFalse(controller.isRecovering)
+        coreReady = true
+        controller.request(forceSync: false)
+        await fulfillment(of: [prepared], timeout: 2)
+        XCTAssertEqual(attempts, 1)
+        controller.stop()
+    }
+
+    func testCoreLossBeforeQueuedPreparationDoesNotRebuildRuntime() async {
+        var coreReady = true
+        let controller = ShieldedRecoveryController(
+            prepare: { XCTFail("Queued preparation must recheck Core readiness") },
+            sync: { XCTFail("No sync after Core stops") },
+            isSyncing: { false },
+            canPrepare: { coreReady },
+            sleep: { _ in XCTFail("No retries after Core stops") })
+        controller.start(isForeground: true)
+        coreReady = false
+        for _ in 0..<10 { await Task.yield() }
+        XCTAssertFalse(controller.isRecovering)
+        XCTAssertNil(controller.lastError)
+        controller.stop()
+    }
+
     func testAbandonedPreparationEndsQuietlyAndAllowsANewRequest() async {
         let abandoned = expectation(description: "obsolete scope abandoned")
         let prepared = expectation(description: "new request prepared")

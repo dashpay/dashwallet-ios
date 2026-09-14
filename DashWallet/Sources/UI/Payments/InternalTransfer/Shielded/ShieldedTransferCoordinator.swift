@@ -281,6 +281,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case noPlatformAddress
         case authCancelled
         case authFailed
+        case shieldedBalanceUnavailable
         case shieldedPoolFeeUnavailable
         case addressFundingFeeUnavailable
         case platformShieldCapacityChanged(maxShieldableCredits: UInt64?)
@@ -310,6 +311,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString("Authentication cancelled", comment: "InternalTransfer")
             case .authFailed:
                 return NSLocalizedString("Authentication failed", comment: "InternalTransfer")
+            case .shieldedBalanceUnavailable:
+                return NSLocalizedString("Shielded balance is unavailable. Try again after syncing.", comment: "Shielded transfer requires a known balance")
             case .shieldedPoolFeeUnavailable:
                 return NSLocalizedString(
                     "There was an error, please try again later",
@@ -467,6 +470,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
         _ amountCredits: UInt64,
         feeKind: PlatformWalletManager.ShieldedFeeKind
     ) -> Bool {
+        guard PlatformAddressSyncCoordinator.shared.shieldedBalanceState.isAvailable else {
+            handleFailure(CoordinatorError.shieldedBalanceUnavailable)
+            return true
+        }
         guard let ceiling = Self.spendCeilingCredits(feeKind: feeKind),
               amountCredits > ceiling
         else { return false }

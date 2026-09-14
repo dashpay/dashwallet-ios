@@ -212,6 +212,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             try await manager.syncShieldedNow()
         },
         isSyncing: { [weak self] in self?.walletManager?.shieldedSyncIsSyncing ?? false },
+        canPrepare: {
+            SwiftDashSDKWalletRuntime.shared.isCoreRuntimeReady(for: WalletEnvironment.network)
+        },
         shouldRefreshOnForeground: { [weak self] in
             guard let self else { return false }
             // A failed/stopped runtime still needs preparation immediately.
@@ -266,10 +269,11 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }
     }
 
-    /// Monitoring survives a failed runtime start so a subsequent online event
-    /// can re-arm a manager that never reached the ordinary sync subscriptions.
+    /// Platform recovery must never turn a failed Core start into a periodic
+    /// full runtime rebuild. Core lifecycle events own retries until it is ready.
     func startShieldedRecoveryMonitoring() {
-        guard shieldedRecoveryObservers.isEmpty else { return }
+        guard SwiftDashSDKWalletRuntime.shared.isCoreRuntimeReady(for: WalletEnvironment.network),
+              shieldedRecoveryObservers.isEmpty else { return }
         shieldedRecovery.start(isForeground: UIApplication.shared.applicationState != .background)
         networkStatus.statusPublisher
             .removeDuplicates()
@@ -300,10 +304,15 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     }
 
     private func prepareShieldedForRecovery() async throws {
-        if walletManager == nil || !isRunning {
+        let recoveryNetwork = WalletEnvironment.network
+        guard SwiftDashSDKWalletRuntime.shared.isCoreRuntimeReady(for: recoveryNetwork) else {
+            throw CancellationError()
+        }
+        if walletManager == nil {
             let generation = shieldedRecovery.generation
             await SwiftDashSDKWalletRuntime.shared.rearmPlatformSync { [weak self] in
                 self?.shieldedRecovery.isCurrentSession(generation) == true
+                    && SwiftDashSDKWalletRuntime.shared.isCoreRuntimeReady(for: recoveryNetwork)
             }
         }
         try Task.checkCancellation()
@@ -1028,7 +1037,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         self.platformAddressWallet = addressWallet
         self.platformAccountAvailability = accountAvailability
         self.runningNetwork = network
-        self.isRunning = true
+        // Keep automatic Platform retries eligible while the independently
+        // started Shielded/DashPay services retain their manager.
+        self.isRunning = platformLoopError == nil
         self.addressWalletStartupError = addressWalletError
         self.lastError = platformLoopError ?? addressWalletError
 

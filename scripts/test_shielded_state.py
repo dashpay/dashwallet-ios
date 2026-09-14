@@ -15,9 +15,11 @@ with tempfile.TemporaryDirectory(prefix="shielded-state-tests-") as directory:
     for name in ["ShieldedBalanceController", "ShieldedRecoveryController"]:
         source = repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK" / (name + ".swift")
         test = repository / "DashWalletTests" / (name + "Tests.swift")
-        if source.exists():
-            (sources / source.name).symlink_to(source)
-            (tests / test.name).symlink_to(test)
+        for path in (source, test):
+            if not path.is_file():
+                raise SystemExit(f"missing expected file: {path}")
+        (sources / source.name).symlink_to(source)
+        (tests / test.name).symlink_to(test)
     (package / "Package.swift").write_text('''// swift-tools-version: 5.9
 import PackageDescription
 let package = Package(name: "ShieldedBalanceHarness", platforms: [.macOS(.v13)], targets: [
