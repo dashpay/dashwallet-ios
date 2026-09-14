@@ -278,9 +278,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     private func beginPlatformBalanceSession(
         manager: PlatformWalletManager, walletId: Data, network: Network
     ) -> PlatformBalanceController.Session {
-        let session = platformBalances.begin(
-            scope: .init(walletId: walletId, network: String(network.rawValue)),
-            owner: ObjectIdentifier(manager))
+        let scope = PlatformBalanceController.Scope(walletId: walletId, network: String(network.rawValue))
+        invalidatePlatformSnapshotUnless(scope: scope)
+        let session = platformBalances.begin(scope: scope, owner: ObjectIdentifier(manager))
         platformBalanceSession = session
         return session
     }
@@ -331,9 +331,18 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             }
         }
         shieldedBalances.invalidateUnless(scope: selectedScope)
-        platformBalances.invalidateUnless(scope: selectedScope.map {
+        invalidatePlatformSnapshotUnless(scope: selectedScope.map {
             .init(walletId: $0.walletId, network: $0.network)
         })
+    }
+
+    private func invalidatePlatformSnapshotUnless(scope: PlatformBalanceController.Scope?) {
+        guard platformBalances.invalidateUnless(scope: scope) else { return }
+        // Selection changes precede host startup. Discard the previous receive
+        // address now, even if loading the new wallet later fails or awaits.
+        platformBalanceSession = nil
+        activeAddressCount = 0
+        derivedAddresses = []
     }
 
     /// Platform recovery must never turn a failed Core start into a periodic

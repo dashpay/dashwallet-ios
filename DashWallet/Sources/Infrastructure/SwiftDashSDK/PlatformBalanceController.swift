@@ -66,8 +66,13 @@ final class PlatformBalanceController: ObservableObject {
         session = nil
     }
 
-    func invalidateUnless(scope selectedScope: Scope?) {
-        if scope != selectedScope { clear() }
+    /// Returns whether the cached scope was invalidated, so companion
+    /// address/receive snapshots can be discarded in the same synchronous turn.
+    @discardableResult
+    func invalidateUnless(scope selectedScope: Scope?) -> Bool {
+        guard scope != selectedScope else { return false }
+        clear()
+        return true
     }
 
     func clear() {

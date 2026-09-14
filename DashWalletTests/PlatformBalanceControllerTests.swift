@@ -123,13 +123,36 @@ final class PlatformBalanceControllerTests: XCTestCase {
         XCTAssertEqual(controller.state, .available(0))
     }
 
+    func testDetachedSnapshotSignalsSelectionInvalidationBeforeReplacementLoads() {
+        let selections: [PlatformBalanceController.Scope?] = [
+            .init(walletId: Data([2]), network: scope.network),
+            .init(walletId: scope.walletId, network: "mainnet"),
+            nil
+        ]
+        for selected in selections {
+            let controller = PlatformBalanceController()
+            let original = controller.begin(scope: scope, owner: ObjectIdentifier(owner))
+            controller.read(using: original) { 42 }
+            controller.detach()
+            XCTAssertFalse(controller.invalidateUnless(scope: scope), "Same-wallet Stop preserves companion snapshots")
+            XCTAssertTrue(controller.invalidateUnless(scope: selected), "Selection change must discard companion receive addresses before startup")
+            XCTAssertNil(controller.state.credits)
+            XCTAssertFalse(controller.read(using: original) { XCTFail("Old session must not repopulate addresses"); return 99 })
+            if let selected {
+                let replacement = controller.begin(scope: selected, owner: ObjectIdentifier(owner))
+                XCTAssertThrowsError(try controller.read(using: replacement) { throw Failure.read })
+                XCTAssertNil(controller.state.credits)
+            }
+        }
+    }
+
     func testWalletMaterialChangePreservesOnlyTheSameSelection() {
         let controller = PlatformBalanceController()
         let session = controller.begin(scope: scope, owner: ObjectIdentifier(owner))
         controller.read(using: session) { 42 }
-        controller.invalidateUnless(scope: scope)
+        XCTAssertFalse(controller.invalidateUnless(scope: scope))
         XCTAssertEqual(controller.state.credits, 42)
-        controller.invalidateUnless(scope: .init(walletId: scope.walletId, network: "another network"))
+        XCTAssertTrue(controller.invalidateUnless(scope: .init(walletId: scope.walletId, network: "another network")))
         XCTAssertNil(controller.state.credits)
         XCTAssertFalse(controller.isCurrent(session))
     }

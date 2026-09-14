@@ -7,7 +7,6 @@ struct HomeBalancePresentation {
 
     var platformDuffs: UInt64? { platformState.credits.map { $0 / 1_000 } }
     var shieldedDuffs: UInt64? { shieldedCredits.map { $0 / 1_000 } }
-    var showsBreakdown: Bool { showsPlatformBalance || shieldedDuffs != nil }
     var isPartial: Bool {
         shieldedDuffs == nil || (showsPlatformBalance && platformDuffs == nil)
     }

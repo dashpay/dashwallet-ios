@@ -10,7 +10,6 @@ import XCTest
 final class HomeBalancePresentationTests: XCTestCase {
     func testRestoredPlatformIsIncludedWithoutRuntimeReadiness() {
         let balance = HomeBalancePresentation(transparentDuffs: 10, platformState: .available(20_000), shieldedCredits: 30_000, showsPlatformBalance: true)
-        XCTAssertTrue(balance.showsBreakdown)
         XCTAssertEqual(balance.platformDuffs, 20)
         XCTAssertEqual(balance.totalDuffs, 60)
         XCTAssertFalse(balance.isPartial)
@@ -18,16 +17,21 @@ final class HomeBalancePresentationTests: XCTestCase {
 
     func testUnknownPlatformKeepsRowAndKnownComponents() {
         let balance = HomeBalancePresentation(transparentDuffs: 10, platformState: .unavailable, shieldedCredits: 30_000, showsPlatformBalance: true)
-        XCTAssertTrue(balance.showsBreakdown)
         XCTAssertNil(balance.platformDuffs)
         XCTAssertEqual(balance.totalDuffs, 40)
         XCTAssertTrue(balance.isPartial)
     }
 
-    func testAdvancedBreakdownIsVisibleBeforeBothLocalReads() {
+    func testAdvancedTotalIsPartialBeforeBothLocalReads() {
         let balance = HomeBalancePresentation(transparentDuffs: 10, platformState: .unavailable, shieldedCredits: nil, showsPlatformBalance: true)
-        XCTAssertTrue(balance.showsBreakdown)
         XCTAssertEqual(balance.totalDuffs, 10)
+        XCTAssertTrue(balance.isPartial)
+    }
+
+    func testSimpleModeKeepsKnownCoreWhileShieldedIsUnavailable() {
+        let balance = HomeBalancePresentation(transparentDuffs: 10, platformState: .available(20_000), shieldedCredits: nil, showsPlatformBalance: false)
+        XCTAssertEqual(balance.totalDuffs, 10)
+        XCTAssertNil(balance.shieldedDuffs)
         XCTAssertTrue(balance.isPartial)
     }
 
