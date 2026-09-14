@@ -139,6 +139,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     @Published private(set) var platformAccountAvailability: PlatformAccountAvailability = .unknown
 
     @Published public private(set) var platformBalance: UInt64 = 0
+    @Published public private(set) var platformBalanceState: PlatformBalanceState = .unavailable
     @Published public private(set) var shieldedBalanceState: ShieldedBalanceState = .unavailable
     @Published public private(set) var shieldedInitializationError: String?
     @Published public private(set) var shieldedRecoveryError: String?
@@ -199,7 +200,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// from the keychain silently (no biometric prompt).
     private let shieldedResolver = MnemonicResolver()
     private let shieldedBalances = ShieldedBalanceController()
-    private var shieldedBalanceObservers = Set<AnyCancellable>()
+    private let platformBalances = PlatformBalanceController()
+    private var platformBalanceSession: PlatformBalanceController.Session?
+    private var balanceObservers = Set<AnyCancellable>()
     private var shieldedPreparedManager: PlatformWalletManager?
     private var shieldedRecoveryObservers = Set<AnyCancellable>()
     private var shieldedSyncStateCancellable: AnyCancellable?
@@ -234,14 +237,52 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     private override init() {
         super.init()
+        platformBalances.$state
+            .sink { [weak self] state in
+                self?.platformBalanceState = state
+                self?.platformBalance = state.credits ?? 0
+            }
+            .store(in: &balanceObservers)
         shieldedBalances.$state
             .sink { [weak self] in self?.shieldedBalanceState = $0 }
-            .store(in: &shieldedBalanceObservers)
+            .store(in: &balanceObservers)
         Publishers.CombineLatest(shieldedBalances.$lastError, shieldedBalances.$syncStartError)
             .sink { [weak self] restoreError, startError in
                 self?.shieldedInitializationError = startError ?? restoreError
             }
-            .store(in: &shieldedBalanceObservers)
+            .store(in: &balanceObservers)
+    }
+
+    /// Publish the selected wallet's persisted Platform amount before the
+    /// pre-SPV identity discovery. This does not start or bind sync services.
+    func prepareLocalPlatformState(
+        manager: PlatformWalletManager, walletId: Data, network: Network
+    ) {
+        guard isSelectedWalletScope(walletId: walletId, network: network),
+              SwiftDashSDKHost.shared.manager === manager,
+              SwiftDashSDKHost.shared.runningNetwork == network,
+              SwiftDashSDKHost.shared.wallet?.walletId == walletId else { return }
+        let session = beginPlatformBalanceSession(manager: manager, walletId: walletId, network: network)
+        let started = CFAbsoluteTimeGetCurrent()
+        guard let container = SwiftDashSDKHost.shared.modelContainer else {
+            let completedAtMilliseconds = Int64(Date().timeIntervalSince1970 * 1_000)
+            DWLogger.log("PLATFORM-BALANCE local-read result=no-container duration_ms=0 completed_unix_ms=\(completedAtMilliseconds)")
+            return
+        }
+        let outcome = readPlatformBalance(container: container, session: session, network: network)
+        let milliseconds = Int((CFAbsoluteTimeGetCurrent() - started) * 1_000)
+        let completedAtMilliseconds = Int64(Date().timeIntervalSince1970 * 1_000)
+        DWLogger.log("PLATFORM-BALANCE local-read result=\(outcome.rawValue) duration_ms=\(milliseconds) completed_unix_ms=\(completedAtMilliseconds)")
+    }
+
+    private func beginPlatformBalanceSession(
+        manager: PlatformWalletManager, walletId: Data, network: Network
+    ) -> PlatformBalanceController.Session {
+        let scope = PlatformBalanceController.Scope(walletId: walletId, network: String(network.rawValue))
+        invalidatePlatformSnapshotUnless(scope: scope)
+        let session = platformBalances.begin(scope: scope, owner: ObjectIdentifier(manager))
+        platformBalanceSession = session
+        return session
     }
 
     /// Restores the engine before any startup network wait or shielded pass.
@@ -290,6 +331,18 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             }
         }
         shieldedBalances.invalidateUnless(scope: selectedScope)
+        invalidatePlatformSnapshotUnless(scope: selectedScope.map {
+            .init(walletId: $0.walletId, network: $0.network)
+        })
+    }
+
+    private func invalidatePlatformSnapshotUnless(scope: PlatformBalanceController.Scope?) {
+        guard platformBalances.invalidateUnless(scope: scope) else { return }
+        // Selection changes precede host startup. Discard the previous receive
+        // address now, even if loading the new wallet later fails or awaits.
+        platformBalanceSession = nil
+        activeAddressCount = 0
+        derivedAddresses = []
     }
 
     /// Platform recovery must never turn a failed Core start into a periodic
@@ -806,6 +859,15 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             recipients: [recipient, remainder])
     }
 
+    var canClearLocalState: Bool {
+        guard !isClearing, !isSyncing, let manager = walletManager,
+              SwiftDashSDKHost.shared.manager === manager, modelContainer != nil,
+              let session = platformBalanceSession, let network = runningNetwork else { return false }
+        return wallet?.walletId == session.scope.walletId
+            && platformBalances.isCurrent(session)
+            && isSelectedWalletScope(walletId: session.scope.walletId, network: network)
+    }
+
     /// Full local wipe of the platform-address sync state — the Sync Info
     /// screen's "Clear" button. Ported from the SwiftExampleApp
     /// `PlatformBalanceSyncService.clearLocalState` contract:
@@ -828,10 +890,15 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     ///    (the Rust reset deliberately leaves it stopped).
     public func clearLocalState() async {
         guard !isClearing else { return }
-        guard let manager = walletManager else {
-            // BLAST never started — nothing Rust-side or persisted to
-            // reset; wiping the display is the whole job.
-            clearDisplay(preservingShieldedBalance: true)
+        guard let manager = walletManager, SwiftDashSDKHost.shared.manager === manager,
+              let container = modelContainer, let session = platformBalanceSession,
+              wallet?.walletId == session.scope.walletId,
+              let network = runningNetwork,
+              platformBalances.isCurrent(session),
+              isSelectedWalletScope(walletId: session.scope.walletId, network: network) else {
+            // Local restoration can precede BLAST. A display-only clear here
+            // would resurrect the untouched cache as soon as BLAST starts.
+            lastError = NSLocalizedString("Start Platform sync before clearing its local state", comment: "Platform Clear requires a bound wallet")
             return
         }
         isClearing = true
@@ -845,39 +912,58 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             return
         }
 
-        if let container = modelContainer, let network = runningNetwork {
-            do {
-                let context = container.mainContext
-                let networkRaw = network.rawValue
-                let wallets = try context.fetch(FetchDescriptor<PersistentWallet>(
-                    predicate: #Predicate { $0.networkRaw == networkRaw }))
-                let walletIds = Set(wallets.map(\.walletId))
-                let addresses = try context.fetch(FetchDescriptor<PersistentPlatformAddress>())
-                for row in addresses where walletIds.contains(row.walletId) {
-                    row.balance = 0
-                    row.nonce = 0
-                    row.isUsed = false
-                    row.firstSeenHeight = 0
-                    row.lastSeenHeight = 0
-                    row.lastUpdated = Date()
-                }
-                let syncStates = try context.fetch(FetchDescriptor<PersistentPlatformAddressesSyncState>())
-                for row in syncStates where row.networkRaw == networkRaw {
-                    context.delete(row)
-                }
-                try context.save()
-            } catch {
-                lastError = "Failed to clear persisted platform-address state: \(error.localizedDescription)"
-                Self.logger.error("🛰️ PLATFORM-ADDR :: clear persist failed: \(String(describing: error), privacy: .public)")
-                return
+        // A wallet/network switch can finish while the native reset awaits.
+        // Its destination must never be cleared by this outgoing operation.
+        guard walletManager === manager, SwiftDashSDKHost.shared.manager === manager,
+              wallet?.walletId == session.scope.walletId, runningNetwork == network,
+              platformBalances.isCurrent(session),
+              isSelectedWalletScope(walletId: session.scope.walletId, network: network) else { return }
+        isRunning = false // The successful native reset leaves its loop stopped.
+
+        do {
+            let context = container.mainContext
+            let networkRaw = network.rawValue
+            // Match local restoration: missing network metadata belongs to
+            // this network-specific container and must be cleared as well.
+            let wallets = try context.fetch(FetchDescriptor<PersistentWallet>(
+                predicate: #Predicate { $0.networkRaw == networkRaw || $0.networkRaw == nil }))
+            let walletIds = Set(wallets.map(\.walletId))
+            let addresses = try context.fetch(FetchDescriptor<PersistentPlatformAddress>())
+            for row in addresses where walletIds.contains(row.walletId) {
+                row.balance = 0
+                row.nonce = 0
+                row.isUsed = false
+                row.firstSeenHeight = 0
+                row.lastSeenHeight = 0
+                row.lastUpdated = Date()
+            }
+            let syncStates = try context.fetch(FetchDescriptor<PersistentPlatformAddressesSyncState>())
+            for row in syncStates where row.networkRaw == networkRaw {
+                context.delete(row)
+            }
+            try context.save()
+        } catch {
+            lastError = "Failed to clear persisted platform-address state: \(error.localizedDescription)"
+            Self.logger.error("🛰️ PLATFORM-ADDR :: clear persist failed: \(String(describing: error), privacy: .public)")
+            return
+        }
+
+        detachPlatformSubscriptions()
+        clearDisplay(preservingShieldedBalance: true)
+        if let walletId = wallet?.walletId, let network = runningNetwork {
+            subscribeToPlatformUpdates(manager: manager, walletId: walletId, network: network)
+            if let clearedSession = platformBalanceSession {
+                // The successful local clear establishes a known zero even
+                // offline; do not wait for a network pass to publish it.
+                readPlatformBalance(container: container, session: clearedSession, network: network)
             }
         }
 
-        clearDisplay(preservingShieldedBalance: true)
-
         do {
             try manager.startPlatformAddressSync()
+            isRunning = true
         } catch {
+            isRunning = false
             lastError = "startPlatformAddressSync failed after clear: \(error.localizedDescription)"
             Self.logger.error("🛰️ PLATFORM-ADDR :: post-clear restart failed: \(String(describing: error), privacy: .public)")
         }
@@ -887,11 +973,18 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// Swift-side teardown (no FFI call), so it is safe to run ahead of the
     /// serialized stop — `performStop` and `prepareForNetworkSwitch` share it
     /// rather than keeping two lists of cancellables in step by hand.
-    private func detachSyncSubscriptions() {
+    private func detachPlatformSubscriptions() {
         syncEventCancellable?.cancel()
         syncEventCancellable = nil
         syncStateCancellable?.cancel()
         syncStateCancellable = nil
+        platformBalances.detach()
+        platformBalanceSession = nil
+        isSyncing = false
+    }
+
+    private func detachSyncSubscriptions() {
+        detachPlatformSubscriptions()
         shieldedEventCancellable?.cancel()
         shieldedEventCancellable = nil
         shieldedSyncStateCancellable?.cancel()
@@ -917,15 +1010,20 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     }
 
     /// Clear the UI counters/display without tearing down the sync loop.
-    public func clearDisplay(preservingShieldedBalance: Bool = false) {
+    public func clearDisplay(
+        preservingShieldedBalance: Bool = false, preservingPlatformBalance: Bool = false
+    ) {
         shieldedReconciliationTask?.cancel()
         shieldedReconciliationTask = nil
-        platformBalance = 0
+        if !preservingPlatformBalance {
+            platformBalances.clear()
+            platformBalanceSession = nil
+            activeAddressCount = 0
+            derivedAddresses = []
+        }
         if !preservingShieldedBalance { shieldedBalances.clear() }
         latestObservedShieldedBalance = shieldedBalance
         isShieldedBalanceReconciling = false
-        activeAddressCount = 0
-        derivedAddresses = []
         checkpointHeight = 0
         chainTipHeight = 0
         lastSyncHeight = 0
@@ -1025,9 +1123,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             }
         }
 
-        // Seed from persisted state before kicking the sync loop, so the UI has
-        // something to show immediately on relaunch.
-        seedFromPersistedState(manager: manager, walletId: resolvedWallet.walletId)
+        // Also covers a direct Platform start without the runtime bootstrap.
+        prepareLocalPlatformState(manager: manager, walletId: resolvedWallet.walletId, network: network)
+        seedSyncProgressFromPersistedState(manager: manager, walletId: resolvedWallet.walletId)
 
         await prepareLocalShieldedState(manager: manager, walletId: resolvedWallet.walletId, network: network)
 
@@ -1225,7 +1323,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         runningNetwork = nil
         isRunning = false
         platformAccountAvailability = .unknown
-        clearDisplay(preservingShieldedBalance: !deletingPersistedWallet)
+        clearDisplay(
+            preservingShieldedBalance: !deletingPersistedWallet,
+            preservingPlatformBalance: !deletingPersistedWallet)
     }
 
     private func deletePersistedWalletIfAny() {
@@ -1281,22 +1381,42 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     // MARK: - Combine subscriptions
 
+    private func subscribeToPlatformUpdates(
+        manager: PlatformWalletManager, walletId: Data, network: Network
+    ) {
+        guard walletManager === manager, SwiftDashSDKHost.shared.manager === manager,
+              wallet?.walletId == walletId, runningNetwork == network,
+              isSelectedWalletScope(walletId: walletId, network: network) else { return }
+        detachPlatformSubscriptions()
+        let session = beginPlatformBalanceSession(manager: manager, walletId: walletId, network: network)
+        syncStateCancellable = manager.$platformAddressSyncIsSyncing
+            .receive(on: RunLoop.main)
+            .sink { [weak self, weak manager] syncing in
+                guard let self, let manager,
+                      self.walletManager === manager,
+                      self.platformBalances.isCurrent(session),
+                      self.isSelectedWalletScope(walletId: walletId, network: network) else { return }
+                self.isSyncing = syncing
+            }
+        syncEventCancellable = manager.$lastPlatformAddressSyncEvent
+            .receive(on: RunLoop.main)
+            .sink { [weak self, weak manager] event in
+                guard let self, let manager, let event,
+                      self.walletManager === manager,
+                      self.platformBalances.isCurrent(session),
+                      self.isSelectedWalletScope(walletId: walletId, network: network),
+                      !self.isClearing else { return }
+                self.handleSyncEvent(event, walletId: walletId)
+            }
+    }
+
     private func subscribeToManager(manager: PlatformWalletManager, walletId: Data) async {
         shieldedMonitoringStartedAt = Date()
         lastFullShieldedSyncAt = nil
 
-        syncStateCancellable = manager.$platformAddressSyncIsSyncing
-            .receive(on: RunLoop.main)
-            .sink { [weak self] syncing in
-                self?.isSyncing = syncing
-            }
-
-        syncEventCancellable = manager.$lastPlatformAddressSyncEvent
-            .receive(on: RunLoop.main)
-            .sink { [weak self] event in
-                guard let self, let event else { return }
-                self.handleSyncEvent(event, walletId: walletId)
-            }
+        if let network = runningNetwork {
+            subscribeToPlatformUpdates(manager: manager, walletId: walletId, network: network)
+        }
 
         shieldedSyncStateCancellable = manager.$shieldedSyncIsSyncing
             .removeDuplicates()
@@ -1498,82 +1618,64 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             lastSyncTime = Date(timeIntervalSince1970: TimeInterval(event.syncUnixSeconds))
             syncCountSinceLaunch += 1
 
-            Task { [weak self] in
-                await self?.refreshBalanceSnapshot()
-            }
+            // Already on MainActor; avoid a queued read outliving this session.
+            refreshDerivedAddresses()
         } else {
             lastError = result.errorMessage ?? "Platform address sync failed"
         }
     }
 
-    private func refreshBalanceSnapshot() async {
-        // Source of truth is SwiftData — the FFI `addressesWithBalances()` /
-        // `totalCredits()` pair lags behind the BLAST persistence callbacks
-        // and can report zero while the DB already holds the funded rows.
-        refreshDerivedAddresses()
+    private func refreshDerivedAddresses() {
+        guard let container = modelContainer,
+              let walletId = wallet?.walletId,
+              let network = runningNetwork,
+              let session = platformBalanceSession,
+              isSelectedWalletScope(walletId: walletId, network: network),
+              platformBalances.isCurrent(session), !isClearing else { return }
+
+        if readPlatformBalance(container: container, session: session, network: network) == .available {
+            PlatformAddressActivityRecorder.observe(
+                addresses: derivedAddresses, walletId: walletId,
+                network: network, container: container)
+        }
     }
 
-    private func refreshDerivedAddresses() {
-        guard
-            let container = modelContainer,
-            let walletId = wallet?.walletId
-        else {
-            derivedAddresses = []
-            platformBalance = 0
-            activeAddressCount = 0
-            return
-        }
+    private enum LocalPlatformReadOutcome: String {
+        case available, unavailable, superseded, failed
+    }
 
-        let descriptor = FetchDescriptor<PersistentPlatformAddress>(
-            predicate: #Predicate<PersistentPlatformAddress> { $0.walletId == walletId },
-            sortBy: [
-                SortDescriptor(\.accountIndex),
-                SortDescriptor(\.addressIndex),
-            ])
-
+    /// Failed reads keep the previous snapshot. Missing wallet/account is a
+    /// successful unavailable lookup; an empty address pool is a known zero.
+    @discardableResult
+    private func readPlatformBalance(
+        container: ModelContainer, session: PlatformBalanceController.Session, network: Network
+    ) -> LocalPlatformReadOutcome {
         do {
-            let rows = try container.mainContext.fetch(descriptor)
-            derivedAddresses = rows.map { row in
+            var snapshot: PlatformBalanceReader.Snapshot?
+            let accepted = try platformBalances.read(using: session) {
+                snapshot = try PlatformBalanceReader.read(
+                    container: container, walletId: session.scope.walletId, network: network)
+                return snapshot?.credits
+            }
+            guard accepted else { return .superseded }
+            derivedAddresses = (snapshot?.addresses ?? []).map { row in
                 DerivedPlatformAddress(
-                    address: row.address,
-                    accountIndex: row.accountIndex,
-                    addressIndex: row.addressIndex,
-                    isUsed: row.isUsed,
-                    balance: row.balance)
+                    address: row.address, accountIndex: row.accountIndex,
+                    addressIndex: row.addressIndex, isUsed: row.isUsed, balance: row.balance)
             }
-            platformBalance = rows.reduce(0) { $0 + $1.balance }
-            activeAddressCount = rows.reduce(0) { $1.balance > 0 ? $0 + 1 : $0 }
-            // Observed-payment ledger: diff this snapshot against the
-            // persisted baseline and record unattributed increases as
-            // received activity for the home history.
-            if let network = runningNetwork {
-                PlatformAddressActivityRecorder.observe(
-                    addresses: derivedAddresses,
-                    walletId: walletId,
-                    network: network,
-                    container: container)
-            }
+            activeAddressCount = snapshot?.activeAddressCount ?? 0
+            return snapshot == nil ? .unavailable : .available
         } catch {
-            Self.logger.warning("🛰️ PLATFORM-ADDR :: derived-address fetch failed: \(String(describing: error), privacy: .public)")
+            // Do not log amounts, wallet IDs or database error payloads.
+            Self.logger.warning("PLATFORM-BALANCE local read failed; preserving the selected wallet snapshot")
+            return .failed
         }
     }
 
     // MARK: - Seed from persistence
 
-    private func seedFromPersistedState(manager: PlatformWalletManager, walletId: Data) {
+    private func seedSyncProgressFromPersistedState(manager: PlatformWalletManager, walletId: Data) {
         guard let handler = manager.persistence else { return }
-
-        let cached = handler.loadCachedBalances(walletId: walletId)
-        if !cached.isEmpty {
-            var total: UInt64 = 0
-            var nonZero = 0
-            for (_, _, balance, _, _, _, _) in cached {
-                total += balance
-                if balance > 0 { nonZero += 1 }
-            }
-            platformBalance = total
-            activeAddressCount = nonZero
-        }
 
         if let state = handler.loadCachedSyncState(walletId: walletId) {
             chainTipHeight = state.syncHeight
