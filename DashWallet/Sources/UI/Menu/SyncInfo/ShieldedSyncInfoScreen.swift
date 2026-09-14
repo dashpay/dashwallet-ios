@@ -235,7 +235,7 @@ struct ShieldedSyncInfoScreen: View {
     private var controlsCard: some View {
         HStack(spacing: 12) {
             Button(action: {
-                Task { await monitor.syncNow() }
+                monitor.syncNow()
             }) {
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.clockwise")

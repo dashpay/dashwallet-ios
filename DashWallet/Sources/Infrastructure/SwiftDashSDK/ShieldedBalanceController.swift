@@ -33,6 +33,7 @@ final class ShieldedBalanceController: ObservableObject {
 
     @Published private(set) var state: ShieldedBalanceState = .unavailable
     @Published private(set) var lastError: String?
+    @Published private(set) var syncStartError: String?
     private(set) var isPrepared = false
     /// Native binding can succeed even when a local balance read times out.
     private(set) var isBound = false
@@ -121,6 +122,14 @@ final class ShieldedBalanceController: ObservableObject {
         state = .refreshed(credits)
     }
 
+    func recordSyncStartFailure(_ message: String) {
+        syncStartError = message
+    }
+
+    func recordSyncStarted() {
+        syncStartError = nil
+    }
+
     func markStale() {
         state = state.cached
     }
@@ -133,6 +142,7 @@ final class ShieldedBalanceController: ObservableObject {
         owner = nil
         isPrepared = false
         isBound = false
+        syncStartError = nil
         markStale()
     }
 

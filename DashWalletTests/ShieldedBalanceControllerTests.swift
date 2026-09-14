@@ -265,4 +265,35 @@ final class ShieldedBalanceControllerTests: XCTestCase {
         XCTAssertFalse(controller.isBound)
     }
 
+    func testSuccessfulSyncStartClearsOnlyTheLoopFailure() async {
+        let controller = ShieldedBalanceController()
+        let owner = NSObject()
+        await controller.restore(scope: wallet, owner: ObjectIdentifier(owner)) { .restored(42) }
+        controller.recordSyncStartFailure("transient start failure")
+        await controller.restore(scope: wallet, owner: ObjectIdentifier(owner)) {
+            XCTFail("A prepared snapshot should not be re-read to clear a loop error")
+            return .unavailable
+        }
+        XCTAssertNotNil(controller.syncStartError)
+        controller.recordSyncStarted()
+        XCTAssertNil(controller.syncStartError)
+        XCTAssertTrue(controller.isPrepared)
+        XCTAssertEqual(controller.state.credits, 42)
+
+        controller.detach()
+        await controller.restore(scope: wallet, owner: ObjectIdentifier(owner)) {
+            throw NSError(domain: "snapshot unavailable", code: 1)
+        }
+        let restoreFailure = controller.lastError
+        XCTAssertNotNil(restoreFailure)
+        controller.recordSyncStartFailure("loop failure")
+        controller.recordSyncStarted()
+        XCTAssertNil(controller.syncStartError)
+        XCTAssertEqual(controller.lastError, restoreFailure)
+        controller.recordSyncStartFailure("outgoing manager failure")
+        controller.detach()
+        XCTAssertNil(controller.syncStartError)
+        XCTAssertEqual(controller.lastError, restoreFailure)
+    }
+
 }

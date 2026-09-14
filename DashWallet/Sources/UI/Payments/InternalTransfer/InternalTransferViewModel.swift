@@ -1886,7 +1886,11 @@ final class InternalTransferViewModel: ObservableObject {
     /// Source-aware Max fill. Keeps the same unit semantics — DASH or fiat —
     /// but draws the upper bound from whichever bucket the user picked.
     func fillMaxFromWallet() {
-        if !isIdentitySource && source == .shielded, !shieldedBalanceState.isAvailable { return }
+        if !isIdentitySource && source == .shielded, !shieldedBalanceState.isAvailable {
+            clearMaxSelection()
+            maxNotice = NSLocalizedString("Balance unavailable", comment: "Max requires a known source balance")
+            return
+        }
         if isIdentitySource {
             fillIdentityWithdrawalMax()
             return

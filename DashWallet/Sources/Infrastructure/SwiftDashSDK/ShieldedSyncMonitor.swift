@@ -154,8 +154,14 @@ final class ShieldedSyncMonitor: ObservableObject {
 
     /// Request a coalesced recovery/pass. Initialization errors surface via the
     /// coordinator; completed sync errors continue to arrive on this monitor.
-    func syncNow() async {
-        if PlatformAddressSyncCoordinator.shared.recoverShieldedNow() { lastError = nil }
+    func syncNow() {
+        if PlatformAddressSyncCoordinator.shared.recoverShieldedNow() {
+            lastError = nil
+        } else if lastError == nil {
+            lastError = NSLocalizedString(
+                "Wallet sync is not ready. Start wallet sync and try again.",
+                comment: "Shielded manual sync requires Core runtime readiness")
+        }
     }
 
     /// Reset the displayed since-launch counters and timings. Purely a

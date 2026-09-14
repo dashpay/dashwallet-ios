@@ -5884,3 +5884,5 @@
 "Shielded balance is unavailable. Try again after syncing." = "Shielded balance is unavailable. Try again after syncing.";
 
 "Shielded sync is not running" = "Shielded sync is not running";
+
+"Wallet sync is not ready. Start wallet sync and try again." = "Wallet sync is not ready. Start wallet sync and try again.";

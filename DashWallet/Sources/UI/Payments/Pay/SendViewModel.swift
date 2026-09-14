@@ -891,7 +891,11 @@ final class SendViewModel: ObservableObject {
 
     /// Source-aware Max fill — same envelopes as the internal transfer.
     func fillMaxFromWallet() {
-        if source == .shielded, !shieldedBalanceState.isAvailable { return }
+        if source == .shielded, !shieldedBalanceState.isAvailable {
+            clearShieldedMaxSelection()
+            shieldedMaxNotice = NSLocalizedString("Balance unavailable", comment: "Max requires a known source balance")
+            return
+        }
         clearShieldedMaxSelection()
         let sourceDuffs: UInt64
         switch route {

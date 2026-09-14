@@ -237,8 +237,10 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         shieldedBalances.$state
             .sink { [weak self] in self?.shieldedBalanceState = $0 }
             .store(in: &shieldedBalanceObservers)
-        shieldedBalances.$lastError
-            .sink { [weak self] in self?.shieldedInitializationError = $0 }
+        Publishers.CombineLatest(shieldedBalances.$lastError, shieldedBalances.$syncStartError)
+            .sink { [weak self] restoreError, startError in
+                self?.shieldedInitializationError = startError ?? restoreError
+            }
             .store(in: &shieldedBalanceObservers)
     }
 
@@ -364,6 +366,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }
         if try !manager.isShieldedSyncRunning() { try manager.startShieldedSync() }
         isShieldedRunning = true
+        shieldedBalances.recordSyncStarted()
     }
 
     private func isSelectedShieldedScope(walletId: Data, network: Network) -> Bool {
@@ -1042,8 +1045,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             do {
                 if try !manager.isShieldedSyncRunning() { try manager.startShieldedSync() }
                 isShieldedRunning = true
+                shieldedBalances.recordSyncStarted()
             } catch {
-                shieldedInitializationError = error.localizedDescription
+                shieldedBalances.recordSyncStartFailure(error.localizedDescription)
                 Self.logger.error("Shielded sync start failed: \(String(describing: error), privacy: .public)")
             }
         }
