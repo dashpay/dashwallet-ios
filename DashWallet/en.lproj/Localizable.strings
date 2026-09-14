@@ -5882,3 +5882,5 @@
 "Known balance" = "Known balance";
 "Balance unavailable" = "Balance unavailable";
 "Shielded balance is unavailable. Try again after syncing." = "Shielded balance is unavailable. Try again after syncing.";
+
+"Shielded sync is not running" = "Shielded sync is not running";

@@ -93,7 +93,7 @@ struct ShieldedSyncInfoScreen: View {
             if !coordinator.isShieldedRunning {
                 Image(systemName: "exclamationmark.circle")
                     .foregroundColor(.orange)
-                Text("Platform sync is not running")
+                Text("Shielded sync is not running")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(Color.dash.secondaryText)
             } else if monitor.isSyncing {
