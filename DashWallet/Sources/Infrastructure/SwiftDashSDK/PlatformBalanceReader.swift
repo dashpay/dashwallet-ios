@@ -3,7 +3,9 @@ import SwiftDashSDK
 import SwiftData
 
 /// Both launch restoration and live readback use the persisted address rows.
-/// Unlike loadCachedBalances(), this keeps fetch failures distinct from zero.
+/// Fetch failures throw; a missing wallet or Platform account returns nil.
+/// The caller supplies the network-specific container from SwiftDashSDKHost.
+/// Address rows are wallet-scoped within that separate database.
 @MainActor
 enum PlatformBalanceReader {
     struct Snapshot {

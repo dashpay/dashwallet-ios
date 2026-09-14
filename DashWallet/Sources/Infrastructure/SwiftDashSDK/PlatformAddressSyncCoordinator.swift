@@ -265,7 +265,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         let session = beginPlatformBalanceSession(manager: manager, walletId: walletId, network: network)
         let started = CFAbsoluteTimeGetCurrent()
         guard let container = SwiftDashSDKHost.shared.modelContainer else {
-            DWLogger.log("PLATFORM-BALANCE local-read result=no-container duration_ms=0")
+            let completedAtMilliseconds = Int64(Date().timeIntervalSince1970 * 1_000)
+            DWLogger.log("PLATFORM-BALANCE local-read result=no-container duration_ms=0 completed_unix_ms=\(completedAtMilliseconds)")
             return
         }
         let outcome = readPlatformBalance(container: container, session: session, network: network)

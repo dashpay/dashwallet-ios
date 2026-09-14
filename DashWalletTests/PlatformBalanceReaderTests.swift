@@ -14,8 +14,8 @@ import XCTest
 final class PlatformBalanceReaderTests: XCTestCase {
     private let walletId = Data(repeating: 1, count: 32)
 
-    private func addWallet(to container: ModelContainer, id: Data, hasAccount: Bool = true) -> PersistentWallet {
-        let wallet = PersistentWallet(walletId: id, network: .testnet)
+    private func addWallet(to container: ModelContainer, id: Data, network: Network = .testnet, hasAccount: Bool = true) -> PersistentWallet {
+        let wallet = PersistentWallet(walletId: id, network: network)
         container.mainContext.insert(wallet)
         if hasAccount {
             let account = PersistentAccount(wallet: wallet, accountType: 14, accountIndex: 0, accountTypeName: "PlatformPayment")
@@ -70,6 +70,26 @@ final class PlatformBalanceReaderTests: XCTestCase {
         let wallet = addWallet(to: container, id: walletId)
         addAddress(to: container, wallet: wallet, index: 0, credits: 99)
         XCTAssertNil(try PlatformBalanceReader.read(container: container, walletId: walletId, network: .mainnet))
+    }
+
+    func testSameWalletIdAcrossNetworkContainersKeepsAmountsAndAddressesSeparate() throws {
+        // SwiftDashSDKHost uses a separate DashModel.sqlite per network.
+        let mainnet = try DashModelContainer.createInMemory()
+        let testnet = try DashModelContainer.createInMemory()
+        let mainWallet = addWallet(to: mainnet, id: walletId, network: .mainnet)
+        let testWallet = addWallet(to: testnet, id: walletId, network: .testnet)
+        addAddress(to: mainnet, wallet: mainWallet, index: 1, credits: 100)
+        addAddress(to: testnet, wallet: testWallet, index: 2, credits: 900)
+        try mainnet.mainContext.save()
+        try testnet.mainContext.save()
+        let main = try XCTUnwrap(PlatformBalanceReader.read(container: mainnet, walletId: walletId, network: .mainnet))
+        let test = try XCTUnwrap(PlatformBalanceReader.read(container: testnet, walletId: walletId, network: .testnet))
+        XCTAssertEqual(main.credits, 100)
+        XCTAssertEqual(main.addresses.map(\.addressIndex), [1])
+        XCTAssertEqual(test.credits, 900)
+        XCTAssertEqual(test.addresses.map(\.addressIndex), [2])
+        XCTAssertNil(try PlatformBalanceReader.read(container: mainnet, walletId: walletId, network: .testnet))
+        XCTAssertNil(try PlatformBalanceReader.read(container: testnet, walletId: walletId, network: .mainnet))
     }
 
     func testUpdatedPersistedZeroReplacesPreviousAmount() throws {
