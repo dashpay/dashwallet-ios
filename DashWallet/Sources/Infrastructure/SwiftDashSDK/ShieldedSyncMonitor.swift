@@ -154,22 +154,21 @@ final class ShieldedSyncMonitor: ObservableObject {
 
     /// Request a coalesced recovery/pass. Initialization errors surface via the
     /// coordinator; completed sync errors continue to arrive on this monitor.
-    func syncNow() {
+    /// Return immediate admission feedback separately from the last sync
+    /// failure, so a coordinator error cannot hide an offline button response.
+    func syncNow() -> String? {
         guard NetworkStatusService.shared.isOnline else {
-            if lastError == nil {
-                lastError = NSLocalizedString(
-                    "You are offline. Connect to the internet and try again.",
-                    comment: "Shielded manual sync requires an internet connection")
-            }
-            return
+            return NSLocalizedString(
+                "You are offline. Connect to the internet and try again.",
+                comment: "Shielded manual sync requires an internet connection")
         }
-        if PlatformAddressSyncCoordinator.shared.recoverShieldedNow() {
-            lastError = nil
-        } else if lastError == nil {
-            lastError = NSLocalizedString(
+        guard PlatformAddressSyncCoordinator.shared.recoverShieldedNow() else {
+            return NSLocalizedString(
                 "Wallet sync is not ready. Start wallet sync and try again.",
                 comment: "Shielded manual sync requires Core runtime readiness")
         }
+        lastError = nil
+        return nil
     }
 
     /// Reset the displayed since-launch counters and timings. Purely a

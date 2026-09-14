@@ -70,7 +70,6 @@ struct HomeBalanceView: View {
     /// total whose breakdown cannot show them would state a number the user
     /// can neither see the parts of nor reach.
     private var showsPlatformRow: Bool { showsPlatformBalance && platformSync.isRunning }
-    private var showsBreakdown: Bool { platformSync.isRunning || shieldedDuffs != nil }
     private var isPartialBalance: Bool {
         shieldedDuffs == nil || (showsPlatformBalance && !platformSync.isRunning)
     }
@@ -159,7 +158,7 @@ struct HomeBalanceView: View {
                 onLongPress()
             }
 
-            if !viewModel.isBalanceHidden && showsBreakdown {
+            if !viewModel.isBalanceHidden {
                 breakdownCard
                     .padding(.horizontal, 16)
                     .padding(.top, 12)

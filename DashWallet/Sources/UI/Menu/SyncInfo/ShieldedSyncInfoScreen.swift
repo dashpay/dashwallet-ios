@@ -21,6 +21,7 @@ import DashUIKit
 import UIKit
 
 struct ShieldedSyncInfoScreen: View {
+    @State private var syncRequestError: String?
     private let vc: UINavigationController
 
     @ObservedObject private var monitor = ShieldedSyncMonitor.shared
@@ -84,6 +85,14 @@ struct ShieldedSyncInfoScreen: View {
         .padding(.horizontal, 20)
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
+        .alert(Text("Sync Now"), isPresented: Binding(
+            get: { syncRequestError != nil },
+            set: { if !$0 { syncRequestError = nil } }
+        )) {
+            Button("OK", role: .cancel) { syncRequestError = nil }
+        } message: {
+            Text(syncRequestError ?? "")
+        }
     }
 
     // MARK: - Cards
@@ -235,7 +244,7 @@ struct ShieldedSyncInfoScreen: View {
     private var controlsCard: some View {
         HStack(spacing: 12) {
             Button(action: {
-                monitor.syncNow()
+                syncRequestError = monitor.syncNow()
             }) {
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.clockwise")
