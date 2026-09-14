@@ -27,8 +27,9 @@ enum HomeBalanceViewState: Int {
 
 // MARK: - HomeBalanceView
 
-/// Home header: the sum of known balances as the hero amount, and a row per
-/// balance with its fiat value. Unavailable components label the total partial.
+/// Home header: the hero waits for the transparent balance, then sums the known
+/// balances. Each balance has a row with its fiat value; missing amounts stay
+/// unavailable and label an otherwise known total partial.
 /// Advanced mode controls whether Platform credits are included.
 ///
 /// The rows are a readout, not a control surface. They used to carry an
@@ -115,15 +116,24 @@ struct HomeBalanceView: View {
                         .frame(width: 58, height: 58)
                 } else {
                     VStack(spacing: 0) {
-                        DashAmount(amount: Int64(balance.totalDuffs), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
-                            .foregroundColor(Color.dash.whiteText)
-                        Text(viewModel.fiatString(forDuffs: balance.totalDuffs))
-                            .font(.subhead)
-                            .foregroundColor(Color.dash.whiteText)
-                        if balance.isPartial {
-                            Text(NSLocalizedString("Known balance", comment: "Total excludes unavailable balances"))
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.7))
+                        if let totalDuffs = balance.totalDuffs {
+                            DashAmount(amount: Int64(totalDuffs), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
+                                .foregroundColor(Color.dash.whiteText)
+                            Text(viewModel.fiatString(forDuffs: totalDuffs))
+                                .font(.subhead)
+                                .foregroundColor(Color.dash.whiteText)
+                            if balance.isPartial {
+                                Text(NSLocalizedString("Known balance", comment: "Total excludes unavailable balances"))
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+                        } else {
+                            Text("—")
+                                .font(.largeTitle)
+                                .foregroundColor(Color.dash.whiteText)
+                            Text(NSLocalizedString("Balance unavailable", comment: "Balance not restored"))
+                                .font(.subhead)
+                                .foregroundColor(Color.dash.whiteText)
                         }
 
                         ZStack {
