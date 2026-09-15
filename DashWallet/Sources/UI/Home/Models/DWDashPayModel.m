@@ -86,8 +86,9 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSUInteger)unreadNotificationsCount {
-    // Incoming requests and established-contact events newer than the
-    // last-viewed marker are counted by the app-owned contacts bridge.
+    // Pending incoming and outgoing requests plus established-contact
+    // events newer than the last-viewed marker are counted by the
+    // app-owned contacts bridge.
     return DWContactsNotificationsBridge.unreadCount;
 }
 
