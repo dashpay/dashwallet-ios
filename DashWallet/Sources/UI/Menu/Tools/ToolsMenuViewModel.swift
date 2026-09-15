@@ -36,6 +36,11 @@ class ToolsMenuViewModel: ObservableObject {
     @Published var csvExportData: (fileName: String, file: URL)?
     @Published var safariLink: String?
     @Published var showCoinJoinSweepConfirmation = false
+    /// Destination-choice sheet (Dash Wallet vs Shielded). Presented
+    /// instead of the plain confirmation when the shielded route is
+    /// available, so this row offers the same choice as the post-sync
+    /// popup rather than silently sweeping to the transparent balance.
+    @Published var showCoinJoinMoveFundsSheet = false
     @Published var coinJoinSweepErrorMessage: String?
     /// True while the diagnostic-log archive is being staged + zipped
     /// (file I/O off the main actor). Guards re-entry from row taps.
@@ -52,13 +57,17 @@ class ToolsMenuViewModel: ObservableObject {
     private static let minCoinJoinSweepDuffs: UInt64 = 1000
 
     /// Live CoinJoin-account spendable balance (duffs) — the SDK source of truth.
-    private var coinJoinLeftoverDuffs: UInt64 {
+    var coinJoinLeftoverDuffs: UInt64 {
         SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs
     }
 
-    /// Whether to show the conditional "Move CoinJoin Funds" row.
+    /// Whether to show the conditional "Move CoinJoin Funds" row. Gated on a
+    /// finished sync as well as a leftover — see
+    /// `CoinJoinMoveDestinationPolicy.menuRowAvailable`.
     var hasCoinJoinLeftover: Bool {
-        coinJoinLeftoverDuffs > Self.minCoinJoinSweepDuffs
+        CoinJoinMoveDestinationPolicy.menuRowAvailable(
+            hasLeftover: coinJoinLeftoverDuffs > Self.minCoinJoinSweepDuffs,
+            isChainSynced: SyncingActivityMonitor.shared.state == .syncDone)
     }
 
     /// Formatted leftover amount for the confirmation dialog.
@@ -69,6 +78,7 @@ class ToolsMenuViewModel: ObservableObject {
     init() {
         setupMenuItems()
         setupCoinJoinObserver()
+        setupSyncStateObserver()
     }
 
     /// Rebuild the list when the CoinJoin balance crosses the sweep threshold, so
@@ -85,6 +95,19 @@ class ToolsMenuViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
+    /// The "Move CoinJoin Funds" row is unavailable until the chain is synced,
+    /// so the list has to rebuild when that changes — otherwise the row stays
+    /// hidden for the rest of the session after a sync that finished while this
+    /// screen existed.
+    private func setupSyncStateObserver() {
+        NotificationCenter.default.publisher(for: .syncStateChangedNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.setupMenuItems()
+            }
+            .store(in: &cancellables)
+    }
+
     private func setupMenuItems() {
         items = [
             MenuItemModel(
@@ -152,11 +175,33 @@ class ToolsMenuViewModel: ObservableObject {
                     subtitle: NSLocalizedString("CoinJoin is no longer supported", comment: "CoinJoin"),
                     icon: .custom("image.coinjoin.menu", maxHeight: 22),
                     action: { [weak self] in
-                        self?.showCoinJoinSweepConfirmation = true
+                        guard let self else { return }
+                        self.presentCoinJoinMoveSurface()
                     }
                 ),
                 at: storageIdx + 1
             )
+        }
+    }
+
+    /// Same branch as the post-sync popup
+    /// (`HomeViewModel.maybeShowCoinJoinSweepDialog`): offer the destination
+    /// choice whenever the shielded route is viable, and fall back to the
+    /// transparent-only confirmation when it is not. A tap that races the sync
+    /// state back to syncing opens neither — the row is about to disappear.
+    private func presentCoinJoinMoveSurface() {
+        let route = CoinJoinMoveDestinationPolicy.menuRoute(
+            isChainSynced: SyncingActivityMonitor.shared.state == .syncDone,
+            shieldedAvailable: CoinJoinMoveDestinationPolicy.shieldedDestinationAvailable(
+                forBalanceDuffs: coinJoinLeftoverDuffs))
+        switch route {
+        case .destinationChoice:
+            showCoinJoinMoveFundsSheet = true
+        case .transparentConfirmation:
+            showCoinJoinSweepConfirmation = true
+        case nil:
+            DWLogger.log("ToolsMenuViewModel: move-funds tap ignored — chain not synced")
+            setupMenuItems()
         }
     }
 

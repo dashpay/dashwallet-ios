@@ -152,19 +152,23 @@ final class ShieldedSyncMonitor: ObservableObject {
 
     // MARK: - Actions (Shielded Sync Info screen)
 
-    /// Run one shielded sync pass now. Errors surface via `lastError`.
-    func syncNow() async {
-        guard let manager else {
-            lastError = "Platform sync is not running"
-            return
+    /// Request a coalesced recovery/pass. Initialization errors surface via the
+    /// coordinator; completed sync errors continue to arrive on this monitor.
+    /// Return immediate admission feedback separately from the last sync
+    /// failure, so a coordinator error cannot hide an offline button response.
+    func syncNow() -> String? {
+        guard NetworkStatusService.shared.isOnline else {
+            return NSLocalizedString(
+                "You are offline. Connect to the internet and try again.",
+                comment: "Shielded manual sync requires an internet connection")
+        }
+        guard PlatformAddressSyncCoordinator.shared.recoverShieldedNow() else {
+            return NSLocalizedString(
+                "Wallet sync is not ready. Start wallet sync and try again.",
+                comment: "Shielded manual sync requires Core runtime readiness")
         }
         lastError = nil
-        do {
-            try await manager.syncShieldedNow()
-        } catch {
-            lastError = error.localizedDescription
-            Self.logger.error("🛡️ SHIELD-MON :: syncShieldedNow threw: \(String(describing: error), privacy: .public)")
-        }
+        return nil
     }
 
     /// Reset the displayed since-launch counters and timings. Purely a

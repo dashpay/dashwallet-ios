@@ -5904,3 +5904,16 @@
 
 /* Send to contact: the broadcast outcome is unknown */
 "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history." = "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.";
+
+/* Cached wallet balance availability */
+"Known balance" = "Known balance";
+"Balance unavailable" = "Balance unavailable";
+"Shielded balance is unavailable. Try again after syncing." = "Shielded balance is unavailable. Try again after syncing.";
+
+"Shielded sync is not running" = "Shielded sync is not running";
+
+"Wallet sync is not ready. Start wallet sync and try again." = "Wallet sync is not ready. Start wallet sync and try again.";
+
+/* Shielded manual sync requires an internet connection */
+"You are offline. Connect to the internet and try again." = "You are offline. Connect to the internet and try again.";
+"Start Platform sync before clearing its local state" = "Start Platform sync before clearing its local state";

@@ -281,12 +281,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case noPlatformAddress
         case authCancelled
         case authFailed
+        case shieldedBalanceUnavailable
         case shieldedPoolFeeUnavailable
         case addressFundingFeeUnavailable
         case platformShieldCapacityChanged(maxShieldableCredits: UInt64?)
         case shieldedSweepWaiting(UInt64)
         case shieldedSweepChanged
         case shieldedAmountExceedsBundle(UInt64)
+        case coinJoinDrainRequiresSync
         case transferFailed(Error)
 
         var errorDescription: String? {
@@ -309,6 +311,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString("Authentication cancelled", comment: "InternalTransfer")
             case .authFailed:
                 return NSLocalizedString("Authentication failed", comment: "InternalTransfer")
+            case .shieldedBalanceUnavailable:
+                return NSLocalizedString("Shielded balance is unavailable. Try again after syncing.", comment: "Shielded transfer requires a known balance")
             case .shieldedPoolFeeUnavailable:
                 return NSLocalizedString(
                     "There was an error, please try again later",
@@ -348,6 +352,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
                         "Your Shielded balance is split across notes, and at most %@ DASH of it can be sent in one transaction.",
                         comment: "Shielded amount above the single-transaction ceiling"),
                     formatted)
+            case .coinJoinDrainRequiresSync:
+                return NSLocalizedString(
+                    "Your wallet is still syncing. Moving your mixed coins to Shielded will be available once it finishes.",
+                    comment: "CoinJoin drain blocked while the chain is syncing")
             case .transferFailed(let underlying):
                 return underlying.localizedDescription
             }
@@ -379,6 +387,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             .contains { !$0.spentNullifiers.isEmpty }
 
         let balanceCoordinator = PlatformAddressSyncCoordinator.shared
+        guard balanceCoordinator.shieldedBalanceState.isAvailable else { return .unavailable }
         if hasPendingSpend || balanceCoordinator.isShieldedBalanceReconciling {
             return .waitingForConfirmation(balanceCoordinator.shieldedBalance)
         }
@@ -461,6 +470,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
         _ amountCredits: UInt64,
         feeKind: PlatformWalletManager.ShieldedFeeKind
     ) -> Bool {
+        guard PlatformAddressSyncCoordinator.shared.shieldedBalanceState.isAvailable else {
+            handleFailure(CoordinatorError.shieldedBalanceUnavailable)
+            return true
+        }
         guard let ceiling = Self.spendCeilingCredits(feeKind: feeKind),
               amountCredits > ceiling
         else { return false }
@@ -544,6 +557,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
             try await authorize()
         } catch {
             handleFailure(error)
+            return
+        }
+
+        // Re-check at the execution boundary, not only where the surface was
+        // offered. The drain is whole-account and its value is computed
+        // SDK-side, so a scan that restarted while the sheet or the PIN prompt
+        // was open would lock a UTXO set the user never saw. The BIP44 route
+        // carries an explicit amount and its own screens gate on
+        // `isChainSynced`, so this is the drain's check alone.
+        if case .coinJoinDrain = funding,
+           SyncingActivityMonitor.shared.state != .syncDone {
+            Self.logger.error("🛡️ SHIELD-TX :: coinjoin drain refused — chain not synced")
+            handleFailure(CoordinatorError.coinJoinDrainRequiresSync)
             return
         }
 

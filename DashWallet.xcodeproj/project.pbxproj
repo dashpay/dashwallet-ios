@@ -7,6 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F0CAB696BC154E7EB3EC221D /* ShieldedRecoveryControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C63088F44013AEC5D85B /* ShieldedRecoveryControllerTests.swift */; };
+		B16D9D3F361A448E8A9FEBAF /* ShieldedRecoveryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2ADF29244E649D8BE05FD93 /* ShieldedRecoveryController.swift */; };
+		E012FFCC6C3142B4B5869B72 /* ShieldedRecoveryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2ADF29244E649D8BE05FD93 /* ShieldedRecoveryController.swift */; };
+		4C9AC6D2EC13450DAC68FC90 /* ShieldedBalanceControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 930BFA9B069540D4A5CAD79A /* ShieldedBalanceControllerTests.swift */; };
+		525045ECC4BF30BBCB09E13C /* PlatformBalanceReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17921340EDF4455B62461AF8 /* PlatformBalanceReaderTests.swift */; };
+		C693C63758228F630D39F00E /* HomeBalancePresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F9884169298187E321C8804 /* HomeBalancePresentationTests.swift */; };
+		BCC98012E278206FC08FA8E3 /* PlatformBalanceControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71029F5975636F1DCFFFF85 /* PlatformBalanceControllerTests.swift */; };
+		FA87A306BF0E476385DA1C66 /* ShieldedBalanceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F5A428A4E24408592C674A0 /* ShieldedBalanceController.swift */; };
+		3FB3DF46CD5AE05691411A29 /* PlatformBalanceReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0404B1EF157E90B4EF63BB /* PlatformBalanceReader.swift */; };
+		84189D0105142F3926178B6D /* HomeBalancePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691713FB42FED19292F60021 /* HomeBalancePresentation.swift */; };
+		23E8269233178A3EE4E9635F /* PlatformBalanceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43E7D434DF71B73F2B47A5E /* PlatformBalanceController.swift */; };
+		06AFC7A7EE22469FB22185CE /* ShieldedBalanceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F5A428A4E24408592C674A0 /* ShieldedBalanceController.swift */; };
+		C22DB25CE1327A1A7FF180B1 /* PlatformBalanceReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0404B1EF157E90B4EF63BB /* PlatformBalanceReader.swift */; };
+		8BB48CBDDB2C5830F32DBAE5 /* HomeBalancePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691713FB42FED19292F60021 /* HomeBalancePresentation.swift */; };
+		4A299EBB511451DCA1234899 /* PlatformBalanceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43E7D434DF71B73F2B47A5E /* PlatformBalanceController.swift */; };
+
 		00B3E9708BF84A08409B431B /* BIP70PaymentOutputFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5822AAB9B5EA605FF82B009A /* BIP70PaymentOutputFactory.swift */; };
 		026B0383557D0181E034B64E /* SDKIdentityProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E62262597A8B22870184A36 /* SDKIdentityProfileSheet.swift */; };
 		02EDCC7635BCD84768554D9C /* StorageModelListViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A762BDA473947F1A7EF199 /* StorageModelListViews.swift */; };
@@ -742,6 +758,10 @@
 		751C05DE2D3E39A800475E52 /* TransactionListDataItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751C05DC2D3E39A600475E52 /* TransactionListDataItem.swift */; };
 		5A1EC0FE2E29A30000000002 /* CoinJoinMoveFundsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A30000000001 /* CoinJoinMoveFundsSheet.swift */; };
 		5A1EC0FE2E29A30000000003 /* CoinJoinMoveFundsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A30000000001 /* CoinJoinMoveFundsSheet.swift */; };
+		5A1EC0FE2E29A30000000012 /* CoinJoinMoveFundsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A30000000011 /* CoinJoinMoveFundsViewModel.swift */; };
+		5A1EC0FE2E29A30000000013 /* CoinJoinMoveFundsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A30000000011 /* CoinJoinMoveFundsViewModel.swift */; };
+		5A1EC0FE2E29A30000000022 /* CoinJoinMoveDestinationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A30000000021 /* CoinJoinMoveDestinationPolicy.swift */; };
+		5A1EC0FE2E29A30000000023 /* CoinJoinMoveDestinationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A30000000021 /* CoinJoinMoveDestinationPolicy.swift */; };
 		7527720D2AA9B2630066557E /* SupportedTopperAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */; };
 		7527720F2AA9F58E0066557E /* TopperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720E2AA9F58E0066557E /* TopperViewModel.swift */; };
 		752772122AAA1CE30066557E /* Coinbase-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752772112AAA1CE30066557E /* Coinbase-Info.plist */; };
@@ -977,6 +997,9 @@
 		75FFD6C82BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
 		76766A50AFDB7BC138F569DC /* NetworkUnavailableStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487C4C2E6AC61005536FF85E /* NetworkUnavailableStateView.swift */; };
 		7A30000230A1000000000002 /* TransactionDirectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30000130A1000000000001 /* TransactionDirectionTests.swift */; };
+		7A32000230A3000000000002 /* PooledSendableBalanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A32000130A3000000000001 /* PooledSendableBalanceTests.swift */; };
+		7A30002230A2000000000022 /* CrowdNodeOwnershipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30002130A2000000000021 /* CrowdNodeOwnershipTests.swift */; };
+		7A31000230A2000000000002 /* CoinJoinMoveDestinationPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A31000130A2000000000001 /* CoinJoinMoveDestinationPolicyTests.swift */; };
 		7A30001230A1000000000012 /* StuckAssetLockRetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */; };
 		7B18F4580CB3D24E417435DE /* StorageRecordDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCBA057E553F81F54ACE6E1 /* StorageRecordDetailViews.swift */; };
 		7B4F28EE00BA451DA8675B06 /* SwapCoinIconLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F0351CAD174EEB8E64012A /* SwapCoinIconLoader.swift */; };
@@ -2112,6 +2135,16 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5798C63088F44013AEC5D85B /* ShieldedRecoveryControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedRecoveryControllerTests.swift; sourceTree = "<group>"; };
+		F2ADF29244E649D8BE05FD93 /* ShieldedRecoveryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedRecoveryController.swift; sourceTree = "<group>"; };
+		930BFA9B069540D4A5CAD79A /* ShieldedBalanceControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedBalanceControllerTests.swift; sourceTree = "<group>"; };
+		17921340EDF4455B62461AF8 /* PlatformBalanceReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBalanceReaderTests.swift; sourceTree = "<group>"; };
+		6F9884169298187E321C8804 /* HomeBalancePresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeBalancePresentationTests.swift; sourceTree = "<group>"; };
+		D71029F5975636F1DCFFFF85 /* PlatformBalanceControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBalanceControllerTests.swift; sourceTree = "<group>"; };
+		9F5A428A4E24408592C674A0 /* ShieldedBalanceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedBalanceController.swift; sourceTree = "<group>"; };
+		DE0404B1EF157E90B4EF63BB /* PlatformBalanceReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBalanceReader.swift; sourceTree = "<group>"; };
+		691713FB42FED19292F60021 /* HomeBalancePresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeBalancePresentation.swift; sourceTree = "<group>"; };
+		D43E7D434DF71B73F2B47A5E /* PlatformBalanceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBalanceController.swift; sourceTree = "<group>"; };
 		01D55D0FA9AE953CD23DE6B6 /* DWIdentityRegistrationController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWIdentityRegistrationController.swift; sourceTree = "<group>"; };
 		02357928871603392E797C9A /* SwiftDashSDKContactsService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKContactsService.swift; sourceTree = "<group>"; };
 		5ADPR0012E4A0000000000F1 /* DashPayContactAddressReadiness.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DashPayContactAddressReadiness.swift; sourceTree = "<group>"; };
@@ -3008,6 +3041,8 @@
 		751C05DA2D3D0E7C00475E52 /* JoinDashPayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinDashPayViewModel.swift; sourceTree = "<group>"; };
 		751C05DC2D3E39A600475E52 /* TransactionListDataItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionListDataItem.swift; sourceTree = "<group>"; };
 		5A1EC0FE2E29A30000000001 /* CoinJoinMoveFundsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinMoveFundsSheet.swift; sourceTree = "<group>"; };
+		5A1EC0FE2E29A30000000011 /* CoinJoinMoveFundsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinMoveFundsViewModel.swift; sourceTree = "<group>"; };
+		5A1EC0FE2E29A30000000021 /* CoinJoinMoveDestinationPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinMoveDestinationPolicy.swift; sourceTree = "<group>"; };
 		7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedTopperAssets.swift; sourceTree = "<group>"; };
 		7527720E2AA9F58E0066557E /* TopperViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopperViewModel.swift; sourceTree = "<group>"; };
 		752772112AAA1CE30066557E /* Coinbase-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Coinbase-Info.plist"; sourceTree = "<group>"; };
@@ -3168,6 +3203,9 @@
 		7708BBFDD14AFF237FB72D71 /* MayaConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaConstants.swift; sourceTree = "<group>"; };
 		797D9070BF54A3533190584E /* libPods-dashwallet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-dashwallet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7A30000130A1000000000001 /* TransactionDirectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionDirectionTests.swift; sourceTree = "<group>"; };
+		7A32000130A3000000000001 /* PooledSendableBalanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PooledSendableBalanceTests.swift; sourceTree = "<group>"; };
+		7A30002130A2000000000021 /* CrowdNodeOwnershipTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeOwnershipTests.swift; sourceTree = "<group>"; };
+		7A31000130A2000000000001 /* CoinJoinMoveDestinationPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinMoveDestinationPolicyTests.swift; sourceTree = "<group>"; };
 		7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StuckAssetLockRetryTests.swift; sourceTree = "<group>"; };
 		7B56B94951BA51EAC9E0A6E1 /* libPods-DashWalletScreenshotsUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletScreenshotsUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B94B3697D7742BFA991B5CC /* BuySellPortalScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuySellPortalScreen.swift; sourceTree = "<group>"; };
@@ -4594,6 +4632,16 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		5A1EC0FE2E29A30000000031 /* CoinJoinMoveFunds */ = {
+			isa = PBXGroup;
+			children = (
+				5A1EC0FE2E29A30000000001 /* CoinJoinMoveFundsSheet.swift */,
+				5A1EC0FE2E29A30000000011 /* CoinJoinMoveFundsViewModel.swift */,
+				5A1EC0FE2E29A30000000021 /* CoinJoinMoveDestinationPolicy.swift */,
+			);
+			path = CoinJoinMoveFunds;
+			sourceTree = "<group>";
+		};
 		2A307CB322E6FA7F00A18347 /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -4606,7 +4654,7 @@
 				754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */,
 				751C05DC2D3E39A600475E52 /* TransactionListDataItem.swift */,
 				5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */,
-				5A1EC0FE2E29A30000000001 /* CoinJoinMoveFundsSheet.swift */,
+				5A1EC0FE2E29A30000000031 /* CoinJoinMoveFunds */,
 				5A1EC0FE2E29A20000000014 /* PlatformAddressHistory.swift */,
 				75D657662DF579F300ACE570 /* TransactionFilterDialog.swift */,
 				4E55DD28C4EBE049216291A2 /* HomeUsernameRow.swift */,
@@ -7383,10 +7431,18 @@
 				47976E492987772700612988 /* AmountObjectTests.swift */,
 				A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */,
 				B7C072AA26C7000000000002 /* DWContestedNameStatusServiceTests.swift */,
+				930BFA9B069540D4A5CAD79A /* ShieldedBalanceControllerTests.swift */,
+				17921340EDF4455B62461AF8 /* PlatformBalanceReaderTests.swift */,
+				6F9884169298187E321C8804 /* HomeBalancePresentationTests.swift */,
+				D71029F5975636F1DCFFFF85 /* PlatformBalanceControllerTests.swift */,
+				5798C63088F44013AEC5D85B /* ShieldedRecoveryControllerTests.swift */,
 				C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */,
 				CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */,
 				CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */,
 				7A30000130A1000000000001 /* TransactionDirectionTests.swift */,
+				7A32000130A3000000000001 /* PooledSendableBalanceTests.swift */,
+				7A30002130A2000000000021 /* CrowdNodeOwnershipTests.swift */,
+				7A31000130A2000000000001 /* CoinJoinMoveDestinationPolicyTests.swift */,
 				7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */,
 				CB9200012FE3000000000001 /* PassiveWalletStateUITailTests.swift */,
 				AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */,
@@ -7446,6 +7502,11 @@
 				7A30002130A1000000000021 /* AssetLockProbeStore.swift */,
 				UTR0B0002FA0000000000001 /* UnconfirmedTransactionRemover.swift */,
 				INSGT0001000000000000001 /* InsightExplorerAPI.swift */,
+				9F5A428A4E24408592C674A0 /* ShieldedBalanceController.swift */,
+				DE0404B1EF157E90B4EF63BB /* PlatformBalanceReader.swift */,
+				691713FB42FED19292F60021 /* HomeBalancePresentation.swift */,
+				D43E7D434DF71B73F2B47A5E /* PlatformBalanceController.swift */,
+				F2ADF29244E649D8BE05FD93 /* ShieldedRecoveryController.swift */,
 				51AA000D2F97000D005A000D /* ShieldedSyncMonitor.swift */,
 				43C830DD6D63115525925F75 /* PlatformCreditsFormatter.swift */,
 				44DCDC3A2B92601BB1E61FD9 /* PlatformSendExecutor.swift */,
@@ -9982,6 +10043,8 @@
 				751C05DE2D3E39A800475E52 /* TransactionListDataItem.swift in Sources */,
 				5A1EC0FE2E29A10000000003 /* ShieldedActivityHistory.swift in Sources */,
 				5A1EC0FE2E29A30000000003 /* CoinJoinMoveFundsSheet.swift in Sources */,
+				5A1EC0FE2E29A30000000013 /* CoinJoinMoveFundsViewModel.swift in Sources */,
+				5A1EC0FE2E29A30000000023 /* CoinJoinMoveDestinationPolicy.swift in Sources */,
 				5A1EC0FE2E29A20000000013 /* PlatformAddressActivityStore.swift in Sources */,
 				5A1EC0FE2E29A20000000016 /* PlatformAddressHistory.swift in Sources */,
 				2ADB396C242615C200A6F898 /* CALayer+MBAnimationPersistence.m in Sources */,
@@ -10503,6 +10566,11 @@
 				51AA00052F970005005A0005 /* SyncInfoMenuViewModel.swift in Sources */,
 				51AA00082F970008005A0008 /* DashPaySyncInfoScreen.swift in Sources */,
 				51AA000B2F97000B005A000B /* ShieldedSyncInfoScreen.swift in Sources */,
+				FA87A306BF0E476385DA1C66 /* ShieldedBalanceController.swift in Sources */,
+				3FB3DF46CD5AE05691411A29 /* PlatformBalanceReader.swift in Sources */,
+				84189D0105142F3926178B6D /* HomeBalancePresentation.swift in Sources */,
+				23E8269233178A3EE4E9635F /* PlatformBalanceController.swift in Sources */,
+				E012FFCC6C3142B4B5869B72 /* ShieldedRecoveryController.swift in Sources */,
 				51AA000E2F97000E005A000E /* ShieldedSyncMonitor.swift in Sources */,
 				E16E2BA180551E3B6661B9F4 /* PlatformCreditsFormatter.swift in Sources */,
 				F1F870569B75C5B1452C5D65 /* ChainNetworkToggle.swift in Sources */,
@@ -10619,10 +10687,18 @@
 				47976E4A2987772700612988 /* AmountObjectTests.swift in Sources */,
 				A17EED0126C7000000000001 /* WalletWipeSerialExecutorTests.swift in Sources */,
 				B7C072AA26C7000000000001 /* DWContestedNameStatusServiceTests.swift in Sources */,
+				4C9AC6D2EC13450DAC68FC90 /* ShieldedBalanceControllerTests.swift in Sources */,
+				525045ECC4BF30BBCB09E13C /* PlatformBalanceReaderTests.swift in Sources */,
+				C693C63758228F630D39F00E /* HomeBalancePresentationTests.swift in Sources */,
+				BCC98012E278206FC08FA8E3 /* PlatformBalanceControllerTests.swift in Sources */,
+				F0CAB696BC154E7EB3EC221D /* ShieldedRecoveryControllerTests.swift in Sources */,
 				C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */,
 				CB9000022FE1000000000002 /* CoinbaseTransactionMetadataTests.swift in Sources */,
 				CB9100022FE2000000000002 /* CoinbaseTransferAmountTests.swift in Sources */,
 				7A30000230A1000000000002 /* TransactionDirectionTests.swift in Sources */,
+				7A32000230A3000000000002 /* PooledSendableBalanceTests.swift in Sources */,
+				7A30002230A2000000000022 /* CrowdNodeOwnershipTests.swift in Sources */,
+				7A31000230A2000000000002 /* CoinJoinMoveDestinationPolicyTests.swift in Sources */,
 				7A30001230A1000000000012 /* StuckAssetLockRetryTests.swift in Sources */,
 				CB9200022FE3000000000002 /* PassiveWalletStateUITailTests.swift in Sources */,
 				AA0003042CA0F58E00A1B402 /* SwapAddressValidatorTests.swift in Sources */,
@@ -10861,6 +10937,8 @@
 				751C05DD2D3E39A800475E52 /* TransactionListDataItem.swift in Sources */,
 				5A1EC0FE2E29A10000000002 /* ShieldedActivityHistory.swift in Sources */,
 				5A1EC0FE2E29A30000000002 /* CoinJoinMoveFundsSheet.swift in Sources */,
+				5A1EC0FE2E29A30000000012 /* CoinJoinMoveFundsViewModel.swift in Sources */,
+				5A1EC0FE2E29A30000000022 /* CoinJoinMoveDestinationPolicy.swift in Sources */,
 				5A1EC0FE2E29A20000000012 /* PlatformAddressActivityStore.swift in Sources */,
 				5A1EC0FE2E29A20000000015 /* PlatformAddressHistory.swift in Sources */,
 				C9D2C70B2A320AA000D15901 /* DWDemoAppRootViewController.m in Sources */,
@@ -11567,6 +11645,11 @@
 				51AA00062F970006005A0006 /* SyncInfoMenuViewModel.swift in Sources */,
 				51AA00092F970009005A0009 /* DashPaySyncInfoScreen.swift in Sources */,
 				51AA000C2F97000C005A000C /* ShieldedSyncInfoScreen.swift in Sources */,
+				06AFC7A7EE22469FB22185CE /* ShieldedBalanceController.swift in Sources */,
+				C22DB25CE1327A1A7FF180B1 /* PlatformBalanceReader.swift in Sources */,
+				8BB48CBDDB2C5830F32DBAE5 /* HomeBalancePresentation.swift in Sources */,
+				4A299EBB511451DCA1234899 /* PlatformBalanceController.swift in Sources */,
+				B16D9D3F361A448E8A9FEBAF /* ShieldedRecoveryController.swift in Sources */,
 				51AA000F2F97000F005A000F /* ShieldedSyncMonitor.swift in Sources */,
 				3705C73F15BCD91AF70940B9 /* PlatformCreditsFormatter.swift in Sources */,
 				56F5C9FD51AE5508BB5E579B /* ChainNetworkToggle.swift in Sources */,

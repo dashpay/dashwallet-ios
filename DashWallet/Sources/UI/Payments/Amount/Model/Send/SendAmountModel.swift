@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import Foundation
 
 // MARK: - SendAmountError
@@ -62,7 +63,11 @@ class SendAmountModel: BaseAmountModel {
 
     var canShowInsufficientFunds: Bool {
         let plainAmount = amount.plainAmount
-        let allAvailableFunds = SwiftDashSDKWalletState.shared.balance?.spendable ?? 0
+        // The accounts a send can actually draw on, not the whole wallet:
+        // `balance.spendable` also counts CoinJoin, which the funding pool
+        // excludes by design, so gating on it accepts amounts the builder then
+        // refuses with "insufficient unreserved core funds".
+        let allAvailableFunds = SwiftDashSDKWalletState.shared.sendableDuffs
         return plainAmount > allAvailableFunds
     }
 
@@ -72,7 +77,36 @@ class SendAmountModel: BaseAmountModel {
         super.init()
 
         initializeSyncingActivityMonitor()
+        observeSendableCeiling()
         checkAmountForErrors()
+    }
+
+    /// The ceiling can move while this screen is open and the amount is
+    /// untouched — a pooled read landing for the first time, or recovering from
+    /// an outage and replacing the wallet-wide fallback with a much smaller
+    /// transparent balance. `BaseAmountModel`'s balance subscription only
+    /// refreshes `walletBalance`, and the view refreshes its button off
+    /// `$amount`, so nothing revalidates an amount typed before the drop.
+    ///
+    /// Both inputs matter, not just the pooled one: through a persistent pooled
+    /// outage that value stays `nil` and `removeDuplicates` swallows every
+    /// repeat, while `balance` keeps moving the fallback ceiling underneath.
+    /// Deduplicating the RESOLVED ceiling instead reacts to whichever half
+    /// changed, and still ignores updates that leave it where it was.
+    private func observeSendableCeiling() {
+        let state = SwiftDashSDKWalletState.shared
+        SwiftDashSDKWalletState
+            .sendableCeilingPublisher(
+                pooled: state.$pooledSpendableDuffs.eraseToAnyPublisher(),
+                walletSpendable: state.$balance.map { $0?.spendable }.eraseToAnyPublisher())
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.error = nil
+                self.checkAmountForErrors()
+                self.validationDidChangeHandler?()
+            }
+            .store(in: &cancellableBag)
     }
 
     override func selectAllFunds() {
@@ -96,11 +130,16 @@ class SendAmountModel: BaseAmountModel {
             // small to also cover the fee were indistinguishable from a dead
             // button. Same three states, same wording, as the internal
             // transfer's Core Max.
-            let balance = SwiftDashSDKWalletState.shared.balance
+            let state = SwiftDashSDKWalletState.shared
+            let balance = state.balance
             error = SendAmountError.maxUnavailable(
                 InternalTransferViewModel.coreZeroMaxMessage(
                     totalDuffs: balance?.total ?? 0,
-                    confirmedSpendableDuffs: balance?.spendable ?? 0))
+                    confirmedSpendableDuffs: balance?.spendable ?? 0,
+                    // Without this a CoinJoin-only wallet is told its balance
+                    // is too small to cover the fee, which is not why Max is
+                    // empty — the pool simply cannot draw on mixed coins.
+                    excludedFromPoolDuffs: state.excludedFromSendPoolDuffs))
             return
         }
 
