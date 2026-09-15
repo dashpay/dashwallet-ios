@@ -5905,6 +5905,18 @@
 /* Send to contact: the broadcast outcome is unknown */
 "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history." = "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.";
 
+/* DashPay: contact picker empty state body */
+"Add someone as a contact and you can pay them by username instead of an address." = "Add someone as a contact and you can pay them by username instead of an address.";
+
+/* DashPay: contact picker search found nothing */
+"No contacts match “%@”" = "No contacts match “%@”";
+
+/* DashPay: contact picker empty state headline */
+"No contacts yet" = "No contacts yet";
+
+/* DashPay: contact whose payment channel could not be built */
+"Payments unavailable — ask them to send you a new contact request." = "Payments unavailable — ask them to send you a new contact request.";
+
 /* Cached wallet balance availability */
 "Known balance" = "Known balance";
 "Balance unavailable" = "Balance unavailable";

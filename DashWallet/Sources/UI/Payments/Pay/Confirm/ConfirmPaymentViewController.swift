@@ -60,14 +60,20 @@ class ConfirmPaymentViewController: SheetViewController {
 
     /// Rebuilt from the model, so the detent can be re-resolved against it.
     private lazy var hostingController: UIHostingController<AnyView> = {
+        // `BottomSheet` stores its content closure, and this controller owns
+        // the hosting controller that owns the sheet — so the closure holds
+        // the state object and a weak controller, never `self`. A strong
+        // capture kept every confirmation alive, and with it the model's
+        // exchange-rate observer and its "Sending…" timer.
+        let state = self.state
         let sheet = DashUIKit.BottomSheet.selfSizing(
             title: NSLocalizedString("Confirm", comment: "Payment confirmation"),
             showBackButton: .constant(false)
-        ) {
+        ) { [weak self] in
             ConfirmPaymentSheet(
-                state: self.state,
-                onCancel: { [weak self] in self?.cancel() },
-                onConfirm: { [weak self] in self?.confirm() })
+                state: state,
+                onCancel: { self?.cancel() },
+                onConfirm: { self?.confirm() })
         }
         return UIHostingController(rootView: AnyView(sheet))
     }()
@@ -133,6 +139,8 @@ extension ConfirmPaymentViewController {
     /// Pull everything the sheet draws off the model in one pass, and re-resolve
     /// the detent — an updated payment output can add or drop a row.
     private func reloadState() {
+        state.feeItem = model.feeItem
+        state.totalItem = model.totalItem
         state.items = model.items ?? []
         state.actionTitle = model.actionButtonTitle
         // Digits only. `mainAmountString` is `formattedDashAmount`, which spells
@@ -186,7 +194,10 @@ extension ConfirmPaymentViewController {
     @MainActor
     fileprivate final class State: ObservableObject {
         @Published var items: [DWTitleDetailItem] = []
-        /// Present on the L1 payment path only; see `ConfirmPaymentDataSource`.
+        /// The members of `items` that carry the fee and the total, by identity.
+        @Published var feeItem: DWTitleDetailItem?
+        @Published var totalItem: DWTitleDetailItem?
+        /// Absent when the data source has no duff figures; see `ConfirmPaymentDataSource`.
         @Published var feeDuffs: UInt64?
         @Published var totalDuffs: UInt64?
         @Published var actionTitle = ""
@@ -228,9 +239,8 @@ private struct ConfirmPaymentSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // The amount string already carries its Dash symbol — it comes from
-            // the same `formattedDashAmount` the balance view used — so the
-            // component's own logo would draw a second one.
+            // `mainAmount` is digits only (see `reloadState`), so the Dash
+            // symbol is the component's own logo.
             DashUIKit.SwapAmountView(
                 amount: state.mainAmount,
                 secondaryText: state.supplementaryAmount,
@@ -284,15 +294,16 @@ private struct ConfirmPaymentSheet: View {
     /// but as an image attachment — read back as plain text it disappears and
     /// the row shows a bare number, which is what it did.
     ///
-    /// Matched by title against the model's own strings: the items arrive as an
-    /// untyped list, and re-deriving the order here would be a second copy of
-    /// the assembly `ConfirmPaymentModel` already does.
+    /// Matched by identity against the items `ConfirmPaymentModel` handed over
+    /// as the fee and the total, not by title: data sources title those rows
+    /// differently ("Network fee" on the L1 path, "Fee" on Uphold), and a
+    /// title match that misses degrades silently into the plain-text row.
     private func accessory(for item: DWTitleDetailItem) -> DashUIKit.MenuItemAccessory {
-        if let fee = state.feeDuffs, item.title == NSLocalizedString("Network fee", comment: "") {
+        if let fee = state.feeDuffs, item === state.feeItem {
             return .balance(dash: Int64(clamping: fee), sign: .none,
                             maximumFractionDigits: Self.dashFractionDigits)
         }
-        if let total = state.totalDuffs, item.title == NSLocalizedString("Total", comment: "") {
+        if let total = state.totalDuffs, item === state.totalItem {
             return .balance(dash: Int64(clamping: total), sign: .none,
                             maximumFractionDigits: Self.dashFractionDigits)
         }
@@ -303,8 +314,15 @@ private struct ConfirmPaymentSheet: View {
     /// truncated line — an address, which otherwise wraps and pushes the whole
     /// row out of shape. `MenuItem` takes a string rather than a styled view, so
     /// the shortening happens here instead of as a truncation mode.
+    ///
+    /// An attributed detail's image attachments (the Dash symbol) read back as
+    /// U+FFFC, which renders as a visible replacement glyph, so they are dropped.
     private func detail(of item: DWTitleDetailItem) -> String {
-        let value = item.plainDetail ?? item.attributedDetail?.string ?? ""
+        let value = item.plainDetail
+            ?? item.attributedDetail?.string
+            .replacingOccurrences(of: "\u{FFFC}", with: "")
+            .trimmingCharacters(in: .whitespaces)
+            ?? ""
         guard item.style == .truncatedSingleLine, value.count > 24 else { return value }
         return "\(value.prefix(12))…\(value.suffix(12))"
     }

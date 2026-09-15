@@ -22,6 +22,16 @@ struct SendToContactPickerScreen: View {
 
     @State private var showingAddContact = false
 
+    // The design's point sizes, scaled with Dynamic Type against the text
+    // style each one stands in for. `@ScaledMetric` rather than `.font(.caption)`
+    // and friends: the app module's `Font+DWStyle` redeclares those as fixed
+    // sizes, so they would not scale.
+    @ScaledMetric(relativeTo: .caption) private var noteSize: CGFloat = 12
+    @ScaledMetric(relativeTo: .subheadline) private var secondarySize: CGFloat = 14
+    @ScaledMetric(relativeTo: .callout) private var bodySize: CGFloat = 16
+    @ScaledMetric(relativeTo: .title3) private var headlineSize: CGFloat = 20
+    @ScaledMetric(relativeTo: .largeTitle) private var emptyStateIconSize: CGFloat = 72
+
     var body: some View {
         VStack(spacing: 0) {
             SendToContactHeader(onBack: onBack)
@@ -77,7 +87,7 @@ struct SendToContactPickerScreen: View {
                     // Same sentence the amount step shows if the flag arrives
                     // after a contact is already open.
                     Text(SendViewModel.contactPaymentsUnavailableMessage)
-                        .font(.system(size: 12))
+                        .font(.system(size: noteSize)) // a11y-ignore: A11Y007 size is @ScaledMetric
                         .foregroundColor(.dashGolden)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 17)
@@ -104,7 +114,7 @@ struct SendToContactPickerScreen: View {
         Text(String.localizedStringWithFormat(
             NSLocalizedString("No contacts match “%@”", comment: "DashPay: contact picker search found nothing"),
             viewModel.trimmedSearchText))
-            .font(.system(size: 14))
+            .font(.system(size: secondarySize)) // a11y-ignore: A11Y007 size is @ScaledMetric
             .foregroundColor(.dash.secondaryText)
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
@@ -120,16 +130,16 @@ struct SendToContactPickerScreen: View {
         VStack(spacing: 10) {
             Spacer()
             Image(systemName: "person.crop.circle.badge.plus")
-                .font(.system(size: 72, weight: .light))
+                .font(.system(size: emptyStateIconSize, weight: .light)) // a11y-ignore: A11Y007 size is @ScaledMetric
                 .foregroundColor(.dash.blue)
                 .padding(.bottom, 12)
             Text(NSLocalizedString("No contacts yet", comment: "DashPay: contact picker empty state headline"))
-                .font(.system(size: 20, weight: .bold))
+                .font(.system(size: headlineSize, weight: .bold)) // a11y-ignore: A11Y007 size is @ScaledMetric
                 .foregroundColor(.dash.primaryText)
             Text(NSLocalizedString(
                 "Add someone as a contact and you can pay them by username instead of an address.",
                 comment: "DashPay: contact picker empty state body"))
-                .font(.system(size: 16))
+                .font(.system(size: bodySize)) // a11y-ignore: A11Y007 size is @ScaledMetric
                 .foregroundColor(.dash.secondaryText)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
@@ -140,10 +150,10 @@ struct SendToContactPickerScreen: View {
                 Label(
                     NSLocalizedString("Search for a User", comment: "DashPay Contacts"),
                     systemImage: "magnifyingglass")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: secondarySize, weight: .semibold)) // a11y-ignore: A11Y007 size is @ScaledMetric
                     .foregroundColor(Color.dash.whiteText)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 46)
+                    .frame(minHeight: 46)
                     .background(
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
                             .fill(Color.dash.blue))

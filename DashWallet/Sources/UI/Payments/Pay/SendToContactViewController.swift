@@ -71,7 +71,7 @@ final class SendToContactPickerViewController: DWBasePayViewController, Navigati
         sendViewModel.setContactRecipient(contact)
         pushExternalSendAmount(
             viewModel: sendViewModel,
-            onSendCompleted: { [weak self] in self?.dismiss(animated: true) })
+            onSendCompleted: { [weak self] in self?.finishSendFlow() })
     }
 }
 

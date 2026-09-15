@@ -484,6 +484,14 @@ final class SendViewModel: ObservableObject {
         "Payments unavailable — ask them to send you a new contact request.",
         comment: "DashPay: contact whose payment channel could not be built")
 
+    /// Set when a contact broadcast came back with an unknown outcome. The
+    /// send may have happened, so this screen must not offer it again.
+    @Published private(set) var contactSendOutcomeIsUnknown = false
+
+    static let contactSendUnknownOutcomeMessage = NSLocalizedString(
+        "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.",
+        comment: "Send to contact: the broadcast outcome is unknown")
+
     /// Execute the pay-to-contact spend.
     ///
     /// There is no prepare/confirm split on this path —
@@ -497,14 +505,6 @@ final class SendViewModel: ObservableObject {
     ///   `nil` when it failed or the user cancelled the PIN prompt. A
     ///   cancellation leaves `contactSendError` clear — backing out of the
     ///   prompt is not an error.
-    /// Set when a contact broadcast came back with an unknown outcome. The
-    /// send may have happened, so this screen must not offer it again.
-    @Published private(set) var contactSendOutcomeIsUnknown = false
-
-    static let contactSendUnknownOutcomeMessage = NSLocalizedString(
-        "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.",
-        comment: "Send to contact: the broadcast outcome is unknown")
-
     func sendToContact() async -> Data? {
         guard let contact = contactRecipient,
               canContinue,

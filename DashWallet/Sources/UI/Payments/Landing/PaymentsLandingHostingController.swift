@@ -515,8 +515,6 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         }
     }
 
-    /// Send card → the address-entry form. Pushed rather than embedded: the
-    /// landing's Send tab is now the destination picker, not the form.
     /// Where Done on a receive receipt goes.
     ///
     /// Presented as a sheet there is something to dismiss; as the payments
@@ -568,6 +566,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         navigationController.popToViewController(host, animated: true)
     }
 
+    /// Send card → the address-entry form. Pushed rather than embedded: the
+    /// landing's Send tab is now the destination picker, not the form.
     private func pushSendToAddress() {
         pushWithoutTabBar(SendScreenViewController())
     }
