@@ -137,11 +137,18 @@ extension ConfirmPaymentViewController {
     }
 
     /// Pull everything the sheet draws off the model in one pass, and re-resolve
-    /// the detent — an updated payment output can add or drop a row.
+    /// the detent when the rows changed — an updated payment output can add or
+    /// drop one.
+    ///
+    /// Only then: the model also calls this on every exchange-rate tick, which
+    /// moves the fiat text but never the row set, and re-resolving the detent
+    /// measures the whole SwiftUI tree for a height that did not change.
     private func reloadState() {
+        let items = model.items ?? []
+        let rowsChanged = !items.elementsEqual(state.items) { $0 === $1 }
         state.feeItem = model.feeItem
         state.totalItem = model.totalItem
-        state.items = model.items ?? []
+        state.items = items
         state.actionTitle = model.actionButtonTitle
         // Digits only. `mainAmountString` is `formattedDashAmount`, which spells
         // the currency out — "DASH 0.02" — and the component draws the symbol.
@@ -151,7 +158,7 @@ extension ConfirmPaymentViewController {
         state.totalDuffs = model.dataSource.totalDuffs
         state.supplementaryAmount = model.supplementaryAmountString
 
-        if #available(iOS 16.0, *) {
+        if rowsChanged, #available(iOS 16.0, *) {
             sheetPresentationController?.animateChanges {
                 sheetPresentationController?.invalidateDetents()
             }
@@ -250,9 +257,13 @@ private struct ConfirmPaymentSheet: View {
 
             VStack(spacing: 0) {
                 ForEach(Array(state.items.enumerated()), id: \.offset) { _, item in
-                    DashUIKit.MenuItem(
-                        title: item.title ?? "",
-                        accessory: accessory(for: item))
+                    if let title = item.title, !title.isEmpty {
+                        DashUIKit.MenuItem(
+                            title: title,
+                            accessory: accessory(for: item))
+                    } else {
+                        untitledRow(item)
+                    }
                 }
             }
             .modifier(MenuViewModifier())
@@ -308,6 +319,29 @@ private struct ConfirmPaymentSheet: View {
                             maximumFractionDigits: Self.dashFractionDigits)
         }
         return .text(detail(of: item))
+    }
+
+    /// A row the model built without a title: a BIP70 merchant's name, its memo
+    /// and requested-amount line, Uphold's "fee will be deducted" note.
+    /// `MenuItem` would draw it as an empty label with the text squeezed into
+    /// the trailing value, so it takes the full width, wraps, and keeps the
+    /// alignment its data source asked for.
+    private func untitledRow(_ item: DWTitleDetailItem) -> some View {
+        let alignment: (text: TextAlignment, frame: Alignment)
+        switch item.detailAlignment {
+        case .center: alignment = (.center, .center)
+        case .right: alignment = (.trailing, .trailing)
+        default: alignment = (.leading, .leading)
+        }
+        return Text(detail(of: item))
+            .dashFont(.subhead)
+            .foregroundColor(Color.dash.secondaryText)
+            .multilineTextAlignment(alignment.text)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: alignment.frame)
+            // `MenuItem`'s own insets, so the text lines up with the titled rows.
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
     }
 
     /// The row's value as plain text, shortened when the model asked for one

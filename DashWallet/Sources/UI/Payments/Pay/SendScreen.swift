@@ -417,7 +417,7 @@ struct ExternalSendAmountScreen: View {
             if let contact = viewModel.contactRecipient {
                 SendContactIntro(
                     contact: contact,
-                    balanceDuffs: viewModel.coreBalanceDuffs,
+                    balanceDuffs: viewModel.coreToCoreSpendableDuffs,
                     onBack: onBack)
                     .padding(.horizontal, 20)
                     .padding(.top, 10)
@@ -738,7 +738,9 @@ private struct SendContactIntro: View {
     let contact: ContactItem
     /// The funding balance in duffs, shown on its own line. A contact can only
     /// be paid from Core today, so the screen states what is available rather
-    /// than offering a choice.
+    /// than offering a choice. It is the fee-aware spendable figure the Send
+    /// button is gated on, not the raw balance — typing the number shown here
+    /// must not come back as "insufficient balance".
     let balanceDuffs: UInt64
     var onBack: () -> Void
 

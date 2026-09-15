@@ -5914,6 +5914,12 @@
 /* DashPay: contact picker empty state headline */
 "No contacts yet" = "No contacts yet";
 
+/* Send screen: the funding balance */
+"Balance:" = "Balance:";
+
+/* InternalTransfer */
+"The amount is too large to transfer." = "The amount is too large to transfer.";
+
 /* DashPay: contact whose payment channel could not be built */
 "Payments unavailable — ask them to send you a new contact request." = "Payments unavailable — ask them to send you a new contact request.";
 

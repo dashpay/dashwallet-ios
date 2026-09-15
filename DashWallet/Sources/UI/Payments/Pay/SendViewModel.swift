@@ -447,6 +447,11 @@ final class SendViewModel: ObservableObject {
     /// `contactValidSources` admits.
     func setContactRecipient(_ contact: ContactItem) {
         contactRecipient = contact
+        // A fresh amount step for a contact whose last payment has an unknown
+        // outcome opens already locked — otherwise Back and reselecting the
+        // contact would hand back the Send button the lock exists to withhold.
+        contactSendOutcomeIsUnknown = WalletSendService.shared.unknownContactPaymentOutcomes
+            .contains(contactIdentityId: contact.contactIdentityId)
         destination = .core
         // Not the user's pick: it is the only legal source, and recording it
         // as a pick would let it survive a later destination change.
@@ -484,8 +489,10 @@ final class SendViewModel: ObservableObject {
         "Payments unavailable — ask them to send you a new contact request.",
         comment: "DashPay: contact whose payment channel could not be built")
 
-    /// Set when a contact broadcast came back with an unknown outcome. The
-    /// send may have happened, so this screen must not offer it again.
+    /// Set when a payment to this contact came back with an unknown outcome,
+    /// here or on an earlier amount step this session
+    /// (`WalletSendService.unknownContactPaymentOutcomes`). The send may have
+    /// happened, so it must not be offered again.
     @Published private(set) var contactSendOutcomeIsUnknown = false
 
     static let contactSendUnknownOutcomeMessage = NSLocalizedString(
@@ -981,6 +988,13 @@ final class SendViewModel: ObservableObject {
         if let contactSendError { return contactSendError }
         #endif
         if let shieldedMaxNotice { return shieldedMaxNotice }
+        // Before the first `dashDuffsUnsigned` read: that value wraps above
+        // `UInt64.max` duffs, and a wrapped amount can pass the checks below
+        // silently while `canContinue` refuses it. Only the too-large case —
+        // `dashDuffsIfRepresentable` also rejects negatives, which are not this.
+        if (parsedDashAmount * .duffs).whole > Decimal(UInt64.max) {
+            return NSLocalizedString("The amount is too large to transfer.", comment: "InternalTransfer")
+        }
         guard dashDuffsUnsigned > 0, let route else { return nil }
         if hasUnavailableSourceBalance {
             return NSLocalizedString("Balance unavailable", comment: "Selected source balance not restored")
@@ -1154,8 +1168,10 @@ final class SendViewModel: ObservableObject {
     /// `sendDashPayPayment` builds, signs and broadcasts in one SDK call and
     /// charges the fee on top of the amount — so it is held to the fee-aware
     /// envelope, which is also the cap `WalletSendService.sendToContact`
-    /// documents for its callers and the one Max already fills.
-    private var coreToCoreSpendableDuffs: UInt64 {
+    /// documents for its callers and the one Max already fills. The contact
+    /// intro shows this figure too, so the balance on screen is one the Send
+    /// button accepts.
+    var coreToCoreSpendableDuffs: UInt64 {
         #if DASHPAY
         if contactRecipient != nil { return coreSpendableDuffs }
         #endif
@@ -1164,7 +1180,8 @@ final class SendViewModel: ObservableObject {
 
     var canContinue: Bool {
         #if DASHPAY
-        // Terminal for the rest of this screen's life: see `sendToContact`.
+        // Terminal for this contact for the rest of the session: see
+        // `contactSendOutcomeIsUnknown`.
         if contactSendOutcomeIsUnknown { return false }
         #endif
         // An amount that cannot be represented in duffs is not spendable on

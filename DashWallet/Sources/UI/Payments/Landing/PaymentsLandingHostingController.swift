@@ -45,7 +45,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             },
             onSendToAddress: { [weak self] in self?.pushSendToAddress() },
             onSendToUsername: { [weak self] in self?.pushSendToContact() },
-            onSwapToCrypto: { [weak self] in self?.presentDashDEX() },
+            onSwapToCrypto: { [weak self] in self?.presentDashDEXAfterAuthentication() },
             onCloseLanding: { [weak self] in self?.leaveLanding() },
             showsHeader: showsHeader)
         return UIHostingController(rootView: screen)
@@ -493,26 +493,6 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     private func applyTabBarVisibility() {
         guard let tabBarController, presentingViewController == nil else { return }
         tabBarController.setTabBarHidden(true, animated: true)
-    }
-
-    /// "Swap to other crypto" → the Dash DEX portal.
-    ///
-    /// Behind the same authentication gate the Home shortcut puts it behind:
-    /// the portal is a spending surface, and a destination that asks for a PIN
-    /// from one entry point and not another is not a gate at all.
-    private func presentDashDEX() {
-        AuthenticationService.shared.authenticate(
-            withPrompt: nil,
-            usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
-            alertIfLockout: true
-        ) { [weak self] authenticated, _, _ in
-            guard authenticated, let self else { return }
-            let controller = SwapKitPortalViewController()
-            controller.hidesBottomBarWhenPushed = true
-            let navigationController = BaseNavigationController(rootViewController: controller)
-            navigationController.modalPresentationStyle = .fullScreen
-            self.present(navigationController, animated: true)
-        }
     }
 
     /// Where Done on a receive receipt goes.
