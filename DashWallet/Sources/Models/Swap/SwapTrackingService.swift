@@ -93,7 +93,8 @@ final class SwapTrackingService {
     }
 
     /// Called from a status screen's `viewWillAppear`; each call must be
-    /// balanced by `statusScreenWillDisappear(orderID:)`. A screen with no
+    /// balanced by `statusScreenWillDisappear(orderID:)` with the same id —
+    /// screens go through `StatusVisibilityClaim`, which guarantees it. A screen with no
     /// order id yet (nothing submitted) registers nothing, so the producer
     /// banners rather than silently consuming.
     func statusScreenWillAppear(orderID: String?) {
@@ -115,6 +116,45 @@ final class SwapTrackingService {
             visibleStatusOrderIDs.removeValue(forKey: orderID)
         } else {
             visibleStatusOrderIDs[orderID] = count - 1
+        }
+    }
+
+    /// One status screen's registration, released exactly once.
+    ///
+    /// A screen must unregister the id it registered, not whatever its view
+    /// model holds when it leaves: `submittedTxId` is cleared by a retry or a
+    /// reset and replaced by `setSubmittedSwap` while the screen is up, so
+    /// re-reading it on disappear left the original order's count stuck above
+    /// zero — and this service lives for the whole process, so that order's
+    /// terminal banner was consumed from then on. A screen torn down without
+    /// `viewWillDisappear` (its stack replaced while it is not on top) leaked
+    /// the same way; `deinit` releases that case.
+    final class StatusVisibilityClaim {
+        private let service: SwapTrackingService
+        private var orderID: String?
+
+        init(service: SwapTrackingService = .shared) {
+            self.service = service
+        }
+
+        /// Registers `orderID`, first releasing any id this claim still
+        /// holds, so a repeated appear cannot count one screen twice.
+        func begin(orderID: String?) {
+            end()
+            guard let orderID, !orderID.isEmpty else { return }
+            self.orderID = orderID
+            service.statusScreenWillAppear(orderID: orderID)
+        }
+
+        /// Releases the registered id, if any. Idempotent.
+        func end() {
+            guard let orderID else { return }
+            self.orderID = nil
+            service.statusScreenWillDisappear(orderID: orderID)
+        }
+
+        deinit {
+            end()
         }
     }
 

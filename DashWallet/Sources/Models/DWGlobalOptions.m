@@ -72,6 +72,7 @@ static NSString *const PER_WALLET_NOTIFICATION_CATCH_UP_PREFIX = @"DW_WALLET_NOT
 @dynamic dashpayUsername;
 @dynamic dashpayRegistrationCompleted;
 @dynamic mostRecentViewedNotificationDate;
+@dynamic viewedNotificationEventKeys;
 @dynamic dashPayRegistrationOpenedOnce;
 @dynamic confirmationAcceptContactRequestIsOn;
 #endif
@@ -288,6 +289,7 @@ NSNotificationName const DWAdvancedModeDidChangeNotification = @"org.dash.advanc
     self.dashpayUsername = nil;
     self.dashpayRegistrationCompleted = NO;
     self.mostRecentViewedNotificationDate = nil;
+    self.viewedNotificationEventKeys = nil;
     self.dashPayRegistrationOpenedOnce = NO;
     self.confirmationAcceptContactRequestIsOn = YES;
 #endif

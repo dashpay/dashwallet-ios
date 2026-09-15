@@ -20,7 +20,7 @@ import UserNotifications
 @testable import dashpay
 
 /// Exercises the producer against the real dispatcher over the in-memory
-/// store, so the event-scoped-id design is proven against the actual dedup.
+/// store, so the stable-id re-arm is proven against the actual dedup.
 /// The `showNotificationOnResult` guard is NOT here by design — it stays in
 /// `CrowdNode.notifyIfNeeded` (screen-driven state the CrowdNode
 /// controllers toggle), so every message that reaches this seam posts.
@@ -38,7 +38,7 @@ final class CrowdNodeNotificationProducerTests: XCTestCase {
         preferences = FakeNotificationPreferenceStore()
         let permissions = NotificationPermissionCoordinator(client: client, preferences: preferences)
         dispatcher = NotificationDispatcher(client: client, store: store, permissions: permissions)
-        producer = CrowdNodeNotificationProducer(dispatcher: dispatcher)
+        producer = CrowdNodeNotificationProducer(dispatcher: dispatcher, store: store)
     }
 
     func testPostCarriesCrowdNodeTopicRouteAndPresentation() async {
@@ -47,7 +47,7 @@ final class CrowdNodeNotificationProducerTests: XCTestCase {
         XCTAssertTrue(posted)
         XCTAssertEqual(client.addedRequests.count, 1)
         let request = client.addedRequests[0]
-        XCTAssertTrue(request.identifier.hasPrefix("crowdnode.result."))
+        XCTAssertEqual(request.identifier, CrowdNodeNotificationProducer.resultNotificationID)
         XCTAssertEqual(request.content.threadIdentifier, NotificationTopic.crowdnode.rawValue)
         XCTAssertEqual(request.content.categoryIdentifier, NotificationTopic.crowdnode.rawValue)
         XCTAssertEqual(request.content.body, "Your CrowdNode account is set up and ready to use!")
@@ -57,16 +57,53 @@ final class CrowdNodeNotificationProducerTests: XCTestCase {
                        NotificationForegroundBehavior.banner.rawValue)
     }
 
-    func testRepeatedIdenticalMessagesBothReachTheClient() async {
-        // The bug the event-scoped id fixes: under the fixed legacy
-        // "CrowdNode" id, the store dedup swallowed every message after
-        // the first one.
-        await producer.post(message: "Deposit sent")
+    func testRepeatedMessagesAllReachTheClientUnderOneIdentifier() async {
+        // A retrying operation: every message is still delivered (the store
+        // must not swallow the later ones as duplicates), and all of them
+        // share the identifier, so the notification center replaces the
+        // delivered banner rather than stacking one per retry.
+        await producer.post(message: "Deposit failed")
+        await producer.post(message: "Deposit failed")
         await producer.post(message: "Deposit sent")
 
+        XCTAssertEqual(client.addedRequests.count, 3)
+        XCTAssertTrue(client.addedRequests.allSatisfy {
+            $0.identifier == CrowdNodeNotificationProducer.resultNotificationID
+        })
+        XCTAssertEqual(client.addedRequests.last?.content.body, "Deposit sent")
+    }
+
+    func testRetriesLeaveOneUnseenRowAndBadgeOne() async {
+        await producer.post(message: "error 1")
+        await producer.post(message: "error 2")
+        await producer.post(message: "error 3")
+
+        XCTAssertEqual(store.events.count, 1)
+        let unseen = await store.unseenCount()
+        XCTAssertEqual(unseen, 1)
+        XCTAssertEqual(client.addedRequests.map { $0.content.badge?.intValue }, [1, 1, 1])
+    }
+
+    func testResultAfterTheLastWasSeenIsUnseenAgain() async {
+        store.seed(id: CrowdNodeNotificationProducer.resultNotificationID, topic: .crowdnode, seen: true)
+
+        let posted = await producer.post(message: "Your CrowdNode address has been confirmed.")
+
+        XCTAssertTrue(posted)
+        XCTAssertEqual(store.events[CrowdNodeNotificationProducer.resultNotificationID]?.seen, false)
+        XCTAssertEqual(client.addedRequests.first?.content.badge?.intValue, 1)
+    }
+
+    func testConcurrentPostsAreAllDelivered() async {
+        // Two results racing for the same row: the re-arm is serialized with
+        // its post, so neither is dropped as the other's duplicate.
+        async let first = producer.post(message: "first")
+        async let second = producer.post(message: "second")
+        let results = await [first, second]
+
+        XCTAssertEqual(results, [true, true])
         XCTAssertEqual(client.addedRequests.count, 2)
-        XCTAssertNotEqual(client.addedRequests[0].identifier, client.addedRequests[1].identifier)
-        XCTAssertTrue(client.addedRequests.allSatisfy { $0.identifier.hasPrefix("crowdnode.result.") })
+        XCTAssertEqual(store.events.count, 1)
     }
 
     func testPermissionGateStillApplies() async {
@@ -89,13 +126,12 @@ final class CrowdNodeNotificationProducerTests: XCTestCase {
                        "Your CrowdNode address has been confirmed.")
     }
 
-    func testInjectedEventIdIsUsedVerbatim() async {
-        let pinned = CrowdNodeNotificationProducer(dispatcher: dispatcher,
-                                                   makeEventId: { "crowdnode.result.pinned" })
+    func testOtherTopicsRowsAreUntouchedByTheReArm() async {
+        store.seed(id: "tx.abc", topic: .transactions)
 
-        await pinned.post(message: "message")
+        await producer.post(message: "message")
 
-        XCTAssertEqual(client.addedRequests.first?.identifier, "crowdnode.result.pinned")
-        XCTAssertNotNil(store.events["crowdnode.result.pinned"])
+        XCTAssertNotNil(store.events["tx.abc"])
+        XCTAssertEqual(store.unmarkedIds, [CrowdNodeNotificationProducer.resultNotificationID])
     }
 }

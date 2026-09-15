@@ -22,6 +22,10 @@ import UserNotifications
 /// `UNNotificationRequest`. Every feature posts through here, so permission
 /// gating, dedup, grouping, and the badge number are applied in one place.
 final class NotificationDispatcher {
+    /// The notification center requests are handed to.
+    private let client: UserNotificationCenterClient
+    private let store: NotifiedEventStoring
+    private let permissions: NotificationPermissionCoordinator
     /// Runs each submission to completion before the next one starts.
     ///
     /// The unseen-count read and the `client.add` that carries it are one
@@ -35,9 +39,6 @@ final class NotificationDispatcher {
     /// An actor alone would not fix it: actors are reentrant at `await`, so
     /// a multi-await sequence still interleaves. Chaining each unit onto the
     /// previous one is what makes the sequence atomic.
-    private let client: UserNotificationCenterClient
-    private let store: NotifiedEventStoring
-    private let permissions: NotificationPermissionCoordinator
     private let submissions: NotificationSerialQueue
 
     /// `submissions` is shared with `NotificationLifecycle` by the composition
@@ -95,7 +96,7 @@ final class NotificationDispatcher {
         }
         // Serialized end to end: the mark, the count it implies, and the
         // request that carries that count must not interleave with another
-        // post's, or the badge lands out of order (see `SubmissionQueue`).
+        // post's, or the badge lands out of order (see `submissions`).
         return await submissions.run { [store, client] in
             guard await store.markIfNew(id: notification.id, topic: notification.topic) else {
                 DWLogger.log("NotificationDispatcher: dropped \(notification.id) — already notified")
@@ -116,7 +117,6 @@ final class NotificationDispatcher {
             // arithmetic on `applicationIconBadgeNumber`, so
             // `NotificationLifecycle` can reconcile it to zero.
             content.badge = NSNumber(value: unseen)
-            content.interruptionLevel = notification.topic == .transactions ? .timeSensitive : .active
 
             var userInfo: [String: Any] = [
                 NotificationUserInfoKey.foregroundBehavior: notification.foregroundBehavior.rawValue,

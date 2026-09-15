@@ -33,18 +33,41 @@ protocol AppStateProvider: AnyObject {
 }
 
 /// Production provider over `UIApplication.shared.applicationState`, which
-/// is main-actor state — reads called from a producer's background thread
-/// hop to the main thread first (the same trampoline
-/// `TransactionObserver.resolveHostHandles` uses).
+/// is main-actor state — read through `SwiftDashSDKWalletSource.onMain`, so a
+/// producer's background thread hops to the main thread first.
 final class UIApplicationStateProvider: AppStateProvider {
     var isApplicationActive: Bool {
-        let read = { @MainActor () -> Bool in
-            UIApplication.shared.applicationState == .active
+        SwiftDashSDKWalletSource.onMain { UIApplication.shared.applicationState == .active }
+    }
+}
+
+// MARK: - WatchMirrorLedger
+
+/// The notification ids this process has already mirrored to the Apple Watch.
+///
+/// The watch notice does not go through the dispatcher — it mirrors every
+/// received payment whatever the notification permission or app state — so
+/// the dispatcher's persisted dedup does not bound it. Scans overlap and
+/// re-read the same rows on every signal; this ledger keeps one row to one
+/// watch notice within a process. It is in memory only: a relaunch inside a
+/// row's freshness window can mirror that row once more. Bounded, oldest id
+/// evicted first.
+private final class WatchMirrorLedger {
+    private let lock = NSLock()
+    private var ids: Set<String> = []
+    private var insertionOrder: [String] = []
+    private let capacity = 512
+
+    /// Records `id`; `false` when this process already recorded it.
+    func markIfNew(_ id: String) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        guard ids.insert(id).inserted else { return false }
+        insertionOrder.append(id)
+        if insertionOrder.count > capacity {
+            ids.remove(insertionOrder.removeFirst())
         }
-        if Thread.isMainThread {
-            return MainActor.assumeIsolated { read() }
-        }
-        return DispatchQueue.main.sync { MainActor.assumeIsolated { read() } }
+        return true
     }
 }
 
@@ -95,8 +118,10 @@ final class TransactionNotificationProducer {
     /// ledger rather than in SwiftData — `rowSource` cannot see them.
     private let platformActivitySource: (Date) -> [PlatformAddressActivityRecord]
     private let appState: AppStateProvider
-    /// Mirrors a posted notification's body to the Apple Watch app.
+    /// Sends a received payment's copy to the Apple Watch app; see
+    /// `mirrorToWatch(_:)`.
     private let watchBridge: (String) -> Void
+    private let watchMirrors = WatchMirrorLedger()
     /// The fiat half of the received-payment copy, for a DASH amount.
     private let fiatFormatter: (Decimal) async -> String
     private let now: () -> Date
@@ -151,7 +176,8 @@ final class TransactionNotificationProducer {
     /// Hops off the signal's posting thread. Scans are not serialized
     /// against each other: overlapping scans posting the same row are
     /// resolved by the store's `markIfNew` (an actor), so exactly one post
-    /// and one watch mirror happen per txid.
+    /// happens per txid; `WatchMirrorLedger` does the same for the watch
+    /// mirror within a process.
     private func requestScan() {
         Task { [weak self] in
             await self?.scanAndNotify()
@@ -237,6 +263,8 @@ final class TransactionNotificationProducer {
                 route: .home,
                 foregroundBehavior: .banner)
 
+            mirrorToWatch(notification)
+
             // Same app-state policy as a received Core payment: consumed, not
             // dropped, so a later scan cannot re-post what the user watched
             // arrive in the foreground.
@@ -245,7 +273,6 @@ final class TransactionNotificationProducer {
                 continue
             }
             if await dispatcher.post(notification) {
-                watchBridge(notification.body)
                 posted += 1
             }
         }
@@ -281,6 +308,8 @@ final class TransactionNotificationProducer {
 
         let notification = await notification(for: tx, amount: amount)
 
+        mirrorToWatch(notification)
+
         // App-state policy, preserved from the balance-delta notifier: a
         // plain received payment posts only while the app is backgrounded
         // or inactive — the foreground feed is already showing it. The id
@@ -293,9 +322,21 @@ final class TransactionNotificationProducer {
         }
 
         guard await dispatcher.post(notification) else { return .dropped }
-        // The watch mirrors exactly the rows that produced a post.
-        watchBridge(notification.body)
         return .posted
+    }
+
+    /// Sends a received payment's copy to the Apple Watch, once per id per
+    /// process.
+    ///
+    /// Called only for rows that passed the replay guard, and ahead of the
+    /// app-state policy and the dispatcher's permission gate: the watch shows
+    /// every received payment — payments that arrive while the app is
+    /// frontmost or notifications are off included — as the retired
+    /// `DWBalanceNotifier` did, not only the ones that produced a phone
+    /// notification.
+    private func mirrorToWatch(_ notification: AppNotification) {
+        guard watchMirrors.markIfNew(notification.id) else { return }
+        watchBridge(notification.body)
     }
 
     /// The point in time a row must prove is recent.
@@ -374,9 +415,10 @@ final class TransactionNotificationProducer {
     }
 
     /// Production Platform activity: the active wallet's ledger rows on the
-    /// current network, filtered to the scan window. Returns nothing when no
-    /// wallet is resolved — a scan during teardown must not read another
-    /// wallet's ledger.
+    /// current network, windowed and capped at `scanFetchLimit` in the query
+    /// itself, like the Core half — scans run on every persistence signal and
+    /// may overlap. Returns nothing when no wallet is resolved — a scan
+    /// during teardown must not read another wallet's ledger.
     static func defaultPlatformActivitySource(since cutoff: Date) -> [PlatformAddressActivityRecord] {
         // Same resolution `SwiftDashSDKWalletSource.fetchPlatformActivity`
         // uses, through the same main-thread trampoline: the
@@ -390,9 +432,11 @@ final class TransactionNotificationProducer {
             return (walletId, Int64(network.rawValue))
         }
         guard let handles else { return [] }
-        return PlatformAddressActivityDAO.shared
-            .activities(walletId: handles.walletId, networkRaw: handles.networkRaw)
-            .filter { $0.observedAt >= cutoff }
+        return PlatformAddressActivityDAO.shared.activities(
+            walletId: handles.walletId,
+            networkRaw: handles.networkRaw,
+            since: cutoff,
+            limit: scanFetchLimit)
     }
 
     /// Production fiat copy, formatted on the main actor. Scans run on

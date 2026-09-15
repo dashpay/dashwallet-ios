@@ -95,7 +95,7 @@ final class NotificationsBootstrap: NSObject {
                 options.notificationCatchUpDate = Date()
             })
         self.backgroundGrace = BackgroundGraceHold(permissions: permissionCoordinator)
-        self.crowdNodeProducer = CrowdNodeNotificationProducer(dispatcher: dispatcher)
+        self.crowdNodeProducer = CrowdNodeNotificationProducer(dispatcher: dispatcher, store: store)
         // Foreground terminal-swap banners are suppressed only while the
         // live swap-status screen is on screen (it marks itself visible on
         // `SwapTrackingService`).

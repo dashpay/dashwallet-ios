@@ -431,6 +431,14 @@ final class BackgroundRefreshCoordinator {
     /// fresh cycle that ends in `.syncDone` again. Nothing to catch up on is
     /// a legitimate outcome: the caller's deadline bounds the wait and its
     /// expiry is not treated as failure by itself.
+    ///
+    /// Main-actor isolated, explicitly: `SyncingActivityMonitor.state` fans
+    /// out on main and `SwiftDashSDKSPVCoordinator.tipHeight` is `@Published`.
+    /// The coordinator's deadline race calls this from a task-group child, and
+    /// an async function hops to its own isolation on entry — so every read in
+    /// the loop runs on main, and the 250 ms sleep releases it in between. The
+    /// annotation keeps that true should the method ever leave this type.
+    @MainActor
     static func defaultSyncDoneWait() async {
         let monitor = SyncingActivityMonitor.shared
         let startedDone = monitor.state == .syncDone

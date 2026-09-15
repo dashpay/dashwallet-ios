@@ -51,7 +51,9 @@ final class BackgroundGraceHoldTests: XCTestCase {
     }
 
     private var host: FakeBackgroundTaskHost!
+    private var client: FakeUserNotificationCenterClient!
     private var preferences: FakeNotificationPreferenceStore!
+    private var hasWallet = true
     private var permissions: NotificationPermissionCoordinator!
     /// Set only by the test that needs to observe the wait starting — an
     /// expectation created for every test would go unwaited.
@@ -62,8 +64,10 @@ final class BackgroundGraceHoldTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         host = FakeBackgroundTaskHost()
+        client = FakeUserNotificationCenterClient()
         preferences = FakeNotificationPreferenceStore()
-        permissions = NotificationPermissionCoordinator(client: FakeUserNotificationCenterClient(),
+        hasWallet = true
+        permissions = NotificationPermissionCoordinator(client: client,
                                                         preferences: preferences)
         hold = makeHold()
     }
@@ -77,7 +81,9 @@ final class BackgroundGraceHoldTests: XCTestCase {
     }
 
     private func makeHold() -> BackgroundGraceHold {
-        BackgroundGraceHold(host: host, permissions: permissions) { [weak self] _ in
+        BackgroundGraceHold(host: host,
+                            permissions: permissions,
+                            hasWallet: { [weak self] in self?.hasWallet ?? false }) { [weak self] _ in
             await withCheckedContinuation { continuation in
                 Task { @MainActor in
                     self?.resumeWait = { continuation.resume() }
@@ -154,6 +160,60 @@ final class BackgroundGraceHoldTests: XCTestCase {
 
         XCTAssertEqual(host.beginCount, 0)
         XCTAssertFalse(hold.isHolding)
+    }
+
+    /// No wallet, nothing to sync or notify about — no background time.
+    func testNoHoldWithoutAWallet() {
+        hasWallet = false
+
+        hold.beginHold()
+
+        XCTAssertEqual(host.beginCount, 0)
+        XCTAssertFalse(hold.isHolding)
+    }
+
+    /// The OS grant is read asynchronously, after the task is already taken:
+    /// a denied grant must hand the time straight back instead of holding it
+    /// for the grace period.
+    func testDeniedOSGrantReleasesTheTaskWithoutWaiting() async {
+        client.authorizationStatusValue = .denied
+        let ended = expectation(description: "background task released")
+        host.onEnd = { ended.fulfill() }
+
+        hold.beginHold()
+        XCTAssertEqual(host.beginCount, 1)
+
+        await fulfillment(of: [ended], timeout: 1)
+        XCTAssertEqual(host.endedIdentifiers, [host.nextIdentifier])
+        XCTAssertFalse(hold.isHolding)
+        XCTAssertNil(resumeWait, "the grace wait must not start for an undeliverable state")
+    }
+
+    /// Not yet asked is not `.on` either: iOS ignores posts until the grant.
+    func testUndeterminedOSGrantReleasesTheTaskWithoutWaiting() async {
+        client.authorizationStatusValue = .notDetermined
+        let ended = expectation(description: "background task released")
+        host.onEnd = { ended.fulfill() }
+
+        hold.beginHold()
+
+        await fulfillment(of: [ended], timeout: 1)
+        XCTAssertFalse(hold.isHolding)
+        XCTAssertNil(resumeWait)
+    }
+
+    /// The deliverable case keeps the task for the grace period.
+    func testGrantedAndWantedKeepsTheTaskForTheGracePeriod() async {
+        client.authorizationStatusValue = .authorized
+        let started = expectation(description: "grace wait started")
+        started.assertForOverFulfill = false
+        waitStarted = started
+
+        hold.beginHold()
+        await fulfillment(of: [started], timeout: 1)
+
+        XCTAssertTrue(hold.isHolding)
+        XCTAssertTrue(host.endedIdentifiers.isEmpty)
     }
 
     /// A refused loan (`.invalid`) must not leave the hold believing it

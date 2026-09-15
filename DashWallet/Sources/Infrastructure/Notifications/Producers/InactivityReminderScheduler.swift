@@ -102,21 +102,18 @@ final class InactivityReminderScheduler {
     /// fallback for the unknown case above. `BalanceModel` writes it on
     /// every balance it renders.
     private let hadBalance: () -> Bool
-    private let now: () -> Date
     private var observers: [NSObjectProtocol] = []
 
     init(client: UserNotificationCenterClient,
          permissions: NotificationPermissionCoordinator,
          preferences: InactivityReminderPreferenceStore = GlobalOptionsInactivityReminderPreferenceStore(),
          totalBalance: @escaping () -> UInt64? = { SwiftDashSDKWalletState.shared.balance?.total },
-         hadBalance: @escaping () -> Bool = { DWGlobalOptions.sharedInstance().userHasBalance },
-         now: @escaping () -> Date = Date.init) {
+         hadBalance: @escaping () -> Bool = { DWGlobalOptions.sharedInstance().userHasBalance }) {
         self.client = client
         self.permissions = permissions
         self.preferences = preferences
         self.totalBalance = totalBalance
         self.hadBalance = hadBalance
-        self.now = now
     }
 
     deinit {
@@ -195,16 +192,17 @@ final class InactivityReminderScheduler {
         }
         content.userInfo = userInfo
 
-        let fireDate = now().addingTimeInterval(Self.reminderDelay)
-        let components = Calendar.current.dateComponents(
-            [.year, .month, .day, .hour, .minute, .second], from: fireDate)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        // A pure delay, so an interval trigger: a calendar trigger built from
+        // `now + 30 days` is re-resolved in whatever time zone is current when
+        // it fires, and a time-zone change or DST transition moved it (a
+        // spring-forward match could name a local time that never occurs).
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: Self.reminderDelay, repeats: false)
         let request = UNNotificationRequest(identifier: Self.requestIdentifier,
                                             content: content,
                                             trigger: trigger)
         do {
             try await client.add(request)
-            DWLogger.log("InactivityReminderScheduler: reminder scheduled for \(fireDate)")
+            DWLogger.log("InactivityReminderScheduler: reminder scheduled in \(Int(Self.reminderDelay))s")
         } catch {
             DWLogger.log("InactivityReminderScheduler: scheduling failed: \(error)")
         }

@@ -101,6 +101,10 @@ extern NSNotificationName const DWAdvancedModeDidChangeNotification;
 @property (nonatomic, assign) BOOL confirmationAcceptContactRequestIsOn;
 @property (nullable, nonatomic, copy) NSString *dashpayUsername;
 @property (nullable, nonatomic, strong) NSDate *mostRecentViewedNotificationDate;
+/// Keys of the DashPay notification events the notifications screen has
+/// shown (`DashPayNotificationsReadState.eventKey`). `nil` until the first
+/// viewing records them; the date marker above answers until then.
+@property (nullable, nonatomic, copy) NSArray<NSString *> *viewedNotificationEventKeys;
 #endif
 // Non-dynamic
 

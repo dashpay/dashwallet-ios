@@ -59,9 +59,12 @@ final class BackgroundGraceHold {
     static let duration: TimeInterval = 25
 
     private let host: BackgroundTaskHost
-    /// The in-app toggle. A user who wants no notifications gets no
-    /// background time spent on producing them.
+    /// The permission gate. A user with the in-app toggle off, or with the
+    /// OS grant denied or not yet given, gets no background time spent on
+    /// notifications that could not be delivered.
     private let permissions: NotificationPermissionCoordinator
+    /// Without a wallet there is nothing to sync and nothing to notify about.
+    private let hasWallet: () -> Bool
     /// Cancellable wait; injected so tests need no wall clock.
     private let wait: (TimeInterval) async -> Void
 
@@ -72,11 +75,13 @@ final class BackgroundGraceHold {
 
     init(host: BackgroundTaskHost = UIApplication.shared,
          permissions: NotificationPermissionCoordinator,
+         hasWallet: @escaping () -> Bool = { WalletEnvironment.hasWallet },
          wait: @escaping (TimeInterval) async -> Void = { seconds in
              try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
          }) {
         self.host = host
         self.permissions = permissions
+        self.hasWallet = hasWallet
         self.wait = wait
     }
 
@@ -111,13 +116,24 @@ final class BackgroundGraceHold {
 
     // MARK: Hold
 
-    /// Takes the background task, unless the user wants no notifications or
-    /// a hold is somehow already in flight.
+    /// Takes the background task, unless notifications could not be
+    /// delivered, there is no wallet, or a hold is already in flight.
+    ///
+    /// The OS grant can only be read asynchronously, and `didEnterBackground`
+    /// leaves no time to await it before asking for background time — the
+    /// process may already be suspended by then. So the synchronous facts
+    /// (toggle, wallet) gate the request, and the task is taken at once; the
+    /// async `effectiveState()` then either keeps it for the grace period or
+    /// releases it immediately when the state is anything but `.on`.
     func beginHold() {
-        // Both bails log: a hold that silently does nothing is exactly how
+        // Every bail logs: a hold that silently does nothing is exactly how
         // the sync gate hid itself.
         guard permissions.userWantsNotifications else {
             DWLogger.log("BackgroundGraceHold: skipped — notifications are off")
+            return
+        }
+        guard hasWallet() else {
+            DWLogger.log("BackgroundGraceHold: skipped — no wallet")
             return
         }
         guard identifier == .invalid else {
@@ -137,8 +153,14 @@ final class BackgroundGraceHold {
         }
         DWLogger.log("BackgroundGraceHold: holding for \(Int(Self.duration))s")
 
-        expiry = Task { [weak self] in
-            guard let wait = self?.wait else { return }
+        expiry = Task { [weak self, permissions = self.permissions, wait = self.wait] in
+            let state = await permissions.effectiveState()
+            // Cancelled means the hold already ended (foregrounded, expired).
+            guard !Task.isCancelled else { return }
+            guard state == .on else {
+                self?.endHold(reason: "notifications not deliverable: \(state)")
+                return
+            }
             await wait(Self.duration)
             guard !Task.isCancelled else { return }
             self?.endHold(reason: "elapsed")

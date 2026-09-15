@@ -13,6 +13,9 @@
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
+/* DashPay Notifications: established contact, accepting side unknown */
+"%@ is now your contact" = "%@ is now your contact";
+
 /* Maya */
 "%@ address" = "%@ address";
 

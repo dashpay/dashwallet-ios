@@ -41,7 +41,7 @@ final class DashPayNotificationsReadStateTests: XCTestCase {
 
         XCTAssertEqual(
             DashPayNotificationsReadState.unreadCount(
-                incoming: [], outgoing: [outgoing], contacts: [], lastViewed: lastViewed),
+                incoming: [], outgoing: [outgoing], contacts: [], lastViewed: lastViewed, viewedKeys: nil),
             1)
         XCTAssertEqual(
             DashPayNotificationsReadState.advancedMarker(
@@ -61,7 +61,7 @@ final class DashPayNotificationsReadStateTests: XCTestCase {
                 incoming: [incoming],
                 outgoing: [outgoing],
                 contacts: [established, viewedEstablished],
-                lastViewed: lastViewed),
+                lastViewed: lastViewed, viewedKeys: nil),
             3)
     }
 
@@ -70,7 +70,7 @@ final class DashPayNotificationsReadStateTests: XCTestCase {
 
         XCTAssertEqual(
             DashPayNotificationsReadState.unreadCount(
-                incoming: [incoming], outgoing: [], contacts: [], lastViewed: nil),
+                incoming: [incoming], outgoing: [], contacts: [], lastViewed: nil, viewedKeys: nil),
             1)
         XCTAssertEqual(
             DashPayNotificationsReadState.advancedMarker(
@@ -86,11 +86,75 @@ final class DashPayNotificationsReadStateTests: XCTestCase {
 
         XCTAssertEqual(
             DashPayNotificationsReadState.unreadCount(
-                incoming: [item], outgoing: [], contacts: [], lastViewed: lastViewed),
+                incoming: [item], outgoing: [], contacts: [], lastViewed: lastViewed, viewedKeys: nil),
             0)
         XCTAssertNil(
             DashPayNotificationsReadState.advancedMarker(
                 incoming: [item], outgoing: [], contacts: [], lastViewed: lastViewed))
+    }
+
+    // MARK: Viewed event keys
+
+    func testRequestDatedBehindTheViewingStillCountsUnread() {
+        // The finding this guards: the user viewed the screen while their
+        // own outgoing request (60 s ago) was the newest event, which moved
+        // the date marker there. An incoming request arriving afterwards,
+        // stamped by the sender's clock 90 s ago, sat behind that marker and
+        // was never counted. With recorded keys it is unread until shown.
+        let ownOutgoing = ContactItem.fixture(idByte: 0x01, relationship: .outgoing, createdAt: date(secondsAgo: 60))
+        let viewed = DashPayNotificationsReadState.recordingViewed(
+            incoming: [], outgoing: [ownOutgoing], contacts: [], previous: nil)
+        let marker = DashPayNotificationsReadState.advancedMarker(
+            incoming: [], outgoing: [ownOutgoing], contacts: [], lastViewed: nil)
+        let lateIncoming = ContactItem.fixture(idByte: 0x02, relationship: .incoming, createdAt: date(secondsAgo: 90))
+
+        XCTAssertEqual(
+            DashPayNotificationsReadState.unreadCount(
+                incoming: [lateIncoming], outgoing: [ownOutgoing], contacts: [],
+                lastViewed: marker, viewedKeys: viewed),
+            1)
+        XCTAssertTrue(DashPayNotificationsReadState.isUnread(lateIncoming, lastViewed: marker, viewedKeys: viewed))
+        XCTAssertFalse(DashPayNotificationsReadState.isUnread(ownOutgoing, lastViewed: marker, viewedKeys: viewed))
+    }
+
+    func testViewingRecordsShownEventsAndKeepsEarlierOnes() {
+        let first = ContactItem.fixture(idByte: 0x01, relationship: .incoming, createdAt: date(secondsAgo: 60))
+        let second = ContactItem.fixture(idByte: 0x02, relationship: .established, createdAt: date(secondsAgo: 30))
+
+        let afterFirst = DashPayNotificationsReadState.recordingViewed(
+            incoming: [first], outgoing: [], contacts: [], previous: nil)
+        // A viewing while the lists are briefly empty (snapshot mid-rebuild)
+        // must not wipe what was recorded.
+        let afterEmpty = DashPayNotificationsReadState.recordingViewed(
+            incoming: [], outgoing: [], contacts: [], previous: afterFirst)
+        let afterSecond = DashPayNotificationsReadState.recordingViewed(
+            incoming: [], outgoing: [], contacts: [second], previous: afterEmpty)
+
+        XCTAssertEqual(afterEmpty, afterFirst)
+        XCTAssertEqual(afterSecond, [
+            DashPayNotificationsReadState.eventKey(for: first),
+            DashPayNotificationsReadState.eventKey(for: second),
+        ])
+    }
+
+    func testResentRequestIsANewEvent() {
+        // Same counterparty, same list, later timestamp: a new request.
+        let original = ContactItem.fixture(idByte: 0x01, relationship: .incoming, createdAt: date(secondsAgo: 600))
+        let resent = ContactItem.fixture(idByte: 0x01, relationship: .incoming, createdAt: date(secondsAgo: 30))
+        let viewed = DashPayNotificationsReadState.recordingViewed(
+            incoming: [original], outgoing: [], contacts: [], previous: nil)
+
+        XCTAssertTrue(DashPayNotificationsReadState.isUnread(resent, lastViewed: nil, viewedKeys: viewed))
+    }
+
+    func testRecordedSetIsPrunedToShownEventsPastItsBound() {
+        let stale = Set((0..<DashPayNotificationsReadState.viewedKeysLimit).map { "incoming.stale.\($0)" })
+        let shown = ContactItem.fixture(relationship: .incoming, createdAt: date(secondsAgo: 30))
+
+        let recorded = DashPayNotificationsReadState.recordingViewed(
+            incoming: [shown], outgoing: [], contacts: [], previous: stale)
+
+        XCTAssertEqual(recorded, [DashPayNotificationsReadState.eventKey(for: shown)])
     }
 
     // MARK: Marker safety
@@ -98,7 +162,7 @@ final class DashPayNotificationsReadStateTests: XCTestCase {
     func testEmptyListsCountNothingAndAdvanceNothing() {
         XCTAssertEqual(
             DashPayNotificationsReadState.unreadCount(
-                incoming: [], outgoing: [], contacts: [], lastViewed: nil),
+                incoming: [], outgoing: [], contacts: [], lastViewed: nil, viewedKeys: nil),
             0)
         XCTAssertNil(
             DashPayNotificationsReadState.advancedMarker(

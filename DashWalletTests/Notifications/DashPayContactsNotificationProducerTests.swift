@@ -42,7 +42,6 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
     private var dispatcher: NotificationDispatcher!
     private var appState: FakeAppStateProvider!
     private var snapshot = DashPayContactsNotificationProducer.ContactsSnapshot(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [], contacts: [])
-    private var lastViewed: Date?
     private var producer: DashPayContactsNotificationProducer!
 
     override func setUp() async throws {
@@ -52,7 +51,6 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
         preferences = FakeNotificationPreferenceStore()
         appState = FakeAppStateProvider()
         snapshot = DashPayContactsNotificationProducer.ContactsSnapshot(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [], contacts: [])
-        lastViewed = nil
         let permissions = NotificationPermissionCoordinator(client: client, preferences: preferences)
         dispatcher = NotificationDispatcher(client: client, store: store, permissions: permissions)
         producer = DashPayContactsNotificationProducer(
@@ -61,7 +59,6 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
             snapshot: { [weak self] in
                 self?.snapshot ?? DashPayContactsNotificationProducer.ContactsSnapshot(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [], contacts: [])
             },
-            lastViewedDate: { [weak self] in self?.lastViewed },
             appState: appState,
             now: { Self.referenceNow })
     }
@@ -138,16 +135,20 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
         XCTAssertTrue(client.addedRequests.isEmpty)
     }
 
-    func testAlreadyViewedRequestDoesNotPost() async {
-        // The user opened the notifications screen after this request
-        // arrived — the bell's read marker makes it old news.
-        let item = makeItem(relationship: .incoming, age: 120, incomingAge: 120)
-        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [item], contacts: [])
-        lastViewed = Self.referenceNow.addingTimeInterval(-60)
+    func testRequestDatedBehindAnEarlierViewingStillPosts() async {
+        // The bell marker once gated this producer. Viewing the screen moves
+        // it to the newest event shown — here, our own outgoing request sent
+        // a minute ago — and an incoming request stamped by the sender's
+        // clock 30 s earlier, which arrived only after that viewing, was
+        // dropped for good. The producer no longer reads the marker at all.
+        let lateIncoming = makeItem(idByte: 0x22, relationship: .incoming, age: 90, incomingAge: 90)
+        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA,
+                         incomingRequests: [lateIncoming], contacts: [])
 
         await producer.scanAndNotify()
 
-        XCTAssertTrue(client.addedRequests.isEmpty)
+        XCTAssertEqual(client.addedRequests.map(\.identifier),
+                       ["contact.request.\(DashPayContactsNotificationProducerTests.ownerAHex).\(idHex(0x22))"])
     }
 
     // MARK: Established contacts
@@ -179,6 +180,30 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
         await producer.scanAndNotify()
 
         XCTAssertTrue(client.addedRequests.isEmpty)
+    }
+
+    func testUnknownAcceptOrderDoesNotPost() async {
+        // Neither direction's timestamp is known, so nothing says THEY
+        // accepted — a missing date is not the distant past.
+        let item = makeItem(idByte: 0xdd, relationship: .established, age: 60)
+        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [], contacts: [item])
+
+        await producer.scanAndNotify()
+
+        XCTAssertNil(item.establishedByTheirAccept)
+        XCTAssertTrue(client.addedRequests.isEmpty)
+    }
+
+    func testOneMissingDirectionTimestampIsUnknownOrder() {
+        let incomingOnly = makeItem(relationship: .established, incomingAge: 60)
+        let outgoingOnly = makeItem(relationship: .established, outgoingAge: 60)
+        let theirs = makeItem(relationship: .established, incomingAge: 60, outgoingAge: 120)
+        let ours = makeItem(relationship: .established, incomingAge: 120, outgoingAge: 60)
+
+        XCTAssertNil(incomingOnly.establishedByTheirAccept)
+        XCTAssertNil(outgoingOnly.establishedByTheirAccept)
+        XCTAssertEqual(theirs.establishedByTheirAccept, true)
+        XCTAssertEqual(ours.establishedByTheirAccept, false)
     }
 
     // MARK: App-state policy

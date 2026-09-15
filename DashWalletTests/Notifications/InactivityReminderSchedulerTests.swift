@@ -21,9 +21,8 @@ import UserNotifications
 @testable import dashpay
 
 /// Drives the scheduler directly (and once through the app-lifecycle
-/// notification it observes). The real wall clock stays in place: a
-/// calendar trigger built from a synthetic past date could never fire, so
-/// the ~30-day assertion is made relative to `Date()`.
+/// notification it observes). The reminder is an interval trigger, so the
+/// 30-day assertion needs no clock at all.
 @MainActor
 final class InactivityReminderSchedulerTests: XCTestCase {
     private final class FakeInactivityReminderPreferenceStore: InactivityReminderPreferenceStore {
@@ -64,7 +63,7 @@ final class InactivityReminderSchedulerTests: XCTestCase {
 
     // MARK: Scheduling
 
-    func testSchedulesCalendarTriggerThirtyDaysOutWithoutTheBalance() async throws {
+    func testSchedulesIntervalTriggerThirtyDaysOutWithoutTheBalance() async throws {
         await scheduler.scheduleReminder()
 
         XCTAssertEqual(client.addedRequests.count, 1)
@@ -80,11 +79,12 @@ final class InactivityReminderSchedulerTests: XCTestCase {
         XCTAssertFalse(request.content.body.contains("DASH"))
         XCTAssertEqual(DeepLinkRoute.decode(fromUserInfo: request.content.userInfo), .home)
 
-        let trigger = try XCTUnwrap(request.trigger as? UNCalendarNotificationTrigger)
+        // An interval, not a calendar match: immune to time-zone and DST
+        // changes between scheduling and firing.
+        let trigger = try XCTUnwrap(request.trigger as? UNTimeIntervalNotificationTrigger)
         XCTAssertFalse(trigger.repeats)
-        let fireDate = try XCTUnwrap(trigger.nextTriggerDate())
-        let expected = Date().addingTimeInterval(InactivityReminderScheduler.reminderDelay)
-        XCTAssertEqual(fireDate.timeIntervalSince(expected), 0, accuracy: 5 * 60)
+        XCTAssertEqual(trigger.timeInterval, InactivityReminderScheduler.reminderDelay)
+        XCTAssertEqual(trigger.timeInterval, 30 * 24 * 60 * 60)
     }
 
     func testZeroBalanceSchedulesNothing() async {
@@ -125,13 +125,13 @@ final class InactivityReminderSchedulerTests: XCTestCase {
         await scheduler.scheduleReminder()
         XCTAssertTrue(reminderPreferences.walletHadBalance)
 
-        client.addedRequests.removeAll()
+        let requestsBefore = client.addedRequests.count
         balance = nil
         hadBalance = false
 
         await scheduler.scheduleReminder()
 
-        XCTAssertEqual(client.addedRequests.count, 1)
+        XCTAssertEqual(client.addedRequests.count, requestsBefore + 1)
     }
 
     func testKnownEmptyBalanceClearsTheLatch() async {
@@ -139,13 +139,13 @@ final class InactivityReminderSchedulerTests: XCTestCase {
         await scheduler.scheduleReminder()
         XCTAssertTrue(reminderPreferences.walletHadBalance)
 
-        client.addedRequests.removeAll()
+        let requestsBefore = client.addedRequests.count
         balance = 0
 
         await scheduler.scheduleReminder()
 
         XCTAssertFalse(reminderPreferences.walletHadBalance)
-        XCTAssertTrue(client.addedRequests.isEmpty)
+        XCTAssertEqual(client.addedRequests.count, requestsBefore)
     }
 
     func testOptedOutSchedulesNothing() async {

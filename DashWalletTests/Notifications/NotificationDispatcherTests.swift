@@ -130,11 +130,14 @@ final class NotificationDispatcherTests: XCTestCase {
         XCTAssertEqual(client.addedRequests[0].content.badge, NSNumber(value: 3))
     }
 
-    func testInterruptionLevelIsTimeSensitiveOnlyForTransactions() async {
+    /// No topic claims `.timeSensitive`: without the Time Sensitive
+    /// Notifications entitlement iOS downgrades it anyway, so every request
+    /// carries the default level.
+    func testInterruptionLevelIsDefaultForEveryTopic() async {
         await dispatcher.post(makeNotification(id: "tx.a", topic: .transactions))
         await dispatcher.post(makeNotification(id: "cn.a", topic: .crowdnode))
 
-        XCTAssertEqual(client.addedRequests[0].content.interruptionLevel, .timeSensitive)
+        XCTAssertEqual(client.addedRequests[0].content.interruptionLevel, .active)
         XCTAssertEqual(client.addedRequests[1].content.interruptionLevel, .active)
     }
 

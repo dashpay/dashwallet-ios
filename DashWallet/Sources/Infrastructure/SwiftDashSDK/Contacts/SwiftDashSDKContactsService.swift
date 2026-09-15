@@ -305,39 +305,52 @@ final class SwiftDashSDKContactsService: ObservableObject {
     /// builds without it): viewing then only advances the marker.
     static var notificationsViewedHandler: (() -> Void)?
 
-    /// Contact events newer than the last time the user viewed the
-    /// notifications screen: pending incoming and outgoing requests plus
-    /// established-contact events — every row the notifications screen
-    /// renders. Read-state lives in the same
-    /// `DWGlobalOptions.mostRecentViewedNotificationDate` slot the
-    /// legacy `DWNotificationsModel` used, so upgrade installs don't
-    /// re-badge everything the user already saw.
+    /// Contact events the notifications screen has not shown yet: pending
+    /// incoming and outgoing requests plus established-contact events —
+    /// every row the screen renders. Read from the recorded event keys
+    /// (`DashPayNotificationsReadState`); until the first viewing records
+    /// any, the legacy `DWNotificationsModel` date marker answers, so
+    /// upgrade installs don't re-badge everything the user already saw.
     var unreadNotificationCount: Int {
-        DashPayNotificationsReadState.unreadCount(
+        let options = DWGlobalOptions.sharedInstance()
+        return DashPayNotificationsReadState.unreadCount(
             incoming: incomingRequests,
             outgoing: outgoingRequests,
             contacts: contacts,
-            lastViewed: DWGlobalOptions.sharedInstance().mostRecentViewedNotificationDate)
+            lastViewed: options.mostRecentViewedNotificationDate,
+            viewedKeys: options.viewedNotificationEventKeys.map(Set.init))
     }
 
-    /// Advance the read-state marker over every rendered event list —
-    /// incoming, outgoing, established — to the newest event currently
-    /// shown (mirrors the legacy model, which tracked the max displayed
-    /// item date rather than `Date()` — future-dated events stay unread;
-    /// the marker never moves backward, so re-firing on multiple exit
-    /// paths is harmless). Reposts the change notification so the bell
-    /// badge re-renders, and always fires `notificationsViewedHandler` —
-    /// stale delivered dashpay notifications must clear whenever the
-    /// screen was viewed, whether or not the marker could advance.
+    /// Record every rendered event — incoming, outgoing, established — as
+    /// viewed, and advance the legacy date marker alongside it. Re-firing on
+    /// multiple exit paths is harmless: the key set only grows (within its
+    /// bound) and the marker never moves backward. Reposts the change
+    /// notification when either moved, so the bell badge re-renders, and
+    /// always fires `notificationsViewedHandler` — stale delivered dashpay
+    /// notifications must clear whenever the screen was viewed.
     func markNotificationsViewed() {
         defer { Self.notificationsViewedHandler?() }
         let options = DWGlobalOptions.sharedInstance()
-        guard let advanced = DashPayNotificationsReadState.advancedMarker(
+        let previousKeys = options.viewedNotificationEventKeys.map(Set.init)
+        let recordedKeys = DashPayNotificationsReadState.recordingViewed(
             incoming: incomingRequests,
             outgoing: outgoingRequests,
             contacts: contacts,
-            lastViewed: options.mostRecentViewedNotificationDate) else { return }
-        options.mostRecentViewedNotificationDate = advanced
+            previous: previousKeys)
+        var changed = false
+        if recordedKeys != previousKeys {
+            options.viewedNotificationEventKeys = recordedKeys.sorted()
+            changed = true
+        }
+        if let advanced = DashPayNotificationsReadState.advancedMarker(
+            incoming: incomingRequests,
+            outgoing: outgoingRequests,
+            contacts: contacts,
+            lastViewed: options.mostRecentViewedNotificationDate) {
+            options.mostRecentViewedNotificationDate = advanced
+            changed = true
+        }
+        guard changed else { return }
         NotificationCenter.default.post(name: Self.contactsDidChangeNotification, object: nil)
     }
 

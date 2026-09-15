@@ -29,9 +29,12 @@ struct NotificationsScreen: View {
     let onBack: () -> Void
 
     /// Read-state captured once at screen entry so rows don't jump
-    /// between sections while the user is looking at them; the marker
-    /// itself advances on exit (`markViewed`).
-    @State private var lastViewedAtEntry: Date = .distantPast
+    /// between sections while the user is looking at them; it is recorded
+    /// on exit (`markViewed`). The keys decide; the date marker only answers
+    /// for an install that has not recorded any yet
+    /// (`DashPayNotificationsReadState.isUnread`).
+    @State private var lastViewedAtEntry: Date?
+    @State private var viewedKeysAtEntry: Set<String>?
 
     /// The search field's live text.
     @State private var searchText = ""
@@ -76,7 +79,9 @@ struct NotificationsScreen: View {
             Text(viewModel.errorMessage ?? "")
         }
         .onAppear {
-            lastViewedAtEntry = DWGlobalOptions.sharedInstance().mostRecentViewedNotificationDate ?? .distantPast
+            let options = DWGlobalOptions.sharedInstance()
+            lastViewedAtEntry = options.mostRecentViewedNotificationDate
+            viewedKeysAtEntry = options.viewedNotificationEventKeys.map(Set.init)
             viewModel.refresh()
         }
         .onDisappear {
@@ -109,6 +114,9 @@ struct NotificationsScreen: View {
         case theyAccepted
         /// Established because we accepted their request.
         case weAccepted
+        /// Established, but which side accepted is unknown — one of the two
+        /// direction timestamps is missing (`establishedByTheirAccept == nil`).
+        case established
     }
 
     private struct Event: Identifiable {
@@ -131,7 +139,13 @@ struct NotificationsScreen: View {
         let requests = viewModel.incomingRequests.map { Event(item: $0, kind: .incomingRequest) }
         let sent = viewModel.outgoingRequests.map { Event(item: $0, kind: .sentRequest) }
         let established = viewModel.contacts.map { item -> Event in
-            Event(item: item, kind: item.establishedByTheirAccept ? .theyAccepted : .weAccepted)
+            let kind: EventKind
+            switch item.establishedByTheirAccept {
+            case true?: kind = .theyAccepted
+            case false?: kind = .weAccepted
+            case nil: kind = .established
+            }
+            return Event(item: item, kind: kind)
         }
         return (requests + sent + established).sorted { $0.date > $1.date }
     }
@@ -143,8 +157,13 @@ struct NotificationsScreen: View {
         events.filter { $0.item.matches(searchQuery: appliedSearchQuery) }
     }
 
-    private var newEvents: [Event] { filteredEvents.filter { $0.date > lastViewedAtEntry } }
-    private var earlierEvents: [Event] { filteredEvents.filter { $0.date <= lastViewedAtEntry } }
+    private var newEvents: [Event] { filteredEvents.filter(isNew) }
+    private var earlierEvents: [Event] { filteredEvents.filter { !isNew($0) } }
+
+    private func isNew(_ event: Event) -> Bool {
+        DashPayNotificationsReadState.isUnread(
+            event.item, lastViewed: lastViewedAtEntry, viewedKeys: viewedKeysAtEntry)
+    }
 
     // MARK: Body
 
@@ -302,6 +321,19 @@ struct NotificationsScreen: View {
                 event,
                 text: String(
                     format: NSLocalizedString("You added %@ as a contact", comment: "DashPay Notifications"),
+                    event.item.displayTitle)
+            ) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(.dashGreen)
+            }
+        case .established:
+            // Neither "they accepted" nor "you added": the row can't say
+            // which side reciprocated, so it only states the outcome.
+            notificationRow(
+                event,
+                text: String(
+                    format: NSLocalizedString("%@ is now your contact", comment: "DashPay Notifications: established contact, accepting side unknown"),
                     event.item.displayTitle)
             ) {
                 Image(systemName: "checkmark.circle.fill")

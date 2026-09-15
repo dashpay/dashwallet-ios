@@ -88,6 +88,14 @@ actor NotifiedEventStore: NotifiedEventStoring {
 
     private let connection: Connection
     private let now: () -> Date
+    /// Ids admitted by `markIfNew` while the database could not record them.
+    ///
+    /// A failed write loses dedup for that id, but notifications must not be
+    /// swallowed by a broken database — so the first attempt is still admitted.
+    /// Remembered here, for this process only, so the rescans that fire on
+    /// every persistence signal cannot admit the same id again and repeat the
+    /// banner for as long as the database keeps failing.
+    private var admittedWithoutRecord: Set<String> = []
 
     init(connection: Connection, now: @escaping () -> Date = Date.init) {
         self.connection = connection
@@ -138,9 +146,9 @@ actor NotifiedEventStore: NotifiedEventStoring {
             return inserted
         } catch {
             DWLogger.log("NotifiedEventStore: markIfNew(\(id)) failed: \(error)")
-            // Fail open: nothing was recorded, so dedup for this id is lost —
-            // but a broken database must not silently swallow notifications.
-            return true
+            // Nothing was recorded. Admit the id once per process (see
+            // `admittedWithoutRecord`); a repeat is a duplicate, not a new event.
+            return admittedWithoutRecord.insert(id).inserted
         }
     }
 
@@ -164,6 +172,11 @@ actor NotifiedEventStore: NotifiedEventStoring {
 
     func unmark(id: String) async {
         typealias S = NotifiedEventSchema
+        // Re-arms the id on both paths `markIfNew` can admit it through —
+        // otherwise, while the database is failing, a caller that unmarks
+        // to post the same id again (CrowdNode's single result id) would see
+        // every later result refused as a duplicate.
+        admittedWithoutRecord.remove(id)
         do {
             try connection.run(S.table.filter(S.colId == id).delete())
         } catch {

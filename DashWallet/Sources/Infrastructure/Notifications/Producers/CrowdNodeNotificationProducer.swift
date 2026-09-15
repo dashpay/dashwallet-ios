@@ -42,12 +42,21 @@ protocol CrowdNodeResultNotifying: AnyObject {
 ///
 /// Identity: these messages are one-shot UX events (signup finished,
 /// address confirmed, operation failed) with no natural content identity,
-/// so each post gets an event-scoped id ("crowdnode.result.<UUID>") and the
-/// store dedup is a deliberate no-op for them — every message the guard
-/// lets through is news. The previous fixed "CrowdNode" id made the store
-/// swallow every message after the first one as a duplicate; already-
-/// delivered notifications under that legacy id keep their tap-fold to
-/// `.staking` in `NotificationLifecycle`.
+/// and every message the guard lets through is news — but only the latest
+/// one is worth a banner. `handleError` fires on every API error, so a
+/// retrying operation produces a run of them. Every result is therefore
+/// posted under one stable identifier (`resultNotificationID`): the
+/// notification center replaces the delivered banner instead of stacking
+/// one per retry, and the store holds at most one CrowdNode row, so the
+/// badge counts one unseen result rather than one per retry.
+///
+/// That id would make the store drop every message after the first as a
+/// duplicate, so each post first re-arms it (`unmark`), serialized with the
+/// post that follows so two results cannot race for the same row. If the
+/// permission gate then drops the post, the previous row stays deleted —
+/// its banner, if any, was already delivered and nothing new is posted.
+/// Notifications delivered under the legacy "CrowdNode" id keep their
+/// tap-fold to `.staking` in `NotificationLifecycle`.
 ///
 /// Post-grant catch-up: none, on purpose. A message the dispatcher dropped
 /// while authorization was `.notDetermined` has no source to rescan and is
@@ -57,14 +66,18 @@ protocol CrowdNodeResultNotifying: AnyObject {
 /// rather than news. The other producers (transactions, swaps, contacts)
 /// rescan their persisted rows on the grant instead.
 final class CrowdNodeNotificationProducer: CrowdNodeResultNotifying {
-    private let dispatcher: NotificationDispatcher
-    /// Event-scoped id per post; injectable so tests can pin it.
-    private let makeEventId: () -> String
+    /// The request identifier and store id every CrowdNode result shares.
+    static let resultNotificationID = "crowdnode.result"
 
-    init(dispatcher: NotificationDispatcher,
-         makeEventId: @escaping () -> String = { "crowdnode.result.\(UUID().uuidString)" }) {
+    private let dispatcher: NotificationDispatcher
+    /// The dispatcher's store, for re-arming `resultNotificationID`.
+    private let store: NotifiedEventStoring
+    /// Orders each re-arm with the post that follows it.
+    private let posts = NotificationSerialQueue()
+
+    init(dispatcher: NotificationDispatcher, store: NotifiedEventStoring) {
         self.dispatcher = dispatcher
-        self.makeEventId = makeEventId
+        self.store = store
     }
 
     // MARK: CrowdNodeResultNotifying
@@ -79,13 +92,17 @@ final class CrowdNodeNotificationProducer: CrowdNodeResultNotifying {
     @discardableResult
     func post(message: String) async -> Bool {
         let notification = AppNotification(
-            id: makeEventId(),
+            id: Self.resultNotificationID,
             topic: .crowdnode,
             title: nil,
             body: message,
             sound: .default,
             route: .staking,
             foregroundBehavior: .banner)
-        return await dispatcher.post(notification)
+        return await posts.run { [store, dispatcher] in
+            // The previous result's row, seen or not, gives way to this one.
+            await store.unmark(id: Self.resultNotificationID)
+            return await dispatcher.post(notification)
+        }
     }
 }

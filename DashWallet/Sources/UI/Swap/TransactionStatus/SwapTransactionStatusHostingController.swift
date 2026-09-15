@@ -34,6 +34,8 @@ final class SwapTransactionStatusHostingController: UIViewController, Navigation
     func shouldPopViewController() -> Bool { false }
 
     private let viewModel: OrderPreviewViewModel
+    /// This screen's mark on `SwapTrackingService`; see `StatusVisibilityClaim`.
+    private let visibilityClaim = SwapTrackingService.StatusVisibilityClaim()
 
     init(viewModel: OrderPreviewViewModel) {
         self.viewModel = viewModel
@@ -109,14 +111,16 @@ final class SwapTransactionStatusHostingController: UIViewController, Navigation
         // `SwapNotificationProducer` consumes its terminal transition
         // instead of showing a banner over it. Every other order still
         // banners — the id is what keeps the two apart.
-        SwapTrackingService.shared.statusScreenWillAppear(orderID: viewModel.submittedTxId)
+        visibilityClaim.begin(orderID: viewModel.submittedTxId)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         // Restore normal swipe-back for whatever screen comes next (Home / Portal / Order Preview).
         navigationController?.interactivePopGestureRecognizer?.isEnabled = true
-        SwapTrackingService.shared.statusScreenWillDisappear(orderID: viewModel.submittedTxId)
+        // The id registered on appear, not a re-read of `submittedTxId`,
+        // which can have changed since.
+        visibilityClaim.end()
     }
 
     // MARK: - Retry

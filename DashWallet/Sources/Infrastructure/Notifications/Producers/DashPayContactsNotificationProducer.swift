@@ -33,9 +33,15 @@ import UserNotifications
 ///
 /// Replay guard (same thinking as `TransactionNotificationProducer`): a
 /// freshly synced identity replays its whole request history, and none of
-/// it may notify. Only events created within the freshness window AND newer
-/// than the bell's read marker
-/// (`DWGlobalOptions.mostRecentViewedNotificationDate`) are news.
+/// it may notify. Only events created within the freshness window are news;
+/// the store dedup keeps each of those to one post, and an event that
+/// arrives while the app is frontmost is consumed rather than posted.
+///
+/// The bell's read marker is deliberately not part of the guard. It is
+/// advanced to the newest event on screen — which can be our own outgoing
+/// request — while an incoming request carries the SENDER's Platform
+/// timestamp, which can sit behind it. Gating on the marker dropped such a
+/// request silently, with nothing left to show it.
 @MainActor
 final class DashPayContactsNotificationProducer {
     /// An event must have been created at most this long ago to notify.
@@ -59,9 +65,6 @@ final class DashPayContactsNotificationProducer {
     private let dispatcher: NotificationDispatcher
     private let store: NotifiedEventStoring
     private let snapshot: @MainActor () -> ContactsSnapshot
-    /// The bell's read marker: events at or before it were already viewed
-    /// on the notifications screen and are not news.
-    private let lastViewedDate: () -> Date?
     private let appState: AppStateProvider
     private let now: () -> Date
     private var cancellables = Set<AnyCancellable>()
@@ -75,13 +78,11 @@ final class DashPayContactsNotificationProducer {
                  incomingRequests: service.incomingRequests,
                  contacts: service.contacts)
          },
-         lastViewedDate: @escaping () -> Date? = { DWGlobalOptions.sharedInstance().mostRecentViewedNotificationDate },
          appState: AppStateProvider = UIApplicationStateProvider(),
          now: @escaping () -> Date = Date.init) {
         self.dispatcher = dispatcher
         self.store = store
         self.snapshot = snapshot
-        self.lastViewedDate = lastViewedDate
         self.appState = appState
         self.now = now
     }
@@ -107,7 +108,6 @@ final class DashPayContactsNotificationProducer {
     func scanAndNotify() async {
         let current = snapshot()
         let cutoff = now().addingTimeInterval(-Self.freshnessWindow)
-        let lastViewed = lastViewedDate() ?? .distantPast
         // Scopes every key below to the receiving identity. An unknown owner
         // gets its own bucket rather than silently sharing the wallet-less
         // one, so a snapshot taken mid-rebind cannot consume a real owner's id.
@@ -119,11 +119,11 @@ final class DashPayContactsNotificationProducer {
                 eventDate: item.createdAt,
                 id: "contact.request.\(owner).\(item.contactIdentityId.hexEncodedString())",
                 bodyFormat: NSLocalizedString("%@ has sent you a contact request", comment: "DashPay Notifications"),
-                cutoff: cutoff,
-                lastViewed: lastViewed)
+                cutoff: cutoff)
         }
 
-        for item in current.contacts where item.establishedByTheirAccept {
+        // `== true`: an unknown order (`nil`) is not an accept to announce.
+        for item in current.contacts where item.establishedByTheirAccept == true {
             // For established pairs `createdAt` is the reciprocation time —
             // the moment they accepted.
             await process(
@@ -131,8 +131,7 @@ final class DashPayContactsNotificationProducer {
                 eventDate: item.createdAt,
                 id: "contact.accepted.\(owner).\(item.contactIdentityId.hexEncodedString())",
                 bodyFormat: NSLocalizedString("%@ accepted your contact request", comment: "DashPay Notifications"),
-                cutoff: cutoff,
-                lastViewed: lastViewed)
+                cutoff: cutoff)
         }
     }
 
@@ -142,13 +141,11 @@ final class DashPayContactsNotificationProducer {
                          eventDate: Date,
                          id: String,
                          bodyFormat: String,
-                         cutoff: Date,
-                         lastViewed: Date) async {
-        // Replay guard: historical events (initial identity sync) and
-        // events the user already viewed on the notifications screen are
-        // not news. Both checks are deterministic per event, so dropped
-        // events need no store record to stay dropped.
-        guard eventDate >= cutoff, eventDate > lastViewed else { return }
+                         cutoff: Date) async {
+        // Replay guard: historical events (initial identity sync) are not
+        // news. Deterministic per event, so a dropped event needs no store
+        // record to stay dropped.
+        guard eventDate >= cutoff else { return }
 
         // App-state policy: in the foreground the bell badge updates live,
         // so the event is consumed — a later scan (relaunch, next sync

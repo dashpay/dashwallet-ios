@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import SQLite
 import XCTest
 @testable import dashpay
 
@@ -49,6 +50,33 @@ final class NotifiedEventStoreTests: XCTestCase {
         XCTAssertTrue(first)
         XCTAssertFalse(second)
         XCTAssertTrue(other)
+    }
+
+    /// A database that cannot record (here: the table was never migrated)
+    /// still admits an event once, but not again on the next rescan.
+    func testMarkIfNewOnFailingDatabaseAdmitsEachIdOncePerProcess() async throws {
+        let broken = NotifiedEventStore(connection: try Connection(.inMemory))
+
+        let first = await broken.markIfNew(id: "tx.abc", topic: .transactions)
+        let repeated = await broken.markIfNew(id: "tx.abc", topic: .transactions)
+        let other = await broken.markIfNew(id: "tx.def", topic: .transactions)
+
+        XCTAssertTrue(first)
+        XCTAssertFalse(repeated)
+        XCTAssertTrue(other)
+    }
+
+    /// `unmark` re-arms an id admitted without a record too, so a caller that
+    /// posts one id repeatedly (CrowdNode's result) is not refused for good
+    /// while the database is failing.
+    func testUnmarkOnFailingDatabaseReadmitsTheId() async throws {
+        let broken = NotifiedEventStore(connection: try Connection(.inMemory))
+
+        _ = await broken.markIfNew(id: "crowdnode.result", topic: .crowdnode)
+        await broken.unmark(id: "crowdnode.result")
+        let again = await broken.markIfNew(id: "crowdnode.result", topic: .crowdnode)
+
+        XCTAssertTrue(again)
     }
 
     func testMarkIfNewDedupsById_TopicDoesNotDisambiguate() async {

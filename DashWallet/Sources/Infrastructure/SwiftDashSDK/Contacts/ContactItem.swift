@@ -134,8 +134,13 @@ struct ContactItem: Identifiable, Equatable {
     /// accepted. The notifications screen's they-accepted/we-accepted split
     /// and the contacts notification producer both classify with this.
     /// Meaningless for pending relationships (one direction row missing).
-    var establishedByTheirAccept: Bool {
-        (incomingCreatedAt ?? .distantPast) >= (outgoingCreatedAt ?? .distantPast)
+    ///
+    /// `nil` when either direction's timestamp is unknown: the order of the
+    /// two rows cannot then be read, and treating a missing date as the
+    /// distant past would announce an accept nobody can vouch for.
+    var establishedByTheirAccept: Bool? {
+        guard let incomingCreatedAt, let outgoingCreatedAt else { return nil }
+        return incomingCreatedAt >= outgoingCreatedAt
     }
 
     /// Local search predicate shared by the contacts and notifications

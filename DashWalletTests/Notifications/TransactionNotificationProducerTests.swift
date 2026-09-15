@@ -229,14 +229,17 @@ final class TransactionNotificationProducerTests: XCTestCase {
         await producer.scanAndNotify()
 
         XCTAssertTrue(client.addedRequests.isEmpty)
-        XCTAssertTrue(watchBodies.isEmpty)
+        // The phone stays quiet, the watch still shows the payment.
+        XCTAssertEqual(watchBodies.count, 1)
 
         // The id was consumed: a rescan after backgrounding must not
-        // resurrect a payment the user watched arrive in the feed.
+        // resurrect a payment the user watched arrive in the feed — on the
+        // phone or on the watch.
         appState.isApplicationActive = false
         await producer.scanAndNotify()
 
         XCTAssertTrue(client.addedRequests.isEmpty)
+        XCTAssertEqual(watchBodies.count, 1)
     }
 
     func testForegroundStillPostsCrowdNodeDeposit() async {
@@ -250,19 +253,66 @@ final class TransactionNotificationProducerTests: XCTestCase {
 
     // MARK: Watch bridge
 
-    func testWatchBridgeMirrorsPostedRowsOnly() async {
+    func testWatchBridgeMirrorsPostedRowWithItsBody() async {
         rows = [makeRow(txidByte: 0x05)]
 
         await producer.scanAndNotify()
 
         XCTAssertEqual(watchBodies, [client.addedRequests[0].content.body])
+    }
 
-        // A row the dispatcher drops (permission gate) does not reach the
-        // watch either.
+    /// The watch shows every received payment, as the retired balance
+    /// notifier did — not only the ones the phone was allowed to notify.
+    func testWatchBridgeMirrorsFreshReceivedRowWhenNotificationsAreOff() async {
         preferences.userWantsNotifications = false
-        rows = [makeRow(txidByte: 0x06)]
+        rows = [makeRow(txidByte: 0x06, netAmount: 150_000)]
+
         await producer.scanAndNotify()
 
+        XCTAssertTrue(client.addedRequests.isEmpty)
+        XCTAssertEqual(watchBodies.count, 1)
+        XCTAssertTrue(watchBodies[0].contains(UInt64(150_000).formattedDashAmount))
+    }
+
+    func testWatchBridgeMirrorsOnceAcrossRescansAndALaterGrant() async {
+        preferences.userWantsNotifications = false
+        rows = [makeRow(txidByte: 0x08)]
+
+        await producer.scanAndNotify()
+        await producer.scanAndNotify()
+
+        // Notifications turned on: the next scan posts the row to the phone,
+        // but the watch already has it.
+        preferences.userWantsNotifications = true
+        await producer.scanAndNotify()
+
+        XCTAssertEqual(client.addedRequests.count, 1)
+        XCTAssertEqual(watchBodies.count, 1)
+    }
+
+    func testWatchBridgeMirrorsPlatformActivityWhenNotificationsAreOff() async {
+        preferences.userWantsNotifications = false
+        let record = PlatformAddressActivityRecord(
+            id: 42,
+            walletId: Data(repeating: 0x01, count: 32),
+            networkRaw: 0,
+            address: "tdash1platformtest",
+            amountDuffs: 70_000,
+            balanceAfterDuffs: 70_000,
+            observedAt: Self.referenceNow.addingTimeInterval(-30))
+        producer = TransactionNotificationProducer(
+            dispatcher: dispatcher,
+            store: store,
+            rowSource: { _ in [] },
+            platformActivitySource: { _ in [record] },
+            appState: appState,
+            watchBridge: { [weak self] body in self?.watchBodies.append(body) },
+            now: { Self.referenceNow })
+
+        await producer.scanAndNotify()
+        await producer.scanAndNotify()
+
+        XCTAssertTrue(client.addedRequests.isEmpty)
         XCTAssertEqual(watchBodies.count, 1)
     }
 

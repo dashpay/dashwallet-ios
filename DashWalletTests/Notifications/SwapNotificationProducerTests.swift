@@ -197,7 +197,8 @@ final class SwapNotificationProducerTests: XCTestCase {
 
         XCTAssertEqual(client.addedRequests.count, 1)
         XCTAssertEqual(client.addedRequests[0].identifier, "swap.order-B")
-        XCTAssertNil(store.events["swap.order-B"]?.seen)
+        // Posted, so recorded unseen — not consumed.
+        XCTAssertEqual(store.events["swap.order-B"]?.seen, false)
     }
 
     func testForegroundOffSwapUIPostsBanner() async {
@@ -291,5 +292,60 @@ final class SwapStatusUIVisibilityTests: XCTestCase {
 
         service.statusScreenWillDisappear(orderID: "order-1")
         XCTAssertFalse(service.isStatusUIVisible(forOrderID: "order-1"))
+    }
+
+    func testClaimReleasesTheRegisteredIdAfterTheViewModelIdChanged() {
+        let service = SwapTrackingService.shared
+        let claim = SwapTrackingService.StatusVisibilityClaim(service: service)
+        // The screen's `submittedTxId` as it changes under a retry/reset.
+        var submittedTxId: String? = "order-A"
+
+        claim.begin(orderID: submittedTxId)
+        XCTAssertTrue(service.isStatusUIVisible(forOrderID: "order-A"))
+
+        submittedTxId = nil
+        claim.end()
+        XCTAssertFalse(service.isStatusUIVisible(forOrderID: "order-A"))
+
+        submittedTxId = "order-B"
+        claim.begin(orderID: submittedTxId)
+        claim.end()
+        XCTAssertFalse(service.isStatusUIVisible(forOrderID: "order-A"))
+        XCTAssertFalse(service.isStatusUIVisible(forOrderID: "order-B"))
+    }
+
+    func testRepeatedBeginCountsTheScreenOnce() {
+        let service = SwapTrackingService.shared
+        let claim = SwapTrackingService.StatusVisibilityClaim(service: service)
+
+        claim.begin(orderID: "order-1")
+        claim.begin(orderID: "order-1")
+        claim.end()
+
+        XCTAssertFalse(service.isStatusUIVisible(forOrderID: "order-1"))
+    }
+
+    func testTeardownWithoutDisappearReleasesTheRegistration() {
+        let service = SwapTrackingService.shared
+        var claim: SwapTrackingService.StatusVisibilityClaim? =
+            SwapTrackingService.StatusVisibilityClaim(service: service)
+
+        claim?.begin(orderID: "order-1")
+        XCTAssertTrue(service.isStatusUIVisible(forOrderID: "order-1"))
+
+        // The screen deallocates without a `viewWillDisappear`.
+        claim = nil
+        XCTAssertFalse(service.isStatusUIVisible(forOrderID: "order-1"))
+    }
+
+    func testBeginWithoutAnIdRegistersNothing() {
+        let service = SwapTrackingService.shared
+        let claim = SwapTrackingService.StatusVisibilityClaim(service: service)
+
+        claim.begin(orderID: nil)
+        claim.begin(orderID: "")
+        claim.end()
+
+        XCTAssertFalse(service.isStatusUIVisible(forOrderID: ""))
     }
 }
