@@ -14,7 +14,15 @@ enum PlatformCreditsFormatter {
     /// Integer arithmetic, not `Double`: a `Double` cannot represent every
     /// `UInt64` credit amount above 2^53, so a large amount rendered through
     /// it came out rounded while the exact integer was the one spent.
-    static func dashString(_ credits: UInt64, locale: Locale = .current) -> String {
+    static func dashString(_ credits: UInt64) -> String {
+        dashString(credits, locale: .current)
+    }
+
+    /// The same, with an explicit locale for the decimal separator. A separate
+    /// overload rather than a defaulted parameter: the sync screens pass
+    /// `dashString` as a `(UInt64) -> String` function value, which a defaulted
+    /// second parameter does not satisfy.
+    static func dashString(_ credits: UInt64, locale: Locale) -> String {
         let whole = credits / creditsPerDash
         let fraction = credits % creditsPerDash
         guard fraction > 0 else {

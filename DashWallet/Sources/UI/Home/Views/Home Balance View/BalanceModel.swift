@@ -24,7 +24,10 @@ final class BalanceModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     
     @Published private(set) var state = SyncingActivityMonitor.shared.state
-    @Published private(set) var value: UInt64 = 0
+    /// `nil` until the selected wallet's balance has been read. A known zero
+    /// is an amount; an unavailable snapshot uses the same placeholder as the
+    /// other Home balance rows.
+    @Published private(set) var value: UInt64?
     /// Badge text for the home header while the wallet runs on a test
     /// network ("TESTNET"/"DEVNET"), so test funds can't be mistaken for
     /// real Dash; nil on mainnet.
@@ -46,12 +49,13 @@ final class BalanceModel: ObservableObject {
         isBalanceHidden = DWGlobalOptions.sharedInstance().balanceHidden
         SyncingActivityMonitor.shared.add(observer: self)
 
-        // After M6 retired DashSync's SPV, this is the authoritative source
-        // for the home screen balance.
+        // Wallet state publishes and clears on the main queue. Consume the
+        // emitted snapshot directly: another run-loop hop delays the restored
+        // amount behind startup work, and rereading `shared.balance` here sees
+        // the old value because @Published emits from willSet.
         SwiftDashSDKWalletState.shared.$balance
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in
-                self?.reloadBalance()
+            .sink { [weak self] snapshot in
+                self?.applyBalance(snapshot)
             }
             .store(in: &cancellableBag)
 
@@ -84,6 +88,10 @@ final class BalanceModel: ObservableObject {
     }
 
     func reloadBalance() {
+        applyBalance(SwiftDashSDKWalletState.shared.balance)
+    }
+
+    private func applyBalance(_ walletBalance: WalletBalance?) {
         // Source from SwiftDashSDKWalletState instead of
         // DWEnvironment.sharedInstance().currentWallet.balance. After M6
         // (commit 86ed72706), DashSync's SPV no longer runs and
@@ -92,11 +100,11 @@ final class BalanceModel: ObservableObject {
         // unconfirmed, immature and locked — matching the "everything
         // user-visible" semantic dashwallet's UI displays.
         // Function #5 of the DashSync migration.
-        let walletBalance = SwiftDashSDKWalletState.shared.balance
-        let balanceValue = walletBalance?.total ?? 0
+        let balanceValue = walletBalance?.total
 
-        if balanceValue > value &&
-            value > 0 &&
+        if let balanceValue, let previousValue = value,
+            balanceValue > previousValue &&
+            previousValue > 0 &&
             UIApplication.shared.applicationState != .background &&
             SyncingActivityMonitor.shared.progress > 0.995 {
             UIDevice.current.dw_playCoinSound()
@@ -105,13 +113,20 @@ final class BalanceModel: ObservableObject {
         value = balanceValue
 
         let options = DWGlobalOptions.sharedInstance()
-        if balanceValue > 0
+        if let balanceValue, balanceValue > 0
             && options.walletNeedsBackup
             && (options.balanceChangedDate == nil) {
             options.balanceChangedDate = Date()
         }
 
-        options.userHasBalance = balanceValue > 0
+        // Only write when the balance is actually known. `userHasBalance` is
+        // persisted per wallet and is an input to the default shortcut bar, so
+        // writing `false` for a not-yet-loaded balance let a single launch
+        // before the wallet was bound permanently drop a shortcut from a funded
+        // wallet's bar. `nil` means "not known yet", never "empty".
+        if let total = walletBalance?.total {
+            options.userHasBalance = total > 0
+        }
         isBalanceHidden = DWGlobalOptions.sharedInstance().balanceHidden
     }
     
@@ -141,7 +156,7 @@ extension BalanceModel {
 
 extension BalanceModel: BalanceViewDataSource {
     var mainAmountString: String {
-        value.formattedDashAmount
+        value?.formattedDashAmount ?? "—"
     }
 
     var supplementaryAmountString: String {
@@ -164,11 +179,15 @@ extension BalanceModel: SyncingActivityMonitorObserver {
 
 extension BalanceModel {
     func dashAmountStringWithFont(_ font: UIFont, tintColor: UIColor) -> NSAttributedString {
-        NSAttributedString.dashAttributedString(for: value, tintColor: tintColor, font: font)
+        guard let value else {
+            return NSAttributedString(string: "—", attributes: [.font: font, .foregroundColor: tintColor])
+        }
+        return NSAttributedString.dashAttributedString(for: value, tintColor: tintColor, font: font)
     }
 
     func fiatAmountString() -> String {
-        CurrencyExchanger.shared.fiatAmountString(for: value.dashAmount)
+        guard let value else { return "—" }
+        return CurrencyExchanger.shared.fiatAmountString(for: value.dashAmount)
     }
 
     /// Fiat string for an arbitrary duff amount — used by the balance

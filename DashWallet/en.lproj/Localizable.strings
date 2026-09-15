@@ -3862,6 +3862,9 @@
 /* No comment provided by engineer. */
 "Scan QR" = "Scan QR";
 
+/* Payments */
+"Scan Dash QR" = "Scan Dash QR";
+
 /* No comment provided by engineer. */
 "Scan QR Code" = "Scan QR Code";
 
@@ -4023,14 +4026,23 @@
 /* No comment provided by engineer. */
 "Send to a Contact" = "Send to a Contact";
 
+/* Payments */
+"Swap to other crypto" = "Swap to other crypto";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Send to Address";
 
 /* No comment provided by engineer. */
 "Send to address" = "Send to address";
 
+/* Payments */
+"Send to Dash address" = "Send to Dash address";
+
 /* No comment provided by engineer. */
 "Send to contact" = "Send to contact";
+
+/* Payments */
+"Send to username" = "Send to username";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Contact" = "Send to Contact";
@@ -5967,3 +5979,49 @@
 
 /* DashConnect token purchase: the wallet has no local contract row, so the payload's raw quantity cannot be scaled */
 "Tokens (base units)" = "Tokens (base units)";
+
+/* Send: the contact step's back control */
+"Back" = "Back";
+
+/* Send screen: mask the funding balance */
+"Hide balance" = "Hide balance";
+
+/* Send screen: reveal the funding balance */
+"Show balance" = "Show balance";
+
+/* Send to contact: the exact fee is reported once the payment is sent */
+"Taken from your balance" = "Taken from your balance";
+
+/* Send to contact: the broadcast outcome is unknown */
+"We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history." = "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.";
+
+/* DashPay: contact picker empty state body */
+"Add someone as a contact and you can pay them by username instead of an address." = "Add someone as a contact and you can pay them by username instead of an address.";
+
+/* DashPay: contact picker search found nothing */
+"No contacts match “%@”" = "No contacts match “%@”";
+
+/* DashPay: contact picker empty state headline */
+"No contacts yet" = "No contacts yet";
+
+/* Send screen: the funding balance */
+"Balance:" = "Balance:";
+
+/* InternalTransfer */
+"The amount is too large to transfer." = "The amount is too large to transfer.";
+
+/* DashPay: contact whose payment channel could not be built */
+"Payments unavailable — ask them to send you a new contact request." = "Payments unavailable — ask them to send you a new contact request.";
+
+/* Cached wallet balance availability */
+"Known balance" = "Known balance";
+"Balance unavailable" = "Balance unavailable";
+"Shielded balance is unavailable. Try again after syncing." = "Shielded balance is unavailable. Try again after syncing.";
+
+"Shielded sync is not running" = "Shielded sync is not running";
+
+"Wallet sync is not ready. Start wallet sync and try again." = "Wallet sync is not ready. Start wallet sync and try again.";
+
+/* Shielded manual sync requires an internet connection */
+"You are offline. Connect to the internet and try again." = "You are offline. Connect to the internet and try again.";
+"Start Platform sync before clearing its local state" = "Start Platform sync before clearing its local state";

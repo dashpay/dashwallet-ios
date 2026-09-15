@@ -220,9 +220,13 @@ struct PaymentsReceiveContent: View {
                             .accessibilityAddTraits(.isButton)
                             .accessibilityHint(Text(NSLocalizedString("Copy", comment: "")))
                         } else {
+                            // Same full-width, leading slot the address takes,
+                            // so the copy button stays on the trailing edge
+                            // instead of the pair centring in the row.
                             Text(NSLocalizedString("No address available", comment: "Payments"))
                                 .font(.footnote)
                                 .foregroundColor(Color.dash.secondaryText)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
 
 
@@ -276,11 +280,14 @@ struct PaymentsReceiveContent: View {
         }
     }
 
-    @ViewBuilder
+    /// Always laid out, and only faded when there is nothing to watch: an
+    /// absent view takes its padding with it, which left the actions sitting
+    /// on the card's bottom edge and made the card jump when watching began.
     private var watchingForPayment: some View {
-        if viewModel.isWatchingForReceipt {
-            ReceiveWatchingIndicator()
-        }
+        ReceiveWatchingIndicator()
+            .opacity(viewModel.isWatchingForReceipt ? 1 : 0)
+            .accessibilityHidden(!viewModel.isWatchingForReceipt)
+            .animation(.easeInOut(duration: 0.2), value: viewModel.isWatchingForReceipt)
     }
 
     private var hasAddress: Bool {

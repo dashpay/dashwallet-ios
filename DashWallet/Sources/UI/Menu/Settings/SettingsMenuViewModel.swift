@@ -38,6 +38,11 @@ class SettingsMenuViewModel: ObservableObject {
     @Published var showCSVExportActivity = false
     @Published var csvExportData: (fileName: String, file: URL)?
     @Published var showCoinJoinSweepConfirmation = false
+    /// Destination-choice sheet (Dash Wallet vs Shielded). Presented
+    /// instead of the plain confirmation when the shielded route is
+    /// available, so this row offers the same choice as the post-sync
+    /// popup rather than silently sweeping to the transparent balance.
+    @Published var showCoinJoinMoveFundsSheet = false
     @Published var coinJoinSweepErrorMessage: String?
     /// Set when a network switch is refused before any teardown (today:
     /// devnet selected without a quorum URL + devnet name). Failures during
@@ -51,13 +56,17 @@ class SettingsMenuViewModel: ObservableObject {
 
     /// Live CoinJoin-account spendable balance (duffs) — the SDK source of
     /// truth, NOT the legacy DashSync `CoinJoinService`.
-    private var coinJoinLeftoverDuffs: UInt64 {
+    var coinJoinLeftoverDuffs: UInt64 {
         SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs
     }
 
-    /// Whether to show the conditional "Move CoinJoin Funds" row.
+    /// Whether to show the conditional "Move CoinJoin Funds" row. Gated on a
+    /// finished sync as well as a leftover — see
+    /// `CoinJoinMoveDestinationPolicy.menuRowAvailable`.
     var hasCoinJoinLeftover: Bool {
-        coinJoinLeftoverDuffs > Self.minCoinJoinSweepDuffs
+        CoinJoinMoveDestinationPolicy.menuRowAvailable(
+            hasLeftover: coinJoinLeftoverDuffs > Self.minCoinJoinSweepDuffs,
+            isChainSynced: SyncingActivityMonitor.shared.state == .syncDone)
     }
 
     /// Formatted leftover amount for the confirmation dialog.
@@ -82,7 +91,23 @@ class SettingsMenuViewModel: ObservableObject {
         self.advancedModeEnabled = DWGlobalOptions.sharedInstance().advancedModeEnabled
         refreshMenuItems()
         setupCoinJoinObservers()
+        setupSyncStateObserver()
         setupCurrencyChangeObserver()
+        // The flag can move without this screen touching it — the first
+        // funded Platform balance turns it on while Settings is open. The
+        // guard keeps that the only work this does: a change made *here*
+        // has already updated the row, and rebuilding the menu a second
+        // time on the next main-loop turn would be pure churn.
+        NotificationCenter.default.publisher(for: .advancedModeDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                let enabled = DWGlobalOptions.sharedInstance().advancedModeEnabled
+                guard enabled != self.advancedModeEnabled else { return }
+                self.advancedModeEnabled = enabled
+                self.refreshMenuItems()
+            }
+            .store(in: &cancellableBag)
     }
     
     func resetNavigation() {
@@ -104,6 +129,19 @@ class SettingsMenuViewModel: ObservableObject {
             .store(in: &cancellableBag)
     }
     
+    /// The "Move CoinJoin Funds" row is unavailable until the chain is synced,
+    /// so the list has to rebuild when that changes — otherwise the row stays
+    /// hidden for the rest of the session after a sync that finished while this
+    /// screen existed.
+    private func setupSyncStateObserver() {
+        NotificationCenter.default.publisher(for: .syncStateChangedNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshMenuItems()
+            }
+            .store(in: &cancellableBag)
+    }
+
     private func setupCurrencyChangeObserver() {
         NotificationCenter.default.publisher(for: Notification.Name.fiatCurrencyDidChange)
             .receive(on: DispatchQueue.main)
@@ -178,7 +216,8 @@ class SettingsMenuViewModel: ObservableObject {
                     subtitle: NSLocalizedString("CoinJoin is no longer supported", comment: "CoinJoin"),
                     icon: .custom("image.coinjoin.menu", maxHeight: 22),
                     action: { [weak self] in
-                        self?.showCoinJoinSweepConfirmation = true
+                        guard let self else { return }
+                        self.presentCoinJoinMoveSurface()
                     }
                 )
             )
@@ -223,13 +262,14 @@ class SettingsMenuViewModel: ObservableObject {
     /// Write the flag, then announce it. The announcement is the point: the
     /// setting reaches far beyond this screen, and a consumer that only read
     /// the value when it appeared would keep showing the old state until it
-    /// was rebuilt for some unrelated reason.
+    /// was rebuilt for some unrelated reason. This is also the only path that
+    /// marks the preference as the user's, which retires the automatic
+    /// first-funding enable for good.
     func setAdvancedMode(_ enabled: Bool) {
         guard enabled != advancedModeEnabled else { return }
+        DWGlobalOptions.sharedInstance().setAdvancedModeEnabledByUser(enabled)
         advancedModeEnabled = enabled
-        DWGlobalOptions.sharedInstance().advancedModeEnabled = enabled
         DWLogger.log("Settings: advanced mode \(enabled ? "enabled" : "disabled")")
-        NotificationCenter.default.post(name: .advancedModeDidChange, object: nil)
         refreshMenuItems()
     }
 
@@ -248,6 +288,27 @@ class SettingsMenuViewModel: ObservableObject {
             // Auth-cancel is an expected no-op (nil message); a real failure
             // surfaces an alert. The row stays visible so the user can retry.
             coinJoinSweepErrorMessage = WalletSendService.coinJoinSweepUserMessage(for: error)
+        }
+    }
+
+    /// Same branch as the post-sync popup
+    /// (`HomeViewModel.maybeShowCoinJoinSweepDialog`): offer the destination
+    /// choice whenever the shielded route is viable, and fall back to the
+    /// transparent-only confirmation when it is not. A tap that races the sync
+    /// state back to syncing opens neither — the row is about to disappear.
+    private func presentCoinJoinMoveSurface() {
+        let route = CoinJoinMoveDestinationPolicy.menuRoute(
+            isChainSynced: SyncingActivityMonitor.shared.state == .syncDone,
+            shieldedAvailable: CoinJoinMoveDestinationPolicy.shieldedDestinationAvailable(
+                forBalanceDuffs: coinJoinLeftoverDuffs))
+        switch route {
+        case .destinationChoice:
+            showCoinJoinMoveFundsSheet = true
+        case .transparentConfirmation:
+            showCoinJoinSweepConfirmation = true
+        case nil:
+            DWLogger.log("SettingsMenuViewModel: move-funds tap ignored — chain not synced")
+            refreshMenuItems()
         }
     }
 
