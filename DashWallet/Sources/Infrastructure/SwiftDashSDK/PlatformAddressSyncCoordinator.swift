@@ -241,6 +241,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             .sink { [weak self] state in
                 self?.platformBalanceState = state
                 self?.platformBalance = state.credits ?? 0
+                if let credits = state.credits {
+                    self?.enableAdvancedModeIfFunded(balance: credits)
+                }
             }
             .store(in: &balanceObservers)
         shieldedBalances.$state
@@ -1688,6 +1691,15 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     }
 
     // MARK: - Helpers
+
+    /// The Platform surfaces live behind Advanced mode, so a wallet that holds
+    /// credits with the mode off shows the user nothing and offers no way to
+    /// move them. Called with every balance the controller publishes — the
+    /// cached one restored at start-up and each fresh read after a sync — and
+    /// the policy itself decides whether that is the first funded sighting.
+    private func enableAdvancedModeIfFunded(balance: UInt64) {
+        DWGlobalOptions.sharedInstance().enableAdvancedMode(forPlatformBalance: balance)
+    }
 
     private func resolvePlatformAccountAvailability(
         walletId: Data
