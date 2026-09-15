@@ -106,17 +106,25 @@ final class TransactionNotificationProducer {
     /// finally runs.
     static let maxCatchUpWindow: TimeInterval = 24 * 60 * 60
 
-    /// Rows admitted per scan. The freshness floor already bounds the
+    /// Rows admitted per FETCH. The freshness floor already bounds the
     /// window; this guards a resync burst that lands many rows at once.
     static let scanFetchLimit = 100
 
+    /// Fetches a catch-up sweep may walk before it gives up on exhausting
+    /// the window. Only the sweep pages (see `scanAndNotify(since:)`), and
+    /// it runs at most once per background refresh, so the ceiling is there
+    /// for a pathological window rather than for ordinary load.
+    static let maxCatchUpFetches = 20
+
     private let dispatcher: NotificationDispatcher
     private let store: NotifiedEventStoring
-    /// Recent rows, given a `firstSeen` floor (epoch seconds).
-    private let rowSource: (UInt64) -> [ObservedTransaction]
+    /// Recent rows, given a `firstSeen` floor (epoch seconds) and a row
+    /// offset. Newest first, at most `scanFetchLimit` per call.
+    private let rowSource: (UInt64, Int) -> [ObservedTransaction]
     /// Incoming Platform-address payments, which live in the app's own SQLite
-    /// ledger rather than in SwiftData — `rowSource` cannot see them.
-    private let platformActivitySource: (Date) -> [PlatformAddressActivityRecord]
+    /// ledger rather than in SwiftData — `rowSource` cannot see them. Same
+    /// ordering, cap and offset contract.
+    private let platformActivitySource: (Date, Int) -> [PlatformAddressActivityRecord]
     private let appState: AppStateProvider
     /// Sends a received payment's copy to the Apple Watch app; see
     /// `mirrorToWatch(_:)`.
@@ -135,8 +143,8 @@ final class TransactionNotificationProducer {
 
     init(dispatcher: NotificationDispatcher,
          store: NotifiedEventStoring,
-         rowSource: @escaping (UInt64) -> [ObservedTransaction] = TransactionNotificationProducer.defaultRowSource,
-         platformActivitySource: @escaping (Date) -> [PlatformAddressActivityRecord] =
+         rowSource: @escaping (UInt64, Int) -> [ObservedTransaction] = TransactionNotificationProducer.defaultRowSource,
+         platformActivitySource: @escaping (Date, Int) -> [PlatformAddressActivityRecord] =
              TransactionNotificationProducer.defaultPlatformActivitySource,
          appState: AppStateProvider = UIApplicationStateProvider(),
          watchBridge: @escaping (String) -> Void = TransactionNotificationProducer.defaultWatchBridge,
@@ -222,27 +230,56 @@ final class TransactionNotificationProducer {
     /// While the app is frontmost the scan also consumes, without posting,
     /// every received row a later catch-up sweep could reach — see
     /// `consumeShownRows`.
-    func scanAndNotify(since boundary: Date? = nil) async {
+    @discardableResult
+    func scanAndNotify(since boundary: Date? = nil) async -> Bool {
         let cutoff = Self.catchUpCutoff(now: now(), boundary: boundary)
-        let rows = rowSource(Self.firstSeenFloor(for: cutoff))
+        // Only the catch-up sweep pages. A signal-driven scan reads ONE
+        // fetch: it fires on every persistence signal (a restore burst fires
+        // hundreds), the next signal re-reads the window anyway, and it moves
+        // no boundary — so a row it leaves behind is not lost. The sweep is
+        // the call that advances `notificationCatchUpDate`, and both sources
+        // return newest-first under `scanFetchLimit`, so the rows a single
+        // fetch drops are the OLDEST in the window: stepping the boundary
+        // over them would drop them for good.
+        let paging = boundary != nil
+
         // The `.platformAddressActivityRecorded` signal this producer
         // subscribes to is posted by `PlatformAddressActivityRecorder`, which
         // writes the app-owned activity ledger and creates NO
         // `PersistentTransaction` — so an incoming `dash1`/`tdash1` payment
         // woke the scan and was then absent from the rows it looked at.
-        await scanPlatformActivity(cutoff: cutoff)
+        let platformCovered = await scanPlatformActivity(cutoff: cutoff, paging: paging)
 
-        if !rows.isEmpty {
-            // One line per scan, not per row: a restore burst hands back up to
-            // `scanFetchLimit` rows on every save signal.
-            var outcomes: [Outcome: Int] = [:]
+        let floor = Self.firstSeenFloor(for: cutoff)
+        var outcomes: [Outcome: Int] = [:]
+        var scanned = 0
+        var offset = 0
+        var fetches = 0
+        var coreCovered = true
+        while true {
+            let rows = rowSource(floor, offset)
             for row in rows {
                 outcomes[await process(row, cutoff: cutoff), default: 0] += 1
             }
+            scanned += rows.count
+            fetches += 1
+            // A short fetch is the end of the window; a full one may not be.
+            guard rows.count >= Self.scanFetchLimit else { break }
+            guard paging else { coreCovered = false; break }
+            guard fetches < Self.maxCatchUpFetches else { coreCovered = false; break }
+            offset += rows.count
+        }
+
+        if scanned > 0 {
+            // One line per scan, not per row: a restore burst hands back up to
+            // `scanFetchLimit` rows on every save signal.
             let tally = Outcome.allCases
                 .compactMap { outcome in outcomes[outcome].map { "\(outcome.rawValue) \($0)" } }
                 .joined(separator: ", ")
-            DWLogger.log("TransactionNotificationProducer: scanned \(rows.count) recent row(s) — \(tally)")
+            DWLogger.log("TransactionNotificationProducer: scanned \(scanned) recent row(s) — \(tally)")
+        }
+        if !coreCovered || !platformCovered {
+            DWLogger.log("TransactionNotificationProducer: window not exhausted; the catch-up boundary must stay put")
         }
 
         // After the rows above, not before: a CrowdNode deposit posts in every
@@ -251,6 +288,7 @@ final class TransactionNotificationProducer {
         if appState.isApplicationActive {
             await consumeShownRows()
         }
+        return coreCovered && platformCovered
     }
 
     /// The window a scan judges freshness against: the 10-minute default,
@@ -284,7 +322,7 @@ final class TransactionNotificationProducer {
     /// unconsumed.
     private func consumeShownRows() async {
         let cutoff = Self.catchUpCutoff(now: now(), boundary: catchUpBoundary())
-        for row in rowSource(Self.firstSeenFloor(for: cutoff)) {
+        for row in rowSource(Self.firstSeenFloor(for: cutoff), 0) {
             guard row.wrapped.direction == .received,
                   !isShieldedWithdrawalPayout(row),
                   row.wrapped.dashAmount > 0 else { continue }
@@ -302,11 +340,29 @@ final class TransactionNotificationProducer {
     /// recorder stamps when it first SEES the balance increase, so a restore
     /// that rebuilds baselines cannot backdate a payment into the window (it
     /// records nothing) and cannot replay one either.
-    private func scanPlatformActivity(cutoff: Date) async {
-        let records = platformActivitySource(cutoff)
-        guard !records.isEmpty else { return }
-
+    ///
+    /// Returns whether the window was exhausted — `paging` walks it a fetch
+    /// at a time, exactly as the Core half does and for the same reason.
+    private func scanPlatformActivity(cutoff: Date, paging: Bool) async -> Bool {
+        var offset = 0
+        var fetches = 0
         var posted = 0
+        while true {
+            let records = platformActivitySource(cutoff, offset)
+            await postPlatformActivity(records, cutoff: cutoff, posted: &posted)
+            fetches += 1
+            guard records.count >= Self.scanFetchLimit else { break }
+            guard paging, fetches < Self.maxCatchUpFetches else { return false }
+            offset += records.count
+        }
+        return true
+    }
+
+    /// One fetch's worth of ledger rows, posted or consumed.
+    private func postPlatformActivity(_ records: [PlatformAddressActivityRecord],
+                                      cutoff: Date,
+                                      posted: inout Int) async {
+        guard !records.isEmpty else { return }
         for record in records where record.amountDuffs > 0 && record.observedAt >= cutoff {
             let amount = UInt64(record.amountDuffs)
             let amountText = amount.formattedDashAmount
@@ -491,8 +547,10 @@ final class TransactionNotificationProducer {
     /// never `mainContext` off-main. A thin pass-through left untested; the
     /// decisions made on the rows it returns are covered through the
     /// injected seam.
-    static func defaultRowSource(firstSeenAtOrAfter floor: UInt64) -> [ObservedTransaction] {
-        TransactionObserver.fetchObserved(fetchLimit: scanFetchLimit, firstSeenAtOrAfter: floor)
+    static func defaultRowSource(firstSeenAtOrAfter floor: UInt64, offset: Int) -> [ObservedTransaction] {
+        TransactionObserver.fetchObserved(fetchLimit: scanFetchLimit,
+                                          fetchOffset: offset,
+                                          firstSeenAtOrAfter: floor)
     }
 
     /// Production Platform activity: the active wallet's ledger rows on the
@@ -500,7 +558,7 @@ final class TransactionNotificationProducer {
     /// itself, like the Core half — scans run on every persistence signal and
     /// may overlap. Returns nothing when no wallet is resolved — a scan
     /// during teardown must not read another wallet's ledger.
-    static func defaultPlatformActivitySource(since cutoff: Date) -> [PlatformAddressActivityRecord] {
+    static func defaultPlatformActivitySource(since cutoff: Date, offset: Int) -> [PlatformAddressActivityRecord] {
         // Same resolution `SwiftDashSDKWalletSource.fetchPlatformActivity`
         // uses, through the same main-thread trampoline: the
         // handles are read on the main actor, the DAO's own SQLite connection
@@ -517,7 +575,8 @@ final class TransactionNotificationProducer {
             walletId: handles.walletId,
             networkRaw: handles.networkRaw,
             since: cutoff,
-            limit: scanFetchLimit)
+            limit: scanFetchLimit,
+            offset: offset)
     }
 
     /// Production fiat copy, formatted on the main actor. Scans run on

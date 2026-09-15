@@ -84,6 +84,13 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
         String(repeating: String(format: "%02x", byte), count: 32)
     }
 
+    /// The producer's id for an event: owner + counterparty + the event's own
+    /// moment, which is what keeps two events for the same pair apart.
+    private func eventId(_ kind: String, owner: String, item: ContactItem) -> String {
+        let millis = Int64((item.createdAt.timeIntervalSince1970 * 1000).rounded())
+        return "contact.\(kind).\(owner).\(item.contactIdentityId.hexEncodedString()).\(millis)"
+    }
+
     // MARK: Incoming requests
 
     func testFreshIncomingRequestPostsOnceAcrossTwoChangeSignals() async {
@@ -95,7 +102,7 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
 
         XCTAssertEqual(client.addedRequests.count, 1)
         let request = client.addedRequests[0]
-        XCTAssertEqual(request.identifier, "contact.request.\(DashPayContactsNotificationProducerTests.ownerAHex).\(idHex(0xaa))")
+        XCTAssertEqual(request.identifier, eventId("request", owner: DashPayContactsNotificationProducerTests.ownerAHex, item: item))
         XCTAssertEqual(request.content.threadIdentifier, NotificationTopic.dashpay.rawValue)
         XCTAssertEqual(request.content.body,
                        String(format: NSLocalizedString("%@ has sent you a contact request", comment: "DashPay Notifications"), "alice"))
@@ -119,8 +126,8 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
 
         XCTAssertEqual(client.addedRequests.count, 2)
         XCTAssertEqual(client.addedRequests.map(\.identifier), [
-            "contact.request.\(DashPayContactsNotificationProducerTests.ownerAHex).\(idHex(0xaa))",
-            "contact.request.\(DashPayContactsNotificationProducerTests.ownerBHex).\(idHex(0xaa))",
+            eventId("request", owner: DashPayContactsNotificationProducerTests.ownerAHex, item: item),
+            eventId("request", owner: DashPayContactsNotificationProducerTests.ownerBHex, item: item),
         ])
     }
 
@@ -146,7 +153,7 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
         await producer.scanAndNotify(since: Self.referenceNow.addingTimeInterval(-30 * 60))
 
         XCTAssertEqual(client.addedRequests.map(\.identifier),
-                       ["contact.request.\(DashPayContactsNotificationProducerTests.ownerAHex).\(idHex(0xaa))"])
+                       [eventId("request", owner: DashPayContactsNotificationProducerTests.ownerAHex, item: item)])
     }
 
     func testWithoutABoundaryARequestPastTheWindowDoesNotPost() async {
@@ -193,7 +200,7 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
         await producer.scanAndNotify()
 
         XCTAssertEqual(client.addedRequests.map(\.identifier),
-                       ["contact.request.\(DashPayContactsNotificationProducerTests.ownerAHex).\(idHex(0x22))"])
+                       [eventId("request", owner: DashPayContactsNotificationProducerTests.ownerAHex, item: lateIncoming)])
     }
 
     // MARK: Established contacts
@@ -209,7 +216,7 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
 
         XCTAssertEqual(client.addedRequests.count, 1)
         let request = client.addedRequests[0]
-        XCTAssertEqual(request.identifier, "contact.accepted.\(DashPayContactsNotificationProducerTests.ownerAHex).\(idHex(0xbb))")
+        XCTAssertEqual(request.identifier, eventId("accepted", owner: DashPayContactsNotificationProducerTests.ownerAHex, item: item))
         XCTAssertEqual(request.content.body,
                        String(format: NSLocalizedString("%@ accepted your contact request", comment: "DashPay Notifications"), "bob"))
         XCTAssertEqual(DeepLinkRoute.decode(fromUserInfo: request.content.userInfo), .dashPayNotifications)
@@ -239,6 +246,38 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
         XCTAssertTrue(client.addedRequests.isEmpty)
     }
 
+    /// Equal direction timestamps name no accepting side. The two are derived
+    /// independently from the direction rows, and `ContactProfileSheet` reads
+    /// equality the other way round — so the order is unknown and nothing is
+    /// announced.
+    func testEqualDirectionTimestampsAreUnknownOrderAndDoNotPost() async {
+        let item = makeItem(idByte: 0xce, relationship: .established,
+                            age: 60, incomingAge: 60, outgoingAge: 60)
+        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [], contacts: [item])
+
+        await producer.scanAndNotify()
+
+        XCTAssertNil(item.establishedByTheirAccept)
+        XCTAssertTrue(client.addedRequests.isEmpty)
+    }
+
+    /// The id carries the event's own moment, so a second request from the
+    /// same counterparty is a second event — not the first one repeating.
+    func testASecondRequestFromTheSameCounterpartyPostsAgain() async {
+        let first = makeItem(relationship: .incoming, age: 300, incomingAge: 300)
+        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [first], contacts: [])
+        await producer.scanAndNotify(since: Self.referenceNow.addingTimeInterval(-30 * 60))
+
+        let second = makeItem(relationship: .incoming, age: 60, incomingAge: 60)
+        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [second], contacts: [])
+        await producer.scanAndNotify(since: Self.referenceNow.addingTimeInterval(-30 * 60))
+
+        XCTAssertEqual(client.addedRequests.map(\.identifier), [
+            eventId("request", owner: DashPayContactsNotificationProducerTests.ownerAHex, item: first),
+            eventId("request", owner: DashPayContactsNotificationProducerTests.ownerAHex, item: second),
+        ])
+    }
+
     func testOneMissingDirectionTimestampIsUnknownOrder() {
         let incomingOnly = makeItem(relationship: .established, incomingAge: 60)
         let outgoingOnly = makeItem(relationship: .established, outgoingAge: 60)
@@ -263,7 +302,7 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
         XCTAssertTrue(client.addedRequests.isEmpty)
         // Consumed: the bell showed it live, so a scan after backgrounding
         // cannot post it and the badge never counts it.
-        XCTAssertEqual(store.events["contact.request.\(DashPayContactsNotificationProducerTests.ownerAHex).\(idHex(0xaa))"]?.seen, true)
+        XCTAssertEqual(store.events[eventId("request", owner: DashPayContactsNotificationProducerTests.ownerAHex, item: item)]?.seen, true)
 
         appState.isApplicationActive = false
         await producer.scanAndNotify()

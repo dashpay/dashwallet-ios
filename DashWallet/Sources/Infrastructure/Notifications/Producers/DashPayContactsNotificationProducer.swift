@@ -132,7 +132,7 @@ final class DashPayContactsNotificationProducer {
             await process(
                 item,
                 eventDate: item.createdAt,
-                id: "contact.request.\(owner).\(item.contactIdentityId.hexEncodedString())",
+                id: "contact.request.\(owner).\(item.contactIdentityId.hexEncodedString()).\(Self.stamp(item.createdAt))",
                 bodyFormat: NSLocalizedString("%@ has sent you a contact request", comment: "DashPay Notifications"),
                 cutoff: cutoff)
         }
@@ -144,13 +144,26 @@ final class DashPayContactsNotificationProducer {
             await process(
                 item,
                 eventDate: item.createdAt,
-                id: "contact.accepted.\(owner).\(item.contactIdentityId.hexEncodedString())",
+                id: "contact.accepted.\(owner).\(item.contactIdentityId.hexEncodedString()).\(Self.stamp(item.createdAt))",
                 bodyFormat: NSLocalizedString("%@ accepted your contact request", comment: "DashPay Notifications"),
                 cutoff: cutoff)
         }
     }
 
     // MARK: Private
+
+    /// The event's own moment, in the same milliseconds
+    /// `DashPayNotificationsReadState.eventKey(for:)` uses.
+    ///
+    /// Part of every id because owner + counterparty alone name a
+    /// RELATIONSHIP, not an event: the pair can reach the same state more
+    /// than once, and without the stamp the store's dedup would read the
+    /// second occurrence as the first one repeating and drop it for as long
+    /// as the record is kept. It also makes the producer's identity and the
+    /// bell screen's read-state key distinguish events the same way.
+    private static func stamp(_ date: Date) -> Int64 {
+        Int64((date.timeIntervalSince1970 * 1000).rounded())
+    }
 
     private func process(_ item: ContactItem,
                          eventDate: Date,

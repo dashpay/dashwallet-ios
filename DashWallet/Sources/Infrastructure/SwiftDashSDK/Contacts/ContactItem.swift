@@ -130,17 +130,21 @@ struct ContactItem: Identifiable, Equatable {
 
     /// For an established pair: true when the friendship completed because
     /// THEY reciprocated our request — the newer direction row is the
-    /// reciprocation, so a newer (or equal) incoming row means they
-    /// accepted. The notifications screen's they-accepted/we-accepted split
-    /// and the contacts notification producer both classify with this.
-    /// Meaningless for pending relationships (one direction row missing).
+    /// reciprocation, so a strictly newer incoming row means they accepted.
+    /// The notifications screen's they-accepted/we-accepted split and the
+    /// contacts notification producer both classify with this. Meaningless
+    /// for pending relationships (one direction row missing).
     ///
-    /// `nil` when either direction's timestamp is unknown: the order of the
-    /// two rows cannot then be read, and treating a missing date as the
-    /// distant past would announce an accept nobody can vouch for.
+    /// `nil` when the order cannot be read: either direction's timestamp is
+    /// unknown, or the two are equal. `SwiftDashSDKContactsService` derives
+    /// the two independently from the direction rows, so equality identifies
+    /// no accepting side — and calling it either way announces an accept
+    /// nobody can vouch for. `ContactProfileSheet` reads equality as
+    /// `weAccepted`; neither reading is better, so neither is notified.
     var establishedByTheirAccept: Bool? {
         guard let incomingCreatedAt, let outgoingCreatedAt else { return nil }
-        return incomingCreatedAt >= outgoingCreatedAt
+        guard incomingCreatedAt != outgoingCreatedAt else { return nil }
+        return incomingCreatedAt > outgoingCreatedAt
     }
 
     /// Local search predicate shared by the contacts and notifications

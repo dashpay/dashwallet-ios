@@ -38,6 +38,9 @@ final class TransactionNotificationProducerTests: XCTestCase {
     private var rows: [ObservedTransaction] = []
     /// Every `firstSeen` floor the producer asked the row source for.
     private var rowFloors: [UInt64] = []
+    /// Row offsets each fetch asked for — how a paged catch-up sweep is
+    /// told apart from a single-fetch signal-driven scan.
+    private var rowOffsets: [Int] = []
     /// What `DWGlobalOptions.notificationCatchUpDate` reads in production.
     private var catchUpBoundary: Date?
     private var watchBodies: [String] = []
@@ -51,6 +54,7 @@ final class TransactionNotificationProducerTests: XCTestCase {
         appState = FakeAppStateProvider()
         rows = []
         rowFloors = []
+        rowOffsets = []
         catchUpBoundary = nil
         watchBodies = []
         let permissions = NotificationPermissionCoordinator(client: client, preferences: preferences)
@@ -58,9 +62,13 @@ final class TransactionNotificationProducerTests: XCTestCase {
         producer = TransactionNotificationProducer(
             dispatcher: dispatcher,
             store: store,
-            rowSource: { [weak self] floor in
+            rowSource: { [weak self] floor, offset in
                 self?.rowFloors.append(floor)
-                return self?.rows ?? []
+                self?.rowOffsets.append(offset)
+                // Mirrors the production sources: newest-first, one fetch's
+                // worth at a time, from the offset the caller paged to.
+                let all = self?.rows ?? []
+                return Array(all.dropFirst(offset).prefix(TransactionNotificationProducer.scanFetchLimit))
             },
             appState: appState,
             watchBridge: { [weak self] body in self?.watchBodies.append(body) },
@@ -166,7 +174,7 @@ final class TransactionNotificationProducerTests: XCTestCase {
         producer = TransactionNotificationProducer(
             dispatcher: dispatcher,
             store: store,
-            rowSource: { [weak self] _ in self?.rows ?? [] },
+            rowSource: { [weak self] _, _ in self?.rows ?? [] },
             appState: appState,
             watchBridge: { [weak self] body in self?.watchBodies.append(body) },
             catchUpBoundary: { nil },
@@ -297,6 +305,51 @@ final class TransactionNotificationProducerTests: XCTestCase {
         XCTAssertEqual(client.addedRequests.count, 1)
     }
 
+    // MARK: Catch-up paging
+
+    /// Both row sources return newest-first under a per-fetch cap, so a
+    /// window wider than one fetch hides its OLDEST rows behind that cap. The
+    /// sweep — the only caller that advances `notificationCatchUpDate` — pages
+    /// until the window runs out, and reports that it reached the end.
+    func testACatchUpSweepPagesUntilTheWindowIsExhausted() async {
+        let page = TransactionNotificationProducer.scanFetchLimit
+        rows = (0..<(page + 5)).map {
+            makeRow(txidByte: UInt8($0), age: 30 * 60, minedAge: 30 * 60)
+        }
+
+        let covered = await producer.scanAndNotify(since: Self.referenceNow.addingTimeInterval(-60 * 60))
+
+        XCTAssertTrue(covered)
+        XCTAssertEqual(rowOffsets, [0, page])
+        XCTAssertEqual(client.addedRequests.count, page + 5)
+    }
+
+    /// A signal-driven scan reads ONE fetch: it fires on every persistence
+    /// signal, and the rows it leaves are not lost because it moves no
+    /// boundary. It says the window is unexhausted so nothing advances over
+    /// what it did not read.
+    func testASignalDrivenScanReadsOneFetchAndReportsTheWindowUnexhausted() async {
+        let page = TransactionNotificationProducer.scanFetchLimit
+        rows = (0..<(page + 5)).map {
+            makeRow(txidByte: UInt8($0), age: 5 * 60, minedAge: 5 * 60)
+        }
+
+        let covered = await producer.scanAndNotify()
+
+        XCTAssertFalse(covered)
+        XCTAssertEqual(rowOffsets, [0])
+    }
+
+    /// A window that fits in one fetch is exhausted by it — no second read.
+    func testAWindowInsideOneFetchIsReportedCovered() async {
+        rows = [makeRow(txidByte: 0x21, age: 30 * 60, minedAge: 30 * 60)]
+
+        let covered = await producer.scanAndNotify(since: Self.referenceNow.addingTimeInterval(-60 * 60))
+
+        XCTAssertTrue(covered)
+        XCTAssertEqual(rowOffsets, [0])
+    }
+
     /// A payment mined while the app slept and synced after it opened is
     /// older than the freshness window, so no foreground scan posts it — the
     /// user sees it on Home. A later background sweep reaching back to the
@@ -413,8 +466,8 @@ final class TransactionNotificationProducerTests: XCTestCase {
         producer = TransactionNotificationProducer(
             dispatcher: dispatcher,
             store: store,
-            rowSource: { _ in [] },
-            platformActivitySource: { _ in [record] },
+            rowSource: { _, _ in [] },
+            platformActivitySource: { _, _ in [record] },
             appState: appState,
             watchBridge: { [weak self] body in self?.watchBodies.append(body) },
             catchUpBoundary: { nil },

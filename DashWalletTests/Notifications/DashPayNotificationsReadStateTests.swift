@@ -157,6 +157,37 @@ final class DashPayNotificationsReadStateTests: XCTestCase {
         XCTAssertEqual(recorded, [DashPayNotificationsReadState.eventKey(for: shown)])
     }
 
+    // MARK: What a viewing stores
+
+    /// `nil` stored keys are what keeps `isUnread` on the legacy date marker.
+    /// A viewing that rendered nothing — the screen opened before contacts
+    /// loaded — must leave that alone rather than write an empty set, which
+    /// would switch the reader onto the key set and re-badge all history.
+    func testAViewingWithNothingRenderedStoresNothing() {
+        let recorded = DashPayNotificationsReadState.recordingViewed(
+            incoming: [], outgoing: [], contacts: [], previous: nil)
+
+        XCTAssertTrue(recorded.isEmpty)
+        XCTAssertNil(DashPayNotificationsReadState.storedValue(forRecorded: recorded, previous: nil))
+    }
+
+    func testAnUnchangedSetStoresNothing() {
+        let item = ContactItem.fixture(idByte: 0x01, relationship: .incoming, createdAt: date(secondsAgo: 60))
+        let recorded = DashPayNotificationsReadState.recordingViewed(
+            incoming: [item], outgoing: [], contacts: [], previous: nil)
+
+        XCTAssertNotNil(DashPayNotificationsReadState.storedValue(forRecorded: recorded, previous: nil))
+        XCTAssertNil(DashPayNotificationsReadState.storedValue(forRecorded: recorded, previous: recorded))
+    }
+
+    /// An empty set never overwrites keys already recorded either — that is
+    /// the prune branch with nothing rendered.
+    func testAnEmptySetNeverOverwritesRecordedKeys() {
+        let previous: Set<String> = ["established.aa.1"]
+
+        XCTAssertNil(DashPayNotificationsReadState.storedValue(forRecorded: [], previous: previous))
+    }
+
     // MARK: Marker safety
 
     func testEmptyListsCountNothingAndAdvanceNothing() {

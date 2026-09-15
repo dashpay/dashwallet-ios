@@ -187,6 +187,46 @@ final class NotifiedEventStoreTests: XCTestCase {
         XCTAssertTrue(markedAgain)
     }
 
+    /// A database that failed and then RECOVERED inside the same process must
+    /// not re-admit what it already let through. The banner went out on the
+    /// failing write; the insert that now succeeds is the missing record, not
+    /// a second event.
+    func testAnIdAdmittedWhileTheDatabaseWasBrokenIsNotAdmittedAgainOnRecovery() async throws {
+        let db = try Connection(.inMemory)
+        let recovering = NotifiedEventStore(connection: db)
+
+        // No table yet: the write fails and the id is admitted once.
+        let whileBroken = await recovering.markIfNew(id: "tx.abc", topic: .transactions)
+        let whileStillBroken = await recovering.markIfNew(id: "tx.abc", topic: .transactions)
+
+        try AddNotifiedEventsTable().migrateDatabase(db)
+        let afterRecovery = await recovering.markIfNew(id: "tx.abc", topic: .transactions)
+        // And the record is there now, so the next scan is deduped by the row.
+        let afterRecord = await recovering.markIfNew(id: "tx.abc", topic: .transactions)
+        // An id the broken run never saw is still a genuine first sighting.
+        let fresh = await recovering.markIfNew(id: "tx.def", topic: .transactions)
+
+        XCTAssertTrue(whileBroken)
+        XCTAssertFalse(whileStillBroken)
+        XCTAssertFalse(afterRecovery)
+        XCTAssertFalse(afterRecord)
+        XCTAssertTrue(fresh)
+    }
+
+    /// `unmark` re-arms an id on BOTH paths, so a recovered database does not
+    /// refuse the re-post it was unmarked for.
+    func testUnmarkReArmsAnIdAdmittedWhileTheDatabaseWasBroken() async throws {
+        let db = try Connection(.inMemory)
+        let recovering = NotifiedEventStore(connection: db)
+        _ = await recovering.markIfNew(id: "crowdnode.result", topic: .transactions)
+
+        try AddNotifiedEventsTable().migrateDatabase(db)
+        await recovering.unmark(id: "crowdnode.result")
+        let afterUnmark = await recovering.markIfNew(id: "crowdnode.result", topic: .transactions)
+
+        XCTAssertTrue(afterUnmark)
+    }
+
     func testPruneKeepsRowsWithinThirtyDays() async {
         _ = await store.markIfNew(id: "tx.recent", topic: .transactions)
 

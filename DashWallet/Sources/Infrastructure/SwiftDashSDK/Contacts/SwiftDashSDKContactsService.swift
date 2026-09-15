@@ -338,8 +338,9 @@ final class SwiftDashSDKContactsService: ObservableObject {
             contacts: contacts,
             previous: previousKeys)
         var changed = false
-        if recordedKeys != previousKeys {
-            options.viewedNotificationEventKeys = recordedKeys.sorted()
+        if let stored = DashPayNotificationsReadState.storedValue(forRecorded: recordedKeys,
+                                                                 previous: previousKeys) {
+            options.viewedNotificationEventKeys = stored
             changed = true
         }
         if let advanced = DashPayNotificationsReadState.advancedMarker(

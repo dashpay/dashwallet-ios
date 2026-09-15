@@ -297,7 +297,8 @@ final class PlatformAddressActivityDAO {
         walletId: Data,
         networkRaw: Int64,
         since: Date,
-        limit: Int
+        limit: Int,
+        offset: Int = 0
     ) -> [PlatformAddressActivityRecord] {
         typealias S = PlatformAddressActivitySchema
         let query = S.activity
@@ -306,7 +307,7 @@ final class PlatformAddressActivityDAO {
                     S.colNetwork == networkRaw &&
                     S.colObservedAt >= since.timeIntervalSince1970)
             .order(S.colObservedAt.desc)
-            .limit(limit)
+            .limit(limit, offset: offset)
         return records(for: query)
     }
 

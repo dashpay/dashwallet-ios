@@ -91,6 +91,19 @@ enum DashPayNotificationsReadState {
         return recorded.count > viewedKeysLimit ? shown : recorded
     }
 
+    /// What a viewing should STORE, or `nil` to leave the stored value as it
+    /// is — no write, no change notification.
+    ///
+    /// An empty set is never stored. `viewedNotificationEventKeys == nil` is
+    /// what keeps `isUnread` on the legacy date marker, so writing `[]` —
+    /// which a viewing before the contacts load, or a prune with nothing
+    /// rendered, produces — would switch the reader onto an empty key set and
+    /// make every historical event unread again.
+    static func storedValue(forRecorded recorded: Set<String>, previous: Set<String>?) -> [String]? {
+        guard !recorded.isEmpty, recorded != previous else { return nil }
+        return recorded.sorted()
+    }
+
     /// The value viewing the screen advances the legacy date marker to —
     /// still kept current so a build without the key set reads a sane
     /// marker. The newest

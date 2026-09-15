@@ -143,6 +143,15 @@ actor NotifiedEventStore: NotifiedEventStoring {
                     S.colCreatedAt <- epochSeconds(now())))
                 inserted = true
             }
+            // A failing database earlier in this process may have admitted
+            // this id with no row behind it. The insert just made is that
+            // missing record, not a new event — the banner already went out,
+            // so the id leaves the fallback set and the caller is told
+            // "duplicate". Only a successful write clears it: while the
+            // database keeps failing the set stays the sole guard.
+            if inserted, admittedWithoutRecord.remove(id) != nil {
+                return false
+            }
             return inserted
         } catch {
             DWLogger.log("NotifiedEventStore: markIfNew(\(id)) failed: \(error)")

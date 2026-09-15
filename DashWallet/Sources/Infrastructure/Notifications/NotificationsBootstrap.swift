@@ -99,11 +99,24 @@ final class NotificationsBootstrap: NSObject {
                 // outside the ordinary ten-minute window.
                 let options = DWGlobalOptions.sharedInstance()
                 let boundary = options.notificationCatchUpDate
-                await transactionProducer.scanAndNotify(since: boundary)
+                // Stamped BEFORE the scans, not after: a row persisted while
+                // the sweep runs must stay above the boundary, or the sweep
+                // that never looked at it would still claim it.
+                let sweepStarted = Date()
+                let covered = await transactionProducer.scanAndNotify(since: boundary)
                 #if DASHPAY
+                // Unbounded — it reads the in-memory contact snapshots, so
+                // there is no window for it to leave unexhausted.
                 await contactsProducer.scanAndNotify(since: boundary)
                 #endif
-                options.notificationCatchUpDate = Date()
+                // Only over what the scans actually reached. Both transaction
+                // sources are newest-first under a per-fetch cap, so a window
+                // they could not exhaust has its OLDEST rows still unread;
+                // moving the boundary past those would drop them for good.
+                // Leaving it put costs a repeat scan the store deduplicates.
+                if covered {
+                    options.notificationCatchUpDate = sweepStarted
+                }
             })
         self.backgroundGrace = BackgroundGraceHold(permissions: permissionCoordinator)
         self.crowdNodeProducer = CrowdNodeNotificationProducer(dispatcher: dispatcher, store: store)
