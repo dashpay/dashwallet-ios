@@ -120,6 +120,9 @@ class NumberKeyboardButton: UIView {
     private func reloadTitle() {
         #if SNAPSHOT
         if value == .separator {
+            // The button view is the exposed accessibility element, so the XCUITest
+            // id lives on it as well as on the label
+            accessibilityIdentifier = "amount_button_separator"
             titleLabel.accessibilityIdentifier = "amount_button_separator"
         }
         #endif // SNAPSHOT
@@ -152,6 +155,37 @@ class NumberKeyboardButton: UIView {
             attributedText.append(NSAttributedString(string: " "))
 
             titleLabel.attributedText = attributedText
+        }
+
+        updateAccessibility()
+    }
+
+    private func updateAccessibility() {
+        switch value {
+        case .empty:
+            // A spacer key: hidden from VoiceOver entirely
+            isAccessibilityElement = false
+            accessibilityElementsHidden = true
+            accessibilityLabel = nil
+            accessibilityTraits = []
+        case .digit, .custom:
+            isAccessibilityElement = true
+            accessibilityElementsHidden = false
+            accessibilityLabel = value.stringValue
+            accessibilityTraits = .button
+        case .separator:
+            isAccessibilityElement = true
+            accessibilityElementsHidden = false
+            accessibilityLabel = NSLocalizedString("Decimal separator",
+                                                   comment: "VoiceOver label for the decimal separator key on the number keyboard")
+            accessibilityTraits = .button
+        case .delete:
+            // The visible title is an SF Symbol attachment, so the spoken label is set explicitly
+            isAccessibilityElement = true
+            accessibilityElementsHidden = false
+            accessibilityLabel = NSLocalizedString("Delete",
+                                                   comment: "VoiceOver label for the delete key on the number keyboard")
+            accessibilityTraits = .button
         }
     }
 
