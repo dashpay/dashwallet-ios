@@ -34,6 +34,12 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
     private var protectedDataAvailable = true
     private var runtimeStartResult = true
     private var runtimeStartCalls = 0
+    /// The "still wanted" gate the run hands to the runtime bring-up, kept
+    /// by `runtimeStartOverride` so a test can read it across an expiration.
+    private var isRuntimeStartWanted: BackgroundRefreshStartGate?
+    /// Invoked as the injected sync wait is entered, so a test can expire a
+    /// run exactly once it is parked there.
+    private var onWaitForSyncDone: (() -> Void)?
     private var runtimeStopCalls = 0
     private var runtimeRearmCalls = 0
     private var sweepCalls = 0
@@ -47,6 +53,8 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
         protectedDataAvailable = true
         runtimeStartResult = true
         runtimeStartCalls = 0
+        isRuntimeStartWanted = nil
+        onWaitForSyncDone = nil
         runtimeStopCalls = 0
         runtimeRearmCalls = 0
         sweepCalls = 0
@@ -106,15 +114,16 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
     /// instant runtime start (the counter still ticks).
     private func makeCoordinator(syncDoneImmediately: Bool = true,
                                  deadlineSleepsForever: Bool = false,
-                                 runtimeStartOverride: (() async -> Bool)? = nil) {
+                                 runtimeStartOverride: ((BackgroundRefreshStartGate) async -> Bool)? = nil) {
         coordinator = BackgroundRefreshCoordinator(
             scheduler: scheduler,
             hasWallet: { [weak self] in self?.walletExists ?? false },
             isProtectedDataAvailable: { [weak self] in self?.protectedDataAvailable ?? true },
-            runtimeStart: { @MainActor [weak self] in
+            runtimeStart: { @MainActor [weak self] gate in
                 self?.runtimeStartCalls += 1
+                self?.isRuntimeStartWanted = gate
                 if let runtimeStartOverride {
-                    return await runtimeStartOverride()
+                    return await runtimeStartOverride(gate)
                 }
                 return self?.runtimeStartResult ?? false
             },
@@ -124,7 +133,8 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
             runtimeRearm: { [weak self] in
                 self?.runtimeRearmCalls += 1
             },
-            waitForSyncDone: {
+            waitForSyncDone: { @MainActor [weak self] in
+                self?.onWaitForSyncDone?()
                 if !syncDoneImmediately {
                     try? await Task.sleep(nanoseconds: Self.foreverNanos)
                 }
@@ -249,7 +259,7 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
 
     func testRunSubmitsNextRefreshBeforeStartingTheRuntime() async throws {
         var submissionsAtRuntimeStart: Int?
-        makeCoordinator(syncDoneImmediately: true, runtimeStartOverride: { @MainActor [weak self] in
+        makeCoordinator(syncDoneImmediately: true, runtimeStartOverride: { @MainActor [weak self] _ in
             submissionsAtRuntimeStart = self?.scheduler.submissions.count
             return true
         })
@@ -358,8 +368,14 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
         // The expiration path completes the task before the run body has
         // unwound; the tail re-submission marks the run body's end.
         let bodyEnded = submissionsReach(2)
+        // Expire only once the run is actually parked on the sync wait —
+        // expiring before the body starts is a different path (it never
+        // reaches the runtime at all) and has its own test below.
+        let waiting = expectation(description: "run parked on the sync wait")
+        onWaitForSyncDone = { waiting.fulfill() }
 
         handler(task)
+        await fulfillment(of: [waiting], timeout: 5)
         let expiration = try XCTUnwrap(task.expirationHandler)
         expiration()
 
@@ -376,7 +392,7 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
         // The runtime bring-up await is non-cancellable in production (the
         // runtime's serial lifecycle queue); the gate reproduces that.
         let gate = ManualGate()
-        makeCoordinator(syncDoneImmediately: true, runtimeStartOverride: { await gate.wait() })
+        makeCoordinator(syncDoneImmediately: true, runtimeStartOverride: { _ in await gate.wait() })
         coordinator.start()
         let handler = try XCTUnwrap(scheduler.launchHandlers[BackgroundRefreshCoordinator.taskIdentifier])
         let task = FakeBackgroundRefreshTask()
@@ -411,6 +427,70 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
         XCTAssertEqual(task.completions, [false])
         XCTAssertEqual(runtimeStopCalls, 0)
         XCTAssertFalse(coordinator.stoppedRuntimeAfterBackgroundRun)
+        XCTAssertEqual(sweepCalls, 0)
+    }
+
+    /// Expiration before the run body has had a chance to start: the task
+    /// is already handed back, so the body must not open a runtime bring-up
+    /// in a process the system is about to suspend. The chain still gets its
+    /// next request, which the body submits before anything else.
+    func testExpirationBeforeTheBodyRunsNeverStartsTheRuntime() async throws {
+        makeCoordinator(syncDoneImmediately: true)
+        coordinator.start()
+        let handler = try XCTUnwrap(scheduler.launchHandlers[BackgroundRefreshCoordinator.taskIdentifier])
+        let task = FakeBackgroundRefreshTask()
+        let completed = expectation(description: "task completed")
+        task.onSetTaskCompleted = { _ in completed.fulfill() }
+        // The body runs to its guard without suspending, so the run's single
+        // submission marks that it has already returned.
+        let bodyEnded = submissionsReach(1)
+
+        handler(task)
+        // Still on the main actor: the run task has not been given a chance
+        // to execute between the handler returning and this expiry.
+        try XCTUnwrap(task.expirationHandler)()
+
+        await fulfillment(of: [completed, bodyEnded], timeout: 5)
+        XCTAssertEqual(task.completions, [false])
+        XCTAssertEqual(runtimeStartCalls, 0)
+        XCTAssertEqual(runtimeStopCalls, 0)
+        XCTAssertEqual(sweepCalls, 0)
+        XCTAssertFalse(coordinator.stoppedRuntimeAfterBackgroundRun)
+        XCTAssertEqual(scheduler.submissions.count, 1)
+    }
+
+    /// Expiration while the bring-up waits its turn on the runtime's serial
+    /// lifecycle queue. Cancelling the run does not reach that queue, so the
+    /// coordinator hands the bring-up an explicit "still wanted" gate, read
+    /// on the queue immediately before the rebuild would begin.
+    func testExpirationWhileTheRebuildIsQueuedWithdrawsIt() async throws {
+        let gate = ManualGate()
+        makeCoordinator(syncDoneImmediately: true, runtimeStartOverride: { _ in await gate.wait() })
+        coordinator.start()
+        let handler = try XCTUnwrap(scheduler.launchHandlers[BackgroundRefreshCoordinator.taskIdentifier])
+        let task = FakeBackgroundRefreshTask()
+        let completed = expectation(description: "task completed")
+        task.onSetTaskCompleted = { _ in completed.fulfill() }
+        let startBlocked = expectation(description: "run parked on runtimeStart")
+        gate.onWait = { startBlocked.fulfill() }
+
+        handler(task)
+        await fulfillment(of: [startBlocked], timeout: 5)
+        let isWanted = try XCTUnwrap(isRuntimeStartWanted)
+        XCTAssertTrue(isWanted(), "a live run still wants its bring-up")
+
+        try XCTUnwrap(task.expirationHandler)()
+        await fulfillment(of: [completed], timeout: 5)
+
+        XCTAssertFalse(isWanted(), "an expired run withdraws the queued bring-up")
+
+        // And the parked body still unwinds without a second completion or a
+        // teardown in time the system no longer grants.
+        let bodyEnded = submissionsReach(2)
+        gate.resolve(true)
+        await fulfillment(of: [bodyEnded], timeout: 5)
+        XCTAssertEqual(task.completions, [false])
+        XCTAssertEqual(runtimeStopCalls, 0)
         XCTAssertEqual(sweepCalls, 0)
     }
 

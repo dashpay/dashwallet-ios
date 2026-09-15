@@ -48,6 +48,18 @@ private final class BackgroundRefreshTaskCompletion: @unchecked Sendable {
         self.task = task
     }
 
+    /// Whether the task has already been handed back. The expiration
+    /// handler completes it before the run body reaches its own completion
+    /// call, so during a run this reads as "the system has taken the window
+    /// back" — the one cancellation signal that crosses into the runtime's
+    /// serial lifecycle queue, where `Task.isCancelled` belongs to the
+    /// queue's own task and not to this run.
+    var isCompleted: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return completed
+    }
+
     /// Completes the task on the first call; every later call is a no-op.
     func complete(success: Bool) {
         lock.lock()
@@ -58,6 +70,21 @@ private final class BackgroundRefreshTaskCompletion: @unchecked Sendable {
             task.setTaskCompleted(success: success)
         }
     }
+}
+
+// MARK: - BackgroundRefreshStartGate
+
+/// "Is this run still wanted?", asked from inside the runtime's serial
+/// lifecycle queue.
+///
+/// A nominal type rather than a bare closure parameter: the bring-up stores
+/// the question and asks it later, on another queue, so it has to escape —
+/// which a closure written directly into a function-type parameter cannot.
+struct BackgroundRefreshStartGate {
+    let isWanted: @MainActor () -> Bool
+
+    @MainActor
+    func callAsFunction() -> Bool { isWanted() }
 }
 
 // MARK: - BackgroundTaskScheduling
@@ -191,8 +218,10 @@ final class BackgroundRefreshCoordinator {
     /// Whether keychain items stored "when unlocked" are readable right now.
     private let isProtectedDataAvailable: () -> Bool
     /// Ensure the runtime is up via the serialized lifecycle; returns
-    /// whether it is ready afterwards.
-    private let runtimeStart: () async -> Bool
+    /// whether it is ready afterwards. The gate is re-read on that queue,
+    /// immediately before the rebuild would begin, and a `false` reading
+    /// withdraws it — see `run`.
+    private let runtimeStart: (BackgroundRefreshStartGate) async -> Bool
     /// Awaitable full teardown (persistence flushed on return).
     private let runtimeStop: () async -> Void
     /// Fire-and-forget restart, used when the user foregrounds a process
@@ -224,7 +253,7 @@ final class BackgroundRefreshCoordinator {
     init(scheduler: BackgroundTaskScheduling = SystemBackgroundTaskScheduler(),
          hasWallet: @escaping () -> Bool = { WalletEnvironment.hasWallet },
          isProtectedDataAvailable: @escaping () -> Bool = BackgroundRefreshCoordinator.defaultIsProtectedDataAvailable,
-         runtimeStart: @escaping () async -> Bool = BackgroundRefreshCoordinator.defaultRuntimeStart,
+         runtimeStart: @escaping (BackgroundRefreshStartGate) async -> Bool = BackgroundRefreshCoordinator.defaultRuntimeStart,
          runtimeStop: @escaping () async -> Void = { await SwiftDashSDKWalletRuntime.shared.stopAndAwaitTeardown() },
          runtimeRearm: @escaping () -> Void = { SwiftDashSDKWalletRuntime.startIfReady() },
          waitForSyncDone: @escaping () async -> Void = BackgroundRefreshCoordinator.defaultSyncDoneWait,
@@ -389,7 +418,25 @@ final class BackgroundRefreshCoordinator {
             return
         }
 
-        let ready = await runtimeStart()
+        // Expiration can land before this body reaches its first
+        // suspension: `handleRefreshTask` installs the handler on the
+        // scheduler's queue while the run task is still hopping to the main
+        // actor. Beginning a bring-up then spends time the system has
+        // already taken back, in a process it is about to suspend.
+        guard !Task.isCancelled else {
+            DWLogger.log("BackgroundRefreshCoordinator: expired before startup; skipping the runtime bring-up")
+            completion.complete(success: false)
+            return
+        }
+
+        // The bring-up runs on the runtime's serial lifecycle queue, which
+        // cancelling this task does not reach. The gate is what does: it is
+        // read on that queue immediately before the rebuild would start, so
+        // an expiry that lands while the op waits its turn stops the rebuild
+        // from beginning at all. An expiry mid-rebuild cannot stop it — the
+        // runtime is then left up, exactly as a suspended foreground process
+        // leaves it, for the reason spelled out at the teardown below.
+        let ready = await runtimeStart(BackgroundRefreshStartGate { [completion] in !completion.isCompleted })
         var success = false
         // Re-checked here and not only inside `syncDoneWithinDeadline()`:
         // expiration can land between that check and the sweep, and the
@@ -452,10 +499,16 @@ final class BackgroundRefreshCoordinator {
     /// Core, not full readiness: payments arrive over SPV, and requiring
     /// BLAST as well meant a Platform outage skipped the sync and the sweep in
     /// every background run although Core had synced.
+    ///
+    /// `gate` is handed to `rearmPlatformSync(if:)`, which re-reads it on the
+    /// lifecycle queue just before the rebuild: a refresh the system has
+    /// already expired withdraws its queued bring-up instead of starting SPV
+    /// and BLAST in a process about to be suspended.
     @MainActor
-    static func defaultRuntimeStart() async -> Bool {
+    static func defaultRuntimeStart(while gate: BackgroundRefreshStartGate) async -> Bool {
         let runtime = SwiftDashSDKWalletRuntime.shared
-        await runtime.rearmPlatformSync()
+        await runtime.rearmPlatformSync(if: gate.isWanted)
+        guard gate() else { return false }
         guard case .success(let network) = runtime.resolveCurrentNetwork() else { return false }
         return runtime.isCoreRuntimeReady(for: network)
     }
