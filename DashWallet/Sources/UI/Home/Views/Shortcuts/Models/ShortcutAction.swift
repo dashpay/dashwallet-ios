@@ -68,7 +68,7 @@ extension ShortcutActionType {
         ]
         // Dash DEX swaps real assets, so it's offered only on mainnet and only when
         // the SwapKit API key is configured. Mirrors the gated Buy & Sell portal card.
-        if !WalletEnvironment.isTestnet && SwapKitConstants.isConfigured {
+        if WalletEnvironment.isMainnet && SwapKitConstants.isConfigured {
             actions.append(.dashDEX)
         }
         let state = CrowdNode.shared.signUpState

@@ -197,8 +197,64 @@ final class StoredWalletInventoryTests: XCTestCase {
     func testLogicalWalletIdsAreNetworkScoped() throws {
         let ids = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: seedA)
 
-        XCTAssertEqual(ids.count, 2)
-        XCTAssertNotEqual(ids[.mainnet], ids[.testnet])
+        XCTAssertEqual(
+            ids.count,
+            SwiftDashSDKStoredWalletNetworkResolver.storableNetworks.count)
+        // All three ids distinct, not just mainnet vs testnet: a collision
+        // would make one network's deletion remove another network's wallet.
+        let distinctIds = Set(ids.values)
+        XCTAssertEqual(distinctIds.count, ids.count)
+    }
+
+    // MARK: - Devnet configuration
+
+    func testDevnetNameRejectsWhitespaceAndSlash() {
+        // Mirrors `platform_wallet_manager_spv_start`, which rejects both —
+        // after the runtime has already been torn down, hence the pre-check.
+        XCTAssertNotNil(DevnetConfiguration.devnetNameValidationError("mou tai"))
+        XCTAssertNotNil(DevnetConfiguration.devnetNameValidationError(" moutai"))
+        XCTAssertNotNil(DevnetConfiguration.devnetNameValidationError("moutai "))
+        XCTAssertNotNil(DevnetConfiguration.devnetNameValidationError("a/b"))
+    }
+
+    func testDevnetNameAcceptsAPlainNameAndDeliberateClearing() {
+        XCTAssertNil(DevnetConfiguration.devnetNameValidationError("moutai"))
+        // Empty is not an error: clearing the field is how devnet is
+        // deliberately unconfigured.
+        XCTAssertNil(DevnetConfiguration.devnetNameValidationError(""))
+    }
+
+    func testDevnetProvisionsOnlyItself() throws {
+        XCTAssertEqual(
+            try SwiftDashSDKHost.missingWalletNetworks(
+                mnemonic: seedA,
+                persistedWalletIds: [],
+                currentNetwork: .devnet),
+            [.devnet])
+    }
+
+    func testMainnetProvisioningNeverMirrorsToDevnet() throws {
+        // Devnet exists only in internal builds, and a devnet wallet row is
+        // useless without devnet coordinates — creating one as a side effect
+        // of onboarding on mainnet would also demand a devnet SDK.
+        XCTAssertFalse(
+            try SwiftDashSDKHost.missingWalletNetworks(
+                mnemonic: seedA,
+                persistedWalletIds: [],
+                currentNetwork: .mainnet)
+                .contains(.devnet))
+    }
+
+    func testDevnetProvisioningSkipsAnAlreadyStoredDevnetWallet() throws {
+        let ids = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: seedA)
+        let devnetId = try XCTUnwrap(ids[.devnet])
+
+        XCTAssertEqual(
+            try SwiftDashSDKHost.missingWalletNetworks(
+                mnemonic: seedA,
+                persistedWalletIds: [devnetId],
+                currentNetwork: .devnet),
+            [])
     }
 
     func testAddWalletCreatesCurrentNetworkThenMissingMirror() throws {
@@ -629,5 +685,95 @@ final class MnemonicFirstWalletCreationTests: XCTestCase {
         }
 
         XCTAssertEqual(storedMnemonic, previousMnemonic)
+    }
+}
+
+// MARK: - Devnet provisioning source
+
+/// First devnet entry must provision the wallet the user entered devnet from,
+/// or nothing — never another stored seed in its place.
+final class DevnetProvisioningSourceTests: XCTestCase {
+    private enum KeychainTestError: Error { case unreadable }
+
+    private let sourceId = Data(repeating: 0xA1, count: 32)
+    private let otherId = Data(repeating: 0xB2, count: 32)
+    private let validPhrase =
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+
+    func testNoRecordedSourceIsNotRecorded() {
+        let source = SwiftDashSDKHost.resolveDevnetProvisioningSource(
+            sourceWalletId: nil,
+            storedWalletIds: { XCTFail("no Keychain read without a source"); return [] },
+            readMnemonic: { _ in XCTFail("no Keychain read without a source"); return "" })
+
+        XCTAssertEqual(source, .notRecorded)
+    }
+
+    func testReadableValidSourceYieldsItsPhrase() {
+        let source = SwiftDashSDKHost.resolveDevnetProvisioningSource(
+            sourceWalletId: sourceId,
+            storedWalletIds: { [self.otherId, self.sourceId] },
+            readMnemonic: { id in
+                XCTAssertEqual(id, self.sourceId)
+                return self.validPhrase
+            })
+
+        XCTAssertEqual(source, .phrase(validPhrase))
+    }
+
+    func testSourceAbsentFromACompleteReadIsDeleted() {
+        let source = SwiftDashSDKHost.resolveDevnetProvisioningSource(
+            sourceWalletId: sourceId,
+            storedWalletIds: { [self.otherId] },
+            readMnemonic: { _ in XCTFail("a deleted source has nothing to read"); return "" })
+
+        XCTAssertEqual(source, .deleted)
+    }
+
+    func testEnumerationFailureIsUnavailableNotNotRecorded() {
+        let source = SwiftDashSDKHost.resolveDevnetProvisioningSource(
+            sourceWalletId: sourceId,
+            storedWalletIds: { throw KeychainTestError.unreadable },
+            readMnemonic: { _ in "" })
+
+        guard case .unavailable = source else {
+            return XCTFail("expected unavailable, got \(source)")
+        }
+    }
+
+    func testUnreadableSourceMnemonicIsUnavailable() {
+        let source = SwiftDashSDKHost.resolveDevnetProvisioningSource(
+            sourceWalletId: sourceId,
+            storedWalletIds: { [self.sourceId, self.otherId] },
+            readMnemonic: { _ in throw KeychainTestError.unreadable })
+
+        guard case .unavailable = source else {
+            return XCTFail("expected unavailable, got \(source)")
+        }
+    }
+
+    func testInvalidOrEmptySourceMnemonicIsUnavailable() {
+        for stored in ["", "not a valid mnemonic phrase at all"] {
+            let source = SwiftDashSDKHost.resolveDevnetProvisioningSource(
+                sourceWalletId: sourceId,
+                storedWalletIds: { [self.sourceId] },
+                readMnemonic: { _ in stored })
+
+            guard case .unavailable = source else {
+                return XCTFail("expected unavailable for \(stored.debugDescription), got \(source)")
+            }
+        }
+    }
+
+    func testAnUnreadableUnrelatedWalletDoesNotBlockTheSource() {
+        let source = SwiftDashSDKHost.resolveDevnetProvisioningSource(
+            sourceWalletId: sourceId,
+            storedWalletIds: { [self.otherId, self.sourceId] },
+            readMnemonic: { id in
+                guard id == self.sourceId else { throw KeychainTestError.unreadable }
+                return self.validPhrase
+            })
+
+        XCTAssertEqual(source, .phrase(validPhrase))
     }
 }
