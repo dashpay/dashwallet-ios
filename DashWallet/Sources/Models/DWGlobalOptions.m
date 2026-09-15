@@ -37,6 +37,19 @@ static NSString *const LEGACY_USER_HAS_BALANCE_KEY = @"DW_GLOB_userHasBalance";
 static NSString *const PER_WALLET_NEEDS_BACKUP_PREFIX = @"DW_WALLET_NEEDS_BACKUP_";
 static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_";
 static NSString *const PER_WALLET_NOTIFICATION_CATCH_UP_PREFIX = @"DW_WALLET_NOTIFICATION_CATCH_UP_";
+// `advancedModeEnabled` and `advancedModeUserManaged` are readonly to the rest
+// of the app: a direct assignment would move the flag without posting
+// `DWAdvancedModeDidChangeNotification`, leaving every screen that is already
+// on display showing the old state. Writable only in here, through
+// `updateAdvancedModeEnabled:`.
+@interface DWGlobalOptions ()
+
+@property (nonatomic, assign) BOOL advancedModeEnabled;
+@property (nonatomic, assign) BOOL advancedModeUserManaged;
+
+- (void)updateAdvancedModeEnabled:(BOOL)enabled;
+
+@end
 
 @implementation DWGlobalOptions
 
@@ -48,6 +61,7 @@ static NSString *const PER_WALLET_NOTIFICATION_CATCH_UP_PREFIX = @"DW_WALLET_NOT
 @dynamic shortcuts;
 @dynamic balanceHidden;
 @dynamic advancedModeEnabled;
+@dynamic advancedModeUserManaged;
 @dynamic tapToHideBalanceShown;
 @dynamic shouldDisplayOnboarding;
 @dynamic paymentsScreenCurrentTab;
@@ -262,6 +276,34 @@ static NSString *const PER_WALLET_NOTIFICATION_CATCH_UP_PREFIX = @"DW_WALLET_NOT
 
 NSNotificationName const DWAdvancedModeDidChangeNotification = @"org.dash.advanced-mode-did-change";
 
+- (void)setAdvancedModeEnabledByUser:(BOOL)enabled {
+    // Claimed before the write and regardless of whether the value moved: the
+    // point of the flag is that the user has an opinion, not what it is. An
+    // opinion formed before any Platform funds existed counts too — turning
+    // the mode off and then receiving credits must not turn it back on.
+    self.advancedModeUserManaged = YES;
+    [self updateAdvancedModeEnabled:enabled];
+}
+
+- (void)enableAdvancedModeForPlatformBalance:(uint64_t)balance {
+    NSAssert([NSThread isMainThread], @"advanced-mode policy must run on the main thread");
+    if (balance == 0 || self.advancedModeUserManaged) {
+        return;
+    }
+    [self updateAdvancedModeEnabled:YES];
+}
+
+/// The single writer. Nothing to do when the value is already the requested
+/// one — in particular the automatic policy re-running on every balance
+/// refresh, which lands here on each sync and must stay silent.
+- (void)updateAdvancedModeEnabled:(BOOL)enabled {
+    if (self.advancedModeEnabled == enabled) {
+        return;
+    }
+    self.advancedModeEnabled = enabled;
+    [[NSNotificationCenter defaultCenter] postNotificationName:DWAdvancedModeDidChangeNotification object:nil];
+}
+
 - (void)restoreToDefaults {
     const BOOL advancedModeWasEnabled = self.advancedModeEnabled;
     self.walletNeedsBackup = YES;
@@ -275,6 +317,7 @@ NSNotificationName const DWAdvancedModeDidChangeNotification = @"org.dash.advanc
     self.inactivityReminderWalletHadBalance = NO;
     self.balanceHidden = NO;
     self.advancedModeEnabled = NO;
+    self.advancedModeUserManaged = NO;
     self.tapToHideBalanceShown = NO;
     self.resyncingWallet = NO;
     self.selectedPaymentCurrency = DWPaymentCurrencyDash;
