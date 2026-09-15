@@ -119,12 +119,12 @@ struct ContactItem: Identifiable, Equatable {
         if let username, !username.isEmpty {
             return username.withoutDashSuffix
         }
-        return String(contactIdentityId.map { String(format: "%02x", $0) }.joined().prefix(8)) + "…"
+        return String(identityIdBase58.prefix(8)) + "…"
     }
 
     /// The identity id as users see it elsewhere — Platform explorers, the
     /// wallet's own identity list and the `dashpay://user` QR payload all read
-    /// base58, so a contact's id is shown the same way rather than as the hex
-    /// `displayTitle`'s fallback happens to use.
+    /// base58. `displayTitle`'s last-resort fallback truncates this same
+    /// string, so a contact reads the same way everywhere.
     var identityIdBase58: String { contactIdentityId.toBase58String() }
 }
