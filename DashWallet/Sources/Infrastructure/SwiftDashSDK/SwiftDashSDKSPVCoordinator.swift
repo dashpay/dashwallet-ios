@@ -293,11 +293,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             }
 
             // `discoverActiveMasternodes` blocks on a semaphore for up to
-            // ~6 s — never on the MainActor. UserDefaults + the nonisolated
-            // SDK static are both safe off-main.
-            let discovered = await Task.detached(priority: .userInitiated) {
-                SDK.discoverActiveMasternodes(quorumBase: quorumURL)
-            }.value
+            // ~6 s — parked on a dedicated GCD queue, never on the MainActor
+            // or the Swift cooperative pool.
+            let discovered = await Self.discoverDevnetMasternodes(quorumURL: quorumURL)
 
             // Re-entry guard after the multi-second suspension, identical
             // to the shared start path's: if the user switched networks
@@ -421,11 +419,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 // its own peer list here.
                 //
                 // `discoverActiveMasternodes` blocks on a semaphore for up to
-                // ~6 s — never on the MainActor. UserDefaults + the nonisolated
-                // SDK static are both safe off-main.
-                let discovered = await Task.detached(priority: .userInitiated) {
-                    SDK.discoverActiveMasternodes(quorumBase: quorumURL)
-                }.value
+                // ~6 s — parked on a dedicated GCD queue, never on the MainActor
+                // or the Swift cooperative pool.
+                let discovered = await Self.discoverDevnetMasternodes(quorumURL: quorumURL)
 
                 // Re-entry guard after the multi-second suspension: if the user
                 // switched networks meanwhile (the persisted selection moved),
@@ -910,6 +906,31 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     }
 }
 
+// MARK: - Devnet peer discovery
+
+extension SwiftDashSDKSPVCoordinator {
+    /// Dedicated queue parking devnet masternode discovery.
+    /// `SDK.discoverActiveMasternodes` waits on a semaphore for up to ~6 s; a
+    /// plain GCD queue, never `Task.detached`, keeps that wait off the Swift
+    /// cooperative pool — the same constraint `SwiftDashSDKHost.buildSDKOffMain`
+    /// documents for SDK construction.
+    private nonisolated static let devnetDiscoveryQueue = DispatchQueue(
+        label: "org.dashfoundation.dash.devnet-discovery",
+        qos: .userInitiated)
+
+    /// The devnet's active masternodes from the quorum service, or nil when
+    /// the fetch failed.
+    nonisolated static func discoverDevnetMasternodes(
+        quorumURL: String
+    ) async -> [(spvPeer: String, dapiUrl: String)]? {
+        await withCheckedContinuation { continuation in
+            devnetDiscoveryQueue.async {
+                continuation.resume(returning: SDK.discoverActiveMasternodes(quorumBase: quorumURL))
+            }
+        }
+    }
+}
+
 // MARK: - Pending chain resync (birth-height repair)
 
 /// One-shot "clear the SPV chain store and rescan at the next launch"
@@ -951,10 +972,15 @@ enum SPVChainResyncMarker {
     }
 
     private static func key(for network: Network) -> String {
-        // `networkName` yields the same "mainnet"/"testnet" strings the old
-        // two-way mapping produced, so existing markers keep their keys;
-        // devnet gets its own key instead of colliding with testnet's.
-        "spvChainResync.v1.pending.\(network.networkName)"
+        // `persistenceScope` yields the same "mainnet"/"testnet" strings the
+        // old two-way mapping produced, so existing markers keep their keys;
+        // each configured devnet gets its own key, matching the per-devnet SPV
+        // store the marker deletes.
+        key(scope: network.persistenceScope)
+    }
+
+    private static func key(scope: String) -> String {
+        "spvChainResync.v1.pending.\(scope)"
     }
 
     /// Arm the marker: `network`'s chain store is deleted before the first
@@ -1007,5 +1033,9 @@ enum SPVChainResyncMarker {
         clear(for: .mainnet)
         clear(for: .testnet)
         clear(for: .devnet)
+        // Markers armed on devnets other than the one configured now.
+        for scope in DevnetConfiguration.persistedDevnetScopes() {
+            UserDefaults.standard.removeObject(forKey: key(scope: scope))
+        }
     }
 }
