@@ -31,6 +31,10 @@ struct SendScreen: View {
 
     @FocusState private var addressFieldFocused: Bool
     @State private var isEditingAddress = false
+    /// Identifies this instance's clipboard-monitoring registration. During a
+    /// tab change two `SendScreen`s are alive at once, so the outgoing one's
+    /// `onDisappear` must withdraw only its own.
+    @State private var clipboardMonitorToken = UUID()
 
     /// The address is "locked" (shown as a truncated card) once a valid
     /// destination is decoded and focus has left the field; tapping it reopens
@@ -78,6 +82,17 @@ struct SendScreen: View {
         }
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
+        .task {
+            // A pasteboard read can block on the system permission dialog.
+            // Let the address form's entrance animation finish first. This
+            // view can still be on its way out when the sleep ends — its
+            // removal transition outlasts the delay — which is why the read
+            // itself is gated on the host's `isClipboardReadAllowed`.
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            viewModel.setClipboardMonitoring(true, token: clipboardMonitorToken)
+        }
+        .onDisappear { viewModel.setClipboardMonitoring(false, token: clipboardMonitorToken) }
     }
 
     // MARK: - Header

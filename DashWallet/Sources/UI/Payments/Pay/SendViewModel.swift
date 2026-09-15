@@ -94,6 +94,19 @@ final class SendViewModel: ObservableObject {
         }
     }
     @Published private(set) var clipboardSuggestion: ClipboardSuggestion? = nil
+    /// One token per address form that currently wants automatic reads. A set
+    /// rather than a flag because a host with animated tabs keeps the outgoing
+    /// form alive after the incoming one appeared: both are registered at
+    /// once, and the outgoing one's removal drops only its own registration.
+    private var clipboardMonitors: Set<UUID> = []
+    /// The "Send to Address" shortcut's intent, held until a read this screen
+    /// was actually allowed to make has run — a deferred or denied read must
+    /// not silently consume it.
+    private var appliesClipboardSuggestionWhenAvailable = false
+    /// Granted by the host for as long as its send surface is on screen.
+    /// Closed by default: a host that never opts in must not have the user's
+    /// pasteboard read behind its back.
+    var isClipboardReadAllowed: () -> Bool = { false }
 
     // Balances — same feeds as `InternalTransferViewModel` (BIP44 duffs,
     // DIP-17 credits, Orchard credits).
@@ -106,7 +119,9 @@ final class SendViewModel: ObservableObject {
         SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
     }
     @Published private(set) var platformCredits: UInt64 = 0
-    @Published private(set) var shieldedBalance: UInt64 = 0
+    @Published private(set) var platformBalanceState: PlatformBalanceState = .unavailable
+    @Published private(set) var shieldedBalanceState: ShieldedBalanceState = .unavailable
+    var shieldedBalance: UInt64 { shieldedBalanceState.credits ?? 0 }
 
     /// Largest amount the pool can fund inside ONE transition — the same
     /// note-aware number Max produces. A typed amount above this needs more
@@ -157,7 +172,6 @@ final class SendViewModel: ObservableObject {
         if let pinnedSource {
             source = pinnedSource
         }
-        refreshClipboardSuggestion()
         SyncingActivityMonitor.shared.add(observer: self)
 
         NotificationCenter.default.publisher(for: UIPasteboard.changedNotification)
@@ -171,7 +185,8 @@ final class SendViewModel: ObservableObject {
             .store(in: &cancellables)
 
         coreBalanceDuffs = SwiftDashSDKWalletState.shared.balance?.total ?? 0
-        platformCredits = PlatformAddressSyncCoordinator.shared.platformBalance
+        platformBalanceState = PlatformAddressSyncCoordinator.shared.platformBalanceState
+        platformCredits = platformBalanceState.credits ?? 0
 
         SwiftDashSDKWalletState.shared.$balance
             .receive(on: RunLoop.main)
@@ -180,10 +195,12 @@ final class SendViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        PlatformAddressSyncCoordinator.shared.$platformBalance
+        PlatformAddressSyncCoordinator.shared.$platformBalanceState
             .receive(on: RunLoop.main)
-            .sink { [weak self] credits in
+            .sink { [weak self] state in
                 guard let self else { return }
+                self.platformBalanceState = state
+                let credits = state.credits ?? 0
                 // Only a CHANGED balance restarts the shield preflight —
                 // the publisher re-emits on every sync pass, and a restart
                 // clears the capacity (fails closed), which would flicker
@@ -194,11 +211,11 @@ final class SendViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        shieldedBalance = PlatformAddressSyncCoordinator.shared.shieldedBalance
-        PlatformAddressSyncCoordinator.shared.$shieldedBalance
+        shieldedBalanceState = PlatformAddressSyncCoordinator.shared.shieldedBalanceState
+        PlatformAddressSyncCoordinator.shared.$shieldedBalanceState
             .receive(on: RunLoop.main)
-            .sink { [weak self] credits in
-                self?.shieldedBalance = credits
+            .sink { [weak self] state in
+                self?.shieldedBalanceState = state
                 self?.refreshShieldedSpendCeiling()
             }
             .store(in: &cancellables)
@@ -424,12 +441,62 @@ final class SendViewModel: ObservableObject {
         let kind: DestinationKind
     }
 
+    /// Only a visible address form registers for automatic reads. This model
+    /// also exists behind Receive/Internal and is reused by later send steps.
+    ///
+    /// `token` identifies the registering form. Reads run while at least one
+    /// registration stands, so a form being removed can never switch off the
+    /// monitoring another form just switched on.
+    func setClipboardMonitoring(_ enabled: Bool, token: UUID) {
+        let wasMonitoring = !clipboardMonitors.isEmpty
+        if enabled {
+            clipboardMonitors.insert(token)
+        } else {
+            clipboardMonitors.remove(token)
+        }
+
+        if !clipboardMonitors.isEmpty {
+            refreshClipboardSuggestion()
+        } else if wasMonitoring {
+            clipboardSuggestion = nil
+            appliesClipboardSuggestionWhenAvailable = false
+        }
+    }
+
+    /// The "Send to Address" shortcut: fill the address field from the
+    /// clipboard as soon as a permitted read runs. The host calls this on
+    /// appearance, before the form has registered, so the intent waits for
+    /// that first read instead of being spent on a read that cannot happen.
+    func applyClipboardSuggestionWhenAvailable() {
+        appliesClipboardSuggestionWhenAvailable = true
+        refreshClipboardSuggestion()
+    }
+
+    /// Refreshes when a host becomes visible or the clipboard changes. Both
+    /// the form registration and the host's permission must allow the read.
     func refreshClipboardSuggestion() {
-        guard let raw = UIPasteboard.general.string else {
+        guard !clipboardMonitors.isEmpty, isClipboardReadAllowed() else {
+            // Not allowed to read is also not allowed to keep offering what an
+            // earlier read found: the pasteboard may have changed since, and
+            // the chip must not outlive the screen that produced it.
             clipboardSuggestion = nil
             return
         }
-        clipboardSuggestion = Self.detect(in: raw)
+
+        if let raw = UIPasteboard.general.string {
+            clipboardSuggestion = Self.detect(in: raw)
+        } else {
+            clipboardSuggestion = nil
+        }
+
+        guard appliesClipboardSuggestionWhenAvailable else { return }
+        // Spent by the first permitted read, whatever it found — a denied
+        // prompt or an empty clipboard has no retry to wait for.
+        appliesClipboardSuggestionWhenAvailable = false
+        // An explicit prefill (a scan-routed address, applied on load) wins
+        // over the clipboard, as it did when both ran in `viewDidLoad`.
+        guard trimmedAddress.isEmpty else { return }
+        useClipboardSuggestion()
     }
 
     func useClipboardSuggestion() {
@@ -522,11 +589,13 @@ final class SendViewModel: ObservableObject {
     }
 
     var platformCreditsFormatted: String {
-        InternalTransferViewModel.cardBalanceString(duffs: platformCredits / 1000)
+        guard platformBalanceState.isAvailable else { return "—" }
+        return InternalTransferViewModel.cardBalanceString(duffs: platformCredits / 1000)
     }
 
     var shieldedBalanceFormatted: String {
-        InternalTransferViewModel.cardBalanceString(duffs: shieldedBalance / 1000)
+        guard shieldedBalanceState.isAvailable else { return "—" }
+        return InternalTransferViewModel.cardBalanceString(duffs: shieldedBalance / 1000)
     }
 
     /// A source's balance normalised to duffs, for the "first source with
@@ -627,11 +696,19 @@ final class SendViewModel: ObservableObject {
         }
     }
 
+    private var hasUnavailableSourceBalance: Bool {
+        ((source == .shielded && !shieldedBalanceState.isAvailable)
+            || (source == .platform && !platformBalanceState.isAvailable))
+    }
+
     /// Inline explanation for an amount rejected before Confirm. Keep zero
     /// quiet until the user types.
     var amountValidationMessage: String? {
         if let shieldedMaxNotice { return shieldedMaxNotice }
         guard dashDuffsUnsigned > 0, let route else { return nil }
+        if hasUnavailableSourceBalance {
+            return NSLocalizedString("Balance unavailable", comment: "Selected source balance not restored")
+        }
 
         // The Core → Shielded pool fee rides on top of the amount, so there
         // is no route minimum — but without the estimate the lock value
@@ -774,6 +851,7 @@ final class SendViewModel: ObservableObject {
     }
 
     var canContinue: Bool {
+        if hasUnavailableSourceBalance { return false }
         guard dashDuffsUnsigned > 0, let route, !isBlockedBySync else { return false }
         switch route {
         case .coreToCore:
@@ -823,6 +901,11 @@ final class SendViewModel: ObservableObject {
 
     /// Source-aware Max fill — same envelopes as the internal transfer.
     func fillMaxFromWallet() {
+        if hasUnavailableSourceBalance {
+            clearShieldedMaxSelection()
+            shieldedMaxNotice = NSLocalizedString("Balance unavailable", comment: "Max requires a known source balance")
+            return
+        }
         clearShieldedMaxSelection()
         let sourceDuffs: UInt64
         switch route {

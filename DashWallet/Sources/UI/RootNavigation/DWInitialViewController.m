@@ -39,6 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if DASHPAY
 @property (nullable, nonatomic, strong) NSURL *deferredDeeplink;
 #endif
+@property (nullable, nonatomic, strong) NSURL *deferredURL;
 
 @end
 
@@ -87,7 +88,19 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 
 - (void)handleURL:(NSURL *)url {
-    [self.rootController handleURL:url];
+    // `application:openURL:` is delivered after `didFinishLaunching` has made
+    // the window key, so `viewDidLoad` has normally already built the root
+    // controller. What is left is onboarding still holding the screen: a
+    // reinstall keeps the wallet in the Keychain, so `allowsURLHandling`
+    // passes while the Keep/Delete choice runs and the root controller does
+    // not exist yet. The link waits there, like a deeplink does, instead of
+    // being dropped.
+    if (self.rootController) {
+        [self.rootController handleURL:url];
+    }
+    else {
+        self.deferredURL = url;
+    }
 }
 
 #pragma mark - DWOnboardingViewControllerDelegate
@@ -213,6 +226,11 @@ NS_ASSUME_NONNULL_BEGIN
         self.deferredDeeplink = nil;
     }
 #endif
+
+    if (self.deferredURL) {
+        [controller handleURL:self.deferredURL];
+        self.deferredURL = nil;
+    }
 
     return controller;
 }

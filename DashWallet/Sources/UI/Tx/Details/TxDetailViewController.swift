@@ -281,25 +281,52 @@ extension TXDetailViewController {
         let txidWire = model.transaction.txHashData
         view.dw_showProgressHUD(withMessage: NSLocalizedString("Retrying transfer…", comment: "Asset-lock retry in progress"))
         Task { [weak self] in
-            defer {
-                self?.isRetryingAssetLock = false
-                self?.view.dw_hideProgressHUD()
-            }
+            // The outcome is decided here and rendered only after the
+            // spinner is down. Ordering, not a workaround: the retry can run
+            // for minutes, and a toast raised underneath a modal spinner would
+            // spend that time invisible and expire before the user could read
+            // it. Collect the result, drop the HUD, then show it.
+            var toast: (message: String, style: ToastStyle)?
+            var failure: Error?
             do {
-                try await AssetLockRecoveryService().retry(
+                let outcome = try await AssetLockRecoveryService().retry(
                     fundingTypeRaw: retry.fundingTypeRaw,
                     txidWire: txidWire,
                     vout: retry.vout)
-                self?.view.dw_showInfoHUD(withText: NSLocalizedString("Transfer completed", comment: "Asset-lock retry finished"))
+                switch outcome {
+                case .completed:
+                    toast = (NSLocalizedString("Transfer completed", comment: "Asset-lock retry finished"), .success)
+                case .completionUnconfirmed:
+                    // Platform said the outpoint is already spent, but that
+                    // report is not quorum-authenticated. Nothing is left to
+                    // retry; say only that, so the wallet never reports a
+                    // completion it did not witness.
+                    toast = (NSLocalizedString("Already spent — nothing to transfer", comment: "Asset-lock retry found the lock already consumed"), .info)
+                case .submittedAwaitingSync:
+                    // Accepted, result not readable yet. Re-submitting risks a
+                    // double-spend, so say what is true and point at the sync
+                    // rather than inviting another tap.
+                    toast = (NSLocalizedString("Submitted — waiting for the network to confirm", comment: "Asset-lock retry submitted but its result could not be read back"), .info)
+                }
             } catch DWIdentityAuthorizer.AuthError.cancelled {
                 // Backing out of the PIN prompt is not an error state.
             } catch {
-                self?.presentRetryFailure(error)
+                failure = error
+            }
+
+            guard let self else { return }
+            self.isRetryingAssetLock = false
+            self.view.dw_hideProgressHUD()
+            if let toast {
+                self.presentDashUIKitToast(style: toast.style, message: toast.message)
+            }
+            if let failure {
+                self.presentRetryFailure(failure)
             }
             // Re-derive the rows either way — even a failed retry can
             // have advanced the lock (e.g. broadcast landed, Platform
             // submit didn't), and the status row should say so.
-            self?.reloadDataSource()
+            self.reloadDataSource()
         }
     }
 
@@ -341,14 +368,25 @@ extension TXDetailViewController {
                 self?.view.dw_hideProgressHUD()
             }
             do {
-                let rescanArmed = try await UnconfirmedTransactionRemover().remove(txidWire: txidWire)
-                // Never claim the rescan safety net ran when it didn't —
-                // point at the manual Rescan Filters action instead.
-                self?.view.dw_showInfoHUD(withText: rescanArmed
-                    ? NSLocalizedString("Transaction removed", comment: "Remove never-accepted transaction: success")
-                    : NSLocalizedString("Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status", comment: "Remove never-accepted transaction: removed but the recovery rescan did not arm"))
-                // The row this sheet describes no longer exists.
-                self?.closeAction()
+                let outcome = try await UnconfirmedTransactionRemover().remove(txidWire: txidWire)
+                switch outcome {
+                case .rescanArmed:
+                    self?.view.dw_showInfoHUD(withText: NSLocalizedString("Transaction removed", comment: "Remove never-accepted transaction: success"))
+                    // The row this sheet describes no longer exists.
+                    self?.closeAction()
+                case .rescanUnavailable:
+                    // Never claim the rescan safety net ran when it didn't.
+                    self?.view.dw_showInfoHUD(withText: NSLocalizedString("Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status", comment: "Remove never-accepted transaction: removed but the recovery rescan did not arm"))
+                    self?.closeAction()
+                case .runtimeStopped:
+                    // A HUD would not survive this: it is added to this
+                    // controller's own view, which `closeAction` tears down.
+                    // The stopped wallet needs an acknowledged alert that
+                    // dismisses the sheet only once the user has read it —
+                    // and it must name BOTH steps, because restarting the
+                    // runtime does not replay this removal's rescan.
+                    self?.presentRemovalLeftWalletStopped()
+                }
             } catch UnconfirmedTransactionRemover.RemovalError.transactionOnChain {
                 self?.presentRemovalRefused()
             } catch {
@@ -360,6 +398,24 @@ extension TXDetailViewController {
                 self?.present(alert, animated: true)
             }
         }
+    }
+
+    /// The rows are deleted, but reloading the runtime left the wallet
+    /// stopped (Core SPV is torn down when the Platform side fails to come
+    /// back). Both recovery steps are spelled out: restarting the runtime
+    /// does NOT replay the rescan this removal skipped, so the transaction's
+    /// on-chain safety check still has to be run by hand afterwards. The
+    /// sheet is dismissed only after the user acknowledges.
+    private func presentRemovalLeftWalletStopped() {
+        let alert = UIAlertController(
+            title: NSLocalizedString("Transaction removed, but the wallet stopped", comment: "Remove never-accepted transaction: removed but the runtime reload left the wallet stopped"),
+            message: NSLocalizedString("The transaction was deleted from this device. Reloading the wallet didn't finish, so the wallet is stopped and the rescan that double-checks the blockchain never ran.\n\nRestart the wallet — reopen the app, or tap Sync Now in Sync Info — and then run Rescan Filters in Core Sync Status. Restarting alone does not repeat the rescan.", comment: "Remove never-accepted transaction: both recovery steps after a failed runtime reload"),
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel) { [weak self] _ in
+            // The row this sheet describes no longer exists.
+            self?.closeAction()
+        })
+        present(alert, animated: true)
     }
 
     /// The explorer knows the transaction, either from the mempool or a

@@ -1336,21 +1336,8 @@ extension HomeViewModel {
     /// moved amount survives the fees. Fails closed (BIP44-only popup) when
     /// the fee estimate or the shielded binding is unavailable.
     var coinJoinShieldDestinationAvailable: Bool {
-        let balanceDuffs = coinJoinSweepAmountDuffs
-        // Host + manager are `@MainActor`-isolated — reuse the wallet source's
-        // main-thread trampoline (same file).
-        return SwiftDashSDKWalletSource.onMain {
-            guard let manager = SwiftDashSDKHost.shared.manager,
-                  let wallet = SwiftDashSDKHost.shared.wallet,
-                  ((try? manager.shieldedDefaultAddress(walletId: wallet.walletId)) ?? nil) != nil,
-                  let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits
-            else { return false }
-            // The shared Type 18 pool-fee estimate (credits → duffs is ÷ 1000);
-            // `sendFeeReserveDuffs` (0.001 DASH) allows for the L1 fee of a
-            // drain spending hundreds of mixed-coin inputs.
-            let overheadDuffs = poolFeeCredits / 1000 + WalletBalance.sendFeeReserveDuffs
-            return balanceDuffs >= overheadDuffs * 2
-        }
+        CoinJoinMoveDestinationPolicy.shieldedDestinationAvailable(
+            forBalanceDuffs: coinJoinSweepAmountDuffs)
     }
 
     /// Proactively surface the "move your mixed coins" popup once per session
@@ -2087,6 +2074,30 @@ class SwiftDashSDKWalletSource: TransactionSource {
             .filter { isWalletMember($0, walletId: walletId) }
             .map { wrap($0, walletId: walletId) }
         return SwiftDashSDKWalletTransactionSnapshot(walletId: walletId, transactions: transactions)
+    }
+
+    /// Ids, in `ShieldedActivityItem.id` form, of every shielded activity row
+    /// the active wallet has persisted. Safe from any thread.
+    ///
+    /// A superset of what `fetchShieldedActivity` projects — no row is
+    /// dropped or deduped here — which is what a "what already existed"
+    /// baseline needs: a row present now is not a new payment, whatever the
+    /// projection later makes of it. It reads two columns of one small table
+    /// and never touches the Core history, where the projection materializes
+    /// every wallet transaction to reconcile against.
+    ///
+    /// Nil when the rows could not be read (no host yet, or a failed fetch),
+    /// never an empty set standing in for one: as an exclusion set, empty
+    /// would admit every existing row as new.
+    static func persistedShieldedActivityIds() -> Set<String>? {
+        guard let (container, walletId) = hostHandles() else { return nil }
+        var descriptor = FetchDescriptor<PersistentShieldedActivity>(
+            predicate: #Predicate { $0.walletId == walletId })
+        descriptor.propertiesToFetch = [\.entryId, \.accountIndex]
+        guard let rows = try? ModelContext(container).fetch(descriptor) else { return nil }
+        return Set(rows.map {
+            ShieldedActivityItem.id(entryId: $0.entryId, accountIndex: $0.accountIndex)
+        })
     }
 
     /// The active wallet's shielded operations as history items, for

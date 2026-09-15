@@ -134,6 +134,10 @@ class MainTabbarController: UITabBarController {
     private var contactsTabIndex: Int?
     #endif
     weak var menuNavigationController: MainMenuViewController?
+    /// Position of the More tab. Always built, but the DashPay layout inserts
+    /// tabs before it, so `MainTabbarTabs.more.rawValue` is wrong in the core
+    /// layout. Refreshed by `configureControllers()` with the rest.
+    private var moreTabIndex: Int?
 
     #if DASHPAY
     weak var exploreNavigationController: ExploreViewController?
@@ -321,6 +325,7 @@ extension MainTabbarController {
 
         nvc = BaseNavigationController(rootViewController: menuVC)
         nvc.tabBarItem = item
+        moreTabIndex = viewControllers.count
         viewControllers.append(nvc)
 
         #if !DASHPAY
@@ -496,6 +501,30 @@ extension MainTabbarController {
         dismiss(animated: false, completion: nil)
         selectedIndex = MainTabbarTabs.home.rawValue
         homeController?.performPay(to: url)
+    }
+
+    /// Opens the Connections screen for a `dash-key:` / `dash-st:` link.
+    ///
+    /// The More tab's index moves with the DashPay layout, so it comes from
+    /// `moreTabIndex` rather than from the tab enum.
+    @objc
+    public func openDashConnect(_ uri: String) {
+        dismiss(animated: false, completion: nil)
+
+        guard let menuNav = menuNavigationController?.navigationController else { return }
+
+        if let moreTabIndex {
+            selectedIndex = moreTabIndex
+        }
+
+        if let connections = menuNav.topViewController as? DashConnectHostingController {
+            connections.handle(uri: uri)
+            return
+        }
+
+        let controller = DashConnectHostingController(navigationController: menuNav, uri: uri)
+        controller.hidesBottomBarWhenPushed = true
+        menuNav.pushViewController(controller, animated: true)
     }
 
     @objc
