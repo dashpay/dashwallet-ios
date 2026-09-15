@@ -43,6 +43,15 @@ struct PaymentsLandingScreen: View {
     /// The Send tab's address is valid → advance to the amount step. The host
     /// pushes `ExternalSendAmountScreen` onto the landing's navigation stack.
     var onSendContinue: () -> Void = {}
+    /// "Send to Dash address" on the Send tab's card — the host pushes the send
+    /// form. (Its sibling row routes through `onScanQR`.)
+    var onSendToAddress: () -> Void = {}
+    /// "Send to username" — the host presents the contact book. Offered only
+    /// while `viewModel.canSendToUsername`.
+    var onSendToUsername: () -> Void = {}
+    /// "Swap to other crypto" — the host presents the Dash DEX portal. This
+    /// leaves Dash for another chain and is not an internal transfer.
+    var onSwapToCrypto: () -> Void = {}
     /// Leaves the payments tab entirely — the X above the Internal form. The
     /// host resolves where that goes; on the tab there is nothing to dismiss.
     var onCloseLanding: () -> Void = {}
@@ -311,14 +320,30 @@ struct PaymentsLandingScreen: View {
             }
 
         case .send:
-            SendScreen(
-                viewModel: embeddedSendViewModel,
-                onClose: onClose,
-                onScanQR: onScanQR,
-                onContinue: onSendContinue,
-                showsHeader: false
-            )
-            .padding(.top, Layout.embeddedFormTopPadding)
+            switch mode {
+            case .picker, .receivingInto:
+                pickerLayout {
+                    PaymentsSendCard(
+                        showsSendToUsername: viewModel.canSendToUsername,
+                        onSendToUsername: onSendToUsername,
+                        onSendToAddress: onSendToAddress,
+                        onScanQR: onScanQR,
+                        showsSwapToCrypto: viewModel.canSwapToOtherCrypto,
+                        onSwapToCrypto: onSwapToCrypto
+                    )
+                    .padding(.horizontal, Layout.cardHorizontalPadding)
+                }
+
+            case .sendingFrom:
+                SendScreen(
+                    viewModel: embeddedSendViewModel,
+                    onClose: onClose,
+                    onScanQR: onScanQR,
+                    onContinue: onSendContinue,
+                    showsHeader: false
+                )
+                .padding(.top, Layout.embeddedFormTopPadding)
+            }
         }
     }
 
@@ -351,3 +376,100 @@ struct PaymentsLandingScreen: View {
     }
 
 }
+
+#if DEBUG
+
+/// The full landing draws destination cards, which need no wallet at all. The
+/// pinned variants at the bottom embed real forms instead, and previews run
+/// without a wallet — those price nothing the SDK owns, so they render the
+/// "fee unavailable" state rather than an enabled Continue.
+@MainActor
+private func landingSample(
+    activeTab: PaymentsLandingTab = .internalTransfer,
+    network: ChainNetwork = .core,
+    visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
+    coreAddress: String? = "XyZ8kFqW3nR5tHmB2vJcL7pQaS4dEuG9wN",
+    transferAmount: String = "0",
+    transferSendFrom: ChainNetwork? = nil,
+    transferReceivePinned: Bool = false,
+    showsHeader: Bool = true
+) -> some View {
+
+    PaymentsLandingScreen(
+        viewModel: .makeForPreview(
+            activeTab: activeTab,
+            network: network,
+            visibleTabs: visibleTabs,
+            coreAddress: coreAddress),
+        onClose: {},
+        onDone: {},
+        onCopyAddress: {},
+        onShareAddress: {},
+        onSpecifyAmount: {},
+        onViewTransaction: { _ in },
+        onScanQR: {},
+        embeddedTransferViewModel: .makeForPreview(amountText: transferAmount),
+        transferSendFrom: transferSendFrom,
+        transferReceivePinned: transferReceivePinned,
+        embeddedSendViewModel: .makeForPreview(pinnedSource: transferSendFrom),
+        showsHeader: showsHeader)
+}
+
+// MARK: Tabs
+
+/// The tab selector is the shared chrome — these three show it in each of its
+/// selected states, above the content that tab actually renders.
+@available(iOS 17, *)
+#Preview("Internal tab") {
+    landingSample(showsHeader: false)
+}
+
+/// The presentation the balance-row receive sheet uses: Send is not offered,
+/// so the landing has to hold together on two tabs. `PaymentsTabSelector` has
+/// its own previews for the selector's own states.
+@available(iOS 17, *)
+#Preview("Two tabs · receive sheet") {
+    landingSample(
+        activeTab: .receive,
+        visibleTabs: [.receive, .internalTransfer])
+}
+
+// MARK: Receive tab states
+
+/// No address resolved yet — the QR card gives way to its placeholder.
+@available(iOS 17, *)
+#Preview("Receive · no address") {
+    landingSample(activeTab: .receive, coreAddress: nil)
+}
+
+@available(iOS 17, *)
+#Preview("Receive · shielded placeholder") {
+    landingSample(activeTab: .receive, network: .shielded)
+}
+
+// MARK: Sheet embeddings
+
+/// Balance-row send sheet: no header (the sheet's grabber and hero selector are
+/// the top chrome) and the transfer form's From card pinned.
+@available(iOS 17, *)
+#Preview("Send sheet · pinned From") {
+    landingSample(
+        transferAmount: "0.5",
+        transferSendFrom: .core,
+        showsHeader: false)
+}
+
+/// Balance-row receive sheet: the transfer form's To card is pinned to the
+/// receive toggle's network.
+@available(iOS 17, *)
+#Preview("Receive sheet · pinned To") {
+    landingSample(
+        network: .platform,
+        visibleTabs: [.receive, .internalTransfer],
+        transferAmount: "0.5",
+        transferReceivePinned: true,
+        showsHeader: false)
+}
+
+#endif
+

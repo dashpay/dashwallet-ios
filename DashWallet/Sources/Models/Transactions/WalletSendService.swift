@@ -209,6 +209,33 @@ final class RecentSendsRegistry {
     }
 }
 
+#if DASHPAY
+/// Contacts whose last payment came back with an unknown broadcast outcome.
+///
+/// The transaction may already be on the network with only the response lost,
+/// so a second payment to the same contact could be a duplicate that no later
+/// correction undoes. Held for the life of the process rather than a screen: a
+/// flag on the amount step was cleared by backing out and reopening the same
+/// contact. Never persisted — by the next launch a sync has had the chance to
+/// show whether the first payment landed.
+final class UnknownContactPaymentOutcomes {
+    private let lock = NSLock()
+    private var contactIdentityIds: Set<Data> = []
+
+    func record(contactIdentityId: Data) {
+        lock.lock()
+        defer { lock.unlock() }
+        contactIdentityIds.insert(contactIdentityId)
+    }
+
+    func contains(contactIdentityId: Data) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return contactIdentityIds.contains(contactIdentityId)
+    }
+}
+#endif
+
 @objc(DWWalletSendService)
 final class WalletSendService: NSObject {
     @objc(sharedService) static let shared = WalletSendService()
@@ -219,6 +246,9 @@ final class WalletSendService: NSObject {
 
     /// See `RecentSendsRegistry` — the send-success screen's fallback source.
     let recentSends = RecentSendsRegistry()
+    #if DASHPAY
+    let unknownContactPaymentOutcomes = UnknownContactPaymentOutcomes()
+    #endif
 
     private let sendAuthorizer = SendAuthorizer()
 
@@ -461,6 +491,13 @@ final class WalletSendService: NSObject {
         memo: String? = nil
     ) async throws -> (txid: Data, feeDuffs: UInt64) {
         Self.logger.info("💸 TXSEND :: pay-to-contact starting — \(amount, privacy: .public) duffs")
+        // Refused before the PIN prompt: see `UnknownContactPaymentOutcomes`.
+        if unknownContactPaymentOutcomes.contains(contactIdentityId: contactIdentityId) {
+            throw Self.makeError(
+                code: .broadcastUnknown,
+                description: "A previous payment to this contact could not be confirmed. Don't send it again; wait for wallet synchronization."
+            )
+        }
         try Self.ensureInitialRestoreSyncCompleted()
         // spendAmount engages the biometric spending limit (C7.4) —
         // without it the gate is non-monetary and Face ID alone would
@@ -489,9 +526,20 @@ final class WalletSendService: NSObject {
                 amountDuffs: amount,
                 memo: memo)
         } catch {
-            throw Self.contactPaymentError(from: error)
+            let mapped = Self.contactPaymentError(from: error)
+            if Self.isBroadcastUnknownError(mapped as NSError) {
+                unknownContactPaymentOutcomes.record(contactIdentityId: contactIdentityId)
+            }
+            throw mapped
         }
         Self.logger.info("💸 TXSEND :: pay-to-contact broadcast, txid \(txid.map { String(format: "%02x", $0) }.joined(), privacy: .public), fee \(feeDuffs, privacy: .public) duffs")
+        // The send-success screen resolves the amount from this registry while
+        // the Rust persister hasn't written the transaction row yet — same as
+        // every other broadcast-success point. `txid` is already wire order
+        // (Rust hands back `to_raw_hash().to_byte_array()`), which is the
+        // registry's key convention. No address: the DIP-15 receive address is
+        // derived inside Rust and never crosses the FFI boundary.
+        recentSends.record(txidWire: txid, address: nil, amount: amount, fee: feeDuffs)
         return (txid: txid, feeDuffs: feeDuffs)
     }
 #endif
@@ -698,8 +746,12 @@ private extension WalletSendService {
 
     static let errorDomain = "org.dashfoundation.dash.wallet-send-service"
 
-    /// Translate the SDK's internal missing-external-account diagnostic into
-    /// something a user can act on.
+    /// Translate the SDK's contact-payment errors into ones the app acts on.
+    ///
+    /// A broadcast outcome the SDK could not confirm becomes this service's
+    /// `broadcastUnknown`, which `sendToContact` turns into a per-contact lock
+    /// and the amount step into a terminal state — the SDK's own error type
+    /// matched neither. A definitive rejection becomes `broadcastRejected`.
     ///
     /// A contact's DIP-15 external account is built in the background from the
     /// counterparty's contact request; until it exists the SDK fails the send
@@ -714,6 +766,23 @@ private extension WalletSendService {
     /// anything else is returned untouched rather than hidden behind a generic
     /// message.
     static func contactPaymentError(from error: Error) -> Error {
+        // The SDK reports the broadcast outcome in its own error type; the rest
+        // of the app — the amount step's terminal state included — recognises
+        // it only in this service's domain, the same codes a standard send gets.
+        switch error as? PlatformWalletError {
+        case .transactionBroadcastUnconfirmed(let reason):
+            return makeError(
+                code: .broadcastUnknown,
+                description: "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)"
+            )
+        case .transactionBroadcastRejected(let reason):
+            return makeError(
+                code: .broadcastRejected,
+                description: "The transaction wasn't sent. You can try again. \(reason)"
+            )
+        default:
+            break
+        }
         let description = error.localizedDescription
         guard description.contains("DashpayExternalAccount")
             || description.contains("register_external_contact_account")
