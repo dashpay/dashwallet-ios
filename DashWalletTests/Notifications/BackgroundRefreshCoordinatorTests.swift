@@ -31,6 +31,7 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
 
     private var scheduler: FakeBackgroundTaskScheduler!
     private var walletExists = true
+    private var protectedDataAvailable = true
     private var runtimeStartResult = true
     private var runtimeStartCalls = 0
     private var runtimeStopCalls = 0
@@ -43,6 +44,7 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
         try await super.setUp()
         scheduler = FakeBackgroundTaskScheduler()
         walletExists = true
+        protectedDataAvailable = true
         runtimeStartResult = true
         runtimeStartCalls = 0
         runtimeStopCalls = 0
@@ -108,6 +110,7 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
         coordinator = BackgroundRefreshCoordinator(
             scheduler: scheduler,
             hasWallet: { [weak self] in self?.walletExists ?? false },
+            isProtectedDataAvailable: { [weak self] in self?.protectedDataAvailable ?? true },
             runtimeStart: { @MainActor [weak self] in
                 self?.runtimeStartCalls += 1
                 if let runtimeStartOverride {
@@ -150,6 +153,23 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
         return task
     }
 
+    /// Fulfilled once the scheduler has recorded `count` submissions — the
+    /// run body submits at its start and again at its end, so the second
+    /// marks the body's completion.
+    private func submissionsReach(_ count: Int) -> XCTestExpectation {
+        let reached = expectation(description: "\(count) submissions")
+        reached.assertForOverFulfill = false
+        let scheduler = self.scheduler!
+        if scheduler.submissions.count >= count {
+            reached.fulfill()
+        } else {
+            scheduler.onSubmit = { _ in
+                if scheduler.submissions.count >= count { reached.fulfill() }
+            }
+        }
+        return reached
+    }
+
     // MARK: Registration
 
     func testStartRegistersOnceWithTaskIdentifier() {
@@ -187,6 +207,19 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
         XCTAssertTrue(scheduler.submissions.isEmpty)
     }
 
+    func testBackgroundingSubmitsWhenLockedDeviceHidesTheWallet() {
+        // Locked device: the wallet-presence keychain read fails and says "no
+        // wallet". The chain must not end on that.
+        makeCoordinator()
+        coordinator.start()
+        walletExists = false
+        protectedDataAvailable = false
+
+        coordinator.noteDidEnterBackground()
+
+        XCTAssertEqual(scheduler.submissions.map(\.identifier), [BackgroundRefreshCoordinator.taskIdentifier])
+    }
+
     func testDidEnterBackgroundNotificationSubmits() async {
         makeCoordinator()
         coordinator.start()
@@ -209,6 +242,34 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
         XCTAssertEqual(task.completions, [true])
         XCTAssertEqual(runtimeStartCalls, 1)
         XCTAssertEqual(sweepCalls, 1)
+        // Submitted at the start of the run and again at its end.
+        XCTAssertEqual(scheduler.submissions.map(\.identifier),
+                       [BackgroundRefreshCoordinator.taskIdentifier, BackgroundRefreshCoordinator.taskIdentifier])
+    }
+
+    func testRunSubmitsNextRefreshBeforeStartingTheRuntime() async throws {
+        var submissionsAtRuntimeStart: Int?
+        makeCoordinator(syncDoneImmediately: true, runtimeStartOverride: { @MainActor [weak self] in
+            submissionsAtRuntimeStart = self?.scheduler.submissions.count
+            return true
+        })
+
+        _ = try await runTask()
+
+        XCTAssertEqual(submissionsAtRuntimeStart, 1)
+    }
+
+    func testLockedDeviceSkipsSyncButKeepsTheChain() async throws {
+        makeCoordinator(syncDoneImmediately: true)
+        walletExists = false
+        protectedDataAvailable = false
+
+        let task = try await runTask()
+
+        XCTAssertEqual(task.completions, [false])
+        XCTAssertEqual(runtimeStartCalls, 0)
+        XCTAssertEqual(runtimeStopCalls, 0)
+        XCTAssertEqual(sweepCalls, 0)
         XCTAssertEqual(scheduler.submissions.map(\.identifier), [BackgroundRefreshCoordinator.taskIdentifier])
     }
 
@@ -265,7 +326,7 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
         XCTAssertEqual(task.completions, [false])
         XCTAssertEqual(sweepCalls, 0)
         XCTAssertEqual(runtimeStopCalls, 1)
-        XCTAssertEqual(scheduler.submissions.map(\.identifier), [BackgroundRefreshCoordinator.taskIdentifier])
+        XCTAssertEqual(scheduler.submissions.count, 2)
     }
 
     func testRuntimeStartFailureCompletesWithoutSuccess() async throws {
@@ -280,7 +341,7 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
         // process from suspending, and the runtime's stop is a safe no-op
         // when nothing is up.
         XCTAssertEqual(runtimeStopCalls, 1)
-        XCTAssertEqual(scheduler.submissions.count, 1)
+        XCTAssertEqual(scheduler.submissions.count, 2)
     }
 
     // MARK: Task run — expiration
@@ -295,19 +356,20 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
         let completed = expectation(description: "task completed")
         task.onSetTaskCompleted = { _ in completed.fulfill() }
         // The expiration path completes the task before the run body has
-        // unwound; the re-submission marks the run body's end.
-        let submitted = expectation(description: "next refresh scheduled")
-        scheduler.onSubmit = { _ in submitted.fulfill() }
+        // unwound; the tail re-submission marks the run body's end.
+        let bodyEnded = submissionsReach(2)
 
         handler(task)
         let expiration = try XCTUnwrap(task.expirationHandler)
         expiration()
 
-        await fulfillment(of: [completed, submitted], timeout: 5)
+        await fulfillment(of: [completed, bodyEnded], timeout: 5)
         XCTAssertEqual(task.completions, [false])
         XCTAssertEqual(sweepCalls, 0)
-        XCTAssertEqual(runtimeStopCalls, 1)
-        XCTAssertEqual(scheduler.submissions.count, 1)
+        // No teardown after expiration: the task was already completed.
+        XCTAssertEqual(runtimeStopCalls, 0)
+        XCTAssertFalse(coordinator.stoppedRuntimeAfterBackgroundRun)
+        XCTAssertEqual(scheduler.submissions.count, 2)
     }
 
     func testExpirationDuringRuntimeStartCompletesPromptlyAndExactlyOnce() async throws {
@@ -335,16 +397,20 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
         // The run body is still parked: no teardown yet.
         XCTAssertEqual(runtimeStopCalls, 0)
 
-        // Unblock the startup: the run body finishes in the background —
-        // the background-launch teardown still runs — without a second
-        // completion of the already-completed task.
-        let submitted = expectation(description: "next refresh scheduled")
-        scheduler.onSubmit = { _ in submitted.fulfill() }
+        // The next request was already submitted before the startup await,
+        // so an expiry here does not end the chain.
+        XCTAssertEqual(scheduler.submissions.count, 1)
+
+        // Unblock the startup: the run body finishes without a second
+        // completion of the already-completed task, and without a teardown
+        // in time the system no longer grants.
+        let bodyEnded = submissionsReach(2)
         gate.resolve(true)
 
-        await fulfillment(of: [submitted], timeout: 5)
+        await fulfillment(of: [bodyEnded], timeout: 5)
         XCTAssertEqual(task.completions, [false])
-        XCTAssertEqual(runtimeStopCalls, 1)
+        XCTAssertEqual(runtimeStopCalls, 0)
+        XCTAssertFalse(coordinator.stoppedRuntimeAfterBackgroundRun)
         XCTAssertEqual(sweepCalls, 0)
     }
 

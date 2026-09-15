@@ -158,6 +158,31 @@ final class NotificationLifecycle: NSObject {
         }
     }
 
+    /// The whole of the `willPresent` delegate method, taking the `userInfo`
+    /// instead of the `UNNotification` a test cannot construct: the
+    /// completion handler runs exactly once, whatever the payload carries.
+    nonisolated static func completePresentation(
+        userInfo: [AnyHashable: Any],
+        completionHandler: (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler(presentationOptions(forUserInfo: userInfo))
+    }
+
+    /// The whole of the `didReceive` delegate method after its hop to the main
+    /// actor, taking the response's fields instead of the
+    /// `UNNotificationResponse` a test cannot construct. The completion
+    /// handler runs after the response is handled and on every path —
+    /// unknown action identifiers and responses with no route included.
+    func completeResponse(actionIdentifier: String,
+                          identifier: String,
+                          userInfo: [AnyHashable: Any],
+                          completionHandler: () -> Void) {
+        handleNotificationResponse(actionIdentifier: actionIdentifier,
+                                   identifier: identifier,
+                                   userInfo: userInfo)
+        completionHandler()
+    }
+
     /// Response handling: the inactivity reminder's category actions go to
     /// their handler by action identifier; the default tap action (and any
     /// identifier this build doesn't know) routes as a plain tap.
@@ -191,22 +216,21 @@ final class NotificationLifecycle: NSObject {
 // MARK: - UNUserNotificationCenterDelegate
 
 extension NotificationLifecycle: UNUserNotificationCenterDelegate {
-    // Both delegate methods call their completion handler unconditionally on
-    // every path — returning without it makes iOS drop the notification
-    // after a delegate timeout. They stay thin trampolines over the handlers
-    // above (`UNNotification`/`UNNotificationResponse` cannot be constructed
-    // in tests, the handlers can be exercised directly). `didReceive` calls
-    // its handler only after `handleNotificationResponse` returns: on a
-    // background-activation tap the system may treat the response as
-    // processed the moment the handler runs, so acknowledging before the
-    // router has run could cut the routing short. The main-actor Task runs
-    // unconditionally and `handleNotificationResponse` cannot throw, so the
-    // completion handler is still reached on every path.
+    // Both delegate methods call their completion handler on every path —
+    // returning without it makes iOS drop the notification after a delegate
+    // timeout. Each only unpacks its `UNNotification`/`UNNotificationResponse`
+    // (neither can be constructed in tests) and forwards to
+    // `completePresentation` / `completeResponse` above, which tests call
+    // directly with a recording handler. `didReceive` acknowledges only after
+    // the response is handled: on a background-activation tap the system may
+    // treat the response as processed the moment the handler runs, so
+    // acknowledging before the router has run could cut the routing short.
 
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
                                             willPresent notification: UNNotification,
                                             withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler(Self.presentationOptions(forUserInfo: notification.request.content.userInfo))
+        Self.completePresentation(userInfo: notification.request.content.userInfo,
+                                  completionHandler: completionHandler)
     }
 
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
@@ -216,10 +240,10 @@ extension NotificationLifecycle: UNUserNotificationCenterDelegate {
         let identifier = response.notification.request.identifier
         let userInfo = response.notification.request.content.userInfo
         Task { @MainActor in
-            self.handleNotificationResponse(actionIdentifier: actionIdentifier,
-                                            identifier: identifier,
-                                            userInfo: userInfo)
-            completionHandler()
+            self.completeResponse(actionIdentifier: actionIdentifier,
+                                  identifier: identifier,
+                                  userInfo: userInfo,
+                                  completionHandler: completionHandler)
         }
     }
 }

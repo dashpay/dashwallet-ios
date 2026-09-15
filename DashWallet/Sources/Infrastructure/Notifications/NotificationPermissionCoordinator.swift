@@ -78,11 +78,15 @@ final class NotificationPermissionCoordinator {
         set { preferences.userWantsNotifications = newValue }
     }
 
-    /// Invoked on the main thread when `requestAuthorizationIfNeeded`'s
-    /// request returns granted. The composition root hooks the post-grant
-    /// catch-up here (a producer rescan), so events the dispatcher dropped
-    /// un-marked while the state was `.awaitingAuthorization` get their
-    /// post. Never invoked on denial or failure.
+    /// Invoked on the main thread once, when `requestAuthorizationIfNeeded`
+    /// turns an undetermined authorization into a grant — the moment the
+    /// user answers the system prompt with Allow. The composition root hooks
+    /// the post-grant catch-up here (a producer rescan), so events the
+    /// dispatcher dropped un-marked while the state was
+    /// `.awaitingAuthorization` get their post. Not invoked on denial, on
+    /// failure, or when authorization was already decided before the call:
+    /// the home screen requests on every appearance, and iOS answers an
+    /// already-authorized app with "granted" without showing anything.
     var onAuthorizationGranted: (() -> Void)?
 
     func effectiveState() async -> NotificationPermissionState {
@@ -111,6 +115,9 @@ final class NotificationPermissionCoordinator {
     func requestAuthorizationIfNeeded() {
         NotificationCenter.default.post(name: .willRequestOSPermission, object: nil)
         Task { [client, weak self] in
+            // Read before requesting: afterwards an already-authorized app and
+            // one the user just authorized look the same.
+            let statusBeforeRequest = await client.authorizationStatus()
             var granted = false
             var failure: Error?
             do {
@@ -120,7 +127,7 @@ final class NotificationPermissionCoordinator {
             }
             await MainActor.run {
                 NotificationCenter.default.post(name: .didRequestOSPermission, object: nil)
-                if granted {
+                if granted, statusBeforeRequest == .notDetermined {
                     self?.onAuthorizationGranted?()
                 }
             }

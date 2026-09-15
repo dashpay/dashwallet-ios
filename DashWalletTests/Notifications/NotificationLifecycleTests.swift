@@ -49,10 +49,9 @@ final class NotificationLifecycleTests: XCTestCase {
     // MARK: Foreground presentation
     //
     // `UNNotification` has no public initializer, so the delegate's
-    // `willPresent` cannot be invoked from a test. It is a one-expression
-    // trampoline over `presentationOptions(forUserInfo:)` that passes the
-    // result straight to its completion handler — the mapping below is the
-    // entire behavior.
+    // `willPresent` cannot be invoked from a test. It forwards to
+    // `completePresentation(userInfo:completionHandler:)`, exercised below
+    // together with the `presentationOptions(forUserInfo:)` mapping.
 
     func testWillPresentOptionsSuppress() {
         XCTAssertEqual(NotificationLifecycle.presentationOptions(forUserInfo: userInfo(behavior: .suppress)), [])
@@ -170,8 +169,8 @@ final class NotificationLifecycleTests: XCTestCase {
     // MARK: Tap routing
     //
     // `UNNotificationResponse` cannot be constructed either; the delegate's
-    // `didReceive` trampolines into `handleNotificationTap` and calls its
-    // completion handler unconditionally.
+    // `didReceive` forwards to `completeResponse`, whose completion-handler
+    // contract is tested in "Delegate completion" below.
 
     func testTapWithEncodedRouteHandsItToRouter() {
         var userInfo = userInfo(behavior: .banner)
@@ -240,5 +239,79 @@ final class NotificationLifecycleTests: XCTestCase {
         XCTAssertEqual(router.openedRoutes, [.url(URL(string: "https://www.dash.org")!)])
         XCTAssertEqual(handler.remindLaterCount, 0)
         XCTAssertEqual(handler.optOutCount, 0)
+    }
+
+    // MARK: Delegate completion
+    //
+    // A delegate method that returns without calling its completion handler
+    // makes iOS drop the notification. These pin that every path acknowledges
+    // exactly once, so a guard reintroduced around the call fails here.
+
+    func testPresentationCompletesOnceForAPayloadWithoutBehavior() {
+        var calls: [UNNotificationPresentationOptions] = []
+
+        NotificationLifecycle.completePresentation(userInfo: [:]) { calls.append($0) }
+
+        XCTAssertEqual(calls, [NotificationLifecycle.defaultPresentationOptions])
+    }
+
+    func testPresentationCompletesOnceWhenSuppressed() {
+        var calls: [UNNotificationPresentationOptions] = []
+
+        NotificationLifecycle.completePresentation(userInfo: userInfo(behavior: .suppress)) { calls.append($0) }
+
+        XCTAssertEqual(calls, [[]])
+    }
+
+    func testResponseCompletesOnceForAnUnknownActionIdentifier() {
+        var completions = 0
+
+        lifecycle.completeResponse(actionIdentifier: "com.example.unknown-action",
+                                   identifier: "announcement.1",
+                                   userInfo: [:]) { completions += 1 }
+
+        XCTAssertEqual(completions, 1)
+        XCTAssertTrue(router.openedRoutes.isEmpty)
+    }
+
+    func testResponseCompletesOnceForATapWithoutRoute() {
+        var completions = 0
+
+        lifecycle.completeResponse(actionIdentifier: UNNotificationDefaultActionIdentifier,
+                                   identifier: "tx.some-id",
+                                   userInfo: [:]) { completions += 1 }
+
+        XCTAssertEqual(completions, 1)
+        XCTAssertTrue(router.openedRoutes.isEmpty)
+    }
+
+    func testResponseCompletesOnceAfterRoutingATap() {
+        var completions = 0
+        var routedBeforeCompletion = false
+        var userInfo: [AnyHashable: Any] = [:]
+        userInfo[NotificationUserInfoKey.route] = DeepLinkRoute.home.encodedForUserInfo()
+
+        lifecycle.completeResponse(actionIdentifier: UNNotificationDefaultActionIdentifier,
+                                   identifier: "announcement.1",
+                                   userInfo: userInfo) {
+            routedBeforeCompletion = self.router.openedRoutes == [.home]
+            completions += 1
+        }
+
+        XCTAssertEqual(completions, 1)
+        XCTAssertTrue(routedBeforeCompletion)
+    }
+
+    func testResponseCompletesOnceForAnInactivityAction() {
+        let handler = RecordingInactivityHandler()
+        lifecycle.inactivityReminderHandler = handler
+        var completions = 0
+
+        lifecycle.completeResponse(actionIdentifier: InactivityReminderScheduler.optOutActionIdentifier,
+                                   identifier: InactivityReminderScheduler.requestIdentifier,
+                                   userInfo: [:]) { completions += 1 }
+
+        XCTAssertEqual(completions, 1)
+        XCTAssertEqual(handler.optOutCount, 1)
     }
 }

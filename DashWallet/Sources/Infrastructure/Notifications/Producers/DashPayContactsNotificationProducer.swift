@@ -47,6 +47,12 @@ final class DashPayContactsNotificationProducer {
     /// An event must have been created at most this long ago to notify.
     static let freshnessWindow: TimeInterval = 10 * 60
 
+    /// Hard floor for a catch-up boundary, the same as
+    /// `TransactionNotificationProducer.maxCatchUpWindow`: a wallet left closed
+    /// for weeks must not have its whole request backlog announced the first
+    /// time a refresh finally runs.
+    static let maxCatchUpWindow: TimeInterval = 24 * 60 * 60
+
     /// The two contact snapshots a scan reads — a value type so tests can
     /// feed synthetic items without the contacts service singleton.
     struct ContactsSnapshot {
@@ -105,9 +111,18 @@ final class DashPayContactsNotificationProducer {
     /// One pass over the current snapshots: per-item notification
     /// decisions out. The store resolves overlapping scans, so each event
     /// posts at most once no matter how many change signals see it.
-    func scanAndNotify() async {
+    ///
+    /// `since` widens the window for a catch-up scan, with the same clamp as
+    /// `TransactionNotificationProducer.scanAndNotify(since:)`: the background
+    /// refresh runs no earlier than 15 minutes after backgrounding, so a
+    /// request that arrived while the app was suspended is already outside
+    /// the default 10-minute window by the time the sweep runs. The boundary
+    /// never narrows the default window and is floored at `maxCatchUpWindow`.
+    func scanAndNotify(since boundary: Date? = nil) async {
         let current = snapshot()
-        let cutoff = now().addingTimeInterval(-Self.freshnessWindow)
+        let defaultCutoff = now().addingTimeInterval(-Self.freshnessWindow)
+        let earliest = now().addingTimeInterval(-Self.maxCatchUpWindow)
+        let cutoff = min(defaultCutoff, max(boundary ?? defaultCutoff, earliest))
         // Scopes every key below to the receiving identity. An unknown owner
         // gets its own bucket rather than silently sharing the wallet-less
         // one, so a snapshot taken mid-rebind cannot consume a real owner's id.

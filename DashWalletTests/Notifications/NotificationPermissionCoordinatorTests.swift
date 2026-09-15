@@ -105,6 +105,7 @@ final class NotificationPermissionCoordinatorTests: XCTestCase {
 
     @MainActor
     func testOnAuthorizationGrantedFiresOnMainThreadWhenGranted() async {
+        client.authorizationStatusValue = .notDetermined
         client.requestAuthorizationResult = .success(true)
         let granted = expectation(description: "onAuthorizationGranted invoked")
         coordinator.onAuthorizationGranted = {
@@ -119,9 +120,33 @@ final class NotificationPermissionCoordinatorTests: XCTestCase {
 
     @MainActor
     func testOnAuthorizationGrantedDoesNotFireOnDenial() async {
+        client.authorizationStatusValue = .notDetermined
         client.requestAuthorizationResult = .success(false)
         // The did-request signal posts in the same main-actor block that
         // would invoke the callback, so it brackets the non-invocation.
+        let didRequest = expectation(description: "didRequestOSPermission posted")
+        let didObserver = NotificationCenter.default.addObserver(
+            forName: .didRequestOSPermission, object: nil, queue: .main) { _ in
+            didRequest.fulfill()
+        }
+        defer { NotificationCenter.default.removeObserver(didObserver) }
+        let calledBack = expectation(description: "onAuthorizationGranted not invoked")
+        calledBack.isInverted = true
+        coordinator.onAuthorizationGranted = { calledBack.fulfill() }
+
+        coordinator.requestAuthorizationIfNeeded()
+
+        await fulfillment(of: [didRequest], timeout: 2)
+        await fulfillment(of: [calledBack], timeout: 0.2)
+    }
+
+    /// The home screen requests on every appearance, and iOS answers an
+    /// already-authorized app with "granted" and no prompt. That is not a
+    /// grant, so the post-grant catch-up must not run again.
+    @MainActor
+    func testOnAuthorizationGrantedDoesNotFireWhenAlreadyAuthorized() async {
+        client.authorizationStatusValue = .authorized
+        client.requestAuthorizationResult = .success(true)
         let didRequest = expectation(description: "didRequestOSPermission posted")
         let didObserver = NotificationCenter.default.addObserver(
             forName: .didRequestOSPermission, object: nil, queue: .main) { _ in

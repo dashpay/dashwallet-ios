@@ -36,6 +36,10 @@ final class TransactionNotificationProducerTests: XCTestCase {
     private var dispatcher: NotificationDispatcher!
     private var appState: FakeAppStateProvider!
     private var rows: [ObservedTransaction] = []
+    /// Every `firstSeen` floor the producer asked the row source for.
+    private var rowFloors: [UInt64] = []
+    /// What `DWGlobalOptions.notificationCatchUpDate` reads in production.
+    private var catchUpBoundary: Date?
     private var watchBodies: [String] = []
     private var producer: TransactionNotificationProducer!
 
@@ -46,16 +50,26 @@ final class TransactionNotificationProducerTests: XCTestCase {
         preferences = FakeNotificationPreferenceStore()
         appState = FakeAppStateProvider()
         rows = []
+        rowFloors = []
+        catchUpBoundary = nil
         watchBodies = []
         let permissions = NotificationPermissionCoordinator(client: client, preferences: preferences)
         dispatcher = NotificationDispatcher(client: client, store: store, permissions: permissions)
         producer = TransactionNotificationProducer(
             dispatcher: dispatcher,
             store: store,
-            rowSource: { [weak self] _ in self?.rows ?? [] },
+            rowSource: { [weak self] floor in
+                self?.rowFloors.append(floor)
+                return self?.rows ?? []
+            },
             appState: appState,
             watchBridge: { [weak self] body in self?.watchBodies.append(body) },
+            catchUpBoundary: { [weak self] in self?.catchUpBoundary },
             now: { Self.referenceNow })
+    }
+
+    private static func epoch(_ secondsAgo: TimeInterval) -> UInt64 {
+        UInt64(referenceNow.addingTimeInterval(-secondsAgo).timeIntervalSince1970)
     }
 
     /// A synthetic decoded row. `directionRaw` uses the FFI encoding the
@@ -145,6 +159,27 @@ final class TransactionNotificationProducerTests: XCTestCase {
         XCTAssertTrue(watchBodies.isEmpty)
     }
 
+    /// The payout of the app's own Shielded → Core withdrawal is received on
+    /// L1 but is an internal transfer — no "Received" notification, no watch
+    /// notice.
+    func testShieldedWithdrawalPayoutDoesNotPost() async {
+        producer = TransactionNotificationProducer(
+            dispatcher: dispatcher,
+            store: store,
+            rowSource: { [weak self] _ in self?.rows ?? [] },
+            appState: appState,
+            watchBridge: { [weak self] body in self?.watchBodies.append(body) },
+            catchUpBoundary: { nil },
+            isShieldedWithdrawalPayout: { _ in true },
+            now: { Self.referenceNow })
+        rows = [makeRow(txidByte: 0x09, netAmount: 150_000)]
+
+        await producer.scanAndNotify()
+
+        XCTAssertTrue(client.addedRequests.isEmpty)
+        XCTAssertTrue(watchBodies.isEmpty)
+    }
+
     func testZeroAmountReceivedRowDoesNotPost() async {
         rows = [makeRow(netAmount: 0)]
 
@@ -174,9 +209,9 @@ final class TransactionNotificationProducerTests: XCTestCase {
         XCTAssertEqual(client.addedRequests.count, 1)
     }
 
-    /// The restore/rescan shape: the persister stamps a historical
-    /// transaction with a device-clock `firstSeen` of *now*, but its block
-    /// is old. `firstSeen` must not be able to vouch for it.
+    /// A row whose `firstSeen` is recent — first sighted unmined on the
+    /// device clock — while its block is old. `firstSeen` must not be able
+    /// to vouch for it.
     func testMinedRowWithOldBlockDoesNotPostDespiteFreshFirstSeen() async {
         rows = [makeRow(age: 0, minedAge: 30 * 24 * 60 * 60)]
 
@@ -218,6 +253,81 @@ final class TransactionNotificationProducerTests: XCTestCase {
 
         XCTAssertEqual(client.addedRequests.count, 1)
         XCTAssertEqual(client.addedRequests[0].identifier, expectedId(txidByte: 0x07))
+    }
+
+    // MARK: Catch-up window
+
+    func testCatchUpWithoutABoundaryKeepsTheFreshnessWindow() async {
+        rows = [makeRow(txidByte: 0x10, age: 11 * 60, minedAge: 11 * 60),
+                makeRow(txidByte: 0x11, age: 9 * 60, minedAge: 9 * 60)]
+
+        await producer.scanAndNotify(since: nil)
+
+        XCTAssertEqual(rowFloors.first, Self.epoch(TransactionNotificationProducer.freshnessWindow))
+        XCTAssertEqual(client.addedRequests.map(\.identifier), [expectedId(txidByte: 0x11)])
+    }
+
+    func testCatchUpReachesBackToTheBoundary() async {
+        rows = [makeRow(txidByte: 0x12, age: 30 * 60, minedAge: 30 * 60),
+                makeRow(txidByte: 0x13, age: 90 * 60, minedAge: 90 * 60)]
+
+        await producer.scanAndNotify(since: Self.referenceNow.addingTimeInterval(-60 * 60))
+
+        XCTAssertEqual(rowFloors.first, Self.epoch(60 * 60))
+        XCTAssertEqual(client.addedRequests.map(\.identifier), [expectedId(txidByte: 0x12)])
+    }
+
+    func testCatchUpIsFlooredAtOneDay() async {
+        rows = [makeRow(txidByte: 0x14, age: 23 * 60 * 60, minedAge: 23 * 60 * 60),
+                makeRow(txidByte: 0x15, age: 25 * 60 * 60, minedAge: 25 * 60 * 60)]
+
+        await producer.scanAndNotify(since: Self.referenceNow.addingTimeInterval(-72 * 60 * 60))
+
+        XCTAssertEqual(rowFloors.first, Self.epoch(TransactionNotificationProducer.maxCatchUpWindow))
+        XCTAssertEqual(client.addedRequests.map(\.identifier), [expectedId(txidByte: 0x14)])
+    }
+
+    /// A boundary inside the freshness window never narrows it.
+    func testCatchUpNeverNarrowsTheFreshnessWindow() async {
+        rows = [makeRow(txidByte: 0x16, age: 5 * 60, minedAge: 5 * 60)]
+
+        await producer.scanAndNotify(since: Self.referenceNow.addingTimeInterval(-60))
+
+        XCTAssertEqual(rowFloors.first, Self.epoch(TransactionNotificationProducer.freshnessWindow))
+        XCTAssertEqual(client.addedRequests.count, 1)
+    }
+
+    /// A payment mined while the app slept and synced after it opened is
+    /// older than the freshness window, so no foreground scan posts it — the
+    /// user sees it on Home. A later background sweep reaching back to the
+    /// boundary must not announce it then.
+    func testPaymentShownInForegroundIsNotAnnouncedByALaterCatchUp() async {
+        let boundary = Self.referenceNow.addingTimeInterval(-48 * 60 * 60)
+        catchUpBoundary = boundary
+        rows = [makeRow(txidByte: 0x17, age: 3 * 60 * 60, minedAge: 3 * 60 * 60)]
+
+        appState.isApplicationActive = true
+        await producer.scanAndNotify()
+
+        XCTAssertTrue(client.addedRequests.isEmpty)
+        XCTAssertEqual(store.events[expectedId(txidByte: 0x17)]?.seen, true)
+
+        appState.isApplicationActive = false
+        await producer.scanAndNotify(since: boundary)
+
+        XCTAssertTrue(client.addedRequests.isEmpty)
+    }
+
+    /// The control for the test above: a payment the app never showed is
+    /// still announced by the catch-up sweep.
+    func testCatchUpStillAnnouncesAPaymentTheAppNeverShowed() async {
+        let boundary = Self.referenceNow.addingTimeInterval(-48 * 60 * 60)
+        catchUpBoundary = boundary
+        rows = [makeRow(txidByte: 0x18, age: 3 * 60 * 60, minedAge: 3 * 60 * 60)]
+
+        await producer.scanAndNotify(since: boundary)
+
+        XCTAssertEqual(client.addedRequests.map(\.identifier), [expectedId(txidByte: 0x18)])
     }
 
     // MARK: App-state policy
@@ -307,6 +417,7 @@ final class TransactionNotificationProducerTests: XCTestCase {
             platformActivitySource: { _ in [record] },
             appState: appState,
             watchBridge: { [weak self] body in self?.watchBodies.append(body) },
+            catchUpBoundary: { nil },
             now: { Self.referenceNow })
 
         await producer.scanAndNotify()
@@ -317,6 +428,19 @@ final class TransactionNotificationProducerTests: XCTestCase {
     }
 
     // MARK: Dedup across signals
+
+    /// The same txid first surfaces unmined, then again once mined: one
+    /// notification, one watch notice.
+    func testUnconfirmedThenMinedRowPostsAndMirrorsOnce() async {
+        rows = [makeRow(txidByte: 0x19, age: 60)]
+        await producer.scanAndNotify()
+
+        rows = [makeRow(txidByte: 0x19, age: 30, minedAge: 30)]
+        await producer.scanAndNotify()
+
+        XCTAssertEqual(client.addedRequests.map(\.identifier), [expectedId(txidByte: 0x19)])
+        XCTAssertEqual(watchBodies.count, 1)
+    }
 
     func testRowSeenByTwoSignalsPostsOnce() async {
         rows = [makeRow()]

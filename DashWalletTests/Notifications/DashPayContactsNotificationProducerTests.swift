@@ -135,6 +135,51 @@ final class DashPayContactsNotificationProducerTests: XCTestCase {
         XCTAssertTrue(client.addedRequests.isEmpty)
     }
 
+    // MARK: Catch-up boundary
+
+    func testCatchUpBoundaryPostsARequestReceivedWhileBackgrounded() async {
+        // The background refresh runs at least 15 minutes after the app was
+        // suspended; a request sent 20 minutes ago is past the default window.
+        let item = makeItem(relationship: .incoming, age: 20 * 60, incomingAge: 20 * 60)
+        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [item], contacts: [])
+
+        await producer.scanAndNotify(since: Self.referenceNow.addingTimeInterval(-30 * 60))
+
+        XCTAssertEqual(client.addedRequests.map(\.identifier),
+                       ["contact.request.\(DashPayContactsNotificationProducerTests.ownerAHex).\(idHex(0xaa))"])
+    }
+
+    func testWithoutABoundaryARequestPastTheWindowDoesNotPost() async {
+        let item = makeItem(relationship: .incoming, age: 20 * 60, incomingAge: 20 * 60)
+        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [item], contacts: [])
+
+        await producer.scanAndNotify()
+
+        XCTAssertTrue(client.addedRequests.isEmpty)
+    }
+
+    func testCatchUpBoundaryIsFlooredAtTheMaximumWindow() async {
+        // A boundary from weeks ago is clamped: a dormant install must not
+        // announce its whole request backlog.
+        let item = makeItem(relationship: .incoming, age: 25 * 60 * 60, incomingAge: 25 * 60 * 60)
+        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [item], contacts: [])
+
+        await producer.scanAndNotify(since: Self.referenceNow.addingTimeInterval(-14 * 24 * 60 * 60))
+
+        XCTAssertTrue(client.addedRequests.isEmpty)
+    }
+
+    func testCatchUpScanDoesNotRepostAnAlreadyPostedRequest() async {
+        let item = makeItem(relationship: .incoming, age: 20 * 60, incomingAge: 20 * 60)
+        snapshot = .init(ownerIdentityId: DashPayContactsNotificationProducerTests.ownerA, incomingRequests: [item], contacts: [])
+        let boundary = Self.referenceNow.addingTimeInterval(-30 * 60)
+
+        await producer.scanAndNotify(since: boundary)
+        await producer.scanAndNotify(since: boundary)
+
+        XCTAssertEqual(client.addedRequests.count, 1)
+    }
+
     func testRequestDatedBehindAnEarlierViewingStillPosts() async {
         // The bell marker once gated this producer. Viewing the screen moves
         // it to the newest event shown — here, our own outgoing request sent

@@ -124,6 +124,12 @@ final class TransactionNotificationProducer {
     private let watchMirrors = WatchMirrorLedger()
     /// The fiat half of the received-payment copy, for a DASH amount.
     private let fiatFormatter: (Decimal) async -> String
+    /// The boundary a later background catch-up sweep would reach back to
+    /// (`DWGlobalOptions.notificationCatchUpDate`); see `consumeShownRows`.
+    private let catchUpBoundary: () -> Date?
+    /// Whether a received row is the L1 payout of the app's own Shielded →
+    /// Core withdrawal — an internal transfer, not a payment from someone.
+    private let isShieldedWithdrawalPayout: (ObservedTransaction) -> Bool
     private let now: () -> Date
     private var cancellables = Set<AnyCancellable>()
 
@@ -135,6 +141,8 @@ final class TransactionNotificationProducer {
          appState: AppStateProvider = UIApplicationStateProvider(),
          watchBridge: @escaping (String) -> Void = TransactionNotificationProducer.defaultWatchBridge,
          fiatFormatter: @escaping (Decimal) async -> String = TransactionNotificationProducer.defaultFiatFormatter,
+         catchUpBoundary: @escaping () -> Date? = TransactionNotificationProducer.defaultCatchUpBoundary,
+         isShieldedWithdrawalPayout: @escaping (ObservedTransaction) -> Bool = { $0.wrapped.isShieldedWithdrawalReceipt },
          now: @escaping () -> Date = Date.init) {
         self.dispatcher = dispatcher
         self.store = store
@@ -143,6 +151,8 @@ final class TransactionNotificationProducer {
         self.appState = appState
         self.watchBridge = watchBridge
         self.fiatFormatter = fiatFormatter
+        self.catchUpBoundary = catchUpBoundary
+        self.isShieldedWithdrawalPayout = isShieldedWithdrawalPayout
         self.now = now
     }
 
@@ -205,33 +215,82 @@ final class TransactionNotificationProducer {
     /// cannot disagree.
     ///
     /// Historical-restore suppression is unaffected: a restored row is
-    /// judged by `minedAt` (see `freshnessStamp`), which stays old however
-    /// recent its `firstSeen` is, and the boundary is floored at
-    /// `maxCatchUpWindow` so a long-dormant install cannot replay weeks.
+    /// judged by `minedAt` (see `freshnessStamp`), and the boundary is
+    /// floored at `maxCatchUpWindow` so a long-dormant install cannot replay
+    /// weeks.
+    ///
+    /// While the app is frontmost the scan also consumes, without posting,
+    /// every received row a later catch-up sweep could reach — see
+    /// `consumeShownRows`.
     func scanAndNotify(since boundary: Date? = nil) async {
-        let defaultCutoff = now().addingTimeInterval(-Self.freshnessWindow)
-        let earliest = now().addingTimeInterval(-Self.maxCatchUpWindow)
-        let cutoff = min(defaultCutoff, max(boundary ?? defaultCutoff, earliest))
-        let floor = UInt64(max(0, cutoff.timeIntervalSince1970))
-        let rows = rowSource(floor)
+        let cutoff = Self.catchUpCutoff(now: now(), boundary: boundary)
+        let rows = rowSource(Self.firstSeenFloor(for: cutoff))
         // The `.platformAddressActivityRecorded` signal this producer
         // subscribes to is posted by `PlatformAddressActivityRecorder`, which
         // writes the app-owned activity ledger and creates NO
         // `PersistentTransaction` — so an incoming `dash1`/`tdash1` payment
         // woke the scan and was then absent from the rows it looked at.
         await scanPlatformActivity(cutoff: cutoff)
-        guard !rows.isEmpty else { return }
 
-        // One line per scan, not per row: a restore burst hands back up to
-        // `scanFetchLimit` rows on every save signal.
-        var outcomes: [Outcome: Int] = [:]
-        for row in rows {
-            outcomes[await process(row, cutoff: cutoff), default: 0] += 1
+        if !rows.isEmpty {
+            // One line per scan, not per row: a restore burst hands back up to
+            // `scanFetchLimit` rows on every save signal.
+            var outcomes: [Outcome: Int] = [:]
+            for row in rows {
+                outcomes[await process(row, cutoff: cutoff), default: 0] += 1
+            }
+            let tally = Outcome.allCases
+                .compactMap { outcome in outcomes[outcome].map { "\(outcome.rawValue) \($0)" } }
+                .joined(separator: ", ")
+            DWLogger.log("TransactionNotificationProducer: scanned \(rows.count) recent row(s) — \(tally)")
         }
-        let tally = Outcome.allCases
-            .compactMap { outcome in outcomes[outcome].map { "\(outcome.rawValue) \($0)" } }
-            .joined(separator: ", ")
-        DWLogger.log("TransactionNotificationProducer: scanned \(rows.count) recent row(s) — \(tally)")
+
+        // After the rows above, not before: a CrowdNode deposit posts in every
+        // app state, and consuming its id first left the dispatcher nothing
+        // to post. `consume` leaves an id that was already posted untouched.
+        if appState.isApplicationActive {
+            await consumeShownRows()
+        }
+    }
+
+    /// The window a scan judges freshness against: the 10-minute default,
+    /// widened back to `boundary` but never past `maxCatchUpWindow`, and
+    /// never narrower than the default.
+    static func catchUpCutoff(now: Date, boundary: Date?) -> Date {
+        let defaultCutoff = now.addingTimeInterval(-freshnessWindow)
+        let earliest = now.addingTimeInterval(-maxCatchUpWindow)
+        return min(defaultCutoff, max(boundary ?? defaultCutoff, earliest))
+    }
+
+    /// The row source's `firstSeen` floor for a cutoff, in epoch seconds.
+    private static func firstSeenFloor(for cutoff: Date) -> UInt64 {
+        UInt64(max(0, cutoff.timeIntervalSince1970))
+    }
+
+    /// Consumes every received payment a later catch-up sweep could
+    /// announce, because the app is frontmost and the feed is showing it.
+    ///
+    /// A row enters the default window by its own stamp, so a payment mined
+    /// while the app slept and synced after it opened is older than the
+    /// window: no foreground scan fetches it, the user sees it on Home, and
+    /// the next background sweep — reaching back to the persisted boundary,
+    /// up to a day — used to announce it. This pass reaches back exactly as
+    /// far as that sweep would, and records the ids as seen. Nothing is
+    /// posted or mirrored; `consume` leaves an id that was already posted
+    /// untouched.
+    ///
+    /// Bounded by the row source's `scanFetchLimit` like every scan, so a
+    /// day holding more received rows than that leaves the excess
+    /// unconsumed.
+    private func consumeShownRows() async {
+        let cutoff = Self.catchUpCutoff(now: now(), boundary: catchUpBoundary())
+        for row in rowSource(Self.firstSeenFloor(for: cutoff)) {
+            guard row.wrapped.direction == .received,
+                  !isShieldedWithdrawalPayout(row),
+                  row.wrapped.dashAmount > 0 else { continue }
+            await store.consume(id: Self.notificationId(for: row),
+                                topic: Self.topic(forAmount: row.wrapped.dashAmount))
+        }
     }
 
     /// The Platform half of a scan: incoming payments recorded against the
@@ -283,6 +342,8 @@ final class TransactionNotificationProducer {
     private enum Outcome: String, CaseIterable {
         case posted
         case notReceived = "not-received"
+        /// The payout of the app's own Shielded → Core withdrawal.
+        case shieldedWithdrawal = "shielded-withdrawal"
         case notFresh = "not-fresh"
         case zeroAmount = "zero-amount"
         /// Suppressed because the app is frontmost (and consumed, so a
@@ -296,9 +357,13 @@ final class TransactionNotificationProducer {
     @discardableResult
     private func process(_ tx: ObservedTransaction, cutoff: Date) async -> Outcome {
         // Incoming only — the SDK direction classifier is authoritative.
-        // `.moved` (internal legs: shielded transfers, CoinJoin, self-sends)
+        // `.moved` (CoinJoin, self-sends, the Core → Shielded deposit leg)
         // and sends never notify.
         guard tx.wrapped.direction == .received else { return .notReceived }
+        // The Shielded → Core payout leg classifies `.received` — its
+        // outputs pay one of our receive addresses — but it is the user's
+        // own transfer, the same exclusion Home and the detail screen apply.
+        guard !isShieldedWithdrawalPayout(tx) else { return .shieldedWithdrawal }
 
         // Replay guard: a row that cannot prove it is fresh does not notify.
         guard let stamp = Self.freshnessStamp(for: tx), stamp >= cutoff else { return .notFresh }
@@ -341,12 +406,14 @@ final class TransactionNotificationProducer {
 
     /// The point in time a row must prove is recent.
     ///
-    /// A mined row is judged by its block's timestamp, never by `firstSeen`:
-    /// restore and rescan persist historical transactions with a fresh
-    /// device-clock `firstSeen`, so `firstSeen` cannot tell "just arrived"
-    /// apart from "history replayed" — while consensus data can. A row that
-    /// claims a block but carries no block timestamp proves nothing, so it
-    /// is dropped (nil).
+    /// A mined row is judged by its block's timestamp. The persister stamps
+    /// `firstSeen` with the device clock while a row is unconfirmed and
+    /// adopts the block timestamp once it is mined, so for a mined row the
+    /// two normally agree — but only the block timestamp is consensus data a
+    /// replay cannot re-stamp, and a row first sighted unmined keeps its
+    /// device-clock `firstSeen` until the block arrives. A row that claims a
+    /// block but carries no block timestamp proves nothing, so it is dropped
+    /// (nil).
     ///
     /// An unmined row (mempool, or InstantSend-locked but not yet in a
     /// block) has no consensus stamp and needs none: it can only have
@@ -363,11 +430,9 @@ final class TransactionNotificationProducer {
     /// identity stays the txid, so a CrowdNode deposit still dedups per
     /// transaction like every other received payment.
     private func notification(for tx: ObservedTransaction, amount: UInt64) async -> AppNotification {
-        let id = "tx.\(tx.txidHexDisplay)"
+        let id = Self.notificationId(for: tx)
 
-        // The CrowdNode API encodes "deposit received" as an exact amount
-        // (apiOffset + code) paid back to the account.
-        if amount == ApiCode.depositReceived.rawValue + CrowdNode.apiOffset {
+        if Self.topic(forAmount: amount) == .crowdnode {
             return AppNotification(
                 id: id,
                 topic: .crowdnode,
@@ -393,7 +458,23 @@ final class TransactionNotificationProducer {
             foregroundBehavior: .banner)
     }
 
+    /// The dedup identity of a received row's notification.
+    private static func notificationId(for tx: ObservedTransaction) -> String {
+        "tx.\(tx.txidHexDisplay)"
+    }
+
+    /// The CrowdNode API encodes "deposit received" as an exact amount
+    /// (apiOffset + code) paid back to the account.
+    private static func topic(forAmount amount: UInt64) -> NotificationTopic {
+        amount == ApiCode.depositReceived.rawValue + CrowdNode.apiOffset ? .crowdnode : .transactions
+    }
+
     // MARK: Production defaults
+
+    /// The persisted catch-up boundary the background sweep reads.
+    static func defaultCatchUpBoundary() -> Date? {
+        DWGlobalOptions.sharedInstance().notificationCatchUpDate
+    }
 
     /// Whether a SwiftData save inserted `PersistentTransaction` rows — only
     /// inserts can carry a not-yet-notified transaction. Fails open on a

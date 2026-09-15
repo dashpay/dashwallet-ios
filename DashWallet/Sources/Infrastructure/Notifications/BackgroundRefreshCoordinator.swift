@@ -137,9 +137,13 @@ enum SyncCatchUpPolicy {
 /// wait for `SyncingActivityMonitor` to reach `.syncDone` within a wall-clock
 /// deadline, run one transaction-producer sweep so rows first seen during
 /// this sync are posted before teardown, then stop the runtime — but only
-/// when this process was launched into the background for the task. A
-/// process the user foregrounded keeps its live runtime, exactly as if no
-/// task had run.
+/// when this process was launched into the background for the task and the
+/// system has not expired it. A process the user foregrounded keeps its live
+/// runtime, exactly as if no task had run.
+///
+/// The next request is submitted at the start of every run, before any
+/// work, and again at its end; a locked device skips the sync but keeps the
+/// chain.
 @MainActor
 final class BackgroundRefreshCoordinator {
     /// Production boundary stamp: only for a wallet whose foreground sync
@@ -151,6 +155,15 @@ final class BackgroundRefreshCoordinator {
             guard SyncingActivityMonitor.shared.state == .syncDone else { return }
             DWGlobalOptions.sharedInstance().notificationCatchUpDate = Date()
         }
+    }
+
+    /// Production protected-data reader. `WalletStorage` keeps the mnemonic —
+    /// the only wallet-presence signal (`WalletEnvironment.hasWallet`) — as
+    /// `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`, so while the device is
+    /// locked that read fails and reports "no wallet". A refresh cannot tell a
+    /// locked wallet from a missing one without this.
+    nonisolated static let defaultIsProtectedDataAvailable: () -> Bool = {
+        MainActor.assumeIsolated { UIApplication.shared.isProtectedDataAvailable }
     }
 
     /// Must match the `BGTaskSchedulerPermittedIdentifiers` entry in both
@@ -175,6 +188,8 @@ final class BackgroundRefreshCoordinator {
     /// touching user defaults.
     private let markForegroundCaughtUp: () -> Void
     private let hasWallet: () -> Bool
+    /// Whether keychain items stored "when unlocked" are readable right now.
+    private let isProtectedDataAvailable: () -> Bool
     /// Ensure the runtime is up via the serialized lifecycle; returns
     /// whether it is ready afterwards.
     private let runtimeStart: () async -> Bool
@@ -208,6 +223,7 @@ final class BackgroundRefreshCoordinator {
 
     init(scheduler: BackgroundTaskScheduling = SystemBackgroundTaskScheduler(),
          hasWallet: @escaping () -> Bool = { WalletEnvironment.hasWallet },
+         isProtectedDataAvailable: @escaping () -> Bool = BackgroundRefreshCoordinator.defaultIsProtectedDataAvailable,
          runtimeStart: @escaping () async -> Bool = BackgroundRefreshCoordinator.defaultRuntimeStart,
          runtimeStop: @escaping () async -> Void = { await SwiftDashSDKWalletRuntime.shared.stopAndAwaitTeardown() },
          runtimeRearm: @escaping () -> Void = { SwiftDashSDKWalletRuntime.startIfReady() },
@@ -219,6 +235,7 @@ final class BackgroundRefreshCoordinator {
         self.scheduler = scheduler
         self.markForegroundCaughtUp = markForegroundCaughtUp
         self.hasWallet = hasWallet
+        self.isProtectedDataAvailable = isProtectedDataAvailable
         self.runtimeStart = runtimeStart
         self.runtimeStop = runtimeStop
         self.runtimeRearm = runtimeRearm
@@ -275,8 +292,8 @@ final class BackgroundRefreshCoordinator {
 
     // MARK: App-lifecycle handlers (trampolined from the observers above)
 
-    /// Backgrounding: submit the next refresh request. Skipped without a
-    /// wallet — there is nothing to sync and nothing to notify about.
+    /// Backgrounding: submit the next refresh request (skipped only when no
+    /// wallet exists — see `scheduleNextRefresh`).
     func noteDidEnterBackground() {
         // Give the catch-up sweep a boundary BEFORE the process suspends.
         //
@@ -304,8 +321,13 @@ final class BackgroundRefreshCoordinator {
 
     /// Submit a request to run no earlier than ~15 minutes from now. iOS
     /// may run it much later or not at all; each run re-submits.
+    ///
+    /// Skipped only when a wallet is provably absent. On a locked device the
+    /// wallet-presence read fails and says "no wallet"; refusing to submit
+    /// then ended the refresh chain until the user next opened the app, and
+    /// app refreshes run almost exclusively while the device is locked.
     func scheduleNextRefresh() {
-        guard hasWallet() else { return }
+        guard hasWallet() || !isProtectedDataAvailable() else { return }
         do {
             try scheduler.submit(identifier: Self.taskIdentifier,
                                  earliestBeginDate: now().addingTimeInterval(Self.earliestBeginInterval))
@@ -348,6 +370,20 @@ final class BackgroundRefreshCoordinator {
     /// failed run did persist are not lost: the producer's store and
     /// freshness window admit them on the next open or run.
     private func run(completion: BackgroundRefreshTaskCompletion) async {
+        // Before any work: a run the system expires, or one that bails out
+        // below, must not be the end of the chain. A background-launched
+        // process never sees `didEnterBackground`, so this and the tail
+        // submission are the only places the next request comes from.
+        scheduleNextRefresh()
+
+        // Locked device: the wallet cannot be told apart from an absent one
+        // (see `defaultIsProtectedDataAvailable`), so this run syncs nothing
+        // and leaves the next request in place for a run after unlock.
+        guard isProtectedDataAvailable() else {
+            DWLogger.log("BackgroundRefreshCoordinator: protected data unavailable (device locked); skipping sync")
+            completion.complete(success: false)
+            return
+        }
         guard hasWallet() else {
             completion.complete(success: false)
             return
@@ -368,7 +404,14 @@ final class BackgroundRefreshCoordinator {
         // `hasBeenActive` is read here, not captured at run start: if the
         // user opened the app mid-run, the runtime now belongs to a live
         // session and stays up.
-        if !hasBeenActive {
+        //
+        // Not after expiration either. The expiration handler has completed
+        // the task by then, so a teardown started now would run its blocking
+        // SPV stop in time the system no longer grants — possibly frozen
+        // mid-call by suspension, and holding the main actor if the user
+        // opens the app during it. The runtime is left as a suspended app
+        // leaves it; the next foreground or run finds it up.
+        if !hasBeenActive && !Task.isCancelled {
             await runtimeStop()
             if hasBeenActive {
                 // Activated during the teardown await — restart immediately
@@ -404,13 +447,17 @@ final class BackgroundRefreshCoordinator {
 
     /// Bring-up through the runtime's serial lifecycle chain (the exact
     /// pipeline `didFinishLaunching`'s `startIfReady` feeds; the refresh
-    /// elides when the runtime is already ready), then report readiness.
+    /// elides when the runtime is already ready), then report Core readiness.
+    ///
+    /// Core, not full readiness: payments arrive over SPV, and requiring
+    /// BLAST as well meant a Platform outage skipped the sync and the sweep in
+    /// every background run although Core had synced.
     @MainActor
     static func defaultRuntimeStart() async -> Bool {
         let runtime = SwiftDashSDKWalletRuntime.shared
         await runtime.rearmPlatformSync()
         guard case .success(let network) = runtime.resolveCurrentNetwork() else { return false }
-        return runtime.isRuntimeReady(for: network)
+        return runtime.isCoreRuntimeReady(for: network)
     }
 
     /// Poll `SyncingActivityMonitor` until `.syncDone` (the module's sync

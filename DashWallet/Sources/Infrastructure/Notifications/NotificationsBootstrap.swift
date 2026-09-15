@@ -72,6 +72,10 @@ final class NotificationsBootstrap: NSObject {
 
         let transactionProducer = TransactionNotificationProducer(dispatcher: dispatcher,
                                                                   store: store)
+        #if DASHPAY
+        let contactsProducer = DashPayContactsNotificationProducer(dispatcher: dispatcher,
+                                                                   store: store)
+        #endif
 
         self.store = store
         self.permissionCoordinator = permissionCoordinator
@@ -90,8 +94,15 @@ final class NotificationsBootstrap: NSObject {
                 // to can run long after the payment was mined. The boundary
                 // advances only on a sweep that completed, so a run the
                 // system cut short is retried by the next one.
+                // Contact requests use the same boundary: their freshness is
+                // the sender's timestamp, which a refresh this late has left
+                // outside the ordinary ten-minute window.
                 let options = DWGlobalOptions.sharedInstance()
-                await transactionProducer.scanAndNotify(since: options.notificationCatchUpDate)
+                let boundary = options.notificationCatchUpDate
+                await transactionProducer.scanAndNotify(since: boundary)
+                #if DASHPAY
+                await contactsProducer.scanAndNotify(since: boundary)
+                #endif
                 options.notificationCatchUpDate = Date()
             })
         self.backgroundGrace = BackgroundGraceHold(permissions: permissionCoordinator)
@@ -106,8 +117,7 @@ final class NotificationsBootstrap: NSObject {
         self.inactivityReminderScheduler = InactivityReminderScheduler(client: client,
                                                                        permissions: permissionCoordinator)
         #if DASHPAY
-        self.contactsProducer = DashPayContactsNotificationProducer(dispatcher: dispatcher,
-                                                                    store: store)
+        self.contactsProducer = contactsProducer
         #endif
         super.init()
 
@@ -135,9 +145,6 @@ final class NotificationsBootstrap: NSObject {
         // results are one-shot and intentionally not recovered
         // (`CrowdNodeNotificationProducer`).
         let swapProducer = self.swapProducer
-        #if DASHPAY
-        let contactsProducer = self.contactsProducer
-        #endif
         permissionCoordinator.onAuthorizationGranted = { [weak transactionProducer, weak swapProducer] in
             if let transactionProducer {
                 Task { await transactionProducer.scanAndNotify() }
