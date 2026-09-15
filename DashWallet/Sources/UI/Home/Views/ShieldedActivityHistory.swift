@@ -113,6 +113,12 @@ struct ShieldedActivityItem: Identifiable {
     let isAwaitingTransparentReceipt: Bool
 
     var id: String {
+        Self.id(entryId: entryId, accountIndex: accountIndex)
+    }
+
+    /// The id a row projects to, for callers that need it without building
+    /// the item (`persistedShieldedActivityIds`).
+    static func id(entryId: Data, accountIndex: UInt32) -> String {
         "shielded-" + entryId.map { String(format: "%02x", $0) }.joined() + "-\(accountIndex)"
     }
 

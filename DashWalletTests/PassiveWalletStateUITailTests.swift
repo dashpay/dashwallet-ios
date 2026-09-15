@@ -64,7 +64,7 @@ final class PassiveWalletStateUITailTests: XCTestCase {
         withExtendedLifetime(cancellable) {}
     }
 
-    func testBalanceModelAppliesClearsAndReseedsWithoutChangingDisplayContract() async {
+    func testBalanceModelDistinguishesUnavailableFromZeroAcrossClearsAndReseeds() async {
         let options = DWGlobalOptions.sharedInstance()
         let originalBalanceHidden = options.balanceHidden
         let originalWalletNeedsBackup = options.walletNeedsBackup
@@ -86,15 +86,31 @@ final class PassiveWalletStateUITailTests: XCTestCase {
 
         let model = BalanceModel()
         XCTAssertTrue(model.isBalanceHidden)
+        XCTAssertNil(model.value)
+        XCTAssertEqual(model.mainAmountString, "—")
+        XCTAssertEqual(model.fiatAmountString(), "—")
 
-        await applyBalance(9_000, expecting: 9_000, in: model)
+        // The early restore publish must reach Home before the main actor
+        // yields. This also catches rereading @Published's old stored value.
+        SwiftDashSDKWalletState.shared.applyBalanceOnMainActor(WalletBalance(confirmed: 9_000))
+        XCTAssertEqual(model.value, 9_000)
         XCTAssertTrue(options.userHasBalance)
         XCTAssertNotNil(options.balanceChangedDate)
         XCTAssertTrue(model.isBalanceHidden)
 
         let backupReminderDate = options.balanceChangedDate
         await clearBalance(expecting: model)
-        XCTAssertFalse(options.userHasBalance)
+        XCTAssertNil(model.value)
+        XCTAssertEqual(model.mainAmountString, "—")
+        XCTAssertEqual(model.fiatAmountString(), "—")
+        // `userHasBalance` deliberately survives a cleared balance. `nil` means
+        // "not known yet" — Core SPV stopped, or no wallet bound to the host —
+        // never "this wallet is empty", and the flag is persisted per wallet and
+        // feeds the default shortcut bar. Writing `false` here let one offline
+        // launch permanently drop a shortcut from a funded wallet. The wipe path
+        // is what legitimately resets it, through
+        // `DWGlobalOptions.restoreToDefaults()` in `SwiftDashSDKWalletWiper`.
+        XCTAssertTrue(options.userHasBalance)
         XCTAssertEqual(options.balanceChangedDate, backupReminderDate)
         XCTAssertTrue(model.isBalanceHidden)
 
@@ -102,6 +118,11 @@ final class PassiveWalletStateUITailTests: XCTestCase {
         XCTAssertEqual(model.value, 4_000)
         XCTAssertTrue(options.userHasBalance)
         XCTAssertTrue(model.isBalanceHidden)
+
+        await applyBalance(0, expecting: 0, in: model)
+        XCTAssertEqual(model.value, 0)
+        XCTAssertNotEqual(model.mainAmountString, "—")
+        XCTAssertFalse(options.userHasBalance)
     }
 
     func testExploreUsesCurrentNetworkAndResolvesAddressForEveryAction() {
@@ -172,11 +193,12 @@ final class PassiveWalletStateUITailTests: XCTestCase {
     private func clearBalance(expecting model: BalanceModel) async {
         let expectation = expectation(description: "Balance clears")
         let cancellable = model.$value
-            .filter { $0 == 0 }
+            .filter { $0 == nil }
             .prefix(1)
             .sink { _ in expectation.fulfill() }
 
         SwiftDashSDKWalletState.shared.clearAllState()
+        XCTAssertNil(model.value)
 
         await fulfillment(of: [expectation], timeout: 2)
         withExtendedLifetime(cancellable) {}
