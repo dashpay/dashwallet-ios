@@ -340,11 +340,22 @@ struct HomeViewContent<Content: View>: View {
                             // The row is the action now — this is what the
                             // Upgrade/Edit/Retry button used to do.
                             onTap: { state in
-                                if state == .approved {
+                                switch state {
+                                case .approved:
                                     delegate?.homeViewEditProfile()
                                     joinDPViewModel.markAsDismissed()
                                     viewModel.checkJoinDashPay()
-                                } else {
+                                case .creating:
+                                    // Nothing to act on while it runs.
+                                    break
+                                case .creationFailed, .interrupted:
+                                    // Back to the form: a retry re-enters the
+                                    // PIN gate and may re-spend, which deserves
+                                    // a screen rather than a one-tap action.
+                                    // Its recovery machinery takes over from
+                                    // there.
+                                    delegate?.homeViewRequestUsername()
+                                case .none, .callToAction, .voting, .failed, .blocked, .contested, .registered:
                                     // TODO: ? MOCK_DASHPAY if failed, maybe need to call model?.dashPayModel.retry()
                                     // Always open the info dialog. It carries the
                                     // only "Have an invitation?" entry in the app,

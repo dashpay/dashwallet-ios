@@ -21,6 +21,14 @@ import DashUIKit
 enum JoinDashPayState {
     case none
     case callToAction
+    /// A username registration the create screen handed off is running.
+    /// `JoinDashPayViewModel.registrationStep` says which of its three stages.
+    case creating
+    /// That registration stopped at `registrationStep` and will not advance.
+    case creationFailed
+    /// A registration was recorded and the app died before it finished. The
+    /// coordinator is idle after a relaunch, so there is no stage to claim.
+    case interrupted
     case voting
     case approved
     case failed
@@ -32,6 +40,20 @@ enum JoinDashPayState {
 extension JoinDashPayState {
     func hasAction() -> Bool {
         return self == .callToAction || self == .approved || self == .failed || self == .blocked || self == .contested
+            || self == .creationFailed || self == .interrupted
+    }
+
+    /// The row is reporting on a registration this wallet started, rather than
+    /// inviting the user to start one. Home shows these regardless of whether
+    /// the call to action was dismissed: they are that registration's only
+    /// surface once the create screen has stepped aside.
+    var isRegistrationReport: Bool {
+        switch self {
+        case .creating, .creationFailed, .interrupted, .approved:
+            return true
+        case .none, .callToAction, .voting, .failed, .blocked, .contested, .registered:
+            return false
+        }
     }
 }
 
@@ -46,12 +68,22 @@ struct JoinDashPayCopy {
     let state: JoinDashPayState
     let username: String
     let shieldedSnapshot: ShieldedIdentityFundingReadiness.Snapshot?
+    /// Which stage `.creating` and `.creationFailed` describe. Ignored by
+    /// every other state.
+    var registrationStep: DWDPRegistrationState = .processingPayment
+
+    /// The legacy status object that owns the "(1/3) Processing Payment" copy
+    /// and its failure variants in all 43 locales. Built rather than
+    /// reimplemented; only the interrupted line has no equivalent there.
+    private var registrationStatus: DWDPRegistrationStatus {
+        DWDPRegistrationStatus(state: registrationStep, failed: state == .creationFailed, username: username)
+    }
 
     var iconName: String {
         switch state {
         case .none, .callToAction, .registered:
             return "dp_user_generic"
-        case .voting:
+        case .voting, .creating, .interrupted:
             return "username_requested"
         case .approved:
             return "username_approved"
@@ -66,7 +98,11 @@ struct JoinDashPayCopy {
             return NSLocalizedString("Join DashPay", comment: "")
         case .callToAction:
             return NSLocalizedString("Upgrade to DashPay", comment: "")
-        case .voting, .registered:
+        case .creating:
+            return String.localizedStringWithFormat(
+                NSLocalizedString("Creating – %@", comment: "Usernames — Home row title while a username is being registered"),
+                username)
+        case .voting, .registered, .creationFailed, .interrupted:
             return username
         case .approved:
             return NSLocalizedString("Your username has been successfully created", comment: "Usernames")
@@ -95,6 +131,12 @@ struct JoinDashPayCopy {
             case .needsFunding, .poolTooSmall, nil:
                 return NSLocalizedString("Add to your Shielded balance now and register your username privately a few hours later", comment: "Usernames")
             }
+        case .creating, .creationFailed:
+            return registrationStatus.stateDescription()
+        case .interrupted:
+            return NSLocalizedString(
+                "Registration was interrupted",
+                comment: "Usernames — the app closed before the registration finished")
         case .voting:
             if let endTime = DWContestedNameStatusService.shared.pendingVotingEndTime {
                 let endDate = DWDateFormatter.sharedInstance.dateAndTime(from: endTime)
@@ -136,7 +178,7 @@ struct JoinDashPayCopy {
 
     var actionIcon: IconName? {
         switch state {
-        case .failed, .blocked, .contested:
+        case .failed, .blocked, .contested, .creationFailed, .interrupted:
             return .system("arrow.counterclockwise")
         default:
             return nil
@@ -171,7 +213,8 @@ struct JoinDashPayMenuItem: View {
         JoinDashPayCopy(
             state: viewModel.state,
             username: viewModel.username,
-            shieldedSnapshot: shieldedReadiness.standardSnapshot)
+            shieldedSnapshot: shieldedReadiness.standardSnapshot,
+            registrationStep: viewModel.registrationStep)
     }
 
     var body: some View {
@@ -292,6 +335,9 @@ struct JoinDashPayMenuItem: View {
             ForEach(
                 [
                     JoinDashPayState.callToAction,
+                    .creating,
+                    .creationFailed,
+                    .interrupted,
                     .voting,
                     .approved,
                     .failed,
@@ -300,7 +346,7 @@ struct JoinDashPayMenuItem: View {
                 id: \.self
             ) { state in
                 JoinDashPayMenuItem(
-                    viewModel: JoinDashPayViewModel(initialState: state),
+                    viewModel: JoinDashPayViewModel(initialState: state, username: "jordan12345"),
                     onTap: { _ in },
                     onDismiss: { _ in })
                     .padding(6)
