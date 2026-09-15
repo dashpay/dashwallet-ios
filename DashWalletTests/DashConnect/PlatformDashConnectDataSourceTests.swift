@@ -248,6 +248,34 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             Decimal(string: "0.00000000001"))
     }
 
+    // MARK: - Approval-sheet price text
+
+    private static let enUS = Locale(identifier: "en_US")
+
+    func testPriceTextRendersWholeAndSubDuffAmounts() {
+        XCTAssertEqual(Self.purchaseRequest(credits: 0).totalPriceDashText(locale: Self.enUS), "0 DASH")
+        XCTAssertEqual(Self.purchaseRequest(credits: 100_000_000_000).totalPriceDashText(locale: Self.enUS), "1 DASH")
+        XCTAssertEqual(Self.purchaseRequest(credits: 1).totalPriceDashText(locale: Self.enUS), "0.00000000001 DASH")
+        XCTAssertEqual(Self.purchaseRequest(credits: 150_000_000_000).totalPriceDashText(locale: Self.enUS), "1.5 DASH")
+    }
+
+    func testPriceTextKeepsFullPrecisionAboveTwoToTheFiftyThird() {
+        // Values a `Double` cannot represent exactly: the text must name the
+        // same integer that is passed as `expectedTotalCost`.
+        XCTAssertEqual(
+            Self.purchaseRequest(credits: 10_000_000_000_000_001).totalPriceDashText(locale: Self.enUS),
+            "100000.00000000001 DASH")
+        XCTAssertEqual(
+            Self.purchaseRequest(credits: 9_007_199_254_740_993).totalPriceDashText(locale: Self.enUS),
+            "90071.99254740993 DASH")
+    }
+
+    func testPriceTextUsesTheLocalesDecimalSeparatorWithoutGrouping() {
+        XCTAssertEqual(
+            Self.purchaseRequest(credits: 123_456_700_000_000).totalPriceDashText(locale: Locale(identifier: "uk_UA")),
+            "1234,567 DASH")
+    }
+
     private static func purchaseRequest(
         credits: UInt64,
         tokenCount: UInt64 = 1,
@@ -274,14 +302,14 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         // 100,000,000 base units of an eight-decimal token is one token — the
         // number the user is authorizing.
         let request = Self.purchaseRequest(credits: 1, tokenCount: 100_000_000, tokenDecimals: 8)
-        XCTAssertEqual(request.tokenQuantity.text, "1")
-        XCTAssertFalse(request.tokenQuantity.isBaseUnits)
+        XCTAssertEqual(request.tokenQuantity(locale: Self.enUS).text, "1")
+        XCTAssertFalse(request.tokenQuantity(locale: Self.enUS).isBaseUnits)
     }
 
     func testAZeroDecimalTokenReadsAsAWholeCount() {
         let request = Self.purchaseRequest(credits: 1, tokenCount: 250, tokenDecimals: 0)
-        XCTAssertEqual(request.tokenQuantity.text, "250")
-        XCTAssertFalse(request.tokenQuantity.isBaseUnits)
+        XCTAssertEqual(request.tokenQuantity(locale: Self.enUS).text, "250")
+        XCTAssertFalse(request.tokenQuantity(locale: Self.enUS).isBaseUnits)
     }
 
     func testAnUnknownDenominationIsReportedAsBaseUnits() {
@@ -289,14 +317,21 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         // zero decimals here would overstate an eight-decimal token by 1e8 on
         // a money-authorization screen.
         let request = Self.purchaseRequest(credits: 1, tokenCount: 100_000_000, tokenDecimals: nil)
-        XCTAssertEqual(request.tokenQuantity.text, "100000000")
-        XCTAssertTrue(request.tokenQuantity.isBaseUnits)
+        // Ungrouped in a grouping locale too: every branch renders the same way.
+        XCTAssertEqual(request.tokenQuantity(locale: Self.enUS).text, "100000000")
+        XCTAssertTrue(request.tokenQuantity(locale: Self.enUS).isBaseUnits)
+    }
+
+    func testAWholeCountIsUngroupedInAGroupingLocale() {
+        let request = Self.purchaseRequest(credits: 1, tokenCount: 1_000_000, tokenDecimals: 0)
+        XCTAssertEqual(request.tokenQuantity(locale: Self.enUS).text, "1000000")
     }
 
     func testAFractionalQuantityKeepsItsDeclaredPrecision() {
         let request = Self.purchaseRequest(credits: 1, tokenCount: 150_000_000, tokenDecimals: 8)
-        XCTAssertEqual(request.tokenQuantity.text, "1.5")
-        XCTAssertFalse(request.tokenQuantity.isBaseUnits)
+        XCTAssertEqual(request.tokenQuantity(locale: Self.enUS).text, "1.5")
+        XCTAssertEqual(request.tokenQuantity(locale: Locale(identifier: "uk_UA")).text, "1,5")
+        XCTAssertFalse(request.tokenQuantity(locale: Self.enUS).isBaseUnits)
     }
 
     func testBuildLoginKeyResponseDraftProducesExactFieldsAndWipesEphemeralPrivateKey() throws {

@@ -85,7 +85,11 @@ extension DashConnectTokenPurchaseRequest {
     /// silently rounds away a sub-duff remainder that is nevertheless
     /// charged — not something a money-authorization surface should hide.
     var totalPriceDashText: String {
-        PlatformCreditsFormatter.dashString(totalAgreedPriceCredits)
+        totalPriceDashText(locale: .current)
+    }
+
+    func totalPriceDashText(locale: Locale) -> String {
+        PlatformCreditsFormatter.dashString(totalAgreedPriceCredits, locale: locale)
     }
 
     /// The quantity as the user should read it, and whether it is a real
@@ -97,19 +101,29 @@ extension DashConnectTokenPurchaseRequest {
     /// token. When the decimals are unknown the number is still shown, but
     /// named for what it is rather than dressed as something else.
     var tokenQuantity: (text: String, isBaseUnits: Bool) {
+        tokenQuantity(locale: .current)
+    }
+
+    /// `tokenQuantity` with the locale fixed. Every branch goes through
+    /// `formattedTokenAmount`, so a whole count and a raw base-unit count are
+    /// rendered ungrouped exactly like a scaled one; only the decimal
+    /// separator follows the locale.
+    func tokenQuantity(locale: Locale) -> (text: String, isBaseUnits: Bool) {
         guard let decimals = tokenDecimals, decimals > 0 else {
-            return (Decimal(tokenCount).string, tokenDecimals == nil)
+            return (Decimal(tokenCount).formattedTokenAmount(fractionDigits: 0, locale: locale),
+                    tokenDecimals == nil)
         }
         let scaled = Decimal(tokenCount) / pow(Decimal(10), decimals)
-        return (scaled.formattedTokenAmount(fractionDigits: decimals), false)
+        return (scaled.formattedTokenAmount(fractionDigits: decimals, locale: locale), false)
     }
 }
 
 extension Decimal {
     /// Plain decimal rendering with no grouping and no exponent, trimmed of
     /// trailing zeros — a token quantity, not a currency.
-    fileprivate func formattedTokenAmount(fractionDigits: Int) -> String {
+    fileprivate func formattedTokenAmount(fractionDigits: Int, locale: Locale) -> String {
         let formatter = NumberFormatter()
+        formatter.locale = locale
         formatter.numberStyle = .decimal
         formatter.usesGroupingSeparator = false
         formatter.minimumFractionDigits = 0
