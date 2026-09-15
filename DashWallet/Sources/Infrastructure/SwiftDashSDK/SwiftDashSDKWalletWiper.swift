@@ -287,6 +287,13 @@ final class SwiftDashSDKWalletWiper: NSObject {
             return false
         }
 
+        do {
+            try DashPayWithdrawalStore.shared.resetForWipe()
+        } catch {
+            logger.error("failed to clear DashPay withdrawal history: \(String(describing: error), privacy: .public)")
+            return false
+        }
+
         // The SDK wallet deletion is now known to have succeeded for every
         // network. Clear every global app-owned store only at this commit
         // point, so a failed wipe preserves a coherent wallet,
@@ -640,6 +647,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
             CrowdNodeDefaults.shared.clearPerWalletKeys(forWalletIdHex: walletIdHex)
             CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
+            try DashPayWithdrawalStore.shared.clearForWallet(walletId: walletId)
             AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletIdHex)
         }
 

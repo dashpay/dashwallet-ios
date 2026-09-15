@@ -121,6 +121,8 @@ final class SwiftDashSDKContactsService: ObservableObject {
         // back-to-back) into one snapshot rebuild.
         saveObserverCancellable = NotificationCenter.default
             .publisher(for: .NSManagedObjectContextDidSave)
+            .merge(with: NotificationCenter.default.publisher(
+                for: DashPayWithdrawalStore.didChangeNotification))
             .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.refresh()
@@ -530,24 +532,27 @@ final class SwiftDashSDKContactsService: ObservableObject {
     /// One row of the payments-between-us history for a contact,
     /// read from the SwiftData rows the DashPay sync reconciles.
     struct ContactPayment: Identifiable {
+        let id: String
         /// Display-order (RPC) txid hex — the Rust `dashpay_payments`
-        /// map key, produced by `dashcore::Txid::to_string()`.
-        let txid: String
+        /// map key, produced by `dashcore::Txid::to_string()`. Absent for a
+        /// withdrawal submission, which has no known Core transaction yet.
+        let txid: String?
         let amountDuffs: UInt64
+        let amountIsEstimate: Bool
         let direction: DashPayPaymentDirection
         let memo: String?
         let date: Date
         /// Current-rate fiat equivalent of `amountDuffs`, formatted for
         /// display (e.g. "$0.35"). Nil only when the amount is zero.
         let fiatString: String?
-        var id: String { txid }
+        let withdrawalStatus: String?
 
         /// Wire-order txid (the byte reverse of the display-order hex
         /// key) — the form `SwiftDashSDKWalletSource.fetch(txid:)` and
         /// `TxDetailModel(txidWire:)` expect, matching
         /// `PersistentTransaction.txid`. Nil when the hex won't parse.
         var txidWire: Data? {
-            guard let display = Data(hex: txid) else { return nil }
+            guard let txid, let display = Data(hex: txid) else { return nil }
             return Data(display.reversed())
         }
     }
@@ -580,7 +585,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
             }
         }
 
-        return rows.map { row in
+        var payments = rows.map { row in
             let dash = Decimal(row.amountDuffs) / Decimal(100_000_000)
             // `PersistentDashpayPayment.txid` is display-order hex; the
             // transaction table is keyed by the wire-order bytes.
@@ -593,8 +598,10 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 .map { Date(timeIntervalSince1970: TimeInterval($0)) }
                 ?? row.createdAt
             return ContactPayment(
+                id: row.txid,
                 txid: row.txid,
                 amountDuffs: row.amountDuffs,
+                amountIsEstimate: false,
                 direction: row.direction,
                 memo: row.memo,
                 date: date,
@@ -604,12 +611,39 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 // rather than throwing when rates aren't up yet.
                 fiatString: row.amountDuffs > 0
                     ? CurrencyExchanger.shared.fiatAmountString(for: dash)
-                    : nil)
+                    : nil,
+                withdrawalStatus: nil)
+        }
+        if let walletId = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) {
+            let scope = DashPayWithdrawalStore.Scope(
+                networkRaw: WalletEnvironment.networkKind.rawValue,
+                walletId: walletId, ownerIdentityId: ownerId)
+            do {
+                let withdrawals = try DashPayWithdrawalStore.shared.entries(
+                    scope: scope, contactIdentityId: contactId)
+                payments += withdrawals.map { entry in
+                    ContactPayment(
+                        id: "withdrawal:\(entry.id.uuidString)",
+                        txid: nil,
+                        amountDuffs: entry.amountDuffs,
+                        amountIsEstimate: entry.amountIsEstimate,
+                        direction: .sent,
+                        memo: nil,
+                        date: entry.createdAt,
+                        fiatString: CurrencyExchanger.shared.fiatAmountString(
+                            for: Decimal(entry.amountDuffs) / Decimal(100_000_000)),
+                        withdrawalStatus: entry.status == .submitted
+                            ? NSLocalizedString("Withdrawal submitted", comment: "DashPay payment history")
+                            : NSLocalizedString("Withdrawal status unknown", comment: "DashPay payment history"))
+                }
+            } catch {
+                Self.logger.error("DashPay withdrawal history could not be read: \(String(describing: error), privacy: .public)")
+            }
         }
         // Sort on the payment date, not the row's insert order: reconstructed
         // rows are all written within the same second, so insert order says
         // nothing about which payment came first.
-        .sorted { $0.date > $1.date }
+        return payments.sorted { $0.date > $1.date }
     }
 
     /// Write the owner-private contact metadata (alias / note / hidden)

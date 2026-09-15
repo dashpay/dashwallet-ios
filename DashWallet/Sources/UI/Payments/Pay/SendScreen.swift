@@ -434,6 +434,7 @@ struct ExternalSendAmountScreen: View {
                     withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
                     isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
                     isFullShieldedSweep: viewModel.isFullShieldedSweep,
+                    contactRecipient: viewModel.contactRecipient,
                     onCancel: { showConfirm = false },
                     onCompleted: {
                         showConfirm = false
@@ -624,6 +625,36 @@ private struct SendAddressSummary: View {
     var onEdit: () -> Void
 
     var body: some View {
+        if let recipient = viewModel.contactRecipient {
+            HStack(spacing: 12) {
+                Image(systemName: "person.crop.circle.fill")
+                    .font(.title)
+                    .foregroundColor(.dashBlue)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(NSLocalizedString("To", comment: ""))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(recipient.displayName)
+                        .font(.headline)
+                        .foregroundColor(.primaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+                Text("DashPay")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.dashBlue)
+            }
+            .padding(14)
+            .background(Color.secondaryBackground)
+            .cornerRadius(12)
+            .padding(.horizontal, 20)
+        } else {
+            addressButton
+        }
+    }
+
+    private var addressButton: some View {
         Button(action: onEdit) {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
@@ -735,6 +766,7 @@ struct SendConfirmSheet: View {
     var withdrawalFeeCredits: UInt64? = nil
     var isFullPlatformWithdrawal: Bool = false
     var isFullShieldedSweep: Bool = false
+    var contactRecipient: ContactPaymentRecipient? = nil
     var onCancel: () -> Void
     var onCompleted: () -> Void
 
@@ -754,7 +786,12 @@ struct SendConfirmSheet: View {
             case .success:
                 successBody
             case .submittedUnconfirmed:
-                ShieldedSubmittedUnconfirmedView(onDone: onCompleted)
+                ShieldedSubmittedUnconfirmedView(
+                    title: coordinator.contactWithdrawalStatusUnknown
+                        ? NSLocalizedString("Payment status unknown", comment: "DashPay withdrawal") : nil,
+                    message: coordinator.contactWithdrawalStatusUnknown
+                        ? NSLocalizedString("We couldn't confirm whether your withdrawal was accepted. Check your contact's payment history and balances before sending again.", comment: "DashPay withdrawal") : nil,
+                    onDone: onCompleted)
             default:
                 detailsBody
             }
@@ -858,9 +895,28 @@ struct SendConfirmSheet: View {
     private var successBody: some View {
         VStack(spacing: 16) {
             PaymentSuccessHeader(
-                title: NSLocalizedString("Sent", comment: "Send confirm sheet"),
+                title: contactRecipient == nil
+                    ? NSLocalizedString("Sent", comment: "Send confirm sheet")
+                    : NSLocalizedString("Withdrawal submitted", comment: "DashPay withdrawal"),
                 amountDuffs: dashDuffs,
                 fiatText: fiatText)
+
+            if let contactRecipient {
+                Text(String.localizedStringWithFormat(
+                    NSLocalizedString("%@ will receive the payment after the network processes the withdrawal.", comment: "DashPay withdrawal submitted"),
+                    contactRecipient.displayName))
+                    .font(.callout)
+                    .foregroundColor(.dash.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+                if isFullPlatformWithdrawal {
+                    Text(NSLocalizedString("The amount shown is an estimate. The final payout depends on the network fee.", comment: "DashPay maximum withdrawal"))
+                        .font(.caption)
+                        .foregroundColor(.dash.secondaryText)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 24)
+                }
+            }
 
             Spacer(minLength: 12)
 
@@ -887,8 +943,8 @@ struct SendConfirmSheet: View {
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
                 Spacer()
-                Text(truncateMiddle(destinationAddress))
-                    .font(.system(.footnote, design: .monospaced))
+                Text(contactRecipient?.displayName ?? truncateMiddle(destinationAddress))
+                    .font(.system(.footnote, design: contactRecipient == nil ? .monospaced : .default))
                     .foregroundColor(.dash.primaryText)
                     .lineLimit(1)
             }
@@ -1119,12 +1175,14 @@ struct SendConfirmSheet: View {
                     amountCredits: creditsAmount,
                     fullBalance: isFullPlatformWithdrawal,
                     feeHeadroomCredits: withdrawalFeeCredits,
-                    toCoreAddress: destinationAddress)
+                    toCoreAddress: destinationAddress,
+                    contactRecipient: contactRecipient)
             case .shieldedToCore:
                 await coordinator.performWithdraw(
                     amountCredits: creditsAmount,
                     sweepAll: isFullShieldedSweep,
-                    toCoreAddress: destinationAddress)
+                    toCoreAddress: destinationAddress,
+                    contactRecipient: contactRecipient)
             case .shieldedToPlatform:
                 await coordinator.performUnshield(
                     amountCredits: creditsAmount,

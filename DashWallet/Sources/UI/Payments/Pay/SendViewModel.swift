@@ -160,6 +160,7 @@ final class SendViewModel: ObservableObject {
     /// that balance can't pay surfaces as a mismatch (`pinnedSourceMismatch`)
     /// rather than silently re-picking the source.
     let pinnedSource: ChainNetwork?
+    let contactRecipient: ContactPaymentRecipient?
 
     deinit {
         // The monitor holds observers strongly — without this the VM (and
@@ -167,8 +168,9 @@ final class SendViewModel: ObservableObject {
         SyncingActivityMonitor.shared.remove(observer: self)
     }
 
-    init(pinnedSource: ChainNetwork? = nil) {
+    init(pinnedSource: ChainNetwork? = nil, contactRecipient: ContactPaymentRecipient? = nil) {
         self.pinnedSource = pinnedSource
+        self.contactRecipient = contactRecipient
         if let pinnedSource {
             source = pinnedSource
         }
@@ -219,6 +221,13 @@ final class SendViewModel: ObservableObject {
                 self?.refreshShieldedSpendCeiling()
             }
             .store(in: &cancellables)
+        if contactRecipient != nil {
+            // DashPay currently receives at a DIP-15 Core address. Resolve the
+            // actual address only after confirmation, so browsing consumes none.
+            destination = .core
+            setSourceWithoutClaimingUserIntent(validSources.first { balanceDuffs(of: $0) > 0 } ?? .core)
+            routeDidChange()
+        }
     }
 
     /// Fee kind for the pool-spending routes; `nil` for every other route.
@@ -266,6 +275,7 @@ final class SendViewModel: ObservableObject {
     }
 
     private func destinationDidChange() {
+        guard contactRecipient == nil else { return }
         let sanitized = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
         if sanitized != addressText {
             addressText = sanitized
@@ -475,7 +485,7 @@ final class SendViewModel: ObservableObject {
     /// Refreshes when a host becomes visible or the clipboard changes. Both
     /// the form registration and the host's permission must allow the read.
     func refreshClipboardSuggestion() {
-        guard !clipboardMonitors.isEmpty, isClipboardReadAllowed() else {
+        guard contactRecipient == nil, !clipboardMonitors.isEmpty, isClipboardReadAllowed() else {
             // Not allowed to read is also not allowed to keep offering what an
             // earlier read found: the pasteboard may have changed since, and
             // the chip must not outlive the screen that produced it.
