@@ -244,6 +244,35 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         dispatchOnPipeline { shared.enqueueFullReset(lastError: nil, forWipe: false) }
     }
 
+    /// Apply a devnet configuration change as one lifecycle operation.
+    ///
+    /// A start reads the devnet values at several points — SDK construction
+    /// (quorum URL), the Platform/SPV/shielded store directories
+    /// (`Network.persistenceScope`, from the devnet name) and SPV peer
+    /// discovery — with suspensions in between. Writing them from Devnet
+    /// Settings while a start was suspended let one start mix two devnets'
+    /// values. Here `apply` runs on the serial lifecycle queue, after every op
+    /// already queued has finished; when `restartIfRunningOnDevnet` is set and
+    /// the wallet runs on devnet, it runs between a full teardown and the
+    /// rebuild, so each start sees one configuration. Returns once the whole
+    /// operation, rebuild included, has run.
+    @MainActor
+    static func applyDevnetConfiguration(
+        restartIfRunningOnDevnet: Bool,
+        _ apply: @escaping @MainActor () -> Void
+    ) async {
+        await shared.enqueueAwaitable {
+            let restart = restartIfRunningOnDevnet && WalletEnvironment.isDevnet
+            if restart {
+                await shared.fullReset(lastError: nil, forWipe: false)
+            }
+            apply()
+            if restart {
+                await shared.refresh(trigger: .startIfReady)
+            }
+        }.value
+    }
+
     /// Stop only Core SPV. The host, wallet, published balance and Platform
     /// sync services stay alive so a later Core restart does not rebuild the
     /// shared SDK runtime.

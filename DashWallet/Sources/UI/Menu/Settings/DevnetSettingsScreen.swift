@@ -37,6 +37,10 @@ final class DevnetSettingsViewModel: ObservableObject {
     /// while the name is usable — including while it is empty, which is how
     /// devnet is deliberately unconfigured.
     @Published var devnetNameError: String?
+    /// True while a save is queued behind, or running on, the runtime's
+    /// lifecycle queue; Save is disabled meanwhile so two saves cannot
+    /// interleave their writes with one restart.
+    @Published private(set) var isApplying = false
 
     /// The last-applied values, to detect whether a save changed anything
     /// the running devnet SDK/SPV depends on. Refreshed after each save so a
@@ -66,56 +70,50 @@ final class DevnetSettingsViewModel: ObservableObject {
         }
         devnetNameError = nil
 
-        DevnetConfiguration.setQuorumURL(quorumURL)
-        DevnetConfiguration.setDevnetName(devnetName)
-        DevnetConfiguration.setDashConnectContractId(dashConnectContractId)
-
-        let savedQuorumURL = DevnetConfiguration.quorumURL ?? ""
-        let savedDevnetName = DevnetConfiguration.devnetName ?? ""
+        let newQuorumURL = quorumURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        let newContractId = dashConnectContractId.trimmingCharacters(in: .whitespacesAndNewlines)
         let networkValuesChanged =
-            savedQuorumURL != initialQuorumURL || savedDevnetName != initialDevnetName
-        initialQuorumURL = savedQuorumURL
-        initialDevnetName = savedDevnetName
+            newQuorumURL != initialQuorumURL || trimmedName != initialDevnetName
+        let willBeConfigured = !newQuorumURL.isEmpty && !trimmedName.isEmpty
+        initialQuorumURL = newQuorumURL
+        initialDevnetName = trimmedName
 
-        guard WalletEnvironment.isDevnet else {
+        if !WalletEnvironment.isDevnet {
             statusMessage = NSLocalizedString(
                 "Saved. The values apply when you switch to Devnet.",
                 comment: "Devnet")
-            return
-        }
-
-        guard DevnetConfiguration.isConfigured else {
+        } else if !willBeConfigured {
             statusMessage = NSLocalizedString(
                 "Saved, but Devnet needs both a Quorum URL and a Devnet Name — syncing will fail until both are set.",
                 comment: "Devnet")
-            return
-        }
-
-        guard networkValuesChanged else {
+        } else if !networkValuesChanged {
             // The contract id is read per DashConnect approval; no runtime
             // restart is needed for it.
             statusMessage = NSLocalizedString("Saved.", comment: "Devnet")
-            return
+        } else {
+            statusMessage = NSLocalizedString(
+                "Saved. Devnet is reconnecting with the new settings.",
+                comment: "Devnet")
         }
 
-        // Full stop → start pair on the runtime's serial lifecycle queue:
-        // the SDK re-init re-reads `platformQuorumURL` (re-discovering DAPI
-        // nodes) and the SPV restart re-reads the peers + devnet name — the
-        // same effect a network switch has, without changing the selection.
-        // (`startIfReady` alone would elide the refresh while the runtime is
-        // ready, so the explicit stop comes first.)
-        //
-        // Naming a different devnet is a different chain, not a reconnect:
-        // the Platform store, the shielded commitment tree and the SPV data
-        // directory are all scoped by `Network.persistenceScope`, so the
-        // restart opens that chain's own state rather than reinterpreting
-        // the previous one's records against new peers. Nothing is deleted —
-        // switching back finds the earlier chain's state where it was.
-        SwiftDashSDKWalletRuntime.stop()
-        SwiftDashSDKWalletRuntime.startIfReady()
-        statusMessage = NSLocalizedString(
-            "Saved. Devnet is reconnecting with the new settings.",
-            comment: "Devnet")
+        // The writes go through the runtime's lifecycle queue rather than
+        // straight to UserDefaults: a start already in flight finishes with
+        // the configuration it began with, and a changed quorum URL or name on
+        // a running devnet is applied between a full teardown and the rebuild
+        // (the SDK re-reads the quorum URL, SPV the peers and name, and the
+        // stores open the named devnet's own `persistenceScope`). Nothing is
+        // deleted — switching back finds the earlier chain's state where it was.
+        isApplying = true
+        Task { [weak self] in
+            await SwiftDashSDKWalletRuntime.applyDevnetConfiguration(
+                restartIfRunningOnDevnet: networkValuesChanged && willBeConfigured
+            ) {
+                DevnetConfiguration.setQuorumURL(newQuorumURL)
+                DevnetConfiguration.setDevnetName(trimmedName)
+                DevnetConfiguration.setDashConnectContractId(newContractId)
+            }
+            self?.isApplying = false
+        }
     }
 }
 
@@ -178,6 +176,7 @@ struct DevnetSettingsScreen: View {
                     ) {
                         viewModel.save()
                     }
+                    .disabled(viewModel.isApplying)
                     .padding(.top, 4)
 
                     if let status = viewModel.statusMessage {

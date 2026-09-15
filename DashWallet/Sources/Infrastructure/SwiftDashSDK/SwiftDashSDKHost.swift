@@ -404,6 +404,10 @@ final class SwiftDashSDKHost {
         case invalidMnemonic
         case mnemonicPersistenceFailed(Error)
         case mnemonicRoundTripMismatch
+        /// The devnet quorum URL or name changed between the start of a runtime
+        /// build and its SDK coming back, so the SDK and the store it would be
+        /// paired with belong to different devnets.
+        case devnetConfigurationChanged
 
         var errorDescription: String? {
             switch self {
@@ -427,6 +431,8 @@ final class SwiftDashSDKHost {
                 return "Mnemonic persistence failed: \(error.localizedDescription)"
             case .mnemonicRoundTripMismatch:
                 return "Mnemonic round-trip mismatch"
+            case .devnetConfigurationChanged:
+                return "Devnet configuration changed while the runtime was starting"
             }
         }
     }
@@ -998,6 +1004,17 @@ final class SwiftDashSDKHost {
         Self.ensureSDKInitialized()
         Self.logger.info("🪺 HOST :: stage 1/4 creating SDK for \(network.rawValue, privacy: .public)")
 
+        // The devnet values are read on both sides of the SDK build's
+        // suspension: the quorum URL by SDK construction, the devnet name
+        // (through `persistenceScope`) by the store opened below. Writers go
+        // through `SwiftDashSDKWalletRuntime.applyDevnetConfiguration`, which
+        // runs on the same serial lifecycle queue as this start; the check
+        // after the await is what keeps one runtime from ever pairing one
+        // devnet's SDK with another devnet's store.
+        let configurationIdentity = (
+            quorumURL: network == .devnet ? DevnetConfiguration.quorumURL : nil,
+            scope: network.persistenceScope)
+
         let newSDK: SDK
         do {
             let platformVersion = Self.platformVersion(for: network)
@@ -1009,6 +1026,12 @@ final class SwiftDashSDKHost {
         } catch {
             Self.logger.error("🪺 HOST :: SDK init failed: \(String(describing: error), privacy: .public)")
             throw HostError.sdkInitFailed(error)
+        }
+
+        guard configurationIdentity.scope == network.persistenceScope,
+              configurationIdentity.quorumURL == (network == .devnet ? DevnetConfiguration.quorumURL : nil) else {
+            Self.logger.error("🪺 HOST :: devnet configuration changed during the SDK build; discarding this start")
+            throw HostError.devnetConfigurationChanged
         }
 
         let container: ModelContainer
@@ -1366,12 +1389,19 @@ final class SwiftDashSDKHost {
     /// Wallets screen while on devnet (`missingWalletNetworks` provisions
     /// devnet-only there).
     ///
-    /// Fallback: when no FROM-network active phrase resolves
-    /// (`devnetProvisioningSourcePhrase` — each nil path logged) or its
-    /// create fails, every distinct stored phrase is provisioned instead and
-    /// the registry is left to `resolveActiveWallet`'s `firstWallet` pin —
-    /// devnet must never become unprovisionable (the hard `walletNotFound`
-    /// dead-end this function exists to prevent).
+    /// Source resolution (`devnetProvisioningSource`):
+    /// - a recorded source with a usable phrase provisions that phrase only,
+    ///   and a failed create fails the start rather than substituting a seed;
+    /// - a recorded source whose phrase cannot be used — the Keychain could
+    ///   not be read, or the stored phrase is invalid — also fails the start:
+    ///   provisioning another seed would bind a wallet the user did not pick;
+    /// - a recorded source that no longer exists (absent from a complete
+    ///   Keychain read, i.e. deleted since the switch was recorded) clears the
+    ///   stale record and, like no record at all, provisions every distinct
+    ///   stored phrase, leaving the registry to `resolveActiveWallet`'s
+    ///   `firstWallet` pin — so devnet never becomes permanently
+    ///   unprovisionable (the `walletNotFound` dead-end this function exists
+    ///   to prevent).
     ///
     /// Birth height 0: devnet chains are short and restart, so a genesis scan
     /// is both cheap and the only correct floor.
@@ -1383,7 +1413,22 @@ final class SwiftDashSDKHost {
     private func provisionDevnetWallets(handles: RuntimeHandles) async -> ManagedPlatformWallet? {
         guard handles.network == .devnet else { return nil }
 
-        let sourcePhrase = devnetProvisioningSourcePhrase()
+        let sourcePhrase: String?
+        switch devnetProvisioningSource() {
+        case .phrase(let phrase):
+            sourcePhrase = phrase
+        case .unavailable(let reason):
+            Self.logger.error(
+                "🪺 HOST :: devnet provisioning source is recorded but unusable (\(reason, privacy: .public)); refusing to provision another seed")
+            return nil
+        case .deleted:
+            Self.logger.notice(
+                "🪺 HOST :: devnet provisioning source no longer exists; clearing the stale record")
+            WalletEnvironment.devnetProvisioningSourceWalletId = nil
+            sourcePhrase = nil
+        case .notRecorded:
+            sourcePhrase = nil
+        }
         var provisionedCount = 0
         if let sourcePhrase {
             // A source wallet IS known, so this is the only phrase that may
@@ -1436,22 +1481,32 @@ final class SwiftDashSDKHost {
         return resolved
     }
 
-    /// The normalized mnemonic of the wallet devnet is being entered from, or
-    /// nil when it cannot be resolved.
+    /// What first devnet entry may provision, from the wallet it is entered
+    /// from and the Keychain.
+    enum DevnetProvisioningSource: Equatable {
+        /// Nothing recorded which wallet devnet is entered from.
+        case notRecorded
+        /// The recorded wallet's normalized, valid phrase.
+        case phrase(String)
+        /// A wallet is recorded but its phrase cannot be used: the Keychain
+        /// could not be read, or the stored phrase fails validation.
+        case unavailable(String)
+        /// The recorded wallet is absent from a complete Keychain read.
+        case deleted
+    }
+
+    /// The wallet devnet is being entered from, and whether its phrase can be
+    /// provisioned.
     ///
-    /// Two sources, in order. A managed switch in flight carries the FROM
-    /// network in `WalletLifecycleTransitionState`, which is the freshest
-    /// answer. Failing that — a cold start on devnet, an external
+    /// Two sources for the wallet, in order. A managed switch in flight
+    /// carries the FROM network in `WalletLifecycleTransitionState`, which is
+    /// the freshest answer. Failing that — a cold start on devnet, an external
     /// network-key write, or a devnet→devnet restart such as repointing at
     /// another devnet — the id persisted by `switchNetwork(to: .devnet)`
     /// answers instead, which is what makes the choice survive the app being
     /// killed mid-switch.
-    ///
-    /// Nil paths (each logged): no source recorded at all, a source id with
-    /// no stored mnemonic (the wallet was deleted), or a stored mnemonic that
-    /// fails validation.
-    private func devnetProvisioningSourcePhrase() -> String? {
-        let sourceWalletId: Data
+    private func devnetProvisioningSource() -> DevnetProvisioningSource {
+        let sourceWalletId: Data?
         if case let .switchingNetwork(from, to) = WalletLifecycleTransitionState.shared.phase,
            to == .devnet, from != .devnet,
            let activeWalletId = WalletEnvironment.activeWalletId(for: from) {
@@ -1463,21 +1518,47 @@ final class SwiftDashSDKHost {
         } else {
             Self.logger.notice(
                 "🪺 HOST :: devnet provisioning has no recorded source wallet; no FROM-network active phrase")
-            return nil
+            sourceWalletId = nil
         }
+        let storage = WalletStorage()
+        return Self.resolveDevnetProvisioningSource(
+            sourceWalletId: sourceWalletId,
+            storedWalletIds: { try storage.listWalletIdsWithMnemonic() },
+            readMnemonic: { try storage.retrieveMnemonic(for: $0) })
+    }
 
-        guard let entry = Self.persistedMnemonics().first(where: { $0.walletId == sourceWalletId }) else {
-            Self.logger.notice(
-                "🪺 HOST :: devnet provisioning: the source wallet has no stored mnemonic; no FROM-network active phrase")
-            return nil
+    /// Pure resolution behind `devnetProvisioningSource`.
+    ///
+    /// Reads strictly, but only what the recorded wallet needs: the id list
+    /// (to tell a deleted wallet from an unreadable one) and that one
+    /// wallet's phrase. `persistedMnemonics()` would not do here — it skips an
+    /// unreadable entry, which made an unreadable source indistinguishable
+    /// from no source and let first entry provision other seeds. An unrelated
+    /// wallet's unreadable entry does not block devnet.
+    nonisolated static func resolveDevnetProvisioningSource(
+        sourceWalletId: Data?,
+        storedWalletIds: () throws -> [Data],
+        readMnemonic: (Data) throws -> String
+    ) -> DevnetProvisioningSource {
+        guard let sourceWalletId else { return .notRecorded }
+        let ids: [Data]
+        do {
+            ids = try storedWalletIds()
+        } catch {
+            return .unavailable("keychain enumeration failed: \(error)")
         }
-        let phrase = Mnemonic.normalizePhrase(entry.mnemonic)
-        guard Mnemonic.validate(phrase) else {
-            Self.logger.notice(
-                "🪺 HOST :: devnet provisioning: the source wallet's stored mnemonic failed validation; no FROM-network active phrase")
-            return nil
+        guard ids.contains(sourceWalletId) else { return .deleted }
+        let stored: String
+        do {
+            stored = try readMnemonic(sourceWalletId)
+        } catch {
+            return .unavailable("mnemonic read failed: \(error)")
         }
-        return phrase
+        let phrase = Mnemonic.normalizePhrase(stored)
+        guard !phrase.isEmpty, Mnemonic.validate(phrase) else {
+            return .unavailable("stored mnemonic failed validation")
+        }
+        return .phrase(phrase)
     }
 
     /// One phrase → devnet wallet rows + a devnet-scoped Keychain mnemonic
