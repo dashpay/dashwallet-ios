@@ -84,6 +84,12 @@ class BaseAmountModel: ObservableObject {
     public var inputsSwappedHandler: ((AmountType) -> Void)?
     public var amountInputItemsChangeHandler: (() -> Void)?
 
+    /// Called when something OTHER than an amount edit changed whether the
+    /// current amount is valid — the funding ceiling moving under a screen that
+    /// is already open. The view's `$amount` subscription cannot see that, so
+    /// it refreshes the button and the error message from here.
+    public var validationDidChangeHandler: (() -> Void)?
+
     public var isAllowedToContinue: Bool {
         isAmountValidForProceeding
     }

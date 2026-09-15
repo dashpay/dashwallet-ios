@@ -119,7 +119,9 @@ final class SendViewModel: ObservableObject {
         SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
     }
     @Published private(set) var platformCredits: UInt64 = 0
-    @Published private(set) var shieldedBalance: UInt64 = 0
+    @Published private(set) var platformBalanceState: PlatformBalanceState = .unavailable
+    @Published private(set) var shieldedBalanceState: ShieldedBalanceState = .unavailable
+    var shieldedBalance: UInt64 { shieldedBalanceState.credits ?? 0 }
 
     /// Largest amount the pool can fund inside ONE transition — the same
     /// note-aware number Max produces. A typed amount above this needs more
@@ -183,7 +185,8 @@ final class SendViewModel: ObservableObject {
             .store(in: &cancellables)
 
         coreBalanceDuffs = SwiftDashSDKWalletState.shared.balance?.total ?? 0
-        platformCredits = PlatformAddressSyncCoordinator.shared.platformBalance
+        platformBalanceState = PlatformAddressSyncCoordinator.shared.platformBalanceState
+        platformCredits = platformBalanceState.credits ?? 0
 
         SwiftDashSDKWalletState.shared.$balance
             .receive(on: RunLoop.main)
@@ -192,10 +195,12 @@ final class SendViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        PlatformAddressSyncCoordinator.shared.$platformBalance
+        PlatformAddressSyncCoordinator.shared.$platformBalanceState
             .receive(on: RunLoop.main)
-            .sink { [weak self] credits in
+            .sink { [weak self] state in
                 guard let self else { return }
+                self.platformBalanceState = state
+                let credits = state.credits ?? 0
                 // Only a CHANGED balance restarts the shield preflight —
                 // the publisher re-emits on every sync pass, and a restart
                 // clears the capacity (fails closed), which would flicker
@@ -206,11 +211,11 @@ final class SendViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        shieldedBalance = PlatformAddressSyncCoordinator.shared.shieldedBalance
-        PlatformAddressSyncCoordinator.shared.$shieldedBalance
+        shieldedBalanceState = PlatformAddressSyncCoordinator.shared.shieldedBalanceState
+        PlatformAddressSyncCoordinator.shared.$shieldedBalanceState
             .receive(on: RunLoop.main)
-            .sink { [weak self] credits in
-                self?.shieldedBalance = credits
+            .sink { [weak self] state in
+                self?.shieldedBalanceState = state
                 self?.refreshShieldedSpendCeiling()
             }
             .store(in: &cancellables)
@@ -584,11 +589,13 @@ final class SendViewModel: ObservableObject {
     }
 
     var platformCreditsFormatted: String {
-        InternalTransferViewModel.cardBalanceString(duffs: platformCredits / 1000)
+        guard platformBalanceState.isAvailable else { return "—" }
+        return InternalTransferViewModel.cardBalanceString(duffs: platformCredits / 1000)
     }
 
     var shieldedBalanceFormatted: String {
-        InternalTransferViewModel.cardBalanceString(duffs: shieldedBalance / 1000)
+        guard shieldedBalanceState.isAvailable else { return "—" }
+        return InternalTransferViewModel.cardBalanceString(duffs: shieldedBalance / 1000)
     }
 
     /// A source's balance normalised to duffs, for the "first source with
@@ -689,11 +696,19 @@ final class SendViewModel: ObservableObject {
         }
     }
 
+    private var hasUnavailableSourceBalance: Bool {
+        ((source == .shielded && !shieldedBalanceState.isAvailable)
+            || (source == .platform && !platformBalanceState.isAvailable))
+    }
+
     /// Inline explanation for an amount rejected before Confirm. Keep zero
     /// quiet until the user types.
     var amountValidationMessage: String? {
         if let shieldedMaxNotice { return shieldedMaxNotice }
         guard dashDuffsUnsigned > 0, let route else { return nil }
+        if hasUnavailableSourceBalance {
+            return NSLocalizedString("Balance unavailable", comment: "Selected source balance not restored")
+        }
 
         // The Core → Shielded pool fee rides on top of the amount, so there
         // is no route minimum — but without the estimate the lock value
@@ -836,6 +851,7 @@ final class SendViewModel: ObservableObject {
     }
 
     var canContinue: Bool {
+        if hasUnavailableSourceBalance { return false }
         guard dashDuffsUnsigned > 0, let route, !isBlockedBySync else { return false }
         switch route {
         case .coreToCore:
@@ -885,6 +901,11 @@ final class SendViewModel: ObservableObject {
 
     /// Source-aware Max fill — same envelopes as the internal transfer.
     func fillMaxFromWallet() {
+        if hasUnavailableSourceBalance {
+            clearShieldedMaxSelection()
+            shieldedMaxNotice = NSLocalizedString("Balance unavailable", comment: "Max requires a known source balance")
+            return
+        }
         clearShieldedMaxSelection()
         let sourceDuffs: UInt64
         switch route {

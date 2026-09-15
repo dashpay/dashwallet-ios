@@ -253,14 +253,22 @@ final class PlatformAddressActivityDAO {
 
     /// Stable append-only position for an attended receive-session snapshot.
     /// Row IDs are used instead of wall-clock observation timestamps.
-    func latestActivityId(walletId: Data, networkRaw: Int64) -> Int64 {
+    ///
+    /// 0 when the wallet has no activity yet; nil when the read failed. The
+    /// two must stay apart: a cursor of 0 admits every row as new, which is
+    /// right for an empty table and wrong for one that could not be read.
+    func latestActivityId(walletId: Data, networkRaw: Int64) -> Int64? {
         typealias S = PlatformAddressActivitySchema
         let query = S.activity
             .select(S.colId)
             .filter(S.colWalletId == walletId && S.colNetwork == networkRaw)
             .order(S.colId.desc)
             .limit(1)
-        return (try? db.pluck(query))?[S.colId] ?? 0
+        do {
+            return try db.pluck(query)?[S.colId] ?? 0
+        } catch {
+            return nil
+        }
     }
 
     /// New activity for one frozen receive address, oldest first so a burst is

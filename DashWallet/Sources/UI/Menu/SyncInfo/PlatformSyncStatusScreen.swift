@@ -137,7 +137,7 @@ struct PlatformSyncStatusScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             row(
                 title: "Platform Balance",
-                value: PlatformCreditsFormatter.dashString(coordinator.platformBalance))
+                value: coordinator.platformBalanceState.credits.map(PlatformCreditsFormatter.dashString) ?? "—")
             row(
                 title: "Active Addresses",
                 value: "\(coordinator.activeAddressCount)")
@@ -277,51 +277,58 @@ struct PlatformSyncStatusScreen: View {
     }
 
     private var controlsCard: some View {
-        HStack(spacing: 12) {
-            Button(action: {
-                Task { await coordinator.syncNow() }
-            }) {
-                HStack(spacing: 4) {
-                    Image(systemName: "arrow.clockwise")
-                    Text("Sync Now")
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 12) {
+                Button(action: {
+                    Task { await coordinator.syncNow() }
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.clockwise")
+                        Text("Sync Now")
+                    }
+                    .font(.system(size: 14, weight: .semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(coordinator.isSyncing || coordinator.isClearing ? Color.dash.gray300.opacity(0.3) : Color.dash.blue.opacity(0.15))
+                    .foregroundColor(coordinator.isSyncing || coordinator.isClearing ? .secondary : .blue)
+                    .cornerRadius(8)
                 }
-                .font(.system(size: 14, weight: .semibold))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(coordinator.isSyncing || coordinator.isClearing ? Color.dash.gray300.opacity(0.3) : Color.dash.blue.opacity(0.15))
-                .foregroundColor(coordinator.isSyncing || coordinator.isClearing ? .secondary : .blue)
-                .cornerRadius(8)
-            }
-            .disabled(coordinator.isSyncing || coordinator.isClearing)
+                .disabled(coordinator.isSyncing || coordinator.isClearing)
 
-            Button(action: {
-                // Full local wipe (Rust watermark + persisted balances +
-                // display), so the next Sync Now does the complete
-                // trunk/branch rescan — not just a display reset.
-                Task { await coordinator.clearLocalState() }
-            }) {
-                Text("Clear")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(Color.dash.gray300.opacity(0.3))
-                    .foregroundColor(coordinator.isClearing ? .secondary : .dash.primaryText)
-                    .cornerRadius(8)
-            }
-            .disabled(coordinator.isClearing || coordinator.isSyncing)
+                Button(action: {
+                    // Full local wipe (Rust watermark + persisted balances +
+                    // display), so the next Sync Now does the complete
+                    // trunk/branch rescan — not just a display reset.
+                    Task { await coordinator.clearLocalState() }
+                }) {
+                    Text("Clear")
+                        .font(.system(size: 14, weight: .semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.dash.gray300.opacity(0.3))
+                        .foregroundColor(coordinator.canClearLocalState ? .dash.primaryText : .secondary)
+                        .cornerRadius(8)
+                }
+                .disabled(!coordinator.canClearLocalState)
 
-            Button(action: {
-                PlatformAddressSyncCoordinator.stop()
-            }) {
-                Text("Stop")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(coordinator.isRunning ? Color.red.opacity(0.15) : Color.dash.gray300.opacity(0.3))
-                    .foregroundColor(coordinator.isRunning ? .red : .secondary)
-                    .cornerRadius(8)
+                Button(action: {
+                    PlatformAddressSyncCoordinator.stop()
+                }) {
+                    Text("Stop")
+                        .font(.system(size: 14, weight: .semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(coordinator.isRunning ? Color.red.opacity(0.15) : Color.dash.gray300.opacity(0.3))
+                        .foregroundColor(coordinator.isRunning ? .red : .secondary)
+                        .cornerRadius(8)
+                }
+                .disabled(!coordinator.isRunning)
             }
-            .disabled(!coordinator.isRunning)
+            if !coordinator.canClearLocalState && !coordinator.isSyncing && !coordinator.isClearing {
+                Text("Start Platform sync before clearing its local state")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
         }
     }
 
