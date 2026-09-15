@@ -141,6 +141,9 @@
 		1B4B570DEFDE93352486F118 /* SendToContactScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08E25A4A85971BBF2BED6C3F /* SendToContactScreen.swift */; };
 		E78E49CC8ED4CC88E6122A1A /* SendToContactViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FA65DCAE38B074599D7BC86 /* SendToContactViewController.swift */; };
 		E932B50D2C8449B6C2A8A6E0 /* SendToContactViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 009CAE452A11A372A38C592D /* SendToContactViewModel.swift */; };
+		C029D3337FF6DAD231B33C4B /* SendToContactScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08E25A4A85971BBF2BED6C3F /* SendToContactScreen.swift */; };
+		1F2E9228002A59F638346E1F /* SendToContactViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FA65DCAE38B074599D7BC86 /* SendToContactViewController.swift */; };
+		7BB23AA04C134011F69256E7 /* SendToContactViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 009CAE452A11A372A38C592D /* SendToContactViewModel.swift */; };
 		279C16F9AF0575C540E312E5 /* SwapConvertCardRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99130732DE8F2E95F635F6B /* SwapConvertCardRow.swift */; };
 		2991DE4863B0BF4FA8628C3C /* DWProfileUpdateBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAA91E4239626E28125CC0E2 /* DWProfileUpdateBridge.swift */; };
 		2A0C699C23104588001B8C90 /* DWPaymentInput.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C699B23104588001B8C90 /* DWPaymentInput.m */; };
@@ -10581,6 +10584,9 @@
 				8B8898971DC24152E171DABC /* PaymentsLandingScreen.swift in Sources */,
 				12DE15416F9F7A0B8749CAF1 /* PaymentsLandingViewModel.swift in Sources */,
 				908AB7EFCC69D3828BBD70A8 /* PaymentsLandingHostingController.swift in Sources */,
+				C029D3337FF6DAD231B33C4B /* SendToContactScreen.swift in Sources */,
+				1F2E9228002A59F638346E1F /* SendToContactViewController.swift in Sources */,
+				7BB23AA04C134011F69256E7 /* SendToContactViewModel.swift in Sources */,
 				0EB4679BC135B464D90CDC8B /* TransferTimingSheet.swift in Sources */,
 				EF053C0D81A007CC015EB3EE /* InternalTransferViewModel.swift in Sources */,
 				58825FFD2913876CC5D4AA21 /* InternalTransferScreen.swift in Sources */,
