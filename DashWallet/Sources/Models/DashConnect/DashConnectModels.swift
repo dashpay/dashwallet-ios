@@ -79,9 +79,10 @@ extension ConnectionRequest {
     /// so this convenience lives in an extension.
     init(loginRequest: DashKeyRequest) {
         let contractId = loginRequest.contractId.toBase58String()
-        let branding = DashConnectFallbackAppMetadata.resolve(
+        let branding = DashConnectNetworkConfiguration.appMetadata(
             contractId: contractId,
-            unauthenticatedLabel: loginRequest.label
+            unauthenticatedLabel: loginRequest.label,
+            on: loginRequest.network
         )
         self.init(
             appLabel: branding.name,
