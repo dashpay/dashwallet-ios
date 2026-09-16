@@ -128,7 +128,7 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     }
 
     private func makeMetadata(for order: SwapOrder) -> TxRowMetadata {
-        let pair = "\(shortSymbol(from: order.fromAsset))/\(shortSymbol(from: order.toAsset))"
+        let pair = "\(Self.shortSymbol(from: order.fromAsset))/\(Self.shortSymbol(from: order.toAsset))"
         let title = String(
             format: NSLocalizedString("Converted · %@", comment: "Dash DEX / tx history row title"),
             pair
@@ -157,7 +157,8 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     /// Extracts the short ticker symbol from a full THORChain asset path.
     /// "ARB.USDC-0X-AF88D065E77C8C-C2239327C5ED-B3A432268E5831" → "USDC"
     /// "DASH" → "DASH"
-    private func shortSymbol(from asset: String) -> String {
+    /// Internal static: `SwapNotificationProducer` names the pair with it too.
+    static func shortSymbol(from asset: String) -> String {
         let afterDot = asset.split(separator: ".").last.map(String.init) ?? asset
         return afterDot.split(separator: "-").first.map(String.init) ?? afterDot
     }
