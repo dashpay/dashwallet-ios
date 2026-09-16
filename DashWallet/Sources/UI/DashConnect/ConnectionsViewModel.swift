@@ -48,13 +48,18 @@ final class ConnectionsViewModel: ObservableObject {
     @Published private(set) var connections: [DAppConnection] = []
     @Published private(set) var featureUnavailable: Bool
     @Published var pendingRequest: ConnectionRequest?
+    @Published var pendingTokenPurchase: DashConnectTokenPurchaseRequest?
     @Published var isApproving = false
-    @Published var isProcessingKeyRegistration = false
+    @Published var isApprovingPurchase = false
+    @Published var isProcessingStateTransition = false
     @Published var message: ConnectionsScreenMessage?
     /// Failure of the last approve attempt, rendered **inside** the approve sheet.
     /// A screen-level `.alert` cannot appear over a presented sheet, so routing this
     /// through `message` would leave the user with no feedback at all.
     @Published var approveError: String?
+    /// Failure of the last token-purchase approve attempt, rendered inside
+    /// the purchase sheet for the same reason as `approveError`.
+    @Published var purchaseApproveError: String?
 
     private let dataSource: any DashConnectDataSource
     private var pendingLoginRequest: DashKeyRequest?
@@ -98,22 +103,32 @@ final class ConnectionsViewModel: ObservableObject {
         guard !featureUnavailable else { return }
 
         // A request the user is already looking at owns the screen until they
-        // answer it. `pendingRequest` covers both halves of that: the approve
-        // sheet is presented exactly while it is set, and an approval in
-        // flight keeps it set. Refusing the newcomer beats replacing a request
-        // mid-read — and beats what replacing used to cost, since resolving
-        // the newcomer starts by clearing the sheet, so an unparseable link
-        // could dismiss a legitimate approval on its way to failing.
+        // answer it. Both sheets count: `pendingRequest` presents the connection
+        // approval (and stays set while an approval is in flight), and
+        // `pendingTokenPurchase` presents a purchase waiting to be authorized.
+        // Refusing the newcomer beats replacing a request mid-read — and beats
+        // what replacing used to cost, since resolving the newcomer starts by
+        // clearing the sheet, so an unparseable link could dismiss a legitimate
+        // approval on its way to failing.
         //
         // The refusal has to appear where the user is looking: the sheet
         // covers the screen, and a screen-level `.alert` cannot show over it.
-        guard pendingRequest == nil else {
-            approveError = NSLocalizedString("Another DashConnect request arrived. Finish this one first, then try again.",
-                                             comment: "DashConnect: a second request arrived while one was on screen")
+        guard pendingRequest == nil, pendingTokenPurchase == nil else {
+            let refusal = NSLocalizedString("Another DashConnect request arrived. Finish this one first, then try again.",
+                                            comment: "DashConnect: a second request arrived while one was on screen")
+            // Onto the sheet that is actually up: the purchase sheet reads
+            // `purchaseApproveError` alone, so a refusal parked in
+            // `approveError` while a purchase is on screen is invisible — the
+            // request would look silently dropped.
+            if pendingTokenPurchase != nil {
+                purchaseApproveError = refusal
+            } else {
+                approveError = refusal
+            }
             return
         }
 
-        guard !isProcessingKeyRegistration else {
+        guard !isProcessingStateTransition else {
             message = ConnectionsScreenMessage(
                 kind: .error,
                 text: NSLocalizedString("Finish the current DashConnect request first, then try again.",
@@ -143,16 +158,20 @@ final class ConnectionsViewModel: ObservableObject {
                     guard generation == requestGeneration else { return }
                     pendingLoginRequest = request
                     pendingRequest = connectionRequest
-                case let .keyRegistration(request):
+                case let .stateTransition(request):
                     guard generation == requestGeneration else { return }
-                    isProcessingKeyRegistration = true
-                    defer { isProcessingKeyRegistration = false }
+                    isProcessingStateTransition = true
+                    defer { isProcessingStateTransition = false }
 
-                    try await dataSource.completeKeyRegistration(request)
-                    message = ConnectionsScreenMessage(
-                        kind: .success,
-                        text: NSLocalizedString("DashConnect key registration completed.", comment: "DashConnect")
-                    )
+                    switch try await dataSource.handleStateTransition(request) {
+                    case .keyRegistrationCompleted:
+                        message = ConnectionsScreenMessage(
+                            kind: .success,
+                            text: NSLocalizedString("DashConnect key registration completed.", comment: "DashConnect")
+                        )
+                    case let .tokenPurchaseApprovalRequired(purchase):
+                        pendingTokenPurchase = purchase
+                    }
                 }
             } catch {
                 guard generation == requestGeneration else { return }
@@ -205,6 +224,60 @@ final class ConnectionsViewModel: ObservableObject {
         pendingRequest = nil
         pendingLoginRequest = nil
         approveError = nil
+    }
+
+    func approvePendingTokenPurchase() {
+        guard let purchase = pendingTokenPurchase, !isApprovingPurchase else { return }
+
+        isApprovingPurchase = true
+        purchaseApproveError = nil
+
+        Task {
+            defer { isApprovingPurchase = false }
+
+            do {
+                try await dataSource.approveTokenPurchase(purchase)
+                self.pendingTokenPurchase = nil
+                self.purchaseApproveError = nil
+                message = ConnectionsScreenMessage(
+                    kind: .success,
+                    text: NSLocalizedString("Token purchase completed.", comment: "DashConnect")
+                )
+            } catch DashConnectTokenPurchaseFailure.outcomeUnknown(let underlying) {
+                // The transition was signed and submitted, and only the wait
+                // for its outcome failed — Platform may well have accepted it.
+                // Approving again would build a second purchase on the next
+                // nonce and could buy the tokens twice, so the sheet closes
+                // rather than offering a retry, and the user is told what to
+                // check before starting over.
+                self.pendingTokenPurchase = nil
+                self.purchaseApproveError = nil
+                message = ConnectionsScreenMessage(
+                    kind: .error,
+                    text: String(
+                        format: NSLocalizedString(
+                            "The purchase was submitted but its result is unknown: %@. Check this identity's tokens and credit balance before buying again — approving a second time would pay twice.",
+                            comment: "DashConnect token purchase"),
+                        underlying.localizedDescription
+                    )
+                )
+            } catch {
+                // Refused before anything was signed or sent (a cancelled
+                // authentication, a wrong identity, "the identity has no
+                // CRITICAL key"): nothing was charged, so keep the sheet up
+                // and let the user retry without rescanning the QR.
+                self.purchaseApproveError = String(
+                    format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
+                    error.localizedDescription
+                )
+            }
+        }
+    }
+
+    func denyPendingTokenPurchase() {
+        guard !isApprovingPurchase else { return }
+        pendingTokenPurchase = nil
+        purchaseApproveError = nil
     }
 
     func disconnect(_ connection: DAppConnection) {

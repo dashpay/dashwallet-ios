@@ -1,3 +1,5 @@
+import Combine
+import Foundation
 import XCTest
 @testable import dashpay
 @testable import SwiftDashSDK
@@ -196,13 +198,169 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(tagless.addPublicKeys.map(\.keyId), tagged.addPublicKeys.map(\.keyId))
         XCTAssertEqual(tagless.disablePublicKeyIds, tagged.disablePublicKeyIds)
 
-        let appParser = PlatformWalletDashConnectKeyRegistrationParser { bytes in
-            try wallet.parseIdentityUpdateTransition(bytes)
+        let appParser = PlatformWalletDashConnectStateTransitionParser { bytes in
+            .identityUpdate(try wallet.parseIdentityUpdateTransition(bytes))
         }
-        let appTransition = try appParser.parse(taglessBytes)
+        guard case let .keyRegistration(appTransition) = try appParser.parse(taglessBytes) else {
+            return XCTFail("Expected a key-registration transition")
+        }
         XCTAssertEqual(appTransition.identityId, tagged.identityId)
         XCTAssertEqual(appTransition.addPublicKeys.map(\.keyId), [17, 18])
         XCTAssertEqual(appTransition.disablePublicKeyIds, [4, 8])
+    }
+
+    func testParserMapsATokenPurchaseTransition() throws {
+        let ownerId = Data(repeating: 0x21, count: 32)
+        let contractId = Data(repeating: 0x22, count: 32)
+        let tokenId = Data(repeating: 0x23, count: 32)
+        let parser = PlatformWalletDashConnectStateTransitionParser { _ in
+            .tokenPurchase(ManagedPlatformWallet.ParsedTokenPurchaseTransition(
+                ownerId: ownerId,
+                dataContractId: contractId,
+                tokenId: tokenId,
+                tokenContractPosition: 3,
+                tokenCount: 100,
+                totalAgreedPrice: 100_000_000
+            ))
+        }
+
+        guard case let .tokenPurchase(purchase) = try parser.parse(Data([0x00])) else {
+            return XCTFail("Expected a token purchase")
+        }
+        XCTAssertEqual(purchase.ownerId, ownerId)
+        XCTAssertEqual(purchase.dataContractId, contractId)
+        XCTAssertEqual(purchase.tokenId, tokenId)
+        XCTAssertEqual(purchase.tokenContractPosition, 3)
+        XCTAssertEqual(purchase.tokenCount, 100)
+        XCTAssertEqual(purchase.totalAgreedPrice, 100_000_000)
+    }
+
+    func testTokenPurchasePriceConvertsCreditsToDash() {
+        // 1e11 credits = 1 DASH; 1e3 credits = 1 duff.
+        XCTAssertEqual(Self.purchaseRequest(credits: 0).totalPriceDash, 0)
+        XCTAssertEqual(Self.purchaseRequest(credits: 100_000_000_000).totalPriceDash, 1)
+        XCTAssertEqual(
+            Self.purchaseRequest(credits: 100_000).totalPriceDash,
+            Decimal(string: "0.000001"))
+        // Sub-duff precision survives: 1 credit is a thousandth of a duff,
+        // which an eight-decimal rendering would round away even though it
+        // is charged.
+        XCTAssertEqual(
+            Self.purchaseRequest(credits: 1).totalPriceDash,
+            Decimal(string: "0.00000000001"))
+    }
+
+    // MARK: - Approval-sheet price text
+
+    private static let enUS = Locale(identifier: "en_US")
+
+    func testPriceTextRendersWholeAndSubDuffAmounts() {
+        XCTAssertEqual(Self.purchaseRequest(credits: 0).totalPriceDashText(locale: Self.enUS), "0 DASH")
+        XCTAssertEqual(Self.purchaseRequest(credits: 100_000_000_000).totalPriceDashText(locale: Self.enUS), "1 DASH")
+        XCTAssertEqual(Self.purchaseRequest(credits: 1).totalPriceDashText(locale: Self.enUS), "0.00000000001 DASH")
+        XCTAssertEqual(Self.purchaseRequest(credits: 150_000_000_000).totalPriceDashText(locale: Self.enUS), "1.5 DASH")
+    }
+
+    func testPriceTextKeepsFullPrecisionAboveTwoToTheFiftyThird() {
+        // Values a `Double` cannot represent exactly: the text must name the
+        // same integer that is passed as `expectedTotalCost`.
+        XCTAssertEqual(
+            Self.purchaseRequest(credits: 10_000_000_000_000_001).totalPriceDashText(locale: Self.enUS),
+            "100000.00000000001 DASH")
+        XCTAssertEqual(
+            Self.purchaseRequest(credits: 9_007_199_254_740_993).totalPriceDashText(locale: Self.enUS),
+            "90071.99254740993 DASH")
+    }
+
+    func testPriceTextUsesTheLocalesDecimalSeparatorWithoutGrouping() {
+        XCTAssertEqual(
+            Self.purchaseRequest(credits: 123_456_700_000_000).totalPriceDashText(locale: Locale(identifier: "uk_UA")),
+            "1234,567 DASH")
+    }
+
+    fileprivate static func purchaseRequest(
+        credits: UInt64,
+        tokenCount: UInt64 = 1,
+        tokenDecimals: Int? = nil
+    ) -> DashConnectTokenPurchaseRequest {
+        DashConnectTokenPurchaseRequest(
+            appName: nil,
+            ownerId: Data(repeating: 0x21, count: 32),
+            dataContractId: Data(repeating: 0x22, count: 32),
+            tokenId: Data(repeating: 0x23, count: 32),
+            tokenContractPosition: 0,
+            tokenCount: tokenCount,
+            tokenDecimals: tokenDecimals,
+            tokenName: nil,
+            totalAgreedPriceCredits: credits,
+            walletUsername: nil,
+            walletIdentityId: "identity"
+        )
+    }
+
+    // MARK: - Token quantity denomination
+
+    func testAQuantityIsScaledByTheContractsDecimals() {
+        // 100,000,000 base units of an eight-decimal token is one token — the
+        // number the user is authorizing.
+        let request = Self.purchaseRequest(credits: 1, tokenCount: 100_000_000, tokenDecimals: 8)
+        XCTAssertEqual(request.tokenQuantity(locale: Self.enUS).text, "1")
+        XCTAssertFalse(request.tokenQuantity(locale: Self.enUS).isBaseUnits)
+    }
+
+    func testAZeroDecimalTokenReadsAsAWholeCount() {
+        let request = Self.purchaseRequest(credits: 1, tokenCount: 250, tokenDecimals: 0)
+        XCTAssertEqual(request.tokenQuantity(locale: Self.enUS).text, "250")
+        XCTAssertFalse(request.tokenQuantity(locale: Self.enUS).isBaseUnits)
+    }
+
+    func testAnUnknownDenominationIsReportedAsBaseUnits() {
+        // The wallet does not hold the contract, so it cannot scale. Assuming
+        // zero decimals here would overstate an eight-decimal token by 1e8 on
+        // a money-authorization screen.
+        let request = Self.purchaseRequest(credits: 1, tokenCount: 100_000_000, tokenDecimals: nil)
+        // Ungrouped in a grouping locale too: every branch renders the same way.
+        XCTAssertEqual(request.tokenQuantity(locale: Self.enUS).text, "100000000")
+        XCTAssertTrue(request.tokenQuantity(locale: Self.enUS).isBaseUnits)
+    }
+
+    func testAWholeCountIsUngroupedInAGroupingLocale() {
+        let request = Self.purchaseRequest(credits: 1, tokenCount: 1_000_000, tokenDecimals: 0)
+        XCTAssertEqual(request.tokenQuantity(locale: Self.enUS).text, "1000000")
+    }
+
+    func testAFractionalQuantityKeepsItsDeclaredPrecision() {
+        let request = Self.purchaseRequest(credits: 1, tokenCount: 150_000_000, tokenDecimals: 8)
+        XCTAssertEqual(request.tokenQuantity(locale: Self.enUS).text, "1.5")
+        XCTAssertEqual(request.tokenQuantity(locale: Locale(identifier: "uk_UA")).text, "1,5")
+        XCTAssertFalse(request.tokenQuantity(locale: Self.enUS).isBaseUnits)
+    }
+
+    /// The quantity on the sheet must be the quantity `tokenPurchase` submits.
+    /// A `NumberFormatter` rendering keeps ~15 significant digits, so this
+    /// 16-decimal amount came out as 0.900719925474099 — three base units
+    /// short of what the user would have been charged for.
+    func testAQuantityKeepsEveryDeclaredDigitAboveTwoToTheFiftyThird() {
+        let request = Self.purchaseRequest(
+            credits: 1,
+            tokenCount: 9_007_199_254_740_993,
+            tokenDecimals: 16
+        )
+
+        XCTAssertEqual(request.tokenQuantity(locale: Self.enUS).text, "0.9007199254740993")
+        XCTAssertEqual(
+            request.tokenQuantity(locale: Locale(identifier: "uk_UA")).text,
+            "0,9007199254740993"
+        )
+        XCTAssertFalse(request.tokenQuantity(locale: Self.enUS).isBaseUnits)
+    }
+
+    /// Fewer base units than the scale: the leading zero and every declared
+    /// place survive.
+    func testAQuantitySmallerThanOneTokenKeepsItsLeadingZeros() {
+        let request = Self.purchaseRequest(credits: 1, tokenCount: 1, tokenDecimals: 18)
+
+        XCTAssertEqual(request.tokenQuantity(locale: Self.enUS).text, "0.000000000000000001")
     }
 
     func testBuildLoginKeyResponseDraftProducesExactFieldsAndWipesEphemeralPrivateKey() throws {
@@ -971,5 +1129,193 @@ private final class TestDashConnectStore: DashConnectStore {
 
     func save(_ connections: [DAppConnection]) {
         self.connections = connections
+    }
+}
+
+/// What the approval sheet may offer after a failed token purchase.
+///
+/// A purchase is not idempotent, so the rule under test is a money rule: a
+/// failure that never reached Platform stays retryable, an unknown outcome
+/// does not, and a second tap while the first is in flight buys nothing.
+@MainActor
+final class ConnectionsViewModelPurchaseTests: XCTestCase {
+    func testAFailureBeforeSubmissionKeepsThePurchasePendingForRetry() async {
+        let spy = PurchaseApprovalSpy()
+        spy.failure = DashConnectTokenPurchaseFailure.beforeSubmission(PurchaseSpyError.refused)
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        let purchase = PlatformDashConnectDataSourceTests.purchaseRequest(credits: 1)
+        viewModel.pendingTokenPurchase = purchase
+
+        viewModel.approvePendingTokenPurchase()
+        await waitUntil { !viewModel.isApprovingPurchase }
+
+        // Nothing was signed or sent, so the sheet stays up carrying the
+        // reason, and approving again costs no second rescan.
+        XCTAssertEqual(viewModel.pendingTokenPurchase, purchase)
+        XCTAssertEqual(viewModel.purchaseApproveError?.contains("spy refused"), true)
+        XCTAssertNil(viewModel.message)
+        XCTAssertEqual(spy.approveCallCount, 1)
+    }
+
+    func testAnUnknownOutcomeClosesTheSheetAndWarnsInsteadOfOfferingRetry() async {
+        let spy = PurchaseApprovalSpy()
+        spy.failure = DashConnectTokenPurchaseFailure.outcomeUnknown(PurchaseSpyError.refused)
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        viewModel.pendingTokenPurchase = PlatformDashConnectDataSourceTests.purchaseRequest(credits: 1)
+
+        viewModel.approvePendingTokenPurchase()
+        await waitUntil { !viewModel.isApprovingPurchase }
+
+        // The transition may already be on Platform: no retry is offered, and
+        // the warning names what to check before buying again.
+        XCTAssertNil(viewModel.pendingTokenPurchase)
+        XCTAssertNil(viewModel.purchaseApproveError)
+        XCTAssertEqual(viewModel.message?.kind, .error)
+        XCTAssertEqual(viewModel.message?.text.contains("spy refused"), true)
+        XCTAssertEqual(spy.approveCallCount, 1)
+    }
+
+    func testASecondApproveWhileTheFirstIsInFlightSubmitsOnlyOnce() async {
+        let spy = PurchaseApprovalSpy()
+        spy.suspendsUntilReleased = true
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        viewModel.pendingTokenPurchase = PlatformDashConnectDataSourceTests.purchaseRequest(credits: 1)
+
+        viewModel.approvePendingTokenPurchase()
+        await waitUntil { spy.isSuspended }
+        XCTAssertTrue(spy.isSuspended, "the first approval never reached the data source")
+
+        // The double tap the in-flight guard exists for: a second signed
+        // purchase on the next nonce would debit the identity twice.
+        viewModel.approvePendingTokenPurchase()
+        try? await Task.sleep(nanoseconds: 50_000_000)
+        XCTAssertEqual(spy.approveCallCount, 1)
+
+        spy.release()
+        await waitUntil { !viewModel.isApprovingPurchase }
+
+        XCTAssertEqual(spy.approveCallCount, 1)
+        XCTAssertNil(viewModel.pendingTokenPurchase)
+        XCTAssertEqual(viewModel.message?.kind, .success)
+    }
+
+    /// Polls `condition` until it holds or `timeout` elapses.
+    ///
+    /// `approvePendingTokenPurchase` works in an unstructured `Task` and the
+    /// data source runs off the main actor, so there is no handle to await.
+    private func waitUntil(timeout: TimeInterval = 2, _ condition: () -> Bool) async {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !condition(), Date() < deadline {
+            try? await Task.sleep(nanoseconds: 2_000_000)
+        }
+    }
+}
+
+/// A `DashConnectDataSource` that counts approvals and can hold one suspended.
+///
+/// `MockDashConnectDataSource` cannot stand in: it always fails before
+/// submission, counts nothing, and has no suspension point to tap through.
+private final class PurchaseApprovalSpy: DashConnectDataSource {
+    /// Guards every stored property: the protocol's methods are nonisolated,
+    /// so they run off the main actor the test asserts from.
+    private let lock = NSLock()
+    private var storedFailure: Error?
+    private var storedSuspendsUntilReleased = false
+    private var storedApproveCallCount = 0
+    private var storedIsSuspended = false
+    private var gate: CheckedContinuation<Void, Never>?
+
+    /// Thrown once the call proceeds. `nil` completes the purchase.
+    var failure: Error? {
+        get { lock.withLock { storedFailure } }
+        set { lock.withLock { storedFailure = newValue } }
+    }
+
+    /// When true, `approveTokenPurchase` suspends until `release()`.
+    var suspendsUntilReleased: Bool {
+        get { lock.withLock { storedSuspendsUntilReleased } }
+        set { lock.withLock { storedSuspendsUntilReleased = newValue } }
+    }
+
+    var approveCallCount: Int {
+        lock.withLock { storedApproveCallCount }
+    }
+
+    var isSuspended: Bool {
+        lock.withLock { storedIsSuspended }
+    }
+
+    var connections: AnyPublisher<[DAppConnection], Never> {
+        Just([DAppConnection]()).eraseToAnyPublisher()
+    }
+
+    /// Lets a suspended `approveTokenPurchase` finish.
+    func release() {
+        let waiting = lock.withLock { () -> CheckedContinuation<Void, Never>? in
+            let waiting = gate
+            gate = nil
+            storedIsSuspended = false
+            return waiting
+        }
+        waiting?.resume()
+    }
+
+    func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws {
+        let suspends = lock.withLock { () -> Bool in
+            storedApproveCallCount += 1
+            return storedSuspendsUntilReleased
+        }
+
+        if suspends {
+            await withCheckedContinuation { continuation in
+                lock.withLock {
+                    gate = continuation
+                    storedIsSuspended = true
+                }
+            }
+        }
+
+        if let failure {
+            throw failure
+        }
+    }
+
+    func parseQR(_ content: String) async throws -> DashConnectQr {
+        throw PurchaseSpyError.unsupported
+    }
+
+    func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest {
+        XCTFail("makeConnectionRequest is not part of the purchase approval flow")
+        return ConnectionRequest(loginRequest: loginRequest)
+    }
+
+    func approveLogin(_ request: DashKeyRequest) async throws -> DAppConnection {
+        throw PurchaseSpyError.unsupported
+    }
+
+    func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction {
+        throw PurchaseSpyError.unsupported
+    }
+
+    func disconnect(id: String) async {
+        XCTFail("disconnect is not part of the purchase approval flow")
+    }
+
+    func remove(id: String) async {
+        XCTFail("remove is not part of the purchase approval flow")
+    }
+}
+
+private enum PurchaseSpyError: LocalizedError {
+    case refused
+    case unsupported
+
+    var errorDescription: String? {
+        switch self {
+        case .refused:
+            return "spy refused"
+        case .unsupported:
+            return "not part of the purchase approval flow"
+        }
     }
 }
