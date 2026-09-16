@@ -279,7 +279,10 @@
 "Tokens" = "Tokens";
 
 /* DashConnect token purchase */
-"Total price" = "Total price";
+"Maximum price" = "Maximum price";
+
+/* DashConnect token purchase */
+"You pay up to this amount. The final price may be lower." = "You pay up to this amount. The final price may be lower.";
 
 /* Notifications */
 "Turned off in iOS Settings" = "Turned off in iOS Settings";
@@ -6013,7 +6016,7 @@
 "Copy QR code" = "Copy QR code";
 "Couldn't authenticate: %@" = "Couldn't authenticate: %@";
 
-/* DashConnect token purchase: the wallet has no local contract row, so the payload's raw quantity cannot be scaled */
+/* DashConnect token purchase: the token's decimals could not be read from its contract, so the payload's raw quantity cannot be scaled */
 "Tokens (base units)" = "Tokens (base units)";
 
 /* Send: the contact step's back control */

@@ -68,10 +68,22 @@ struct ApproveTokenPurchaseSheet: View {
                             value: DashConnectIdentifierFormatting.truncateMiddle(request.tokenId.toBase58String())
                         )
                         DashConnectDetailRow(
-                            label: NSLocalizedString("Total price", comment: "DashConnect token purchase"),
+                            label: NSLocalizedString("Maximum price", comment: "DashConnect token purchase"),
                             value: request.totalPriceDashText
                         )
                     }
+
+                    // The figure above is a ceiling, not a quote: it is passed
+                    // to `tokenPurchase` as `expectedTotalCost`, and Platform
+                    // settles at the price in force when the purchase lands,
+                    // which can be lower. Saying "Total price" would promise an
+                    // exactness the protocol does not give.
+                    Text(NSLocalizedString(
+                        "You pay up to this amount. The final price may be lower.",
+                        comment: "DashConnect token purchase"))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 20)
 
                     detailBox {
                         if let walletUsername = request.walletUsername {
@@ -154,7 +166,10 @@ struct ApproveTokenPurchaseSheet: View {
         if request.tokenQuantity.isBaseUnits {
             return NSLocalizedString("Tokens (base units)", comment: "DashConnect token purchase")
         }
-        if let name = request.tokenName, !name.isEmpty {
+        // Trimmed first: a name of only whitespace is not a label, and using
+        // it verbatim leaves the quantity row visually unlabelled.
+        if let name = request.tokenName?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !name.isEmpty {
             return name
         }
         return NSLocalizedString("Tokens", comment: "DashConnect token purchase")

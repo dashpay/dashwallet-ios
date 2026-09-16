@@ -632,9 +632,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// Builds the user-facing approval request for a parsed token purchase,
-    /// refusing purchases that name someone else's identity. Local data only:
-    /// resolving richer metadata (token name, DPNS username) would add
-    /// network calls the purchase itself does not need.
+    /// refusing purchases that name someone else's identity. Reads the token's
+    /// denomination from the contract over the network (see
+    /// `tokenDenomination`), because the quantity on the sheet is meaningless
+    /// without it; no other metadata is resolved.
     private func makeTokenPurchaseRequest(
         _ purchase: DashConnectTokenPurchaseTransition,
         context: Context
@@ -663,11 +664,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             throw DashConnectPlatformError.tokenPurchaseTokenIdMismatch
         }
 
-        // Denomination from the wallet's own contract row, when it holds one.
-        // Nothing else on this path resolves it: the parser copies the count
-        // through and `tokenPurchase(amount:)` spends base units, so without
-        // this the sheet would name a quantity that can be wrong by orders of
-        // magnitude.
+        // Denomination read from the token's contract on Platform, not from
+        // any local row. Nothing else on this path resolves it: the parser
+        // copies the count through and `tokenPurchase(amount:)` spends base
+        // units, so without this the sheet would name a quantity that can be
+        // wrong by orders of magnitude.
         let denomination = await Self.tokenDenomination(
             sdk: context.sdk,
             contractId: purchase.dataContractId,
@@ -701,12 +702,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// no token at that position; the sheet then shows base units and says so,
     /// rather than implying a denominated quantity nobody verified.
     ///
-    /// TODO(dashconnect-denomination-offmain): this fetch blocks the main
-    /// actor. `SDK.dataContractGet` is declared in the SDK's `@MainActor`
-    /// extension and its FFI entry point runs `runtime.block_on`, so awaiting
-    /// it here hops ONTO the main actor and holds it until DAPI answers —
-    /// `Task.detached` around it would hop straight back. Moving it off needs
-    /// a `nonisolated` worker-backed contract query in SwiftDashSDK.
+    /// Fetched through `dataContractGetOffMain`, not `dataContractGet`: the
+    /// latter is declared in the SDK's `@MainActor` extension and is `async`
+    /// without ever suspending, over an FFI entry point that runs
+    /// `runtime.block_on` — so awaiting it would hold the main actor for the
+    /// whole DAPI round trip and freeze the sheet. The off-main query runs the
+    /// native read on the SDK's own worker queue instead.
     private static func tokenDenomination(
         sdk: SDK,
         contractId: Data,
@@ -714,7 +715,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     ) async -> (decimals: Int, name: String)? {
         let id = contractId.toBase58String()
         do {
-            let contract = try await sdk.dataContractGet(id: id)
+            let contract = try await sdk.dataContractGetOffMain(id: id)
             guard let tokens = contract["tokens"] as? [String: Any],
                   let tokenDict = tokens[String(position)] as? [String: Any] else {
                 logger.info("🔗 DASHCONNECT :: token purchase: contract \(id, privacy: .public) has no token at position \(position, privacy: .public); quantity shown as base units")
