@@ -113,6 +113,20 @@ enum NavigationBarElement: String {
             .contentShape(Rectangle())
         }
         .buttonStyle(NavigationBarButtonStyle())
+        .accessibilityLabel(Text(accessibilityLabelText))
+    }
+
+    var accessibilityLabelText: String {
+        switch self {
+        case .back:
+            return NSLocalizedString("Back", comment: "Accessibility label for the navigation bar back button")
+        case .close:
+            return NSLocalizedString("Close", comment: "Accessibility label for the navigation bar close button")
+        case .plus:
+            return NSLocalizedString("Add", comment: "Accessibility label for the navigation bar add button")
+        case .info:
+            return NSLocalizedString("Info", comment: "Accessibility label for the navigation bar info button")
+        }
     }
 }
 
@@ -169,6 +183,7 @@ struct NavBarBack: View {
                        .foregroundColor(.dash.primaryText)
                }
            }
+           .accessibilityLabel(Text(NavigationBarElement.back.accessibilityLabelText))
            .padding(.leading, 20)
 
            Spacer()
@@ -225,6 +240,7 @@ struct NavBarBackPlus: View {
                        .foregroundColor(.dash.primaryText)
                }
            }
+           .accessibilityLabel(Text(NavigationBarElement.back.accessibilityLabelText))
            .padding(.leading, 20)
 
            Spacer()
@@ -246,6 +262,7 @@ struct NavBarBackPlus: View {
                        .foregroundColor(.dash.primaryText)
                }
            }
+           .accessibilityLabel(Text(NavigationBarElement.plus.accessibilityLabelText))
            .padding(.trailing, 20)
        }
        .frame(height: 64)
@@ -300,6 +317,7 @@ struct NavBarClose: View {
                        .foregroundColor(.dash.primaryText)
                }
            }
+           .accessibilityLabel(Text(NavigationBarElement.close.accessibilityLabelText))
            .padding(.trailing, 20)
        }
        .frame(height: 64)
