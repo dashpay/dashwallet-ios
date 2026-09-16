@@ -144,7 +144,7 @@ enum RecoveryPhraseInventory {
                 "Skipping \(result.skippedWalletIds.count, privacy: .public) unreadable recovery-phrase entry/entries ids=\(labels, privacy: .public)")
         }
 
-        let entries = result.entries
+        let entries = selectableEntries(result.entries)
         let displayNames = Dictionary(uniqueKeysWithValues: entries.map {
             ($0.walletId, WalletsViewModel.displayName(for: $0.walletId))
         })
@@ -185,6 +185,28 @@ enum RecoveryPhraseInventory {
             skippedWalletIds: skippedWalletIds)
     }
 
+    /// The entries this build can actually act on.
+    ///
+    /// Enumeration classifies every Keychain entry by derived wallet id,
+    /// independent of what the build can select, so a devnet-scoped entry
+    /// resolves to `.devnet` even where devnet does not exist. Left unfiltered,
+    /// a shipping build would label a picker row `Mainnet, Devnet`, and a
+    /// devnet-only phrase would get a revealable row of its own — material
+    /// `networkKind`, `switchToNetwork(_:)` and `hasWallet` deliberately hide
+    /// everywhere else. The precondition is the one the rest of the devnet work
+    /// already treats as real: an internal build replaced in place by a
+    /// shipping one.
+    ///
+    /// `devnetAvailable` is injected so the rule is testable in both build
+    /// shapes.
+    static func selectableEntries(
+        _ entries: [RecoveryPhraseInventoryEntry],
+        devnetAvailable: Bool = WalletEnvironment.isDevnetAvailable
+    ) -> [RecoveryPhraseInventoryEntry] {
+        guard !devnetAvailable else { return entries }
+        return entries.filter { $0.network != .devnet }
+    }
+
     static func route(for descriptors: [RecoveryPhraseWalletDescriptor]) -> RecoveryPhraseRoute {
         switch descriptors.count {
         case 0: return .unavailable
@@ -196,6 +218,12 @@ enum RecoveryPhraseInventory {
     static func mnemonic(for walletId: Data) throws -> MnemonicMaterial {
         let mnemonic = try SwiftDashSDKHost.strictlyPersistedMnemonic(for: walletId)
         let entry = try classify((walletId: walletId, mnemonic: mnemonic))
+        // The reveal is reachable by wallet id as well as through a descriptor
+        // (`RecoveryPhraseFlowModel.loadWallet`), so the same rule has to hold
+        // here — filtering the inventory alone would leave that entry point open.
+        guard !selectableEntries([entry]).isEmpty else {
+            throw RecoveryPhraseInventoryError.unsupportedWalletNetwork
+        }
         return MnemonicMaterial(
             mnemonic: entry.normalizedMnemonic,
             canonicalWalletId: entry.canonicalWalletId,

@@ -432,19 +432,38 @@ final class SwiftDashSDKWalletWiper: NSObject {
         case manager(PlatformWalletManager, isTemporary: Bool)
         case offline(PlatformWalletPersistenceHandler)
 
-        /// Wallet ids the backend itself knows about. Only a live manager
-        /// has a loaded set; the offline path relies entirely on the
-        /// Keychain inventory the caller passes in.
+        /// Wallet ids the backend itself knows about.
+        ///
+        /// The offline path reads them from the store it is bound to —
+        /// `restorableWalletIds()`, the same network-scoped fetch the SDK's
+        /// own loader uses — rather than reporting none. A devnet scope's rows
+        /// have to be discoverable WITHOUT the shared mnemonic: the phrase is
+        /// what the wipe is removing, so a retry after a partial wipe, or a
+        /// scope whose ids were never in the Keychain inventory, would
+        /// otherwise present as "nothing to delete" and let the wipe report
+        /// success over records that are still there.
         @MainActor
         var loadedWalletIds: Set<Data> {
             switch self {
             case .manager(let manager, _): return Set(manager.wallets.keys)
-            case .offline: return []
+            case .offline(let handler): return Set(handler.restorableWalletIds())
             }
         }
 
+        /// Remove one wallet's material through this backend.
+        ///
+        /// `preservingSharedSecrets` keeps the Keychain mnemonic and metadata
+        /// even when this store has no row left for the id. The devnet-scoped
+        /// mnemonic is shared by every devnet, while
+        /// `walletRowCountAcrossNetworks` counts rows in ONE ModelContainer —
+        /// so a sweep of devnet A cannot see devnet B's rows and would drop
+        /// the very phrase that names them. Scopes swept ahead of the
+        /// authoritative leg pass true; that leg then removes the shared
+        /// material once no other scope still holds rows. Only the offline
+        /// path honours it, which is sufficient: a manager backend is only
+        /// ever the authoritative leg, never a swept scope.
         @MainActor
-        func delete(_ walletId: Data) throws {
+        func delete(_ walletId: Data, preservingSharedSecrets: Bool = false) throws {
             switch self {
             case .manager(let manager, _):
                 try manager.deleteWallet(walletId: walletId)
@@ -458,6 +477,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 }
                 try KeychainManager.shared.deleteAllIdentityPrivateKeys(forWalletId: walletId)
                 try handler.deleteWalletData(walletId: walletId)
+                guard !preservingSharedSecrets else { return }
                 if try handler.walletRowCountAcrossNetworks(walletId: walletId) == 0 {
                     let storage = WalletStorage()
                     // Metadata first so the mnemonic stays available for a retry.
@@ -518,18 +538,37 @@ final class SwiftDashSDKWalletWiper: NSObject {
         Task { @MainActor in
             let host = SwiftDashSDKHost.shared
             var networks: [Network] = [.mainnet, .testnet]
-            // Devnet joins the wipe only when a devnet-scoped entry exists:
-            // preparing a devnet deletion reaches for the quorum service
-            // first, so paying that is only justified when there is devnet
-            // data to delete. When the service is unreachable the deletion
-            // still happens, through the store-only backend.
-            if !(storedWalletIdsByNetwork[.devnet] ?? []).isEmpty {
+            // Devnet joins the wipe when this device holds devnet material:
+            // either a devnet-scoped Keychain entry, or a persisted devnet
+            // store. The store half is what makes a retry safe — a previous
+            // attempt may already have removed the shared mnemonic, and an
+            // inclusion test reading only the Keychain inventory would then
+            // skip devnet entirely and let the wipe report success over rows
+            // that are still there. Preparing a devnet deletion reaches for
+            // the quorum service first, so it stays gated on there being
+            // something to delete; when that service is unreachable the
+            // deletion still happens, through the store-only backend.
+            let devnetScopes = DevnetConfiguration.persistedDevnetScopes()
+            if !(storedWalletIdsByNetwork[.devnet] ?? []).isEmpty || !devnetScopes.isEmpty {
                 networks.append(.devnet)
             }
             if let current = host.runningNetwork,
                let currentIndex = networks.firstIndex(of: current) {
                 networks.remove(at: currentIndex)
                 networks.append(current)
+            }
+
+            // Other devnet scopes are swept BEFORE the loop that deletes the
+            // configured one, because that loop's devnet leg is what removes
+            // the shared devnet mnemonic — and once the phrase is gone,
+            // nothing can enumerate the wallets whose rows still sit in
+            // another devnet's store. Sweeping first means the mnemonic
+            // outlives every scope that still needs it to be found.
+            if networks.contains(.devnet) {
+                sweepOtherDevnetScopes(
+                    scopes: devnetScopes,
+                    walletIds: storedWalletIdsByNetwork[.devnet] ?? [],
+                    result: result)
             }
 
             for network in networks {
@@ -566,12 +605,6 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 }
             }
 
-            if networks.contains(.devnet) {
-                sweepOtherDevnetScopes(
-                    walletIds: storedWalletIdsByNetwork[.devnet] ?? [],
-                    result: result)
-            }
-
             do {
                 let remaining = try WalletStorage().listWalletIdsWithMnemonic()
                 if !remaining.isEmpty {
@@ -606,26 +639,38 @@ final class SwiftDashSDKWalletWiper: NSObject {
     /// not worth reaching) just to delete local rows.
     @MainActor
     private static func sweepOtherDevnetScopes(
+        scopes: [String],
         walletIds: Set<Data>,
         result: WalletWipeResultAccumulator
     ) {
-        guard !walletIds.isEmpty else { return }
         let current = Network.devnet.persistenceScope
-        for scope in DevnetConfiguration.persistedDevnetScopes() where scope != current {
+        for scope in scopes where scope != current {
             do {
                 let handler = try SwiftDashSDKHost.shared.storeOnlyPersistenceHandler(
                     for: .devnet,
                     scope: scope)
                 let backend = DeletionBackend.offline(handler)
-                for walletId in walletIds.sorted(by: { $0.lexicographicallyPrecedes($1) }) {
+                // The Keychain inventory can be empty here — a retry after the
+                // shared mnemonic was already removed — so the ids this scope's
+                // own store reports are unioned in. A scope's rows are always
+                // deletable from the scope itself.
+                var scopedWalletIds = backend.loadedWalletIds
+                scopedWalletIds.formUnion(walletIds)
+                guard !scopedWalletIds.isEmpty else { continue }
+                for walletId in scopedWalletIds.sorted(by: { $0.lexicographicallyPrecedes($1) }) {
                     do {
-                        try deleteWalletFromSDK(walletId, deleteWallet: { try backend.delete($0) })
+                        // The shared devnet mnemonic is left alone: it still
+                        // names rows in the scopes not yet swept, and the
+                        // configured scope's own deletion removes it last.
+                        try deleteWalletFromSDK(walletId, deleteWallet: {
+                            try backend.delete($0, preservingSharedSecrets: true)
+                        })
                     } catch {
                         result.recordFailure()
                         logDeletionFailure(error, walletId: walletId, network: .devnet)
                     }
                 }
-                logger.info("swept devnet scope \(scope, privacy: .public) for \(walletIds.count, privacy: .public) wallet(s)")
+                logger.info("swept devnet scope \(scope, privacy: .public) for \(scopedWalletIds.count, privacy: .public) wallet(s)")
             } catch {
                 result.recordFailure()
                 logger.error(
@@ -658,6 +703,14 @@ final class SwiftDashSDKWalletWiper: NSObject {
         guard Mnemonic.validate(mnemonic) else {
             throw SwiftDashSDKWalletDeletionError.invalidMnemonic
         }
+        // Same reason the full wipe invalidates: removing one wallet changes
+        // which networks still hold material, and the app-level gate caches
+        // that answer for the process. Without this, removing the only
+        // selectable wallet on an install that also carries devnet material
+        // leaves `hasWallet` reporting true until the next launch — the
+        // `walletNotFound` dead end the gate exists to prevent. On `defer`
+        // because a partial deletion changes the answer too.
+        defer { WalletEnvironment.invalidateWalletMaterialCache() }
 
         let walletIds = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(
             for: mnemonic)
@@ -688,6 +741,10 @@ final class SwiftDashSDKWalletWiper: NSObject {
             let network: Network
             let walletId: Data
             let backend: DeletionBackend
+            /// True for the extra devnet scopes swept ahead of the configured
+            /// one: they must not remove the shared devnet mnemonic, which
+            /// still names the rows the authoritative leg is about to delete.
+            var preservesSharedSecrets: Bool = false
         }
 
         var deletions: [PendingDeletion] = []
@@ -722,7 +779,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
                         deletions.append(PendingDeletion(
                             network: .devnet,
                             walletId: walletId,
-                            backend: .offline(handler)))
+                            backend: .offline(handler),
+                            preservesSharedSecrets: true))
                     }
                 }
                 let backend = try await deletionBackend(for: network)
@@ -743,7 +801,9 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 try deleteWalletFromSDK(
                     deletion.walletId,
                     deleteWallet: { walletId in
-                        try deletion.backend.delete(walletId)
+                        try deletion.backend.delete(
+                            walletId,
+                            preservingSharedSecrets: deletion.preservesSharedSecrets)
                     })
 
                 let kind = WalletEnvironment.networkKind(for: deletion.network)

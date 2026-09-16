@@ -5,7 +5,7 @@
 
 import Foundation
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 final class TransactionDirectionTests: XCTestCase {
     func testFFIDirectionMapping() {
@@ -122,9 +122,12 @@ final class TransactionDirectionTests: XCTestCase {
             outputs: [output],
             inputAddresses: [],
             timestamp: wrapped.date,
+            blockHeight: 1,
+            minedAt: wrapped.date,
             ownOutputsAmount: 0,
             ownOutputAddresses: [],
             isChainAccepted: true,
+            context: 2,
             wrapped: wrapped)
     }
 

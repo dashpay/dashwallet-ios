@@ -558,8 +558,19 @@ jobs:
           EFFECTIVE_VERSION: ${{ steps.release-version.outputs.effective_version }}
           BUILD_NUMBER: ${{ steps.release-build.outputs.build_number }}
           EXPOSE_DEVNET: ${{ inputs.expose_devnet }}
+          RELEASE_CHANNEL: ${{ inputs.release_channel }}
         run: |
           set -euo pipefail
+
+          # A devnet build is for the team only. Only `internal-only` marks the
+          # upload TestFlight Internal Only (see the export-options step), so
+          # every other channel — `internal` included — leaves a devnet build
+          # that can later be handed to external testers or promoted to the
+          # App Store. Refuse before archiving.
+          if [[ "$EXPOSE_DEVNET" == "true" && "$RELEASE_CHANNEL" != "internal-only" ]]; then
+            echo "::error::expose_devnet requires release_channel 'internal-only' (got '$RELEASE_CHANNEL')."
+            exit 1
+          fi
 
           # Devnet is compiled in only when this run explicitly asks for it.
           # The Release configuration defaults the setting to empty, so an

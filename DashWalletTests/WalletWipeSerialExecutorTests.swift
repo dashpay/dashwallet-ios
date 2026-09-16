@@ -208,6 +208,25 @@ final class StoredWalletInventoryTests: XCTestCase {
 
     // MARK: - Devnet configuration
 
+    /// The wipe enumerates devnet stores by directory name, and the bare
+    /// `devnet` scope counts: naming stores after the configured devnet is
+    /// newer than devnet support, so a device that used devnet before it — or
+    /// with no name configured — keeps its wallet and identity rows there. A
+    /// wipe that skipped that scope would remove the shared mnemonic while
+    /// those rows survive, leaving records nothing can enumerate afterwards.
+    func testDevnetScopeDirectoriesIncludeTheBareScope() {
+        XCTAssertTrue(DevnetConfiguration.isDevnetScopeDirectory("devnet"))
+        XCTAssertTrue(DevnetConfiguration.isDevnetScopeDirectory("devnet-moutai"))
+    }
+
+    /// Mainnet and testnet stores sit in the same parent directory and must
+    /// never be opened — or deleted — as devnet scopes.
+    func testDevnetScopeDirectoriesExcludeOtherNetworks() {
+        XCTAssertFalse(DevnetConfiguration.isDevnetScopeDirectory("mainnet"))
+        XCTAssertFalse(DevnetConfiguration.isDevnetScopeDirectory("testnet"))
+        XCTAssertFalse(DevnetConfiguration.isDevnetScopeDirectory("devnetmoutai"))
+    }
+
     func testDevnetNameRejectsWhitespaceAndSlash() {
         // Mirrors `platform_wallet_manager_spv_start`, which rejects both —
         // after the runtime has already been torn down, hence the pre-check.
@@ -551,6 +570,91 @@ final class RecoveryPhraseRoutingTests: XCTestCase {
             currentNetwork: .mainnet,
             activeWalletIds: [:],
             displayNames: [:]))
+    }
+
+    /// A build without `DASH_DEVNET` must not surface devnet material here.
+    /// Enumeration classifies by derived wallet id, independent of what the
+    /// build can select, so a mirrored devnet entry would otherwise label the
+    /// row `Mainnet, Devnet`.
+    func testDevnetEntriesAreDroppedWhenTheBuildCannotSelectDevnet() throws {
+        let mainnetId = Data(repeating: 0x31, count: 32)
+        let devnetId = Data(repeating: 0x32, count: 32)
+        let entries = [
+            entry(walletId: mainnetId, canonicalId: mainnetId, mnemonic: seedA, network: .mainnet),
+            entry(walletId: devnetId, canonicalId: mainnetId, mnemonic: seedA, network: .devnet),
+        ]
+
+        let descriptors = try RecoveryPhraseInventory.makeDescriptors(
+            entries: RecoveryPhraseInventory.selectableEntries(entries, devnetAvailable: false),
+            currentNetwork: .mainnet,
+            activeWalletIds: [:],
+            displayNames: [mainnetId: "Primary"])
+
+        XCTAssertEqual(descriptors.count, 1)
+        XCTAssertEqual(descriptors[0].networks, [.mainnet])
+        XCTAssertEqual(descriptors[0].sourceWalletId, mainnetId)
+    }
+
+    /// A devnet-only phrase gets a descriptor of its own — a revealable row
+    /// for material `hasWallet` deliberately hides. It must not reach the
+    /// chooser in a shipping build.
+    func testDevnetOnlyPhraseLeavesTheChooserWhenDevnetIsUnavailable() throws {
+        let mainnetId = Data(repeating: 0x41, count: 32)
+        let devnetId = Data(repeating: 0x42, count: 32)
+        let entries = [
+            entry(walletId: mainnetId, canonicalId: mainnetId, mnemonic: seedA, network: .mainnet),
+            entry(walletId: devnetId, canonicalId: devnetId, mnemonic: seedB, network: .devnet),
+        ]
+
+        let descriptors = try RecoveryPhraseInventory.makeDescriptors(
+            entries: RecoveryPhraseInventory.selectableEntries(entries, devnetAvailable: false),
+            currentNetwork: .mainnet,
+            activeWalletIds: [:],
+            displayNames: [mainnetId: "Primary", devnetId: "Devnet wallet"])
+
+        guard case .direct(let descriptor) = RecoveryPhraseInventory.route(for: descriptors) else {
+            return XCTFail("Expected only the selectable wallet to remain")
+        }
+        XCTAssertEqual(descriptor.sourceWalletId, mainnetId)
+    }
+
+    /// An inventory that is entirely devnet reads as "no recovery phrase"
+    /// rather than offering a phrase the build cannot act on.
+    func testAnEntirelyDevnetInventoryIsUnavailableWhenDevnetIsUnavailable() throws {
+        let devnetId = Data(repeating: 0x61, count: 32)
+        let descriptors = try RecoveryPhraseInventory.makeDescriptors(
+            entries: RecoveryPhraseInventory.selectableEntries(
+                [entry(walletId: devnetId, canonicalId: devnetId, mnemonic: seedA, network: .devnet)],
+                devnetAvailable: false),
+            currentNetwork: .mainnet,
+            activeWalletIds: [:],
+            displayNames: [:])
+
+        XCTAssertTrue(descriptors.isEmpty)
+        XCTAssertEqual(RecoveryPhraseInventory.route(for: descriptors), .unavailable)
+    }
+
+    /// The gate is conditional, not a removal: an internal build still lists
+    /// every network it can select.
+    func testDevnetEntriesSurviveWhenTheBuildOffersDevnet() throws {
+        let mainnetId = Data(repeating: 0x51, count: 32)
+        let devnetId = Data(repeating: 0x52, count: 32)
+        let entries = [
+            entry(walletId: mainnetId, canonicalId: mainnetId, mnemonic: seedA, network: .mainnet),
+            entry(walletId: devnetId, canonicalId: mainnetId, mnemonic: seedA, network: .devnet),
+        ]
+
+        let selectable = RecoveryPhraseInventory.selectableEntries(entries, devnetAvailable: true)
+        XCTAssertEqual(selectable.count, 2)
+
+        let descriptors = try RecoveryPhraseInventory.makeDescriptors(
+            entries: selectable,
+            currentNetwork: .mainnet,
+            activeWalletIds: [:],
+            displayNames: [mainnetId: "Primary"])
+
+        XCTAssertEqual(descriptors.count, 1)
+        XCTAssertEqual(descriptors[0].networks, [.mainnet, .devnet])
     }
 
     private func entry(

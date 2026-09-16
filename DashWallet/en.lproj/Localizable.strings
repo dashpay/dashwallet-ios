@@ -13,6 +13,9 @@
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
+/* DashPay Notifications: established contact, accepting side unknown */
+"%@ is now your contact" = "%@ is now your contact";
+
 /* Maya */
 "%@ address" = "%@ address";
 
@@ -209,11 +212,26 @@
 /* Devnet */
 "Devnet is not configured. Enter a Quorum URL and Devnet Name in Settings → Devnet Settings first." = "Devnet is not configured. Enter a Quorum URL and Devnet Name in Settings → Devnet Settings first.";
 
+/* Inactivity reminder */
+"Don't remind me again" = "Don't remind me again";
+
+/* Inactivity reminder */
+"It's been a while since you opened Dash Wallet." = "It's been a while since you opened Dash Wallet.";
+
+/* DashPay Notifications */
+"No notifications match your search" = "No notifications match your search";
+
+/* Notifications */
+"Open Settings" = "Open Settings";
+
 /* Devnet */
 "Quorum URL" = "Quorum URL";
 
 /* Devnet */
 "Quorum URL, name and contract ids" = "Quorum URL, name and contract ids";
+
+/* Inactivity reminder */
+"Remind me later" = "Remind me later";
 
 /* Devnet */
 "Saved, but Devnet needs both a Quorum URL and a Devnet Name — syncing will fail until both are set." = "Saved, but Devnet needs both a Quorum URL and a Devnet Name — syncing will fail until both are set.";
@@ -226,6 +244,9 @@
 
 /* Devnet */
 "Saved. The values apply when you switch to Devnet." = "Saved. The values apply when you switch to Devnet.";
+
+/* DashPay Notifications */
+"Search notifications" = "Search notifications";
 
 /* DashConnect */
 "The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings." = "The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings.";
@@ -245,6 +266,9 @@
 /* DashConnect token purchase */
 "The purchase was submitted but its result is unknown: %@. Check this identity's tokens and credit balance before buying again — approving a second time would pay twice." = "The purchase was submitted but its result is unknown: %@. Check this identity's tokens and credit balance before buying again — approving a second time would pay twice.";
 
+/* Dash DEX */
+"The status of your %@ swap could not be confirmed" = "The status of your %@ swap could not be confirmed";
+
 /* DashConnect token purchase */
 "Token ID" = "Token ID";
 
@@ -256,6 +280,18 @@
 
 /* DashConnect token purchase */
 "Total price" = "Total price";
+
+/* Notifications */
+"Turned off in iOS Settings" = "Turned off in iOS Settings";
+
+/* Dash DEX */
+"Your %@ swap failed" = "Your %@ swap failed";
+
+/* Dash DEX */
+"Your %@ swap is complete" = "Your %@ swap is complete";
+
+/* Dash DEX */
+"Your %@ swap was refunded" = "Your %@ swap was refunded";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" is not a recovery phrase word";
