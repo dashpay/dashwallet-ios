@@ -45,6 +45,38 @@ enum CoreSPVRestartOperation {
     }
 }
 
+/// A devnet start's validated configuration and the peers discovered for it,
+/// captured BEFORE the SDK is built.
+///
+/// The managed runtime path builds the SDK itself (`SwiftDashSDKHost.start`)
+/// and asks this coordinator to start SPV only afterwards, so a preflight
+/// living solely in `performStart` ran after the very construction it exists
+/// to front-run: `SDK.init` performs its own `/masternodes` fetch and refuses
+/// to build without it, turning an unreachable quorum URL into a generic
+/// initialization failure. The runtime therefore preflights, and this value
+/// carries the result forward so a full devnet start still performs one
+/// app-side discovery fetch.
+///
+/// Scope and quorum URL travel with the peers because devnet settings can
+/// change between a preflight and the start it belongs to: peers discovered
+/// for devnet A must never configure a client for devnet B.
+struct DevnetStartPreflight: Equatable {
+    /// `Network.devnet.persistenceScope` at discovery time — the configured
+    /// devnet's identity, not merely `.devnet`.
+    let scope: String
+    let quorumURL: String
+    let peers: [String]
+
+    /// The discovered peers, or nil when this preflight was made for another
+    /// devnet configuration and must be discarded rather than reused.
+    func peers(forScope scope: String, quorumURL: String) -> [String]? {
+        guard self.scope == scope, self.quorumURL == quorumURL, !peers.isEmpty else {
+            return nil
+        }
+        return peers
+    }
+}
+
 // MARK: - Local stand-ins for SDK surface that consumers still expect
 
 /// Local replacement for the SDK's removed `SPVSyncState`. Shape matches
@@ -128,6 +160,12 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     // MARK: - Internal state
 
     private var runningNetwork: Network?
+
+    /// Devnet peers discovered by `preflightDevnetStartIfNeeded(for:)`, held
+    /// for the `performStart(for:)` that follows it. Nil when no preflight has
+    /// run for the pending start, which is the Core-only restart's case.
+    private var devnetPreflight: DevnetStartPreflight?
+
     private var progressCancellable: AnyCancellable?
     private var peersCancellable: AnyCancellable?
     private var balanceRefreshCancellable: AnyCancellable?
@@ -257,6 +295,62 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         (try? manager.isSpvRunning()) == true && runningNetwork == network
     }
 
+    /// Validate the devnet configuration and discover SPV peers BEFORE the
+    /// caller builds the SDK.
+    ///
+    /// `performStart(for:)` does this too, but the managed runtime path calls
+    /// `SwiftDashSDKHost.start` first and `startAsync` only after it — so on
+    /// that path the SDK build, which fetches the same `/masternodes`
+    /// endpoint and cannot construct a devnet SDK without it, failed before
+    /// the preflight could report `devnetNotConfigured` or
+    /// `devnetPeerDiscoveryFailed`. The runtime calls this ahead of
+    /// `host.start`; the peers are kept for the start that follows, so the app
+    /// still performs exactly one discovery fetch per start.
+    ///
+    /// A no-op off devnet and when SPV already runs on this network — the same
+    /// elision the start paths make, so a repeated start never pays a
+    /// multi-second fetch to reach a guard that returns immediately.
+    @MainActor
+    func preflightDevnetStartIfNeeded(for network: Network) async throws {
+        guard network == .devnet else { return }
+        if let manager = SwiftDashSDKHost.shared.manager,
+           isAlreadyRunning(manager: manager, network: network) {
+            return
+        }
+        guard DevnetConfiguration.isConfigured,
+              let quorumURL = DevnetConfiguration.quorumURL else {
+            throw StartError.devnetNotConfigured
+        }
+
+        let scope = Network.devnet.persistenceScope
+        if devnetPreflight?.peers(forScope: scope, quorumURL: quorumURL) != nil {
+            return
+        }
+
+        // `discoverActiveMasternodes` blocks on a semaphore for up to ~6 s —
+        // parked on a dedicated GCD queue, never on the MainActor or the Swift
+        // cooperative pool.
+        let discovered = await Self.discoverDevnetMasternodes(quorumURL: quorumURL)
+
+        // Re-entry guard after the multi-second suspension, as at every other
+        // devnet discovery site: a network switch meanwhile makes this
+        // preflight belong to an abandoned start.
+        guard WalletEnvironment.network == network else {
+            Self.logger.info("🛰️ SPVCOORD :: devnet preflight superseded during peer discovery")
+            throw StartError.superseded
+        }
+        guard let discovered, !discovered.isEmpty else {
+            throw StartError.devnetPeerDiscoveryFailed(quorumURL: quorumURL)
+        }
+
+        devnetPreflight = DevnetStartPreflight(
+            scope: scope,
+            quorumURL: quorumURL,
+            peers: discovered.map(\.spvPeer))
+        Self.logger.info(
+            "🛰️ SPVCOORD :: devnet preflight discovered \(discovered.count, privacy: .public) peer(s) for \(scope, privacy: .public)")
+    }
+
     @MainActor
     private func performStart(for network: Network) async -> Result<Void, Error> {
         // Checked before `host.start` builds the SDK: an unconfigured devnet
@@ -292,24 +386,36 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 return .failure(StartError.devnetNotConfigured)
             }
 
-            // `discoverActiveMasternodes` blocks on a semaphore for up to
-            // ~6 s — parked on a dedicated GCD queue, never on the MainActor
-            // or the Swift cooperative pool.
-            let discovered = await Self.discoverDevnetMasternodes(quorumURL: quorumURL)
+            // Peers the runtime's preflight already discovered, for exactly
+            // this devnet and quorum URL. Consumed once: a preflight made for
+            // another devnet (settings changed in between) reports nil and is
+            // dropped in favour of a fresh discovery below.
+            let scope = Network.devnet.persistenceScope
+            let preflighted = devnetPreflight?.peers(forScope: scope, quorumURL: quorumURL)
+            devnetPreflight = nil
 
-            // Re-entry guard after the multi-second suspension, identical
-            // to the shared start path's: if the user switched networks
-            // meanwhile, starting the abandoned devnet client would revive
-            // sync the lifecycle queue is about to tear down.
-            guard WalletEnvironment.network == network else {
-                Self.logger.info("🛰️ SPVCOORD :: devnet start superseded during peer discovery")
-                return .failure(StartError.superseded)
-            }
+            if let preflighted {
+                discoveredDevnetPeers = preflighted
+            } else {
+                // `discoverActiveMasternodes` blocks on a semaphore for up to
+                // ~6 s — parked on a dedicated GCD queue, never on the MainActor
+                // or the Swift cooperative pool.
+                let discovered = await Self.discoverDevnetMasternodes(quorumURL: quorumURL)
 
-            guard let discovered, !discovered.isEmpty else {
-                return .failure(StartError.devnetPeerDiscoveryFailed(quorumURL: quorumURL))
+                // Re-entry guard after the multi-second suspension, identical
+                // to the shared start path's: if the user switched networks
+                // meanwhile, starting the abandoned devnet client would revive
+                // sync the lifecycle queue is about to tear down.
+                guard WalletEnvironment.network == network else {
+                    Self.logger.info("🛰️ SPVCOORD :: devnet start superseded during peer discovery")
+                    return .failure(StartError.superseded)
+                }
+
+                guard let discovered, !discovered.isEmpty else {
+                    return .failure(StartError.devnetPeerDiscoveryFailed(quorumURL: quorumURL))
+                }
+                discoveredDevnetPeers = discovered.map(\.spvPeer)
             }
-            discoveredDevnetPeers = discovered.map(\.spvPeer)
         }
 
         let manager: PlatformWalletManager

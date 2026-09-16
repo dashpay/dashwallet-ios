@@ -27,13 +27,34 @@ import CryptoKit
 enum PaymentNetwork {
     case mainnet
     case testnet
+    /// A devnet. Kept distinct from `.testnet` even though the two share
+    /// address version bytes: the token is also what BIP70's `details.network`
+    /// check compares against, and a request that declares `"test"` names the
+    /// public testnet. A wallet running on a devnet must not accept it — the
+    /// merchant is on another chain and would never see the payment. The
+    /// version bytes below fold devnet back onto testnet's, so address and
+    /// script handling are unchanged; only equality separates them.
+    case devnet
 }
 
 extension PaymentNetwork {
     /// P2PKH / pubkey-hash address version byte (`DASH_PUBKEY_ADDRESS{,_TEST}`).
-    var pubkeyHashVersion: UInt8 { self == .mainnet ? 76 : 140 }
+    /// Devnet shares testnet's.
+    var pubkeyHashVersion: UInt8 {
+        switch self {
+        case .mainnet: return 76
+        case .testnet, .devnet: return 140
+        }
+    }
+
     /// P2SH / script-hash address version byte (`DASH_SCRIPT_ADDRESS{,_TEST}`).
-    var scriptHashVersion: UInt8 { self == .mainnet ? 16 : 19 }
+    /// Devnet shares testnet's.
+    var scriptHashVersion: UInt8 {
+        switch self {
+        case .mainnet: return 16
+        case .testnet, .devnet: return 19
+        }
+    }
 }
 
 enum ScriptAddressCodec {

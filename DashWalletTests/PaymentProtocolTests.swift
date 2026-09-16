@@ -258,7 +258,35 @@ final class PaymentProtocolTests: XCTestCase {
     private var p2shScript: Data { Data([0xa9, 0x14]) + Self.hash160 + Data([0x87]) }
 
     private func sdkNetwork(_ network: PaymentNetwork) -> SwiftDashSDK.Network {
-        network == .mainnet ? .mainnet : .testnet
+        switch network {
+        case .mainnet: return .mainnet
+        // The SDK validates devnet addresses with testnet's version bytes.
+        case .testnet, .devnet: return .testnet
+        }
+    }
+
+    /// Devnet is a distinct payment network but not a distinct address
+    /// format. The codec must keep producing testnet's bytes for it, or every
+    /// devnet address the app shows and parses changes shape.
+    func testDevnetSharesTestnetAddressVersionBytes() {
+        for script in [p2pkhScript, p2shScript] {
+            XCTAssertEqual(ScriptAddressCodec.address(forScript: script, network: .devnet),
+                           ScriptAddressCodec.address(forScript: script, network: .testnet))
+        }
+        XCTAssertEqual(PaymentNetwork.devnet.pubkeyHashVersion,
+                       PaymentNetwork.testnet.pubkeyHashVersion)
+        XCTAssertEqual(PaymentNetwork.devnet.scriptHashVersion,
+                       PaymentNetwork.testnet.scriptHashVersion)
+    }
+
+    /// BIP70 has no devnet token, so no declared network string may resolve to
+    /// `.devnet`. That is precisely what makes the service's equality check
+    /// reject a testnet request while the wallet runs on a devnet.
+    func testDeclaredNetworkStringsNeverResolveToDevnet() {
+        XCTAssertEqual(BIP70PaymentService.paymentNetwork(fromString: "test"), .testnet)
+        XCTAssertEqual(BIP70PaymentService.paymentNetwork(fromString: "main"), .mainnet)
+        XCTAssertNil(BIP70PaymentService.paymentNetwork(fromString: "devnet"))
+        XCTAssertNil(BIP70PaymentService.paymentNetwork(fromString: nil))
     }
 
     func testFixtureScriptDecodesToKnownTestnetAddress() throws {
@@ -586,6 +614,38 @@ final class BIP70PaymentServiceTests: XCTestCase {
         let w = FakeWallet()
         _ = try await service(FakeTransport(unsigned()), w).prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
         XCTAssertTrue(w.calls.isEmpty)
+    }
+
+    /// A wallet running on a devnet must refuse a request that declares the
+    /// public testnet. Devnet and testnet share address version bytes, so
+    /// nothing downstream would notice: the transaction would be signed and
+    /// broadcast on the devnet while the merchant waits on testnet.
+    func testPrepareRejectsTestnetRequestWhileOnDevnet() async {
+        let w = FakeWallet()
+        let svc = service(FakeTransport(unsigned(network: "test")), w)
+        await assertThrowsBIP70(
+            try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .devnet),
+            .networkMismatch(requested: "test"))
+        XCTAssertTrue(w.calls.isEmpty)
+    }
+
+    /// And a mainnet request, for the same reason.
+    func testPrepareRejectsMainnetRequestWhileOnDevnet() async {
+        let svc = service(FakeTransport(unsigned(network: "main")), FakeWallet())
+        await assertThrowsBIP70(
+            try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .devnet),
+            .networkMismatch(requested: "main"))
+    }
+
+    /// A request that declares no network is still honoured on devnet: an
+    /// absent field means "no check" on every network, and devnet resolves its
+    /// outputs through testnet's address bytes.
+    func testPrepareAcceptsNetworklessRequestOnDevnet() async throws {
+        let svc = service(FakeTransport(unsigned(network: nil)), FakeWallet())
+        let confirmation = try await svc.prepareForConfirmation(
+            from: url, scheme: "dash", network: .devnet)
+        XCTAssertEqual(confirmation.recipients.map(\.address), [Self.testnetAddress])
+        XCTAssertEqual(confirmation.network, .devnet)
     }
 
     func testConfirmAndSendOrderAndBytes() async throws {

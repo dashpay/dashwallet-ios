@@ -174,6 +174,19 @@ extension DevnetConfiguration {
     /// Discovered from the Platform store directory rather than from a
     /// remembered list: the directories ARE the inventory, so a scope written
     /// by an older build (or by a name since cleared) is still found.
+    /// Whether a Platform store directory name is a devnet persistence scope.
+    ///
+    /// Both shapes count: `devnet-<name>`, and the bare `devnet` scope. Naming
+    /// the store after the configured devnet is newer than devnet support
+    /// itself, so a device that ran devnet before it — or with no name
+    /// configured, which is still a supported unconfigured state — holds its
+    /// wallet and identity rows under the unsuffixed scope. Missing it leaves
+    /// behind exactly the records this enumeration exists to reach.
+    static func isDevnetScopeDirectory(_ name: String) -> Bool {
+        let base = SwiftDashSDK.Network.devnet.networkName
+        return name == base || name.hasPrefix("\(base)-")
+    }
+
     static func persistedDevnetScopes() -> [String] {
         var scopes: Set<String> = []
         if let current = devnetName {
@@ -191,8 +204,7 @@ extension DevnetConfiguration {
                 at: platform,
                 includingPropertiesForKeys: [.isDirectoryKey],
                 options: [.skipsHiddenFiles])) ?? []
-            for url in contents
-                where url.lastPathComponent.hasPrefix("\(SwiftDashSDK.Network.devnet.networkName)-") {
+            for url in contents where isDevnetScopeDirectory(url.lastPathComponent) {
                 scopes.insert(url.lastPathComponent)
             }
         }

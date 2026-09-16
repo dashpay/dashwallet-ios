@@ -265,10 +265,26 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             let restart = restartIfRunningOnDevnet && WalletEnvironment.isDevnet
             if restart {
                 await shared.fullReset(lastError: nil, forWipe: false)
+                // A changed chain is a wallet-context transition, not a
+                // restart of the same one. The identity mirror is keyed by
+                // `Network`, which is `.devnet` for every devnet, so its
+                // cached snapshot cannot tell A from B: after registering a
+                // username on A, a fresh B — where that identity does not
+                // exist — would keep presenting A's identity, username and
+                // registration state. Cleared between the teardown and the
+                // rebuild, so nothing reads A's snapshot while B binds.
+                DWCurrentUserIdentityInfo.shared.resetForWalletRemoval()
             }
             apply()
             if restart {
                 await shared.refresh(trigger: .startIfReady)
+                // Published once the destination wallet is bound (or the start
+                // failed and none is). `refresh` publishes only for the
+                // material/network/rows triggers, and a devnet→devnet restart
+                // is none of them — without this, consumers that cache per
+                // active wallet (contacts, home, the identity banner) keep the
+                // snapshot they loaded on A.
+                shared.publishActiveWalletDidChange(reason: "devnet-chain-changed")
             }
         }.value
     }
@@ -712,6 +728,14 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // transaction list reads. Offline that turned a reachable Platform
             // outage into an empty wallet with no retry.
             do {
+                // Devnet preflight BEFORE the SDK is built. `SDK.init` fetches
+                // the same `/masternodes` endpoint and refuses to construct a
+                // devnet SDK without it, so an unset or unreachable quorum URL
+                // would otherwise fail inside `host.start` and surface as the
+                // generic wallet-import error rather than the actionable
+                // devnet one. The peers it discovers are handed to the SPV
+                // start below instead of being fetched twice.
+                try await SwiftDashSDKSPVCoordinator.shared.preflightDevnetStartIfNeeded(for: network)
                 let (manager, wallet) = try await SwiftDashSDKHost.shared.start(network: network)
                 PlatformAddressSyncCoordinator.shared.prepareLocalPlatformState(
                     manager: manager, walletId: wallet.walletId, network: network)

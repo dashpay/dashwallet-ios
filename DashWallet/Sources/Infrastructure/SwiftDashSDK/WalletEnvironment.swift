@@ -306,28 +306,104 @@ public final class WalletEnvironment: NSObject {
     /// select. Cached: the answer needs `SwiftDashSDKStoredWalletNetworkResolver`
     /// to derive ids from each stored phrase, which is far too expensive for a
     /// gate read on every launch and background-task path. Invalidated by
-    /// `invalidateWalletMaterialCache()` wherever wallet material changes.
+    /// `invalidateWalletMaterialCache()` wherever wallet material changes:
+    /// creation and the key migrator (`SwiftDashSDKWalletRuntime`'s
+    /// `handleWalletMaterialChanged()`), the full wipe, and the per-wallet
+    /// removal the Wallets screen runs (`deleteLogicalWallet`).
+    ///
+    /// Guarded by `walletMaterialCacheLock`: the getter above is `@objc` and,
+    /// as its own doc says, read from background-task paths, so this is not
+    /// confined to one actor. The lock is never held across the derivation
+    /// below — two concurrent misses recompute the same answer, which is
+    /// idempotent, and holding it would serialize a Keychain-heavy read.
+    private static let walletMaterialCacheLock = NSLock()
     private static var cachedSelectableWalletMaterial: Bool?
 
+    /// Durable memo of that verdict, keyed by the Keychain inventory it was
+    /// derived from.
+    ///
+    /// Computing it needs `SwiftDashSDKStoredWalletNetworkResolver`, which
+    /// constructs a SwiftDashSDK wallet for every stored phrase on every
+    /// storable network — native mnemonic derivation and account creation,
+    /// reached synchronously through the `@objc` presence getter the
+    /// root-controller check calls during launch. The in-memory cache above
+    /// does not survive a cold start, so that work was repeated on every
+    /// launch of a build without `DASH_DEVNET`. Persisting the answer next to
+    /// a fingerprint of the ids it was computed from keeps later launches to
+    /// one attributes-only Keychain enumeration; the derivation runs again
+    /// only when the stored set actually changes.
+    struct SelectableWalletMaterialMemo: Equatable {
+        static let valueKey = "DW_SELECTABLE_WALLET_MATERIAL"
+        static let fingerprintKey = "DW_SELECTABLE_WALLET_MATERIAL_FINGERPRINT"
+
+        let fingerprint: String
+        let selectable: Bool
+
+        /// Order-independent identity of a wallet-id inventory. Wallet ids are
+        /// derived from the phrases, so the set changing is exactly when the
+        /// classification can change.
+        static func fingerprint(of walletIds: [Data]) -> String {
+            walletIds
+                .map { $0.map { byte in String(format: "%02x", byte) }.joined() }
+                .sorted()
+                .joined(separator: ",")
+        }
+
+        /// The memoized verdict, or nil when it was computed for a different
+        /// inventory and must not be trusted.
+        func verdict(for fingerprint: String) -> Bool? {
+            self.fingerprint == fingerprint ? selectable : nil
+        }
+
+        static func load(from defaults: UserDefaults) -> SelectableWalletMaterialMemo? {
+            guard let fingerprint = defaults.string(forKey: fingerprintKey),
+                  defaults.object(forKey: valueKey) != nil else { return nil }
+            return SelectableWalletMaterialMemo(
+                fingerprint: fingerprint,
+                selectable: defaults.bool(forKey: valueKey))
+        }
+
+        func save(to defaults: UserDefaults) {
+            defaults.set(fingerprint, forKey: Self.fingerprintKey)
+            defaults.set(selectable, forKey: Self.valueKey)
+        }
+    }
+
     private static var hasSelectableWalletMaterial: Bool {
-        if let cached = cachedSelectableWalletMaterial { return cached }
+        walletMaterialCacheLock.lock()
+        let cached = cachedSelectableWalletMaterial
+        walletMaterialCacheLock.unlock()
+        if let cached { return cached }
         let selectable: Bool
         do {
-            let networks = try SwiftDashSDKHost.persistedSDKWalletNetworks()
-            selectable = networks.contains { $0 != .devnet }
+            let fingerprint = SelectableWalletMaterialMemo.fingerprint(
+                of: try SwiftDashSDKHost.persistedWalletIds())
+            if let memoized = SelectableWalletMaterialMemo
+                .load(from: .standard)?.verdict(for: fingerprint) {
+                selectable = memoized
+            } else {
+                let networks = try SwiftDashSDKHost.persistedSDKWalletNetworks()
+                selectable = networks.contains { $0 != .devnet }
+                SelectableWalletMaterialMemo(fingerprint: fingerprint, selectable: selectable)
+                    .save(to: .standard)
+            }
         } catch {
             // Unknown, not empty: a keychain read failure must not present a
             // funded install as a fresh one.
             selectable = true
         }
+        walletMaterialCacheLock.lock()
         cachedSelectableWalletMaterial = selectable
+        walletMaterialCacheLock.unlock()
         return selectable
     }
 
     /// Drop the cached verdict above. Called wherever wallet material is
     /// created, imported or deleted.
     @objc public static func invalidateWalletMaterialCache() {
+        walletMaterialCacheLock.lock()
         cachedSelectableWalletMaterial = nil
+        walletMaterialCacheLock.unlock()
     }
 
     private override init() {}
