@@ -210,6 +210,30 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     }
 
     #if DASHPAY
+    /// The retry behind the Home row's `.creationFailed` / `.interrupted`
+    /// report: the create form, prefilled, with NO readiness gate in front of
+    /// it.
+    ///
+    /// Deliberately not `showCreateUsername`'s
+    /// `hasPendingRegistrationRecovery()` branch. That predicate reads the SDK
+    /// host (`SwiftDashSDKHost.shared.wallet` / `modelContainer`) and answers
+    /// `false` while the host is still coming up — which is exactly the state a
+    /// relaunched app is in when the row renders `.interrupted` from its
+    /// persisted record. The tap would then fall through to the interstitial,
+    /// and after a Core-funded attempt has spent the registration amount that
+    /// screen disables Continue and hides the transparent escape: the user is
+    /// walled off from the one form that recognizes the existing payment. The
+    /// report is itself the evidence that an attempt already ran, so it decides
+    /// the route and nothing else is consulted.
+    func showCreateUsernameForRecovery(definedUsername: String?) {
+        let trimmed = definedUsername?.trimmingCharacters(in: .whitespacesAndNewlines)
+        pushCreateUsernameForm(
+            invitationURL: nil,
+            definedUsername: (trimmed?.isEmpty ?? true) ? nil : trimmed)
+    }
+    #endif
+
+    #if DASHPAY
     /// Manual redeem entry (Join DashPay dialog → "Have an invitation?"):
     /// paste/scan screen, then the username form in invitation mode.
     func showClaimInvitation() {
