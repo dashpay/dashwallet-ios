@@ -1,0 +1,201 @@
+//
+//  Created by Roman Chornyi
+//  Copyright © 2026 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#if DASHPAY
+
+import Combine
+import Foundation
+import UserNotifications
+
+/// Posts a notification per new pending incoming contact request and per
+/// contact who accepted one of our requests.
+///
+/// Signal: `SwiftDashSDKContactsService.contactsDidChangeNotification`,
+/// posted after every published-snapshot rebuild (the SDK's 15 s DashPay
+/// sync loop lands the rows). Each signal triggers a scan of the current
+/// snapshots; the store dedup on the owner- and counterparty-scoped ids
+/// ("contact.request.<owner>.<id>" / "contact.accepted.<owner>.<id>") IS
+/// the new-vs-known detector — no second seen-set.
+///
+/// Replay guard (same thinking as `TransactionNotificationProducer`): a
+/// freshly synced identity replays its whole request history, and none of
+/// it may notify. Only events created within the freshness window are news;
+/// the store dedup keeps each of those to one post, and an event that
+/// arrives while the app is frontmost is consumed rather than posted.
+///
+/// The bell's read marker is deliberately not part of the guard. It is
+/// advanced to the newest event on screen — which can be our own outgoing
+/// request — while an incoming request carries the SENDER's Platform
+/// timestamp, which can sit behind it. Gating on the marker dropped such a
+/// request silently, with nothing left to show it.
+@MainActor
+final class DashPayContactsNotificationProducer {
+    /// An event must have been created at most this long ago to notify.
+    static let freshnessWindow: TimeInterval = 10 * 60
+
+    /// Hard floor for a catch-up boundary, the same as
+    /// `TransactionNotificationProducer.maxCatchUpWindow`: a wallet left closed
+    /// for weeks must not have its whole request backlog announced the first
+    /// time a refresh finally runs.
+    static let maxCatchUpWindow: TimeInterval = 24 * 60 * 60
+
+    /// The two contact snapshots a scan reads — a value type so tests can
+    /// feed synthetic items without the contacts service singleton.
+    struct ContactsSnapshot {
+        /// The identity the snapshot was built for. `SwiftDashSDKContactsService`
+        /// rebuilds its lists against the new owner on every active-wallet
+        /// change, while the app keeps ONE `NotifiedEventStore` — so without
+        /// this in the key, a request from the same counterparty to a second
+        /// owner reuses the first owner's id and is suppressed as a duplicate.
+        let ownerIdentityId: Data?
+        /// Pending incoming requests (they asked us).
+        let incomingRequests: [ContactItem]
+        /// Established (mutual) contacts.
+        let contacts: [ContactItem]
+    }
+
+    private let dispatcher: NotificationDispatcher
+    private let store: NotifiedEventStoring
+    private let snapshot: @MainActor () -> ContactsSnapshot
+    private let appState: AppStateProvider
+    private let now: () -> Date
+    private var cancellables = Set<AnyCancellable>()
+
+    init(dispatcher: NotificationDispatcher,
+         store: NotifiedEventStoring,
+         snapshot: @escaping @MainActor () -> ContactsSnapshot = {
+             let service = SwiftDashSDKContactsService.shared
+             return ContactsSnapshot(
+                 ownerIdentityId: DWCurrentUserIdentityInfo.shared.identityId,
+                 incomingRequests: service.incomingRequests,
+                 contacts: service.contacts)
+         },
+         appState: AppStateProvider = UIApplicationStateProvider(),
+         now: @escaping () -> Date = Date.init) {
+        self.dispatcher = dispatcher
+        self.store = store
+        self.snapshot = snapshot
+        self.appState = appState
+        self.now = now
+    }
+
+    /// Subscribes to the contacts-changed signal. Idempotent; called once
+    /// by `NotificationsBootstrap`. Passive until the contacts service is
+    /// alive — the default snapshot closure only touches the singleton
+    /// once a change signal has fired, which requires the service to exist.
+    func start() {
+        guard cancellables.isEmpty else { return }
+        NotificationCenter.default.publisher(for: SwiftDashSDKContactsService.contactsDidChangeNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                Task { await self.scanAndNotify() }
+            }
+            .store(in: &cancellables)
+    }
+
+    /// One pass over the current snapshots: per-item notification
+    /// decisions out. The store resolves overlapping scans, so each event
+    /// posts at most once no matter how many change signals see it.
+    ///
+    /// `since` widens the window for a catch-up scan, with the same clamp as
+    /// `TransactionNotificationProducer.scanAndNotify(since:)`: the background
+    /// refresh runs no earlier than 15 minutes after backgrounding, so a
+    /// request that arrived while the app was suspended is already outside
+    /// the default 10-minute window by the time the sweep runs. The boundary
+    /// never narrows the default window and is floored at `maxCatchUpWindow`.
+    func scanAndNotify(since boundary: Date? = nil) async {
+        let current = snapshot()
+        let defaultCutoff = now().addingTimeInterval(-Self.freshnessWindow)
+        let earliest = now().addingTimeInterval(-Self.maxCatchUpWindow)
+        let cutoff = min(defaultCutoff, max(boundary ?? defaultCutoff, earliest))
+        // Scopes every key below to the receiving identity. An unknown owner
+        // gets its own bucket rather than silently sharing the wallet-less
+        // one, so a snapshot taken mid-rebind cannot consume a real owner's id.
+        let owner = current.ownerIdentityId?.hexEncodedString() ?? "unknown-owner"
+
+        for item in current.incomingRequests {
+            await process(
+                item,
+                eventDate: item.createdAt,
+                id: "contact.request.\(owner).\(item.contactIdentityId.hexEncodedString()).\(Self.stamp(item.createdAt))",
+                bodyFormat: NSLocalizedString("%@ has sent you a contact request", comment: "DashPay Notifications"),
+                cutoff: cutoff)
+        }
+
+        // `== true`: an unknown order (`nil`) is not an accept to announce.
+        for item in current.contacts where item.establishedByTheirAccept == true {
+            // For established pairs `createdAt` is the reciprocation time —
+            // the moment they accepted.
+            await process(
+                item,
+                eventDate: item.createdAt,
+                id: "contact.accepted.\(owner).\(item.contactIdentityId.hexEncodedString()).\(Self.stamp(item.createdAt))",
+                bodyFormat: NSLocalizedString("%@ accepted your contact request", comment: "DashPay Notifications"),
+                cutoff: cutoff)
+        }
+    }
+
+    // MARK: Private
+
+    /// The event's own moment, in the same milliseconds
+    /// `DashPayNotificationsReadState.eventKey(for:)` uses.
+    ///
+    /// Part of every id because owner + counterparty alone name a
+    /// RELATIONSHIP, not an event: the pair can reach the same state more
+    /// than once, and without the stamp the store's dedup would read the
+    /// second occurrence as the first one repeating and drop it for as long
+    /// as the record is kept. It also makes the producer's identity and the
+    /// bell screen's read-state key distinguish events the same way.
+    private static func stamp(_ date: Date) -> Int64 {
+        Int64((date.timeIntervalSince1970 * 1000).rounded())
+    }
+
+    private func process(_ item: ContactItem,
+                         eventDate: Date,
+                         id: String,
+                         bodyFormat: String,
+                         cutoff: Date) async {
+        // Replay guard: historical events (initial identity sync) are not
+        // news. Deterministic per event, so a dropped event needs no store
+        // record to stay dropped.
+        guard eventDate >= cutoff else { return }
+
+        // App-state policy: in the foreground the bell badge updates live,
+        // so the event is consumed — a later scan (relaunch, next sync
+        // pass) cannot post what the user was watching arrive.
+        if appState.isApplicationActive {
+            await store.consume(id: id, topic: .dashpay)
+            return
+        }
+
+        await dispatcher.post(AppNotification(
+            id: id,
+            topic: .dashpay,
+            title: nil,
+            // `displayTitle` is the same resolution the notifications
+            // screen renders (alias > profile name > username > truncated
+            // identity id).
+            body: String(format: bodyFormat, item.displayTitle),
+            sound: .default,
+            route: .dashPayNotifications,
+            // Suppressed while frontmost: the bell already shows it.
+            foregroundBehavior: .suppress))
+    }
+}
+
+#endif

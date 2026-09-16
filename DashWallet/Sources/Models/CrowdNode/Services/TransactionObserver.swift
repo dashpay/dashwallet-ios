@@ -64,6 +64,9 @@ extension ObservedTransaction {
         // as the fallback for rows restored from chain data.
         let ts: UInt64 = row.firstSeen != 0 ? row.firstSeen : UInt64(row.blockTimestamp)
         timestamp = ts == 0 ? nil : Date(timeIntervalSince1970: TimeInterval(ts))
+        blockHeight = row.blockHeight
+        let mined = UInt64(row.blockTimestamp)
+        minedAt = mined == 0 ? nil : Date(timeIntervalSince1970: TimeInterval(mined))
         wrapped = Transaction(persistentTransaction: row)
     }
 }
@@ -129,6 +132,7 @@ public final class TransactionObserver {
     /// carry nothing back to the context they were read through.
     static func fetchObserved(
         fetchLimit: Int? = nil,
+        fetchOffset: Int = 0,
         firstSeenAtOrAfter: UInt64? = nil
     ) -> [ObservedTransaction] {
         guard let resolved = resolveHostHandles() else { return [] }
@@ -137,6 +141,7 @@ public final class TransactionObserver {
             walletId: resolved.walletId,
             network: resolved.network,
             fetchLimit: fetchLimit,
+            fetchOffset: fetchOffset,
             firstSeenAtOrAfter: firstSeenAtOrAfter)
     }
 
@@ -256,6 +261,7 @@ public final class TransactionObserver {
         walletId: Data,
         network: Network,
         fetchLimit: Int?,
+        fetchOffset: Int = 0,
         firstSeenAtOrAfter: UInt64?
     ) -> [ObservedTransaction] {
         // Own context, so the scan never contends with the main actor.
@@ -285,6 +291,9 @@ public final class TransactionObserver {
         if let fetchLimit {
             descriptor.fetchLimit = fetchLimit
         }
+        // Paged by a catch-up sweep walking a window wider than one fetch;
+        // the sort above is what makes the offset stable across calls.
+        descriptor.fetchOffset = fetchOffset
         do {
             let fetchStart = Date()
             let rows = try context.fetch(descriptor)

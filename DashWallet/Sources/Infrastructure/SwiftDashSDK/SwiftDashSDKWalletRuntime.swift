@@ -342,12 +342,27 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// at launch and after wallet recovery, then return only when Platform
     /// sync is bound again (or the start has failed). Sync Info uses this to
     /// turn "Sync Now" into a real in-session recovery action after Stop or a
-    /// recover-time binding race.
+    /// recover-time binding race; `BackgroundRefreshCoordinator` reuses it as
+    /// the awaitable bring-up of its bounded background sync.
     func rearmPlatformSync(if shouldStart: @escaping @MainActor () -> Bool = { true }) async {
         let task = enqueueAwaitable { [weak self] in
             // A queued recovery must not undo a later Stop or wallet wipe.
             guard shouldStart() else { return }
             await self?.refresh(trigger: .platformSyncRearm)
+        }
+        await task.value
+    }
+
+    /// Awaitable counterpart of `stop()`: the same full teardown
+    /// (`fullReset` — BLAST → SPV → wallet state → host) as one link of the
+    /// serial lifecycle chain, returning only after the host's native
+    /// shutdown has completed and logged its shutdown metrics.
+    /// `BackgroundRefreshCoordinator` uses this after a background-launch
+    /// sync so persistence is flushed before the task reports completion and
+    /// the process suspends.
+    func stopAndAwaitTeardown() async {
+        let task = enqueueAwaitable { [weak self] in
+            await self?.fullReset(lastError: nil, forWipe: false)
         }
         await task.value
     }
