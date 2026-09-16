@@ -393,10 +393,15 @@ class CreateUsernameViewModel: ObservableObject {
                     username: submittedUsername,
                     invitationURI: invitationURI,
                     temporaryUsername: temporaryUsername)
-                // This path never touches `DWIdentityRegistrationBridge.shared`,
-                // so on an invitation-first launch that singleton is never
-                // constructed, never observes the coordinator's phases, and
-                // never posts the canonical registration notification —
+                // This path never REFERENCES `DWIdentityRegistrationBridge.shared`,
+                // so on an invitation-first launch that singleton may never be
+                // constructed, and then never observes the coordinator's phases
+                // and never posts the canonical registration notification —
+                // note "may": any earlier plain submit in the process builds the
+                // bridge (`performSubmit` writes `preferredFundingSource` on
+                // it), and from then on it mirrors this path's phases like any
+                // other. What the Home row keys off is the handoff record, not
+                // the bridge being blind to invitations.
                 // `.shared` and `.stateChangedNotification` are independently
                 // lazy statics, so referencing the notification name does not
                 // build the bridge. Every consumer of app-wide "registered now"

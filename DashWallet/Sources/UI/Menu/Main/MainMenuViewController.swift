@@ -438,8 +438,16 @@ struct MainMenuScreen: View {
             // which also carries the "Have an invitation?" entry.
             handleJoinButtonAction()
         case .creationFailed, .interrupted:
-            // Back to the form, whose recovery machinery picks the attempt up.
-            handleJoinButtonAction()
+            // Straight to the form, whose recovery machinery picks the attempt
+            // up — NOT through the info dialog. That dialog's continuation
+            // evaluates funding readiness, and a Core-funded attempt has
+            // already spent the registration amount: the interstitial would
+            // then disable Continue and hide the transparent escape, walling
+            // off the one screen that waives the balance requirement for a
+            // recovery. Home's row goes straight to the form for the same
+            // reason (`showCreateUsername`). The reported label comes along so
+            // the user does not retype it.
+            openCreateUsernameForRecovery(username: joinDPViewModel.username)
         case .creating:
             // Nothing to act on while it runs.
             break
@@ -553,6 +561,17 @@ struct MainMenuScreen: View {
     private func joinDashPay() {
         guard let dashPayModel = viewModel.dashPayModel else { return }
 
+        // A registration waiting to be recovered goes straight to the form,
+        // whatever brought the user here. Same rule as Home's
+        // `showCreateUsername`: the failed attempt already spent the
+        // registration amount, so the readiness interstitial would refuse to
+        // let it through on a balance the recovery does not need. The recovery
+        // IS the funding.
+        if DWIdentityRegistrationCoordinator.shared.hasPendingRegistrationRecovery() {
+            pushCreateUsernameForm(dashPayModel: dashPayModel)
+            return
+        }
+
         let readiness = ShieldedIdentityFundingReadiness.shared.evaluate(
             requiredCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits)
         if let readiness, readiness.state != .ready {
@@ -560,6 +579,18 @@ struct MainMenuScreen: View {
         } else {
             pushCreateUsernameForm(dashPayModel: dashPayModel)
         }
+    }
+
+    /// The retry action behind the row's `.creationFailed` / `.interrupted`
+    /// report: the create form, prefilled, with no readiness gate in front of
+    /// it.
+    private func openCreateUsernameForRecovery(username: String) {
+        guard let dashPayModel = viewModel.dashPayModel else { return }
+        let trimmed = username.trimmingCharacters(in: .whitespacesAndNewlines)
+        Self.pushCreateUsernameForm(
+            on: vc,
+            dashPayModel: dashPayModel,
+            definedUsername: trimmed.isEmpty ? nil : trimmed)
     }
 
     private func showJoinDashPayReadiness(dashPayModel: DWDashPayProtocol) {
@@ -610,12 +641,13 @@ struct MainMenuScreen: View {
     private static func pushCreateUsernameForm(
         on navigationController: UINavigationController,
         dashPayModel: DWDashPayProtocol,
-        suppressShieldedHint: Bool = false
+        suppressShieldedHint: Bool = false,
+        definedUsername: String? = nil
     ) {
         let controller = CreateUsernameViewController(
             dashPayModel: dashPayModel,
             invitationURL: nil,
-            definedUsername: nil
+            definedUsername: definedUsername
         )
         controller.suppressShieldedHint = suppressShieldedHint
         controller.hidesBottomBarWhenPushed = true

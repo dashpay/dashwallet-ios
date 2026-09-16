@@ -776,8 +776,10 @@ struct CreateUsernameView: View {
         // aside. The other two keep the blocking flow: a contested submission
         // ends in the voting explanation, which has nowhere else to live, and an
         // invitation claim carries the inviter contact request afterwards —
-        // both on this screen, and the invitation path bypasses the bridge the
-        // Home row reads.
+        // both on this screen. Neither is invisible to the bridge: it mirrors
+        // every coordinator phase, so what keeps them off the Home row is this
+        // gate and the handoff record it writes, not the entry point they
+        // used.
         let handsOffToHomeRow = !viewModel.isInvitationMode
             && !DWContestedNameStatusService.isContestedLabel(
                 viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines))
