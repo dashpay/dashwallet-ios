@@ -79,6 +79,9 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             updatedAt: Date(timeIntervalSince1970: 1_773_132_300)
         )
         let dataSource = PlatformDashConnectDataSource(
+            // Explicit: the default follows the app's current network, and on
+            // a fresh install that is mainnet, which the initializer rejects.
+            supportedNetwork: .testnet,
             store: TestDashConnectStore(initialConnections: [existing])
         )
 
@@ -97,6 +100,9 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             updatedAt: Date(timeIntervalSince1970: 1_773_132_300)
         )
         let dataSource = PlatformDashConnectDataSource(
+            // Explicit: the default follows the app's current network, and on
+            // a fresh install that is mainnet, which the initializer rejects.
+            supportedNetwork: .testnet,
             store: TestDashConnectStore(initialConnections: [existing])
         )
 
@@ -114,6 +120,9 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             updatedAt: Date(timeIntervalSince1970: 1_773_132_300)
         )
         let dataSource = PlatformDashConnectDataSource(
+            // Explicit: the default follows the app's current network, and on
+            // a fresh install that is mainnet, which the initializer rejects.
+            supportedNetwork: .testnet,
             store: TestDashConnectStore(initialConnections: [existing])
         )
         let request = try makeLoginRequest(

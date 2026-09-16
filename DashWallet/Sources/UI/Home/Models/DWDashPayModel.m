@@ -77,7 +77,17 @@ NS_ASSUME_NONNULL_END
 }
 
 - (BOOL)registrationCompleted {
-    return [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted;
+    // `WalletEnvironment.switchToNetwork` clears the UserDefaults flag on
+    // every switch to a different network, and the self-heal in
+    // `DWCurrentUserIdentityInfo` only rewrites it when the username
+    // mirror is empty too — so OR in SDK truth the same way `hasIdentity`
+    // does below. `usernames` carries confirmed labels only (SDK DPNS
+    // cache or persisted SwiftData sources, pending contested labels
+    // filtered out); unlike `username` it never echoes the
+    // `DWGlobalOptions.dashpayUsername` value written at submission time,
+    // so an in-flight registration still reads NO here.
+    return [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted ||
+           DWCurrentUserIdentityInfo.shared.usernames.count > 0;
 }
 
 - (BOOL)hasIdentity {

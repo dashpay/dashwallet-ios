@@ -328,7 +328,10 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     func invalidateBalancesIfSelectionChanged() {
         let selectedScope = WalletEnvironment.network.flatMap { network -> ShieldedBalanceController.Scope? in
-            let kind: WalletEnvironment.NetworkKind = network == .mainnet ? .mainnet : .testnet
+            // Same registry mapping as `isSelectedWalletScope`: a devnet
+            // selection read through testnet's key looks like "nothing
+            // selected" and invalidates the snapshot that was just loaded.
+            let kind = WalletEnvironment.networkKind(for: network)
             return WalletEnvironment.activeWalletId(for: kind).map {
                 ShieldedBalanceController.Scope(walletId: $0, network: String(network.rawValue))
             }
@@ -433,7 +436,11 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// await. Shielded binding/readiness is checked separately for its own loop.
     private func isSelectedWalletScope(walletId: Data, network: Network) -> Bool {
         guard WalletEnvironment.network == network else { return false }
-        let kind: WalletEnvironment.NetworkKind = network == .mainnet ? .mainnet : .testnet
+        // The registry has a key per network kind, devnet included, so the
+        // lookup goes through the shared mapping: reading devnet's wallet id
+        // out of testnet's key never matches, and every Platform and shielded
+        // preparation guarded by this returns early on devnet.
+        let kind = WalletEnvironment.networkKind(for: network)
         return WalletEnvironment.activeWalletId(for: kind) == walletId
     }
 
@@ -1084,6 +1091,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         let manager: PlatformWalletManager
         let resolvedWallet: ManagedPlatformWallet
         do {
+            // Platform normally starts after Core, so the SDK already exists
+            // and `host.start` returns it. This entry point is the exception:
+            // the Storage Explorer's "Start Platform Sync" can reach it with
+            // nothing built, and on devnet `SDK.init` would then fetch the
+            // quorum service itself and fail as a generic initialization
+            // error. Preflighting first reports the actionable devnet error
+            // and hands the discovered peers to the SPV start that follows.
+            try await SwiftDashSDKSPVCoordinator.shared.preflightDevnetStartIfNeeded(for: network)
             (manager, resolvedWallet) = try await SwiftDashSDKHost.shared.start(network: network)
         } catch {
             guard lifecycleGeneration == generation else { return }
