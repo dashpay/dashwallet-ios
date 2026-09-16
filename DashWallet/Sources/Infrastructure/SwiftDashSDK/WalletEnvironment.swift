@@ -316,8 +316,17 @@ public final class WalletEnvironment: NSObject {
     /// confined to one actor. The lock is never held across the derivation
     /// below — two concurrent misses recompute the same answer, which is
     /// idempotent, and holding it would serialize a Keychain-heavy read.
+    ///
+    /// `walletMaterialCacheGeneration` is what makes that safe against an
+    /// invalidation that lands WHILE a derivation is in flight. Without it the
+    /// deriving reader would store its now-obsolete verdict after
+    /// `invalidateWalletMaterialCache()` cleared the cache, silently undoing
+    /// the invalidation for the rest of the process — exactly the
+    /// `walletNotFound` dead end the invalidation exists to prevent. The
+    /// generation is read before deriving and re-checked before storing.
     private static let walletMaterialCacheLock = NSLock()
     private static var cachedSelectableWalletMaterial: Bool?
+    private static var walletMaterialCacheGeneration: UInt64 = 0
 
     /// Durable memo of that verdict, keyed by the Keychain inventory it was
     /// derived from.
@@ -372,6 +381,7 @@ public final class WalletEnvironment: NSObject {
     private static var hasSelectableWalletMaterial: Bool {
         walletMaterialCacheLock.lock()
         let cached = cachedSelectableWalletMaterial
+        let generation = walletMaterialCacheGeneration
         walletMaterialCacheLock.unlock()
         if let cached { return cached }
         let selectable: Bool
@@ -393,7 +403,12 @@ public final class WalletEnvironment: NSObject {
             selectable = true
         }
         walletMaterialCacheLock.lock()
-        cachedSelectableWalletMaterial = selectable
+        // Only if nothing invalidated the cache while this derivation ran: a
+        // verdict that predates the change is stale, and storing it would
+        // reinstate the answer the invalidation just dropped.
+        if walletMaterialCacheGeneration == generation {
+            cachedSelectableWalletMaterial = selectable
+        }
         walletMaterialCacheLock.unlock()
         return selectable
     }
@@ -403,6 +418,9 @@ public final class WalletEnvironment: NSObject {
     @objc public static func invalidateWalletMaterialCache() {
         walletMaterialCacheLock.lock()
         cachedSelectableWalletMaterial = nil
+        // Bumped under the same lock, so a derivation already in flight sees a
+        // changed generation and discards its result instead of storing it.
+        walletMaterialCacheGeneration &+= 1
         walletMaterialCacheLock.unlock()
     }
 

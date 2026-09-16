@@ -562,10 +562,13 @@ jobs:
         run: |
           set -euo pipefail
 
-          # A devnet build is for the team only: the external channel hands it
-          # to an external TestFlight group, so refuse before archiving.
-          if [[ "$EXPOSE_DEVNET" == "true" && "$RELEASE_CHANNEL" == "external" ]]; then
-            echo "::error::expose_devnet cannot be used with release_channel 'external'. Use 'internal-only' or 'internal'."
+          # A devnet build is for the team only. Only `internal-only` marks the
+          # upload TestFlight Internal Only (see the export-options step), so
+          # every other channel — `internal` included — leaves a devnet build
+          # that can later be handed to external testers or promoted to the
+          # App Store. Refuse before archiving.
+          if [[ "$EXPOSE_DEVNET" == "true" && "$RELEASE_CHANNEL" != "internal-only" ]]; then
+            echo "::error::expose_devnet requires release_channel 'internal-only' (got '$RELEASE_CHANNEL')."
             exit 1
           fi
 
