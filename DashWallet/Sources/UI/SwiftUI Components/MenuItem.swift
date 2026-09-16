@@ -41,6 +41,11 @@ struct MenuItem: View {
     var trailingStatusColor: Color = Color.dash.orange
     var trailingView: AnyView?
     var showToggle: Bool = false
+    /// Seeded from the caller's value when the row's identity is created and
+    /// changed afterwards only by the user, so `action` fires for user
+    /// changes alone. A caller that wants to show a new model value hands a
+    /// new identity: the menus rebuild their `MenuItemModel`s, each minting a
+    /// fresh `id`.
     @State private var isToggled: Bool = false
     var action: (() -> Void)?
 
@@ -273,7 +278,7 @@ struct MenuItem: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity)
-        .onChange(of: isToggled) { newValue in
+        .onChange(of: isToggled) { _ in
             action?()
         }
     }

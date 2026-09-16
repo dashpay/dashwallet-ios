@@ -66,9 +66,9 @@ final class CoinJoinRecovery: NSObject {
     // MARK: - Per-network UserDefaults keys
 
     private func networkTag(_ network: Network) -> String {
-        // Same "mainnet"/"testnet" strings as before; devnet gets its own
-        // tag instead of colliding with testnet's keys.
-        network.networkName
+        // Same "mainnet"/"testnet" strings as before; each configured devnet
+        // gets its own tag, since its wallets live on a different chain.
+        network.persistenceScope
     }
     /// Terminal per-network flag: set once the first full wide-gap scan
     /// completes (the deep coins it found are persisted thereafter) or the
@@ -76,13 +76,21 @@ final class CoinJoinRecovery: NSObject {
     /// used-address history persists. (The older `…evaluated` / `…needed` keys
     /// are no longer used; any stale values are harmless.)
     private func recoveredKey(_ network: Network) -> String {
-        "coinJoinRecovery.v1.recovered.\(networkTag(network))"
+        recoveredKey(tag: networkTag(network))
+    }
+
+    private func recoveredKey(tag: String) -> String {
+        "coinJoinRecovery.v1.recovered.\(tag)"
     }
 
     /// CoinJoin balance (duffs) at the moment the user last chose "Later" on
     /// the post-sync sweep prompt. Absent = never dismissed.
     private func sweepPromptDismissedBalanceKey(_ network: Network) -> String {
-        "coinJoinRecovery.v1.sweepPromptDismissedBalance.\(networkTag(network))"
+        sweepPromptDismissedBalanceKey(tag: networkTag(network))
+    }
+
+    private func sweepPromptDismissedBalanceKey(tag: String) -> String {
+        "coinJoinRecovery.v1.sweepPromptDismissedBalance.\(tag)"
     }
 
     // MARK: - API
@@ -139,7 +147,7 @@ final class CoinJoinRecovery: NSObject {
     /// persisted deep UTXOs, so without this a restored heavy-mixer wallet would
     /// skip the wide scan and understate its balance. Clears BOTH networks —
     /// the wipe removes all wallet material and we don't know the next restored
-    /// wallet's network; `recoveredKey` only ever produces those two keys.
+    /// wallet's network, so every network and every devnet scope is cleared.
     /// Thread-safe.
     func resetForWipe() {
         lock.lock(); defer { lock.unlock() }
@@ -149,6 +157,11 @@ final class CoinJoinRecovery: NSObject {
         defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.mainnet))
         defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.testnet))
         defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.devnet))
+        // Flags written on devnets other than the one configured now.
+        for scope in DevnetConfiguration.persistedDevnetScopes() {
+            defaults.removeObject(forKey: recoveredKey(tag: scope))
+            defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(tag: scope))
+        }
         Self.logger.info(
             "🪙 CJRECOV :: recovery flags cleared on wipe — next wallet re-runs the one-time wide scan")
     }

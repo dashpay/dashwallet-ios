@@ -311,7 +311,15 @@ final class SwiftDashSDKHost {
     /// enumeration — no mnemonic secrets are read. Throws on enumeration
     /// failure so destructive callers stay fail-closed.
     nonisolated static func persistedWalletIdCount() throws -> Int {
-        try WalletStorage().listWalletIdsWithMnemonic().count
+        try persistedWalletIds().count
+    }
+
+    /// Persisted SDK wallet ids. Attributes-only Keychain enumeration — no
+    /// mnemonic secrets are read and no wallet is derived — so it is cheap
+    /// enough for a synchronous presence path. Throws on enumeration failure
+    /// so callers stay fail-closed.
+    nonisolated static func persistedWalletIds() throws -> [Data] {
+        try WalletStorage().listWalletIdsWithMnemonic()
     }
 
     /// Number of logical wallets represented by the strict Keychain inventory.

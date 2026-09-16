@@ -106,7 +106,10 @@ final class DevnetSettingsViewModel: ObservableObject {
         isApplying = true
         Task { [weak self] in
             await SwiftDashSDKWalletRuntime.applyDevnetConfiguration(
-                restartIfRunningOnDevnet: networkValuesChanged && willBeConfigured
+                // Any changed coordinate restarts a running devnet, clearing
+                // included: an incomplete configuration then stays stopped
+                // instead of the wallet running on the previous devnet.
+                restartIfRunningOnDevnet: networkValuesChanged
             ) {
                 DevnetConfiguration.setQuorumURL(newQuorumURL)
                 DevnetConfiguration.setDevnetName(trimmedName)
