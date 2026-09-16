@@ -603,6 +603,10 @@ extension HomeViewController: HomeViewDelegate {
     }
 
     #if DASHPAY
+    func homeViewRequestUsernameForRecovery(username: String) {
+        showCreateUsernameForRecovery(definedUsername: username)
+    }
+
     func homeViewClaimInvitation() {
         showClaimInvitation()
     }

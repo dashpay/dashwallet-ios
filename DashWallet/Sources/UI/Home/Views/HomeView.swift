@@ -40,6 +40,11 @@ protocol HomeViewDelegate: AnyObject {
 #if DASHPAY
     func homeView(_ homeView: HomeView, didUpdateProfileWithUnreadNotifications unreadNotifications: UInt)
     func homeViewRequestUsername()
+    /// The retry behind a `.creationFailed` / `.interrupted` registration
+    /// report. Separate from `homeViewRequestUsername()` because a recovery
+    /// must not meet the funding-readiness gate — see
+    /// `showCreateUsernameForRecovery`.
+    func homeViewRequestUsernameForRecovery(username: String)
     func homeViewClaimInvitation()
     func homeViewEditProfile()
     /// Opens the notifications list (header nav-bar bell).
@@ -340,11 +345,30 @@ struct HomeViewContent<Content: View>: View {
                             // The row is the action now — this is what the
                             // Upgrade/Edit/Retry button used to do.
                             onTap: { state in
-                                if state == .approved {
+                                switch state {
+                                case .approved:
                                     delegate?.homeViewEditProfile()
                                     joinDPViewModel.markAsDismissed()
                                     viewModel.checkJoinDashPay()
-                                } else {
+                                case .creating:
+                                    // Nothing to act on while it runs.
+                                    break
+                                case .creationFailed, .interrupted:
+                                    // Back to the form: a retry re-enters the
+                                    // PIN gate and may re-spend, which deserves
+                                    // a screen rather than a one-tap action.
+                                    // Its recovery machinery takes over from
+                                    // there.
+                                    //
+                                    // Straight there, past the readiness gate:
+                                    // the report IS the evidence that an attempt
+                                    // already ran, and the predicate that would
+                                    // otherwise wave it through reads the SDK
+                                    // host — which is still cold right after the
+                                    // relaunch that renders `.interrupted`.
+                                    delegate?.homeViewRequestUsernameForRecovery(
+                                        username: joinDPViewModel.username)
+                                case .none, .callToAction, .voting, .failed, .blocked, .contested, .registered:
                                     // TODO: ? MOCK_DASHPAY if failed, maybe need to call model?.dashPayModel.retry()
                                     // Always open the info dialog. It carries the
                                     // only "Have an invitation?" entry in the app,

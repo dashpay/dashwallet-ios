@@ -437,7 +437,32 @@ struct MainMenuScreen: View {
             // Not registered (or the attempt failed): open the join flow,
             // which also carries the "Have an invitation?" entry.
             handleJoinButtonAction()
-        case .approved, .registered:
+        case .creationFailed, .interrupted:
+            // Straight to the form, whose recovery machinery picks the attempt
+            // up — NOT through the info dialog. That dialog's continuation
+            // evaluates funding readiness, and a Core-funded attempt has
+            // already spent the registration amount: the interstitial would
+            // then disable Continue and hide the transparent escape, walling
+            // off the one screen that waives the balance requirement for a
+            // recovery. Home's row goes straight to the form for the same
+            // reason (`showCreateUsername`). The reported label comes along so
+            // the user does not retype it.
+            openCreateUsernameForRecovery(username: joinDPViewModel.username)
+        case .creating:
+            // Nothing to act on while it runs.
+            break
+        case .approved:
+            // Acknowledge the report as well as acting on it. Without this
+            // `completedTileUsername` stays persisted, and since More's row is
+            // now kept visible by that record (`reportsRegistration`), the
+            // completed-registration row would come back after the user had
+            // already opened the profile from it — including on the next
+            // launch. `handleJoinDashPayAction` is a different entry point and
+            // this row does not go through it.
+            editProfile()
+            joinDPViewModel.markAsDismissed()
+            viewModel.refreshJoinDashPayBanner()
+        case .registered:
             editProfile()
         case .voting:
             showUsernameRequestStatus()
@@ -536,6 +561,17 @@ struct MainMenuScreen: View {
     private func joinDashPay() {
         guard let dashPayModel = viewModel.dashPayModel else { return }
 
+        // A registration waiting to be recovered goes straight to the form,
+        // whatever brought the user here. Same rule as Home's
+        // `showCreateUsername`: the failed attempt already spent the
+        // registration amount, so the readiness interstitial would refuse to
+        // let it through on a balance the recovery does not need. The recovery
+        // IS the funding.
+        if DWIdentityRegistrationCoordinator.shared.hasPendingRegistrationRecovery() {
+            pushCreateUsernameForm(dashPayModel: dashPayModel)
+            return
+        }
+
         let readiness = ShieldedIdentityFundingReadiness.shared.evaluate(
             requiredCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits)
         if let readiness, readiness.state != .ready {
@@ -543,6 +579,18 @@ struct MainMenuScreen: View {
         } else {
             pushCreateUsernameForm(dashPayModel: dashPayModel)
         }
+    }
+
+    /// The retry action behind the row's `.creationFailed` / `.interrupted`
+    /// report: the create form, prefilled, with no readiness gate in front of
+    /// it.
+    private func openCreateUsernameForRecovery(username: String) {
+        guard let dashPayModel = viewModel.dashPayModel else { return }
+        let trimmed = username.trimmingCharacters(in: .whitespacesAndNewlines)
+        Self.pushCreateUsernameForm(
+            on: vc,
+            dashPayModel: dashPayModel,
+            definedUsername: trimmed.isEmpty ? nil : trimmed)
     }
 
     private func showJoinDashPayReadiness(dashPayModel: DWDashPayProtocol) {
@@ -593,12 +641,13 @@ struct MainMenuScreen: View {
     private static func pushCreateUsernameForm(
         on navigationController: UINavigationController,
         dashPayModel: DWDashPayProtocol,
-        suppressShieldedHint: Bool = false
+        suppressShieldedHint: Bool = false,
+        definedUsername: String? = nil
     ) {
         let controller = CreateUsernameViewController(
             dashPayModel: dashPayModel,
             invitationURL: nil,
-            definedUsername: nil
+            definedUsername: definedUsername
         )
         controller.suppressShieldedHint = suppressShieldedHint
         controller.hidesBottomBarWhenPushed = true

@@ -54,7 +54,9 @@ class CreateUsernameViewModel: ObservableObject {
     /// query that distinguishes a locked name from one mid-vote.
     private let marketplaceService = UsernameMarketplaceService()
     private let illegalChars = TemporaryUsernameFieldModel.illegalCharacters
-    private var submittedRegistrationUsername: String?
+    /// The normalized label the running registration was submitted under.
+    /// Read by the form for its handoff so both name the same attempt.
+    private(set) var submittedRegistrationUsername: String?
     private var didNotifyRegistrationStarted = false
     private var onRegistrationStarted: (@MainActor () -> Void)?
     /// In-flight DPNS availability check. Cancelled and replaced when
@@ -362,7 +364,14 @@ class CreateUsernameViewModel: ObservableObject {
         // check and put the spinner back up mid-submission.
         coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
 
-        let submittedUsername = username
+        // Normalized ONCE, here, and used for everything that follows:
+        // registration, the phase match below, and the handoff label the Home
+        // row is keyed by. `validateUsername` trims only its local argument, so
+        // a pasted label can reach this point with surrounding whitespace —
+        // registering the raw form while the handoff persists the trimmed one
+        // leaves the row reporting an interrupted registration for an attempt
+        // that is actually running.
+        let submittedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
         submittedRegistrationUsername = submittedUsername
         didNotifyRegistrationStarted = false
         self.onRegistrationStarted = onRegistrationStarted
@@ -384,10 +393,15 @@ class CreateUsernameViewModel: ObservableObject {
                     username: submittedUsername,
                     invitationURI: invitationURI,
                     temporaryUsername: temporaryUsername)
-                // This path never touches `DWIdentityRegistrationBridge.shared`,
-                // so on an invitation-first launch that singleton is never
-                // constructed, never observes the coordinator's phases, and
-                // never posts the canonical registration notification —
+                // This path never REFERENCES `DWIdentityRegistrationBridge.shared`,
+                // so on an invitation-first launch that singleton may never be
+                // constructed, and then never observes the coordinator's phases
+                // and never posts the canonical registration notification —
+                // note "may": any earlier plain submit in the process builds the
+                // bridge (`performSubmit` writes `preferredFundingSource` on
+                // it), and from then on it mirrors this path's phases like any
+                // other. What the Home row keys off is the handoff record, not
+                // the bridge being blind to invitations.
                 // `.shared` and `.stateChangedNotification` are independently
                 // lazy statics, so referencing the notification name does not
                 // build the bridge. Every consumer of app-wide "registered now"

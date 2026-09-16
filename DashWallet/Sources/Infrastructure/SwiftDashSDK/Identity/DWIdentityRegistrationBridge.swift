@@ -78,6 +78,30 @@ extension DWIdentityFundingSource {
     }
 }
 
+// MARK: - RegistrationAttemptScope
+
+/// The wallet and network a username registration belongs to.
+///
+/// `DWIdentityRegistrationCoordinator` and the bridge that mirrors it are
+/// process-global, while the records a registration leaves behind
+/// (`UsernamePrefs`) are per wallet and network. One label can legitimately
+/// exist in two scopes at once — the same name failing on mainnet and
+/// succeeding on testnet is routine for anyone testing — so a label alone
+/// never identifies an attempt. This is what an attempt is qualified by.
+struct RegistrationAttemptScope: Equatable {
+    let networkRawValue: Int
+    /// `nil` on an unsupported network, which then compares equal only to
+    /// another reading taken in the same state — enough, because a
+    /// registration cannot run there.
+    let walletIdHex: String?
+
+    static var current: RegistrationAttemptScope {
+        RegistrationAttemptScope(
+            networkRawValue: WalletEnvironment.networkKind.rawValue,
+            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+    }
+}
+
 @objc(DWIdentityRegistrationBridge)
 @MainActor
 @objcMembers
@@ -116,6 +140,24 @@ public final class DWIdentityRegistrationBridge: NSObject {
     /// attempt).
     @objc public private(set) var currentUsername: String?
 
+    /// Which wallet and network the attempt behind `currentUsername` was
+    /// STARTED on, stamped when the bridge first sees that attempt and left
+    /// alone for the rest of its life.
+    ///
+    /// The bridge mirrors every coordinator phase, so it carries attempts no
+    /// screen handed anywhere — an invitation claim and a username purchase
+    /// both reach the coordinator through `startCreateUsername`'s siblings and
+    /// set `currentUsername` without a handoff. A reader that qualified bridge
+    /// results by the last HANDOFF's scope therefore had no way to tell "the
+    /// attempt this wallet handed off" from "some other attempt running under
+    /// the same label", and a same-label registration finishing on another
+    /// network read as this one's success.
+    ///
+    /// Not re-stamped on later phases: a network switch mid-registration must
+    /// not move an attempt to the scope the user happens to be looking at.
+    /// Swift-only — the Obj-C surface has no use for it.
+    private(set) var currentAttemptScope: RegistrationAttemptScope?
+
     /// Last failure description, or nil if no failure recorded.
     @objc public private(set) var lastErrorMessage: String?
 
@@ -145,6 +187,10 @@ public final class DWIdentityRegistrationBridge: NSObject {
     // MARK: - Subscriptions
 
     private var coordinatorSubscription: AnyCancellable?
+    /// The phase behind the last `refreshFromCoordinator`, so a fresh attempt
+    /// can be told from another tick of the one already running — see
+    /// `currentAttemptScope`.
+    private var lastObservedPhase: DWIdentityRegistrationController.Phase?
 
     private override init() {
         super.init()
@@ -306,7 +352,21 @@ public final class DWIdentityRegistrationBridge: NSObject {
             isFailed = false
             isCompleted = false
         }
+        let previousUsername = currentUsername
+        let wasActive = lastObservedPhase?.isActive ?? false
+        lastObservedPhase = phase
         currentUsername = coord.currentUsername
+        if let running = coord.currentUsername, !running.isEmpty {
+            // An attempt begins where an inactive phase turns active — which
+            // covers a retry of the SAME label after a failure, possibly on a
+            // different wallet or network. A changed label is the other start,
+            // and a nil scope catches a bridge built mid-registration.
+            if (phase.isActive && !wasActive) || running != previousUsername || currentAttemptScope == nil {
+                currentAttemptScope = RegistrationAttemptScope.current
+            }
+        } else {
+            currentAttemptScope = nil
+        }
         lastErrorMessage = coord.lastErrorMessage
 
         // Reset preferredFundingSource to the safe default on
