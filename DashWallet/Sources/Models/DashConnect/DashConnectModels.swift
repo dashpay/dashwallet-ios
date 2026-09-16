@@ -105,31 +105,41 @@ extension DashConnectTokenPurchaseRequest {
     }
 
     /// `tokenQuantity` with the locale fixed. Every branch goes through
-    /// `formattedTokenAmount`, so a whole count and a raw base-unit count are
+    /// `tokenAmountText`, so a whole count and a raw base-unit count are
     /// rendered ungrouped exactly like a scaled one; only the decimal
     /// separator follows the locale.
     func tokenQuantity(locale: Locale) -> (text: String, isBaseUnits: Bool) {
         guard let decimals = tokenDecimals, decimals > 0 else {
-            return (Decimal(tokenCount).formattedTokenAmount(fractionDigits: 0, locale: locale),
+            return (Self.tokenAmountText(baseUnits: tokenCount, decimals: 0, locale: locale),
                     tokenDecimals == nil)
         }
-        let scaled = Decimal(tokenCount) / pow(Decimal(10), decimals)
-        return (scaled.formattedTokenAmount(fractionDigits: decimals, locale: locale), false)
+        return (Self.tokenAmountText(baseUnits: tokenCount, decimals: decimals, locale: locale), false)
     }
-}
 
-extension Decimal {
-    /// Plain decimal rendering with no grouping and no exponent, trimmed of
-    /// trailing zeros — a token quantity, not a currency.
-    fileprivate func formattedTokenAmount(fractionDigits: Int, locale: Locale) -> String {
-        let formatter = NumberFormatter()
-        formatter.locale = locale
-        formatter.numberStyle = .decimal
-        formatter.usesGroupingSeparator = false
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = fractionDigits
-        formatter.roundingMode = .down
-        return formatter.string(from: self as NSDecimalNumber) ?? Decimal(0).string
+    /// Base units rendered at the token's declared precision, with no grouping
+    /// and trailing zeros trimmed.
+    ///
+    /// Digit placement on the integer, not `Decimal` division rendered through
+    /// `NumberFormatter`: the formatter keeps ~15 significant digits, so a
+    /// 16-decimal token of 9_007_199_254_740_993 base units came out as
+    /// 0.900719925474099 — three base units short of the amount
+    /// `tokenPurchase` actually submits. Same exact-integer approach as
+    /// `PlatformCreditsFormatter.dashString`.
+    private static func tokenAmountText(baseUnits: UInt64, decimals: Int, locale: Locale) -> String {
+        guard decimals > 0 else { return String(baseUnits) }
+
+        var digits = String(baseUnits)
+        if digits.count <= decimals {
+            digits = String(repeating: "0", count: decimals - digits.count + 1) + digits
+        }
+        let split = digits.index(digits.endIndex, offsetBy: -decimals)
+        let whole = String(digits[..<split])
+        var fraction = String(digits[split...])
+        while fraction.hasSuffix("0") {
+            fraction.removeLast()
+        }
+        guard !fraction.isEmpty else { return whole }
+        return "\(whole)\(locale.decimalSeparator ?? ".")\(fraction)"
     }
 }
 

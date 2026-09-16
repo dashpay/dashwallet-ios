@@ -700,6 +700,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// authorizes money. `nil` when the contract cannot be fetched or carries
     /// no token at that position; the sheet then shows base units and says so,
     /// rather than implying a denominated quantity nobody verified.
+    ///
+    /// TODO(dashconnect-denomination-offmain): this fetch blocks the main
+    /// actor. `SDK.dataContractGet` is declared in the SDK's `@MainActor`
+    /// extension and its FFI entry point runs `runtime.block_on`, so awaiting
+    /// it here hops ONTO the main actor and holds it until DAPI answers —
+    /// `Task.detached` around it would hop straight back. Moving it off needs
+    /// a `nonisolated` worker-backed contract query in SwiftDashSDK.
     private static func tokenDenomination(
         sdk: SDK,
         contractId: Data,
