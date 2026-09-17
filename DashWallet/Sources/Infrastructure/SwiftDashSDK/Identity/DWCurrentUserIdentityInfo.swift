@@ -286,6 +286,42 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         invalidate()
     }
 
+    /// Fetch Platform credits and let the SDK persist them before invalidating UI.
+    /// Capturing the wallet instance prevents a late response being applied to a
+    /// newly selected wallet/network, even if the wallet IDs happen to match.
+    @nonobjc
+    func refreshBalanceFromNetwork(
+        identityId: Data, wallet: ManagedPlatformWallet, network: Network
+    ) async {
+        await IdentityBalanceRefresh.run(
+            isCurrent: {
+                let host = SwiftDashSDKHost.shared
+                return host.wallet === wallet
+                    && host.runningNetwork == network
+                    && WalletEnvironment.network == network
+            },
+            refresh: { try await wallet.refreshIdentityBalance(identityId: identityId) },
+            publish: { balance in
+                self.invalidate()
+                Self.logger.info("🪪 IDENT-INFO :: refreshed identity balance: \(balance, privacy: .public) credits")
+                NotificationCenter.default.post(
+                    name: Notification.Name("DWDashPayRegistrationStatusUpdatedNotification"),
+                    object: nil)
+            },
+            onFailure: { error in
+                Self.logger.warning("🪪 IDENT-INFO :: identity balance refresh failed: \(String(describing: error), privacy: .public)")
+            })
+    }
+
+    @nonobjc
+    func refreshCurrentBalanceFromNetwork() async {
+        guard isCurrentNetworkContextReady,
+              let wallet = SwiftDashSDKHost.shared.wallet,
+              let network = SwiftDashSDKHost.shared.runningNetwork,
+              let identityId = refreshedSnapshot().identityId else { return }
+        await refreshBalanceFromNetwork(identityId: identityId, wallet: wallet, network: network)
+    }
+
     /// Adopt an identity that arrived through seed recovery/discovery into the
     /// app-level DashPay state and notify every live UI consumer immediately.
     ///
