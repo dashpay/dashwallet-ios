@@ -41,6 +41,8 @@ struct SDKIdentityProfileSheet: View {
     @State private var showingUsernameRecovery = false
     @State private var loadedUsername: String?
     @State private var identityIsLoading = true
+    @State private var identityLoadTimedOut = false
+    @State private var identityLoadAttempt = 0
 
     /// Callback invoked when the user taps Edit. Owner (HomeViewController)
     /// dismisses the sheet and pushes `RootEditProfileViewController`.
@@ -59,7 +61,15 @@ struct SDKIdentityProfileSheet: View {
                     Divider()
                     infoSection
                     if identityIsLoading {
-                        SwiftUI.ProgressView()
+                        if identityLoadTimedOut {
+                            Button("Retry loading identity") {
+                                identityLoadTimedOut = false
+                                identityLoadAttempt += 1
+                            }
+                        } else {
+                            SwiftUI.ProgressView()
+                                .accessibilityIdentifier("identityProfileLoading")
+                        }
                     } else if hasIdentity {
                         if dpnsNames.isEmpty && loadedUsername == nil && pendingContestedName == nil {
                             Button(NSLocalizedString("Finish username registration", comment: "DashPay registration recovery")) {
@@ -106,14 +116,16 @@ struct SDKIdentityProfileSheet: View {
                 }
             }
             .onAppear(perform: reloadIdentitySnapshot)
-            .task(id: identityIsLoading) {
+            .task(id: "\(identityIsLoading)-\(identityLoadAttempt)") {
                 // Cold launch may hydrate persistence without a registration event.
                 // Only refresh reads while loading; never resume a spend here.
-                while identityIsLoading {
+                for _ in 0..<20 {
+                    guard identityIsLoading else { return }
                     do { try await Task.sleep(nanoseconds: 250_000_000) }
                     catch { return }
                     reloadIdentitySnapshot()
                 }
+                identityLoadTimedOut = identityIsLoading
             }
             .onReceive(NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)) { _ in
                 reloadIdentitySnapshot()
@@ -944,3 +956,30 @@ struct IdentityTopUpSheet: View {
         }
     }
 }
+
+#if DEBUG && targetEnvironment(simulator)
+/// Isolated UI-test launch surface. Does not initialize or modify a real wallet.
+@objc(DWUsernameRecoveryUITestFixture)
+final class DWUsernameRecoveryUITestFixture: NSObject {
+    @objc static func makeViewControllerIfRequested() -> UIViewController? {
+        guard ProcessInfo.processInfo.environment["DPNS_RECOVERY_UI_TEST"] == "1" else { return nil }
+        return UIHostingController(rootView: Fixture())
+    }
+
+    private struct Fixture: View {
+        @State private var loading = true
+
+        var body: some View {
+            SDKIdentityProfileSheet(snapshotProvider: {
+                .init(isLoading: loading, balanceCredits: 9_639_634_780,
+                      identityId: Data(repeating: 1, count: 32), identityIdHex: String(repeating: "01", count: 32),
+                      username: nil, usernames: [], displayName: nil, avatarURL: nil, publicMessage: nil)
+            })
+            .overlay(alignment: .bottom) {
+                Button("Load identity fixture") { loading = false }
+                    .accessibilityIdentifier("loadIdentityFixture")
+            }
+        }
+    }
+}
+#endif

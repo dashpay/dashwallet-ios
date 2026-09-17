@@ -78,7 +78,19 @@ final class UsernameRegistrationRecoveryTests: XCTestCase {
             lookup: { events.append("lookup"); return .available },
             register: { events.append("dpns") })
         XCTAssertEqual(result, .available)
-        XCTAssertEqual(events, ["auth", "context", "lookup", "context", "dpns", "context"])
+        XCTAssertEqual(events, ["auth", "context", "lookup", "context", "dpns"])
+    }
+
+    func testContextSwitchDuringSuccessfulBroadcastDoesNotReportFailure() async throws {
+        var current = true
+        var broadcasts = 0
+        let result = try await UsernameRegistrationRecoveryFlow.run(
+            authorize: {},
+            validateContext: { if !current { throw Failure.contextChanged } },
+            lookup: { .available },
+            register: { broadcasts += 1; current = false })
+        XCTAssertEqual(result, .available)
+        XCTAssertEqual(broadcasts, 1)
     }
 
     func testOwnedAndVotingNamesReconcileWithoutBroadcasting() async throws {
@@ -127,6 +139,16 @@ final class UsernameRegistrationRecoveryTests: XCTestCase {
         }
     }
 
+    func testCompletedPurchaseDefersReconciliationAfterContextSwitch() {
+        var reconciliations = 0
+        XCTAssertFalse(UsernamePurchaseCompletion.reconcileIfCurrent(
+            isCurrent: { false }, reconcile: { reconciliations += 1 }))
+        XCTAssertEqual(reconciliations, 0)
+        XCTAssertTrue(UsernamePurchaseCompletion.reconcileIfCurrent(
+            isCurrent: { true }, reconcile: { reconciliations += 1 }))
+        XCTAssertEqual(reconciliations, 1)
+    }
+
     func testInsufficientCreditsReturnsErrorWithoutAutomaticRetryOrFunding() async {
         var broadcasts = 0
         do {
@@ -162,32 +184,19 @@ extension UsernameRegistrationRecoveryTests {
         XCTAssertFalse(snapshot.needsUsername)
         snapshot.isLoading = false
         XCTAssertTrue(snapshot.needsUsername)
+        XCTAssertEqual(snapshot.registrationRecovery, .identityNeedsUsername(snapshot.identityId!))
         snapshot.pendingContestedName = "dash786"
         XCTAssertFalse(snapshot.needsUsername)
     }
 
-    func testProfileRendersRecoveryAfterSimulatedDPNSFailure() async throws {
-        var snapshot = unnamedIdentitySnapshot()
-        // IdentityCreate succeeded, DPNS failed: there is a funded identity,
-        // no owned name and no external funding involved in showing recovery.
-        XCTAssertTrue(snapshot.needsUsername)
-        snapshot.isLoading = true
-        let controller = UIHostingController(rootView: SDKIdentityProfileSheet(snapshotProvider: { snapshot }))
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
-        window.rootViewController = controller
-        window.makeKeyAndVisible()
-        defer { window.isHidden = true }
-        try await Task.sleep(nanoseconds: 200_000_000)
-        snapshot.isLoading = false
-        try await Task.sleep(nanoseconds: 500_000_000)
-        controller.view.layoutIfNeeded()
-        let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
-            window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
-        }
-        let attachment = XCTAttachment(image: image)
-        attachment.name = "Funded identity after DPNS failure"
-        attachment.lifetime = .keepAlways
-        add(attachment)
+    func testConfirmedNameDoesNotOfferRegistrationRecovery() {
+        let snapshot = DWCurrentUserIdentityInfo.Snapshot(
+            balanceCredits: 0, identityId: Data([1]), identityIdHex: "01",
+            username: "confirmed-name", usernames: ["confirmed-name"],
+            displayName: nil, avatarURL: nil, publicMessage: nil)
+        XCTAssertFalse(snapshot.needsUsername)
+        XCTAssertEqual(snapshot.registrationRecovery, .none)
     }
+
 }
 #endif

@@ -81,9 +81,20 @@ enum UsernameRegistrationRecoveryFlow {
         let state = try await lookup()
         try validateContext()
         if state == .available {
+            // Broadcast success is final even if the UI context changes while awaiting it.
             try await register()
-            try validateContext()
         }
         return state
+    }
+}
+
+/// A completed purchase may be adopted only in its original context. No await
+/// can separate the check from reconciliation, so a wallet switch cannot race it.
+@MainActor
+enum UsernamePurchaseCompletion {
+    static func reconcileIfCurrent(isCurrent: () -> Bool, reconcile: () -> Void) -> Bool {
+        guard isCurrent() else { return false }
+        reconcile()
+        return true
     }
 }

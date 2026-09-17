@@ -241,11 +241,13 @@ struct JoinDashPayMenuItem: View {
             viewModel.checkUsername()
         }
         .task(id: viewModel.state == .loading) {
-            while viewModel.state == .loading {
+            for _ in 0..<20 {
+                guard viewModel.state == .loading else { return }
                 do { try await Task.sleep(nanoseconds: 250_000_000) }
                 catch { return }
                 viewModel.checkUsername()
             }
+            viewModel.finishLoadingAttempt()
         }
     }
 }

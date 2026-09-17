@@ -135,6 +135,9 @@ struct CreateUsernameView: View {
     /// Terminal success alert of a direct listing purchase; OK finishes
     /// the flow like a completed registration.
     @State private var showPurchaseSuccess: Bool = false
+    @State private var purchaseCompletionMessage: String?
+    @State private var identityLoadTimedOut = false
+    @State private var identityLoadAttempt = 0
     /// The name captured when the purchase started — the text field stays
     /// editable across the PIN gate + funding + purchase, so the success
     /// alert must not read the live field.
@@ -201,6 +204,10 @@ struct CreateUsernameView: View {
                         ).padding(.top, 20)
                     }
             
+                    if viewModel.recoveryHasNoCredits {
+                        Text("This identity has no credits. Use Top Up in My Profile, then return to finish registration.")
+                            .foregroundColor(.dash.primaryText)
+                    }
                     if viewModel.uiState.costRule != .hidden {
                         ValidationCheck(
                             validationResult: viewModel.uiState.costRule,
@@ -330,21 +337,32 @@ struct CreateUsernameView: View {
             if let invitationURI {
                 viewModel.configureInvitationMode(uri: invitationURI)
             }
-            viewModel.refreshRegistrationRecoveryState()
             if let definedUsername, !definedUsername.isEmpty, viewModel.username.isEmpty {
                 viewModel.username = definedUsername
             }
+            viewModel.refreshRegistrationRecoveryState()
             // Seed the picker selection so a wallet with only one
             // viable source (typical case) doesn't default to a
             // non-viable Core path.
             syncFundingSourceToViableSource()
         }
-        .task(id: viewModel.isIdentityLoading) {
-            while viewModel.isIdentityLoading {
+        .task(id: "\(viewModel.isIdentityLoading)-\(identityLoadAttempt)") {
+            for _ in 0..<20 {
+                guard viewModel.isIdentityLoading else { return }
                 do { try await Task.sleep(nanoseconds: 250_000_000) }
                 catch { return }
                 viewModel.refreshRegistrationRecoveryState()
             }
+            identityLoadTimedOut = viewModel.isIdentityLoading
+        }
+        .alert("Identity is still loading", isPresented: $identityLoadTimedOut) {
+            Button("Retry") {
+                viewModel.refreshRegistrationRecoveryState()
+                identityLoadAttempt += 1
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Wait for the wallet and network to finish loading, then retry. No registration has been sent.")
         }
         .onChange(of: viewModel.hasMinimumRequiredCoreBalance) { _ in
             syncFundingSourceToViableSource()
@@ -391,12 +409,12 @@ struct CreateUsernameView: View {
                 ((viewModel.takenNameSalePriceCredits ?? 0) / 1_000).dashAmount.formattedDashAmountWithoutCurrencySymbol))
         }
         .alert(
-            NSLocalizedString("Username purchased", comment: "Usernames"),
+            NSLocalizedString("Username request completed", comment: "Usernames"),
             isPresented: $showPurchaseSuccess
         ) {
             Button(NSLocalizedString("OK", comment: "")) { finish() }
         } message: {
-            Text(String.localizedStringWithFormat(
+            Text(purchaseCompletionMessage ?? String.localizedStringWithFormat(
                 NSLocalizedString("“%@” is now your username.", comment: "Usernames"),
                 purchasedUsername))
         }
@@ -728,6 +746,10 @@ struct CreateUsernameView: View {
             inProgress = false
             switch outcome {
             case .success:
+                purchaseCompletionMessage = nil
+                showPurchaseSuccess = true
+            case .completedInOriginalContext(let message):
+                purchaseCompletionMessage = message
                 showPurchaseSuccess = true
             case .cancelled:
                 break
@@ -787,6 +809,9 @@ struct CreateUsernameView: View {
             switch outcome {
             case .success:
                 showSuccess = true
+            case .completedInOriginalContext(let message):
+                purchaseCompletionMessage = message
+                showPurchaseSuccess = true
             case let .submittedForVoting(registeredTemporary, temporaryError):
                 registeredTemporaryUsername = registeredTemporary
                 failedTemporaryUsername = temporaryError != nil ? temporaryUsername : nil

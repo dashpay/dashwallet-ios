@@ -129,6 +129,11 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             !isLoading && hasIdentity && username == nil && usernames.isEmpty && pendingContestedName == nil
         }
 
+        var registrationRecovery: UsernameRegistrationRecovery {
+            guard needsUsername, let identityId else { return .none }
+            return .identityNeedsUsername(identityId)
+        }
+
         static let empty = Snapshot(
             identityId: nil,
             identityIdHex: nil,
@@ -430,14 +435,12 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             else {
                 var loading = Snapshot.empty
                 loading.isLoading = true
-                return loading
+                cachedSnapshot = loading
+                cachedRevision = currentRevision
+                cachedNetwork = selectedNetwork
             }
-            // else: host wasn't ready (wallet/container hydrating).
-            // Don't bump cachedRevision so the next read retries
-            // instead of caching `.empty` until the next
-            // notification fires — at app cold launch there's no
-            // such notification, which previously left the helper
-            // permanently empty.
+            // Hydration retries are explicit and bounded in the UI. Repeated
+            // accessors within one revision reuse even the loading snapshot.
         }
         return cachedSnapshot
     }
@@ -452,6 +455,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
     /// the 22 read-site call patterns stay simple.
     private func computeSnapshot() -> Snapshot? {
         guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let network = SwiftDashSDKHost.shared.runningNetwork,
               let container = SwiftDashSDKHost.shared.modelContainer
         else {
             return nil
@@ -514,7 +518,8 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         // is single-writer/single-reader and cleared on resolution.
         // EVERY in-flight contested label filters out — the marketplace
         // allows several simultaneous requests, each its own vote poll.
-        let pendingContested = DWContestedNameStatusService.shared.pendingLabels
+        let pendingContested = DWContestedNameStatusService.shared.pendingLabels(
+            for: network, identityId: identityId)
         let isPending: (String) -> Bool = { name in
             pendingContested.contains { DWContestedNameStatusService.labelsMatch(name, $0) }
         }
@@ -627,8 +632,11 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         return Snapshot(
             balanceCredits: (try? wallet.managedIdentity(identityId: identityId).getBalance())
                 ?? UInt64(bitPattern: persisted.balance),
-            pendingContestedName: DWContestedNameStatusService.shared.pendingLabel,
-            pendingVotingEndTime: DWContestedNameStatusService.shared.pendingVotingEndTime,
+            pendingContestedName: pendingContested.first,
+            pendingVotingEndTime: pendingContested.first.flatMap {
+                guard let network = SwiftDashSDKHost.shared.runningNetwork else { return nil }
+                return DWContestedNameStatusService.shared.pendingVotingEndTime(label: $0, for: network)
+            },
             identityId: identityId,
             identityIdHex: hex,
             username: username,
@@ -636,6 +644,19 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             displayName: displayName,
             avatarURL: avatarURL,
             publicMessage: publicMessage)
+    }
+
+    /// Persist only a label whose ownership was proven by registration or resolution.
+    static func persistConfirmedUsername(
+        _ name: String, identityId: Data, walletId: Data, container: ModelContainer?
+    ) {
+        guard let context = container?.mainContext else { return }
+        let descriptor = FetchDescriptor<PersistentWallet>(predicate: #Predicate { $0.walletId == walletId })
+        guard let wallet = try? context.fetch(descriptor).first,
+              let identity = wallet.identities.first(where: { $0.identityId == identityId }) else { return }
+        identity.dpnsName = name
+        do { try context.save() }
+        catch { Self.logger.warning("Could not persist confirmed DPNS name: \(error.localizedDescription)") }
     }
 
     private static func nilIfEmpty(_ value: String?) -> String? {
@@ -1002,7 +1023,18 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                 },
                 refreshNames: { identityIds in
                     for identityId in identityIds {
-                        _ = try await wallet.syncDpnsNames(identityId: identityId)
+                        do {
+                            _ = try await wallet.syncDpnsNames(identityId: identityId)
+                        } catch {
+                            let options = DWGlobalOptions.sharedInstance()
+                            guard options.dashpayRegistrationCompleted,
+                                  let legacyName = options.dashpayUsername, !legacyName.isEmpty,
+                                  try await DWIdentityRegistrationCoordinator.shared.registrationNameState(
+                                    legacyName, identityId: identityId, wallet: wallet) == .owned else { throw error }
+                            DWCurrentUserIdentityInfo.persistConfirmedUsername(
+                                legacyName, identityId: identityId, walletId: walletId,
+                                container: modelContainer)
+                        }
 
                         // Contested-name refresh is important for correctly
                         // withholding a still-voting label, but it must not
@@ -1017,10 +1049,9 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                             // bookmarks. Reconstruct one per still-voting
                             // label from Platform so the pre-vote DPNS
                             // documents cannot be mistaken for ownership.
-                            for recoveredPending in contested
-                            where !DWContestedNameStatusService.shared.isPendingLabel(recoveredPending) {
+                            for recoveredPending in contested {
                                 DWContestedNameStatusService.shared.recordSubmission(
-                                    label: recoveredPending)
+                                    label: recoveredPending, network: network, identityId: identityId, walletId: walletId)
                             }
                         } catch {
                             Self.logger.warning(

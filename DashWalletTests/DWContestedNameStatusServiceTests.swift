@@ -33,6 +33,7 @@ final class DWContestedNameStatusServiceTests: XCTestCase {
         service.recordSubmission(
             label: "Beta",
             network: .testnet,
+            identityId: Data([1]),
             submittedAt: submittedAt)
 
         XCTAssertEqual(service.pendingLabel(for: .testnet), "beta")
@@ -47,6 +48,7 @@ final class DWContestedNameStatusServiceTests: XCTestCase {
         service.recordSubmission(
             label: "TestnetName",
             network: .testnet,
+            identityId: Data([1]),
             submittedAt: submittedAt)
 
         XCTAssertNil(service.pendingLabel(for: .mainnet))
@@ -55,6 +57,7 @@ final class DWContestedNameStatusServiceTests: XCTestCase {
         service.recordSubmission(
             label: "MainnetName",
             network: .mainnet,
+            identityId: Data([1]),
             submittedAt: submittedAt)
 
         XCTAssertEqual(service.pendingLabel(for: .testnet), "testnetname")
@@ -70,6 +73,7 @@ final class DWContestedNameStatusServiceTests: XCTestCase {
         service.recordSubmission(
             label: "Gamma",
             network: .testnet,
+            identityId: Data([1]),
             submittedAt: submittedAt)
 
         service.recordVotingEndTime(authoritativeEnd, label: "Gamma", network: .testnet)
@@ -78,4 +82,14 @@ final class DWContestedNameStatusServiceTests: XCTestCase {
             service.pendingVotingEndTime(for: .testnet),
             authoritativeEnd)
     }
+    func testPendingContestDoesNotHideRecoveryForAnotherIdentity() {
+        service.recordSubmission(label: "Alpha", network: .testnet, identityId: Data([1]))
+        XCTAssertEqual(service.pendingLabels(for: .testnet, identityId: Data([1])), ["alpha"])
+        XCTAssertTrue(service.pendingLabels(for: .testnet, identityId: Data([2])).isEmpty)
+        XCTAssertTrue(service.pendingLabels(for: .testnet, identityId: nil).isEmpty)
+        service.recordSubmission(label: "Beta", network: .testnet, identityId: Data([2]))
+        XCTAssertEqual(service.pendingLabels(for: .testnet, identityId: Data([2])), ["beta"])
+        XCTAssertEqual(service.pendingLabels(for: .testnet, identityId: Data([1])), ["alpha"])
+    }
+
 }
