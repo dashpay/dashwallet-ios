@@ -35,7 +35,7 @@ final class DWContestedNameStatusServiceTests: XCTestCase {
             network: .testnet,
             submittedAt: submittedAt)
 
-        XCTAssertEqual(service.pendingLabel(for: .testnet), "Beta")
+        XCTAssertEqual(service.pendingLabel(for: .testnet), "beta")
         XCTAssertEqual(
             service.pendingVotingEndTime(for: .testnet),
             submittedAt.addingTimeInterval(95 * 60))
@@ -57,8 +57,8 @@ final class DWContestedNameStatusServiceTests: XCTestCase {
             network: .mainnet,
             submittedAt: submittedAt)
 
-        XCTAssertEqual(service.pendingLabel(for: .testnet), "TestnetName")
-        XCTAssertEqual(service.pendingLabel(for: .mainnet), "MainnetName")
+        XCTAssertEqual(service.pendingLabel(for: .testnet), "testnetname")
+        XCTAssertEqual(service.pendingLabel(for: .mainnet), "mainnetname")
         XCTAssertEqual(
             service.pendingVotingEndTime(for: .mainnet),
             submittedAt.addingTimeInterval((14 * 24 * 60 + 5) * 60))

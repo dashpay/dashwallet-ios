@@ -182,6 +182,10 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
             pushCreateUsernameForm(invitationURL: invitationURL, definedUsername: definedUsername)
             return
         }
+        if DWIdentityRegistrationCoordinator.shared.registrationRecovery().isPending {
+            pushCreateUsernameForm(invitationURL: invitationURL, definedUsername: definedUsername)
+            return
+        }
         // Route through the shielded get-ready interstitial whenever
         // the privacy-preserving funding path isn't ready (needs funds
         // / maturing / pool below minimum) so the privacy clock starts

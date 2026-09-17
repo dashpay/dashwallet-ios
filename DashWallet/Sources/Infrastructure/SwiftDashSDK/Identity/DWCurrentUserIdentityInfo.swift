@@ -111,7 +111,11 @@ public final class DWCurrentUserIdentityInfo: NSObject {
 
     /// Cached read of the SDK's current identity info. Rebuilt lazily
     /// on the next property access after `currentRevision` advances.
-    private struct Snapshot {
+    struct Snapshot {
+        var isLoading = false
+        var balanceCredits: UInt64? = nil
+        var pendingContestedName: String? = nil
+        var pendingVotingEndTime: Date? = nil
         let identityId: Data?
         let identityIdHex: String?
         let username: String?
@@ -119,6 +123,11 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         let displayName: String?
         let avatarURL: String?
         let publicMessage: String?
+
+        var hasIdentity: Bool { identityId != nil }
+        var needsUsername: Bool {
+            !isLoading && hasIdentity && username == nil && usernames.isEmpty && pendingContestedName == nil
+        }
 
         static let empty = Snapshot(
             identityId: nil,
@@ -128,6 +137,12 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             displayName: nil,
             avatarURL: nil,
             publicMessage: nil)
+    }
+
+    /// One refreshed value for profile content and action eligibility.
+    @nonobjc func refreshedSnapshot() -> Snapshot {
+        invalidate()
+        return snapshot
     }
 
     private var cachedSnapshot: Snapshot = .empty
@@ -204,10 +219,8 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             && host.modelContainer != nil
     }
 
-    /// First DPNS label for the current identity, or
-    /// `DWGlobalOptions.dashpayUsername` as a post-register fallback
-    /// when the SDK's name cache hasn't been populated yet. Nil if
-    /// no identity is registered.
+    /// First confirmed DPNS label associated with the selected identity.
+    /// A locally entered registration draft is not proof of ownership.
     @objc public var username: String? {
         snapshot.username
     }
@@ -403,7 +416,9 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         guard isCurrentNetworkContextReady,
               let selectedNetwork = WalletEnvironment.network
         else {
-            return .empty
+            var loading = Snapshot.empty
+            loading.isLoading = true
+            return loading
         }
 
         if cachedNetwork != selectedNetwork || cachedRevision != currentRevision {
@@ -411,6 +426,11 @@ public final class DWCurrentUserIdentityInfo: NSObject {
                 cachedSnapshot = computed
                 cachedRevision = currentRevision
                 cachedNetwork = selectedNetwork
+            }
+            else {
+                var loading = Snapshot.empty
+                loading.isLoading = true
+                return loading
             }
             // else: host wasn't ready (wallet/container hydrating).
             // Don't bump cachedRevision so the next read retries
@@ -458,7 +478,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         )
         walletDescriptor.fetchLimit = 1
         guard let persistedWallet = try? context.fetch(walletDescriptor).first else {
-            return .empty
+            return nil
         }
         // Resolution order: the user's stored main-identity pick (when it
         // still names one of this wallet's identities), then the pinned
@@ -567,16 +587,9 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             username = usernames.first
         }
 
-        // Post-register fallback: SwiftDashSDK's DPNS cache is empty
-        // immediately after `registerDpnsName` returns until the next
-        // `syncDpnsNames` round, but the coordinator writes
-        // `DWGlobalOptions.dashpayUsername` on `.completed` for
-        // uncontested submissions only — contested submissions defer
-        // the write entirely, so the fallback can't match a pending
-        // contested label by construction.
-        if username == nil {
-            username = Self.nilIfEmpty(DWGlobalOptions.sharedInstance().dashpayUsername)
-        }
+        // Only names associated with this selected identity are authoritative.
+        // The legacy global mirror also holds attempted labels (before DPNS)
+        // and can belong to a different selected identity in the same wallet.
 
         // Self-heal the DWGlobalOptions mirror. Registration completion
         // and Find-identities adoption are the only writers, so an
@@ -586,8 +599,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         // DashPay banner, DWDashPayModel's registration status) then
         // disagrees with the SDK truth rendered everywhere else. Only a
         // confirmed name qualifies (`usernames` — fed by the SDK DPNS
-        // cache or the persisted SwiftData sources; the `DWGlobalOptions`
-        // fallback above IS the mirror and never feeds it), and the
+        // cache or the persisted SwiftData sources), and the
         // pending-contested filter has already run, so a deferred
         // contested registration can't sneak in. The
         // canonical notification is posted async: this runs lazily inside a
@@ -613,6 +625,10 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             "🪪 IDENT-INFO :: snapshot username=\(username ?? "nil", privacy: .public) hasProfile=\(displayName != nil || avatarURL != nil, privacy: .public) id=\(hex.prefix(8), privacy: .public)…")
 
         return Snapshot(
+            balanceCredits: (try? wallet.managedIdentity(identityId: identityId).getBalance())
+                ?? UInt64(bitPattern: persisted.balance),
+            pendingContestedName: DWContestedNameStatusService.shared.pendingLabel,
+            pendingVotingEndTime: DWContestedNameStatusService.shared.pendingVotingEndTime,
             identityId: identityId,
             identityIdHex: hex,
             username: username,

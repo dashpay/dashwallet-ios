@@ -167,7 +167,9 @@ struct CreateUsernameView: View {
         VStack(alignment: .leading, spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Text(NSLocalizedString("Create your username", comment: "Usernames"))
+                    Text(viewModel.isResumingUsername
+                        ? NSLocalizedString("Finish username registration", comment: "DashPay registration recovery")
+                        : NSLocalizedString("Create your username", comment: "Usernames"))
                         .foregroundColor(.dash.primaryText)
                         .font(.title1)
                         .padding(.top, 12)
@@ -222,7 +224,10 @@ struct CreateUsernameView: View {
                             .padding(.top, 20)
                     }
 
-                    if viewModel.hasPendingRegistrationRecovery {
+                    if viewModel.isIdentityLoading {
+                        SwiftUI.ProgressView(NSLocalizedString("Loading identity…", comment: "DashPay registration recovery"))
+                            .padding(.top, 20)
+                    } else if viewModel.hasPendingRegistrationRecovery {
                         registrationRecoveryBanner
                             .padding(.top, 20)
                     }
@@ -244,7 +249,7 @@ struct CreateUsernameView: View {
                     // user already answered this question on the readiness
                     // interstitial (`suppressShieldedHint`).
                     if !viewModel.isInvitationMode,
-                       !viewModel.hasPendingRegistrationRecovery,
+                       !viewModel.hasPendingRegistrationRecovery, !viewModel.isIdentityLoading,
                        !suppressShieldedHint {
                         shieldedReadinessHint
                     }
@@ -255,7 +260,7 @@ struct CreateUsernameView: View {
                     // auto-pinned by `syncFundingSourceToViableSource()` so the
                     // Continue handler routes correctly without UI clutter.
                     if !viewModel.isInvitationMode,
-                       !viewModel.hasPendingRegistrationRecovery,
+                       !viewModel.hasPendingRegistrationRecovery, !viewModel.isIdentityLoading,
                        viableFundingSources.count >= 2 {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(NSLocalizedString("Pay with", comment: "Usernames"))
@@ -322,10 +327,10 @@ struct CreateUsernameView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
             isTextInputFocused = true
-            viewModel.refreshRegistrationRecoveryState()
             if let invitationURI {
                 viewModel.configureInvitationMode(uri: invitationURI)
             }
+            viewModel.refreshRegistrationRecoveryState()
             if let definedUsername, !definedUsername.isEmpty, viewModel.username.isEmpty {
                 viewModel.username = definedUsername
             }
@@ -333,6 +338,13 @@ struct CreateUsernameView: View {
             // viable source (typical case) doesn't default to a
             // non-viable Core path.
             syncFundingSourceToViableSource()
+        }
+        .task(id: viewModel.isIdentityLoading) {
+            while viewModel.isIdentityLoading {
+                do { try await Task.sleep(nanoseconds: 250_000_000) }
+                catch { return }
+                viewModel.refreshRegistrationRecoveryState()
+            }
         }
         .onChange(of: viewModel.hasMinimumRequiredCoreBalance) { _ in
             syncFundingSourceToViableSource()
@@ -470,9 +482,9 @@ struct CreateUsernameView: View {
                     comment: "DashPay registration recovery"))
                     .font(.subheadline.bold())
                     .foregroundColor(.dash.primaryText)
-                Text(NSLocalizedString(
-                    "Your previous payment was found. Continue to finish creating the identity and username without paying again.",
-                    comment: "DashPay registration recovery"))
+                Text(viewModel.isResumingUsername
+                    ? NSLocalizedString("Your identity is ready. Finish registering a username using its existing credits.", comment: "DashPay registration recovery")
+                    : NSLocalizedString("Your previous payment was found. Continue to finish creating the identity and username without paying again.", comment: "DashPay registration recovery"))
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -720,6 +732,7 @@ struct CreateUsernameView: View {
             case .cancelled:
                 break
             case .failure(let message):
+                viewModel.refreshRegistrationRecoveryState()
                 registrationErrorMessage = message
             case .submittedForVoting:
                 // A purchase never enters a vote; the outcome enum is
@@ -753,8 +766,11 @@ struct CreateUsernameView: View {
     /// single write is the only synchronization needed.
     private func performSubmit(temporaryUsername: String? = nil) {
         if !viewModel.isInvitationMode {
-            DWIdentityRegistrationBridge.shared.preferredFundingSource =
-                viewModel.hasPendingRegistrationRecovery ? .core : fundingSource
+            if viewModel.registrationRecovery == .pendingCoreAssetLock {
+                DWIdentityRegistrationBridge.shared.preferredFundingSource = .core
+            } else if !viewModel.isResumingUsername {
+                DWIdentityRegistrationBridge.shared.preferredFundingSource = fundingSource
+            }
         }
         Task {
             // `inProgress` keeps the Continue spinner up — and the screen
@@ -779,6 +795,7 @@ struct CreateUsernameView: View {
                 screenLockedAfterAuth = false
                 break // user backed out of the PIN — stay on screen, allow retry
             case .failure(let message):
+                viewModel.refreshRegistrationRecoveryState()
                 registrationErrorMessage = message
             }
         }
