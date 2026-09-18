@@ -17,6 +17,18 @@ private enum CoreLifecycleTestError: Error {
 final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
     private let now = Date(timeIntervalSince1970: 10_000)
 
+    func testNameEndpointFailureDoesNotBlockAdoptingDiscoveredIdentity() async throws {
+        let id = Data([1])
+        var adopted = false
+        let outcome = try await SameSeedIdentityRecoveryPipeline.run(
+            localIdentityIds: { [id] }, discover: { XCTFail("Already discovered"); return [] },
+            refreshNames: { _ in throw NSError(domain: "test", code: 1) },
+            adopt: { adopted = true; return true })
+        XCTAssertTrue(adopted)
+        XCTAssertTrue(outcome.adopted)
+        XCTAssertTrue(outcome.identitiesPersisted)
+    }
+
     func testRestartRunsExactlyStopThenStartAndResetsBusyState() async throws {
         var events: [String] = []
         var restartingStates: [Bool] = []

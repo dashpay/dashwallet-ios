@@ -19,8 +19,11 @@ import SwiftUI
 import DashUIKit
 
 enum JoinDashPayState {
+    case loading
+    case retryLoading
     case none
     case callToAction
+    case usernameRequired
     case voting
     case approved
     case failed
@@ -31,7 +34,7 @@ enum JoinDashPayState {
 
 extension JoinDashPayState {
     func hasAction() -> Bool {
-        return self == .callToAction || self == .approved || self == .failed || self == .blocked || self == .contested
+        return self == .usernameRequired || self == .callToAction || self == .approved || self == .failed || self == .blocked || self == .contested
     }
 }
 
@@ -49,7 +52,7 @@ struct JoinDashPayCopy {
 
     var iconName: String {
         switch state {
-        case .none, .callToAction, .registered:
+        case .loading, .retryLoading, .none, .callToAction, .usernameRequired, .registered:
             return "dp_user_generic"
         case .voting:
             return "username_requested"
@@ -62,10 +65,16 @@ struct JoinDashPayCopy {
 
     var title: String {
         switch state {
+        case .retryLoading:
+            return NSLocalizedString("Retry loading identity", comment: "Identity recovery")
+        case .loading:
+            return NSLocalizedString("Loading identity…", comment: "DashPay registration recovery")
         case .none:
             return NSLocalizedString("Join DashPay", comment: "")
         case .callToAction:
             return NSLocalizedString("Upgrade to DashPay", comment: "")
+        case .usernameRequired:
+            return NSLocalizedString("Finish username registration", comment: "DashPay registration recovery")
         case .voting, .registered:
             return username
         case .approved:
@@ -83,6 +92,8 @@ struct JoinDashPayCopy {
         switch state {
         case .none:
             return NSLocalizedString("Request your username", comment: "")
+        case .usernameRequired:
+            return NSLocalizedString("Your identity is ready. Use its existing credits to register a username.", comment: "DashPay registration recovery")
         case .callToAction:
             switch shieldedSnapshot?.state {
             case .maturing(let readyAt):
@@ -118,13 +129,15 @@ struct JoinDashPayCopy {
             return String.localizedStringWithFormat(NSLocalizedString("The username '%@' was blocked by the Dash Network. Please try again by requesting another username.", comment: "Usernames"), username)
         case .contested:
             return String.localizedStringWithFormat(NSLocalizedString("Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username.", comment: "Usernames"), username)
-        case .registered:
+        case .loading, .retryLoading, .registered:
             return ""
         }
     }
     
     var actionText: String {
         switch state {
+        case .usernameRequired:
+            return NSLocalizedString("Continue", comment: "DashPay registration recovery")
         case .callToAction:
             return NSLocalizedString("Upgrade", comment: "")
         case .approved:
@@ -178,7 +191,7 @@ struct JoinDashPayMenuItem: View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.MenuItem(
                 leadingIcon: .custom(copy.iconName, bundle: .main),
-                isEnabled: !isSyncing,
+                isEnabled: !isSyncing && viewModel.state != .loading,
                 disabledLeadingIcon: .custom("menu-send-account-disabled", bundle: .dashUIKit),
                 title: copy.title,
                 helpText: viewModel.state == .registered ? nil : copy.subtitle,
@@ -188,8 +201,12 @@ struct JoinDashPayMenuItem: View {
             // row leads to (join, retry, edit profile) needs a synced chain, so
             // a tap here could only fail. The note below says why.
             .onTapGesture {
-                guard !isSyncing else { return }
-                onTap(viewModel.state)
+                guard !isSyncing && viewModel.state != .loading else { return }
+                if viewModel.state == .retryLoading {
+                    viewModel.retryLoading()
+                } else {
+                    onTap(viewModel.state)
+                }
             }
             .overlay(alignment: .topTrailing) {
                 if let onDismiss {
@@ -229,6 +246,15 @@ struct JoinDashPayMenuItem: View {
         .modifier(MenuViewModifier())
         .onAppear {
             viewModel.checkUsername()
+        }
+        .task(id: viewModel.state == .loading) {
+            for _ in 0..<20 {
+                guard viewModel.state == .loading else { return }
+                do { try await Task.sleep(nanoseconds: 250_000_000) }
+                catch { return }
+                viewModel.checkUsername()
+            }
+            viewModel.finishLoadingAttempt()
         }
     }
 }

@@ -412,7 +412,7 @@ struct UsernameMarketplaceService {
         // Bookmark BEFORE the vote-state read — Platform can legitimately
         // return nil until the contest is indexed, and the conservative
         // fallback deadline written here is what reconciliation leans on.
-        DWContestedNameStatusService.shared.recordSubmission(label: label, network: network)
+        DWContestedNameStatusService.shared.recordSubmission(label: label, network: network, identityId: identityId, walletId: wallet.walletId)
         do {
             _ = try await wallet.syncContestedDpnsNames(identityId: identityId)
         } catch {
@@ -421,7 +421,7 @@ struct UsernameMarketplaceService {
         var endTime: Date?
         if let state = try? await wallet.fetchContestVoteState(identityId: identityId, label: label) {
             endTime = state.endTime
-            DWContestedNameStatusService.shared.recordVotingEndTime(state.endTime, label: label, network: network)
+            DWContestedNameStatusService.shared.recordVotingEndTime(state.endTime, label: label, network: network, walletId: wallet.walletId)
         }
         return endTime
     }

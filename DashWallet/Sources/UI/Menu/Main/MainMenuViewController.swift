@@ -433,6 +433,10 @@ struct MainMenuScreen: View {
     /// the users this state describes, which read on screen as a dead row.
     private func handleJoinDashPayRowTap(state: JoinDashPayState) {
         switch state {
+        case .loading, .retryLoading:
+            return
+        case .usernameRequired:
+            joinDashPay()
         case .none, .callToAction, .blocked, .failed, .contested:
             // Not registered (or the attempt failed): open the join flow,
             // which also carries the "Have an invitation?" entry.
@@ -535,6 +539,10 @@ struct MainMenuScreen: View {
 
     private func joinDashPay() {
         guard let dashPayModel = viewModel.dashPayModel else { return }
+        if DWIdentityRegistrationCoordinator.shared.registrationRecovery().isPending {
+            pushCreateUsernameForm(dashPayModel: dashPayModel)
+            return
+        }
 
         let readiness = ShieldedIdentityFundingReadiness.shared.evaluate(
             requiredCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits)
