@@ -16,6 +16,16 @@ with tempfile.TemporaryDirectory(prefix="identity-balance-tests-") as directory:
         repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/Identity/DWIdentityBalanceRefresh.swift")
     (tests / "IdentityBalanceRefreshTests.swift").symlink_to(
         repository / "DashWalletTests/IdentityBalanceRefreshTests.swift")
+    # Compile the actual coordinator completion block against small app/SDK
+    # stand-ins. This tests its production ordering, including where the Task
+    # is created, rather than a separately reimplemented scheduling helper.
+    coordinator = (repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/Identity/DWIdentityRegistrationCoordinator.swift").read_text()
+    completion = coordinator.split(
+        "            _ = try? await wallet.syncDpnsNames(identityId: identityId)\n        }\n", 1)[1]
+    completion = completion.split("\n    }", 1)[0]
+    scaffold = (repository / "scripts/fixtures/IdentityRegistrationCompletionHarness.swift").read_text()
+    (source / "IdentityRegistrationCompletionHarness.swift").write_text(
+        scaffold.replace("        // PRODUCTION_COMPLETION_BLOCK", completion))
     (package / "Package.swift").write_text('''// swift-tools-version: 5.9
 import PackageDescription
 let package = Package(name: "IdentityBalanceHarness", platforms: [.macOS("15.0")], targets: [

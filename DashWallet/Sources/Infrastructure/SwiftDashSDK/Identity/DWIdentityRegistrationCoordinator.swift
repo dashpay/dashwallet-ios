@@ -1154,12 +1154,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             _ = try? await wallet.syncDpnsNames(identityId: identityId)
         }
 
-        // Both the primary and optional companion DPNS documents debit this
-        // identity. Refresh once after all attempts, including reconciliation
-        // of an already-owned name. Read failure never undoes registration.
-        await DWCurrentUserIdentityInfo.shared.refreshBalanceFromNetwork(
-            identityId: identityId, wallet: wallet, network: network)
-
         // Step 4: mark complete + mirror to DWGlobalOptions. The
         // controller transition triggers the phaseSubscription
         // sink which posts the notification + writes
@@ -1186,6 +1180,14 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()
         newController.enterCompleted(identityId: identityId)
         Self.logger.info("🪪 IDENT-COORD :: registration complete")
+
+        // Completion bookkeeping and the success return must not depend on this
+        // optional network read. Keep the captured wallet/network guards inside
+        // the refresh so a later context switch cannot publish into another wallet.
+        Task { @MainActor in
+            await DWCurrentUserIdentityInfo.shared.refreshBalanceFromNetwork(
+                identityId: identityId, wallet: wallet, network: network)
+        }
         return identityId
     }
 

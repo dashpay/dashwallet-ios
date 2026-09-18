@@ -312,6 +312,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
                     && host.runningNetwork == network
                     && WalletEnvironment.network == network
             },
+            previousBalance: { try? wallet.managedIdentity(identityId: identityId).getBalance() },
             refresh: { try await wallet.refreshIdentityBalance(identityId: identityId) },
             publish: { balance in
                 self.invalidate()
@@ -321,6 +322,14 @@ public final class DWCurrentUserIdentityInfo: NSObject {
                     object: nil)
             },
             onFailure: { error in
+                if let walletError = error as? PlatformWalletError {
+                    switch walletError {
+                    case .persisterStoreTransient, .persisterStoreFatal, .persisterStoreConstraint:
+                        Self.logger.error("🪪 IDENT-INFO :: identity balance persistence failed: \(String(describing: error), privacy: .public)")
+                        return
+                    default: break
+                    }
+                }
                 Self.logger.warning("🪪 IDENT-INFO :: identity balance refresh failed: \(String(describing: error), privacy: .public)")
             })
     }
@@ -330,7 +339,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         guard isCurrentNetworkContextReady,
               let wallet = SwiftDashSDKHost.shared.wallet,
               let network = SwiftDashSDKHost.shared.runningNetwork,
-              let identityId = refreshedSnapshot().identityId else { return }
+              let identityId = snapshot.identityId else { return }
         await refreshBalanceFromNetwork(identityId: identityId, wallet: wallet, network: network)
     }
 

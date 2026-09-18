@@ -64,6 +64,45 @@ final class IdentityBalanceRefreshTests: XCTestCase {
         }
     }
 
+    func testCancelledRefreshDoesNotPublishAfterReadCompletes() async {
+        let task = Task { @MainActor in
+            await IdentityBalanceRefresh.run(
+                isCurrent: { true }, previousBalance: { 42 },
+                refresh: {
+                    withUnsafeCurrentTask { $0?.cancel() }
+                    return 43
+                },
+                publish: { _ in XCTFail("Dismissed profile must not publish") },
+                onFailure: { _ in XCTFail() })
+        }
+        await task.value
+    }
+
+    func testUnchangedBalanceStillPersistsWithoutPublishing() async {
+        for balance: UInt64 in [0, 42] {
+            var persisted = false
+            await IdentityBalanceRefresh.run(
+                isCurrent: { true }, previousBalance: { balance },
+                refresh: { persisted = true; return balance },
+                publish: { _ in XCTFail("Unchanged balance must not notify observers") },
+                onFailure: { _ in XCTFail() })
+            XCTAssertTrue(persisted)
+        }
+    }
+
+    func testChangedBalancePublishesAfterPersistence() async {
+        for balance: UInt64 in [0, 43] {
+            var persisted = false
+            var published: UInt64?
+            await IdentityBalanceRefresh.run(
+                isCurrent: { true }, previousBalance: { 42 },
+                refresh: { persisted = true; return balance },
+                publish: { XCTAssertTrue(persisted); published = $0 },
+                onFailure: { _ in XCTFail() })
+            XCTAssertEqual(published, balance)
+        }
+    }
+
     func testConfirmedZeroBalanceIsPublished() async {
         var result: UInt64?
         await IdentityBalanceRefresh.run(
@@ -71,4 +110,44 @@ final class IdentityBalanceRefreshTests: XCTestCase {
             publish: { result = $0 }, onFailure: { _ in XCTFail() })
         XCTAssertEqual(result, 0)
     }
+
+    #if !canImport(dashpay)
+    // The standalone runner compiles the actual coordinator completion block.
+    func testCoordinatorReturnsSuccessAndClearsDraftWhileBalanceReadIsSuspended() async throws {
+        let coordinator = RegistrationCompletionHarness()
+        UsernameRegistrationDraftStore.didClear = false
+        DWContestedNameStatusService.shared.didClearPending = false
+        let readStarted = expectation(description: "Balance read started")
+        let readFinished = expectation(description: "Balance read finished")
+        var resumeRead: CheckedContinuation<Void, Never>?
+        var returnedSuccess = false
+        DWCurrentUserIdentityInfo.shared.refresh = {
+            XCTAssertTrue(returnedSuccess, "Success must return before optional balance read")
+            XCTAssertEqual(coordinator.newController.completedIdentity, coordinator.identityId)
+            XCTAssertTrue(UsernameRegistrationDraftStore.didClear)
+            XCTAssertTrue(DWContestedNameStatusService.shared.didClearPending)
+            await withCheckedContinuation { continuation in
+                resumeRead = continuation
+                readStarted.fulfill()
+            }
+            readFinished.fulfill()
+        }
+        defer { DWCurrentUserIdentityInfo.shared.refresh = {} }
+        let completed = expectation(description: "Registration returned")
+        let registration = Task { @MainActor in
+            let identity = try await coordinator.completeRegistration()
+            XCTAssertEqual(identity, coordinator.identityId)
+            returnedSuccess = true
+            completed.fulfill()
+        }
+        await fulfillment(of: [completed, readStarted], timeout: 2)
+        // A context switch while the optional read is suspended cannot undo
+        // completed registration or trigger a later coordinator validation.
+        coordinator.validateContext = { XCTFail("Registration already completed") }
+        resumeRead?.resume()
+        await fulfillment(of: [readFinished], timeout: 2)
+        try await registration.value
+    }
+    #endif
+
 }

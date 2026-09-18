@@ -42,6 +42,13 @@ struct SDKIdentityProfileSheet: View {
     @State private var loadedUsername: String?
     @State private var identityIsLoading = true
     @State private var balanceRefreshContext: IdentityBalanceRefresh.Context?
+    @State private var balanceRefreshAttempt = 0
+
+    private struct BalanceRefreshRequest: Hashable {
+        let context: IdentityBalanceRefresh.Context?
+        let attempt: Int
+    }
+
     @State private var identityLoadTimedOut = false
     @State private var identityLoadAttempt = 0
 
@@ -130,9 +137,10 @@ struct SDKIdentityProfileSheet: View {
                 }
                 identityLoadTimedOut = identityIsLoading
             }
-            .task(id: balanceRefreshContext) {
+            .task(id: BalanceRefreshRequest(context: balanceRefreshContext, attempt: balanceRefreshAttempt)) {
                 guard balanceRefreshContext != nil else { return }
                 await DWCurrentUserIdentityInfo.shared.refreshCurrentBalanceFromNetwork()
+                guard !Task.isCancelled else { return }
                 reloadIdentitySnapshot()
             }
             .onReceive(NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)) { _ in
@@ -140,10 +148,9 @@ struct SDKIdentityProfileSheet: View {
             }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
                 reloadIdentitySnapshot()
-                Task { @MainActor in
-                    await DWCurrentUserIdentityInfo.shared.refreshCurrentBalanceFromNetwork()
-                    reloadIdentitySnapshot()
-                }
+                // Restart the view-owned task; SwiftUI cancels it on dismissal
+                // and on wallet/identity changes through the request context.
+                balanceRefreshAttempt += 1
             }
             .onReceive(NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)) { _ in
                 restartIdentityLoading()
