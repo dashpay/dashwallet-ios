@@ -30,8 +30,8 @@ struct SDKIdentityProfileSheet: View {
     @State private var pendingVotingEndTime: Date? = nil
     @State private var copyToast: String? = nil
     /// The identity's credit balance (credits, 1000 credits = 1 duff),
-    /// from the persisted identity row; refreshed by a top-up's returned
-    /// post-transition balance. nil until the identity row loads.
+    /// refreshed from Platform when the profile opens. nil until the
+    /// identity row loads; read failures retain the last known balance.
     @State private var identityBalanceCredits: UInt64?
     /// 32-byte identity id the top-up transition targets.
     @State private var identityIdData: Data?
@@ -41,6 +41,14 @@ struct SDKIdentityProfileSheet: View {
     @State private var showingUsernameRecovery = false
     @State private var loadedUsername: String?
     @State private var identityIsLoading = true
+    @State private var balanceRefreshContext: IdentityBalanceRefresh.Context?
+    @State private var balanceRefreshAttempt = 0
+
+    private struct BalanceRefreshRequest: Hashable {
+        let context: IdentityBalanceRefresh.Context?
+        let attempt: Int
+    }
+
     @State private var identityLoadTimedOut = false
     @State private var identityLoadAttempt = 0
 
@@ -129,11 +137,20 @@ struct SDKIdentityProfileSheet: View {
                 }
                 identityLoadTimedOut = identityIsLoading
             }
+            .task(id: BalanceRefreshRequest(context: balanceRefreshContext, attempt: balanceRefreshAttempt)) {
+                guard balanceRefreshContext != nil else { return }
+                await DWCurrentUserIdentityInfo.shared.refreshCurrentBalanceFromNetwork()
+                guard !Task.isCancelled else { return }
+                reloadIdentitySnapshot()
+            }
             .onReceive(NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)) { _ in
                 reloadIdentitySnapshot()
             }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
                 reloadIdentitySnapshot()
+                // Restart the view-owned task; SwiftUI cancels it on dismissal
+                // and on wallet/identity changes through the request context.
+                balanceRefreshAttempt += 1
             }
             .onReceive(NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)) { _ in
                 restartIdentityLoading()
@@ -176,6 +193,14 @@ struct SDKIdentityProfileSheet: View {
 
     private func reloadIdentitySnapshot() {
         let snapshot = snapshotProvider()
+        if let identityId = snapshot.identityId,
+           let wallet = SwiftDashSDKHost.shared.wallet,
+           let network = SwiftDashSDKHost.shared.runningNetwork {
+            balanceRefreshContext = .init(
+                network: network.persistenceScope, walletId: wallet.walletId, identityId: identityId)
+        } else {
+            balanceRefreshContext = nil
+        }
         identityIsLoading = snapshot.isLoading
         identityIdData = snapshot.identityId
         identityIdHex = snapshot.identityIdHex
