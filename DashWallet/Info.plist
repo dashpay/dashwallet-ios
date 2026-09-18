@@ -114,6 +114,8 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Used to hand a nearby browser a time- and spend-limited login key for your username.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Used to scan barcodes</string>
 	<key>NSFaceIDUsageDescription</key>

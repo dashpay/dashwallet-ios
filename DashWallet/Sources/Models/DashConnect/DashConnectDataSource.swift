@@ -36,6 +36,14 @@ protocol DashConnectDataSource {
     /// transition could already have reached Platform — the caller must not
     /// offer a retry when it could have.
     func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws
+    /// The Bluetooth login: registers a fresh AUTHENTICATION / HIGH key on the
+    /// identity carrying `limits`, and returns the login key it was derived
+    /// from encrypted to the browser's ephemeral key, ready to serve on the
+    /// response characteristic. The connection is recorded as active.
+    func shareLoginKey(
+        _ request: DashKeyRequest,
+        limits: BrowserLoginKeyLimits
+    ) async throws -> BrowserLoginBleProtocol.Response
     func disconnect(id: String) async
     func remove(id: String) async
 }
@@ -237,6 +245,41 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws {
         throw DashConnectTokenPurchaseFailure.beforeSubmission(
             DashConnectMockError.stateTransitionNotSupported)
+    }
+
+    func shareLoginKey(
+        _ request: DashKeyRequest,
+        limits: BrowserLoginKeyLimits
+    ) async throws -> BrowserLoginBleProtocol.Response {
+        try await Task.sleep(nanoseconds: 400_000_000)
+
+        if shouldFailNextApprove {
+            shouldFailNextApprove = false
+            throw DashConnectMockError.approveFailed
+        }
+
+        let connectionRequest = await makeConnectionRequest(from: request)
+        let connection = DAppConnection(
+            id: connectionRequest.appContractId,
+            name: connectionRequest.appLabel.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : connectionRequest.appLabel,
+            url: connectionRequest.appUrl,
+            status: .active,
+            updatedAt: Date()
+        )
+        var current = subject.value.filter { $0.id != connection.id }
+        current.append(connection)
+        persistAndSend(current)
+
+        // Not a real envelope: the mock never holds an identity, so it hands
+        // back recognisable filler of the right shape.
+        return BrowserLoginBleProtocol.Response(
+            identityId: Data(repeating: 0x33, count: 32),
+            walletEphemeralPublicKey: request.appEphemeralPubKey,
+            encryptedPayload: Data(repeating: 0x00, count: 60),
+            keyId: 7,
+            expiresAt: limits.expiresAt(from: Date()),
+            totalBudget: limits.totalBudget
+        )
     }
 
     func disconnect(id: String) async {

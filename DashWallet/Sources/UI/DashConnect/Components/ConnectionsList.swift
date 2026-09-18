@@ -26,21 +26,26 @@ struct ConnectionsList: View {
     let connections: [DAppConnection]
     let onScanQR: () -> Void
     let onMockScan: () -> Void
+    let onShareOverBluetooth: () -> Void
     let onDisconnect: (DAppConnection) -> Void
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 2) {
-                ForEach(connections) { connection in
-                    ConnectionRow(
-                        connection: connection,
-                        onPrimaryAction: onScanQR,
-                        onMockScan: onMockScan,
-                        onDisconnect: { onDisconnect(connection) }
-                    )
+            VStack(spacing: 16) {
+                VStack(spacing: 2) {
+                    ForEach(connections) { connection in
+                        ConnectionRow(
+                            connection: connection,
+                            onPrimaryAction: onScanQR,
+                            onMockScan: onMockScan,
+                            onDisconnect: { onDisconnect(connection) }
+                        )
+                    }
                 }
+                .modifier(MenuViewModifier())
+
+                ShareOverBluetoothButton(action: onShareOverBluetooth)
             }
-            .modifier(MenuViewModifier())
         }
     }
 }
@@ -58,6 +63,7 @@ struct ConnectionsList: View {
         },
         onScanQR: {},
         onMockScan: {},
+        onShareOverBluetooth: {},
         onDisconnect: { _ in }
     )
     .padding(20)

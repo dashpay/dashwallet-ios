@@ -1293,6 +1293,13 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
         throw PurchaseSpyError.unsupported
     }
 
+    func shareLoginKey(
+        _ request: DashKeyRequest,
+        limits: BrowserLoginKeyLimits
+    ) async throws -> BrowserLoginBleProtocol.Response {
+        throw DashConnectMockError.stateTransitionNotSupported
+    }
+
     func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction {
         throw PurchaseSpyError.unsupported
     }

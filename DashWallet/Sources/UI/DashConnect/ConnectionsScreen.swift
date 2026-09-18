@@ -93,12 +93,13 @@ struct ConnectionsScreen: View {
         if viewModel.featureUnavailable {
             ConnectionsUnavailableState()
         } else if viewModel.connections.isEmpty {
-            ConnectionsEmptyState(onScanQR: showScanner, onMockScan: mockScan)
+            ConnectionsEmptyState(onScanQR: showScanner, onMockScan: mockScan, onShareOverBluetooth: showShareLoginKey)
         } else {
             ConnectionsList(
                 connections: viewModel.connections,
                 onScanQR: showScanner,
                 onMockScan: mockScan,
+                onShareOverBluetooth: showShareLoginKey,
                 onDisconnect: viewModel.disconnect
             )
             .padding(.horizontal, 20)
@@ -173,6 +174,15 @@ struct ConnectionsScreen: View {
         }
 
         vc.present(scanner, animated: true)
+    }
+
+    /// The Bluetooth alternative to scanning: the phone advertises and the
+    /// browser connects to it.
+    private func showShareLoginKey() {
+        let screen = ShareLoginKeyScreen(vc: vc, viewModel: viewModel.makeShareLoginKeyViewModel())
+        let controller = UIHostingController(rootView: screen)
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
     }
 
     private func mockScan() {

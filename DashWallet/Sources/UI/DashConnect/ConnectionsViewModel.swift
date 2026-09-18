@@ -280,6 +280,12 @@ final class ConnectionsViewModel: ObservableObject {
         purchaseApproveError = nil
     }
 
+    /// The Bluetooth login screen shares this screen's data source, so a key
+    /// shared there shows up in the connections list on return.
+    func makeShareLoginKeyViewModel() -> ShareLoginKeyViewModel {
+        ShareLoginKeyViewModel(dataSource: dataSource)
+    }
+
     func disconnect(_ connection: DAppConnection) {
         Task {
             await dataSource.disconnect(id: connection.id)

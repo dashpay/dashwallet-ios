@@ -25,6 +25,7 @@ import SwiftUI
 struct ConnectionsEmptyState: View {
     let onScanQR: () -> Void
     let onMockScan: () -> Void
+    let onShareOverBluetooth: () -> Void
 
     var body: some View {
         VStack {
@@ -57,8 +58,11 @@ struct ConnectionsEmptyState: View {
                     .multilineTextAlignment(.center)
                 }
 
-                ScanQRButton(onScanQR: onScanQR, onMockScan: onMockScan)
-                    .padding(.horizontal, 60)
+                VStack(spacing: 8) {
+                    ScanQRButton(onScanQR: onScanQR, onMockScan: onMockScan)
+                    ShareOverBluetoothButton(action: onShareOverBluetooth)
+                }
+                .padding(.horizontal, 60)
             }
             .padding(.horizontal, 60)
 
@@ -69,6 +73,6 @@ struct ConnectionsEmptyState: View {
 }
 
 #Preview {
-    ConnectionsEmptyState(onScanQR: {}, onMockScan: {})
+    ConnectionsEmptyState(onScanQR: {}, onMockScan: {}, onShareOverBluetooth: {})
         .background(Color.primaryBackground)
 }
