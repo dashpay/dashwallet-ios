@@ -1629,6 +1629,7 @@ final class SwiftDashSDKHost {
             cloudKitDatabase: .none)
         return try ModelContainer(
             for: DashModelContainer.schema,
+            migrationPlan: DashMigrationPlan.self,
             configurations: [configuration])
     }
 
