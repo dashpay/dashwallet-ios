@@ -20,6 +20,7 @@ import DashUIKit
 
 enum JoinDashPayState {
     case loading
+    case retryLoading
     case none
     case callToAction
     case usernameRequired
@@ -51,7 +52,7 @@ struct JoinDashPayCopy {
 
     var iconName: String {
         switch state {
-        case .loading, .none, .callToAction, .usernameRequired, .registered:
+        case .loading, .retryLoading, .none, .callToAction, .usernameRequired, .registered:
             return "dp_user_generic"
         case .voting:
             return "username_requested"
@@ -64,6 +65,8 @@ struct JoinDashPayCopy {
 
     var title: String {
         switch state {
+        case .retryLoading:
+            return NSLocalizedString("Retry loading identity", comment: "Identity recovery")
         case .loading:
             return NSLocalizedString("Loading identity…", comment: "DashPay registration recovery")
         case .none:
@@ -126,7 +129,7 @@ struct JoinDashPayCopy {
             return String.localizedStringWithFormat(NSLocalizedString("The username '%@' was blocked by the Dash Network. Please try again by requesting another username.", comment: "Usernames"), username)
         case .contested:
             return String.localizedStringWithFormat(NSLocalizedString("Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username.", comment: "Usernames"), username)
-        case .loading, .registered:
+        case .loading, .retryLoading, .registered:
             return ""
         }
     }
@@ -199,7 +202,11 @@ struct JoinDashPayMenuItem: View {
             // a tap here could only fail. The note below says why.
             .onTapGesture {
                 guard !isSyncing && viewModel.state != .loading else { return }
-                onTap(viewModel.state)
+                if viewModel.state == .retryLoading {
+                    viewModel.retryLoading()
+                } else {
+                    onTap(viewModel.state)
+                }
             }
             .overlay(alignment: .topTrailing) {
                 if let onDismiss {
@@ -241,11 +248,13 @@ struct JoinDashPayMenuItem: View {
             viewModel.checkUsername()
         }
         .task(id: viewModel.state == .loading) {
-            while viewModel.state == .loading {
+            for _ in 0..<20 {
+                guard viewModel.state == .loading else { return }
                 do { try await Task.sleep(nanoseconds: 250_000_000) }
                 catch { return }
                 viewModel.checkUsername()
             }
+            viewModel.finishLoadingAttempt()
         }
     }
 }

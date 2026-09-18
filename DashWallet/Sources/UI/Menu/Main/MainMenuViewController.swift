@@ -433,7 +433,7 @@ struct MainMenuScreen: View {
     /// the users this state describes, which read on screen as a dead row.
     private func handleJoinDashPayRowTap(state: JoinDashPayState) {
         switch state {
-        case .loading:
+        case .loading, .retryLoading:
             return
         case .usernameRequired:
             joinDashPay()

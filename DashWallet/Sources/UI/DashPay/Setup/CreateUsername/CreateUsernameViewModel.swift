@@ -227,6 +227,7 @@ class CreateUsernameViewModel: ObservableObject {
     /// recovery path asks the user to fund a second identity.
     @Published private(set) var registrationRecovery: UsernameRegistrationRecovery = .none
     @Published private(set) var isIdentityLoading = true
+    @Published private(set) var recoveryHasNoCredits = false
     var hasPendingRegistrationRecovery: Bool { registrationRecovery.isPending }
     var isResumingUsername: Bool { registrationRecovery.identityId != nil }
 
@@ -334,6 +335,7 @@ class CreateUsernameViewModel: ObservableObject {
     /// submission itself still succeeded).
     enum UsernameRegistrationOutcome {
         case success
+        case completedInOriginalContext(String)
         case submittedForVoting(temporaryUsername: String?, temporaryUsernameError: String?)
         case cancelled
         case failure(String)
@@ -469,6 +471,9 @@ class CreateUsernameViewModel: ObservableObject {
                 name: name,
                 priceCredits: credits)
             return .success
+        } catch let error as DWIdentityRegistrationCoordinator.CoordinatorError
+            where error.isCompletedPurchase {
+            return .completedInOriginalContext(error.localizedDescription)
         } catch DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled {
             return .cancelled
         } catch {
@@ -499,10 +504,18 @@ class CreateUsernameViewModel: ObservableObject {
                     comment: "Usernames"),
                 username)
         }
+        if raw.localizedCaseInsensitiveContains("insufficient") {
+            return NSLocalizedString(
+                "Not enough identity credits to register this name. Use Top Up in My Profile, then try again. Your existing identity will be reused.",
+                comment: "Identity recovery insufficient credits")
+        }
         return raw
     }
 
     private func registrationOutcome(for username: String) -> UsernameRegistrationOutcome {
+        if let message = DWIdentityRegistrationCoordinator.shared.completedRegistrationContextMessage {
+            return .completedInOriginalContext(message)
+        }
         // Membership across ALL pending entries, not the single-slot
         // `pendingLabel` (the oldest): an older unresolved contested
         // submission in the store must not make THIS submission read as
@@ -631,7 +644,7 @@ class CreateUsernameViewModel: ObservableObject {
         // error alert.
         let voucherFunded = isInvitationMode
         let recoveryFunded = hasPendingRegistrationRecovery && !voucherFunded
-        let hasEnoughBalance = recoveryFunded || voucherFunded || hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding
+        let hasEnoughBalance = !recoveryHasNoCredits && (recoveryFunded || voucherFunded || hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding)
         let canContinue = lengthValid && !hasIllegalCharacters && !startsOrEndsWithHyphen && hasEnoughBalance
             && !isIdentityLoading && DWCurrentUserIdentityInfo.shared.isCurrentNetworkContextReady
 
@@ -991,8 +1004,10 @@ class CreateUsernameViewModel: ObservableObject {
     }
 
     private func refreshRegistrationRecoverySnapshot() {
-        isIdentityLoading = DWCurrentUserIdentityInfo.shared.refreshedSnapshot().isLoading
+        let snapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        isIdentityLoading = snapshot.isLoading
         registrationRecovery = DWIdentityRegistrationCoordinator.shared.registrationRecovery()
+        recoveryHasNoCredits = registrationRecovery.identityId != nil && snapshot.hasKnownZeroBalance
     }
 
     /// Update only the requirement-dependent picker flags while typing. The

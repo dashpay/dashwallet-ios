@@ -42,12 +42,15 @@ struct SDKIdentityProfileSheet: View {
     @State private var loadedUsername: String?
     @State private var identityIsLoading = true
     @State private var balanceRefreshContext: IdentityBalanceRefresh.Context?
+    @State private var identityLoadTimedOut = false
+    @State private var identityLoadAttempt = 0
 
     /// Callback invoked when the user taps Edit. Owner (HomeViewController)
     /// dismisses the sheet and pushes `RootEditProfileViewController`.
     /// Nil → no Edit button is shown (back-compat with callers that
     /// haven't wired up the edit flow yet).
     var onEditTapped: (() -> Void)?
+    var identityLoadPollLimit = 20
     var snapshotProvider: () -> DWCurrentUserIdentityInfo.Snapshot = {
         DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
     }
@@ -60,7 +63,16 @@ struct SDKIdentityProfileSheet: View {
                     Divider()
                     infoSection
                     if identityIsLoading {
-                        SwiftUI.ProgressView()
+                        if identityLoadTimedOut {
+                            Button(NSLocalizedString("Retry loading identity", comment: "Identity recovery")) {
+                                DWCurrentUserIdentityInfo.shared.retryNameRefresh()
+                                identityLoadTimedOut = false
+                                identityLoadAttempt += 1
+                            }
+                        } else {
+                            SwiftUI.ProgressView()
+                                .accessibilityIdentifier("identityProfileLoading")
+                        }
                     } else if hasIdentity {
                         if dpnsNames.isEmpty && loadedUsername == nil && pendingContestedName == nil {
                             Button(NSLocalizedString("Finish username registration", comment: "DashPay registration recovery")) {
@@ -107,14 +119,16 @@ struct SDKIdentityProfileSheet: View {
                 }
             }
             .onAppear(perform: reloadIdentitySnapshot)
-            .task(id: identityIsLoading) {
+            .task(id: "\(identityIsLoading)-\(identityLoadAttempt)") {
                 // Cold launch may hydrate persistence without a registration event.
                 // Only refresh reads while loading; never resume a spend here.
-                while identityIsLoading {
+                for _ in 0..<identityLoadPollLimit {
+                    guard identityIsLoading else { return }
                     do { try await Task.sleep(nanoseconds: 250_000_000) }
                     catch { return }
                     reloadIdentitySnapshot()
                 }
+                identityLoadTimedOut = identityIsLoading
             }
             .task(id: balanceRefreshContext) {
                 guard balanceRefreshContext != nil else { return }
@@ -132,10 +146,10 @@ struct SDKIdentityProfileSheet: View {
                 }
             }
             .onReceive(NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)) { _ in
-                reloadIdentitySnapshot()
+                restartIdentityLoading()
             }
             .onReceive(NotificationCenter.default.publisher(for: .DWCurrentNetworkDidChange)) { _ in
-                reloadIdentitySnapshot()
+                restartIdentityLoading()
             }
         }
         // `onDismiss` rather than relying on the `onAppear` above: SwiftUI does
@@ -161,6 +175,13 @@ struct SDKIdentityProfileSheet: View {
                 showingUsernameMarketplace = false
             }
         }
+    }
+
+    private func restartIdentityLoading() {
+        identityLoadTimedOut = false
+        identityLoadAttempt += 1
+        DWCurrentUserIdentityInfo.shared.retryNameRefresh()
+        reloadIdentitySnapshot()
     }
 
     private func reloadIdentitySnapshot() {
@@ -962,3 +983,39 @@ struct IdentityTopUpSheet: View {
         }
     }
 }
+
+#if DEBUG && targetEnvironment(simulator)
+/// Isolated UI-test launch surface. Does not initialize or modify a real wallet.
+@objc(DWUsernameRecoveryUITestFixture)
+final class DWUsernameRecoveryUITestFixture: NSObject {
+    @objc static func makeViewControllerIfRequested() -> UIViewController? {
+        guard ProcessInfo.processInfo.environment["DPNS_RECOVERY_UI_TEST"] == "1" else { return nil }
+        return UIHostingController(rootView: Fixture())
+    }
+
+    private struct Fixture: View {
+        @State private var loading = true
+
+        var body: some View {
+            SDKIdentityProfileSheet(
+                identityLoadPollLimit: ProcessInfo.processInfo.environment["DPNS_RECOVERY_UI_HYDRATION"] == "1" ? 240 : 20,
+                snapshotProvider: {
+                .init(isLoading: loading, namesAreLoaded: !loading, balanceCredits: 9_639_634_780,
+                      identityId: Data(repeating: 1, count: 32), identityIdHex: String(repeating: "01", count: 32),
+                      username: nil, usernames: [], displayName: nil, avatarURL: nil, publicMessage: nil)
+            })
+            .overlay(alignment: .bottom) {
+                HStack {
+                    Button("Load identity fixture") { loading = false }
+                        .accessibilityIdentifier("loadIdentityFixture")
+                    Button("Switch identity fixture") {
+                        loading = true
+                        NotificationCenter.default.post(name: .DWCurrentNetworkDidChange, object: nil)
+                    }
+                    .accessibilityIdentifier("switchIdentityFixture")
+                }
+            }
+        }
+    }
+}
+#endif

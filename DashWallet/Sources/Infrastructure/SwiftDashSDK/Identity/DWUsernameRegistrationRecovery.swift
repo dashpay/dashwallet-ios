@@ -16,7 +16,7 @@ enum UsernameRegistrationRecovery: Equatable {
 
 /// A form draft, not a transaction journal. Never resumes a spend on launch.
 struct UsernameRegistrationDraftStore {
-    struct Scope: Equatable {
+    struct Scope: Hashable {
         let network: String
         let walletId: Data
         let identityId: Data
@@ -81,9 +81,50 @@ enum UsernameRegistrationRecoveryFlow {
         let state = try await lookup()
         try validateContext()
         if state == .available {
+            // Broadcast success is final even if the UI context changes while awaiting it.
             try await register()
-            try validateContext()
         }
         return state
     }
+}
+
+/// A completed purchase may be adopted only in its original context. No await
+/// can separate the check from reconciliation, so a wallet switch cannot race it.
+@MainActor
+enum UsernamePurchaseCompletion {
+    static func reconcileIfCurrent(isCurrent: () -> Bool, reconcile: () -> Void) -> Bool {
+        guard isCurrent() else { return false }
+        reconcile()
+        return true
+    }
+}
+
+/// Per-context name reads are single-flight. Only successful reads establish
+/// absence; failures require an explicit retry rather than a polling storm.
+@MainActor
+final class IdentityNameReadiness {
+    private var loaded: Set<UsernameRegistrationDraftStore.Scope> = []
+    private var attempts: [UsernameRegistrationDraftStore.Scope: UUID] = [:]
+
+    func begin(_ scope: UsernameRegistrationDraftStore.Scope, refresh: Bool = false) -> UUID? {
+        guard attempts[scope] == nil, refresh || !loaded.contains(scope) else { return nil }
+        let generation = UUID()
+        attempts[scope] = generation
+        return generation
+    }
+
+    func isCurrent(_ scope: UsernameRegistrationDraftStore.Scope, generation: UUID) -> Bool {
+        attempts[scope] == generation
+    }
+
+    func finish(_ scope: UsernameRegistrationDraftStore.Scope, generation: UUID, succeeded: Bool) {
+        guard isCurrent(scope, generation: generation) else { return }
+        if succeeded { loaded.insert(scope) }
+    }
+
+    func isLoaded(_ scope: UsernameRegistrationDraftStore.Scope) -> Bool { loaded.contains(scope) }
+    // Invalidating generations lets a user replace a hung read; late completion
+    // cannot overwrite the replacement. Keep previously established knowledge.
+    func retry() { attempts.removeAll() }
+    func retry(_ scope: UsernameRegistrationDraftStore.Scope) { attempts.removeValue(forKey: scope) }
 }

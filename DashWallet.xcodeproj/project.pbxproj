@@ -2069,6 +2069,8 @@
 		F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */; };
 		BABA10000000000000000004 /* IdentityBalanceRefreshTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */; };
 		17E47391430C11AC728B69A3 /* DWRegistrationPhaseAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */; };
+		A00CC68AE2499E4496BAECC6 /* UsernameRecoveryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */; };
+		0CC58E06B79948481E52B517 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2ABCA9172357A61B00092C09 /* Foundation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -2106,6 +2108,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = BAE12BE41B2DEE7F00895CC5;
 			remoteInfo = TodayExtension;
+		};
+		C1EB9D0F8F3E20AC64FB4FA5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C9D2C68A2A320AA000D15901;
+			remoteInfo = dashpay;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -3898,6 +3907,8 @@
 		701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRegistrationRecoveryTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityBalanceRefreshTests.swift; sourceTree = "<group>"; };
 		951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWRegistrationPhaseAdapterTests.swift; sourceTree = "<group>"; };
+		C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameRecoveryUITests.swift; sourceTree = "<group>"; };
+		222014736AFDB62525FA244F /* DashPayRecoveryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashPayRecoveryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -3990,6 +4001,14 @@
 				510336EF2FEBB1B4002E0899 /* DashUIKit in Frameworks */,
 				FB63E84F4FF795DCC56731CC /* SwiftDashSDK in Frameworks */,
 				CF4B9EC1B74A5AEC8D8DD7F1 /* libPods-dashpay.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		053C3D4ECC7DE809E98B10F4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0CC58E06B79948481E52B517 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7361,6 +7380,7 @@
 				75D5F3BF191EC270004AB296 /* Products */,
 				8AE9CD5705796B04FF0033B6 /* Pods */,
 				510336DE2FEBB0C9002E0899 /* Recovered References */,
+				13453DF717FD229A1586CECD /* DashPayRecoveryUITests */,
 			);
 			sourceTree = "<group>";
 			wrapsLines = 0;
@@ -7375,6 +7395,7 @@
 				BA913BEA1BD57E4D005A7C0E /* WatchApp Extension.appex */,
 				2A4663002279DC2F0027533B /* DashWalletScreenshotsUITests.xctest */,
 				C9D2C9532A320AA000D15901 /* dashpay.app */,
+				222014736AFDB62525FA244F /* DashPayRecoveryUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -9049,6 +9070,15 @@
 			path = Voting;
 			sourceTree = "<group>";
 		};
+		13453DF717FD229A1586CECD /* DashPayRecoveryUITests */ = {
+			isa = PBXGroup;
+			children = (
+				C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */,
+			);
+			name = DashPayRecoveryUITests;
+			path = DashPayRecoveryUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -9217,6 +9247,24 @@
 			productReference = C9D2C9532A320AA000D15901 /* dashpay.app */;
 			productType = "com.apple.product-type.application";
 		};
+		DA5EB941660EA12D1C2F5C61 /* DashPayRecoveryUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 630984E29A1DF8EA97C2520B /* Build configuration list for PBXNativeTarget "DashPayRecoveryUITests" */;
+			buildPhases = (
+				ECA0E2734F4CA8359F62BB41 /* Sources */,
+				053C3D4ECC7DE809E98B10F4 /* Frameworks */,
+				0F8CCAFE28A9C88A4D19B235 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				93F87A5CA1E13C2B07DA95EB /* PBXTargetDependency */,
+			);
+			name = DashPayRecoveryUITests;
+			productName = DashPayRecoveryUITests;
+			productReference = 222014736AFDB62525FA244F /* DashPayRecoveryUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -9323,6 +9371,7 @@
 				BA913BDD1BD57E4D005A7C0E /* WatchApp */,
 				BA913BE91BD57E4D005A7C0E /* WatchApp Extension */,
 				2A4662FF2279DC2F0027533B /* DashWalletScreenshotsUITests */,
+				DA5EB941660EA12D1C2F5C61 /* DashPayRecoveryUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -9491,6 +9540,13 @@
 				75303FE62AE7B70500870D8B /* CrowdNode.storyboard in Resources */,
 				C9D2C9452A320AA000D15901 /* AmountPreviewView.xib in Resources */,
 				C9D2C9462A320AA000D15901 /* TxDetailActionCell.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0F8CCAFE28A9C88A4D19B235 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -11807,6 +11863,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		ECA0E2734F4CA8359F62BB41 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00CC68AE2499E4496BAECC6 /* UsernameRecoveryUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -11834,6 +11898,12 @@
 			isa = PBXTargetDependency;
 			target = BAE12BE41B2DEE7F00895CC5 /* TodayExtension */;
 			targetProxy = BAE12BF01B2DEE7F00895CC5 /* PBXContainerItemProxy */;
+		};
+		93F87A5CA1E13C2B07DA95EB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = dashpay;
+			target = C9D2C68A2A320AA000D15901 /* dashpay */;
+			targetProxy = C1EB9D0F8F3E20AC64FB4FA5 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -13782,6 +13852,72 @@
 			};
 			name = Testnet;
 		};
+		61A25E58C4A71401A30CB89A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.dashfoundation.dash.recovery-uitests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = dashpay;
+			};
+			name = Debug;
+		};
+		9551F2C02A6B4B4F5B43ABEA /* Testflight */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.dashfoundation.dash.recovery-uitests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = dashpay;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Testflight;
+		};
+		31D67B7B76F249D883C539D9 /* Testnet */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.dashfoundation.dash.recovery-uitests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = dashpay;
+			};
+			name = Testnet;
+		};
+		164F4856E4C6D1A79DA61248 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.dashfoundation.dash.recovery-uitests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = dashpay;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -13873,6 +14009,17 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		630984E29A1DF8EA97C2520B /* Build configuration list for PBXNativeTarget "DashPayRecoveryUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				164F4856E4C6D1A79DA61248 /* Release */,
+				61A25E58C4A71401A30CB89A /* Debug */,
+				31D67B7B76F249D883C539D9 /* Testnet */,
+				9551F2C02A6B4B4F5B43ABEA /* Testflight */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -13915,6 +14062,7 @@
 			productName = DashUIKit;
 		};
 /* End XCSwiftPackageProductDependency section */
+
 	};
 	rootObject = 75D5F3B6191EC270004AB296 /* Project object */;
 }

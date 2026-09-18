@@ -6205,3 +6205,20 @@
 
 /* DashPay Invitations */
 "“%@” has been registered. Send a contact request to the person who invited you?" = "»%@« je bilo registrirano. Želite poslati zahtevo za stik osebi, ki vas je povabila?";
+
+/* DashPay username registration recovery */
+"Could not check username availability. Please try again." = "Could not check username availability. Please try again.";
+"Finish username registration" = "Finish username registration";
+"Identity is still loading" = "Identity is still loading";
+"Loading identity…" = "Loading identity…";
+"Not enough identity credits to register this name. Use Top Up in My Profile, then try again. Your existing identity will be reused." = "Not enough identity credits to register this name. Use Top Up in My Profile, then try again. Your existing identity will be reused.";
+"Retry loading identity" = "Retry loading identity";
+"The active wallet or identity changed. Please try again." = "The active wallet or identity changed. Please try again.";
+"The name request succeeded for the original identity. Switch back to the original wallet and network to see its status." = "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status.";
+"This identity has no credits. Use Top Up in My Profile, then return to finish registration." = "This identity has no credits. Use Top Up in My Profile, then return to finish registration.";
+"This username is no longer available. Please choose another one." = "This username is no longer available. Please choose another one.";
+"Username request completed" = "Username request completed";
+"Wait for the wallet and network to finish loading, then retry. No registration has been sent." = "Wait for the wallet and network to finish loading, then retry. No registration has been sent.";
+"Your identity is ready. Finish registering a username using its existing credits." = "Your identity is ready. Finish registering a username using its existing credits.";
+"Your identity is ready. Use its existing credits to register a username." = "Your identity is ready. Use its existing credits to register a username.";
+"“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again." = "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.";

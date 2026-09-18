@@ -29,7 +29,7 @@ class JoinDashPayViewModel: ObservableObject {
     func checkUsername() {
         let identity = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
         guard !identity.isLoading else {
-            state = .loading
+            state = DWCurrentUserIdentityInfo.shared.isCurrentNetworkContextReady ? .loading : .callToAction
             username = ""
             return
         }
@@ -51,6 +51,17 @@ class JoinDashPayViewModel: ObservableObject {
         } else {
             self.state = initialState
         }
+    }
+
+    @MainActor
+    func finishLoadingAttempt() {
+        if state == .loading { state = .retryLoading }
+    }
+
+    @MainActor
+    func retryLoading() {
+        DWCurrentUserIdentityInfo.shared.retryNameRefresh()
+        checkUsername()
     }
 
     @MainActor
