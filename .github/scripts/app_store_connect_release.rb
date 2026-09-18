@@ -77,8 +77,14 @@ module AppStoreConnectRelease
   end
 
   def live_app_store_version?(attributes)
-    LIVE_APP_STORE_STATES.include?(attributes["appVersionState"]) ||
-      LIVE_APP_STORE_STATES.include?(attributes["appStoreState"])
+    LIVE_APP_STORE_STATES.include?(attributes["appVersionState"] || attributes["appStoreState"])
+  end
+
+  def published_app_store_version?(attributes)
+    # A superseded release still has installed databases, even when two
+    # publications happened between observer runs.
+    live_app_store_version?(attributes) ||
+      (attributes["appVersionState"] || attributes["appStoreState"]) == "REPLACED_WITH_NEW_VERSION"
   end
 
   def maximum_version(values)
@@ -163,15 +169,21 @@ module AppStoreConnectRelease
     end
 
     def production_versions(app_id)
+      published_versions(app_id).map { |version| version.fetch("attributes").fetch("versionString") }
+    end
+
+    def published_versions(app_id)
       url = api_url(
         "/v1/apps/#{app_id}/appStoreVersions",
         "filter[platform]" => "IOS",
         "limit" => 200
       )
-      get_all(url).filter_map do |version|
-        attributes = version.fetch("attributes")
-        attributes.fetch("versionString") if AppStoreConnectRelease.live_app_store_version?(attributes)
-      end
+      get_all(url).select { |version| AppStoreConnectRelease.published_app_store_version?(version.fetch("attributes")) }
+    end
+
+    def version_build(version_id)
+      get_json(api_url("/v1/appStoreVersions/#{version_id}/build")).fetch("data") ||
+        raise(Error, "Published App Store version #{version_id} has no associated build.")
     end
 
     def external_group_names(app_id)
@@ -258,6 +270,23 @@ module AppStoreConnectRelease
 
     def get_json(url)
       uri = URI(url)
+      unless uri.scheme == "https" && uri.host == "api.appstoreconnect.apple.com"
+        raise Error, "Unexpected App Store Connect pagination host."
+      end
+      attempts = 0
+      begin
+        attempts += 1
+        perform_get(uri)
+      rescue TransientError, IOError, SystemCallError, SocketError,
+             Net::OpenTimeout, Net::ReadTimeout, OpenSSL::SSL::SSLError
+        raise if attempts >= 4
+
+        sleep(2**(attempts - 1))
+        retry
+      end
+    end
+
+    def perform_get(uri)
       request = Net::HTTP::Get.new(uri)
       request["Authorization"] = "Bearer #{authorization_token}"
       request["Content-Type"] = "application/json"

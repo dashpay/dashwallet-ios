@@ -108,13 +108,13 @@ class AppStoreConnectReleaseTest < Minitest::Test
     assert AppStoreConnectRelease.live_app_store_version?(attributes)
   end
 
-  def test_live_state_in_either_attribute_wins
+  def test_current_state_takes_precedence_over_deprecated_state
     attributes = {
       "appVersionState" => "IN_REVIEW",
       "appStoreState" => "READY_FOR_SALE"
     }
 
-    assert AppStoreConnectRelease.live_app_store_version?(attributes)
+    refute AppStoreConnectRelease.live_app_store_version?(attributes)
   end
 
   def test_paginator_collects_all_pages
@@ -151,5 +151,56 @@ class AppStoreConnectReleaseTest < Minitest::Test
     assert_raises(AppStoreConnectRelease::TransientError) do
       AppStoreConnectRelease::Client.parse_response(503, '{"errors":[]}')
     end
+  end
+
+  def fake_client
+    AppStoreConnectRelease::Client.new(key_id: "test", issuer_id: "test", private_key_path: "unused")
+  end
+
+  def test_published_versions_excludes_review_and_beta_states
+    client = fake_client
+    client.define_singleton_method(:get_all) do |_url|
+      %w[READY_FOR_DISTRIBUTION IN_REVIEW PENDING_DEVELOPER_RELEASE].map do |state|
+        { "id" => state, "attributes" => { "appVersionState" => state, "versionString" => "9.1.0" } }
+      end
+    end
+    assert_equal ["READY_FOR_DISTRIBUTION"], client.published_versions("app").map { |row| row["id"] }
+    assert_equal ["9.1.0"], client.production_versions("app")
+  end
+
+  def test_superseded_release_remains_part_of_published_history
+    assert AppStoreConnectRelease.published_app_store_version?({ "appVersionState" => "REPLACED_WITH_NEW_VERSION" })
+    assert AppStoreConnectRelease.published_app_store_version?({ "appStoreState" => "REPLACED_WITH_NEW_VERSION" })
+    refute AppStoreConnectRelease.published_app_store_version?({ "appVersionState" => "IN_REVIEW", "appStoreState" => "REPLACED_WITH_NEW_VERSION" })
+  end
+
+  def test_reads_exact_build_relationship_and_rejects_missing_build
+    client = fake_client
+    requested = []
+    client.define_singleton_method(:get_json) do |url|
+      requested << url
+      { "data" => { "id" => "build21" } }
+    end
+    assert_equal "build21", client.version_build("version-id")["id"]
+    assert_equal "https://api.appstoreconnect.apple.com/v1/appStoreVersions/version-id/build", requested.first
+    client.define_singleton_method(:get_json) { |_url| { "data" => nil } }
+    assert_raises(AppStoreConnectRelease::Error) { client.version_build("version-id") }
+  end
+
+  def test_read_retries_transient_errors_without_network
+    client = fake_client
+    calls = 0
+    client.define_singleton_method(:perform_get) do |_uri|
+      calls += 1
+      raise AppStoreConnectRelease::TransientError, "rate limited" if calls < 3
+      { "data" => [] }
+    end
+    client.define_singleton_method(:sleep) { |_seconds| nil }
+    assert_equal({ "data" => [] }, client.send(:get_json, "https://api.appstoreconnect.apple.com/v1/apps"))
+    assert_equal 3, calls
+  end
+
+  def test_pagination_cannot_send_apple_credentials_to_another_host
+    assert_raises(AppStoreConnectRelease::Error) { fake_client.send(:get_json, "https://example.com/v1/apps") }
   end
 end

@@ -198,6 +198,8 @@ jobs:
             exit 1
           fi
           echo "RELEASE_SCRIPT=$script" >> "$GITHUB_ENV"
+          echo "SCHEMA_RELEASE_SCRIPT=$GITHUB_WORKSPACE/release-tooling/.github/scripts/schema_release.rb" >> "$GITHUB_ENV"
+          echo "SCHEMA_CAPTURE_SCRIPT=$GITHUB_WORKSPACE/release-tooling/.github/scripts/capture_schema_release.py" >> "$GITHUB_ENV"
 
       - name: Checkout platform
         uses: actions/checkout@v6
@@ -205,7 +207,8 @@ jobs:
           repository: dashpay/platform
           ref: ${{ inputs.platform_ref }}
           path: platform
-          fetch-depth: 1
+          # Frozen models are regenerated from historical source commits.
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Resolve archive paths
@@ -213,6 +216,11 @@ jobs:
           set -euo pipefail
           echo "ARCHIVE_PATH=$RUNNER_TEMP/dashpay.xcarchive" >> "$GITHUB_ENV"
           echo "EXPORT_PATH=$RUNNER_TEMP/dashpay-export" >> "$GITHUB_ENV"
+
+      - name: Set up release tooling Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
 
       - name: Validate release secrets
         env:
@@ -333,6 +341,15 @@ jobs:
         run: |
           set -euo pipefail
           ruby "$RELEASE_SCRIPT" resolve-version
+
+      - name: Require previous App Store schemas before building a candidate
+        if: inputs.release_channel != 'internal-only'
+        env:
+          SCHEMA_RELEASE_TOKEN: ${{ secrets.SCHEMA_RELEASE_TOKEN }}
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          BUNDLE_ID: ${{ env.DASHPAY_BUNDLE_ID }}
+        run: ruby "$SCHEMA_RELEASE_SCRIPT" gate --platform-dir ../platform
 
       - name: Select Xcode 26.6
         uses: maxim-lobanov/setup-xcode@v1
@@ -469,7 +486,7 @@ jobs:
             DashWallet/SwapKit-Info.plist
 
       - name: Resolve next TestFlight build number
-        id: release-build
+        id: apple-build
         env:
           API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
@@ -478,6 +495,22 @@ jobs:
         run: |
           set -euo pipefail
           ruby "$RELEASE_SCRIPT" resolve-build
+
+      - name: Skip build numbers with evidence from an interrupted upload
+        id: release-build
+        env:
+          SCHEMA_RELEASE_TOKEN: ${{ secrets.SCHEMA_RELEASE_TOKEN }}
+          BUNDLE_ID: ${{ env.DASHPAY_BUNDLE_ID }}
+          EFFECTIVE_VERSION: ${{ steps.release-version.outputs.effective_version }}
+          MIN_BUILD_NUMBER: ${{ steps.apple-build.outputs.build_number }}
+          RELEASE_CHANNEL: ${{ inputs.release_channel }}
+        run: |
+          set -euo pipefail
+          if [[ "$RELEASE_CHANNEL" == 'internal-only' ]]; then
+            echo "build_number=$MIN_BUILD_NUMBER" >> "$GITHUB_OUTPUT"
+          else
+            ruby "$SCHEMA_RELEASE_SCRIPT" next-build
+          fi
 
       - name: Install Apple signing certificates
         env:
@@ -639,6 +672,24 @@ jobs:
             echo "bundle_id=$bundle_id"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Capture schema evidence from the candidate sources
+        if: inputs.release_channel != 'internal-only'
+        run: |
+          set -euo pipefail
+          python3 "$SCHEMA_CAPTURE_SCRIPT" \
+            --platform-dir ../platform --output-dir "$RUNNER_TEMP/schema-capture"
+
+      - name: Persist candidate evidence before upload
+        if: inputs.release_channel != 'internal-only'
+        env:
+          SCHEMA_RELEASE_TOKEN: ${{ secrets.SCHEMA_RELEASE_TOKEN }}
+          BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
+          EFFECTIVE_VERSION: ${{ steps.app-version.outputs.version }}
+          BUILD_NUMBER: ${{ steps.app-version.outputs.build }}
+          WALLET_SHA: ${{ steps.release-info.outputs.wallet_sha }}
+          PLATFORM_SHA: ${{ steps.release-info.outputs.platform_sha }}
+        run: ruby "$SCHEMA_RELEASE_SCRIPT" record-build --capture-dir "$RUNNER_TEMP/schema-capture"
+
       - name: Ensure fastlane is available
         run: |
           set -euo pipefail
@@ -675,6 +726,15 @@ jobs:
         run: |
           set -euo pipefail
           ruby "$RELEASE_SCRIPT" assert-build-free
+
+      - name: Recheck published schemas immediately before upload
+        if: inputs.release_channel != 'internal-only'
+        env:
+          SCHEMA_RELEASE_TOKEN: ${{ secrets.SCHEMA_RELEASE_TOKEN }}
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
+        run: ruby "$SCHEMA_RELEASE_SCRIPT" gate --platform-dir ../platform
 
       - name: Upload archive to TestFlight
         env:
@@ -720,6 +780,16 @@ jobs:
         run: |
           set -euo pipefail
           ruby "$RELEASE_SCRIPT" wait-build
+
+      - name: Bind the processed Apple build to its recorded sources
+        if: inputs.release_channel != 'internal-only'
+        env:
+          SCHEMA_RELEASE_TOKEN: ${{ secrets.SCHEMA_RELEASE_TOKEN }}
+          BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
+          EFFECTIVE_VERSION: ${{ steps.app-version.outputs.version }}
+          BUILD_NUMBER: ${{ steps.uploaded-build.outputs.number }}
+          ASC_BUILD_ID: ${{ steps.uploaded-build.outputs.id }}
+        run: ruby "$SCHEMA_RELEASE_SCRIPT" bind-build
 
       - name: Finalize internal TestFlight build
         if: inputs.release_channel != 'external'
