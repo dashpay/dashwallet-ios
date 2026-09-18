@@ -1485,7 +1485,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// Deliberate omission: no in-session timer — appear/foreground covers
     /// the testnet (~90 min) and mainnet (~2 week) voting windows.
     func checkPendingContestResolution() {
-        guard !DWContestedNameStatusService.shared.pendingLabels.isEmpty else { return }
+        guard let network = WalletEnvironment.network,
+              !DWContestedNameStatusService.shared.pendingLabels(for: network).isEmpty else { return }
         guard contestResolutionTask == nil else { return } // single-flight
         switch phase {
         case .preparingKeys, .inFlight:
@@ -1530,6 +1531,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             return
         }
 
+        if let container = SwiftDashSDKHost.shared.modelContainer {
+            do {
+                try await DWCurrentUserIdentityInfo.shared.rehydrateLegacyContests(
+                    wallet: wallet, network: expectedNetwork, container: container)
+            } catch {
+                Self.logger.warning("Legacy contest ownership is still unknown: \(error.localizedDescription)")
+                return
+            }
+        }
         let labels = DWContestedNameStatusService.shared.pendingLabels(
             for: expectedNetwork, identityId: identityId)
 

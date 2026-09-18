@@ -35,12 +35,9 @@
 //      DashSync `DSBlockchainIdentity` — pre-existing DashSync
 //      identities are accepted to break in this branch and are
 //      retired entirely in Row #25.
-//    - Username lookup falls back to `DWGlobalOptions.dashpayUsername`
-//      when the `ManagedIdentity.getDpnsNames()` cache is empty
-//      (newly-registered identity that hasn't synced the DPNS cache
-//      yet). The coordinator writes `dashpayUsername` on `.completed`
-//      so this fallback closes the post-register sync gap without
-//      depending on `wallet.syncDpnsNames(identityId:)`.
+//    - Confirmed identity-scoped persistence covers cold name caches. A legacy
+//      mirror is recovered only after a live ownership check. Empty caches
+//      remain unknown until a scoped network refresh succeeds.
 //
 
 import Combine
@@ -113,6 +110,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
     /// on the next property access after `currentRevision` advances.
     struct Snapshot {
         var isLoading = false
+        var namesAreLoaded = false
         var balanceCredits: UInt64? = nil
         var pendingContestedName: String? = nil
         var pendingVotingEndTime: Date? = nil
@@ -125,8 +123,9 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         let publicMessage: String?
 
         var hasIdentity: Bool { identityId != nil }
+        var hasKnownZeroBalance: Bool { balanceCredits == 0 }
         var needsUsername: Bool {
-            !isLoading && hasIdentity && username == nil && usernames.isEmpty && pendingContestedName == nil
+            !isLoading && namesAreLoaded && hasIdentity && username == nil && usernames.isEmpty && pendingContestedName == nil
         }
 
         var registrationRecovery: UsernameRegistrationRecovery {
@@ -149,6 +148,8 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         invalidate()
         return snapshot
     }
+
+    private let nameReadiness = IdentityNameReadiness()
 
     private var cachedSnapshot: Snapshot = .empty
     private var cachedRevision: Int = -1
@@ -369,6 +370,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
     /// lifecycle invokes it.
     @nonobjc
     func resetForWalletRemoval() {
+        nameReadiness.retry()
         currentRevision &+= 1
         cachedSnapshot = .empty
         cachedRevision = currentRevision
@@ -387,24 +389,113 @@ public final class DWCurrentUserIdentityInfo: NSObject {
     /// `HomeViewController.viewDidAppear` so the helper picks up
     /// blockchain-side names automatically.
     @objc public func syncFromNetwork() {
+        retryNameRefresh()
+        guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let network = SwiftDashSDKHost.shared.runningNetwork,
+              let container = SwiftDashSDKHost.shared.modelContainer,
+              let id = refreshedSnapshot().identityId else { return }
+        scheduleNameRefresh(wallet: wallet, network: network, container: container, identityId: id)
+    }
+
+    @nonobjc func retryNameRefresh() {
+        nameReadiness.retry()
+        invalidate()
+    }
+
+    private func scheduleNameRefresh(
+        wallet: ManagedPlatformWallet, network: Network, container: ModelContainer, identityId: Data
+    ) {
+        let scope = UsernameRegistrationDraftStore.Scope(
+            network: network.persistenceScope, walletId: wallet.walletId, identityId: identityId)
+        guard nameReadiness.begin(scope) else { return }
         Task { @MainActor in
-            Self.logger.info("🪪 IDENT-INFO :: syncFromNetwork called")
-            guard let wallet = SwiftDashSDKHost.shared.wallet,
-                  let identityId = snapshot.identityId
-            else { return }
             do {
-                let added = try await wallet.syncDpnsNames(identityId: identityId)
-                Self.logger.info("🪪 IDENT-INFO :: syncDpnsNames added=\(added, privacy: .public)")
-                self.invalidate()
+                try await self.refreshNames(wallet: wallet, network: network, container: container, identityId: identityId)
+                let hasUnknownContests = !DWContestedNameStatusService.shared
+                    .unattributedLabels(for: network, walletId: wallet.walletId).isEmpty
+                self.nameReadiness.finish(scope, succeeded: !hasUnknownContests)
             } catch {
-                Self.logger.warning("🪪 IDENT-INFO :: syncDpnsNames failed: \(String(describing: error), privacy: .public)")
+                self.nameReadiness.finish(scope, succeeded: false)
+                Self.logger.warning("Name refresh remains unknown: \(error.localizedDescription)")
+            }
+            self.invalidate()
+            NotificationCenter.default.post(name: .DWDashPayRegistrationStatusUpdated, object: nil)
+        }
+    }
+
+    /// Shared by startup and the retryable UI read. All writes retain the captured scope.
+    @nonobjc func refreshNames(
+        wallet: ManagedPlatformWallet, network: Network, container: ModelContainer, identityId: Data
+    ) async throws {
+        let options = DWGlobalOptions.sharedInstance()
+        let legacyName = WalletEnvironment.network == network
+            && (WalletEnvironment.activeWalletIdHex as String?) == wallet.walletId.hexEncodedString()
+            && options.dashpayRegistrationCompleted ? options.dashpayUsername : nil
+        var syncError: Error?
+        do { _ = try await wallet.syncDpnsNames(identityId: identityId) }
+        catch { syncError = error }
+        let names = try wallet.managedIdentity(identityId: identityId).getDpnsNames()
+        if let legacyName, !legacyName.isEmpty, names.isEmpty || syncError != nil {
+            do {
+                if try await DWIdentityRegistrationCoordinator.shared.registrationNameState(
+                    legacyName, identityId: identityId, wallet: wallet) == .owned {
+                    Self.persistConfirmedUsername(legacyName, identityId: identityId, walletId: wallet.walletId, container: container)
+                    syncError = nil
+                }
+            } catch DWIdentityRegistrationCoordinator.CoordinatorError.usernameUnavailable {
+                // A wallet-global mirror can belong to another selected identity.
+                // It must not turn a successful empty name read into an error.
             }
         }
+        if let syncError { throw syncError }
+        _ = try await wallet.syncContestedDpnsNames(identityId: identityId)
+        let unattributed = DWContestedNameStatusService.shared.unattributedLabels(for: network, walletId: wallet.walletId)
+        for label in try wallet.managedIdentity(identityId: identityId).getContestedDpnsNames() {
+            // Upgrade entries require a unique owner across every wallet identity.
+            guard !unattributed.contains(where: { DWContestedNameStatusService.labelsMatch($0, label) }) else { continue }
+            DWContestedNameStatusService.shared.recordSubmission(
+                label: label, network: network, identityId: identityId, walletId: wallet.walletId)
+        }
+        try await rehydrateLegacyContests(wallet: wallet, network: network, container: container)
+    }
+
+    @nonobjc func rehydrateLegacyContests(
+        wallet: ManagedPlatformWallet, network: Network, container: ModelContainer
+    ) async throws {
+        let walletId = wallet.walletId
+        let descriptor = FetchDescriptor<PersistentWallet>(predicate: #Predicate { $0.walletId == walletId })
+        let identities = try container.mainContext.fetch(descriptor).first?.identities.map(\.identityId) ?? []
+        guard !identities.isEmpty else { return }
+        let service = DWContestedNameStatusService.shared
+        try await service.rehydrateUnattributed(network: network, walletId: walletId, owners: { label in
+            var candidates: [Data] = []
+            for id in identities {
+                if let vote = try await wallet.fetchContestVoteState(identityId: id, label: label),
+                   vote.contenders.contains(where: { $0.identityId == id }) {
+                    candidates.append(id)
+                }
+            }
+            if candidates.isEmpty, let owner = try await wallet.resolveDpnsName(label), identities.contains(owner) {
+                candidates.append(owner)
+            }
+            return candidates
+        }, resolved: { label in
+            guard let end = service.pendingVotingEndTime(label: label, for: network, walletId: walletId),
+                  Date() >= end else { return false }
+            // No wallet identity is still contending; retain the old deadline
+            // and the same canonical-owner resolution policy as attributed entries.
+            _ = try await wallet.resolveDpnsName(label)
+            return true
+        })
     }
 
     // MARK: - Internals
 
     @objc private func handleInvalidationNotification(_ notification: Notification) {
+        if notification.name == .DWCurrentNetworkDidChange
+            || notification.name == SwiftDashSDKWalletState.activeWalletDidChangeNotification {
+            nameReadiness.retry()
+        }
         invalidate()
     }
 
@@ -520,8 +611,9 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         // allows several simultaneous requests, each its own vote poll.
         let pendingContested = DWContestedNameStatusService.shared.pendingLabels(
             for: network, identityId: identityId)
+        let unattributed = DWContestedNameStatusService.shared.unattributedLabels(for: network)
         let isPending: (String) -> Bool = { name in
-            pendingContested.contains { DWContestedNameStatusService.labelsMatch(name, $0) }
+            (pendingContested + unattributed).contains { DWContestedNameStatusService.labelsMatch(name, $0) }
         }
 
         if let managed = try? wallet.managedIdentity(identityId: identityId) {
@@ -629,9 +721,18 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         Self.logger.debug(
             "🪪 IDENT-INFO :: snapshot username=\(username ?? "nil", privacy: .public) hasProfile=\(displayName != nil || avatarURL != nil, privacy: .public) id=\(hex.prefix(8), privacy: .public)…")
 
+        let scope = UsernameRegistrationDraftStore.Scope(
+            network: network.persistenceScope, walletId: walletId, identityId: identityId)
+        let namesAreLoaded = !usernames.isEmpty || !pendingContested.isEmpty
+            || (nameReadiness.isLoaded(scope) && unattributed.isEmpty)
+        if !namesAreLoaded {
+            scheduleNameRefresh(wallet: wallet, network: network, container: container, identityId: identityId)
+        }
         return Snapshot(
+            isLoading: !namesAreLoaded,
+            namesAreLoaded: namesAreLoaded,
             balanceCredits: (try? wallet.managedIdentity(identityId: identityId).getBalance())
-                ?? UInt64(bitPattern: persisted.balance),
+                ?? (persisted.balance > 0 ? UInt64(persisted.balance) : nil),
             pendingContestedName: pendingContested.first,
             pendingVotingEndTime: pendingContested.first.flatMap {
                 guard let network = SwiftDashSDKHost.shared.runningNetwork else { return nil }
@@ -1023,43 +1124,8 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                 },
                 refreshNames: { identityIds in
                     for identityId in identityIds {
-                        do {
-                            _ = try await wallet.syncDpnsNames(identityId: identityId)
-                        } catch {
-                            let options = DWGlobalOptions.sharedInstance()
-                            guard options.dashpayRegistrationCompleted,
-                                  let legacyName = options.dashpayUsername, !legacyName.isEmpty,
-                                  try await DWIdentityRegistrationCoordinator.shared.registrationNameState(
-                                    legacyName, identityId: identityId, wallet: wallet) == .owned else { throw error }
-                            DWCurrentUserIdentityInfo.persistConfirmedUsername(
-                                legacyName, identityId: identityId, walletId: walletId,
-                                container: modelContainer)
-                        }
-
-                        // Contested-name refresh is important for correctly
-                        // withholding a still-voting label, but it must not
-                        // block restoration of an already-owned identity when
-                        // that auxiliary endpoint is temporarily unavailable.
-                        do {
-                            _ = try await wallet.syncContestedDpnsNames(identityId: identityId)
-                            let contested = try wallet
-                                .managedIdentity(identityId: identityId)
-                                .getContestedDpnsNames()
-                            // A second install has no local submission
-                            // bookmarks. Reconstruct one per still-voting
-                            // label from Platform so the pre-vote DPNS
-                            // documents cannot be mistaken for ownership.
-                            for recoveredPending in contested {
-                                DWContestedNameStatusService.shared.recordSubmission(
-                                    label: recoveredPending, network: network, identityId: identityId, walletId: walletId)
-                            }
-                        } catch {
-                            Self.logger.warning(
-                                """
-                                🪪 IDENT-RECOVERY :: contested-name refresh failed: \
-                                \(String(describing: error), privacy: .public)
-                                """)
-                        }
+                        try await DWCurrentUserIdentityInfo.shared.refreshNames(
+                            wallet: wallet, network: network, container: modelContainer, identityId: identityId)
                     }
                 },
                 adopt: {

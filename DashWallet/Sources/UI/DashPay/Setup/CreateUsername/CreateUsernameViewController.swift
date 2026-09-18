@@ -205,7 +205,7 @@ struct CreateUsernameView: View {
                     }
             
                     if viewModel.recoveryHasNoCredits {
-                        Text("This identity has no credits. Use Top Up in My Profile, then return to finish registration.")
+                        Text(NSLocalizedString("This identity has no credits. Use Top Up in My Profile, then return to finish registration.", comment: "Identity recovery"))
                             .foregroundColor(.dash.primaryText)
                     }
                     if viewModel.uiState.costRule != .hidden {
@@ -355,14 +355,15 @@ struct CreateUsernameView: View {
             }
             identityLoadTimedOut = viewModel.isIdentityLoading
         }
-        .alert("Identity is still loading", isPresented: $identityLoadTimedOut) {
+        .alert(NSLocalizedString("Identity is still loading", comment: "Identity recovery"), isPresented: $identityLoadTimedOut) {
             Button("Retry") {
+                DWCurrentUserIdentityInfo.shared.retryNameRefresh()
                 viewModel.refreshRegistrationRecoveryState()
                 identityLoadAttempt += 1
             }
             Button("Cancel", role: .cancel) { }
         } message: {
-            Text("Wait for the wallet and network to finish loading, then retry. No registration has been sent.")
+            Text(NSLocalizedString("Wait for the wallet and network to finish loading, then retry. No registration has been sent.", comment: "Identity recovery"))
         }
         .onChange(of: viewModel.hasMinimumRequiredCoreBalance) { _ in
             syncFundingSourceToViableSource()

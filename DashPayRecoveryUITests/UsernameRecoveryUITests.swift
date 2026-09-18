@@ -33,4 +33,17 @@ final class UsernameRecoveryUITests: XCTestCase {
         app.terminate()
     }
 
+    func testContextChangeRestartsTimedOutLoading() {
+        let app = XCUIApplication()
+        app.launchEnvironment["DPNS_RECOVERY_UI_TEST"] = "1"
+        app.launch()
+        XCTAssertTrue(app.buttons["Retry loading identity"].waitForExistence(timeout: 10))
+        app.buttons["switchIdentityFixture"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["identityProfileLoading"].firstMatch.waitForExistence(timeout: 3))
+        XCTAssertFalse(app.buttons["Retry loading identity"].exists)
+        app.buttons["loadIdentityFixture"].tap()
+        XCTAssertTrue(app.buttons["finishUsernameRegistration"].waitForExistence(timeout: 5))
+        app.terminate()
+    }
+
 }

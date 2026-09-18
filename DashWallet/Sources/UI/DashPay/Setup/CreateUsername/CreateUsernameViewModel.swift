@@ -504,6 +504,11 @@ class CreateUsernameViewModel: ObservableObject {
                     comment: "Usernames"),
                 username)
         }
+        if raw.localizedCaseInsensitiveContains("insufficient") {
+            return NSLocalizedString(
+                "Not enough identity credits to register this name. Use Top Up in My Profile, then try again. Your existing identity will be reused.",
+                comment: "Identity recovery insufficient credits")
+        }
         return raw
     }
 
@@ -1002,7 +1007,7 @@ class CreateUsernameViewModel: ObservableObject {
         let snapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
         isIdentityLoading = snapshot.isLoading
         registrationRecovery = DWIdentityRegistrationCoordinator.shared.registrationRecovery()
-        recoveryHasNoCredits = registrationRecovery.identityId != nil && (snapshot.balanceCredits ?? 0) == 0
+        recoveryHasNoCredits = registrationRecovery.identityId != nil && snapshot.hasKnownZeroBalance
     }
 
     /// Update only the requirement-dependent picker flags while typing. The

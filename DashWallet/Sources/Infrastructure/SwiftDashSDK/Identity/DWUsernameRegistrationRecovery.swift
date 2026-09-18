@@ -16,7 +16,7 @@ enum UsernameRegistrationRecovery: Equatable {
 
 /// A form draft, not a transaction journal. Never resumes a spend on launch.
 struct UsernameRegistrationDraftStore {
-    struct Scope: Equatable {
+    struct Scope: Hashable {
         let network: String
         let walletId: Data
         let identityId: Data
@@ -97,4 +97,22 @@ enum UsernamePurchaseCompletion {
         reconcile()
         return true
     }
+}
+
+/// Per-context name reads are single-flight. Only successful reads establish
+/// absence; failures require an explicit retry rather than a polling storm.
+@MainActor
+final class IdentityNameReadiness {
+    private enum State { case loading, loaded, failed }
+    private var states: [UsernameRegistrationDraftStore.Scope: State] = [:]
+    func begin(_ scope: UsernameRegistrationDraftStore.Scope) -> Bool {
+        guard states[scope] == nil else { return false }
+        states[scope] = .loading
+        return true
+    }
+    func finish(_ scope: UsernameRegistrationDraftStore.Scope, succeeded: Bool) {
+        states[scope] = succeeded ? .loaded : .failed
+    }
+    func isLoaded(_ scope: UsernameRegistrationDraftStore.Scope) -> Bool { states[scope] == .loaded }
+    func retry() { states = states.filter { $0.value == .loading } }
 }

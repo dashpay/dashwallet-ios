@@ -92,4 +92,42 @@ final class DWContestedNameStatusServiceTests: XCTestCase {
         XCTAssertEqual(service.pendingLabels(for: .testnet, identityId: Data([1])), ["alpha"])
     }
 
+    private enum LookupFailure: Error { case offline }
+
+    func testUpgradeBookmarkSurvivesFailureAndAmbiguityThenUsesUniqueOwner() async throws {
+        let walletId = Data([0x91, 0x23])
+        let key = "DWPendingContestedDPNSEntries.\(Network.testnet.persistenceScope).9123"
+        let entries: [String: [String: Any]] = ["legacy": ["submitted": 100.0, "end": 200.0]]
+        UserDefaults.standard.set(entries, forKey: key)
+        defer { UserDefaults.standard.removeObject(forKey: key) }
+        do {
+            try await service.rehydrateUnattributed(network: .testnet, walletId: walletId,
+                owners: { _ in throw LookupFailure.offline }, resolved: { _ in XCTFail("Failed read"); return true })
+            XCTFail("Expected lookup failure")
+        } catch LookupFailure.offline {} catch { XCTFail("Unexpected \(error)") }
+        XCTAssertEqual(service.unattributedLabels(for: .testnet, walletId: walletId), ["legacy"])
+        try await service.rehydrateUnattributed(network: .testnet, walletId: walletId,
+            owners: { _ in [Data([1]), Data([2])] }, resolved: { _ in XCTFail("Ambiguous owner"); return true })
+        XCTAssertEqual(service.unattributedLabels(for: .testnet, walletId: walletId), ["legacy"])
+        try await service.rehydrateUnattributed(network: .testnet, walletId: walletId,
+            owners: { _ in [Data([2])] }, resolved: { _ in false })
+        XCTAssertTrue(service.unattributedLabels(for: .testnet, walletId: walletId).isEmpty)
+        XCTAssertTrue(service.pendingLabels(for: .testnet, identityId: Data([1]), walletId: walletId).isEmpty)
+        XCTAssertEqual(service.pendingLabels(for: .testnet, identityId: Data([2]), walletId: walletId), ["legacy"])
+        XCTAssertEqual(service.pendingVotingEndTime(label: "legacy", for: .testnet, walletId: walletId), Date(timeIntervalSince1970: 200))
+    }
+
+    func testResolvedLegacyBookmarkCanClearWithoutGuessingAnOwner() async throws {
+        let walletId = Data([0x91, 0x24])
+        let key = "DWPendingContestedDPNSEntries.\(Network.testnet.persistenceScope).9124"
+        UserDefaults.standard.set(["legacy": ["submitted": 100.0, "end": 200.0]], forKey: key)
+        defer { UserDefaults.standard.removeObject(forKey: key) }
+        try await service.rehydrateUnattributed(network: .testnet, walletId: walletId,
+            owners: { _ in [] }, resolved: { _ in false })
+        XCTAssertEqual(service.unattributedLabels(for: .testnet, walletId: walletId), ["legacy"])
+        try await service.rehydrateUnattributed(network: .testnet, walletId: walletId,
+            owners: { _ in [] }, resolved: { _ in true })
+        XCTAssertTrue(service.unattributedLabels(for: .testnet, walletId: walletId).isEmpty)
+    }
+
 }

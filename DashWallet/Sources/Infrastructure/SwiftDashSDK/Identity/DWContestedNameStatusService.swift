@@ -314,12 +314,42 @@ public final class DWContestedNameStatusService: NSObject {
     /// Retired entries without an owner remain available for migration, but
     /// cannot be assigned to whichever identity happens to be selected.
     @nonobjc
-    func pendingLabels(for network: Network, identityId: Data?) -> [String] {
+    func pendingLabels(for network: Network, identityId: Data?, walletId: Data? = nil) -> [String] {
         guard let identityId else { return [] }
         let hex = identityId.map { String(format: "%02x", $0) }.joined()
-        let entries = Self.entries(for: network)
-        return pendingLabels(for: network).filter {
-            entries[$0]?[Self.identityField] as? String == hex
+        return Self.entries(for: network, walletId: walletId)
+            .filter { $0.value[Self.identityField] as? String == hex }
+            .sorted { ($0.value[Self.submittedField] as? Double ?? 0) < ($1.value[Self.submittedField] as? Double ?? 0) }
+            .map(\.key)
+    }
+
+    /// An upgrade bookmark has a wallet, but no proven identity yet.
+    @nonobjc
+    func unattributedLabels(for network: Network, walletId: Data? = nil) -> [String] {
+        Self.entries(for: network, walletId: walletId)
+            .filter { $0.value[Self.identityField] == nil }.map(\.key).sorted()
+    }
+
+    /// Never guess the selected identity. A failed or ambiguous lookup preserves
+    /// the durable bookmark; resolved contests can be removed without an owner.
+    @nonobjc
+    func rehydrateUnattributed(
+        network: Network, walletId: Data,
+        owners: (String) async throws -> [Data],
+        resolved: (String) async throws -> Bool
+    ) async throws {
+        for label in unattributedLabels(for: network, walletId: walletId) {
+            let candidates = Set(try await owners(label))
+            let shouldClear = candidates.isEmpty ? try await resolved(label) : false
+            guard let key = Self.entriesKey(for: network, walletId: walletId) else { return }
+            var entries = Self.entries(for: network, walletId: walletId)
+            guard entries[label] != nil, entries[label]?[Self.identityField] == nil else { continue }
+            if candidates.count == 1, let owner = candidates.first {
+                entries[label]?[Self.identityField] = owner.map { String(format: "%02x", $0) }.joined()
+            } else if shouldClear {
+                entries.removeValue(forKey: label)
+            }
+            UserDefaults.standard.set(entries, forKey: key)
         }
     }
 
@@ -332,8 +362,8 @@ public final class DWContestedNameStatusService: NSObject {
     /// Best-known voting deadline for one label's contest, or nil when the
     /// label has no bookmark.
     @nonobjc
-    func pendingVotingEndTime(label: String, for network: Network) -> Date? {
-        guard let timestamp = Self.entries(for: network)[Self.canonicalLabel(label)]?[Self.endField] as? Double,
+    func pendingVotingEndTime(label: String, for network: Network, walletId: Data? = nil) -> Date? {
+        guard let timestamp = Self.entries(for: network, walletId: walletId)[Self.canonicalLabel(label)]?[Self.endField] as? Double,
               timestamp > 0 else { return nil }
         return Date(timeIntervalSince1970: timestamp)
     }
@@ -353,8 +383,8 @@ public final class DWContestedNameStatusService: NSObject {
         let defaults = UserDefaults.standard
         var entries = (defaults.dictionary(forKey: key) as? [String: [String: Any]]) ?? [:]
         // Adopt the retired wallet-scoped single-slot layout: same wallet
-        // scope, so attribution is unambiguous (unlike the legacy unscoped
-        // bookmark, which is discarded).
+        // scope, but its identity remains explicitly unattributed until verified
+        // (unlike the device-wide unscoped bookmark, which is discarded).
         if walletId == nil || walletId?.map({ String(format: "%02x", $0) }).joined() == scope(),
            let labelKey = pendingLabelKey(for: network),
            let oldLabel = defaults.string(forKey: labelKey) {

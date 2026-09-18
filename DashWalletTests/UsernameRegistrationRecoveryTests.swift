@@ -10,6 +10,25 @@ import SwiftUI
 final class UsernameRegistrationRecoveryTests: XCTestCase {
     private enum Failure: Error { case cancelled, contextChanged, unavailable, insufficientCredits }
 
+    func testNameReadinessRequiresSuccessfulReadAndExplicitRetryAfterFailure() {
+        let readiness = IdentityNameReadiness()
+        let scope = UsernameRegistrationDraftStore.Scope(network: "testnet", walletId: Data([1]), identityId: Data([2]))
+        let other = UsernameRegistrationDraftStore.Scope(network: "mainnet", walletId: Data([1]), identityId: Data([2]))
+        XCTAssertFalse(readiness.isLoaded(scope))
+        XCTAssertTrue(readiness.begin(scope))
+        XCTAssertFalse(readiness.begin(scope), "Polling must not duplicate the in-flight read")
+        readiness.finish(scope, succeeded: false)
+        XCTAssertFalse(readiness.isLoaded(scope))
+        XCTAssertFalse(readiness.begin(scope), "Failed reads wait for user retry")
+        readiness.retry()
+        XCTAssertTrue(readiness.begin(scope))
+        readiness.finish(scope, succeeded: true)
+        XCTAssertTrue(readiness.isLoaded(scope))
+        XCTAssertFalse(readiness.isLoaded(other))
+        XCTAssertFalse(readiness.isLoaded(.init(network: "testnet", walletId: Data([3]), identityId: Data([2]))))
+        XCTAssertFalse(readiness.isLoaded(.init(network: "testnet", walletId: Data([1]), identityId: Data([3]))))
+    }
+
     func testDraftSurvivesStoreRecreationAndIsScopedToNetworkWalletAndIdentity() throws {
         let suite = "dpns-recovery-tests-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
@@ -164,7 +183,7 @@ final class UsernameRegistrationRecoveryTests: XCTestCase {
 #if canImport(dashpay)
 extension UsernameRegistrationRecoveryTests {
     private func unnamedIdentitySnapshot() -> DWCurrentUserIdentityInfo.Snapshot {
-        .init(balanceCredits: 9_639_634_780,
+        .init(namesAreLoaded: true, balanceCredits: 9_639_634_780,
               identityId: Data(repeating: 1, count: 32), identityIdHex: String(repeating: "01", count: 32),
               username: nil, usernames: [], displayName: nil, avatarURL: nil, publicMessage: nil)
     }
@@ -187,6 +206,25 @@ extension UsernameRegistrationRecoveryTests {
         XCTAssertEqual(snapshot.registrationRecovery, .identityNeedsUsername(snapshot.identityId!))
         snapshot.pendingContestedName = "dash786"
         XCTAssertFalse(snapshot.needsUsername)
+    }
+
+    func testUnloadedNamesDoNotImplyUnnamedIdentity() {
+        var snapshot = unnamedIdentitySnapshot()
+        snapshot.namesAreLoaded = false
+        XCTAssertFalse(snapshot.needsUsername)
+        XCTAssertEqual(snapshot.registrationRecovery, .none)
+        snapshot.namesAreLoaded = true
+        XCTAssertTrue(snapshot.needsUsername)
+    }
+
+    func testUnknownBalanceIsNotKnownZero() {
+        var snapshot = unnamedIdentitySnapshot()
+        snapshot.balanceCredits = nil
+        XCTAssertFalse(snapshot.hasKnownZeroBalance)
+        snapshot.balanceCredits = 0
+        XCTAssertTrue(snapshot.hasKnownZeroBalance)
+        snapshot.balanceCredits = 9_639_634_780
+        XCTAssertFalse(snapshot.hasKnownZeroBalance)
     }
 
     func testConfirmedNameDoesNotOfferRegistrationRecovery() {

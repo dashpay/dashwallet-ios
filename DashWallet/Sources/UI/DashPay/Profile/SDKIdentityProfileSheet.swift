@@ -62,7 +62,8 @@ struct SDKIdentityProfileSheet: View {
                     infoSection
                     if identityIsLoading {
                         if identityLoadTimedOut {
-                            Button("Retry loading identity") {
+                            Button(NSLocalizedString("Retry loading identity", comment: "Identity recovery")) {
+                                DWCurrentUserIdentityInfo.shared.retryNameRefresh()
                                 identityLoadTimedOut = false
                                 identityLoadAttempt += 1
                             }
@@ -134,10 +135,10 @@ struct SDKIdentityProfileSheet: View {
                 reloadIdentitySnapshot()
             }
             .onReceive(NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)) { _ in
-                reloadIdentitySnapshot()
+                restartIdentityLoading()
             }
             .onReceive(NotificationCenter.default.publisher(for: .DWCurrentNetworkDidChange)) { _ in
-                reloadIdentitySnapshot()
+                restartIdentityLoading()
             }
         }
         // `onDismiss` rather than relying on the `onAppear` above: SwiftUI does
@@ -163,6 +164,13 @@ struct SDKIdentityProfileSheet: View {
                 showingUsernameMarketplace = false
             }
         }
+    }
+
+    private func restartIdentityLoading() {
+        identityLoadTimedOut = false
+        identityLoadAttempt += 1
+        DWCurrentUserIdentityInfo.shared.retryNameRefresh()
+        reloadIdentitySnapshot()
     }
 
     private func reloadIdentitySnapshot() {
@@ -971,13 +979,20 @@ final class DWUsernameRecoveryUITestFixture: NSObject {
 
         var body: some View {
             SDKIdentityProfileSheet(snapshotProvider: {
-                .init(isLoading: loading, balanceCredits: 9_639_634_780,
+                .init(isLoading: loading, namesAreLoaded: !loading, balanceCredits: 9_639_634_780,
                       identityId: Data(repeating: 1, count: 32), identityIdHex: String(repeating: "01", count: 32),
                       username: nil, usernames: [], displayName: nil, avatarURL: nil, publicMessage: nil)
             })
             .overlay(alignment: .bottom) {
-                Button("Load identity fixture") { loading = false }
-                    .accessibilityIdentifier("loadIdentityFixture")
+                HStack {
+                    Button("Load identity fixture") { loading = false }
+                        .accessibilityIdentifier("loadIdentityFixture")
+                    Button("Switch identity fixture") {
+                        loading = true
+                        NotificationCenter.default.post(name: .DWCurrentNetworkDidChange, object: nil)
+                    }
+                    .accessibilityIdentifier("switchIdentityFixture")
+                }
             }
         }
     }

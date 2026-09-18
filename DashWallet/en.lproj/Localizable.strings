@@ -6064,3 +6064,19 @@
 /* Shielded manual sync requires an internet connection */
 "You are offline. Connect to the internet and try again." = "You are offline. Connect to the internet and try again.";
 "Start Platform sync before clearing its local state" = "Start Platform sync before clearing its local state";
+
+ / *   I d e n t i t y   r e g i s t r a t i o n   r e c o v e r y .   * / 
+ " R e t r y   l o a d i n g   i d e n t i t y "   =   " R e t r y   l o a d i n g   i d e n t i t y " ; 
+ 
+ / *   I d e n t i t y   r e g i s t r a t i o n   r e c o v e r y .   * / 
+ " T h i s   i d e n t i t y   h a s   n o   c r e d i t s .   U s e   T o p   U p   i n   M y   P r o f i l e ,   t h e n   r e t u r n   t o   f i n i s h   r e g i s t r a t i o n . "   =   " T h i s   i d e n t i t y   h a s   n o   c r e d i t s .   U s e   T o p   U p   i n   M y   P r o f i l e ,   t h e n   r e t u r n   t o   f i n i s h   r e g i s t r a t i o n . " ; 
+ 
+ / *   I d e n t i t y   r e g i s t r a t i o n   r e c o v e r y .   * / 
+ " I d e n t i t y   i s   s t i l l   l o a d i n g "   =   " I d e n t i t y   i s   s t i l l   l o a d i n g " ; 
+ 
+ / *   I d e n t i t y   r e g i s t r a t i o n   r e c o v e r y .   * / 
+ " W a i t   f o r   t h e   w a l l e t   a n d   n e t w o r k   t o   f i n i s h   l o a d i n g ,   t h e n   r e t r y .   N o   r e g i s t r a t i o n   h a s   b e e n   s e n t . "   =   " W a i t   f o r   t h e   w a l l e t   a n d   n e t w o r k   t o   f i n i s h   l o a d i n g ,   t h e n   r e t r y .   N o   r e g i s t r a t i o n   h a s   b e e n   s e n t . " ; 
+ 
+ / *   I d e n t i t y   r e g i s t r a t i o n   r e c o v e r y .   * / 
+ " N o t   e n o u g h   i d e n t i t y   c r e d i t s   t o   r e g i s t e r   t h i s   n a m e .   U s e   T o p   U p   i n   M y   P r o f i l e ,   t h e n   t r y   a g a i n .   Y o u r   e x i s t i n g   i d e n t i t y   w i l l   b e   r e u s e d . "   =   " N o t   e n o u g h   i d e n t i t y   c r e d i t s   t o   r e g i s t e r   t h i s   n a m e .   U s e   T o p   U p   i n   M y   P r o f i l e ,   t h e n   t r y   a g a i n .   Y o u r   e x i s t i n g   i d e n t i t y   w i l l   b e   r e u s e d . " ; 
+ 
