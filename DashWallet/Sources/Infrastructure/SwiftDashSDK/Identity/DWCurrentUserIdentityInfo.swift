@@ -149,7 +149,13 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         return snapshot
     }
 
+    static func cachedBalanceCredits(_ credits: UInt64?) -> UInt64? {
+        guard let credits, credits > 0 else { return nil }
+        return credits
+    }
+
     private let nameReadiness = IdentityNameReadiness()
+    private var nameRefreshTasks: [UsernameRegistrationDraftStore.Scope: Task<Void, Never>] = [:]
 
     private var cachedSnapshot: Snapshot = .empty
     private var cachedRevision: Int = -1
@@ -334,7 +340,11 @@ public final class DWCurrentUserIdentityInfo: NSObject {
                 recoveredUsername = [persistedIdentity.mainDpnsName, persistedIdentity.dpnsName]
                     .compactMap { Self.nilIfEmpty($0) }
                     .first(where: { candidate in
-                        !DWContestedNameStatusService.shared.isPendingLabel(candidate)
+                        guard let network = SwiftDashSDKHost.shared.runningNetwork else { return false }
+                        let service = DWContestedNameStatusService.shared
+                        let pending = service.pendingLabels(for: network, identityId: recoveredIdentityId, walletId: walletId)
+                            + service.unattributedLabels(for: network, walletId: walletId)
+                        return !pending.contains { DWContestedNameStatusService.labelsMatch(candidate, $0) }
                     })
             }
         }
@@ -389,35 +399,40 @@ public final class DWCurrentUserIdentityInfo: NSObject {
     /// `HomeViewController.viewDidAppear` so the helper picks up
     /// blockchain-side names automatically.
     @objc public func syncFromNetwork() {
-        retryNameRefresh()
         guard let wallet = SwiftDashSDKHost.shared.wallet,
               let network = SwiftDashSDKHost.shared.runningNetwork,
               let container = SwiftDashSDKHost.shared.modelContainer,
               let id = refreshedSnapshot().identityId else { return }
-        scheduleNameRefresh(wallet: wallet, network: network, container: container, identityId: id)
+        scheduleNameRefresh(wallet: wallet, network: network, container: container, identityId: id, refresh: true)
     }
 
     @nonobjc func retryNameRefresh() {
+        for task in nameRefreshTasks.values { task.cancel() }
+        nameRefreshTasks.removeAll()
         nameReadiness.retry()
         invalidate()
     }
 
     private func scheduleNameRefresh(
-        wallet: ManagedPlatformWallet, network: Network, container: ModelContainer, identityId: Data
+        wallet: ManagedPlatformWallet, network: Network, container: ModelContainer, identityId: Data,
+        refresh: Bool = false
     ) {
         let scope = UsernameRegistrationDraftStore.Scope(
             network: network.persistenceScope, walletId: wallet.walletId, identityId: identityId)
-        guard nameReadiness.begin(scope) else { return }
-        Task { @MainActor in
+        if refresh, nameRefreshTasks[scope] == nil { nameReadiness.retry(scope) }
+        guard let generation = nameReadiness.begin(scope, refresh: refresh) else { return }
+        nameRefreshTasks[scope] = Task { @MainActor in
             do {
                 try await self.refreshNames(wallet: wallet, network: network, container: container, identityId: identityId)
                 let hasUnknownContests = !DWContestedNameStatusService.shared
                     .unattributedLabels(for: network, walletId: wallet.walletId).isEmpty
-                self.nameReadiness.finish(scope, succeeded: !hasUnknownContests)
+                self.nameReadiness.finish(scope, generation: generation, succeeded: !hasUnknownContests)
             } catch {
-                self.nameReadiness.finish(scope, succeeded: false)
+                self.nameReadiness.finish(scope, generation: generation, succeeded: false)
                 Self.logger.warning("Name refresh remains unknown: \(error.localizedDescription)")
             }
+            guard self.nameReadiness.isCurrent(scope, generation: generation) else { return }
+            self.nameRefreshTasks.removeValue(forKey: scope)
             self.invalidate()
             NotificationCenter.default.post(name: .DWDashPayRegistrationStatusUpdated, object: nil)
         }
@@ -434,11 +449,13 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         var syncError: Error?
         do { _ = try await wallet.syncDpnsNames(identityId: identityId) }
         catch { syncError = error }
+        try Task.checkCancellation()
         let names = try wallet.managedIdentity(identityId: identityId).getDpnsNames()
         if let legacyName, !legacyName.isEmpty, names.isEmpty || syncError != nil {
             do {
                 if try await DWIdentityRegistrationCoordinator.shared.registrationNameState(
                     legacyName, identityId: identityId, wallet: wallet) == .owned {
+                    try Task.checkCancellation()
                     Self.persistConfirmedUsername(legacyName, identityId: identityId, walletId: wallet.walletId, container: container)
                     syncError = nil
                 }
@@ -449,6 +466,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         }
         if let syncError { throw syncError }
         _ = try await wallet.syncContestedDpnsNames(identityId: identityId)
+        try Task.checkCancellation()
         let unattributed = DWContestedNameStatusService.shared.unattributedLabels(for: network, walletId: wallet.walletId)
         for label in try wallet.managedIdentity(identityId: identityId).getContestedDpnsNames() {
             // Upgrade entries require a unique owner across every wallet identity.
@@ -494,7 +512,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
     @objc private func handleInvalidationNotification(_ notification: Notification) {
         if notification.name == .DWCurrentNetworkDidChange
             || notification.name == SwiftDashSDKWalletState.activeWalletDidChangeNotification {
-            nameReadiness.retry()
+            retryNameRefresh()
         }
         invalidate()
     }
@@ -610,8 +628,8 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         // EVERY in-flight contested label filters out — the marketplace
         // allows several simultaneous requests, each its own vote poll.
         let pendingContested = DWContestedNameStatusService.shared.pendingLabels(
-            for: network, identityId: identityId)
-        let unattributed = DWContestedNameStatusService.shared.unattributedLabels(for: network)
+            for: network, identityId: identityId, walletId: walletId)
+        let unattributed = DWContestedNameStatusService.shared.unattributedLabels(for: network, walletId: walletId)
         let isPending: (String) -> Bool = { name in
             (pendingContested + unattributed).contains { DWContestedNameStatusService.labelsMatch(name, $0) }
         }
@@ -731,12 +749,15 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         return Snapshot(
             isLoading: !namesAreLoaded,
             namesAreLoaded: namesAreLoaded,
-            balanceCredits: (try? wallet.managedIdentity(identityId: identityId).getBalance())
-                ?? (persisted.balance > 0 ? UInt64(persisted.balance) : nil),
+            // SDK and persisted balances are cached: a successful local zero
+            // does not prove Platform was read. Let submission validate credits.
+            balanceCredits: Self.cachedBalanceCredits(
+                (try? wallet.managedIdentity(identityId: identityId).getBalance())
+                    ?? (persisted.balance > 0 ? UInt64(persisted.balance) : nil)),
             pendingContestedName: pendingContested.first,
             pendingVotingEndTime: pendingContested.first.flatMap {
                 guard let network = SwiftDashSDKHost.shared.runningNetwork else { return nil }
-                return DWContestedNameStatusService.shared.pendingVotingEndTime(label: $0, for: network)
+                return DWContestedNameStatusService.shared.pendingVotingEndTime(label: $0, for: network, walletId: walletId)
             },
             identityId: identityId,
             identityIdHex: hex,
@@ -774,6 +795,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
 /// names after discovery persistence, then reconcile app state.
 @MainActor
 enum SameSeedIdentityRecoveryPipeline {
+    private static let logger = Logger(subsystem: "org.dash.wallet", category: "IdentityRecovery")
     struct Outcome: Equatable {
         let discoveredCount: Int
         let identityCount: Int
@@ -824,7 +846,10 @@ enum SameSeedIdentityRecoveryPipeline {
                 discoveredCount: discoveredIds.count, identityCount: 0, adopted: false, identitiesPersisted: false)
         }
 
-        try await refreshNames(identityIds)
+        do { try await refreshNames(identityIds) }
+        catch is CancellationError { throw CancellationError() }
+        catch { logger.warning("Identity recovered; name refresh remains pending: \(error.localizedDescription)") }
+        try Task.checkCancellation()
         // Re-read rather than trust the ids we acted on: `knownIdentityIds`
         // came from a different call, and even a discovery result can
         // outrun its own persistence. Intersected with the acted-on ids so

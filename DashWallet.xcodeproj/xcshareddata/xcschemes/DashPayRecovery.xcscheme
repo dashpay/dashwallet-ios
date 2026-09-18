@@ -23,7 +23,7 @@
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
@@ -47,6 +47,16 @@
                BlueprintIdentifier = "75D5F3E4191EC270004AB296"
                BuildableName = "DashWalletTests.xctest"
                BlueprintName = "DashWalletTests"
+               ReferencedContainer = "container:DashWallet.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DA5EB941660EA12D1C2F5C61"
+               BuildableName = "DashPayRecoveryUITests.xctest"
+               BlueprintName = "DashPayRecoveryUITests"
                ReferencedContainer = "container:DashWallet.xcodeproj">
             </BuildableReference>
          </TestableReference>

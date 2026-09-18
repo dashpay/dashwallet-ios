@@ -338,19 +338,28 @@ public final class DWContestedNameStatusService: NSObject {
         owners: (String) async throws -> [Data],
         resolved: (String) async throws -> Bool
     ) async throws {
+        var firstError: Error?
         for label in unattributedLabels(for: network, walletId: walletId) {
-            let candidates = Set(try await owners(label))
-            let shouldClear = candidates.isEmpty ? try await resolved(label) : false
-            guard let key = Self.entriesKey(for: network, walletId: walletId) else { return }
-            var entries = Self.entries(for: network, walletId: walletId)
-            guard entries[label] != nil, entries[label]?[Self.identityField] == nil else { continue }
-            if candidates.count == 1, let owner = candidates.first {
-                entries[label]?[Self.identityField] = owner.map { String(format: "%02x", $0) }.joined()
-            } else if shouldClear {
-                entries.removeValue(forKey: label)
+            do {
+                let candidates = Set(try await owners(label))
+                let shouldClear = candidates.isEmpty ? try await resolved(label) : false
+                try Task.checkCancellation()
+                guard let key = Self.entriesKey(for: network, walletId: walletId) else { return }
+                var entries = Self.entries(for: network, walletId: walletId)
+                guard entries[label] != nil, entries[label]?[Self.identityField] == nil else { continue }
+                if candidates.count == 1, let owner = candidates.first {
+                    entries[label]?[Self.identityField] = owner.map { String(format: "%02x", $0) }.joined()
+                } else if shouldClear {
+                    entries.removeValue(forKey: label)
+                }
+                UserDefaults.standard.set(entries, forKey: key)
+            } catch is CancellationError {
+                throw CancellationError()
+            } catch {
+                firstError = firstError ?? error
             }
-            UserDefaults.standard.set(entries, forKey: key)
         }
+        if let firstError { throw firstError }
     }
 
     /// Compatibility single-label read: the OLDEST in-flight label.

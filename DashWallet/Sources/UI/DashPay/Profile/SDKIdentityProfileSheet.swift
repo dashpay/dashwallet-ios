@@ -49,6 +49,7 @@ struct SDKIdentityProfileSheet: View {
     /// Nil → no Edit button is shown (back-compat with callers that
     /// haven't wired up the edit flow yet).
     var onEditTapped: (() -> Void)?
+    var identityLoadPollLimit = 20
     var snapshotProvider: () -> DWCurrentUserIdentityInfo.Snapshot = {
         DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
     }
@@ -120,7 +121,7 @@ struct SDKIdentityProfileSheet: View {
             .task(id: "\(identityIsLoading)-\(identityLoadAttempt)") {
                 // Cold launch may hydrate persistence without a registration event.
                 // Only refresh reads while loading; never resume a spend here.
-                for _ in 0..<20 {
+                for _ in 0..<identityLoadPollLimit {
                     guard identityIsLoading else { return }
                     do { try await Task.sleep(nanoseconds: 250_000_000) }
                     catch { return }
@@ -978,7 +979,9 @@ final class DWUsernameRecoveryUITestFixture: NSObject {
         @State private var loading = true
 
         var body: some View {
-            SDKIdentityProfileSheet(snapshotProvider: {
+            SDKIdentityProfileSheet(
+                identityLoadPollLimit: ProcessInfo.processInfo.environment["DPNS_RECOVERY_UI_HYDRATION"] == "1" ? 240 : 20,
+                snapshotProvider: {
                 .init(isLoading: loading, namesAreLoaded: !loading, balanceCredits: 9_639_634_780,
                       identityId: Data(repeating: 1, count: 32), identityIdHex: String(repeating: "01", count: 32),
                       username: nil, usernames: [], displayName: nil, avatarURL: nil, publicMessage: nil)

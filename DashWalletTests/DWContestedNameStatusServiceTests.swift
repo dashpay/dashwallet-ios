@@ -27,6 +27,23 @@ final class DWContestedNameStatusServiceTests: XCTestCase {
         super.tearDown()
     }
 
+    func testLegacyLookupFailureDoesNotBlockOtherBookmarks() async throws {
+        let walletId = Data([0x91, 0x25])
+        let key = "DWPendingContestedDPNSEntries.\(Network.testnet.persistenceScope).9125"
+        UserDefaults.standard.set(["a": ["submitted": 100.0], "b": ["submitted": 100.0]], forKey: key)
+        defer { UserDefaults.standard.removeObject(forKey: key) }
+        do {
+            try await service.rehydrateUnattributed(network: .testnet, walletId: walletId,
+                owners: { label in
+                    if label == "a" { throw NSError(domain: "test", code: 1) }
+                    return [Data([2])]
+                }, resolved: { _ in false })
+            XCTFail("Expected the first lookup error")
+        } catch { }
+        XCTAssertEqual(service.unattributedLabels(for: .testnet, walletId: walletId), ["a"])
+        XCTAssertEqual(service.pendingLabels(for: .testnet, identityId: Data([2]), walletId: walletId), ["b"])
+    }
+
     func testSubmissionPersistsConservativeTestnetDeadlineImmediately() {
         let submittedAt = Date(timeIntervalSince1970: 1_000_000)
 

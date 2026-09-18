@@ -871,7 +871,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         return CoordinatorError.identityRegistration(error)
     }
 
-    /// DPNS-only recovery. No IdentityCreate, key re-derivation, or top-up.
+    /// DPNS-only recovery. No IdentityCreate or top-up.
     @discardableResult
     func resumeUsernameRegistration(
         identityId: Identifier,
@@ -909,21 +909,40 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         newController.enterPreparingKeys() // reserves the slot while authentication is open
         defer { DWCurrentUserIdentityInfo.shared.refreshFromSDK() }
         do {
-            return try await finishUsernameRegistration(
-                identityId: identityId, username: username, temporaryUsername: temporaryUsername,
-                wallet: wallet, network: network, signer: KeychainSigner(modelContainer: container),
-                newController: newController,
-                authorize: { try await self.authorizer.authorize() })
+            try await authorizer.authorize()
         } catch DWIdentityAuthorizer.AuthError.cancelled {
             resetState()
             throw CoordinatorError.authCancelled
+        } catch {
+            lastErrorMessage = CoordinatorError.authFailed.localizedDescription
+            newController.enterFailed(lastErrorMessage ?? "")
+            throw CoordinatorError.authFailed
         }
+        do {
+            try validateRegistrationContext(walletId: wallet.walletId, network: network)
+            // Restore signing material after seed recovery. Use this identity's
+            // recorded derivation index, never assume the selected identity is 0.
+            guard let index = try wallet.managedIdentity(identityId: identityId).getIdentityIndex() else {
+                throw CoordinatorError.contextChanged
+            }
+            try wallet.prePersistIdentityKeysForRegistration(
+                identityIndex: index, keyCount: Self.defaultKeyCount, network: network)
+        } catch {
+            lastErrorMessage = error.localizedDescription
+            newController.enterFailed(error.localizedDescription)
+            throw CoordinatorError.keyDerivation(error)
+        }
+        return try await finishUsernameRegistration(
+            identityId: identityId, username: username, temporaryUsername: temporaryUsername,
+            wallet: wallet, network: network, signer: KeychainSigner(modelContainer: container),
+            newController: newController)
     }
 
     private func validateRegistrationContext(walletId: Data, network: Network) throws {
         guard SwiftDashSDKHost.shared.wallet?.walletId == walletId,
               SwiftDashSDKHost.shared.runningNetwork == network,
-              WalletEnvironment.network == network else {
+              WalletEnvironment.network == network,
+              (WalletEnvironment.activeWalletIdHex as String?) == walletId.hexEncodedString() else {
             throw CoordinatorError.contextChanged
         }
         if let resumedIdentityId {
@@ -1216,7 +1235,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             throw CoordinatorError.noModelContainer
         }
 
-        let selectedIdentityId = DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId
+        let identitySnapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        guard !identitySnapshot.isLoading else { throw CoordinatorError.noWallet }
+        let selectedIdentityId = identitySnapshot.identityId
 
         // Single-flight — same rationale as `startCreateUsername`: the
         // funding FFI calls race to their terminal even if we stop
@@ -1537,11 +1558,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     wallet: wallet, network: expectedNetwork, container: container)
             } catch {
                 Self.logger.warning("Legacy contest ownership is still unknown: \(error.localizedDescription)")
-                return
             }
         }
         let labels = DWContestedNameStatusService.shared.pendingLabels(
-            for: expectedNetwork, identityId: identityId)
+            for: expectedNetwork, identityId: identityId, walletId: wallet.walletId)
 
         // Every in-flight contest resolves independently — a per-label
         // failure only skips that label for this pass.
@@ -1592,7 +1612,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 // not consulted: preregistration puts the label there before
                 // voting and therefore cannot prove ownership.
                 guard let votingEnd = DWContestedNameStatusService.shared
-                    .pendingVotingEndTime(label: label, for: expectedNetwork),
+                    .pendingVotingEndTime(label: label, for: expectedNetwork, walletId: wallet.walletId),
                       Date() >= votingEnd else {
                     return
                 }
@@ -1611,8 +1631,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         guard WalletEnvironment.network == expectedNetwork,
               SwiftDashSDKHost.shared.runningNetwork == expectedNetwork,
               SwiftDashSDKHost.shared.wallet?.walletId == wallet.walletId,
+              (WalletEnvironment.activeWalletIdHex as String?) == wallet.walletId.hexEncodedString(),
               DWCurrentUserIdentityInfo.shared.identityId == identityId,
-              DWContestedNameStatusService.shared.pendingLabels(for: expectedNetwork, identityId: identityId)
+              DWContestedNameStatusService.shared.pendingLabels(for: expectedNetwork, identityId: identityId, walletId: wallet.walletId)
                   .contains(where: { DWContestedNameStatusService.labelsMatch($0, label) })
         else {
             Self.logger.info("🪪 IDENT-COORD :: contest check for \(label, privacy: .public) became stale after network/submission change")
@@ -1659,7 +1680,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         if case .completed = newPhase, let username = currentUsername,
            registrationWalletId == SwiftDashSDKHost.shared.wallet?.walletId,
            registrationNetwork == SwiftDashSDKHost.shared.runningNetwork,
-           registrationNetwork == WalletEnvironment.network {
+           registrationNetwork == WalletEnvironment.network,
+           registrationWalletId?.hexEncodedString() == (WalletEnvironment.activeWalletIdHex as String?) {
             let isContestedSubmission = DWContestedNameStatusService.shared.isPendingLabel(username)
             if isContestedSubmission {
                 if let temporaryUsername = registeredTemporaryUsername {

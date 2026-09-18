@@ -55,7 +55,13 @@ class JoinDashPayViewModel: ObservableObject {
 
     @MainActor
     func finishLoadingAttempt() {
-        if state == .loading { state = .callToAction }
+        if state == .loading { state = .retryLoading }
+    }
+
+    @MainActor
+    func retryLoading() {
+        DWCurrentUserIdentityInfo.shared.retryNameRefresh()
+        checkUsername()
     }
 
     @MainActor

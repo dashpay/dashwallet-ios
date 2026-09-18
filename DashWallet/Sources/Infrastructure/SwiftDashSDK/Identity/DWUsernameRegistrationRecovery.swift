@@ -103,16 +103,28 @@ enum UsernamePurchaseCompletion {
 /// absence; failures require an explicit retry rather than a polling storm.
 @MainActor
 final class IdentityNameReadiness {
-    private enum State { case loading, loaded, failed }
-    private var states: [UsernameRegistrationDraftStore.Scope: State] = [:]
-    func begin(_ scope: UsernameRegistrationDraftStore.Scope) -> Bool {
-        guard states[scope] == nil else { return false }
-        states[scope] = .loading
-        return true
+    private var loaded: Set<UsernameRegistrationDraftStore.Scope> = []
+    private var attempts: [UsernameRegistrationDraftStore.Scope: UUID] = [:]
+
+    func begin(_ scope: UsernameRegistrationDraftStore.Scope, refresh: Bool = false) -> UUID? {
+        guard attempts[scope] == nil, refresh || !loaded.contains(scope) else { return nil }
+        let generation = UUID()
+        attempts[scope] = generation
+        return generation
     }
-    func finish(_ scope: UsernameRegistrationDraftStore.Scope, succeeded: Bool) {
-        states[scope] = succeeded ? .loaded : .failed
+
+    func isCurrent(_ scope: UsernameRegistrationDraftStore.Scope, generation: UUID) -> Bool {
+        attempts[scope] == generation
     }
-    func isLoaded(_ scope: UsernameRegistrationDraftStore.Scope) -> Bool { states[scope] == .loaded }
-    func retry() { states = states.filter { $0.value == .loading } }
+
+    func finish(_ scope: UsernameRegistrationDraftStore.Scope, generation: UUID, succeeded: Bool) {
+        guard isCurrent(scope, generation: generation) else { return }
+        if succeeded { loaded.insert(scope) }
+    }
+
+    func isLoaded(_ scope: UsernameRegistrationDraftStore.Scope) -> Bool { loaded.contains(scope) }
+    // Invalidating generations lets a user replace a hung read; late completion
+    // cannot overwrite the replacement. Keep previously established knowledge.
+    func retry() { attempts.removeAll() }
+    func retry(_ scope: UsernameRegistrationDraftStore.Scope) { attempts.removeValue(forKey: scope) }
 }

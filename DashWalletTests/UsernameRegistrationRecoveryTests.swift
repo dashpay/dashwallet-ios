@@ -10,23 +10,38 @@ import SwiftUI
 final class UsernameRegistrationRecoveryTests: XCTestCase {
     private enum Failure: Error { case cancelled, contextChanged, unavailable, insufficientCredits }
 
-    func testNameReadinessRequiresSuccessfulReadAndExplicitRetryAfterFailure() {
+    func testNameReadinessRequiresSuccessfulReadAndExplicitRetryAfterFailure() throws {
         let readiness = IdentityNameReadiness()
         let scope = UsernameRegistrationDraftStore.Scope(network: "testnet", walletId: Data([1]), identityId: Data([2]))
         let other = UsernameRegistrationDraftStore.Scope(network: "mainnet", walletId: Data([1]), identityId: Data([2]))
+        let first = try XCTUnwrap(readiness.begin(scope))
+        XCTAssertNil(readiness.begin(scope), "Polling must not duplicate the in-flight read")
+        readiness.finish(scope, generation: first, succeeded: false)
         XCTAssertFalse(readiness.isLoaded(scope))
-        XCTAssertTrue(readiness.begin(scope))
-        XCTAssertFalse(readiness.begin(scope), "Polling must not duplicate the in-flight read")
-        readiness.finish(scope, succeeded: false)
-        XCTAssertFalse(readiness.isLoaded(scope))
-        XCTAssertFalse(readiness.begin(scope), "Failed reads wait for user retry")
+        XCTAssertNil(readiness.begin(scope), "Failed reads wait for user retry")
         readiness.retry()
-        XCTAssertTrue(readiness.begin(scope))
-        readiness.finish(scope, succeeded: true)
+        let second = try XCTUnwrap(readiness.begin(scope))
+        readiness.finish(scope, generation: second, succeeded: true)
         XCTAssertTrue(readiness.isLoaded(scope))
         XCTAssertFalse(readiness.isLoaded(other))
-        XCTAssertFalse(readiness.isLoaded(.init(network: "testnet", walletId: Data([3]), identityId: Data([2]))))
-        XCTAssertFalse(readiness.isLoaded(.init(network: "testnet", walletId: Data([1]), identityId: Data([3]))))
+        readiness.retry(scope)
+        let background = try XCTUnwrap(readiness.begin(scope, refresh: true))
+        XCTAssertTrue(readiness.isLoaded(scope), "Background refresh preserves known absence")
+        readiness.finish(scope, generation: background, succeeded: false)
+        XCTAssertTrue(readiness.isLoaded(scope))
+    }
+
+    func testRetryReplacesStuckReadAndIgnoresItsLateCompletion() throws {
+        let readiness = IdentityNameReadiness()
+        let scope = UsernameRegistrationDraftStore.Scope(network: "testnet", walletId: Data([1]), identityId: Data([2]))
+        let stuck = try XCTUnwrap(readiness.begin(scope))
+        readiness.retry()
+        let replacement = try XCTUnwrap(readiness.begin(scope))
+        readiness.finish(scope, generation: stuck, succeeded: true)
+        XCTAssertFalse(readiness.isLoaded(scope), "An obsolete success must not establish absence")
+        readiness.finish(scope, generation: replacement, succeeded: true)
+        readiness.finish(scope, generation: stuck, succeeded: false)
+        XCTAssertTrue(readiness.isLoaded(scope), "An obsolete failure must not undo the replacement")
     }
 
     func testDraftSurvivesStoreRecreationAndIsScopedToNetworkWalletAndIdentity() throws {
@@ -218,6 +233,9 @@ extension UsernameRegistrationRecoveryTests {
     }
 
     func testUnknownBalanceIsNotKnownZero() {
+        XCTAssertNil(DWCurrentUserIdentityInfo.cachedBalanceCredits(0))
+        XCTAssertNil(DWCurrentUserIdentityInfo.cachedBalanceCredits(nil))
+        XCTAssertEqual(DWCurrentUserIdentityInfo.cachedBalanceCredits(42), 42)
         var snapshot = unnamedIdentitySnapshot()
         snapshot.balanceCredits = nil
         XCTAssertFalse(snapshot.hasKnownZeroBalance)

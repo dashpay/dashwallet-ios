@@ -4,6 +4,7 @@ final class UsernameRecoveryUITests: XCTestCase {
     func testFundedUnnamedIdentityOffersRecoveryAfterLoading() {
         let app = XCUIApplication()
         app.launchEnvironment["DPNS_RECOVERY_UI_TEST"] = "1"
+        app.launchEnvironment["DPNS_RECOVERY_UI_HYDRATION"] = "1"
         app.launch()
         let loading = app.descendants(matching: .any)["identityProfileLoading"].firstMatch
         XCTAssertTrue(loading.waitForExistence(timeout: 5))
