@@ -593,6 +593,9 @@
 /* InternalTransfer recovery */
 "Building the privacy proof can take up to a minute. Keep the app open." = "Building the privacy proof can take up to a minute. Keep the app open.";
 
+/* InternalTransfer recovery */
+"Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open." = "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open.";
+
 /* Log export */
 "Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files" = "A legutóbbi diagnosztikai naplókat zip-fájlba gyűjti, hogy AirDroppal vagy e-mailben elküldhesd, illetve a Fájlokba menthesd";
 
