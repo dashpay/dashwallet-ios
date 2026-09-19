@@ -174,6 +174,32 @@ class AppStoreConnectReleaseTest < Minitest::Test
     refute AppStoreConnectRelease.published_app_store_version?({ "appVersionState" => "IN_REVIEW", "appStoreState" => "REPLACED_WITH_NEW_VERSION" })
   end
 
+  def test_current_version_state_remains_authoritative_after_removal_from_sale
+    %w[DEVELOPER_REMOVED_FROM_SALE REMOVED_FROM_SALE].each do |legacy|
+      %w[READY_FOR_DISTRIBUTION REPLACED_WITH_NEW_VERSION].each do |current|
+        assert AppStoreConnectRelease.published_app_store_version?({
+          "appVersionState" => current, "appStoreState" => legacy
+        })
+      end
+      refute AppStoreConnectRelease.published_app_store_version?({
+        "appVersionState" => "PENDING_DEVELOPER_RELEASE", "appStoreState" => legacy
+      })
+    end
+  end
+
+  def test_legacy_removal_alone_stops_publication_reads_instead_of_guessing
+    %w[DEVELOPER_REMOVED_FROM_SALE REMOVED_FROM_SALE].each do |legacy|
+      client = fake_client
+      client.define_singleton_method(:get_all) do |_url|
+        [{ "id" => "old-version", "attributes" => { "appStoreState" => legacy, "versionString" => "9.1.0" } }]
+      end
+      error = assert_raises(AppStoreConnectRelease::Error) { client.published_versions("app") }
+      assert_includes error.message, "Ambiguous publication history"
+      assert_includes error.message, "9.1.0"
+      assert_includes error.message, legacy
+    end
+  end
+
   def test_reads_exact_build_relationship_and_rejects_missing_build
     client = fake_client
     requested = []
@@ -202,5 +228,56 @@ class AppStoreConnectReleaseTest < Minitest::Test
 
   def test_pagination_cannot_send_apple_credentials_to_another_host
     assert_raises(AppStoreConnectRelease::Error) { fake_client.send(:get_json, "https://example.com/v1/apps") }
+  end
+
+  def test_transport_read_errors_have_four_attempts_and_a_safe_final_message
+    [SocketError, IOError, Net::OpenTimeout, Net::ReadTimeout, Net::WriteTimeout,
+     Errno::ECONNRESET, OpenSSL::SSL::SSLError].each do |type|
+      client = fake_client
+      calls, delays = 0, []
+      client.define_singleton_method(:perform_get) do |_uri|
+        calls += 1
+        raise type, "private-test-token"
+      end
+      client.define_singleton_method(:sleep) { |seconds| delays << seconds }
+      error = assert_raises(AppStoreConnectRelease::TransientError) do
+        client.send(:get_json, "https://api.appstoreconnect.apple.com/v1/apps")
+      end
+      assert_equal 4, calls
+      assert_equal [1, 2, 4], delays
+      assert_includes error.message, "failed after 4 attempts"
+      refute_includes error.message, "private-test-token"
+    end
+  end
+
+  def test_http_read_errors_stop_after_four_attempts
+    client = fake_client
+    calls, delays = 0, []
+    client.define_singleton_method(:perform_get) do |_uri|
+      calls += 1
+      AppStoreConnectRelease::Client.parse_response(503, '{"errors":[]}')
+    end
+    client.define_singleton_method(:sleep) { |seconds| delays << seconds }
+    error = assert_raises(AppStoreConnectRelease::TransientError) do
+      client.send(:get_json, "https://api.appstoreconnect.apple.com/v1/apps")
+    end
+    assert_equal 4, calls
+    assert_equal [1, 2, 4], delays
+    assert_includes error.message, "HTTP 503"
+  end
+
+  def test_http_client_does_not_add_hidden_retries
+    client = fake_client
+    client.define_singleton_method(:authorization_token) { "private-test-token" }
+    http = Struct.new(:max_retries).new
+    http.define_singleton_method(:request) do |_request|
+      raise "Net::HTTP retry budget was not disabled" unless max_retries == 0
+      Struct.new(:code, :body).new("200", '{"data":[]}')
+    end
+    original_start = Net::HTTP.method(:start)
+    Net::HTTP.define_singleton_method(:start) { |*_args, **_options, &block| block.call(http) }
+    assert_equal({ "data" => [] }, client.send(:get_json, "https://api.appstoreconnect.apple.com/v1/apps"))
+  ensure
+    Net::HTTP.define_singleton_method(:start, original_start) if original_start
   end
 end

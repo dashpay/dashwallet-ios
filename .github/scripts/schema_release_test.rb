@@ -166,10 +166,8 @@ class SchemaReleaseTest < Minitest::Test
   end
 
   def test_gate_requires_merge_and_presence_in_selected_commit
-    Dir.mktmpdir do |dir|
+    with_platform do |dir|
       path = File.join(dir, SchemaRelease::REGISTRY)
-      FileUtils.mkdir_p(File.dirname(path))
-      File.write(path, SchemaRelease.json(@store.github.registry))
       assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
       merge_release
       assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
@@ -181,11 +179,95 @@ class SchemaReleaseTest < Minitest::Test
     end
   end
 
+  def with_platform
+    Dir.mktmpdir do |dir|
+      SchemaRelease::CAPTURE_FILES.each do |relative|
+        path = File.join(dir, relative)
+        FileUtils.mkdir_p(File.dirname(path))
+        File.write(path, "test capture support")
+      end
+      path = File.join(dir, SchemaRelease::REGISTRY)
+      FileUtils.mkdir_p(File.dirname(path))
+      File.write(path, SchemaRelease.json(@store.github.registry))
+      yield dir
+    end
+  end
+
+  def test_gate_checks_setup_even_without_post_baseline_publications
+    @apple.versions = []
+    with_platform do |dir|
+      @pipeline.gate(dir)
+      @store.files.delete("baseline.json")
+      error = assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
+      assert_match "bootstrap", error.message
+      assert_match "dry_run disabled", error.message
+    end
+  end
+
+  def test_gate_explains_selected_checkout_missing_release_support_before_apple_access
+    @apple.define_singleton_method(:find_app) { |_bundle| raise "Apple must not be contacted" }
+    with_platform do |dir|
+      [SchemaRelease::REGISTRY, SchemaRelease::CAPTURE_FILES.last].each do |relative|
+        path = File.join(dir, relative)
+        original = File.read(path)
+        File.delete(path)
+        error = assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
+        assert_includes error.message, dir
+        assert_includes error.message, relative
+        assert_includes error.message, "Select a Platform commit"
+        File.write(path, original)
+      end
+    end
+  end
+
+  def test_gate_rejects_invalid_registry_even_without_publications
+    @apple.versions = []
+    with_platform do |dir|
+      ["not-json", '{"format_version":2,"schemas":{},"releases":{}}', '{}'].each do |bytes|
+        File.write(File.join(dir, SchemaRelease::REGISTRY), bytes)
+        error = assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
+        assert_match "registry", error.message
+      end
+    end
+  end
+
+  def test_gate_explains_unavailable_or_forbidden_merged_registry
+    @apple.versions = []
+    with_platform do |dir|
+      [nil, SchemaRelease::HTTPError.new(403, "forbidden")].each do |result|
+        @store.github.define_singleton_method(:file) do |*_args, **_options|
+          raise result if result.is_a?(Exception)
+          result
+        end
+        error = assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
+        assert_includes error.message, SchemaRelease::PLATFORM_REPO
+        assert_includes error.message, SchemaRelease::REGISTRY
+        assert_includes error.message, "SCHEMA_RELEASE_TOKEN"
+      end
+    end
+  end
+
+  def test_absent_registry_entry_is_distinct_from_incomplete_or_conflicting_evidence
+    record = @pipeline.published_records.first
+    manifest, _path, hash = @pipeline.evidence(record)
+    refute @pipeline.registered?(@store.github.registry, record, manifest, hash)
+    merge_release
+    assert @pipeline.registered?(@store.github.registry, record, manifest, hash)
+    original = @store.github.registry["releases"]["new"].dup
+    @store.github.registry["releases"]["new"].delete("platform_sha")
+    assert_raises(SchemaRelease::Error) { @pipeline.registered?(@store.github.registry, record, manifest, hash) }
+    @store.github.registry["releases"]["new"] = original.merge("platform_sha" => "f" * 40)
+    assert_raises(SchemaRelease::Error) { @pipeline.registered?(@store.github.registry, record, manifest, hash) }
+  end
+
   def test_observed_release_remains_required_after_removal_from_sale
     @pipeline.sync
     @apple.versions = []
     @pipeline.sync
     assert_equal 2, @store.github.dispatches.length
+    with_platform do |dir|
+      assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
+    end
   end
 
   def test_bootstrap_is_one_time_and_dry_run_is_read_only
@@ -242,6 +324,108 @@ class SchemaReleaseTest < Minitest::Test
     assert_raises(SchemaRelease::Error) { SchemaRelease.manifest_path(BUNDLE, "../../main", "21") }
     assert_raises(SchemaRelease::Error) { SchemaRelease.validate_schema(SCHEMA.merge("entity_hashes" => {})) }
     assert_raises(SchemaRelease::Error) { SchemaRelease.validate_schema(SCHEMA.merge("indexes" => %w[z a])) }
+  end
+end
+
+class SchemaGitHubRequestTest < Minitest::Test
+  Response = Struct.new(:code, :body)
+
+  def setup
+    @api = SchemaRelease::GitHub.new("private-test-token")
+    @calls, @sleeps = [], []
+  end
+
+  def with_responses(outcomes)
+    calls = @calls
+    http = Struct.new(:max_retries).new
+    http.define_singleton_method(:request) do |request|
+      calls << request.method
+      raise "Net::HTTP retry budget was not disabled" unless max_retries == 0
+      outcome = outcomes.fetch(calls.length - 1)
+      raise outcome if outcome.is_a?(Exception)
+      outcome
+    end
+    transport = ->(*_args, **_options, &block) { block.call(http) }
+    original_start = Net::HTTP.method(:start)
+    Net::HTTP.define_singleton_method(:start, transport)
+    sleeps = @sleeps
+    @api.define_singleton_method(:sleep) { |seconds| sleeps << seconds }
+    yield
+  ensure
+    Net::HTTP.define_singleton_method(:start, original_start) if original_start
+    @api.singleton_class.remove_method(:sleep) if @api.singleton_methods.include?(:sleep)
+  end
+
+  def test_transient_transport_failures_retry_reads
+    [SocketError, IOError, Net::OpenTimeout, Net::ReadTimeout, Net::WriteTimeout,
+     Errno::ECONNRESET, OpenSSL::SSL::SSLError].each do |type|
+      @calls.clear
+      @sleeps.clear
+      with_responses([type.new("private-test-token"), Response.new("200", '{"ok":true}')]) do
+        assert_equal({ "ok" => true }, @api.request("get", "repos/example/test"))
+      end
+      assert_equal %w[GET GET], @calls
+      assert_equal [1], @sleeps
+    end
+  end
+
+  def test_read_retry_budget_is_four_attempts_with_bounded_backoff
+    with_responses(Array.new(4) { SocketError.new("private-test-token") }) do
+      error = assert_raises(SchemaRelease::Error) { @api.request("get", "repos/example/test") }
+      assert_match "4 attempt", error.message
+      refute_includes error.message, "private-test-token"
+    end
+    assert_equal 4, @calls.length
+    assert_equal [1, 2, 4], @sleeps
+  end
+
+  def test_retries_only_transient_http_reads
+    with_responses([Response.new("429", ""), Response.new("503", ""), Response.new("200", '{}')]) do
+      assert_equal({}, @api.request("get", "repos/example/test"))
+    end
+    assert_equal [1, 2], @sleeps
+    @calls.clear
+    @sleeps.clear
+    with_responses([Response.new("403", "")]) do
+      error = assert_raises(SchemaRelease::HTTPError) { @api.request("get", "repos/example/test") }
+      assert_equal 403, error.status
+    end
+    assert_equal ["GET"], @calls
+    assert_empty @sleeps
+  end
+
+  def test_does_not_retry_ambiguous_writes_or_print_transport_details
+    %w[post patch].each do |method|
+      [SocketError.new("private-test-token"), Response.new("503", "")].each do |failure|
+        @calls.clear
+        @sleeps.clear
+        with_responses([failure]) do
+          error = assert_raises(SchemaRelease::Error) { @api.request(method, "repos/example/test", {}) }
+          assert_match "write may have completed", error.message
+          assert_match "reconcile", error.message
+          refute_includes error.message, "private-test-token"
+        end
+        assert_equal [method.upcase], @calls
+        assert_empty @sleeps
+      end
+    end
+  end
+
+  def test_ref_conflicts_keep_the_http_status_for_atomic_store_recovery
+    with_responses([Response.new("422", "")]) do
+      error = assert_raises(SchemaRelease::HTTPError) { @api.request("patch", "repos/example/test", {}) }
+      assert_equal 422, error.status
+    end
+    assert_equal ["PATCH"], @calls
+  end
+
+  def test_missing_token_has_setup_instructions_before_any_network_call
+    [nil, "", "  "].each do |token|
+      error = assert_raises(SchemaRelease::Error) do
+        SchemaRelease.main(["gate", "--platform-dir", "/unused"], { "SCHEMA_RELEASE_TOKEN" => token })
+      end
+      assert_includes error.message, "Add the Actions secret"
+    end
   end
 end
 

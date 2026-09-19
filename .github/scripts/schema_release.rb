@@ -16,6 +16,12 @@ module SchemaRelease
   DATA_BRANCH = "schema-release-data"
   PLATFORM_BRANCH = "v4.2-dev"
   REGISTRY = "packages/swift-sdk/schema-releases.json"
+  CAPTURE_FILES = %w[
+    packages/swift-sdk/schema-models.json
+    packages/swift-sdk/scripts/freeze_schema_models.py
+    packages/swift-sdk/SwiftTests/SwiftDashSDKTests/DashSchemaReleaseCaptureTests.swift
+  ].freeze
+  TRANSPORT_ERRORS = [Timeout::Error, IOError, SystemCallError, SocketError, OpenSSL::SSL::SSLError].freeze
 
   def self.json(value)
     JSON.pretty_generate(value) + "\n"
@@ -59,7 +65,9 @@ module SchemaRelease
 
   class GitHub
     def initialize(token)
-      raise Error, "SCHEMA_RELEASE_TOKEN is missing" if token.nil? || token.empty?
+      if token.nil? || token.strip.empty?
+        raise Error, "SCHEMA_RELEASE_TOKEN is missing. Add the Actions secret to #{IOS_REPO} and #{PLATFORM_REPO} before running the schema release workflow."
+      end
       @token = token
     end
 
@@ -74,7 +82,11 @@ module SchemaRelease
       attempts = 0
       begin
         attempts += 1
-        response = Net::HTTP.start(uri.host, uri.port, use_ssl: true, open_timeout: 15, read_timeout: 45) { |http| http.request(request) }
+        response = Net::HTTP.start(uri.host, uri.port, use_ssl: true, open_timeout: 15, read_timeout: 45) do |http|
+          # Keep the four-attempt budget here, rather than also retrying in Net::HTTP.
+          http.max_retries = 0
+          http.request(request)
+        end
         status = response.code.to_i
         return nil if optional && status == 404
         unless status.between?(200, 299)
@@ -82,9 +94,23 @@ module SchemaRelease
         end
         response.body.to_s.empty? ? {} : JSON.parse(response.body)
       rescue HTTPError => e
-        raise unless method == "get" && (e.status == 429 || e.status >= 500) && attempts < 4
-        sleep(2**(attempts - 1))
-        retry
+        transient = e.status == 429 || e.status >= 500
+        if method == "get" && transient && attempts < 4
+          sleep(2**(attempts - 1))
+          retry
+        end
+        if method != "get" && transient
+          raise HTTPError.new(e.status, "#{e.message}. The write may have completed; reconcile the remote result before retrying.")
+        end
+        raise
+      rescue *TRANSPORT_ERRORS => e
+        if method == "get" && attempts < 4
+          sleep(2**(attempts - 1))
+          retry
+        end
+        detail = method == "get" ? "Check connectivity and retry the workflow." :
+          "The write may have completed; reconcile the remote result before retrying."
+        raise Error, "GitHub #{method.upcase} #{uri.path} failed after #{attempts} attempt(s) (#{e.class}). #{detail}"
       end
     end
 
@@ -198,7 +224,10 @@ module SchemaRelease
     end
 
     def published_records
-      baseline = @store.document("baseline.json")
+      baseline = @store.document("baseline.json", optional: true)
+      unless baseline
+        raise Error, "Schema release baseline is missing on #{IOS_REPO}:#{DATA_BRANCH}. Run 'Freeze published App Store schema' in bootstrap mode: inspect dry_run first, then repeat with dry_run disabled before building a release candidate."
+      end
       raise Error, "Baseline belongs to a different app" unless baseline.fetch("bundle_id") == @bundle
       app = @apple.find_app(@bundle)
       raise Error, "App Store app identifier changed" unless baseline.fetch("app_id") == app.fetch("id")
@@ -265,8 +294,7 @@ module SchemaRelease
           records << prior unless records.any? { |record| record["release_id"] == prior["release_id"] }
         end
       end
-      registry_bytes = @store.github.file(PLATFORM_REPO, REGISTRY, PLATFORM_BRANCH)
-      registry = JSON.parse(registry_bytes)
+      registry = merged_registry
       records.each do |record|
         manifest, path, hash = evidence(record)
         id = record.fetch("release_id")
@@ -297,13 +325,13 @@ module SchemaRelease
     end
 
     def gate(platform_dir)
-      registry = JSON.parse(File.read(File.join(platform_dir, REGISTRY)))
+      registry = selected_registry(platform_dir)
       records = published_records
       @store.paths("releases/").each do |path|
         record = @store.document(path)
         records << record unless records.any? { |item| item["release_id"] == record["release_id"] }
       end
-      merged = JSON.parse(@store.github.file(PLATFORM_REPO, REGISTRY, PLATFORM_BRANCH))
+      merged = merged_registry
       records.each do |record|
         manifest, _path, hash = evidence(record)
         unless registered?(merged, record, manifest, hash) && registered?(registry, record, manifest, hash)
@@ -316,6 +344,43 @@ module SchemaRelease
         end
       end
       @out.puts "Published schemas are reconciled in the selected Platform checkout."
+    end
+
+    private
+
+    def parse_registry(bytes, location)
+      registry = JSON.parse(bytes)
+      unless registry.is_a?(Hash) && registry["format_version"] == 1 &&
+             registry["schemas"].is_a?(Hash) && registry["releases"].is_a?(Hash)
+        raise Error, "Unsupported or malformed schema registry at #{location}; restore the reviewed registry before releasing."
+      end
+      registry
+    rescue JSON::ParserError
+      raise Error, "Invalid JSON in schema registry at #{location}; restore the reviewed registry before releasing."
+    end
+
+    def selected_registry(platform_dir)
+      sha, status = Open3.capture2("git", "-C", platform_dir, "rev-parse", "HEAD", err: File::NULL)
+      checkout = "#{File.expand_path(platform_dir)} (#{status.success? ? sha.strip : 'unknown commit'})"
+      missing = ([REGISTRY] + CAPTURE_FILES).reject { |path| File.file?(File.join(platform_dir, path)) }
+      unless missing.empty?
+        raise Error, "Selected Platform checkout #{checkout} lacks schema release support: #{missing.join(', ')}. Select a Platform commit containing the schema release pipeline."
+      end
+      parse_registry(File.read(File.join(platform_dir, REGISTRY)), checkout)
+    end
+
+    def merged_registry
+      location = "#{PLATFORM_REPO}:#{PLATFORM_BRANCH}/#{REGISTRY}"
+      bytes = @store.github.file(PLATFORM_REPO, REGISTRY, PLATFORM_BRANCH, optional: true)
+      unless bytes
+        raise Error, "Schema registry is unavailable at #{location}. Merge Platform schema release support first and verify SCHEMA_RELEASE_TOKEN access and organization approval."
+      end
+      parse_registry(bytes, location)
+    rescue HTTPError => e
+      hint = [401, 403, 404].include?(e.status) ?
+        "Verify SCHEMA_RELEASE_TOKEN access and organization approval, then retry." :
+        "GitHub is unavailable or rate-limited; retry the workflow after service recovers."
+      raise Error, "Cannot read schema registry at #{location} (HTTP #{e.status}). #{hint}"
     end
   end
 
@@ -365,7 +430,7 @@ module SchemaRelease
     command = argv.shift
     parser.parse!(argv)
     raise Error, "Unexpected positional arguments" unless argv.empty?
-    store = Store.new(GitHub.new(env.fetch("SCHEMA_RELEASE_TOKEN")))
+    store = Store.new(GitHub.new(env["SCHEMA_RELEASE_TOKEN"]))
     if command == "next-build"
       value = "build_number=#{next_build(store, env)}"
       puts value

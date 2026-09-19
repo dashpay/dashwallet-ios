@@ -11,6 +11,7 @@ require "uri"
 module AppStoreConnectRelease
   class Error < StandardError; end
   class TransientError < Error; end
+  TRANSPORT_ERRORS = [Timeout::Error, IOError, SystemCallError, SocketError, OpenSSL::SSL::SSLError].freeze
 
   class MarketingVersion
     include Comparable
@@ -81,6 +82,12 @@ module AppStoreConnectRelease
   end
 
   def published_app_store_version?(attributes)
+    if !attributes["appVersionState"] &&
+       %w[DEVELOPER_REMOVED_FROM_SALE REMOVED_FROM_SALE].include?(attributes["appStoreState"])
+      raise Error, "Ambiguous publication history for App Store version #{attributes['versionString']}: " \
+                   "legacy #{attributes['appStoreState']} without appVersionState. " \
+                   "Verify the release history in App Store Connect and recover its current version state; do not guess a published build."
+    end
     # A superseded release still has installed databases, even when two
     # publications happened between observer runs.
     live_app_store_version?(attributes) ||
@@ -229,8 +236,7 @@ module AppStoreConnectRelease
           else
             puts "Waiting for TestFlight version #{version_string} to appear in App Store Connect..."
           end
-        rescue TransientError, IOError, SystemCallError, SocketError,
-               Net::OpenTimeout, Net::ReadTimeout, OpenSSL::SSL::SSLError => e
+        rescue TransientError, *TRANSPORT_ERRORS => e
           puts "Transient App Store Connect error while polling (#{e.class}: #{e.message}); retrying..."
         end
 
@@ -277,9 +283,13 @@ module AppStoreConnectRelease
       begin
         attempts += 1
         perform_get(uri)
-      rescue TransientError, IOError, SystemCallError, SocketError,
-             Net::OpenTimeout, Net::ReadTimeout, OpenSSL::SSL::SSLError
-        raise if attempts >= 4
+      rescue TransientError, *TRANSPORT_ERRORS => e
+        if attempts >= 4
+          raise if e.is_a?(TransientError)
+
+          raise TransientError, "App Store Connect GET #{uri.path} failed after #{attempts} attempts (#{e.class}). " \
+                                "Check API availability and connectivity, then retry."
+        end
 
         sleep(2**(attempts - 1))
         retry
@@ -297,6 +307,7 @@ module AppStoreConnectRelease
         open_timeout: 15,
         read_timeout: 30
       ) do |http|
+        http.max_retries = 0
         http.request(request)
       end
       self.class.parse_response(response.code.to_i, response.body)

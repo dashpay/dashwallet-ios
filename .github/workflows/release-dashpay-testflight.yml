@@ -224,6 +224,8 @@ jobs:
 
       - name: Validate release secrets
         env:
+          SCHEMA_RELEASE_TOKEN: ${{ secrets.SCHEMA_RELEASE_TOKEN }}
+          RELEASE_CHANNEL: ${{ inputs.release_channel }}
           APPLE_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }}
           APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
           APPLE_DEVELOPMENT_CERTIFICATE_BASE64: ${{ secrets.APPLE_DEVELOPMENT_CERTIFICATE_BASE64 }}
@@ -253,6 +255,9 @@ jobs:
             UPHOLD_INFO_PLIST_BASE64
             SWAPKIT_INFO_PLIST_BASE64
           )
+          if [[ "$RELEASE_CHANNEL" != 'internal-only' ]]; then
+            required_secrets+=(SCHEMA_RELEASE_TOKEN)
+          fi
 
           missing=0
           for name in "${required_secrets[@]}"; do
@@ -329,6 +334,15 @@ jobs:
           chmod 600 "$fastlane_api_key_path"
           echo "FASTLANE_API_KEY_PATH=$fastlane_api_key_path" >> "$GITHUB_ENV"
 
+      - name: Require previous App Store schemas before building a candidate
+        if: inputs.release_channel != 'internal-only'
+        env:
+          SCHEMA_RELEASE_TOKEN: ${{ secrets.SCHEMA_RELEASE_TOKEN }}
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          BUNDLE_ID: ${{ env.DASHPAY_BUNDLE_ID }}
+        run: ruby "$SCHEMA_RELEASE_SCRIPT" gate --platform-dir ../platform
+
       - name: Resolve TestFlight release version
         id: release-version
         env:
@@ -341,15 +355,6 @@ jobs:
         run: |
           set -euo pipefail
           ruby "$RELEASE_SCRIPT" resolve-version
-
-      - name: Require previous App Store schemas before building a candidate
-        if: inputs.release_channel != 'internal-only'
-        env:
-          SCHEMA_RELEASE_TOKEN: ${{ secrets.SCHEMA_RELEASE_TOKEN }}
-          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
-          BUNDLE_ID: ${{ env.DASHPAY_BUNDLE_ID }}
-        run: ruby "$SCHEMA_RELEASE_SCRIPT" gate --platform-dir ../platform
 
       - name: Select Xcode 26.6
         uses: maxim-lobanov/setup-xcode@v1

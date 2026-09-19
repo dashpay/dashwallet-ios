@@ -36,6 +36,24 @@ def extract_attachments(export_dir, output_dir):
         shutil.copyfile(source, output_dir / expected)
 
 
+def select_simulator(devices):
+    candidates = []
+    for runtime, items in devices.items():
+        match = re.search(r"\.iOS-(\d+(?:-\d+){0,2})$", runtime)
+        if not match:
+            continue
+        parts = tuple(int(part) for part in match[1].split("-"))
+        version = parts + (0,) * (3 - len(parts))
+        for device in items:
+            if device.get("isAvailable") and device["name"].startswith("iPhone"):
+                candidates.append((version, runtime, device))
+    if not candidates:
+        raise ValueError("No available iPhone simulator for schema capture")
+    _, runtime, device = max(
+        candidates, key=lambda item: (item[0], item[1], item[2]["name"], item[2]["udid"]))
+    return runtime, device
+
+
 def capture(platform_dir, output_dir):
     platform_dir, output_dir = pathlib.Path(platform_dir).resolve(), pathlib.Path(output_dir).resolve()
     sdk = platform_dir / "packages/swift-sdk"
@@ -50,11 +68,7 @@ def capture(platform_dir, output_dir):
         raise ValueError("Capture output directory already exists; do not overwrite release evidence")
     output_dir.mkdir(parents=True)
     devices = json.loads(run("xcrun", "simctl", "list", "devices", "available", "--json"))["devices"]
-    candidates = [(runtime, device) for runtime, items in devices.items() if ".iOS-" in runtime
-                  for device in items if device.get("isAvailable") and device["name"].startswith("iPhone")]
-    if not candidates:
-        raise ValueError("No available iPhone simulator for schema capture")
-    runtime, device = sorted(candidates, key=lambda item: (item[0], item[1]["name"]), reverse=True)[0]
+    runtime, device = select_simulator(devices)
     with tempfile.TemporaryDirectory(prefix="schema-capture-") as scratch:
         result = pathlib.Path(scratch) / "capture.xcresult"
         subprocess.run([
