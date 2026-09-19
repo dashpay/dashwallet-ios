@@ -108,13 +108,13 @@ class AppStoreConnectReleaseTest < Minitest::Test
     assert AppStoreConnectRelease.live_app_store_version?(attributes)
   end
 
-  def test_live_state_in_either_attribute_wins
+  def test_current_state_takes_precedence_over_deprecated_state
     attributes = {
       "appVersionState" => "IN_REVIEW",
       "appStoreState" => "READY_FOR_SALE"
     }
 
-    assert AppStoreConnectRelease.live_app_store_version?(attributes)
+    refute AppStoreConnectRelease.live_app_store_version?(attributes)
   end
 
   def test_paginator_collects_all_pages
@@ -151,5 +151,160 @@ class AppStoreConnectReleaseTest < Minitest::Test
     assert_raises(AppStoreConnectRelease::TransientError) do
       AppStoreConnectRelease::Client.parse_response(503, '{"errors":[]}')
     end
+  end
+
+  def fake_client
+    AppStoreConnectRelease::Client.new(key_id: "test", issuer_id: "test", private_key_path: "unused")
+  end
+
+  def test_published_versions_excludes_review_and_beta_states
+    client = fake_client
+    client.define_singleton_method(:get_all) do |_url|
+      %w[READY_FOR_DISTRIBUTION IN_REVIEW PENDING_DEVELOPER_RELEASE].map do |state|
+        { "id" => state, "attributes" => { "appVersionState" => state, "versionString" => "9.1.0" } }
+      end
+    end
+    assert_equal ["READY_FOR_DISTRIBUTION"], client.published_versions("app").map { |row| row["id"] }
+    assert_equal ["9.1.0"], client.production_versions("app")
+  end
+
+  def test_superseded_release_remains_part_of_published_history
+    assert AppStoreConnectRelease.published_app_store_version?({ "appVersionState" => "REPLACED_WITH_NEW_VERSION" })
+    assert AppStoreConnectRelease.published_app_store_version?({ "appStoreState" => "REPLACED_WITH_NEW_VERSION" })
+    refute AppStoreConnectRelease.published_app_store_version?({ "appVersionState" => "IN_REVIEW", "appStoreState" => "REPLACED_WITH_NEW_VERSION" })
+  end
+
+  def test_current_version_state_remains_authoritative_after_removal_from_sale
+    %w[DEVELOPER_REMOVED_FROM_SALE REMOVED_FROM_SALE].each do |legacy|
+      %w[READY_FOR_DISTRIBUTION REPLACED_WITH_NEW_VERSION].each do |current|
+        assert AppStoreConnectRelease.published_app_store_version?({
+          "appVersionState" => current, "appStoreState" => legacy
+        })
+      end
+      refute AppStoreConnectRelease.published_app_store_version?({
+        "appVersionState" => "PENDING_DEVELOPER_RELEASE", "appStoreState" => legacy
+      })
+    end
+  end
+
+  def test_legacy_removal_alone_stops_publication_reads_instead_of_guessing
+    %w[DEVELOPER_REMOVED_FROM_SALE REMOVED_FROM_SALE].each do |legacy|
+      client = fake_client
+      client.define_singleton_method(:get_all) do |_url|
+        [{ "id" => "old-version", "attributes" => { "appStoreState" => legacy, "versionString" => "9.1.0" } }]
+      end
+      error = assert_raises(AppStoreConnectRelease::Error) { client.published_versions("app") }
+      assert_includes error.message, "Ambiguous publication history"
+      assert_includes error.message, "9.1.0"
+      assert_includes error.message, legacy
+    end
+  end
+
+  def test_internal_only_version_resolution_is_not_blocked_by_ambiguous_freeze_history
+    client = fake_client
+    client.define_singleton_method(:get_all) do |_url|
+      [
+        { "attributes" => { "appStoreState" => "REMOVED_FROM_SALE", "versionString" => "8.0.0" } },
+        { "attributes" => { "appVersionState" => "READY_FOR_DISTRIBUTION", "versionString" => "9.0.0" } }
+      ]
+    end
+    client.define_singleton_method(:testflight_versions) { |_app| [] }
+    command = AppStoreConnectRelease::Command.new([], env: { "RELEASE_CHANNEL" => "internal-only", "REQUESTED_VERSION" => "9.1.0" })
+    command.define_singleton_method(:write_outputs) { |values| values }
+    outputs = command.send(:resolve_version, client, "app")
+    assert_equal "9.1.0", outputs.fetch("effective_version")
+    assert_equal "9.0.0", outputs.fetch("latest_production_version")
+    assert_raises(AppStoreConnectRelease::Error) { client.published_versions("app") }
+  end
+
+  def test_testflight_guard_still_includes_known_superseded_publications
+    client = fake_client
+    client.define_singleton_method(:get_all) do |_url|
+      [{ "attributes" => { "appVersionState" => "REPLACED_WITH_NEW_VERSION", "versionString" => "9.1.0" } }]
+    end
+    assert_raises(AppStoreConnectRelease::Error) do
+      resolve(requested: "9.1.0", production: client.production_versions("app"))
+    end
+  end
+
+  def test_reads_exact_build_relationship_and_rejects_missing_build
+    client = fake_client
+    requested = []
+    client.define_singleton_method(:get_json) do |url|
+      requested << url
+      { "data" => { "id" => "build21" } }
+    end
+    assert_equal "build21", client.version_build("version-id")["id"]
+    assert_equal "https://api.appstoreconnect.apple.com/v1/appStoreVersions/version-id/build", requested.first
+    client.define_singleton_method(:get_json) { |_url| { "data" => nil } }
+    assert_raises(AppStoreConnectRelease::Error) { client.version_build("version-id") }
+  end
+
+  def test_read_retries_transient_errors_without_network
+    client = fake_client
+    calls = 0
+    client.define_singleton_method(:perform_get) do |_uri|
+      calls += 1
+      raise AppStoreConnectRelease::TransientError, "rate limited" if calls < 3
+      { "data" => [] }
+    end
+    client.define_singleton_method(:sleep) { |_seconds| nil }
+    assert_equal({ "data" => [] }, client.send(:get_json, "https://api.appstoreconnect.apple.com/v1/apps"))
+    assert_equal 3, calls
+  end
+
+  def test_pagination_cannot_send_apple_credentials_to_another_host
+    assert_raises(AppStoreConnectRelease::Error) { fake_client.send(:get_json, "https://example.com/v1/apps") }
+  end
+
+  def test_transport_read_errors_have_four_attempts_and_a_safe_final_message
+    [SocketError, IOError, Net::OpenTimeout, Net::ReadTimeout, Net::WriteTimeout,
+     Errno::ECONNRESET, OpenSSL::SSL::SSLError].each do |type|
+      client = fake_client
+      calls, delays = 0, []
+      client.define_singleton_method(:perform_get) do |_uri|
+        calls += 1
+        raise type, "private-test-token"
+      end
+      client.define_singleton_method(:sleep) { |seconds| delays << seconds }
+      error = assert_raises(AppStoreConnectRelease::TransientError) do
+        client.send(:get_json, "https://api.appstoreconnect.apple.com/v1/apps")
+      end
+      assert_equal 4, calls
+      assert_equal [1, 2, 4], delays
+      assert_includes error.message, "failed after 4 attempts"
+      refute_includes error.message, "private-test-token"
+    end
+  end
+
+  def test_http_read_errors_stop_after_four_attempts
+    client = fake_client
+    calls, delays = 0, []
+    client.define_singleton_method(:perform_get) do |_uri|
+      calls += 1
+      AppStoreConnectRelease::Client.parse_response(503, '{"errors":[]}')
+    end
+    client.define_singleton_method(:sleep) { |seconds| delays << seconds }
+    error = assert_raises(AppStoreConnectRelease::TransientError) do
+      client.send(:get_json, "https://api.appstoreconnect.apple.com/v1/apps")
+    end
+    assert_equal 4, calls
+    assert_equal [1, 2, 4], delays
+    assert_includes error.message, "HTTP 503"
+  end
+
+  def test_http_client_does_not_add_hidden_retries
+    client = fake_client
+    client.define_singleton_method(:authorization_token) { "private-test-token" }
+    http = Struct.new(:max_retries).new
+    http.define_singleton_method(:request) do |_request|
+      raise "Net::HTTP retry budget was not disabled" unless max_retries == 0
+      Struct.new(:code, :body).new("200", '{"data":[]}')
+    end
+    original_start = Net::HTTP.method(:start)
+    Net::HTTP.define_singleton_method(:start) { |*_args, **_options, &block| block.call(http) }
+    assert_equal({ "data" => [] }, client.send(:get_json, "https://api.appstoreconnect.apple.com/v1/apps"))
+  ensure
+    Net::HTTP.define_singleton_method(:start, original_start) if original_start
   end
 end
