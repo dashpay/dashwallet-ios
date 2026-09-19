@@ -4,6 +4,7 @@
 //
 
 import Combine
+import OSLog
 import SwiftUI
 import DashUIKit
 import SwiftDashSDK
@@ -63,23 +64,68 @@ final class ShieldedRecoveryViewModel: ObservableObject {
     /// rather than paying for a proof that cannot land.
     @Published private(set) var alreadyComplete = false
 
+    /// The attempt has been on "Generating proof" longer than the copy's "up to
+    /// a minute". The resume can legitimately wait much longer — for a ChainLock
+    /// when Platform refuses an old InstantSend proof — so the sheet stops
+    /// promising a minute.
+    @Published private(set) var isLongProofWait = false
+
+    nonisolated static let longProofWaitThreshold: Duration = .seconds(60)
+
+    /// What a Finish now tap does, given the coordinator's phase when the tap
+    /// is acted on.
+    enum TapAction: Equatable {
+        case resume
+        /// The previous attempt failed. The coordinator's single-flight gate
+        /// only opens from `.idle`, so without a reset every retry is refused.
+        case resetAndResume
+        /// An attempt is running, or the transfer reached a verdict that must
+        /// not be retried: `.submittedUnconfirmed` risks a double spend.
+        case ignore
+    }
+
+    nonisolated static func tapAction(for phase: ShieldedTransferCoordinator.Phase) -> TapAction {
+        switch phase {
+        case .idle: return .resume
+        case .failed: return .resetAndResume
+        case .signing, .locking, .proving, .broadcasting, .success, .submittedUnconfirmed: return .ignore
+        }
+    }
+
+    private static let logger = Logger(subsystem: "org.dashfoundation.dash", category: "ShieldedRecovery")
+
     private let outPoint: (txidWire: Data, vout: UInt32)?
     private let coordinator = ShieldedTransferCoordinator()
     private var cancellables = Set<AnyCancellable>()
+    private var longProofWaitTask: Task<Void, Never>?
 
     init(transaction: Transaction) {
         outPoint = transaction.shieldedOutPoint.map { ($0.txidWire, $0.vout) }
 
         coordinator.$phase
             .receive(on: RunLoop.main)
-            .sink { [weak self] in self?.phase = $0 }
+            .sink { [weak self] in self?.apply(phase: $0) }
             .store(in: &cancellables)
     }
 
     var isInFlight: Bool {
-        switch phase {
-        case .signing, .locking, .proving, .broadcasting: return true
-        default: return false
+        phase.isInFlight
+    }
+
+    private func apply(phase: ShieldedTransferCoordinator.Phase) {
+        self.phase = phase
+
+        guard phase == .proving else {
+            longProofWaitTask?.cancel()
+            longProofWaitTask = nil
+            isLongProofWait = false
+            return
+        }
+        guard longProofWaitTask == nil else { return }
+        longProofWaitTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: Self.longProofWaitThreshold)
+            guard !Task.isCancelled else { return }
+            self?.isLongProofWait = true
         }
     }
 
@@ -99,6 +145,20 @@ final class ShieldedRecoveryViewModel: ObservableObject {
 
             if Self.status(ofOutPoint: outPoint.txidWire) == .consumed {
                 alreadyComplete = true
+                return
+            }
+
+            // Decided after the preflight await: a second tap may have started
+            // an attempt in the meantime. No suspension point separates this
+            // check from the coordinator's own single-flight gate.
+            switch Self.tapAction(for: coordinator.phase) {
+            case .resume:
+                break
+            case .resetAndResume:
+                Self.logger.info("🛡️ SHIELD-TX :: recovery retry after failure")
+                coordinator.reset()
+            case .ignore:
+                Self.logger.info("🛡️ SHIELD-TX :: recovery tap ignored phase=\(String(describing: self.coordinator.phase), privacy: .public)")
                 return
             }
 
@@ -227,9 +287,13 @@ struct ShieldedRecoverySheet: View {
                     .init(label: NSLocalizedString("Broadcasting", comment: ""), phase: .broadcasting),
                 ])
 
-            Text(NSLocalizedString(
-                "Building the privacy proof can take up to a minute. Keep the app open.",
-                comment: "InternalTransfer recovery"))
+            Text(viewModel.isLongProofWait
+                ? NSLocalizedString(
+                    "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open.",
+                    comment: "InternalTransfer recovery")
+                : NSLocalizedString(
+                    "Building the privacy proof can take up to a minute. Keep the app open.",
+                    comment: "InternalTransfer recovery"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
