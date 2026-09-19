@@ -1114,6 +1114,94 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
 
     private static let realKeyRegistrationFixtureHex =
         "0089fd6ddba75136a4fea02dc7d89ef0ca5bcc32ccf12fb8da6a1a03740567ae7201010200060200020000145e24e38a86e720f61757647996957e322686abb7000007000103000021035e8cfb0785b54e8902a3dc17bdaad8a5738c6019a18ebc527f79d1c64a27826a4120dc911df1d1e6cccf8c95ec0d423c928433397933de6dd9ad006bc40dc0334d6d270d50c6d5e2dcdc5560e40487ddfe28bd1066d0729fad4b26f92ae33f12a04b00000000"
+
+    // MARK: - Per-network configuration
+
+    func testTestnetResolvesThePinnedKeyExchangeContract() throws {
+        let id = try DashConnectNetworkConfiguration.loginKeyExchangeContractId(for: .testnet, devnetContractId: nil)
+
+        XCTAssertEqual(id.toBase58String(), "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P")
+    }
+
+    func testDevnetResolvesTheConfiguredContract() throws {
+        let configured = "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P"
+
+        let id = try DashConnectNetworkConfiguration.loginKeyExchangeContractId(for: .devnet, devnetContractId: configured)
+
+        XCTAssertEqual(id.toBase58String(), configured)
+    }
+
+    func testDevnetWithoutAUsableContractIdIsNotConfigured() {
+        for configured in [nil, "not-an-identifier"] as [String?] {
+            XCTAssertThrowsError(
+                try DashConnectNetworkConfiguration.loginKeyExchangeContractId(for: .devnet, devnetContractId: configured)
+            ) { error in
+                XCTAssertEqual(error as? DashConnectPlatformError, .devnetLoginContractNotConfigured)
+            }
+        }
+    }
+
+    func testMainnetHasNoKeyExchangeContractYet() {
+        XCTAssertFalse(DashConnectNetworkConfiguration.isAvailable(on: .mainnet))
+        XCTAssertThrowsError(
+            try DashConnectNetworkConfiguration.loginKeyExchangeContractId(for: .mainnet, devnetContractId: nil)
+        ) { error in
+            XCTAssertEqual(error as? DashConnectPlatformError, .loginContractUnavailable)
+        }
+    }
+
+    func testAvailabilityFollowsTheKeyExchangeContract() {
+        XCTAssertTrue(DashConnectNetworkConfiguration.isAvailable(on: .testnet))
+        XCTAssertTrue(DashConnectNetworkConfiguration.isAvailable(on: .devnet))
+        XCTAssertEqual(
+            DashConnectNetworkConfiguration.isAvailable(on: .mainnet),
+            DashConnectNetworkConfiguration.mainnetLoginKeyExchangeContractId != nil
+        )
+    }
+
+    func testRuntimeNetworkMatchesTheDashConnectNetwork() {
+        XCTAssertEqual(DashConnectNetworkConfiguration.runtimeNetwork(for: .mainnet), .mainnet)
+        XCTAssertEqual(DashConnectNetworkConfiguration.runtimeNetwork(for: .testnet), .testnet)
+        XCTAssertEqual(DashConnectNetworkConfiguration.runtimeNetwork(for: .devnet), .devnet)
+    }
+
+    /// An app's contract id is only meaningful on the chain it was registered
+    /// on, so known branding does not leak to another network.
+    func testKnownAppBrandingIsPerNetwork() {
+        let yapprTestnet = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+
+        let onTestnet = DashConnectNetworkConfiguration.appMetadata(
+            contractId: yapprTestnet, unauthenticatedLabel: " QR label ", on: .testnet)
+        let onMainnet = DashConnectNetworkConfiguration.appMetadata(
+            contractId: yapprTestnet, unauthenticatedLabel: " QR label ", on: .mainnet)
+
+        XCTAssertEqual(onTestnet, DashConnectAppMetadata(name: "Yappr", url: "yap.pr"))
+        XCTAssertEqual(onMainnet, DashConnectAppMetadata(name: "QR label", url: ""))
+    }
+
+    func testParseQRRejectsALoginForAnotherNetwork() async throws {
+        let dataSource = PlatformDashConnectDataSource(
+            supportedNetwork: .testnet,
+            store: TestDashConnectStore(initialConnections: [])
+        )
+        let label = Data("Yappr".utf8)
+        let payload = Data([0x01])
+            + (try Secp256k1.compressedPublicKey(privateKey: Data(repeating: 0x01, count: 32)))
+            + Data(repeating: 0x44, count: 32)
+            + Data([UInt8(label.count)])
+            + label
+        let mainnetUri = "dash-key:\(payload.toBase58String())?n=\(DashConnectNetwork.mainnet.rawValue)&v=1"
+
+        do {
+            _ = try await dataSource.parseQR(mainnetUri)
+            XCTFail("A mainnet login must not parse on a testnet data source")
+        } catch {
+            XCTAssertEqual(
+                error as? DashConnectPlatformError,
+                .unsupportedRequestNetwork(expected: .testnet, actual: .mainnet)
+            )
+        }
+    }
 }
 
 private final class TestDashConnectStore: DashConnectStore {
