@@ -190,16 +190,24 @@ jobs:
           persist-credentials: false
 
       - name: Locate release tooling
+        env:
+          RELEASE_CHANNEL: ${{ inputs.release_channel }}
         run: |
           set -euo pipefail
-          script="$GITHUB_WORKSPACE/release-tooling/.github/scripts/app_store_connect_release.rb"
-          if [[ ! -f "$script" ]]; then
-            echo "::error::release tooling missing at $script"
-            exit 1
+          tooling="$GITHUB_WORKSPACE/release-tooling/.github/scripts"
+          scripts=(app_store_connect_release.rb)
+          if [[ "$RELEASE_CHANNEL" != 'internal-only' ]]; then
+            scripts+=(schema_release.rb capture_schema_release.py)
           fi
-          echo "RELEASE_SCRIPT=$script" >> "$GITHUB_ENV"
-          echo "SCHEMA_RELEASE_SCRIPT=$GITHUB_WORKSPACE/release-tooling/.github/scripts/schema_release.rb" >> "$GITHUB_ENV"
-          echo "SCHEMA_CAPTURE_SCRIPT=$GITHUB_WORKSPACE/release-tooling/.github/scripts/capture_schema_release.py" >> "$GITHUB_ENV"
+          for script in "${scripts[@]}"; do
+            if [[ ! -f "$tooling/$script" ]]; then
+              echo "::error::release tooling missing at $tooling/$script; use a workflow ref containing all release scripts"
+              exit 1
+            fi
+          done
+          echo "RELEASE_SCRIPT=$tooling/app_store_connect_release.rb" >> "$GITHUB_ENV"
+          echo "SCHEMA_RELEASE_SCRIPT=$tooling/schema_release.rb" >> "$GITHUB_ENV"
+          echo "SCHEMA_CAPTURE_SCRIPT=$tooling/capture_schema_release.py" >> "$GITHUB_ENV"
 
       - name: Checkout platform
         uses: actions/checkout@v6

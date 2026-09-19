@@ -12,16 +12,20 @@ class SchemaReleaseTest < Minitest::Test
 
   class GitHub
     attr_accessor :registry
-    attr_reader :dispatches
+    attr_reader :dispatches, :retained_sources
     def initialize
       @registry = { "format_version" => 1, "schemas" => {}, "releases" => {} }
       @dispatches = []
+      @retained_sources = []
     end
     def file(*_args)
       SchemaRelease.json(@registry)
     end
     def dispatch(id, commit)
       @dispatches << [id, commit]
+    end
+    def retain_platform_source(sha)
+      @retained_sources << sha
     end
   end
 
@@ -140,6 +144,19 @@ class SchemaReleaseTest < Minitest::Test
     @store.files.delete(@path)
     assert_raises(SchemaRelease::Error) { @pipeline.sync }
     assert_empty @store.github.dispatches
+  end
+
+  def test_sync_reports_bad_evidence_but_still_dispatches_other_valid_releases
+    @apple.versions.insert(1, @apple.version("broken", "9.0.1"))
+    @apple.builds["broken"] = { "id" => "apple20", "attributes" => { "version" => "20" } }
+    error = assert_raises(SchemaRelease::Error) { @pipeline.sync }
+    assert_includes error.message, "broken"
+    assert_equal [["new", @store.head]], @store.github.dispatches
+    assert_nil @store.document("releases/broken.json", optional: true)
+    refute_nil @store.document("releases/new.json")
+    with_platform do |directory|
+      assert_raises(SchemaRelease::Error) { @pipeline.gate(directory) }
+    end
   end
 
   def test_wrong_fixture_digest_fails
@@ -300,6 +317,7 @@ class SchemaReleaseTest < Minitest::Test
               "PLATFORM_SHA" => "b" * 40, "GITHUB_RUN_ID" => "1", "GITHUB_RUN_ATTEMPT" => "1" }
       SchemaRelease.record_build(@store, dir, env)
       SchemaRelease.record_build(@store, dir, env)
+      assert_equal ["b" * 40, "b" * 40], @store.github.retained_sources
       env["PLATFORM_SHA"] = "c" * 40
       assert_raises(SchemaRelease::Error) { SchemaRelease.record_build(@store, dir, env) }
     end
@@ -427,9 +445,56 @@ class SchemaGitHubRequestTest < Minitest::Test
       assert_includes error.message, "Add the Actions secret"
     end
   end
+
+  def source_tag(commit = "b" * 40)
+    { "ref" => "refs/tags/swift-schema-source/#{'b' * 40}", "object" => { "type" => "commit", "sha" => commit } }
+  end
+
+  def test_source_tag_is_created_once_and_never_updated
+    with_responses([Response.new("404", ""), Response.new("201", JSON.generate(source_tag))]) do
+      @api.retain_platform_source("b" * 40)
+    end
+    assert_equal %w[GET POST], @calls
+    @calls.clear
+    with_responses([Response.new("200", JSON.generate(source_tag))]) do
+      @api.retain_platform_source("b" * 40)
+    end
+    assert_equal ["GET"], @calls
+  end
+
+  def test_source_tag_creation_race_reconciles_the_exact_commit
+    with_responses([Response.new("404", ""), Response.new("422", "exists"), Response.new("200", JSON.generate(source_tag))]) do
+      @api.retain_platform_source("b" * 40)
+    end
+    assert_equal %w[GET POST GET], @calls
+  end
+
+  def test_source_tag_conflict_is_never_overwritten
+    with_responses([Response.new("200", JSON.generate(source_tag("c" * 40)))]) do
+      error = assert_raises(SchemaRelease::Error) { @api.retain_platform_source("b" * 40) }
+      assert_includes error.message, "without moving or deleting"
+    end
+    assert_equal ["GET"], @calls
+  end
+
+  def test_source_tag_ambiguous_write_stops_until_a_later_run_can_reconcile
+    with_responses([Response.new("404", ""), SocketError.new("connection lost")]) do
+      assert_raises(SchemaRelease::Error) { @api.retain_platform_source("b" * 40) }
+    end
+    assert_equal %w[GET POST], @calls
+    assert_empty @sleeps
+  end
 end
 
 class SchemaDataStoreTest < Minitest::Test
+  def store_for(api)
+    store = SchemaRelease::Store.new(api)
+    @delays = []
+    delays = @delays
+    store.define_singleton_method(:sleep) { |seconds| delays << seconds }
+    store
+  end
+
   def test_large_fixture_uses_immutable_blob_fallback
     api = SchemaRelease::GitHub.new("test-token")
     calls = []
@@ -448,13 +513,17 @@ class SchemaDataStoreTest < Minitest::Test
   # Small Git API model exercises non-fast-forward conflicts without any network
   # or local repository writes.
   class GitAPI
-    attr_accessor :race, :files
+    attr_accessor :race, :files, :stale_conflict_reads
     attr_reader :updates
     def initialize
       @head = "a" * 40
       @files, @blobs, @trees, @commits, @updates = {}, {}, {}, {}, []
     end
     def ref(*_args)
+      if @stale_reads.to_i > 0
+        @stale_reads -= 1
+        return @stale_head
+      end
       @head
     end
     def file(_repo, path, _ref, optional:)
@@ -480,6 +549,7 @@ class SchemaDataStoreTest < Minitest::Test
         if @race
           @files.merge!(@race)
           @race = nil
+          @stale_head, @stale_reads = @head, @stale_conflict_reads.to_i
           @head = "b" * 40
           raise SchemaRelease::HTTPError.new(422, "non-fast-forward")
         end
@@ -497,7 +567,7 @@ class SchemaDataStoreTest < Minitest::Test
   def test_atomic_retry_preserves_concurrent_unrelated_data
     api = GitAPI.new
     api.race = { "other.json" => "other" }
-    store = SchemaRelease::Store.new(api)
+    store = store_for(api)
     store.write({ "build.json" => "evidence" }, message: "record")
     assert_equal({ "other.json" => "other", "build.json" => "evidence" }, api.files)
     assert_equal 2, api.updates.length
@@ -507,7 +577,7 @@ class SchemaDataStoreTest < Minitest::Test
   def test_atomic_retry_refuses_conflicting_evidence
     api = GitAPI.new
     api.race = { "build.json" => "different" }
-    assert_raises(SchemaRelease::Error) { SchemaRelease::Store.new(api).write({ "build.json" => "evidence" }, message: "record") }
+    assert_raises(SchemaRelease::Error) { store_for(api).write({ "build.json" => "evidence" }, message: "record") }
     assert_equal "different", api.files["build.json"]
   end
 
@@ -516,5 +586,27 @@ class SchemaDataStoreTest < Minitest::Test
     api.files = { "build.json" => "same" }
     SchemaRelease::Store.new(api).write({ "build.json" => "same" }, message: "record")
     assert_empty api.updates
+  end
+
+  def test_atomic_retry_waits_for_a_stale_ref_read_to_catch_up
+    api = GitAPI.new
+    api.race = { "other.json" => "other" }
+    api.stale_conflict_reads = 2
+    store_for(api).write({ "build.json" => "evidence" }, message: "record")
+    assert_equal [1, 2, 4], @delays
+    assert_equal 2, api.updates.length
+    assert_equal({ "other.json" => "other", "build.json" => "evidence" }, api.files)
+  end
+
+  def test_unresolved_ref_conflict_has_bounded_reads_and_does_not_repeat_the_write
+    api = GitAPI.new
+    api.race = {}
+    api.stale_conflict_reads = 10
+    assert_raises(SchemaRelease::HTTPError) do
+      store_for(api).write({ "build.json" => "evidence" }, message: "record")
+    end
+    assert_equal [1, 2, 4], @delays
+    assert_equal 1, api.updates.length
+    assert_empty api.files
   end
 end

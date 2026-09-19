@@ -54,15 +54,31 @@ def select_simulator(devices):
     return runtime, device
 
 
-def capture(platform_dir, output_dir):
-    platform_dir, output_dir = pathlib.Path(platform_dir).resolve(), pathlib.Path(output_dir).resolve()
+def validate_capture_checkout(platform_dir):
+    platform_dir = pathlib.Path(platform_dir).resolve()
     sdk = platform_dir / "packages/swift-sdk"
-    if not (sdk / "SwiftTests/SwiftDashSDKTests/DashSchemaReleaseCaptureTests.swift").is_file():
-        raise ValueError("Selected Platform commit predates schema capture. Use a commit containing the release pipeline.")
-    for path in ("schema-models.json", "SwiftTests/SwiftDashSDKTests/DashSchemaReleaseCaptureTests.swift"):
+    required = ["schema-models.json", "scripts/freeze_schema_models.py"] + [
+        f"SwiftTests/SwiftDashSDKTests/{name}.swift" for name in (
+            "DashSchemaReleaseCaptureTests", "DashModelMigrationTests", "DashReleasedSchemaTests")
+    ]
+    missing = [path for path in required if not (sdk / path).is_file()]
+    if missing:
+        raise ValueError("Selected Platform commit lacks schema capture support: " + ", ".join(missing))
+    for path in required:
         run("git", "cat-file", "-e", f"HEAD:packages/swift-sdk/{path}", cwd=platform_dir)
     if run("git", "status", "--porcelain", "--untracked-files=all", "--", "packages/swift-sdk", cwd=platform_dir):
         raise ValueError("SwiftDashSDK has local changes; captured evidence must belong to the exact Platform commit")
+    return sdk
+
+
+def validate_inventory(schema, inventory):
+    if inventory.get("format_version") != 1 or set(schema["entity_hashes"]) != set(inventory["models"]):
+        raise ValueError("Captured entities differ from schema-models.json; update the source inventory before shipping")
+
+
+def capture(platform_dir, output_dir):
+    platform_dir, output_dir = pathlib.Path(platform_dir).resolve(), pathlib.Path(output_dir).resolve()
+    sdk = validate_capture_checkout(platform_dir)
     subprocess.run(["python3", str(sdk / "scripts/freeze_schema_models.py"), "--check"], cwd=platform_dir, check=True)
     if output_dir.exists():
         raise ValueError("Capture output directory already exists; do not overwrite release evidence")
@@ -87,8 +103,7 @@ def capture(platform_dir, output_dir):
         extract_attachments(exported, output_dir)
     schema = json.loads((output_dir / "schema.json").read_text())
     inventory = json.loads((sdk / "schema-models.json").read_text())
-    if inventory.get("format_version") != 1 or set(schema["entity_hashes"]) != set(inventory["models"]):
-        raise ValueError("Captured entities differ from schema-models.json; update the source inventory before shipping")
+    validate_inventory(schema, inventory)
     (output_dir / "toolchain.json").write_text(json.dumps({
         "xcode": run("xcodebuild", "-version"), "simulator_runtime": runtime,
     }, indent=2) + "\n")

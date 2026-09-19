@@ -81,13 +81,16 @@ module AppStoreConnectRelease
     LIVE_APP_STORE_STATES.include?(attributes["appVersionState"] || attributes["appStoreState"])
   end
 
-  def published_app_store_version?(attributes)
+  def validate_publication_history!(attributes)
     if !attributes["appVersionState"] &&
        %w[DEVELOPER_REMOVED_FROM_SALE REMOVED_FROM_SALE].include?(attributes["appStoreState"])
       raise Error, "Ambiguous publication history for App Store version #{attributes['versionString']}: " \
                    "legacy #{attributes['appStoreState']} without appVersionState. " \
                    "Verify the release history in App Store Connect and recover its current version state; do not guess a published build."
     end
+  end
+
+  def published_app_store_version?(attributes)
     # A superseded release still has installed databases, even when two
     # publications happened between observer runs.
     live_app_store_version?(attributes) ||
@@ -176,16 +179,18 @@ module AppStoreConnectRelease
     end
 
     def production_versions(app_id)
-      published_versions(app_id).map { |version| version.fetch("attributes").fetch("versionString") }
+      # The TestFlight version guard needs known published versions, not the
+      # freeze observer's stricter proof of complete publication history.
+      app_store_versions(app_id).filter_map do |version|
+        attributes = version.fetch("attributes")
+        attributes.fetch("versionString") if AppStoreConnectRelease.published_app_store_version?(attributes)
+      end
     end
 
     def published_versions(app_id)
-      url = api_url(
-        "/v1/apps/#{app_id}/appStoreVersions",
-        "filter[platform]" => "IOS",
-        "limit" => 200
-      )
-      get_all(url).select { |version| AppStoreConnectRelease.published_app_store_version?(version.fetch("attributes")) }
+      versions = app_store_versions(app_id)
+      versions.each { |version| AppStoreConnectRelease.validate_publication_history!(version.fetch("attributes")) }
+      versions.select { |version| AppStoreConnectRelease.published_app_store_version?(version.fetch("attributes")) }
     end
 
     def version_build(version_id)
@@ -249,6 +254,10 @@ module AppStoreConnectRelease
     end
 
     private
+
+    def app_store_versions(app_id)
+      get_all(api_url("/v1/apps/#{app_id}/appStoreVersions", "filter[platform]" => "IOS", "limit" => 200))
+    end
 
     def pre_release_versions(app_id)
       url = api_url(

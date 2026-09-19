@@ -200,6 +200,33 @@ class AppStoreConnectReleaseTest < Minitest::Test
     end
   end
 
+  def test_internal_only_version_resolution_is_not_blocked_by_ambiguous_freeze_history
+    client = fake_client
+    client.define_singleton_method(:get_all) do |_url|
+      [
+        { "attributes" => { "appStoreState" => "REMOVED_FROM_SALE", "versionString" => "8.0.0" } },
+        { "attributes" => { "appVersionState" => "READY_FOR_DISTRIBUTION", "versionString" => "9.0.0" } }
+      ]
+    end
+    client.define_singleton_method(:testflight_versions) { |_app| [] }
+    command = AppStoreConnectRelease::Command.new([], env: { "RELEASE_CHANNEL" => "internal-only", "REQUESTED_VERSION" => "9.1.0" })
+    command.define_singleton_method(:write_outputs) { |values| values }
+    outputs = command.send(:resolve_version, client, "app")
+    assert_equal "9.1.0", outputs.fetch("effective_version")
+    assert_equal "9.0.0", outputs.fetch("latest_production_version")
+    assert_raises(AppStoreConnectRelease::Error) { client.published_versions("app") }
+  end
+
+  def test_testflight_guard_still_includes_known_superseded_publications
+    client = fake_client
+    client.define_singleton_method(:get_all) do |_url|
+      [{ "attributes" => { "appVersionState" => "REPLACED_WITH_NEW_VERSION", "versionString" => "9.1.0" } }]
+    end
+    assert_raises(AppStoreConnectRelease::Error) do
+      resolve(requested: "9.1.0", production: client.production_versions("app"))
+    end
+  end
+
   def test_reads_exact_build_relationship_and_rejects_missing_build
     client = fake_client
     requested = []

@@ -35,6 +35,10 @@ a substitute for migration.
 Do not merge `schema-release-data` into application code. Permit the automation
 to fast-forward that branch; prohibit force pushes/deletion. The branch contains
 only synthetic fixtures and release provenance, never secrets or user data.
+Protect Platform tags matching `swift-schema-source/*` against updates and
+deletion. Each lightweight tag points to the exact full SHA in its name. The
+candidate workflow creates it before recording evidence and uploading, so a
+later development-branch rewrite cannot discard the released model sources.
 PAT updates write metadata and create draft freeze branches/PRs; nobody needs to
 grant the bot permission to merge protected development branches.
 
@@ -49,7 +53,8 @@ the selected Platform commit**. Choosing an older SHA without that freeze fails
 even if the latest development branch has it.
 The first check runs before release-version resolution and the native build.
 The selected Platform checkout must contain the registry and capture tooling
-even when there are no new publications to reconcile.
+and all three required test classes even when there are no new publications to
+reconcile. Missing release scripts are rejected before the build begins.
 
 After archive, the pipeline runs the SDK's offline migration, release-compatibility
 and capture tests in Release on an arm64 iOS simulator. It reuses the simulator
@@ -103,9 +108,17 @@ that mismatch; it must not roll back current code or invent a migration.
   so a release superseded between two observations is still frozen.
 - The current `appVersionState` takes precedence over legacy `appStoreState`.
   A legacy-only `DEVELOPER_REMOVED_FROM_SALE` or `REMOVED_FROM_SALE` response
-  stops processing because it does not establish publication history. Inspect
+  stops schema observation and candidate gates because it does not establish
+  publication history. It does not block `internal-only` TestFlight version
+  resolution, which still checks known published versions. Inspect
   that version in App Store Connect and recover its current version state;
   do not mark it published or substitute a build to make the check pass.
+- A bad release's evidence is reported without preventing independent valid
+  releases from reaching their freeze PRs. The observation run still fails and
+  the next candidate remains blocked until every required release is reconciled.
+- Concurrent metadata writes wait for stale branch reads to catch up before
+  revalidating the evidence. If the branch still has not advanced, the operation
+  stops rather than blindly repeating a rejected or ambiguous write.
 - The gate checks all observed production releases, including previously
   observed releases later removed from distribution. Polling cannot guarantee
   detection of a release published and removed entirely between checks; run a
@@ -121,6 +134,33 @@ that mismatch; it must not roll back current code or invent a migration.
   the remote data branch or dispatched workflow before retrying. Existing
   immutable evidence is preserved; ordinary concurrent ref conflicts still
   use the atomic reconciliation loop.
+
+## First publication and failure recovery
+
+For the first tracked App Store release, the release operator verifies the whole
+chain: the published Apple build matches the saved manifest, the Platform source
+tag and captured fixture are present, the worker opens the expected draft PR,
+and its checks pass before manual merge. A successful observer run only means
+that it dispatched the worker; inspect the separate Platform run and PR too.
+
+If scheduled observation has not run or failed, start **Freeze published App
+Store schema** manually in `sync` mode. Use `dry_run` to inspect the result, then
+disable it to record publication and dispatch. A worker failure is retried by
+the next observation or by the Platform workflow with the same release ID and
+metadata commit. Fix the reported cause first. Retries preserve the original
+build evidence and reuse the existing PR; they never substitute current HEAD.
+
+The existing App Store app is unaffected by a failed freeze job. Subsequent
+`internal`/`external` candidates remain blocked until the required snapshot is
+merged and included in the selected Platform commit. Manual dispatch retains
+the publication/evidence checks; it is not an override for missing provenance.
+
+Both workflows report failures in Actions. The release operator should enable
+[GitHub Actions failure notifications](https://docs.github.com/en/actions/concepts/workflows-and-actions/notifications-for-workflow-runs)
+and verify the recipient for scheduled runs (normally the last editor of the
+cron schedule). There is no separate team alert or app telemetry for this
+process. A disabled schedule produces no failed run, so checking the freeze PR
+is part of the release checklist even when notifications are enabled.
 
 ## Local tooling tests
 

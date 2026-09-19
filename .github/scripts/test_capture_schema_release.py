@@ -2,8 +2,42 @@ import json
 import pathlib
 import tempfile
 import unittest
+from unittest import mock
 
-from capture_schema_release import extract_attachments, select_simulator
+from capture_schema_release import extract_attachments, select_simulator, validate_capture_checkout, validate_inventory
+
+
+class CapturePreflightTest(unittest.TestCase):
+    def test_all_required_test_classes_are_checked_before_starting_xcode(self):
+        required = ["schema-models.json", "scripts/freeze_schema_models.py"] + [
+            f"SwiftTests/SwiftDashSDKTests/{name}.swift" for name in (
+                "DashSchemaReleaseCaptureTests", "DashModelMigrationTests", "DashReleasedSchemaTests")
+        ]
+        with tempfile.TemporaryDirectory() as root:
+            sdk = pathlib.Path(root) / "packages/swift-sdk"
+            for path in required:
+                file = sdk / path
+                file.parent.mkdir(parents=True, exist_ok=True)
+                file.write_text("test")
+            for path in required:
+                with self.subTest(missing=path):
+                    (sdk / path).unlink()
+                    with mock.patch("capture_schema_release.run") as run:
+                        with self.assertRaisesRegex(ValueError, path):
+                            validate_capture_checkout(root)
+                        run.assert_not_called()
+                    (sdk / path).write_text("test")
+            with mock.patch("capture_schema_release.run", return_value="") as run:
+                self.assertEqual(validate_capture_checkout(root), sdk.resolve())
+                self.assertEqual(run.call_count, len(required) + 1)
+
+    def test_capture_requires_exact_live_inventory_membership(self):
+        schema = {"entity_hashes": {"Wallet": "abcd", "Account": "dcba"}}
+        inventory = {"format_version": 1, "models": {"Wallet": "wallet.swift", "Account": "account.swift"}}
+        validate_inventory(schema, inventory)
+        for names in ({"Wallet": "wallet.swift"}, dict(inventory["models"], Extra="extra.swift")):
+            with self.assertRaisesRegex(ValueError, "update the source inventory before shipping"):
+                validate_inventory(schema, dict(inventory, models=names))
 
 
 class SimulatorSelectionTest(unittest.TestCase):

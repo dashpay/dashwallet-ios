@@ -20,6 +20,8 @@ module SchemaRelease
     packages/swift-sdk/schema-models.json
     packages/swift-sdk/scripts/freeze_schema_models.py
     packages/swift-sdk/SwiftTests/SwiftDashSDKTests/DashSchemaReleaseCaptureTests.swift
+    packages/swift-sdk/SwiftTests/SwiftDashSDKTests/DashModelMigrationTests.swift
+    packages/swift-sdk/SwiftTests/SwiftDashSDKTests/DashReleasedSchemaTests.swift
   ].freeze
   TRANSPORT_ERRORS = [Timeout::Error, IOError, SystemCallError, SocketError, OpenSSL::SSL::SSLError].freeze
 
@@ -135,6 +137,26 @@ module SchemaRelease
       request("post", "repos/#{PLATFORM_REPO}/actions/workflows/swift-sdk-freeze-release.yml/dispatches",
               { ref: PLATFORM_BRANCH, inputs: { release_id: release_id, data_commit: data_commit } })
     end
+
+    def retain_platform_source(commit)
+      commit = SchemaRelease.sha(commit)
+      ref = "refs/tags/swift-schema-source/#{commit}"
+      path = "repos/#{PLATFORM_REPO}/git/ref/tags/swift-schema-source/#{commit}"
+      existing = request("get", path, optional: true)
+      unless existing
+        begin
+          existing = request("post", "repos/#{PLATFORM_REPO}/git/refs", { ref: ref, sha: commit })
+        rescue HTTPError => error
+          # A concurrent capture may have created exactly the same immutable tag.
+          raise unless error.status == 422
+          existing = request("get", path, optional: true)
+          raise error unless existing
+        end
+      end
+      unless existing["ref"] == ref && existing.dig("object", "type") == "commit" && existing.dig("object", "sha") == commit
+        raise Error, "Platform source retention tag #{ref} does not match #{commit}; investigate without moving or deleting the tag."
+      end
+    end
   end
 
   class Store
@@ -198,10 +220,22 @@ module SchemaRelease
         rescue HTTPError => e
           # Another writer advanced the branch. Re-read every affected path;
           # conflicting evidence is rejected on the next attempt.
-          raise unless [409, 422].include?(e.status) && head != parent
+          raise unless [409, 422].include?(e.status) && wait_for_new_head(parent)
         end
       end
       raise Error, "Release-data branch stayed busy after five atomic update attempts"
+    end
+
+    private
+
+    def wait_for_new_head(parent)
+      # A rejected ref update can be followed by a stale ref read. Retry reads,
+      # never the ambiguous write, and revalidate all evidence on the next pass.
+      [1, 2, 4].each do |delay|
+        sleep(delay)
+        return true if head != parent
+      end
+      false
     end
   end
 
@@ -295,6 +329,7 @@ module SchemaRelease
         end
       end
       registry = merged_registry
+      failures = []
       records.each do |record|
         manifest, path, hash = evidence(record)
         id = record.fetch("release_id")
@@ -321,7 +356,11 @@ module SchemaRelease
         @store.github.dispatch(id, commit)
         branch = "codex/freeze-swift-schema-v#{manifest['schema']['schema_version']}"
         @out.puts "Platform PR: https://github.com/#{PLATFORM_REPO}/pulls?q=#{URI.encode_www_form_component("is:pr head:#{branch}")}"
+      rescue Error, KeyError, JSON::ParserError => error
+        failures << "#{record['release_id']}: #{error.message}"
+        @out.puts "::error::App Store release #{record['release_id']} could not be reconciled: #{error.message}"
       end
+      raise Error, "Some App Store releases still need attention: #{failures.join('; ')}" unless failures.empty?
     end
 
     def gate(platform_dir)
@@ -397,6 +436,7 @@ module SchemaRelease
       "toolchain" => JSON.parse(File.read(File.join(capture_dir, "toolchain.json")))
     }
     path = manifest_path(manifest["bundle_id"], manifest["app_version"], manifest["build_number"])
+    store.github.retain_platform_source(manifest.fetch("platform_sha"))
     store.write({ path => json(manifest), manifest["fixture_path"] => fixture }, message: "Record schema evidence for #{manifest['app_version']} (#{manifest['build_number']})")
   end
 
