@@ -1102,7 +1102,9 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             keyType: keyType,
             readOnly: false,
             disabledAt: disabledAt.map { Int64(bitPattern: $0) },
-            data: data
+            data: data,
+            totalBudget: nil,
+            expiresAt: nil
         )
     }
 
@@ -1291,6 +1293,13 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
 
     func approveLogin(_ request: DashKeyRequest) async throws -> DAppConnection {
         throw PurchaseSpyError.unsupported
+    }
+
+    func shareLoginKey(
+        _ request: DashKeyRequest,
+        limits: BrowserLoginKeyLimits
+    ) async throws -> BrowserLoginBleProtocol.Response {
+        throw DashConnectMockError.stateTransitionNotSupported
     }
 
     func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction {

@@ -235,14 +235,14 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
             return .keyRegistration(
                 DashConnectKeyRegistrationTransition(
                     identityId: parsed.identityId,
-                    addPublicKeys: parsed.addPublicKeys.map { key in
+                    addPublicKeys: try parsed.addPublicKeys.map { key in
                         DashConnectKeyRegistrationKey(
                             keyId: key.keyId,
                             keyType: key.keyType,
                             purpose: key.purpose,
                             securityLevel: key.securityLevel,
                             publicKeyData: key.pubkeyBytes,
-                            contractBounds: key.contractBounds.map {
+                            contractBounds: try key.contractBounds.map {
                                 switch $0 {
                                 case .singleContract(let id):
                                     return .singleContract(id: id)
@@ -251,6 +251,12 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
                                         id: id,
                                         documentTypeName: documentTypeName
                                     )
+                                case .contractGroup:
+                                    // A key bound to a contract group is never
+                                    // one of the login keys this flow derives,
+                                    // so the transition is not a DashConnect
+                                    // key registration.
+                                    throw DashConnectPlatformError.keyRegistrationUnexpectedMutation
                                 }
                             }
                         )
@@ -801,6 +807,111 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
+    func shareLoginKey(
+        _ request: DashKeyRequest,
+        limits: BrowserLoginKeyLimits
+    ) async throws -> BrowserLoginBleProtocol.Response {
+        Self.logger.info("🔗 DASHCONNECT :: shareLoginKey started")
+        try validateNetwork(request.network)
+        let context = try await requireContext()
+        try await authorize()
+
+        // A random login key rather than the QR flow's deterministic per-app
+        // one: the key registered here expires and has a budget, so each
+        // share has to mint a key the identity has never carried. The
+        // wallet never keeps it; only the browser will hold this key, and
+        // a HASH160 key needs no ownership proof to register.
+        var loginKey = try Self.randomBytes(count: 32)
+        defer { Self.zero(&loginKey) }
+        var authenticationPrivateKey = try KeyExchangeCrypto.deriveAuthPrivateKey(
+            loginKey: loginKey,
+            identityId: context.identityId
+        )
+        defer { Self.zero(&authenticationPrivateKey) }
+        let authenticationPublicKey = try Secp256k1.compressedPublicKey(privateKey: authenticationPrivateKey)
+        let authenticationPublicKeyHash160 = try KeyExchangeCrypto.hash160(authenticationPublicKey)
+
+        let keyId = try await nextFreeKeyId(context: context)
+        let expiresAt = limits.expiresAt(from: now())
+        let newKey = ManagedPlatformWallet.IdentityPubkey(
+            keyId: keyId,
+            keyType: .ecdsaHash160,
+            purpose: .authentication,
+            securityLevel: .high,
+            pubkeyBytes: authenticationPublicKeyHash160,
+            totalBudget: limits.totalBudget,
+            expiresAt: expiresAt
+        )
+
+        // Build the encrypted response before the on-chain broadcast, so the
+        // whole thing fails closed. Both calls below can throw — a failing
+        // `SecRandomCopyBytes`, an invalid point, an AES-GCM error — and after
+        // `updateIdentity` that would leave a bounded key registered on the
+        // identity that no one can ever use: the browser gets no response and
+        // `defer` has already zeroed `loginKey`. Neither call needs `keyId`;
+        // the response carries it separately, after registration.
+        var walletEphemeralPrivateKey = try Self.generateEphemeralPrivateKey()
+        let draft = try Self.buildLoginKeyResponseDraft(
+            loginKey: loginKey,
+            appContractId: request.contractId,
+            appEphemeralPubKey: request.appEphemeralPubKey,
+            walletEphemeralPrivateKey: &walletEphemeralPrivateKey
+        )
+
+        Self.logger.info("🔗 DASHCONNECT :: registering bounded login key id \(keyId, privacy: .public)")
+        let signer = KeychainSigner(modelContainer: context.modelContainer)
+        try await context.wallet.updateIdentity(
+            identityId: context.identityId,
+            addPublicKeys: [newKey],
+            signer: signer
+        )
+        Self.logger.info("🔗 DASHCONNECT :: bounded login key registered")
+
+        let preview = await makeConnectionRequest(from: request)
+        let connection = Self.makeConnection(
+            preview: preview,
+            status: .active,
+            updatedAt: now(),
+            registeredKeyId: keyId
+        )
+        var current = subject.value.filter { $0.id != connection.id }
+        current.append(connection)
+        persistAndSend(current)
+
+        return BrowserLoginBleProtocol.Response(
+            identityId: context.identityId,
+            walletEphemeralPublicKey: draft.walletEphemeralPublicKey,
+            encryptedPayload: draft.encryptedPayload,
+            keyId: keyId,
+            expiresAt: expiresAt,
+            totalBudget: limits.totalBudget
+        )
+    }
+
+    /// The next unused key id: past every key Platform reports (authoritative,
+    /// since keys added from another device are not in the local rows yet),
+    /// falling back to the local key set when Platform cannot be asked.
+    private func nextFreeKeyId(context: Context) async throws -> UInt32 {
+        let localMaxId = try context.wallet
+            .managedIdentity(identityId: context.identityId)
+            .getPublicKeys()
+            .map { UInt32(max(0, $0.keyId)) }
+            .max() ?? 0
+
+        var networkMaxId: UInt32 = 0
+        do {
+            let keysById = try await context.sdk.identityGetKeys(identityId: context.identityId.toBase58String())
+            networkMaxId = keysById.values
+                .compactMap { ($0 as? [String: Any])?["id"] as? Int }
+                .max()
+                .map { UInt32(max(0, $0)) } ?? 0
+        } catch {
+            Self.logger.warning("🔗 DASHCONNECT :: could not fetch Platform keys for the next key id, using local rows — \(error.localizedDescription, privacy: .public)")
+        }
+
+        return max(localMaxId, networkMaxId) + 1
+    }
+
     func remove(id: String) async {
         persistAndSend(subject.value.filter { $0.id != id })
     }
@@ -817,7 +928,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 name: connection.name,
                 url: connection.url,
                 status: .approved,
-                updatedAt: disconnectedAt
+                updatedAt: disconnectedAt,
+                // Carried over: disconnecting is local, so the key this
+                // connection minted is still registered on the identity and
+                // the row is the only record of which one it is.
+                registeredKeyId: connection.registeredKeyId
             )
         })
     }
@@ -1022,14 +1137,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private static func makeConnection(
         preview: ConnectionRequest,
         status: ConnectionStatus,
-        updatedAt: Date
+        updatedAt: Date,
+        registeredKeyId: UInt32? = nil
     ) -> DAppConnection {
         DAppConnection(
             id: preview.appContractId,
             name: preview.appLabel.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : preview.appLabel,
             url: preview.appUrl,
             status: status,
-            updatedAt: updatedAt
+            updatedAt: updatedAt,
+            registeredKeyId: registeredKeyId
         )
     }
 

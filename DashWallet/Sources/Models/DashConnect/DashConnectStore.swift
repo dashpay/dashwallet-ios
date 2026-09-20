@@ -115,7 +115,8 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
                     name: row.label,
                     url: row.url,
                     status: row.status,
-                    updatedAt: row.updatedAt
+                    updatedAt: row.updatedAt,
+                    registeredKeyId: row.registeredKeyId
                 )
             )
         }
@@ -140,7 +141,8 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
                 label: $0.name,
                 url: $0.url,
                 status: $0.status,
-                updatedAt: $0.updatedAt
+                updatedAt: $0.updatedAt,
+                registeredKeyId: $0.registeredKeyId
             )
         }
 
@@ -166,6 +168,10 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         let url: String
         let status: ConnectionStatus
         let updatedAt: Date
+        /// Absent in rows written before the Bluetooth flow existed, which is
+        /// why it is optional rather than defaulted: a missing key decodes as
+        /// "this connection minted no key", not as key 0.
+        let registeredKeyId: UInt32?
     }
 
     private static func base58Decode(_ string: String) -> Data? {
