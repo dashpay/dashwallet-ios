@@ -235,14 +235,14 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
             return .keyRegistration(
                 DashConnectKeyRegistrationTransition(
                     identityId: parsed.identityId,
-                    addPublicKeys: parsed.addPublicKeys.map { key in
+                    addPublicKeys: try parsed.addPublicKeys.map { key in
                         DashConnectKeyRegistrationKey(
                             keyId: key.keyId,
                             keyType: key.keyType,
                             purpose: key.purpose,
                             securityLevel: key.securityLevel,
                             publicKeyData: key.pubkeyBytes,
-                            contractBounds: key.contractBounds.map {
+                            contractBounds: try key.contractBounds.map {
                                 switch $0 {
                                 case .singleContract(let id):
                                     return .singleContract(id: id)
@@ -251,6 +251,10 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
                                         id: id,
                                         documentTypeName: documentTypeName
                                     )
+                                case .contractGroup:
+                                    // DashConnect approves keys for one app contract;
+                                    // group bounds cannot be represented by that policy.
+                                    throw DashConnectPlatformError.keyRegistrationUnexpectedMutation
                                 }
                             }
                         )
