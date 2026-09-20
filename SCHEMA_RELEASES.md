@@ -139,8 +139,11 @@ that mismatch; it must not roll back current code or invent a migration.
   so a release superseded between two observations is still frozen.
 - The current `appVersionState` takes precedence over legacy `appStoreState`.
   A legacy-only `DEVELOPER_REMOVED_FROM_SALE` or `REMOVED_FROM_SALE` response
-  stops schema observation and candidate gates because it does not establish
-  publication history. It does not block `internal-only` TestFlight version
+  for a version newer than the accepted baseline stops schema observation and
+  candidate gates because it does not establish publication history. Older
+  history is already covered by the baseline. Bootstrap selects the newest
+  known publication and still rejects ambiguous newer versions. This history
+  check does not block `internal-only` TestFlight version
   resolution, which still checks known published versions. Inspect
   that version in App Store Connect and recover its current version state;
   do not mark it published or substitute a build to make the check pass.

@@ -187,10 +187,33 @@ module AppStoreConnectRelease
       end
     end
 
-    def published_versions(app_id)
+    def published_versions(app_id, after_version: nil)
       versions = app_store_versions(app_id)
+      if after_version
+        baseline = MarketingVersion.new(after_version)
+        versions = versions.select do |version|
+          MarketingVersion.new(version.fetch("attributes").fetch("versionString")) > baseline
+        end
+      end
       versions.each { |version| AppStoreConnectRelease.validate_publication_history!(version.fetch("attributes")) }
       versions.select { |version| AppStoreConnectRelease.published_app_store_version?(version.fetch("attributes")) }
+    end
+
+    def latest_published_version(app_id)
+      versions = app_store_versions(app_id)
+      known = versions.select { |version| AppStoreConnectRelease.published_app_store_version?(version.fetch("attributes")) }
+      latest = known.max_by { |version| MarketingVersion.new(version.fetch("attributes").fetch("versionString")) }
+      return nil unless latest
+
+      # Bootstrap explicitly accepts all history through this publication.
+      # A newer ambiguous row could change that boundary and must be resolved.
+      boundary = MarketingVersion.new(latest.fetch("attributes").fetch("versionString"))
+      versions.each do |version|
+        attributes = version.fetch("attributes")
+        next if MarketingVersion.new(attributes.fetch("versionString")) <= boundary
+        AppStoreConnectRelease.validate_publication_history!(attributes)
+      end
+      latest
     end
 
     def version_build(version_id)

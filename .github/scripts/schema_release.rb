@@ -248,8 +248,7 @@ module SchemaRelease
     def bootstrap(dry_run: false)
       raise Error, "Baseline already exists; it must never be moved forward" if @store.document("baseline.json", optional: true)
       app = @apple.find_app(@bundle)
-      versions = @apple.published_versions(app.fetch("id"))
-      newest = versions.max_by { |version| AppStoreConnectRelease::MarketingVersion.new(version.fetch("attributes").fetch("versionString")) }
+      newest = @apple.latest_published_version(app.fetch("id"))
       raise Error, "No published App Store version to accept as V1" unless newest
       baseline = { format_version: 1, bundle_id: @bundle, app_id: app.fetch("id"),
                    max_app_version: newest.fetch("attributes").fetch("versionString"),
@@ -266,7 +265,7 @@ module SchemaRelease
       raise Error, "Baseline belongs to a different app" unless baseline.fetch("bundle_id") == @bundle
       app = @apple.find_app(@bundle)
       raise Error, "App Store app identifier changed" unless baseline.fetch("app_id") == app.fetch("id")
-      versions = @apple.published_versions(app.fetch("id"))
+      versions = @apple.published_versions(app.fetch("id"), after_version: baseline.fetch("max_app_version"))
       versions.filter_map do |version|
         attrs = version.fetch("attributes")
         number = attrs.fetch("versionString")

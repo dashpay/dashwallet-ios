@@ -58,7 +58,7 @@ class SchemaReleaseTest < Minitest::Test
     end
   end
 
-  class Apple
+  class Apple < AppStoreConnectRelease::Client
     attr_accessor :versions, :builds
     def initialize
       @versions = [version("old", "9.0.0"), version("new", "9.1.0")]
@@ -70,7 +70,7 @@ class SchemaReleaseTest < Minitest::Test
     def find_app(_bundle)
       { "id" => "app" }
     end
-    def published_versions(_app)
+    def app_store_versions(_app)
       versions
     end
     def version_build(id)
@@ -330,6 +330,45 @@ class SchemaReleaseTest < Minitest::Test
     @pipeline.bootstrap
     assert_equal "9.1.0", @store.document("baseline.json")["max_app_version"]
     assert_raises(SchemaRelease::Error) { @pipeline.bootstrap }
+  end
+
+  def test_pre_baseline_ambiguous_history_does_not_block_observation_or_gate
+    @apple.versions.unshift({ "id" => "legacy", "attributes" => {
+      "versionString" => "6.0.0", "appStoreState" => "REMOVED_FROM_SALE"
+    } })
+    @pipeline.sync
+    assert_equal [["new", @store.head]], @store.github.dispatches
+    merge_release
+    with_platform do |dir|
+      File.binwrite(File.join(dir, "fixture.store"), @fixture)
+      @pipeline.gate(dir)
+    end
+  end
+
+  def test_bootstrap_accepts_latest_known_publication_despite_older_ambiguous_history
+    @store.files.delete("baseline.json")
+    @apple.versions.unshift({ "id" => "legacy", "attributes" => {
+      "versionString" => "6.0.0", "appStoreState" => "DEVELOPER_REMOVED_FROM_SALE"
+    } })
+
+    @pipeline.bootstrap
+
+    assert_equal "9.1.0", @store.document("baseline.json").fetch("max_app_version")
+    assert_equal "new", @store.document("baseline.json").fetch("release_id")
+  end
+
+  def test_ambiguous_history_after_baseline_still_blocks_sync_gate_and_bootstrap
+    @apple.versions << { "id" => "ambiguous", "attributes" => {
+      "versionString" => "9.2.0", "appStoreState" => "REMOVED_FROM_SALE"
+    } }
+    assert_raises(SchemaRelease::Error) { @pipeline.sync }
+    with_platform do |dir|
+      assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
+    end
+    @store.files.delete("baseline.json")
+    assert_raises(SchemaRelease::Error) { @pipeline.bootstrap }
+    refute @store.files.key?("baseline.json")
+    assert_empty @store.github.dispatches
   end
 
   def test_interrupted_upload_can_bind_later_using_build_tuple
