@@ -44,7 +44,15 @@ struct ShareLoginKeyScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(
                 leading: {
-                    NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                    // Dimmed and inert rather than absent: the bar keeps its
+                    // layout, and the user sees the screen is busy instead of
+                    // a control that silently does nothing.
+                    NavigationBarElement.back.button {
+                        guard !viewModel.blocksDismissal else { return }
+                        vc.popViewController(animated: true)
+                    }
+                    .disabled(viewModel.blocksDismissal)
+                    .opacity(viewModel.blocksDismissal ? 0.4 : 1)
                 }
             )
 
@@ -69,7 +77,13 @@ struct ShareLoginKeyScreen: View {
         }
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
+        // The swipe-back gesture bypasses the button above, and `onDisappear`
+        // would then wipe a response the browser has not read yet.
+        .onChange(of: viewModel.blocksDismissal) { blocks in
+            vc.interactivePopGestureRecognizer?.isEnabled = !blocks
+        }
         .onDisappear {
+            vc.interactivePopGestureRecognizer?.isEnabled = true
             viewModel.stop()
         }
     }
@@ -184,6 +198,10 @@ struct ShareLoginKeyScreen: View {
                         .font(.system(size: 36, weight: .bold, design: .monospaced))
                         .kerning(6)
                         .foregroundColor(Color.dash.primaryText)
+                        // The label is the six digits themselves, spaced so VoiceOver reads them
+                        // one at a time. It carries no translatable text — the rule fires on the
+                        // `" "` separator passed to `joined(separator:)`.
+                        // a11y-ignore: A11Y009 spaced digits, no translatable text
                         .accessibilityLabel(pending.pairingCode.map(String.init).joined(separator: " "))
                     Text(NSLocalizedString("Only continue if the browser shows the same six digits.", comment: "DashConnect: Bluetooth login"))
                         .dashFont(.subhead)
@@ -224,21 +242,7 @@ struct ShareLoginKeyScreen: View {
             ) { EmptyView() }
 
         case .delivered(let keyId):
-            statusCard(
-                title: NSLocalizedString("Login key delivered", comment: "DashConnect: Bluetooth login"),
-                detail: String(
-                    format: NSLocalizedString("The browser can now sign in. Key %d expires on its own; you can also disable it early from your username's keys.", comment: "DashConnect: Bluetooth login"),
-                    Int(keyId)),
-                showsProgress: false
-            ) {
-                DashButton(
-                    text: NSLocalizedString("Done", comment: ""),
-                    style: .filledBlue,
-                    size: .large,
-                    stretch: true,
-                    action: { vc.popViewController(animated: true) }
-                )
-            }
+            deliveredCard(keyId: keyId)
 
         case .failed(let message):
             statusCard(
@@ -262,6 +266,42 @@ struct ShareLoginKeyScreen: View {
                 .dashFont(.subhead)
                 .foregroundColor(Color.dash.errorText)
                 .multilineTextAlignment(.center)
+        }
+    }
+
+    /// The key is registered and the response is on the characteristic, but
+    /// it is only useful once the browser has actually read it — until then
+    /// this card keeps the service up and the Done button away.
+    @ViewBuilder private func deliveredCard(keyId: UInt32) -> some View {
+        if viewModel.isAwaitingDeliveryAcknowledgement && !viewModel.deliveryWaitTimedOut {
+            statusCard(
+                title: NSLocalizedString("Sending the key to the browser…", comment: "DashConnect: Bluetooth login"),
+                detail: NSLocalizedString("Keep this screen open until the browser confirms it received the key.", comment: "DashConnect: Bluetooth login"),
+                showsProgress: true
+            ) { EmptyView() }
+        } else {
+            statusCard(
+                title: viewModel.isAwaitingDeliveryAcknowledgement
+                    ? NSLocalizedString("The browser didn't confirm", comment: "DashConnect: Bluetooth login")
+                    : NSLocalizedString("Login key delivered", comment: "DashConnect: Bluetooth login"),
+                detail: viewModel.isAwaitingDeliveryAcknowledgement
+                    ? String(
+                        format: NSLocalizedString("Key %d is registered, but the browser never said it received it. If it can't sign in, share a new key — this one stops working when it expires or its budget runs out.", comment: "DashConnect: Bluetooth login"),
+                        Int(keyId))
+                    : String(
+                        format: NSLocalizedString("The browser can now sign in. Key %d stops working when it expires or its budget runs out.", comment: "DashConnect: Bluetooth login"),
+                        Int(keyId)),
+                showsProgress: false,
+                isError: viewModel.isAwaitingDeliveryAcknowledgement
+            ) {
+                DashButton(
+                    text: NSLocalizedString("Done", comment: ""),
+                    style: .filledBlue,
+                    size: .large,
+                    stretch: true,
+                    action: { vc.popViewController(animated: true) }
+                )
+            }
         }
     }
 

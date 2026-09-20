@@ -18,6 +18,7 @@
 //
 
 import CoreBluetooth
+import CryptoKit
 import Foundation
 
 /// The Bluetooth LE framing of a DashConnect login: the same `dash-key:`
@@ -25,12 +26,31 @@ import Foundation
 /// over a GATT service instead of a QR code and a `loginKeyResponse` document.
 ///
 /// The browser is the GATT central, the wallet the peripheral. The wallet
-/// advertises `serviceUUID` with three characteristics:
+/// advertises `serviceUUID` with four characteristics:
 ///
 ///   - `requestCharacteristicUUID` (write): the browser writes one request.
 ///   - `statusCharacteristicUUID` (read + notify): one `Status` byte.
 ///   - `responseCharacteristicUUID` (read): the `Response` once the status is
 ///     `ready`, empty before that.
+///   - `sessionCharacteristicUUID` (read + write): the pairing commitment, then
+///     the nonce it commits to, and the browser's delivery acknowledgement.
+///
+/// The pairing code is a short authentication string over the session, not a
+/// function of the browser's key alone, and the browser has to follow this
+/// order for it to mean anything:
+///
+///   1. read `sessionCharacteristicUUID` and keep the `.commitment` payload;
+///   2. write the request;
+///   3. read `sessionCharacteristicUUID` again, check the `.reveal` nonce
+///      hashes to the commitment from step 1, and derive the six digits from
+///      that nonce and the exact request bytes it wrote.
+///
+/// The wallet fixes its nonce before it can see any request and reveals it only
+/// once a request has been accepted, so neither side can pick its contribution
+/// after seeing the other's. A relay in the middle has to commit to a nonce
+/// towards the browser before it learns what the wallet will reveal, which
+/// leaves it one blind guess in a million per session instead of a grindable
+/// 20-bit space.
 ///
 /// The cryptography is `KeyExchangeCrypto`'s, untouched. What differs from the
 /// QR flow is the key the wallet registers: instead of the deterministic
@@ -44,6 +64,7 @@ enum BrowserLoginBleProtocol {
     static let requestCharacteristicUUIDString = "8f9a3e10-5c2b-4d6e-9f1a-2b3c4d5e6f02"
     static let statusCharacteristicUUIDString = "8f9a3e10-5c2b-4d6e-9f1a-2b3c4d5e6f03"
     static let responseCharacteristicUUIDString = "8f9a3e10-5c2b-4d6e-9f1a-2b3c4d5e6f04"
+    static let sessionCharacteristicUUIDString = "8f9a3e10-5c2b-4d6e-9f1a-2b3c4d5e6f05"
 
     // `CBUUID` is not Sendable, so the constants above are the strings and
     // these build a fresh value per use.
@@ -51,6 +72,7 @@ enum BrowserLoginBleProtocol {
     static var requestCharacteristicUUID: CBUUID { CBUUID(string: requestCharacteristicUUIDString) }
     static var statusCharacteristicUUID: CBUUID { CBUUID(string: statusCharacteristicUUIDString) }
     static var responseCharacteristicUUID: CBUUID { CBUUID(string: responseCharacteristicUUIDString) }
+    static var sessionCharacteristicUUID: CBUUID { CBUUID(string: sessionCharacteristicUUIDString) }
 
     /// Longest app label the request may carry, in UTF-8 bytes. Matches the
     /// `dash-key:` URI limit.
@@ -81,6 +103,7 @@ enum BrowserLoginBleProtocol {
         case labelNotUTF8
         case labelTooLong(Int)
         case invalidFieldLength(String)
+        case unknownSessionStage(UInt8)
 
         var errorDescription: String? {
             switch self {
@@ -98,6 +121,8 @@ enum BrowserLoginBleProtocol {
                 return "The app label is \(length) bytes; at most \(BrowserLoginBleProtocol.maxLabelLength) are allowed."
             case .invalidFieldLength(let field):
                 return "The \(field) field has the wrong length."
+            case .unknownSessionStage(let stage):
+                return "The browser wrote an unknown session stage (\(stage))."
             }
         }
     }
@@ -175,14 +200,94 @@ enum BrowserLoginBleProtocol {
         return out
     }
 
-    /// Six decimal digits both sides derive from the browser's ephemeral
-    /// public key. The browser shows them, the user checks the wallet shows
-    /// the same ones before confirming, which rules out a third radio in
-    /// range answering the browser's request.
-    static func pairingCode(for appEphemeralPubKey: Data) throws -> String {
-        let digest = try KeyExchangeCrypto.hash160(appEphemeralPubKey)
-        let value = digest.prefix(4).reduce(UInt32(0)) { ($0 << 8) | UInt32($1) }
-        return String(format: "%06d", value % 1_000_000)
+    // MARK: - Session
+
+    /// Value of the session characteristic:
+    ///
+    ///     version(1) || stage(1) || payload(0…32)
+    ///
+    /// The wallet serves `.commitment` while it is waiting for a request and
+    /// `.reveal` once one has been accepted; the browser writes `.received`
+    /// after it has read and opened the response.
+    enum SessionStage: UInt8 {
+        /// SHA256 over the nonce the wallet drew for this session.
+        case commitment = 0
+        /// That nonce, once a request has been accepted.
+        case reveal = 1
+        /// The browser has the response; the wallet may tear the service down.
+        case received = 2
+    }
+
+    struct SessionValue: Equatable {
+        let stage: SessionStage
+        let payload: Data
+    }
+
+    /// Length of the pairing nonce, in bytes.
+    static let pairingNonceLength = 32
+
+    private static let pairingDomain = Data("DashConnect-BLE-pairing-v1".utf8)
+
+    static func serializeSession(_ value: SessionValue) throws -> Data {
+        guard value.payload.count <= pairingNonceLength else {
+            throw ProtocolError.invalidFieldLength("session payload")
+        }
+        var out = Data(capacity: 2 + value.payload.count)
+        out.append(version)
+        out.append(value.stage.rawValue)
+        out.append(value.payload)
+        return out
+    }
+
+    static func parseSession(_ bytes: Data) throws -> SessionValue {
+        guard bytes.count >= 2 else { throw ProtocolError.truncatedRequest }
+        var cursor = bytes.startIndex
+        guard bytes[cursor] == version else {
+            throw ProtocolError.unsupportedVersion(bytes[cursor])
+        }
+        cursor += 1
+        guard let stage = SessionStage(rawValue: bytes[cursor]) else {
+            throw ProtocolError.unknownSessionStage(bytes[cursor])
+        }
+        cursor += 1
+        let payload = Data(bytes[cursor ..< bytes.endIndex])
+        guard payload.count <= pairingNonceLength else {
+            throw ProtocolError.invalidFieldLength("session payload")
+        }
+        return SessionValue(stage: stage, payload: payload)
+    }
+
+    /// What the wallet publishes before it can see a request, so that
+    /// revealing the nonce later cannot be a choice made in hindsight.
+    static func pairingCommitment(nonce: Data) throws -> Data {
+        guard nonce.count == pairingNonceLength else {
+            throw ProtocolError.invalidFieldLength("pairing nonce")
+        }
+        var input = pairingDomain
+        input.append(contentsOf: "commit".utf8)
+        input.append(nonce)
+        return Data(SHA256.hash(data: input))
+    }
+
+    /// Six decimal digits over the wallet's committed nonce and the exact
+    /// bytes the browser wrote. Both screens show them and the user compares
+    /// them before confirming.
+    ///
+    /// Hashing the whole request — not just the ephemeral key — means the
+    /// digits also cover the contract id and the app label the wallet is
+    /// about to display, so a relay cannot rewrite what the user is looking
+    /// at without changing the code on the wallet's screen.
+    static func pairingCode(nonce: Data, requestBytes: Data) throws -> String {
+        guard nonce.count == pairingNonceLength else {
+            throw ProtocolError.invalidFieldLength("pairing nonce")
+        }
+        var input = pairingDomain
+        input.append(contentsOf: "code".utf8)
+        input.append(nonce)
+        input.append(requestBytes)
+        let digest = Data(SHA256.hash(data: input))
+        let value = digest.prefix(8).reduce(UInt64(0)) { ($0 << 8) | UInt64($1) }
+        return String(format: "%06llu", value % 1_000_000)
     }
 
     // MARK: - Response

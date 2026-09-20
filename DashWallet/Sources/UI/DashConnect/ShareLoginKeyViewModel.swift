@@ -19,6 +19,7 @@
 
 import Combine
 import Foundation
+import OSLog
 
 /// Drives the "Share Login Key with Browser" screen: owns the Bluetooth
 /// peripheral, turns the browser's request into something the user can
@@ -89,25 +90,36 @@ final class ShareLoginKeyViewModel: ObservableObject {
             }
         }
 
+        /// `dashString` renders the same values, but with the decimal
+        /// separator of the current locale — the literals above were always
+        /// `.`, which is wrong wherever the separator is `,`.
         var title: String {
-            switch self {
-            case .milliDash: return "0.001 DASH"
-            case .centiDash: return "0.01 DASH"
-            case .deciDash: return "0.1 DASH"
-            case .oneDash: return "1 DASH"
-            }
+            PlatformCreditsFormatter.dashString(credits)
         }
     }
 
     @Published private(set) var phase: Phase = .configuring
     @Published var lifetime: Lifetime = .oneDay
     @Published var budget: Budget = .centiDash
+    /// Set once the browser has had `deliveryAcknowledgementTimeout` to pick
+    /// the response up. It unblocks the screen for a browser that never
+    /// acknowledges, so the user is never stuck on a screen it cannot leave.
+    @Published private(set) var deliveryWaitTimedOut = false
 
     let peripheral: BrowserLoginPeripheral
+
+    /// How long the screen waits for the browser to say it has the response
+    /// before it lets the user leave anyway.
+    static let deliveryAcknowledgementTimeout: TimeInterval = 30
 
     private let dataSource: any DashConnectDataSource
     private let supportedNetwork: DashConnectNetwork
     private var request: DashKeyRequest?
+    private var deliveryWaitTask: Task<Void, Never>?
+
+    private static let logger = Logger(
+        subsystem: "org.dashfoundation.dash",
+        category: "dashconnect.share-login-key")
 
     init(
         dataSource: any DashConnectDataSource,
@@ -133,8 +145,32 @@ final class ShareLoginKeyViewModel: ObservableObject {
         return false
     }
 
+    /// Whether the browser still has to read the response the peripheral is
+    /// serving.
+    var isAwaitingDeliveryAcknowledgement: Bool {
+        if case .delivered = phase { return !peripheral.responseWasAcknowledged }
+        return false
+    }
+
+    /// Leaving the screen calls `stop()`, which wipes the response and takes
+    /// the service down. Between the confirmation and the browser's
+    /// acknowledgement that would strand a key that is already registered on
+    /// the identity, with nothing on the wallet side able to use or revoke
+    /// it — so those two phases hold the screen.
+    var blocksDismissal: Bool {
+        switch phase {
+        case .registering:
+            return true
+        case .delivered:
+            return isAwaitingDeliveryAcknowledgement && !deliveryWaitTimedOut
+        case .configuring, .advertising, .awaitingConfirmation, .failed:
+            return false
+        }
+    }
+
     func startAdvertising() {
         request = nil
+        cancelDeliveryWait()
         phase = .advertising
         peripheral.start()
     }
@@ -142,18 +178,21 @@ final class ShareLoginKeyViewModel: ObservableObject {
     /// Tear the radio down. Called when the screen goes away, and after a
     /// decline so the next browser starts from a clean service.
     func stop() {
+        cancelDeliveryWait()
         peripheral.stop()
     }
 
     func decline() {
         peripheral.setStatus(.rejected)
         request = nil
+        cancelDeliveryWait()
         phase = .configuring
         peripheral.stop()
     }
 
     func reset() {
         request = nil
+        cancelDeliveryWait()
         phase = .configuring
         peripheral.stop()
     }
@@ -169,6 +208,7 @@ final class ShareLoginKeyViewModel: ObservableObject {
                 let bytes = try response.serialized()
                 peripheral.deliver(response: bytes)
                 phase = .delivered(keyId: response.keyId)
+                startDeliveryWait()
             } catch {
                 fail(error.localizedDescription)
             }
@@ -191,22 +231,57 @@ final class ShareLoginKeyViewModel: ObservableObject {
                 contractId: parsed.contractId.toBase58String(),
                 unauthenticatedLabel: parsed.label
             )
+            // Over the bytes as written, not over the parsed request: the
+            // browser derives the same digits from what it sent, so anything
+            // a relay rewrites on the way — the contract id and the label
+            // this screen is about to show included — changes the code here.
+            let pairingCode = try BrowserLoginBleProtocol.pairingCode(
+                nonce: peripheral.pairingNonce,
+                requestBytes: requestBytes
+            )
             request = parsed
             phase = .awaitingConfirmation(PendingRequest(
                 appLabel: branding.name,
                 contractId: DashConnectIdentifierFormatting.truncateMiddle(parsed.contractId.toBase58String()),
-                pairingCode: try BrowserLoginBleProtocol.pairingCode(for: parsed.appEphemeralPubKey)
+                pairingCode: pairingCode
             ))
+            // Only now, with the request accepted and the code on screen, may
+            // the nonce go out.
+            peripheral.revealPairingNonce()
             peripheral.setStatus(.awaitingConfirmation)
         } catch {
-            fail(error.localizedDescription)
+            // The request characteristic is unauthenticated and writable, so
+            // these bytes may not be from the browser at all. Reject the write
+            // and keep advertising: routing it into `fail()` would let any
+            // central in range end the legitimate session with one malformed
+            // byte and force a manual reset.
+            Self.logger.warning(
+                "🔗 DASHCONNECT :: discarding an unparseable BLE request — \(error.localizedDescription, privacy: .public)")
+            peripheral.setStatus(.idle)
         }
     }
 
     private func fail(_ message: String) {
         peripheral.setStatus(.failed)
         request = nil
+        cancelDeliveryWait()
         phase = .failed(message)
+    }
+
+    private func startDeliveryWait() {
+        deliveryWaitTask?.cancel()
+        deliveryWaitTimedOut = false
+        deliveryWaitTask = Task { [timeout = Self.deliveryAcknowledgementTimeout] in
+            try? await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            deliveryWaitTimedOut = true
+        }
+    }
+
+    private func cancelDeliveryWait() {
+        deliveryWaitTask?.cancel()
+        deliveryWaitTask = nil
+        deliveryWaitTimedOut = false
     }
 
     private static func displayName(for network: DashConnectNetwork) -> String {

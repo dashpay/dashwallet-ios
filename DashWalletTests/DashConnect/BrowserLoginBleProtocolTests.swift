@@ -8,9 +8,16 @@ final class BrowserLoginBleProtocolTests: XCTestCase {
     private let appPrivateKey = Data(repeating: 0x11, count: 32)
     private let contractId = Data(repeating: 0x44, count: 32)
     private let identityId = Data(repeating: 0x33, count: 32)
+    private let pairingNonce = Data(repeating: 0x77, count: 32)
 
-    private var appPublicKey: Data {
-        try! Secp256k1.compressedPublicKey(privateKey: appPrivateKey)
+    private var appPublicKey = Data()
+
+    // Derived in setUp rather than a computed property: `force_try` is enabled
+    // at error severity and the Xcode lint phase runs over this target, so a
+    // `try!` here can fail the build. A throw surfaces as a test error instead.
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        appPublicKey = try Secp256k1.compressedPublicKey(privateKey: appPrivateKey)
     }
 
     func testRequestRoundTripsThroughTheDashKeyRequestShape() throws {
@@ -55,7 +62,56 @@ final class BrowserLoginBleProtocolTests: XCTestCase {
 
     func testPairingCodeMatchesTheBrowserVector() throws {
         XCTAssertEqual(appPublicKey.hexEncodedString(), "034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa")
-        XCTAssertEqual(try BrowserLoginBleProtocol.pairingCode(for: appPublicKey), "350178")
+        XCTAssertEqual(
+            try BrowserLoginBleProtocol.pairingCommitment(nonce: pairingNonce).hexEncodedString(),
+            "107705455ec941a76431097d33ec3de9fdbca6046bc85d16863a74ae2db1b185")
+        XCTAssertEqual(
+            try BrowserLoginBleProtocol.pairingCode(nonce: pairingNonce, requestBytes: try sampleRequestBytes()),
+            "968149")
+    }
+
+    /// The whole point of hashing the request rather than the ephemeral key:
+    /// a relay that rewrites the label the wallet is about to show cannot
+    /// keep the digits the browser displays.
+    func testPairingCodeCoversEveryByteOfTheRequest() throws {
+        var tampered = try sampleRequestBytes()
+        tampered[tampered.count - 1] = UInt8(ascii: "q")
+        XCTAssertEqual(
+            try BrowserLoginBleProtocol.pairingCode(nonce: pairingNonce, requestBytes: tampered),
+            "135490")
+    }
+
+    func testPairingCodeAndCommitmentRefuseAMissizedNonce() {
+        let short = Data(repeating: 0x77, count: 31)
+        XCTAssertThrowsError(try BrowserLoginBleProtocol.pairingCommitment(nonce: short))
+        XCTAssertThrowsError(try BrowserLoginBleProtocol.pairingCode(nonce: short, requestBytes: Data()))
+    }
+
+    func testSessionValueRoundTripsAndRefusesUnknownStages() throws {
+        let reveal = BrowserLoginBleProtocol.SessionValue(stage: .reveal, payload: pairingNonce)
+        var bytes = try BrowserLoginBleProtocol.serializeSession(reveal)
+        XCTAssertEqual(bytes.count, 2 + 32)
+        XCTAssertEqual(try BrowserLoginBleProtocol.parseSession(bytes), reveal)
+
+        let ack = BrowserLoginBleProtocol.SessionValue(stage: .received, payload: Data())
+        XCTAssertEqual(try BrowserLoginBleProtocol.parseSession(try BrowserLoginBleProtocol.serializeSession(ack)), ack)
+
+        bytes[1] = 9
+        XCTAssertThrowsError(try BrowserLoginBleProtocol.parseSession(bytes)) {
+            XCTAssertEqual($0 as? BrowserLoginBleProtocol.ProtocolError, .unknownSessionStage(9))
+        }
+        XCTAssertThrowsError(try BrowserLoginBleProtocol.parseSession(Data([1]))) {
+            XCTAssertEqual($0 as? BrowserLoginBleProtocol.ProtocolError, .truncatedRequest)
+        }
+    }
+
+    private func sampleRequestBytes() throws -> Data {
+        try BrowserLoginBleProtocol.serializeRequest(DashKeyRequest(
+            appEphemeralPubKey: appPublicKey,
+            contractId: contractId,
+            label: "Login to Yappr",
+            network: .devnet
+        ))
     }
 
     func testResponseRoundTripsAndEncodesAbsentLimitsAsZero() throws {
@@ -104,5 +160,73 @@ final class BrowserLoginBleProtocolTests: XCTestCase {
         let limits = BrowserLoginKeyLimits(totalBudget: 1_000_000_000, lifetime: 3_600)
         let now = Date(timeIntervalSince1970: 1_700_000_000)
         XCTAssertEqual(limits.expiresAt(from: now), 1_700_003_600_000)
+    }
+}
+
+/// The peripheral's session bookkeeping — the half of it that never touches
+/// CoreBluetooth, so it can be exercised without a radio. Lives next to the
+/// protocol tests because it is the same handshake seen from the wallet side.
+@MainActor
+final class BrowserLoginPeripheralSessionTests: XCTestCase {
+    private func makePeripheral() -> BrowserLoginPeripheral {
+        let peripheral = BrowserLoginPeripheral(localName: "Dash Wallet")
+        peripheral.prepareSession()
+        return peripheral
+    }
+
+    func testSessionServesTheCommitmentUntilARequestIsAccepted() throws {
+        let peripheral = makePeripheral()
+
+        let before = try BrowserLoginBleProtocol.parseSession(peripheral.sessionValueBytes())
+        XCTAssertEqual(before.stage, .commitment)
+        XCTAssertEqual(before.payload, try BrowserLoginBleProtocol.pairingCommitment(nonce: peripheral.pairingNonce))
+        XCTAssertNotEqual(before.payload, peripheral.pairingNonce)
+
+        peripheral.revealPairingNonce()
+        let after = try BrowserLoginBleProtocol.parseSession(peripheral.sessionValueBytes())
+        XCTAssertEqual(after.stage, .reveal)
+        XCTAssertEqual(after.payload, peripheral.pairingNonce)
+    }
+
+    func testEachSessionDrawsItsOwnNonce() {
+        let peripheral = makePeripheral()
+        let first = peripheral.pairingNonce
+        peripheral.prepareSession()
+        XCTAssertEqual(first.count, BrowserLoginBleProtocol.pairingNonceLength)
+        XCTAssertNotEqual(first, peripheral.pairingNonce)
+    }
+
+    func testAcknowledgementOnlyCountsOnceThereIsAResponseToRead() throws {
+        let peripheral = makePeripheral()
+        let ack = try BrowserLoginBleProtocol.serializeSession(
+            BrowserLoginBleProtocol.SessionValue(stage: .received, payload: Data()))
+
+        // Nothing to read yet: a central cannot unlock the screen early.
+        peripheral.acknowledge(sessionWrite: ack)
+        XCTAssertFalse(peripheral.responseWasAcknowledged)
+
+        peripheral.deliver(response: Data(repeating: 0xAB, count: BrowserLoginBleProtocol.Response.length))
+        XCTAssertFalse(peripheral.responseWasAcknowledged)
+
+        peripheral.acknowledge(sessionWrite: Data([1, 0]))
+        XCTAssertFalse(peripheral.responseWasAcknowledged, "a commitment write is not an acknowledgement")
+
+        peripheral.acknowledge(sessionWrite: ack)
+        XCTAssertTrue(peripheral.responseWasAcknowledged)
+    }
+
+    func testStoppingClearsTheSession() throws {
+        let peripheral = makePeripheral()
+        peripheral.revealPairingNonce()
+        peripheral.deliver(response: Data(repeating: 0xAB, count: 8))
+        peripheral.acknowledge(sessionWrite: try BrowserLoginBleProtocol.serializeSession(
+            BrowserLoginBleProtocol.SessionValue(stage: .received, payload: Data())))
+
+        peripheral.stop()
+
+        XCTAssertTrue(peripheral.pairingNonce.isEmpty)
+        XCTAssertTrue(peripheral.sessionValueBytes().isEmpty)
+        XCTAssertFalse(peripheral.responseWasAcknowledged)
+        XCTAssertEqual(peripheral.status, .idle)
     }
 }

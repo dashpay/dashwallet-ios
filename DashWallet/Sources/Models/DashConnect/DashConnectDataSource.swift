@@ -251,6 +251,10 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         _ request: DashKeyRequest,
         limits: BrowserLoginKeyLimits
     ) async throws -> BrowserLoginBleProtocol.Response {
+        // Production refuses a mismatched network before it does any work;
+        // without this the mock would persist an `.active` connection for a
+        // request the real data source rejects.
+        try validateNetwork(request.network)
         try await Task.sleep(nanoseconds: 400_000_000)
 
         if shouldFailNextApprove {

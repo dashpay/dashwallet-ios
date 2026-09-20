@@ -843,6 +843,21 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             expiresAt: expiresAt
         )
 
+        // Build the encrypted response before the on-chain broadcast, so the
+        // whole thing fails closed. Both calls below can throw — a failing
+        // `SecRandomCopyBytes`, an invalid point, an AES-GCM error — and after
+        // `updateIdentity` that would leave a bounded key registered on the
+        // identity that no one can ever use: the browser gets no response and
+        // `defer` has already zeroed `loginKey`. Neither call needs `keyId`;
+        // the response carries it separately, after registration.
+        var walletEphemeralPrivateKey = try Self.generateEphemeralPrivateKey()
+        let draft = try Self.buildLoginKeyResponseDraft(
+            loginKey: loginKey,
+            appContractId: request.contractId,
+            appEphemeralPubKey: request.appEphemeralPubKey,
+            walletEphemeralPrivateKey: &walletEphemeralPrivateKey
+        )
+
         Self.logger.info("🔗 DASHCONNECT :: registering bounded login key id \(keyId, privacy: .public)")
         let signer = KeychainSigner(modelContainer: context.modelContainer)
         try await context.wallet.updateIdentity(
@@ -851,14 +866,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             signer: signer
         )
         Self.logger.info("🔗 DASHCONNECT :: bounded login key registered")
-
-        var walletEphemeralPrivateKey = try Self.generateEphemeralPrivateKey()
-        let draft = try Self.buildLoginKeyResponseDraft(
-            loginKey: loginKey,
-            appContractId: request.contractId,
-            appEphemeralPubKey: request.appEphemeralPubKey,
-            walletEphemeralPrivateKey: &walletEphemeralPrivateKey
-        )
 
         let preview = await makeConnectionRequest(from: request)
         let connection = Self.makeConnection(preview: preview, status: .active, updatedAt: now())
