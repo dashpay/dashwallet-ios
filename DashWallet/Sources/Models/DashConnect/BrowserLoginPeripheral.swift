@@ -63,6 +63,8 @@ final class BrowserLoginPeripheral: NSObject, ObservableObject {
     private(set) var pairingNonce = Data()
     private var pairingCommitment = Data()
     private var pairingNonceIsRevealed = false
+    /// A pending delayed teardown from `finishSession(status:)`.
+    private var teardownTask: Task<Void, Never>?
     /// The latest status CoreBluetooth refused to queue. Resent from
     /// `peripheralManagerIsReady(toUpdateSubscribers:)`; a browser that
     /// relies on notifications would otherwise miss the transition.
@@ -79,8 +81,13 @@ final class BrowserLoginPeripheral: NSObject, ObservableObject {
     }
 
     /// Bring the radio up and advertise the service once it is ready.
-    func start() {
-        guard prepareSession() else { return }
+    /// `false` means the session could not even be prepared, so the radio was
+    /// never touched and `lastError` says why.
+    @discardableResult
+    func start() -> Bool {
+        teardownTask?.cancel()
+        teardownTask = nil
+        guard prepareSession() else { return false }
         if manager == nil {
             // A nil queue delivers delegate callbacks on the main queue,
             // which is what the @MainActor isolation of this class expects.
@@ -88,6 +95,7 @@ final class BrowserLoginPeripheral: NSObject, ObservableObject {
         } else {
             publishIfReady()
         }
+        return true
     }
 
     /// Everything `start()` does before it touches the radio: draw this
@@ -115,6 +123,8 @@ final class BrowserLoginPeripheral: NSObject, ObservableObject {
     /// Stop advertising and tear the service down. The response bytes
     /// are wiped so a later connection cannot read a stale key.
     func stop() {
+        teardownTask?.cancel()
+        teardownTask = nil
         wantsAdvertising = false
         // The protocol defines `.idle` as "advertising, no request received
         // yet". `decline()` and `reset()` stop this same peripheral before a
@@ -152,6 +162,24 @@ final class BrowserLoginPeripheral: NSObject, ObservableObject {
             onSubscribedCentrals: nil
         )
         undeliveredStatus = queued ? nil : status
+    }
+
+    /// How long a terminal status stays readable before the service goes down.
+    static let terminalStatusGrace: TimeInterval = 3
+
+    /// Publish a terminal status and take the service down only once the
+    /// browser has had a chance to see it. `stop()` wipes the status
+    /// characteristic along with the service, so setting a status and stopping
+    /// in the same turn tells the browser nothing: it cannot tell a refusal
+    /// from a phone that walked out of range.
+    func finishSession(status: BrowserLoginBleProtocol.Status) {
+        setStatus(status)
+        teardownTask?.cancel()
+        teardownTask = Task { [grace = Self.terminalStatusGrace] in
+            try? await Task.sleep(nanoseconds: UInt64(grace * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            stop()
+        }
     }
 
     /// Serve the nonce behind the commitment. Called once the request the
@@ -298,14 +326,33 @@ extension BrowserLoginPeripheral: @preconcurrency CBPeripheralManagerDelegate {
             radioState = .poweredOn
             publishIfReady()
         case .poweredOff:
+            discardPublishedService()
             radioState = .poweredOff
         case .unauthorized:
+            discardPublishedService()
             radioState = .unauthorized
         case .unsupported:
+            discardPublishedService()
             radioState = .unsupported
         default:
+            // `.resetting` and `.unknown`. Both end with the published service
+            // gone, and `.resetting` is followed by another state change.
+            discardPublishedService()
             radioState = .unknown
         }
+    }
+
+    /// Forget the published service without ending the session. CoreBluetooth
+    /// invalidates every service when the radio goes down, so holding the
+    /// references would make `publishIfReady()` — which returns early while
+    /// `service != nil` — skip re-adding it when the radio comes back, and the
+    /// screen would wait for a browser that can no longer see the wallet.
+    private func discardPublishedService() {
+        service = nil
+        statusCharacteristic = nil
+        responseCharacteristic = nil
+        sessionCharacteristic = nil
+        undeliveredStatus = nil
     }
 
     func peripheralManager(

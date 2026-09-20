@@ -868,7 +868,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         Self.logger.info("🔗 DASHCONNECT :: bounded login key registered")
 
         let preview = await makeConnectionRequest(from: request)
-        let connection = Self.makeConnection(preview: preview, status: .active, updatedAt: now())
+        let connection = Self.makeConnection(
+            preview: preview,
+            status: .active,
+            updatedAt: now(),
+            registeredKeyId: keyId
+        )
         var current = subject.value.filter { $0.id != connection.id }
         current.append(connection)
         persistAndSend(current)
@@ -923,7 +928,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 name: connection.name,
                 url: connection.url,
                 status: .approved,
-                updatedAt: disconnectedAt
+                updatedAt: disconnectedAt,
+                // Carried over: disconnecting is local, so the key this
+                // connection minted is still registered on the identity and
+                // the row is the only record of which one it is.
+                registeredKeyId: connection.registeredKeyId
             )
         })
     }
@@ -1128,14 +1137,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private static func makeConnection(
         preview: ConnectionRequest,
         status: ConnectionStatus,
-        updatedAt: Date
+        updatedAt: Date,
+        registeredKeyId: UInt32? = nil
     ) -> DAppConnection {
         DAppConnection(
             id: preview.appContractId,
             name: preview.appLabel.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : preview.appLabel,
             url: preview.appUrl,
             status: status,
-            updatedAt: updatedAt
+            updatedAt: updatedAt,
+            registeredKeyId: registeredKeyId
         )
     }
 

@@ -180,6 +180,29 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
     let url: String
     let status: ConnectionStatus
     let updatedAt: Date
+    /// The identity key this connection minted, for the Bluetooth flow that
+    /// registers one. Without it the wallet has no record of which of the
+    /// identity's keys belongs to which browser, so a future revoke has
+    /// nothing to put into `disablePublicKeyIds`. `nil` for the QR flow,
+    /// which hands out the deterministic per-app key, and for rows stored
+    /// before this field existed.
+    let registeredKeyId: UInt32?
+
+    init(
+        id: String,
+        name: String,
+        url: String,
+        status: ConnectionStatus,
+        updatedAt: Date,
+        registeredKeyId: UInt32? = nil
+    ) {
+        self.id = id
+        self.name = name
+        self.url = url
+        self.status = status
+        self.updatedAt = updatedAt
+        self.registeredKeyId = registeredKeyId
+    }
 }
 
 /// A pending request derived from a scanned login QR code.

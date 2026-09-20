@@ -215,6 +215,20 @@ final class BrowserLoginPeripheralSessionTests: XCTestCase {
         XCTAssertTrue(peripheral.responseWasAcknowledged)
     }
 
+    /// The regression behind "Deny tells the browser nothing": `decline()`
+    /// used to set the status and stop in the same turn, which threw the
+    /// notification away with the characteristic.
+    func testFinishSessionKeepsTheServiceUpForTheTerminalStatus() {
+        let peripheral = makePeripheral()
+        peripheral.revealPairingNonce()
+
+        peripheral.finishSession(status: .rejected)
+
+        XCTAssertEqual(peripheral.status, .rejected)
+        XCTAssertFalse(peripheral.pairingNonce.isEmpty, "the session is still up during the grace window")
+        XCTAssertFalse(peripheral.sessionValueBytes().isEmpty)
+    }
+
     func testStoppingClearsTheSession() throws {
         let peripheral = makePeripheral()
         peripheral.revealPairingNonce()

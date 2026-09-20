@@ -247,6 +247,10 @@ final class MockDashConnectDataSource: DashConnectDataSource {
             DashConnectMockError.stateTransitionNotSupported)
     }
 
+    /// The key id the mock claims to have registered, so the row it stores
+    /// and the response it returns agree the way production's do.
+    private static let mockRegisteredKeyId: UInt32 = 7
+
     func shareLoginKey(
         _ request: DashKeyRequest,
         limits: BrowserLoginKeyLimits
@@ -268,7 +272,8 @@ final class MockDashConnectDataSource: DashConnectDataSource {
             name: connectionRequest.appLabel.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : connectionRequest.appLabel,
             url: connectionRequest.appUrl,
             status: .active,
-            updatedAt: Date()
+            updatedAt: Date(),
+            registeredKeyId: Self.mockRegisteredKeyId
         )
         var current = subject.value.filter { $0.id != connection.id }
         current.append(connection)
@@ -280,7 +285,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
             identityId: Data(repeating: 0x33, count: 32),
             walletEphemeralPublicKey: request.appEphemeralPubKey,
             encryptedPayload: Data(repeating: 0x00, count: 60),
-            keyId: 7,
+            keyId: Self.mockRegisteredKeyId,
             expiresAt: limits.expiresAt(from: Date()),
             totalBudget: limits.totalBudget
         )
@@ -295,7 +300,8 @@ final class MockDashConnectDataSource: DashConnectDataSource {
                 name: connection.name,
                 url: connection.url,
                 status: .approved,
-                updatedAt: disconnectedAt
+                updatedAt: disconnectedAt,
+                registeredKeyId: connection.registeredKeyId
             )
         })
     }

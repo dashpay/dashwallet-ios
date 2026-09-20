@@ -232,6 +232,31 @@ final class DashConnectStoreTests: XCTestCase {
         )
     }
 
+    func testRegisteredKeyIdSurvivesTheRoundTripAndIsAbsentInOlderRows() throws {
+        let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
+        let id = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+
+        store.save([DAppConnection(
+            id: id, name: "Yappr", url: "yap.pr", status: .active,
+            updatedAt: Date(timeIntervalSince1970: 40), registeredKeyId: 12)])
+        XCTAssertEqual(store.load().first?.registeredKeyId, 12)
+
+        // A row written before the Bluetooth flow existed: the field is
+        // missing, not zero, and the row must still load.
+        let legacy: [[String: Any]] = [[
+            "contractId": id,
+            "label": "Yappr",
+            "url": "yap.pr",
+            "status": "active",
+            "updatedAt": 1_773_132_300_000
+        ]]
+        defaults.set(try JSONSerialization.data(withJSONObject: legacy), forKey: try XCTUnwrap(store.storageKey))
+
+        let restored = store.load()
+        XCTAssertEqual(restored.count, 1)
+        XCTAssertNil(restored.first?.registeredKeyId)
+    }
+
     private func sampleConnection(
         id: String,
         name: String = "Yappr",

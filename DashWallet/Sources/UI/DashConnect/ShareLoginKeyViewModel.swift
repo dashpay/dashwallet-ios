@@ -101,6 +101,10 @@ final class ShareLoginKeyViewModel: ObservableObject {
     @Published private(set) var phase: Phase = .configuring
     @Published var lifetime: Lifetime = .oneDay
     @Published var budget: Budget = .centiDash
+    /// What the wallet last refused, shown under the card while it keeps
+    /// waiting. A refusal is not a failure: the write may be from any radio in
+    /// range, so it must not be able to end the user's session.
+    @Published private(set) var lastRefusal: String?
     /// Set once the browser has had `deliveryAcknowledgementTimeout` to pick
     /// the response up. It unblocks the screen for a browser that never
     /// acknowledges, so the user is never stuck on a screen it cannot leave.
@@ -170,9 +174,17 @@ final class ShareLoginKeyViewModel: ObservableObject {
 
     func startAdvertising() {
         request = nil
+        lastRefusal = nil
         cancelDeliveryWait()
+        // The phase follows the radio rather than announcing it: a session the
+        // peripheral could not even prepare would otherwise leave the screen
+        // spinning on "Starting Bluetooth…" forever.
+        guard peripheral.start() else {
+            phase = .failed(peripheral.lastError ?? NSLocalizedString(
+                "Bluetooth could not be started.", comment: "DashConnect: Bluetooth login"))
+            return
+        }
         phase = .advertising
-        peripheral.start()
     }
 
     /// Tear the radio down. Called when the screen goes away, and after a
@@ -183,15 +195,19 @@ final class ShareLoginKeyViewModel: ObservableObject {
     }
 
     func decline() {
-        peripheral.setStatus(.rejected)
         request = nil
+        lastRefusal = nil
         cancelDeliveryWait()
         phase = .configuring
-        peripheral.stop()
+        // Not `stop()`: that wipes the status characteristic in the same turn,
+        // and the browser could not tell the refusal from a phone that walked
+        // away. The service goes down after the grace window.
+        peripheral.finishSession(status: .rejected)
     }
 
     func reset() {
         request = nil
+        lastRefusal = nil
         cancelDeliveryWait()
         phase = .configuring
         peripheral.stop()
@@ -220,11 +236,17 @@ final class ShareLoginKeyViewModel: ObservableObject {
         do {
             let parsed = try BrowserLoginBleProtocol.parseRequest(requestBytes)
             guard parsed.network == supportedNetwork else {
-                fail(String(
-                    format: NSLocalizedString("The browser asked for %@, but this wallet is on %@.", comment: "DashConnect: Bluetooth request for another network"),
+                // A refusal, not a failure — same reasoning as the `catch`
+                // below. A well-formed request for another chain from any
+                // central in range would otherwise drop the screen into
+                // "Couldn't share the key" and make the real browser's write
+                // land on a session that no longer accepts one.
+                peripheral.setStatus(.failed)
+                lastRefusal = String(
+                    format: NSLocalizedString("A browser asked for %@, but this wallet is on %@. Still waiting.", comment: "DashConnect: Bluetooth request for another network"),
                     Self.displayName(for: parsed.network),
                     Self.displayName(for: supportedNetwork)
-                ))
+                )
                 return
             }
             let branding = DashConnectFallbackAppMetadata.resolve(
@@ -240,6 +262,7 @@ final class ShareLoginKeyViewModel: ObservableObject {
                 requestBytes: requestBytes
             )
             request = parsed
+            lastRefusal = nil
             phase = .awaitingConfirmation(PendingRequest(
                 appLabel: branding.name,
                 contractId: DashConnectIdentifierFormatting.truncateMiddle(parsed.contractId.toBase58String()),
@@ -262,10 +285,13 @@ final class ShareLoginKeyViewModel: ObservableObject {
     }
 
     private func fail(_ message: String) {
-        peripheral.setStatus(.failed)
         request = nil
         cancelDeliveryWait()
         phase = .failed(message)
+        // The session is over either way; `finishSession` lets the browser
+        // read `.failed` first and then takes the radio down, which `fail()`
+        // used to leave up until the user tapped Try again.
+        peripheral.finishSession(status: .failed)
     }
 
     private func startDeliveryWait() {

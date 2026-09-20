@@ -79,7 +79,7 @@ struct ShareLoginKeyScreen: View {
         .navigationBarHidden(true)
         // The swipe-back gesture bypasses the button above, and `onDisappear`
         // would then wipe a response the browser has not read yet.
-        .onChange(of: viewModel.blocksDismissal) { blocks in
+        .onChange(of: viewModel.blocksDismissal) { _, blocks in
             vc.interactivePopGestureRecognizer?.isEnabled = !blocks
         }
         .onDisappear {
@@ -265,6 +265,14 @@ struct ShareLoginKeyScreen: View {
             Text(radioError)
                 .dashFont(.subhead)
                 .foregroundColor(Color.dash.errorText)
+                .multilineTextAlignment(.center)
+        }
+
+        // A refused request the wallet kept waiting through, not a failure.
+        if let refusal = viewModel.lastRefusal {
+            Text(refusal)
+                .dashFont(.subhead)
+                .foregroundColor(Color.dash.secondaryText)
                 .multilineTextAlignment(.center)
         }
     }
