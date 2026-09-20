@@ -44,6 +44,12 @@ enum MnemonicFirstWalletCreationError: Error {
 /// separation can be tested without constructing SwiftData.
 @MainActor
 final class ProcessNetworkValueCache<Value: Sendable> {
+    enum OpenSource: String {
+        case cached = "reused from cache"
+        case shared = "awaited shared open"
+        case created = "created"
+    }
+
     private var values: [String: Value] = [:]
     private struct PendingOpen {
         let id = UUID()
@@ -66,17 +72,17 @@ final class ProcessNetworkValueCache<Value: Sendable> {
     func valueAsync(
         for networkKey: String,
         create: @escaping @MainActor () async throws -> Value
-    ) async throws -> (value: Value, reused: Bool) {
-        if let existing = values[networkKey] { return (existing, true) }
+    ) async throws -> (value: Value, source: OpenSource) {
+        if let existing = values[networkKey] { return (existing, .cached) }
         let pending: PendingOpen
-        let reused: Bool
+        let source: OpenSource
         if let existing = inFlight[networkKey] {
             pending = existing
-            reused = true
+            source = .shared
         } else {
             pending = PendingOpen(task: Task { try await create() })
             inFlight[networkKey] = pending
-            reused = false
+            source = .created
         }
         defer {
             // Any waiter may finish first. An older waiter must not remove
@@ -87,7 +93,7 @@ final class ProcessNetworkValueCache<Value: Sendable> {
         }
         let created = try await pending.task.value
         values[networkKey] = created
-        return (created, reused)
+        return (created, source)
     }
 }
 
@@ -1084,8 +1090,8 @@ final class SwiftDashSDKHost {
             }
             let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
             container = cached.value
-            Self.logger.info("🪺 HOST :: stage 2/4 ModelContainer \(cached.reused ? "reused" : "created", privacy: .public) for \(network.rawValue, privacy: .public)")
-            DWLogger.log("HOST stage 2/4 ModelContainer \(cached.reused ? "reused" : "created") for \(network.rawValue) in \(ms)ms")
+            Self.logger.info("🪺 HOST :: stage 2/4 ModelContainer \(cached.source.rawValue, privacy: .public) for \(network.rawValue, privacy: .public)")
+            DWLogger.log("HOST stage 2/4 ModelContainer \(cached.source.rawValue) for \(network.rawValue) in \(ms)ms")
         } catch {
             Self.logger.error("🪺 HOST :: ModelContainer build failed: \(String(describing: error), privacy: .public)")
             throw HostError.modelContainerFailed(error)

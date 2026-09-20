@@ -235,13 +235,17 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         let concurrent = try await second.value
         XCTAssertEqual(creates, 1)
         XCTAssertTrue(initial.value === concurrent.value)
-        XCTAssertTrue(concurrent.reused)
+        XCTAssertEqual(initial.source, .created)
+        XCTAssertEqual(concurrent.source, .shared)
+        let cached = try await cache.valueAsync(for: "testnet") { Token() }
+        XCTAssertEqual(cached.source, .cached)
+        XCTAssertTrue(cached.value === initial.value)
         do {
             _ = try await cache.valueAsync(for: "mainnet") { throw CoreLifecycleTestError.start }
             XCTFail("A failed open must throw")
         } catch CoreLifecycleTestError.start {}
         let retried = try await cache.valueAsync(for: "mainnet") { Token() }
-        XCTAssertFalse(retried.reused)
+        XCTAssertEqual(retried.source, .created)
         XCTAssertFalse(retried.value === initial.value)
     }
 
