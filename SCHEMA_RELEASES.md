@@ -144,6 +144,10 @@ that mismatch; it must not roll back current code or invent a migration.
 - Apple's `REPLACED_WITH_NEW_VERSION` state also counts as published history,
   so a release superseded between two observations is still frozen.
 - The current `appVersionState` takes precedence over legacy `appStoreState`.
+  An unknown current state fails with an actionable error rather than silently
+  skipping the release or trusting the deprecated field. Update the observer's
+  state mapping after checking Apple's documentation, then retry. This also
+  protects TestFlight version selection from understating the published version.
   A legacy-only `DEVELOPER_REMOVED_FROM_SALE` or `REMOVED_FROM_SALE` response
   for a version newer than the accepted baseline stops schema observation and
   candidate gates because it does not establish publication history. Older

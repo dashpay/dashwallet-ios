@@ -62,6 +62,15 @@ module AppStoreConnectRelease
     READY_FOR_SALE
   ].freeze
 
+  # Current AppVersionState values, independent of the deprecated field.
+  # A new Apple state needs an explicit publication decision, never a silent skip.
+  APP_VERSION_STATES = %w[
+    ACCEPTED DEVELOPER_REJECTED IN_REVIEW INVALID_BINARY METADATA_REJECTED
+    PENDING_APPLE_RELEASE PENDING_DEVELOPER_RELEASE PREPARE_FOR_SUBMISSION
+    PROCESSING_FOR_DISTRIBUTION READY_FOR_DISTRIBUTION READY_FOR_REVIEW REJECTED
+    REPLACED_WITH_NEW_VERSION WAITING_FOR_EXPORT_COMPLIANCE WAITING_FOR_REVIEW
+  ].freeze
+
   module_function
 
   def validate_release_channel(channel)
@@ -77,11 +86,22 @@ module AppStoreConnectRelease
     raise Error, "External TestFlight group '#{requested_group}' does not exist. Available groups: #{available}"
   end
 
+  def effective_app_store_state(attributes)
+    current = attributes["appVersionState"]
+    if current && !APP_VERSION_STATES.include?(current)
+      raise Error, "Unknown appVersionState #{current.inspect} for App Store version #{attributes['versionString']}. " \
+                   "Check Apple's state documentation and update the release observer before retrying; " \
+                   "the deprecated appStoreState cannot establish publication in its place."
+    end
+    current || attributes["appStoreState"]
+  end
+
   def live_app_store_version?(attributes)
-    LIVE_APP_STORE_STATES.include?(attributes["appVersionState"] || attributes["appStoreState"])
+    LIVE_APP_STORE_STATES.include?(effective_app_store_state(attributes))
   end
 
   def validate_publication_history!(attributes)
+    effective_app_store_state(attributes)
     if !attributes["appVersionState"] &&
        %w[DEVELOPER_REMOVED_FROM_SALE REMOVED_FROM_SALE].include?(attributes["appStoreState"])
       raise Error, "Ambiguous publication history for App Store version #{attributes['versionString']}: " \
@@ -94,7 +114,7 @@ module AppStoreConnectRelease
     # A superseded release still has installed databases, even when two
     # publications happened between observer runs.
     live_app_store_version?(attributes) ||
-      (attributes["appVersionState"] || attributes["appStoreState"]) == "REPLACED_WITH_NEW_VERSION"
+      effective_app_store_state(attributes) == "REPLACED_WITH_NEW_VERSION"
   end
 
   def maximum_version(values)
@@ -201,16 +221,20 @@ module AppStoreConnectRelease
 
     def latest_published_version(app_id)
       versions = app_store_versions(app_id)
-      known = versions.select { |version| AppStoreConnectRelease.published_app_store_version?(version.fetch("attributes")) }
+      # Identify a candidate before validating only its relevant history, so
+      # bootstrap can still accept older ambiguous/unknown rows explicitly.
+      known = versions.select do |version|
+        attrs = version.fetch("attributes")
+        state = attrs["appVersionState"] || attrs["appStoreState"]
+        LIVE_APP_STORE_STATES.include?(state) || state == "REPLACED_WITH_NEW_VERSION"
+      end
       latest = known.max_by { |version| MarketingVersion.new(version.fetch("attributes").fetch("versionString")) }
-      return nil unless latest
-
       # Bootstrap explicitly accepts all history through this publication.
       # A newer ambiguous row could change that boundary and must be resolved.
-      boundary = MarketingVersion.new(latest.fetch("attributes").fetch("versionString"))
+      boundary = latest && MarketingVersion.new(latest.fetch("attributes").fetch("versionString"))
       versions.each do |version|
         attributes = version.fetch("attributes")
-        next if MarketingVersion.new(attributes.fetch("versionString")) <= boundary
+        next if boundary && MarketingVersion.new(attributes.fetch("versionString")) < boundary
         AppStoreConnectRelease.validate_publication_history!(attributes)
       end
       latest

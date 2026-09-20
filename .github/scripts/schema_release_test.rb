@@ -114,6 +114,17 @@ class SchemaReleaseTest < Minitest::Test
     assert_equal [["new", @store.head]], @store.github.dispatches
   end
 
+  def test_unknown_current_apple_state_blocks_observation_and_candidate_gate
+    @apple.versions.last["attributes"].merge!(
+      "appVersionState" => "FUTURE_APPLE_STATE", "appStoreState" => "READY_FOR_SALE")
+    assert_raises(AppStoreConnectRelease::Error) { @pipeline.sync }
+    assert_empty @store.writes
+    assert_empty @store.github.dispatches
+    with_platform do |directory|
+      assert_raises(AppStoreConnectRelease::Error) { @pipeline.gate(directory) }
+    end
+  end
+
   def test_retry_reuses_immutable_observation_timestamp_and_commit
     @pipeline.sync
     original = @store.files["releases/new.json"]

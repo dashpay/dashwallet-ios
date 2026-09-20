@@ -117,6 +117,42 @@ class AppStoreConnectReleaseTest < Minitest::Test
     refute AppStoreConnectRelease.live_app_store_version?(attributes)
   end
 
+  def test_unknown_current_state_blocks_observation_and_version_guard
+    client = fake_client
+    client.define_singleton_method(:get_all) do |_url|
+      [{ "id" => "new", "attributes" => { "versionString" => "9.2.0",
+        "appVersionState" => "FUTURE_APPLE_STATE", "appStoreState" => "READY_FOR_SALE" } }]
+    end
+    [:published_versions, :production_versions, :latest_published_version].each do |method|
+      error = assert_raises(AppStoreConnectRelease::Error) { client.public_send(method, "app") }
+      assert_includes error.message, "Unknown appVersionState"
+      assert_includes error.message, "9.2.0"
+    end
+  end
+
+  def test_unknown_history_before_accepted_baseline_does_not_block_observation_or_bootstrap
+    client = fake_client
+    client.define_singleton_method(:get_all) do |_url|
+      [
+        { "id" => "old", "attributes" => { "versionString" => "6.0.0", "appVersionState" => "OLD_UNKNOWN_STATE" } },
+        { "id" => "new", "attributes" => { "versionString" => "9.1.0", "appVersionState" => "READY_FOR_DISTRIBUTION" } }
+      ]
+    end
+    assert_equal ["new"], client.published_versions("app", after_version: "9.0.0").map { |row| row["id"] }
+    assert_equal "new", client.latest_published_version("app")["id"]
+  end
+
+  def test_unknown_newer_state_blocks_bootstrap_even_with_an_older_known_publication
+    client = fake_client
+    client.define_singleton_method(:get_all) do |_url|
+      [
+        { "id" => "old", "attributes" => { "versionString" => "9.1.0", "appVersionState" => "READY_FOR_DISTRIBUTION" } },
+        { "id" => "new", "attributes" => { "versionString" => "9.2.0", "appVersionState" => "FUTURE_APPLE_STATE" } }
+      ]
+    end
+    assert_raises(AppStoreConnectRelease::Error) { client.latest_published_version("app") }
+  end
+
   def test_paginator_collects_all_pages
     pages = {
       "first" => { "data" => [1], "links" => { "next" => "second" } },
