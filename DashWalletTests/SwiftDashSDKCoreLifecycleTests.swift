@@ -245,6 +245,49 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertFalse(retried.value === initial.value)
     }
 
+    func testConcurrentFailedOpenWaitersShareOneFreshRetry() async throws {
+        let cache = ProcessNetworkValueCache<Int>()
+        var releaseFailure: CheckedContinuation<Void, Never>?
+        var releaseRetry: CheckedContinuation<Void, Never>?
+        var entered = 0
+        var failed = 0
+        var retryCreates = 0
+        let callers = (0..<8).map { _ in
+            Task { @MainActor in
+                entered += 1
+                do {
+                    _ = try await cache.valueAsync(for: "testnet") {
+                        await withCheckedContinuation { releaseFailure = $0 }
+                        throw CoreLifecycleTestError.start
+                    }
+                    XCTFail("Initial open must fail")
+                    return -1
+                } catch {
+                    failed += 1
+                    // Retry immediately, before other waiters necessarily resume.
+                    return try await cache.valueAsync(for: "testnet") {
+                        retryCreates += 1
+                        guard retryCreates == 1 else {
+                            XCTFail("An older waiter discarded the active retry")
+                            return -1
+                        }
+                        await withCheckedContinuation { releaseRetry = $0 }
+                        return 42
+                    }.value
+                }
+            }
+        }
+        while entered < callers.count || releaseFailure == nil { await Task.yield() }
+        releaseFailure?.resume()
+        while failed < callers.count || releaseRetry == nil { await Task.yield() }
+        releaseRetry?.resume()
+        for caller in callers {
+            let value = try await caller.value
+            XCTAssertEqual(value, 42)
+        }
+        XCTAssertEqual(retryCreates, 1, "Old waiters must not remove or bypass the new in-flight retry")
+    }
+
     func testSameSeedIdentityRecoveryDiscoversRefreshesAndAdoptsInOneRun() async throws {
         let identityId = Data(repeating: 0x16, count: 32)
         var storedIdentityIds: [Data] = []

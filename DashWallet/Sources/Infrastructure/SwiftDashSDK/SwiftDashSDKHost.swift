@@ -45,7 +45,11 @@ enum MnemonicFirstWalletCreationError: Error {
 @MainActor
 final class ProcessNetworkValueCache<Value: Sendable> {
     private var values: [String: Value] = [:]
-    private var inFlight: [String: Task<Value, Error>] = [:]
+    private struct PendingOpen {
+        let id = UUID()
+        let task: Task<Value, Error>
+    }
+    private var inFlight: [String: PendingOpen] = [:]
 
     func value(
         for networkKey: String,
@@ -64,18 +68,26 @@ final class ProcessNetworkValueCache<Value: Sendable> {
         create: @escaping @MainActor () async throws -> Value
     ) async throws -> (value: Value, reused: Bool) {
         if let existing = values[networkKey] { return (existing, true) }
-        if let task = inFlight[networkKey] { return (try await task.value, true) }
-        let task = Task { try await create() }
-        inFlight[networkKey] = task
-        do {
-            let created = try await task.value
-            values[networkKey] = created
-            inFlight[networkKey] = nil
-            return (created, false)
-        } catch {
-            inFlight[networkKey] = nil
-            throw error
+        let pending: PendingOpen
+        let reused: Bool
+        if let existing = inFlight[networkKey] {
+            pending = existing
+            reused = true
+        } else {
+            pending = PendingOpen(task: Task { try await create() })
+            inFlight[networkKey] = pending
+            reused = false
         }
+        defer {
+            // Any waiter may finish first. An older waiter must not remove
+            // a retry that another caller has already started after failure.
+            if inFlight[networkKey]?.id == pending.id {
+                inFlight[networkKey] = nil
+            }
+        }
+        let created = try await pending.task.value
+        values[networkKey] = created
+        return (created, reused)
     }
 }
 
