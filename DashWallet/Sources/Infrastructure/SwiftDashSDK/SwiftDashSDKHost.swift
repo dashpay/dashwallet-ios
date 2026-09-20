@@ -1622,15 +1622,7 @@ final class SwiftDashSDKHost {
             withIntermediateDirectories: true)
         let url = dir.appendingPathComponent("DashModel.sqlite", isDirectory: false)
 
-        let configuration = ModelConfiguration(
-            schema: DashModelContainer.schema,
-            url: url,
-            allowsSave: true,
-            cloudKitDatabase: .none)
-        return try ModelContainer(
-            for: DashModelContainer.schema,
-            migrationPlan: DashMigrationPlan.self,
-            configurations: [configuration])
+        return try DashModelContainer.create(url: url)
     }
 
     /// Filesystem path for the per-network shielded Orchard commitment-tree

@@ -59,7 +59,8 @@ def validate_capture_checkout(platform_dir):
     sdk = platform_dir / "packages/swift-sdk"
     required = ["schema-models.json", "scripts/freeze_schema_models.py"] + [
         f"SwiftTests/SwiftDashSDKTests/{name}.swift" for name in (
-            "DashSchemaReleaseCaptureTests", "DashModelMigrationTests", "DashReleasedSchemaTests")
+            "DashSchemaReleaseCaptureTests", "DashModelMigrationTests", "DashReleasedSchemaTests",
+            "DashLegacySchemaMigrationTests")
     ]
     missing = [path for path in required if not (sdk / path).is_file()]
     if missing:
@@ -95,6 +96,7 @@ def capture(platform_dir, output_dir):
             "-only-testing:SwiftDashSDKTests/DashSchemaReleaseCaptureTests/testCaptureReleaseSchema",
             "-only-testing:SwiftDashSDKTests/DashModelMigrationTests",
             "-only-testing:SwiftDashSDKTests/DashReleasedSchemaTests",
+            "-only-testing:SwiftDashSDKTests/DashLegacySchemaMigrationTests",
             "CODE_SIGNING_ALLOWED=NO", "ARCHS=arm64", "ENABLE_TESTABILITY=YES",
         ], cwd=sdk, check=True)
         exported = pathlib.Path(scratch) / "attachments"

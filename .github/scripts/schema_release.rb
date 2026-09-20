@@ -22,6 +22,7 @@ module SchemaRelease
     packages/swift-sdk/SwiftTests/SwiftDashSDKTests/DashSchemaReleaseCaptureTests.swift
     packages/swift-sdk/SwiftTests/SwiftDashSDKTests/DashModelMigrationTests.swift
     packages/swift-sdk/SwiftTests/SwiftDashSDKTests/DashReleasedSchemaTests.swift
+    packages/swift-sdk/SwiftTests/SwiftDashSDKTests/DashLegacySchemaMigrationTests.swift
   ].freeze
   TRANSPORT_ERRORS = [Timeout::Error, IOError, SystemCallError, SocketError, OpenSSL::SSL::SSLError].freeze
 

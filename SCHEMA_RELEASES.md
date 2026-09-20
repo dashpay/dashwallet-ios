@@ -3,9 +3,37 @@
 The TestFlight pipeline captures schema evidence. Publication in App Store
 Connect triggers a separate freeze PR in `dashpay/platform`. TestFlight builds
 do not become historical schema versions merely because they were uploaded.
-V1 is the accepted baseline; intermediate development databases are unsupported
-and may require a deliberate reset. Never reset an App Store user's database as
-a substitute for migration.
+V1 remains the accepted frozen baseline. An older app may have written a
+different, unversioned model graph while still labelling its store `1.0.0`.
+The SDK provides a bounded compatibility bridge for these legacy stores, as
+described below. Other intermediate development databases remain unsupported.
+Never reset an App Store user's database as a substitute for migration.
+
+## Legacy database compatibility
+
+The app opens its per-network SQLite store through
+`DashModelContainer.create(url:)`, sharing the SDK's migration behavior. Known
+schemas use the normal migration plan. For an unrecognized legacy `1.0.0`
+store, the SDK attempts automatic migration on an isolated, consistent copy to
+the specific V2 schema. It verifies preservation of existing stored data and
+relationships and checks that the normal plan can reopen the migrated store
+before accepting it. A retained backup supports recovery; failure must never
+erase the user's database. Newer schema versions and corrupt stores do not
+qualify for this bridge.
+
+This bridge runs once per database, independently of the App Store observer
+and its `bootstrap` operation. It does not modify frozen V1 or establish which
+source commit was published. Regression fixtures include synthetic data made
+from Platform `fd8d8d13e5d7cea17b00df5974934ab1910e8039`, paired with iOS
+`8094751eb2be8d52b57da3589fdd2ae2dcd0ecc6` in
+[Actions run 32706880873](https://github.com/dashpay/dashwallet-ios/actions/runs/32706880873).
+That run failed before upload; its commits identify the tested sources, not
+proven App Store provenance. See the SDK fixture manifest for reproduction.
+
+Retain the bridge for users who skip V2 and upgrade directly to a later app.
+When introducing V3, keep the bridge destination on the frozen V2 models, then
+use the ordinary V2-to-current migration plan. Do not point the legacy bridge
+at whichever models happen to be current.
 
 ## Initial setup
 
@@ -53,11 +81,11 @@ the selected Platform commit**. Choosing an older SHA without that freeze fails
 even if the latest development branch has it.
 The first check runs before release-version resolution and the native build.
 The selected Platform checkout must contain the registry and capture tooling
-and all three required test classes even when there are no new publications to
+and all four required test classes even when there are no new publications to
 reconcile. Missing release scripts are rejected before the build begins.
 
-After archive, the pipeline runs the SDK's offline migration, release-compatibility
-and capture tests in Release on an arm64 iOS simulator. It reuses the simulator
+After archive, the pipeline runs the SDK's offline migration, legacy-bridge,
+release-compatibility and capture tests in Release on an arm64 iOS simulator. It reuses the simulator
 slice built alongside the device FFI. The populated store is created from the
 same Platform sources; it is not extracted from the device binary. The capture
 contains the schema version, entity hashes, checksum, and SQLite indexes, plus
