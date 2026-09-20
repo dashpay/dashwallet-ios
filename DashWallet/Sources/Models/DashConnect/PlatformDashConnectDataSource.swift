@@ -235,14 +235,14 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
             return .keyRegistration(
                 DashConnectKeyRegistrationTransition(
                     identityId: parsed.identityId,
-                    addPublicKeys: parsed.addPublicKeys.map { key in
+                    addPublicKeys: try parsed.addPublicKeys.map { key in
                         DashConnectKeyRegistrationKey(
                             keyId: key.keyId,
                             keyType: key.keyType,
                             purpose: key.purpose,
                             securityLevel: key.securityLevel,
                             publicKeyData: key.pubkeyBytes,
-                            contractBounds: key.contractBounds.map {
+                            contractBounds: try key.contractBounds.map {
                                 switch $0 {
                                 case .singleContract(let id):
                                     return .singleContract(id: id)
@@ -251,6 +251,18 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
                                         id: id,
                                         documentTypeName: documentTypeName
                                     )
+                                case .contractGroup:
+                                    // The wallet layer reports a contract-group bound since the
+                                    // SDK's #4800, and the DPP-layer `ContractBounds` this maps
+                                    // into has no case for it (dashpay/platform#4853). Dropping
+                                    // the bound is not an option here: the value decides which
+                                    // approved app a key registration belongs to, and it is also
+                                    // rebuilt into the `IdentityPubkey` handed back to
+                                    // `updateIdentity(...)`, so a silently weakened bound would
+                                    // mean signing a transition the dApp did not ask for. A key
+                                    // bound to a contract group is never one of the login keys
+                                    // this flow derives, so refuse the transition instead.
+                                    throw DashConnectPlatformError.keyRegistrationUnexpectedMutation
                                 }
                             }
                         )

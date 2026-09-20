@@ -1102,7 +1102,11 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             keyType: keyType,
             readOnly: false,
             disabledAt: disabledAt.map { Int64(bitPattern: $0) },
-            data: data
+            data: data,
+            // Protocol 14 key limits (platform#4798). These fixtures describe
+            // the keys the QR login flow derives, which carry neither.
+            totalBudget: nil,
+            expiresAt: nil
         )
     }
 
