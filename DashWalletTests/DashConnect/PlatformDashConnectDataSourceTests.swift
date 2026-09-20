@@ -1102,7 +1102,9 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             keyType: keyType,
             readOnly: false,
             disabledAt: disabledAt.map { Int64(bitPattern: $0) },
-            data: data
+            data: data,
+            totalBudget: nil,
+            expiresAt: nil
         )
     }
 
