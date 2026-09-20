@@ -236,8 +236,11 @@ class AppStoreConnectReleaseTest < Minitest::Test
     end
     assert_equal "build21", client.version_build("version-id")["id"]
     assert_equal "https://api.appstoreconnect.apple.com/v1/appStoreVersions/version-id/build", requested.first
-    client.define_singleton_method(:get_json) { |_url| { "data" => nil } }
-    assert_raises(AppStoreConnectRelease::Error) { client.version_build("version-id") }
+    [{ "data" => nil }, {}].each do |response|
+      client.define_singleton_method(:get_json) { |_url| response }
+      error = assert_raises(AppStoreConnectRelease::Error) { client.version_build("version-id") }
+      assert_includes error.message, "Published App Store version version-id has no associated build"
+    end
   end
 
   def test_read_retries_transient_errors_without_network

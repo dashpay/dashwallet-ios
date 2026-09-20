@@ -217,7 +217,7 @@ module AppStoreConnectRelease
     end
 
     def version_build(version_id)
-      get_json(api_url("/v1/appStoreVersions/#{version_id}/build")).fetch("data") ||
+      get_json(api_url("/v1/appStoreVersions/#{version_id}/build"))["data"] ||
         raise(Error, "Published App Store version #{version_id} has no associated build.")
     end
 
