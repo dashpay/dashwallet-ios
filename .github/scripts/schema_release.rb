@@ -257,7 +257,7 @@ module SchemaRelease
       @store.write({ "baseline.json" => SchemaRelease.json(baseline) }, message: "Initialize SwiftData release baseline") unless dry_run
     end
 
-    def published_records
+    def published_records(&on_failure)
       baseline = @store.document("baseline.json", optional: true)
       unless baseline
         raise Error, "Schema release baseline is missing on #{IOS_REPO}:#{DATA_BRANCH}. Run 'Freeze published App Store schema' in bootstrap mode: inspect dry_run first, then repeat with dry_run disabled before building a release candidate."
@@ -277,6 +277,12 @@ module SchemaRelease
           "build_number" => build.fetch("attributes").fetch("version"), "build_id" => SchemaRelease.component(build.fetch("id")),
           "observed_state" => attrs["appVersionState"] || attrs.fetch("appStoreState")
         }
+      rescue Error, KeyError, JSON::ParserError => error
+        # Observation can reconcile other publications, but callers such as
+        # the candidate gate remain strict when no failure collector is supplied.
+        raise unless on_failure
+        on_failure.call(version["id"] || "unknown release", error)
+        nil
       end
     end
 
@@ -316,7 +322,10 @@ module SchemaRelease
     end
 
     def sync(release_id: nil, dry_run: false)
-      records = published_records
+      failures = []
+      records = published_records do |id, error|
+        report_release_failure(failures, id, error)
+      end
       # Retained publication proofs are obligations even after Apple stops
       # listing a version. Merge them before filtering a manual retry.
       @store.paths("releases/").each do |path|
@@ -325,10 +334,9 @@ module SchemaRelease
       end
       if release_id
         records = records.select { |record| record["release_id"] == release_id }
-        raise Error, "Requested version is not a published App Store release after the baseline" if records.empty?
+        raise Error, "Requested version is not a published App Store release after the baseline" if records.empty? && failures.empty?
       end
       registry = merged_registry
-      failures = []
       records.each do |record|
         manifest, path, hash = evidence(record)
         id = record.fetch("release_id")
@@ -356,8 +364,7 @@ module SchemaRelease
         branch = "codex/freeze-swift-schema-v#{manifest['schema']['schema_version']}"
         @out.puts "Platform PR: https://github.com/#{PLATFORM_REPO}/pulls?q=#{URI.encode_www_form_component("is:pr head:#{branch}")}"
       rescue Error, KeyError, JSON::ParserError => error
-        failures << "#{record['release_id']}: #{error.message}"
-        @out.puts "::error::App Store release #{record['release_id']} could not be reconciled: #{error.message}"
+        report_release_failure(failures, record["release_id"], error)
       end
       raise Error, "Some App Store releases still need attention: #{failures.join('; ')}" unless failures.empty?
     end
@@ -372,8 +379,11 @@ module SchemaRelease
       merged = merged_registry
       records.each do |record|
         manifest, _path, hash = evidence(record)
-        unless registered?(merged, record, manifest, hash) && registered?(registry, record, manifest, hash)
-          raise Error, "App Store #{record['app_version']} still needs a merged freeze present in the selected Platform commit. Run the App Store schema workflow and merge its PR first."
+        unless registered?(merged, record, manifest, hash)
+          raise Error, "App Store #{record['app_version']} still needs a merged freeze in #{PLATFORM_REPO}:#{PLATFORM_BRANCH}. Run the App Store schema workflow and merge its PR into that branch first."
+        end
+        unless registered?(registry, record, manifest, hash)
+          raise Error, "App Store #{record['app_version']} has a freeze in #{PLATFORM_REPO}:#{PLATFORM_BRANCH}, but it is missing from the selected Platform commit. Select a commit containing that freeze before uploading."
         end
         schema = registry.fetch("schemas").fetch(manifest.fetch("schema").fetch("schema_version"))
         fixture_path = File.expand_path(schema.fetch("fixture_path"), platform_dir)
@@ -385,6 +395,11 @@ module SchemaRelease
     end
 
     private
+
+    def report_release_failure(failures, id, error)
+      failures << "#{id}: #{error.message}"
+      @out.puts "::error::App Store release #{id} could not be reconciled: #{error.message}"
+    end
 
     def parse_registry(bytes, location)
       registry = JSON.parse(bytes)

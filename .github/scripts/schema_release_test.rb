@@ -157,6 +157,55 @@ class SchemaReleaseTest < Minitest::Test
     assert_empty @store.github.dispatches
   end
 
+  def add_publication_without_build
+    @apple.versions.insert(1, @apple.version("missing-build", "9.0.1"))
+    @apple.define_singleton_method(:version_build) do |id|
+      raise AppStoreConnectRelease::Error, "Published App Store version #{id} has no associated build." if id == "missing-build"
+      builds.fetch(id)
+    end
+  end
+
+  def test_missing_build_does_not_prevent_other_publications_from_dispatching
+    add_publication_without_build
+    error = assert_raises(SchemaRelease::Error) { @pipeline.sync }
+    assert_includes error.message, "missing-build"
+    assert_includes error.message, "no associated build"
+    assert_equal [["new", @store.head]], @store.github.dispatches
+    refute_nil @store.document("releases/new.json")
+    assert_nil @store.document("releases/missing-build.json", optional: true)
+    with_platform do |directory|
+      assert_raises(SchemaRelease::Error) { @pipeline.gate(directory) }
+    end
+  end
+
+  def test_missing_build_is_reported_after_dry_run_without_writes
+    add_publication_without_build
+    error = assert_raises(SchemaRelease::Error) { @pipeline.sync(dry_run: true) }
+    assert_includes error.message, "missing-build"
+    assert_empty @store.writes
+    assert_empty @store.github.dispatches
+  end
+
+  def test_manual_retained_proof_retry_survives_an_unrelated_missing_build
+    @pipeline.sync
+    proof = @store.files["releases/new.json"]
+    @store.github.dispatches.clear
+    @apple.versions.reject! { |version| version["id"] == "new" }
+    add_publication_without_build
+    error = assert_raises(SchemaRelease::Error) { @pipeline.sync(release_id: "new") }
+    assert_includes error.message, "missing-build"
+    assert_equal [["new", @store.head]], @store.github.dispatches
+    assert_equal proof, @store.files["releases/new.json"]
+  end
+
+  def test_missing_build_for_requested_release_reports_lookup_failure
+    add_publication_without_build
+    error = assert_raises(SchemaRelease::Error) { @pipeline.sync(release_id: "missing-build") }
+    assert_includes error.message, "no associated build"
+    refute_includes error.message, "not a published"
+    assert_empty @store.github.dispatches
+  end
+
   def test_sync_reports_bad_evidence_but_still_dispatches_other_valid_releases
     @apple.versions.insert(1, @apple.version("broken", "9.0.1"))
     @apple.builds["broken"] = { "id" => "apple20", "attributes" => { "version" => "20" } }
@@ -196,9 +245,11 @@ class SchemaReleaseTest < Minitest::Test
   def test_gate_requires_merge_and_presence_in_selected_commit
     with_platform do |dir|
       path = File.join(dir, SchemaRelease::REGISTRY)
-      assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
+      missing_merge = assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
+      assert_includes missing_merge.message, "dashpay/platform:v4.2-dev"
       merge_release
-      assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
+      missing_checkout = assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
+      assert_includes missing_checkout.message, "missing from the selected Platform commit"
       File.write(path, SchemaRelease.json(@store.github.registry))
       File.binwrite(File.join(dir, "fixture.store"), @fixture)
       @pipeline.gate(dir)

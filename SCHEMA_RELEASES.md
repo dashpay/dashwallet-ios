@@ -157,8 +157,9 @@ that mismatch; it must not roll back current code or invent a migration.
   resolution, which still checks known published versions. Inspect
   that version in App Store Connect and recover its current version state;
   do not mark it published or substitute a build to make the check pass.
-- A bad release's evidence is reported without preventing independent valid
-  releases from reaching their freeze PRs. The observation run still fails and
+- Missing Apple build relationships and bad release evidence are reported
+  without preventing independent valid releases or retained-proof manual retries
+  from reaching their freeze PRs. The observation run still fails and
   the next candidate remains blocked until every required release is reconciled.
 - Concurrent metadata writes wait for stale branch reads to catch up before
   revalidating the evidence. If the branch still has not advanced, the operation
