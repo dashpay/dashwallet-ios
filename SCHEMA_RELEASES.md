@@ -12,12 +12,18 @@ Never reset an App Store user's database as a substitute for migration.
 ## Legacy database compatibility
 
 The app opens its per-network SQLite store through
-`DashModelContainer.create(url:)`, sharing the SDK's migration behavior. Known
+`DashModelContainer.createAsync(url:)`, sharing the SDK's migration behavior.
+Store opening and migration run on a dedicated queue; concurrent requests for
+the same network share one in-flight open. Contexts stay on their owning actor.
+Known
 schemas use the normal migration plan. For an unrecognized legacy `1.0.0`
 store, the SDK attempts automatic migration on an isolated, consistent copy to
 the specific V2 schema. It verifies preservation of existing stored data and
 relationships and checks that the normal plan can reopen the migrated store
-before accepting it. A retained backup supports recovery; failure must never
+before accepting it. A backup remains through the migration/recovery launch and
+is reclaimed after a later successful ordinary open; failed opens never trigger
+cleanup. The recovery journal retains a fingerprint of the validated final data
+so missing scratch files need not block recovery. Failure must never
 erase the user's database. Newer schema versions and corrupt stores do not
 qualify for this bridge.
 

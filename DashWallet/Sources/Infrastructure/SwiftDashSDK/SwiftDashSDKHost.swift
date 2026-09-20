@@ -43,8 +43,9 @@ enum MnemonicFirstWalletCreationError: Error {
 /// opened twice over the same backing store. Generic so identity and network
 /// separation can be tested without constructing SwiftData.
 @MainActor
-final class ProcessNetworkValueCache<Value> {
+final class ProcessNetworkValueCache<Value: Sendable> {
     private var values: [String: Value] = [:]
+    private var inFlight: [String: Task<Value, Error>] = [:]
 
     func value(
         for networkKey: String,
@@ -56,6 +57,25 @@ final class ProcessNetworkValueCache<Value> {
         let created = try create()
         values[networkKey] = created
         return (created, false)
+    }
+
+    func valueAsync(
+        for networkKey: String,
+        create: @escaping @MainActor () async throws -> Value
+    ) async throws -> (value: Value, reused: Bool) {
+        if let existing = values[networkKey] { return (existing, true) }
+        if let task = inFlight[networkKey] { return (try await task.value, true) }
+        let task = Task { try await create() }
+        inFlight[networkKey] = task
+        do {
+            let created = try await task.value
+            values[networkKey] = created
+            inFlight[networkKey] = nil
+            return (created, false)
+        } catch {
+            inFlight[networkKey] = nil
+            throw error
+        }
     }
 }
 
@@ -991,11 +1011,8 @@ final class SwiftDashSDKHost {
     /// network so each network-scoped SwiftData store is deleted through a
     /// manager configured for that same network.
     ///
-    /// Async since etap C: stage 1 (SDK construction) runs on
-    /// [`sdkBuildQueue`] instead of blocking the MainActor; stages 2-4
-    /// (ModelContainer, configure, and the caller's loadFromPersistor)
-    /// stay on the MainActor — their measured cost decides whether they
-    /// ever follow (see the stage timing logs).
+    /// SDK construction and store opening/migration use dedicated queues.
+    /// Manager configuration and context access remain on the MainActor.
     private func makeRuntime(for network: Network) async throws -> RuntimeHandles {
         guard network != .regtest else {
             throw HostError.unsupportedNetwork(network)
@@ -1045,15 +1062,13 @@ final class SwiftDashSDKHost {
         let container: ModelContainer
         do {
             Self.logger.info("🪺 HOST :: stage 2/4 obtaining ModelContainer for \(network.rawValue, privacy: .public)")
-            // Timed for the same reason as stage 1: main-thread work whose
-            // real cost decides whether it ever needs to move off-main. The
-            // cached (reused) path should be ~0ms; only the first build of a
-            // network's container in the process pays the store-open cost.
+            // Store construction and any migration run on the SDK's dedicated
+            // queue. Concurrent callers share the same in-flight open.
             let started = CFAbsoluteTimeGetCurrent()
             // Keyed by `persistenceScope`, not `networkName`: two devnets are
             // two chains and must never share one container.
-            let cached = try modelContainerCache.value(for: network.persistenceScope) {
-                try buildModelContainer(for: network)
+            let cached = try await modelContainerCache.valueAsync(for: configurationIdentity.scope) {
+                try await self.buildModelContainer(for: network, scope: configurationIdentity.scope)
             }
             let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
             container = cached.value
@@ -1062,6 +1077,11 @@ final class SwiftDashSDKHost {
         } catch {
             Self.logger.error("🪺 HOST :: ModelContainer build failed: \(String(describing: error), privacy: .public)")
             throw HostError.modelContainerFailed(error)
+        }
+
+        guard configurationIdentity.scope == network.persistenceScope,
+              configurationIdentity.quorumURL == (network == .devnet ? DevnetConfiguration.quorumURL : nil) else {
+            throw HostError.devnetConfigurationChanged
         }
 
         let newManager = PlatformWalletManager()
@@ -1106,10 +1126,10 @@ final class SwiftDashSDKHost {
     func storeOnlyPersistenceHandler(
         for network: Network,
         scope: String? = nil
-    ) throws -> PlatformWalletPersistenceHandler {
+    ) async throws -> PlatformWalletPersistenceHandler {
         let scope = scope ?? network.persistenceScope
-        let cached = try modelContainerCache.value(for: scope) {
-            try buildModelContainer(for: network, scope: scope)
+        let cached = try await modelContainerCache.valueAsync(for: scope) {
+            try await self.buildModelContainer(for: network, scope: scope)
         }
         return PlatformWalletPersistenceHandler(
             modelContainer: cached.value,
@@ -1607,7 +1627,7 @@ final class SwiftDashSDKHost {
 
     // MARK: - ModelContainer
 
-    private func buildModelContainer(for network: Network, scope: String? = nil) throws -> ModelContainer {
+    private func buildModelContainer(for network: Network, scope: String? = nil) async throws -> ModelContainer {
         let documents = try FileManager.default.url(
             for: .documentDirectory,
             in: .userDomainMask,
@@ -1622,7 +1642,7 @@ final class SwiftDashSDKHost {
             withIntermediateDirectories: true)
         let url = dir.appendingPathComponent("DashModel.sqlite", isDirectory: false)
 
-        return try DashModelContainer.create(url: url)
+        return try await DashModelContainer.createAsync(url: url)
     }
 
     /// Filesystem path for the per-network shielded Orchard commitment-tree

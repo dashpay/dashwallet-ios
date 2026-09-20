@@ -196,7 +196,7 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
     }
 
     func testProcessCacheReusesValuesPerNetworkAndSeparatesNetworks() {
-        final class Token {}
+        final class Token: Sendable {}
 
         let cache = ProcessNetworkValueCache<Token>()
         let mainnetFirst = cache.value(for: "mainnet") { Token() }
@@ -208,6 +208,41 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertFalse(testnet.reused)
         XCTAssertTrue(mainnetFirst.value === mainnetSecond.value)
         XCTAssertFalse(mainnetFirst.value === testnet.value)
+    }
+
+    func testProcessCacheCoalescesConcurrentAsyncOpensAndRetriesFailures() async throws {
+        final class Token: Sendable {}
+        let cache = ProcessNetworkValueCache<Token>()
+        var creates = 0
+        var resumeOpen: CheckedContinuation<Void, Never>?
+        let first = Task { @MainActor in
+            try await cache.valueAsync(for: "testnet") {
+                creates += 1
+                await withCheckedContinuation { resumeOpen = $0 }
+                return Token()
+            }
+        }
+        while resumeOpen == nil { await Task.yield() }
+        let second = Task { @MainActor in
+            try await cache.valueAsync(for: "testnet") {
+                XCTFail("An in-flight open must be reused")
+                return Token()
+            }
+        }
+        await Task.yield()
+        resumeOpen?.resume()
+        let initial = try await first.value
+        let concurrent = try await second.value
+        XCTAssertEqual(creates, 1)
+        XCTAssertTrue(initial.value === concurrent.value)
+        XCTAssertTrue(concurrent.reused)
+        do {
+            _ = try await cache.valueAsync(for: "mainnet") { throw CoreLifecycleTestError.start }
+            XCTFail("A failed open must throw")
+        } catch CoreLifecycleTestError.start {}
+        let retried = try await cache.valueAsync(for: "mainnet") { Token() }
+        XCTAssertFalse(retried.reused)
+        XCTAssertFalse(retried.value === initial.value)
     }
 
     func testSameSeedIdentityRecoveryDiscoversRefreshesAndAdoptsInOneRun() async throws {

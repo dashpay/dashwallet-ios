@@ -515,7 +515,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 """
                 devnet manager unavailable for deletion                 (\(String(describing: error), privacy: .public));                 deleting devnet material from the store directly
                 """)
-            return .offline(try host.storeOnlyPersistenceHandler(for: network))
+            return .offline(try await host.storeOnlyPersistenceHandler(for: network))
         }
     }
 
@@ -565,7 +565,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
             // another devnet's store. Sweeping first means the mnemonic
             // outlives every scope that still needs it to be found.
             if networks.contains(.devnet) {
-                sweepOtherDevnetScopes(
+                await sweepOtherDevnetScopes(
                     scopes: devnetScopes,
                     walletIds: storedWalletIdsByNetwork[.devnet] ?? [],
                     result: result)
@@ -642,11 +642,11 @@ final class SwiftDashSDKWalletWiper: NSObject {
         scopes: [String],
         walletIds: Set<Data>,
         result: WalletWipeResultAccumulator
-    ) {
+    ) async {
         let current = Network.devnet.persistenceScope
         for scope in scopes where scope != current {
             do {
-                let handler = try SwiftDashSDKHost.shared.storeOnlyPersistenceHandler(
+                let handler = try await SwiftDashSDKHost.shared.storeOnlyPersistenceHandler(
                     for: .devnet,
                     scope: scope)
                 let backend = DeletionBackend.offline(handler)
@@ -773,7 +773,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 if network == .devnet {
                     let current = Network.devnet.persistenceScope
                     for scope in DevnetConfiguration.persistedDevnetScopes() where scope != current {
-                        let handler = try SwiftDashSDKHost.shared.storeOnlyPersistenceHandler(
+                        let handler = try await SwiftDashSDKHost.shared.storeOnlyPersistenceHandler(
                             for: .devnet,
                             scope: scope)
                         deletions.append(PendingDeletion(
