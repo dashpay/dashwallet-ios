@@ -318,16 +318,15 @@ module SchemaRelease
 
     def sync(release_id: nil, dry_run: false)
       records = published_records
+      # Retained publication proofs are obligations even after Apple stops
+      # listing a version. Merge them before filtering a manual retry.
+      @store.paths("releases/").each do |path|
+        prior = @store.document(path)
+        records << prior unless records.any? { |record| record["release_id"] == prior["release_id"] }
+      end
       if release_id
         records = records.select { |record| record["release_id"] == release_id }
         raise Error, "Requested version is not a published App Store release after the baseline" if records.empty?
-      end
-      # Observed releases remain obligations even if later removed from sale.
-      unless release_id
-        @store.paths("releases/").each do |path|
-          prior = @store.document(path)
-          records << prior unless records.any? { |record| record["release_id"] == prior["release_id"] }
-        end
       end
       registry = merged_registry
       failures = []

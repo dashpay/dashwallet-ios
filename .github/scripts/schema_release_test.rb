@@ -287,6 +287,41 @@ class SchemaReleaseTest < Minitest::Test
     end
   end
 
+  def test_manual_retry_uses_retained_publication_when_apple_no_longer_lists_it
+    @pipeline.sync
+    original = @store.files.fetch("releases/new.json")
+    @apple.versions = []
+
+    @pipeline.sync(release_id: "new")
+
+    assert_equal [["new", @store.head], ["new", @store.head]], @store.github.dispatches
+    assert_equal original, @store.files.fetch("releases/new.json")
+    assert_equal "apple21", @store.document("releases/new.json").fetch("build_id")
+  end
+
+  def test_manual_retry_of_retained_publication_keeps_dry_run_read_only
+    @pipeline.sync
+    @apple.versions = []
+    writes = @store.writes.length
+    dispatches = @store.github.dispatches.length
+
+    @pipeline.sync(release_id: "new", dry_run: true)
+
+    assert_equal writes, @store.writes.length
+    assert_equal dispatches, @store.github.dispatches.length
+  end
+
+  def test_manual_retry_of_retained_publication_still_validates_build_evidence
+    @pipeline.sync
+    @apple.versions = []
+    @store.files[@manifest.fetch("fixture_path")] = "changed"
+
+    error = assert_raises(SchemaRelease::Error) { @pipeline.sync(release_id: "new") }
+
+    assert_includes error.message, "Fixture digest does not match"
+    assert_equal 1, @store.github.dispatches.length
+  end
+
   def test_bootstrap_is_one_time_and_dry_run_is_read_only
     assert_raises(SchemaRelease::Error) { @pipeline.bootstrap }
     @store.files.delete("baseline.json")

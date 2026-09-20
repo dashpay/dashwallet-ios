@@ -124,6 +124,9 @@ that mismatch; it must not roll back current code or invent a migration.
   Optionally provide an App Store version ID. Manual operation still requires
   publication and never freezes an arbitrary commit. Uncheck `dry_run` to write
   evidence and dispatch the PR; its default is read-only.
+  A specific version ID can also use its previously recorded publication proof
+  if Apple no longer lists the release. The original build evidence and checksums
+  are still required; retry never changes the recorded build or publication.
 - A lost upload-processing callback is recoverable: publication resolves the
   exact bundle/version/build tuple against the evidence recorded before upload.
 - Missing or contradictory provenance blocks dispatch. Recover the original
