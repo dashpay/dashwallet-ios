@@ -340,7 +340,9 @@ struct HomeViewContent<Content: View>: View {
                             // The row is the action now — this is what the
                             // Upgrade/Edit/Retry button used to do.
                             onTap: { state in
-                                if state == .approved {
+                                if state == .usernameRequired {
+                                    delegate?.homeViewRequestUsername()
+                                } else if state == .approved {
                                     delegate?.homeViewEditProfile()
                                     joinDPViewModel.markAsDismissed()
                                     viewModel.checkJoinDashPay()

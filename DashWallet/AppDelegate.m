@@ -78,6 +78,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(nullable NSDictionary *)launchOptions {
 #if DEBUG
+#if TARGET_OS_SIMULATOR && DASHPAY
+    UIViewController *recoveryFixture = [DWUsernameRecoveryUITestFixture makeViewControllerIfRequested];
+    if (recoveryFixture != nil) {
+        self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+        self.window.rootViewController = recoveryFixture;
+        [self.window makeKeyAndVisible];
+        return YES;
+    }
+#endif
     if ([NSProcessInfo.processInfo.environment[@"XCODE_RUNNING_FOR_PREVIEWS"] isEqualToString:@"1"]) {
         return YES;
     }

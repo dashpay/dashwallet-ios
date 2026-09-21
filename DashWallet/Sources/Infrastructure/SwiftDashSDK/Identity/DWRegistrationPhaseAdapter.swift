@@ -37,6 +37,7 @@ enum DWRegistrationPhaseAdapter {
         phase: DWIdentityRegistrationController.Phase,
         assetLockStatus: Int,
         fundingSource: DWIdentityFundingSource = .core,
+        isRegisteringUsername: Bool = false,
         failedAtPhase: DWDPRegistrationState? = nil
     ) -> DWDPRegistrationState {
         // NS_ENUM(NSUInteger, DWDPRegistrationState) imports into Swift
@@ -46,6 +47,7 @@ enum DWRegistrationPhaseAdapter {
         //   DWDPRegistrationState_CreatingID        → .creatingID
         //   DWDPRegistrationState_RegistrationUsername → .registrationUsername
         //   DWDPRegistrationState_Done              → .done
+        if isRegisteringUsername && phase.isActive { return .registrationUsername }
         switch phase {
         case .idle, .preparingKeys:
             // Pre-FFI — keys are still being derived, no on-chain

@@ -252,8 +252,16 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
                                         documentTypeName: documentTypeName
                                     )
                                 case .contractGroup:
-                                    // DashConnect approves keys for one app contract;
-                                    // group bounds cannot be represented by that policy.
+                                    // The wallet layer reports a contract-group bound since the
+                                    // SDK's #4800, and the DPP-layer `ContractBounds` this maps
+                                    // into has no case for it (dashpay/platform#4853). Dropping
+                                    // the bound is not an option here: the value decides which
+                                    // approved app a key registration belongs to, and it is also
+                                    // rebuilt into the `IdentityPubkey` handed back to
+                                    // `updateIdentity(...)`, so a silently weakened bound would
+                                    // mean signing a transition the dApp did not ask for. A key
+                                    // bound to a contract group is never one of the login keys
+                                    // this flow derives, so refuse the transition instead.
                                     throw DashConnectPlatformError.keyRegistrationUnexpectedMutation
                                 }
                             }

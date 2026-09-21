@@ -38,7 +38,7 @@
 //    - MANY submissions can be in flight at once (each label is its own
 //      network vote poll; the marketplace lets the user request several).
 //      The store is one UserDefaults dictionary per (network, wallet):
-//      canonical label → {submittedAt, votingEnd}. The single-value
+//      canonical label → {submittedAt, votingEnd, identityId}. The single-value
 //      `pendingLabel` / `pendingVotingEndTime` remain as OLDEST-entry
 //      conveniences for the setup-flow surfaces, which only ever deal
 //      with the first username.
@@ -72,6 +72,7 @@ public final class DWContestedNameStatusService: NSObject {
     /// Dictionary-value field names in the entries store.
     private static let submittedField = "submitted"
     private static let endField = "end"
+    private static let identityField = "identityId"
 
     /// Protocol vote-poll durations in the Platform v2 settings. The fallback
     /// starts at OUR submission time, which is at or after the first contender's
@@ -91,17 +92,17 @@ public final class DWContestedNameStatusService: NSObject {
     /// OLDEST in-flight contested label, or `nil` when none. The setup
     /// flow's compatibility view of the store: those surfaces only deal
     /// with the user's FIRST username, which is by construction the
-    /// oldest entry. Multi-label consumers use `pendingLabels`.
+    /// oldest entry belonging to the selected identity. Multi-label consumers use `pendingLabels`.
     public var pendingLabel: String? {
         guard let network = WalletEnvironment.network else { return nil }
-        return pendingLabels(for: network).first
+        return pendingLabels(for: network, identityId: DWCurrentUserIdentityInfo.shared.identityId).first
     }
 
     /// Every in-flight contested label for the active network, oldest
     /// submission first.
     public var pendingLabels: [String] {
         guard let network = WalletEnvironment.network else { return [] }
-        return pendingLabels(for: network)
+        return pendingLabels(for: network, identityId: DWCurrentUserIdentityInfo.shared.identityId)
     }
 
     /// Best-known voting deadline of the OLDEST entry (see `pendingLabel`).
@@ -110,7 +111,7 @@ public final class DWContestedNameStatusService: NSObject {
     /// contest.
     public var pendingVotingEndTime: Date? {
         guard let network = WalletEnvironment.network,
-              let label = pendingLabels(for: network).first else { return nil }
+              let label = pendingLabel else { return nil }
         return pendingVotingEndTime(label: label, for: network)
     }
 
@@ -125,7 +126,7 @@ public final class DWContestedNameStatusService: NSObject {
             Self.logger.error("🪪 CONTEST-SVC :: cannot record submission without a supported network")
             return
         }
-        recordSubmission(label: label, network: network)
+        recordSubmission(label: label, network: network, identityId: DWCurrentUserIdentityInfo.shared.identityId)
     }
 
     /// Network-explicit variant used by the registration coordinator. It
@@ -137,9 +138,11 @@ public final class DWContestedNameStatusService: NSObject {
     func recordSubmission(
         label: String,
         network: Network,
+        identityId: Data?,
+        walletId: Data? = nil,
         submittedAt: Date = Date()
     ) {
-        guard let key = Self.entriesKey(for: network) else {
+        guard let identityId, let key = Self.entriesKey(for: network, walletId: walletId) else {
             // A submission is always made by an active wallet, so this cannot
             // happen — but recording it under no wallet would write a bookmark
             // nothing can ever own or clear.
@@ -150,7 +153,7 @@ public final class DWContestedNameStatusService: NSObject {
         let fallbackEnd = Self.fallbackVotingEndTime(
             submittedAt: submittedAt,
             network: network)
-        var entries = Self.entries(for: network)
+        var entries = Self.entries(for: network, walletId: walletId)
         let canonical = Self.canonicalLabel(label)
         if var existing = entries[canonical] {
             existing[Self.endField] = existing[Self.endField] ?? fallbackEnd.timeIntervalSince1970
@@ -161,6 +164,7 @@ public final class DWContestedNameStatusService: NSObject {
                 Self.endField: fallbackEnd.timeIntervalSince1970,
             ]
         }
+        entries[canonical]?[Self.identityField] = identityId.map { String(format: "%02x", $0) }.joined()
         UserDefaults.standard.set(entries, forKey: key)
         Self.logger.info(
             "🪪 CONTEST-SVC :: recordSubmission label=\(canonical, privacy: .public) network=\(network.rawValue, privacy: .public) inFlight=\(entries.count, privacy: .public)")
@@ -170,9 +174,9 @@ public final class DWContestedNameStatusService: NSObject {
     /// its vote state. It replaces the conservative submission-time
     /// estimate. No-op for a label with no bookmark.
     @nonobjc
-    func recordVotingEndTime(_ endTime: Date, label: String, network: Network) {
-        guard let key = Self.entriesKey(for: network) else { return }
-        var entries = Self.entries(for: network)
+    func recordVotingEndTime(_ endTime: Date, label: String, network: Network, walletId: Data? = nil) {
+        guard let key = Self.entriesKey(for: network, walletId: walletId) else { return }
+        var entries = Self.entries(for: network, walletId: walletId)
         let canonical = Self.canonicalLabel(label)
         guard var entry = entries[canonical] else { return }
         entry[Self.endField] = endTime.timeIntervalSince1970
@@ -187,9 +191,9 @@ public final class DWContestedNameStatusService: NSObject {
     /// (and `finalizeWon` on the WON branch). Other in-flight contests
     /// keep their bookmarks.
     @nonobjc
-    func clearPending(label: String, for network: Network) {
-        guard let key = Self.entriesKey(for: network) else { return }
-        var entries = Self.entries(for: network)
+    func clearPending(label: String, for network: Network, walletId: Data? = nil) {
+        guard let key = Self.entriesKey(for: network, walletId: walletId) else { return }
+        var entries = Self.entries(for: network, walletId: walletId)
         entries.removeValue(forKey: Self.canonicalLabel(label))
         if entries.isEmpty {
             UserDefaults.standard.removeObject(forKey: key)
@@ -301,9 +305,61 @@ public final class DWContestedNameStatusService: NSObject {
     func pendingLabels(for network: Network) -> [String] {
         Self.entries(for: network)
             .sorted {
-                ($0.value[Self.submittedField] ?? 0) < ($1.value[Self.submittedField] ?? 0)
+                ($0.value[Self.submittedField] as? Double ?? 0) < ($1.value[Self.submittedField] as? Double ?? 0)
             }
             .map(\.key)
+    }
+
+    /// Only attributed bookmarks can suppress recovery for this identity.
+    /// Retired entries without an owner remain available for migration, but
+    /// cannot be assigned to whichever identity happens to be selected.
+    @nonobjc
+    func pendingLabels(for network: Network, identityId: Data?, walletId: Data? = nil) -> [String] {
+        guard let identityId else { return [] }
+        let hex = identityId.map { String(format: "%02x", $0) }.joined()
+        return Self.entries(for: network, walletId: walletId)
+            .filter { $0.value[Self.identityField] as? String == hex }
+            .sorted { ($0.value[Self.submittedField] as? Double ?? 0) < ($1.value[Self.submittedField] as? Double ?? 0) }
+            .map(\.key)
+    }
+
+    /// An upgrade bookmark has a wallet, but no proven identity yet.
+    @nonobjc
+    func unattributedLabels(for network: Network, walletId: Data? = nil) -> [String] {
+        Self.entries(for: network, walletId: walletId)
+            .filter { $0.value[Self.identityField] == nil }.map(\.key).sorted()
+    }
+
+    /// Never guess the selected identity. A failed or ambiguous lookup preserves
+    /// the durable bookmark; resolved contests can be removed without an owner.
+    @nonobjc
+    func rehydrateUnattributed(
+        network: Network, walletId: Data,
+        owners: (String) async throws -> [Data],
+        resolved: (String) async throws -> Bool
+    ) async throws {
+        var firstError: Error?
+        for label in unattributedLabels(for: network, walletId: walletId) {
+            do {
+                let candidates = Set(try await owners(label))
+                let shouldClear = candidates.isEmpty ? try await resolved(label) : false
+                try Task.checkCancellation()
+                guard let key = Self.entriesKey(for: network, walletId: walletId) else { return }
+                var entries = Self.entries(for: network, walletId: walletId)
+                guard entries[label] != nil, entries[label]?[Self.identityField] == nil else { continue }
+                if candidates.count == 1, let owner = candidates.first {
+                    entries[label]?[Self.identityField] = owner.map { String(format: "%02x", $0) }.joined()
+                } else if shouldClear {
+                    entries.removeValue(forKey: label)
+                }
+                UserDefaults.standard.set(entries, forKey: key)
+            } catch is CancellationError {
+                throw CancellationError()
+            } catch {
+                firstError = firstError ?? error
+            }
+        }
+        if let firstError { throw firstError }
     }
 
     /// Compatibility single-label read: the OLDEST in-flight label.
@@ -315,8 +371,8 @@ public final class DWContestedNameStatusService: NSObject {
     /// Best-known voting deadline for one label's contest, or nil when the
     /// label has no bookmark.
     @nonobjc
-    func pendingVotingEndTime(label: String, for network: Network) -> Date? {
-        guard let timestamp = Self.entries(for: network)[Self.canonicalLabel(label)]?[Self.endField],
+    func pendingVotingEndTime(label: String, for network: Network, walletId: Data? = nil) -> Date? {
+        guard let timestamp = Self.entries(for: network, walletId: walletId)[Self.canonicalLabel(label)]?[Self.endField] as? Double,
               timestamp > 0 else { return nil }
         return Date(timeIntervalSince1970: timestamp)
     }
@@ -330,15 +386,16 @@ public final class DWContestedNameStatusService: NSObject {
 
     /// The entries dictionary, after migrating any retired single-slot
     /// bookmark into it (one-time: the old keys are deleted on adoption).
-    private nonisolated static func entries(for network: Network) -> [String: [String: Double]] {
+    private nonisolated static func entries(for network: Network, walletId: Data? = nil) -> [String: [String: Any]] {
         discardLegacyBookmark(for: network)
-        guard let key = entriesKey(for: network) else { return [:] }
+        guard let key = entriesKey(for: network, walletId: walletId) else { return [:] }
         let defaults = UserDefaults.standard
-        var entries = (defaults.dictionary(forKey: key) as? [String: [String: Double]]) ?? [:]
+        var entries = (defaults.dictionary(forKey: key) as? [String: [String: Any]]) ?? [:]
         // Adopt the retired wallet-scoped single-slot layout: same wallet
-        // scope, so attribution is unambiguous (unlike the legacy unscoped
-        // bookmark, which is discarded).
-        if let labelKey = pendingLabelKey(for: network),
+        // scope, but its identity remains explicitly unattributed until verified
+        // (unlike the device-wide unscoped bookmark, which is discarded).
+        if walletId == nil || walletId?.map({ String(format: "%02x", $0) }).joined() == scope(),
+           let labelKey = pendingLabelKey(for: network),
            let oldLabel = defaults.string(forKey: labelKey) {
             let canonical = canonicalLabel(oldLabel)
             if entries[canonical] == nil {
@@ -365,8 +422,9 @@ public final class DWContestedNameStatusService: NSObject {
         return entries
     }
 
-    private nonisolated static func entriesKey(for network: Network) -> String? {
-        scope().map { "\(entriesKeyPrefix).\(networkKey(network)).\($0)" }
+    private nonisolated static func entriesKey(for network: Network, walletId: Data? = nil) -> String? {
+        let walletScope = walletId.map { $0.map { String(format: "%02x", $0) }.joined() } ?? scope()
+        return walletScope.map { "\(entriesKeyPrefix).\(networkKey(network)).\($0)" }
     }
 
     nonisolated static func fallbackVotingEndTime(

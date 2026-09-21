@@ -294,6 +294,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
             phase: phase,
             assetLockStatus: assetLockStatus,
             fundingSource: coord.currentFundingSource,
+            isRegisteringUsername: coord.isRegisteringUsername,
             failedAtPhase: coord.failedAtPhase)
         switch phase {
         case .failed:

@@ -700,6 +700,7 @@
 "Broadcasting…" = "Broadcasting…";
 "Build and sign the transaction and show it here, so you can check it before it's broadcast." = "Build and sign the transaction and show it here, so you can check it before it's broadcast.";
 "Building the privacy proof can take up to a minute. Keep the app open." = "Building the privacy proof can take up to a minute. Keep the app open.";
+"Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open." = "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open.";
 
 /* Log export */
 "Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files" = "Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files";
@@ -980,6 +981,9 @@
 "The masternode should return to the valid list within a few blocks. Refresh its details in a few minutes." = "The masternode should return to the valid list within a few blocks. Refresh its details in a few minutes.";
 "The operator key is missing from the keychain — re-add it and try again." = "The operator key is missing from the keychain — re-add it and try again.";
 "The temporary username must not itself require voting." = "The temporary username must not itself require voting.";
+
+/* Send failed before any bytes reached the network */
+"The transaction wasn't sent, so nothing left your wallet. You can try again." = "The transaction wasn't sent, so nothing left your wallet. You can try again.";
 
 /* Usernames */
 "The transfer settles through the network's withdrawal queue — usually a few minutes. You can close this sheet and come back; the unban resumes where it left off." = "The transfer settles through the network's withdrawal queue — usually a few minutes. You can close this sheet and come back; the unban resumes where it left off.";
@@ -2984,6 +2988,9 @@
 
 /* DashPay: banner identity row subtitle */
 "View profile" = "View profile";
+
+/* Send dispatched but no network acceptance signal arrived */
+"We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through." = "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through.";
 
 /* DashPay FAQ */
 "What about Unstoppable Domains and similar name services?" = "What about Unstoppable Domains and similar name services?";
@@ -6064,3 +6071,30 @@
 /* Shielded manual sync requires an internet connection */
 "You are offline. Connect to the internet and try again." = "You are offline. Connect to the internet and try again.";
 "Start Platform sync before clearing its local state" = "Start Platform sync before clearing its local state";
+
+/* Identity registration recovery. */
+"Retry loading identity" = "Retry loading identity";
+
+/* Identity registration recovery. */
+"This identity has no credits. Use Top Up in My Profile, then return to finish registration." = "This identity has no credits. Use Top Up in My Profile, then return to finish registration.";
+
+/* Identity registration recovery. */
+"Identity is still loading" = "Identity is still loading";
+
+/* Identity registration recovery. */
+"Wait for the wallet and network to finish loading, then retry. No registration has been sent." = "Wait for the wallet and network to finish loading, then retry. No registration has been sent.";
+
+/* Identity registration recovery. */
+"Not enough identity credits to register this name. Use Top Up in My Profile, then try again. Your existing identity will be reused." = "Not enough identity credits to register this name. Use Top Up in My Profile, then try again. Your existing identity will be reused.";
+
+/* DashPay username registration recovery */
+"Could not check username availability. Please try again." = "Could not check username availability. Please try again.";
+"Finish username registration" = "Finish username registration";
+"Loading identity…" = "Loading identity…";
+"The active wallet or identity changed. Please try again." = "The active wallet or identity changed. Please try again.";
+"The name request succeeded for the original identity. Switch back to the original wallet and network to see its status." = "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status.";
+"This username is no longer available. Please choose another one." = "This username is no longer available. Please choose another one.";
+"Username request completed" = "Username request completed";
+"Your identity is ready. Finish registering a username using its existing credits." = "Your identity is ready. Finish registering a username using its existing credits.";
+"Your identity is ready. Use its existing credits to register a username." = "Your identity is ready. Use its existing credits to register a username.";
+"“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again." = "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.";
