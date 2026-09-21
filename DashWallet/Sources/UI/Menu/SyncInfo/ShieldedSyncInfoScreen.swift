@@ -21,6 +21,7 @@ import DashUIKit
 import UIKit
 
 struct ShieldedSyncInfoScreen: View {
+    @State private var syncRequestError: String?
     private let vc: UINavigationController
 
     @ObservedObject private var monitor = ShieldedSyncMonitor.shared
@@ -73,7 +74,7 @@ struct ShieldedSyncInfoScreen: View {
                     if monitor.syncCountSinceLaunch > 0 {
                         countersCard
                     }
-                    if let lastError = monitor.lastError {
+                    if let lastError = coordinator.shieldedRecoveryError ?? coordinator.shieldedInitializationError ?? monitor.lastError {
                         errorCard(message: lastError)
                     }
                     controlsCard
@@ -84,16 +85,24 @@ struct ShieldedSyncInfoScreen: View {
         .padding(.horizontal, 20)
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
+        .alert(Text("Sync Now"), isPresented: Binding(
+            get: { syncRequestError != nil },
+            set: { if !$0 { syncRequestError = nil } }
+        )) {
+            Button("OK", role: .cancel) { syncRequestError = nil }
+        } message: {
+            Text(syncRequestError ?? "")
+        }
     }
 
     // MARK: - Cards
 
     private var stateCard: some View {
         HStack(spacing: 8) {
-            if !coordinator.isRunning {
+            if !coordinator.isShieldedRunning {
                 Image(systemName: "exclamationmark.circle")
                     .foregroundColor(.orange)
-                Text("Platform sync is not running")
+                Text("Shielded sync is not running")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(Color.dash.secondaryText)
             } else if monitor.isSyncing {
@@ -136,7 +145,7 @@ struct ShieldedSyncInfoScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             row(
                 title: "Total Shielded Balance",
-                value: PlatformCreditsFormatter.dashString(coordinator.shieldedBalance))
+                value: coordinator.shieldedBalanceState.credits.map(PlatformCreditsFormatter.dashString) ?? "—")
             row(
                 title: "Notes Synced",
                 value: formattedCount(monitor.notesSynced))
@@ -235,7 +244,7 @@ struct ShieldedSyncInfoScreen: View {
     private var controlsCard: some View {
         HStack(spacing: 12) {
             Button(action: {
-                Task { await monitor.syncNow() }
+                syncRequestError = monitor.syncNow()
             }) {
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.clockwise")
@@ -265,7 +274,7 @@ struct ShieldedSyncInfoScreen: View {
     }
 
     private var syncNowDisabled: Bool {
-        monitor.isSyncing || !coordinator.isRunning
+        monitor.isSyncing || !coordinator.canRecoverShielded
     }
 
     // MARK: - Row builders

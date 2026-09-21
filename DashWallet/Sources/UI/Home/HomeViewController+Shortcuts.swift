@@ -77,7 +77,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         case .switchWallet:
             showSwitchWallet()
         case .dashDEX:
-            dashDEXAction()
+            presentDashDEXAfterAuthentication()
         case .nodes:
             homeViewShowMasternodes()
         }
@@ -187,9 +187,9 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         // already spent the registration amount, so the remaining balance is
         // routinely below the minimum: the interstitial would then disable
         // Continue and hide the transparent-funding escape, sealing off the
-        // one screen that recognizes `hasPendingRegistrationRecovery` and
-        // waives the balance requirement. The recovery IS the funding.
-        if DWIdentityRegistrationCoordinator.shared.hasPendingRegistrationRecovery() {
+        // one screen that recognizes a pending recovery and waives the balance
+        // requirement. The recovery IS the funding.
+        if DWIdentityRegistrationCoordinator.shared.registrationRecovery().isPending {
             pushCreateUsernameForm(invitationURL: nil, definedUsername: definedUsername)
             return
         }
@@ -411,25 +411,6 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         let safariViewController = SFSafariViewController.dw_controller(with: TestnetFaucet.webURL)
         present(safariViewController, animated: true)
     }
-    private func dashDEXAction() {
-        AuthenticationService.shared.authenticate(
-            withPrompt: nil,
-            usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
-            alertIfLockout: true
-        ) { [weak self] authenticated, _, _ in
-            guard authenticated else { return }
-            self?.dashDEXActionAuthenticated()
-        }
-    }
-
-    private func dashDEXActionAuthenticated() {
-        let controller = SwapKitPortalViewController()
-        controller.hidesBottomBarWhenPushed = true
-        let navigationController = BaseNavigationController(rootViewController: controller)
-        navigationController.modalPresentationStyle = .fullScreen
-        present(navigationController, animated: true)
-    }
-
     private func presentControllerModallyInNavigationController(_ controller: UIViewController) {
         if #available(iOS 13.0, *) {
             presentControllerModallyInNavigationController(controller, modalPresentationStyle: .automatic)

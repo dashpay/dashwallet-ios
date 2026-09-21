@@ -167,3 +167,54 @@ extension UIViewController {
         }
     }
 }
+
+extension UIViewController {
+    /// Bottom-anchored **DashUIKit** toast hosted from a UIKit screen.
+    ///
+    /// Distinct from `showToast` above, which renders the app-local `ToastView`.
+    /// `DashUIKit.Toast` sizes its own icon (16x16 in a 24x24 slot) and resolves
+    /// it from the DashUIKit bundle, where the toast imagesets live — so UIKit
+    /// screens that must match the SwiftUI design-system call sites
+    /// (`dexOfflineToast`, `SelectCoinView`) use this one. Geometry matches
+    /// them: bottom overlay, 20pt sides, 16pt above the safe area. The toast
+    /// auto-dismisses, so it carries no close button.
+    ///
+    /// Hosted on the outermost controller of the caller's own hierarchy, not on
+    /// `view`: a screen presented as a `UIViewControllerRepresentable` inside a
+    /// `DashUIKit.BottomSheet` has a view that ends where the sheet's content
+    /// ends, and a toast pinned to it lands mid-screen instead of at the bottom
+    /// edge the other toasts share.
+    ///
+    /// The hosting controller is parented to that same controller. Adding a
+    /// child's view to a hierarchy its parent does not own — the window, say —
+    /// trips UIKit's `_associatedViewControllerForwardsAppearanceCallbacks`
+    /// check and raises.
+    func presentDashUIKitToast(style: ToastStyle,
+                               message: String,
+                               duration: TimeInterval = 3.5) {
+        var owner: UIViewController = self
+        while let parent = owner.parent { owner = parent }
+
+        let host = UIHostingController(rootView: DashUIKit.Toast(style: style, message: message))
+        host.view.backgroundColor = .clear
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+        owner.addChild(host)
+        owner.view.addSubview(host.view)
+        NSLayoutConstraint.activate([
+            host.view.leadingAnchor.constraint(equalTo: owner.view.leadingAnchor, constant: 20),
+            host.view.trailingAnchor.constraint(equalTo: owner.view.trailingAnchor, constant: -20),
+            host.view.bottomAnchor.constraint(equalTo: owner.view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+        ])
+        host.didMove(toParent: owner)
+
+        host.view.alpha = 0
+        UIView.animate(withDuration: 0.3) { host.view.alpha = 1 }
+        UIView.animate(withDuration: 0.3, delay: duration, options: .curveEaseOut) {
+            host.view.alpha = 0
+        } completion: { _ in
+            host.willMove(toParent: nil)
+            host.view.removeFromSuperview()
+            host.removeFromParent()
+        }
+    }
+}

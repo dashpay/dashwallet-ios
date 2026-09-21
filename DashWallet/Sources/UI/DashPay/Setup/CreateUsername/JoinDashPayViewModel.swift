@@ -44,8 +44,12 @@ class JoinDashPayViewModel: ObservableObject {
 
     @MainActor
     func checkUsername() {
-        let identity = DWCurrentUserIdentityInfo.shared
-        let options = DWGlobalOptions.sharedInstance()
+        let identity = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        guard !identity.isLoading else {
+            state = DWCurrentUserIdentityInfo.shared.isCurrentNetworkContextReady ? .loading : .callToAction
+            username = ""
+            return
+        }
 
         if let report = registrationReport() {
             // A registration this wallet started outranks everything else the
@@ -60,14 +64,18 @@ class JoinDashPayViewModel: ObservableObject {
             // endings carry different advice, so they stay distinct here.
             self.state = UsernamePrefs.shared.lostContestWasBlocked ? .blocked : .contested
             self.username = lost
-        } else if let pending = DWContestedNameStatusService.shared.pendingLabel {
+        } else if let pending = DWContestedNameStatusService.shared.pendingLabel
+                    ?? identity.pendingContestedName {
             // Same-seed recovery reconstructs this bookmark from Platform.
             // Surface the real voting state instead of offering Join DashPay
             // for an identity that already has a submitted name.
             self.state = .voting
             self.username = pending
-        } else if let registeredUsername = identity.username ?? options.dashpayUsername,
-                  identity.hasIdentity || options.dashpayRegistrationCompleted,
+        } else if identity.needsUsername {
+            self.state = .usernameRequired
+            self.username = ""
+        } else if let registeredUsername = identity.username,
+                  identity.hasIdentity,
                   UsernamePrefs.shared.joinDashPayDismissed {
             self.state = .registered
             self.username = registeredUsername
@@ -84,6 +92,17 @@ class JoinDashPayViewModel: ObservableObject {
     /// and the create screen still surfaces it through
     /// `hasPendingRegistrationRecovery` on the next visit. For the call to
     /// action it is the persisted per-wallet dismissal, as before.
+    @MainActor
+    func finishLoadingAttempt() {
+        if state == .loading { state = .retryLoading }
+    }
+
+    @MainActor
+    func retryLoading() {
+        DWCurrentUserIdentityInfo.shared.retryNameRefresh()
+        checkUsername()
+    }
+
     @MainActor
     func markAsDismissed() {
         let prefs = UsernamePrefs.shared

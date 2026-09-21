@@ -357,11 +357,15 @@ struct HomeViewContent<Content: View>: View {
                             // Upgrade/Edit/Retry button used to do.
                             onTap: { state in
                                 switch state {
+                                case .usernameRequired:
+                                    // An identity with credits and no name: the form
+                                    // finishes what is already paid for.
+                                    delegate?.homeViewRequestUsername()
                                 case .approved:
                                     delegate?.homeViewEditProfile()
                                     joinDPViewModel.markAsDismissed()
                                     viewModel.checkJoinDashPay()
-                                case .creating:
+                                case .creating, .loading, .retryLoading:
                                     // Nothing to act on while it runs.
                                     break
                                 case .creationFailed, .interrupted:

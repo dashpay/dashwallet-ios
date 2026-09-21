@@ -375,9 +375,12 @@ extension CrowdNodeModel {
 /// The CrowdNode account address is a BIP44 receive address of account 0;
 /// the SDK exposes no address→derivation-index lookup, so the signer
 /// re-derives public keys along `m/44'/<coin>'/0'/<chain>/<index>` and
-/// matches the address's hash160. The scan is bounded — an address
-/// outside it (never observed in practice; the address was issued by
-/// this wallet) fails closed with nil, never a wrong-key signature.
+/// matches the address's hash160. The scan is bounded, and the two callers
+/// treat exhaustion differently: `sign` fails closed with nil (never a
+/// wrong-key signature), while the ownership check answers "not found within
+/// the bound" — the scan can miss an address the wallet owns (ticket 32026;
+/// whether through the index bound or the set of derivation paths it walks is
+/// not established), so exhaustion is not evidence the address is foreign.
 @MainActor
 enum CrowdNodeMessageSigner {
     private static let scanLimit: UInt32 = 300
@@ -399,26 +402,96 @@ enum CrowdNodeMessageSigner {
             data: DarkCoinMessage.framed(message), privateKey: privateKey, network: network)
     }
 
+    /// What the ownership check needs from the running wallet: an
+    /// address → hash160 decode for the running network, and the bounded
+    /// BIP44 scan over that wallet's keys. `liveOwnership()` returns nil
+    /// when the SDK wallet or the network isn't up yet.
+    struct OwnershipLookup {
+        let hash160OfAddress: (String) -> String?
+        let derivationPath: (String) -> String?
+    }
+
+    /// Why the ownership check answered what it did.
+    ///
+    /// `ownsAddress`'s `Bool?` collapsed two very different unknowns into
+    /// `nil`: the wallet not being up yet, and the bounded scan running out.
+    /// They deserve different handling — a scan that ran out is a durable
+    /// verdict for this wallet, while a wallet that is not up means the check
+    /// never ran, and a restore must not memoize a pass built on it as
+    /// fruitless.
+    enum Ownership: Equatable {
+        /// The scan found the key: this address is the active wallet's.
+        case owned
+        /// The address cannot be this wallet's — not a P2PKH address of the
+        /// running network. The only answer that justifies destroying prefs.
+        case foreign
+        /// The SDK wallet or the network is not up, so nothing was checked.
+        case walletUnavailable
+        /// The scan ran to its bound without finding the address. Not evidence
+        /// the address is foreign (ticket 32026) — the bound exists for cost.
+        case notFoundWithinBound
+
+        /// Whether this verdict came from a check that actually ran.
+        var wasChecked: Bool { self != .walletUnavailable }
+    }
+
+    /// Four-case ownership check. Prefer this over `ownsAddress`, which
+    /// flattens `walletUnavailable` and `notFoundWithinBound` into `nil`.
+    static func ownership(of address: String) -> Ownership {
+        ownership(of: address, using: liveOwnership())
+    }
+
+    /// The verdict rule on its own, with the wallet reduced to two closures so
+    /// it can be pinned without an SDK host: a nil `lookup` is "the wallet
+    /// isn't up".
+    static func ownership(of address: String, using lookup: OwnershipLookup?) -> Ownership {
+        guard let lookup else { return .walletUnavailable }
+        guard let targetHash160 = lookup.hash160OfAddress(address) else {
+            return .foreign // not a P2PKH address of this network ⇒ not ours
+        }
+        return lookup.derivationPath(targetHash160) != nil ? .owned : .notFoundWithinBound
+    }
+
     /// Tri-state wallet-ownership check for a persisted CrowdNode account
-    /// address: `true`/`false` when the SDK wallet is available and the BIP44
-    /// acct-0 scan ran (the CrowdNode address is a BIP44 receive address, so
-    /// the same bounded scan the signer uses answers ownership); `nil` when
-    /// the wallet/network isn't up yet — the caller must NOT treat that as
-    /// "alien address" (a relaunch validates prefs before the SDK starts).
+    /// address (a BIP44 acct-0 receive address, so the same bounded scan the
+    /// signer uses can find it): `true` when the scan finds the key; `false`
+    /// only when the address cannot be this wallet's (not a P2PKH address of
+    /// the running network); `nil` when ownership is unknown — the
+    /// wallet/network isn't up yet (a relaunch validates prefs before the SDK
+    /// starts), or the scan ran out before reaching the address's index
+    /// (ticket 32026). The caller must NOT treat `nil` as "alien address" —
+    /// unlike signing, where exhaustion safely fails closed, answering
+    /// `false` here triggers a destructive reset of the CrowdNode link.
     static func ownsAddress(_ address: String) -> Bool? {
+        ownsAddress(address, using: liveOwnership())
+    }
+
+    /// Lossy bridge over `ownership(of:using:)` for callers that only need the
+    /// trust decision. Both unknowns become `nil`; anything that must tell them
+    /// apart calls `ownership` directly.
+    static func ownsAddress(_ address: String, using lookup: OwnershipLookup?) -> Bool? {
+        switch ownership(of: address, using: lookup) {
+        case .owned: return true
+        case .foreign: return false
+        case .walletUnavailable, .notFoundWithinBound: return nil
+        }
+    }
+
+    private static func liveOwnership() -> OwnershipLookup? {
         guard let network = SwiftDashSDKHost.shared.runningNetwork,
               let (_, wallet, _) = SwiftDashSDKHost.shared.derivationWallet() else {
             return nil
         }
-        guard let targetHash160 = hash160(ofAddress: address, network: network) else {
-            return false // not a P2PKH address of this network ⇒ not ours
-        }
-        return derivationPath(ofHash160: targetHash160, wallet: wallet, network: network) != nil
+        return OwnershipLookup(
+            hash160OfAddress: { hash160(ofAddress: $0, network: network) },
+            derivationPath: { derivationPath(ofHash160: $0, wallet: wallet, network: network) })
     }
 
     /// Base58Check-decoded P2PKH hash160 of `address` as lowercase hex
-    /// (the format `computePublicKeyHashHex` emits).
-    private static func hash160(ofAddress address: String, network: Network) -> String? {
+    /// (the format `computePublicKeyHashHex` emits). Nil for anything that is
+    /// not a P2PKH address of `network` — the one input that lets `ownsAddress`
+    /// answer `false`, so it is exercised directly by the tests.
+    static func hash160(ofAddress address: String, network: Network) -> String? {
         let paymentNetwork: PaymentNetwork = network == .mainnet ? .mainnet : .testnet
         guard let script = ScriptAddressCodec.scriptPubKey(forAddress: address, network: paymentNetwork),
               script.count == 25 else { return nil } // P2PKH only; P2SH can't be message-signed
@@ -427,7 +500,8 @@ enum CrowdNodeMessageSigner {
 
     /// Scan the BIP44 external chain (then internal, defensively) for the
     /// key whose hash160 matches. ~50 µs per derive; worst case ≈ 600
-    /// derives once per withdraw/email action.
+    /// derives per withdraw/email action or startup prefs validation. Nil
+    /// means "not found within the bound", not "absent from the wallet".
     private static func derivationPath(ofHash160 target: String, wallet: Wallet, network: Network) -> String? {
         let coin = network == .mainnet ? "5'" : "1'"
         for chain in [0, 1] {

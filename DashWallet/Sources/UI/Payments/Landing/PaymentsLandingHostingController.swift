@@ -41,8 +41,11 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
                 guard let self else { return }
                 self.pushExternalSendSource(
                     viewModel: self.embeddedSendViewModel,
-                    onSendCompleted: { [weak self] in self?.dismiss(animated: true) })
+                    onSendCompleted: { [weak self] in self?.finishSendFlow() })
             },
+            onSendToAddress: { [weak self] in self?.pushSendToAddress() },
+            onSendToUsername: { [weak self] in self?.pushSendToContact() },
+            onSwapToCrypto: { [weak self] in self?.presentDashDEXAfterAuthentication() },
             onCloseLanding: { [weak self] in self?.leaveLanding() },
             showsHeader: showsHeader)
         return UIHostingController(rootView: screen)
@@ -63,6 +66,11 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// suspends watching the moment that screen is pushed, so nothing is
     /// detected while the user is on the very screen they are handing over.
     private var isPushingReceiveStep = false
+    /// Whether this landing is the screen the user is on. Gates the Send
+    /// tab's pasteboard reads: unlike the receive session, a pushed step is
+    /// not "still here" for the clipboard, so this one tracks plain
+    /// appearance and ignores `isPushingReceiveStep`.
+    private var isSurfaceOnScreen = false
     /// The specify-amount sheet while it is up, so a receipt can dismiss it.
     private weak var requestAmountController: RequestAmountHostingController?
     /// Kept apart from `cancellables`: these live exactly as long as that sheet
@@ -168,6 +176,15 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         super.viewDidLoad()
         view.backgroundColor = .dw_background()
 
+        // Reads need both halves: this landing on screen (a pushed send step
+        // or a dismissal revokes it, and the model is reused by those steps)
+        // and the Send tab selected. The tab check alone is not enough — the
+        // outgoing form stays alive through its slide-out transition.
+        embeddedSendViewModel.isClipboardReadAllowed = { [weak self] in
+            guard let self else { return false }
+            return self.isSurfaceOnScreen && self.viewModel.activeTab == .send
+        }
+
         addChild(hostingController)
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         hostingController.view.backgroundColor = .clear
@@ -240,6 +257,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         // here as well so returning from transaction details can resume the
         // same receive session (or start a fresh "Receive another" session).
         viewModel.setReceiptWatchingObscured(false)
+        isSurfaceOnScreen = true
+        embeddedSendViewModel.refreshClipboardSuggestion()
         isPushingReceiveStep = false
         receiveStepObservers.removeAll()
         viewModel.setReceiveSurfaceVisible(true)
@@ -251,6 +270,9 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        // Set before the receive-step exemption below: for the clipboard,
+        // every way of leaving this screen counts, pushed step included.
+        isSurfaceOnScreen = false
         // Stepping deeper into the receive flow is not leaving it. Everything
         // else — a tab change, a dismissal, a pop — still puts the session to
         // sleep.
@@ -329,15 +351,63 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// The base class routes a scanned payment straight into the payment
     /// processor (its `DWQRScanModelDelegate` conformance is a private
     /// class extension, so this can't be `override` — the matching selector
-    /// shadows it through ObjC dispatch). Every scan on the landing
-    /// originates from the Send tab's embedded form, so fill that form —
-    /// destination-type detection and the From picker then apply to scanned
-    /// addresses exactly like typed/pasted ones.
+    /// shadows it through ObjC dispatch). A scan on the landing fills the send
+    /// FORM instead, so destination-type detection and the From picker apply to
+    /// scanned addresses exactly like typed/pasted ones.
+    ///
+    /// Where that form is depends on the mode. The balance-row send sheet
+    /// embeds it as its Send tab, and the scan goes straight in. On the picker
+    /// landing the Send tab is a card list — "Scan Dash QR" sits next to "Send
+    /// to Dash address" — and `embeddedSendViewModel` backs nothing on screen:
+    /// filling it left the user on the same three rows with no sign the scan
+    /// had been read. There the scan pushes the send form carrying it, which is
+    /// where the sibling row goes.
     @objc(qrScanModel:didScanPaymentInput:)
     func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
         dismiss(animated: true) { [weak self] in
-            self?.embeddedSendViewModel.ingestScannedInput(paymentInput)
+            guard let self else { return }
+
+            if self.transferSendFrom != nil {
+                if !self.embeddedSendViewModel.ingestScannedInput(paymentInput) {
+                    self.processPaymentInput(paymentInput)
+                }
+                return
+            }
+
+            // A BIP70 request carries a fetched confirmation rather than an
+            // address, so there is nothing to open the form with.
+            guard SendViewModel.scannedAddress(in: paymentInput) != nil else {
+                self.processPaymentInput(paymentInput)
+                return
+            }
+
+            let controller = SendScreenViewController()
+            controller.prefill(scannedInput: paymentInput)
+            self.pushScannedSend(controller)
         }
+    }
+
+    /// Open a scanned send on the From picker, with the address step behind it.
+    ///
+    /// The address step asks for the one thing the scan has already answered,
+    /// and a QR's BIP21 amount is invisible until the step after that — so a
+    /// scan used to land on a screen that looked like it had read neither. The
+    /// stack is built in one transition rather than pushed twice, so the
+    /// skipped step never appears; back (and the address summary's edit tap)
+    /// still returns to it, which is where a misread address is corrected.
+    ///
+    /// An address that did not decode keeps the address step: it is the screen
+    /// that says so.
+    private func pushScannedSend(_ controller: SendScreenViewController) {
+        controller.hidesBottomBarWhenPushed = true
+        guard let navigationController else { return }
+        guard controller.hasResolvedDestination else {
+            navigationController.pushViewController(controller, animated: true)
+            return
+        }
+        navigationController.setViewControllers(
+            navigationController.viewControllers + [controller, controller.makeSourceStep()],
+            animated: true)
     }
 
     /// First-ever visit to the free-form Internal tab: explain transfer
@@ -348,6 +418,25 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     func select(tab: PaymentsLandingTab) {
         viewModel.activeTab = tab
     }
+
+    #if DASHPAY
+    /// "Send to username" → the contact picker, as a step of THIS flow.
+    ///
+    /// Pushed like the sibling "Send to Dash address" row, so the two read the
+    /// same way: pick who, then say how much, then send. Picking a contact
+    /// pushes the amount step, which spends through
+    /// `WalletSendService.sendToContact`.
+    ///
+    /// It used to switch to the contacts TAB and stop there, leaving the user
+    /// to find the person themselves and pay from their profile sheet — a row
+    /// on the Send screen that did not send. That tab, and the profile sheet's
+    /// own Pay button, are untouched.
+    private func pushSendToContact() {
+        pushWithoutTabBar(SendToContactPickerViewController())
+    }
+    #else
+    private func pushSendToContact() {}
+    #endif
 
     /// The tab bar controller this landing belongs to.
     ///
@@ -455,6 +544,12 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         guard let host, navigationController.topViewController !== host else { return }
 
         navigationController.popToViewController(host, animated: true)
+    }
+
+    /// Send card → the address-entry form. Pushed rather than embedded: the
+    /// landing's Send tab is now the destination picker, not the form.
+    private func pushSendToAddress() {
+        pushWithoutTabBar(SendScreenViewController())
     }
 
     /// The landing keeps the tab bar; everything it pushes is a step in a

@@ -19,6 +19,8 @@ import SwiftUI
 import DashUIKit
 
 enum JoinDashPayState {
+    case loading
+    case retryLoading
     case none
     case callToAction
     /// A username registration the create screen handed off is running.
@@ -29,6 +31,9 @@ enum JoinDashPayState {
     /// A registration was recorded and the app died before it finished. The
     /// coordinator is idle after a relaunch, so there is no stage to claim.
     case interrupted
+    /// An identity exists with credits but no username yet — the
+    /// registration can be finished from where it stopped.
+    case usernameRequired
     case voting
     case approved
     case failed
@@ -39,7 +44,7 @@ enum JoinDashPayState {
 
 extension JoinDashPayState {
     func hasAction() -> Bool {
-        return self == .callToAction || self == .approved || self == .failed || self == .blocked || self == .contested
+        return self == .usernameRequired || self == .callToAction || self == .approved || self == .failed || self == .blocked || self == .contested
             || self == .creationFailed || self == .interrupted
     }
 
@@ -51,7 +56,7 @@ extension JoinDashPayState {
         switch self {
         case .creating, .creationFailed, .interrupted, .approved:
             return true
-        case .none, .callToAction, .voting, .failed, .blocked, .contested, .registered:
+        case .none, .loading, .retryLoading, .callToAction, .usernameRequired, .voting, .failed, .blocked, .contested, .registered:
             return false
         }
     }
@@ -103,7 +108,7 @@ struct JoinDashPayCopy {
 
     var iconName: String {
         switch state {
-        case .none, .callToAction, .registered:
+        case .loading, .retryLoading, .none, .callToAction, .usernameRequired, .registered:
             return "dp_user_generic"
         case .voting, .creating, .interrupted:
             return "username_requested"
@@ -116,6 +121,10 @@ struct JoinDashPayCopy {
 
     var title: String {
         switch state {
+        case .retryLoading:
+            return NSLocalizedString("Retry loading identity", comment: "Identity recovery")
+        case .loading:
+            return NSLocalizedString("Loading identity…", comment: "DashPay registration recovery")
         case .none:
             return NSLocalizedString("Join DashPay", comment: "")
         case .callToAction:
@@ -132,6 +141,8 @@ struct JoinDashPayCopy {
             return String.localizedStringWithFormat(
                 NSLocalizedString("Voting – %@", comment: "Usernames — Home row title while the network votes on a username"),
                 username)
+        case .usernameRequired:
+            return NSLocalizedString("Finish username registration", comment: "DashPay registration recovery")
         case .registered, .creationFailed, .interrupted:
             return username
         case .approved:
@@ -155,6 +166,8 @@ struct JoinDashPayCopy {
         switch state {
         case .none:
             return NSLocalizedString("Request your username", comment: "")
+        case .usernameRequired:
+            return NSLocalizedString("Your identity is ready. Use its existing credits to register a username.", comment: "DashPay registration recovery")
         case .callToAction:
             switch shieldedSnapshot?.state {
             case .maturing(let readyAt):
@@ -198,13 +211,15 @@ struct JoinDashPayCopy {
             return NSLocalizedString("The Dash network blocked this username. Nobody can register it — please try a different one.", comment: "Usernames")
         case .contested:
             return NSLocalizedString("The voting gave this username to someone else. Please try again with a different username.", comment: "Usernames")
-        case .registered:
+        case .loading, .retryLoading, .registered:
             return ""
         }
     }
     
     var actionText: String {
         switch state {
+        case .usernameRequired:
+            return NSLocalizedString("Continue", comment: "DashPay registration recovery")
         case .callToAction:
             return NSLocalizedString("Upgrade", comment: "")
         case .approved:
@@ -339,6 +354,15 @@ struct JoinDashPayMenuItem: View {
         .modifier(MenuViewModifier())
         .onAppear {
             viewModel.checkUsername()
+        }
+        .task(id: viewModel.state == .loading) {
+            for _ in 0..<20 {
+                guard viewModel.state == .loading else { return }
+                do { try await Task.sleep(nanoseconds: 250_000_000) }
+                catch { return }
+                viewModel.checkUsername()
+            }
+            viewModel.finishLoadingAttempt()
         }
     }
 

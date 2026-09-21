@@ -35,6 +35,13 @@ extern NSNotificationName const DWAdvancedModeDidChangeNotification;
 
 @property (nonatomic, assign) BOOL walletNeedsBackup;
 @property (nonatomic, assign) BOOL userHasBalance;
+
+/// Per-wallet: the instant the notification producers last completed a
+/// catch-up scan for the active wallet. `nil` until the first one runs.
+/// `TransactionNotificationProducer` widens its freshness window back to
+/// this, so a payment mined while the process was suspended is still news
+/// when a delayed background refresh finally runs.
+@property (nonatomic, strong, nullable) NSDate *notificationCatchUpDate;
 @property (nullable, nonatomic, strong) NSDate *balanceChangedDate;
 @property (nonatomic, assign) BOOL walletBackupReminderWasShown;
 
@@ -48,17 +55,45 @@ extern NSNotificationName const DWAdvancedModeDidChangeNotification;
 @property (nullable, nonatomic, copy) NSArray<NSNumber *> *shortcuts;
 
 @property (nonatomic, assign) BOOL localNotificationsEnabled;
+/// The "Don't remind me again" opt-out of the inactivity reminder
+/// (`InactivityReminderScheduler`).
+@property (nonatomic, assign) BOOL inactivityReminderDisabled;
+/// Whether the wallet was last SEEN to hold funds, latched by
+/// `InactivityReminderScheduler` from balances it knows to be real.
+///
+/// Deliberately not `userHasBalance`: that flag is written by
+/// `BalanceModel.reloadBalance`, which maps an unavailable SDK balance to zero
+/// — so a cold launch from the reminder's own "Remind me later" action could
+/// erase the eligibility it was about to read and drop the reminder for a
+/// funded wallet. This one only ever moves on a balance the scheduler knows.
+@property (nonatomic, assign) BOOL inactivityReminderWalletHadBalance;
 
 @property (nonatomic, assign) BOOL balanceHidden;
 @property (nonatomic, assign) BOOL tapToHideBalanceShown;
 
-/// Opt-in to the advanced surfaces across the app. Off by default: the
-/// screens it unlocks assume the user knows what a UTXO or a derivation path
-/// is, and showing them unasked is how an ordinary wallet stops looking
-/// ordinary. Read it anywhere, but observe
+/// Advanced surfaces are off by default and turned on once, automatically,
+/// when a wallet is first seen holding a positive Platform balance — the
+/// screens that show and move those funds live behind this flag, so leaving
+/// it off hides money the wallet already has. Read it anywhere, but observe
 /// `Notification.Name.advancedModeDidChange` rather than caching the value —
 /// it can be flipped from Settings while any screen is on display.
-@property (nonatomic, assign) BOOL advancedModeEnabled;
+/// Read-only by design: every write goes through one of the two methods
+/// below, so no caller can move the flag without announcing it.
+@property (nonatomic, readonly, assign) BOOL advancedModeEnabled;
+
+/// YES once the user has set Advanced mode themselves. From that point the
+/// automatic policy never moves the flag again, in either direction.
+@property (nonatomic, readonly, assign) BOOL advancedModeUserManaged;
+
+/// The user's own choice, from Settings. Persists it, hands them the
+/// preference for good, and announces an actual change to all open screens.
+- (void)setAdvancedModeEnabledByUser:(BOOL)enabled;
+
+/// Turns Advanced mode on the first time a wallet is observed funded on
+/// Platform, unless the user has already taken the preference over. A zero
+/// balance leaves the decision pending; repeat observations are no-ops.
+/// Call on the main thread.
+- (void)enableAdvancedModeForPlatformBalance:(uint64_t)balance;
 
 @property (nonatomic, assign) BOOL shouldDisplayOnboarding;
 @property (nonatomic, assign) BOOL shouldDisplayReclassifyYourTransactionsFlow;
@@ -82,6 +117,10 @@ extern NSNotificationName const DWAdvancedModeDidChangeNotification;
 @property (nonatomic, assign) BOOL confirmationAcceptContactRequestIsOn;
 @property (nullable, nonatomic, copy) NSString *dashpayUsername;
 @property (nullable, nonatomic, strong) NSDate *mostRecentViewedNotificationDate;
+/// Keys of the DashPay notification events the notifications screen has
+/// shown (`DashPayNotificationsReadState.eventKey`). `nil` until the first
+/// viewing records them; the date marker above answers until then.
+@property (nullable, nonatomic, copy) NSArray<NSString *> *viewedNotificationEventKeys;
 #endif
 // Non-dynamic
 

@@ -4,7 +4,7 @@
 <dict>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>org.dashcore.dashsync.backgroundblocksync</string>
+		<string>org.dashfoundation.dashpay.refresh</string>
 	</array>
 	<key>CALL_BACK_URL_SCHEME</key>
 	<string>$(CALL_BACK_URL_SCHEME)</string>
@@ -105,6 +105,17 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>dashid</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>org.dashfoundation.dash.dashconnect</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>dash-key</string>
+				<string>dash-st</string>
 			</array>
 		</dict>
 	</array>

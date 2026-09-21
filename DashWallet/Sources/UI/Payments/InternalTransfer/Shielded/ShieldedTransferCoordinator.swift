@@ -205,6 +205,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
         /// the next shielded sync.
         case submittedUnconfirmed
         case failed(String)
+
+        /// Work is running: the sheet must stay up and a tap must not start a
+        /// second attempt.
+        var isInFlight: Bool {
+            switch self {
+            case .signing, .locking, .proving, .broadcasting: return true
+            case .idle, .success, .submittedUnconfirmed, .failed: return false
+            }
+        }
     }
 
     enum Source {
@@ -221,6 +230,25 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// read the error itself here rather than matching localized strings.
     /// Cleared when a transfer starts and on `reset()`.
     private(set) var lastFailure: Error?
+
+    /// What a resume established beyond its terminal phase. `.submittedUnconfirmed`
+    /// has two producers — `alreadyConsumedAssetLockResumePhase` (Platform says
+    /// this outpoint is already spent) and `handleSpendError`
+    /// (`shieldedSpendUnconfirmed`: the transition was accepted but its result
+    /// could not be read back) — and only the first is evidence about the
+    /// outpoint. Callers that persist a verdict, such as
+    /// `AssetLockRecoveryService` writing an already-spent probe, must branch on
+    /// this rather than on the phase, which cannot tell the two apart.
+    /// Cleared when a transfer starts and on `reset()`.
+    private(set) var lastResumeReport: ResumeReport?
+
+    /// The distinctions a terminal phase flattens away.
+    enum ResumeReport: Equatable {
+        /// Platform reported this exact outpoint already consumed. Not
+        /// quorum-authenticated, so it proves there is nothing left to retry
+        /// without proving this transfer is what spent it.
+        case alreadyConsumed
+    }
 
     private static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
@@ -262,12 +290,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case noPlatformAddress
         case authCancelled
         case authFailed
+        case shieldedBalanceUnavailable
         case shieldedPoolFeeUnavailable
         case addressFundingFeeUnavailable
         case platformShieldCapacityChanged(maxShieldableCredits: UInt64?)
         case shieldedSweepWaiting(UInt64)
         case shieldedSweepChanged
         case shieldedAmountExceedsBundle(UInt64)
+        case coinJoinDrainRequiresSync
         case transferFailed(Error)
 
         var errorDescription: String? {
@@ -290,6 +320,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString("Authentication cancelled", comment: "InternalTransfer")
             case .authFailed:
                 return NSLocalizedString("Authentication failed", comment: "InternalTransfer")
+            case .shieldedBalanceUnavailable:
+                return NSLocalizedString("Shielded balance is unavailable. Try again after syncing.", comment: "Shielded transfer requires a known balance")
             case .shieldedPoolFeeUnavailable:
                 return NSLocalizedString(
                     "There was an error, please try again later",
@@ -329,6 +361,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
                         "Your Shielded balance is split across notes, and at most %@ DASH of it can be sent in one transaction.",
                         comment: "Shielded amount above the single-transaction ceiling"),
                     formatted)
+            case .coinJoinDrainRequiresSync:
+                return NSLocalizedString(
+                    "Your wallet is still syncing. Moving your mixed coins to Shielded will be available once it finishes.",
+                    comment: "CoinJoin drain blocked while the chain is syncing")
             case .transferFailed(let underlying):
                 return underlying.localizedDescription
             }
@@ -360,6 +396,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             .contains { !$0.spentNullifiers.isEmpty }
 
         let balanceCoordinator = PlatformAddressSyncCoordinator.shared
+        guard balanceCoordinator.shieldedBalanceState.isAvailable else { return .unavailable }
         if hasPendingSpend || balanceCoordinator.isShieldedBalanceReconciling {
             return .waitingForConfirmation(balanceCoordinator.shieldedBalance)
         }
@@ -442,6 +479,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
         _ amountCredits: UInt64,
         feeKind: PlatformWalletManager.ShieldedFeeKind
     ) -> Bool {
+        guard PlatformAddressSyncCoordinator.shared.shieldedBalanceState.isAvailable else {
+            handleFailure(CoordinatorError.shieldedBalanceUnavailable)
+            return true
+        }
         guard let ceiling = Self.spendCeilingCredits(feeKind: feeKind),
               amountCredits > ceiling
         else { return false }
@@ -525,6 +566,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
             try await authorize()
         } catch {
             handleFailure(error)
+            return
+        }
+
+        // Re-check at the execution boundary, not only where the surface was
+        // offered. The drain is whole-account and its value is computed
+        // SDK-side, so a scan that restarted while the sheet or the PIN prompt
+        // was open would lock a UTXO set the user never saw. The BIP44 route
+        // carries an explicit amount and its own screens gate on
+        // `isChainSynced`, so this is the drain's check alone.
+        if case .coinJoinDrain = funding,
+           SyncingActivityMonitor.shared.state != .syncDone {
+            Self.logger.error("🛡️ SHIELD-TX :: coinjoin drain refused — chain not synced")
+            handleFailure(CoordinatorError.coinJoinDrainRequiresSync)
             return
         }
 
@@ -634,6 +688,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             // the ChainLock proof and records nonterminal consumption-unknown
             // state, so suppress retries without claiming verified success.
             terminalPhase = mappedPhase
+            lastResumeReport = .alreadyConsumed
             Self.logger.info("🛡️ SHIELD-TX :: resume found asset lock reported consumed — completion remains unconfirmed")
         }
 
@@ -1309,6 +1364,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         stopAssetLockPolling()
         lastAssetLockOutPoint = nil
         lastFailure = nil
+        lastResumeReport = nil
         phase = .idle
     }
 
@@ -1378,8 +1434,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// `.signing` write run with no suspension point between them — the
     /// first caller wins atomically and the second sees `.signing` + bails.
     private func beginTransfer() -> Bool {
-        guard phase == .idle else { return false }
+        guard phase == .idle else {
+            // Logged so a tap that starts nothing is visible in the export.
+            Self.logger.info("🛡️ SHIELD-TX :: begin refused phase=\(String(describing: self.phase), privacy: .public)")
+            return false
+        }
         lastFailure = nil
+        lastResumeReport = nil
         phase = .signing
         return true
     }

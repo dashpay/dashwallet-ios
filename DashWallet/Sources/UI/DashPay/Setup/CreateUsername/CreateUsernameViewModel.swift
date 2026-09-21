@@ -115,7 +115,7 @@ class CreateUsernameViewModel: ObservableObject {
     /// username collected by the contested-name confirmation sheet.
     /// Submitted through `submitUsernameRequest(temporaryUsername:)`
     /// when the user confirms with it.
-    let temporaryField = TemporaryUsernameFieldModel()
+    let temporaryField = TemporaryUsernameFieldModel(acceptsOwnedName: true)
 
     /// The typed label lost an earlier contest to a masternode LOCK, so nobody
     /// can register it. It still reports as available (no owner holds the
@@ -282,10 +282,13 @@ class CreateUsernameViewModel: ObservableObject {
     /// nil while the SDK host has no hydrated wallet.
     @Published private(set) var shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot? = nil
 
-    /// A prior Core-funded attempt has already created an identity or
-    /// persisted an unfinished asset lock. The form must not require a
-    /// second balance or offer another funding source in this state.
-    @Published private(set) var hasPendingRegistrationRecovery = false
+    /// Distinguishes a paid Core lock from an existing identity. Neither
+    /// recovery path asks the user to fund a second identity.
+    @Published private(set) var registrationRecovery: UsernameRegistrationRecovery = .none
+    @Published private(set) var isIdentityLoading = true
+    @Published private(set) var recoveryHasNoCredits = false
+    var hasPendingRegistrationRecovery: Bool { registrationRecovery.isPending }
+    var isResumingUsername: Bool { registrationRecovery.identityId != nil }
 
     /// Fee-aware spendable Core balance (duffs) — the real ceiling for funding
     /// a registration: an ordinary L1 spend draws on confirmed UTXOs only and
@@ -330,6 +333,11 @@ class CreateUsernameViewModel: ObservableObject {
         // verdict from an earlier visit (name taken meanwhile, a vote
         // started or resolved) can't carry over into this one.
         refreshWalletBackedValidationState()
+        if username.isEmpty, !isInvitationMode,
+           let draft = DWIdentityRegistrationCoordinator.shared.pendingUsernameDraft() {
+            username = draft.username
+            temporaryField.restoreDraft(draft.temporaryUsername ?? "", for: draft.username)
+        }
         availabilityCheckLabel = nil
         validateUsername(username: username)
         checkBalance()
@@ -427,6 +435,7 @@ class CreateUsernameViewModel: ObservableObject {
     /// submission itself still succeeded).
     enum UsernameRegistrationOutcome {
         case success
+        case completedInOriginalContext(String)
         case submittedForVoting(temporaryUsername: String?, temporaryUsernameError: String?)
         case cancelled
         case failure(String)
@@ -574,6 +583,9 @@ class CreateUsernameViewModel: ObservableObject {
                 name: name,
                 priceCredits: credits)
             return .success
+        } catch let error as DWIdentityRegistrationCoordinator.CoordinatorError
+            where error.isCompletedPurchase {
+            return .completedInOriginalContext(error.localizedDescription)
         } catch DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled {
             return .cancelled
         } catch {
@@ -604,10 +616,18 @@ class CreateUsernameViewModel: ObservableObject {
                     comment: "Usernames"),
                 username)
         }
+        if raw.localizedCaseInsensitiveContains("insufficient") {
+            return NSLocalizedString(
+                "Not enough identity credits to register this name. Use Top Up in My Profile, then try again. Your existing identity will be reused.",
+                comment: "Identity recovery insufficient credits")
+        }
         return raw
     }
 
     private func registrationOutcome(for username: String) -> UsernameRegistrationOutcome {
+        if let message = DWIdentityRegistrationCoordinator.shared.completedRegistrationContextMessage {
+            return .completedInOriginalContext(message)
+        }
         // Membership across ALL pending entries, not the single-slot
         // `pendingLabel` (the oldest): an older unresolved contested
         // submission in the store must not make THIS submission read as
@@ -744,8 +764,11 @@ class CreateUsernameViewModel: ObservableObject {
         case .invitation, .none:
             hasEnoughFunding = hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding
         }
-        let hasEnoughBalance = recoveryFunded || voucherFunded || hasEnoughFunding
+        // A recovery whose identity is known to hold zero credits cannot pay for
+        // anything, whichever source is selected.
+        let hasEnoughBalance = !recoveryHasNoCredits && (recoveryFunded || voucherFunded || hasEnoughFunding)
         let canContinue = lengthValid && !hasIllegalCharacters && !startsOrEndsWithHyphen && hasEnoughBalance
+            && !isIdentityLoading && DWCurrentUserIdentityInfo.shared.isCurrentNetworkContextReady
 
         // Same label as the existing check state → carry its rule forward
         // (a settled verdict stays settled; an in-flight `.loading` keeps
@@ -760,7 +783,7 @@ class CreateUsernameViewModel: ObservableObject {
         uiState = CreateUsernameUIState(
             lengthRule: lengthValid ? .valid : .invalid,
             allowedCharactersRule: hasIllegalCharacters || startsOrEndsWithHyphen ? .invalid : .valid,
-            costRule: voucherFunded || recoveryFunded ? .hidden : (hasEnoughBalance ? .valid : .invalid),
+            costRule: isIdentityLoading || voucherFunded || recoveryFunded ? .hidden : (hasEnoughBalance ? .valid : .invalid),
             usernameBlockedRule: canContinue ? (reusePriorCheck ? priorRule : .loading) : .hidden,
             requiredDash: requiredCost,
             canContinue: reusePriorCheck && priorRule == .valid
@@ -809,6 +832,9 @@ class CreateUsernameViewModel: ObservableObject {
                 + "recovery=\(hasPendingRegistrationRecovery), voucher=\(isInvitationMode) — "
                 + "judging \(activeFundingSource?.logLabel ?? "any (no choice committed)")")
 
+        let checkingWalletId = SwiftDashSDKHost.shared.wallet?.walletId
+        let checkingNetwork = SwiftDashSDKHost.shared.runningNetwork
+        let checkingRecovery = registrationRecovery
         let result: UsernameValidationRuleResult
         var locked = false
         var activeContenders: Int?
@@ -828,6 +854,26 @@ class CreateUsernameViewModel: ObservableObject {
                 : .fresh
 
             let available = try await availability
+            if let identityId = registrationRecovery.identityId,
+               let wallet = SwiftDashSDKHost.shared.wallet {
+                let recoveryState = try await DWIdentityRegistrationCoordinator.shared.registrationNameState(
+                    username, identityId: identityId, wallet: wallet)
+                if recoveryState != .available {
+                    guard !Task.isCancelled,
+                          self.username.trimmingCharacters(in: .whitespacesAndNewlines) == username,
+                          SwiftDashSDKHost.shared.wallet?.walletId == checkingWalletId,
+                          SwiftDashSDKHost.shared.runningNetwork == checkingNetwork,
+                          WalletEnvironment.network == checkingNetwork,
+                          registrationRecovery == checkingRecovery, !isIdentityLoading else { return }
+                    isLockedContestedName = false
+                    activeContestContenders = nil
+                    activeContestEndsAt = nil
+                    takenNameSalePriceCredits = nil
+                    uiState.usernameBlockedRule = .valid
+                    uiState.canContinue = true
+                    return
+                }
+            }
             if available {
                 // "Available" only means no identity owns the domain document.
                 // A contested label can still be spoken for: a vote that ended
@@ -873,12 +919,11 @@ class CreateUsernameViewModel: ObservableObject {
                             result = .valid
                         }
                     }
-                case .fresh, .unknown:
-                    // .unknown = the precheck query failed. It must not block
-                    // a name that is very likely fine — the submit-time
-                    // transition stays the authority (mirrors the old
-                    // locked-check's failed-query behavior).
+                case .fresh:
                     result = .valid
+                case .unknown:
+                    // A failed read cannot establish name availability.
+                    result = .error
                 }
             } else if let pending = DWContestedNameStatusService.shared.pendingLabel,
                       pending.caseInsensitiveCompare(username) == .orderedSame {
@@ -895,6 +940,8 @@ class CreateUsernameViewModel: ObservableObject {
                 }
                 result = .invalidCritical
             }
+        } catch DWIdentityRegistrationCoordinator.CoordinatorError.usernameUnavailable {
+            result = .invalidCritical
         } catch {
             result = .error
         }
@@ -903,7 +950,11 @@ class CreateUsernameViewModel: ObservableObject {
         // flight. Compare against the trimmed live value — validateUsername
         // trims before calling us.
         guard !Task.isCancelled,
-              self.username.trimmingCharacters(in: .whitespacesAndNewlines) == username
+              self.username.trimmingCharacters(in: .whitespacesAndNewlines) == username,
+              SwiftDashSDKHost.shared.wallet?.walletId == checkingWalletId,
+              SwiftDashSDKHost.shared.runningNetwork == checkingNetwork,
+              WalletEnvironment.network == checkingNetwork,
+              registrationRecovery == checkingRecovery, !isIdentityLoading
         else { return }
 
         isLockedContestedName = locked
@@ -1004,6 +1055,8 @@ class CreateUsernameViewModel: ObservableObject {
         // empty, not by this.
         NotificationCenter.default
             .publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
+            .merge(with: NotificationCenter.default.publisher(for: .DWCurrentNetworkDidChange),
+                   NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated))
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self else { return }
@@ -1071,10 +1124,10 @@ class CreateUsernameViewModel: ObservableObject {
     }
 
     private func refreshRegistrationRecoverySnapshot() {
-        let pending = DWIdentityRegistrationCoordinator.shared.hasPendingRegistrationRecovery()
-        if hasPendingRegistrationRecovery != pending {
-            hasPendingRegistrationRecovery = pending
-        }
+        let snapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        isIdentityLoading = snapshot.isLoading
+        registrationRecovery = DWIdentityRegistrationCoordinator.shared.registrationRecovery()
+        recoveryHasNoCredits = registrationRecovery.identityId != nil && snapshot.hasKnownZeroBalance
     }
 
     /// Update only the requirement-dependent picker flags while typing. The
@@ -1182,8 +1235,10 @@ final class TemporaryUsernameFieldModel: ObservableObject {
     private var suggestionBase: String?
 
     private var cancellableBag = Set<AnyCancellable>()
+    private let acceptsOwnedName: Bool
 
-    init() {
+    init(acceptsOwnedName: Bool = false) {
+        self.acceptsOwnedName = acceptsOwnedName
         $text
             .throttle(for: .milliseconds(500), scheduler: RunLoop.main, latest: true)
             .removeDuplicates()
@@ -1192,6 +1247,11 @@ final class TemporaryUsernameFieldModel: ObservableObject {
                 self?.validate(value)
             }
             .store(in: &cancellableBag)
+    }
+
+    func restoreDraft(_ username: String, for mainLabel: String) {
+        suggestionBase = mainLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+        text = username
     }
 
     /// Seed the field with a variant of `mainLabel` that is guaranteed
@@ -1258,16 +1318,33 @@ final class TemporaryUsernameFieldModel: ObservableObject {
             do { try await Task.sleep(nanoseconds: 400_000_000) }
             catch { return }
             guard let self, !Task.isCancelled else { return }
+            let walletId = SwiftDashSDKHost.shared.wallet?.walletId
+            let network = SwiftDashSDKHost.shared.runningNetwork
             let verdict: Check
             do {
-                let available = try await DWIdentityRegistrationCoordinator.shared
-                    .dpnsCheckAvailability(label)
-                verdict = available ? .available : .taken
+                if self.acceptsOwnedName,
+                   let identityId = DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId,
+                   let wallet = SwiftDashSDKHost.shared.wallet {
+                    // The create/recovery coordinator reconciles an owned
+                    // companion instead of trying to register it again.
+                    _ = try await DWIdentityRegistrationCoordinator.shared.registrationNameState(
+                        label, identityId: identityId, wallet: wallet)
+                    verdict = .available
+                } else {
+                    let available = try await DWIdentityRegistrationCoordinator.shared
+                        .dpnsCheckAvailability(label)
+                    verdict = available ? .available : .taken
+                }
+            } catch DWIdentityRegistrationCoordinator.CoordinatorError.usernameUnavailable {
+                verdict = .taken
             } catch {
                 verdict = .error
             }
-            // Drop stale results — the field changed while the RPC ran.
-            guard !Task.isCancelled, self.trimmedText == label else { return }
+            // Drop stale results — the field or wallet changed during the RPC.
+            guard !Task.isCancelled, self.trimmedText == label,
+                  SwiftDashSDKHost.shared.wallet?.walletId == walletId,
+                  SwiftDashSDKHost.shared.runningNetwork == network,
+                  WalletEnvironment.network == network else { return }
             self.check = verdict
         }
     }
