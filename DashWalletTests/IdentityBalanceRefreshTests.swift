@@ -73,7 +73,7 @@ final class IdentityBalanceRefreshTests: XCTestCase {
                     return 43
                 },
                 publish: { _ in XCTFail("Dismissed profile must not publish") },
-                onFailure: { _ in XCTFail() })
+                onFailure: { XCTFail("Unexpected failure during cancelled refresh: \($0)") })
         }
         await task.value
     }
@@ -85,7 +85,7 @@ final class IdentityBalanceRefreshTests: XCTestCase {
                 isCurrent: { true }, previousBalance: { balance },
                 refresh: { persisted = true; return balance },
                 publish: { _ in XCTFail("Unchanged balance must not notify observers") },
-                onFailure: { _ in XCTFail() })
+                onFailure: { XCTFail("Unexpected failure while refreshing unchanged balance: \($0)") })
             XCTAssertTrue(persisted)
         }
     }
@@ -98,7 +98,7 @@ final class IdentityBalanceRefreshTests: XCTestCase {
                 isCurrent: { true }, previousBalance: { 42 },
                 refresh: { persisted = true; return balance },
                 publish: { XCTAssertTrue(persisted); published = $0 },
-                onFailure: { _ in XCTFail() })
+                onFailure: { XCTFail("Unexpected failure while refreshing changed balance: \($0)") })
             XCTAssertEqual(published, balance)
         }
     }
@@ -107,7 +107,8 @@ final class IdentityBalanceRefreshTests: XCTestCase {
         var result: UInt64?
         await IdentityBalanceRefresh.run(
             isCurrent: { true }, refresh: { 0 },
-            publish: { result = $0 }, onFailure: { _ in XCTFail() })
+            publish: { result = $0 },
+            onFailure: { XCTFail("Unexpected failure while confirming zero balance: \($0)") })
         XCTAssertEqual(result, 0)
     }
 

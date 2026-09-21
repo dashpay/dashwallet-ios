@@ -20,12 +20,26 @@ with tempfile.TemporaryDirectory(prefix="identity-balance-tests-") as directory:
     # stand-ins. This tests its production ordering, including where the Task
     # is created, rather than a separately reimplemented scheduling helper.
     coordinator = (repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/Identity/DWIdentityRegistrationCoordinator.swift").read_text()
-    completion = coordinator.split(
-        "            _ = try? await wallet.syncDpnsNames(identityId: identityId)\n        }\n", 1)[1]
-    completion = completion.split("\n    }", 1)[0]
+    start_marker = "            _ = try? await wallet.syncDpnsNames(identityId: identityId)\n        }\n"
+    if start_marker not in coordinator:
+        raise SystemExit(
+            "DWIdentityRegistrationCoordinator.swift is missing the completion-block start marker; "
+            "update scripts/test_identity_balance.py")
+    completion = coordinator.split(start_marker, 1)[1]
+    end_marker = "\n    }"
+    if end_marker not in completion:
+        raise SystemExit(
+            "DWIdentityRegistrationCoordinator.swift is missing the completion-block end marker; "
+            "update scripts/test_identity_balance.py")
+    completion = completion.split(end_marker, 1)[0]
     scaffold = (repository / "scripts/fixtures/IdentityRegistrationCompletionHarness.swift").read_text()
+    sentinel = "        // PRODUCTION_COMPLETION_BLOCK"
+    if scaffold.count(sentinel) != 1:
+        raise SystemExit(
+            "IdentityRegistrationCompletionHarness.swift must contain exactly one "
+            "PRODUCTION_COMPLETION_BLOCK sentinel")
     (source / "IdentityRegistrationCompletionHarness.swift").write_text(
-        scaffold.replace("        // PRODUCTION_COMPLETION_BLOCK", completion))
+        scaffold.replace(sentinel, completion))
     (package / "Package.swift").write_text('''// swift-tools-version: 5.9
 import PackageDescription
 let package = Package(name: "IdentityBalanceHarness", platforms: [.macOS("15.0")], targets: [
