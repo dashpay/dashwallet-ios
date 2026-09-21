@@ -92,6 +92,45 @@ final class IdentityVerifyService {
     /// Read from Platform rather than from a local note: the document is the
     /// thing voters see, and a link published from another install of the same
     /// wallet counts.
+    /// The link published for `label` by a *specific* identity — a rival
+    /// contender's proof of identity, which is what a voter is weighing when
+    /// they open that contender.
+    ///
+    /// Same query as `publishedURL(forLabel:)` (the contract's
+    /// `uniqueUsernameIndex` is the only field this document can be found by),
+    /// but it fetches the whole set for the label and picks the owner asked
+    /// for, since a contested label has one document per contender.
+    func publishedURL(forLabel label: String, ownedBy identityIdBase58: String) async throws -> URL? {
+        let contractId = try requireContractIdBase58()
+        guard let sdk = SwiftDashSDKHost.shared.sdk else { throw ServiceError.noIdentity }
+
+        let normalized = try normalizedLabel(label, sdk: sdk)
+        let whereClause = """
+        [["normalizedLabel","==","\(normalized)"]]
+        """
+
+        let response: [String: Any]
+        do {
+            response = try await Task.detached(priority: .userInitiated) {
+                try await sdk.documentList(
+                    dataContractId: contractId,
+                    documentType: Self.documentType,
+                    whereClause: whereClause,
+                    limit: 20)
+            }.value
+        } catch {
+            Self.logger.error("🔗 IDENT-VERIFY :: contender lookup failed: \(String(describing: error), privacy: .public)")
+            throw ServiceError.lookupFailed
+        }
+
+        guard let documents = response["documents"] as? [[String: Any]] else {
+            throw ServiceError.lookupFailed
+        }
+        let theirs = documents.first { Self.isOwned(byBase58: identityIdBase58, document: $0) }
+        guard let urlString = theirs?["url"] as? String else { return nil }
+        return URL(string: urlString)
+    }
+
     func publishedURL(forLabel label: String) async throws -> URL? {
         let (_, _, identityId) = try requireContext()
         let contractId = try requireContractIdBase58()
@@ -245,6 +284,23 @@ final class IdentityVerifyService {
     /// `serde_json`, and an identifier can land as base58 text or as raw
     /// bytes depending on how the platform value serializes, so both are
     /// accepted rather than assuming one.
+    /// Same check as `isOwned(by:document:)`, for an owner known only by its
+    /// base58 spelling — which is how contenders arrive from the vote-state
+    /// query.
+    private static func isOwned(byBase58 identityId: String, document: [String: Any]) -> Bool {
+        guard let owner = document["$ownerId"] else { return false }
+        if let text = owner as? String {
+            return text == identityId
+        }
+        if let numbers = owner as? [NSNumber] {
+            return Data(numbers.map { $0.uint8Value }).toBase58String() == identityId
+        }
+        if let bytes = owner as? Data {
+            return bytes.toBase58String() == identityId
+        }
+        return false
+    }
+
     private static func isOwned(by identityId: Data, document: [String: Any]) -> Bool {
         guard let owner = document["$ownerId"] else { return false }
         if let text = owner as? String {
