@@ -22,6 +22,16 @@ with tempfile.TemporaryDirectory(prefix="wallet-preparation-tests-") as director
     (sources / "AppDependencies.swift").write_text('''
 enum WalletEnvironment { enum NetworkKind { case mainnet, testnet, devnet } }
 enum DWLogger { static func log(_ message: String) {} }
+@MainActor final class SwiftDashSDKSPVCoordinator {
+    static let shared = SwiftDashSDKSPVCoordinator()
+    var preparations = 0
+    func prepareForNetworkSwitch() { preparations += 1 }
+}
+@MainActor final class PlatformAddressSyncCoordinator {
+    static let shared = PlatformAddressSyncCoordinator()
+    var preparations = 0
+    func prepareForNetworkSwitch() { preparations += 1 }
+}
 ''')
     # Exercise the real automatic entry points and serial queue, substituting
     # only SDK bring-up. This catches guards placed before enqueueing instead
@@ -45,6 +55,7 @@ enum DWLogger { static func log(_ message: String) {} }
         "    enum RefreshTrigger: String {",
         "    func retryWalletPreparation() async {",
         "    private func enqueueRefresh(trigger:",
+        "    private func handleObservedNetworkChange()",
         "    private func enqueueAwaitable(_ op:",
     ))
     # Its closure default contains braces before the method body.
@@ -83,6 +94,8 @@ import XCTest
         await runtime.drain()
         state.finish()
         runtime.refreshCalls = 0
+        SwiftDashSDKSPVCoordinator.shared.preparations = 0
+        PlatformAddressSyncCoordinator.shared.preparations = 0
     }
     override func tearDown() async throws {
         await runtime.drain()
@@ -108,6 +121,31 @@ import XCTest
             XCTAssertEqual(state.preparationFailure, detail)
             XCTAssertEqual(runtime.refreshCalls, 0, "Automatic trigger: \(trigger)")
         }
+    }
+    func testNetworkNotificationAfterFailedOpenDoesNotDetachOrRefresh() async {
+        await failOpen()
+        let failure = state.preparationFailure
+        runtime.handleObservedNetworkChange()
+        await runtime.drain()
+        XCTAssertEqual(SwiftDashSDKSPVCoordinator.shared.preparations, 0)
+        XCTAssertEqual(PlatformAddressSyncCoordinator.shared.preparations, 0)
+        XCTAssertEqual(runtime.refreshCalls, 0)
+        XCTAssertEqual(state.preparationFailure, failure)
+    }
+    func testNormalNetworkNotificationStillClearsMirrorsBeforeQueuedRefresh() async {
+        runtime.handleObservedNetworkChange()
+        XCTAssertEqual(SwiftDashSDKSPVCoordinator.shared.preparations, 1)
+        XCTAssertEqual(PlatformAddressSyncCoordinator.shared.preparations, 1)
+        XCTAssertEqual(runtime.refreshCalls, 0)
+        await runtime.drain()
+        XCTAssertEqual(runtime.refreshCalls, 1)
+    }
+    func testNetworkNotificationStillRespectsFailureAheadInQueue() async {
+        runtime.enqueue { await self.failOpen() }
+        runtime.handleObservedNetworkChange()
+        await runtime.drain()
+        XCTAssertEqual(runtime.refreshCalls, 0)
+        XCTAssertNotNil(state.preparationFailure)
     }
     func testBackgroundRechecksFailureAfterWaitingForQueue() async {
         runtime.enqueue { await self.failOpen() }

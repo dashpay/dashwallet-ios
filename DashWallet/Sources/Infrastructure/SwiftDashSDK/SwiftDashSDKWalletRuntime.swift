@@ -995,6 +995,19 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         return true
     }
 
+    private func handleObservedNetworkChange() {
+        // The automatic refresh may be refused after a database-open failure.
+        // Refuse its immediate side effects too, without detaching the runtime.
+        guard WalletLifecycleTransitionState.shared.allowsAutomaticWalletPreparation else { return }
+        // Silence all balance mirrors immediately so the previous network's
+        // funds never render as the new one's while the refresh is queued.
+        SwiftDashSDKSPVCoordinator.shared.prepareForNetworkSwitch()
+        PlatformAddressSyncCoordinator.shared.prepareForNetworkSwitch()
+        // The queue checks admission again: an earlier open can still fail
+        // before this notification reaches the head of the queue.
+        enqueueRefresh(trigger: .networkDidChange)
+    }
+
     private func installNetworkObserver() {
         guard observerToken == nil else { return }
 
@@ -1011,15 +1024,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // the full observer behavior below.
             guard !WalletEnvironment.isManagedSwitchNotification(note) else { return }
             Task { @MainActor in
-                // The home screen's funds are three published mirrors: the core
-                // balance plus BLAST's Platform and Shielded totals. `refresh`
-                // clears all three, but only once the serial lifecycle queue
-                // reaches `fullReset` — behind the seed-migrator wait and the
-                // BLAST/SPV stops. Silence and zero them here so the previously
-                // selected network's balances never render as the new one's.
-                SwiftDashSDKSPVCoordinator.shared.prepareForNetworkSwitch()
-                PlatformAddressSyncCoordinator.shared.prepareForNetworkSwitch()
-                Self.shared.enqueueRefresh(trigger: .networkDidChange)
+                Self.shared.handleObservedNetworkChange()
             }
         }
 
