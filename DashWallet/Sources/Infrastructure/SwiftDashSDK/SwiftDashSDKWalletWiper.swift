@@ -520,7 +520,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
     /// their SDK from local parameters, so a failure there is a real fault
     /// and must not be papered over by a weaker deletion path.
     @MainActor
-    private static func deletionBackend(for network: Network) async throws -> DeletionBackend {
+    private static func deletionBackend(for network: Network, forFullWipe: Bool = false) async throws -> DeletionBackend {
         let host = SwiftDashSDKHost.shared
         let backend: DeletionBackend
         do {
@@ -534,13 +534,16 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 """)
             backend = .offline(try await host.storeOnlyPersistenceHandler(for: network))
         }
-        do {
-            // Run before wallet enumeration, so Delete All also removes copies
-            // of wallets whose live rows/keys were removed by an earlier attempt.
-            try backend.deleteCompletedMigrationSnapshots()
-        } catch {
-            await backend.shutDownIfOwned()
-            throw error
+        if forFullWipe {
+            do {
+                // Delete All must also remove copies from empty stores. A
+                // single-wallet removal waits until membership is established
+                // and DeletionBackend.delete runs, before touching snapshots.
+                try backend.deleteCompletedMigrationSnapshots()
+            } catch {
+                await backend.shutDownIfOwned()
+                throw error
+            }
         }
         return backend
     }
@@ -599,7 +602,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
 
             for network in networks {
                 do {
-                    let backend = try await deletionBackend(for: network)
+                    let backend = try await deletionBackend(for: network, forFullWipe: true)
                     var walletIds = backend.loadedWalletIds
                     walletIds.formUnion(storedWalletIdsByNetwork[network] ?? [])
 
@@ -803,7 +806,6 @@ final class SwiftDashSDKWalletWiper: NSObject {
                         let handler = try await SwiftDashSDKHost.shared.storeOnlyPersistenceHandler(
                             for: .devnet,
                             scope: scope)
-                        try handler.deleteCompletedMigrationSnapshots()
                         deletions.append(PendingDeletion(
                             network: .devnet,
                             walletId: walletId,
