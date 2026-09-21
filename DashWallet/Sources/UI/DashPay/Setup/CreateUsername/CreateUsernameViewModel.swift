@@ -209,21 +209,78 @@ class CreateUsernameViewModel: ObservableObject {
 
     /// Per-funding-source eligibility flags. `hasMinimumRequiredBalance`
     /// (above) is kept as the legacy OR-of-both flag for any existing
-    /// consumer; the new picker UI reads these to decide whether to
-    /// show both options or auto-pin to the single viable source.
+    /// consumer; these say which source can actually pay — the privacy page
+    /// offers Platform only on the second one, and the form pins to the first
+    /// viable source when no choice was carried in.
     @Published private(set) var hasMinimumRequiredCoreBalance = false
     @Published private(set) var hasMinimumRequiredPlatformBalance = false
     /// Formatted Platform Payment balance (in DASH, derived from the
     /// duff-equivalent of `SwiftDashSDKWalletState.platformPaymentCredits`).
     @Published private(set) var platformPaymentBalance: String = ""
+    /// Mirrors `DWGlobalOptions.advancedModeEnabled`. Paying for a username
+    /// from Platform credits is one of the surfaces the mode unlocks — it
+    /// spends a balance that only advanced mode even shows — and it has to
+    /// appear and disappear with the switch rather than on the next launch.
+    @Published private(set) var isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+
+    /// Which balance the user chose on the Join DashPay sheet's privacy page.
+    ///
+    /// The create form used to ask the same question a second time, with its
+    /// own picker. It no longer does, so the answer has to travel — and the
+    /// route between the two screens runs through Home's shortcut dispatcher,
+    /// which carries no payload.
+    ///
+    /// Type-level, not per-instance, because the two screens do not share an
+    /// instance: the privacy page runs on `shared`, while `CreateUsernameView`
+    /// makes its own so each presentation of the form starts clean. An
+    /// instance property here was read back as nil every time, and the form
+    /// silently funded from whatever source happened to be viable instead of
+    /// the one that was picked. The choice belongs to the flow, not to either
+    /// object. `@MainActor` on the class covers it.
+    private static var chosenFundingSource: DWIdentityFundingSource?
+
+    /// Which source will actually pay, once the form has adopted the pick.
+    ///
+    /// The cost rule is judged against THIS and nothing else. It used to pass
+    /// whenever *any* balance could cover the name, which was right while the
+    /// form carried its own picker — the user could switch to whichever source
+    /// was funded. With the source fixed a screen earlier that became a false
+    /// green: a 0.1 Dash Platform balance chosen for a name that costs 0.25
+    /// reported "you need 0.25" as satisfied because Core happened to hold
+    /// enough.
+    ///
+    /// `nil` before the form has appeared, when the OR-of-all-sources is still
+    /// the honest answer — no source has been committed to yet.
+    @Published private(set) var activeFundingSource: DWIdentityFundingSource?
+
+    /// Records the privacy page's pick.
+    func chooseFundingSource(_ source: DWIdentityFundingSource) {
+        Self.chosenFundingSource = source
+    }
+
+    /// Told by the form which source it settled on, on appear and whenever it
+    /// changes. Re-runs validation, because the cost rule's verdict depends on
+    /// it.
+    func setActiveFundingSource(_ source: DWIdentityFundingSource) {
+        guard activeFundingSource != source else { return }
+        activeFundingSource = source
+        validateUsername(username: username)
+    }
+
+    /// Hands the pick to the form and forgets it. Consume-once on purpose: a
+    /// later visit that never passes the privacy page — a recovery, an
+    /// invitation claim — must not inherit a choice made for a previous
+    /// attempt.
+    func consumeChosenFundingSource() -> DWIdentityFundingSource? {
+        defer { Self.chosenFundingSource = nil }
+        return Self.chosenFundingSource
+    }
 
     /// Shielded-funding readiness for the CURRENT typed name (contested
     /// names need the 0.25 DASH exit denomination instead of 0.1).
     /// Recomputed by `validateUsername` and on every readiness publish.
     /// nil while the SDK host has no hydrated wallet.
     @Published private(set) var shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot? = nil
-    /// Formatted unspent shielded balance in DASH, for the picker label.
-    @Published private(set) var shieldedBalance: String = ""
 
     /// A prior Core-funded attempt has already created an identity or
     /// persisted an unfinished asset lock. The form must not require a
@@ -316,6 +373,47 @@ class CreateUsernameViewModel: ObservableObject {
 
         observeBalance()
     }
+
+    #if DEBUG
+    /// True only for `makeForPreview` instances. They never wired the
+    /// balance observers, so nothing may reach for the SDK singletons a
+    /// canvas process has no hydrated wallet for.
+    private(set) var isPreviewInstance = false
+
+    /// Lightweight init used only by SwiftUI previews. Skips `init()`'s
+    /// Combine wiring — it touches `SwiftDashSDKWalletState`, the
+    /// registration coordinator and the shielded readiness service — and
+    /// just poses the published state the Join DashPay surfaces read.
+    private init(previewBalance: String,
+                 hasMinimumRequiredBalance: Bool,
+                 hasRecommendedBalance: Bool,
+                 shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot?) {
+        self.isPreviewInstance = true
+        self.balance = previewBalance
+        self.hasMinimumRequiredBalance = hasMinimumRequiredBalance
+        self.hasRecommendedBalance = hasRecommendedBalance
+        self.shieldedReadiness = shieldedReadiness
+    }
+
+    /// - Parameters:
+    ///   - balance: formatted transparent balance, as the info line prints it.
+    ///   - hasMinimumRequiredBalance: covers a standard name (0.03 DASH).
+    ///   - hasRecommendedBalance: covers a contested name (0.25 DASH).
+    ///   - shieldedReadiness: poses the shielded route; `nil` stands for a
+    ///     wallet that has not hydrated yet, which is what keeps Continue off.
+    static func makeForPreview(
+        balance: String = "0.00000000",
+        hasMinimumRequiredBalance: Bool = false,
+        hasRecommendedBalance: Bool = false,
+        shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot? = nil
+    ) -> CreateUsernameViewModel {
+        CreateUsernameViewModel(
+            previewBalance: balance,
+            hasMinimumRequiredBalance: hasMinimumRequiredBalance,
+            hasRecommendedBalance: hasRecommendedBalance,
+            shieldedReadiness: shieldedReadiness)
+    }
+    #endif
     
     /// Terminal outcome of a username-registration attempt, surfaced to
     /// the SwiftUI form so it can keep the screen up through the PIN +
@@ -601,17 +699,16 @@ class CreateUsernameViewModel: ObservableObject {
             isContestedCandidate = contestedCandidate
         }
         let requiredCost = isContested ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME : DWDP_MIN_BALANCE_TO_CREATE_USERNAME
-        // Any funding source can satisfy the cost rule. Core spends
-        // BIP44 UTXOs via `registerIdentityWithFunding`; Platform
-        // Payment spends DIP-17 credits via
-        // `registerIdentityFromAddresses`; Shielded spends a fixed
-        // exit denomination via `shieldedIdentityCreateFromPool` and
-        // is viable only when its readiness gates (funding, maturity,
-        // pool) all pass. The picker in `CreateUsernameView` lets the
-        // user choose among the viable sources; the form is unblocked
-        // as soon as any one is.
+        // What each source spends: Core, BIP44 UTXOs via
+        // `registerIdentityWithFunding`; Platform Payment, DIP-17 credits via
+        // `registerIdentityFromAddresses`; Shielded, a fixed exit denomination
+        // via `shieldedIdentityCreateFromPool`, viable only when its readiness
+        // gates (funding, maturity, pool) all pass. All three are measured
+        // here; `activeFundingSource` decides which verdict the cost rule
+        // actually reports.
         let coreBalance = coreSpendableDuffs
         let hasEnoughCore = coreBalance >= requiredCost
+
         let hasEnoughPlatform = PlatformPaymentIdentityFundingPolicy
             .canFund(
                 candidates: platformFundingCandidates,
@@ -621,10 +718,6 @@ class CreateUsernameViewModel: ObservableObject {
             : ShieldedIdentityFundingReadiness.shared.standardSnapshot
         if shieldedReadiness != currentShieldedReadiness {
             shieldedReadiness = currentShieldedReadiness
-            // The picker's Shielded row and this formatted amount read the same
-            // snapshot, so they have to move together — `checkBalance` no longer
-            // runs on the typing path that reaches here.
-            shieldedBalance = Self.formattedShieldedBalance(from: currentShieldedReadiness)
         }
         armShieldedMaturityRevalidation()
         updateCurrentFundingEligibility(
@@ -638,7 +731,20 @@ class CreateUsernameViewModel: ObservableObject {
         // error alert.
         let voucherFunded = isInvitationMode
         let recoveryFunded = hasPendingRegistrationRecovery && !voucherFunded
-        let hasEnoughBalance = recoveryFunded || voucherFunded || hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding
+        // Only the source that will pay counts. `nil` is the window before the
+        // form appears and commits to one; there, any source still could.
+        let hasEnoughFunding: Bool
+        switch activeFundingSource {
+        case .core:
+            hasEnoughFunding = hasEnoughCore
+        case .platformPayment:
+            hasEnoughFunding = hasEnoughPlatform
+        case .shielded:
+            hasEnoughFunding = hasReadyShieldedFunding
+        case .invitation, .none:
+            hasEnoughFunding = hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding
+        }
+        let hasEnoughBalance = recoveryFunded || voucherFunded || hasEnoughFunding
         let canContinue = lengthValid && !hasIllegalCharacters && !startsOrEndsWithHyphen && hasEnoughBalance
 
         // Same label as the existing check state → carry its rule forward
@@ -700,7 +806,8 @@ class CreateUsernameViewModel: ObservableObject {
                 + "core=\(hasMinimumRequiredCoreBalance) [spendable \(coreSpendableDuffs) duffs], "
                 + "platform=\(hasMinimumRequiredPlatformBalance), "
                 + "shielded=\(hasReadyShieldedFunding), "
-                + "recovery=\(hasPendingRegistrationRecovery), voucher=\(isInvitationMode)")
+                + "recovery=\(hasPendingRegistrationRecovery), voucher=\(isInvitationMode) — "
+                + "judging \(activeFundingSource?.logLabel ?? "any (no choice committed)")")
 
         let result: UsernameValidationRuleResult
         var locked = false
@@ -871,6 +978,12 @@ class CreateUsernameViewModel: ObservableObject {
                 self.checkBalance()
             }
             .store(in: &cancellableBag)
+        NotificationCenter.default.publisher(for: .advancedModeDidChange)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+            }
+            .store(in: &cancellableBag)
         // Shielded readiness changes (a note maturing, a shielded sync
         // pass landing new notes, the pool count arriving) re-run the
         // same validation so the picker's shielded option and the
@@ -957,15 +1070,6 @@ class CreateUsernameViewModel: ObservableObject {
         return contestedShieldedReadiness
     }
 
-    /// Credits → duffs (÷1000) for display; the readiness snapshot keeps the
-    /// canonical credit-denominated values.
-    private static func formattedShieldedBalance(
-        from snapshot: ShieldedIdentityFundingReadiness.Snapshot?
-    ) -> String {
-        ((snapshot?.unspentCredits ?? 0) / 1_000)
-            .dashAmount.formattedDashAmountWithoutCurrencySymbol
-    }
-
     private func refreshRegistrationRecoverySnapshot() {
         let pending = DWIdentityRegistrationCoordinator.shared.hasPendingRegistrationRecovery()
         if hasPendingRegistrationRecovery != pending {
@@ -998,7 +1102,6 @@ class CreateUsernameViewModel: ObservableObject {
         let requiredDuffs = uiState.requiredDash
         self.balance = balance.dashAmount.formattedDashAmountWithoutCurrencySymbol
         self.platformPaymentBalance = platformDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
-        self.shieldedBalance = Self.formattedShieldedBalance(from: shieldedReadiness)
         // These flags drive the actual funding-source picker. They must
         // follow the current name's cost, otherwise a Core/Platform
         // balance that covers 0.03 DASH but not a contested name's
