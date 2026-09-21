@@ -27,6 +27,15 @@ so missing scratch files need not block recovery. Failure must never
 erase the user's database. Newer schema versions and corrupt stores do not
 qualify for this bridge.
 
+Remove and Delete All also discard completed migration snapshots through the
+SDK before deleting SDK keys or live wallet rows, including cached containers,
+empty stores and inactive network stores. A snapshot contains the entire old
+store, so removing one wallet discards that completed snapshot while preserving
+other wallets' current rows. A pending migration journal or cleanup failure
+stops SDK deletion and is reported to the caller. Whole-app wipe may already
+have removed legacy DashSync mnemonic entries in its existing first phase;
+snapshot cleanup is not an atomic transaction with that legacy cleanup.
+
 This bridge runs once per database, independently of the App Store observer
 and its `bootstrap` operation. It does not modify frozen V1 or establish which
 source commit was published. Regression fixtures include synthetic data made
@@ -97,6 +106,10 @@ same Platform sources; it is not extracted from the device binary. The capture
 contains the schema version, entity hashes, checksum, and SQLite indexes, plus
 toolchain metadata. Indexes are checked separately because entity hashes do not
 cover them.
+Before the native capture starts, `freeze_schema_models.py --check-inventory`
+checks that supported stored declarations reference only inventoried or standard
+types, including nested value-type fields and enum payloads. Missing types or
+unsupported declaration syntax stop capture before evidence is recorded.
 
 The branch records `builds/<bundle>/<app-version>/<build>/manifest.json` and
 `stores/<sha256>.store` before upload, then `apple-builds/<id>.json` when processing
@@ -146,8 +159,10 @@ that mismatch; it must not roll back current code or invent a migration.
 - The current `appVersionState` takes precedence over legacy `appStoreState`.
   An unknown current state fails with an actionable error rather than silently
   skipping the release or trusting the deprecated field. Update the observer's
-  state mapping after checking Apple's documentation, then retry. This also
-  protects TestFlight version selection from understating the published version.
+  state mapping after checking Apple's documentation, then retry. This strict
+  history check applies to the observer and promotable candidate gates;
+  `internal-only` version selection still uses known published versions and
+  does not fail just because Apple adds an unknown state.
   A legacy-only `DEVELOPER_REMOVED_FROM_SALE` or `REMOVED_FROM_SALE` response
   for a version newer than the accepted baseline stops schema observation and
   candidate gates because it does not establish publication history. Older
@@ -157,7 +172,8 @@ that mismatch; it must not roll back current code or invent a migration.
   resolution, which still checks known published versions. Inspect
   that version in App Store Connect and recover its current version state;
   do not mark it published or substitute a build to make the check pass.
-- Missing Apple build relationships and bad release evidence are reported
+- Malformed publication records, unknown publication states, missing Apple
+  build relationships and bad release evidence are reported per release
   without preventing independent valid releases or retained-proof manual retries
   from reaching their freeze PRs. The observation run still fails and
   the next candidate remains blocked until every required release is reconciled.
