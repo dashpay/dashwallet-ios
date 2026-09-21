@@ -111,6 +111,89 @@ final class IdentityBalanceRefreshTests: XCTestCase {
         XCTAssertEqual(result, 0)
     }
 
+    #if canImport(dashpay)
+    func testInternalTransferMaxWaitsForPersistedNetworkBalance() async {
+        let cached: UInt64 = 24_818_360_460
+        let actual: UInt64 = 4_619_310_760
+        let model = InternalTransferViewModel.makeForPreview(
+            identitySource: true, identityCredits: cached, amountText: "0.01")
+        let started = expectation(description: "Transfer balance read started")
+        var resume: CheckedContinuation<Void, Never>?
+        var persisted = cached
+        let task = model.refreshIdentityBalanceSnapshot(
+            refresh: {
+                await withCheckedContinuation { continuation in
+                    resume = continuation
+                    started.fulfill()
+                }
+                persisted = actual
+            },
+            snapshot: { (Data(repeating: 7, count: 32), persisted) })
+        await fulfillment(of: [started], timeout: 2)
+        XCTAssertTrue(model.isIdentityBalanceRefreshing)
+        XCTAssertFalse(model.canContinue)
+        model.fillMaxFromWallet()
+        XCTAssertEqual(model.amountText, "0.01", "Max must not use the stale cached balance")
+        resume?.resume()
+        await task.value
+        XCTAssertFalse(model.isIdentityBalanceRefreshing)
+        XCTAssertEqual(model.identityBalanceCredits, actual)
+        model.fillMaxFromWallet()
+        XCTAssertEqual(model.dashDuffsUnsigned,
+                       IdentityWithdrawViewModel.spendableCredits(balanceCredits: actual) / 1000)
+        XCTAssertTrue(model.canContinue)
+    }
+
+    func testInternalTransferBestEffortFailureKeepsTheCachedBalance() async {
+        let cached: UInt64 = 4_619_310_760
+        let model = InternalTransferViewModel.makeForPreview(identitySource: true, identityCredits: cached)
+        var reported = false
+        await model.refreshIdentityBalanceSnapshot(
+            refresh: {
+                await IdentityBalanceRefresh.run(
+                    isCurrent: { true }, refresh: { throw Failure.offline },
+                    publish: { _ in XCTFail("Failed read must not publish") },
+                    onFailure: { _ in reported = true })
+            },
+            snapshot: { (Data(repeating: 7, count: 32), cached) }).value
+        XCTAssertTrue(reported)
+        XCTAssertFalse(model.isIdentityBalanceRefreshing)
+        XCTAssertEqual(model.identityBalanceCredits, cached)
+    }
+
+    func testInternalTransferSupersededRefreshCannotOverwriteTheNewSnapshot() async {
+        let model = InternalTransferViewModel.makeForPreview(identitySource: true)
+        let started = expectation(description: "Old read started")
+        var resume: CheckedContinuation<Void, Never>?
+        let old = model.refreshIdentityBalanceSnapshot(
+            refresh: {
+                await withCheckedContinuation { continuation in
+                    resume = continuation
+                    started.fulfill()
+                }
+            },
+            snapshot: { XCTFail("Cancelled request must not read a snapshot"); return nil })
+        await fulfillment(of: [started], timeout: 2)
+        let newId = Data(repeating: 8, count: 32)
+        await model.refreshIdentityBalanceSnapshot(
+            refresh: {}, snapshot: { (newId, 4_619_310_760) }).value
+        resume?.resume()
+        await old.value
+        XCTAssertEqual(model.identityId, newId)
+        XCTAssertEqual(model.identityBalanceCredits, 4_619_310_760)
+        XCTAssertFalse(model.isIdentityBalanceRefreshing)
+    }
+
+    func testInternalTransferContextSwitchClearsTheOldSpendingSnapshot() async {
+        let model = InternalTransferViewModel.makeForPreview(
+            identitySource: true, identityCredits: 24_818_360_460, amountText: "0.01")
+        await model.refreshIdentityBalanceSnapshot(refresh: {}, snapshot: { nil }).value
+        XCTAssertNil(model.identityId)
+        XCTAssertFalse(model.canContinue)
+        XCTAssertFalse(model.isIdentityBalanceRefreshing)
+    }
+    #endif
+
     #if !canImport(dashpay)
     // The standalone runner compiles the actual coordinator completion block.
     func testCoordinatorReturnsSuccessAndClearsDraftWhileBalanceReadIsSuspended() async throws {
