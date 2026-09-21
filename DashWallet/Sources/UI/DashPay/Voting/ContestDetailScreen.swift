@@ -331,9 +331,16 @@ private struct ContenderDetailScreen: View {
     let onVote: () -> Void
 
     @Environment(\.dismiss) private var dismiss
-    /// nil while the lookup runs, `.some(nil)` once it has answered with
-    /// nothing — "checking" and "none published" are different answers.
-    @State private var link: URL??
+    /// What the link lookup has to say. Reading, a link, nothing published, or
+    /// a failure — four answers, because collapsing the last two tells a voter
+    /// this contender published no proof when in truth the query did not run.
+    private enum LinkState {
+        case reading
+        case published(URL)
+        case none
+        case failed
+    }
+    @State private var link: LinkState = .reading
 
     private enum Layout {
         static let cardSpacing: CGFloat = 2
@@ -405,25 +412,50 @@ private struct ContenderDetailScreen: View {
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
         .task {
-            guard link == nil else { return }
-            link = .some((try? await IdentityVerifyService.shared.publishedURL(
-                forLabel: normalizedLabel, ownedBy: contender.identityId)) ?? nil)
+            guard case .reading = link else { return }
+            await loadLink()
+        }
+    }
+
+    private func loadLink() async {
+        link = .reading
+        do {
+            if let url = try await IdentityVerifyService.shared.publishedURL(
+                forLabel: normalizedLabel, ownedBy: contender.identityId) {
+                link = .published(url)
+            } else {
+                link = .none
+            }
+        } catch {
+            link = .failed
         }
     }
 
     @ViewBuilder
     private var linkValue: some View {
         switch link {
-        case .none:
+        case .reading:
             HStack(spacing: 6) {
                 SwiftUI.ProgressView()
                 Text(NSLocalizedString("Checking…", comment: "Voting"))
             }
             .foregroundColor(Color.dash.secondaryText)
-        case .some(.none):
+        case .none:
             Text(NSLocalizedString("None", comment: "Voting"))
                 .foregroundColor(Color.dash.secondaryText)
-        case .some(.some(let url)):
+        case .failed:
+            // Not "None": the difference between "published nothing" and "we
+            // could not ask" is the whole value of this row to a voter.
+            Button {
+                Task { await loadLink() }
+            } label: {
+                HStack(spacing: 6) {
+                    Text(NSLocalizedString("Could not check — retry", comment: "Voting"))
+                    Image(systemName: "arrow.clockwise")
+                }
+                .foregroundStyle(Color.dash.blue)
+            }
+        case .published(let url):
             Link(destination: url) {
                 HStack(spacing: 6) {
                     Text(url.absoluteString)

@@ -116,8 +116,17 @@ class MainMenuViewModel: ObservableObject {
     }
 
     func refreshProfileUsername() {
-        let owned = MainActor.assumeIsolated { DWCurrentUserIdentityInfo.shared.usernames.first }
-        let mirrored = DWGlobalOptions.sharedInstance().dashpayUsername
+        let identity = MainActor.assumeIsolated { DWCurrentUserIdentityInfo.shared.refreshedSnapshot() }
+        // The mirror in `DWGlobalOptions` is global, not per wallet. While a
+        // wallet switch is in flight the new identity has not loaded yet and
+        // `usernames` is legitimately empty — falling back to the mirror there
+        // would show the PREVIOUS wallet's username as this one's profile. It
+        // is only consulted once the names of the active identity are in, as a
+        // stand-in for a name this wallet owns but has not re-read yet.
+        let owned = identity.usernames.first
+        let mirrored = (!identity.isLoading && identity.namesAreLoaded && identity.hasIdentity)
+            ? DWGlobalOptions.sharedInstance().dashpayUsername
+            : nil
         let username = owned ?? mirrored
         profileUsername = (username?.isEmpty == false) ? username : nil
     }

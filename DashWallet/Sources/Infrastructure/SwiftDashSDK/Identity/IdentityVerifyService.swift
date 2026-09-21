@@ -109,26 +109,43 @@ final class IdentityVerifyService {
         [["normalizedLabel","==","\(normalized)"]]
         """
 
-        let response: [String: Any]
-        do {
-            response = try await Task.detached(priority: .userInitiated) {
-                try await sdk.documentList(
-                    dataContractId: contractId,
-                    documentType: Self.documentType,
-                    whereClause: whereClause,
-                    limit: 20)
-            }.value
-        } catch {
-            Self.logger.error("🔗 IDENT-VERIFY :: contender lookup failed: \(String(describing: error), privacy: .public)")
-            throw ServiceError.lookupFailed
-        }
+        // Paged rather than capped: the label is the only field this document
+        // can be found by, so every contender's document comes back in one
+        // list. A fixed limit would answer "no link published" for a contender
+        // who simply sat past the end of the first page.
+        var startAfter: String? = nil
+        for _ in 0..<Self.maxLookupPages {
+            let response: [String: Any]
+            do {
+                let after = startAfter
+                response = try await Task.detached(priority: .userInitiated) {
+                    try await sdk.documentList(
+                        dataContractId: contractId,
+                        documentType: Self.documentType,
+                        whereClause: whereClause,
+                        limit: Self.lookupPageSize,
+                        startAfter: after)
+                }.value
+            } catch {
+                Self.logger.error("🔗 IDENT-VERIFY :: contender lookup failed: \(String(describing: error), privacy: .public)")
+                throw ServiceError.lookupFailed
+            }
 
-        guard let documents = response["documents"] as? [[String: Any]] else {
-            throw ServiceError.lookupFailed
+            guard let documents = response["documents"] as? [[String: Any]] else {
+                throw ServiceError.lookupFailed
+            }
+            if let theirs = documents.first(where: { Self.isOwned(byBase58: identityIdBase58, document: $0) }) {
+                guard let urlString = theirs["url"] as? String else { return nil }
+                return URL(string: urlString)
+            }
+            // A short page is the last one.
+            guard documents.count == Int(Self.lookupPageSize), let last = documents.last,
+                  let cursor = last["$id"] as? String
+            else { return nil }
+            startAfter = cursor
         }
-        let theirs = documents.first { Self.isOwned(byBase58: identityIdBase58, document: $0) }
-        guard let urlString = theirs?["url"] as? String else { return nil }
-        return URL(string: urlString)
+        Self.logger.error("🔗 IDENT-VERIFY :: contender lookup gave up after \(Self.maxLookupPages, privacy: .public) pages")
+        return nil
     }
 
     func publishedURL(forLabel label: String) async throws -> URL? {
@@ -277,6 +294,12 @@ final class IdentityVerifyService {
         Self.logger.info("🔗 IDENT-VERIFY :: published link for \(normalized, privacy: .public) (registration flow)")
         return url
     }
+
+    /// Documents per page when looking a contender's link up, and the number
+    /// of pages before the search gives up — a contest with more contenders
+    /// than this has bigger problems than a missing link.
+    private static let lookupPageSize: UInt32 = 100
+    private static let maxLookupPages = 10
 
     /// Whether `document` belongs to `identityId`.
     ///

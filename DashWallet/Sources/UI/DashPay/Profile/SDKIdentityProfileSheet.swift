@@ -155,7 +155,10 @@ struct SDKIdentityProfileSheet: View {
                     // to the Join DashPay sheet's privacy page, and a handoff
                     // to the status row leaves this screen just the same.
                     finish: { showingUsernameRecovery = false },
-                    handOffToStatusRow: { showingUsernameRecovery = false })
+                    handOffToStatusRow: { showingUsernameRecovery = false },
+                    // The form draws its own back arrow; without this it is a
+                    // visible control that does nothing inside a cover.
+                    onBack: { showingUsernameRecovery = false })
                 .navigationTitle(NSLocalizedString("Finish username registration", comment: "DashPay registration recovery"))
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {

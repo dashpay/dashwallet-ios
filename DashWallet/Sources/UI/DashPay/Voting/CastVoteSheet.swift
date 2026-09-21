@@ -48,16 +48,25 @@ struct CastVoteSheet: View {
         viewModel.nodesForVote(choice, on: contest.normalizedLabel)
     }
 
+    /// The nodes this sheet is talking about at all: `candidateNodes` is
+    /// already filtered by the remembered selection, so the counts explaining
+    /// what was left out have to be filtered the same way — otherwise nodes
+    /// the user never selected are reported as having used up their votes.
+    private var selectedVotableNodes: [VoterNode] {
+        let selected = viewModel.effectiveSelectedNodeIDs
+        return viewModel.votableNodes.filter { selected.contains($0.proTxHash) }
+    }
+
     /// Nodes left out because they already hold this exact choice.
     private var holdingThisChoice: Int {
-        viewModel.votableNodes.filter {
+        selectedVotableNodes.filter {
             viewModel.liveChoice(of: $0, on: contest.normalizedLabel) == choice
         }.count
     }
 
     /// Nodes left out because they have no casts left on this contest.
     private var outOfCasts: Int {
-        max(0, viewModel.votableNodes.count - candidateNodes.count - holdingThisChoice)
+        max(0, selectedVotableNodes.count - candidateNodes.count - holdingThisChoice)
     }
 
     var body: some View {
@@ -122,18 +131,26 @@ struct CastVoteSheet: View {
             } header: {
                 Text(NSLocalizedString("Vote with", comment: "Voting"))
             } footer: {
-                if holdingThisChoice > 0 {
-                    Text(String(
-                        format: NSLocalizedString(
-                            "%d of your nodes already voted this way and are not listed. Any node voting differently is listed — its vote will be replaced.",
-                            comment: "Voting"),
-                        holdingThisChoice))
-                } else if outOfCasts > 0 {
-                    Text(String(
-                        format: NSLocalizedString(
-                            "%d of your nodes have used all 5 votes Dash Platform allows on one contest.",
-                            comment: "Voting"),
-                        outOfCasts))
+                if holdingThisChoice > 0 || outOfCasts > 0 {
+                    // Both reasons when both apply: a node already voting this
+                    // way and a node with no casts left are different answers,
+                    // and showing one hides the other.
+                    VStack(alignment: .leading, spacing: 2) {
+                        if holdingThisChoice > 0 {
+                            Text(String(
+                                format: NSLocalizedString(
+                                    "%d of your nodes already voted this way and are not listed. Any node voting differently is listed — its vote will be replaced.",
+                                    comment: "Voting"),
+                                holdingThisChoice))
+                        }
+                        if outOfCasts > 0 {
+                            Text(String(
+                                format: NSLocalizedString(
+                                    "%d of your nodes have used all 5 votes Dash Platform allows on one contest.",
+                                    comment: "Voting"),
+                                outOfCasts))
+                        }
+                    }
                 } else if selectedNodeIDs.count < candidateNodes.count, candidateNodes.count > 1 {
                     Text(NSLocalizedString(
                         "Selecting fewer nodes reveals less about which masternodes you run.",
