@@ -159,20 +159,32 @@ struct CastVoteSheet: View {
         }
     }
 
+    /// The spelling a human recognizes. Platform indexes `10stest`; the person
+    /// asked for `iostest`, and that is what the rest of this flow shows —
+    /// naming the stored form here made the two screens look like two names.
+    private var displayLabel: String {
+        if case .towards(let identityId) = choice,
+           let contender = contest.contenders.first(where: { $0.identityId == identityId }),
+           let label = contender.displayLabel {
+            return label
+        }
+        return contest.contenders.compactMap(\.displayLabel).first ?? contest.normalizedLabel
+    }
+
     private var summaryTitle: String {
         switch choice {
         case .towards:
             return String(
                 format: NSLocalizedString("Award “%@” to this contender", comment: "Voting"),
-                contest.normalizedLabel)
+                displayLabel)
         case .lock:
             return String(
                 format: NSLocalizedString("Lock “%@” so nobody gets it", comment: "Voting"),
-                contest.normalizedLabel)
+                displayLabel)
         case .abstain:
             return String(
                 format: NSLocalizedString("Abstain on “%@”", comment: "Voting"),
-                contest.normalizedLabel)
+                displayLabel)
         }
     }
 
