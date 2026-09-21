@@ -7,7 +7,7 @@
 
 import Combine
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 @MainActor
 final class CoinbaseTransferAmountTests: XCTestCase {

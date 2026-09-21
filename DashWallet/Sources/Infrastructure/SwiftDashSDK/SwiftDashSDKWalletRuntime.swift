@@ -244,6 +244,51 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         dispatchOnPipeline { shared.enqueueFullReset(lastError: nil, forWipe: false) }
     }
 
+    /// Apply a devnet configuration change as one lifecycle operation.
+    ///
+    /// A start reads the devnet values at several points — SDK construction
+    /// (quorum URL), the Platform/SPV/shielded store directories
+    /// (`Network.persistenceScope`, from the devnet name) and SPV peer
+    /// discovery — with suspensions in between. Writing them from Devnet
+    /// Settings while a start was suspended let one start mix two devnets'
+    /// values. Here `apply` runs on the serial lifecycle queue, after every op
+    /// already queued has finished; when `restartIfRunningOnDevnet` is set and
+    /// the wallet runs on devnet, it runs between a full teardown and the
+    /// rebuild, so each start sees one configuration. Returns once the whole
+    /// operation, rebuild included, has run.
+    @MainActor
+    static func applyDevnetConfiguration(
+        restartIfRunningOnDevnet: Bool,
+        _ apply: @escaping @MainActor () -> Void
+    ) async {
+        await shared.enqueueAwaitable {
+            let restart = restartIfRunningOnDevnet && WalletEnvironment.isDevnet
+            if restart {
+                await shared.fullReset(lastError: nil, forWipe: false)
+                // A changed chain is a wallet-context transition, not a
+                // restart of the same one. The identity mirror is keyed by
+                // `Network`, which is `.devnet` for every devnet, so its
+                // cached snapshot cannot tell A from B: after registering a
+                // username on A, a fresh B — where that identity does not
+                // exist — would keep presenting A's identity, username and
+                // registration state. Cleared between the teardown and the
+                // rebuild, so nothing reads A's snapshot while B binds.
+                DWCurrentUserIdentityInfo.shared.resetForWalletRemoval()
+            }
+            apply()
+            if restart {
+                await shared.refresh(trigger: .startIfReady)
+                // Published once the destination wallet is bound (or the start
+                // failed and none is). `refresh` publishes only for the
+                // material/network/rows triggers, and a devnet→devnet restart
+                // is none of them — without this, consumers that cache per
+                // active wallet (contacts, home, the identity banner) keep the
+                // snapshot they loaded on A.
+                shared.publishActiveWalletDidChange(reason: "devnet-chain-changed")
+            }
+        }.value
+    }
+
     /// Stop only Core SPV. The host, wallet, published balance and Platform
     /// sync services stay alive so a later Core restart does not rebuild the
     /// shared SDK runtime.
@@ -267,7 +312,14 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     @objc(handleWalletMaterialChanged)
     nonisolated static func handleWalletMaterialChanged() {
-        dispatchOnPipeline { shared.enqueueRefresh(trigger: .walletMaterialChanged) }
+        // The app-level wallet gate caches which networks the stored phrases
+        // belong to (deriving that is expensive); material changing is exactly
+        // when the answer can change.
+        WalletEnvironment.invalidateWalletMaterialCache()
+        dispatchOnPipeline {
+            PlatformAddressSyncCoordinator.shared.invalidateBalancesIfSelectionChanged()
+            shared.enqueueRefresh(trigger: .walletMaterialChanged)
+        }
     }
 
     /// Tear down the runtime after a completed wipe and report when that
@@ -290,9 +342,29 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// at launch and after wallet recovery, then return only when Platform
     /// sync is bound again (or the start has failed). Sync Info uses this to
     /// turn "Sync Now" into a real in-session recovery action after Stop or a
-    /// recover-time binding race.
-    func rearmPlatformSync() async {
-        await awaitRefresh(trigger: .platformSyncRearm)
+    /// recover-time binding race; `BackgroundRefreshCoordinator` reuses it as
+    /// the awaitable bring-up of its bounded background sync.
+    func rearmPlatformSync(if shouldStart: @escaping @MainActor () -> Bool = { true }) async {
+        let task = enqueueAwaitable { [weak self] in
+            // A queued recovery must not undo a later Stop or wallet wipe.
+            guard shouldStart() else { return }
+            await self?.refresh(trigger: .platformSyncRearm)
+        }
+        await task.value
+    }
+
+    /// Awaitable counterpart of `stop()`: the same full teardown
+    /// (`fullReset` — BLAST → SPV → wallet state → host) as one link of the
+    /// serial lifecycle chain, returning only after the host's native
+    /// shutdown has completed and logged its shutdown metrics.
+    /// `BackgroundRefreshCoordinator` uses this after a background-launch
+    /// sync so persistence is flushed before the task reports completion and
+    /// the process suspends.
+    func stopAndAwaitTeardown() async {
+        let task = enqueueAwaitable { [weak self] in
+            await self?.fullReset(lastError: nil, forWipe: false)
+        }
+        await task.value
     }
 
     /// Rebuild the shared runtime after the SwiftData rows it loaded from were
@@ -343,8 +415,16 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// chain are the intended callers.
     @MainActor
     func switchNetwork(to kind: WalletEnvironment.NetworkKind) async throws {
-        guard kind != .devnet else { throw SwitchError.unsupportedNetwork }
-        let targetNetwork: Network = kind == .mainnet ? .mainnet : .testnet
+        // Devnet needs its coordinates before anything is torn down: failing
+        // here leaves the current runtime untouched with a message the
+        // Settings UI can show, instead of driving the overlay into a failed
+        // switch for a start that could never succeed. (The SPV coordinator
+        // re-checks this at start time for the config-cleared-while-on-devnet
+        // case.)
+        if kind == .devnet, !DevnetConfiguration.isConfigured {
+            throw SwitchError.devnetNotConfigured
+        }
+        let targetNetwork: Network = sdkNetwork(for: kind)
         // No-op check stays BEFORE the admission gate (read-only, never
         // consumes the gate); the gate itself rejects when ANY interactive
         // lifecycle operation — network switch, wallet switch, or removal —
@@ -378,6 +458,16 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         }
         guard WalletLifecycleTransitionState.shared.tryBegin(.switchingNetwork(from: from, to: kind)) else {
             throw SwitchError.switchInProgress
+        }
+        // Record which wallet devnet is being entered FROM before the network
+        // key moves. The transition phase carries the same fact, but only in
+        // memory: this switch persists the selection and then awaits peer
+        // discovery and a full runtime start, and a termination inside that
+        // window would otherwise relaunch on devnet with no source wallet.
+        // See `WalletEnvironment.devnetProvisioningSourceWalletId`.
+        if kind == .devnet, from != .devnet {
+            WalletEnvironment.devnetProvisioningSourceWalletId =
+                WalletEnvironment.activeWalletId(for: from)
         }
         let transitionID = String(UUID().uuidString.prefix(8))
         let started = CFAbsoluteTimeGetCurrent()
@@ -451,6 +541,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             return
         }
 
+        PlatformAddressSyncCoordinator.shared.prepareForNetworkSwitch()
         WalletEnvironment.setActiveWalletId(walletId, for: kind)
 
         // Same stop/clear/load/start sequence as a network switch, enqueued on
@@ -508,16 +599,22 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         return network
     }
 
-    /// `WalletEnvironment.NetworkKind` for the SDK `Network`. Only
-    /// `.mainnet`/`.testnet` reach a persisted wallet (the runtime fails fast
-    /// on every other network before this is called), so the switch path never
-    /// sees a network without a registry key; the `default` maps to `.testnet`
-    /// defensively to keep the return non-optional.
+    /// `WalletEnvironment.NetworkKind` for the SDK `Network`. Every network
+    /// the runtime can run (mainnet/testnet/devnet) has a registry key;
+    /// `.regtest` never reaches a persisted wallet (the host rejects it), so
+    /// the `default` maps to `.testnet` defensively to keep the return
+    /// non-optional.
     private func registryNetworkKind(for network: Network) -> WalletEnvironment.NetworkKind {
-        switch network {
+        WalletEnvironment.networkKind(for: network)
+    }
+
+    /// The SDK `Network` for an app `NetworkKind` — the inverse of
+    /// `registryNetworkKind(for:)`; total over the three selectable kinds.
+    private func sdkNetwork(for kind: WalletEnvironment.NetworkKind) -> Network {
+        switch kind {
         case .mainnet: return .mainnet
         case .testnet: return .testnet
-        default: return .testnet
+        case .devnet: return .devnet
         }
     }
 
@@ -617,7 +714,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 return
             }
 
-            await fullReset(lastError: nil, forWipe: false)
+            await fullReset(lastError: nil, forWipe: false, preservingShieldedRecovery: true)
 
             // A reinstall clears the selected-network UserDefaults key but
             // preserves SDK mnemonics. If every stored wallet belongs to the
@@ -634,6 +731,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // handleWalletMaterialChanged) — and the migrator is awaited
             // above, so a legacy-upgrade launch has its mnemonic by this line.
             guard WalletEnvironment.hasSDKWallet else {
+                PlatformAddressSyncCoordinator.shared.stopShieldedRecoveryMonitoring()
                 Self.logger.info("🧭 RUNTIME :: no SDK wallet persisted; leaving runtime stopped for \(network.rawValue, privacy: .public)")
                 return
             }
@@ -645,6 +743,19 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // transaction list reads. Offline that turned a reachable Platform
             // outage into an empty wallet with no retry.
             do {
+                // Devnet preflight BEFORE the SDK is built. `SDK.init` fetches
+                // the same `/masternodes` endpoint and refuses to construct a
+                // devnet SDK without it, so an unset or unreachable quorum URL
+                // would otherwise fail inside `host.start` and surface as the
+                // generic wallet-import error rather than the actionable
+                // devnet one. The peers it discovers are handed to the SPV
+                // start below instead of being fetched twice.
+                try await SwiftDashSDKSPVCoordinator.shared.preflightDevnetStartIfNeeded(for: network)
+                let (manager, wallet) = try await SwiftDashSDKHost.shared.start(network: network)
+                PlatformAddressSyncCoordinator.shared.prepareLocalPlatformState(
+                    manager: manager, walletId: wallet.walletId, network: network)
+                await PlatformAddressSyncCoordinator.shared.prepareLocalShieldedState(
+                    manager: manager, walletId: wallet.walletId, network: network)
                 try await SwiftDashSDKSPVCoordinator.shared.startAsync(for: network)
             } catch {
                 Self.logger.error("🧭 RUNTIME :: Core start failed: \(String(describing: error), privacy: .public)")
@@ -657,6 +768,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // still reports itself bound to `network` (`isCoreRuntimeReady`),
             // or every later `startIfReady` would rebuild a healthy Core.
             currentNetwork = network
+            PlatformAddressSyncCoordinator.shared.startShieldedRecoveryMonitoring()
 
             // Published before the Platform start for the same reason: every
             // consumer keys off the host's bound wallet and `modelContainer`,
@@ -713,11 +825,13 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// the FFI handle while either tokio task is still running would be a
     /// use-after-free, so the host stop happens strictly after both
     /// coordinators have settled.
-    private func fullReset(lastError: String?, forWipe: Bool) async {
+    private func fullReset(
+        lastError: String?, forWipe: Bool, preservingShieldedRecovery: Bool = false
+    ) async {
         if forWipe {
             await PlatformAddressSyncCoordinator.stopForWipeAsync()
         } else {
-            await PlatformAddressSyncCoordinator.shared.stopAsync()
+            await PlatformAddressSyncCoordinator.shared.stopAsync(preservingRecovery: preservingShieldedRecovery)
         }
         await SwiftDashSDKSPVCoordinator.shared.stopAsync(lastError: lastError)
         SwiftDashSDKWalletState.shared.clearAllState()
@@ -757,7 +871,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             return false
         }
 
-        let kind: WalletEnvironment.NetworkKind = storedNetwork == .mainnet ? .mainnet : .testnet
+        let kind = registryNetworkKind(for: storedNetwork)
         Self.logger.info(
             "🧭 RUNTIME :: selecting sole persisted wallet network \(storedNetwork.networkName, privacy: .public)")
         return WalletEnvironment.switchToNetwork(kind)
@@ -918,8 +1032,12 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// to the caller rather than logged-and-swallowed so a UI switch flow can
     /// report why it failed.
     enum SwitchError: LocalizedError {
-        /// The current network isn't SDK-supported (devnet/unsupported).
+        /// The current network isn't SDK-supported.
         case unsupportedNetwork
+        /// Devnet was requested without a quorum URL + devnet name
+        /// (`DevnetConfiguration.isConfigured` is false). Thrown before any
+        /// teardown, so the running network is untouched.
+        case devnetNotConfigured
         /// No mnemonic is persisted in `WalletStorage` for the target walletId.
         case unknownWallet
         /// The stop/clear/load/start sequence ran but the host did not bind the
@@ -938,6 +1056,10 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             switch self {
             case .unsupportedNetwork:
                 return "Cannot switch wallet: the current network is not supported."
+            case .devnetNotConfigured:
+                return NSLocalizedString(
+                    "Devnet is not configured. Enter a Quorum URL and Devnet Name in Settings → Devnet Settings first.",
+                    comment: "Devnet")
             case .unknownWallet:
                 return "Cannot switch wallet: no wallet with that id is stored on this network."
             case .bindFailed:

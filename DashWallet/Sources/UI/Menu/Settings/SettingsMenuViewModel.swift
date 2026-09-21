@@ -23,6 +23,7 @@ enum SettingsMenuNavigationDestination {
     case network
     case about
     case exportCSV
+    case devnetSettings
 }
 
 @MainActor
@@ -31,7 +32,6 @@ class SettingsMenuViewModel: ObservableObject {
 
     @Published var items: [MenuItemModel] = []
     @Published var navigationDestination: SettingsMenuNavigationDestination?
-    @Published var notificationsEnabled: Bool
     @Published var advancedModeEnabled: Bool
     @Published var showAdvancedModeInfo = false
     @Published var showCSVExportActivity = false
@@ -43,6 +43,11 @@ class SettingsMenuViewModel: ObservableObject {
     /// popup rather than silently sweeping to the transparent balance.
     @Published var showCoinJoinMoveFundsSheet = false
     @Published var coinJoinSweepErrorMessage: String?
+    /// Set when a network switch is refused before any teardown (today:
+    /// devnet selected without a quorum URL + devnet name). Failures during
+    /// the switch itself keep rendering through the lifecycle overlay's
+    /// failure card, not this.
+    @Published var networkSwitchErrorMessage: String?
 
     /// Minimum CoinJoin-account balance (duffs) worth surfacing a sweep for —
     /// below this it's un-sweepable dust/fragments, not a real denomination.
@@ -80,13 +85,58 @@ class SettingsMenuViewModel: ObservableObject {
         DWGlobalOptions.sharedInstance().balanceHidden
     }
     
-    init() {
-        self.notificationsEnabled = DWGlobalOptions.sharedInstance().localNotificationsEnabled
+    /// Effective permission from `NotificationPermissionCoordinator`: the
+    /// in-app toggle and the live OS authorization combined. While the OS
+    /// grant is denied the row shows off and tapping it opens the app's iOS
+    /// Settings page instead of flipping a preference that can't take effect.
+    @Published private var notificationPermissionState: NotificationPermissionState
+
+    private let notificationPermissions: NotificationPermissionCoordinator
+
+    init(notificationPermissions: NotificationPermissionCoordinator = NotificationPermissionCoordinator()) {
+        self.notificationPermissions = notificationPermissions
+        // The OS half of the state arrives asynchronously; until then render
+        // from the in-app toggle alone.
+        self.notificationPermissionState = notificationPermissions.userWantsNotifications ? .on : .offByUser
         self.advancedModeEnabled = DWGlobalOptions.sharedInstance().advancedModeEnabled
         refreshMenuItems()
         setupCoinJoinObservers()
         setupSyncStateObserver()
         setupCurrencyChangeObserver()
+        refreshNotificationPermissionState()
+        // The user may come back from iOS Settings with a changed grant.
+        NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshNotificationPermissionState()
+            }
+            .store(in: &cancellableBag)
+        // The flag can move without this screen touching it — the first
+        // funded Platform balance turns it on while Settings is open. The
+        // guard keeps that the only work this does: a change made *here*
+        // has already updated the row, and rebuilding the menu a second
+        // time on the next main-loop turn would be pure churn.
+        NotificationCenter.default.publisher(for: .advancedModeDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                let enabled = DWGlobalOptions.sharedInstance().advancedModeEnabled
+                guard enabled != self.advancedModeEnabled else { return }
+                self.advancedModeEnabled = enabled
+                self.refreshMenuItems()
+            }
+            .store(in: &cancellableBag)
+    }
+
+    private func refreshNotificationPermissionState() {
+        Task { [weak self] in
+            guard let self else { return }
+            let state = await self.notificationPermissions.effectiveState()
+            if self.notificationPermissionState != state {
+                self.notificationPermissionState = state
+                self.refreshMenuItems()
+            }
+        }
     }
     
     func resetNavigation() {
@@ -140,18 +190,7 @@ class SettingsMenuViewModel: ObservableObject {
                     self?.navigationDestination = .currencySelector
                 }
             ),
-            MenuItemModel(
-                title: NSLocalizedString("Notifications", comment: ""),
-                icon: .custom("image.notifications", maxHeight: 30),
-                showToggle: true,
-                isToggled: notificationsEnabled,
-                action: { [weak self] in
-                    guard let self = self else { return }
-                    self.notificationsEnabled.toggle()
-                    DWGlobalOptions.sharedInstance().localNotificationsEnabled = self.notificationsEnabled
-                    self.refreshMenuItems()
-                }
-            ),
+            notificationsMenuItem(),
             MenuItemModel(
                 title: NSLocalizedString("Network", comment: ""),
                 subtitle: networkName,
@@ -160,6 +199,24 @@ class SettingsMenuViewModel: ObservableObject {
                     self?.navigationDestination = .network
                 }
             ),
+        ]
+
+        // Devnet is offered by internal builds only, so its settings row does
+        // not exist in a shipping one — see `WalletEnvironment.isDevnetAvailable`.
+        if WalletEnvironment.isDevnetAvailable {
+            items.append(
+                MenuItemModel(
+                    title: NSLocalizedString("Devnet Settings", comment: "Devnet"),
+                    subtitle: NSLocalizedString("Quorum URL, name and contract ids", comment: "Devnet"),
+                    icon: .custom("image.network.monitor", maxHeight: 30),
+                    action: { [weak self] in
+                        self?.navigationDestination = .devnetSettings
+                    }
+                )
+            )
+        }
+
+        items.append(
             MenuItemModel(
                 title: NSLocalizedString("About", comment: ""),
                 icon: .custom("image.about", maxHeight: 30),
@@ -167,7 +224,7 @@ class SettingsMenuViewModel: ObservableObject {
                     self?.navigationDestination = .about
                 }
             )
-        ]
+        )
 
         // Conditional migration row: only while leftover CoinJoin funds exist.
         if hasCoinJoinLeftover {
@@ -218,18 +275,59 @@ class SettingsMenuViewModel: ObservableObject {
         )
     }
 
+    // MARK: - Notifications
+
+    /// The Notifications row. While the OS grant is denied it is not a
+    /// toggle at all: a switch there would flip on under the tap and then
+    /// sit lying, because nothing this screen can do changes the grant.
+    /// Instead the row says where the setting lives and opens iOS Settings.
+    private func notificationsMenuItem() -> MenuItemModel {
+        if notificationPermissionState == .blockedBySystem {
+            return MenuItemModel(
+                title: NSLocalizedString("Notifications", comment: ""),
+                subtitle: NSLocalizedString("Turned off in iOS Settings", comment: "Notifications"),
+                details: NSLocalizedString("Open Settings", comment: "Notifications"),
+                icon: .custom("image.notifications", maxHeight: 30),
+                action: {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+            )
+        }
+        return MenuItemModel(
+            title: NSLocalizedString("Notifications", comment: ""),
+            icon: .custom("image.notifications", maxHeight: 30),
+            showToggle: true,
+            // `.awaitingAuthorization` renders like `.on`: the user's
+            // toggle is on and only the OS grant is still pending.
+            isToggled: notificationPermissionState == .on
+                || notificationPermissionState == .awaitingAuthorization,
+            action: { [weak self] in
+                guard let self = self else { return }
+                self.notificationPermissions.userWantsNotifications.toggle()
+                // Render the flip immediately from the toggle; the OS
+                // half of the state re-derives asynchronously.
+                self.notificationPermissionState = self.notificationPermissions.userWantsNotifications ? .on : .offByUser
+                self.refreshMenuItems()
+                self.refreshNotificationPermissionState()
+            }
+        )
+    }
+
     // MARK: - Advanced mode
 
     /// Write the flag, then announce it. The announcement is the point: the
     /// setting reaches far beyond this screen, and a consumer that only read
     /// the value when it appeared would keep showing the old state until it
-    /// was rebuilt for some unrelated reason.
+    /// was rebuilt for some unrelated reason. This is also the only path that
+    /// marks the preference as the user's, which retires the automatic
+    /// first-funding enable for good.
     func setAdvancedMode(_ enabled: Bool) {
         guard enabled != advancedModeEnabled else { return }
+        DWGlobalOptions.sharedInstance().setAdvancedModeEnabledByUser(enabled)
         advancedModeEnabled = enabled
-        DWGlobalOptions.sharedInstance().advancedModeEnabled = enabled
         DWLogger.log("Settings: advanced mode \(enabled ? "enabled" : "disabled")")
-        NotificationCenter.default.post(name: .advancedModeDidChange, object: nil)
         refreshMenuItems()
     }
 
@@ -282,15 +380,26 @@ class SettingsMenuViewModel: ObservableObject {
         await switchNetwork(to: .testnet)
     }
 
+    func switchToDevnet() async -> Bool {
+        await switchNetwork(to: .devnet)
+    }
+
     /// Route through the runtime's managed switch: strict teardown → rebuild
     /// with the blocking overlay window up for the whole transition. A thrown
-    /// failure leaves the overlay in its `.failed` phase (Retry lives there),
-    /// so this only reports the outcome to the settings screen.
+    /// failure normally leaves the overlay in its `.failed` phase (Retry
+    /// lives there), so this only reports the outcome to the settings screen
+    /// — except `devnetNotConfigured`, which is thrown BEFORE the transition
+    /// begins (nothing torn down, no overlay card) and therefore surfaces
+    /// here as an alert.
     private func switchNetwork(to kind: WalletEnvironment.NetworkKind) async -> Bool {
         WalletLifecycleOverlayPresenter.shared.ensureActive()
         do {
             try await SwiftDashSDKWalletRuntime.shared.switchNetwork(to: kind)
             return true
+        } catch SwiftDashSDKWalletRuntime.SwitchError.devnetNotConfigured {
+            networkSwitchErrorMessage =
+                SwiftDashSDKWalletRuntime.SwitchError.devnetNotConfigured.localizedDescription
+            return false
         } catch {
             DWLogger.log("SettingsMenuViewModel: network switch failed: \(error)")
             return false

@@ -205,6 +205,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
         /// the next shielded sync.
         case submittedUnconfirmed
         case failed(String)
+
+        /// Work is running: the sheet must stay up and a tap must not start a
+        /// second attempt.
+        var isInFlight: Bool {
+            switch self {
+            case .signing, .locking, .proving, .broadcasting: return true
+            case .idle, .success, .submittedUnconfirmed, .failed: return false
+            }
+        }
     }
 
     enum Source {
@@ -281,6 +290,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case noPlatformAddress
         case authCancelled
         case authFailed
+        case shieldedBalanceUnavailable
         case shieldedPoolFeeUnavailable
         case addressFundingFeeUnavailable
         case platformShieldCapacityChanged(maxShieldableCredits: UInt64?)
@@ -310,6 +320,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString("Authentication cancelled", comment: "InternalTransfer")
             case .authFailed:
                 return NSLocalizedString("Authentication failed", comment: "InternalTransfer")
+            case .shieldedBalanceUnavailable:
+                return NSLocalizedString("Shielded balance is unavailable. Try again after syncing.", comment: "Shielded transfer requires a known balance")
             case .shieldedPoolFeeUnavailable:
                 return NSLocalizedString(
                     "There was an error, please try again later",
@@ -384,6 +396,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             .contains { !$0.spentNullifiers.isEmpty }
 
         let balanceCoordinator = PlatformAddressSyncCoordinator.shared
+        guard balanceCoordinator.shieldedBalanceState.isAvailable else { return .unavailable }
         if hasPendingSpend || balanceCoordinator.isShieldedBalanceReconciling {
             return .waitingForConfirmation(balanceCoordinator.shieldedBalance)
         }
@@ -466,6 +479,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
         _ amountCredits: UInt64,
         feeKind: PlatformWalletManager.ShieldedFeeKind
     ) -> Bool {
+        guard PlatformAddressSyncCoordinator.shared.shieldedBalanceState.isAvailable else {
+            handleFailure(CoordinatorError.shieldedBalanceUnavailable)
+            return true
+        }
         guard let ceiling = Self.spendCeilingCredits(feeKind: feeKind),
               amountCredits > ceiling
         else { return false }
@@ -1417,7 +1434,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// `.signing` write run with no suspension point between them — the
     /// first caller wins atomically and the second sees `.signing` + bails.
     private func beginTransfer() -> Bool {
-        guard phase == .idle else { return false }
+        guard phase == .idle else {
+            // Logged so a tap that starts nothing is visible in the export.
+            Self.logger.info("🛡️ SHIELD-TX :: begin refused phase=\(String(describing: self.phase), privacy: .public)")
+            return false
+        }
         lastFailure = nil
         lastResumeReport = nil
         phase = .signing

@@ -27,23 +27,41 @@ class JoinDashPayViewModel: ObservableObject {
 
     @MainActor
     func checkUsername() {
-        let identity = DWCurrentUserIdentityInfo.shared
-        let options = DWGlobalOptions.sharedInstance()
+        let identity = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        guard !identity.isLoading else {
+            state = DWCurrentUserIdentityInfo.shared.isCurrentNetworkContextReady ? .loading : .callToAction
+            username = ""
+            return
+        }
 
-        if let pending = DWContestedNameStatusService.shared.pendingLabel {
+        if let pending = identity.pendingContestedName {
             // Same-seed recovery reconstructs this bookmark from Platform.
             // Surface the real voting state instead of offering Join DashPay
             // for an identity that already has a submitted name.
             self.state = .voting
             self.username = pending
-        } else if let registeredUsername = identity.username ?? options.dashpayUsername,
-                  identity.hasIdentity || options.dashpayRegistrationCompleted,
+        } else if identity.needsUsername {
+            self.state = .usernameRequired
+            self.username = ""
+        } else if let registeredUsername = identity.username,
+                  identity.hasIdentity,
                   UsernamePrefs.shared.joinDashPayDismissed {
             self.state = .registered
             self.username = registeredUsername
         } else {
             self.state = initialState
         }
+    }
+
+    @MainActor
+    func finishLoadingAttempt() {
+        if state == .loading { state = .retryLoading }
+    }
+
+    @MainActor
+    func retryLoading() {
+        DWCurrentUserIdentityInfo.shared.retryNameRefresh()
+        checkUsername()
     }
 
     @MainActor

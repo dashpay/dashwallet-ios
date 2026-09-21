@@ -17,6 +17,18 @@ private enum CoreLifecycleTestError: Error {
 final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
     private let now = Date(timeIntervalSince1970: 10_000)
 
+    func testNameEndpointFailureDoesNotBlockAdoptingDiscoveredIdentity() async throws {
+        let id = Data([1])
+        var adopted = false
+        let outcome = try await SameSeedIdentityRecoveryPipeline.run(
+            localIdentityIds: { [id] }, discover: { XCTFail("Already discovered"); return [] },
+            refreshNames: { _ in throw NSError(domain: "test", code: 1) },
+            adopt: { adopted = true; return true })
+        XCTAssertTrue(adopted)
+        XCTAssertTrue(outcome.adopted)
+        XCTAssertTrue(outcome.identitiesPersisted)
+    }
+
     func testRestartRunsExactlyStopThenStartAndResetsBusyState() async throws {
         var events: [String] = []
         var restartingStates: [Bool] = []
@@ -28,6 +40,81 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
 
         XCTAssertEqual(events, ["stop", "start"])
         XCTAssertEqual(restartingStates, [true, false])
+    }
+
+    // MARK: - Devnet start preflight
+
+    /// The runtime discovers devnet peers before the SDK is built; the SPV
+    /// start that follows reuses exactly those peers instead of fetching
+    /// `/masternodes` a second time.
+    func testDevnetPreflightPeersAreReusedForTheSameConfiguration() {
+        let preflight = DevnetStartPreflight(
+            scope: "devnet-moutai",
+            quorumURL: "https://quorum.example",
+            peers: ["1.2.3.4:20001"])
+
+        XCTAssertEqual(
+            preflight.peers(forScope: "devnet-moutai", quorumURL: "https://quorum.example"),
+            ["1.2.3.4:20001"])
+    }
+
+    /// Devnet settings can change between a preflight and the start it was
+    /// made for. Peers discovered for devnet A must never configure a client
+    /// for devnet B — nor peers from a different quorum service.
+    func testDevnetPreflightIsDiscardedWhenTheConfigurationChanged() {
+        let preflight = DevnetStartPreflight(
+            scope: "devnet-a",
+            quorumURL: "https://a.example",
+            peers: ["1.2.3.4:20001"])
+
+        XCTAssertNil(preflight.peers(forScope: "devnet-b", quorumURL: "https://a.example"))
+        XCTAssertNil(preflight.peers(forScope: "devnet-a", quorumURL: "https://b.example"))
+    }
+
+    /// An empty peer set is not a usable preflight: the start must rediscover
+    /// rather than configure a peer-restricted client with no peers.
+    func testEmptyDevnetPreflightIsNotReused() {
+        let preflight = DevnetStartPreflight(
+            scope: "devnet-a", quorumURL: "https://a.example", peers: [])
+
+        XCTAssertNil(preflight.peers(forScope: "devnet-a", quorumURL: "https://a.example"))
+    }
+
+    // MARK: - Selectable wallet material memo
+
+    /// The memo answers only for the inventory it was derived from, so a
+    /// changed wallet set re-runs the classification instead of returning a
+    /// stale verdict.
+    func testSelectableWalletMaterialMemoAnswersOnlyForItsOwnInventory() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "memo.\(UUID().uuidString)"))
+        let ids = [Data([0x01]), Data([0x02])]
+        let fingerprint = WalletEnvironment.SelectableWalletMaterialMemo.fingerprint(of: ids)
+
+        WalletEnvironment.SelectableWalletMaterialMemo(
+            fingerprint: fingerprint, selectable: false).save(to: defaults)
+        let loaded = try XCTUnwrap(
+            WalletEnvironment.SelectableWalletMaterialMemo.load(from: defaults))
+
+        XCTAssertEqual(loaded.verdict(for: fingerprint), false)
+        let changed = WalletEnvironment.SelectableWalletMaterialMemo.fingerprint(
+            of: ids + [Data([0x03])])
+        XCTAssertNil(loaded.verdict(for: changed))
+    }
+
+    /// The fingerprint identifies a SET of ids: Keychain enumeration order
+    /// must not invalidate a good memo and force the derivation again.
+    func testSelectableWalletMaterialFingerprintIsOrderIndependent() {
+        let ids = [Data([0x0a]), Data([0x0b]), Data([0xff])]
+
+        XCTAssertEqual(
+            WalletEnvironment.SelectableWalletMaterialMemo.fingerprint(of: ids),
+            WalletEnvironment.SelectableWalletMaterialMemo.fingerprint(of: ids.reversed()))
+    }
+
+    func testAbsentSelectableWalletMaterialMemoLoadsAsNil() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "memo.\(UUID().uuidString)"))
+
+        XCTAssertNil(WalletEnvironment.SelectableWalletMaterialMemo.load(from: defaults))
     }
 
     func testRestartPropagatesStartFailureAndAlwaysResetsBusyState() async {

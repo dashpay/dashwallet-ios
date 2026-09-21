@@ -87,7 +87,17 @@ struct SettingsScreen: View {
                         updateView()
                     }
                 }
-            })
+            },
+            // Internal builds only — see `WalletEnvironment.isDevnetAvailable`.
+            // A nil handler is what keeps the button out of the alert.
+            onDevnet: WalletEnvironment.isDevnetAvailable ? {
+                Task {
+                    if await viewModel.switchToDevnet() {
+                        updateView()
+                    }
+                }
+            } : nil)
+        .networkSwitchErrorAlert(message: $viewModel.networkSwitchErrorMessage)
         .sheet(isPresented: $viewModel.showAdvancedModeInfo) {
             AdvancedModeInfoSheet()
         }
@@ -189,6 +199,8 @@ struct SettingsScreen: View {
             showAboutController()
         case .exportCSV:
             handleCSVExport()
+        case .devnetSettings:
+            showDevnetSettings()
         case .none:
             break
         }
@@ -216,6 +228,12 @@ struct SettingsScreen: View {
     
     private func showAboutController() {
         let controller = AboutDashHostingViewController()
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
+    }
+
+    private func showDevnetSettings() {
+        let controller = DevnetSettingsHostingViewController(vc: vc)
         controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }

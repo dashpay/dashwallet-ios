@@ -34,7 +34,7 @@ struct TransferEndpointDisplay {
     let icon: DashIconSource
     let title: String
     /// Duffs — every consumer formats the amount itself.
-    let dashBalance: Int64
+    let dashBalance: Int64?
 
     static func network(
         _ network: ChainNetwork,
@@ -56,7 +56,7 @@ struct TransferEndpointDisplay {
             return .init(
                 icon: DashIcon.Features.shield.source,
                 title: network.balanceName,
-                dashBalance: Int64(viewModel.shieldedBalance / 1000))
+                dashBalance: viewModel.shieldedBalanceState.credits.map { Int64($0 / 1000) })
         }
     }
 

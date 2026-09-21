@@ -144,9 +144,12 @@ final class PreparedStandardSend: NSObject {
                 txidWire: Data(txHash.reversed()), address: address, amount: amount, fee: fee)
 
         case .rejected(_, let reason):
+            // Nothing reached the network, so the money is provably still
+            // here — say that, because "wasn't sent" alone reads as a loss.
             let error = WalletSendService.makeError(
                 code: .broadcastRejected,
-                description: "The transaction wasn't sent. You can try again. \(reason)"
+                description: WalletSendService.BroadcastOutcomeCopy.rejected,
+                diagnostic: reason
             )
             claimLock.lock()
             broadcastState = .ready
@@ -154,9 +157,24 @@ final class PreparedStandardSend: NSObject {
             throw error
 
         case .unknown(_, let reason):
+            // The old copy told the user to "wait for wallet synchronization"
+            // without saying that the wallet is the thing doing the waiting —
+            // and it appended the SDK's internal reason, so the dialog ended
+            // in "SPV broadcast saw no acceptance signal before dash-spv's
+            // acceptance timeout". Neither was actionable, and neither was
+            // localized, so a customer on a non-English device got a wall of
+            // English (support ticket 32189).
+            //
+            // What the copy promises is what the shipped SDK does: dash-spv
+            // keeps retrying while the wallet is open. It deliberately does
+            // NOT promise that retries survive closing the app —
+            // launch-time re-registration is dashpay/platform#4659 and is
+            // not in the SDK this builds against. See
+            // `BroadcastOutcomeCopy.unknown` for when that qualifier can go.
             let error = WalletSendService.makeError(
                 code: .broadcastUnknown,
-                description: "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)"
+                description: WalletSendService.BroadcastOutcomeCopy.unknown,
+                diagnostic: reason
             )
             claimLock.lock()
             broadcastState = .unknown(error)
@@ -209,6 +227,33 @@ final class RecentSendsRegistry {
     }
 }
 
+#if DASHPAY
+/// Contacts whose last payment came back with an unknown broadcast outcome.
+///
+/// The transaction may already be on the network with only the response lost,
+/// so a second payment to the same contact could be a duplicate that no later
+/// correction undoes. Held for the life of the process rather than a screen: a
+/// flag on the amount step was cleared by backing out and reopening the same
+/// contact. Never persisted — by the next launch a sync has had the chance to
+/// show whether the first payment landed.
+final class UnknownContactPaymentOutcomes {
+    private let lock = NSLock()
+    private var contactIdentityIds: Set<Data> = []
+
+    func record(contactIdentityId: Data) {
+        lock.lock()
+        defer { lock.unlock() }
+        contactIdentityIds.insert(contactIdentityId)
+    }
+
+    func contains(contactIdentityId: Data) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return contactIdentityIds.contains(contactIdentityId)
+    }
+}
+#endif
+
 @objc(DWWalletSendService)
 final class WalletSendService: NSObject {
     @objc(sharedService) static let shared = WalletSendService()
@@ -217,8 +262,20 @@ final class WalletSendService: NSObject {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.wallet-send-service")
 
+    /// `userInfo` key carrying the SDK's own explanation of a broadcast
+    /// outcome.
+    ///
+    /// Deliberately not `NSLocalizedDescriptionKey`: it is engineer-facing
+    /// text and must never reach a dialog. Internal rather than file-private
+    /// because the point of keeping it is that logging, error inspection and
+    /// tests in other files can read it back.
+    static let diagnosticKey = "org.dashfoundation.dash.send.diagnostic"
+
     /// See `RecentSendsRegistry` — the send-success screen's fallback source.
     let recentSends = RecentSendsRegistry()
+    #if DASHPAY
+    let unknownContactPaymentOutcomes = UnknownContactPaymentOutcomes()
+    #endif
 
     private let sendAuthorizer = SendAuthorizer()
 
@@ -313,12 +370,14 @@ final class WalletSendService: NSObject {
             } catch SwiftDashSDKTransactionSender.SendError.transactionRejected(_, let reason) {
                 throw Self.makeError(
                     code: .broadcastRejected,
-                    description: "The transaction wasn't sent. You can try again. \(reason)"
+                    description: BroadcastOutcomeCopy.rejected,
+                    diagnostic: reason
                 )
             } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(_, let reason) {
                 throw Self.makeError(
                     code: .broadcastUnknown,
-                    description: "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)"
+                    description: BroadcastOutcomeCopy.unknown,
+                    diagnostic: reason
                 )
             }
         }
@@ -461,6 +520,13 @@ final class WalletSendService: NSObject {
         memo: String? = nil
     ) async throws -> (txid: Data, feeDuffs: UInt64) {
         Self.logger.info("💸 TXSEND :: pay-to-contact starting — \(amount, privacy: .public) duffs")
+        // Refused before the PIN prompt: see `UnknownContactPaymentOutcomes`.
+        if unknownContactPaymentOutcomes.contains(contactIdentityId: contactIdentityId) {
+            throw Self.makeError(
+                code: .broadcastUnknown,
+                description: "A previous payment to this contact could not be confirmed. Don't send it again; wait for wallet synchronization."
+            )
+        }
         try Self.ensureInitialRestoreSyncCompleted()
         // spendAmount engages the biometric spending limit (C7.4) —
         // without it the gate is non-monetary and Face ID alone would
@@ -489,9 +555,20 @@ final class WalletSendService: NSObject {
                 amountDuffs: amount,
                 memo: memo)
         } catch {
-            throw Self.contactPaymentError(from: error)
+            let mapped = Self.contactPaymentError(from: error)
+            if Self.isBroadcastUnknownError(mapped as NSError) {
+                unknownContactPaymentOutcomes.record(contactIdentityId: contactIdentityId)
+            }
+            throw mapped
         }
         Self.logger.info("💸 TXSEND :: pay-to-contact broadcast, txid \(txid.map { String(format: "%02x", $0) }.joined(), privacy: .public), fee \(feeDuffs, privacy: .public) duffs")
+        // The send-success screen resolves the amount from this registry while
+        // the Rust persister hasn't written the transaction row yet — same as
+        // every other broadcast-success point. `txid` is already wire order
+        // (Rust hands back `to_raw_hash().to_byte_array()`), which is the
+        // registry's key convention. No address: the DIP-15 receive address is
+        // derived inside Rust and never crosses the FFI boundary.
+        recentSends.record(txidWire: txid, address: nil, amount: amount, fee: feeDuffs)
         return (txid: txid, feeDuffs: feeDuffs)
     }
 #endif
@@ -698,8 +775,12 @@ private extension WalletSendService {
 
     static let errorDomain = "org.dashfoundation.dash.wallet-send-service"
 
-    /// Translate the SDK's internal missing-external-account diagnostic into
-    /// something a user can act on.
+    /// Translate the SDK's contact-payment errors into ones the app acts on.
+    ///
+    /// A broadcast outcome the SDK could not confirm becomes this service's
+    /// `broadcastUnknown`, which `sendToContact` turns into a per-contact lock
+    /// and the amount step into a terminal state — the SDK's own error type
+    /// matched neither. A definitive rejection becomes `broadcastRejected`.
     ///
     /// A contact's DIP-15 external account is built in the background from the
     /// counterparty's contact request; until it exists the SDK fails the send
@@ -714,6 +795,23 @@ private extension WalletSendService {
     /// anything else is returned untouched rather than hidden behind a generic
     /// message.
     static func contactPaymentError(from error: Error) -> Error {
+        // The SDK reports the broadcast outcome in its own error type; the rest
+        // of the app — the amount step's terminal state included — recognises
+        // it only in this service's domain, the same codes a standard send gets.
+        switch error as? PlatformWalletError {
+        case .transactionBroadcastUnconfirmed(let reason):
+            return makeError(
+                code: .broadcastUnknown,
+                description: "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)"
+            )
+        case .transactionBroadcastRejected(let reason):
+            return makeError(
+                code: .broadcastRejected,
+                description: "The transaction wasn't sent. You can try again. \(reason)"
+            )
+        default:
+            break
+        }
         let description = error.localizedDescription
         guard description.contains("DashpayExternalAccount")
             || description.contains("register_external_contact_account")
@@ -727,11 +825,56 @@ private extension WalletSendService {
                 comment: "DashPay Contacts"))
     }
 
-    static func makeError(code: ErrorCode, description: String) -> NSError {
-        NSError(
+    /// The two broadcast outcomes a user can be shown, in one place.
+    ///
+    /// Every send route ends in one of these, and there is more than one route
+    /// — the prepared standard send and the selected-input / sweep path, which
+    /// broadcasts inside `buildAndSignFromAddress` and never reaches
+    /// `PreparedStandardSend.broadcast()`. They used to build the strings
+    /// independently and drifted apart, so one route kept showing unlocalized
+    /// English with the SDK's internal reason appended.
+    enum BroadcastOutcomeCopy {
+        /// Nothing reached the network, so the money is provably still here —
+        /// say that, because "wasn't sent" alone reads as a loss.
+        static var rejected: String {
+            NSLocalizedString(
+                "The transaction wasn't sent, so nothing left your wallet. You can try again.",
+                comment: "Send failed before any bytes reached the network")
+        }
+
+        /// The transaction went out and no acceptance signal came back.
+        ///
+        /// The retry this promises is the one the shipped SDK actually
+        /// performs: dash-spv keeps rebroadcasting a transaction it is
+        /// tracking, for as long as the process lives. That is also why the
+        /// copy says "while it's open" rather than making an unqualified
+        /// promise — closing the app ends the retry today, and telling the
+        /// user otherwise would be worse than the old wording, because they
+        /// would close it believing the wallet had the situation in hand.
+        ///
+        /// dashpay/platform#4659 re-registers unconfirmed sends for rebroadcast
+        /// at every launch, which makes closing the app harmless. This sentence
+        /// stays true either way; it can lose the qualifier once that ships.
+        static var unknown: String {
+            NSLocalizedString(
+                "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through.",
+                comment: "Send dispatched but no network acceptance signal arrived")
+        }
+    }
+
+    static func makeError(
+        code: ErrorCode,
+        description: String,
+        diagnostic: String? = nil
+    ) -> NSError {
+        var userInfo: [String: Any] = [NSLocalizedDescriptionKey: description]
+        if let diagnostic, !diagnostic.isEmpty {
+            userInfo[diagnosticKey] = diagnostic
+        }
+        return NSError(
             domain: errorDomain,
             code: code.rawValue,
-            userInfo: [NSLocalizedDescriptionKey: description]
+            userInfo: userInfo
         )
     }
 }

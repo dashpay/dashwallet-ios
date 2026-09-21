@@ -290,6 +290,27 @@ final class PlatformAddressActivityDAO {
         return records(for: query)
     }
 
+    /// Received-activity rows for the wallet+network observed at or after
+    /// `since`, newest first, at most `limit` of them — the window and the cap
+    /// applied in the query, for a caller that scans on every signal.
+    func activities(
+        walletId: Data,
+        networkRaw: Int64,
+        since: Date,
+        limit: Int,
+        offset: Int = 0
+    ) -> [PlatformAddressActivityRecord] {
+        typealias S = PlatformAddressActivitySchema
+        let query = S.activity
+            .filter(
+                S.colWalletId == walletId &&
+                    S.colNetwork == networkRaw &&
+                    S.colObservedAt >= since.timeIntervalSince1970)
+            .order(S.colObservedAt.desc)
+            .limit(limit, offset: offset)
+        return records(for: query)
+    }
+
     /// All received-activity rows for the wallet+network, newest first.
     func activities(walletId: Data, networkRaw: Int64) -> [PlatformAddressActivityRecord] {
         typealias S = PlatformAddressActivitySchema

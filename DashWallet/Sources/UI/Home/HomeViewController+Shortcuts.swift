@@ -77,7 +77,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         case .switchWallet:
             showSwitchWallet()
         case .dashDEX:
-            dashDEXAction()
+            presentDashDEXAfterAuthentication()
         case .nodes:
             homeViewShowMasternodes()
         }
@@ -179,6 +179,10 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         // shielded get-ready interstitial doesn't apply — straight to
         // the form in invitation mode.
         if invitationURL != nil {
+            pushCreateUsernameForm(invitationURL: invitationURL, definedUsername: definedUsername)
+            return
+        }
+        if DWIdentityRegistrationCoordinator.shared.registrationRecovery().isPending {
             pushCreateUsernameForm(invitationURL: invitationURL, definedUsername: definedUsername)
             return
         }
@@ -417,25 +421,6 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         let safariViewController = SFSafariViewController.dw_controller(with: TestnetFaucet.webURL)
         present(safariViewController, animated: true)
     }
-    private func dashDEXAction() {
-        AuthenticationService.shared.authenticate(
-            withPrompt: nil,
-            usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
-            alertIfLockout: true
-        ) { [weak self] authenticated, _, _ in
-            guard authenticated else { return }
-            self?.dashDEXActionAuthenticated()
-        }
-    }
-
-    private func dashDEXActionAuthenticated() {
-        let controller = SwapKitPortalViewController()
-        controller.hidesBottomBarWhenPushed = true
-        let navigationController = BaseNavigationController(rootViewController: controller)
-        navigationController.modalPresentationStyle = .fullScreen
-        present(navigationController, animated: true)
-    }
-
     private func presentControllerModallyInNavigationController(_ controller: UIViewController) {
         if #available(iOS 13.0, *) {
             presentControllerModallyInNavigationController(controller, modalPresentationStyle: .automatic)

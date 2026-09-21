@@ -29,6 +29,7 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
     private let defaults: UserDefaults
     private let network: DashConnectNetwork
     private let walletIdHexProvider: () -> String?
+    private let devnetNameProvider: () -> String?
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
 
@@ -37,11 +38,13 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         network: DashConnectNetwork,
         walletIdHexProvider: @escaping () -> String? = {
             WalletEnvironment.activeWalletIdHex as String?
-        }
+        },
+        devnetNameProvider: @escaping () -> String? = { DevnetConfiguration.devnetName }
     ) {
         self.defaults = defaults
         self.network = network
         self.walletIdHexProvider = walletIdHexProvider
+        self.devnetNameProvider = devnetNameProvider
 
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .millisecondsSince1970
@@ -60,11 +63,25 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
     /// so a shared placeholder scope would let one wallet's rows be saved and
     /// then loaded back in a different wallet context — reporting a connection
     /// status that belongs to someone else.
+    ///
+    /// On devnet the segment also names the configured devnet: every devnet
+    /// shares the network code, and the same wallet on devnet B would otherwise
+    /// load the connections it approved on devnet A. An unnamed devnet has no
+    /// scope, so nothing is stored or loaded for it.
     var storageKey: String? {
         guard let walletScope = walletIdHexProvider()?
             .trimmingCharacters(in: .whitespacesAndNewlines),
             !walletScope.isEmpty else { return nil }
-        return "dashconnect.connections.v1.\(network.rawValue).\(walletScope)"
+        guard let networkScope else { return nil }
+        return "dashconnect.connections.v1.\(networkScope).\(walletScope)"
+    }
+
+    private var networkScope: String? {
+        guard network == .devnet else { return network.rawValue }
+        guard let name = devnetNameProvider()?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+            !name.isEmpty else { return nil }
+        return "\(network.rawValue)-\(name)"
     }
 
     func load() -> [DAppConnection] {
@@ -107,8 +124,9 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
     }
 
     func save(_ connections: [DAppConnection]) {
-        // No wallet scope means there is no key this state may be written
-        // under; dropping the write is correct, not a silent failure.
+        // No wallet scope (or an unnamed devnet) means there is no key this
+        // state may be written under; dropping the write is correct, not a
+        // silent failure.
         guard let storageKey else { return }
 
         guard !connections.isEmpty else {

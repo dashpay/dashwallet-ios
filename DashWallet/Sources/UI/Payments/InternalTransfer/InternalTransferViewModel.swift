@@ -1050,10 +1050,12 @@ final class InternalTransferViewModel: ObservableObject {
     /// `.platform` source transfers (which go through `shieldedShield`,
     /// drawing transparent credits directly).
     @Published private(set) var platformCredits: UInt64 = 0
+    @Published private(set) var platformBalanceState: PlatformBalanceState = .unavailable
 
     /// Real shielded balance in credits, fed by the coordinator's reconciled
     /// balance mirror. Updates whenever a shielded sync pass completes.
-    @Published private(set) var shieldedBalance: UInt64 = 0
+    @Published private(set) var shieldedBalanceState: ShieldedBalanceState = .unavailable
+    var shieldedBalance: UInt64 { shieldedBalanceState.credits ?? 0 }
 
     /// Largest amount the pool can fund inside ONE transition — see
     /// `ShieldedTransferCoordinator.spendCeilingCredits`. A typed amount above
@@ -1103,7 +1105,8 @@ final class InternalTransferViewModel: ObservableObject {
         isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
         coreBalanceDuffs = SwiftDashSDKWalletState.shared.balance?.total ?? 0
         coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
-        platformCredits = PlatformAddressSyncCoordinator.shared.platformBalance
+        platformBalanceState = PlatformAddressSyncCoordinator.shared.platformBalanceState
+        platformCredits = platformBalanceState.credits ?? 0
 
         SwiftDashSDKWalletState.shared.$balance
             .receive(on: RunLoop.main)
@@ -1113,10 +1116,12 @@ final class InternalTransferViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        PlatformAddressSyncCoordinator.shared.$platformBalance
+        PlatformAddressSyncCoordinator.shared.$platformBalanceState
             .receive(on: RunLoop.main)
-            .sink { [weak self] credits in
+            .sink { [weak self] state in
                 guard let self else { return }
+                self.platformBalanceState = state
+                let credits = state.credits ?? 0
                 self.platformCredits = credits
                 // Clear the stale-cache barrier on publication regardless of
                 // route. If this route is inactive, the next route entry will
@@ -1135,11 +1140,11 @@ final class InternalTransferViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        shieldedBalance = PlatformAddressSyncCoordinator.shared.shieldedBalance
-        PlatformAddressSyncCoordinator.shared.$shieldedBalance
+        shieldedBalanceState = PlatformAddressSyncCoordinator.shared.shieldedBalanceState
+        PlatformAddressSyncCoordinator.shared.$shieldedBalanceState
             .receive(on: RunLoop.main)
-            .sink { [weak self] credits in
-                self?.shieldedBalance = credits
+            .sink { [weak self] state in
+                self?.shieldedBalanceState = state
                 self?.refreshShieldedSpendCeiling()
             }
             .store(in: &cancellables)
@@ -1184,8 +1189,9 @@ final class InternalTransferViewModel: ObservableObject {
         // No fee reserve to subtract without a wallet — previews want the
         // whole balance to read as spendable so Max and Continue behave.
         coreSpendableDuffs = previewCoreDuffs
+        platformBalanceState = .available(previewPlatformCredits)
         platformCredits = previewPlatformCredits
-        shieldedBalance = previewShieldedCredits
+        shieldedBalanceState = .refreshed(previewShieldedCredits)
         isChainSynced = previewIsChainSynced
         self.previewIsResyncingWallet = previewIsResyncingWallet
         if previewIdentityDestination {
@@ -1337,12 +1343,26 @@ final class InternalTransferViewModel: ObservableObject {
         return DWGlobalOptions.sharedInstance().isResyncingWallet
     }
 
+    /// Embedded send/receive sheets pin the route independently of `source`.
+    /// Identity top-ups keep their separate funding-source selection.
+    private var sourceBalanceNetwork: ChainNetwork {
+        isIdentityDestination ? source : route.source
+    }
+
+    private var hasUnavailableSourceBalance: Bool {
+        !isIdentitySource && ((sourceBalanceNetwork == .shielded && !shieldedBalanceState.isAvailable)
+            || (sourceBalanceNetwork == .platform && !platformBalanceState.isAvailable))
+    }
+
     /// Inline, user-facing explanation for an amount rejected before Confirm.
     /// Zero stays quiet while the user has not entered an amount; a
     /// fee-estimation failure fails closed with a generic retry.
     var amountValidationMessage: String? {
         if let maxNotice { return maxNotice }
         guard dashDuffsUnsigned > 0 else { return nil }
+        if hasUnavailableSourceBalance {
+            return NSLocalizedString("Balance unavailable", comment: "Selected source balance not restored")
+        }
 
         if isIdentitySource { return identityWithdrawalValidationMessage }
         if isIdentityDestination { return identityAmountValidationMessage }
@@ -1591,6 +1611,7 @@ final class InternalTransferViewModel: ObservableObject {
         comment: "Internal transfer fee estimate unavailable")
 
     var canContinue: Bool {
+        if hasUnavailableSourceBalance { return false }
         // Gate on duffs, not raw DASH: a sub-duff amount (e.g. 1e-9 DASH)
         // renders as 0 in the confirm sheet, so it must not enable Continue —
         // otherwise the credit routes would submit a nonzero amount while the
@@ -1883,13 +1904,15 @@ final class InternalTransferViewModel: ObservableObject {
     /// (max 5 fraction digits). The credits-to-duffs conversion is `/ 1000`
     /// (1e8 duffs per DASH vs 1e11 credits per DASH).
     var platformCreditsFormatted: String {
-        Self.cardBalanceString(duffs: platformCredits / 1000)
+        guard platformBalanceState.isAvailable else { return "—" }
+        return Self.cardBalanceString(duffs: platformCredits / 1000)
     }
 
     /// Formatted live shielded balance as DASH for the balance cards
     /// (max 5 fraction digits). Credits → duffs is `/ 1000`.
     var shieldedBalanceFormatted: String {
-        Self.cardBalanceString(duffs: shieldedBalance / 1000)
+        guard shieldedBalanceState.isAvailable else { return "—" }
+        return Self.cardBalanceString(duffs: shieldedBalance / 1000)
     }
 
     /// Formatted identity credit balance as DASH for the destination picker's
@@ -1927,6 +1950,11 @@ final class InternalTransferViewModel: ObservableObject {
     /// Source-aware Max fill. Keeps the same unit semantics — DASH or fiat —
     /// but draws the upper bound from whichever bucket the user picked.
     func fillMaxFromWallet() {
+        if hasUnavailableSourceBalance {
+            clearMaxSelection()
+            maxNotice = NSLocalizedString("Balance unavailable", comment: "Max requires a known source balance")
+            return
+        }
         if isIdentitySource {
             fillIdentityWithdrawalMax()
             return
