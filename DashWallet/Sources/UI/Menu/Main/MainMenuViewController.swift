@@ -221,6 +221,12 @@ struct MainMenuScreen: View {
                         accessory: .none
                     )
                     .onTapGesture { editProfile() }
+                    // The row is a control: one element, named by what it
+                    // leads to, with the trait VoiceOver reads as tappable.
+                    .accessibilityElement(children: .combine)
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityLabel(String.localizedStringWithFormat(
+                        NSLocalizedString("Profile, %@", comment: "DashPay"), username))
                     .modifier(MenuViewModifier())
                     .padding(.vertical, 20)
                     .padding(.horizontal, 20)
