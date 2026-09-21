@@ -507,7 +507,9 @@ final class BackgroundRefreshCoordinator {
     @MainActor
     static func defaultRuntimeStart(while gate: BackgroundRefreshStartGate) async -> Bool {
         let runtime = SwiftDashSDKWalletRuntime.shared
-        await runtime.rearmPlatformSync(if: gate.isWanted)
+        await runtime.rearmPlatformSync {
+            gate() && WalletLifecycleTransitionState.shared.allowsAutomaticWalletPreparation
+        }
         guard gate() else { return false }
         guard case .success(let network) = runtime.resolveCurrentNetwork() else { return false }
         return runtime.isCoreRuntimeReady(for: network)

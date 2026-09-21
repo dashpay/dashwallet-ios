@@ -209,21 +209,6 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(appTransition.disablePublicKeyIds, [4, 8])
     }
 
-    func testParserRejectsContractGroupBoundsRatherThanDroppingTheRestriction() {
-        let parser = PlatformWalletDashConnectStateTransitionParser { _ in
-            .identityUpdate(ManagedPlatformWallet.ParsedIdentityUpdateTransition(
-                identityId: Data(repeating: 0x11, count: 32),
-                addPublicKeys: [ManagedPlatformWallet.IdentityPubkey(
-                    keyId: 17, keyType: .ecdsaSecp256k1, purpose: .authentication,
-                    securityLevel: .high, pubkeyBytes: Data(repeating: 0x02, count: 33),
-                    contractBounds: .contractGroup(id: Data(repeating: 0x44, count: 32)))],
-                disablePublicKeyIds: []))
-        }
-        XCTAssertThrowsError(try parser.parse(Data([0x00]))) { error in
-            XCTAssertEqual(error as? DashConnectPlatformError, .keyRegistrationUnexpectedMutation)
-        }
-    }
-
     func testParserMapsATokenPurchaseTransition() throws {
         let ownerId = Data(repeating: 0x21, count: 32)
         let contractId = Data(repeating: 0x22, count: 32)
@@ -248,6 +233,21 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(purchase.tokenContractPosition, 3)
         XCTAssertEqual(purchase.tokenCount, 100)
         XCTAssertEqual(purchase.totalAgreedPrice, 100_000_000)
+    }
+
+    func testParserRejectsContractGroupKeysInsteadOfDroppingTheirRestriction() throws {
+        let parser = PlatformWalletDashConnectStateTransitionParser { _ in
+            .identityUpdate(.init(
+                identityId: Data(repeating: 0x21, count: 32),
+                addPublicKeys: [.init(
+                    keyId: 1, keyType: .ecdsaSecp256k1, purpose: .authentication,
+                    securityLevel: .high, pubkeyBytes: Data(repeating: 0x22, count: 33),
+                    contractBounds: .contractGroup(id: Data(repeating: 0x23, count: 32)))],
+                disablePublicKeyIds: []))
+        }
+        XCTAssertThrowsError(try parser.parse(Data([0]))) {
+            XCTAssertEqual($0 as? DashConnectPlatformError, .keyRegistrationUnexpectedMutation)
+        }
     }
 
     func testTokenPurchasePriceConvertsCreditsToDash() {
