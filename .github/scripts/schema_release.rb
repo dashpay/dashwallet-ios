@@ -265,12 +265,15 @@ module SchemaRelease
       raise Error, "Baseline belongs to a different app" unless baseline.fetch("bundle_id") == @bundle
       app = @apple.find_app(@bundle)
       raise Error, "App Store app identifier changed" unless baseline.fetch("app_id") == app.fetch("id")
-      versions = @apple.published_versions(app.fetch("id"), after_version: baseline.fetch("max_app_version"))
+      versions = @apple.published_versions(app.fetch("id"), after_version: baseline.fetch("max_app_version"), &on_failure)
       versions.filter_map do |version|
         attrs = version.fetch("attributes")
         number = attrs.fetch("versionString")
         next if AppStoreConnectRelease::MarketingVersion.new(number) <= AppStoreConnectRelease::MarketingVersion.new(baseline.fetch("max_app_version"))
         build = @apple.version_build(version.fetch("id"))
+        unless build.is_a?(Hash) && build["attributes"].is_a?(Hash)
+          raise Error, "Malformed build for App Store version #{version.fetch('id')}: expected a build attributes object."
+        end
         {
           "format_version" => 1, "release_id" => SchemaRelease.component(version.fetch("id")),
           "app_id" => app.fetch("id"), "bundle_id" => @bundle, "app_version" => number,

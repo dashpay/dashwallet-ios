@@ -63,7 +63,7 @@ module AppStoreConnectRelease
   ].freeze
 
   # Current AppVersionState values, independent of the deprecated field.
-  # A new Apple state needs an explicit publication decision, never a silent skip.
+  # The freeze observer requires an explicit publication decision for new states.
   APP_VERSION_STATES = %w[
     ACCEPTED DEVELOPER_REJECTED IN_REVIEW INVALID_BINARY METADATA_REJECTED
     PENDING_APPLE_RELEASE PENDING_DEVELOPER_RELEASE PREPARE_FOR_SUBMISSION
@@ -87,27 +87,43 @@ module AppStoreConnectRelease
   end
 
   def effective_app_store_state(attributes)
+    attributes["appVersionState"] || attributes["appStoreState"]
+  end
+
+  def live_app_store_version?(attributes)
+    state = effective_app_store_state(attributes)
+    return false if attributes["appVersionState"] && !APP_VERSION_STATES.include?(state)
+    LIVE_APP_STORE_STATES.include?(state)
+  end
+
+  def validate_publication_history!(attributes)
     current = attributes["appVersionState"]
     if current && !APP_VERSION_STATES.include?(current)
       raise Error, "Unknown appVersionState #{current.inspect} for App Store version #{attributes['versionString']}. " \
                    "Check Apple's state documentation and update the release observer before retrying; " \
                    "the deprecated appStoreState cannot establish publication in its place."
     end
-    current || attributes["appStoreState"]
-  end
-
-  def live_app_store_version?(attributes)
-    LIVE_APP_STORE_STATES.include?(effective_app_store_state(attributes))
-  end
-
-  def validate_publication_history!(attributes)
-    effective_app_store_state(attributes)
     if !attributes["appVersionState"] &&
        %w[DEVELOPER_REMOVED_FROM_SALE REMOVED_FROM_SALE].include?(attributes["appStoreState"])
       raise Error, "Ambiguous publication history for App Store version #{attributes['versionString']}: " \
                    "legacy #{attributes['appStoreState']} without appVersionState. " \
                    "Verify the release history in App Store Connect and recover its current version state; do not guess a published build."
     end
+  end
+
+  def publication_id(version)
+    version.is_a?(Hash) ? version["id"] || "unknown release" : "unknown release"
+  end
+
+  def publication_attributes(version)
+    attributes = version["attributes"] if version.is_a?(Hash)
+    unless attributes.is_a?(Hash)
+      raise Error, "Malformed App Store version #{publication_id(version)}: expected an attributes object."
+    end
+    MarketingVersion.new(attributes.fetch("versionString"))
+    attributes
+  rescue KeyError
+    raise Error, "Malformed App Store version #{publication_id(version)}: missing versionString."
   end
 
   def published_app_store_version?(attributes)
@@ -202,21 +218,25 @@ module AppStoreConnectRelease
       # The TestFlight version guard needs known published versions, not the
       # freeze observer's stricter proof of complete publication history.
       app_store_versions(app_id).filter_map do |version|
-        attributes = version.fetch("attributes")
+        attributes = AppStoreConnectRelease.publication_attributes(version)
         attributes.fetch("versionString") if AppStoreConnectRelease.published_app_store_version?(attributes)
       end
     end
 
-    def published_versions(app_id, after_version: nil)
-      versions = app_store_versions(app_id)
-      if after_version
-        baseline = MarketingVersion.new(after_version)
-        versions = versions.select do |version|
-          MarketingVersion.new(version.fetch("attributes").fetch("versionString")) > baseline
-        end
+    def published_versions(app_id, after_version: nil, &on_failure)
+      baseline = MarketingVersion.new(after_version) if after_version
+      app_store_versions(app_id).filter_map do |version|
+        attributes = AppStoreConnectRelease.publication_attributes(version)
+        next if baseline && MarketingVersion.new(attributes.fetch("versionString")) <= baseline
+        AppStoreConnectRelease.validate_publication_history!(attributes)
+        version if AppStoreConnectRelease.published_app_store_version?(attributes)
+      rescue Error, KeyError => error
+        # Observation may continue with independent records, but a candidate
+        # gate supplies no collector and must fail on incomplete history.
+        raise unless on_failure
+        on_failure.call(AppStoreConnectRelease.publication_id(version), error)
+        nil
       end
-      versions.each { |version| AppStoreConnectRelease.validate_publication_history!(version.fetch("attributes")) }
-      versions.select { |version| AppStoreConnectRelease.published_app_store_version?(version.fetch("attributes")) }
     end
 
     def latest_published_version(app_id)
@@ -224,16 +244,14 @@ module AppStoreConnectRelease
       # Identify a candidate before validating only its relevant history, so
       # bootstrap can still accept older ambiguous/unknown rows explicitly.
       known = versions.select do |version|
-        attrs = version.fetch("attributes")
-        state = attrs["appVersionState"] || attrs["appStoreState"]
-        LIVE_APP_STORE_STATES.include?(state) || state == "REPLACED_WITH_NEW_VERSION"
+        AppStoreConnectRelease.published_app_store_version?(AppStoreConnectRelease.publication_attributes(version))
       end
       latest = known.max_by { |version| MarketingVersion.new(version.fetch("attributes").fetch("versionString")) }
       # Bootstrap explicitly accepts all history through this publication.
       # A newer ambiguous row could change that boundary and must be resolved.
       boundary = latest && MarketingVersion.new(latest.fetch("attributes").fetch("versionString"))
       versions.each do |version|
-        attributes = version.fetch("attributes")
+        attributes = AppStoreConnectRelease.publication_attributes(version)
         next if boundary && MarketingVersion.new(attributes.fetch("versionString")) < boundary
         AppStoreConnectRelease.validate_publication_history!(attributes)
       end

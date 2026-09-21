@@ -186,6 +186,46 @@ class SchemaReleaseTest < Minitest::Test
     assert_empty @store.github.dispatches
   end
 
+  def test_malformed_publication_does_not_stop_valid_dispatch_but_blocks_gate
+    @apple.versions.insert(1, { "id" => "malformed", "attributes" => nil })
+    error = assert_raises(SchemaRelease::Error) { @pipeline.sync }
+    assert_includes error.message, "malformed"
+    assert_includes error.message, "expected an attributes object"
+    assert_equal [["new", @store.head]], @store.github.dispatches
+    assert_nil @store.document("releases/malformed.json", optional: true)
+    with_platform do |directory|
+      assert_raises(SchemaRelease::Error) { @pipeline.gate(directory) }
+    end
+  end
+
+  def test_malformed_publication_dry_run_has_no_side_effects
+    @apple.versions.insert(1, { "id" => "malformed", "attributes" => [] })
+    error = assert_raises(SchemaRelease::Error) { @pipeline.sync(dry_run: true) }
+    assert_includes error.message, "malformed"
+    assert_empty @store.writes
+    assert_empty @store.github.dispatches
+  end
+
+  def test_unknown_state_does_not_stop_independent_release_or_retained_proof_retry
+    @pipeline.sync
+    proof = @store.files.fetch("releases/new.json")
+    @store.github.dispatches.clear
+    @apple.versions.reject! { |version| version["id"] == "new" }
+    @apple.versions << { "id" => "unknown", "attributes" => { "versionString" => "9.2.0", "appVersionState" => "FUTURE_STATE" } }
+    error = assert_raises(SchemaRelease::Error) { @pipeline.sync(release_id: "new") }
+    assert_includes error.message, "Unknown appVersionState"
+    assert_equal [["new", @store.head]], @store.github.dispatches
+    assert_equal proof, @store.files.fetch("releases/new.json")
+  end
+
+  def test_malformed_build_attributes_do_not_stop_valid_dispatch
+    @apple.versions.insert(1, @apple.version("malformed-build", "9.0.1"))
+    @apple.builds["malformed-build"] = { "id" => "build20", "attributes" => nil }
+    error = assert_raises(SchemaRelease::Error) { @pipeline.sync }
+    assert_includes error.message, "Malformed build"
+    assert_equal [["new", @store.head]], @store.github.dispatches
+  end
+
   def test_manual_retained_proof_retry_survives_an_unrelated_missing_build
     @pipeline.sync
     proof = @store.files["releases/new.json"]
@@ -419,7 +459,7 @@ class SchemaReleaseTest < Minitest::Test
     assert_equal "new", @store.document("baseline.json").fetch("release_id")
   end
 
-  def test_ambiguous_history_after_baseline_still_blocks_sync_gate_and_bootstrap
+  def test_ambiguous_history_after_baseline_fails_sync_gate_and_bootstrap_but_allows_valid_dispatch
     @apple.versions << { "id" => "ambiguous", "attributes" => {
       "versionString" => "9.2.0", "appStoreState" => "REMOVED_FROM_SALE"
     } }
@@ -430,7 +470,7 @@ class SchemaReleaseTest < Minitest::Test
     @store.files.delete("baseline.json")
     assert_raises(SchemaRelease::Error) { @pipeline.bootstrap }
     refute @store.files.key?("baseline.json")
-    assert_empty @store.github.dispatches
+    assert_equal [["new", @store.head]], @store.github.dispatches
   end
 
   def test_interrupted_upload_can_bind_later_using_build_tuple
