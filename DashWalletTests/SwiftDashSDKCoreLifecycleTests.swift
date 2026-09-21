@@ -1135,39 +1135,6 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             3)
     }
 
-    func testPlatformShieldHeldBackNoticeUsesDisplayedAggregateBalance() {
-        XCTAssertEqual(
-            PlatformShieldAmountPolicy.heldBackCredits(
-                displayedPlatformCredits: 4_500_000_000,
-                accountBalanceCredits: 3_921_114_000,
-                submittedDuffs: 2_623_849),
-            1_876_151_000)
-
-        // If the published aggregate briefly lags, do not understate the
-        // account-level remainder reported by the coherent SDK preflight.
-        XCTAssertEqual(
-            PlatformShieldAmountPolicy.heldBackCredits(
-                displayedPlatformCredits: 3_000_000_000,
-                accountBalanceCredits: 3_921_114_000,
-                submittedDuffs: 2_623_849),
-            1_297_265_000)
-    }
-
-    func testPlatformShieldHeldBackIsZeroForOverflowAndFullySubmittedBalance() {
-        XCTAssertEqual(
-            PlatformShieldAmountPolicy.heldBackCredits(
-                displayedPlatformCredits: 4_500_000_000,
-                accountBalanceCredits: 3_921_114_000,
-                submittedDuffs: UInt64.max),
-            0)
-        XCTAssertEqual(
-            PlatformShieldAmountPolicy.heldBackCredits(
-                displayedPlatformCredits: 2_623_849_000,
-                accountBalanceCredits: 2_623_849_000,
-                submittedDuffs: 2_623_849),
-            0)
-    }
-
     func testPlatformShieldFailsClosedWithoutResolvedPreflight() {
         XCTAssertFalse(PlatformShieldAmountPolicy.canSubmit(
             requestedCredits: 1_000,

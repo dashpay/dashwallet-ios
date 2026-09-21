@@ -939,13 +939,10 @@ final class SendViewModel: ObservableObject {
             guard let feeKind = shieldedFeeKind(for: route) else { return }
             switch ShieldedTransferCoordinator.sweepAvailability(feeKind: feeKind) {
             case .ready(let plan):
+                // A remainder the plan leaves behind gets no notice: the slot
+                // under the amount carries errors only.
                 isFullShieldedSweep = true
                 shieldedSweepAmountCredits = plan.amountCredits
-                if plan.remainingCredits > 0 {
-                    shieldedMaxNotice = Self.shieldedRemainderMessage(
-                        plan.remainingCredits,
-                        followUpCredits: plan.followUpCredits)
-                }
                 sourceDuffs = plan.amountCredits / 1000
             case .waitingForConfirmation(let credits):
                 shieldedMaxNotice = Self.shieldedConfirmingMessage(credits)
@@ -1009,27 +1006,6 @@ final class SendViewModel: ObservableObject {
             NSLocalizedString(
                 "Your Shielded balance is split across notes, and at most %@ DASH of it can be sent in one transaction. Send the rest afterwards.",
                 comment: "Shielded amount above the single-transaction ceiling"),
-            formatted)
-    }
-
-    private static func shieldedRemainderMessage(
-        _ credits: UInt64,
-        followUpCredits: UInt64
-    ) -> String {
-        let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
-        guard followUpCredits > 0 else {
-            // Spending these notes costs more than they hold, so no later
-            // sweep can move them — do not send the user round that loop.
-            return String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "%@ DASH stays in your Shielded balance: those notes are worth less than the fee to send them.",
-                    comment: "Shielded Max dust remainder"),
-                formatted)
-        }
-        return String.localizedStringWithFormat(
-            NSLocalizedString(
-                "%@ DASH is held in notes that don't fit in one transaction. Use Max again after this one settles to send the rest.",
-                comment: "Shielded Max multi-bundle remainder"),
             formatted)
     }
 
