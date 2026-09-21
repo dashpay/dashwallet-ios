@@ -11,6 +11,7 @@ require "uri"
 module AppStoreConnectRelease
   class Error < StandardError; end
   class TransientError < Error; end
+  TRANSPORT_ERRORS = [Timeout::Error, IOError, SystemCallError, SocketError, OpenSSL::SSL::SSLError].freeze
 
   class MarketingVersion
     include Comparable
@@ -61,6 +62,15 @@ module AppStoreConnectRelease
     READY_FOR_SALE
   ].freeze
 
+  # Current AppVersionState values, independent of the deprecated field.
+  # The freeze observer requires an explicit publication decision for new states.
+  APP_VERSION_STATES = %w[
+    ACCEPTED DEVELOPER_REJECTED IN_REVIEW INVALID_BINARY METADATA_REJECTED
+    PENDING_APPLE_RELEASE PENDING_DEVELOPER_RELEASE PREPARE_FOR_SUBMISSION
+    PROCESSING_FOR_DISTRIBUTION READY_FOR_DISTRIBUTION READY_FOR_REVIEW REJECTED
+    REPLACED_WITH_NEW_VERSION WAITING_FOR_EXPORT_COMPLIANCE WAITING_FOR_REVIEW
+  ].freeze
+
   module_function
 
   def validate_release_channel(channel)
@@ -76,9 +86,51 @@ module AppStoreConnectRelease
     raise Error, "External TestFlight group '#{requested_group}' does not exist. Available groups: #{available}"
   end
 
+  def effective_app_store_state(attributes)
+    attributes["appVersionState"] || attributes["appStoreState"]
+  end
+
   def live_app_store_version?(attributes)
-    LIVE_APP_STORE_STATES.include?(attributes["appVersionState"]) ||
-      LIVE_APP_STORE_STATES.include?(attributes["appStoreState"])
+    state = effective_app_store_state(attributes)
+    return false if attributes["appVersionState"] && !APP_VERSION_STATES.include?(state)
+    LIVE_APP_STORE_STATES.include?(state)
+  end
+
+  def validate_publication_history!(attributes)
+    current = attributes["appVersionState"]
+    if current && !APP_VERSION_STATES.include?(current)
+      raise Error, "Unknown appVersionState #{current.inspect} for App Store version #{attributes['versionString']}. " \
+                   "Check Apple's state documentation and update the release observer before retrying; " \
+                   "the deprecated appStoreState cannot establish publication in its place."
+    end
+    if !attributes["appVersionState"] &&
+       %w[DEVELOPER_REMOVED_FROM_SALE REMOVED_FROM_SALE].include?(attributes["appStoreState"])
+      raise Error, "Ambiguous publication history for App Store version #{attributes['versionString']}: " \
+                   "legacy #{attributes['appStoreState']} without appVersionState. " \
+                   "Verify the release history in App Store Connect and recover its current version state; do not guess a published build."
+    end
+  end
+
+  def publication_id(version)
+    version.is_a?(Hash) ? version["id"] || "unknown release" : "unknown release"
+  end
+
+  def publication_attributes(version)
+    attributes = version["attributes"] if version.is_a?(Hash)
+    unless attributes.is_a?(Hash)
+      raise Error, "Malformed App Store version #{publication_id(version)}: expected an attributes object."
+    end
+    MarketingVersion.new(attributes.fetch("versionString"))
+    attributes
+  rescue KeyError
+    raise Error, "Malformed App Store version #{publication_id(version)}: missing versionString."
+  end
+
+  def published_app_store_version?(attributes)
+    # A superseded release still has installed databases, even when two
+    # publications happened between observer runs.
+    live_app_store_version?(attributes) ||
+      effective_app_store_state(attributes) == "REPLACED_WITH_NEW_VERSION"
   end
 
   def maximum_version(values)
@@ -163,15 +215,57 @@ module AppStoreConnectRelease
     end
 
     def production_versions(app_id)
-      url = api_url(
-        "/v1/apps/#{app_id}/appStoreVersions",
-        "filter[platform]" => "IOS",
-        "limit" => 200
-      )
-      get_all(url).filter_map do |version|
-        attributes = version.fetch("attributes")
-        attributes.fetch("versionString") if AppStoreConnectRelease.live_app_store_version?(attributes)
+      # The TestFlight version guard needs known published versions, not the
+      # freeze observer's stricter proof of complete publication history.
+      app_store_versions(app_id).filter_map do |version|
+        # Unpublished or unrecognizable rows cannot close a TestFlight train.
+        # Validate version numbers only after identifying a known publication;
+        # malformed published versions still fail rather than weakening the guard.
+        attributes = version.is_a?(Hash) ? version["attributes"] : nil
+        next unless attributes.is_a?(Hash) && AppStoreConnectRelease.published_app_store_version?(attributes)
+        attributes = AppStoreConnectRelease.publication_attributes(version)
+        attributes.fetch("versionString")
       end
+    end
+
+    def published_versions(app_id, after_version: nil, &on_failure)
+      baseline = MarketingVersion.new(after_version) if after_version
+      app_store_versions(app_id).filter_map do |version|
+        attributes = AppStoreConnectRelease.publication_attributes(version)
+        next if baseline && MarketingVersion.new(attributes.fetch("versionString")) <= baseline
+        AppStoreConnectRelease.validate_publication_history!(attributes)
+        version if AppStoreConnectRelease.published_app_store_version?(attributes)
+      rescue Error, KeyError => error
+        # Observation may continue with independent records, but a candidate
+        # gate supplies no collector and must fail on incomplete history.
+        raise unless on_failure
+        on_failure.call(AppStoreConnectRelease.publication_id(version), error)
+        nil
+      end
+    end
+
+    def latest_published_version(app_id)
+      versions = app_store_versions(app_id)
+      # Identify a candidate before validating only its relevant history, so
+      # bootstrap can still accept older ambiguous/unknown rows explicitly.
+      known = versions.select do |version|
+        AppStoreConnectRelease.published_app_store_version?(AppStoreConnectRelease.publication_attributes(version))
+      end
+      latest = known.max_by { |version| MarketingVersion.new(version.fetch("attributes").fetch("versionString")) }
+      # Bootstrap explicitly accepts all history through this publication.
+      # A newer ambiguous row could change that boundary and must be resolved.
+      boundary = latest && MarketingVersion.new(latest.fetch("attributes").fetch("versionString"))
+      versions.each do |version|
+        attributes = AppStoreConnectRelease.publication_attributes(version)
+        next if boundary && MarketingVersion.new(attributes.fetch("versionString")) < boundary
+        AppStoreConnectRelease.validate_publication_history!(attributes)
+      end
+      latest
+    end
+
+    def version_build(version_id)
+      get_json(api_url("/v1/appStoreVersions/#{version_id}/build"))["data"] ||
+        raise(Error, "Published App Store version #{version_id} has no associated build.")
     end
 
     def external_group_names(app_id)
@@ -217,8 +311,7 @@ module AppStoreConnectRelease
           else
             puts "Waiting for TestFlight version #{version_string} to appear in App Store Connect..."
           end
-        rescue TransientError, IOError, SystemCallError, SocketError,
-               Net::OpenTimeout, Net::ReadTimeout, OpenSSL::SSL::SSLError => e
+        rescue TransientError, *TRANSPORT_ERRORS => e
           puts "Transient App Store Connect error while polling (#{e.class}: #{e.message}); retrying..."
         end
 
@@ -231,6 +324,10 @@ module AppStoreConnectRelease
     end
 
     private
+
+    def app_store_versions(app_id)
+      get_all(api_url("/v1/apps/#{app_id}/appStoreVersions", "filter[platform]" => "IOS", "limit" => 200))
+    end
 
     def pre_release_versions(app_id)
       url = api_url(
@@ -258,6 +355,27 @@ module AppStoreConnectRelease
 
     def get_json(url)
       uri = URI(url)
+      unless uri.scheme == "https" && uri.host == "api.appstoreconnect.apple.com"
+        raise Error, "Unexpected App Store Connect pagination host."
+      end
+      attempts = 0
+      begin
+        attempts += 1
+        perform_get(uri)
+      rescue TransientError, *TRANSPORT_ERRORS => e
+        if attempts >= 4
+          raise if e.is_a?(TransientError)
+
+          raise TransientError, "App Store Connect GET #{uri.path} failed after #{attempts} attempts (#{e.class}). " \
+                                "Check API availability and connectivity, then retry."
+        end
+
+        sleep(2**(attempts - 1))
+        retry
+      end
+    end
+
+    def perform_get(uri)
       request = Net::HTTP::Get.new(uri)
       request["Authorization"] = "Bearer #{authorization_token}"
       request["Content-Type"] = "application/json"
@@ -268,6 +386,7 @@ module AppStoreConnectRelease
         open_timeout: 15,
         read_timeout: 30
       ) do |http|
+        http.max_retries = 0
         http.request(request)
       end
       self.class.parse_response(response.code.to_i, response.body)

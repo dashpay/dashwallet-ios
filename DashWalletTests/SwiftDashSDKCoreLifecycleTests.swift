@@ -208,7 +208,7 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
     }
 
     func testProcessCacheReusesValuesPerNetworkAndSeparatesNetworks() {
-        final class Token {}
+        final class Token: Sendable {}
 
         let cache = ProcessNetworkValueCache<Token>()
         let mainnetFirst = cache.value(for: "mainnet") { Token() }
@@ -220,6 +220,88 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertFalse(testnet.reused)
         XCTAssertTrue(mainnetFirst.value === mainnetSecond.value)
         XCTAssertFalse(mainnetFirst.value === testnet.value)
+    }
+
+    func testProcessCacheCoalescesConcurrentAsyncOpensAndRetriesFailures() async throws {
+        final class Token: Sendable {}
+        let cache = ProcessNetworkValueCache<Token>()
+        var creates = 0
+        var resumeOpen: CheckedContinuation<Void, Never>?
+        let first = Task { @MainActor in
+            try await cache.valueAsync(for: "testnet") {
+                creates += 1
+                await withCheckedContinuation { resumeOpen = $0 }
+                return Token()
+            }
+        }
+        while resumeOpen == nil { await Task.yield() }
+        let second = Task { @MainActor in
+            try await cache.valueAsync(for: "testnet") {
+                XCTFail("An in-flight open must be reused")
+                return Token()
+            }
+        }
+        await Task.yield()
+        resumeOpen?.resume()
+        let initial = try await first.value
+        let concurrent = try await second.value
+        XCTAssertEqual(creates, 1)
+        XCTAssertTrue(initial.value === concurrent.value)
+        XCTAssertEqual(initial.source, .created)
+        XCTAssertEqual(concurrent.source, .shared)
+        let cached = try await cache.valueAsync(for: "testnet") { Token() }
+        XCTAssertEqual(cached.source, .cached)
+        XCTAssertTrue(cached.value === initial.value)
+        do {
+            _ = try await cache.valueAsync(for: "mainnet") { throw CoreLifecycleTestError.start }
+            XCTFail("A failed open must throw")
+        } catch CoreLifecycleTestError.start {}
+        let retried = try await cache.valueAsync(for: "mainnet") { Token() }
+        XCTAssertEqual(retried.source, .created)
+        XCTAssertFalse(retried.value === initial.value)
+    }
+
+    func testConcurrentFailedOpenWaitersShareOneFreshRetry() async throws {
+        let cache = ProcessNetworkValueCache<Int>()
+        var releaseFailure: CheckedContinuation<Void, Never>?
+        var releaseRetry: CheckedContinuation<Void, Never>?
+        var entered = 0
+        var failed = 0
+        var retryCreates = 0
+        let callers = (0..<8).map { _ in
+            Task { @MainActor in
+                entered += 1
+                do {
+                    _ = try await cache.valueAsync(for: "testnet") {
+                        await withCheckedContinuation { releaseFailure = $0 }
+                        throw CoreLifecycleTestError.start
+                    }
+                    XCTFail("Initial open must fail")
+                    return -1
+                } catch {
+                    failed += 1
+                    // Retry immediately, before other waiters necessarily resume.
+                    return try await cache.valueAsync(for: "testnet") {
+                        retryCreates += 1
+                        guard retryCreates == 1 else {
+                            XCTFail("An older waiter discarded the active retry")
+                            return -1
+                        }
+                        await withCheckedContinuation { releaseRetry = $0 }
+                        return 42
+                    }.value
+                }
+            }
+        }
+        while entered < callers.count || releaseFailure == nil { await Task.yield() }
+        releaseFailure?.resume()
+        while failed < callers.count || releaseRetry == nil { await Task.yield() }
+        releaseRetry?.resume()
+        for caller in callers {
+            let value = try await caller.value
+            XCTAssertEqual(value, 42)
+        }
+        XCTAssertEqual(retryCreates, 1, "Old waiters must not remove or bypass the new in-flight retry")
     }
 
     func testSameSeedIdentityRecoveryDiscoversRefreshesAndAdoptsInOneRun() async throws {

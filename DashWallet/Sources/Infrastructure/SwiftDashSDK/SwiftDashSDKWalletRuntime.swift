@@ -215,6 +215,15 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         dispatchOnPipeline { shared.enqueueRefresh(trigger: .startIfReady) }
     }
 
+    /// Explicit recovery from a failed database open. Waits for teardown and
+    /// retries the whole start on the same serial queue as switches and wipes.
+    func retryWalletPreparation() async {
+        await enqueueAwaitable {
+            guard case .failedWalletOpen = WalletLifecycleTransitionState.shared.phase else { return }
+            await self.refresh(trigger: .startIfReady)
+        }.value
+    }
+
     /// Connectivity-return recovery, used by `SyncingActivityMonitor` when the
     /// path flips back to online.
     ///
@@ -653,6 +662,10 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     private func enqueueRefresh(trigger: RefreshTrigger) {
         enqueue { [weak self] in
+            // Automatic kicks (including material-change notifications) must
+            // leave Help and its unsent draft intact. Re-read on the serial
+            // queue: opening may have failed since this kick was enqueued.
+            guard WalletLifecycleTransitionState.shared.allowsAutomaticWalletPreparation else { return }
             await self?.refresh(trigger: trigger)
         }
     }
@@ -751,7 +764,15 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 // devnet one. The peers it discovers are handed to the SPV
                 // start below instead of being fetched twice.
                 try await SwiftDashSDKSPVCoordinator.shared.preflightDevnetStartIfNeeded(for: network)
-                let (manager, wallet) = try await SwiftDashSDKHost.shared.start(network: network)
+                WalletLifecycleOverlayPresenter.shared.ensureActive()
+                let (manager, wallet) = try await WalletLifecycleTransitionState.shared.prepareWallet {
+                    try await SwiftDashSDKHost.shared.start(network: network)
+                } failure: { error in
+                    if case let SwiftDashSDKHost.HostError.modelContainerFailed(underlying) = error {
+                        return WalletPreparationFailure(error: underlying)
+                    }
+                    return nil
+                }
                 PlatformAddressSyncCoordinator.shared.prepareLocalPlatformState(
                     manager: manager, walletId: wallet.walletId, network: network)
                 await PlatformAddressSyncCoordinator.shared.prepareLocalShieldedState(
@@ -974,6 +995,19 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         return true
     }
 
+    private func handleObservedNetworkChange() {
+        // The automatic refresh may be refused after a database-open failure.
+        // Refuse its immediate side effects too, without detaching the runtime.
+        guard WalletLifecycleTransitionState.shared.allowsAutomaticWalletPreparation else { return }
+        // Silence all balance mirrors immediately so the previous network's
+        // funds never render as the new one's while the refresh is queued.
+        SwiftDashSDKSPVCoordinator.shared.prepareForNetworkSwitch()
+        PlatformAddressSyncCoordinator.shared.prepareForNetworkSwitch()
+        // The queue checks admission again: an earlier open can still fail
+        // before this notification reaches the head of the queue.
+        enqueueRefresh(trigger: .networkDidChange)
+    }
+
     private func installNetworkObserver() {
         guard observerToken == nil else { return }
 
@@ -990,15 +1024,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // the full observer behavior below.
             guard !WalletEnvironment.isManagedSwitchNotification(note) else { return }
             Task { @MainActor in
-                // The home screen's funds are three published mirrors: the core
-                // balance plus BLAST's Platform and Shielded totals. `refresh`
-                // clears all three, but only once the serial lifecycle queue
-                // reaches `fullReset` — behind the seed-migrator wait and the
-                // BLAST/SPV stops. Silence and zero them here so the previously
-                // selected network's balances never render as the new one's.
-                SwiftDashSDKSPVCoordinator.shared.prepareForNetworkSwitch()
-                PlatformAddressSyncCoordinator.shared.prepareForNetworkSwitch()
-                Self.shared.enqueueRefresh(trigger: .networkDidChange)
+                Self.shared.handleObservedNetworkChange()
             }
         }
 
