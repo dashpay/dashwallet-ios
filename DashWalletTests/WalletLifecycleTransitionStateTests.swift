@@ -4,8 +4,8 @@
 //
 //  Table test pinning the admission matrix of the wallet-lifecycle gate —
 //  the safety-critical part of the lifecycle-overlay work: which operation
-//  may begin from which phase, that a wipe stays reachable from EVERY
-//  failure phase (the reset escape hatch), and that `advance(to:)` rejects
+//  may begin from which phase, that an authorized wipe is admitted after
+//  every failure phase, and that `advance(to:)` rejects
 //  an ownerless transition from idle. Written compile-ready per the repo's
 //  current test-target posture (the unit-test target is temporarily broken);
 //  the tests are pure MainActor state-machine checks with no SDK/FFI use.
@@ -106,10 +106,8 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         }
     }
 
-    /// The reset escape hatch: `.wiping` is admitted from EVERY failure
-    /// phase, so a persistently failing switch can never wall the user off
-    /// from Reset Wallet.
-    func testWipeIsReachableFromEveryFailurePhase() {
+    /// This tests admission only, not the existence of a destructive UI action.
+    func testAuthorizedWipeIsAdmittedFromEveryFailurePhase() {
         for (failureLabel, failure) in Self.failures {
             let state = makeState(in: failure)
             XCTAssertTrue(

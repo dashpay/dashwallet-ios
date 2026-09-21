@@ -662,10 +662,10 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     private func enqueueRefresh(trigger: RefreshTrigger) {
         enqueue { [weak self] in
-            // Foreground kicks must not dismiss Help or retry a failed database
-            // behind the user's back. The failure card has an explicit retry.
-            if trigger == .startIfReady,
-               case .failedWalletOpen = WalletLifecycleTransitionState.shared.phase { return }
+            // Automatic kicks (including material-change notifications) must
+            // leave Help and its unsent draft intact. Re-read on the serial
+            // queue: opening may have failed since this kick was enqueued.
+            guard WalletLifecycleTransitionState.shared.allowsAutomaticWalletPreparation else { return }
             await self?.refresh(trigger: trigger)
         }
     }

@@ -92,13 +92,21 @@ final class WalletLifecycleTransitionState: ObservableObject {
     /// fresh instances; production code uses only `shared`.
     init() {}
 
+    /// Automatic kicks must leave the failure card and any unsent support
+    /// draft intact. Explicit Retry / Sync Now use their existing entry points.
+    var allowsAutomaticWalletPreparation: Bool {
+        if case .failedWalletOpen = phase { return false }
+        return true
+    }
+
     /// Atomically admit `next` as the active operation. Admission rules: any
     /// operation may begin from `.idle`; a network switch may also begin from
     /// `.failedNetworkSwitch` (the failure card's Retry / Switch Back); a
     /// wallet switch may also begin from `.failedWalletSwitch` (Retry /
-    /// Switch Back); a wipe may begin from ANY failure phase, keeping the
-    /// reset route as the universal escape hatch. Every other combination is
-    /// rejected and the caller surfaces or logs it.
+    /// Switch Back); an independently authorized wipe may begin from any
+    /// failure phase. Admission does not imply a reset button on a failure
+    /// card: a database-open failure offers Retry and Help, preserving data.
+    /// Every other combination is rejected and the caller surfaces or logs it.
     func tryBegin(_ next: Phase) -> Bool {
         switch (phase, next) {
         case (.idle, .openingWallet),
@@ -117,10 +125,8 @@ final class WalletLifecycleTransitionState: ObservableObject {
              // can reach it, because the blocking overlay window covers every
              // other interactive entry point for `.addingWallet`'s lifetime.
              (.addingWallet, .switchingWallet),
-             // The wipe/reset route stays reachable from EVERY failure card:
-             // without this, a persistently failing switch (destination
-             // network down) would block the whole app behind the overlay
-             // with reinstalling as the only exit.
+             // Permit an independently authorized wipe after a failure.
+             // The gate alone neither offers nor authorizes deletion.
              (.failedNetworkSwitch, .wiping),
              (.failedWalletSwitch, .wiping),
              (.failedWalletRemoval, .wiping):
