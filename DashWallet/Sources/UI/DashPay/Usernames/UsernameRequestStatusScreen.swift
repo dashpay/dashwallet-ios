@@ -42,6 +42,12 @@ final class UsernameRequestStatusViewModel: ObservableObject {
     /// what voters can see is the only thing worth reporting here.
     @Published private(set) var verificationURL: URL?
     @Published private(set) var isPublishingVerification = false
+    /// The published-link lookup is in flight. Starts `true`: the screen's
+    /// `.task` always runs that read, and until it answers `verificationURL`
+    /// is nil for two different reasons — nothing published, or not read yet.
+    /// Treating those as one offered "Verify Now" over a link that was about
+    /// to appear, inviting a second publication of a link the user already has.
+    @Published private(set) var isReadingVerification = true
     /// Non-nil drives the failure alert. Cancelling the PIN is not an error.
     @Published var verificationError: String?
 
@@ -72,7 +78,12 @@ final class UsernameRequestStatusViewModel: ObservableObject {
     /// information about a request whose status is already on screen, so a
     /// lookup that fails must not present itself as the request failing.
     func refreshVerificationURL() async {
-        guard identityVerify.isAvailable else { return }
+        guard identityVerify.isAvailable else {
+            isReadingVerification = false
+            return
+        }
+        isReadingVerification = true
+        defer { isReadingVerification = false }
         verificationURL = try? await identityVerify.publishedURL(forLabel: label)
     }
 
@@ -375,6 +386,14 @@ struct UsernameRequestStatusScreen: View {
                 }
                 .foregroundStyle(Color.dash.blue)
             }
+        } else if viewModel.isReadingVerification {
+            // Reading, not "nothing there": the publish invitation would be
+            // offering work the user may have already done.
+            HStack(spacing: 6) {
+                SwiftUI.ProgressView()
+                Text(NSLocalizedString("Checking…", comment: "Usernames"))
+            }
+            .foregroundStyle(Color.dash.secondaryText)
         } else if viewModel.canVerifyIdentity {
             Button {
                 showVerifyIdentity = true
