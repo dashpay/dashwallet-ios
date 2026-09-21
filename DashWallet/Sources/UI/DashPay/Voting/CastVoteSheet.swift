@@ -37,11 +37,27 @@ struct CastVoteSheet: View {
         candidateNodes.filter { selectedNodeIDs.contains($0.proTxHash) }
     }
 
-    /// Only nodes that have not voted on this contest yet. A node with a vote
-    /// on record is not offered again — Platform rejects a repeat of the same
-    /// choice, and re-listing it would invite that error.
+    /// The nodes this choice can be cast with: everything except nodes that
+    /// already hold *this* choice — Platform rejects a repeat of the same vote
+    /// — and nodes that have spent the five casts it allows per contest.
+    ///
+    /// A node holding a different choice belongs here. Replacing its vote is a
+    /// single state transition, and excluding it was what made changing your
+    /// mind impossible from this sheet.
     private var candidateNodes: [VoterNode] {
-        viewModel.nodesYetToVote(on: contest.normalizedLabel)
+        viewModel.nodesForVote(choice, on: contest.normalizedLabel)
+    }
+
+    /// Nodes left out because they already hold this exact choice.
+    private var holdingThisChoice: Int {
+        viewModel.votableNodes.filter {
+            viewModel.liveChoice(of: $0, on: contest.normalizedLabel) == choice
+        }.count
+    }
+
+    /// Nodes left out because they have no casts left on this contest.
+    private var outOfCasts: Int {
+        max(0, viewModel.votableNodes.count - candidateNodes.count - holdingThisChoice)
     }
 
     var body: some View {
@@ -72,8 +88,9 @@ struct CastVoteSheet: View {
             if selectedNodeIDs.isEmpty {
                 // Honour the privacy mode: one node preselected by default,
                 // all of them only when the user asked for that.
-                selectedNodeIDs = Set(
-                    viewModel.nodesForNextVote(on: contest.normalizedLabel).map(\.proTxHash))
+                // Same set the sheet lists — nodes that can cast THIS choice,
+                // including ones whose current vote it would replace.
+                selectedNodeIDs = Set(candidateNodes.map(\.proTxHash))
             }
         }
     }
@@ -105,12 +122,18 @@ struct CastVoteSheet: View {
             } header: {
                 Text(NSLocalizedString("Vote with", comment: "Voting"))
             } footer: {
-                if alreadyVoted > 0 {
+                if holdingThisChoice > 0 {
                     Text(String(
                         format: NSLocalizedString(
-                            "%d of your nodes already voted here and are not listed.",
+                            "%d of your nodes already voted this way and are not listed. Any node voting differently is listed — its vote will be replaced.",
                             comment: "Voting"),
-                        alreadyVoted))
+                        holdingThisChoice))
+                } else if outOfCasts > 0 {
+                    Text(String(
+                        format: NSLocalizedString(
+                            "%d of your nodes have used all 5 votes Dash Platform allows on one contest.",
+                            comment: "Voting"),
+                        outOfCasts))
                 } else if selectedNodeIDs.count < candidateNodes.count, candidateNodes.count > 1 {
                     Text(NSLocalizedString(
                         "Selecting fewer nodes reveals less about which masternodes you run.",
@@ -147,9 +170,6 @@ struct CastVoteSheet: View {
         }
     }
 
-    private var alreadyVoted: Int {
-        viewModel.votableNodes.count - candidateNodes.count
-    }
 
     private func toggle(_ node: VoterNode) {
         if selectedNodeIDs.contains(node.proTxHash) {
