@@ -189,6 +189,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     UIWindow *lockWindow = [[UIWindow alloc] initWithFrame:screenBounds];
     lockWindow.backgroundColor = [UIColor blackColor];
     lockWindow.windowLevel = UIWindowLevelNormal;
+    [DWWalletLifecycleOverlayBridge setLockScreenVisible:[self.model shouldShowLockScreen]];
     self.lockWindow = lockWindow;
 
     // Display main controller initially if there is a wallet and lock screen is disabled
@@ -473,6 +474,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             self.lockWindow.rootViewController = nil;
             self.lockWindow.hidden = YES;
             self.lockWindow.alpha = 1.0;
+            [DWWalletLifecycleOverlayBridge setLockScreenVisible:NO];
 
             if (self.deferredDeeplinkToProcess) {
 #if DASHPAY
@@ -498,6 +500,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     self.lockWindow.rootViewController = nil;
     self.lockWindow.hidden = YES;
     self.lockWindow.alpha = 1.0;
+    [DWWalletLifecycleOverlayBridge setLockScreenVisible:NO];
 
     // The support recovery controller reports success only after the serial
     // wiper has completed. Transition to setup without issuing a second wipe.
@@ -579,6 +582,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
 
     if (![self.model shouldShowLockScreen]) {
+        [DWWalletLifecycleOverlayBridge setLockScreenVisible:NO];
         [self hideAndRemoveOverlayImageView];
 
         return;
@@ -649,6 +653,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         [[DWNavigationController alloc] initWithRootViewController:controller];
     navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
 
+    [DWWalletLifecycleOverlayBridge setLockScreenVisible:YES];
     self.lockWindow.rootViewController = navigationController;
     [self.lockWindow makeKeyAndVisible];
 

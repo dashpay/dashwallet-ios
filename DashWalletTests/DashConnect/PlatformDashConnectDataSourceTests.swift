@@ -235,6 +235,21 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(purchase.totalAgreedPrice, 100_000_000)
     }
 
+    func testParserRejectsContractGroupKeysInsteadOfDroppingTheirRestriction() throws {
+        let parser = PlatformWalletDashConnectStateTransitionParser { _ in
+            .identityUpdate(.init(
+                identityId: Data(repeating: 0x21, count: 32),
+                addPublicKeys: [.init(
+                    keyId: 1, keyType: .ecdsaSecp256k1, purpose: .authentication,
+                    securityLevel: .high, pubkeyBytes: Data(repeating: 0x22, count: 33),
+                    contractBounds: .contractGroup(id: Data(repeating: 0x23, count: 32)))],
+                disablePublicKeyIds: []))
+        }
+        XCTAssertThrowsError(try parser.parse(Data([0]))) {
+            XCTAssertEqual($0 as? DashConnectPlatformError, .keyRegistrationUnexpectedMutation)
+        }
+    }
+
     func testTokenPurchasePriceConvertsCreditsToDash() {
         // 1e11 credits = 1 DASH; 1e3 credits = 1 duff.
         XCTAssertEqual(Self.purchaseRequest(credits: 0).totalPriceDash, 0)
