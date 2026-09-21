@@ -26,23 +26,21 @@ import UIKit
 /// created lazily when the transition leaves `.idle` and dropped only on
 /// `.idle` — never between `advance` transitions (switch → remove), so the
 /// window cannot flicker mid-operation. Failure phases keep the window up;
-/// each failure card owns its recovery actions. The PIN window takes priority;
-/// hiding this window while locked preserves the card and any support draft.
+/// each failure card owns its recovery actions. The PIN window takes priority
+/// except during an explicitly authorized wipe (which can start from PIN
+/// recovery). Hiding while locked preserves the card and any support draft.
 @MainActor
 final class WalletLifecycleOverlayPresenter {
-    static let shared = WalletLifecycleOverlayPresenter(state: .shared)
+    static let shared = WalletLifecycleOverlayPresenter()
 
     private(set) var overlayWindow: UIWindow?
-    private let state: WalletLifecycleTransitionState
+    private let state = WalletLifecycleTransitionState.shared
     private var cancellables = Set<AnyCancellable>()
     private var openingDelay: Task<Void, Never>?
     private var lockScreenVisible = false
     private var applicationActive = false
 
-    // Internal initializer lets presentation tests use an isolated state.
-    init(state: WalletLifecycleTransitionState) {
-        self.state = state
-    }
+    private init() {}
 
     /// Idempotent activation: every operation entry point calls this before
     /// starting; the first call subscribes for the process lifetime.
@@ -105,10 +103,20 @@ final class WalletLifecycleOverlayPresenter {
     }
 
     private func updateVisibility() {
-        overlayWindow?.isHidden = lockScreenVisible || !applicationActive
+        // Forgot-PIN recovery can start an authorized wipe inside the lock
+        // window. Its progress must block Cancel until deletion completes.
+        let blockedByLock: Bool
+        if case .wiping = state.phase {
+            blockedByLock = false
+        } else {
+            blockedByLock = lockScreenVisible
+        }
+        overlayWindow?.isHidden = blockedByLock || !applicationActive
     }
 
     private func presentIfNeeded() {
+        // Re-evaluate even when reusing a hidden failure window for a wipe.
+        defer { updateVisibility() }
         guard overlayWindow == nil else { return }
         let scene = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
@@ -122,7 +130,6 @@ final class WalletLifecycleOverlayPresenter {
         window.rootViewController?.view.accessibilityViewIsModal = true
         window.backgroundColor = .clear
         overlayWindow = window
-        updateVisibility()
     }
 }
 
