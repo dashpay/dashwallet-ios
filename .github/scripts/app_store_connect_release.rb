@@ -218,8 +218,13 @@ module AppStoreConnectRelease
       # The TestFlight version guard needs known published versions, not the
       # freeze observer's stricter proof of complete publication history.
       app_store_versions(app_id).filter_map do |version|
+        # Unpublished or unrecognizable rows cannot close a TestFlight train.
+        # Validate version numbers only after identifying a known publication;
+        # malformed published versions still fail rather than weakening the guard.
+        attributes = version.is_a?(Hash) ? version["attributes"] : nil
+        next unless attributes.is_a?(Hash) && AppStoreConnectRelease.published_app_store_version?(attributes)
         attributes = AppStoreConnectRelease.publication_attributes(version)
-        attributes.fetch("versionString") if AppStoreConnectRelease.published_app_store_version?(attributes)
+        attributes.fetch("versionString")
       end
     end
 

@@ -276,6 +276,40 @@ class AppStoreConnectReleaseTest < Minitest::Test
     end
   end
 
+  def test_internal_only_ignores_malformed_unpublished_rows_without_weakening_publication_checks
+    client = fake_client
+    irrelevant = [nil, [], { "attributes" => nil }, { "attributes" => [] },
+                  { "attributes" => "invalid" }, { "attributes" => {} },
+                  { "attributes" => { "appVersionState" => "PREPARE_FOR_SUBMISSION" } },
+                  { "attributes" => { "appVersionState" => "IN_REVIEW", "versionString" => "invalid" } },
+                  { "attributes" => { "appVersionState" => "FUTURE_STATE", "appStoreState" => "READY_FOR_SALE" } }]
+    client.define_singleton_method(:app_store_versions) do |_app|
+      irrelevant + [{ "attributes" => { "appVersionState" => "READY_FOR_DISTRIBUTION", "versionString" => "9.0.0" } }]
+    end
+    client.define_singleton_method(:testflight_versions) { |_app| [] }
+    command = AppStoreConnectRelease::Command.new([], env: { "RELEASE_CHANNEL" => "internal-only", "REQUESTED_VERSION" => "9.1.0" })
+    command.define_singleton_method(:write_outputs) { |values| values }
+    outputs = command.send(:resolve_version, client, "app")
+    assert_equal "9.1.0", outputs.fetch("effective_version")
+    assert_equal "9.0.0", outputs.fetch("latest_production_version")
+    assert_raises(AppStoreConnectRelease::Error) { client.published_versions("app") }
+    assert_raises(AppStoreConnectRelease::Error) do
+      resolve(requested: "9.0.0", production: client.production_versions("app"))
+    end
+  end
+
+  def test_malformed_known_publications_still_block_testflight_version_resolution
+    client = fake_client
+    %w[READY_FOR_DISTRIBUTION REPLACED_WITH_NEW_VERSION].each do |state|
+      [nil, "invalid"].each do |number|
+        attributes = { "appVersionState" => state }
+        attributes["versionString"] = number if number
+        client.define_singleton_method(:app_store_versions) { |_app| [{ "attributes" => attributes }] }
+        assert_raises(AppStoreConnectRelease::Error) { client.production_versions("app") }
+      end
+    end
+  end
+
   def test_publication_validation_collects_bad_records_and_continues
     client = fake_client
     records = [nil, [], { "id" => "nil-attributes", "attributes" => nil },
