@@ -6,8 +6,8 @@
 import Combine
 import Foundation
 
-/// Central published state of an interactive wallet-lifecycle operation —
-/// a network switch, a runtime wallet switch, or a per-wallet removal. Two
+/// Central published state of wallet preparation and interactive lifecycle
+/// operations — network/wallet switches, removal and wipe. Two
 /// explicit roles, and deliberately nothing more:
 ///
 /// 1. **Presentation**: `phase` drives the app-wide blocking overlay
@@ -27,6 +27,8 @@ import Foundation
 final class WalletLifecycleTransitionState: ObservableObject {
     enum Phase: Equatable {
         case idle
+        case openingWallet
+        case failedWalletOpen(WalletPreparationFailure)
         case switchingNetwork(from: WalletEnvironment.NetworkKind, to: WalletEnvironment.NetworkKind)
         /// The network switch failed after the old runtime was already torn
         /// down — the app may have no working manager, so the overlay stays
@@ -65,6 +67,8 @@ final class WalletLifecycleTransitionState: ObservableObject {
         var logLabel: String {
             switch self {
             case .idle: return "idle"
+            case .openingWallet: return "openingWallet"
+            case .failedWalletOpen: return "failedWalletOpen"
             case .switchingNetwork(_, let to): return "switchingNetwork(\(to))"
             case .failedNetworkSwitch(_, let target, _): return "failedNetworkSwitch(\(target))"
             case .switchingWallet: return "switchingWallet"
@@ -80,6 +84,9 @@ final class WalletLifecycleTransitionState: ObservableObject {
     static let shared = WalletLifecycleTransitionState()
 
     @Published private(set) var phase: Phase = .idle
+    /// Retained for an interactive switch's failure card; its owner keeps the
+    /// phase and retry destination while the wallet-opening step runs.
+    @Published private(set) var preparationFailure: WalletPreparationFailure?
 
     /// Internal (not private) so the admission-matrix table test can build
     /// fresh instances; production code uses only `shared`.
@@ -94,7 +101,10 @@ final class WalletLifecycleTransitionState: ObservableObject {
     /// rejected and the caller surfaces or logs it.
     func tryBegin(_ next: Phase) -> Bool {
         switch (phase, next) {
-        case (.idle, .switchingNetwork),
+        case (.idle, .openingWallet),
+             (.failedWalletOpen, .openingWallet),
+             (.failedWalletOpen, .wiping),
+             (.idle, .switchingNetwork),
              (.idle, .switchingWallet),
              (.idle, .removingWallet),
              (.idle, .addingWallet),
@@ -115,6 +125,7 @@ final class WalletLifecycleTransitionState: ObservableObject {
              (.failedWalletSwitch, .wiping),
              (.failedWalletRemoval, .wiping):
             phase = next
+            preparationFailure = nil
             return true
         default:
             DWLogger.log("🚦 LIFECYCLE tryBegin rejected: phase=\(phase.logLabel) next=\(next.logLabel)")
@@ -139,9 +150,40 @@ final class WalletLifecycleTransitionState: ObservableObject {
 
     func finish() {
         phase = .idle
+        preparationFailure = nil
     }
 
     func fail(_ failure: Phase) {
         phase = failure
+    }
+
+    /// Uses the existing switch overlay when an interactive operation owns
+    /// it. Otherwise owns a startup overlay until local wallet data is ready.
+    /// Opening failures never reset data, and never dismiss a switch's card.
+    func prepareWallet<T>(
+        open: () async throws -> T,
+        failure: (Error) -> WalletPreparationFailure?
+    ) async throws -> T {
+        let ownsOverlay: Bool
+        switch phase {
+        case .idle, .failedWalletOpen:
+            ownsOverlay = tryBegin(.openingWallet)
+        default:
+            ownsOverlay = false
+        }
+        preparationFailure = nil
+        do {
+            let result = try await open()
+            if ownsOverlay, phase == .openingWallet { finish() }
+            return result
+        } catch {
+            let detail = failure(error)
+            preparationFailure = detail
+            if ownsOverlay, phase == .openingWallet {
+                // Unrelated startup errors keep their existing recovery flow.
+                if let detail { phase = .failedWalletOpen(detail) } else { finish() }
+            }
+            throw error
+        }
     }
 }

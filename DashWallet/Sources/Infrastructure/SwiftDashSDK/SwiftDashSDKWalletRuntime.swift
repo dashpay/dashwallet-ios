@@ -215,6 +215,15 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         dispatchOnPipeline { shared.enqueueRefresh(trigger: .startIfReady) }
     }
 
+    /// Explicit recovery from a failed database open. Waits for teardown and
+    /// retries the whole start on the same serial queue as switches and wipes.
+    func retryWalletPreparation() async {
+        await enqueueAwaitable {
+            guard case .failedWalletOpen = WalletLifecycleTransitionState.shared.phase else { return }
+            await self.refresh(trigger: .startIfReady)
+        }.value
+    }
+
     /// Connectivity-return recovery, used by `SyncingActivityMonitor` when the
     /// path flips back to online.
     ///
@@ -653,6 +662,10 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     private func enqueueRefresh(trigger: RefreshTrigger) {
         enqueue { [weak self] in
+            // Foreground kicks must not dismiss Help or retry a failed database
+            // behind the user's back. The failure card has an explicit retry.
+            if trigger == .startIfReady,
+               case .failedWalletOpen = WalletLifecycleTransitionState.shared.phase { return }
             await self?.refresh(trigger: trigger)
         }
     }
@@ -751,7 +764,15 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 // devnet one. The peers it discovers are handed to the SPV
                 // start below instead of being fetched twice.
                 try await SwiftDashSDKSPVCoordinator.shared.preflightDevnetStartIfNeeded(for: network)
-                let (manager, wallet) = try await SwiftDashSDKHost.shared.start(network: network)
+                WalletLifecycleOverlayPresenter.shared.ensureActive()
+                let (manager, wallet) = try await WalletLifecycleTransitionState.shared.prepareWallet {
+                    try await SwiftDashSDKHost.shared.start(network: network)
+                } failure: { error in
+                    if case let SwiftDashSDKHost.HostError.modelContainerFailed(underlying) = error {
+                        return WalletPreparationFailure(error: underlying)
+                    }
+                    return nil
+                }
                 PlatformAddressSyncCoordinator.shared.prepareLocalPlatformState(
                     manager: manager, walletId: wallet.walletId, network: network)
                 await PlatformAddressSyncCoordinator.shared.prepareLocalShieldedState(

@@ -55,7 +55,8 @@ final class WalletLifecycleOverlayPresenter {
         case .idle:
             overlayWindow?.isHidden = true
             overlayWindow = nil
-        case .switchingNetwork, .failedNetworkSwitch,
+        case .openingWallet, .failedWalletOpen,
+             .switchingNetwork, .failedNetworkSwitch,
              .switchingWallet, .removingWallet, .addingWallet,
              .failedWalletSwitch, .failedWalletRemoval,
              .wiping:
@@ -74,6 +75,7 @@ final class WalletLifecycleOverlayPresenter {
         window.windowLevel = .alert + 1
         window.rootViewController = UIHostingController(rootView: WalletLifecycleOverlayView())
         window.rootViewController?.view.backgroundColor = .clear
+        window.rootViewController?.view.accessibilityViewIsModal = true
         window.backgroundColor = .clear
         window.isHidden = false
         overlayWindow = window
@@ -117,16 +119,39 @@ final class WalletLifecycleOverlayBridge: NSObject {
 @MainActor
 final class WalletLifecycleOverlayViewModel: ObservableObject {
     @Published private(set) var phase: WalletLifecycleTransitionState.Phase
+    @Published private(set) var preparationFailure: WalletPreparationFailure?
+    @Published var supportFailure: WalletPreparationFailure?
+    @Published private(set) var retryPending = false
 
-    private var phaseCancellable: AnyCancellable?
+    private var cancellables = Set<AnyCancellable>()
 
     init() {
         let transitionState = WalletLifecycleTransitionState.shared
         phase = transitionState.phase
-        phaseCancellable = transitionState.$phase
+        preparationFailure = transitionState.preparationFailure
+        transitionState.$phase
             .sink { [weak self] phase in
                 self?.phase = phase
             }
+            .store(in: &cancellables)
+        transitionState.$preparationFailure
+            .sink { [weak self] failure in self?.preparationFailure = failure }
+            .store(in: &cancellables)
+    }
+
+    func retryWalletOpen() {
+        guard !retryPending else { return }
+        retryPending = true
+        // A Core-only Restart requires an already-open wallet and cannot
+        // recover a database failure. Re-enter the complete serialized start.
+        Task {
+            await SwiftDashSDKWalletRuntime.shared.retryWalletPreparation()
+            retryPending = false
+        }
+    }
+
+    func showPreparationHelp() {
+        supportFailure = preparationFailure
     }
 
     func retryNetworkSwitch(to target: WalletEnvironment.NetworkKind) {
@@ -173,6 +198,19 @@ struct WalletLifecycleOverlayView: View {
             switch viewModel.phase {
             case .idle:
                 EmptyView()
+            case .openingWallet:
+                progressCard(
+                    title: NSLocalizedString("Preparing your wallet…", comment: "Wallet preparation"),
+                    subtitle: NSLocalizedString("Please keep the app open.", comment: "Wallet preparation"))
+            case let .failedWalletOpen(failure):
+                card {
+                    failureHeader(title: failure.title, message: failure.message)
+                    actionButton(NSLocalizedString("Try Again", comment: ""), prominent: true) {
+                        viewModel.retryWalletOpen()
+                    }
+                    .disabled(viewModel.retryPending)
+                    preparationHelp
+                }
             case let .switchingNetwork(_, to):
                 progressCard(
                     title: String(
@@ -205,7 +243,7 @@ struct WalletLifecycleOverlayView: View {
                     subtitle: nil)
             case let .failedNetworkSwitch(from, target, message):
                 card {
-                    failureHeader(
+                    preparationFailureHeader(
                         title: String(
                             format: NSLocalizedString("Switching to %@ failed", comment: "Network switch overlay"),
                             Self.displayName(of: target)),
@@ -221,10 +259,11 @@ struct WalletLifecycleOverlayView: View {
                             viewModel.retryNetworkSwitch(to: from)
                         }
                     }
+                    preparationHelp
                 }
             case let .failedWalletSwitch(targetId, targetName, previousId, message):
                 card {
-                    failureHeader(
+                    preparationFailureHeader(
                         title: NSLocalizedString("Switching wallet failed", comment: "Wallets"),
                         message: message)
                     actionButton(NSLocalizedString("Retry", comment: ""), prominent: true) {
@@ -235,6 +274,7 @@ struct WalletLifecycleOverlayView: View {
                             viewModel.switchBack(to: previousId)
                         }
                     }
+                    preparationHelp
                 }
             case let .failedWalletRemoval(message):
                 card {
@@ -246,6 +286,28 @@ struct WalletLifecycleOverlayView: View {
                     }
                 }
             }
+        }
+        .sheet(item: $viewModel.supportFailure) { failure in
+            WalletPreparationSupportView(failure: failure)
+        }
+    }
+
+    @ViewBuilder
+    private var preparationHelp: some View {
+        if viewModel.preparationFailure != nil {
+            actionButton(NSLocalizedString("Help", comment: ""), prominent: false) {
+                viewModel.showPreparationHelp()
+            }
+            .disabled(viewModel.retryPending)
+        }
+    }
+
+    @ViewBuilder
+    private func preparationFailureHeader(title: String, message: String?) -> some View {
+        if let failure = viewModel.preparationFailure {
+            failureHeader(title: failure.title, message: failure.message)
+        } else {
+            failureHeader(title: title, message: message)
         }
     }
 
@@ -272,8 +334,10 @@ struct WalletLifecycleOverlayView: View {
         Image(systemName: "exclamationmark.triangle.fill")
             .font(.largeTitle)
             .foregroundColor(.orange)
+            .accessibilityHidden(true)
         Text(title)
             .font(.headline)
+            .multilineTextAlignment(.center)
         if let message, !message.isEmpty {
             Text(message)
                 .font(.footnote)
@@ -299,14 +363,19 @@ struct WalletLifecycleOverlayView: View {
 
     @ViewBuilder
     private func card(@ViewBuilder content: () -> some View) -> some View {
-        VStack(spacing: 16) {
-            content()
+        let contents = VStack(spacing: 16) { content() }
+        GeometryReader { viewport in
+            ScrollView {
+                contents
+                    .padding(24)
+                    .frame(maxWidth: 320)
+                    .background(Color(UIColor.systemBackground))
+                    .cornerRadius(16)
+                    .padding(32)
+                    .frame(maxWidth: .infinity, minHeight: viewport.size.height)
+            }
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .padding(24)
-        .frame(maxWidth: 320)
-        .background(Color(UIColor.systemBackground))
-        .cornerRadius(16)
-        .padding(32)
     }
 
     private static func displayName(of kind: WalletEnvironment.NetworkKind) -> String {
