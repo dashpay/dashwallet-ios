@@ -496,6 +496,12 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// as the active username (the deferred contested label then never
     /// displaces it — `finalizeWon` only backfills an empty mirror, so
     /// a vote win adds the second name instead of replacing the first).
+    /// Proof-of-identity link for the submission in flight, handed over by
+    /// `startCreateUsername` and consumed once the identity exists. Held here
+    /// rather than threaded through `finishUsernameRegistration` →
+    /// `registerNames`, neither of which has a reason to know about it.
+    private var pendingVerificationURL: URL?
+
     @discardableResult
     func startCreateUsername(
         _ username: String,
@@ -509,6 +515,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         verificationURL: URL? = nil
     ) async throws -> Identifier {
         Self.logger.info("🪪 IDENT-COORD :: startCreateUsername username=\(username, privacy: .public) funding=\(fundingSource.logLabel, privacy: .public) temporary=\(temporaryUsername ?? "none", privacy: .public)")
+        pendingVerificationURL = verificationURL
 
         // A companion label only makes sense next to a contested main
         // label, and must itself be non-contested — registering a second
@@ -1029,6 +1036,16 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         }
     }
 
+    /// Drops the step-2.9 bookmark for a submission that never reached the
+    /// network. Safe to call when none was written.
+    private func withdrawPrematureBookmark(
+        _ username: String, isContested: Bool, network: Network, wallet: ManagedPlatformWallet
+    ) {
+        guard isContested else { return }
+        DWContestedNameStatusService.shared.clearPending(
+            label: username, for: network, walletId: wallet.walletId)
+    }
+
     private func registerNames(
         identityId: Identifier, username: String, temporaryUsername: String?,
         wallet: ManagedPlatformWallet, network: Network, signer: KeychainSigner,
@@ -1045,6 +1062,25 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             .init(username: username, temporaryUsername: temporaryUsername), for: draftScope)
         let isContestedSubmission = DWContestedNameStatusService.isContestedLabel(username)
         var nameState = UsernameRegistrationRecoveryFlow.NameState.available
+        // Step 2.9: bookmark a contested submission BEFORE the document exists.
+        //
+        // `registerDpnsName` below creates the DPNS domain document for a
+        // contested label too — voting only decides who keeps it — while the
+        // bookmark that marks it as "not ours yet" used to be written at step
+        // 3.5. Everything that filters in-flight contested labels reads that
+        // bookmark, so for the whole submission the app treated the name as
+        // owned: More offered a Profile row for it, and the request-status
+        // screen (whose entry guards on `pendingLabel`) could not be opened at
+        // all, which made the row's ⓘ a dead control.
+        //
+        // Written from the local predicate — no network needed to know a label
+        // is contested — and withdrawn again if the registration throws, or if
+        // step 3.5 finds the name was already ours.
+        if isContestedSubmission {
+            DWContestedNameStatusService.shared.recordSubmission(
+                label: username, network: network, identityId: identityId, walletId: wallet.walletId)
+        }
+
         // Step 3: reconcile first; an RPC failure never implies availability.
         do {
             nameState = try await UsernameRegistrationRecoveryFlow.run(
@@ -1063,9 +1099,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 })
             Self.logger.info("🪪 IDENT-COORD :: DPNS name registered: \(username, privacy: .public)")
         } catch DWIdentityAuthorizer.AuthError.cancelled {
+            withdrawPrematureBookmark(
+                username, isContested: isContestedSubmission, network: network, wallet: wallet)
             throw DWIdentityAuthorizer.AuthError.cancelled
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: DPNS registration failed: \(String(describing: error), privacy: .public)")
+            // Nothing was submitted, so nothing is out for a vote — leaving the
+            // step-2.9 bookmark would report a contest that does not exist.
+            withdrawPrematureBookmark(
+                username, isContested: isContestedSubmission, network: network, wallet: wallet)
             throw CoordinatorError.dpnsRegistration(error)
         }
 
@@ -1164,7 +1206,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // can only weigh the link while the vote is open. Non-fatal — the
         // request is already in, and the link can be added later from
         // "Request details".
-        if let verificationURL, isContestedSubmission {
+        if let verificationURL = pendingVerificationURL, isContestedSubmission {
+            pendingVerificationURL = nil
             do {
                 try await IdentityVerifyService.shared.publish(
                     url: verificationURL,
@@ -1620,7 +1663,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 // normalized form rather than adopt someone else's name.
                 ?? (contest.requestedLabels.count == 1 ? contest.requestedLabels[0] : nil)
                 ?? contest.normalizedLabel
-            service.recordSubmission(label: label, network: network)
+            service.recordSubmission(label: label, network: network, identityId: identityId)
             if let endTime = contest.endTime {
                 service.recordVotingEndTime(endTime, label: label, network: network)
             }
