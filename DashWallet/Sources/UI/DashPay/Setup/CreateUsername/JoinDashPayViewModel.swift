@@ -53,6 +53,13 @@ class JoinDashPayViewModel: ObservableObject {
             self.state = report.state
             self.username = report.username
             self.registrationStep = report.step
+        } else if let lost = UsernamePrefs.shared.lostContestUsername, !lost.isEmpty {
+            // The vote went against this wallet. Reported until the user acts
+            // on it — a lost request that silently became "request a username"
+            // again looked like the request had never been made. The two
+            // endings carry different advice, so they stay distinct here.
+            self.state = UsernamePrefs.shared.lostContestWasBlocked ? .blocked : .contested
+            self.username = lost
         } else if let pending = DWContestedNameStatusService.shared.pendingLabel {
             // Same-seed recovery reconstructs this bookmark from Platform.
             // Surface the real voting state instead of offering Join DashPay
@@ -89,7 +96,11 @@ class JoinDashPayViewModel: ObservableObject {
             // `.registered`, the state a registered user's row rests in.
             prefs.completedTileUsername = nil
             prefs.joinDashPayDismissed = true
-        case .none, .callToAction, .voting, .failed, .blocked, .contested, .registered:
+        case .contested, .blocked:
+            // Acting on (or dismissing) the rejection is what retires it.
+            prefs.lostContestUsername = nil
+            prefs.lostContestWasBlocked = false
+        case .none, .callToAction, .voting, .failed, .registered:
             prefs.joinDashPayDismissed = true
         }
         self.checkUsername()
@@ -188,9 +199,22 @@ class JoinDashPayViewModel: ObservableObject {
     /// `currentUsername` once a registration is done, so without a record of
     /// its own the success would be wiped by the next status notification
     /// before the user ever saw it.
+    @MainActor
     private func complete(_ username: String) -> RegistrationReport {
         let prefs = UsernamePrefs.shared
         prefs.inFlightRegistrationUsername = nil
+
+        // A contested submission "completes" when the network has accepted it
+        // for a vote — the name is not the user's until the vote says so.
+        // Reporting `.approved` announced "Your username has been successfully
+        // created" for a name nobody owns yet, and the row corrected itself to
+        // `.voting` a moment later. The `completedTileUsername` record would
+        // have outlived that too, offering "Edit profile" for the same name.
+        if DWContestedNameStatusService.shared.isPendingLabel(username) {
+            prefs.completedTileUsername = nil
+            return RegistrationReport(state: .voting, username: username, step: .done)
+        }
+
         prefs.completedTileUsername = username
         return RegistrationReport(state: .approved, username: username, step: .done)
     }

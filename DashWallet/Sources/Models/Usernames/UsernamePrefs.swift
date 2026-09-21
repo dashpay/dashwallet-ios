@@ -23,6 +23,8 @@ private let kRequestedUsernameId = "requestedUsernameIdKey"
 private let kAlreadyPaid = "alreadyPaidForUsernameKey"
 private let kJoinDashPayDismissed = "joinDashPayDismissed"
 private let kInFlightRegistrationUsername = "inFlightRegistrationUsername"
+private let kLostContestUsername = "lostContestUsername"
+private let kLostContestWasBlocked = "lostContestWasBlocked"
 private let kCompletedTileUsername = "usernameRegistrationCompletedTile"
 
 /// Keeps the Upgrade-to-DashPay banner dismissal attached to the wallet and
@@ -144,6 +146,58 @@ class UsernamePrefs {
                 UserDefaults.standard.removeObject(forKey: completedTileUsernameKey)
             }
         }
+    }
+
+    /// The contested name this wallet asked for and did NOT get — its vote
+    /// ended in someone else's favour or in a lock. Which of the two is in
+    /// `lostContestWasBlocked`.
+    ///
+    /// Kept for the same reason as `completedTileUsername`: when the bookmark
+    /// is cleared the row has nothing left to report from, and the loss went
+    /// straight back to "Join DashPay — request your username" as if the
+    /// request had never happened. Cleared when the user acts on the row
+    /// (retry) or dismisses it.
+    var lostContestUsername: String? {
+        get { UserDefaults.standard.string(forKey: lostContestUsernameKey) }
+        set(value) {
+            if let value, !value.isEmpty {
+                UserDefaults.standard.set(value, forKey: lostContestUsernameKey)
+            } else {
+                UserDefaults.standard.removeObject(forKey: lostContestUsernameKey)
+            }
+        }
+    }
+
+    /// `true` when `lostContestUsername` was locked by the network rather
+    /// than won by another identity.
+    ///
+    /// The two outcomes are not interchangeable advice: a locked name is
+    /// gone for everyone and asking for it again achieves nothing, while a
+    /// name given to someone else is simply taken. Written together with
+    /// `lostContestUsername` and cleared with it.
+    var lostContestWasBlocked: Bool {
+        get { UserDefaults.standard.bool(forKey: lostContestWasBlockedKey) }
+        set(value) {
+            if value {
+                UserDefaults.standard.set(true, forKey: lostContestWasBlockedKey)
+            } else {
+                UserDefaults.standard.removeObject(forKey: lostContestWasBlockedKey)
+            }
+        }
+    }
+
+    private var lostContestWasBlockedKey: String {
+        JoinDashPayDismissalScope.scopedKey(
+            kLostContestWasBlocked,
+            networkRawValue: WalletEnvironment.networkKind.rawValue,
+            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+    }
+
+    private var lostContestUsernameKey: String {
+        JoinDashPayDismissalScope.scopedKey(
+            kLostContestUsername,
+            networkRawValue: WalletEnvironment.networkKind.rawValue,
+            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
     }
 
     private var completedTileUsernameKey: String {

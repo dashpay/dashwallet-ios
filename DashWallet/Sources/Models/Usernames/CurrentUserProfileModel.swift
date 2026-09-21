@@ -127,6 +127,10 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
             dismissed: false,
             hasRegisteredUsername: hasUsername,
             hasRegistrationInProgress: hasPendingRecoveredName,
+            // Same reason as Home: a submitted contested name is reported by
+            // this row while the network votes on it, and that outlives the
+            // registration of an instant companion.
+            hasVotePending: hasPendingRecoveredName,
             // Same override Home applies. A registration started from More
             // returns to More, and the row is where its progress and its
             // outcome are reported — but this model's status observer sees

@@ -183,11 +183,7 @@ struct MainMenuScreen: View {
         self.delegateInternal = DelegateInternal(
             delegate: delegate,
             wipeDelegate: wipeDelegate,
-            viewModel: viewModel,
-            showCreditsWarning: { [weak viewModel] heading, message in
-                viewModel?.showCreditsWarning(heading: heading, message: message)
-            }
-        )
+            viewModel: viewModel)
         self.viewModel = viewModel
     }
     #else
@@ -204,9 +200,7 @@ struct MainMenuScreen: View {
         self.delegateInternal = DelegateInternal(
             delegate: delegate,
             wipeDelegate: wipeDelegate,
-            viewModel: viewModel,
-            showCreditsWarning: { _, _ in }
-        )
+            viewModel: viewModel)
         self.viewModel = viewModel
     }
     #endif
@@ -216,6 +210,22 @@ struct MainMenuScreen: View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
                 #if DASHPAY
+                // Once a username is actually the user's, More leads to their
+                // profile. This is also what a won vote resolves into: the
+                // request row goes, the profile appears.
+                if let username = viewModel.profileUsername {
+                    DashUIKit.MenuItem(
+                        leadingIcon: .custom("dp_user_generic", bundle: .main),
+                        title: NSLocalizedString("Profile", comment: "DashPay"),
+                        helpText: username,
+                        accessory: .none
+                    )
+                    .onTapGesture { editProfile() }
+                    .modifier(MenuViewModifier())
+                    .padding(.vertical, 20)
+                    .padding(.horizontal, 20)
+                }
+
                 if viewModel.showJoinDashpay {
                     JoinDashPayMenuItem(
                         viewModel: joinDPViewModel,
@@ -225,6 +235,11 @@ struct MainMenuScreen: View {
                         onTap: { state in
                             handleJoinDashPayRowTap(state: state)
                         },
+                        // Same destination as the row's tap: the details
+                        // screen carries the explainer behind its own info
+                        // control, as on Android.
+                        onShowVotingInfo: { handleJoinDashPayRowTap(state: .voting) },
+                        surface: .more,
                         isSyncing: viewModel.isSyncing
                     )
                     .padding(.vertical, 20)
@@ -288,32 +303,6 @@ struct MainMenuScreen: View {
                 .padding(.bottom, 30)
             }
             
-            #if DASHPAY
-            if viewModel.showCreditsWarning {
-                ModalDialog(
-                    style: .warning, 
-                    icon: .system("exclamationmark.triangle.fill"), 
-                    heading: viewModel.creditsWarningHeading,
-                    textBlock1: viewModel.creditsWarningMessage,
-                    positiveButtonText: NSLocalizedString("Buy credits", comment: ""),
-                    positiveButtonAction: {
-                        let viewController = BuyCreditsViewController {
-                            self.showCreditsPurchasedToast = true
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                self.showCreditsPurchasedToast = false
-                            }
-                        }
-                        let navigationController = BaseNavigationController(rootViewController: viewController)
-                        vc.present(navigationController, animated: true)
-                    },
-                    negativeButtonText: NSLocalizedString("Maybe later", comment: "")
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.dash.backgroundOverlay)
-                .edgesIgnoringSafeArea(.all)
-            }
-            #endif
-            
             NavigationLink(
                 destination: SettingsScreen(vc: vc, onDidRescan: {
                     self.vc.popToRootViewController(animated: false)
@@ -369,6 +358,13 @@ struct MainMenuScreen: View {
         .background(Color.dash.primaryBackground)
         .onAppear {
             viewModel.buildMenuSections()
+            viewModel.refreshProfileUsername()
+            #if DASHPAY
+            // A vote can resolve while the user sits on this screen, and this
+            // check is what notices. It was only triggered from Home, so More
+            // kept showing "Voting" — or nothing — long after the result.
+            DWIdentityRegistrationCoordinator.shared.checkPendingContestResolution()
+            #endif
         }
         .onReceive(viewModel.$navigationDestination) { destination in
             handleNavigation(destination)
@@ -386,13 +382,14 @@ struct MainMenuScreen: View {
                 },
                 onClaimInvitation: {
                     self.claimInvitation()
+                },
+                onShieldFunds: {
+                    self.shieldFunds()
                 })
             
-            if #available(iOS 16.0, *) {
-                dialog.presentationDetents([.height(600)])
-            } else {
-                dialog
-            }
+            // No detent here: the dialog is a `BottomSheet.selfSizing`, which
+            // publishes its own measured height.
+            dialog
         }
         #endif
     }
@@ -418,7 +415,11 @@ struct MainMenuScreen: View {
     private func showUsernameRequestStatus() {
         guard let label = DWContestedNameStatusService.shared.pendingLabel else { return }
         let screen = UsernameRequestStatusScreen(
-            viewModel: UsernameRequestStatusViewModel(label: label))
+            viewModel: UsernameRequestStatusViewModel(label: label),
+            // `MainMenuScreen` is a struct and `vc` is the stack it lives in,
+            // so the pop is captured directly — there is no reference cycle
+            // for a `weak self` to break here.
+            onBack: { vc.popViewController(animated: true) })
         let controller = UIHostingController(rootView: screen)
         controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
@@ -556,6 +557,14 @@ struct MainMenuScreen: View {
         guard let dashPayModel = viewModel.dashPayModel else { return }
         ClaimInvitationFlow.pushRedeemScreen(on: vc, dashPayModel: dashPayModel)
     }
+
+    /// The "Shield your funds first" leg of the username privacy step.
+    /// Preselected, not pinned — the form still lets either endpoint change.
+    private func shieldFunds() {
+        let controller = InternalTransferHostingController(transferTo: .balance(.shielded))
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
+    }
     #endif
 
     private func joinDashPay() {
@@ -572,13 +581,10 @@ struct MainMenuScreen: View {
             return
         }
 
-        let readiness = ShieldedIdentityFundingReadiness.shared.evaluate(
-            requiredCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits)
-        if let readiness, readiness.state != .ready {
-            showJoinDashPayReadiness(dashPayModel: dashPayModel)
-        } else {
-            pushCreateUsernameForm(dashPayModel: dashPayModel)
-        }
+        // Straight to the form: the shielded question now lives on the Join
+        // DashPay sheet's privacy page, and the get-ready interstitial that
+        // used to stand here is gone.
+        pushCreateUsernameForm(dashPayModel: dashPayModel)
     }
 
     /// The retry action behind the row's `.creationFailed` / `.interrupted`
@@ -593,46 +599,6 @@ struct MainMenuScreen: View {
             definedUsername: trimmed.isEmpty ? nil : trimmed)
     }
 
-    private func showJoinDashPayReadiness(dashPayModel: DWDashPayProtocol) {
-        weak var readinessNavigationController: UINavigationController?
-        weak var menuNavigationController = vc
-
-        let screen = JoinDashPayReadinessScreen(
-            onAddFunds: { suggestedDash in
-                let controller = InternalTransferHostingController(prefillDashAmount: suggestedDash)
-                readinessNavigationController?.pushViewController(controller, animated: true)
-            },
-            onProceed: {
-                readinessNavigationController?.dismiss(animated: true) {
-                    guard let menuNavigationController else { return }
-                    // Coming from the readiness interstitial: the shielded
-                    // question was answered there (checklist or the explicit
-                    // transparent escape), so the form skips the teaser.
-                    Self.pushCreateUsernameForm(
-                        on: menuNavigationController,
-                        dashPayModel: dashPayModel,
-                        suppressShieldedHint: true)
-                }
-            },
-            onClose: {
-                readinessNavigationController?.dismiss(animated: true)
-            },
-            onClaimInvitation: {
-                readinessNavigationController?.dismiss(animated: true) {
-                    guard let menuNavigationController else { return }
-                    ClaimInvitationFlow.pushRedeemScreen(
-                        on: menuNavigationController,
-                        dashPayModel: dashPayModel)
-                }
-            })
-        let hosting = UIHostingController(rootView: screen)
-        hosting.view.backgroundColor = UIColor.dw_background()
-        let modalNavigationController = BaseNavigationController(rootViewController: hosting)
-        modalNavigationController.isNavigationBarHidden = true
-        modalNavigationController.modalPresentationStyle = .fullScreen
-        readinessNavigationController = modalNavigationController
-        vc.present(modalNavigationController, animated: true)
-    }
 
     private func pushCreateUsernameForm(dashPayModel: DWDashPayProtocol) {
         Self.pushCreateUsernameForm(on: vc, dashPayModel: dashPayModel)
@@ -641,7 +607,6 @@ struct MainMenuScreen: View {
     private static func pushCreateUsernameForm(
         on navigationController: UINavigationController,
         dashPayModel: DWDashPayProtocol,
-        suppressShieldedHint: Bool = false,
         definedUsername: String? = nil
     ) {
         let controller = CreateUsernameViewController(
@@ -649,7 +614,6 @@ struct MainMenuScreen: View {
             invitationURL: nil,
             definedUsername: definedUsername
         )
-        controller.suppressShieldedHint = suppressShieldedHint
         controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { [weak navigationController] result in
             let message = result 
@@ -672,13 +636,11 @@ extension MainMenuScreen {
         private weak var delegate: MainMenuViewControllerDelegate?
         weak var wipeDelegate: DWWipeDelegate?
         private let viewModel: MainMenuViewModel
-        private let showCreditsWarning: (String, String) -> Void
         
-        init(delegate: MainMenuViewControllerDelegate?, wipeDelegate: DWWipeDelegate?, viewModel: MainMenuViewModel, showCreditsWarning: @escaping (String, String) -> Void) {
+        init(delegate: MainMenuViewControllerDelegate?, wipeDelegate: DWWipeDelegate?, viewModel: MainMenuViewModel) {
             self.delegate = delegate
             self.wipeDelegate = wipeDelegate
             self.viewModel = viewModel
-            self.showCreditsWarning = showCreditsWarning
         }
         
         func mainMenuViewControllerOpenHomeScreen() {
@@ -702,27 +664,27 @@ extension MainMenuScreen {
                                      avatarURLString: String?,
                                      avatarImage: UIImage?) {
             #if DASHPAY
-            viewModel.userProfileModel?.updateModel.update(withDisplayName: rawDisplayName, aboutMe: rawAboutMe, avatarURLString: avatarURLString, avatarImage: avatarImage)
-            
-            if MOCK_DASHPAY.boolValue {
-                BuyCreditsModel.currentCredits -= 0.25
-                let heading: String
-                let message: String
-                
-                if BuyCreditsModel.currentCredits <= 0 {
-                    heading = NSLocalizedString("Your credit balance has been fully depleted", comment: "")
-                    message = NSLocalizedString("You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance", comment: "")
-                } else if BuyCreditsModel.currentCredits <= 0.25 {
-                    heading = NSLocalizedString("Your credit balance is low", comment: "")
-                    message = NSLocalizedString("Top-up your credits to continue making changes to your profile and adding contacts", comment: "")
-                } else {
+            // The credit gate runs BEFORE the write, against the identity's
+            // real balance — the warning used to fire after the update had
+            // already been broadcast, and against a mock counter
+            // (`BuyCreditsModel.currentCredits`) that had nothing to do with
+            // the identity.
+            Task { @MainActor in
+                guard await controller.confirmAgainstIdentityCredits() else {
+                    controller.dismiss(animated: true)
                     return
                 }
-                
-                showCreditsWarning(heading, message)
+
+                viewModel.userProfileModel?.updateModel.update(
+                    withDisplayName: rawDisplayName,
+                    aboutMe: rawAboutMe,
+                    avatarURLString: avatarURLString,
+                    avatarImage: avatarImage)
+                controller.dismiss(animated: true)
             }
-            #endif
+            #else
             controller.dismiss(animated: true)
+            #endif
         }
         
         func editProfileViewControllerDidCancel(_ controller: RootEditProfileViewController) {

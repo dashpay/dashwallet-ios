@@ -578,14 +578,24 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
 extension HomeViewController: RootEditProfileViewControllerDelegate {
     func editProfileViewController(_ controller: RootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?, avatarImage: UIImage?) {
-        // Pass the cropped image through so the profile bridge can compute
-        // the avatar hash from the uploaded bytes.
-        model.dashPayModel.userProfile.updateModel.update(
-            withDisplayName: rawDisplayName,
-            aboutMe: rawAboutMe,
-            avatarURLString: avatarURLString,
-            avatarImage: avatarImage)
-        controller.dismiss(animated: true, completion: nil)
+        // Same credit gate as the More entry: a write the identity cannot pay
+        // for must not be broadcast, and a balance running low is worth saying
+        // once — before the write, not after it.
+        Task { @MainActor in
+            guard await controller.confirmAgainstIdentityCredits() else {
+                controller.dismiss(animated: true, completion: nil)
+                return
+            }
+
+            // Pass the cropped image through so the profile bridge can compute
+            // the avatar hash from the uploaded bytes.
+            model.dashPayModel.userProfile.updateModel.update(
+                withDisplayName: rawDisplayName,
+                aboutMe: rawAboutMe,
+                avatarURLString: avatarURLString,
+                avatarImage: avatarImage)
+            controller.dismiss(animated: true, completion: nil)
+        }
     }
 
     func editProfileViewControllerDidCancel(_ controller: RootEditProfileViewController) {
@@ -609,6 +619,28 @@ extension HomeViewController: HomeViewDelegate {
 
     func homeViewClaimInvitation() {
         showClaimInvitation()
+    }
+
+    /// Where the DashPay row goes while a contested name is being voted on —
+    /// the same screen the More row pushes (`MainMenuScreen`), so both
+    /// surfaces report the vote in one place.
+    func homeViewShowUsernameRequestStatus() {
+        guard let label = DWContestedNameStatusService.shared.pendingLabel else { return }
+
+        let screen = UsernameRequestStatusScreen(
+            viewModel: UsernameRequestStatusViewModel(label: label),
+            onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) })
+        let controller = UIHostingController(rootView: screen)
+        controller.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(controller, animated: true)
+    }
+
+    func homeViewShieldFunds() {
+        // Preselected, not pinned — the transfer form still lets the user
+        // change their mind about either endpoint.
+        let controller = InternalTransferHostingController(transferTo: .balance(.shielded))
+        controller.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(controller, animated: true)
     }
     #endif
 

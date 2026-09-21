@@ -132,6 +132,10 @@ class MainTabbarController: UITabBarController {
     /// Nil until an identity exists — the Contacts tab is only built then, and
     /// its position moves with the rest of the DashPay layout.
     private var contactsTabIndex: Int?
+    /// Index of the More tab. Held rather than hardcoded because the tab list
+    /// is rebuilt per wallet context — the contacts tab comes and goes with a
+    /// DashPay identity, so More is not always at the same position.
+    private var menuTabIndex: Int?
     #endif
     weak var menuNavigationController: MainMenuViewController?
 
@@ -163,8 +167,19 @@ class MainTabbarController: UITabBarController {
     /// footprint for Platform-Payment-funded registrations), hiding
     /// the tabs from exactly the users the SDK flows serve.
     @MainActor
+    /// DashPay's tabs need a username, not just an identity.
+    ///
+    /// A contested request registers the identity immediately but the name
+    /// belongs to nobody until the vote resolves, so unlocking on the identity
+    /// alone handed the user Contacts and a profile under a name they might
+    /// never get — and that nobody could find them by meanwhile.
+    /// `usernames` already excludes every in-flight contested label
+    /// (`DWCurrentUserIdentityInfo`, Row #18 filter), so this reads true the
+    /// moment a name is actually theirs: an instant companion registered
+    /// alongside the request, or the contested name once won.
     private var hasDashPayIdentity: Bool {
-        DWCurrentUserIdentityInfo.shared.hasIdentity
+        let identity = DWCurrentUserIdentityInfo.shared
+        return identity.hasIdentity && !identity.usernames.isEmpty
     }
     #endif
 
@@ -239,6 +254,7 @@ extension MainTabbarController {
         // drops the Contacts tab (a wallet switch away from an identity), and a
         // surviving index would then point at whatever took its place.
         contactsTabIndex = nil
+        menuTabIndex = nil
         #endif
 
         // Home
@@ -321,6 +337,7 @@ extension MainTabbarController {
 
         nvc = BaseNavigationController(rootViewController: menuVC)
         nvc.tabBarItem = item
+        menuTabIndex = viewControllers.count
         viewControllers.append(nvc)
 
         #if !DASHPAY
@@ -483,6 +500,17 @@ extension MainTabbarController {
         return true
     }
     #endif
+
+    /// Switch to the More tab, without disturbing what it is showing.
+    ///
+    /// Where a submitted username request is reported in one sentence, which
+    /// is where the create flow leaves the user once the request is in.
+    @discardableResult
+    func showMore() -> Bool {
+        guard let menuTabIndex else { return false }
+        selectedIndex = menuTabIndex
+        return true
+    }
 
     @objc
     public func performScanQRCodeAction() {

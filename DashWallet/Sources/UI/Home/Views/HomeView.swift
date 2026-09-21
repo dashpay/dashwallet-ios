@@ -46,6 +46,14 @@ protocol HomeViewDelegate: AnyObject {
     /// `showCreateUsernameForRecovery`.
     func homeViewRequestUsernameForRecovery(username: String)
     func homeViewClaimInvitation()
+    /// Opens the internal-transfer form with Shielded preselected as the
+    /// destination — the "Shield your funds first" leg of the username
+    /// privacy step.
+    func homeViewShieldFunds()
+    /// Opens "Request details" for the contested name currently being voted
+    /// on — where the row's tap and its info button both lead, matching
+    /// Android's `VotingRequestDetailsFragment`.
+    func homeViewShowUsernameRequestStatus()
     func homeViewEditProfile()
     /// Opens the notifications list (header nav-bar bell).
     func homeViewShowNotifications()
@@ -233,6 +241,9 @@ struct HomeViewContent<Content: View>: View {
     @State private var shouldShowJoinDashPayInfo: Bool = false
     @State private var navigateToDashPayFlow: Bool = false
     @State private var navigateToClaimInvitation: Bool = false
+    /// Same hand-off shape as the two above: the sheet only records the
+    /// intent, and the delegate acts on it once the sheet is gone.
+    @State private var navigateToShieldFunds: Bool = false
     @State private var pendingShieldedRecovery: Transaction? = nil
     /// An internal transfer runs past the screen that started it, and the
     /// confirm sheet closes the moment it begins — so its outcome is
@@ -368,7 +379,12 @@ struct HomeViewContent<Content: View>: View {
                                     // relaunch that renders `.interrupted`.
                                     delegate?.homeViewRequestUsernameForRecovery(
                                         username: joinDPViewModel.username)
-                                case .none, .callToAction, .voting, .failed, .blocked, .contested, .registered:
+                                case .voting:
+                                    // The vote has its own screen — the join
+                                    // sheet is a call to action for someone
+                                    // who has not requested a name yet.
+                                    delegate?.homeViewShowUsernameRequestStatus()
+                                case .none, .callToAction, .failed, .blocked, .contested, .registered:
                                     // TODO: ? MOCK_DASHPAY if failed, maybe need to call model?.dashPayModel.retry()
                                     // Always open the info dialog. It carries the
                                     // only "Have an invitation?" entry in the app,
@@ -383,6 +399,10 @@ struct HomeViewContent<Content: View>: View {
                                 joinDPViewModel.markAsDismissed()
                                 viewModel.checkJoinDashPay()
                             },
+                            // Same destination as the row's own tap: the
+                            // details screen carries the explainer behind its
+                            // own info control, as on Android.
+                            onShowVotingInfo: { delegate?.homeViewShowUsernameRequestStatus() },
                             isSyncing: viewModel.isSyncing
                         )
                         .padding(.horizontal, 20)
@@ -564,6 +584,10 @@ struct HomeViewContent<Content: View>: View {
                 navigateToClaimInvitation = false
                 delegate?.homeViewClaimInvitation()
             }
+            if navigateToShieldFunds {
+                navigateToShieldFunds = false
+                delegate?.homeViewShieldFunds()
+            }
         }) {
             let joinDashPayDialog = JoinDashPayInfoDialog(
                 action: {
@@ -571,13 +595,14 @@ struct HomeViewContent<Content: View>: View {
                 },
                 onClaimInvitation: {
                     navigateToClaimInvitation = true
+                },
+                onShieldFunds: {
+                    navigateToShieldFunds = true
                 })
             
-            if #available(iOS 16.0, *) {
-                joinDashPayDialog.presentationDetents([.height(600)])
-            } else {
-                joinDashPayDialog
-            }
+            // No detent here: the dialog is a `BottomSheet.selfSizing`, which
+            // publishes its own measured height.
+            joinDashPayDialog
         }
         .onChange(of: joinDPViewModel.state) { state in
             viewModel.joinDashPayState = state

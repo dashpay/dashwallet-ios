@@ -41,9 +41,6 @@ class MainMenuViewModel: ObservableObject {
     
     @Published var items: [MenuItemModel] = []
     @Published var navigationDestination: MainMenuNavigationDestination?
-    @Published var showCreditsWarning: Bool = false
-    @Published var creditsWarningHeading: String = ""
-    @Published var creditsWarningMessage: String = ""
     
     #if DASHPAY
     let dashPayReady: DWDashPayReadyProtocol?
@@ -51,6 +48,15 @@ class MainMenuViewModel: ObservableObject {
     let userProfileModel: CurrentUserProfileModel?
     @Published private(set) var showJoinDashpay: Bool = false
     @Published private(set) var isSyncing: Bool = false
+    /// The username this wallet actually owns, or nil while it owns none.
+    ///
+    /// Drives the Profile entry: once a name is the user's — a plain
+    /// registration, an instant companion, or a contested request that won its
+    /// vote — More leads to their profile instead of offering to join.
+    /// Contested labels still out for a vote are excluded by
+    /// `DWCurrentUserIdentityInfo` itself, so a pending request never shows a
+    /// profile that does not exist yet.
+    @Published private(set) var profileUsername: String?
     #endif
 
     weak var delegate: MainMenuViewModelDelegate?
@@ -92,6 +98,28 @@ class MainMenuViewModel: ObservableObject {
         userProfileModel?.$isSyncing
             .receive(on: DispatchQueue.main)
             .assign(to: &$isSyncing)
+
+        refreshProfileUsername()
+        // The same notifications the banner policy listens to: registration
+        // finishing, a contest resolving in our favour, or a wallet/network
+        // switch changing whose names these are.
+        for name in [
+            Notification.Name.DWDashPayRegistrationStatusUpdated,
+            SwiftDashSDKWalletState.activeWalletDidChangeNotification,
+            NSNotification.Name.DWCurrentNetworkDidChange
+        ] {
+            NotificationCenter.default.publisher(for: name)
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in self?.refreshProfileUsername() }
+                .store(in: &cancellableBag)
+        }
+    }
+
+    func refreshProfileUsername() {
+        let owned = MainActor.assumeIsolated { DWCurrentUserIdentityInfo.shared.usernames.first }
+        let mirrored = DWGlobalOptions.sharedInstance().dashpayUsername
+        let username = owned ?? mirrored
+        profileUsername = (username?.isEmpty == false) ? username : nil
     }
 
     func refreshJoinDashPayBanner() {
@@ -203,9 +231,4 @@ class MainMenuViewModel: ObservableObject {
         navigationDestination = nil
     }
     
-    func showCreditsWarning(heading: String, message: String) {
-        creditsWarningHeading = heading
-        creditsWarningMessage = message
-        showCreditsWarning = true
-    }
 }

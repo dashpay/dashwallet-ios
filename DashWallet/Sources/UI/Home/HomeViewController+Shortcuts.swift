@@ -194,18 +194,10 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
             return
         }
 
-        // Route through the shielded get-ready interstitial whenever
-        // the privacy-preserving funding path isn't ready (needs funds
-        // / maturing / pool below minimum) so the privacy clock starts
-        // at first intent. `nil` (host not hydrated yet) falls through
-        // to the form — its own cost rules gate submission.
-        let readiness = ShieldedIdentityFundingReadiness.shared.evaluate(
-            requiredCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits)
-        if let readiness, readiness.state != .ready {
-            showJoinDashPayReadiness()
-        } else {
-            pushCreateUsernameForm()
-        }
+        // Straight to the form. The shielded question is asked inside the
+        // Join DashPay sheet's privacy page now, so the get-ready
+        // interstitial that used to stand here is gone.
+        pushCreateUsernameForm()
         #endif
     }
 
@@ -244,42 +236,8 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     #endif
 
     #if DASHPAY
-    private func showJoinDashPayReadiness() {
-        weak var readinessNavigationController: UINavigationController?
-
-        let screen = JoinDashPayReadinessScreen(
-            onAddFunds: { suggestedDash in
-                let controller = InternalTransferHostingController(prefillDashAmount: suggestedDash)
-                readinessNavigationController?.pushViewController(controller, animated: true)
-            },
-            onProceed: { [weak self] in
-                readinessNavigationController?.dismiss(animated: true) {
-                    // Coming from the readiness interstitial: the shielded
-                    // question was answered there (checklist or the explicit
-                    // transparent escape), so the form skips the teaser.
-                    self?.pushCreateUsernameForm(suppressShieldedHint: true)
-                }
-            },
-            onClose: {
-                readinessNavigationController?.dismiss(animated: true)
-            },
-            onClaimInvitation: { [weak self] in
-                readinessNavigationController?.dismiss(animated: true) {
-                    self?.showClaimInvitation()
-                }
-            })
-        let hosting = UIHostingController(rootView: screen)
-        hosting.view.backgroundColor = UIColor.dw_background()
-        let modalNavigationController = BaseNavigationController(rootViewController: hosting)
-        modalNavigationController.isNavigationBarHidden = true
-        modalNavigationController.modalPresentationStyle = .fullScreen
-        readinessNavigationController = modalNavigationController
-        present(modalNavigationController, animated: true)
-    }
-
-    private func pushCreateUsernameForm(invitationURL: URL? = nil, definedUsername: String? = nil, suppressShieldedHint: Bool = false) {
+    private func pushCreateUsernameForm(invitationURL: URL? = nil, definedUsername: String? = nil) {
         let controller = CreateUsernameViewController(dashPayModel: model.dashPayModel, invitationURL: invitationURL, definedUsername: definedUsername)
-        controller.suppressShieldedHint = suppressShieldedHint
         controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { result in
             if (result) {
