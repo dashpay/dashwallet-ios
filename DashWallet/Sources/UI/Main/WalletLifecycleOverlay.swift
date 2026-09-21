@@ -26,42 +26,86 @@ import UIKit
 /// created lazily when the transition leaves `.idle` and dropped only on
 /// `.idle` — never between `advance` transitions (switch → remove), so the
 /// window cannot flicker mid-operation. Failure phases keep the window up;
-/// each failure card owns its recovery actions.
+/// each failure card owns its recovery actions. The PIN window takes priority;
+/// hiding this window while locked preserves the card and any support draft.
 @MainActor
 final class WalletLifecycleOverlayPresenter {
-    static let shared = WalletLifecycleOverlayPresenter()
+    static let shared = WalletLifecycleOverlayPresenter(state: .shared)
 
-    private var overlayWindow: UIWindow?
-    private var phaseCancellable: AnyCancellable?
+    private(set) var overlayWindow: UIWindow?
+    private let state: WalletLifecycleTransitionState
+    private var cancellables = Set<AnyCancellable>()
+    private var openingDelay: Task<Void, Never>?
+    private var lockScreenVisible = false
+    private var applicationActive = false
 
-    private init() {}
-
-    /// Idempotent activation: every operation entry point calls this before
-    /// starting; the first call subscribes to the transition state for the
-    /// rest of the process lifetime. If a caller forgets, the operation
-    /// still works — only the overlay is missing.
-    func ensureActive() {
-        guard phaseCancellable == nil else { return }
-        phaseCancellable = WalletLifecycleTransitionState.shared.$phase
-            .sink { phase in
-                Task { @MainActor in
-                    WalletLifecycleOverlayPresenter.shared.apply(phase)
-                }
-            }
+    // Internal initializer lets presentation tests use an isolated state.
+    init(state: WalletLifecycleTransitionState) {
+        self.state = state
     }
 
-    private func apply(_ phase: WalletLifecycleTransitionState.Phase) {
-        switch phase {
-        case .idle:
+    /// Idempotent activation: every operation entry point calls this before
+    /// starting; the first call subscribes for the process lifetime.
+    func ensureActive() {
+        guard cancellables.isEmpty else { return }
+        applicationActive = UIApplication.shared.applicationState == .active
+        state.$phase
+            .sink { [weak self] _ in
+                // @Published emits before the assignment. Read the settled
+                // state rather than presenting an already-obsolete phase.
+                Task { @MainActor [weak self] in self?.applyCurrentPhase() }
+            }
+            .store(in: &cancellables)
+        for (notification, active) in [
+            (UIApplication.didBecomeActiveNotification, true),
+            (UIApplication.willResignActiveNotification, false)
+        ] {
+            NotificationCenter.default.publisher(for: notification)
+                .sink { [weak self] _ in
+                    // UIKit sends these notifications on the main thread.
+                    MainActor.assumeIsolated {
+                        self?.applicationActive = active
+                        self?.updateVisibility()
+                    }
+                }
+                .store(in: &cancellables)
+        }
+    }
+
+    /// Called synchronously by the existing root controller before showing
+    /// PIN and after its dismissal, including roots installed after onboarding.
+    func setLockScreenVisible(_ visible: Bool) {
+        lockScreenVisible = visible
+        updateVisibility()
+    }
+
+    private func applyCurrentPhase() {
+        if state.phase == .openingWallet, overlayWindow == nil {
+            guard openingDelay == nil else { return }
+            openingDelay = Task { @MainActor [weak self] in
+                // Fast ordinary opens should not flash a modal. An existing
+                // failure card stays visible immediately during explicit Retry.
+                do { try await Task.sleep(nanoseconds: 500_000_000) }
+                catch { return }
+                guard let self else { return }
+                self.openingDelay = nil
+                guard self.state.phase == .openingWallet else { return }
+                self.presentIfNeeded()
+            }
+            return
+        }
+        openingDelay?.cancel()
+        openingDelay = nil
+        if state.phase == .idle {
             overlayWindow?.isHidden = true
             overlayWindow = nil
-        case .openingWallet, .failedWalletOpen,
-             .switchingNetwork, .failedNetworkSwitch,
-             .switchingWallet, .removingWallet, .addingWallet,
-             .failedWalletSwitch, .failedWalletRemoval,
-             .wiping:
+        } else {
             presentIfNeeded()
         }
+    }
+
+    private func updateVisibility() {
+        overlayWindow?.isHidden = lockScreenVisible || !applicationActive
     }
 
     private func presentIfNeeded() {
@@ -77,20 +121,23 @@ final class WalletLifecycleOverlayPresenter {
         window.rootViewController?.view.backgroundColor = .clear
         window.rootViewController?.view.accessibilityViewIsModal = true
         window.backgroundColor = .clear
-        window.isHidden = false
         overlayWindow = window
+        updateVisibility()
     }
 }
 
 /// Obj-C face of the lifecycle overlay for the Obj-C wipe flows —
 /// `DWAppRootViewController.beginWipeWalletWithAuthorization:` (Delete All)
-/// and `DWRecoverViewController`'s phrase-authorized wipe — which used to
-/// block with local MBProgressHUDs. Exposes exactly begin/finish; the wipes
-/// keep their UIKit failure alerts (shown after finish), so there is no
-/// failure phase here.
+/// and `DWRecoverViewController`'s phrase-authorized wipe. It also gives the
+/// existing root controller a thin bridge for lock-screen visibility.
+/// Wipes keep their UIKit failure alerts (shown after finish).
 @objc(DWWalletLifecycleOverlayBridge)
 @MainActor
 final class WalletLifecycleOverlayBridge: NSObject {
+    @objc static func setLockScreenVisible(_ visible: Bool) {
+        WalletLifecycleOverlayPresenter.shared.setLockScreenVisible(visible)
+    }
+
     /// Begin the wipe phase and show its blocking card; nil `title` falls
     /// back to the Delete All copy. Returns false when another interactive
     /// operation holds the admission gate — the caller must NOT start the
