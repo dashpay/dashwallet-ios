@@ -184,6 +184,15 @@ public final class DWIdentityRegistrationBridge: NSObject {
     /// a retry keeps the user's choice, reset on `.completed`.
     @objc public var pendingTemporaryUsername: String?
 
+    /// Proof-of-identity link the user chose to publish with a contested
+    /// submission, in the same shape as `pendingTemporaryUsername`: written by
+    /// the form right before submit, carried into the coordinator, cleared on
+    /// `.completed`. Android carries it the same way — the link is captured on
+    /// the request screen and published once the identity exists
+    /// (`CreateIdentityService`), inside the flow that already holds the
+    /// signer, so it costs no second PIN prompt.
+    @objc public var pendingVerificationURL: URL?
+
     // MARK: - Subscriptions
 
     private var coordinatorSubscription: AnyCancellable?
@@ -211,13 +220,15 @@ public final class DWIdentityRegistrationBridge: NSObject {
     ) {
         let source = preferredFundingSource
         let temporaryUsername = sanitizedTemporaryUsername(for: username)
-        Self.logger.info("🪪 IDENT-BRIDGE :: startCreateUsername username=\(username, privacy: .public) funding=\(source.logLabel, privacy: .public) temporary=\(temporaryUsername ?? "none", privacy: .public)")
+        let verificationURL = sanitizedVerificationURL(for: username)
+        Self.logger.info("🪪 IDENT-BRIDGE :: startCreateUsername username=\(username, privacy: .public) funding=\(source.logLabel, privacy: .public) temporary=\(temporaryUsername ?? "none", privacy: .public) verified=\(verificationURL != nil, privacy: .public)")
         Task { @MainActor in
             do {
                 let identityId = try await DWIdentityRegistrationCoordinator.shared.startCreateUsername(
                     username,
                     fundingSource: source,
-                    temporaryUsername: temporaryUsername)
+                    temporaryUsername: temporaryUsername,
+                    verificationURL: verificationURL)
                 let hex = identityId.map { String(format: "%02x", $0) }.joined()
                 completion(hex, nil)
             } catch {
@@ -301,6 +312,19 @@ public final class DWIdentityRegistrationBridge: NSObject {
         return temporary
     }
 
+    /// Same staleness rule as the companion: a link only belongs to a
+    /// contested submission, so anything left over from an abandoned attempt
+    /// is dropped rather than attached to an unrelated registration.
+    private func sanitizedVerificationURL(for username: String) -> URL? {
+        guard let url = pendingVerificationURL else { return nil }
+        guard DWContestedNameStatusService.isContestedLabel(username) else {
+            Self.logger.warning("🪪 IDENT-BRIDGE :: dropping stale verification link for submission of \(username, privacy: .public)")
+            pendingVerificationURL = nil
+            return nil
+        }
+        return url
+    }
+
     /// Subscribe to the coordinator's published surface and mirror
     /// each transition into the cached @objc state + post the internal
     /// `stateChangedNotification`. `DWDashPayModel` is the sole
@@ -379,6 +403,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         if case .completed = phase {
             preferredFundingSource = .core
             pendingTemporaryUsername = nil
+            pendingVerificationURL = nil
         }
 
         // Internal notification — DWDashPayModel observes this,
