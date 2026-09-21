@@ -584,7 +584,7 @@ struct MainMenuScreen: View {
         // registration amount, so the readiness interstitial would refuse to
         // let it through on a balance the recovery does not need. The recovery
         // IS the funding.
-        if DWIdentityRegistrationCoordinator.shared.hasPendingRegistrationRecovery() {
+        if DWIdentityRegistrationCoordinator.shared.registrationRecovery().isPending {
             pushCreateUsernameForm(dashPayModel: dashPayModel)
             return
         }

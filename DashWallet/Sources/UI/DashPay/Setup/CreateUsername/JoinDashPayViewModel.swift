@@ -119,7 +119,7 @@ class JoinDashPayViewModel: ObservableObject {
             // Acting on (or dismissing) the rejection is what retires it.
             prefs.lostContestUsername = nil
             prefs.lostContestWasBlocked = false
-        case .none, .callToAction, .voting, .failed, .registered:
+        case .none, .loading, .retryLoading, .callToAction, .usernameRequired, .voting, .failed, .registered:
             prefs.joinDashPayDismissed = true
         }
         self.checkUsername()

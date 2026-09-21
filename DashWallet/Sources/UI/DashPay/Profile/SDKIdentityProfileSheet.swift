@@ -148,9 +148,14 @@ struct SDKIdentityProfileSheet: View {
         // `dpnsNames` and `hasIdentity`.
         .fullScreenCover(isPresented: $showingUsernameRecovery, onDismiss: reloadIdentitySnapshot) {
             NavigationStack {
-                CreateUsernameView(invitationURI: nil, definedUsername: nil, suppressShieldedHint: true) {
-                    showingUsernameRecovery = false
-                }
+                CreateUsernameView(
+                    invitationURI: nil,
+                    definedUsername: nil,
+                    // Both exits close the cover: the shielded question moved
+                    // to the Join DashPay sheet's privacy page, and a handoff
+                    // to the status row leaves this screen just the same.
+                    finish: { showingUsernameRecovery = false },
+                    handOffToStatusRow: { showingUsernameRecovery = false })
                 .navigationTitle(NSLocalizedString("Finish username registration", comment: "DashPay registration recovery"))
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
