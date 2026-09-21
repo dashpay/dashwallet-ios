@@ -80,6 +80,7 @@ def validate_inventory(schema, inventory):
 def capture(platform_dir, output_dir):
     platform_dir, output_dir = pathlib.Path(platform_dir).resolve(), pathlib.Path(output_dir).resolve()
     sdk = validate_capture_checkout(platform_dir)
+    subprocess.run(["python3", str(sdk / "scripts/freeze_schema_models.py"), "--check-inventory"], cwd=platform_dir, check=True)
     subprocess.run(["python3", str(sdk / "scripts/freeze_schema_models.py"), "--check"], cwd=platform_dir, check=True)
     if output_dir.exists():
         raise ValueError("Capture output directory already exists; do not overwrite release evidence")

@@ -1,5 +1,6 @@
 import json
 import pathlib
+import subprocess
 import tempfile
 import unittest
 from unittest import mock
@@ -66,6 +67,21 @@ class CapturePreflightTest(unittest.TestCase):
             self.assertEqual(len(builds), 1)
             self.assertIn("-only-testing:SwiftDashSDKTests/DashLegacySchemaMigrationTests", builds[0].args[0])
             self.assertTrue(builds[0].kwargs["check"])
+            self.assertIn("--check-inventory", execute.call_args_list[0].args[0])
+
+    def test_incomplete_value_type_inventory_blocks_capture_before_native_work_or_evidence(self):
+        with tempfile.TemporaryDirectory() as root:
+            root = pathlib.Path(root)
+            output = root / "evidence"
+            with mock.patch("capture_schema_release.validate_capture_checkout", return_value=root), \
+                    mock.patch("capture_schema_release.run") as run, \
+                    mock.patch("capture_schema_release.subprocess.run", side_effect=subprocess.CalledProcessError(1, "inventory check")) as execute:
+                with self.assertRaises(subprocess.CalledProcessError):
+                    capture(root, output)
+            self.assertFalse(output.exists())
+            run.assert_not_called()
+            execute.assert_called_once()
+            self.assertIn("--check-inventory", execute.call_args.args[0])
 
 
 class SimulatorSelectionTest(unittest.TestCase):
