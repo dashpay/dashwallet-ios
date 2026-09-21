@@ -833,6 +833,16 @@ struct CreateUsernameView: View {
             body = NSLocalizedString(
                 "A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender.",
                 comment: "Usernames")
+        } else if viewModel.isLockedContestedName {
+            // The vote already happened and went to nobody. Everything below
+            // projects a deadline for a vote that has yet to run, which for a
+            // locked name promised a future result the network can never
+            // deliver — and an invented date to go with it.
+            title = NSLocalizedString("This name is locked", comment: "Usernames")
+            body = NSLocalizedString(
+                "A masternode vote ended with this username locked, so nobody can register it. Choose a different one.",
+                comment: "Usernames")
+            isWarning = true
         } else if let resultsBy = Self.projectedVotingDeadlineText() {
             // One sentence in the title slot, as designed — there is no
             // heading over it, the statement IS the message.
