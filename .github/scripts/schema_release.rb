@@ -249,11 +249,20 @@ module SchemaRelease
       raise Error, "Baseline already exists; it must never be moved forward" if @store.document("baseline.json", optional: true)
       app = @apple.find_app(@bundle)
       newest = @apple.latest_published_version(app.fetch("id"))
-      raise Error, "No published App Store version to accept as V1" unless newest
+      raise Error, "No published App Store version to initialize" unless newest
+      historical = historical_schema(merged_registry)
+      binding = historical.fetch("app_store_baseline")
+      unless binding == { "bundle_id" => @bundle, "app_id" => app.fetch("id"),
+                          "app_version" => newest.fetch("attributes").fetch("versionString"),
+                          "release_id" => newest.fetch("id") }
+        raise Error, "No verified historical schema binding for this App Store release. Review its model provenance before initializing; do not assume V1."
+      end
       baseline = { format_version: 1, bundle_id: @bundle, app_id: app.fetch("id"),
                    max_app_version: newest.fetch("attributes").fetch("versionString"),
-                   release_id: newest.fetch("id"), schema_version: "1.0.0", accepted_at: Time.now.utc.iso8601 }
-      @out.puts "Accepting existing App Store version #{baseline[:max_app_version]} as the V1 baseline."
+                   release_id: newest.fetch("id"), schema_version: historical.fetch("schema").fetch("schema_version"),
+                   model_checksum: historical.fetch("schema").fetch("model_checksum"),
+                   schema_provenance: historical.fetch("provenance"), accepted_at: Time.now.utc.iso8601 }
+      @out.puts "Accepting verified App Store version #{baseline[:max_app_version]} with historical schema #{baseline[:schema_version]}."
       @store.write({ "baseline.json" => SchemaRelease.json(baseline) }, message: "Initialize SwiftData release baseline") unless dry_run
     end
 
@@ -380,6 +389,21 @@ module SchemaRelease
         records << record unless records.any? { |item| item["release_id"] == record["release_id"] }
       end
       merged = merged_registry
+      historical = historical_schema(merged)
+      selected = historical_schema(registry)
+      unless selected == historical
+        raise Error, "Selected Platform commit has a different historical V2 reconstruction; select the reviewed migration fix."
+      end
+      validate_historical_checkout(platform_dir, historical)
+      baseline = @store.document("baseline.json")
+      binding = historical.fetch("app_store_baseline")
+      if baseline.fetch("max_app_version") == binding.fetch("app_version") &&
+         (baseline["schema_version"] != historical.fetch("schema").fetch("schema_version") ||
+          baseline["model_checksum"] != historical.fetch("schema").fetch("model_checksum") ||
+          baseline["schema_provenance"] != historical.fetch("provenance") ||
+          baseline["app_id"] != binding.fetch("app_id") || baseline["release_id"] != binding.fetch("release_id"))
+        raise Error, "The existing App Store baseline still has an unverified schema association. Apply the reviewed V2 baseline correction without moving the publication cutoff; do not bootstrap again."
+      end
       records.each do |record|
         manifest, _path, hash = evidence(record)
         unless registered?(merged, record, manifest, hash)
@@ -398,6 +422,44 @@ module SchemaRelease
     end
 
     private
+
+    def historical_schema(registry)
+      history = registry["historical_schemas"]
+      entry = history.is_a?(Hash) ? history["2.0.0"] : nil
+      unless entry.is_a?(Hash) && entry["provenance"] == "reconstructed-model-match"
+        raise Error, "Historical App Store V2 migration support is missing. Merge the Platform V2-to-V3 fix and select a commit containing it before building or uploading."
+      end
+      binding = entry["app_store_baseline"]
+      unless entry["schema"].is_a?(Hash) && binding.is_a?(Hash) &&
+             %w[bundle_id app_id app_version release_id].all? { |key| binding[key].is_a?(String) && !binding[key].empty? }
+        raise Error, "Invalid historical V2 schema or App Store binding; restore the reviewed migration registry."
+      end
+      SchemaRelease.validate_schema(entry.fetch("schema"))
+      SchemaRelease.sha(entry.fetch("source_sha"))
+      unless entry.fetch("schema").fetch("schema_version") == "2.0.0" &&
+             String(entry.fetch("fixture_sha256")).match?(/\A[0-9a-f]{64}\z/) &&
+             entry.fetch("fixture_path") == "packages/swift-sdk/SwiftTests/SwiftDashSDKTests/Fixtures/SchemaStores/historical-v2.store"
+        raise Error, "Invalid historical V2 fixture metadata; restore the reviewed migration registry."
+      end
+      entry
+    end
+
+    def validate_historical_checkout(platform_dir, entry)
+      root = File.realpath(platform_dir) + "/"
+      path = File.join(platform_dir, entry.fetch("fixture_path"))
+      unless File.file?(path) && File.realpath(path).start_with?(root) &&
+             Digest::SHA256.file(path).hexdigest == entry.fetch("fixture_sha256")
+        raise Error, "Selected Platform checkout lacks the verified historical V2 fixture. Select the migration fix before uploading."
+      end
+      files = entry.fetch("schema").fetch("entity_hashes").keys.map do |name|
+        raise Error, "Invalid historical model name" unless name.match?(/\A[A-Za-z_][A-Za-z0-9_]*\z/)
+        "DashSchemaV2+#{name}.swift"
+      end
+      files << "DashSchemaV2+TokenTypes.swift"
+      unless files.all? { |name| File.file?(File.join(platform_dir, "packages/swift-sdk/Sources/SwiftDashSDK/Persistence/FrozenSchemas", name)) }
+        raise Error, "Selected Platform checkout lacks frozen historical V2 models; select the complete migration fix."
+      end
+    end
 
     def report_release_failure(failures, id, error)
       failures << "#{id}: #{error.message}"
