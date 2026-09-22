@@ -176,6 +176,9 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     @Published private(set) var preparationFailure: WalletPreparationFailure?
     @Published var supportFailure: WalletPreparationFailure?
     @Published private(set) var retryPending = false
+    @Published private(set) var isExportingLogs = false
+    @Published var exportedLogsURL: URL?
+    @Published var logExportErrorMessage: String?
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -201,6 +204,22 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
         Task {
             await SwiftDashSDKWalletRuntime.shared.retryWalletPreparation()
             retryPending = false
+        }
+    }
+
+    func exportDiagnosticLogs() {
+        guard !isExportingLogs, !retryPending else { return }
+        isExportingLogs = true
+        Task { [weak self] in
+            let result = await DiagnosticLogExporter.exportArchive()
+            guard let self else { return }
+            self.isExportingLogs = false
+            switch result {
+            case .success(let url):
+                self.exportedLogsURL = url
+            case .failure(let error):
+                self.logExportErrorMessage = error.localizedDescription
+            }
         }
     }
 
@@ -262,7 +281,7 @@ struct WalletLifecycleOverlayView: View {
                     actionButton(NSLocalizedString("Try Again", comment: ""), prominent: true) {
                         viewModel.retryWalletOpen()
                     }
-                    .disabled(viewModel.retryPending)
+                    .disabled(viewModel.retryPending || viewModel.isExportingLogs)
                     preparationHelp
                 }
             case let .switchingNetwork(_, to):
@@ -344,15 +363,39 @@ struct WalletLifecycleOverlayView: View {
         .sheet(item: $viewModel.supportFailure) { failure in
             WalletPreparationSupportView(failure: failure)
         }
+        .sheet(isPresented: Binding(
+            get: { viewModel.exportedLogsURL != nil },
+            set: { if !$0 { viewModel.exportedLogsURL = nil } }
+        )) {
+            if let url = viewModel.exportedLogsURL {
+                ActivityView(activityItems: [url])
+            }
+        }
+        .alert(NSLocalizedString("Export Logs", comment: "Log export"), isPresented: Binding(
+            get: { viewModel.logExportErrorMessage != nil },
+            set: { if !$0 { viewModel.logExportErrorMessage = nil } }
+        )) {
+            Button(NSLocalizedString("OK", comment: "")) { viewModel.logExportErrorMessage = nil }
+        } message: {
+            Text(viewModel.logExportErrorMessage ?? "")
+        }
     }
 
     @ViewBuilder
     private var preparationHelp: some View {
         if viewModel.preparationFailure != nil {
+            if viewModel.isExportingLogs {
+                SwiftUI.ProgressView(NSLocalizedString("Preparing logs…", comment: "Log export progress"))
+            } else {
+                actionButton(NSLocalizedString("Export Logs", comment: "Log export"), prominent: false) {
+                    viewModel.exportDiagnosticLogs()
+                }
+                .disabled(viewModel.retryPending)
+            }
             actionButton(NSLocalizedString("Help", comment: ""), prominent: false) {
                 viewModel.showPreparationHelp()
             }
-            .disabled(viewModel.retryPending)
+            .disabled(viewModel.retryPending || viewModel.isExportingLogs)
         }
     }
 

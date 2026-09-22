@@ -8,7 +8,7 @@ require_relative "schema_release"
 
 class SchemaReleaseTest < Minitest::Test
   BUNDLE = "org.dashfoundation.dash"
-  SCHEMA = { "schema_version" => "2.0.0", "model_checksum" => "checksum", "entity_hashes" => { "Wallet" => "abcd" }, "indexes" => ["Wallet|index"] }.freeze
+  SCHEMA = { "schema_version" => "3.0.0", "model_checksum" => "checksum", "entity_hashes" => { "Wallet" => "abcd" }, "indexes" => ["Wallet|index"] }.freeze
 
   class GitHub
     attr_accessor :registry
@@ -88,6 +88,15 @@ class SchemaReleaseTest < Minitest::Test
                   "wallet_sha" => "a" * 40, "platform_sha" => "b" * 40, "schema" => SCHEMA,
                   "fixture_path" => "stores/#{@digest}.store", "fixture_sha256" => @digest }
     save_manifest
+    historical_fixture = "SQLite format 3\x00historical synthetic test"
+    @historical_fixture = historical_fixture
+    @store.github.registry["historical_schemas"] = { "2.0.0" => {
+      "schema" => SCHEMA.merge("schema_version" => "2.0.0", "model_checksum" => "historical-checksum"),
+      "source_sha" => "e" * 40, "provenance" => "reconstructed-model-match",
+      "fixture_path" => "packages/swift-sdk/SwiftTests/SwiftDashSDKTests/Fixtures/SchemaStores/historical-v2.store",
+      "fixture_sha256" => Digest::SHA256.hexdigest(historical_fixture),
+      "app_store_baseline" => { "bundle_id" => BUNDLE, "app_id" => "app", "app_version" => "9.1.0", "release_id" => "new" }
+    } }
   end
 
   def save_manifest
@@ -100,8 +109,8 @@ class SchemaReleaseTest < Minitest::Test
     record = @pipeline.published_records.first
     manifest, _path, hash = @pipeline.evidence(record)
     @store.github.registry["releases"]["new"] = record.slice("bundle_id", "app_version", "build_number", "build_id", "app_id").merge(
-      "schema_version" => "2.0.0", "platform_sha" => manifest["platform_sha"], "manifest_sha256" => hash)
-    @store.github.registry["schemas"]["2.0.0"] = { "schema" => SCHEMA, "fixture_path" => "fixture.store", "fixture_sha256" => @digest }
+      "schema_version" => "3.0.0", "platform_sha" => manifest["platform_sha"], "manifest_sha256" => hash)
+    @store.github.registry["schemas"]["3.0.0"] = { "schema" => SCHEMA, "fixture_path" => "fixture.store", "fixture_sha256" => @digest }
   end
 
   def test_uses_published_build_21_not_latest_testflight_build_22
@@ -278,7 +287,7 @@ class SchemaReleaseTest < Minitest::Test
 
   def test_registry_cannot_change_indexes_for_same_schema
     merge_release
-    @store.github.registry["schemas"]["2.0.0"]["schema"] = SCHEMA.merge("indexes" => ["different-index"])
+    @store.github.registry["schemas"]["3.0.0"]["schema"] = SCHEMA.merge("indexes" => ["different-index"])
     assert_raises(SchemaRelease::Error) { @pipeline.sync }
   end
 
@@ -308,8 +317,83 @@ class SchemaReleaseTest < Minitest::Test
       path = File.join(dir, SchemaRelease::REGISTRY)
       FileUtils.mkdir_p(File.dirname(path))
       File.write(path, SchemaRelease.json(@store.github.registry))
+      historical = @store.github.registry.fetch("historical_schemas").fetch("2.0.0")
+      fixture_path = File.join(dir, historical.fetch("fixture_path"))
+      FileUtils.mkdir_p(File.dirname(fixture_path))
+      File.binwrite(fixture_path, @historical_fixture)
+      (historical.fetch("schema").fetch("entity_hashes").keys + ["TokenTypes"]).each do |model|
+        model_path = File.join(dir, "packages/swift-sdk/Sources/SwiftDashSDK/Persistence/FrozenSchemas/DashSchemaV2+#{model}.swift")
+        FileUtils.mkdir_p(File.dirname(model_path))
+        File.write(model_path, "test historical model")
+      end
       yield dir
     end
+  end
+
+  def test_historical_migration_is_required_even_without_new_publications
+    @apple.versions = []
+    with_platform do |dir|
+      path = File.join(dir, SchemaRelease::REGISTRY)
+      registry = JSON.parse(File.read(path))
+      registry.delete("historical_schemas")
+      File.write(path, SchemaRelease.json(registry))
+      error = assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
+      assert_includes error.message, "Historical App Store V2 migration support is missing"
+    end
+  end
+
+  def test_historical_fixture_and_frozen_sources_must_exist_in_selected_checkout
+    @apple.versions = []
+    with_platform do |dir|
+      historical = @store.github.registry.fetch("historical_schemas").fetch("2.0.0")
+      fixture = File.join(dir, historical.fetch("fixture_path"))
+      File.binwrite(fixture, "corrupt")
+      error = assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
+      assert_includes error.message, "verified historical V2 fixture"
+      File.binwrite(fixture, @historical_fixture)
+      File.delete(File.join(dir, "packages/swift-sdk/Sources/SwiftDashSDK/Persistence/FrozenSchemas/DashSchemaV2+Wallet.swift"))
+      error = assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
+      assert_includes error.message, "frozen historical V2 models"
+    end
+  end
+
+  def test_gate_requires_reviewed_baseline_correction_without_moving_cutoff
+    @apple.versions = []
+    baseline = { "bundle_id" => BUNDLE, "app_id" => "app", "max_app_version" => "9.1.0", "release_id" => "new", "schema_version" => "1.0.0" }
+    @store.files["baseline.json"] = SchemaRelease.json(baseline)
+    with_platform do |dir|
+      error = assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
+      assert_includes error.message, "reviewed V2 baseline correction"
+      baseline.merge!("schema_version" => "2.0.0", "model_checksum" => "historical-checksum", "schema_provenance" => "reconstructed-model-match")
+      @store.files["baseline.json"] = SchemaRelease.json(baseline)
+      @pipeline.gate(dir)
+      assert_empty @store.writes
+    end
+  end
+
+  def test_bootstrap_rejects_malformed_historical_metadata_without_writing
+    @store.files.delete("baseline.json")
+    original = Marshal.dump(@store.github.registry)
+    [nil, [], { "2.0.0" => { "provenance" => "reconstructed-model-match", "app_store_baseline" => nil } }].each do |history|
+      @store.github.registry = Marshal.load(original)
+      @store.github.registry["historical_schemas"] = history
+      assert_raises(SchemaRelease::Error) { @pipeline.bootstrap }
+      assert_empty @store.writes
+    end
+  end
+
+  def test_bootstrap_does_not_assign_v1_or_guess_an_unverified_release
+    @store.files.delete("baseline.json")
+    @pipeline.bootstrap
+    baseline = @store.document("baseline.json")
+    assert_equal "2.0.0", baseline.fetch("schema_version")
+    assert_equal "historical-checksum", baseline.fetch("model_checksum")
+    assert_equal "reconstructed-model-match", baseline.fetch("schema_provenance")
+    @store.files.delete("baseline.json")
+    @apple.versions << @apple.version("different", "9.2.0")
+    error = assert_raises(SchemaRelease::Error) { @pipeline.bootstrap }
+    assert_includes error.message, "No verified historical schema binding"
+    refute @store.files.key?("baseline.json")
   end
 
   def test_gate_checks_setup_even_without_post_baseline_publications

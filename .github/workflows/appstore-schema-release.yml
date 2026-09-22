@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "Observe publications, or initialize the existing App Store release as V1 once"
+        description: "Observe publications, or initialize a verified historical App Store release once"
         type: choice
         options: [sync, bootstrap]
         default: sync
