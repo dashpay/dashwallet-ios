@@ -227,7 +227,13 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
         supportFailure = preparationFailure
     }
 
+    /// A failed switch can carry a preparation failure, so its card offers
+    /// Export Logs next to Retry/Switch Back. The export's share sheet and
+    /// error alert belong to that card; a switch started meanwhile would swap
+    /// the card underneath them. Retry/Switch Back are disabled while an
+    /// export runs, and these guards back the disabled state up.
     func retryNetworkSwitch(to target: WalletEnvironment.NetworkKind) {
+        guard !isExportingLogs else { return }
         Task {
             try? await SwiftDashSDKWalletRuntime.shared.switchNetwork(to: target)
         }
@@ -237,6 +243,7 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     /// interactive wallet switch uses (admission from `.failedWalletSwitch`
     /// exists exactly for this card's actions).
     func retryWalletSwitch(to targetId: Data, targetName: String?) {
+        guard !isExportingLogs else { return }
         Task {
             try? await WalletsViewModel.gatedSwitchWallet(
                 targetId: targetId,
@@ -248,6 +255,7 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     /// switch began (captured by the gated helper before the registry was
     /// repointed).
     func switchBack(to previousId: Data) {
+        guard !isExportingLogs else { return }
         let name = WalletsViewModel.displayName(for: previousId)
         Task {
             try? await WalletsViewModel.gatedSwitchWallet(
@@ -324,6 +332,7 @@ struct WalletLifecycleOverlayView: View {
                     actionButton(NSLocalizedString("Retry", comment: ""), prominent: true) {
                         viewModel.retryNetworkSwitch(to: target)
                     }
+                    .disabled(viewModel.isExportingLogs)
                     // Escape hatch: the origin network was working when the
                     // switch began, so a way back must exist even when the
                     // destination keeps failing.
@@ -331,6 +340,7 @@ struct WalletLifecycleOverlayView: View {
                         actionButton(NSLocalizedString("Switch Back", comment: "Wallets"), prominent: false) {
                             viewModel.retryNetworkSwitch(to: from)
                         }
+                        .disabled(viewModel.isExportingLogs)
                     }
                     preparationHelp
                 }
@@ -342,10 +352,12 @@ struct WalletLifecycleOverlayView: View {
                     actionButton(NSLocalizedString("Retry", comment: ""), prominent: true) {
                         viewModel.retryWalletSwitch(to: targetId, targetName: targetName)
                     }
+                    .disabled(viewModel.isExportingLogs)
                     if let previousId {
                         actionButton(NSLocalizedString("Switch Back", comment: "Wallets"), prominent: false) {
                             viewModel.switchBack(to: previousId)
                         }
+                        .disabled(viewModel.isExportingLogs)
                     }
                     preparationHelp
                 }

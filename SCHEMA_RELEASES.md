@@ -12,6 +12,27 @@ The SDK provides a bounded compatibility bridge for these legacy stores, as
 described below. Other intermediate development databases remain unsupported.
 Never reset an App Store user's database as a substitute for migration.
 
+The evidence for that reconstruction is recorded once, in Platform's
+`packages/swift-sdk/schema-releases.json` under `historical_schemas["2.0.0"]`,
+and that registry entry is the source of truth; this page only points at it.
+Two different values are involved and must not be confused:
+
+- `fixture_sha256` is the SHA-256 of the committed synthetic fixture file
+  `packages/swift-sdk/SwiftTests/SwiftDashSDKTests/Fixtures/SchemaStores/historical-v2.store`
+  (currently `4c7c0516627c2cc3dc588bfe3e764755205adc0f3848f7e8b7028bf3c53f67ae`).
+  Recompute it with `shasum -a 256` on that file in the selected Platform
+  checkout; the candidate gate does exactly that before building.
+- `schema.model_checksum` (currently `RrRj/iNbS9izgLQvNb2APed4iwaR7pftEE2+4tea7K8=`)
+  is not a digest we compute. It is Core Data's own model version checksum,
+  read from a store's metadata as `NSStoreModelVersionChecksumKey`, alongside
+  the per-entity `NSStoreModelVersionHashes`. Core Data derives it from the
+  managed object model, so it can be verified only by building that model and
+  reading the metadata back, which is what the SDK's migration tests and the
+  route diagnostics (`store_migration_route` → `source_checksum`) do. The
+  fixture's metadata carries the same checksum and hashes as the phone's
+  store; the fixture rows are synthetic and were never extracted from a user
+  database.
+
 ## Legacy database compatibility
 
 The app opens its per-network SQLite store through
