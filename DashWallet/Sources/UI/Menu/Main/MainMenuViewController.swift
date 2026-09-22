@@ -158,7 +158,6 @@ struct MainMenuScreen: View {
     @State private var showIdentities: Bool = false
     @State private var showSecurity: Bool = false
     @State private var showDashPayInfo: Bool = false
-    @State private var showCreditsPurchasedToast: Bool = false
     @State private var navigateToDashPayFlow: Bool = false
     
     #if DASHPAY
@@ -300,15 +299,6 @@ struct MainMenuScreen: View {
                 Spacer(minLength: 60)
             }
             
-            if showCreditsPurchasedToast {
-                ToastView(
-                    text: NSLocalizedString("Successful purchase", comment: ""),
-                    icon: .system("checkmark.circle.fill")
-                )
-                .frame(height: 20)
-                .padding(.bottom, 30)
-            }
-            
             NavigationLink(
                 destination: SettingsScreen(vc: vc, onDidRescan: {
                     self.vc.popToRootViewController(animated: false)
@@ -419,7 +409,15 @@ struct MainMenuScreen: View {
     /// `JoinDashPayViewModel` derives from
     /// `DWContestedNameStatusService.pendingLabel`.
     private func showUsernameRequestStatus() {
-        guard let label = DWContestedNameStatusService.shared.pendingLabel else { return }
+        // The row reaches `.voting` from the bookmark OR from the identity's own
+        // pending contested name (same-seed recovery, or a bookmark scoped to a
+        // wallet/network the snapshot has since moved past). Navigating on the
+        // bookmark alone made the row's tap — and its ⓘ — dead controls on
+        // exactly those wallets, so the fallback used to display it is the
+        // fallback used to open it.
+        guard let label = DWContestedNameStatusService.shared.pendingLabel
+            ?? DWCurrentUserIdentityInfo.shared.refreshedSnapshot().pendingContestedName
+        else { return }
         let screen = UsernameRequestStatusScreen(
             viewModel: UsernameRequestStatusViewModel(label: label),
             // `MainMenuScreen` is a struct and `vc` is the stack it lives in,
@@ -684,8 +682,19 @@ extension MainMenuScreen {
             // (`BuyCreditsModel.currentCredits`) that had nothing to do with
             // the identity.
             Task { @MainActor in
-                guard await controller.confirmAgainstIdentityCredits() else {
+                switch await controller.confirmAgainstIdentityCredits() {
+                case .proceed:
+                    break
+                case .stop:
                     controller.dismiss(animated: true)
+                    return
+                case .topUp:
+                    // After the editor is gone, not onto it: this screen is the one
+                    // being dismissed, so whatever presented it does the presenting.
+                    let presenter = controller.presentingViewController
+                    controller.dismiss(animated: true) {
+                        presenter?.present(IdentityCreditGate.makeTopUpController(), animated: true)
+                    }
                     return
                 }
 

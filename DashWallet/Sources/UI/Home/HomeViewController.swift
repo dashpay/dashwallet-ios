@@ -582,8 +582,19 @@ extension HomeViewController: RootEditProfileViewControllerDelegate {
         // for must not be broadcast, and a balance running low is worth saying
         // once — before the write, not after it.
         Task { @MainActor in
-            guard await controller.confirmAgainstIdentityCredits() else {
-                controller.dismiss(animated: true, completion: nil)
+            switch await controller.confirmAgainstIdentityCredits() {
+            case .proceed:
+                break
+            case .stop:
+                controller.dismiss(animated: true)
+                return
+            case .topUp:
+                // After the editor is gone, not onto it: this screen is the one
+                // being dismissed, so whatever presented it does the presenting.
+                let presenter = controller.presentingViewController
+                controller.dismiss(animated: true) {
+                    presenter?.present(IdentityCreditGate.makeTopUpController(), animated: true)
+                }
                 return
             }
 
@@ -625,7 +636,15 @@ extension HomeViewController: HomeViewDelegate {
     /// the same screen the More row pushes (`MainMenuScreen`), so both
     /// surfaces report the vote in one place.
     func homeViewShowUsernameRequestStatus() {
-        guard let label = DWContestedNameStatusService.shared.pendingLabel else { return }
+        // The row reaches `.voting` from the bookmark OR from the identity's own
+        // pending contested name (same-seed recovery, or a bookmark scoped to a
+        // wallet/network the snapshot has since moved past). Navigating on the
+        // bookmark alone made the row's tap — and its ⓘ — dead controls on
+        // exactly those wallets, so the fallback used to display it is the
+        // fallback used to open it.
+        guard let label = DWContestedNameStatusService.shared.pendingLabel
+            ?? DWCurrentUserIdentityInfo.shared.refreshedSnapshot().pendingContestedName
+        else { return }
 
         let screen = UsernameRequestStatusScreen(
             viewModel: UsernameRequestStatusViewModel(label: label),

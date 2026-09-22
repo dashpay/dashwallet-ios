@@ -154,53 +154,6 @@ final class UsernameRequestStatusViewModel: ObservableObject {
     // MARK: Temporary username (DASHPAY only — the field model and the
     // marketplace registration live in dashpay-target-only files)
 
-    /// Input + validation for the non-contested temporary username the
-    /// screen offers while the vote is unresolved. Same shared model the
-    /// signup flow's contested confirmation sheet uses.
-    let temporaryField = TemporaryUsernameFieldModel()
-
-    @Published private(set) var isRegisteringTemporary = false
-    /// Non-nil drives the registration-failure alert.
-    @Published var temporaryRegistrationError: String?
-    /// Set on success — flips the offer section to its confirmation and
-    /// keeps it flipped for this screen visit (the identity-info
-    /// snapshot also stops reporting an empty username list).
-    @Published private(set) var justRegisteredTemporaryUsername: String?
-
-    /// Stateless facade, instantiated per view model by design (see its
-    /// type doc). `register(label:)` refuses contested labels, so the
-    /// field's non-contested gate has a second line of defense.
-    private let marketplaceService = UsernameMarketplaceService()
-
-    /// Offer the temporary-username section only while it can still
-    /// help: the vote is unresolved (or not yet indexed — the bookmark
-    /// this screen was opened from proves a submission exists) and the
-    /// identity owns no other username to be reached at.
-    var canOfferTemporaryUsername: Bool {
-        guard justRegisteredTemporaryUsername == nil else { return false }
-        guard DWCurrentUserIdentityInfo.shared.usernames.isEmpty else { return false }
-        guard let voteState else { return true }
-        if case .ongoing = voteState.outcome { return true }
-        return false
-    }
-
-    /// Register the validated temporary username to the existing
-    /// identity via the marketplace service (own PIN prompt; refreshes
-    /// the identity snapshot on success). PIN cancel is a silent no-op.
-    func registerTemporaryUsername() async {
-        let label = temporaryField.trimmedText
-        guard temporaryField.check == .available, !isRegisteringTemporary else { return }
-        isRegisteringTemporary = true
-        defer { isRegisteringTemporary = false }
-        do {
-            try await marketplaceService.register(label: label)
-            justRegisteredTemporaryUsername = label
-        } catch UsernameMarketplaceService.ServiceError.authCancelled {
-            // User backed out of the PIN — keep the section as-is.
-        } catch {
-            temporaryRegistrationError = UsernameMarketplaceService.userFacingMessage(for: error)
-        }
-    }
     #endif
 }
 
@@ -317,21 +270,6 @@ struct UsernameRequestStatusScreen: View {
         } message: {
             Text(viewModel.verificationError ?? "")
         }
-        #if DASHPAY
-        .alert(
-            NSLocalizedString("Registration failed", comment: "Usernames"),
-            isPresented: Binding(
-                get: { viewModel.temporaryRegistrationError != nil },
-                set: { if !$0 { viewModel.temporaryRegistrationError = nil } }
-            )
-        ) {
-            Button(NSLocalizedString("OK", comment: "")) {
-                viewModel.temporaryRegistrationError = nil
-            }
-        } message: {
-            Text(viewModel.temporaryRegistrationError ?? "")
-        }
-        #endif
     }
 
     /// Describes only what Platform actually reported. A contest that is not

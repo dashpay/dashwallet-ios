@@ -191,7 +191,27 @@ public final class DWIdentityRegistrationBridge: NSObject {
     /// the request screen and published once the identity exists
     /// (`CreateIdentityService`), inside the flow that already holds the
     /// signer, so it costs no second PIN prompt.
-    @objc public var pendingVerificationURL: URL?
+    /// The proof-of-identity link the user gave, together with the label they
+    /// gave it for. Paired deliberately: a link is a claim about one name, and
+    /// keeping the URL alone let an abandoned attempt hand its link to the next
+    /// submission — publishing, for a different username, a public document the
+    /// user had declined to create for it.
+    private var pendingVerification: (label: String, url: URL)?
+
+    /// Records `url` as the link for `label`, or clears the pending link when
+    /// `url` is nil.
+    @objc public func setPendingVerificationURL(_ url: URL?, forLabel label: String) {
+        guard let url else {
+            pendingVerification = nil
+            return
+        }
+        pendingVerification = (Self.verificationKey(label), url)
+    }
+
+    /// Labels compare the way DPNS treats them: trimmed and case-folded.
+    private static func verificationKey(_ label: String) -> String {
+        label.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
 
     // MARK: - Subscriptions
 
@@ -316,13 +336,21 @@ public final class DWIdentityRegistrationBridge: NSObject {
     /// contested submission, so anything left over from an abandoned attempt
     /// is dropped rather than attached to an unrelated registration.
     private func sanitizedVerificationURL(for username: String) -> URL? {
-        guard let url = pendingVerificationURL else { return nil }
-        guard DWContestedNameStatusService.isContestedLabel(username) else {
-            Self.logger.warning("🪪 IDENT-BRIDGE :: dropping stale verification link for submission of \(username, privacy: .public)")
-            pendingVerificationURL = nil
+        guard let pending = pendingVerification else { return nil }
+        // The link belongs to the label it was entered for. A submission of any
+        // other name — after the user went back and retyped, or abandoned the
+        // sheet — must not inherit it.
+        guard pending.label == Self.verificationKey(username) else {
+            Self.logger.warning("🪪 IDENT-BRIDGE :: dropping a verification link captured for another label before submitting \(username, privacy: .public)")
+            pendingVerification = nil
             return nil
         }
-        return url
+        guard DWContestedNameStatusService.isContestedLabel(username) else {
+            Self.logger.warning("🪪 IDENT-BRIDGE :: dropping stale verification link for submission of \(username, privacy: .public)")
+            pendingVerification = nil
+            return nil
+        }
+        return pending.url
     }
 
     /// Subscribe to the coordinator's published surface and mirror
@@ -404,7 +432,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         if case .completed = phase {
             preferredFundingSource = .core
             pendingTemporaryUsername = nil
-            pendingVerificationURL = nil
+            pendingVerification = nil
         }
 
         // Internal notification — DWDashPayModel observes this,

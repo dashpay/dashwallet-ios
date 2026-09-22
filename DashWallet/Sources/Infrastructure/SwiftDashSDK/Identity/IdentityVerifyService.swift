@@ -113,39 +113,11 @@ final class IdentityVerifyService {
         // can be found by, so every contender's document comes back in one
         // list. A fixed limit would answer "no link published" for a contender
         // who simply sat past the end of the first page.
-        var startAfter: String? = nil
-        for _ in 0..<Self.maxLookupPages {
-            let response: [String: Any]
-            do {
-                let after = startAfter
-                response = try await Task.detached(priority: .userInitiated) {
-                    try await sdk.documentList(
-                        dataContractId: contractId,
-                        documentType: Self.documentType,
-                        whereClause: whereClause,
-                        limit: Self.lookupPageSize,
-                        startAfter: after)
-                }.value
-            } catch {
-                Self.logger.error("🔗 IDENT-VERIFY :: contender lookup failed: \(String(describing: error), privacy: .public)")
-                throw ServiceError.lookupFailed
-            }
-
-            guard let documents = response["documents"] as? [[String: Any]] else {
-                throw ServiceError.lookupFailed
-            }
-            if let theirs = documents.first(where: { Self.isOwned(byBase58: identityIdBase58, document: $0) }) {
-                guard let urlString = theirs["url"] as? String else { return nil }
-                return URL(string: urlString)
-            }
-            // A short page is the last one.
-            guard documents.count == Int(Self.lookupPageSize), let last = documents.last,
-                  let cursor = last["$id"] as? String
-            else { return nil }
-            startAfter = cursor
-        }
-        Self.logger.error("🔗 IDENT-VERIFY :: contender lookup gave up after \(Self.maxLookupPages, privacy: .public) pages")
-        return nil
+        let documents = try await allDocuments(
+            matching: whereClause, contractId: contractId, sdk: sdk)
+        let theirs = documents.first { Self.isOwned(byBase58: identityIdBase58, document: $0) }
+        guard let urlString = theirs?["url"] as? String else { return nil }
+        return URL(string: urlString)
     }
 
     func publishedURL(forLabel label: String) async throws -> URL? {
@@ -170,26 +142,14 @@ final class IdentityVerifyService {
         [["normalizedLabel","==","\(normalized)"]]
         """
 
-        let response: [String: Any]
-        do {
-            // `documentList` is declared `async` but its body is blocking FFI
-            // (it fetches the contract, then queries), so awaiting it from this
-            // main-actor type would run the round-trip on the main thread.
-            response = try await Task.detached(priority: .userInitiated) {
-                try await sdk.documentList(
-                    dataContractId: contractId,
-                    documentType: Self.documentType,
-                    whereClause: whereClause,
-                    limit: 1)
-            }.value
-        } catch {
-            Self.logger.error("🔗 IDENT-VERIFY :: lookup failed: \(String(describing: error), privacy: .public)")
-            throw ServiceError.lookupFailed
-        }
-
-        guard let documents = response["documents"] as? [[String: Any]] else {
-            throw ServiceError.lookupFailed
-        }
+        // Paged, for the same reason the contender lookup is: the label is the
+        // only searchable field, so a contested name returns one document per
+        // contender. Asking for a single row let a rival's document occupy it
+        // and reported our own published link as "none" — and `publish()`
+        // checks idempotency through this method, so it would then write a
+        // second document the contract refuses.
+        let documents = try await allDocuments(
+            matching: whereClause, contractId: contractId, sdk: sdk)
         // Whose link it is has to be checked here, now that the query no
         // longer filters by owner. A contested label can have a rival
         // contender, and their proof of identity is not ours to show.
@@ -293,6 +253,55 @@ final class IdentityVerifyService {
 
         Self.logger.info("🔗 IDENT-VERIFY :: published link for \(normalized, privacy: .public) (registration flow)")
         return url
+    }
+
+    /// Every `identityVerify` document matching `whereClause`, walked page by
+    /// page. The contract indexes this document type by `normalizedLabel`
+    /// alone, so a contested label returns one row per contender and the
+    /// caller — not the query — decides which is theirs.
+    ///
+    /// The FFI call is blocking under its `async` signature, hence the detach:
+    /// awaiting it from this main-actor type would run the round trip on the
+    /// main thread.
+    private func allDocuments(
+        matching whereClause: String,
+        contractId: String,
+        sdk: SDK
+    ) async throws -> [[String: Any]] {
+        var collected: [[String: Any]] = []
+        var startAfter: String? = nil
+
+        for _ in 0..<Self.maxLookupPages {
+            let response: [String: Any]
+            do {
+                let after = startAfter
+                response = try await Task.detached(priority: .userInitiated) {
+                    try await sdk.documentList(
+                        dataContractId: contractId,
+                        documentType: Self.documentType,
+                        whereClause: whereClause,
+                        limit: Self.lookupPageSize,
+                        startAfter: after)
+                }.value
+            } catch {
+                Self.logger.error("🔗 IDENT-VERIFY :: lookup failed: \(String(describing: error), privacy: .public)")
+                throw ServiceError.lookupFailed
+            }
+
+            guard let page = response["documents"] as? [[String: Any]] else {
+                throw ServiceError.lookupFailed
+            }
+            collected.append(contentsOf: page)
+
+            // A short page is the last one.
+            guard page.count == Int(Self.lookupPageSize),
+                  let cursor = page.last?["$id"] as? String
+            else { return collected }
+            startAfter = cursor
+        }
+
+        Self.logger.error("🔗 IDENT-VERIFY :: lookup gave up after \(Self.maxLookupPages, privacy: .public) pages")
+        return collected
     }
 
     /// Documents per page when looking a contender's link up, and the number

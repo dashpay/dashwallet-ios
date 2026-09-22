@@ -179,8 +179,16 @@ class MainTabbarController: UITabBarController {
     /// moment a name is actually theirs: an instant companion registered
     /// alongside the request, or the contested name once won.
     private var hasDashPayIdentity: Bool {
-        let identity = DWCurrentUserIdentityInfo.shared
-        return identity.hasIdentity && !identity.usernames.isEmpty
+        let identity = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        guard identity.hasIdentity else { return false }
+        // `usernames` is empty both for an identity that owns no name and for
+        // one whose names have not been read yet. Applying the rule before the
+        // read lands took the Contacts tab away from a wallet that has had a
+        // username for months — on every cold launch, and for the whole session
+        // when the name query failed. An identity with no names loaded keeps
+        // its tabs; the rule applies once there is an answer.
+        guard identity.namesAreLoaded else { return true }
+        return !identity.usernames.isEmpty
     }
     #endif
 

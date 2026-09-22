@@ -45,10 +45,14 @@ public struct JoinDashPayInfoDialog: View {
         case votingInfo
 
         /// Where the back button goes, and by the same token whether there is
-        /// one at all. Nothing returns a page today: each step's answers are
-        /// all ways forward, and the voting explanation is the last word
-        /// before the form — a back arrow there offers to un-answer a funding
-        /// choice the flow has already acted on.
+        /// one at all.
+        ///
+        /// Every case returns nil: each step's answers are all ways forward,
+        /// and the voting explanation is the last word before the form — a back
+        /// arrow there offers to un-answer a funding choice the flow has
+        /// already acted on. The back plumbing below is kept, and kept
+        /// exercised by this one property, so that naming a predecessor here is
+        /// all it takes to bring the leg back.
         var back: Page? {
             switch self {
             case .join, .fundingPrivacy, .votingInfo: return nil

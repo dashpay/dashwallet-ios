@@ -168,6 +168,16 @@ struct UsernameFundingPrivacyScreen: View {
     /// Platform credits are an advanced-mode balance: the mode is what shows
     /// it on Home at all, so paying a username from it is offered only there —
     /// and only when there is enough of it to cover this registration.
+    /// The transparent source to record when the user forgoes privacy: Core
+    /// when it can cover the registration, Platform credits when only they
+    /// can. Core remains the answer when neither can — the form then states
+    /// the shortfall against the source the user would expect to use.
+    private var transparentSourceThatCanPay: DWIdentityFundingSource {
+        if viewModel.hasMinimumRequiredCoreBalance { return .core }
+        if viewModel.hasMinimumRequiredPlatformBalance { return .platformPayment }
+        return .core
+    }
+
     private var offersPlatformBalance: Bool {
         viewModel.isAdvancedMode && viewModel.hasMinimumRequiredPlatformBalance
     }
@@ -347,16 +357,19 @@ struct UsernameFundingPrivacyScreen: View {
             )
 
             // Transparent funding is the way forward when shielded funds are
-            // not spendable, so the choice is recorded as `.core` rather than
-            // left unset.
+            // not spendable, so the choice is recorded rather than left unset —
+            // but it is recorded as a source that can actually pay. Naming
+            // `.core` for a wallet whose Core balance is short pinned the form
+            // to a source it had to refuse.
             DashUIKit.DashButton(
                 text: NSLocalizedString("Continue without privacy", comment: "Usernames"),
                 fillsWidth: true,
                 size: .large,
                 style: .tintedBlue,
                 action: {
-                    viewModel.chooseFundingSource(.core)
-                    onContinue(.core)
+                    let source = transparentSourceThatCanPay
+                    viewModel.chooseFundingSource(source)
+                    onContinue(source)
                 }
             )
 

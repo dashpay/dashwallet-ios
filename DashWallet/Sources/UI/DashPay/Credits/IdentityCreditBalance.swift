@@ -80,7 +80,7 @@ extension UIViewController {
     /// - Low: the user is warned and "Maybe later" writes anyway, since the
     ///   balance still covers this one operation.
     @MainActor
-    func confirmAgainstIdentityCredits() async -> Bool {
+    func confirmAgainstIdentityCredits() async -> IdentityCreditGate {
         guard let balance = IdentityCreditBalance.current() else {
             _ = await showModalDialog(
                 style: .warning,
@@ -90,10 +90,10 @@ extension UIViewController {
                     "Your credit balance could not be read. Check your connection and try again.",
                     comment: "Credits"),
                 positiveButtonText: NSLocalizedString("OK", comment: ""))
-            return false
+            return .stop
         }
 
-        guard balance.isWarning || balance.isEmpty else { return true }
+        guard balance.isWarning || balance.isEmpty else { return .proceed }
 
         let buysCredits = await showModalDialog(
             style: .warning,
@@ -112,21 +112,39 @@ extension UIViewController {
             negativeButtonText: NSLocalizedString("Maybe later", comment: ""))
 
         if buysCredits {
-            // The real top-up: Core or Platform funds into the identity's
-            // credit balance, which is what the identity actually spends.
-            let controller = InternalTransferHostingController(transferTo: .identity)
-            controller.hidesBottomBarWhenPushed = true
-            if let navigationController {
-                navigationController.pushViewController(controller, animated: true)
-            } else {
-                present(BaseNavigationController(rootViewController: controller), animated: true)
-            }
-            return false
+            // Answered here, presented by the caller. This screen is dismissed
+            // the moment the gate says no, so anything pushed onto it now would
+            // be torn down with it — the top-up has to be presented after that
+            // dismissal, by whoever owns it.
+            return .topUp
         }
 
         // Warned but still able to pay for this one: let it through, as Android
         // does. Empty means there is nothing to pay with.
-        return balance.isWarning && !balance.isEmpty
+        return balance.isWarning && !balance.isEmpty ? .proceed : .stop
+    }
+}
+
+/// What the credit balance says a profile write should do next.
+enum IdentityCreditGate {
+    /// Enough credits, or warned and still able to pay for this one write.
+    case proceed
+    /// The write must not go out, and there is nothing else to offer.
+    case stop
+    /// The user asked to top up: dismiss the editor, then present the transfer.
+    case topUp
+}
+
+extension IdentityCreditGate {
+    /// The top-up screen, wrapped so it can be presented from anywhere once the
+    /// screen that asked has gone away.
+    @MainActor
+    static func makeTopUpController() -> UIViewController {
+        let controller = InternalTransferHostingController(transferTo: .identity)
+        controller.hidesBottomBarWhenPushed = true
+        let navigation = BaseNavigationController(rootViewController: controller)
+        navigation.modalPresentationStyle = .fullScreen
+        return navigation
     }
 }
 

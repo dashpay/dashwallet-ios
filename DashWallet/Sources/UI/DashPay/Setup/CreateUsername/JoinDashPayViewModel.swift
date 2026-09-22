@@ -84,14 +84,8 @@ class JoinDashPayViewModel: ObservableObject {
         }
     }
 
-    /// The X on the row, and the tap that acts on a finished registration.
-    ///
-    /// What "dismissed" means depends on what the row was showing. For a
-    /// registration report the record behind it is dropped — the user loses
-    /// nothing, a Core-funded attempt's recovery lock is persisted SDK-side
-    /// and the create screen still surfaces it through
-    /// `hasPendingRegistrationRecovery` on the next visit. For the call to
-    /// action it is the persisted per-wallet dismissal, as before.
+    /// The identity-name load did not answer in time: offer the row as a retry
+    /// rather than leaving it spinning.
     @MainActor
     func finishLoadingAttempt() {
         if state == .loading { state = .retryLoading }
@@ -103,6 +97,14 @@ class JoinDashPayViewModel: ObservableObject {
         checkUsername()
     }
 
+    /// The X on the row, and the tap that acts on a finished registration.
+    ///
+    /// What "dismissed" means depends on what the row was showing. For a
+    /// registration report the record behind it is dropped — the user loses
+    /// nothing, a Core-funded attempt's recovery lock is persisted SDK-side
+    /// and the create screen still surfaces it through
+    /// `hasPendingRegistrationRecovery` on the next visit. For the call to
+    /// action it is the persisted per-wallet dismissal, as before.
     @MainActor
     func markAsDismissed() {
         let prefs = UsernamePrefs.shared
@@ -205,6 +207,15 @@ class JoinDashPayViewModel: ObservableObject {
         let identity = DWCurrentUserIdentityInfo.shared
         if identity.hasIdentity, let registered = identity.username, !registered.isEmpty {
             return complete(registered)
+        }
+
+        // A contested submission that is out for a vote is not an interrupted
+        // one. It looks like it here — the coordinator is idle, and the label
+        // is filtered out of `usernames` until the vote is won — and reporting
+        // it as interrupted offered a retry that would start (and pay for) a
+        // second registration for a name already in the contest.
+        if DWContestedNameStatusService.shared.isPendingLabel(pending) {
+            return nil
         }
 
         // Otherwise the honest answer is that we do not know how far it got:

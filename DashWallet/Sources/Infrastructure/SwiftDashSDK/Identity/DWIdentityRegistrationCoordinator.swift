@@ -1621,7 +1621,11 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         }
         guard let network = WalletEnvironment.network else { return }
         guard let identityId = DWCurrentUserIdentityInfo.shared.identityId else { return }
-        guard DWCurrentUserIdentityInfo.shared.usernames.isEmpty else { return }
+        // Deliberately NOT gated on "this wallet owns no username": the flow
+        // this recovery exists for — a contested request with an instant
+        // companion registered beside it — leaves the wallet owning a name
+        // while its contested one is still out for a vote. The caller already
+        // establishes the only condition that matters: no bookmark is held.
 
         let scope = "\(network.rawValue):\(ScriptAddressCodec.base58Encode(identityId))"
         guard Self.attemptedContestRecoveries.insert(scope).inserted else { return }

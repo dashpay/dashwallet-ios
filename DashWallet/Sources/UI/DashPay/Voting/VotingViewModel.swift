@@ -301,13 +301,14 @@ final class VotingViewModel: ObservableObject {
 
     // MARK: Vote history
 
-    /// Votes this wallet has cast on `contest`, and how many it could cast in
-    /// total — the "2 of 5" the row and detail screen show.
     /// Live vote per node per contest, and how many casts each node has spent.
     /// Both are rebuilt by `loadVotedNodes(for:)`.
     private var latestVoteByNodeByContest: [String: [Data: CastVoteRecord]] = [:]
     private var castsPerNodeByContest: [String: [Data: Int]] = [:]
 
+    /// Vote *records* this wallet holds on `contest` — a node that changed its
+    /// mind contributes more than one. `votedNodeCount(on:)` is the per-node
+    /// figure the screens show.
     func castCount(for normalizedLabel: String) -> Int {
         castCountsByContest[normalizedLabel] ?? 0
     }

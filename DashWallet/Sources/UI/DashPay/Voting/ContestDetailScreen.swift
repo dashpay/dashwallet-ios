@@ -70,7 +70,6 @@ struct ContestDetailScreen: View {
         return String(format: NSLocalizedString("Vote ×%d", comment: "Voting"), pending.count)
     }
 
-    /// How many of this wallet's nodes have voted here.
     /// Nodes of ours with a live vote here. Not the number of vote *records*:
     /// a node that changed its mind has two of those and is still one node,
     /// which used to render as "2 of 1 nodes voted".

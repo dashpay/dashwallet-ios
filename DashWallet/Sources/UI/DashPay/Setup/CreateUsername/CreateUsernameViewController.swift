@@ -424,7 +424,9 @@ struct CreateUsernameView: View {
                         // The link travels with the submission and is published
                         // by the coordinator once the identity exists — no
                         // second PIN, same as Android.
-                        DWIdentityRegistrationBridge.shared.pendingVerificationURL = url
+                        DWIdentityRegistrationBridge.shared.setPendingVerificationURL(
+                            url,
+                            forLabel: viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines))
                         sheetFollowUp = .confirmRequest
                         showVerifyIdentity = false
                     })
@@ -1209,18 +1211,22 @@ struct CreateUsernameView: View {
     private func syncFundingSourceToViableSource() {
         defer { viewModel.setActiveFundingSource(fundingSource) }
 
-        // An explicit pick is never overridden, not even once it stops being
-        // viable. Quietly moving a user who chose Platform onto Core would
-        // fund the registration from a balance they did not offer; the cost
-        // rule states the shortfall instead and Continue stays disabled.
-        guard !didUserPickFundingSource else { return }
-
         let viable = viableFundingSources
         guard let preferred = viable.first else {
             // Nothing viable — leave the selection alone; the Continue
             // button is disabled by the cost rule anyway.
             return
         }
+
+        // An explicit pick stands while it can pay. Quietly moving a user who
+        // chose Platform onto Core would fund the registration from a balance
+        // they did not offer.
+        //
+        // It does NOT stand once it cannot: the privacy page's "Continue
+        // without privacy" records `.core` for a wallet that may have nothing
+        // in Core, and holding that pick left the form with the cost rule red
+        // and Continue disabled for good, with no way back to change it.
+        if didUserPickFundingSource, viable.contains(fundingSource) { return }
         fundingSource = preferred
     }
 

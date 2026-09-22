@@ -406,9 +406,19 @@ struct JoinDashPayMenuItem: View {
             // synced chain, so the note under it says why instead.
             .contentShape(Rectangle())
             .onTapGesture {
-                guard !isSyncing else { return }
-                onTap(viewModel.state)
+                guard !isSyncing, viewModel.state != .loading else { return }
+                // The row IS the retry while the identity's names are being
+                // re-read: `retryLoading()` has no other caller, so dispatching
+                // this state to `onTap` left the control dead on every surface.
+                if viewModel.state == .retryLoading {
+                    viewModel.retryLoading()
+                } else {
+                    onTap(viewModel.state)
+                }
             }
+            // The row is a control, and its label is what it says.
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isButton)
 
             // Not on Home: the close control already occupies that corner, and
             // two round buttons at the same edge read as a mistake. Tapping the
@@ -422,6 +432,10 @@ struct JoinDashPayMenuItem: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                // A glyph with no text child says nothing to VoiceOver — the
+                // same control on the request-details screen is named, and this
+                // one has to be too.
+                .accessibilityLabel(NSLocalizedString("What is username voting?", comment: "Usernames"))
             }
         }
         .padding(10)
