@@ -181,14 +181,25 @@ class MainTabbarController: UITabBarController {
     private var hasDashPayIdentity: Bool {
         let identity = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
         guard identity.hasIdentity else { return false }
+
         // `usernames` is empty both for an identity that owns no name and for
-        // one whose names have not been read yet. Applying the rule before the
-        // read lands took the Contacts tab away from a wallet that has had a
-        // username for months — on every cold launch, and for the whole session
-        // when the name query failed. An identity with no names loaded keeps
-        // its tabs; the rule applies once there is an answer.
-        guard identity.namesAreLoaded else { return true }
-        return !identity.usernames.isEmpty
+        // one whose names have not been read yet, and the two must not be
+        // answered the same way.
+        //
+        // Loaded: the list decides. Not loaded yet: keep a layout that is
+        // already standing — taking Contacts away from a wallet that has had a
+        // username for months, on every cold launch and for the whole session
+        // when the name query fails, is the worse answer — but do not build one
+        // on an unresolved name, or a contested request with nothing of its own
+        // would be handed DashPay for a name it may never win, with no later
+        // pass to take it back.
+        if identity.namesAreLoaded { return !identity.usernames.isEmpty }
+        return hasDashPayTabLayout
+    }
+
+    /// The five-tab DashPay layout is the one currently installed.
+    private var hasDashPayTabLayout: Bool {
+        viewControllers?.count == MainTabbarTabs.allCases.count
     }
     #endif
 

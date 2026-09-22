@@ -311,6 +311,11 @@ struct JoinDashPayMenuItem: View {
             if copy.showsRetryButton {
                 DashUIKit.DashButton(
                     text: copy.actionText,
+                    // Same gate as the row: every destination this button leads
+                    // to needs a synced chain, and the note under it already
+                    // says so. Without this the button acted while the row
+                    // beside it read "Available after sync finishes".
+                    isEnabled: !isSyncing,
                     size: .small,
                     style: .filledBlue,
                     action: { onTap(viewModel.state) }

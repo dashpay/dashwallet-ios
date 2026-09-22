@@ -300,8 +300,12 @@ final class IdentityVerifyService {
             startAfter = cursor
         }
 
+        // Not `collected`: a partial walk cannot answer "this label has no such
+        // document". Both callers read nil as "nothing published" — one shows
+        // it to a voter, the other lets `publish()` write a second document the
+        // contract then refuses — so an exhausted walk has to fail instead.
         Self.logger.error("🔗 IDENT-VERIFY :: lookup gave up after \(Self.maxLookupPages, privacy: .public) pages")
-        return collected
+        throw ServiceError.lookupFailed
     }
 
     /// Documents per page when looking a contender's link up, and the number

@@ -408,6 +408,10 @@ struct CreateUsernameView: View {
                         showVerifyOffer = false
                     },
                     onSkip: {
+                        // Skip is an answer, not a postponement: whatever was
+                        // captured for this label in an earlier pass must not
+                        // be published behind it.
+                        clearPendingVerification()
                         sheetFollowUp = .confirmRequest
                         showVerifyOffer = false
                     })
@@ -769,7 +773,21 @@ struct CreateUsernameView: View {
             return
         }
 
+        // Leaving the form ends the submission this link was captured for.
+        clearPendingVerification()
         onBack()
+    }
+
+    /// Drops the proof-of-identity link held for this screen's current label.
+    ///
+    /// The bridge keeps it only to hand it to the coordinator with the
+    /// submission; every way out of the flow that does not submit has to say
+    /// so, or the next attempt at the same name inherits a link the user
+    /// declined to publish.
+    private func clearPendingVerification() {
+        DWIdentityRegistrationBridge.shared.setPendingVerificationURL(
+            nil,
+            forLabel: viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 
     /// Naming the instant companion, on the same screen Android returns to for
@@ -1030,7 +1048,12 @@ struct CreateUsernameView: View {
     /// sheets' `onDismiss`, which is the first moment UIKit will present
     /// anything else — including the PIN host.
     private func runSheetFollowUp() {
-        guard let followUp = sheetFollowUp else { return }
+        guard let followUp = sheetFollowUp else {
+            // Dismissed with nothing queued behind it — the user swiped the
+            // offer or the verify screen away rather than answering it.
+            clearPendingVerification()
+            return
+        }
         sheetFollowUp = nil
 
         switch followUp {
