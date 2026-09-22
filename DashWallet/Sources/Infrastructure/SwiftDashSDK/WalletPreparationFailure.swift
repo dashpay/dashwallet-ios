@@ -1,15 +1,27 @@
 import Foundation
 import SQLite3
 
-/// Display and support evidence for a failed wallet open. Never retains an
-/// Error or its userInfo: Core Data errors can contain paths and stored values.
+/// Display and support evidence for a failed wallet open, or for a failed
+/// import of the previous app generation's wallet. Never retains an Error or
+/// its userInfo: Core Data errors can contain paths and stored values.
 struct WalletPreparationFailure: Equatable, Identifiable {
-    enum Kind: String { case database, storage }
+    enum Kind: String { case database, storage, legacyMigration }
+
+    /// Why the DashSync → SwiftDashSDK key migration did not deliver a wallet.
+    /// Only the migrator's terminal flag names leave this boundary.
+    enum LegacyMigrationReason: String { case failed, unknownChain, timedOut }
 
     let id: UUID
     let kind: Kind
     let occurredAt: Date
     let codes: [String]
+
+    init(legacyMigration reason: LegacyMigrationReason, now: Date = Date()) {
+        id = UUID()
+        occurredAt = now
+        kind = .legacyMigration
+        codes = ["KeyMigrator:\(reason.rawValue)"]
+    }
 
     init(error: Error, now: Date = Date()) {
         id = UUID()
@@ -34,11 +46,20 @@ struct WalletPreparationFailure: Equatable, Identifiable {
     }
 
     var title: String {
-        NSLocalizedString("Couldn't open your wallet data",
-                          comment: "Wallet preparation failure")
+        if kind == .legacyMigration {
+            return NSLocalizedString("Couldn't move your wallet",
+                                     comment: "Wallet preparation failure")
+        }
+        return NSLocalizedString("Couldn't open your wallet data",
+                                 comment: "Wallet preparation failure")
     }
 
     var message: String {
+        if kind == .legacyMigration {
+            return NSLocalizedString(
+                "The wallet from the previous version of this app is still on this device but could not be prepared. Do not delete this app. Try again or contact support for help.",
+                comment: "Wallet preparation failure")
+        }
         if kind == .storage {
             return NSLocalizedString(
                 "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Do not delete this app.",

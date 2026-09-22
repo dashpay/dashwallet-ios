@@ -249,6 +249,15 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             .contains { defaults.object(forKey: $0) != nil }
     }
 
+    /// Which terminal flag a settled-without-success run left. The launch
+    /// hold turns it into the failure card's diagnostic code; only these two
+    /// names ever leave this file.
+    static func currentDeferralReason() -> WalletPreparationFailure.LegacyMigrationReason {
+        let defaults = UserDefaults.standard
+        if defaults.object(forKey: deferredUnknownChainKey) != nil { return .unknownChain }
+        return .failed
+    }
+
     // MARK: - Explicit legacy wallet cleanup
 
     struct LegacyMnemonicEntry: Equatable {
@@ -585,4 +594,37 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     }
     #endif
 
+}
+
+// MARK: - Launch hold wiring
+
+/// Production wiring of the launch hold: the key migrator's own probes, the
+/// app-level wallet gate and the overlay presenter. Kept here, next to the
+/// probes it reads, so the coordinator's state machine stays free of
+/// keychain and SDK types.
+extension LegacyWalletMigrationLaunchCoordinator {
+    @MainActor
+    static let shared = LegacyWalletMigrationLaunchCoordinator(
+        state: .shared,
+        dependencies: Dependencies(
+            isSettled: { SwiftDashSDKKeyMigrator.migrationSettled() },
+            hasWallet: { WalletEnvironment.hasWallet },
+            legacyMaterialPending: { SwiftDashSDKKeyMigrator.legacyWalletMaterialPendingMigration() },
+            deferralReason: { SwiftDashSDKKeyMigrator.currentDeferralReason() },
+            startMigration: { SwiftDashSDKKeyMigrator.migrateIfNeeded() },
+            activateOverlay: { WalletLifecycleOverlayPresenter.shared.ensureActive() }))
+
+}
+
+/// Obj-C entry point for the root controller. `completion` runs on the main
+/// thread exactly once: `hasWallet` true means present the wallet (behind
+/// the lock screen — `PinStore` reads DashSync's PIN records in place, so the
+/// migrated wallet keeps its old PIN); false means there was nothing to
+/// migrate and setup is correct.
+@objc(DWLegacyWalletMigrationLaunchHold)
+@MainActor
+final class LegacyWalletMigrationLaunchHold: NSObject {
+    @objc static func begin(completion: @escaping (Bool) -> Void) {
+        LegacyWalletMigrationLaunchCoordinator.shared.begin(completion: completion)
+    }
 }

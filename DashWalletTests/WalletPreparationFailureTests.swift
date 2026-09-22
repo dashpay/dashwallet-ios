@@ -58,4 +58,14 @@ final class WalletPreparationFailureTests: XCTestCase {
         }
         XCTAssertEqual(WalletPreparationFailure(error: nested).codes.count, 8)
     }
+
+    func testLegacyMigrationFailureCarriesOnlyTheMigratorReason() {
+        let failure = WalletPreparationFailure(legacyMigration: .timedOut, now: Date(timeIntervalSince1970: 0))
+        XCTAssertEqual(failure.kind, .legacyMigration)
+        XCTAssertEqual(failure.codes, ["KeyMigrator:timedOut"])
+        XCTAssertNotEqual(failure.title, WalletPreparationFailure(error: NSError(domain: NSPOSIXErrorDomain, code: 1)).title)
+        let report = failure.diagnosticReport(appVersion: "1", systemVersion: "2")
+        XCTAssertTrue(report.contains("Category: legacyMigration"))
+        XCTAssertTrue(report.contains("KeyMigrator:timedOut"))
+    }
 }

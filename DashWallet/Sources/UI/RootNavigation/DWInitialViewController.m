@@ -205,6 +205,9 @@ NS_ASSUME_NONNULL_BEGIN
     // the carousel — its Keep/Delete prompt is wired to the carousel's
     // completion.
     if ([DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration]) {
+        // Skipped for good, not merely for this launch: otherwise the
+        // carousel would play on the next launch, over the migrated wallet.
+        [DWGlobalOptions sharedInstance].shouldDisplayOnboarding = NO;
         return NO;
     }
     return [DWGlobalOptions sharedInstance].shouldDisplayOnboarding;

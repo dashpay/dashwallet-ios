@@ -29,6 +29,16 @@ final class WalletLifecycleTransitionState: ObservableObject {
         case idle
         case openingWallet
         case failedWalletOpen(WalletPreparationFailure)
+        /// Launch hold while the DashSync → SwiftDashSDK key migrator imports
+        /// an upgrading user's wallet. Owned by
+        /// `LegacyWalletMigrationLaunchCoordinator`; the runtime may take the
+        /// window over with `.openingWallet` once the wallet has landed.
+        case migratingLegacyWallet
+        /// The migrator settled without delivering a wallet while DashSync
+        /// material is still in the keychain, or it did not settle in time.
+        /// Blocking: the card offers Try Again, Export Logs and Help, never
+        /// wallet creation — the user's wallet is still on the device.
+        case failedLegacyMigration(WalletPreparationFailure)
         case switchingNetwork(from: WalletEnvironment.NetworkKind, to: WalletEnvironment.NetworkKind)
         /// The network switch failed after the old runtime was already torn
         /// down — the app may have no working manager, so the overlay stays
@@ -69,6 +79,8 @@ final class WalletLifecycleTransitionState: ObservableObject {
             case .idle: return "idle"
             case .openingWallet: return "openingWallet"
             case .failedWalletOpen: return "failedWalletOpen"
+            case .migratingLegacyWallet: return "migratingLegacyWallet"
+            case .failedLegacyMigration: return "failedLegacyMigration"
             case .switchingNetwork(_, let to): return "switchingNetwork(\(to))"
             case .failedNetworkSwitch(_, let target, _): return "failedNetworkSwitch(\(target))"
             case .switchingWallet: return "switchingWallet"
@@ -103,15 +115,23 @@ final class WalletLifecycleTransitionState: ObservableObject {
     /// operation may begin from `.idle`; a network switch may also begin from
     /// `.failedNetworkSwitch` (the failure card's Retry / Switch Back); a
     /// wallet switch may also begin from `.failedWalletSwitch` (Retry /
-    /// Switch Back); an independently authorized wipe may begin from any
-    /// failure phase. Admission does not imply a reset button on a failure
-    /// card: a database-open failure offers Retry and Help, preserving data.
+    /// Switch Back); the legacy-migration hold may be retried from its
+    /// failure card, and the runtime's wallet open may take the window over
+    /// from either legacy-migration phase once the imported wallet exists;
+    /// an independently authorized wipe may begin from any failure phase.
+    /// Admission does not imply a reset button on a failure card: a
+    /// database-open failure offers Retry and Help, preserving data.
     /// Every other combination is rejected and the caller surfaces or logs it.
     func tryBegin(_ next: Phase) -> Bool {
         switch (phase, next) {
         case (.idle, .openingWallet),
              (.failedWalletOpen, .openingWallet),
              (.failedWalletOpen, .wiping),
+             (.idle, .migratingLegacyWallet),
+             (.failedLegacyMigration, .migratingLegacyWallet),
+             (.migratingLegacyWallet, .openingWallet),
+             (.failedLegacyMigration, .openingWallet),
+             (.failedLegacyMigration, .wiping),
              (.idle, .switchingNetwork),
              (.idle, .switchingWallet),
              (.idle, .removingWallet),
@@ -163,6 +183,18 @@ final class WalletLifecycleTransitionState: ObservableObject {
         phase = failure
     }
 
+    /// The legacy-migration hold ended without a wallet. Keeps the window up
+    /// and records the diagnostic the card's Export Logs / Help read. Only
+    /// the hold's owner calls this, and only from its own phase.
+    func failLegacyMigration(_ failure: WalletPreparationFailure) {
+        guard phase == .migratingLegacyWallet else {
+            DWLogger.log("🚦 LIFECYCLE failLegacyMigration rejected: phase=\(phase.logLabel)")
+            return
+        }
+        phase = .failedLegacyMigration(failure)
+        preparationFailure = failure
+    }
+
     /// Uses the existing switch overlay when an interactive operation owns
     /// it. Otherwise owns a startup overlay until local wallet data is ready.
     /// Opening failures never reset data, and never dismiss a switch's card.
@@ -191,5 +223,145 @@ final class WalletLifecycleTransitionState: ObservableObject {
             }
             throw error
         }
+    }
+}
+
+/// Launch-time owner of the `.migratingLegacyWallet` / `.failedLegacyMigration`
+/// phases. The root controller cannot pick an initial screen while the
+/// DashSync → SwiftDashSDK key migrator is still importing an upgrading
+/// user's wallet: deciding "no wallet" then would offer Create/Recover to
+/// someone whose wallet is milliseconds from landing — and if the import
+/// fails, offering Create/Recover at all is wrong, because the wallet is
+/// still in the keychain. This coordinator holds the launch, shows progress
+/// after the overlay's usual delay, turns a failed or overdue import into a
+/// blocking card with Try Again, and reports back exactly once: `true` when
+/// a wallet is present (present it), `false` when there is nothing to
+/// migrate (setup). It never reports while legacy material remains
+/// unmigrated; the card's Try Again re-runs the migrator and the hold
+/// continues. A late success is noticed even without Try Again.
+///
+/// Dependencies are injected so the state machine is testable without the
+/// keychain or the SDK; production wiring lives beside the migrator.
+@MainActor
+final class LegacyWalletMigrationLaunchCoordinator: NSObject {
+    struct Dependencies {
+        /// The migrator reached a terminal state for this launch.
+        var isSettled: () -> Bool
+        /// An SDK wallet this build can select is persisted.
+        var hasWallet: () -> Bool
+        /// DashSync material is still in the keychain and not marked migrated.
+        var legacyMaterialPending: () -> Bool
+        /// Which terminal flag the migrator left, for the diagnostic code.
+        var deferralReason: () -> WalletPreparationFailure.LegacyMigrationReason
+        /// Re-run the migrator (the card's Try Again).
+        var startMigration: () -> Void
+        /// Subscribe the overlay window presenter before the first phase.
+        var activateOverlay: () -> Void
+        var pollInterval: TimeInterval = 0.1
+        /// Progress is visible, so this only bounds a wedged migrator: past
+        /// it the card offers Try Again instead of spinning forever.
+        var settleTimeout: TimeInterval = 60
+        /// After a failure the hold keeps watching for a late success.
+        var lateSuccessInterval: TimeInterval = 0.5
+    }
+
+    private let state: WalletLifecycleTransitionState
+    private let dependencies: Dependencies
+    private var completion: ((Bool) -> Void)?
+    private var watcher: Task<Void, Never>?
+
+    init(state: WalletLifecycleTransitionState, dependencies: Dependencies) {
+        self.state = state
+        self.dependencies = dependencies
+    }
+
+    /// Begin the hold. `completion` fires once, on the main actor. A second
+    /// call while a hold is active is ignored.
+    func begin(completion: @escaping (Bool) -> Void) {
+        guard self.completion == nil else { return }
+        self.completion = completion
+        dependencies.activateOverlay()
+        if !state.tryBegin(.migratingLegacyWallet) {
+            DWLogger.log("🚦 LIFECYCLE legacy-migration hold could not take the window: phase=\(state.phase.logLabel)")
+        }
+        waitForSettlement()
+    }
+
+    /// The failure card's Try Again: back to progress, re-run the migrator,
+    /// wait again. Ignored unless the card is showing.
+    func retry() {
+        guard case .failedLegacyMigration = state.phase, state.tryBegin(.migratingLegacyWallet) else { return }
+        dependencies.startMigration()
+        waitForSettlement()
+    }
+
+    private func waitForSettlement() {
+        watcher?.cancel()
+        let started = Date()
+        watcher = Task { [weak self] in
+            while !Task.isCancelled {
+                guard let self else { return }
+                if self.dependencies.isSettled() {
+                    self.evaluate(timedOut: false)
+                    return
+                }
+                if Date().timeIntervalSince(started) >= self.dependencies.settleTimeout {
+                    self.evaluate(timedOut: true)
+                    return
+                }
+                try? await Task.sleep(nanoseconds: UInt64(self.dependencies.pollInterval * 1_000_000_000))
+            }
+        }
+    }
+
+    private func evaluate(timedOut: Bool) {
+        if dependencies.hasWallet() {
+            deliver(hasWallet: true)
+            return
+        }
+        guard dependencies.legacyMaterialPending() else {
+            deliver(hasWallet: false)
+            return
+        }
+        let reason: WalletPreparationFailure.LegacyMigrationReason =
+            timedOut ? .timedOut : dependencies.deferralReason()
+        state.failLegacyMigration(WalletPreparationFailure(legacyMigration: reason))
+        DWLogger.log("🚦 LIFECYCLE legacy migration did not deliver a wallet (\(reason.rawValue)); holding on the failure card")
+        watchForLateSuccess()
+    }
+
+    /// A migrator run that outlives the timeout, or a retry the user did not
+    /// trigger from this card, can still land the wallet: keep watching so
+    /// the launch completes instead of leaving the card (or a runtime-owned
+    /// window) over an empty root.
+    private func watchForLateSuccess() {
+        watcher?.cancel()
+        watcher = Task { [weak self] in
+            while !Task.isCancelled {
+                guard let self else { return }
+                if self.dependencies.hasWallet() {
+                    self.deliver(hasWallet: true)
+                    return
+                }
+                try? await Task.sleep(nanoseconds: UInt64(self.dependencies.lateSuccessInterval * 1_000_000_000))
+            }
+        }
+    }
+
+    private func deliver(hasWallet: Bool) {
+        watcher?.cancel()
+        watcher = nil
+        // Release only the phases this hold owns. The runtime may already
+        // have taken the window over (`.openingWallet`) for the imported
+        // wallet; that operation clears its own phase.
+        switch state.phase {
+        case .migratingLegacyWallet, .failedLegacyMigration:
+            state.finish()
+        default:
+            break
+        }
+        let completion = self.completion
+        self.completion = nil
+        completion?(hasWallet)
     }
 }

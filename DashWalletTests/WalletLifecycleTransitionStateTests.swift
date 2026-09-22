@@ -27,6 +27,7 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
     // Representative value per phase; payloads do not affect admission.
     private static let begins: [(label: String, phase: Phase)] = [
         ("openingWallet", .openingWallet),
+        ("migratingLegacyWallet", .migratingLegacyWallet),
         ("switchingNetwork", .switchingNetwork(from: .mainnet, to: .testnet)),
         ("switchingWallet", .switchingWallet(targetName: "A")),
         ("removingWallet", .removingWallet),
@@ -36,9 +37,18 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
 
     private static let failures: [(label: String, phase: Phase)] = [
         ("failedWalletOpen", .failedWalletOpen(WalletPreparationFailure(error: NSError(domain: NSCocoaErrorDomain, code: 134100)))),
+        ("failedLegacyMigration", .failedLegacyMigration(WalletPreparationFailure(legacyMigration: .failed))),
         ("failedNetworkSwitch", .failedNetworkSwitch(from: .mainnet, target: .testnet, message: nil)),
         ("failedWalletSwitch", .failedWalletSwitch(targetId: Data([1]), targetName: nil, previousId: nil, message: nil)),
         ("failedWalletRemoval", .failedWalletRemoval(message: nil)),
+    ]
+
+    /// Busy → begin pairs admitted besides the plain from-idle rule: the add
+    /// flow's composite continuation, and the runtime taking the launch
+    /// window over from the legacy-migration hold once the wallet landed.
+    private static let busyContinuations: Set<String> = [
+        "addingWallet→switchingWallet",
+        "migratingLegacyWallet→openingWallet",
     ]
 
     /// Drive a fresh instance into `phase` using only the production API.
@@ -47,9 +57,11 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         switch phase {
         case .idle:
             break
-        case .openingWallet, .switchingNetwork, .switchingWallet, .removingWallet, .addingWallet, .wiping:
+        case .openingWallet, .migratingLegacyWallet, .switchingNetwork, .switchingWallet, .removingWallet,
+             .addingWallet, .wiping:
             XCTAssertTrue(state.tryBegin(phase), "test setup: begin from idle must admit")
-        case .failedWalletOpen, .failedNetworkSwitch, .failedWalletSwitch, .failedWalletRemoval:
+        case .failedWalletOpen, .failedLegacyMigration, .failedNetworkSwitch, .failedWalletSwitch,
+             .failedWalletRemoval:
             state.fail(phase)
         }
         return state
@@ -66,12 +78,13 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
     }
 
     /// No begin is admitted while any operation is busy — except the add
-    /// flow's own composite continuation into its post-add switch.
+    /// flow's own composite continuation into its post-add switch, and the
+    /// runtime's takeover of the legacy-migration hold.
     func testBusyPhasesRejectEveryBegin() {
         for (busyLabel, busy) in Self.begins {
             for (nextLabel, next) in Self.begins {
                 let state = makeState(in: busy)
-                let expected = busyLabel == "addingWallet" && nextLabel == "switchingWallet"
+                let expected = Self.busyContinuations.contains("\(busyLabel)→\(nextLabel)")
                 XCTAssertEqual(
                     state.tryBegin(next), expected,
                     "\(busyLabel) → \(nextLabel): expected admitted=\(expected)")
@@ -87,18 +100,21 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         XCTAssertEqual(state.phase, .switchingWallet(targetName: "A"))
     }
 
-    /// Failure phases admit exactly their own retry — and a wipe.
+    /// Failure phases admit exactly their own retry — and a wipe. The
+    /// legacy-migration card additionally admits the runtime's wallet open,
+    /// because a late import can land while the card is showing.
     func testFailurePhaseAdmissions() {
-        let retryOf: [String: String] = [
-            "failedWalletOpen": "openingWallet",
-            "failedNetworkSwitch": "switchingNetwork",
-            "failedWalletSwitch": "switchingWallet",
-            "failedWalletRemoval": "",  // dismiss-only; no retry begin
+        let retryOf: [String: [String]] = [
+            "failedWalletOpen": ["openingWallet"],
+            "failedLegacyMigration": ["migratingLegacyWallet", "openingWallet"],
+            "failedNetworkSwitch": ["switchingNetwork"],
+            "failedWalletSwitch": ["switchingWallet"],
+            "failedWalletRemoval": [],  // dismiss-only; no retry begin
         ]
         for (failureLabel, failure) in Self.failures {
             for (nextLabel, next) in Self.begins {
                 let state = makeState(in: failure)
-                let expected = nextLabel == retryOf[failureLabel] || nextLabel == "wiping"
+                let expected = retryOf[failureLabel, default: []].contains(nextLabel) || nextLabel == "wiping"
                 XCTAssertEqual(
                     state.tryBegin(next), expected,
                     "\(failureLabel) → \(nextLabel): expected admitted=\(expected)")
@@ -219,5 +235,159 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         } catch {}
         XCTAssertEqual(state.phase, .idle)
         XCTAssertNil(state.preparationFailure)
+    }
+
+    // MARK: - Legacy-migration launch hold
+
+    /// The failure record is taken only from the hold's own phase, and
+    /// `finish()` clears it with the phase.
+    func testFailLegacyMigrationRecordsDiagnosticOnlyFromItsOwnPhase() {
+        let failure = WalletPreparationFailure(legacyMigration: .unknownChain)
+        let idle = WalletLifecycleTransitionState()
+        idle.failLegacyMigration(failure)
+        XCTAssertEqual(idle.phase, .idle)
+        XCTAssertNil(idle.preparationFailure)
+
+        let state = makeState(in: .migratingLegacyWallet)
+        state.failLegacyMigration(failure)
+        XCTAssertEqual(state.phase, .failedLegacyMigration(failure))
+        XCTAssertEqual(state.preparationFailure, failure)
+        XCTAssertEqual(failure.codes, ["KeyMigrator:unknownChain"])
+        XCTAssertTrue(state.tryBegin(.migratingLegacyWallet))
+        XCTAssertNil(state.preparationFailure)
+        state.finish()
+        XCTAssertEqual(state.phase, .idle)
+    }
+
+    /// Scriptable stand-in for the migrator, wallet gate and presenter.
+    @MainActor
+    private final class HoldProbe {
+        var settled = false
+        var hasWallet = false
+        var legacyPending = true
+        var reason: WalletPreparationFailure.LegacyMigrationReason = .failed
+        var migrationStarts = 0
+        var overlayActivations = 0
+        var outcomes: [Bool] = []
+
+        func makeCoordinator(state: WalletLifecycleTransitionState,
+                             settleTimeout: TimeInterval = 5) -> LegacyWalletMigrationLaunchCoordinator {
+            LegacyWalletMigrationLaunchCoordinator(state: state, dependencies: .init(
+                isSettled: { self.settled },
+                hasWallet: { self.hasWallet },
+                legacyMaterialPending: { self.legacyPending },
+                deferralReason: { self.reason },
+                startMigration: { self.migrationStarts += 1 },
+                activateOverlay: { self.overlayActivations += 1 },
+                pollInterval: 0.005,
+                settleTimeout: settleTimeout,
+                lateSuccessInterval: 0.005))
+        }
+    }
+
+    private func settle(_ condition: @autoclosure @escaping @MainActor () -> Bool, within seconds: TimeInterval = 2) async {
+        let deadline = Date().addingTimeInterval(seconds)
+        while !condition(), Date() < deadline {
+            try? await Task.sleep(nanoseconds: 2_000_000)
+        }
+    }
+
+    func testHoldPresentsWalletOnceTheMigratorDeliversIt() async {
+        let state = WalletLifecycleTransitionState()
+        let probe = HoldProbe()
+        let coordinator = probe.makeCoordinator(state: state)
+        coordinator.begin { probe.outcomes.append($0) }
+        XCTAssertEqual(state.phase, .migratingLegacyWallet)
+        XCTAssertEqual(probe.overlayActivations, 1)
+        coordinator.begin { probe.outcomes.append($0) }  // ignored: a hold is active
+        await Task.yield()
+        XCTAssertEqual(probe.outcomes, [])
+
+        probe.hasWallet = true
+        probe.legacyPending = false
+        probe.settled = true
+        await settle(probe.outcomes == [true])
+        XCTAssertEqual(probe.outcomes, [true])
+        XCTAssertEqual(state.phase, .idle)
+        XCTAssertEqual(probe.migrationStarts, 0)
+    }
+
+    func testNothingToMigrateReportsSetupWithoutACard() async {
+        let state = WalletLifecycleTransitionState()
+        let probe = HoldProbe()
+        probe.legacyPending = false
+        let coordinator = probe.makeCoordinator(state: state)
+        coordinator.begin { probe.outcomes.append($0) }
+        probe.settled = true
+        await settle(probe.outcomes == [false])
+        XCTAssertEqual(probe.outcomes, [false])
+        XCTAssertEqual(state.phase, .idle)
+        XCTAssertNil(state.preparationFailure)
+    }
+
+    /// A settled failure with legacy material still present never reports:
+    /// the card blocks, Try Again re-runs the migrator, and only a wallet
+    /// releases the launch.
+    func testFailedImportHoldsOnTheCardUntilARetryLandsTheWallet() async {
+        let state = WalletLifecycleTransitionState()
+        let probe = HoldProbe()
+        probe.reason = .unknownChain
+        let coordinator = probe.makeCoordinator(state: state)
+        coordinator.begin { probe.outcomes.append($0) }
+        probe.settled = true
+        await settle({ if case .failedLegacyMigration = state.phase { return true } else { return false } }())
+        guard case let .failedLegacyMigration(failure) = state.phase else { return XCTFail("expected the failure card") }
+        XCTAssertEqual(failure.codes, ["KeyMigrator:unknownChain"])
+        XCTAssertEqual(state.preparationFailure, failure)
+        XCTAssertEqual(probe.outcomes, [])
+        XCTAssertFalse(state.tryBegin(.switchingWallet(targetName: "A")), "the card blocks other operations")
+
+        probe.settled = false
+        coordinator.retry()
+        XCTAssertEqual(probe.migrationStarts, 1)
+        XCTAssertEqual(state.phase, .migratingLegacyWallet)
+        XCTAssertNil(state.preparationFailure)
+        coordinator.retry()  // ignored while progress is showing
+        XCTAssertEqual(probe.migrationStarts, 1)
+
+        probe.hasWallet = true
+        probe.legacyPending = false
+        probe.settled = true
+        await settle(probe.outcomes == [true])
+        XCTAssertEqual(probe.outcomes, [true])
+        XCTAssertEqual(state.phase, .idle)
+    }
+
+    /// Past the timeout the card shows with its own code, but a run that
+    /// finishes afterwards still completes the launch without Try Again.
+    func testOverdueMigratorShowsTheCardAndALateSuccessStillCompletesTheLaunch() async {
+        let state = WalletLifecycleTransitionState()
+        let probe = HoldProbe()
+        let coordinator = probe.makeCoordinator(state: state, settleTimeout: 0.02)
+        coordinator.begin { probe.outcomes.append($0) }
+        await settle({ if case .failedLegacyMigration = state.phase { return true } else { return false } }())
+        guard case let .failedLegacyMigration(failure) = state.phase else { return XCTFail("expected the failure card") }
+        XCTAssertEqual(failure.codes, ["KeyMigrator:timedOut"])
+
+        probe.hasWallet = true
+        await settle(probe.outcomes == [true])
+        XCTAssertEqual(probe.outcomes, [true])
+        XCTAssertEqual(state.phase, .idle)
+        XCTAssertEqual(probe.migrationStarts, 0)
+    }
+
+    /// When the runtime has already taken the window over for the imported
+    /// wallet, the hold reports without clearing the runtime's phase.
+    func testHoldDoesNotClearAWindowTheRuntimeTookOver() async {
+        let state = WalletLifecycleTransitionState()
+        let probe = HoldProbe()
+        let coordinator = probe.makeCoordinator(state: state)
+        coordinator.begin { probe.outcomes.append($0) }
+        XCTAssertTrue(state.tryBegin(.openingWallet), "runtime takeover from the hold")
+        probe.hasWallet = true
+        probe.settled = true
+        await settle(probe.outcomes == [true])
+        XCTAssertEqual(probe.outcomes, [true])
+        XCTAssertEqual(state.phase, .openingWallet)
     }
 }
