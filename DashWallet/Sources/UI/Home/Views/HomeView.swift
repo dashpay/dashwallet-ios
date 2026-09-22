@@ -53,7 +53,7 @@ protocol HomeViewDelegate: AnyObject {
     /// Opens "Request details" for the contested name currently being voted
     /// on — where the row's tap and its info button both lead, matching
     /// Android's `VotingRequestDetailsFragment`.
-    func homeViewShowUsernameRequestStatus()
+    func homeViewShowUsernameRequestStatus(username: String?)
     func homeViewEditProfile()
     /// Opens the notifications list (header nav-bar bell).
     func homeViewShowNotifications()
@@ -387,7 +387,8 @@ struct HomeViewContent<Content: View>: View {
                                     // The vote has its own screen — the join
                                     // sheet is a call to action for someone
                                     // who has not requested a name yet.
-                                    delegate?.homeViewShowUsernameRequestStatus()
+                                    delegate?.homeViewShowUsernameRequestStatus(
+                                        username: joinDPViewModel.username)
                                 case .none, .callToAction, .failed, .blocked, .contested, .registered:
                                     // TODO: ? MOCK_DASHPAY if failed, maybe need to call model?.dashPayModel.retry()
                                     // Always open the info dialog. It carries the
@@ -406,7 +407,10 @@ struct HomeViewContent<Content: View>: View {
                             // Same destination as the row's own tap: the
                             // details screen carries the explainer behind its
                             // own info control, as on Android.
-                            onShowVotingInfo: { delegate?.homeViewShowUsernameRequestStatus() },
+                            onShowVotingInfo: {
+                                delegate?.homeViewShowUsernameRequestStatus(
+                                    username: joinDPViewModel.username)
+                            },
                             isSyncing: viewModel.isSyncing
                         )
                         .padding(.horizontal, 20)

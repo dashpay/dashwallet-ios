@@ -330,6 +330,12 @@ struct CreateUsernameView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
             isTextInputFocused = true
+            // Restores an interrupted registration's draft and clears the
+            // per-visit availability cache. Its only other caller waits on
+            // `isIdentityLoading`, which is already false for a loaded
+            // identity — so without this the recovery form opened empty and a
+            // DPNS verdict from an earlier visit was reused unchecked.
+            viewModel.refreshRegistrationRecoveryState()
             if let invitationURI {
                 viewModel.configureInvitationMode(uri: invitationURI)
             }

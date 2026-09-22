@@ -132,7 +132,6 @@ class MainTabbarController: UITabBarController {
     /// Nil until an identity exists — the Contacts tab is only built then, and
     /// its position moves with the rest of the DashPay layout.
     private var contactsTabIndex: Int?
-    /// Index of the More tab. Held rather than hardcoded because the tab list
     #endif
     weak var menuNavigationController: MainMenuViewController?
     /// Position of the More tab. Always built, but the DashPay layout inserts

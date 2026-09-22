@@ -65,7 +65,11 @@ final class UsernameRequestStatusViewModel: ObservableObject {
     /// then the conservative submission-time estimate. `nil` when neither is
     /// known — rendered as "Not available yet" rather than a guess.
     var votingEndTime: Date? {
-        DWContestedNameStatusService.shared.pendingVotingEndTime
+        // This screen's own label, not `pendingVotingEndTime` — that one
+        // answers for the OLDEST bookmark, so a second request opened while an
+        // earlier one was still running showed the earlier one's date.
+        guard let network = WalletEnvironment.network else { return nil }
+        return DWContestedNameStatusService.shared.pendingVotingEndTime(label: label, for: network)
     }
 
     /// Whether this network can carry a verification link at all

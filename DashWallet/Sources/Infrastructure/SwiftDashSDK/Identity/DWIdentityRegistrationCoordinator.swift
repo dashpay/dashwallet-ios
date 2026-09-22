@@ -468,6 +468,12 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
 
     // MARK: - Public API
 
+    /// Proof-of-identity link for the submission in flight, handed over by
+    /// `startCreateUsername` and consumed once the identity exists. Held here
+    /// rather than threaded through `finishUsernameRegistration` →
+    /// `registerNames`, neither of which has a reason to know about it.
+    private var pendingVerificationURL: URL?
+
     /// Run the full new-user create-username flow:
     /// PIN gate → pre-derive keys → IdentityCreate → DPNS register.
     /// On success, mirrors the username into `DWGlobalOptions` and
@@ -496,12 +502,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// as the active username (the deferred contested label then never
     /// displaces it — `finalizeWon` only backfills an empty mirror, so
     /// a vote win adds the second name instead of replacing the first).
-    /// Proof-of-identity link for the submission in flight, handed over by
-    /// `startCreateUsername` and consumed once the identity exists. Held here
-    /// rather than threaded through `finishUsernameRegistration` →
-    /// `registerNames`, neither of which has a reason to know about it.
-    private var pendingVerificationURL: URL?
-
     @discardableResult
     func startCreateUsername(
         _ username: String,

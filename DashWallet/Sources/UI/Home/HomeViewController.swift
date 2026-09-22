@@ -635,14 +635,14 @@ extension HomeViewController: HomeViewDelegate {
     /// Where the DashPay row goes while a contested name is being voted on —
     /// the same screen the More row pushes (`MainMenuScreen`), so both
     /// surfaces report the vote in one place.
-    func homeViewShowUsernameRequestStatus() {
-        // The row reaches `.voting` from the bookmark OR from the identity's own
-        // pending contested name (same-seed recovery, or a bookmark scoped to a
-        // wallet/network the snapshot has since moved past). Navigating on the
-        // bookmark alone made the row's tap — and its ⓘ — dead controls on
-        // exactly those wallets, so the fallback used to display it is the
-        // fallback used to open it.
-        guard let label = DWContestedNameStatusService.shared.pendingLabel
+    func homeViewShowUsernameRequestStatus(username: String?) {
+        // The label the row is showing wins. It reaches `.voting` from the
+        // bookmark OR from the identity's pending contested name, and the
+        // bookmark itself returns nothing while `identityId` is unresolved —
+        // so navigating on the bookmark alone left the row's tap and its ⓘ
+        // dead on exactly the wallets that can display it.
+        guard let label = (username?.isEmpty == false ? username : nil)
+            ?? DWContestedNameStatusService.shared.pendingLabel
             ?? DWCurrentUserIdentityInfo.shared.refreshedSnapshot().pendingContestedName
         else { return }
 

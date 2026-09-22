@@ -26,8 +26,7 @@ public struct JoinDashPayInfoDialog: View {
     var onClaimInvitation: (() -> Void)? = nil
     /// Non-nil lets the privacy page offer "Shield your funds first"; the
     /// dialog dismisses before forwarding, same as the invitation entry.
-    /// TODO(shield-entry): no presenter routes this yet, so the button is
-    /// disabled until one does.
+    /// Routed from both presenters — Home and the More menu.
     var onShieldFunds: (() -> Void)? = nil
     #if DEBUG
     /// Preview-only: a posed view model handed to the embedded screen so the

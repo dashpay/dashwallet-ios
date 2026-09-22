@@ -454,6 +454,16 @@ private struct ContenderDetailScreen: View {
                 }
                 .foregroundStyle(Color.dash.blue)
             }
+        case .published(let url) where !Self.isOpenableInBrowser(url):
+            // Written by another contender, through any client or straight
+            // against the contract, so the read path cannot assume what the
+            // write path enforces. A `someapp://…` value handed to the system
+            // opener is an attacker's choice of action, taken by a masternode
+            // owner who only meant to read; show it, do not offer it.
+            Text(url.absoluteString)
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .foregroundColor(Color.dash.secondaryText)
         case .published(let url):
             Link(destination: url) {
                 HStack(spacing: 6) {
@@ -465,6 +475,13 @@ private struct ContenderDetailScreen: View {
                 .foregroundStyle(Color.dash.blue)
             }
         }
+    }
+
+    /// Whether this is a link a browser will take: `http` or `https` and
+    /// nothing else, matching what the publish path accepts.
+    private static func isOpenableInBrowser(_ url: URL) -> Bool {
+        guard let scheme = url.scheme?.lowercased() else { return false }
+        return scheme == "http" || scheme == "https"
     }
 
     private func detailRow<Value: View>(

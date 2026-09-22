@@ -409,13 +409,12 @@ struct MainMenuScreen: View {
     /// `JoinDashPayViewModel` derives from
     /// `DWContestedNameStatusService.pendingLabel`.
     private func showUsernameRequestStatus() {
-        // The row reaches `.voting` from the bookmark OR from the identity's own
-        // pending contested name (same-seed recovery, or a bookmark scoped to a
-        // wallet/network the snapshot has since moved past). Navigating on the
-        // bookmark alone made the row's tap — and its ⓘ — dead controls on
-        // exactly those wallets, so the fallback used to display it is the
-        // fallback used to open it.
-        guard let label = DWContestedNameStatusService.shared.pendingLabel
+        // The label the row is showing wins — see the twin in
+        // `HomeViewController`. The bookmark returns nothing while `identityId`
+        // is unresolved, which left this a dead control on wallets that could
+        // display the row perfectly well.
+        guard let label = (joinDPViewModel.username.isEmpty ? nil : joinDPViewModel.username)
+            ?? DWContestedNameStatusService.shared.pendingLabel
             ?? DWCurrentUserIdentityInfo.shared.refreshedSnapshot().pendingContestedName
         else { return }
         let screen = UsernameRequestStatusScreen(
@@ -577,25 +576,15 @@ struct MainMenuScreen: View {
 
     private func joinDashPay() {
         guard let dashPayModel = viewModel.dashPayModel else { return }
-        if DWIdentityRegistrationCoordinator.shared.registrationRecovery().isPending {
-            pushCreateUsernameForm(dashPayModel: dashPayModel)
-            return
-        }
 
-        // A registration waiting to be recovered goes straight to the form,
-        // whatever brought the user here. Same rule as Home's
-        // `showCreateUsername`: the failed attempt already spent the
-        // registration amount, so the readiness interstitial would refuse to
-        // let it through on a balance the recovery does not need. The recovery
-        // IS the funding.
-        if DWIdentityRegistrationCoordinator.shared.registrationRecovery().isPending {
-            pushCreateUsernameForm(dashPayModel: dashPayModel)
-            return
-        }
-
-        // Straight to the form: the shielded question now lives on the Join
-        // DashPay sheet's privacy page, and the get-ready interstitial that
-        // used to stand here is gone.
+        // One destination for every case. A registration waiting to be
+        // recovered used to need its own branch, to skip a readiness
+        // interstitial that would have refused it on a balance the recovery
+        // does not need — the failed attempt already spent the registration
+        // amount. That interstitial is gone: the shielded question lives on the
+        // Join DashPay sheet's privacy page now, so recovery and first-time
+        // entry take the same route, and keeping three copies of it only meant
+        // a future change would land in one of them.
         pushCreateUsernameForm(dashPayModel: dashPayModel)
     }
 

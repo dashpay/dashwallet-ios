@@ -339,13 +339,13 @@ final class VotingViewModel: ObservableObject {
         votedProTxHashesByContest[normalizedLabel] = Set(records.map(\.proTxHash))
         castCountsByContest[normalizedLabel] = records.count
 
-        // A node appears once per cast, so the newest record is its live
-        // choice; the count is what the protocol's five-per-node ceiling is
-        // measured against.
+        // One row per node per contest — a change overwrites the row it came
+        // from — so the ceiling is read from the row's own `castCount`, not
+        // from how many rows a node has. Counting rows could never reach five.
         var latest: [Data: CastVoteRecord] = [:]
         var casts: [Data: Int] = [:]
         for record in records {
-            casts[record.proTxHash, default: 0] += 1
+            casts[record.proTxHash] = max(casts[record.proTxHash] ?? 0, record.castCount)
             if let seen = latest[record.proTxHash], seen.castAt >= record.castAt { continue }
             latest[record.proTxHash] = record
         }
