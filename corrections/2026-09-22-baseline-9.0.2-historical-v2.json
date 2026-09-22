@@ -1,0 +1,23 @@
+{
+  "format_version": 1,
+  "reason": "The original initialization assigned V1 without proving its model. Historical V2 reconstructed from pre-August-28 sources matches all 35 hashes, model checksum and SQLite indexes of the observed App Store 9.0.2 store. The reconstruction source is not asserted to be the exact released binary commit.",
+  "expected_previous_baseline_sha256": "295aa74e1b73e51065340cc16a8f21aaa54d909a7edf386974585d16ee529b3d",
+  "corrected_baseline_sha256": "9d6928ab920e930a28985e6009e3b377529ae18e350967e3fd36a80a262b7291",
+  "source_sha": "52e8d4ec68f0c772313fa1bbef223fb1eabbf1cc",
+  "unchanged_publication_cutoff": "9.0.2",
+  "unchanged_release_id": "679060c3-2e64-49d6-b28e-baa307c817be",
+  "changes": {
+    "schema_version": {
+      "before": "1.0.0",
+      "after": "2.0.0"
+    },
+    "model_checksum": {
+      "before": null,
+      "after": "RrRj/iNbS9izgLQvNb2APed4iwaR7pftEE2+4tea7K8="
+    },
+    "schema_provenance": {
+      "before": null,
+      "after": "reconstructed-model-match"
+    }
+  }
+}
