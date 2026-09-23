@@ -528,9 +528,11 @@ final class InternalTransferViewModel: ObservableObject {
     @Published private(set) var identityId: Data?
 
     /// The identity's own credit balance for the destination card (credits,
-    /// 1000 per duff) — the persisted row's value, same read the profile
-    /// sheet renders.
+    /// 1000 per duff). The cached value is reconciled through the shared
+    /// network refresh before it can be used for an identity withdrawal.
     @Published private(set) var identityBalanceCredits: UInt64 = 0
+    @Published private(set) var isIdentityBalanceRefreshing = false
+    private var identityBalanceRefreshTask: Task<Void, Never>?
 
     /// Ceiling (duffs) for an identity top-up funded from the Platform
     /// balance, per the executor's own planner
@@ -964,21 +966,58 @@ final class InternalTransferViewModel: ObservableObject {
 
     }
 
-    /// Loads the identity the Identity destination would top up, plus its
-    /// displayed credit balance. A missing identity is left `nil` — the
-    /// amount validation names that state.
+    /// Show the cached identity immediately, then reconcile it before Max or
+    /// Continue can spend its balance. The shared refresh owns SDK persistence
+    /// and best-effort error handling, just as it does for My Profile.
     private func refreshIdentitySnapshot() {
         #if DEBUG
         if isPreviewInstance { return }
         #endif
-        identityId = DWCurrentUserIdentityInfo.shared.identityId
-        if let identityId, let container = SwiftDashSDKHost.shared.modelContainer {
-            identityBalanceCredits = UsernameMarketplaceService.identityBalanceCredits(
-                identityId: identityId,
-                container: container)
-        } else {
-            identityBalanceCredits = 0
+        let cached = Self.currentIdentitySnapshot()
+        identityId = cached.identityId
+        identityBalanceCredits = cached.balanceCredits
+        let wallet = SwiftDashSDKHost.shared.wallet
+        let network = WalletEnvironment.network
+        refreshIdentityBalanceSnapshot(
+            refresh: { await DWCurrentUserIdentityInfo.shared.refreshCurrentBalanceFromNetwork() },
+            snapshot: {
+                guard SwiftDashSDKHost.shared.wallet === wallet,
+                      WalletEnvironment.network == network,
+                      DWCurrentUserIdentityInfo.shared.identityId == cached.identityId
+                else { return nil }
+                return Self.currentIdentitySnapshot()
+            })
+    }
+
+    private static func currentIdentitySnapshot() -> (identityId: Data?, balanceCredits: UInt64) {
+        let snapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        return (snapshot.identityId, snapshot.balanceCredits ?? 0)
+    }
+
+    /// Dependency seam for the asynchronous refresh and its persisted snapshot.
+    /// A superseded request cannot publish or clear the newer request's gate.
+    @discardableResult
+    func refreshIdentityBalanceSnapshot(
+        refresh: @escaping () async -> Void,
+        snapshot: @escaping () -> (identityId: Data?, balanceCredits: UInt64)?
+    ) -> Task<Void, Never> {
+        identityBalanceRefreshTask?.cancel()
+        isIdentityBalanceRefreshing = true
+        let task = Task { [weak self] in
+            guard !Task.isCancelled else { return }
+            await refresh()
+            guard !Task.isCancelled, let self else { return }
+            let refreshed = snapshot()
+            self.identityId = refreshed?.identityId
+            self.identityBalanceCredits = refreshed?.balanceCredits ?? 0
+            self.isIdentityBalanceRefreshing = false
+            self.identityBalanceRefreshTask = nil
+            if self.maxNotice == Self.identityBalanceRefreshingMessage {
+                self.maxNotice = nil
+            }
         }
+        identityBalanceRefreshTask = task
+        return task
     }
 
     /// Recomputes `platformIdentityFundableDuffs` from the persisted
@@ -1087,6 +1126,7 @@ final class InternalTransferViewModel: ObservableObject {
     #endif
 
     deinit {
+        identityBalanceRefreshTask?.cancel()
         #if DEBUG
         if isPreviewInstance { return }
         #endif
@@ -1562,6 +1602,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// consensus withdrawal floor, or over what the credit balance can send
     /// once the fee reserve is held back.
     private var identityWithdrawalValidationMessage: String? {
+        if isIdentityBalanceRefreshing { return Self.identityBalanceRefreshingMessage }
         guard identityId != nil else { return Self.noIdentityToWithdrawFromMessage }
         if resolvedWithdrawalTarget == .transparent,
            creditsPreview < IdentityWithdrawViewModel.minimumWithdrawalCredits {
@@ -1681,7 +1722,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// is charged on top. The executor's own failure remains the final
     /// authority at Confirm.
     private var canContinueFromIdentity: Bool {
-        guard identityId != nil else { return false }
+        guard !isIdentityBalanceRefreshing, identityId != nil else { return false }
         if resolvedWithdrawalTarget == .transparent,
            creditsPreview < IdentityWithdrawViewModel.minimumWithdrawalCredits {
             return false
@@ -2060,13 +2101,17 @@ final class InternalTransferViewModel: ObservableObject {
     }
 
     /// Identity Max: the credit balance less the fee reserve the transition
-    /// is charged on top. Unlike the balance routes there is no preflight to
-    /// wait on — the reserve is a fixed bound — so this always resolves.
+    /// is charged on top. Wait for the shared balance refresh before deriving
+    /// an amount from the persisted snapshot.
     ///
     /// A Max below the balance card is not worth a notice — the slot under
     /// the amount carries errors only, and the fee belongs on the confirm
     /// sheet, not in a line that reads as one.
     private func fillIdentityWithdrawalMax() {
+        guard !isIdentityBalanceRefreshing else {
+            maxNotice = Self.identityBalanceRefreshingMessage
+            return
+        }
         clearMaxSelection()
         let spendable = IdentityWithdrawViewModel.spendableCredits(
             balanceCredits: identityBalanceCredits)
@@ -2078,6 +2123,9 @@ final class InternalTransferViewModel: ObservableObject {
         defer { isApplyingMax = false }
         applyMaxAmountText(spendable / 1000)
     }
+
+    private static let identityBalanceRefreshingMessage = NSLocalizedString(
+        "Refreshing balance…", comment: "Identity transfer waits for the network balance before Max or Continue")
 
     private static let feeReserveExceedsIdentityBalanceMessage = NSLocalizedString(
         "Your Identity balance is too low to cover the transfer fee.",

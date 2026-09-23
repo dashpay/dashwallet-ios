@@ -26,44 +26,97 @@ import UIKit
 /// created lazily when the transition leaves `.idle` and dropped only on
 /// `.idle` — never between `advance` transitions (switch → remove), so the
 /// window cannot flicker mid-operation. Failure phases keep the window up;
-/// each failure card owns its recovery actions.
+/// each failure card owns its recovery actions. The PIN window takes priority
+/// except during an explicitly authorized wipe (which can start from PIN
+/// recovery). Hiding while locked preserves the card and any support draft.
 @MainActor
 final class WalletLifecycleOverlayPresenter {
     static let shared = WalletLifecycleOverlayPresenter()
 
-    private var overlayWindow: UIWindow?
-    private var phaseCancellable: AnyCancellable?
+    private(set) var overlayWindow: UIWindow?
+    private let state = WalletLifecycleTransitionState.shared
+    private var cancellables = Set<AnyCancellable>()
+    private var openingDelay: Task<Void, Never>?
+    private var lockScreenVisible = false
+    private var applicationActive = false
 
     private init() {}
 
     /// Idempotent activation: every operation entry point calls this before
-    /// starting; the first call subscribes to the transition state for the
-    /// rest of the process lifetime. If a caller forgets, the operation
-    /// still works — only the overlay is missing.
+    /// starting; the first call subscribes for the process lifetime.
     func ensureActive() {
-        guard phaseCancellable == nil else { return }
-        phaseCancellable = WalletLifecycleTransitionState.shared.$phase
-            .sink { phase in
-                Task { @MainActor in
-                    WalletLifecycleOverlayPresenter.shared.apply(phase)
-                }
+        guard cancellables.isEmpty else { return }
+        applicationActive = UIApplication.shared.applicationState == .active
+        state.$phase
+            .sink { [weak self] _ in
+                // @Published emits before the assignment. Read the settled
+                // state rather than presenting an already-obsolete phase.
+                Task { @MainActor [weak self] in self?.applyCurrentPhase() }
             }
+            .store(in: &cancellables)
+        for (notification, active) in [
+            (UIApplication.didBecomeActiveNotification, true),
+            (UIApplication.willResignActiveNotification, false)
+        ] {
+            NotificationCenter.default.publisher(for: notification)
+                .sink { [weak self] _ in
+                    // UIKit sends these notifications on the main thread.
+                    MainActor.assumeIsolated {
+                        self?.applicationActive = active
+                        self?.updateVisibility()
+                    }
+                }
+                .store(in: &cancellables)
+        }
     }
 
-    private func apply(_ phase: WalletLifecycleTransitionState.Phase) {
-        switch phase {
-        case .idle:
+    /// Called synchronously by the existing root controller before showing
+    /// PIN and after its dismissal, including roots installed after onboarding.
+    func setLockScreenVisible(_ visible: Bool) {
+        lockScreenVisible = visible
+        updateVisibility()
+    }
+
+    private func applyCurrentPhase() {
+        if state.phase == .openingWallet, overlayWindow == nil {
+            guard openingDelay == nil else { return }
+            openingDelay = Task { @MainActor [weak self] in
+                // Fast ordinary opens should not flash a modal. An existing
+                // failure card stays visible immediately during explicit Retry.
+                do { try await Task.sleep(nanoseconds: 500_000_000) }
+                catch { return }
+                guard let self else { return }
+                self.openingDelay = nil
+                guard self.state.phase == .openingWallet else { return }
+                self.presentIfNeeded()
+            }
+            return
+        }
+        openingDelay?.cancel()
+        openingDelay = nil
+        if state.phase == .idle {
             overlayWindow?.isHidden = true
             overlayWindow = nil
-        case .switchingNetwork, .failedNetworkSwitch,
-             .switchingWallet, .removingWallet, .addingWallet,
-             .failedWalletSwitch, .failedWalletRemoval,
-             .wiping:
+        } else {
             presentIfNeeded()
         }
     }
 
+    private func updateVisibility() {
+        // Forgot-PIN recovery can start an authorized wipe inside the lock
+        // window. Its progress must block Cancel until deletion completes.
+        let blockedByLock: Bool
+        if case .wiping = state.phase {
+            blockedByLock = false
+        } else {
+            blockedByLock = lockScreenVisible
+        }
+        overlayWindow?.isHidden = blockedByLock || !applicationActive
+    }
+
     private func presentIfNeeded() {
+        // Re-evaluate even when reusing a hidden failure window for a wipe.
+        defer { updateVisibility() }
         guard overlayWindow == nil else { return }
         let scene = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
@@ -74,21 +127,24 @@ final class WalletLifecycleOverlayPresenter {
         window.windowLevel = .alert + 1
         window.rootViewController = UIHostingController(rootView: WalletLifecycleOverlayView())
         window.rootViewController?.view.backgroundColor = .clear
+        window.rootViewController?.view.accessibilityViewIsModal = true
         window.backgroundColor = .clear
-        window.isHidden = false
         overlayWindow = window
     }
 }
 
 /// Obj-C face of the lifecycle overlay for the Obj-C wipe flows —
 /// `DWAppRootViewController.beginWipeWalletWithAuthorization:` (Delete All)
-/// and `DWRecoverViewController`'s phrase-authorized wipe — which used to
-/// block with local MBProgressHUDs. Exposes exactly begin/finish; the wipes
-/// keep their UIKit failure alerts (shown after finish), so there is no
-/// failure phase here.
+/// and `DWRecoverViewController`'s phrase-authorized wipe. It also gives the
+/// existing root controller a thin bridge for lock-screen visibility.
+/// Wipes keep their UIKit failure alerts (shown after finish).
 @objc(DWWalletLifecycleOverlayBridge)
 @MainActor
 final class WalletLifecycleOverlayBridge: NSObject {
+    @objc static func setLockScreenVisible(_ visible: Bool) {
+        WalletLifecycleOverlayPresenter.shared.setLockScreenVisible(visible)
+    }
+
     /// Begin the wipe phase and show its blocking card; nil `title` falls
     /// back to the Delete All copy. Returns false when another interactive
     /// operation holds the admission gate — the caller must NOT start the
@@ -117,19 +173,67 @@ final class WalletLifecycleOverlayBridge: NSObject {
 @MainActor
 final class WalletLifecycleOverlayViewModel: ObservableObject {
     @Published private(set) var phase: WalletLifecycleTransitionState.Phase
+    @Published private(set) var preparationFailure: WalletPreparationFailure?
+    @Published var supportFailure: WalletPreparationFailure?
+    @Published private(set) var retryPending = false
+    @Published private(set) var isExportingLogs = false
+    @Published var exportedLogsURL: URL?
+    @Published var logExportErrorMessage: String?
 
-    private var phaseCancellable: AnyCancellable?
+    private var cancellables = Set<AnyCancellable>()
 
     init() {
         let transitionState = WalletLifecycleTransitionState.shared
         phase = transitionState.phase
-        phaseCancellable = transitionState.$phase
+        preparationFailure = transitionState.preparationFailure
+        transitionState.$phase
             .sink { [weak self] phase in
                 self?.phase = phase
             }
+            .store(in: &cancellables)
+        transitionState.$preparationFailure
+            .sink { [weak self] failure in self?.preparationFailure = failure }
+            .store(in: &cancellables)
     }
 
+    func retryWalletOpen() {
+        guard !retryPending else { return }
+        retryPending = true
+        // A Core-only Restart requires an already-open wallet and cannot
+        // recover a database failure. Re-enter the complete serialized start.
+        Task {
+            await SwiftDashSDKWalletRuntime.shared.retryWalletPreparation()
+            retryPending = false
+        }
+    }
+
+    func exportDiagnosticLogs() {
+        guard !isExportingLogs, !retryPending else { return }
+        isExportingLogs = true
+        Task { [weak self] in
+            let result = await DiagnosticLogExporter.exportArchive()
+            guard let self else { return }
+            self.isExportingLogs = false
+            switch result {
+            case .success(let url):
+                self.exportedLogsURL = url
+            case .failure(let error):
+                self.logExportErrorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    func showPreparationHelp() {
+        supportFailure = preparationFailure
+    }
+
+    /// A failed switch can carry a preparation failure, so its card offers
+    /// Export Logs next to Retry/Switch Back. The export's share sheet and
+    /// error alert belong to that card; a switch started meanwhile would swap
+    /// the card underneath them. Retry/Switch Back are disabled while an
+    /// export runs, and these guards back the disabled state up.
     func retryNetworkSwitch(to target: WalletEnvironment.NetworkKind) {
+        guard !isExportingLogs else { return }
         Task {
             try? await SwiftDashSDKWalletRuntime.shared.switchNetwork(to: target)
         }
@@ -139,6 +243,7 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     /// interactive wallet switch uses (admission from `.failedWalletSwitch`
     /// exists exactly for this card's actions).
     func retryWalletSwitch(to targetId: Data, targetName: String?) {
+        guard !isExportingLogs else { return }
         Task {
             try? await WalletsViewModel.gatedSwitchWallet(
                 targetId: targetId,
@@ -150,6 +255,7 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     /// switch began (captured by the gated helper before the registry was
     /// repointed).
     func switchBack(to previousId: Data) {
+        guard !isExportingLogs else { return }
         let name = WalletsViewModel.displayName(for: previousId)
         Task {
             try? await WalletsViewModel.gatedSwitchWallet(
@@ -173,6 +279,19 @@ struct WalletLifecycleOverlayView: View {
             switch viewModel.phase {
             case .idle:
                 EmptyView()
+            case .openingWallet:
+                progressCard(
+                    title: NSLocalizedString("Preparing your wallet…", comment: "Wallet preparation"),
+                    subtitle: NSLocalizedString("Please keep the app open.", comment: "Wallet preparation"))
+            case let .failedWalletOpen(failure):
+                card {
+                    failureHeader(title: failure.title, message: failure.message)
+                    actionButton(NSLocalizedString("Try Again", comment: ""), prominent: true) {
+                        viewModel.retryWalletOpen()
+                    }
+                    .disabled(viewModel.retryPending || viewModel.isExportingLogs)
+                    preparationHelp
+                }
             case let .switchingNetwork(_, to):
                 progressCard(
                     title: String(
@@ -205,7 +324,7 @@ struct WalletLifecycleOverlayView: View {
                     subtitle: nil)
             case let .failedNetworkSwitch(from, target, message):
                 card {
-                    failureHeader(
+                    preparationFailureHeader(
                         title: String(
                             format: NSLocalizedString("Switching to %@ failed", comment: "Network switch overlay"),
                             Self.displayName(of: target)),
@@ -213,6 +332,7 @@ struct WalletLifecycleOverlayView: View {
                     actionButton(NSLocalizedString("Retry", comment: ""), prominent: true) {
                         viewModel.retryNetworkSwitch(to: target)
                     }
+                    .disabled(viewModel.isExportingLogs)
                     // Escape hatch: the origin network was working when the
                     // switch began, so a way back must exist even when the
                     // destination keeps failing.
@@ -220,21 +340,26 @@ struct WalletLifecycleOverlayView: View {
                         actionButton(NSLocalizedString("Switch Back", comment: "Wallets"), prominent: false) {
                             viewModel.retryNetworkSwitch(to: from)
                         }
+                        .disabled(viewModel.isExportingLogs)
                     }
+                    preparationHelp
                 }
             case let .failedWalletSwitch(targetId, targetName, previousId, message):
                 card {
-                    failureHeader(
+                    preparationFailureHeader(
                         title: NSLocalizedString("Switching wallet failed", comment: "Wallets"),
                         message: message)
                     actionButton(NSLocalizedString("Retry", comment: ""), prominent: true) {
                         viewModel.retryWalletSwitch(to: targetId, targetName: targetName)
                     }
+                    .disabled(viewModel.isExportingLogs)
                     if let previousId {
                         actionButton(NSLocalizedString("Switch Back", comment: "Wallets"), prominent: false) {
                             viewModel.switchBack(to: previousId)
                         }
+                        .disabled(viewModel.isExportingLogs)
                     }
+                    preparationHelp
                 }
             case let .failedWalletRemoval(message):
                 card {
@@ -246,6 +371,52 @@ struct WalletLifecycleOverlayView: View {
                     }
                 }
             }
+        }
+        .sheet(item: $viewModel.supportFailure) { failure in
+            WalletPreparationSupportView(failure: failure)
+        }
+        .sheet(isPresented: Binding(
+            get: { viewModel.exportedLogsURL != nil },
+            set: { if !$0 { viewModel.exportedLogsURL = nil } }
+        )) {
+            if let url = viewModel.exportedLogsURL {
+                ActivityView(activityItems: [url])
+            }
+        }
+        .alert(NSLocalizedString("Export Logs", comment: "Log export"), isPresented: Binding(
+            get: { viewModel.logExportErrorMessage != nil },
+            set: { if !$0 { viewModel.logExportErrorMessage = nil } }
+        )) {
+            Button(NSLocalizedString("OK", comment: "")) { viewModel.logExportErrorMessage = nil }
+        } message: {
+            Text(viewModel.logExportErrorMessage ?? "")
+        }
+    }
+
+    @ViewBuilder
+    private var preparationHelp: some View {
+        if viewModel.preparationFailure != nil {
+            if viewModel.isExportingLogs {
+                SwiftUI.ProgressView(NSLocalizedString("Preparing logs…", comment: "Log export progress"))
+            } else {
+                actionButton(NSLocalizedString("Export Logs", comment: "Log export"), prominent: false) {
+                    viewModel.exportDiagnosticLogs()
+                }
+                .disabled(viewModel.retryPending)
+            }
+            actionButton(NSLocalizedString("Help", comment: ""), prominent: false) {
+                viewModel.showPreparationHelp()
+            }
+            .disabled(viewModel.retryPending || viewModel.isExportingLogs)
+        }
+    }
+
+    @ViewBuilder
+    private func preparationFailureHeader(title: String, message: String?) -> some View {
+        if let failure = viewModel.preparationFailure {
+            failureHeader(title: failure.title, message: failure.message)
+        } else {
+            failureHeader(title: title, message: message)
         }
     }
 
@@ -272,8 +443,10 @@ struct WalletLifecycleOverlayView: View {
         Image(systemName: "exclamationmark.triangle.fill")
             .font(.largeTitle)
             .foregroundColor(.orange)
+            .accessibilityHidden(true)
         Text(title)
             .font(.headline)
+            .multilineTextAlignment(.center)
         if let message, !message.isEmpty {
             Text(message)
                 .font(.footnote)
@@ -299,14 +472,19 @@ struct WalletLifecycleOverlayView: View {
 
     @ViewBuilder
     private func card(@ViewBuilder content: () -> some View) -> some View {
-        VStack(spacing: 16) {
-            content()
+        let contents = VStack(spacing: 16) { content() }
+        GeometryReader { viewport in
+            ScrollView {
+                contents
+                    .padding(24)
+                    .frame(maxWidth: 320)
+                    .background(Color(UIColor.systemBackground))
+                    .cornerRadius(16)
+                    .padding(32)
+                    .frame(maxWidth: .infinity, minHeight: viewport.size.height)
+            }
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .padding(24)
-        .frame(maxWidth: 320)
-        .background(Color(UIColor.systemBackground))
-        .cornerRadius(16)
-        .padding(32)
     }
 
     private static func displayName(of kind: WalletEnvironment.NetworkKind) -> String {
