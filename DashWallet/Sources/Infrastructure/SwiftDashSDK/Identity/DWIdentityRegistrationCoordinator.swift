@@ -1279,13 +1279,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     func startClaimInvitation(
         username: String,
         invitationURI: String,
-        temporaryUsername: String? = nil
+        temporaryUsername: String? = nil,
+        verificationURL: URL? = nil
     ) async throws -> Identifier {
         try await startCreateUsername(
             username,
             fundingSource: .invitation,
             invitationURI: invitationURI,
-            temporaryUsername: temporaryUsername)
+            temporaryUsername: temporaryUsername,
+            verificationURL: verificationURL)
     }
 
     /// Direct purchase of a marketplace-listed name from the
@@ -1629,6 +1631,12 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         }
         guard let network = WalletEnvironment.network else { return }
         guard let identityId = DWCurrentUserIdentityInfo.shared.identityId else { return }
+        // The wallet this identity belongs to, pinned now: the recovered
+        // bookmarks are written after a network round trip, and an omitted
+        // wallet scope resolves to whichever wallet is active by then.
+        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+              (WalletEnvironment.activeWalletIdHex as String?) == walletId.hexEncodedString()
+        else { return }
         // Deliberately NOT gated on "this wallet owns no username": the flow
         // this recovery exists for — a contested request with an instant
         // companion registered beside it — leaves the wallet owning a name
@@ -1639,12 +1647,12 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         guard Self.attemptedContestRecoveries.insert(scope).inserted else { return }
 
         contestRecoveryTask = Task { [weak self] in
-            await self?.runPendingContestRecovery(identityId: identityId, network: network)
+            await self?.runPendingContestRecovery(identityId: identityId, walletId: walletId, network: network)
             self?.contestRecoveryTask = nil
         }
     }
 
-    private func runPendingContestRecovery(identityId: Data, network: Network) async {
+    private func runPendingContestRecovery(identityId: Data, walletId: Data, network: Network) async {
         let myIdentity = ScriptAddressCodec.base58Encode(identityId)
         let contests: [DPNSContest]
         do {
@@ -1675,11 +1683,21 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 // normalized form rather than adopt someone else's name.
                 ?? (contest.requestedLabels.count == 1 ? contest.requestedLabels[0] : nil)
                 ?? contest.normalizedLabel
-            service.recordSubmission(label: label, network: network, identityId: identityId)
+            service.recordSubmission(label: label, network: network, identityId: identityId, walletId: walletId)
             if let endTime = contest.endTime {
-                service.recordVotingEndTime(endTime, label: label, network: network)
+                service.recordVotingEndTime(endTime, label: label, network: network, walletId: walletId)
             }
             Self.logger.info("🪪 IDENT-COORD :: contest recovery — restored bookmark for \(label, privacy: .public)")
+        }
+
+        // The bookmarks are the originating wallet's either way; the UI is
+        // told only if that wallet is still the one on screen.
+        guard WalletEnvironment.network == network,
+              (WalletEnvironment.activeWalletIdHex as String?) == walletId.hexEncodedString(),
+              DWCurrentUserIdentityInfo.shared.identityId == identityId
+        else {
+            Self.logger.info("🪪 IDENT-COORD :: contest recovery — context changed during the query; bookmarks kept for their wallet, UI not refreshed")
+            return
         }
 
         // Every voting surface reads the bookmark on this notification.

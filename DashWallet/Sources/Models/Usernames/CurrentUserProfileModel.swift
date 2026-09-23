@@ -148,11 +148,15 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
             // hid the row, so the promised completed report (with its profile
             // action) vanished at the instant it became true, and stayed
             // hidden after relaunch. The persisted records are the same
-            // wallet/network-scoped ones the row itself reads.
+            // wallet/network-scoped ones the row itself reads. A lost vote
+            // counts too: its companion keeps `hasRegisteredUsername` true and
+            // the bookmark behind `hasVotePending` is gone, so without it the
+            // rejection was never shown on a wallet that took a companion.
             reportsRegistration: MainActor.assumeIsolated {
                 let prefs = UsernamePrefs.shared
                 return prefs.inFlightRegistrationUsername?.isEmpty == false
                     || prefs.completedTileUsername?.isEmpty == false
+                    || prefs.lostContestUsername?.isEmpty == false
             })
     }
 

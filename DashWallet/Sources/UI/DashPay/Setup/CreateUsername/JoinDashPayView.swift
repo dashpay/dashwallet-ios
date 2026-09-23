@@ -51,12 +51,15 @@ extension JoinDashPayState {
     /// The row is reporting on a registration this wallet started, rather than
     /// inviting the user to start one. Home shows these regardless of whether
     /// the call to action was dismissed: they are that registration's only
-    /// surface once the create screen has stepped aside.
+    /// surface once the create screen has stepped aside. A lost vote
+    /// (`.contested`, `.blocked`) is that registration's outcome and is
+    /// reported until acted on — otherwise a companion name registered
+    /// alongside it hid the rejection for good.
     var isRegistrationReport: Bool {
         switch self {
-        case .creating, .creationFailed, .interrupted, .approved:
+        case .creating, .creationFailed, .interrupted, .approved, .contested, .blocked:
             return true
-        case .none, .loading, .retryLoading, .callToAction, .usernameRequired, .voting, .failed, .blocked, .contested, .registered:
+        case .none, .loading, .retryLoading, .callToAction, .usernameRequired, .voting, .failed, .registered:
             return false
         }
     }

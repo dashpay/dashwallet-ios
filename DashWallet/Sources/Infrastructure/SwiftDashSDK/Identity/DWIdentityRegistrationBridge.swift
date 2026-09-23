@@ -208,6 +208,14 @@ public final class DWIdentityRegistrationBridge: NSObject {
         pendingVerification = (Self.verificationKey(label), url)
     }
 
+    /// The link to hand to a submission of `username` that does not go
+    /// through `startCreateUsername` — an invitation claim calls the
+    /// coordinator directly, and without this the link captured on its form
+    /// was silently dropped. Same staleness rules as the bridge's own path.
+    func verificationURL(forSubmissionOf username: String) -> URL? {
+        sanitizedVerificationURL(for: username)
+    }
+
     /// Labels compare the way DPNS treats them: trimmed and case-folded.
     private static func verificationKey(_ label: String) -> String {
         label.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()

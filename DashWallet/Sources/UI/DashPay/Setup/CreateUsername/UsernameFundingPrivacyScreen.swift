@@ -33,6 +33,10 @@ struct UsernameFundingPrivacyScreen: View {
     /// privacy consequence something they passed through rather than chose,
     /// so Continue stays disabled until a row is tapped.
     @State private var selection: DWIdentityFundingSource?
+    /// The shield-first variant, after "Continue without privacy" with more
+    /// than one transparent balance to pay from: the tip gives way to a
+    /// choice between them.
+    @State private var isChoosingTransparentSource = false
 
     /// A funding source was chosen and the flow may move on.
     var onContinue: (DWIdentityFundingSource) -> Void
@@ -100,23 +104,23 @@ struct UsernameFundingPrivacyScreen: View {
             }
             .padding(.vertical, 20)
 
-            if !canPayFromShielded {
+            if !showsPicker {
                 Spacer()
                     .frame(maxHeight: 20)
             }
 
-            if canPayFromShielded {
+            if showsPicker {
                 fundingOptions
             } else {
                 shieldFirstTip
             }
 
-            if canPayFromShielded {
+            if showsPicker {
                 Spacer()
                     .frame(maxHeight: 20)
             }
 
-            if canPayFromShielded {
+            if showsPicker {
                 continueButton
             } else {
                 shieldFirstButtons
@@ -125,15 +129,25 @@ struct UsernameFundingPrivacyScreen: View {
         .padding(.horizontal, 40)
     }
 
+    /// The picker is shown when shielded funds can pay, and in the
+    /// shield-first variant once the user has gone without privacy and has a
+    /// transparent choice to make.
+    private var showsPicker: Bool {
+        canPayFromShielded || isChoosingTransparentSource
+    }
+
     // MARK: - Shielded funds are spendable: let the user choose
 
     private var fundingOptions: some View {
         VStack(spacing: 20) {
-            DashUIKit.SimpleSelect(
-                title: NSLocalizedString("Shielded balance", comment: "Usernames"),
-                description: NSLocalizedString("Keeps your username private", comment: "Usernames"),
-                isSelected: selection == .shielded,
-                action: { selection = .shielded })
+            // Absent when privacy was declined: an option that cannot be taken.
+            if canPayFromShielded {
+                DashUIKit.SimpleSelect(
+                    title: NSLocalizedString("Shielded balance", comment: "Usernames"),
+                    description: NSLocalizedString("Keeps your username private", comment: "Usernames"),
+                    isSelected: selection == .shielded,
+                    action: { selection = .shielded })
+            }
 
             DashUIKit.SimpleSelect(
                 title: NSLocalizedString("Dash balance", comment: "Usernames"),
@@ -162,22 +176,15 @@ struct UsernameFundingPrivacyScreen: View {
             // is up. Leaving the pick on a row that is no longer offered would
             // fund the registration from a balance the user can no longer see.
             if !offers, selection == .platformPayment { selection = nil }
+            // With Platform gone the choice left is Core alone, and the
+            // shield-first buttons already make it.
+            if !offers, !canPayFromShielded { isChoosingTransparentSource = false }
         }
     }
 
     /// Platform credits are an advanced-mode balance: the mode is what shows
     /// it on Home at all, so paying a username from it is offered only there —
     /// and only when there is enough of it to cover this registration.
-    /// The transparent source to record when the user forgoes privacy: Core
-    /// when it can cover the registration, Platform credits when only they
-    /// can. Core remains the answer when neither can — the form then states
-    /// the shortfall against the source the user would expect to use.
-    private var transparentSourceThatCanPay: DWIdentityFundingSource {
-        if viewModel.hasMinimumRequiredCoreBalance { return .core }
-        if viewModel.hasMinimumRequiredPlatformBalance { return .platformPayment }
-        return .core
-    }
-
     private var offersPlatformBalance: Bool {
         viewModel.isAdvancedMode && viewModel.hasMinimumRequiredPlatformBalance
     }
@@ -356,42 +363,26 @@ struct UsernameFundingPrivacyScreen: View {
                 action: { onShieldFunds?() }
             )
 
-            // Transparent funding is the way forward when shielded funds are
-            // not spendable, so the choice is recorded rather than left unset —
-            // but it is recorded as a source that can actually pay. Naming
-            // `.core` for a wallet whose Core balance is short pinned the form
-            // to a source it had to refuse.
+            // Going without privacy is still a choice of balance. With Platform
+            // credits on offer it is asked, not made: the form holds whatever
+            // is picked here and never swaps it, so a source the app chose
+            // would stick. With Core the only transparent balance, there is
+            // nothing to ask.
             DashUIKit.DashButton(
                 text: NSLocalizedString("Continue without privacy", comment: "Usernames"),
                 fillsWidth: true,
                 size: .large,
                 style: .tintedBlue,
                 action: {
-                    let source = transparentSourceThatCanPay
-                    viewModel.chooseFundingSource(source)
-                    onContinue(source)
+                    if offersPlatformBalance {
+                        selection = nil
+                        isChoosingTransparentSource = true
+                    } else {
+                        viewModel.chooseFundingSource(.core)
+                        onContinue(.core)
+                    }
                 }
             )
-
-            // Platform credits are a third way forward, and this variant used
-            // to state there were only two. It matters because the form no
-            // longer offers a funding choice of its own: without this button an
-            // advanced-mode wallet holding Platform credits but nothing
-            // shielded would be walked into Core funding it never picked.
-            if offersPlatformBalance {
-                DashUIKit.DashButton(
-                    text: String.localizedStringWithFormat(
-                        NSLocalizedString("Pay from Platform balance (%@ Dash)", comment: "Usernames"),
-                        viewModel.platformPaymentBalance),
-                    fillsWidth: true,
-                    size: .large,
-                    style: .tintedGray,
-                    action: {
-                        viewModel.chooseFundingSource(.platformPayment)
-                        onContinue(.platformPayment)
-                    }
-                )
-            }
         }
         .padding(.bottom, 20)
     }

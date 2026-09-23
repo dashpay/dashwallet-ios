@@ -140,8 +140,7 @@ struct CreateUsernameView: View {
     /// Continue handler right before the submit call.
     @State private var fundingSource: DWIdentityFundingSource = .core
     /// True once a choice made by the user has been adopted; auto-pinning
-    /// then only corrects a selection that became non-viable, instead
-    /// of overriding it.
+    /// then leaves the selection alone, even once it can no longer pay.
     @State private var didUserPickFundingSource: Bool = false
     /// Tracks the contested-name confirmation sheet. Continue routes
     /// through this sheet (instead of submitting directly) when the
@@ -344,8 +343,7 @@ struct CreateUsernameView: View {
             }
             // The funding source is chosen on the Join DashPay sheet's privacy
             // page, one screen back. Adopting it counts as an explicit pick, so
-            // the auto-pinning below only corrects a choice that is no longer
-            // viable instead of overriding it.
+            // the auto-pinning below leaves it alone.
             if let chosen = viewModel.consumeChosenFundingSource() {
                 fundingSource = chosen
                 didUserPickFundingSource = true
@@ -1235,8 +1233,7 @@ struct CreateUsernameView: View {
 
     /// Keep `fundingSource` pointing at a viable source. With no choice
     /// carried in from the privacy page, pin to the highest-priority viable
-    /// source (Shielded → Platform → Core); with one, only correct it once it
-    /// is no longer viable.
+    /// source (Shielded → Platform → Core); with one, never override it.
     private func syncFundingSourceToViableSource() {
         defer { viewModel.setActiveFundingSource(fundingSource) }
 
@@ -1247,15 +1244,15 @@ struct CreateUsernameView: View {
             return
         }
 
-        // An explicit pick stands while it can pay. Quietly moving a user who
-        // chose Platform onto Core would fund the registration from a balance
-        // they did not offer.
-        //
-        // It does NOT stand once it cannot: the privacy page's "Continue
-        // without privacy" records `.core` for a wallet that may have nothing
-        // in Core, and holding that pick left the form with the cost rule red
-        // and Continue disabled for good, with no way back to change it.
-        if didUserPickFundingSource, viable.contains(fundingSource) { return }
+        // An explicit pick stands, affordable or not. The form has no picker
+        // and the confirmation does not name the source, so a quiet switch is
+        // invisible: a user who chose Shielded and then typed a contested name
+        // its pool cannot cover would be funded from Core, linking the
+        // identity to transparent funds they declined. Holding the pick lets
+        // the cost rule fail against it and keeps Continue disabled; changing
+        // it is the user's move, back on the privacy page, which asks for the
+        // transparent balance too rather than picking one.
+        if didUserPickFundingSource { return }
         fundingSource = preferred
     }
 

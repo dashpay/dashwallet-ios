@@ -499,7 +499,12 @@ class CreateUsernameViewModel: ObservableObject {
                 _ = try await DWIdentityRegistrationCoordinator.shared.startClaimInvitation(
                     username: submittedUsername,
                     invitationURI: invitationURI,
-                    temporaryUsername: temporaryUsername)
+                    temporaryUsername: temporaryUsername,
+                    // The verification offer is made in this mode too, and the
+                    // accepted link is held on the bridge; this path skips the
+                    // bridge, so it has to fetch the link itself.
+                    verificationURL: DWIdentityRegistrationBridge.shared
+                        .verificationURL(forSubmissionOf: submittedUsername))
                 // This path never REFERENCES `DWIdentityRegistrationBridge.shared`,
                 // so on an invitation-first launch that singleton may never be
                 // constructed, and then never observes the coordinator's phases

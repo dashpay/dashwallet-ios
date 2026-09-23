@@ -155,6 +155,12 @@ class JoinDashPayViewModel: ObservableObject {
         guard !trimmed.isEmpty else { return }
         UsernamePrefs.shared.inFlightRegistrationUsername = trimmed
         UsernamePrefs.shared.completedTileUsername = nil
+        // A new attempt answers the previous rejection. The retry actions open
+        // this flow without dismissing it, and left in place it outranked the
+        // new request's voting state once the handoff record was settled — a
+        // rejection for one name reported over a request for another.
+        UsernamePrefs.shared.lostContestUsername = nil
+        UsernamePrefs.shared.lostContestWasBlocked = false
         // Without this the row would wait for the registration's next phase
         // change to notice the record, leaving Home showing the call to action
         // for an attempt that is already running.
@@ -208,22 +214,28 @@ class JoinDashPayViewModel: ObservableObject {
             return nil
         }
 
-        // The attempt may well have landed while the app was dead — the
-        // registration runs in the coordinator and the last leg is Platform's,
-        // not ours. If an identity and name now resolve, report the success
-        // the user never got to see.
-        let identity = DWCurrentUserIdentityInfo.shared
-        if identity.hasIdentity, let registered = identity.username, !registered.isEmpty {
-            return complete(registered)
-        }
-
         // A contested submission that is out for a vote is not an interrupted
         // one. It looks like it here — the coordinator is idle, and the label
         // is filtered out of `usernames` until the vote is won — and reporting
         // it as interrupted offered a retry that would start (and pay for) a
-        // second registration for a name already in the contest.
+        // second registration for a name already in the contest. Checked
+        // before ownership: an app killed after the instant companion landed
+        // but before the flow finished has an owned name, the companion, that
+        // is not the one handed off. The bookmark means the request is in, so
+        // it settles the way a live completion would — as voting.
         if DWContestedNameStatusService.shared.isPendingLabel(pending) {
-            return nil
+            return complete(pending)
+        }
+
+        // The attempt may well have landed while the app was dead — the
+        // registration runs in the coordinator and the last leg is Platform's,
+        // not ours. If the handed-off name now resolves as owned, report the
+        // success the user never got to see. That name only: any other owned
+        // label proves nothing about this attempt.
+        let identity = DWCurrentUserIdentityInfo.shared
+        if identity.hasIdentity,
+           identity.usernames.contains(where: { DWContestedNameStatusService.labelsMatch($0, pending) }) {
+            return complete(pending)
         }
 
         // Otherwise the honest answer is that we do not know how far it got:
