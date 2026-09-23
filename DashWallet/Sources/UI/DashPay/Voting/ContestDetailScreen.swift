@@ -75,8 +75,13 @@ struct ContestDetailScreen: View {
     /// which used to render as "2 of 1 nodes voted".
     private var castCount: Int { viewModel.votedNodeCount(on: contest.normalizedLabel) }
 
+    /// Gated on the loaded history, like the vote controls: before it arrives
+    /// `nodesYetToVote` is empty because nothing is known, and the screen
+    /// announced "all voted" over a green counter until the load finished.
     private var allNodesVoted: Bool {
-        viewModel.canVote && viewModel.nodesYetToVote(on: contest.normalizedLabel).isEmpty
+        viewModel.canVote
+            && viewModel.hasLoadedVoteHistory(for: contest.normalizedLabel)
+            && viewModel.nodesYetToVote(on: contest.normalizedLabel).isEmpty
     }
 
     var body: some View {

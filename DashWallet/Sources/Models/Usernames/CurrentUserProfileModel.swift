@@ -61,6 +61,16 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
             }
             .store(in: &cancellableBag)
 
+        // The row's report was acted on from the other surface — typically
+        // Home acknowledging a finished registration, which clears the record
+        // `reportsRegistration` reads below.
+        NotificationCenter.default.publisher(for: .DWUsernameRegistrationReportChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.updateShowJoinDashpay()
+            }
+            .store(in: &cancellableBag)
+
         // Re-evaluate only after the SDK host has rebound to the destination
         // network. This prevents the menu banner from inheriting the previous
         // network's global username mirror.

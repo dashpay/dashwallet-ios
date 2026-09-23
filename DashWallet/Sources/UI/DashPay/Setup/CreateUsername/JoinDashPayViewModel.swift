@@ -23,6 +23,13 @@ extension Notification.Name {
     /// Home row. Its own event rather than a re-post of the registration
     /// status: the status has not changed, the surface reporting it has.
     static let DWUsernameRegistrationHandedOff = Notification.Name("DWUsernameRegistrationHandedOff")
+
+    /// The user acted on (or dismissed) the row's report on one surface, so
+    /// the records behind it changed. Home and More each hold their own row
+    /// and More caches its visibility in `CurrentUserProfileModel`; without
+    /// this, acknowledging a finished registration on Home left More's row up
+    /// until some unrelated refresh.
+    static let DWUsernameRegistrationReportChanged = Notification.Name("DWUsernameRegistrationReportChanged")
 }
 
 class JoinDashPayViewModel: ObservableObject {
@@ -125,6 +132,7 @@ class JoinDashPayViewModel: ObservableObject {
             prefs.joinDashPayDismissed = true
         }
         self.checkUsername()
+        NotificationCenter.default.post(name: .DWUsernameRegistrationReportChanged, object: nil)
     }
 
     // MARK: - Registration handoff
@@ -261,6 +269,7 @@ class JoinDashPayViewModel: ObservableObject {
         let triggers: [Notification.Name] = [
             .DWDashPayRegistrationStatusUpdated,
             .DWUsernameRegistrationHandedOff,
+            .DWUsernameRegistrationReportChanged,
             // Both records are scoped per wallet + network, so a switch
             // changes which keys are read. Nothing recomputes them on its own.
             SwiftDashSDKWalletState.activeWalletDidChangeNotification
