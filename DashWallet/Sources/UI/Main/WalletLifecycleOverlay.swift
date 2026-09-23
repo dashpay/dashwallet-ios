@@ -176,6 +176,9 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     @Published private(set) var preparationFailure: WalletPreparationFailure?
     @Published var supportFailure: WalletPreparationFailure?
     @Published private(set) var retryPending = false
+    @Published private(set) var isExportingLogs = false
+    @Published var exportedLogsURL: URL?
+    @Published var logExportErrorMessage: String?
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -204,11 +207,33 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
         }
     }
 
+    func exportDiagnosticLogs() {
+        guard !isExportingLogs, !retryPending else { return }
+        isExportingLogs = true
+        Task { [weak self] in
+            let result = await DiagnosticLogExporter.exportArchive()
+            guard let self else { return }
+            self.isExportingLogs = false
+            switch result {
+            case .success(let url):
+                self.exportedLogsURL = url
+            case .failure(let error):
+                self.logExportErrorMessage = error.localizedDescription
+            }
+        }
+    }
+
     func showPreparationHelp() {
         supportFailure = preparationFailure
     }
 
+    /// A failed switch can carry a preparation failure, so its card offers
+    /// Export Logs next to Retry/Switch Back. The export's share sheet and
+    /// error alert belong to that card; a switch started meanwhile would swap
+    /// the card underneath them. Retry/Switch Back are disabled while an
+    /// export runs, and these guards back the disabled state up.
     func retryNetworkSwitch(to target: WalletEnvironment.NetworkKind) {
+        guard !isExportingLogs else { return }
         Task {
             try? await SwiftDashSDKWalletRuntime.shared.switchNetwork(to: target)
         }
@@ -218,6 +243,7 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     /// interactive wallet switch uses (admission from `.failedWalletSwitch`
     /// exists exactly for this card's actions).
     func retryWalletSwitch(to targetId: Data, targetName: String?) {
+        guard !isExportingLogs else { return }
         Task {
             try? await WalletsViewModel.gatedSwitchWallet(
                 targetId: targetId,
@@ -229,6 +255,7 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     /// switch began (captured by the gated helper before the registry was
     /// repointed).
     func switchBack(to previousId: Data) {
+        guard !isExportingLogs else { return }
         let name = WalletsViewModel.displayName(for: previousId)
         Task {
             try? await WalletsViewModel.gatedSwitchWallet(
@@ -262,7 +289,7 @@ struct WalletLifecycleOverlayView: View {
                     actionButton(NSLocalizedString("Try Again", comment: ""), prominent: true) {
                         viewModel.retryWalletOpen()
                     }
-                    .disabled(viewModel.retryPending)
+                    .disabled(viewModel.retryPending || viewModel.isExportingLogs)
                     preparationHelp
                 }
             case let .switchingNetwork(_, to):
@@ -305,6 +332,7 @@ struct WalletLifecycleOverlayView: View {
                     actionButton(NSLocalizedString("Retry", comment: ""), prominent: true) {
                         viewModel.retryNetworkSwitch(to: target)
                     }
+                    .disabled(viewModel.isExportingLogs)
                     // Escape hatch: the origin network was working when the
                     // switch began, so a way back must exist even when the
                     // destination keeps failing.
@@ -312,6 +340,7 @@ struct WalletLifecycleOverlayView: View {
                         actionButton(NSLocalizedString("Switch Back", comment: "Wallets"), prominent: false) {
                             viewModel.retryNetworkSwitch(to: from)
                         }
+                        .disabled(viewModel.isExportingLogs)
                     }
                     preparationHelp
                 }
@@ -323,10 +352,12 @@ struct WalletLifecycleOverlayView: View {
                     actionButton(NSLocalizedString("Retry", comment: ""), prominent: true) {
                         viewModel.retryWalletSwitch(to: targetId, targetName: targetName)
                     }
+                    .disabled(viewModel.isExportingLogs)
                     if let previousId {
                         actionButton(NSLocalizedString("Switch Back", comment: "Wallets"), prominent: false) {
                             viewModel.switchBack(to: previousId)
                         }
+                        .disabled(viewModel.isExportingLogs)
                     }
                     preparationHelp
                 }
@@ -344,15 +375,39 @@ struct WalletLifecycleOverlayView: View {
         .sheet(item: $viewModel.supportFailure) { failure in
             WalletPreparationSupportView(failure: failure)
         }
+        .sheet(isPresented: Binding(
+            get: { viewModel.exportedLogsURL != nil },
+            set: { if !$0 { viewModel.exportedLogsURL = nil } }
+        )) {
+            if let url = viewModel.exportedLogsURL {
+                ActivityView(activityItems: [url])
+            }
+        }
+        .alert(NSLocalizedString("Export Logs", comment: "Log export"), isPresented: Binding(
+            get: { viewModel.logExportErrorMessage != nil },
+            set: { if !$0 { viewModel.logExportErrorMessage = nil } }
+        )) {
+            Button(NSLocalizedString("OK", comment: "")) { viewModel.logExportErrorMessage = nil }
+        } message: {
+            Text(viewModel.logExportErrorMessage ?? "")
+        }
     }
 
     @ViewBuilder
     private var preparationHelp: some View {
         if viewModel.preparationFailure != nil {
+            if viewModel.isExportingLogs {
+                SwiftUI.ProgressView(NSLocalizedString("Preparing logs…", comment: "Log export progress"))
+            } else {
+                actionButton(NSLocalizedString("Export Logs", comment: "Log export"), prominent: false) {
+                    viewModel.exportDiagnosticLogs()
+                }
+                .disabled(viewModel.retryPending)
+            }
             actionButton(NSLocalizedString("Help", comment: ""), prominent: false) {
                 viewModel.showPreparationHelp()
             }
-            .disabled(viewModel.retryPending)
+            .disabled(viewModel.retryPending || viewModel.isExportingLogs)
         }
     }
 
