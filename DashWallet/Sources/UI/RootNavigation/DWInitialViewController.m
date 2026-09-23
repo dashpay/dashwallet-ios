@@ -88,8 +88,8 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 
 - (void)handleURL:(NSURL *)url {
-    // `application:openURL:` is delivered after `didFinishLaunching` has made
-    // the window key, so `viewDidLoad` has normally already built the root
+    // Links arrive after the scene has made the window key, so
+    // `viewDidLoad` has normally already built the root
     // controller. What is left is onboarding still holding the screen: a
     // reinstall keeps the wallet in the Keychain, so `allowsURLHandling`
     // passes while the Keep/Delete choice runs and the root controller does
