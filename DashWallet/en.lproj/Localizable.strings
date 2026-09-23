@@ -6119,3 +6119,6 @@
 "Review and send the message in your mail app, or choose a sharing option." = "Review and send the message in your mail app, or choose a sharing option.";
 "Couldn't prepare the support message" = "Couldn't prepare the support message";
 "Try again or copy the support address and write to us from your mail app." = "Try again or copy the support address and write to us from your mail app.";
+
+/* Log export progress */
+"Preparing logs…" = "Preparing logs…";

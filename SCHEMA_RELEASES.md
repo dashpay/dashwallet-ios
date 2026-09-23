@@ -3,11 +3,35 @@
 The TestFlight pipeline captures schema evidence. Publication in App Store
 Connect triggers a separate freeze PR in `dashpay/platform`. TestFlight builds
 do not become historical schema versions merely because they were uploaded.
-V1 remains the accepted frozen baseline. An older app may have written a
+The accepted V1 remains unchanged. Historical V2 is reconstructed from source
+`52e8d4ec68f0c772313fa1bbef223fb1eabbf1cc`, matching all 35 model hashes and
+the checksum of an observed App Store 9.0.2 store. This proves the model shape,
+not the exact source commit of Apple's binary. Active models are now V3. An older app may have written a
 different, unversioned model graph while still labelling its store `1.0.0`.
 The SDK provides a bounded compatibility bridge for these legacy stores, as
 described below. Other intermediate development databases remain unsupported.
 Never reset an App Store user's database as a substitute for migration.
+
+The evidence for that reconstruction is recorded once, in Platform's
+`packages/swift-sdk/schema-releases.json` under `historical_schemas["2.0.0"]`,
+and that registry entry is the source of truth; this page only points at it.
+Two different values are involved and must not be confused:
+
+- `fixture_sha256` is the SHA-256 of the committed synthetic fixture file
+  `packages/swift-sdk/SwiftTests/SwiftDashSDKTests/Fixtures/SchemaStores/historical-v2.store`
+  (currently `4c7c0516627c2cc3dc588bfe3e764755205adc0f3848f7e8b7028bf3c53f67ae`).
+  Recompute it with `shasum -a 256` on that file in the selected Platform
+  checkout; the candidate gate does exactly that before building.
+- `schema.model_checksum` (currently `RrRj/iNbS9izgLQvNb2APed4iwaR7pftEE2+4tea7K8=`)
+  is not a digest we compute. It is Core Data's own model version checksum,
+  read from a store's metadata as `NSStoreModelVersionChecksumKey`, alongside
+  the per-entity `NSStoreModelVersionHashes`. Core Data derives it from the
+  managed object model, so it can be verified only by building that model and
+  reading the metadata back, which is what the SDK's migration tests and the
+  route diagnostics (`store_migration_route` → `source_checksum`) do. The
+  fixture's metadata carries the same checksum and hashes as the phone's
+  store; the fixture rows are synthetic and were never extracted from a user
+  database.
 
 ## Legacy database compatibility
 
@@ -18,7 +42,7 @@ the same network share one in-flight open. Contexts stay on their owning actor.
 Known
 schemas use the normal migration plan. For an unrecognized legacy `1.0.0`
 store, the SDK attempts automatic migration on an isolated, consistent copy to
-the specific V2 schema. It verifies preservation of existing stored data and
+the specific V3 schema. It verifies preservation of existing stored data and
 relationships and checks that the normal plan can reopen the migrated store
 before accepting it. A backup remains through the migration/recovery launch and
 is reclaimed after a later successful ordinary open; failed opens never trigger
@@ -45,9 +69,11 @@ from Platform `fd8d8d13e5d7cea17b00df5974934ab1910e8039`, paired with iOS
 That run failed before upload; its commits identify the tested sources, not
 proven App Store provenance. See the SDK fixture manifest for reproduction.
 
-Retain the bridge for users who skip V2 and upgrade directly to a later app.
-When introducing V3, keep the bridge destination on the frozen V2 models, then
-use the ordinary V2-to-current migration plan. Do not point the legacy bridge
+Retain the bridge for users who skip the V3 app and upgrade directly to a later app.
+When introducing V4, keep the bridge destination on the frozen V3 models, then
+use the ordinary V3-to-current migration plan. Exact accepted V1 uses a separate
+V1-to-V3 route: passing it through historical V2 would drop 13 populated fields.
+Historical V2 uses V2-to-V3. Do not point the legacy bridge
 at whichever models happen to be current.
 
 ## Initial setup
@@ -64,9 +90,10 @@ at whichever models happen to be current.
    before starting the next `internal` or `external` build.
 3. In **Freeze published App Store schema**, choose `bootstrap` and keep
    `dry_run` enabled. Confirm the version printed is the already accepted first
-   App Store release. Repeat with `dry_run` disabled **before shipping the next
-   version**. This creates the isolated `schema-release-data` branch and its
-   immutable baseline; it does not inspect or reconstruct V1's original code.
+   App Store release and matches the verified historical binding in Platform's
+   registry. Bootstrap refuses to assign V1 or guess a schema for an unverified
+   release. Repeat with `dry_run` disabled **before shipping the next version**.
+   This creates the isolated `schema-release-data` branch and its baseline.
    Until this step completes, production-capable builds intentionally stop at
    preflight with setup instructions. `internal-only` builds remain available.
 4. Run `sync` in dry-run mode, then enable repository variable
@@ -233,3 +260,24 @@ python3 -m unittest discover -s .github/scripts -p 'test_*.py' -v
 Use Ruby 3.3 or newer. These tests mock Apple/GitHub and do not publish, upload,
 commit or push anything. Platform's Python generator tests and simulator schema
 tests verify the other half of the contract.
+
+## Correcting the existing 9.0.2 baseline after historical V2 reconstruction
+
+Deploy the Platform migration fix first, then this repository's gate changes.
+Do not run bootstrap again or move `max_app_version` forward. Review an ordinary
+fast-forward commit on `schema-release-data` that retains the existing app ID,
+release ID, version 9.0.2 and `accepted_at`, changes `schema_version` from
+`1.0.0` to `2.0.0`, and adds `model_checksum` from the reviewed historical V2
+registry and `schema_provenance: reconstructed-model-match`. Record the old
+baseline SHA-256 and the reason in a separate correction record. Re-read the
+branch before applying the correction; if the baseline bytes changed, stop and
+review the new state rather than overwriting it. This is a reviewed deployment
+operation, not part of normal observer runs.
+
+Candidate preflight now verifies the historical fixture digest and frozen V2
+sources in the **selected** Platform checkout, even with no post-baseline
+publications. It also rejects the obsolete V1 association for this release.
+After the correction, run observer `sync` with `dry_run: true`, then create a
+new candidate carrying schema V3. Leave the existing TestFlight 9.1.1 (30)
+manifest, capture and `swift-schema-source/*` tag unchanged. They describe the
+actual earlier build and are not evidence for the reconstructed App Store V2.

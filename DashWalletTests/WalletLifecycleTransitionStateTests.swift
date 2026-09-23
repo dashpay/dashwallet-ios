@@ -430,6 +430,43 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         XCTAssertEqual(state.phase, .idle)
     }
 
+    /// A takeover whose open fails for an unrelated reason (the failure
+    /// mapper returns nil — e.g. no selectable wallet yet) must hand the
+    /// window back to the hold, which is still waiting, rather than clear it.
+    func testPrepareWalletReturnsTheWindowToTheHoldOnAnUnrelatedFailure() async {
+        for viaCard in [false, true] {
+            let state = WalletLifecycleTransitionState()
+            let probe = HoldProbe()
+            let coordinator = probe.makeCoordinator(state: state)
+            coordinator.begin { probe.outcomes.append($0) }
+            if viaCard {
+                probe.settled = true
+                await settle({ if case .failedLegacyMigration = state.phase { return true } else { return false } }())
+            }
+            let holdPhase = state.phase
+            let held = state.preparationFailure
+            XCTAssertEqual(viaCard, held != nil)
+
+            do {
+                try await state.prepareWallet {
+                    XCTAssertEqual(state.phase, .openingWallet)
+                    throw NSError(domain: "WalletNotFound", code: 1)
+                } failure: { _ in nil }
+                XCTFail("expected the open failure")
+            } catch {}
+            XCTAssertEqual(state.phase, holdPhase, "the hold must get its window back after \(holdPhase.logLabel)")
+            XCTAssertEqual(state.preparationFailure, held, "the card's diagnostic comes back with the card")
+            XCTAssertEqual(probe.outcomes, [], "the hold is still waiting for a wallet")
+
+            // Late success is noticed from either phase without Try Again.
+            probe.hasWallet = true
+            probe.settled = true
+            await settle(probe.outcomes == [true])
+            XCTAssertEqual(probe.outcomes, [true])
+            XCTAssertEqual(state.phase, .idle)
+        }
+    }
+
     /// The runtime's real entry point takes the launch window over from
     /// either hold phase, so the hold's release cannot dismiss an open in
     /// progress and an open failure lands on the usual blocking card.

@@ -200,17 +200,27 @@ final class WalletLifecycleTransitionState: ObservableObject {
     /// Opening failures never reset data, and never dismiss a switch's card.
     /// The launch hold's phases are taken over the same way: once the
     /// imported wallet exists the runtime's open owns the window, so the
-    /// hold's release cannot dismiss it mid-open and an open failure lands
-    /// on `.failedWalletOpen` as usual.
+    /// hold's release cannot dismiss it mid-open and a database failure
+    /// lands on `.failedWalletOpen` as usual. An open that fails for an
+    /// unrelated reason (no selectable wallet yet, for instance) hands the
+    /// window back to the hold instead of dismissing it: the hold is still
+    /// waiting for a wallet, and without its window the launch would sit on
+    /// an empty root.
     func prepareWallet<T>(
         open: () async throws -> T,
         failure: (Error) -> WalletPreparationFailure?
     ) async throws -> T {
         let ownsOverlay: Bool
+        let takenOverHold: Phase?
         switch phase {
-        case .idle, .failedWalletOpen, .migratingLegacyWallet, .failedLegacyMigration:
+        case .idle, .failedWalletOpen:
+            takenOverHold = nil
+            ownsOverlay = tryBegin(.openingWallet)
+        case .migratingLegacyWallet, .failedLegacyMigration:
+            takenOverHold = phase
             ownsOverlay = tryBegin(.openingWallet)
         default:
+            takenOverHold = nil
             ownsOverlay = false
         }
         preparationFailure = nil
@@ -222,8 +232,15 @@ final class WalletLifecycleTransitionState: ObservableObject {
             let detail = failure(error)
             preparationFailure = detail
             if ownsOverlay, phase == .openingWallet {
-                // Unrelated startup errors keep their existing recovery flow.
-                if let detail { phase = .failedWalletOpen(detail) } else { finish() }
+                if let detail {
+                    phase = .failedWalletOpen(detail)
+                } else if let takenOverHold {
+                    phase = takenOverHold
+                    if case let .failedLegacyMigration(held) = takenOverHold { preparationFailure = held }
+                } else {
+                    // Unrelated startup errors keep their existing recovery flow.
+                    finish()
+                }
             }
             throw error
         }
