@@ -30,20 +30,37 @@ struct SDKIdentityProfileSheet: View {
     @State private var pendingVotingEndTime: Date? = nil
     @State private var copyToast: String? = nil
     /// The identity's credit balance (credits, 1000 credits = 1 duff),
-    /// from the persisted identity row; refreshed by a top-up's returned
-    /// post-transition balance. nil until the identity row loads.
+    /// refreshed from Platform when the profile opens. nil until the
+    /// identity row loads; read failures retain the last known balance.
     @State private var identityBalanceCredits: UInt64?
     /// 32-byte identity id the top-up transition targets.
     @State private var identityIdData: Data?
     @State private var showingBalanceInfo = false
     @State private var showingTopUp = false
     @State private var showingUsernameMarketplace = false
+    @State private var showingUsernameRecovery = false
+    @State private var loadedUsername: String?
+    @State private var identityIsLoading = true
+    @State private var balanceRefreshContext: IdentityBalanceRefresh.Context?
+    @State private var balanceRefreshAttempt = 0
+
+    private struct BalanceRefreshRequest: Hashable {
+        let context: IdentityBalanceRefresh.Context?
+        let attempt: Int
+    }
+
+    @State private var identityLoadTimedOut = false
+    @State private var identityLoadAttempt = 0
 
     /// Callback invoked when the user taps Edit. Owner (HomeViewController)
     /// dismisses the sheet and pushes `RootEditProfileViewController`.
     /// Nil → no Edit button is shown (back-compat with callers that
     /// haven't wired up the edit flow yet).
     var onEditTapped: (() -> Void)?
+    var identityLoadPollLimit = 20
+    var snapshotProvider: () -> DWCurrentUserIdentityInfo.Snapshot = {
+        DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+    }
 
     var body: some View {
         NavigationStack {
@@ -52,7 +69,25 @@ struct SDKIdentityProfileSheet: View {
                     header
                     Divider()
                     infoSection
-                    if hasIdentity {
+                    if identityIsLoading {
+                        if identityLoadTimedOut {
+                            Button(NSLocalizedString("Retry loading identity", comment: "Identity recovery")) {
+                                DWCurrentUserIdentityInfo.shared.retryNameRefresh()
+                                identityLoadTimedOut = false
+                                identityLoadAttempt += 1
+                            }
+                        } else {
+                            SwiftUI.ProgressView()
+                                .accessibilityIdentifier("identityProfileLoading")
+                        }
+                    } else if hasIdentity {
+                        if dpnsNames.isEmpty && loadedUsername == nil && pendingContestedName == nil {
+                            Button(NSLocalizedString("Finish username registration", comment: "DashPay registration recovery")) {
+                                showingUsernameRecovery = true
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .accessibilityIdentifier("finishUsernameRegistration")
+                        }
                         namesSection
                     }
                     // Edit Profile gated on hasIdentity: the editor's
@@ -91,11 +126,56 @@ struct SDKIdentityProfileSheet: View {
                 }
             }
             .onAppear(perform: reloadIdentitySnapshot)
+            .task(id: "\(identityIsLoading)-\(identityLoadAttempt)") {
+                // Cold launch may hydrate persistence without a registration event.
+                // Only refresh reads while loading; never resume a spend here.
+                for _ in 0..<identityLoadPollLimit {
+                    guard identityIsLoading else { return }
+                    do { try await Task.sleep(nanoseconds: 250_000_000) }
+                    catch { return }
+                    reloadIdentitySnapshot()
+                }
+                identityLoadTimedOut = identityIsLoading
+            }
+            .task(id: BalanceRefreshRequest(context: balanceRefreshContext, attempt: balanceRefreshAttempt)) {
+                guard balanceRefreshContext != nil else { return }
+                await DWCurrentUserIdentityInfo.shared.refreshCurrentBalanceFromNetwork()
+                guard !Task.isCancelled else { return }
+                reloadIdentitySnapshot()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)) { _ in
+                reloadIdentitySnapshot()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                reloadIdentitySnapshot()
+                // Restart the view-owned task; SwiftUI cancels it on dismissal
+                // and on wallet/identity changes through the request context.
+                balanceRefreshAttempt += 1
+            }
+            .onReceive(NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)) { _ in
+                restartIdentityLoading()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .DWCurrentNetworkDidChange)) { _ in
+                restartIdentityLoading()
+            }
         }
         // `onDismiss` rather than relying on the `onAppear` above: SwiftUI does
         // not re-run it for the presenting view when a `fullScreenCover` closes,
         // and a name registered or bought in the marketplace changes both
         // `dpnsNames` and `hasIdentity`.
+        .fullScreenCover(isPresented: $showingUsernameRecovery, onDismiss: reloadIdentitySnapshot) {
+            NavigationStack {
+                CreateUsernameView(invitationURI: nil, definedUsername: nil, suppressShieldedHint: true) {
+                    showingUsernameRecovery = false
+                }
+                .navigationTitle(NSLocalizedString("Finish username registration", comment: "DashPay registration recovery"))
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(NSLocalizedString("Close", comment: "")) { showingUsernameRecovery = false }
+                    }
+                }
+            }
+        }
         .fullScreenCover(isPresented: $showingUsernameMarketplace,
                          onDismiss: reloadIdentitySnapshot) {
             UsernameMarketplaceScreen {
@@ -104,13 +184,34 @@ struct SDKIdentityProfileSheet: View {
         }
     }
 
+    private func restartIdentityLoading() {
+        identityLoadTimedOut = false
+        identityLoadAttempt += 1
+        DWCurrentUserIdentityInfo.shared.retryNameRefresh()
+        reloadIdentitySnapshot()
+    }
+
     private func reloadIdentitySnapshot() {
-        loadIdentityId()
-        dpnsNames = DWCurrentUserIdentityInfo.shared.usernames
-        hasIdentity = DWCurrentUserIdentityInfo.shared.hasIdentity
-        pendingContestedName = DWContestedNameStatusService.shared.pendingLabel
-        pendingVotingEndTime = DWContestedNameStatusService.shared.pendingVotingEndTime
-        avatarURL = DWCurrentUserIdentityInfo.shared.avatarURL
+        let snapshot = snapshotProvider()
+        if let identityId = snapshot.identityId,
+           let wallet = SwiftDashSDKHost.shared.wallet,
+           let network = SwiftDashSDKHost.shared.runningNetwork {
+            balanceRefreshContext = .init(
+                network: network.persistenceScope, walletId: wallet.walletId, identityId: identityId)
+        } else {
+            balanceRefreshContext = nil
+        }
+        identityIsLoading = snapshot.isLoading
+        identityIdData = snapshot.identityId
+        identityIdHex = snapshot.identityIdHex
+        identitySeed = snapshot.identityId ?? Data()
+        identityBalanceCredits = snapshot.balanceCredits
+        dpnsNames = snapshot.usernames
+        loadedUsername = snapshot.username
+        hasIdentity = snapshot.identityId != nil
+        pendingContestedName = snapshot.pendingContestedName
+        pendingVotingEndTime = snapshot.pendingVotingEndTime
+        avatarURL = snapshot.avatarURL
     }
 
     // MARK: - Edit button
@@ -353,7 +454,7 @@ struct SDKIdentityProfileSheet: View {
 
     private var username: String {
         pendingContestedName
-            ?? DWGlobalOptions.sharedInstance().dashpayUsername
+            ?? loadedUsername
             ?? "—"
     }
 
@@ -377,33 +478,7 @@ struct SDKIdentityProfileSheet: View {
         }
     }
 
-    /// Look up the persisted identity ID from SwiftData. Mirrors the
-    /// fetch pattern in `DWIdentityRegistrationCoordinator.lookupExistingIdentityId`
-    /// (PersistentIdentity scoped to the active wallet); we render the
-    /// 32-byte id as lowercase hex matching the existing coordinator
-    /// logs (`identityId.map { String(format: "%02x", $0) }.joined()`).
-    private func loadIdentityId() {
-        guard
-            let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
-            let container = SwiftDashSDKHost.shared.modelContainer
-        else { return }
 
-        let context = container.mainContext
-        var descriptor = FetchDescriptor<PersistentIdentity>(
-            predicate: #Predicate { identity in
-                identity.wallet?.walletId == walletId
-            }
-        )
-        descriptor.fetchLimit = 1
-        if let identity = try? context.fetch(descriptor).first {
-            identityIdHex = identity.identityId.map { String(format: "%02x", $0) }.joined()
-            identitySeed = identity.identityId
-            identityIdData = identity.identityId
-            // Stored as the Int64 bit-pattern of the UInt64 credits (see
-            // IdentitiesViewModel's identical read).
-            identityBalanceCredits = UInt64(bitPattern: identity.balance)
-        }
-    }
 }
 
 // MARK: - IdentityTopUpViewModel
@@ -433,6 +508,16 @@ final class IdentityTopUpViewModel: ObservableObject {
         case shielded
         case platform
         case transparent
+
+        /// The funding source that spends `network`'s balance — the internal
+        /// transfer screen's bridge from its FROM side to this executor.
+        init(spending network: ChainNetwork) {
+            switch network {
+            case .core: self = .transparent
+            case .platform: self = .platform
+            case .shielded: self = .shielded
+            }
+        }
 
         var title: String {
             switch self {
@@ -483,10 +568,18 @@ final class IdentityTopUpViewModel: ObservableObject {
     /// unshield minimum (shielded route only, via the pure
     /// `estimateShieldedFee` FFI) plus the observed top-up transition fee.
     /// The transparent route also pays a small Core miner fee on top.
-    static func estimatedFeeCredits(source: FundingSource) -> UInt64 {
+    /// `nil` when the shielded route's unshield estimate is unavailable —
+    /// callers show "no number" rather than only the transition fee.
+    static func estimatedFeeCredits(source: FundingSource) -> UInt64? {
         let unshieldFee: UInt64
         if source == .shielded {
-            unshieldFee = (try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .unshield, numActions: 2)) ?? 0
+            // `nil`, not `0`, when there is no estimate — see the doc above.
+            // Reporting a zero fee for an unknown one is a number the user
+            // would act on.
+            guard let estimate = try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .unshield, numActions: 2) else {
+                return nil
+            }
+            unshieldFee = estimate
         } else {
             unshieldFee = 0
         }
@@ -872,7 +965,11 @@ struct IdentityTopUpSheet: View {
     }
 
     private var estimatedFeeText: String {
-        let credits = IdentityTopUpViewModel.estimatedFeeCredits(source: source)
+        guard let credits = IdentityTopUpViewModel.estimatedFeeCredits(source: source) else {
+            // Shielded route with the unshield estimate unavailable: show no
+            // number rather than one that omits the larger fee component.
+            return "—"
+        }
         let duffs = credits / 1000
         return String.localizedStringWithFormat(
             NSLocalizedString("~%@ DASH (≈ %@)", comment: "DashPay: estimated network fee — DASH amount, then its local-currency equivalent"),
@@ -893,3 +990,39 @@ struct IdentityTopUpSheet: View {
         }
     }
 }
+
+#if DEBUG && targetEnvironment(simulator)
+/// Isolated UI-test launch surface. Does not initialize or modify a real wallet.
+@objc(DWUsernameRecoveryUITestFixture)
+final class DWUsernameRecoveryUITestFixture: NSObject {
+    @objc static func makeViewControllerIfRequested() -> UIViewController? {
+        guard ProcessInfo.processInfo.environment["DPNS_RECOVERY_UI_TEST"] == "1" else { return nil }
+        return UIHostingController(rootView: Fixture())
+    }
+
+    private struct Fixture: View {
+        @State private var loading = true
+
+        var body: some View {
+            SDKIdentityProfileSheet(
+                identityLoadPollLimit: ProcessInfo.processInfo.environment["DPNS_RECOVERY_UI_HYDRATION"] == "1" ? 240 : 20,
+                snapshotProvider: {
+                .init(isLoading: loading, namesAreLoaded: !loading, balanceCredits: 9_639_634_780,
+                      identityId: Data(repeating: 1, count: 32), identityIdHex: String(repeating: "01", count: 32),
+                      username: nil, usernames: [], displayName: nil, avatarURL: nil, publicMessage: nil)
+            })
+            .overlay(alignment: .bottom) {
+                HStack {
+                    Button("Load identity fixture") { loading = false }
+                        .accessibilityIdentifier("loadIdentityFixture")
+                    Button("Switch identity fixture") {
+                        loading = true
+                        NotificationCenter.default.post(name: .DWCurrentNetworkDidChange, object: nil)
+                    }
+                    .accessibilityIdentifier("switchIdentityFixture")
+                }
+            }
+        }
+    }
+}
+#endif

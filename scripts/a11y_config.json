@@ -1,0 +1,36 @@
+{
+  "_comment": [
+    "Project tuning for scripts/a11y_audit.py. Every field is optional.",
+    "",
+    "disabled_rules      — rules that never run at all",
+    "advisory_rules      — rules that report but never fail CI, whatever their severity",
+    "exclude_paths       — path prefixes skipped entirely",
+    "labeled_wrappers    — our own components that guarantee an accessibility",
+    "                      label themselves; a view built from one counts as",
+    "                      already announced (add yours here rather than",
+    "                      sprinkling a11y-ignore comments)",
+    "speaks_for_itself   — extra tokens meaning 'this view announces its own text'",
+    "allowed_font_shadows — Font token names we knowingly keep even though they",
+    "                      shadow an Apple text style (see A11Y008)",
+    "",
+    "Adding a component to labeled_wrappers is a claim about that component.",
+    "Verify it really does set a label before listing it here."
+  ],
+
+  "disabled_rules": [],
+
+  "advisory_rules": [
+    "A11Y007"
+  ],
+
+  "exclude_paths": [],
+
+  "labeled_wrappers": [
+    "DashStepper",
+    "SegmentedControl"
+  ],
+
+  "speaks_for_itself": [],
+
+  "allowed_font_shadows": []
+}

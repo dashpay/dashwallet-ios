@@ -28,8 +28,19 @@ class MenuItemModel: Identifiable, Equatable, Hashable {
     var showToggle: Bool = false
     var isToggled: Bool = false
     var action: (() -> Void)? = nil
+    /// Handler for the info icon, when it should act as its own button
+    /// rather than decorate the title.
+    var infoAction: (() -> Void)? = nil
     
-    init(title: String, subtitle: String? = nil, details: String? = nil, icon: IconName? = nil, showInfo: Bool = false, showToggle: Bool = false, isToggled: Bool = false, action: (() -> Void)? = nil) {
+    init(title: String,
+         subtitle: String? = nil,
+         details: String? = nil,
+         icon: IconName? = nil,
+         showInfo: Bool = false,
+         showToggle: Bool = false,
+         isToggled: Bool = false,
+         action: (() -> Void)? = nil,
+         infoAction: (() -> Void)? = nil) {
         self.title = title
         self.subtitle = subtitle
         self.details = details
@@ -38,6 +49,7 @@ class MenuItemModel: Identifiable, Equatable, Hashable {
         self.showToggle = showToggle
         self.isToggled = isToggled
         self.action = action
+        self.infoAction = infoAction
     }
     
     static func == (lhs: MenuItemModel, rhs: MenuItemModel) -> Bool {

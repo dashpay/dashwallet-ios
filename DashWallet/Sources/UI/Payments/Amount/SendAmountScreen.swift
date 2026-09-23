@@ -244,8 +244,6 @@ private struct SendAmountKeyboardSection: View {
                 inProgress: isLoading,
                 actionHandler: onSend
             )
-            .padding(.top, 10)
-            .padding(.bottom, 15)
         }
     }
 }

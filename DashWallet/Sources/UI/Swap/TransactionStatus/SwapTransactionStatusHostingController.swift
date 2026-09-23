@@ -34,6 +34,8 @@ final class SwapTransactionStatusHostingController: UIViewController, Navigation
     func shouldPopViewController() -> Bool { false }
 
     private let viewModel: OrderPreviewViewModel
+    /// This screen's mark on `SwapTrackingService`; see `StatusVisibilityClaim`.
+    private let visibilityClaim = SwapTrackingService.StatusVisibilityClaim()
 
     init(viewModel: OrderPreviewViewModel) {
         self.viewModel = viewModel
@@ -105,12 +107,20 @@ final class SwapTransactionStatusHostingController: UIViewController, Navigation
         super.viewWillAppear(animated)
         // No swipe-back while the status screen is active.
         navigationController?.interactivePopGestureRecognizer?.isEnabled = false
+        // The user is now watching THIS swap's live progress, so
+        // `SwapNotificationProducer` consumes its terminal transition
+        // instead of showing a banner over it. Every other order still
+        // banners — the id is what keeps the two apart.
+        visibilityClaim.begin(orderID: viewModel.submittedTxId)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         // Restore normal swipe-back for whatever screen comes next (Home / Portal / Order Preview).
         navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+        // The id registered on appear, not a re-read of `submittedTxId`,
+        // which can have changed since.
+        visibilityClaim.end()
     }
 
     // MARK: - Retry
@@ -207,17 +217,5 @@ private struct SwapTransactionStatusView: View {
     }
 }
 
-private extension UIViewController {
-    /// Finds the first UITabBarController in the view-controller hierarchy reachable from `self`
-    /// (children + presented), used to switch back to the Home tab when the flow was pushed.
-    func dw_firstTabBarController() -> UITabBarController? {
-        if let tab = self as? UITabBarController { return tab }
-        for child in children {
-            if let tab = child.dw_firstTabBarController() { return tab }
-        }
-        if let presented = presentedViewController {
-            return presented.dw_firstTabBarController()
-        }
-        return nil
-    }
-}
+// `dw_firstTabBarController()` now lives on the shared `UIViewController`
+// category next to `topController()`, where a third caller could reach it.

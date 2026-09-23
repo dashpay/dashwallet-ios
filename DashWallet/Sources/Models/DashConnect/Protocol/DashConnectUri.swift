@@ -18,6 +18,7 @@ enum DashConnectUriError: LocalizedError, Equatable {
     case invalidEphemeralPublicKey
     case emptyTransitionPayload
     case invalidKeyLabelEncoding
+    case bodyTooLong
 
     var errorDescription: String? {
         switch self {
@@ -55,6 +56,8 @@ enum DashConnectUriError: LocalizedError, Equatable {
             return "The dash-key application label is not valid UTF-8."
         case .emptyTransitionPayload:
             return "The dash-st payload must be non-empty."
+        case .bodyTooLong:
+            return "The URI body is longer than the DashConnect payload format allows."
         }
     }
 }
@@ -68,6 +71,47 @@ enum DashConnectUri {
     private static let contractIdLength = 32
     private static let minKeyPayloadLength = 1 + compressedPubKeyLength + contractIdLength + 1
     private static let maxLabelLength = 64
+
+    /// Largest payloads the two formats can legitimately carry.
+    ///
+    /// `dash-key:` is fully specified: version + compressed point + contract id
+    /// + label length + label.
+    ///
+    /// `dash-st:` carries one `IdentityUpdateTransition` that adds the two
+    /// login keys: identity id, revision, nonce, two key entries with their
+    /// contract bounds and per-key signatures, and the transition signature —
+    /// well under a kilobyte. The ceiling is deliberately not Platform's own
+    /// state-transition limit, which is far larger than this format ever needs
+    /// and which the decode below cannot afford: its cost is quadratic in the
+    /// encoded length, so a 32 KiB ceiling would admit a ~44,800-character body
+    /// worth ~1.5 billion inner iterations — seconds of CPU per link, from any
+    /// installed app. 4 KiB costs ~23 million, tens of milliseconds, and still
+    /// leaves several times the headroom a longer key form or an added field
+    /// would need.
+    private static let maxKeyPayloadLength = minKeyPayloadLength + maxLabelLength
+    private static let maxStPayloadLength = 4 * 1024
+
+    /// Encoded-length ceilings, enforced BEFORE decoding.
+    ///
+    /// `base58Decode` allocates a buffer proportional to the input and walks all
+    /// of it once per input character, so its cost is quadratic in the encoded
+    /// length. A QR code bounds that by its own capacity; a URL does not — any
+    /// installed app, or a tapped remote link, can hand this an arbitrarily long
+    /// run of valid Base58 characters, once per link. `parseQR` is `nonisolated
+    /// async`, so that work runs on the cooperative pool rather than the main
+    /// actor: it does not freeze the UI by itself, but it does burn CPU and
+    /// battery on threads the rest of the app shares, and a burst of links
+    /// starves them. That is why the payload ceilings above are the smallest
+    /// each format can be given rather than the largest Platform would accept.
+    /// The bound belongs here rather than at the URL boundary so every carrier,
+    /// including ones added later, inherits it.
+    ///
+    /// Base58 expands by log(256)/log(58) ≈ 1.366 characters per byte; the
+    /// integer form below rounds up, and the +8 absorbs the leading-zero
+    /// characters the encoding adds one-for-one.
+    private static func maxEncodedLength(forPayloadBytes bytes: Int) -> Int {
+        (bytes * 1366 + 999) / 1000 + 8
+    }
     private static let base58Alphabet = Array("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".utf8)
     private static let base58Reverse: [Int8] = {
         var map = [Int8](repeating: -1, count: 128)
@@ -86,7 +130,10 @@ enum DashConnectUri {
     }
 
     static func parseKeyRequest(_ uri: String) throws -> DashKeyRequest {
-        let envelope = try parseEnvelope(uri, scheme: keyScheme, invalidScheme: .invalidKeyScheme)
+        let envelope = try parseEnvelope(uri,
+                                         scheme: keyScheme,
+                                         invalidScheme: .invalidKeyScheme,
+                                         maxPayloadLength: maxKeyPayloadLength)
         let payload = envelope.payload
 
         guard payload.count >= minKeyPayloadLength else {
@@ -136,7 +183,10 @@ enum DashConnectUri {
     }
 
     static func parseStRequest(_ uri: String) throws -> DashStRequest {
-        let envelope = try parseEnvelope(uri, scheme: stScheme, invalidScheme: .invalidStScheme)
+        let envelope = try parseEnvelope(uri,
+                                         scheme: stScheme,
+                                         invalidScheme: .invalidStScheme,
+                                         maxPayloadLength: maxStPayloadLength)
         guard !envelope.payload.isEmpty else {
             throw DashConnectUriError.emptyTransitionPayload
         }
@@ -146,7 +196,8 @@ enum DashConnectUri {
 
     private static func parseEnvelope(_ uri: String,
                                       scheme: String,
-                                      invalidScheme: DashConnectUriError) throws
+                                      invalidScheme: DashConnectUriError,
+                                      maxPayloadLength: Int) throws
         -> (payload: Data, network: DashConnectNetwork) {
         guard uri.hasPrefix(scheme) else {
             throw invalidScheme
@@ -164,6 +215,11 @@ enum DashConnectUri {
         let body = String(remainder[..<queryIndex])
         guard !body.isEmpty else {
             throw DashConnectUriError.emptyBody
+        }
+        // Before the decode, not after: the point is to never run the quadratic
+        // loop on an oversized body.
+        guard body.utf8.count <= maxEncodedLength(forPayloadBytes: maxPayloadLength) else {
+            throw DashConnectUriError.bodyTooLong
         }
 
         let query = String(remainder[remainder.index(after: queryIndex)...])
@@ -185,6 +241,11 @@ enum DashConnectUri {
 
         guard let payload = base58Decode(body) else {
             throw DashConnectUriError.invalidBase58
+        }
+        // The encoded ceiling is an upper bound with rounding slack in it; this
+        // is the exact one the format allows.
+        guard payload.count <= maxPayloadLength else {
+            throw DashConnectUriError.bodyTooLong
         }
 
         return (payload, network)

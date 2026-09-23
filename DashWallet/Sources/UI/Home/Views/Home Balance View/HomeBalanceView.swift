@@ -27,23 +27,26 @@ enum HomeBalanceViewState: Int {
 
 // MARK: - HomeBalanceView
 
-/// Home header: the combined total (transparent + platform + shielded)
-/// as the hero amount, then one row per balance with its fiat value and
-/// circular in/out transfer buttons. Every row's in-arrow opens the
-/// receive sheet (Receive ↔ Internal) with that balance pinned as the
-/// destination; every out-arrow opens the mirrored send sheet
-/// (Send ↔ Internal) with that balance pinned as the source.
+/// Home header: the hero waits for the transparent balance, then sums the known
+/// balances. Each balance has a row with its fiat value; missing amounts stay
+/// unavailable and label an otherwise known total partial.
+/// Advanced mode controls whether Platform credits are included.
+///
+/// The rows are a readout, not a control surface. They used to carry an
+/// in/out arrow pair opening the pinned receive/send sheets; the transfer
+/// routes those reached are all on the payments tab, and a second, denser
+/// entry to them on the balance header was two taps the header did not need.
 struct HomeBalanceView: View {
     @ObservedObject var viewModel: BalanceModel
     @ObservedObject private var platformSync = PlatformAddressSyncCoordinator.shared
     @ObservedObject private var shieldedSync = ShieldedSyncMonitor.shared
     @State private var opacity: Double = 0.3
     var onLongPress: () -> Void
-    var onReceive: (ChainNetwork) -> Void = { _ in }
-    var onSend: (ChainNetwork) -> Void = { _ in }
-    /// Tap on a row's body (icon/title/amount — not the arrows): opens the
-    /// what-is-this-balance info sheet for that balance.
+    /// Tap on a row: opens the what-is-this-balance info sheet.
     var onInfo: (ChainNetwork) -> Void = { _ in }
+    /// Advanced mode includes Platform credits even before sync starts.
+    /// Unavailable amounts use a placeholder until their local read succeeds.
+    var showsPlatformBalance: Bool = true
 
     // Header nav-bar (SB-11) inputs, threaded in by HomeView from the same
     // app-owned identity snapshot the UIKit nav-bar avatar reads. A nil
@@ -57,9 +60,13 @@ struct HomeBalanceView: View {
     var onProfileTap: () -> Void = {}
     var onNotificationsTap: () -> Void = {}
 
-    private var platformDuffs: UInt64 { platformSync.platformBalance / 1_000 }
-    private var shieldedDuffs: UInt64 { platformSync.shieldedBalance / 1_000 }
-    private var totalDuffs: UInt64 { viewModel.value + platformDuffs + shieldedDuffs }
+    private var balance: HomeBalancePresentation {
+        HomeBalancePresentation(
+            transparentDuffs: viewModel.value,
+            platformState: platformSync.platformBalanceState,
+            shieldedCredits: platformSync.shieldedBalanceState.credits,
+            showsPlatformBalance: showsPlatformBalance)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -75,8 +82,8 @@ struct HomeBalanceView: View {
             )
             #endif
 
-            if viewModel.isTestnet {
-                testnetBadge
+            if let badgeText = viewModel.networkBadgeText {
+                networkBadge(badgeText)
             }
 
             ZStack {
@@ -109,11 +116,25 @@ struct HomeBalanceView: View {
                         .frame(width: 58, height: 58)
                 } else {
                     VStack(spacing: 0) {
-                        DashAmount(amount: Int64(totalDuffs), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
-                            .foregroundColor(Color.dash.whiteText)
-                        Text(viewModel.fiatString(forDuffs: totalDuffs))
-                            .font(.subhead)
-                            .foregroundColor(Color.dash.whiteText)
+                        if let totalDuffs = balance.totalDuffs {
+                            DashAmount(amount: Int64(totalDuffs), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
+                                .foregroundColor(Color.dash.whiteText)
+                            Text(viewModel.fiatString(forDuffs: totalDuffs))
+                                .font(.subhead)
+                                .foregroundColor(Color.dash.whiteText)
+                            if balance.isPartial {
+                                Text(NSLocalizedString("Known balance", comment: "Total excludes unavailable balances"))
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+                        } else {
+                            Text("—")
+                                .font(.largeTitle)
+                                .foregroundColor(Color.dash.whiteText)
+                            Text(NSLocalizedString("Balance unavailable", comment: "Balance not restored"))
+                                .font(.subhead)
+                                .foregroundColor(Color.dash.whiteText)
+                        }
 
                         ZStack {
                             if viewModel.shouldShowTapToHideBalance {
@@ -137,7 +158,7 @@ struct HomeBalanceView: View {
                 onLongPress()
             }
 
-            if !viewModel.isBalanceHidden && platformSync.isRunning {
+            if !viewModel.isBalanceHidden {
                 breakdownCard
                     .padding(.horizontal, 16)
                     .padding(.top, 12)
@@ -201,30 +222,29 @@ struct HomeBalanceView: View {
 
     private var breakdownCard: some View {
         VStack(spacing: 0) {
+            // Titles from `balanceName` rather than spelled out here: simple
+            // mode calls the Core balance "Dash Wallet", and that decision
+            // belongs in one place.
             balanceRow(
                 icon: "wallet.pass",
-                title: NSLocalizedString("Transparent", comment: "Balance breakdown"),
+                title: ChainNetwork.core.balanceName,
                 duffs: viewModel.value,
-                infoAction: { onInfo(.core) },
-                inAction: { onReceive(.core) },
-                outAction: { onSend(.core) })
-            rowDivider
-            balanceRow(
-                icon: "cloud",
-                title: NSLocalizedString("Platform", comment: ""),
-                duffs: platformDuffs,
-                infoAction: { onInfo(.platform) },
-                inAction: { onReceive(.platform) },
-                outAction: { onSend(.platform) })
+                infoAction: { onInfo(.core) })
+            if showsPlatformBalance {
+                rowDivider
+                balanceRow(
+                    icon: "cloud",
+                    title: ChainNetwork.platform.balanceName,
+                    duffs: balance.platformDuffs,
+                    infoAction: { onInfo(.platform) })
+            }
             rowDivider
             balanceRow(
                 icon: "shield",
-                title: NSLocalizedString("Shielded", comment: ""),
-                duffs: shieldedDuffs,
+                title: ChainNetwork.shielded.balanceName,
+                duffs: balance.shieldedDuffs,
                 isSyncing: shieldedSync.isSyncing || platformSync.isShieldedBalanceReconciling,
-                infoAction: { onInfo(.shielded) },
-                inAction: { onReceive(.shielded) },
-                outAction: { onSend(.shielded) })
+                infoAction: { onInfo(.shielded) })
         }
         .padding(.horizontal, 12)
         .background(Color.dash.white.opacity(0.12))
@@ -232,9 +252,9 @@ struct HomeBalanceView: View {
     }
 
     /// Unmissable "these are not real funds" marker while the wallet runs
-    /// on testnet.
-    private var testnetBadge: some View {
-        Text(NSLocalizedString("TESTNET", comment: "Badge on the home balance while the wallet runs on testnet"))
+    /// on a test network (TESTNET/DEVNET).
+    private func networkBadge(_ text: String) -> some View {
+        Text(text)
             .font(.system(size: 11, weight: .bold))
             .kerning(1.2)
             .foregroundColor(Color.dash.whiteText)
@@ -252,15 +272,11 @@ struct HomeBalanceView: View {
     private func balanceRow(
         icon: String,
         title: String,
-        duffs: UInt64,
+        duffs: UInt64?,
         isSyncing: Bool = false,
-        infoAction: @escaping () -> Void,
-        inAction: @escaping () -> Void,
-        outAction: @escaping () -> Void
+        infoAction: @escaping () -> Void
     ) -> some View {
         HStack(spacing: 8) {
-            // The row body is its own tap target (info sheet); keeping it a
-            // sibling of the arrow buttons means it can't swallow their taps.
             HStack(spacing: 8) {
                 Image(systemName: icon)
                     .font(.system(size: 15))
@@ -282,43 +298,24 @@ struct HomeBalanceView: View {
                     Text(
                         isSyncing
                             ? NSLocalizedString("Syncing", comment: "Shielded balance")
-                            : viewModel.fiatString(forDuffs: duffs)
+                            : duffs.map { viewModel.fiatString(forDuffs: $0) }
+                                ?? NSLocalizedString("Balance unavailable", comment: "Balance not restored")
                     )
                         .font(.caption2)
                         .foregroundColor(.white.opacity(0.7))
                 }
                 Spacer(minLength: 8)
-                DashAmount(amount: Int64(duffs), font: .footnote, dashSymbolFactor: 0.8, showDirection: false)
-                    .foregroundColor(Color.dash.whiteText)
+                if let duffs {
+                    DashAmount(amount: Int64(duffs), font: .footnote, dashSymbolFactor: 0.8, showDirection: false)
+                        .foregroundColor(Color.dash.whiteText)
+                } else {
+                    Text("—").foregroundColor(Color.dash.whiteText)
+                }
             }
             .contentShape(Rectangle())
             .onTapGesture { infoAction() }
-
-            transferButton(systemName: "arrow.down",
-                           label: NSLocalizedString("Transfer in", comment: "Balance breakdown"),
-                           action: inAction)
-            transferButton(systemName: "arrow.up",
-                           label: NSLocalizedString("Transfer out", comment: "Balance breakdown"),
-                           action: outAction)
         }
         .padding(.vertical, 9)
     }
 
-    private func transferButton(
-        systemName: String,
-        label: String,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Image(systemName: systemName)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(Color.dash.whiteText)
-                .frame(width: 28, height: 28)
-                .background(Circle().fill(Color.dash.white.opacity(0.18)))
-                // Keep the visual small but the tap target comfortable.
-                .contentShape(Rectangle().inset(by: -8))
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(label)
-    }
 }

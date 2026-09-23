@@ -36,6 +36,20 @@ static NSString *const LEGACY_USER_HAS_BALANCE_KEY = @"DW_GLOB_userHasBalance";
 // scoped by the active wallet (`DWWalletEnvironment.activeWalletIdHex`).
 static NSString *const PER_WALLET_NEEDS_BACKUP_PREFIX = @"DW_WALLET_NEEDS_BACKUP_";
 static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_";
+static NSString *const PER_WALLET_NOTIFICATION_CATCH_UP_PREFIX = @"DW_WALLET_NOTIFICATION_CATCH_UP_";
+// `advancedModeEnabled` and `advancedModeUserManaged` are readonly to the rest
+// of the app: a direct assignment would move the flag without posting
+// `DWAdvancedModeDidChangeNotification`, leaving every screen that is already
+// on display showing the old state. Writable only in here, through
+// `updateAdvancedModeEnabled:`.
+@interface DWGlobalOptions ()
+
+@property (nonatomic, assign) BOOL advancedModeEnabled;
+@property (nonatomic, assign) BOOL advancedModeUserManaged;
+
+- (void)updateAdvancedModeEnabled:(BOOL)enabled;
+
+@end
 
 @implementation DWGlobalOptions
 
@@ -46,6 +60,8 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
 @dynamic autoLockAppInterval;
 @dynamic shortcuts;
 @dynamic balanceHidden;
+@dynamic advancedModeEnabled;
+@dynamic advancedModeUserManaged;
 @dynamic tapToHideBalanceShown;
 @dynamic shouldDisplayOnboarding;
 @dynamic paymentsScreenCurrentTab;
@@ -57,11 +73,20 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
 @dynamic exploreDashMerchantsInfoShown;
 @dynamic coinbaseInfoShown;
 @dynamic shortcutBannerState;
+@dynamic inactivityReminderDisabled;
+@dynamic inactivityReminderWalletHadBalance;
+// Without this the compiler synthesizes an ivar-backed accessor, `class_addMethod`
+// in DSDynamicOptions silently loses the race for the selector, and the property
+// stops being a user default: the registered @YES never applies (so notifications
+// read as switched off on every launch) and the user's own choice is forgotten at
+// termination.
+@dynamic localNotificationsEnabled;
 
 #ifdef DASHPAY
 @dynamic dashpayUsername;
 @dynamic dashpayRegistrationCompleted;
 @dynamic mostRecentViewedNotificationDate;
+@dynamic viewedNotificationEventKeys;
 @dynamic dashPayRegistrationOpenedOnce;
 @dynamic confirmationAcceptContactRequestIsOn;
 #endif
@@ -74,6 +99,7 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
         DW_KEYPATH(self, walletNeedsBackup) : @YES,
         DW_KEYPATH(self, userHasBalance) : @NO,
         DW_KEYPATH(self, localNotificationsEnabled) : @YES,
+        DW_KEYPATH(self, inactivityReminderWalletHadBalance) : @NO,
         DW_KEYPATH(self, autoLockAppInterval) : @60, // 1 min
         DW_KEYPATH(self, shouldDisplayOnboarding) : @YES,
         DW_KEYPATH(self, shouldDisplayReclassifyYourTransactionsFlow) : @YES,
@@ -207,6 +233,33 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
                  legacyKey:LEGACY_USER_HAS_BALANCE_KEY];
 }
 
+// How far back the notification producers must look to catch up. Unlike the
+// two flags above there is no legacy global to fall back to and no default:
+// `nil` means "never caught up on this wallet", and the producers then use
+// their own freshness window. Per-wallet because the boundary describes what
+// THIS wallet has already been scanned for.
+- (nullable NSDate *)notificationCatchUpDate {
+    NSString *key = [self perWalletKeyWithPrefix:PER_WALLET_NOTIFICATION_CATCH_UP_PREFIX];
+    if (key == nil) {
+        return nil;
+    }
+    id value = [self.userDefaults objectForKey:key];
+    return [value isKindOfClass:NSDate.class] ? (NSDate *)value : nil;
+}
+
+- (void)setNotificationCatchUpDate:(nullable NSDate *)notificationCatchUpDate {
+    NSString *key = [self perWalletKeyWithPrefix:PER_WALLET_NOTIFICATION_CATCH_UP_PREFIX];
+    if (key == nil) {
+        return;
+    }
+    if (notificationCatchUpDate == nil) {
+        [self.userDefaults removeObjectForKey:key];
+    }
+    else {
+        [self.userDefaults setObject:notificationCatchUpDate forKey:key];
+    }
+}
+
 - (void)setActivationDateForReclassifyYourTransactionsFlowIfNeeded:(NSDate *)date {
     if (self.dateReclassifyYourTransactionsFlowActivated == nil) {
         self.dateReclassifyYourTransactionsFlowActivated = date;
@@ -221,14 +274,50 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
 
 #pragma mark - Methods
 
+NSNotificationName const DWAdvancedModeDidChangeNotification = @"org.dash.advanced-mode-did-change";
+
+- (void)setAdvancedModeEnabledByUser:(BOOL)enabled {
+    // Claimed before the write and regardless of whether the value moved: the
+    // point of the flag is that the user has an opinion, not what it is. An
+    // opinion formed before any Platform funds existed counts too — turning
+    // the mode off and then receiving credits must not turn it back on.
+    self.advancedModeUserManaged = YES;
+    [self updateAdvancedModeEnabled:enabled];
+}
+
+- (void)enableAdvancedModeForPlatformBalance:(uint64_t)balance {
+    NSAssert([NSThread isMainThread], @"advanced-mode policy must run on the main thread");
+    if (balance == 0 || self.advancedModeUserManaged) {
+        return;
+    }
+    [self updateAdvancedModeEnabled:YES];
+}
+
+/// The single writer. Nothing to do when the value is already the requested
+/// one — in particular the automatic policy re-running on every balance
+/// refresh, which lands here on each sync and must stay silent.
+- (void)updateAdvancedModeEnabled:(BOOL)enabled {
+    if (self.advancedModeEnabled == enabled) {
+        return;
+    }
+    self.advancedModeEnabled = enabled;
+    [[NSNotificationCenter defaultCenter] postNotificationName:DWAdvancedModeDidChangeNotification object:nil];
+}
+
 - (void)restoreToDefaults {
+    const BOOL advancedModeWasEnabled = self.advancedModeEnabled;
     self.walletNeedsBackup = YES;
     self.userHasBalance = NO;
+    self.notificationCatchUpDate = nil;
     self.balanceChangedDate = nil;
     self.walletBackupReminderWasShown = NO;
     self.shortcuts = nil;
     self.localNotificationsEnabled = YES;
+    self.inactivityReminderDisabled = NO;
+    self.inactivityReminderWalletHadBalance = NO;
     self.balanceHidden = NO;
+    self.advancedModeEnabled = NO;
+    self.advancedModeUserManaged = NO;
     self.tapToHideBalanceShown = NO;
     self.resyncingWallet = NO;
     self.selectedPaymentCurrency = DWPaymentCurrencyDash;
@@ -243,9 +332,17 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
     self.dashpayUsername = nil;
     self.dashpayRegistrationCompleted = NO;
     self.mostRecentViewedNotificationDate = nil;
+    self.viewedNotificationEventKeys = nil;
     self.dashPayRegistrationOpenedOnce = NO;
     self.confirmationAcceptContactRequestIsOn = YES;
 #endif
+
+    // A screen already on display reads the flag once; the reset has to
+    // say it moved, exactly as the settings switch does.
+    if (advancedModeWasEnabled) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:DWAdvancedModeDidChangeNotification
+                                                            object:nil];
+    }
 }
 
 @end

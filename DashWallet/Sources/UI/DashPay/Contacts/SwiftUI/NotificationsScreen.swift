@@ -8,25 +8,40 @@
 //  mirrors the Android dash-wallet notifications screen
 //  (fragment_notifications.xml /
 //  notification_contact_request_received_row.xml): gray background,
-//  one white rounded container holding all rows, "New" / "Earlier"
-//  section labels (15pt semibold), request rows with 36pt avatar,
-//  14pt body text, timestamp line ("26 May 2023, 9:45" format), and
-//  the light-blue Accept pill + round ignore inline.
+//  a search field over the list, one white rounded container holding
+//  all rows, "New" / "Earlier" section labels (15pt semibold), request
+//  rows with 36pt avatar, 14pt body text, timestamp line
+//  ("26 May 2023, 9:45" format), and the light-blue Accept pill +
+//  round ignore inline.
 //
 
 import SwiftUI
 import DashUIKit
 
 struct NotificationsScreen: View {
+    /// Debounce before a typed query is applied to the list, matching
+    /// the network-search debounce the contacts screens use.
+    private static let searchDebounceNanoseconds: UInt64 = 350_000_000
+
     @StateObject private var viewModel = ContactsViewModel()
     @State private var selectedContact: ContactItem? = nil
 
     let onBack: () -> Void
 
     /// Read-state captured once at screen entry so rows don't jump
-    /// between sections while the user is looking at them; the marker
-    /// itself advances on exit (`markNotificationsViewed`).
-    @State private var lastViewedAtEntry: Date = .distantPast
+    /// between sections while the user is looking at them; it is recorded
+    /// on exit (`markViewed`). The keys decide; the date marker only answers
+    /// for an install that has not recorded any yet
+    /// (`DashPayNotificationsReadState.isUnread`).
+    @State private var lastViewedAtEntry: Date?
+    @State private var viewedKeysAtEntry: Set<String>?
+
+    /// The search field's live text.
+    @State private var searchText = ""
+    /// The query the list is filtered by — trails `searchText` by the
+    /// debounce so the list doesn't churn on every keystroke.
+    @State private var appliedSearchQuery = ""
+    @State private var searchDebounceTask: Task<Void, Never>?
 
     var body: some View {
         ZStack {
@@ -34,7 +49,12 @@ struct NotificationsScreen: View {
 
             VStack(spacing: 0) {
                 NavigationBar(
-                    leading: { NavigationBarElement.back.button { onBack() } },
+                    leading: {
+                        NavigationBarElement.back.button {
+                            markViewed()
+                            onBack()
+                        }
+                    },
                     central: {
                         Text(NSLocalizedString("Notifications", comment: "DashPay Notifications"))
                             .font(.subheadMedium)
@@ -59,12 +79,28 @@ struct NotificationsScreen: View {
             Text(viewModel.errorMessage ?? "")
         }
         .onAppear {
-            lastViewedAtEntry = DWGlobalOptions.sharedInstance().mostRecentViewedNotificationDate ?? .distantPast
+            let options = DWGlobalOptions.sharedInstance()
+            lastViewedAtEntry = options.mostRecentViewedNotificationDate
+            viewedKeysAtEntry = options.viewedNotificationEventKeys.map(Set.init)
             viewModel.refresh()
         }
         .onDisappear {
-            SwiftDashSDKContactsService.shared.markNotificationsViewed()
+            markViewed()
         }
+        // Backgrounding while this screen is frontmost is an exit too —
+        // the app may never come back to run `.onDisappear`.
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
+            markViewed()
+        }
+    }
+
+    /// Marks everything on screen viewed: advances the read-state marker
+    /// and (through the service's injected seam) clears the tray's dashpay
+    /// thread and the store's dashpay seen-state. Idempotent — the marker
+    /// only moves forward — so firing from every exit path (back button,
+    /// `.onDisappear`, backgrounding) is harmless.
+    private func markViewed() {
+        SwiftDashSDKContactsService.shared.markNotificationsViewed()
     }
 
     // MARK: Events
@@ -78,6 +114,9 @@ struct NotificationsScreen: View {
         case theyAccepted
         /// Established because we accepted their request.
         case weAccepted
+        /// Established, but which side accepted is unknown — one of the two
+        /// direction timestamps is missing (`establishedByTheirAccept == nil`).
+        case established
     }
 
     private struct Event: Identifiable {
@@ -100,16 +139,31 @@ struct NotificationsScreen: View {
         let requests = viewModel.incomingRequests.map { Event(item: $0, kind: .incomingRequest) }
         let sent = viewModel.outgoingRequests.map { Event(item: $0, kind: .sentRequest) }
         let established = viewModel.contacts.map { item -> Event in
-            // The newer direction row is the reciprocation.
-            let incoming = item.incomingCreatedAt ?? .distantPast
-            let outgoing = item.outgoingCreatedAt ?? .distantPast
-            return Event(item: item, kind: incoming >= outgoing ? .theyAccepted : .weAccepted)
+            let kind: EventKind
+            switch item.establishedByTheirAccept {
+            case true?: kind = .theyAccepted
+            case false?: kind = .weAccepted
+            case nil: kind = .established
+            }
+            return Event(item: item, kind: kind)
         }
         return (requests + sent + established).sorted { $0.date > $1.date }
     }
 
-    private var newEvents: [Event] { events.filter { $0.date > lastViewedAtEntry } }
-    private var earlierEvents: [Event] { events.filter { $0.date <= lastViewedAtEntry } }
+    /// Events surviving the applied search query (`ContactItem
+    /// .matches(searchQuery:)` — the same predicate the contacts screen
+    /// filters with). An empty query keeps everything.
+    private var filteredEvents: [Event] {
+        events.filter { $0.item.matches(searchQuery: appliedSearchQuery) }
+    }
+
+    private var newEvents: [Event] { filteredEvents.filter(isNew) }
+    private var earlierEvents: [Event] { filteredEvents.filter { !isNew($0) } }
+
+    private func isNew(_ event: Event) -> Bool {
+        DashPayNotificationsReadState.isUnread(
+            event.item, lastViewed: lastViewedAtEntry, viewedKeys: viewedKeysAtEntry)
+    }
 
     // MARK: Body
 
@@ -128,6 +182,14 @@ struct NotificationsScreen: View {
         } else {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
+                    // Android parity: the search field shows whenever there
+                    // are notifications, filtering by the row's title.
+                    ContactsSearchField(
+                        placeholder: NSLocalizedString("Search notifications", comment: "DashPay Notifications"),
+                        text: $searchText)
+                        .padding(.horizontal, 15)
+                        .padding(.top, 12)
+
                     if !newEvents.isEmpty {
                         sectionHeader(NSLocalizedString("New", comment: "DashPay Notifications"))
                         rowsCard(newEvents)
@@ -136,11 +198,48 @@ struct NotificationsScreen: View {
                         sectionHeader(NSLocalizedString("Earlier", comment: "DashPay Notifications"))
                         rowsCard(earlierEvents)
                     }
+                    if filteredEvents.isEmpty {
+                        noSearchResults
+                    }
                     Spacer(minLength: 24)
                 }
             }
             .refreshable { await viewModel.syncNow() }
+            .onChange(of: searchText) { _, newValue in
+                scheduleSearch(newValue)
+            }
         }
+    }
+
+    /// Debounced hand-off from the field text to the applied query.
+    /// Clearing applies immediately — the full list must come straight
+    /// back when the ✕ empties the field.
+    private func scheduleSearch(_ text: String) {
+        searchDebounceTask?.cancel()
+        guard !text.trimmingCharacters(in: .whitespaces).isEmpty else {
+            appliedSearchQuery = ""
+            return
+        }
+        searchDebounceTask = Task {
+            try? await Task.sleep(nanoseconds: Self.searchDebounceNanoseconds)
+            guard !Task.isCancelled else { return }
+            appliedSearchQuery = text
+        }
+    }
+
+    /// Under a query that matched nothing the sections both hide;
+    /// say so instead of leaving a blank page.
+    private var noSearchResults: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 34, weight: .light))
+                .foregroundColor(.dash.tertiaryText)
+            Text(NSLocalizedString("No notifications match your search", comment: "DashPay Notifications"))
+                .font(.system(size: 14))
+                .foregroundColor(.dash.secondaryText)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 60)
     }
 
     private func sectionHeader(_ text: String) -> some View {
@@ -222,6 +321,19 @@ struct NotificationsScreen: View {
                 event,
                 text: String(
                     format: NSLocalizedString("You added %@ as a contact", comment: "DashPay Notifications"),
+                    event.item.displayTitle)
+            ) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(.dashGreen)
+            }
+        case .established:
+            // Neither "they accepted" nor "you added": the row can't say
+            // which side reciprocated, so it only states the outcome.
+            notificationRow(
+                event,
+                text: String(
+                    format: NSLocalizedString("%@ is now your contact", comment: "DashPay Notifications: established contact, accepting side unknown"),
                     event.item.displayTitle)
             ) {
                 Image(systemName: "checkmark.circle.fill")

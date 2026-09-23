@@ -197,8 +197,83 @@ final class StoredWalletInventoryTests: XCTestCase {
     func testLogicalWalletIdsAreNetworkScoped() throws {
         let ids = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: seedA)
 
-        XCTAssertEqual(ids.count, 2)
-        XCTAssertNotEqual(ids[.mainnet], ids[.testnet])
+        XCTAssertEqual(
+            ids.count,
+            SwiftDashSDKStoredWalletNetworkResolver.storableNetworks.count)
+        // All three ids distinct, not just mainnet vs testnet: a collision
+        // would make one network's deletion remove another network's wallet.
+        let distinctIds = Set(ids.values)
+        XCTAssertEqual(distinctIds.count, ids.count)
+    }
+
+    // MARK: - Devnet configuration
+
+    /// The wipe enumerates devnet stores by directory name, and the bare
+    /// `devnet` scope counts: naming stores after the configured devnet is
+    /// newer than devnet support, so a device that used devnet before it — or
+    /// with no name configured — keeps its wallet and identity rows there. A
+    /// wipe that skipped that scope would remove the shared mnemonic while
+    /// those rows survive, leaving records nothing can enumerate afterwards.
+    func testDevnetScopeDirectoriesIncludeTheBareScope() {
+        XCTAssertTrue(DevnetConfiguration.isDevnetScopeDirectory("devnet"))
+        XCTAssertTrue(DevnetConfiguration.isDevnetScopeDirectory("devnet-moutai"))
+    }
+
+    /// Mainnet and testnet stores sit in the same parent directory and must
+    /// never be opened — or deleted — as devnet scopes.
+    func testDevnetScopeDirectoriesExcludeOtherNetworks() {
+        XCTAssertFalse(DevnetConfiguration.isDevnetScopeDirectory("mainnet"))
+        XCTAssertFalse(DevnetConfiguration.isDevnetScopeDirectory("testnet"))
+        XCTAssertFalse(DevnetConfiguration.isDevnetScopeDirectory("devnetmoutai"))
+    }
+
+    func testDevnetNameRejectsWhitespaceAndSlash() {
+        // Mirrors `platform_wallet_manager_spv_start`, which rejects both —
+        // after the runtime has already been torn down, hence the pre-check.
+        XCTAssertNotNil(DevnetConfiguration.devnetNameValidationError("mou tai"))
+        XCTAssertNotNil(DevnetConfiguration.devnetNameValidationError(" moutai"))
+        XCTAssertNotNil(DevnetConfiguration.devnetNameValidationError("moutai "))
+        XCTAssertNotNil(DevnetConfiguration.devnetNameValidationError("a/b"))
+    }
+
+    func testDevnetNameAcceptsAPlainNameAndDeliberateClearing() {
+        XCTAssertNil(DevnetConfiguration.devnetNameValidationError("moutai"))
+        // Empty is not an error: clearing the field is how devnet is
+        // deliberately unconfigured.
+        XCTAssertNil(DevnetConfiguration.devnetNameValidationError(""))
+    }
+
+    func testDevnetProvisionsOnlyItself() throws {
+        XCTAssertEqual(
+            try SwiftDashSDKHost.missingWalletNetworks(
+                mnemonic: seedA,
+                persistedWalletIds: [],
+                currentNetwork: .devnet),
+            [.devnet])
+    }
+
+    func testMainnetProvisioningNeverMirrorsToDevnet() throws {
+        // Devnet exists only in internal builds, and a devnet wallet row is
+        // useless without devnet coordinates — creating one as a side effect
+        // of onboarding on mainnet would also demand a devnet SDK.
+        XCTAssertFalse(
+            try SwiftDashSDKHost.missingWalletNetworks(
+                mnemonic: seedA,
+                persistedWalletIds: [],
+                currentNetwork: .mainnet)
+                .contains(.devnet))
+    }
+
+    func testDevnetProvisioningSkipsAnAlreadyStoredDevnetWallet() throws {
+        let ids = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: seedA)
+        let devnetId = try XCTUnwrap(ids[.devnet])
+
+        XCTAssertEqual(
+            try SwiftDashSDKHost.missingWalletNetworks(
+                mnemonic: seedA,
+                persistedWalletIds: [devnetId],
+                currentNetwork: .devnet),
+            [])
     }
 
     func testAddWalletCreatesCurrentNetworkThenMissingMirror() throws {
@@ -497,6 +572,91 @@ final class RecoveryPhraseRoutingTests: XCTestCase {
             displayNames: [:]))
     }
 
+    /// A build without `DASH_DEVNET` must not surface devnet material here.
+    /// Enumeration classifies by derived wallet id, independent of what the
+    /// build can select, so a mirrored devnet entry would otherwise label the
+    /// row `Mainnet, Devnet`.
+    func testDevnetEntriesAreDroppedWhenTheBuildCannotSelectDevnet() throws {
+        let mainnetId = Data(repeating: 0x31, count: 32)
+        let devnetId = Data(repeating: 0x32, count: 32)
+        let entries = [
+            entry(walletId: mainnetId, canonicalId: mainnetId, mnemonic: seedA, network: .mainnet),
+            entry(walletId: devnetId, canonicalId: mainnetId, mnemonic: seedA, network: .devnet),
+        ]
+
+        let descriptors = try RecoveryPhraseInventory.makeDescriptors(
+            entries: RecoveryPhraseInventory.selectableEntries(entries, devnetAvailable: false),
+            currentNetwork: .mainnet,
+            activeWalletIds: [:],
+            displayNames: [mainnetId: "Primary"])
+
+        XCTAssertEqual(descriptors.count, 1)
+        XCTAssertEqual(descriptors[0].networks, [.mainnet])
+        XCTAssertEqual(descriptors[0].sourceWalletId, mainnetId)
+    }
+
+    /// A devnet-only phrase gets a descriptor of its own — a revealable row
+    /// for material `hasWallet` deliberately hides. It must not reach the
+    /// chooser in a shipping build.
+    func testDevnetOnlyPhraseLeavesTheChooserWhenDevnetIsUnavailable() throws {
+        let mainnetId = Data(repeating: 0x41, count: 32)
+        let devnetId = Data(repeating: 0x42, count: 32)
+        let entries = [
+            entry(walletId: mainnetId, canonicalId: mainnetId, mnemonic: seedA, network: .mainnet),
+            entry(walletId: devnetId, canonicalId: devnetId, mnemonic: seedB, network: .devnet),
+        ]
+
+        let descriptors = try RecoveryPhraseInventory.makeDescriptors(
+            entries: RecoveryPhraseInventory.selectableEntries(entries, devnetAvailable: false),
+            currentNetwork: .mainnet,
+            activeWalletIds: [:],
+            displayNames: [mainnetId: "Primary", devnetId: "Devnet wallet"])
+
+        guard case .direct(let descriptor) = RecoveryPhraseInventory.route(for: descriptors) else {
+            return XCTFail("Expected only the selectable wallet to remain")
+        }
+        XCTAssertEqual(descriptor.sourceWalletId, mainnetId)
+    }
+
+    /// An inventory that is entirely devnet reads as "no recovery phrase"
+    /// rather than offering a phrase the build cannot act on.
+    func testAnEntirelyDevnetInventoryIsUnavailableWhenDevnetIsUnavailable() throws {
+        let devnetId = Data(repeating: 0x61, count: 32)
+        let descriptors = try RecoveryPhraseInventory.makeDescriptors(
+            entries: RecoveryPhraseInventory.selectableEntries(
+                [entry(walletId: devnetId, canonicalId: devnetId, mnemonic: seedA, network: .devnet)],
+                devnetAvailable: false),
+            currentNetwork: .mainnet,
+            activeWalletIds: [:],
+            displayNames: [:])
+
+        XCTAssertTrue(descriptors.isEmpty)
+        XCTAssertEqual(RecoveryPhraseInventory.route(for: descriptors), .unavailable)
+    }
+
+    /// The gate is conditional, not a removal: an internal build still lists
+    /// every network it can select.
+    func testDevnetEntriesSurviveWhenTheBuildOffersDevnet() throws {
+        let mainnetId = Data(repeating: 0x51, count: 32)
+        let devnetId = Data(repeating: 0x52, count: 32)
+        let entries = [
+            entry(walletId: mainnetId, canonicalId: mainnetId, mnemonic: seedA, network: .mainnet),
+            entry(walletId: devnetId, canonicalId: mainnetId, mnemonic: seedA, network: .devnet),
+        ]
+
+        let selectable = RecoveryPhraseInventory.selectableEntries(entries, devnetAvailable: true)
+        XCTAssertEqual(selectable.count, 2)
+
+        let descriptors = try RecoveryPhraseInventory.makeDescriptors(
+            entries: selectable,
+            currentNetwork: .mainnet,
+            activeWalletIds: [:],
+            displayNames: [mainnetId: "Primary"])
+
+        XCTAssertEqual(descriptors.count, 1)
+        XCTAssertEqual(descriptors[0].networks, [.mainnet, .devnet])
+    }
+
     private func entry(
         walletId: Data,
         canonicalId: Data,
@@ -629,5 +789,95 @@ final class MnemonicFirstWalletCreationTests: XCTestCase {
         }
 
         XCTAssertEqual(storedMnemonic, previousMnemonic)
+    }
+}
+
+// MARK: - Devnet provisioning source
+
+/// First devnet entry must provision the wallet the user entered devnet from,
+/// or nothing — never another stored seed in its place.
+final class DevnetProvisioningSourceTests: XCTestCase {
+    private enum KeychainTestError: Error { case unreadable }
+
+    private let sourceId = Data(repeating: 0xA1, count: 32)
+    private let otherId = Data(repeating: 0xB2, count: 32)
+    private let validPhrase =
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+
+    func testNoRecordedSourceIsNotRecorded() {
+        let source = SwiftDashSDKHost.resolveDevnetProvisioningSource(
+            sourceWalletId: nil,
+            storedWalletIds: { XCTFail("no Keychain read without a source"); return [] },
+            readMnemonic: { _ in XCTFail("no Keychain read without a source"); return "" })
+
+        XCTAssertEqual(source, .notRecorded)
+    }
+
+    func testReadableValidSourceYieldsItsPhrase() {
+        let source = SwiftDashSDKHost.resolveDevnetProvisioningSource(
+            sourceWalletId: sourceId,
+            storedWalletIds: { [self.otherId, self.sourceId] },
+            readMnemonic: { id in
+                XCTAssertEqual(id, self.sourceId)
+                return self.validPhrase
+            })
+
+        XCTAssertEqual(source, .phrase(validPhrase))
+    }
+
+    func testSourceAbsentFromACompleteReadIsDeleted() {
+        let source = SwiftDashSDKHost.resolveDevnetProvisioningSource(
+            sourceWalletId: sourceId,
+            storedWalletIds: { [self.otherId] },
+            readMnemonic: { _ in XCTFail("a deleted source has nothing to read"); return "" })
+
+        XCTAssertEqual(source, .deleted)
+    }
+
+    func testEnumerationFailureIsUnavailableNotNotRecorded() {
+        let source = SwiftDashSDKHost.resolveDevnetProvisioningSource(
+            sourceWalletId: sourceId,
+            storedWalletIds: { throw KeychainTestError.unreadable },
+            readMnemonic: { _ in "" })
+
+        guard case .unavailable = source else {
+            return XCTFail("expected unavailable, got \(source)")
+        }
+    }
+
+    func testUnreadableSourceMnemonicIsUnavailable() {
+        let source = SwiftDashSDKHost.resolveDevnetProvisioningSource(
+            sourceWalletId: sourceId,
+            storedWalletIds: { [self.sourceId, self.otherId] },
+            readMnemonic: { _ in throw KeychainTestError.unreadable })
+
+        guard case .unavailable = source else {
+            return XCTFail("expected unavailable, got \(source)")
+        }
+    }
+
+    func testInvalidOrEmptySourceMnemonicIsUnavailable() {
+        for stored in ["", "not a valid mnemonic phrase at all"] {
+            let source = SwiftDashSDKHost.resolveDevnetProvisioningSource(
+                sourceWalletId: sourceId,
+                storedWalletIds: { [self.sourceId] },
+                readMnemonic: { _ in stored })
+
+            guard case .unavailable = source else {
+                return XCTFail("expected unavailable for \(stored.debugDescription), got \(source)")
+            }
+        }
+    }
+
+    func testAnUnreadableUnrelatedWalletDoesNotBlockTheSource() {
+        let source = SwiftDashSDKHost.resolveDevnetProvisioningSource(
+            sourceWalletId: sourceId,
+            storedWalletIds: { [self.otherId, self.sourceId] },
+            readMnemonic: { id in
+                guard id == self.sourceId else { throw KeychainTestError.unreadable }
+                return self.validPhrase
+            })
+
+        XCTAssertEqual(source, .phrase(validPhrase))
     }
 }

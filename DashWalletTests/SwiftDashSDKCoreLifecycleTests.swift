@@ -6,6 +6,7 @@
 //
 
 import XCTest
+import SwiftDashSDK
 @testable import dashpay
 
 private enum CoreLifecycleTestError: Error {
@@ -15,6 +16,18 @@ private enum CoreLifecycleTestError: Error {
 @MainActor
 final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
     private let now = Date(timeIntervalSince1970: 10_000)
+
+    func testNameEndpointFailureDoesNotBlockAdoptingDiscoveredIdentity() async throws {
+        let id = Data([1])
+        var adopted = false
+        let outcome = try await SameSeedIdentityRecoveryPipeline.run(
+            localIdentityIds: { [id] }, discover: { XCTFail("Already discovered"); return [] },
+            refreshNames: { _ in throw NSError(domain: "test", code: 1) },
+            adopt: { adopted = true; return true })
+        XCTAssertTrue(adopted)
+        XCTAssertTrue(outcome.adopted)
+        XCTAssertTrue(outcome.identitiesPersisted)
+    }
 
     func testRestartRunsExactlyStopThenStartAndResetsBusyState() async throws {
         var events: [String] = []
@@ -27,6 +40,81 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
 
         XCTAssertEqual(events, ["stop", "start"])
         XCTAssertEqual(restartingStates, [true, false])
+    }
+
+    // MARK: - Devnet start preflight
+
+    /// The runtime discovers devnet peers before the SDK is built; the SPV
+    /// start that follows reuses exactly those peers instead of fetching
+    /// `/masternodes` a second time.
+    func testDevnetPreflightPeersAreReusedForTheSameConfiguration() {
+        let preflight = DevnetStartPreflight(
+            scope: "devnet-moutai",
+            quorumURL: "https://quorum.example",
+            peers: ["1.2.3.4:20001"])
+
+        XCTAssertEqual(
+            preflight.peers(forScope: "devnet-moutai", quorumURL: "https://quorum.example"),
+            ["1.2.3.4:20001"])
+    }
+
+    /// Devnet settings can change between a preflight and the start it was
+    /// made for. Peers discovered for devnet A must never configure a client
+    /// for devnet B — nor peers from a different quorum service.
+    func testDevnetPreflightIsDiscardedWhenTheConfigurationChanged() {
+        let preflight = DevnetStartPreflight(
+            scope: "devnet-a",
+            quorumURL: "https://a.example",
+            peers: ["1.2.3.4:20001"])
+
+        XCTAssertNil(preflight.peers(forScope: "devnet-b", quorumURL: "https://a.example"))
+        XCTAssertNil(preflight.peers(forScope: "devnet-a", quorumURL: "https://b.example"))
+    }
+
+    /// An empty peer set is not a usable preflight: the start must rediscover
+    /// rather than configure a peer-restricted client with no peers.
+    func testEmptyDevnetPreflightIsNotReused() {
+        let preflight = DevnetStartPreflight(
+            scope: "devnet-a", quorumURL: "https://a.example", peers: [])
+
+        XCTAssertNil(preflight.peers(forScope: "devnet-a", quorumURL: "https://a.example"))
+    }
+
+    // MARK: - Selectable wallet material memo
+
+    /// The memo answers only for the inventory it was derived from, so a
+    /// changed wallet set re-runs the classification instead of returning a
+    /// stale verdict.
+    func testSelectableWalletMaterialMemoAnswersOnlyForItsOwnInventory() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "memo.\(UUID().uuidString)"))
+        let ids = [Data([0x01]), Data([0x02])]
+        let fingerprint = WalletEnvironment.SelectableWalletMaterialMemo.fingerprint(of: ids)
+
+        WalletEnvironment.SelectableWalletMaterialMemo(
+            fingerprint: fingerprint, selectable: false).save(to: defaults)
+        let loaded = try XCTUnwrap(
+            WalletEnvironment.SelectableWalletMaterialMemo.load(from: defaults))
+
+        XCTAssertEqual(loaded.verdict(for: fingerprint), false)
+        let changed = WalletEnvironment.SelectableWalletMaterialMemo.fingerprint(
+            of: ids + [Data([0x03])])
+        XCTAssertNil(loaded.verdict(for: changed))
+    }
+
+    /// The fingerprint identifies a SET of ids: Keychain enumeration order
+    /// must not invalidate a good memo and force the derivation again.
+    func testSelectableWalletMaterialFingerprintIsOrderIndependent() {
+        let ids = [Data([0x0a]), Data([0x0b]), Data([0xff])]
+
+        XCTAssertEqual(
+            WalletEnvironment.SelectableWalletMaterialMemo.fingerprint(of: ids),
+            WalletEnvironment.SelectableWalletMaterialMemo.fingerprint(of: ids.reversed()))
+    }
+
+    func testAbsentSelectableWalletMaterialMemoLoadsAsNil() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "memo.\(UUID().uuidString)"))
+
+        XCTAssertNil(WalletEnvironment.SelectableWalletMaterialMemo.load(from: defaults))
     }
 
     func testRestartPropagatesStartFailureAndAlwaysResetsBusyState() async {
@@ -120,7 +208,7 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
     }
 
     func testProcessCacheReusesValuesPerNetworkAndSeparatesNetworks() {
-        final class Token {}
+        final class Token: Sendable {}
 
         let cache = ProcessNetworkValueCache<Token>()
         let mainnetFirst = cache.value(for: "mainnet") { Token() }
@@ -132,6 +220,88 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertFalse(testnet.reused)
         XCTAssertTrue(mainnetFirst.value === mainnetSecond.value)
         XCTAssertFalse(mainnetFirst.value === testnet.value)
+    }
+
+    func testProcessCacheCoalescesConcurrentAsyncOpensAndRetriesFailures() async throws {
+        final class Token: Sendable {}
+        let cache = ProcessNetworkValueCache<Token>()
+        var creates = 0
+        var resumeOpen: CheckedContinuation<Void, Never>?
+        let first = Task { @MainActor in
+            try await cache.valueAsync(for: "testnet") {
+                creates += 1
+                await withCheckedContinuation { resumeOpen = $0 }
+                return Token()
+            }
+        }
+        while resumeOpen == nil { await Task.yield() }
+        let second = Task { @MainActor in
+            try await cache.valueAsync(for: "testnet") {
+                XCTFail("An in-flight open must be reused")
+                return Token()
+            }
+        }
+        await Task.yield()
+        resumeOpen?.resume()
+        let initial = try await first.value
+        let concurrent = try await second.value
+        XCTAssertEqual(creates, 1)
+        XCTAssertTrue(initial.value === concurrent.value)
+        XCTAssertEqual(initial.source, .created)
+        XCTAssertEqual(concurrent.source, .shared)
+        let cached = try await cache.valueAsync(for: "testnet") { Token() }
+        XCTAssertEqual(cached.source, .cached)
+        XCTAssertTrue(cached.value === initial.value)
+        do {
+            _ = try await cache.valueAsync(for: "mainnet") { throw CoreLifecycleTestError.start }
+            XCTFail("A failed open must throw")
+        } catch CoreLifecycleTestError.start {}
+        let retried = try await cache.valueAsync(for: "mainnet") { Token() }
+        XCTAssertEqual(retried.source, .created)
+        XCTAssertFalse(retried.value === initial.value)
+    }
+
+    func testConcurrentFailedOpenWaitersShareOneFreshRetry() async throws {
+        let cache = ProcessNetworkValueCache<Int>()
+        var releaseFailure: CheckedContinuation<Void, Never>?
+        var releaseRetry: CheckedContinuation<Void, Never>?
+        var entered = 0
+        var failed = 0
+        var retryCreates = 0
+        let callers = (0..<8).map { _ in
+            Task { @MainActor in
+                entered += 1
+                do {
+                    _ = try await cache.valueAsync(for: "testnet") {
+                        await withCheckedContinuation { releaseFailure = $0 }
+                        throw CoreLifecycleTestError.start
+                    }
+                    XCTFail("Initial open must fail")
+                    return -1
+                } catch {
+                    failed += 1
+                    // Retry immediately, before other waiters necessarily resume.
+                    return try await cache.valueAsync(for: "testnet") {
+                        retryCreates += 1
+                        guard retryCreates == 1 else {
+                            XCTFail("An older waiter discarded the active retry")
+                            return -1
+                        }
+                        await withCheckedContinuation { releaseRetry = $0 }
+                        return 42
+                    }.value
+                }
+            }
+        }
+        while entered < callers.count || releaseFailure == nil { await Task.yield() }
+        releaseFailure?.resume()
+        while failed < callers.count || releaseRetry == nil { await Task.yield() }
+        releaseRetry?.resume()
+        for caller in callers {
+            let value = try await caller.value
+            XCTAssertEqual(value, 42)
+        }
+        XCTAssertEqual(retryCreates, 1, "Old waiters must not remove or bypass the new in-flight retry")
     }
 
     func testSameSeedIdentityRecoveryDiscoversRefreshesAndAdoptsInOneRun() async throws {
@@ -158,7 +328,7 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(events, ["discover", "refresh", "adopt"])
         XCTAssertEqual(
             outcome,
-            .init(discoveredCount: 1, identityCount: 1, adopted: true))
+            .init(discoveredCount: 1, identityCount: 1, adopted: true, identitiesPersisted: true))
     }
 
     func testSameSeedIdentityRecoveryUsesPersistedIdentityWithoutRescanning() async throws {
@@ -179,7 +349,237 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(refreshedIdentityIds, [identityId])
         XCTAssertEqual(
             outcome,
-            .init(discoveredCount: 0, identityCount: 1, adopted: true))
+            .init(discoveredCount: 0, identityCount: 1, adopted: true, identitiesPersisted: true))
+    }
+
+    // MARK: - StartupIdentityRecoveryPolicy
+
+    private static let allStatuses: [WalletStartupStatus] = [
+        .ready, .noIdentity, .partialNoIdentity, .partialAccountsPending,
+        .discoveryFailed, .seedBindingUnverified, .identityScanIncomplete,
+    ]
+
+    private static let flags = [false, true]
+
+    func testPipelineRunsWhenNoReadinessPassRan() {
+        for discovered in Self.flags {
+            XCTAssertEqual(
+                StartupIdentityRecoveryPolicy.decision(
+                    readinessStatus: nil, readinessIdentityId: nil, readinessDiscoveredThisStart: discovered, hasLocalIdentity: false),
+                .runPipeline)
+        }
+    }
+
+    func testKnownIdentityAlwaysReachesThePipeline() {
+        // The guard behind adoption: whatever the status says, an identity the
+        // readiness pass knows about goes through the pipeline (name refresh
+        // then adopt) — past the memo when it was discovered in this start,
+        // under the memo when it was already on file. Never a skip, never an
+        // adoption without the name refresh.
+        let identityId = Data(repeating: 0x18, count: 32)
+        for status in Self.allStatuses {
+            XCTAssertEqual(
+                StartupIdentityRecoveryPolicy.decision(
+                    readinessStatus: status, readinessIdentityId: identityId, readinessDiscoveredThisStart: false, hasLocalIdentity: true),
+                .runPipeline,
+                "\(status)")
+            XCTAssertEqual(
+                StartupIdentityRecoveryPolicy.decision(
+                    readinessStatus: status, readinessIdentityId: identityId, readinessDiscoveredThisStart: true, hasLocalIdentity: false),
+                .refreshNamesAndAdopt,
+                "\(status) discovered")
+        }
+    }
+
+    func testProvenAbsenceOnlySettlesWhenTheStoreAgrees() {
+        // Rust proved the seed owns no identity, but the SwiftData mirror
+        // still holds rows (or the lookup was inconclusive): adopt them
+        // without a scan rather than retiring the backstop for the process.
+        for discovered in Self.flags {
+            for local: Bool? in [true, nil] {
+                XCTAssertEqual(
+                    StartupIdentityRecoveryPolicy.decision(
+                        readinessStatus: .noIdentity, readinessIdentityId: nil,
+                        readinessDiscoveredThisStart: discovered, hasLocalIdentity: local),
+                    .runPipelineWithoutDiscovery,
+                    "local=\(String(describing: local))")
+            }
+        }
+    }
+
+    func testOnlyProvenAbsenceSettlesTheBackstop() {
+        for discovered in Self.flags {
+            XCTAssertEqual(
+                StartupIdentityRecoveryPolicy.decision(
+                    readinessStatus: .noIdentity, readinessIdentityId: nil,
+                    readinessDiscoveredThisStart: discovered, hasLocalIdentity: false),
+                .skipSettled)
+        }
+    }
+
+    func testLocalDiscoveryFaultRunsThePipelineWithoutAScan() {
+        // The SDK says a rescan cannot answer it (`discoveryWorthRetrying ==
+        // false`, `identityIsSettled == false`): no unbudgeted scan, but the
+        // rows that do exist locally are still refreshed and adopted.
+        for discovered in Self.flags {
+            XCTAssertEqual(
+                StartupIdentityRecoveryPolicy.decision(
+                    readinessStatus: .discoveryFailed, readinessIdentityId: nil,
+                    readinessDiscoveredThisStart: discovered, hasLocalIdentity: false),
+                .runPipelineWithoutDiscovery)
+        }
+    }
+
+    func testSameSeedIdentityRecoveryNeverScansWhenDiscoveryIsNotAllowed() async throws {
+        let outcome = try await SameSeedIdentityRecoveryPipeline.run(
+            allowDiscovery: false,
+            localIdentityIds: { [] },
+            discover: { XCTFail("must not scan"); return [] },
+            refreshNames: { _ in XCTFail("nothing to refresh") },
+            adopt: { XCTFail("nothing to adopt"); return false })
+        XCTAssertEqual(
+            outcome,
+            .init(discoveredCount: 0, identityCount: 0, adopted: false, identitiesPersisted: false))
+    }
+
+    func testEveryOtherIdentitylessStatusRunsThePipeline() {
+        // `.partialNoIdentity` (Platform or scan key unreachable, and the
+        // decoder's fallback for unknown FFI statuses) is the SDK's "ask
+        // again"; the settled statuses without an identity are unexpected
+        // pairs and fail towards the pipeline.
+        for status in Self.allStatuses where status != .noIdentity && status != .discoveryFailed {
+            for discovered in Self.flags {
+                XCTAssertEqual(
+                    StartupIdentityRecoveryPolicy.decision(
+                        readinessStatus: status, readinessIdentityId: nil,
+                        readinessDiscoveredThisStart: discovered, hasLocalIdentity: false),
+                    .runPipeline,
+                    "\(status) discovered=\(discovered)")
+            }
+        }
+    }
+
+    func testProbeRerunOnlyWhenTheBudgetCutTheContactStepsShort() {
+        func rerun(
+            budgetExhausted: Bool = true, dashPaySyncRan: Bool = false, pending: UInt32 = 0,
+            seedUnverified: Bool = false, scanIncomplete: Bool = false, found: Bool = true
+        ) -> Bool {
+            StartupIdentityRecoveryPolicy.probeNeedsFullRerun(
+                identityFound: found, budgetExhausted: budgetExhausted, dashPaySyncRan: dashPaySyncRan,
+                contactAccountsPending: pending, seedBindingUnverified: seedUnverified,
+                identityScanIncomplete: scanIncomplete)
+        }
+        XCTAssertTrue(rerun())
+        XCTAssertTrue(rerun(dashPaySyncRan: true, pending: 2))
+        XCTAssertFalse(rerun(dashPaySyncRan: true, pending: 0))
+        // The contact pass was degraded or failed by Platform, not cut by the
+        // budget: a re-run under the default budget hits the same error.
+        XCTAssertFalse(rerun(budgetExhausted: false))
+        // Nothing to re-run for: the probe found no identity.
+        XCTAssertFalse(rerun(found: false))
+        // The drain was skipped for an unverified seed binding: the SDK fails
+        // that closed on every budget, so a re-run would be pure latency.
+        XCTAssertFalse(rerun(pending: 3, seedUnverified: true))
+        // The probe's own scan was cut off: a re-run would rescan from scratch
+        // under the default budget instead of reusing the identity.
+        XCTAssertFalse(rerun(scanIncomplete: true))
+    }
+
+    func testShortStartupBudgetOnlyForGeneratedWalletKnownToHaveNoLocalIdentity() {
+        XCTAssertEqual(
+            StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: true, hasLocalIdentity: false),
+            StartupIdentityRecoveryPolicy.generatedWalletStartupBudget)
+        XCTAssertNil(StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: true, hasLocalIdentity: true))
+        // Inconclusive lookup (fetch failed, no wallet row) keeps the default.
+        XCTAssertNil(StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: true, hasLocalIdentity: nil))
+        XCTAssertNil(StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: false, hasLocalIdentity: false))
+        XCTAssertNil(StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: false, hasLocalIdentity: true))
+        XCTAssertNil(StartupIdentityRecoveryPolicy.startupBudget(isGeneratedOnDevice: false, hasLocalIdentity: nil))
+    }
+
+    func testSameSeedIdentityRecoveryUsesReadinessIdentityWhenTheStoreLags() async throws {
+        // Readiness discovered the identity but the persister has not landed
+        // the row yet: the pipeline must refresh + adopt on the known id and
+        // never run a second discovery scan.
+        let identityId = Data(repeating: 0x19, count: 32)
+        var discoveryCalls = 0
+        var refreshedIdentityIds: [Data] = []
+
+        let outcome = try await SameSeedIdentityRecoveryPipeline.run(
+            knownIdentityIds: [identityId],
+            localIdentityIds: { [] },
+            discover: {
+                discoveryCalls += 1
+                return []
+            },
+            refreshNames: { refreshedIdentityIds = $0 },
+            adopt: { true })
+
+        XCTAssertEqual(discoveryCalls, 0)
+        XCTAssertEqual(refreshedIdentityIds, [identityId])
+        // The store never confirmed the row: the caller must not settle on it.
+        XCTAssertEqual(
+            outcome,
+            .init(discoveredCount: 0, identityCount: 1, adopted: true, identitiesPersisted: false))
+    }
+
+    func testSameSeedIdentityRecoveryPersistenceIsPerActedOnIdentityNotPerWallet() async throws {
+        // The wallet already has identity A on file; the readiness verdict
+        // carries a new identity B whose row never landed. A must not vouch
+        // for B.
+        let identityA = Data(repeating: 0x1b, count: 32)
+        let identityB = Data(repeating: 0x1c, count: 32)
+        var localIds: [Data] = []
+        let outcome = try await SameSeedIdentityRecoveryPipeline.run(
+            knownIdentityIds: [identityB],
+            localIdentityIds: {
+                defer { localIds = [identityA] }   // A shows up on the re-read only
+                return localIds
+            },
+            discover: { XCTFail("known identity must not be rediscovered"); return [] },
+            refreshNames: { XCTAssertEqual($0, [identityB]) },
+            adopt: { true })
+        XCTAssertEqual(
+            outcome,
+            .init(discoveredCount: 0, identityCount: 1, adopted: true, identitiesPersisted: false))
+    }
+
+    func testSameSeedIdentityRecoveryReportsPersistenceFromTheStoreNotTheIds() async throws {
+        // Discovery returned an id the persister never landed: acted on as a
+        // hydration fallback, but reported as not persisted.
+        let identityId = Data(repeating: 0x1a, count: 32)
+        let outcome = try await SameSeedIdentityRecoveryPipeline.run(
+            localIdentityIds: { [] },
+            discover: { [identityId] },
+            refreshNames: { _ in },
+            adopt: { true })
+        XCTAssertEqual(
+            outcome,
+            .init(discoveredCount: 1, identityCount: 1, adopted: true, identitiesPersisted: false))
+    }
+
+    // MARK: - GeneratedWalletIdentityMarker
+
+    func testGeneratedWalletMarkerMarksClearsAndIsolatesWallets() throws {
+        let suiteName = "SwiftDashSDKCoreLifecycleTests." + UUID().uuidString
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let generated = Data(repeating: 0x21, count: 32)
+        let imported = Data(repeating: 0x22, count: 32)
+
+        XCTAssertFalse(GeneratedWalletIdentityMarker.isMarked(walletId: generated, defaults: defaults))
+
+        GeneratedWalletIdentityMarker.mark(walletId: generated, defaults: defaults)
+        XCTAssertTrue(GeneratedWalletIdentityMarker.isMarked(walletId: generated, defaults: defaults))
+        XCTAssertFalse(GeneratedWalletIdentityMarker.isMarked(walletId: imported, defaults: defaults))
+
+        // Clearing is idempotent and per wallet.
+        GeneratedWalletIdentityMarker.clear(walletId: imported, defaults: defaults)
+        XCTAssertTrue(GeneratedWalletIdentityMarker.isMarked(walletId: generated, defaults: defaults))
+        GeneratedWalletIdentityMarker.clear(walletId: generated, defaults: defaults)
+        XCTAssertFalse(GeneratedWalletIdentityMarker.isMarked(walletId: generated, defaults: defaults))
+        GeneratedWalletIdentityMarker.clear(walletId: generated, defaults: defaults)
+        XCTAssertFalse(GeneratedWalletIdentityMarker.isMarked(walletId: generated, defaults: defaults))
     }
 
     func testWatchdogRefreshesOnlyAfterFullScanBecomesStale() {
@@ -259,6 +659,97 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             PlatformSyncRearmPolicy.requiresRuntimeRearm(
                 isRunning: true,
                 hasWalletManager: true))
+    }
+
+    /// A Platform outage must not cost the user a working Core runtime: with
+    /// Core up and Platform down, the triggers that fire on their own (launch,
+    /// foreground, the sync strip's Retry, "Sync Now") elide the rebuild whose
+    /// `fullReset` would stop SPV, clear the balance and empty the home
+    /// transaction list. This is the offline-launch regression in table form.
+    func testCoreOnlyTriggersElideTheRebuildWhilePlatformIsDown() {
+        typealias Trigger = SwiftDashSDKWalletRuntime.RefreshTrigger
+
+        // Core up, Platform down.
+        for trigger in [Trigger.startIfReady, .platformSyncRearm] {
+            XCTAssertTrue(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: true, isFullyReady: false),
+                "\(trigger.rawValue) must not rebuild a healthy Core because Platform is down")
+        }
+
+        // A network switch still rebuilds on Core alone — it detached the SPV
+        // subscriptions that only a rebuild re-attaches.
+        XCTAssertFalse(
+            RuntimeRefreshPolicy.shouldSkipRebuild(
+                trigger: .networkDidChange, isCoreReady: true, isFullyReady: false))
+        XCTAssertTrue(
+            RuntimeRefreshPolicy.shouldSkipRebuild(
+                trigger: .networkDidChange, isCoreReady: true, isFullyReady: true))
+
+        // A wallet change never elides, however ready the runtime looks.
+        for trigger in [Trigger.walletMaterialChanged, .walletDidChange] {
+            XCTAssertFalse(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: true, isFullyReady: true),
+                "\(trigger.rawValue) must always rebind the wallet")
+        }
+
+        // Nothing elides when Core itself is down.
+        for trigger in [Trigger.startIfReady, .platformSyncRearm, .networkDidChange] {
+            XCTAssertFalse(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: false, isFullyReady: false),
+                "\(trigger.rawValue) must rebuild when Core is not running")
+        }
+    }
+
+    /// `switchNetwork(to:)` detaches the SPV progress/peer/balance publishers and
+    /// clears wallet state BEFORE its own refresh reaches the lifecycle queue,
+    /// without clearing Core's running flag. A refresh queued in that window
+    /// must not elide: `isCoreRuntimeReady` reports `false` there because
+    /// `subscriptionsDetached` is set, so every trigger rebuilds and the
+    /// publishers are re-attached. Eliding instead would strand the runtime with
+    /// no subscriptions and a cleared balance that no later refresh repairs.
+    func testNoTriggerElidesWhileSwitchPreparationHasDetachedSubscriptions() {
+        typealias Trigger = SwiftDashSDKWalletRuntime.RefreshTrigger
+        let target = Network.testnet
+
+        // The state `prepareForNetworkSwitch()` leaves behind: host still bound,
+        // Core SPV still flagged running on the target, publishers detached.
+        // Readiness is computed here rather than asserted as a literal, so
+        // dropping the `subscriptionsDetached` term from the predicate fails
+        // this test instead of silently restoring the defect.
+        let preparedCoreReady = RuntimeReadinessPolicy.isCoreReady(
+            boundNetwork: target, target: target, hasBoundWallet: true,
+            isSPVRunning: true, subscriptionsDetached: true)
+        XCTAssertFalse(preparedCoreReady, "detached subscriptions must make Core unready")
+
+        let preparedFullyReady = RuntimeReadinessPolicy.isFullyReady(
+            isCoreReady: preparedCoreReady, isBlastRunning: true,
+            blastNetwork: target, target: target)
+        XCTAssertFalse(preparedFullyReady, "full readiness must not outrank detached Core")
+
+        // With those computed values, nothing may elide the rebuild.
+        for trigger in [Trigger.startIfReady, .platformSyncRearm, .networkDidChange,
+                        .walletMaterialChanged, .walletDidChange] {
+            XCTAssertFalse(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: preparedCoreReady, isFullyReady: preparedFullyReady),
+                "\(trigger.rawValue) must rebuild while the switch preparation has detached the subscriptions")
+        }
+
+        // Re-attaching the publishers makes the same runtime ready again, and
+        // the Core-only triggers go back to eliding.
+        let reattachedCoreReady = RuntimeReadinessPolicy.isCoreReady(
+            boundNetwork: target, target: target, hasBoundWallet: true,
+            isSPVRunning: true, subscriptionsDetached: false)
+        XCTAssertTrue(reattachedCoreReady, "re-attached subscriptions must restore Core readiness")
+
+        for trigger in [Trigger.startIfReady, .platformSyncRearm] {
+            XCTAssertTrue(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: reattachedCoreReady, isFullyReady: false))
+        }
     }
 
     func testWalletWithoutPlatformPaymentAccountUsesNeutralState() {
@@ -455,6 +946,198 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             CoreToShieldedAmountPolicy.lockValueDuffs(
                 forAmountDuffs: UInt64.max,
                 poolFeeCredits: 212_851_200))
+    }
+
+    // MARK: Core → Platform static reserve policy
+    //
+    // Pure reserve math for the DPP static address-funding floor. Runtime
+    // failure to resolve the SDK estimate is ViewModel/coordinator state
+    // handled in `InternalTransferViewModel` and exercised by the testnet
+    // smoke while the unit-test target stays broken.
+
+    private static let addressFundingReserveCredits: UInt64 = 62_000_000
+
+    func testCoreToPlatformReserveIsTheRoundedUpStaticFundingFee() {
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.reserveDuffs(
+                forAmountDuffs: 5_000_000,
+                reserveCredits: Self.addressFundingReserveCredits),
+            62_000)
+        // An exact duff multiple must NOT gain a spurious +1.
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.reserveDuffs(reserveCredits: 15_000_000),
+            15_000)
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.reserveDuffs(reserveCredits: 15_000_001),
+            15_001)
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: 5_000_000,
+                reserveCredits: Self.addressFundingReserveCredits),
+            5_062_000)
+    }
+
+    func testCoreToPlatformTinyAmountLocksAmountPlusStaticReserve() {
+        let reserve = CoreToPlatformAmountPolicy.reserveDuffs(
+            forAmountDuffs: 1,
+            reserveCredits: Self.addressFundingReserveCredits)
+        XCTAssertEqual(reserve, 62_000)
+        let lock = CoreToPlatformAmountPolicy.lockValueDuffs(
+            forAmountDuffs: 1,
+            reserveCredits: Self.addressFundingReserveCredits)
+        XCTAssertEqual(lock, 62_001)
+    }
+
+    func testCoreToPlatformMaxAmountLockEqualsTheSpendable() {
+        // Confirmation/execution consistency at Max: the amount Max fills
+        // (spendable − rounded-up fee) locks EXACTLY the spendable balance
+        // — the confirmed Total, the frozen submission lock, and the
+        // executed lock all come from `lockValueDuffs`, so they cannot
+        // diverge.
+        let spendable: UInt64 = 4_043_550_440
+        let maxAmount = CoreToPlatformAmountPolicy.maxAmountDuffs(
+            spendableDuffs: spendable,
+            reserveCredits: Self.addressFundingReserveCredits)
+        XCTAssertEqual(maxAmount, spendable - 62_000)
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: maxAmount,
+                reserveCredits: Self.addressFundingReserveCredits),
+            spendable)
+    }
+
+    func testCoreToPlatformMaxFailsClosedWhenTheBalanceCannotFund() {
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.maxAmountDuffs(
+                spendableDuffs: 62_000,
+                reserveCredits: Self.addressFundingReserveCredits),
+            0)
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.maxAmountDuffs(
+                spendableDuffs: 62_001,
+                reserveCredits: Self.addressFundingReserveCredits),
+            1)
+    }
+
+    func testCoreToPlatformMaxNeverFillsAnAmountContinueRejects() {
+        // At the UInt64 boundary the duffs→credits conversion overflows, so
+        // an uncapped Max would fill an amount `lockValueDuffs` refuses.
+        // Max caps at the largest representable amount instead — every
+        // filled amount stays submittable.
+        let maxAmount = CoreToPlatformAmountPolicy.maxAmountDuffs(
+            spendableDuffs: .max,
+            reserveCredits: Self.addressFundingReserveCredits)
+        XCTAssertEqual(maxAmount, UInt64.max / 1000)
+        XCTAssertNotNil(
+            CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: maxAmount,
+                reserveCredits: Self.addressFundingReserveCredits))
+    }
+
+    func testCoreToPlatformMaxHeldBackExcludesTheFundingReserve() {
+        // The held-back notice describes what STAYS in Core after the Max
+        // lock executes. The reserve leaves Core inside the lock, so it
+        // must never be counted as held back.
+        let spendable: UInt64 = 4_043_550_440
+        let maxAmount = CoreToPlatformAmountPolicy.maxAmountDuffs(
+            spendableDuffs: spendable,
+            reserveCredits: Self.addressFundingReserveCredits)
+
+        // Whole balance spendable: Max locks all of it — nothing stays in
+        // Core, so no notice.
+        XCTAssertNil(
+            CoreToPlatformAmountPolicy.maxHeldBackDuffs(
+                coreBalanceDuffs: spendable,
+                maxAmountDuffs: maxAmount,
+                reserveCredits: Self.addressFundingReserveCredits))
+
+        // With unconfirmed coins on top of the spendable envelope, the
+        // held-back value is exactly those coins.
+        let unconfirmed: UInt64 = 123_456
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.maxHeldBackDuffs(
+                coreBalanceDuffs: spendable + unconfirmed,
+                maxAmountDuffs: maxAmount,
+                reserveCredits: Self.addressFundingReserveCredits),
+            unconfirmed)
+    }
+
+    func testCoreToPlatformLockValueFailsClosedOnOverflow() {
+        // amount × 1000 credits overflows.
+        XCTAssertNil(
+            CoreToPlatformAmountPolicy.reserveDuffs(
+                forAmountDuffs: UInt64.max,
+                reserveCredits: Self.addressFundingReserveCredits))
+        XCTAssertNil(
+            CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: UInt64.max,
+                reserveCredits: Self.addressFundingReserveCredits))
+        // The largest amount whose credits fit still resolves (amount +
+        // reserve cannot overflow once amount × 1000 fits — the checked
+        // add in `lockValueDuffs` is defensive).
+        let nearMax = UInt64.max / 1000
+        XCTAssertNotNil(
+            CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: nearMax,
+                reserveCredits: Self.addressFundingReserveCredits))
+    }
+
+    func testCoreToPlatformAddressPairUsesTwoUnusedP2PKHAddresses() throws {
+        let used = try platformFundingAddress(
+            hashByte: 0x01,
+            addressIndex: 0,
+            isUsed: true)
+        let recipient = try platformFundingAddress(hashByte: 0x02, addressIndex: 1)
+        let remainder = try platformFundingAddress(hashByte: 0x03, addressIndex: 2)
+
+        let pair = try PlatformAddressSyncCoordinator.resolveCoreToPlatformAddressPair(
+            from: [remainder, used, recipient])
+
+        XCTAssertEqual(pair.recipient.row, recipient)
+        XCTAssertEqual(pair.remainder.row, remainder)
+    }
+
+    func testCoreToPlatformAddressPairFallsBackToUsedRemainderAddress() throws {
+        let recipient = try platformFundingAddress(hashByte: 0x01, addressIndex: 0)
+        let usedRemainder = try platformFundingAddress(
+            hashByte: 0x02,
+            addressIndex: 1,
+            isUsed: true)
+
+        let pair = try PlatformAddressSyncCoordinator.resolveCoreToPlatformAddressPair(
+            from: [usedRemainder, recipient])
+
+        XCTAssertEqual(pair.recipient.row, recipient)
+        XCTAssertEqual(pair.remainder.row, usedRemainder)
+    }
+
+    func testCoreToPlatformAddressPairRequiresTwoP2PKHAddresses() throws {
+        let recipient = try platformFundingAddress(hashByte: 0x01, addressIndex: 0)
+        let p2shOnly = try platformFundingAddress(
+            typeByte: 0x80,
+            hashByte: 0x02,
+            addressIndex: 1)
+
+        XCTAssertThrowsError(
+            try PlatformAddressSyncCoordinator.resolveCoreToPlatformAddressPair(
+                from: [p2shOnly, recipient]))
+    }
+
+    private func platformFundingAddress(
+        typeByte: UInt8 = 0xb0,
+        hashByte: UInt8,
+        accountIndex: UInt32 = 0,
+        addressIndex: UInt32,
+        isUsed: Bool = false
+    ) throws -> DerivedPlatformAddress {
+        let payload = Data([typeByte] + Array(repeating: hashByte, count: 20))
+        let address = try XCTUnwrap(Bech32m.encode(hrp: "tdash", data: payload))
+        return DerivedPlatformAddress(
+            address: address,
+            accountIndex: accountIndex,
+            addressIndex: addressIndex,
+            isUsed: isUsed,
+            balance: 0)
     }
 
     func testShieldedSweepChoosesPrefixWithLargestNetPayout() {

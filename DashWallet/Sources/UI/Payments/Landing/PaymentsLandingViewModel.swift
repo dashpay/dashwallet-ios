@@ -22,14 +22,6 @@ enum PaymentsLandingTab: String, CaseIterable, Identifiable {
         case .send: return NSLocalizedString("Send", comment: "")
         }
     }
-
-    var iconSystemName: String {
-        switch self {
-        case .receive: return "arrow.down"
-        case .internalTransfer: return "arrow.up.arrow.down"
-        case .send: return "arrow.up"
-        }
-    }
 }
 
 enum CoreReceiptSettlementStatus: Int, Comparable {
@@ -117,6 +109,40 @@ final class PaymentsLandingViewModel: ObservableObject {
     /// Which hero tabs this presentation offers. The full landing shows all
     /// three; the balance-row receive sheet narrows to Receive + Internal.
     let visibleTabs: [PaymentsLandingTab]
+    /// Mirrors `DWGlobalOptions.advancedModeEnabled` so the Internal card can
+    /// narrow to Shielded while the mode is off.
+    ///
+    /// Its own mirror rather than the transfer model's: that one is handed to
+    /// the screen as a plain `var`, so observing it here would mean re-rendering
+    /// the whole landing on every keystroke in the embedded amount field.
+    @Published private(set) var isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+
+    /// Which addresses the Receive tab offers.
+    ///
+    /// Core and Shielded are both ordinary destinations — a wallet can be paid
+    /// privately without calling itself advanced. Platform is the one that
+    /// needs the mode: it holds credits rather than spendable Dash, and
+    /// offering it by default invites payments the payer cannot spend back.
+    var receiveNetworks: [ChainNetwork] {
+        isAdvancedMode ? [.core, .shielded, .platform] : [.core, .shielded]
+    }
+
+    /// Whether the Send tab offers "Send to username".
+    ///
+    /// Both halves are required: the row opens the contact book, which needs an
+    /// identity to hold contacts, and a wallet that cannot name itself has
+    /// nothing to send *from* in that flow. False everywhere DashPay is not
+    /// built.
+    @Published private(set) var canSendToUsername = false
+
+    /// Whether the Send tab offers "Swap to other crypto".
+    ///
+    /// The same gate the Dash DEX shortcut is behind: the portal swaps real
+    /// assets across real chains, which testnet coins cannot do, and it is
+    /// useless without the SwapKit key. Fixed for the lifetime of the screen —
+    /// both inputs need a relaunch to change.
+    let canSwapToOtherCrypto = !WalletEnvironment.isTestnet && SwapKitConstants.isConfigured
+
     @Published private(set) var coreAddress: String? = nil
     @Published private(set) var platformAddress: String? = nil
     @Published private(set) var shieldedAddress: String? = nil
@@ -126,16 +152,57 @@ final class PaymentsLandingViewModel: ObservableObject {
 
     let allowsTransactionDetails: Bool
 
-    private struct ReceiptSession {
+    /// What already existed on the rail when the session opened, so a receipt
+    /// is only ever raised for something that arrived after.
+    ///
+    /// One case per rail rather than three flat fields: they were always
+    /// mutually exclusive — two of them zero on every session — and nothing
+    /// said so, which left every construction restating the two that did not
+    /// apply.
+    private enum ReceiptBaseline {
+        case core(transactionIds: Set<Data>)
+        case platform(activityCursor: Int64)
+        case shielded(activityIds: Set<String>)
+    }
+
+    /// Everything about a session other than its baseline, captured before
+    /// the baseline is read.
+    private struct ReceiptSessionSeed {
         let generation: UInt64
         let rail: ChainNetwork
         let address: String
         let walletId: Data
         let environment: Network
         let startedAt: Date
-        let coreTransactionIds: Set<Data>
-        let platformActivityCursor: Int64
-        let shieldedActivityIds: Set<String>
+    }
+
+    private struct ReceiptSession {
+        let seed: ReceiptSessionSeed
+        let baseline: ReceiptBaseline
+
+        var generation: UInt64 { seed.generation }
+        var rail: ChainNetwork { seed.rail }
+        var address: String { seed.address }
+        var walletId: Data { seed.walletId }
+        var environment: Network { seed.environment }
+        var startedAt: Date { seed.startedAt }
+
+        // Read by the rail's own watcher, which only runs when the baseline is
+        // that rail's case; the empty fallbacks are unreachable in practice.
+        var coreTransactionIds: Set<Data> {
+            guard case .core(let ids) = baseline else { return [] }
+            return ids
+        }
+
+        var platformActivityCursor: Int64 {
+            guard case .platform(let cursor) = baseline else { return 0 }
+            return cursor
+        }
+
+        var shieldedActivityIds: Set<String> {
+            guard case .shielded(let ids) = baseline else { return [] }
+            return ids
+        }
     }
 
     private var cancellables = Set<AnyCancellable>()
@@ -164,6 +231,34 @@ final class PaymentsLandingViewModel: ObservableObject {
         reloadCoreAddress()
         reloadShieldedAddress()
 
+        NotificationCenter.default.publisher(for: .advancedModeDidChange)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+                // Platform is the only segment the mode takes away, and it can
+                // be the selected one at that moment — leaving the tab showing
+                // a Platform address with no segment left to move off it.
+                if !self.isAdvancedMode, !self.receiveNetworks.contains(self.network) {
+                    self.network = .core
+                }
+            }
+            .store(in: &cancellables)
+
+        #if DASHPAY
+        refreshCanSendToUsername()
+
+        // The identity can be adopted while this landing is already up — a
+        // registration finishing, or a recovery resolving one — and the row
+        // has to appear without the user leaving the tab.
+        NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.refreshCanSendToUsername()
+            }
+            .store(in: &cancellables)
+        #endif
+
         PlatformAddressSyncCoordinator.shared.$derivedAddresses
             .receive(on: RunLoop.main)
             .sink { [weak self] addresses in
@@ -182,6 +277,20 @@ final class PaymentsLandingViewModel: ObservableObject {
             PlatformAddressSyncCoordinator.shared.$platformAccountAvailability.removeDuplicates())
             .receive(on: RunLoop.main)
             .sink { [weak self] _, _ in self?.reconcileReceiptWatching() }
+            .store(in: &cancellables)
+
+        PlatformAddressSyncCoordinator.shared.$isShieldedRunning.removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] running in
+                guard let self else { return }
+                // Use the delivered stop even if a fast restart has already
+                // replaced the manager before this queued notification runs.
+                if !running, self.session?.rail == .shielded {
+                    self.suspendReceiptWatching()
+                } else {
+                    self.reconcileReceiptWatching()
+                }
+            }
             .store(in: &cancellables)
 
         platformAddress = PlatformAddressSyncCoordinator.shared
@@ -225,6 +334,50 @@ final class PaymentsLandingViewModel: ObservableObject {
             .sink { [weak self] _ in self?.resetForRouteChange() }
             .store(in: &cancellables)
     }
+
+    #if DEBUG
+    /// Lightweight initializer used only by SwiftUI previews: takes the
+    /// addresses as literals instead of reading them from the wallet, and
+    /// subscribes to nothing.
+    private init(
+        previewActiveTab: PaymentsLandingTab,
+        previewNetwork: ChainNetwork,
+        previewVisibleTabs: [PaymentsLandingTab],
+        previewCoreAddress: String?,
+        previewPlatformAddress: String?,
+        previewShieldedAddress: String?
+    ) {
+        activeTab = previewActiveTab
+        network = previewNetwork
+        visibleTabs = previewVisibleTabs
+        coreAddress = previewCoreAddress
+        platformAddress = previewPlatformAddress
+        shieldedAddress = previewShieldedAddress
+        // A preview has no host to route to and no transaction to route with,
+        // so the receipt's "View transaction" stays hidden rather than drawing
+        // a control that could not do anything.
+        allowsTransactionDetails = false
+    }
+
+    /// Preview view model. Pass `nil` for an address to preview that
+    /// network's placeholder state instead of the QR card.
+    static func makeForPreview(
+        activeTab: PaymentsLandingTab = .internalTransfer,
+        network: ChainNetwork = .core,
+        visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
+        coreAddress: String? = "XyZ8kFqW3nR5tHmB2vJcL7pQaS4dEuG9wN",
+        platformAddress: String? = "XmQ4rT7bN2vK9sD5xF8jH3kL6pW1aZcYuE",
+        shieldedAddress: String? = nil
+    ) -> PaymentsLandingViewModel {
+        PaymentsLandingViewModel(
+            previewActiveTab: activeTab,
+            previewNetwork: network,
+            previewVisibleTabs: visibleTabs,
+            previewCoreAddress: coreAddress,
+            previewPlatformAddress: platformAddress,
+            previewShieldedAddress: shieldedAddress)
+    }
+    #endif
 
     var currentAddress: String? {
         if session?.rail == network, let displayedAddress {
@@ -272,6 +425,18 @@ final class PaymentsLandingViewModel: ObservableObject {
         }
     }
 
+    /// The user is finished with this receipt and leaving. Unlike
+    /// `receiveAnother`, no new session is armed and no address is re-derived —
+    /// coming back should start from a clean receive screen rather than the
+    /// receipt of a payment already dealt with.
+    func finishReceiving() {
+        // No reconcile: that would see a nil session and start a fresh one,
+        // which is the opposite of what Done means. Leaving the screen is what
+        // stops the watcher, and returning is what starts the next session.
+        receipt = nil
+        invalidateReceiptSession()
+    }
+
     func receiveAnother() {
         receipt = nil
         invalidateReceiptSession()
@@ -286,6 +451,17 @@ final class PaymentsLandingViewModel: ObservableObject {
     private func reloadCoreAddress() {
         coreAddress = SwiftDashSDKReceiveAddressReader.receiveAddress()
     }
+
+    #if DASHPAY
+    /// Reads the network-scoped SDK truth, the same source
+    /// `JoinDashPayRegistrationPolicy` treats as authoritative. The legacy
+    /// `DWGlobalOptions` username mirror is global and cleared on every network
+    /// switch, so it would offer the row on a network with no identity.
+    private func refreshCanSendToUsername() {
+        let identity = DWCurrentUserIdentityInfo.shared
+        canSendToUsername = identity.hasIdentity && identity.username?.isEmpty == false
+    }
+    #endif
 
     /// Resolves the wallet's default Orchard payment address and encodes it
     /// for display. `shieldedDefaultAddress` returns nil until the shielded
@@ -346,35 +522,68 @@ final class PaymentsLandingViewModel: ObservableObject {
             return
         }
 
-        generation &+= 1
-        let sessionGeneration = generation
-        var coreTransactionIds = Set<Data>()
-        var platformActivityCursor: Int64 = 0
-        var shieldedActivityIds = Set<String>()
+        // Stamped once, above the baseline read rather than below it. Both
+        // the Core snapshot's floor and the subscription's own floor derive
+        // from it, and a transaction persisted between two separately-stamped
+        // instants would land in neither.
+        let startedAt = Date()
 
-        switch network {
-        case .core:
-            coreTransactionIds = TransactionObserver.persistedTransactionIDs()
-        case .platform:
-            platformActivityCursor = PlatformAddressActivityDAO.shared.latestActivityId(
-                walletId: walletId,
-                networkRaw: Int64(environment.rawValue))
-        case .shielded:
-            shieldedActivityIds = Set(Self.projectedShieldedActivity().map(\.id))
+        // Fail closed. An unreadable baseline must not stand in as an empty
+        // one — that would present everything already on the rail as a new
+        // payment. With no session there is no watcher, so the worst case is
+        // a receipt that never shows; the next reconcile tries again.
+        guard let baseline = readReceiptBaseline(
+            for: network, walletId: walletId, environment: environment, startedAt: startedAt)
+        else {
+            isWatchingForReceipt = false
+            return
         }
 
-        session = ReceiptSession(
-            generation: sessionGeneration,
+        generation &+= 1
+        let seed = ReceiptSessionSeed(
+            generation: generation,
             rail: network,
             address: address,
             walletId: walletId,
             environment: environment,
-            startedAt: Date(),
-            coreTransactionIds: coreTransactionIds,
-            platformActivityCursor: platformActivityCursor,
-            shieldedActivityIds: shieldedActivityIds)
+            startedAt: startedAt)
+        session = ReceiptSession(seed: seed, baseline: baseline)
         displayedAddress = address
         resumeReceiptWatching()
+    }
+
+    /// What already exists on `rail`, or nil when it could not be read.
+    ///
+    /// Every rail's baseline is a cheap read, so the session exists before
+    /// the address can be acted on and nothing is ever withheld waiting for
+    /// one.
+    private func readReceiptBaseline(
+        for rail: ChainNetwork,
+        walletId: Data,
+        environment: Network,
+        startedAt: Date
+    ) -> ReceiptBaseline? {
+        switch rail {
+        case .core:
+            // Bounded by the floor the subscription will scan from: anything
+            // older cannot be emitted, so it does not need excluding.
+            return TransactionObserver.persistedTransactionIDs(
+                firstSeenAtOrAfter: TransactionObserver.matchFloor(after: startedAt))
+                .map { .core(transactionIds: $0) }
+        case .platform:
+            return PlatformAddressActivityDAO.shared.latestActivityId(
+                walletId: walletId,
+                networkRaw: Int64(environment.rawValue))
+                .map { .platform(activityCursor: $0) }
+        case .shielded:
+            // The persisted rows' ids, not the projected activity list: the
+            // projection materializes the wallet's whole Core history to
+            // reconcile against. A row that exists now is not a new payment
+            // whatever the projection later makes of it, so the unprojected
+            // superset is the right thing to exclude.
+            return SwiftDashSDKWalletSource.persistedShieldedActivityIds()
+                .map { .shielded(activityIds: $0) }
+        }
     }
 
     private func resumeReceiptWatching() {
@@ -399,9 +608,9 @@ final class PaymentsLandingViewModel: ObservableObject {
             isWatchingForReceipt = true
             attachPlatformObserverIfNeeded(session: session)
         case .shielded:
-            guard PlatformAddressSyncCoordinator.shared.isRunning,
+            guard PlatformAddressSyncCoordinator.shared.isShieldedRunning,
                   PlatformAddressSyncCoordinator.shared.platformWalletManager != nil else {
-                isWatchingForReceipt = false
+                suspendReceiptWatching()
                 return
             }
             isWatchingForReceipt = true
@@ -665,6 +874,11 @@ final class PaymentsLandingViewModel: ObservableObject {
         platformAddress = PlatformAddressSyncCoordinator.shared
             .derivedAddresses.nextReceiveAddress?.address
         reloadShieldedAddress()
+        #if DASHPAY
+        // The identity is network-scoped, so a network switch can invalidate
+        // the Send tab's username row exactly as a registration change does.
+        refreshCanSendToUsername()
+        #endif
         reconcileReceiptWatching()
     }
 

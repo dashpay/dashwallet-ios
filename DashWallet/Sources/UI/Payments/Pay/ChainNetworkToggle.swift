@@ -30,7 +30,19 @@ enum ChainNetwork: String, CaseIterable, Identifiable {
     /// name the same balance differently.
     var balanceName: String {
         switch self {
-        case .core: return NSLocalizedString("Transparent", comment: "Balance breakdown")
+        case .core:
+            // "Transparent" only makes sense opposite "Shielded", and only to
+            // someone who has been shown that there are several balances.
+            // Advanced mode is where that happens; without it the wallet
+            // presents one balance and calls it what the app is called.
+            //
+            // Read here rather than passed in, deliberately: every caller wants
+            // the same answer, and a parameter is a thing a future call site
+            // can forget — which would put the word back on a screen that must
+            // not carry it.
+            return DWGlobalOptions.sharedInstance().advancedModeEnabled
+                ? NSLocalizedString("Transparent", comment: "Balance breakdown")
+                : NSLocalizedString("Dash Wallet", comment: "Balance breakdown, simple mode")
         case .platform: return NSLocalizedString("Platform", comment: "Dash Platform chain")
         case .shielded: return NSLocalizedString("Shielded", comment: "")
         }

@@ -84,6 +84,19 @@ All new UI MUST be built in SwiftUI with a ViewModel. Do **not** add new Storybo
 - When integrating with existing UIKit navigation, use a thin `UIHostingController` wrapper only.
 - Maintain existing UIKit code but don't extend it; migrate a screen to SwiftUI when substantially reworking it.
 
+## Accessibility
+
+Icon-only controls must carry an `accessibilityLabel` — see `ACCESSIBILITY.md`.
+Check your work before committing:
+
+```bash
+scripts/a11y_audit.py --check          # what CI runs; fails only on NEW findings
+scripts/a11y_audit.py --path "DashWallet/Sources/UI/Payments"   # one screen
+```
+
+`accessibilityIdentifier` is an XCUITest id and is never spoken — it does not
+count as a label. `.github/workflows/accessibility.yml` enforces this on every PR.
+
 ## Architecture Guardrails (check before every commit)
 
 Distilled from the 2026-07 branch review (`ARCH_REVIEW_2026-07-03.md`) — each rule exists because we shipped its violation:

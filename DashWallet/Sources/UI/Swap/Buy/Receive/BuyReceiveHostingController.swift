@@ -78,15 +78,5 @@ final class BuyReceiveHostingController: UIViewController, NavigationBarDisplaya
     }
 }
 
-private extension UIViewController {
-    func dw_firstTabBarController() -> UITabBarController? {
-        if let tab = self as? UITabBarController { return tab }
-        for child in children {
-            if let tab = child.dw_firstTabBarController() { return tab }
-        }
-        if let presented = presentedViewController {
-            return presented.dw_firstTabBarController()
-        }
-        return nil
-    }
-}
+// `dw_firstTabBarController()` now lives on the shared `UIViewController`
+// category next to `topController()`.

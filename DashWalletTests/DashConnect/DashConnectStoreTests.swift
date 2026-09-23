@@ -186,11 +186,49 @@ final class DashConnectStoreTests: XCTestCase {
         XCTAssertEqual(second.connectionsSnapshot.first?.status, .approved)
     }
 
-    private func makeStore(network: DashConnectNetwork, walletIdHex: String?) -> UserDefaultsDashConnectStore {
+    func testMainnetAndTestnetKeysAreUnchanged() {
+        XCTAssertEqual(makeStore(network: .testnet, walletIdHex: "wallet-a").storageKey,
+                       "dashconnect.connections.v1.t.wallet-a")
+        XCTAssertEqual(makeStore(network: .mainnet, walletIdHex: "wallet-a").storageKey,
+                       "dashconnect.connections.v1.m.wallet-a")
+    }
+
+    func testEachConfiguredDevnetKeepsItsOwnConnections() {
+        let devnetA = makeStore(network: .devnet, walletIdHex: "wallet-a", devnetName: "moutai")
+        let devnetB = makeStore(network: .devnet, walletIdHex: "wallet-a", devnetName: "paloma")
+        let connection = sampleConnection(
+            id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F",
+            status: .approved,
+            updatedAt: Date(timeIntervalSince1970: 10))
+
+        devnetA.save([connection])
+
+        XCTAssertEqual(devnetA.load(), [connection])
+        XCTAssertEqual(devnetB.load(), [])
+        XCTAssertNotEqual(devnetA.storageKey, devnetB.storageKey)
+    }
+
+    func testUnnamedDevnetStoresNothing() {
+        let store = makeStore(network: .devnet, walletIdHex: "wallet-a", devnetName: nil)
+        store.save([sampleConnection(
+            id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F",
+            status: .approved,
+            updatedAt: Date(timeIntervalSince1970: 10))])
+
+        XCTAssertNil(store.storageKey)
+        XCTAssertEqual(store.load(), [])
+    }
+
+    private func makeStore(
+        network: DashConnectNetwork,
+        walletIdHex: String?,
+        devnetName: String? = "moutai"
+    ) -> UserDefaultsDashConnectStore {
         UserDefaultsDashConnectStore(
             defaults: defaults,
             network: network,
-            walletIdHexProvider: { walletIdHex }
+            walletIdHexProvider: { walletIdHex },
+            devnetNameProvider: { devnetName }
         )
     }
 

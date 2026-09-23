@@ -1,0 +1,61 @@
+name: Freeze published App Store schema
+
+on:
+  schedule:
+    - cron: '17 5,17 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Observe publications, or initialize a verified historical App Store release once"
+        type: choice
+        options: [sync, bootstrap]
+        default: sync
+      release_id:
+        description: "Optional App Store version ID; it must already be published"
+        type: string
+        default: ''
+      dry_run:
+        description: "Read and report only; do not write evidence or dispatch a freeze"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: appstore-schema-release
+  cancel-in-progress: false
+
+jobs:
+  observe:
+    if: github.event_name == 'workflow_dispatch' || vars.SCHEMA_RELEASE_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: testflight
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+      - name: Observe published builds
+        env:
+          SCHEMA_RELEASE_TOKEN: ${{ secrets.SCHEMA_RELEASE_TOKEN }}
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          API_PRIVATE_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY_BASE64 }}
+          BUNDLE_ID: org.dashfoundation.dash
+          MODE: ${{ inputs.mode || 'sync' }}
+          RELEASE_ID: ${{ inputs.release_id }}
+          DRY_RUN: ${{ inputs.dry_run || false }}
+        run: |
+          set -euo pipefail
+          export APP_STORE_CONNECT_API_KEY_PATH="$RUNNER_TEMP/schema-observer.p8"
+          trap 'rm -f "$APP_STORE_CONNECT_API_KEY_PATH"' EXIT
+          umask 077
+          printf '%s' "$API_PRIVATE_KEY_BASE64" | base64 --decode > "$APP_STORE_CONNECT_API_KEY_PATH"
+          args=("$MODE")
+          [[ "$DRY_RUN" != 'true' ]] || args+=(--dry-run)
+          [[ -z "$RELEASE_ID" ]] || args+=(--release-id "$RELEASE_ID")
+          ruby .github/scripts/schema_release.rb "${args[@]}" | tee -a "$GITHUB_STEP_SUMMARY"

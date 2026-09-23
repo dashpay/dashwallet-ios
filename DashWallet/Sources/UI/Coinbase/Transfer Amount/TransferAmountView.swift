@@ -109,10 +109,6 @@ struct TransferAmountView<ViewModel: TransferAmountViewModelProtocol>: View {
             inProgress: viewModel.isProcessing,
             actionHandler: { viewModel.transfer() }
         )
-        .frame(maxWidth: .infinity, maxHeight: 320)
-        .background(Color.dash.secondaryBackground)
-        .clipShape(.rect(cornerRadius: 20))
-        .background(Color.dash.secondaryBackground, ignoresSafeAreaEdges: .bottom)
     }
 }
 

@@ -28,6 +28,15 @@ private enum SegmentedControlLayout {
     static let shadowY: CGFloat = 5
     static let springResponse: Double = 0.3
     static let springDamping: Double = 0.7
+
+    // Icon variant (artwork stacked over the label). It sizes to its content
+    // instead of `height`, which only fits a single text line. The icons are
+    // drawn to one height and differing widths — a single arrow is half as
+    // wide as the double one — so pinning the height is what keeps the labels
+    // under them on one line.
+    static let iconHeight: CGFloat = 17
+    static let iconLabelSpacing: CGFloat = 4
+    static let iconSegmentVerticalPadding: CGFloat = 10
 }
 
 struct SegmentedControl<T: Hashable>: View {
@@ -36,6 +45,14 @@ struct SegmentedControl<T: Hashable>: View {
     let options: [T]
     @Binding var selection: T
     let label: (T) -> String
+    /// Artwork drawn above each label, chosen per selection state. `nil` (the
+    /// default) keeps the text-only segment every existing caller uses.
+    ///
+    /// It takes `isSelected` because a selected segment and an unselected one
+    /// are usually two different files rather than one file tinted two ways —
+    /// artwork that carries its own colour cannot be dimmed into the
+    /// unselected treatment the label gets.
+    var icon: ((_ option: T, _ isSelected: Bool) -> DashIconSource)? = nil
 
     @Environment(\.colorScheme) private var colorScheme
     @State private var containerWidth: CGFloat = 0
@@ -65,12 +82,12 @@ struct SegmentedControl<T: Hashable>: View {
                     Button(action: {
                         select(option)
                     }) {
-                        Text(label(option))
-                            .font(.footnoteMedium)
+                        segmentContent(option)
                             .foregroundColor(selection == option ? .dash.primaryText : .dash.primaryText.opacity(0.4))
-                            .lineLimit(1)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, Layout.segmentVerticalPadding)
+                            .padding(.vertical, icon == nil
+                                ? Layout.segmentVerticalPadding
+                                : Layout.iconSegmentVerticalPadding)
                             .contentShape(Rectangle())
                             .animation(.spring(response: Layout.springResponse, dampingFraction: Layout.springDamping), value: selection)
                     }
@@ -99,9 +116,32 @@ struct SegmentedControl<T: Hashable>: View {
                 }
         )
         .padding(Layout.containerPadding)
-        .frame(height: Layout.height)
+        // The icon variant is two lines tall, so it sizes to its content —
+        // `height` is the single-line text measurement.
+        .frame(height: icon == nil ? Layout.height : nil)
         .background(Color.dash.gray300Alpha20)
         .clipShape(RoundedRectangle(cornerRadius: Layout.containerCornerRadius))
+    }
+
+    @ViewBuilder
+    private func segmentContent(_ option: T) -> some View {
+        if let icon {
+            VStack(spacing: Layout.iconLabelSpacing) {
+                Image(dash: icon(option, selection == option))
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: Layout.iconHeight)
+                segmentLabel(option)
+            }
+        } else {
+            segmentLabel(option)
+        }
+    }
+
+    private func segmentLabel(_ option: T) -> some View {
+        Text(label(option))
+            .font(.footnoteMedium)
+            .lineLimit(1)
     }
 
     private func updateSelection(at x: CGFloat) {
@@ -141,6 +181,43 @@ private struct SegmentedControlPreview: View {
             SegmentedControl(options: ["Day", "Week", "Month"], selection: $three)
 
             SegmentedControl(options: ["1D", "1W", "1M", "1Y"], selection: $four)
+        }
+        .padding()
+    }
+}
+
+#Preview("Icon variant") {
+    SegmentedControlIconPreview()
+}
+
+/// The icon variant next to the text-only one, so the two stay recognisably the
+/// same control: same track, same pill, only the segment is two lines tall. Tap
+/// through the segments — each swaps between its coloured and grey artwork.
+private struct SegmentedControlIconPreview: View {
+    @State private var withIcons = "Internal"
+    @State private var textOnly = "Internal"
+
+    private let options = ["Receive", "Internal", "Send"]
+    private func icon(_ option: String, isSelected: Bool) -> DashIconSource {
+        switch option {
+        case "Receive":
+            return (isSelected ? DashIcon.SegmentedControl.receive : .receiveDisabled).source
+        case "Send":
+            return (isSelected ? DashIcon.SegmentedControl.send : .sendDisabled).source
+        default:
+            return (isSelected ? DashIcon.SegmentedControl.transfer : .transferDisabled).source
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 24) {
+            SegmentedControl(
+                options: options,
+                selection: $withIcons,
+                label: { $0 },
+                icon: icon)
+
+            SegmentedControl(options: options, selection: $textOnly)
         }
         .padding()
     }

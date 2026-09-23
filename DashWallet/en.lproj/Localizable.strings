@@ -13,6 +13,9 @@
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
+/* DashPay Notifications: established contact, accepting side unknown */
+"%@ is now your contact" = "%@ is now your contact";
+
 /* Maya */
 "%@ address" = "%@ address";
 
@@ -172,6 +175,126 @@
 
 /* Explore Dash: Filters */
 "80 km" = "80 km";
+
+/* DashConnect token purchase */
+"Approve token purchase?" = "Approve token purchase?";
+
+/* DashConnect token purchase */
+"Approving pays the total price from this identity's Platform credits." = "Approving pays the total price from this identity's Platform credits.";
+
+/* DashConnect */
+"Available on test networks only" = "Available on test networks only";
+
+/* Devnet */
+"Base URL of the devnet's quorum-list server. SPV peers and Platform (DAPI) nodes are both auto-discovered from {Quorum URL}/masternodes — no manual peer entry." = "Base URL of the devnet's quorum-list server. SPV peers and Platform (DAPI) nodes are both auto-discovered from {Quorum URL}/masternodes — no manual peer entry.";
+
+/* Devnet */
+"Base58 identifier (optional)" = "Base58 identifier (optional)";
+
+/* DashConnect token purchase */
+"Contract %@" = "Contract %@";
+
+/* Devnet */
+"DashConnect Contract ID" = "DashConnect Contract ID";
+
+/* DashConnect */
+"Deny" = "Deny";
+
+/* Wallet network */
+"Devnet" = "Devnet";
+
+/* Devnet */
+"Devnet Name" = "Devnet Name";
+
+/* Devnet */
+"Devnet Settings" = "Devnet Settings";
+
+/* Devnet */
+"Devnet is not configured. Enter a Quorum URL and Devnet Name in Settings → Devnet Settings first." = "Devnet is not configured. Enter a Quorum URL and Devnet Name in Settings → Devnet Settings first.";
+
+/* Inactivity reminder */
+"Don't remind me again" = "Don't remind me again";
+
+/* Inactivity reminder */
+"It's been a while since you opened Dash Wallet." = "It's been a while since you opened Dash Wallet.";
+
+/* DashPay Notifications */
+"No notifications match your search" = "No notifications match your search";
+
+/* Notifications */
+"Open Settings" = "Open Settings";
+
+/* Devnet */
+"Quorum URL" = "Quorum URL";
+
+/* Devnet */
+"Quorum URL, name and contract ids" = "Quorum URL, name and contract ids";
+
+/* Inactivity reminder */
+"Remind me later" = "Remind me later";
+
+/* Devnet */
+"Saved, but Devnet needs both a Quorum URL and a Devnet Name — syncing will fail until both are set." = "Saved, but Devnet needs both a Quorum URL and a Devnet Name — syncing will fail until both are set.";
+
+/* Devnet */
+"Saved." = "Saved.";
+
+/* Devnet */
+"Saved. Devnet is reconnecting with the new settings." = "Saved. Devnet is reconnecting with the new settings.";
+
+/* Devnet */
+"Saved. The values apply when you switch to Devnet." = "Saved. The values apply when you switch to Devnet.";
+
+/* DashPay Notifications */
+"Search notifications" = "Search notifications";
+
+/* DashConnect */
+"The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings." = "The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings.";
+
+/* Devnet */
+"The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history." = "The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history.";
+
+/* Devnet */
+"The devnet name cannot contain a slash." = "The devnet name cannot contain a slash.";
+
+/* Devnet */
+"The devnet name cannot contain spaces." = "The devnet name cannot contain spaces.";
+
+/* Devnet */
+"The loginKeyResponse data contract id registered on this devnet. Only needed for DashConnect logins; leave empty otherwise." = "The loginKeyResponse data contract id registered on this devnet. Only needed for DashConnect logins; leave empty otherwise.";
+
+/* DashConnect token purchase */
+"The purchase was submitted but its result is unknown: %@. Check this identity's tokens and credit balance before buying again — approving a second time would pay twice." = "The purchase was submitted but its result is unknown: %@. Check this identity's tokens and credit balance before buying again — approving a second time would pay twice.";
+
+/* Dash DEX */
+"The status of your %@ swap could not be confirmed" = "The status of your %@ swap could not be confirmed";
+
+/* DashConnect token purchase */
+"Token ID" = "Token ID";
+
+/* DashConnect */
+"Token purchase completed." = "Token purchase completed.";
+
+/* DashConnect token purchase */
+"Tokens" = "Tokens";
+
+/* DashConnect token purchase */
+"Maximum price" = "Maximum price";
+
+/* DashConnect token purchase */
+"You pay up to this amount. The final price may be lower." = "You pay up to this amount. The final price may be lower.";
+
+/* Notifications */
+"Turned off in iOS Settings" = "Turned off in iOS Settings";
+
+/* Dash DEX */
+"Your %@ swap failed" = "Your %@ swap failed";
+
+/* Dash DEX */
+"Your %@ swap is complete" = "Your %@ swap is complete";
+
+/* Dash DEX */
+"Your %@ swap was refunded" = "Your %@ swap was refunded";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" is not a recovery phrase word";
@@ -577,6 +700,7 @@
 "Broadcasting…" = "Broadcasting…";
 "Build and sign the transaction and show it here, so you can check it before it's broadcast." = "Build and sign the transaction and show it here, so you can check it before it's broadcast.";
 "Building the privacy proof can take up to a minute. Keep the app open." = "Building the privacy proof can take up to a minute. Keep the app open.";
+"Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open." = "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open.";
 
 /* Log export */
 "Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files" = "Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files";
@@ -858,6 +982,9 @@
 "The operator key is missing from the keychain — re-add it and try again." = "The operator key is missing from the keychain — re-add it and try again.";
 "The temporary username must not itself require voting." = "The temporary username must not itself require voting.";
 
+/* Send failed before any bytes reached the network */
+"The transaction wasn't sent, so nothing left your wallet. You can try again." = "The transaction wasn't sent, so nothing left your wallet. You can try again.";
+
 /* Usernames */
 "The transfer settles through the network's withdrawal queue — usually a few minutes. You can close this sheet and come back; the unban resumes where it left off." = "The transfer settles through the network's withdrawal queue — usually a few minutes. You can close this sheet and come back; the unban resumes where it left off.";
 "The unban was sent but its result couldn't be confirmed. Don't retry — check the masternode's status again in a few minutes." = "The unban was sent but its result couldn't be confirmed. Don't retry — check the masternode's status again in a few minutes.";
@@ -939,6 +1066,9 @@
 
 /* Username marketplace: join deadline still open — value of the New contenders row */
 "can join until %@" = "can join until %@";
+
+/* Devnet */
+"e.g. moutai (matches dashd -devnet=<name>)" = "e.g. moutai (matches dashd -devnet=<name>)";
 
 /* Username marketplace: the contest's join window has passed — value of the New contenders row */
 "joining closed" = "joining closed";
@@ -2859,6 +2989,9 @@
 /* DashPay: banner identity row subtitle */
 "View profile" = "View profile";
 
+/* Send dispatched but no network acceptance signal arrived */
+"We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through." = "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through.";
+
 /* DashPay FAQ */
 "What about Unstoppable Domains and similar name services?" = "What about Unstoppable Domains and similar name services?";
 
@@ -3775,6 +3908,9 @@
 /* No comment provided by engineer. */
 "Scan QR" = "Scan QR";
 
+/* Payments */
+"Scan Dash QR" = "Scan Dash QR";
+
 /* No comment provided by engineer. */
 "Scan QR Code" = "Scan QR Code";
 
@@ -3936,14 +4072,23 @@
 /* No comment provided by engineer. */
 "Send to a Contact" = "Send to a Contact";
 
+/* Payments */
+"Swap to other crypto" = "Swap to other crypto";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Send to Address";
 
 /* No comment provided by engineer. */
 "Send to address" = "Send to address";
 
+/* Payments */
+"Send to Dash address" = "Send to Dash address";
+
 /* No comment provided by engineer. */
 "Send to contact" = "Send to contact";
+
+/* Payments */
+"Send to username" = "Send to username";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Contact" = "Send to Contact";
@@ -5858,3 +6003,123 @@
 "Node status" = "Node status";
 "Asking the evonode…" = "Asking the evonode…";
 "Request status" = "Request status";
+
+/* Asset-lock recovery */
+"Already spent — nothing to transfer" = "Already spent — nothing to transfer";
+"Already spent — not verified" = "Already spent — not verified";
+"Submitted — waiting for the network to confirm" = "Submitted — waiting for the network to confirm";
+"%d waiting for the network" = "%d waiting for the network";
+"Unfinished Transfers" = "Unfinished Transfers";
+"Restoring a wallet loses the local record of whether each balance transfer finished on Platform, so they come back marked unknown. This asks the network about every one of them at once, finishing the transfers that are still open and marking the rest as already spent. It never builds a new transaction, so it cannot spend anything twice." = "Restoring a wallet loses the local record of whether each balance transfer finished on Platform, so they come back marked unknown. This asks the network about every one of them at once, finishing the transfers that are still open and marking the rest as already spent. It never builds a new transaction, so it cannot spend anything twice.";
+"Awaiting completion" = "Awaiting completion";
+"Finish Transfers" = "Finish Transfers";
+"Finishing…" = "Finishing…";
+"Finishing %1$d of %2$d…" = "Finishing %1$d of %2$d…";
+"%d finished" = "%d finished";
+"%d already spent" = "%d already spent";
+"%d could not be reached" = "%d could not be reached";
+"stopped early" = "stopped early";
+"stopped after repeated failures" = "stopped after repeated failures";
+"Cancelled." = "Cancelled.";
+"Nothing to finish." = "Nothing to finish.";
+/* Receive: the QR image doubles as a copy control */
+"Copy QR code" = "Copy QR code";
+"Couldn't authenticate: %@" = "Couldn't authenticate: %@";
+
+/* DashConnect token purchase: the token's decimals could not be read from its contract, so the payload's raw quantity cannot be scaled */
+"Tokens (base units)" = "Tokens (base units)";
+
+/* Send: the contact step's back control */
+"Back" = "Back";
+
+/* Send screen: mask the funding balance */
+"Hide balance" = "Hide balance";
+
+/* Send screen: reveal the funding balance */
+"Show balance" = "Show balance";
+
+/* Send to contact: the exact fee is reported once the payment is sent */
+"Taken from your balance" = "Taken from your balance";
+
+/* Send to contact: the broadcast outcome is unknown */
+"We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history." = "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.";
+
+/* DashPay: contact picker empty state body */
+"Add someone as a contact and you can pay them by username instead of an address." = "Add someone as a contact and you can pay them by username instead of an address.";
+
+/* DashPay: contact picker search found nothing */
+"No contacts match “%@”" = "No contacts match “%@”";
+
+/* DashPay: contact picker empty state headline */
+"No contacts yet" = "No contacts yet";
+
+/* Send screen: the funding balance */
+"Balance:" = "Balance:";
+
+/* InternalTransfer */
+"The amount is too large to transfer." = "The amount is too large to transfer.";
+
+/* DashPay: contact whose payment channel could not be built */
+"Payments unavailable — ask them to send you a new contact request." = "Payments unavailable — ask them to send you a new contact request.";
+
+/* Cached wallet balance availability */
+"Known balance" = "Known balance";
+"Balance unavailable" = "Balance unavailable";
+"Shielded balance is unavailable. Try again after syncing." = "Shielded balance is unavailable. Try again after syncing.";
+
+"Shielded sync is not running" = "Shielded sync is not running";
+
+"Wallet sync is not ready. Start wallet sync and try again." = "Wallet sync is not ready. Start wallet sync and try again.";
+
+/* Shielded manual sync requires an internet connection */
+"You are offline. Connect to the internet and try again." = "You are offline. Connect to the internet and try again.";
+"Start Platform sync before clearing its local state" = "Start Platform sync before clearing its local state";
+
+/* Identity registration recovery. */
+"Retry loading identity" = "Retry loading identity";
+
+/* Identity registration recovery. */
+"This identity has no credits. Use Top Up in My Profile, then return to finish registration." = "This identity has no credits. Use Top Up in My Profile, then return to finish registration.";
+
+/* Identity registration recovery. */
+"Identity is still loading" = "Identity is still loading";
+
+/* Identity registration recovery. */
+"Wait for the wallet and network to finish loading, then retry. No registration has been sent." = "Wait for the wallet and network to finish loading, then retry. No registration has been sent.";
+
+/* Identity registration recovery. */
+"Not enough identity credits to register this name. Use Top Up in My Profile, then try again. Your existing identity will be reused." = "Not enough identity credits to register this name. Use Top Up in My Profile, then try again. Your existing identity will be reused.";
+
+/* DashPay username registration recovery */
+"Could not check username availability. Please try again." = "Could not check username availability. Please try again.";
+"Finish username registration" = "Finish username registration";
+"Loading identity…" = "Loading identity…";
+"The active wallet or identity changed. Please try again." = "The active wallet or identity changed. Please try again.";
+"The name request succeeded for the original identity. Switch back to the original wallet and network to see its status." = "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status.";
+"This username is no longer available. Please choose another one." = "This username is no longer available. Please choose another one.";
+"Username request completed" = "Username request completed";
+"Your identity is ready. Finish registering a username using its existing credits." = "Your identity is ready. Finish registering a username using its existing credits.";
+"Your identity is ready. Use its existing credits to register a username." = "Your identity is ready. Use its existing credits to register a username.";
+"“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again." = "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.";
+
+/* Wallet preparation and support */
+"Help" = "Help";
+"Couldn't open your wallet data" = "Couldn't open your wallet data";
+"There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Do not delete this app." = "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Do not delete this app.";
+"Your wallet could not be opened. Do not delete this app. Try again or contact support for help." = "Your wallet could not be opened. Do not delete this app. Try again or contact support for help.";
+"Preparing your wallet…" = "Preparing your wallet…";
+"Please keep the app open." = "Please keep the app open.";
+"Try Again" = "Try Again";
+"To: %@\n\nI couldn't open my wallet.\n\nWhat happened before the error:\n" = "To: %@\n\nI couldn't open my wallet.\n\nWhat happened before the error:\n";
+"Do not delete the app. Try opening your wallet again, or contact support if the problem continues." = "Do not delete the app. Try opening your wallet again, or contact support if the problem continues.";
+"Never share your recovery phrase or private keys with anyone, including support." = "Never share your recovery phrase or private keys with anyone, including support.";
+"Include diagnostic report" = "Include diagnostic report";
+"Preview diagnostic report" = "Preview diagnostic report";
+"Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically." = "Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically.";
+"Contact Support" = "Contact Support";
+"Review and send the message in your mail app, or choose a sharing option." = "Review and send the message in your mail app, or choose a sharing option.";
+"Couldn't prepare the support message" = "Couldn't prepare the support message";
+"Try again or copy the support address and write to us from your mail app." = "Try again or copy the support address and write to us from your mail app.";
+
+/* Log export progress */
+"Preparing logs…" = "Preparing logs…";

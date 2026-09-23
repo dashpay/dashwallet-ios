@@ -113,7 +113,7 @@ struct BalanceInfoSheet: View {
         case .core:
             return BalanceInfo(
                 iconSystemName: "d.circle.fill",
-                title: NSLocalizedString("Transparent", comment: "Balance breakdown"),
+                title: ChainNetwork.core.balanceName,
                 summary: NSLocalizedString(
                     "Your main Dash balance on the Core blockchain — what you send and receive with other wallets, exchanges, and merchants.",
                     comment: "Balance info sheet"),

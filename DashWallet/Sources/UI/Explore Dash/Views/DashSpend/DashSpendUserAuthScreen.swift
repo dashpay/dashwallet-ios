@@ -157,10 +157,6 @@ struct DashSpendUserAuthScreen: View {
                         viewModel.onContinue()
                     }
                 )
-                .frame(maxWidth: .infinity)
-                .frame(height: UIDevice.isIphone5OrLess ? 290 : 320)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
             } else {
                 ZStack(alignment: .center) {
                     DashButton(

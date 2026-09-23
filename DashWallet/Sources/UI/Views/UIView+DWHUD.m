@@ -29,19 +29,46 @@ NSTimeInterval const DW_INFO_HUD_DISPLAY_TIME = 3.5;
 
 @implementation UIView (DWHUD)
 
+/// The progress HUD is held by reference (`dw_progressHUD`) rather than looked
+/// up, so show and hide always address the same object.
+///
+/// MBProgressHUD's own `HUDForView:` cannot serve here: info HUDs are the same
+/// class on the same view, and it returns the TOPMOST one. A flow that reports
+/// its result with `dw_showInfoHUD` and then takes its spinner down with
+/// `dw_hideProgressHUD` therefore dismissed the confirmation it had just put
+/// up, leaving nothing to hide the spinner — which then ran forever. The
+/// asset-lock retry in `TxDetailViewController` is exactly that pair, and it
+/// span on over a transfer that had already completed. The same lookup made
+/// `dw_showProgressHUD` adopt a visible info HUD and rewrite its label instead
+/// of raising a spinner at all.
+///
+/// Telling the two apart by `mode` would fix those but not this: a HUD stays in
+/// the hierarchy for the length of its fade-out with `finished` already set
+/// (private, so not readable from here), and a show inside that window would
+/// adopt a HUD on its way out — leaving the caller with no spinner. An owned
+/// reference, released at hide time, has neither problem.
 - (void)dw_showProgressHUDWithMessage:(nullable NSString *)message {
-    MBProgressHUD *hud = [MBProgressHUD HUDForView:self];
+    MBProgressHUD *hud = [self dw_progressHUD];
     if (!hud) {
         hud = [MBProgressHUD showHUDAddedTo:self animated:YES];
+        hud.removeFromSuperViewOnHide = YES;
         hud.label.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
         hud.label.adjustsFontForContentSizeCategory = YES;
         hud.label.numberOfLines = 0;
+        [self setDw_progressHUD:hud];
     }
     hud.label.text = message;
 }
 
 - (void)dw_hideProgressHUD {
-    [MBProgressHUD hideHUDForView:self animated:YES];
+    MBProgressHUD *hud = [self dw_progressHUD];
+    if (!hud) {
+        return;
+    }
+    // Released before the fade-out finishes, deliberately: a `dw_show…` during
+    // that window must build a fresh HUD instead of adopting this one.
+    [self setDw_progressHUD:nil];
+    [hud hideAnimated:YES];
 }
 
 - (void)dw_showInfoHUDWithText:(NSString *)text {
@@ -103,6 +130,17 @@ NSTimeInterval const DW_INFO_HUD_DISPLAY_TIME = 3.5;
 }
 
 #pragma mark - Private
+
+- (nullable MBProgressHUD *)dw_progressHUD {
+    return objc_getAssociatedObject(self, @selector(dw_progressHUD));
+}
+
+- (void)setDw_progressHUD:(nullable MBProgressHUD *)dw_progressHUD {
+    objc_setAssociatedObject(self,
+                             @selector(dw_progressHUD),
+                             dw_progressHUD,
+                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
 
 - (nullable NSMutableArray<MBProgressHUD *> *)dw_infoHUDQueue {
     return objc_getAssociatedObject(self, @selector(dw_infoHUDQueue));
