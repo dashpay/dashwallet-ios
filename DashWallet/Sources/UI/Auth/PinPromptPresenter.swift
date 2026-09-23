@@ -99,10 +99,9 @@ enum PinPromptPresenter {
         let scenes = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
 
-        // This app still owns its UIWindow in AppDelegate and does not use a
-        // SceneDelegate. On those launches `connectedScenes` can be empty
-        // even while the legacy DWWindow is visible. Conversely, after the
-        // lock-window handoff, neither the app-delegate window nor the
+        // AppDelegate keeps the app window (SceneDelegate forwards to it), and
+        // the PIN lock window is a separate window in the same scene. After
+        // the lock-window handoff, neither the app window nor the
         // formerly-key lock window is guaranteed to be returned by the
         // foreground-scene-only path. Include all three sources and validate
         // attachment below.
@@ -115,10 +114,9 @@ enum PinPromptPresenter {
             windows.append(appWindow)
         }
         windows.append(contentsOf: scenes.flatMap(\.windows))
-        // Legacy-window fallback is required for the AppDelegate-managed
-        // lifecycle above. `UIApplication.windows` is deprecated for
-        // scene-based apps, but here it is deliberately the compatibility
-        // source when there is no active UIWindowScene.
+        // TODO(scene-lifecycle): `UIApplication.windows` is deprecated for
+        // scene-based apps and should now add nothing the two sources above
+        // miss; drop it once PIN prompts are verified without it.
         windows.append(contentsOf: UIApplication.shared.windows)
 
         var seen = Set<ObjectIdentifier>()

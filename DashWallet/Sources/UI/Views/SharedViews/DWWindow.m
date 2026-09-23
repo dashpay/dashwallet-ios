@@ -27,6 +27,7 @@ NSString *const DWDeviceDidShakeNotification = @"DWDeviceDidShakeNotification";
 
 @property (nullable, nonatomic, strong) UIVisualEffectView *blurView;
 @property (nullable, nonatomic, strong) NSDate *lastPermissionRequestDate;
+@property (nonatomic, assign) BOOL observersInstalled;
 
 @end
 
@@ -35,23 +36,15 @@ NSString *const DWDeviceDidShakeNotification = @"DWDeviceDidShakeNotification";
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-        [notificationCenter addObserver:self
-                               selector:@selector(applicationWillResignActiveNotification)
-                                   name:UIApplicationWillResignActiveNotification
-                                 object:nil];
-        [notificationCenter addObserver:self
-                               selector:@selector(applicationDidBecomeActiveNotification)
-                                   name:UIApplicationDidBecomeActiveNotification
-                                 object:nil];
-        [notificationCenter addObserver:self
-                               selector:@selector(willRequestOSPermissionNotification)
-                                   name:DWApp.willRequestOSPermissionNotification
-                                 object:nil];
-        [notificationCenter addObserver:self
-                               selector:@selector(didRequestOSPermissionNotification)
-                                   name:DWApp.didRequestOSPermissionNotification
-                                 object:nil];
+        [self installObservers];
+    }
+    return self;
+}
+
+- (instancetype)initWithWindowScene:(UIWindowScene *)windowScene {
+    self = [super initWithWindowScene:windowScene];
+    if (self) {
+        [self installObservers];
     }
     return self;
 }
@@ -98,6 +91,33 @@ NSString *const DWDeviceDidShakeNotification = @"DWDeviceDidShakeNotification";
 }
 
 #pragma mark - Private
+
+- (void)installObservers {
+    // Both initializers call this, and UIKit may route one through the other;
+    // install once so each notification reaches the blur handlers once.
+    if (self.observersInstalled) {
+        return;
+    }
+    self.observersInstalled = YES;
+
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationWillResignActiveNotification)
+                               name:UIApplicationWillResignActiveNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationDidBecomeActiveNotification)
+                               name:UIApplicationDidBecomeActiveNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(willRequestOSPermissionNotification)
+                               name:DWApp.willRequestOSPermissionNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(didRequestOSPermissionNotification)
+                               name:DWApp.didRequestOSPermissionNotification
+                             object:nil];
+}
 
 - (UIVisualEffectView *)createVisualEffectView {
     UIVisualEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleRegular];

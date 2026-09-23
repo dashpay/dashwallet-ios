@@ -654,6 +654,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
 
     [DWWalletLifecycleOverlayBridge setLockScreenVisible:YES];
+    // A window created without a scene is not shown; attach it to the app window's scene.
+    if (self.lockWindow.windowScene == nil) {
+        self.lockWindow.windowScene = self.view.window.windowScene
+                                          ?: [UIApplication sharedApplication].delegate.window.windowScene;
+    }
     self.lockWindow.rootViewController = navigationController;
     [self.lockWindow makeKeyAndVisible];
 
