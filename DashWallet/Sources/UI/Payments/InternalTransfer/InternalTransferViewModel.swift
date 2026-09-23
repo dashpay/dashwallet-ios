@@ -2115,13 +2115,17 @@ final class InternalTransferViewModel: ObservableObject {
         clearMaxSelection()
         let spendable = IdentityWithdrawViewModel.spendableCredits(
             balanceCredits: identityBalanceCredits)
-        if spendable == 0 {
+        // Credits below one duff cannot be sent either, so a remainder under
+        // 1000 credits fills "0" just like an empty one and needs the same
+        // explanation.
+        let spendableDuffs = spendable / 1000
+        if spendableDuffs == 0 {
             maxNotice = Self.feeReserveExceedsIdentityBalanceMessage
         }
 
         isApplyingMax = true
         defer { isApplyingMax = false }
-        applyMaxAmountText(spendable / 1000)
+        applyMaxAmountText(spendableDuffs)
     }
 
     private static let identityBalanceRefreshingMessage = NSLocalizedString(

@@ -1230,6 +1230,37 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             0)
     }
 
+    func testIdentityWithdrawalMinimumFeeMirrorsProtocolMinimums() {
+        // STATE_TRANSITION_MIN_FEES_VERSION1: identity_credit_withdrawal.
+        XCTAssertEqual(
+            IdentityWithdrawViewModel.minimumFeeCredits(target: .transparent),
+            400_000_000)
+        XCTAssertEqual(
+            Decimal(IdentityWithdrawViewModel.minimumFeeCredits(target: .transparent)) / 100_000_000_000,
+            Decimal(string: "0.004"))
+        // credit_transfer_to_addresses + one address_funds_transfer_output_cost.
+        XCTAssertEqual(
+            IdentityWithdrawViewModel.minimumFeeCredits(target: .platform),
+            6_500_000)
+        XCTAssertEqual(
+            Decimal(IdentityWithdrawViewModel.minimumFeeCredits(target: .platform)) / 100_000_000_000,
+            Decimal(string: "0.000065"))
+    }
+
+    func testTypedTextFitsPrecisionStopsBelowOneDuffAndOneCent() {
+        XCTAssertTrue(InternalTransferViewModel.typedTextFitsPrecision("1", unit: .dash))
+        XCTAssertTrue(InternalTransferViewModel.typedTextFitsPrecision("0.", unit: .dash))
+        XCTAssertTrue(InternalTransferViewModel.typedTextFitsPrecision("0.00000001", unit: .dash))
+        XCTAssertFalse(InternalTransferViewModel.typedTextFitsPrecision("0.000000001", unit: .dash))
+        XCTAssertTrue(InternalTransferViewModel.typedTextFitsPrecision("0,00000001", unit: .dash))
+        XCTAssertFalse(InternalTransferViewModel.typedTextFitsPrecision("0,000000001", unit: .dash))
+
+        XCTAssertTrue(InternalTransferViewModel.typedTextFitsPrecision("12.34", unit: .fiat))
+        XCTAssertFalse(InternalTransferViewModel.typedTextFitsPrecision("12.345", unit: .fiat))
+        XCTAssertTrue(InternalTransferViewModel.typedTextFitsPrecision("12,34", unit: .fiat))
+        XCTAssertFalse(InternalTransferViewModel.typedTextFitsPrecision("12,345", unit: .fiat))
+    }
+
     func testPlatformShieldScreenshotRegressionUsesSDKSelectableCapacity() {
         let capacity = PlatformShieldCapacity(
             canShield: true,
