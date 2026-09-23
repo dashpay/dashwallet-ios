@@ -75,7 +75,8 @@ final class SwapKitSwapProvider: SwapProvider {
     /// Small batch size to keep verification bounded without spamming the quote endpoint.
     private let buyRoutabilityProbeBatchSize: Int = 8
 
-    private enum BuyRoutability {
+    /// Internal rather than private so the tests can assert `routability(from:)` directly.
+    enum BuyRoutability {
         case routable
         case notRoutable
     }
@@ -570,7 +571,7 @@ final class SwapKitSwapProvider: SwapProvider {
         do {
             return try await SwapKitAPIService.shared.quote(quoteRequest)
         } catch {
-            if let apiError = decodeQuoteError(from: error) {
+            if let apiError = Self.decodeQuoteError(from: error) {
                 return SwapKitQuoteResponse(
                     quoteId: nil,
                     routes: nil,
@@ -606,7 +607,7 @@ final class SwapKitSwapProvider: SwapProvider {
         do {
             quoteResponse = try await SwapKitAPIService.shared.quote(quoteRequest)
         } catch {
-            if let apiError = decodeQuoteError(from: error) {
+            if let apiError = Self.decodeQuoteError(from: error) {
                 throw NSError(domain: "SwapKit", code: 1, userInfo: [NSLocalizedDescriptionKey: apiError])
             }
             throw error
@@ -727,7 +728,9 @@ final class SwapKitSwapProvider: SwapProvider {
         }
     }
 
-    private static func routability(from response: SwapKitQuoteResponse) -> BuyRoutability? {
+    /// Internal rather than private so the tests can drive the picker-pruning rule with recorded
+    /// responses; nothing outside this type calls it.
+    static func routability(from response: SwapKitQuoteResponse) -> BuyRoutability? {
         if response.routes?.isEmpty == false {
             return .routable
         }
@@ -763,7 +766,9 @@ final class SwapKitSwapProvider: SwapProvider {
         return try? JSONDecoder().decode(SwapKitQuoteResponse.self, from: response.data)
     }
 
-    private func decodeQuoteError(from error: Error) -> String? {
+    /// Internal rather than private so the tests can feed it a recorded non-2xx body and pin the
+    /// code-first ordering; nothing outside this type calls it.
+    static func decodeQuoteError(from error: Error) -> String? {
         guard case HTTPClientError.statusCode(let response) = error,
               let body = try? JSONDecoder().decode(SwapKitQuoteResponse.self, from: response.data)
         else {

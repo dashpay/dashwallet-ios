@@ -18,16 +18,21 @@
 //
 
 @testable import dashpay
+import Moya
 import XCTest
 
-final class SwapKitQuoteDecodingTests: XCTestCase {
-    private func loadFixture(named name: String) throws -> Data {
-        let bundle = Bundle(for: type(of: self))
-        guard let url = bundle.url(forResource: name, withExtension: "json") else {
-            throw XCTestError(.timeoutWhileWaiting, userInfo: ["file": name])
-        }
-        return try Data(contentsOf: url)
+/// Anchors `Bundle(for:)` for the JSON fixtures shared by the test cases in this file.
+private final class FixtureBundleToken {}
+
+private func loadFixture(named name: String) throws -> Data {
+    let bundle = Bundle(for: FixtureBundleToken.self)
+    guard let url = bundle.url(forResource: name, withExtension: "json") else {
+        throw XCTestError(.timeoutWhileWaiting, userInfo: ["file": name])
     }
+    return try Data(contentsOf: url)
+}
+
+final class SwapKitQuoteDecodingTests: XCTestCase {
 
     func testDecodeQuoteResponse() throws {
         let data = try loadFixture(named: "swapkit_quote_response")
@@ -185,5 +190,103 @@ final class SwapKitErrorCopyTests: XCTestCase {
     func testUnknownAndEmptyErrorsFallBackToTheGenericCopy() {
         XCTAssertEqual(message(nil), genericMessage)
         XCTAssertEqual(message(""), genericMessage)
+    }
+}
+
+// MARK: - Production boundary
+
+/// Drives the two functions that apply the rules above to a real SwapKit reply —
+/// `decodeQuoteError(from:)` for a non-2xx body and `routability(from:)` for the Buy picker's
+/// probe — so reverting either one (prose before the code, or pruning on a top-level
+/// `noRoutesFound`) fails here even while every helper test still passes.
+@MainActor
+final class SwapKitQuoteBoundaryTests: XCTestCase {
+    private func statusError(_ json: String, statusCode: Int = 404) -> Error {
+        HTTPClientError.statusCode(Moya.Response(statusCode: statusCode, data: Data(json.utf8)))
+    }
+
+    private func response(providerErrors: [SwapKitProviderError]? = nil,
+                          error: String? = nil, message: String? = nil) -> SwapKitQuoteResponse {
+        SwapKitQuoteResponse(quoteId: nil, routes: [], providerErrors: providerErrors, error: error, message: message)
+    }
+
+    private func providerError(_ code: String?, message: String? = nil) -> SwapKitProviderError {
+        SwapKitProviderError(provider: "NEAR", errorCode: code, message: message)
+    }
+
+    // MARK: decodeQuoteError(from:)
+
+    /// The recorded 404 for 0.01 DASH → BTC. Before the fix the prose won and the code was lost.
+    func testQuoteErrorPutsTheTopLevelCodeBeforeTheProse() {
+        let error = statusError(#"{"error": "noRoutesFound", "message": "No routes found for DASH.DASH -> BTC.BTC"}"#)
+
+        XCTAssertEqual(SwapKitSwapProvider.decodeQuoteError(from: error),
+                       "noRoutesFound: No routes found for DASH.DASH -> BTC.BTC")
+    }
+
+    func testQuoteErrorWithOnlyACodeReturnsTheCode() {
+        XCTAssertEqual(SwapKitSwapProvider.decodeQuoteError(from: statusError(#"{"error": "invalidAsset"}"#)),
+                       "invalidAsset")
+    }
+
+    func testQuoteErrorFallsBackToTheProviderCode() {
+        let provider = statusError(#"""
+        {"providerErrors": [{"provider": "NEAR", "errorCode": "sellAssetAmountTooSmall", "message": "Min amount is 0.175 DASH.DASH"}],
+         "message": "Quote failed"}
+        """#)
+
+        XCTAssertEqual(SwapKitSwapProvider.decodeQuoteError(from: provider),
+                       "sellAssetAmountTooSmall: Min amount is 0.175 DASH.DASH")
+    }
+
+    func testQuoteErrorWithNoCodeAnywhereFallsBackToTheProse() {
+        XCTAssertEqual(SwapKitSwapProvider.decodeQuoteError(from: statusError(#"{"message": "Quote failed"}"#)),
+                       "Quote failed")
+    }
+
+    func testQuoteErrorIgnoresFailuresThatCarryNoSwapKitBody() {
+        XCTAssertNil(SwapKitSwapProvider.decodeQuoteError(from: statusError("<html>Bad Gateway</html>", statusCode: 502)))
+        XCTAssertNil(SwapKitSwapProvider.decodeQuoteError(from: URLError(.notConnectedToInternet)))
+    }
+
+    // MARK: routability(from:)
+
+    func testAnyRouteIsConclusivelyRoutable() throws {
+        let recorded = try JSONDecoder().decode(SwapKitQuoteResponse.self,
+                                                from: loadFixture(named: "swapkit_quote_response"))
+
+        // The fixture also carries a THORCHAIN `noRoutesFound`; a route elsewhere outranks it.
+        XCTAssertEqual(SwapKitSwapProvider.routability(from: recorded), .routable)
+    }
+
+    /// The ambiguous case: SwapKit gives a top-level `noRoutesFound` for an amount far below the
+    /// floor as well as for a pair it cannot carry, so it must not prune the picker.
+    func testTopLevelNoRouteLeavesTheQuestionOpen() {
+        let noRoute = response(error: "noRoutesFound", message: "No routes found for DASH.DASH -> BTC.BTC")
+        XCTAssertNil(SwapKitSwapProvider.routability(from: noRoute))
+    }
+
+    func testAbsentOrBlankProviderErrorsLeaveTheQuestionOpen() {
+        XCTAssertNil(SwapKitSwapProvider.routability(from: response()))
+        XCTAssertNil(SwapKitSwapProvider.routability(from: response(providerErrors: [])))
+        XCTAssertNil(SwapKitSwapProvider.routability(from: response(providerErrors: [providerError(" ", message: "")])))
+    }
+
+    func testProviderNoRouteIsConclusivelyNotRoutable() {
+        let noRoute = response(providerErrors: [providerError("noRoutesFound")])
+        XCTAssertEqual(SwapKitSwapProvider.routability(from: noRoute), .notRoutable)
+    }
+
+    /// The probe amount was under the floor — evidence the route exists, not that it does not.
+    func testProviderBelowMinimumCountsAsRoutable() {
+        let tooSmall = response(providerErrors: [
+            providerError("sellAssetAmountTooSmall", message: "Min amount is 0.175 DASH.DASH"),
+        ])
+        XCTAssertEqual(SwapKitSwapProvider.routability(from: tooSmall), .routable)
+    }
+
+    func testProviderUpstreamFailureLeavesTheQuestionOpen() {
+        let upstream = response(providerErrors: [providerError("apiRequestFailed")])
+        XCTAssertNil(SwapKitSwapProvider.routability(from: upstream))
     }
 }
