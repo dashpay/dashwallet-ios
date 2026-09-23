@@ -9,7 +9,7 @@ struct WalletPreparationFailure: Equatable, Identifiable {
 
     /// Why the DashSync → SwiftDashSDK key migration did not deliver a wallet.
     /// Only the migrator's terminal flag names leave this boundary.
-    enum LegacyMigrationReason: String { case failed, unknownChain, timedOut }
+    enum LegacyMigrationReason: String { case failed, unknownChain, timedOut, unreadableKeychain }
 
     let id: UUID
     let kind: Kind

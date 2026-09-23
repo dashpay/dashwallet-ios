@@ -67,5 +67,6 @@ final class WalletPreparationFailureTests: XCTestCase {
         let report = failure.diagnosticReport(appVersion: "1", systemVersion: "2")
         XCTAssertTrue(report.contains("Category: legacyMigration"))
         XCTAssertTrue(report.contains("KeyMigrator:timedOut"))
+        XCTAssertEqual(WalletPreparationFailure(legacyMigration: .unreadableKeychain).codes, ["KeyMigrator:unreadableKeychain"])
     }
 }

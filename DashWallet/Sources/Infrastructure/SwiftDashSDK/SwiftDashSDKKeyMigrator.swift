@@ -122,6 +122,20 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         }
     }
 
+    /// The launch hold's Try Again. `migrateIfNeeded` only enqueues the run,
+    /// and `performMigration` clears the previous run's terminal flags once
+    /// it starts — so a waiter polling `migrationSettled()` right after the
+    /// enqueue would read the OLD flags and report the old failure again.
+    /// Clear them here, synchronously, before the enqueue: from the caller's
+    /// return onward the migrator is unsettled until the new run finishes.
+    static func restartMigration() {
+        let defaults = UserDefaults.standard
+        defaults.removeObject(forKey: deferredMultiWalletKey)
+        defaults.removeObject(forKey: deferredUnknownChainKey)
+        defaults.removeObject(forKey: deferredFailureKey)
+        migrateIfNeeded()
+    }
+
     // MARK: - Background migration body
 
     /// The actual migration body. Runs on a background `DispatchQueue` —
@@ -226,16 +240,32 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
     // MARK: - Launch-decision probes
 
-    /// True while DashSync wallet material exists in the keychain and the
-    /// one-shot migration has not completed. The root controller holds its
-    /// initial-screen decision while this is true — deciding "no wallet"
-    /// inside the async migration window showed Create/Recover to upgrading
-    /// users whose wallet was milliseconds from landing (and routed their
-    /// typed phrase into the recover screen's wipe branch).
+    /// Whether DashSync wallet material still awaits the one-shot migration.
+    /// A keychain that cannot be read (for example a background launch on a
+    /// locked device) is reported as such rather than as "nothing there":
+    /// the launch hold must not release into setup on a read error, because
+    /// the upgrading user's wallet may well be behind it.
+    static func legacyWalletMaterialState() -> LegacyWalletMigrationLaunchCoordinator.LegacyMaterialState {
+        guard UserDefaults.standard.string(forKey: doneKey) == nil else { return .absent }
+        do {
+            return try strictlyEnumerateDashSyncMnemonicAccounts().isEmpty ? .absent : .pending
+        } catch {
+            logger.error(
+                "🔑 KEYMIG :: DashSync mnemonic enumeration failed during launch probe: \(String(describing: error), privacy: .public)")
+            return .unreadable
+        }
+    }
+
+    /// True unless the keychain confirms there is nothing to migrate. The
+    /// root controller holds its initial-screen decision while this is true
+    /// — deciding "no wallet" inside the async migration window showed
+    /// Create/Recover to upgrading users whose wallet was milliseconds from
+    /// landing (and routed their typed phrase into the recover screen's wipe
+    /// branch). An unreadable keychain also holds: the hold's card, not
+    /// setup, is the fail-closed answer to a read error.
     @objc
     static func legacyWalletMaterialPendingMigration() -> Bool {
-        guard UserDefaults.standard.string(forKey: doneKey) == nil else { return false }
-        return !enumerateDashSyncMnemonicAccounts().isEmpty
+        legacyWalletMaterialState() != .absent
     }
 
     /// True once the migrator reached a terminal state for this launch:
@@ -609,9 +639,9 @@ extension LegacyWalletMigrationLaunchCoordinator {
         dependencies: Dependencies(
             isSettled: { SwiftDashSDKKeyMigrator.migrationSettled() },
             hasWallet: { WalletEnvironment.hasWallet },
-            legacyMaterialPending: { SwiftDashSDKKeyMigrator.legacyWalletMaterialPendingMigration() },
+            legacyMaterial: { SwiftDashSDKKeyMigrator.legacyWalletMaterialState() },
             deferralReason: { SwiftDashSDKKeyMigrator.currentDeferralReason() },
-            startMigration: { SwiftDashSDKKeyMigrator.migrateIfNeeded() },
+            startMigration: { SwiftDashSDKKeyMigrator.restartMigration() },
             activateOverlay: { WalletLifecycleOverlayPresenter.shared.ensureActive() }))
 
 }

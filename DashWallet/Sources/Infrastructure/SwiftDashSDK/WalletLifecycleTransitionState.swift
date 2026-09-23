@@ -198,13 +198,17 @@ final class WalletLifecycleTransitionState: ObservableObject {
     /// Uses the existing switch overlay when an interactive operation owns
     /// it. Otherwise owns a startup overlay until local wallet data is ready.
     /// Opening failures never reset data, and never dismiss a switch's card.
+    /// The launch hold's phases are taken over the same way: once the
+    /// imported wallet exists the runtime's open owns the window, so the
+    /// hold's release cannot dismiss it mid-open and an open failure lands
+    /// on `.failedWalletOpen` as usual.
     func prepareWallet<T>(
         open: () async throws -> T,
         failure: (Error) -> WalletPreparationFailure?
     ) async throws -> T {
         let ownsOverlay: Bool
         switch phase {
-        case .idle, .failedWalletOpen:
+        case .idle, .failedWalletOpen, .migratingLegacyWallet, .failedLegacyMigration:
             ownsOverlay = tryBegin(.openingWallet)
         default:
             ownsOverlay = false
@@ -244,16 +248,27 @@ final class WalletLifecycleTransitionState: ObservableObject {
 /// keychain or the SDK; production wiring lives beside the migrator.
 @MainActor
 final class LegacyWalletMigrationLaunchCoordinator: NSObject {
+    /// What the keychain says about DashSync wallet material. Only
+    /// `.absent` — a successful read that found nothing — releases the hold
+    /// into setup; an unreadable keychain is a failure to show, not an
+    /// absence to act on.
+    enum LegacyMaterialState { case pending, absent, unreadable }
+
     struct Dependencies {
         /// The migrator reached a terminal state for this launch.
         var isSettled: () -> Bool
         /// An SDK wallet this build can select is persisted.
         var hasWallet: () -> Bool
-        /// DashSync material is still in the keychain and not marked migrated.
-        var legacyMaterialPending: () -> Bool
+        /// DashSync material still in the keychain and not marked migrated,
+        /// confirmed absent, or unreadable.
+        var legacyMaterial: () -> LegacyMaterialState
         /// Which terminal flag the migrator left, for the diagnostic code.
         var deferralReason: () -> WalletPreparationFailure.LegacyMigrationReason
-        /// Re-run the migrator (the card's Try Again).
+        /// Re-run the migrator (the card's Try Again). Contract: by the time
+        /// this returns, `isSettled` reports false until the NEW run ends —
+        /// the run itself may start later on its own queue. A previous run's
+        /// terminal state left in place would be read as the new run's
+        /// verdict and re-show the card before the retry even began.
         var startMigration: () -> Void
         /// Subscribe the overlay window presenter before the first phase.
         var activateOverlay: () -> Void
@@ -319,12 +334,16 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
             deliver(hasWallet: true)
             return
         }
-        guard dependencies.legacyMaterialPending() else {
+        let reason: WalletPreparationFailure.LegacyMigrationReason
+        switch dependencies.legacyMaterial() {
+        case .absent:
             deliver(hasWallet: false)
             return
+        case .unreadable:
+            reason = .unreadableKeychain
+        case .pending:
+            reason = timedOut ? .timedOut : dependencies.deferralReason()
         }
-        let reason: WalletPreparationFailure.LegacyMigrationReason =
-            timedOut ? .timedOut : dependencies.deferralReason()
         state.failLegacyMigration(WalletPreparationFailure(legacyMigration: reason))
         DWLogger.log("🚦 LIFECYCLE legacy migration did not deliver a wallet (\(reason.rawValue)); holding on the failure card")
         watchForLateSuccess()
