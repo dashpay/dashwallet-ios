@@ -36,8 +36,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// generated, a newly generated one when the keychain definitely holds no
 /// wallet (creation is kicked off), or the stored one when it does. `nil`
 /// when there is nothing to show — the keychain could not be read (device
-/// locked), or generating failed. A `nil` never created anything, and no
-/// caller may report a step complete on it.
+/// locked), the stored phrase could not be read, or generating failed. A
+/// `nil` never created anything, and no caller may report a step complete
+/// on it. Setup only: a read-only preview of an existing wallet must not
+/// call this — it generates on "no wallet" — and uses
+/// `initWithExistingSeedPhrase:` with `readStoredMnemonic` instead.
 - (nullable DWSeedPhraseModel *)getOrCreateNewWallet;
 - (void)clearAllWallets;
 

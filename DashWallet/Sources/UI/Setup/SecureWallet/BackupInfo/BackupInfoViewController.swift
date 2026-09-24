@@ -163,13 +163,18 @@ final class BackupInfoViewController: BaseViewController {
                 }
 
                 if type != .setup {
-                    self.seedPhraseModel = DWPreviewSeedPhraseModel()
-                    // nil: the stored phrase could not be read. No preview to
-                    // show, and nothing to create outside setup.
-                    guard self.seedPhraseModel.getOrCreateNewWallet() != nil else {
+                    // The backup reminder previews the wallet that exists;
+                    // it never creates one. Read the stored phrase and bind
+                    // the model to it, so neither this screen nor the preview
+                    // it pushes can reach the generating path — a "no wallet"
+                    // read here means the phrase could not be shown, not that
+                    // a wallet should be made.
+                    guard let stored = DWPreviewSeedPhraseModel().readStoredMnemonic(), !stored.isEmpty else {
+                        DWLogger.log("BACKUP stored phrase unreadable; not showing the reminder preview")
                         self.presentWalletUnreadableAlert()
                         return
                     }
+                    self.seedPhraseModel = DWPreviewSeedPhraseModel(existingSeedPhrase: stored)
                 }
 
                 guard self.createNewWalletIfNeeded() else { return }

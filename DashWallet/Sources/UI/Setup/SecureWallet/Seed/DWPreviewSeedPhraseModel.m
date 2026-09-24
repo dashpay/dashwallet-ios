@@ -108,15 +108,18 @@ NS_ASSUME_NONNULL_BEGIN
         seedPhrase = mnemonic;
     }
     else {
-        // Settings → View Recovery Phrase path. Mnemonic was persisted earlier
-        // (by migration / first-create) under an existing walletId. Two
-        // If persistence failed earlier this can still return nil. That would
-        // otherwise crash `NSParameterAssert(seed)` in
-        // `DWSeedPhraseModel initWithSeed:`. Fall back to an empty string —
-        // the screen renders blank words, which is a degraded UX but
-        // survivable. Proper fix (DashSync fallback or error banner) is
-        // a follow-up once the broader DashSync-drop is in flight.
-        seedPhrase = [self readStoredMnemonic] ?: @"";
+        // A wallet is stored (migration / first-create) under an existing
+        // walletId: show its phrase. The read can still fail — persistence
+        // failed earlier, the active wallet is not resolvable among several,
+        // the keychain refused the value. That is nothing to show, not a
+        // phrase of zero words: an empty model reads as success to the
+        // backup screens and opens a blank preview.
+        NSString *stored = [self readStoredMnemonic];
+        if (stored.length == 0) {
+            DWLog(@"SEED :: stored mnemonic unreadable; nothing to show");
+            return nil;
+        }
+        seedPhrase = stored;
     }
 
     return [[DWSeedPhraseModel alloc] initWithSeed:seedPhrase];

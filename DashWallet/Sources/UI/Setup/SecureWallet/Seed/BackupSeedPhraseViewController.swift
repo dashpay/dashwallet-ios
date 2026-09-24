@@ -77,9 +77,14 @@ class BackupSeedPhraseViewController: DWPreviewSeedPhraseViewController {
             self.feedbackGenerator.notificationOccurred(.error)
 
             // nil: the keychain could not be read after the wipe, so no
-            // replacement was generated. Say so instead of animating in a
-            // blank phrase over the one that was just deleted.
+            // replacement was generated. The phrase on screen belongs to the
+            // wallet that was just deleted, and the seed view cannot show
+            // nothing — leave this screen (as it does on resign-active) for
+            // the backup-info step, whose Show Recovery Phrase / Skip generate
+            // the replacement on the next tap, and say why there.
             guard let seedPhrase = self.model.getOrCreateNewWallet() else {
+                let navigation = self.navigationController
+                navigation?.popViewController(animated: false)
                 let alert = UIAlertController(
                     title: nil,
                     message: NSLocalizedString(
@@ -89,7 +94,7 @@ class BackupSeedPhraseViewController: DWPreviewSeedPhraseViewController {
                 alert.addAction(UIAlertAction(
                     title: NSLocalizedString("OK", comment: ""),
                     style: .default))
-                self.present(alert, animated: true)
+                (navigation?.topViewController ?? self).present(alert, animated: true)
                 return
             }
             self.contentView.updateSeedPhraseModelAnimated(seedPhrase)
