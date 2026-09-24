@@ -87,7 +87,8 @@ final class ConnectionsViewModel: ObservableObject {
         dataSource: (any DashConnectDataSource)? = nil,
         featureUnavailable: Bool? = nil
     ) {
-        let computedFeatureUnavailable = featureUnavailable ?? !WalletEnvironment.isTestNetwork
+        let computedFeatureUnavailable = featureUnavailable
+            ?? !DashConnectNetworkConfiguration.isAvailable(on: DashConnectNetworkConfiguration.currentNetwork())
         self.featureUnavailable = computedFeatureUnavailable
         self.dataSource = dataSource ?? Self.defaultDataSource(featureUnavailable: computedFeatureUnavailable)
 
@@ -299,8 +300,8 @@ final class ConnectionsViewModel: ObservableObject {
         }
 
         assert(
-            WalletEnvironment.isTestNetwork,
-            "DashConnect real data source must only run on testnet or devnet."
+            DashConnectNetworkConfiguration.isAvailable(on: DashConnectNetworkConfiguration.currentNetwork()),
+            "DashConnect real data source needs a key-exchange contract on the current network."
         )
         return PlatformDashConnectDataSource()
     }
