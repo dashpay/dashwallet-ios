@@ -20,7 +20,10 @@ with tempfile.TemporaryDirectory(prefix="wallet-preparation-tests-") as director
     # Only unrelated app dependencies are substituted; state and diagnostics
     # are the production files, including their real Combine publishers.
     (sources / "AppDependencies.swift").write_text('''
-enum WalletEnvironment { enum NetworkKind { case mainnet, testnet, devnet } }
+enum WalletEnvironment {
+    enum NetworkKind { case mainnet, testnet, devnet }
+    enum WalletPresence: Int { case absent = 0, present = 1, unknown = 2 }
+}
 enum DWLogger { static func log(_ message: String) {} }
 @MainActor final class SwiftDashSDKSPVCoordinator {
     static let shared = SwiftDashSDKSPVCoordinator()
