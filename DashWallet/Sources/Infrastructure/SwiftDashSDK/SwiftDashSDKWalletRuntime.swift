@@ -97,6 +97,29 @@ struct RuntimeRefreshPolicy {
             return isFullyReady
         }
     }
+
+    /// Whether the Platform start behind `trigger` leaves the same-seed
+    /// identity recovery running in the background instead of awaiting it.
+    ///
+    /// The recovery refreshes DPNS names over DAPI, and the refresh that awaits
+    /// it is the one a network switch's verdict (and its blocking overlay)
+    /// waits for. Only a network change runs it in the background:
+    /// `WalletEnvironment.switchToNetwork` has already cleared the
+    /// wallet-global DashPay username mirror, so nothing renders another
+    /// identity's name while the recovery is still out. The other triggers
+    /// await it — on a wallet switch its adopt step
+    /// (`reconcileRecoveredIdentity`) repoints that mirror at the selected
+    /// wallet before `switchWallet` announces the change.
+    static func runsIdentityRecoveryInBackground(
+        trigger: SwiftDashSDKWalletRuntime.RefreshTrigger
+    ) -> Bool {
+        switch trigger {
+        case .networkDidChange:
+            return true
+        case .startIfReady, .walletMaterialChanged, .walletDidChange, .walletRowsChanged, .platformSyncRearm:
+            return false
+        }
+    }
 }
 
 /// How the runtime decides that Core, and then the whole runtime, is ready for
@@ -816,17 +839,23 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 publishActiveWalletDidChange(reason: "wallet-rows-changed")
             }
 
-            await startPlatform(for: network)
+            await startPlatform(
+                for: network,
+                identityRecoveryInBackground: RuntimeRefreshPolicy.runsIdentityRecoveryInBackground(trigger: trigger))
         }
     }
 
     /// Start Platform/BLAST for `network` and record the verdict in
     /// `platformPhase`. A Platform failure is contained here: the host, Core
     /// SPV, the published balance and the SwiftData handles the home
-    /// transaction list reads all stay up.
-    private func startPlatform(for network: Network) async {
+    /// transaction list reads all stay up. See
+    /// `RuntimeRefreshPolicy.runsIdentityRecoveryInBackground` for
+    /// `identityRecoveryInBackground`.
+    private func startPlatform(for network: Network, identityRecoveryInBackground: Bool = false) async {
         do {
-            try await PlatformAddressSyncCoordinator.shared.startAsync(for: network)
+            try await PlatformAddressSyncCoordinator.shared.startAsync(
+                for: network,
+                identityRecoveryInBackground: identityRecoveryInBackground)
             platformPhase = .running(network)
         } catch {
             platformPhase = .degraded(network)
