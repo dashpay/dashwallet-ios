@@ -25,6 +25,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, assign) BOOL hasAWallet;
 
+/**
+ YES while wallet presence cannot be read from the keychain (device locked
+ during a background launch). `hasAWallet` is NO then, but it must not be
+ acted on: the launch decision waits until protected data is available.
+ */
+@property (readonly, nonatomic, assign) BOOL walletPresenceUnknown;
+
 @property (readonly, nonatomic, strong) id<DWHomeProtocol> homeModel;
 
 @property (nullable, nonatomic, copy) void (^currentNetworkDidChangeBlock)(void);

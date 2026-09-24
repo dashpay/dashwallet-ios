@@ -234,8 +234,33 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// typed phrase into the recover screen's wipe branch).
     @objc
     static func legacyWalletMaterialPendingMigration() -> Bool {
-        guard UserDefaults.standard.string(forKey: doneKey) == nil else { return false }
-        return !enumerateDashSyncMnemonicAccounts().isEmpty
+        legacyWalletMaterialState() == .pending
+    }
+
+    /// `legacyWalletMaterialPendingMigration` with the unreadable case kept
+    /// apart. The DashSync items are `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`
+    /// too, so on a locked device the probe fails and used to read as "nothing
+    /// pending" — letting the root controller fall through to setup. The root
+    /// controller holds on `.unknown`, exactly as it holds on `.pending`.
+    @objc(DWLegacyWalletMaterialState)
+    enum LegacyWalletMaterialState: Int {
+        /// Nothing to migrate: no DashSync material, or the migration is done.
+        case none = 0
+        /// DashSync material exists and the one-shot migration has not completed.
+        case pending = 1
+        /// The Keychain could not be enumerated; pending material cannot be ruled out.
+        case unknown = 2
+    }
+
+    @objc
+    static func legacyWalletMaterialState() -> LegacyWalletMaterialState {
+        guard UserDefaults.standard.string(forKey: doneKey) == nil else { return .none }
+        do {
+            return try strictlyEnumerateDashSyncMnemonicAccounts().isEmpty ? .none : .pending
+        } catch {
+            logger.error("🔑 KEYMIG :: legacy-material probe failed: \(String(describing: error), privacy: .public)")
+            return .unknown
+        }
     }
 
     /// True once the migrator reached a terminal state for this launch:
@@ -400,11 +425,9 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
     /// Enumerate all keychain accounts in `org.dashfoundation.dash` whose
     /// account name starts with `WALLET_MNEMONIC_KEY_`. Returns the full
-    /// account names (including the prefix), sorted for determinism.
-    private static func enumerateDashSyncMnemonicAccounts() -> [String] {
-        (try? strictlyEnumerateDashSyncMnemonicAccounts()) ?? []
-    }
-
+    /// account names (including the prefix), sorted for determinism. Throws
+    /// on any Keychain status other than "not found": a locked device must
+    /// not read as "no legacy material".
     private static func strictlyEnumerateDashSyncMnemonicAccounts() throws -> [String] {
         let query: [String: Any] = [
             kSecClass as String:           kSecClassGenericPassword,

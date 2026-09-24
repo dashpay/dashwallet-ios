@@ -71,10 +71,18 @@ NS_ASSUME_NONNULL_BEGIN
         return [[DWSeedPhraseModel alloc] initWithSeed:self.generatedSeedPhrase];
     }
 
-    BOOL hasAWallet = DWWalletEnvironment.hasWallet;
+    const DWWalletPresence presence = DWWalletEnvironment.walletPresence;
     NSString *seedPhrase;
 
-    if (!hasAWallet) {
+    if (presence == DWWalletPresenceUnknown) {
+        // The keychain could not be read (device locked?). Generating a
+        // phrase here would create a second wallet next to the one the read
+        // cannot see; showing blank words is the same degraded-but-safe
+        // outcome as the failed-read branch below.
+        DWLog(@"SEED :: wallet presence unreadable; refusing to generate a new wallet");
+        seedPhrase = @"";
+    }
+    else if (presence == DWWalletPresenceAbsent) {
         // SwiftDashSDK is the entropy source. `generateAndStore` no longer
         // persists synchronously — the SwiftDashSDK refactor made
         // `WalletStorage` require a walletId, so persistence is deferred to

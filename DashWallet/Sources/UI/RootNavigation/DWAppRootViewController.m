@@ -59,6 +59,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 #endif
 
 @property (nonatomic, assign) BOOL launchingWasDeferred;
+@property (nonatomic, assign) BOOL initialControllerHeldForWalletPresence;
 
 @end
 
@@ -192,9 +193,17 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     [DWWalletLifecycleOverlayBridge setLockScreenVisible:[self.model shouldShowLockScreen]];
     self.lockWindow = lockWindow;
 
+    // A background launch on a locked device (BGAppRefresh) cannot read the
+    // keychain the wallet lives in: "no wallet" would be a lie about the
+    // lock state, not the wallet. Deciding now would show Create/Recover
+    // over a funded wallet when the user opens the same process later.
+    // Hold the launch background; the decision runs once protected data
+    // becomes available (or on the next become-active, which implies it).
+    const BOOL walletPresenceUnknown = self.model.walletPresenceUnknown;
+
     // Display main controller initially if there is a wallet and lock screen is disabled
     // Otherwise main controller will be set as current in `lockScreenViewControllerDidUnlock:`
-    const BOOL hasAWallet = self.model.hasAWallet;
+    const BOOL hasAWallet = !walletPresenceUnknown && self.model.hasAWallet;
     UIViewController *controller = nil;
     if (hasAWallet) {
         if (![self.model shouldShowLockScreen]) {
@@ -209,8 +218,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     // background and decide once the migrator settles (typically well
     // under a second; bounded fallback in the poller).
     const BOOL keyMigrationPending =
-        !hasAWallet && [DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration];
-    if (!hasAWallet && !keyMigrationPending) {
+        !walletPresenceUnknown && !hasAWallet && [DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration];
+    if (!walletPresenceUnknown && !hasAWallet && !keyMigrationPending) {
         controller = [self setupController];
     }
 
@@ -218,7 +227,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         [self transitionToController:controller];
     }
 
-    if (keyMigrationPending) {
+    if (walletPresenceUnknown) {
+        DWLog(@"ROOT :: wallet presence unreadable at launch (device locked?); holding the initial screen");
+        self.initialControllerHeldForWalletPresence = YES;
+    }
+    else if (keyMigrationPending) {
         [self presentInitialControllerWhenKeyMigrationSettles:
                   [NSDate dateWithTimeIntervalSinceNow:10.0]];
     }
@@ -258,6 +271,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     [notificationCenter addObserver:self
                            selector:@selector(windowDidBecomeKeyNotification:)
                                name:UIWindowDidBecomeKeyNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationProtectedDataDidBecomeAvailableNotification)
+                               name:UIApplicationProtectedDataDidBecomeAvailable
                              object:nil];
 
     __weak typeof(self) weakSelf = self;
@@ -323,6 +340,51 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         else {
             [self transitionToController:[self mainController]];
         }
+    }
+    else {
+        [self transitionToController:[self setupController]];
+    }
+}
+
+#pragma mark - Locked-launch hold
+
+/// Run the launch decision `viewDidLoad` held because the keychain was
+/// unreadable. Called when protected data becomes available and, as a
+/// fallback, on every become-active (a frontmost app implies an unlocked
+/// device). A read that still fails keeps the hold — the next notification
+/// tries again — because every alternative (setup over a wallet, main over
+/// nothing) is worse than the launch background.
+- (void)presentInitialControllerIfWalletPresenceBecameKnown {
+    if (!self.initialControllerHeldForWalletPresence) {
+        return;
+    }
+    if (self.model.walletPresenceUnknown) {
+        DWLog(@"ROOT :: wallet presence still unreadable; keeping the initial screen held");
+        return;
+    }
+    self.initialControllerHeldForWalletPresence = NO;
+    DWLog(@"ROOT :: wallet presence readable; presenting the initial screen");
+
+    const BOOL hasAWallet = self.model.hasAWallet;
+    if (hasAWallet) {
+        if ([self.model shouldShowLockScreen]) {
+            // As at launch, the lock screen is presented on become-active
+            // (`applicationDidBecomeActiveNotification`), which is what
+            // follows a decision reached in the background. A decision
+            // reached while already active shows it now.
+            if (UIApplication.sharedApplication.applicationState == UIApplicationStateActive) {
+                [self showLockControllerIfNeeded];
+            }
+        }
+        else {
+            [self transitionToController:[self mainController]];
+        }
+    }
+    else if ([DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration]) {
+        // Same as the launch path: an upgrader's wallet is still being
+        // imported, so the migration hold takes over.
+        [self presentInitialControllerWhenKeyMigrationSettles:
+                  [NSDate dateWithTimeIntervalSinceNow:10.0]];
     }
     else {
         [self transitionToController:[self setupController]];
@@ -510,7 +572,17 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 #pragma mark - Notifications
 
 - (void)applicationDidBecomeActiveNotification {
+    // Before the lock check: a held launch has no wallet to lock yet, and the
+    // decision below may install main, which the lock screen then covers.
+    [self presentInitialControllerIfWalletPresenceBecameKnown];
     [self showLockControllerIfNeeded];
+}
+
+- (void)applicationProtectedDataDidBecomeAvailableNotification {
+    // Posted on the main thread when the device is unlocked, including while
+    // this process is still in the background — so the screen is decided
+    // before the user reaches it, not on the first frame they see.
+    [self presentInitialControllerIfWalletPresenceBecameKnown];
 }
 
 - (void)applicationDidEnterBackgroundNotification {

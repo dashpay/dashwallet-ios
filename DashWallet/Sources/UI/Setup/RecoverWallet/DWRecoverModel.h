@@ -33,6 +33,11 @@ extern NSInteger const DW_PHRASE_MULTIPLE;
 
 - (BOOL)hasWallet;
 
+/// YES while wallet presence cannot be read from the keychain (device
+/// locked). `hasWallet` is NO then, but neither the recover nor the wipe
+/// branch may act on it.
+- (BOOL)walletPresenceUnknown;
+
 /// Whether a PIN record exists in the keychain. In ResetPin mode the screen's
 /// copy depends on it: an existing PIN is "reset", a missing record (partial
 /// keychain restore, interrupted setup) is "set".

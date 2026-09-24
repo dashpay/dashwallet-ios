@@ -238,6 +238,49 @@ public final class WalletEnvironment: NSObject {
         SwiftDashSDKHost.hasPersistedSDKWallet()
     }
 
+    /// App-level wallet presence with the locked-device case kept apart.
+    ///
+    /// `hasWallet` answers "is there definitely a wallet this build can
+    /// select?" and stays `false` whenever that cannot be established — the
+    /// right posture for every gate that merely skips work. The launch
+    /// decision, wallet creation and the recover screen's wipe branch are
+    /// different: acting on a `false` that only means "the Keychain could not
+    /// be read" offers Create/Recover over a funded wallet, or generates a
+    /// second one. Those callers read this instead and hold on `.unknown`.
+    @objc(DWWalletPresence)
+    public enum WalletPresence: Int {
+        case absent = 0
+        case present = 1
+        /// The mnemonic inventory could not be read — the device is locked
+        /// (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`), or the Keychain
+        /// failed for another reason. Says nothing about whether a wallet
+        /// exists; re-read once protected data is available.
+        case unknown = 2
+    }
+
+    /// Pure composition of the Keychain read and the selectable-material
+    /// gate, so the routing can be tested without a Keychain.
+    static func walletPresence(
+        hostPresence: SwiftDashSDKHost.PersistedWalletPresence,
+        hasSelectableMaterial: () -> Bool
+    ) -> WalletPresence {
+        switch hostPresence {
+        case .unknown: return .unknown
+        case .absent: return .absent
+        case .present: return hasSelectableMaterial() ? .present : .absent
+        }
+    }
+
+    @objc public static var walletPresence: WalletPresence {
+        walletPresence(
+            hostPresence: SwiftDashSDKHost.persistedSDKWalletPresence(),
+            hasSelectableMaterial: { isDevnetAvailable || hasSelectableWalletMaterial })
+    }
+
+    @objc public static var isWalletPresenceUnknown: Bool {
+        walletPresence == .unknown
+    }
+
     // MARK: - Active-wallet registry
 
     /// UserDefaults key holding the raw walletId `Data` chosen as active on

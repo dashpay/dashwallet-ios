@@ -96,6 +96,22 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 - (IBAction)createWalletButtonAction:(id)sender {
     self.recoverWalletCommand = nil;
 
+    // This screen is only offered on a definite "no wallet", but the keychain
+    // is re-read on every step; refuse to start creating over an unreadable
+    // one rather than generate a second wallet.
+    if (DWWalletEnvironment.isWalletPresenceUnknown) {
+        DWLog(@"SETUP :: wallet presence unreadable; refusing to create a wallet");
+        UIAlertController *alert = [UIAlertController
+            alertControllerWithTitle:nil
+                             message:NSLocalizedString(@"Your wallet couldn't be read right now. Please try again.", nil)
+                      preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
+                                                  style:UIAlertActionStyleCancel
+                                                handler:nil]];
+        [self presentViewController:alert animated:YES completion:nil];
+        return;
+    }
+
     [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
 
     UIViewController *newViewController = [self nextControllerForCreateWalletRoutine];

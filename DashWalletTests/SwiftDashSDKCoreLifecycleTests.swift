@@ -117,6 +117,61 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertNil(WalletEnvironment.SelectableWalletMaterialMemo.load(from: defaults))
     }
 
+    // MARK: - Wallet presence on a locked device
+
+    /// A failed Keychain inventory read is "unknown", not "absent": a
+    /// background launch on a locked device gets `errSecInteractionNotAllowed`
+    /// and must not be classified as a fresh install.
+    func testKeychainReadFailureClassifiesAsUnknownPresenceWithItsStatus() {
+        let locked = SwiftDashSDKHost.PersistedWalletPresence.classify(
+            .failure(WalletStorageError.keychainError(errSecInteractionNotAllowed)))
+
+        XCTAssertEqual(locked, .unknown(errSecInteractionNotAllowed))
+        XCTAssertTrue(locked.isUnknown)
+        XCTAssertEqual(
+            SwiftDashSDKHost.PersistedWalletPresence.classify(
+                .failure(CoreLifecycleTestError.start)),
+            .unknown(nil))
+    }
+
+    func testInventoryReadClassifiesPresentAndAbsent() {
+        XCTAssertEqual(
+            SwiftDashSDKHost.PersistedWalletPresence.classify(.success([Data([0x01])])),
+            .present)
+        XCTAssertEqual(
+            SwiftDashSDKHost.PersistedWalletPresence.classify(.success([])),
+            .absent)
+        XCTAssertFalse(SwiftDashSDKHost.PersistedWalletPresence.absent.isUnknown)
+    }
+
+    /// The app-level presence keeps "unknown" apart from both answers, and
+    /// never consults the selectable-material derivation for it — that
+    /// derivation reads the same locked Keychain.
+    func testAppWalletPresenceHoldsUnknownWithoutDerivingMaterial() {
+        var derived = false
+        let presence = WalletEnvironment.walletPresence(
+            hostPresence: .unknown(errSecInteractionNotAllowed),
+            hasSelectableMaterial: { derived = true; return true })
+
+        XCTAssertEqual(presence, .unknown)
+        XCTAssertFalse(derived)
+        XCTAssertEqual(
+            WalletEnvironment.walletPresence(hostPresence: .absent, hasSelectableMaterial: { true }),
+            .absent)
+    }
+
+    /// A present mnemonic still counts only when this build can select it —
+    /// the same rule `hasWallet` applies (devnet-only material in a shipping
+    /// build routes to setup, not to a `walletNotFound` dead end).
+    func testAppWalletPresenceAppliesTheSelectableMaterialGate() {
+        XCTAssertEqual(
+            WalletEnvironment.walletPresence(hostPresence: .present, hasSelectableMaterial: { true }),
+            .present)
+        XCTAssertEqual(
+            WalletEnvironment.walletPresence(hostPresence: .present, hasSelectableMaterial: { false }),
+            .absent)
+    }
+
     func testRestartPropagatesStartFailureAndAlwaysResetsBusyState() async {
         var events: [String] = []
         var restartingStates: [Bool] = []

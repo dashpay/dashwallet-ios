@@ -181,7 +181,10 @@ final class BackupInfoViewController: BaseViewController {
             // on "Show Recovery Phrase" or "Skip" — so the user can still pick
             // the phrase length on this screen first.
             seedPhraseModel = DWPreviewSeedPhraseModel()
-            createsNewWallet = !WalletEnvironment.hasWallet
+            // Only a definite "no wallet" creates one. An unreadable keychain
+            // (`.unknown`) must not — that would generate a second wallet next
+            // to the one the read could not see.
+            createsNewWallet = WalletEnvironment.walletPresence == .absent
         }
 
 

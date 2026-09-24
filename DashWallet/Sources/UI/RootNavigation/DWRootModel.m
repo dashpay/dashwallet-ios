@@ -55,6 +55,17 @@ NS_ASSUME_NONNULL_BEGIN
     return DWWalletEnvironment.hasWallet;
 }
 
+- (BOOL)walletPresenceUnknown {
+    // Both keychain inventories the launch decision reads — the SDK mnemonics
+    // and the DashSync material the key migrator would import — are
+    // unreadable while the device is locked. Either one failing means
+    // "no wallet" cannot be trusted yet.
+    if (DWWalletEnvironment.isWalletPresenceUnknown) {
+        return YES;
+    }
+    return [DWSwiftDashSDKKeyMigrator legacyWalletMaterialState] == DWLegacyWalletMaterialStateUnknown;
+}
+
 - (BOOL)walletOperationAllowed {
     return [DWAuthenticationService shared].passcodeEnabled;
 }

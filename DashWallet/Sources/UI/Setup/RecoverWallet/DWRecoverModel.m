@@ -45,6 +45,10 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
     return DWWalletEnvironment.hasWallet;
 }
 
+- (BOOL)walletPresenceUnknown {
+    return DWWalletEnvironment.isWalletPresenceUnknown;
+}
+
 - (BOOL)hasPinSet {
     return [[DWAuthenticationService shared] hasPin];
 }

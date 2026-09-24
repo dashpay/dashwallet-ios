@@ -43,6 +43,10 @@ NS_ASSUME_NONNULL_BEGIN
     return YES;
 }
 
+- (BOOL)walletPresenceUnknown {
+    return NO;
+}
+
 - (BOOL)walletOperationAllowed {
     return YES;
 }

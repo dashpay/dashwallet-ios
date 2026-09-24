@@ -19,6 +19,7 @@
 import Foundation
 import OSLog
 import SwiftDashSDK
+import UIKit
 
 /// Small, testable serial task chain used by the wallet runtime. Keeping the
 /// queue independent from the singleton lets lifecycle ordering be regression
@@ -166,7 +167,15 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         qos: .userInitiated)
 
     private var observerToken: NSObjectProtocol?
+    private var protectedDataObserverTokens: [NSObjectProtocol] = []
     private let lifecycleQueue = SerialAsyncLifecycleQueue()
+
+    /// Set when a refresh found the mnemonic keychain unreadable (locked
+    /// device) and left the runtime stopped. The only condition under which
+    /// the protected-data / become-active observers kick `startIfReady`: a
+    /// runtime that stopped for any other reason (wipe, Stop, no wallet) must
+    /// not be restarted by a foreground transition.
+    private var startDeferredForUnknownWalletPresence = false
 
     /// The network Core is bound to, set once Core SPV has started and BEFORE
     /// Platform/BLAST is asked to start. It means "Core is bound", not
@@ -743,9 +752,25 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // re-triggers a refresh (the creator's and migrator's
             // handleWalletMaterialChanged) — and the migrator is awaited
             // above, so a legacy-upgrade launch has its mnemonic by this line.
-            guard WalletEnvironment.hasSDKWallet else {
+            //
+            // "Unknown" is not "absent": a background launch on a locked
+            // device cannot read the mnemonic keychain at all. Leave the
+            // runtime stopped, but remember it, so the protected-data /
+            // become-active observers re-kick `startIfReady` — nothing else
+            // starts the runtime in a process that launched this way.
+            switch SwiftDashSDKHost.persistedSDKWalletPresence() {
+            case .present:
+                startDeferredForUnknownWalletPresence = false
+            case .absent:
                 PlatformAddressSyncCoordinator.shared.stopShieldedRecoveryMonitoring()
                 Self.logger.info("🧭 RUNTIME :: no SDK wallet persisted; leaving runtime stopped for \(network.rawValue, privacy: .public)")
+                DWLogger.log("RUNTIME no SDK wallet persisted; leaving runtime stopped for \(network.rawValue)")
+                return
+            case .unknown(let status):
+                PlatformAddressSyncCoordinator.shared.stopShieldedRecoveryMonitoring()
+                startDeferredForUnknownWalletPresence = true
+                Self.logger.warning("🧭 RUNTIME :: wallet presence unreadable (keychain status \(String(describing: status), privacy: .public)); leaving runtime stopped for \(network.rawValue, privacy: .public) until protected data is available")
+                DWLogger.log("RUNTIME wallet presence unreadable (keychain status \(String(describing: status)), device locked?); leaving runtime stopped for \(network.rawValue) until protected data is available")
                 return
             }
 
@@ -1029,6 +1054,42 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         }
 
         Self.logger.info("🧭 RUNTIME :: registered DWCurrentNetworkDidChangeNotification observer")
+        installProtectedDataObservers()
+    }
+
+    /// Re-kick a start that `refresh` deferred because the device was locked.
+    ///
+    /// `protectedDataDidBecomeAvailable` fires when the device is unlocked,
+    /// even while this process is still in the background, so the wallet is
+    /// usually up before the user reaches it. `didBecomeActive` is the
+    /// fallback for the transition-only notification racing this
+    /// registration: a frontmost app implies an unlocked device.
+    private func installProtectedDataObservers() {
+        guard protectedDataObserverTokens.isEmpty else { return }
+
+        for name in [UIApplication.protectedDataDidBecomeAvailableNotification,
+                     UIApplication.didBecomeActiveNotification] {
+            protectedDataObserverTokens.append(NotificationCenter.default.addObserver(
+                forName: name,
+                object: nil,
+                queue: .main
+            ) { note in
+                MainActor.assumeIsolated {
+                    Self.shared.retryStartDeferredForUnknownWalletPresence(reason: note.name.rawValue)
+                }
+            })
+        }
+    }
+
+    private func retryStartDeferredForUnknownWalletPresence(reason: String) {
+        guard startDeferredForUnknownWalletPresence else { return }
+        // Cleared here, not in `refresh`: a retry that finds the keychain
+        // still unreadable sets it again, and one that finds a wallet (or
+        // none) has nothing left to defer.
+        startDeferredForUnknownWalletPresence = false
+        Self.logger.info("🧭 RUNTIME :: protected data available (\(reason, privacy: .public)); retrying the deferred start")
+        DWLogger.log("RUNTIME retrying the start deferred on a locked device (\(reason))")
+        enqueueRefresh(trigger: .startIfReady)
     }
 
     /// Internal (was private) so `RuntimeRefreshPolicy` can be exercised
