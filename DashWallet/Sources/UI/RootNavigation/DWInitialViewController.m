@@ -62,6 +62,14 @@ NS_ASSUME_NONNULL_BEGIN
         [self transitionToController:onboarding];
     }
     else {
+        if ([DWSwiftDashSDKKeyMigrator legacyWalletMaterialPresent]) {
+            // The upgrader's carousel is skipped for good, not merely for
+            // this launch: otherwise it would play on the next launch, over
+            // the migrated wallet. Written only on a confirmed read of the
+            // legacy material — never on a keychain error, which on a fresh
+            // install would leave a permanent mark with no wallet behind it.
+            [DWGlobalOptions sharedInstance].shouldDisplayOnboarding = NO;
+        }
         DWAppRootViewController *rootController = [self createRootController];
         [self transitionToController:rootController];
         self.rootController = rootController;
@@ -205,9 +213,6 @@ NS_ASSUME_NONNULL_BEGIN
     // the carousel — its Keep/Delete prompt is wired to the carousel's
     // completion.
     if ([DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration]) {
-        // Skipped for good, not merely for this launch: otherwise the
-        // carousel would play on the next launch, over the migrated wallet.
-        [DWGlobalOptions sharedInstance].shouldDisplayOnboarding = NO;
         return NO;
     }
     return [DWGlobalOptions sharedInstance].shouldDisplayOnboarding;

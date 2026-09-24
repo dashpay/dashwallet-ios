@@ -272,9 +272,12 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         /// What a retry's migrator run does once it actually starts; nil
         /// leaves the run pending until the test scripts its outcome.
         var onMigrationRun: (() -> Void)?
+        /// Announces a material change to the card's watcher.
+        var materialChanged: AsyncStream<Void>.Continuation?
 
         func makeCoordinator(state: WalletLifecycleTransitionState,
-                             settleTimeout: TimeInterval = 5) -> LegacyWalletMigrationLaunchCoordinator {
+                             settleTimeout: TimeInterval = 5,
+                             lateSuccessInterval: TimeInterval = 0.005) -> LegacyWalletMigrationLaunchCoordinator {
             LegacyWalletMigrationLaunchCoordinator(state: state, dependencies: .init(
                 isSettled: { self.settled },
                 hasWallet: { self.hasWallet },
@@ -291,9 +294,10 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
                     }
                 },
                 activateOverlay: { self.overlayActivations += 1 },
+                walletMaterialChanges: { AsyncStream { self.materialChanged = $0 } },
                 pollInterval: 0.005,
                 settleTimeout: settleTimeout,
-                lateSuccessInterval: 0.005))
+                lateSuccessInterval: lateSuccessInterval))
         }
     }
 
@@ -559,6 +563,53 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         XCTAssertEqual(result, 1)
         XCTAssertEqual(state.phase, .idle)
         XCTAssertNil(state.deferredLegacyFailure)
+    }
+
+    /// A wallet that landed releases the hold before the migrator settles
+    /// (several DashSync wallets: the first import is open while a later
+    /// one is still wedged).
+    func testWalletPresenceReleasesTheHoldBeforeSettlement() async {
+        let state = WalletLifecycleTransitionState()
+        let probe = HoldProbe()
+        let coordinator = probe.makeCoordinator(state: state)
+        coordinator.begin { probe.outcomes.append($0) }
+        probe.hasWallet = true  // settled stays false
+        await settle(probe.outcomes == [true])
+        XCTAssertEqual(probe.outcomes, [true])
+        XCTAssertEqual(state.phase, .idle)
+    }
+
+    /// A window busy at begin does not lose the card: the verdict takes the
+    /// window once it is free.
+    func testVerdictTakesTheWindowWhenBeginCouldNot() async {
+        let state = WalletLifecycleTransitionState()
+        XCTAssertTrue(state.tryBegin(.switchingNetwork(from: .mainnet, to: .testnet)))
+        let probe = HoldProbe()
+        let coordinator = probe.makeCoordinator(state: state)
+        coordinator.begin { probe.outcomes.append($0) }
+        XCTAssertEqual(state.phase, .switchingNetwork(from: .mainnet, to: .testnet), "the hold must not steal a busy window")
+        state.finish()
+        probe.settled = true
+        await settle({ if case .failedLegacyMigration = state.phase { return true } else { return false } }())
+        guard case .failedLegacyMigration = state.phase else { return XCTFail("expected the card, got \(state.phase.logLabel)") }
+        XCTAssertEqual(probe.outcomes, [])
+    }
+
+    /// While the card is up, a material-change announcement re-checks the
+    /// wallet immediately; the slow fallback poll is not what completes it.
+    func testMaterialChangeAnnouncementCompletesTheLaunchFromTheCard() async {
+        let state = WalletLifecycleTransitionState()
+        let probe = HoldProbe()
+        let coordinator = probe.makeCoordinator(state: state, lateSuccessInterval: 30)
+        coordinator.begin { probe.outcomes.append($0) }
+        probe.settled = true
+        await settle({ if case .failedLegacyMigration = state.phase { return true } else { return false } }())
+        await settle(probe.materialChanged != nil)
+        probe.hasWallet = true
+        probe.materialChanged?.yield()
+        await settle(probe.outcomes == [true], within: 1)
+        XCTAssertEqual(probe.outcomes, [true], "the announcement, not the 30 s fallback, must complete the launch")
+        XCTAssertEqual(state.phase, .idle)
     }
 
     /// The runtime's real entry point takes the launch window over from

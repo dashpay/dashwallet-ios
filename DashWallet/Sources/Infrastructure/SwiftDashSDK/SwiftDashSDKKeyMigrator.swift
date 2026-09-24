@@ -117,8 +117,9 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// Never throws, never crashes.
     @objc(migrateIfNeeded)
     static func migrateIfNeeded() {
+        let generation = runGenerationLock.withLock { requestedRunGeneration }
         legacyWalletQueue.async {
-            performMigration()
+            performMigration(generation: generation)
         }
     }
 
@@ -126,9 +127,13 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// and `performMigration` clears the previous run's terminal flags once
     /// it starts — so a waiter polling `migrationSettled()` right after the
     /// enqueue would read the OLD flags and report the old failure again.
-    /// Clear them here, synchronously, before the enqueue: from the caller's
-    /// return onward the migrator is unsettled until the new run finishes.
+    /// Clear them here, synchronously, before the enqueue, and bump the run
+    /// generation: from the caller's return onward the migrator is unsettled
+    /// until a run of THIS generation finishes. A previous run still in
+    /// flight (the hold's timeout does not stop it) rewrites the flags when
+    /// it ends, but its generation is stale, so that verdict is not shown.
     static func restartMigration() {
+        runGenerationLock.withLock { requestedRunGeneration += 1 }
         let defaults = UserDefaults.standard
         defaults.removeObject(forKey: deferredMultiWalletKey)
         defaults.removeObject(forKey: deferredUnknownChainKey)
@@ -136,13 +141,25 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         migrateIfNeeded()
     }
 
+    /// In-process run generations, so `migrationSettled()` answers for the
+    /// run the caller asked for and not for flags a previous launch or a
+    /// superseded run left behind. Nothing has settled when the process
+    /// starts: stale flags from an earlier launch wait for this launch's run
+    /// (bounded by the hold's timeout) instead of re-showing a stale card.
+    private static let runGenerationLock = NSLock()
+    private static var requestedRunGeneration = 0
+    private static var settledRunGeneration = -1
+
     // MARK: - Background migration body
 
     /// The actual migration body. Runs on a background `DispatchQueue` —
     /// validates DashSync's mnemonic on a background queue, then synchronously
     /// asks `SwiftDashSDKHost` on the main actor to create/import the managed
     /// wallet and store mnemonic material in `WalletStorage`.
-    private static func performMigration() {
+    private static func performMigration(generation: Int) {
+        // Every exit below is terminal for this run: done, deferred, or
+        // nothing to do. Record which run reached it.
+        defer { runGenerationLock.withLock { settledRunGeneration = max(settledRunGeneration, generation) } }
         let defaults = UserDefaults.standard
 
         // Path 1 — already migrated. One-shot, single-release migration plan:
@@ -268,6 +285,15 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         legacyWalletMaterialState() != .absent
     }
 
+    /// True only when DashSync material was actually read from the keychain
+    /// and awaits migration — never on a read error. For decisions that
+    /// persist (the onboarding carousel's one-shot flag), where a locked or
+    /// failing keychain on a fresh install must not leave a permanent mark.
+    @objc
+    static func legacyWalletMaterialPresent() -> Bool {
+        legacyWalletMaterialState() == .pending
+    }
+
     /// True once the migrator reached a terminal state for this launch:
     /// completed, or recorded any deferral/failure flag (each of which every
     /// waiter treats as "stop waiting").
@@ -275,7 +301,8 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     static func migrationSettled() -> Bool {
         let defaults = UserDefaults.standard
         if defaults.string(forKey: doneKey) != nil { return true }
-        return [deferredMultiWalletKey, deferredUnknownChainKey, deferredFailureKey]
+        let currentRun = runGenerationLock.withLock { settledRunGeneration >= requestedRunGeneration }
+        return currentRun && [deferredMultiWalletKey, deferredUnknownChainKey, deferredFailureKey]
             .contains { defaults.object(forKey: $0) != nil }
     }
 
@@ -632,6 +659,12 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 /// app-level wallet gate and the overlay presenter. Kept here, next to the
 /// probes it reads, so the coordinator's state machine stays free of
 /// keychain and SDK types.
+///
+/// A shared instance because one launch has one hold, and two parties that
+/// cannot be handed a reference must reach the same one: the Obj-C root
+/// controller (`DWLegacyWalletMigrationLaunchHold`) that begins it and the
+/// overlay view model whose Try Again retries it. Its seam is the injected
+/// `Dependencies`; tests build their own instances.
 extension LegacyWalletMigrationLaunchCoordinator {
     @MainActor
     static let shared = LegacyWalletMigrationLaunchCoordinator(

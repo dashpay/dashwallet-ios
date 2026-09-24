@@ -326,12 +326,25 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
         var startMigration: () -> Void
         /// Subscribe the overlay window presenter before the first phase.
         var activateOverlay: () -> Void
+        /// Fires whenever persisted wallet material changed (the migrator
+        /// reports its success through it); the failure card re-checks
+        /// `hasWallet` on each element instead of polling the keychain.
+        var walletMaterialChanges: () -> AsyncStream<Void> = {
+            AsyncStream { continuation in
+                let token = NotificationCenter.default.addObserver(
+                    forName: .swiftDashSDKWalletMaterialDidChange, object: nil, queue: .main
+                ) { _ in continuation.yield() }
+                continuation.onTermination = { _ in NotificationCenter.default.removeObserver(token) }
+            }
+        }
         var pollInterval: TimeInterval = 0.1
         /// Progress is visible, so this only bounds a wedged migrator: past
         /// it the card offers Try Again instead of spinning forever.
         var settleTimeout: TimeInterval = 60
-        /// After a failure the hold keeps watching for a late success.
-        var lateSuccessInterval: TimeInterval = 0.5
+        /// Fallback re-check cadence while the card is up, should a material
+        /// change go unannounced. Slow on purpose: each check is a keychain
+        /// read on the main actor.
+        var lateSuccessInterval: TimeInterval = 5
     }
 
     private let state: WalletLifecycleTransitionState
@@ -345,14 +358,17 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
     }
 
     /// Begin the hold. `completion` fires once, on the main actor. A second
-    /// call while a hold is active is ignored.
+    /// call while a hold is active is ignored. At launch the window is
+    /// idle; should another operation hold it, the hold still runs and takes
+    /// the window when its verdict arrives (`evaluate`), so the card is
+    /// never lost to a busy window at begin.
     func begin(completion: @escaping (Bool) -> Void) {
         guard self.completion == nil else { return }
         self.completion = completion
         state.setLegacyLaunchHold(active: true)
         dependencies.activateOverlay()
         if !state.tryBegin(.migratingLegacyWallet) {
-            DWLogger.log("🚦 LIFECYCLE legacy-migration hold could not take the window: phase=\(state.phase.logLabel)")
+            DWLogger.log("🚦 LIFECYCLE legacy-migration hold could not take the window at begin: phase=\(state.phase.logLabel)")
         }
         waitForSettlement()
     }
@@ -371,6 +387,13 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
         watcher = Task { [weak self] in
             while !Task.isCancelled {
                 guard let self else { return }
+                // A wallet that landed releases the hold before the migrator
+                // settles: with several DashSync wallets the first import can
+                // be open and running while a later one is still wedged.
+                if self.dependencies.hasWallet() {
+                    self.deliver(hasWallet: true)
+                    return
+                }
                 if self.dependencies.isSettled() {
                     self.evaluate(timedOut: false)
                     return
@@ -399,6 +422,9 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
         case .pending:
             reason = timedOut ? .timedOut : dependencies.deferralReason()
         }
+        if state.phase == .idle, !state.tryBegin(.migratingLegacyWallet) {
+            DWLogger.log("🚦 LIFECYCLE legacy-migration hold could not take the window for its verdict")
+        }
         state.failLegacyMigration(WalletPreparationFailure(legacyMigration: reason))
         DWLogger.log("🚦 LIFECYCLE legacy migration did not deliver a wallet (\(reason.rawValue)); holding on the failure card")
         watchForLateSuccess()
@@ -411,15 +437,35 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
     private func watchForLateSuccess() {
         watcher?.cancel()
         watcher = Task { [weak self] in
-            while !Task.isCancelled {
-                guard let self else { return }
-                if self.dependencies.hasWallet() {
-                    self.deliver(hasWallet: true)
-                    return
+            guard let self else { return }
+            if self.deliverIfWalletPresent() { return }
+            let changes = self.dependencies.walletMaterialChanges()
+            let fallback = self.dependencies.lateSuccessInterval
+            await withTaskGroup(of: Void.self) { group in
+                group.addTask { @MainActor [weak self] in
+                    for await _ in changes {
+                        guard let self, !Task.isCancelled else { return }
+                        if self.deliverIfWalletPresent() { return }
+                    }
                 }
-                try? await Task.sleep(nanoseconds: UInt64(self.dependencies.lateSuccessInterval * 1_000_000_000))
+                group.addTask { @MainActor [weak self] in
+                    while !Task.isCancelled {
+                        try? await Task.sleep(nanoseconds: UInt64(fallback * 1_000_000_000))
+                        guard let self, !Task.isCancelled else { return }
+                        if self.deliverIfWalletPresent() { return }
+                    }
+                }
+                await group.next()
+                group.cancelAll()
             }
         }
+    }
+
+    @discardableResult
+    private func deliverIfWalletPresent() -> Bool {
+        guard completion != nil, dependencies.hasWallet() else { return false }
+        deliver(hasWallet: true)
+        return true
     }
 
     private func deliver(hasWallet: Bool) {
@@ -439,4 +485,13 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
         self.completion = nil
         completion?(hasWallet)
     }
+}
+
+extension Notification.Name {
+    /// Posted (main queue) by `SwiftDashSDKWalletRuntime.handleWalletMaterialChanged`
+    /// whenever persisted wallet material changed — the migrator's success,
+    /// a create/import, a removal. Typed, app-owned; not a re-emission of
+    /// any other system's name.
+    static let swiftDashSDKWalletMaterialDidChange =
+        Notification.Name("org.dashfoundation.dash.swiftDashSDKWalletMaterialDidChange")
 }

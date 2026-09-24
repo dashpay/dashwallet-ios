@@ -22,8 +22,10 @@ final class WalletPreparationSupportViewModel: ObservableObject {
     @Published var showError = false
     let report: String
     let recipient: String
+    private let kind: WalletPreparationFailure.Kind
 
     init(failure: WalletPreparationFailure, bundle: Bundle = .main) {
+        kind = failure.kind
         recipient = bundle.object(forInfoDictionaryKey: "SupportEmail") as? String ?? ""
         let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
         let build = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown"
@@ -32,17 +34,40 @@ final class WalletPreparationSupportViewModel: ObservableObject {
             systemVersion: ProcessInfo.processInfo.operatingSystemVersionString)
     }
 
+    /// The sheet's first line: what to do, phrased for the failure at hand.
+    var guidance: String {
+        if kind == .legacyMigration {
+            return NSLocalizedString(
+                "Do not delete the app. Try moving your wallet again, or contact support if the problem continues.",
+                comment: "Wallet preparation help")
+        }
+        return NSLocalizedString(
+            "Do not delete the app. Try opening your wallet again, or contact support if the problem continues.",
+            comment: "Wallet preparation help")
+    }
+
     func prepareDraft() {
         guard !recipient.isEmpty else {
             showError = true
             return
         }
+        let subject: String
+        let body: String
+        if kind == .legacyMigration {
+            subject = "Dash Wallet — unable to move wallet"
+            body = String(format: NSLocalizedString(
+                "To: %@\n\nI couldn't move my wallet from the previous version of the app.\n\nWhat happened before the error:\n",
+                comment: "Editable wallet support message"), recipient)
+        } else {
+            subject = "Dash Wallet — unable to open wallet"
+            body = String(format: NSLocalizedString(
+                "To: %@\n\nI couldn't open my wallet.\n\nWhat happened before the error:\n",
+                comment: "Editable wallet support message"), recipient)
+        }
         draft = Draft(
             recipient: recipient,
-            subject: "Dash Wallet — unable to open wallet",
-            body: String(format: NSLocalizedString(
-                "To: %@\n\nI couldn't open my wallet.\n\nWhat happened before the error:\n",
-                comment: "Editable wallet support message"), recipient),
+            subject: subject,
+            body: body,
             report: includeDiagnostics ? report : nil,
             useMail: MFMailComposeViewController.canSendMail())
     }
@@ -67,7 +92,7 @@ struct WalletPreparationSupportView: View {
         NavigationStack {
             Form {
                 Section {
-                    Text("Do not delete the app. Try opening your wallet again, or contact support if the problem continues.")
+                    Text(viewModel.guidance)
                     Text("Never share your recovery phrase or private keys with anyone, including support.")
                     if !viewModel.recipient.isEmpty {
                         Text(viewModel.recipient).textSelection(.enabled)

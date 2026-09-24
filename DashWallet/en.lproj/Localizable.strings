@@ -6105,6 +6105,8 @@
 "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Do not delete this app." = "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Do not delete this app.";
 "Your wallet could not be opened. Do not delete this app. Try again or contact support for help." = "Your wallet could not be opened. Do not delete this app. Try again or contact support for help.";
 "Couldn't move your wallet" = "Couldn't move your wallet";
+"Do not delete the app. Try moving your wallet again, or contact support if the problem continues." = "Do not delete the app. Try moving your wallet again, or contact support if the problem continues.";
+"To: %@\n\nI couldn't move my wallet from the previous version of the app.\n\nWhat happened before the error:\n" = "To: %@\n\nI couldn't move my wallet from the previous version of the app.\n\nWhat happened before the error:\n";
 "Unlock with your wallet PIN to export logs." = "Unlock with your wallet PIN to export logs.";
 "The wallet from the previous version of this app is still on this device but could not be prepared. Do not delete this app. Try again or contact support for help." = "The wallet from the previous version of this app is still on this device but could not be prepared. Do not delete this app. Try again or contact support for help.";
 "Preparing your wallet…" = "Preparing your wallet…";
