@@ -96,6 +96,22 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 - (IBAction)createWalletButtonAction:(id)sender {
     self.recoverWalletCommand = nil;
 
+    // This screen is only offered on a definite "no wallet", but the keychain
+    // is re-read on every step; refuse to start creating over an unreadable
+    // one rather than generate a second wallet.
+    if (DWWalletEnvironment.isWalletPresenceUnknown) {
+        DWLog(@"SETUP :: wallet presence unreadable; refusing to create a wallet");
+        UIAlertController *alert = [UIAlertController
+            alertControllerWithTitle:nil
+                             message:NSLocalizedString(@"Your wallet couldn't be read right now. Please try again.", nil)
+                      preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
+                                                  style:UIAlertActionStyleCancel
+                                                handler:nil]];
+        [self presentViewController:alert animated:YES completion:nil];
+        return;
+    }
+
     [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
 
     UIViewController *newViewController = [self nextControllerForCreateWalletRoutine];
@@ -123,8 +139,52 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 - (void)setPinViewControllerDidSetPin:(DWSetPinViewController *)controller {
     // In case we're recovering, we have a deferred command to create a new wallet.
     // To avoid inconsistency create a new wallet after the pin has been set.
-    [self.recoverWalletCommand execute];
-    self.recoverWalletCommand = nil;
+    [self executeRecoverCommandIfAllowedThenContinueSetup];
+}
+
+/// The recover screen accepted the phrase against a definite "no wallet"
+/// read; the PIN step took time, and the keychain is read again here, once,
+/// before the import runs. Only a read that still says "absent" imports:
+/// `unknown` is a keychain that cannot be read (the wallet it may hold would
+/// get a twin next to it), so the command is kept and the user gets Try
+/// Again, or Cancel back to this screen; `present` is a wallet that landed
+/// meanwhile (a late migration), so nothing is imported and setup completes
+/// into it.
+- (void)executeRecoverCommandIfAllowedThenContinueSetup {
+    DWRecoverWalletCommand *command = self.recoverWalletCommand;
+    if (command != nil) {
+        const DWWalletPresence presence = DWWalletEnvironment.walletPresence;
+        if (presence == DWWalletPresenceUnknown) {
+            DWLog(@"SETUP :: wallet presence unreadable at recover execution; not importing");
+            UIAlertController *alert = [UIAlertController
+                alertControllerWithTitle:nil
+                                 message:NSLocalizedString(@"Your wallet couldn't be read right now. Please try again.", nil)
+                          preferredStyle:UIAlertControllerStyleAlert];
+            __weak typeof(self) weakSelf = self;
+            [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Try Again", nil)
+                                                      style:UIAlertActionStyleDefault
+                                                    handler:^(UIAlertAction *action) {
+                                                        [weakSelf executeRecoverCommandIfAllowedThenContinueSetup];
+                                                    }]];
+            [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                                                      style:UIAlertActionStyleCancel
+                                                    handler:^(UIAlertAction *action) {
+                                                        __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                        strongSelf.recoverWalletCommand = nil;
+                                                        [strongSelf.navigationController popToViewController:strongSelf animated:YES];
+                                                    }]];
+            // The PIN screen is on top; this controller's view is not.
+            [self.navigationController presentViewController:alert animated:YES completion:nil];
+            return;
+        }
+        if (presence == DWWalletPresenceAbsent) {
+            [command execute];
+        }
+        else {
+            DWLog(@"SETUP :: a wallet is present at recover execution; not importing a second one");
+        }
+        self.recoverWalletCommand = nil;
+    }
 
     [self continueOrCompleteWalletSetup];
 }

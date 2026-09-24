@@ -39,6 +39,16 @@ private let dwRecoverLogger = Logger(
     category: "recover-wipe")
 
 extension DWRecoverModel {
+    /// Whether a wallet this build can select is stored — one keychain read,
+    /// taken once per submitted phrase and used for every route of it:
+    /// `.unknown` (the keychain could not be read, device locked) lets
+    /// neither the recover nor the wipe branch act. Declared here rather
+    /// than in `DWRecoverModel.h`, which is part of the bridging header and
+    /// cannot name a Swift-defined type.
+    @objc var walletPresence: WalletEnvironment.WalletPresence {
+        WalletEnvironment.walletPresence
+    }
+
     /// The plain-"wipe" gate: empty means "zero SDK balance AND the chain is
     /// fully synced" — an unsynced wallet can't prove it's empty, so it reads
     /// as non-empty (fail-closed; an exact recovery phrase remains available).

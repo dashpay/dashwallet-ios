@@ -172,6 +172,18 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
+    // One keychain read for every route of this phrase, the wipe shortcuts
+    // and the support acknowledgement included: with the keychain unreadable,
+    // "no wallet" is not trustworthy (recovering would create a wallet next
+    // to the unseen one) and no wipe can be authorized against an inventory
+    // that cannot be read. A second read further down could fail where this
+    // one succeeded and route a valid phrase into recovery over a wallet.
+    const DWWalletPresence walletPresence = [self.model walletPresence];
+    if (walletPresence == DWWalletPresenceUnknown) {
+        [self.delegate recoverContentViewWalletPresenceUnknown:self];
+        return;
+    }
+
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be deallocated immediately
         UITextView *textView = self.textView;
         NSString *phrase = rawPhrase;
@@ -230,7 +242,7 @@ NS_ASSUME_NONNULL_BEGIN
         else if (![self.model phraseIsValid:phrase]) {
             [self.delegate recoverContentViewBadRecoveryPhrase:self];
         }
-        else if ([self.model hasWallet]) {
+        else if (walletPresence == DWWalletPresencePresent) {
             [self wipeWithPhrase:phrase];
         }
         else {

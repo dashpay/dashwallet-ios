@@ -41,10 +41,6 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
     DWLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
-- (BOOL)hasWallet {
-    return DWWalletEnvironment.hasWallet;
-}
-
 - (BOOL)hasPinSet {
     return [[DWAuthenticationService shared] hasPin];
 }
