@@ -39,6 +39,11 @@ final class WalletLifecycleOverlayPresenter {
     private var openingDelay: Task<Void, Never>?
     private var lockScreenVisible = false
     private var applicationActive = false
+    /// The migration card's Export Logs authenticates first. The PIN prompt
+    /// presents from a `.normal`-level window, below this overlay's
+    /// `.alert + 1`, so the overlay hides for the prompt's duration exactly
+    /// as it does behind the lock screen; the card and its state survive.
+    private var authenticationPromptVisible = false
 
     private init() {}
 
@@ -74,6 +79,11 @@ final class WalletLifecycleOverlayPresenter {
     /// PIN and after its dismissal, including roots installed after onboarding.
     func setLockScreenVisible(_ visible: Bool) {
         lockScreenVisible = visible
+        updateVisibility()
+    }
+
+    func setAuthenticationPromptVisible(_ visible: Bool) {
+        authenticationPromptVisible = visible
         updateVisibility()
     }
 
@@ -117,7 +127,7 @@ final class WalletLifecycleOverlayPresenter {
         } else {
             blockedByLock = lockScreenVisible
         }
-        overlayWindow?.isHidden = blockedByLock || !applicationActive
+        overlayWindow?.isHidden = blockedByLock || authenticationPromptVisible || !applicationActive
     }
 
     private func presentIfNeeded() {
@@ -213,10 +223,33 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
         }
     }
 
-    func exportDiagnosticLogs() {
+    /// `authenticated` is the migration card's mode: it shows before the
+    /// lock screen (no SDK wallet yet, so `shouldShowLockScreen` is false),
+    /// yet the archive carries the previous generation's wallet history. The
+    /// upgrading user's PIN is read in place by `PinStore`, so it gates the
+    /// export; with no PIN on record the export fails closed.
+    func exportDiagnosticLogs(authenticated: Bool = false) {
         guard !isExportingLogs, !retryPending else { return }
+        if authenticated, !AuthenticationService.shared.hasPin() {
+            logExportErrorMessage = NSLocalizedString(
+                "Unlock with your wallet PIN to export logs.", comment: "Log export")
+            return
+        }
         isExportingLogs = true
         Task { [weak self] in
+            if authenticated {
+                WalletLifecycleOverlayPresenter.shared.setAuthenticationPromptVisible(true)
+                let outcome = await AuthenticationGate.authenticate(biometric: true)
+                WalletLifecycleOverlayPresenter.shared.setAuthenticationPromptVisible(false)
+                guard let self else { return }
+                guard outcome == .ok else {
+                    self.isExportingLogs = false
+                    if outcome != .cancelled {
+                        self.logExportErrorMessage = NSLocalizedString("Authentication failed", comment: "")
+                    }
+                    return
+                }
+            }
             let result = await DiagnosticLogExporter.exportArchive()
             guard let self else { return }
             self.isExportingLogs = false
@@ -237,6 +270,9 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     /// re-runs the key migrator and keeps waiting. The card's phase change
     /// (back to progress) is the visible acknowledgement.
     func retryLegacyMigration() {
+        // A successful retry releases the hold and drops this window, and
+        // with it an export's share sheet or error alert.
+        guard !isExportingLogs else { return }
         LegacyWalletMigrationLaunchCoordinator.shared.retry()
     }
 
@@ -312,7 +348,8 @@ struct WalletLifecycleOverlayView: View {
                     actionButton(NSLocalizedString("Try Again", comment: ""), prominent: true) {
                         viewModel.retryLegacyMigration()
                     }
-                    preparationHelp
+                    .disabled(viewModel.isExportingLogs)
+                    preparationHelp(authenticatedExport: true)
                 }
             case let .switchingNetwork(_, to):
                 progressCard(
@@ -415,14 +452,20 @@ struct WalletLifecycleOverlayView: View {
         }
     }
 
-    @ViewBuilder
     private var preparationHelp: some View {
+        preparationHelp(authenticatedExport: false)
+    }
+
+    /// `authenticatedExport`: the card shows before the lock screen, so
+    /// Export Logs authenticates first (see `exportDiagnosticLogs`).
+    @ViewBuilder
+    private func preparationHelp(authenticatedExport: Bool) -> some View {
         if viewModel.preparationFailure != nil {
             if viewModel.isExportingLogs {
                 SwiftUI.ProgressView(NSLocalizedString("Preparing logs…", comment: "Log export progress"))
             } else {
                 actionButton(NSLocalizedString("Export Logs", comment: "Log export"), prominent: false) {
-                    viewModel.exportDiagnosticLogs()
+                    viewModel.exportDiagnosticLogs(authenticated: authenticatedExport)
                 }
                 .disabled(viewModel.retryPending)
             }

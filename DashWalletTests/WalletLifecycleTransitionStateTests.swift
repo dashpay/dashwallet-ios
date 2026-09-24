@@ -467,6 +467,38 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         }
     }
 
+    /// If the hold reports while the takeover's open is running, it has no
+    /// watcher, timeout or Try Again left. An unrelated open failure must
+    /// then release the window, not restore a hold phase nothing can clear.
+    func testPrepareWalletDoesNotRestoreAHoldThatReportedDuringTheOpen() async {
+        for viaCard in [false, true] {
+            let state = WalletLifecycleTransitionState()
+            let probe = HoldProbe()
+            let coordinator = probe.makeCoordinator(state: state)
+            coordinator.begin { probe.outcomes.append($0) }
+            if viaCard {
+                probe.settled = true
+                await settle({ if case .failedLegacyMigration = state.phase { return true } else { return false } }())
+            }
+            XCTAssertTrue(state.legacyLaunchHoldActive)
+
+            do {
+                try await state.prepareWallet {
+                    XCTAssertEqual(state.phase, .openingWallet)
+                    probe.hasWallet = true
+                    probe.settled = true
+                    await self.settle(probe.outcomes == [true])
+                    XCTAssertFalse(state.legacyLaunchHoldActive)
+                    throw NSError(domain: "SDKInit", code: 1)
+                } failure: { _ in nil }
+                XCTFail("expected the open failure")
+            } catch {}
+            XCTAssertEqual(state.phase, .idle, "a reported hold must not be restored (viaCard=\(viaCard))")
+            XCTAssertNil(state.preparationFailure)
+            XCTAssertEqual(probe.outcomes, [true])
+        }
+    }
+
     /// The runtime's real entry point takes the launch window over from
     /// either hold phase, so the hold's release cannot dismiss an open in
     /// progress and an open failure lands on the usual blocking card.

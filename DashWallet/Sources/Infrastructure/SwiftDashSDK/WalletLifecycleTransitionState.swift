@@ -99,6 +99,17 @@ final class WalletLifecycleTransitionState: ObservableObject {
     /// Retained for an interactive switch's failure card; its owner keeps the
     /// phase and retry destination while the wallet-opening step runs.
     @Published private(set) var preparationFailure: WalletPreparationFailure?
+    /// True from the launch hold's `begin` until it reports. `prepareWallet`
+    /// hands a taken-over window back to the hold only while this is set:
+    /// a hold that already reported has no watcher, timeout or Try Again
+    /// left to own the window, so restoring its phase would strand a
+    /// blocking card nothing can clear.
+    private(set) var legacyLaunchHoldActive = false
+
+    /// Only the launch hold flips this, around its own lifetime.
+    func setLegacyLaunchHold(active: Bool) {
+        legacyLaunchHoldActive = active
+    }
 
     /// Internal (not private) so the admission-matrix table test can build
     /// fresh instances; production code uses only `shared`.
@@ -234,7 +245,10 @@ final class WalletLifecycleTransitionState: ObservableObject {
             if ownsOverlay, phase == .openingWallet {
                 if let detail {
                     phase = .failedWalletOpen(detail)
-                } else if let takenOverHold {
+                } else if let takenOverHold, legacyLaunchHoldActive {
+                    // The hold is still waiting: give it its window back.
+                    // If it reported while the open ran, the wallet is
+                    // present and the runtime's own recovery applies.
                     phase = takenOverHold
                     if case let .failedLegacyMigration(held) = takenOverHold { preparationFailure = held }
                 } else {
@@ -312,6 +326,7 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
     func begin(completion: @escaping (Bool) -> Void) {
         guard self.completion == nil else { return }
         self.completion = completion
+        state.setLegacyLaunchHold(active: true)
         dependencies.activateOverlay()
         if !state.tryBegin(.migratingLegacyWallet) {
             DWLogger.log("🚦 LIFECYCLE legacy-migration hold could not take the window: phase=\(state.phase.logLabel)")
@@ -387,6 +402,7 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
     private func deliver(hasWallet: Bool) {
         watcher?.cancel()
         watcher = nil
+        state.setLegacyLaunchHold(active: false)
         // Release only the phases this hold owns. The runtime may already
         // have taken the window over (`.openingWallet`) for the imported
         // wallet; that operation clears its own phase.
