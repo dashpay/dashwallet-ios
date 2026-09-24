@@ -59,7 +59,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 #endif
 
 @property (nonatomic, assign) BOOL launchingWasDeferred;
-@property (nonatomic, assign) BOOL initialControllerHeldForWalletPresence;
 
 @end
 
@@ -193,17 +192,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     [DWWalletLifecycleOverlayBridge setLockScreenVisible:[self.model shouldShowLockScreen]];
     self.lockWindow = lockWindow;
 
-    // A background launch on a locked device (BGAppRefresh) cannot read the
-    // keychain the wallet lives in: "no wallet" would be a lie about the
-    // lock state, not the wallet. Deciding now would show Create/Recover
-    // over a funded wallet when the user opens the same process later.
-    // Hold the launch background; the decision runs once protected data
-    // becomes available (or on the next become-active, which implies it).
-    const BOOL walletPresenceUnknown = self.model.walletPresenceUnknown;
-
     // Display main controller initially if there is a wallet and lock screen is disabled
     // Otherwise main controller will be set as current in `lockScreenViewControllerDidUnlock:`
-    const BOOL hasAWallet = !walletPresenceUnknown && self.model.hasAWallet;
+    const BOOL hasAWallet = self.model.hasAWallet;
     UIViewController *controller = nil;
     if (hasAWallet) {
         if (![self.model shouldShowLockScreen]) {
@@ -214,12 +205,22 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     // still running means "no wallet" is a lie about to become true.
     // Deciding now would show Create/Recover to an upgrading user whose
     // wallet is milliseconds from appearing — and route their typed
-    // phrase into the recover screen's wipe branch. Hold the launch
-    // background and decide once the migrator settles (typically well
-    // under a second; bounded fallback in the poller).
+    // phrase into the recover screen's wipe branch. Hand the launch to the
+    // migration hold: it keeps the launch background, shows progress and a
+    // blocking Try Again card on failure, and calls back only once a wallet
+    // is present or there is nothing to migrate. Setup is never offered
+    // while the old wallet is still in the keychain.
+    //
+    // A background launch on a locked device (BGAppRefresh) cannot read the
+    // keychain the SDK wallet lives in either: "no wallet" would be a lie
+    // about the lock state, not the wallet, and the user would open this
+    // same process later onto Create/Recover over a funded wallet. The same
+    // hold covers it — it waits, silently, until protected data is
+    // available and decides from a read that could see the wallet.
     const BOOL keyMigrationPending =
-        !walletPresenceUnknown && !hasAWallet && [DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration];
-    if (!walletPresenceUnknown && !hasAWallet && !keyMigrationPending) {
+        !hasAWallet && (self.model.walletPresenceUnknown ||
+                        [DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration]);
+    if (!hasAWallet && !keyMigrationPending) {
         controller = [self setupController];
     }
 
@@ -227,13 +228,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         [self transitionToController:controller];
     }
 
-    if (walletPresenceUnknown) {
-        DWLog(@"ROOT :: wallet presence unreadable at launch (device locked?); holding the initial screen");
-        self.initialControllerHeldForWalletPresence = YES;
-    }
-    else if (keyMigrationPending) {
-        [self presentInitialControllerWhenKeyMigrationSettles:
-                  [NSDate dateWithTimeIntervalSinceNow:10.0]];
+    if (keyMigrationPending) {
+        __weak typeof(self) weakSelf = self;
+        [DWLegacyWalletMigrationLaunchHold beginWithCompletion:^(BOOL migratedWalletPresent) {
+            [weakSelf presentInitialControllerAfterKeyMigration:migratedWalletPresent];
+        }];
     }
 
     if (hasAWallet) {
@@ -271,10 +270,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     [notificationCenter addObserver:self
                            selector:@selector(windowDidBecomeKeyNotification:)
                                name:UIWindowDidBecomeKeyNotification
-                             object:nil];
-    [notificationCenter addObserver:self
-                           selector:@selector(applicationProtectedDataDidBecomeAvailableNotification)
-                               name:UIApplicationProtectedDataDidBecomeAvailable
                              object:nil];
 
     __weak typeof(self) weakSelf = self;
@@ -316,78 +311,20 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 #pragma mark - Key migration launch hold
 
-/// Poll the key migrator's terminal state, then present the initial
-/// controller the normal launch decision would have picked: main (behind
-/// the lock screen — `PinStore` reads DashSync's PIN records in place, so
-/// the migrated wallet keeps its old PIN) when the wallet landed, setup
-/// otherwise. Bounded by `deadline` so a wedged migrator degrades to the
-/// old behavior instead of a blank screen.
-- (void)presentInitialControllerWhenKeyMigrationSettles:(NSDate *)deadline {
-    if (![DWSwiftDashSDKKeyMigrator migrationSettled] && [deadline timeIntervalSinceNow] > 0) {
-        __weak typeof(self) weakSelf = self;
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)),
-                       dispatch_get_main_queue(), ^{
-                           [weakSelf presentInitialControllerWhenKeyMigrationSettles:deadline];
-                       });
-        return;
-    }
-
-    const BOOL hasAWallet = self.model.hasAWallet;
-    if (hasAWallet) {
+/// Completion of the migration hold: present the initial controller the
+/// normal launch decision would have picked. Main (behind the lock screen —
+/// `PinStore` reads DashSync's PIN records in place, so the migrated wallet
+/// keeps its old PIN) when the wallet landed; setup only when the hold
+/// reports that nothing was left to migrate. A failed import never reaches
+/// this method — the hold keeps its blocking card up until a retry lands.
+- (void)presentInitialControllerAfterKeyMigration:(BOOL)migratedWalletPresent {
+    if (migratedWalletPresent && self.model.hasAWallet) {
         if ([self.model shouldShowLockScreen]) {
             [self showLockControllerIfNeeded];
         }
         else {
             [self transitionToController:[self mainController]];
         }
-    }
-    else {
-        [self transitionToController:[self setupController]];
-    }
-}
-
-#pragma mark - Locked-launch hold
-
-/// Run the launch decision `viewDidLoad` held because the keychain was
-/// unreadable. Called when protected data becomes available and, as a
-/// fallback, on every become-active (a frontmost app implies an unlocked
-/// device). A read that still fails keeps the hold — the next notification
-/// tries again — because every alternative (setup over a wallet, main over
-/// nothing) is worse than the launch background.
-- (void)presentInitialControllerIfWalletPresenceBecameKnown {
-    if (!self.initialControllerHeldForWalletPresence) {
-        return;
-    }
-    if (self.model.walletPresenceUnknown) {
-        DWLog(@"ROOT :: wallet presence still unreadable; keeping the initial screen held");
-        return;
-    }
-    self.initialControllerHeldForWalletPresence = NO;
-    DWLog(@"ROOT :: wallet presence readable; presenting the initial screen");
-
-    const BOOL hasAWallet = self.model.hasAWallet;
-    if (hasAWallet) {
-        if ([self.model shouldShowLockScreen]) {
-            // As at launch, the lock screen is presented on become-active
-            // (`applicationDidBecomeActiveNotification`), which is what
-            // follows a decision reached in the background. A decision
-            // reached while already active shows it now.
-            if (UIApplication.sharedApplication.applicationState == UIApplicationStateActive) {
-                [self showLockControllerIfNeeded];
-            }
-        }
-        else {
-            [self transitionToController:[self mainController]];
-        }
-    }
-    else if ([DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration]) {
-        // An upgrader's wallet is still in DashSync's keychain: the
-        // launch-time migration ran against the locked keychain and recorded
-        // a failure, which the poller would otherwise read as settled and
-        // present setup. Re-run it now, then let the migration hold decide.
-        [DWSwiftDashSDKKeyMigrator retryMigrationAfterUnlock];
-        [self presentInitialControllerWhenKeyMigrationSettles:
-                  [NSDate dateWithTimeIntervalSinceNow:10.0]];
     }
     else {
         [self transitionToController:[self setupController]];
@@ -575,17 +512,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 #pragma mark - Notifications
 
 - (void)applicationDidBecomeActiveNotification {
-    // Before the lock check: a held launch has no wallet to lock yet, and the
-    // decision below may install main, which the lock screen then covers.
-    [self presentInitialControllerIfWalletPresenceBecameKnown];
     [self showLockControllerIfNeeded];
-}
-
-- (void)applicationProtectedDataDidBecomeAvailableNotification {
-    // Posted on the main thread when the device is unlocked, including while
-    // this process is still in the background — so the screen is decided
-    // before the user reaches it, not on the first frame they see.
-    [self presentInitialControllerIfWalletPresenceBecameKnown];
 }
 
 - (void)applicationDidEnterBackgroundNotification {

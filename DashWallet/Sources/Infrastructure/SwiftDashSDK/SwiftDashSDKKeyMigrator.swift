@@ -117,10 +117,38 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// Never throws, never crashes.
     @objc(migrateIfNeeded)
     static func migrateIfNeeded() {
+        let generation = runGenerationLock.withLock { requestedRunGeneration }
         legacyWalletQueue.async {
-            performMigration()
+            performMigration(generation: generation)
         }
     }
+
+    /// The launch hold's Try Again. `migrateIfNeeded` only enqueues the run,
+    /// and `performMigration` clears the previous run's terminal flags once
+    /// it starts — so a waiter polling `migrationSettled()` right after the
+    /// enqueue would read the OLD flags and report the old failure again.
+    /// Clear them here, synchronously, before the enqueue, and bump the run
+    /// generation: from the caller's return onward the migrator is unsettled
+    /// until a run of THIS generation finishes. A previous run still in
+    /// flight (the hold's timeout does not stop it) rewrites the flags when
+    /// it ends, but its generation is stale, so that verdict is not shown.
+    static func restartMigration() {
+        runGenerationLock.withLock { requestedRunGeneration += 1 }
+        let defaults = UserDefaults.standard
+        defaults.removeObject(forKey: deferredMultiWalletKey)
+        defaults.removeObject(forKey: deferredUnknownChainKey)
+        defaults.removeObject(forKey: deferredFailureKey)
+        migrateIfNeeded()
+    }
+
+    /// In-process run generations, so `migrationSettled()` answers for the
+    /// run the caller asked for and not for flags a previous launch or a
+    /// superseded run left behind. Nothing has settled when the process
+    /// starts: stale flags from an earlier launch wait for this launch's run
+    /// (bounded by the hold's timeout) instead of re-showing a stale card.
+    private static let runGenerationLock = NSLock()
+    private static var requestedRunGeneration = 0
+    private static var settledRunGeneration = -1
 
     // MARK: - Background migration body
 
@@ -128,7 +156,10 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// validates DashSync's mnemonic on a background queue, then synchronously
     /// asks `SwiftDashSDKHost` on the main actor to create/import the managed
     /// wallet and store mnemonic material in `WalletStorage`.
-    private static func performMigration() {
+    private static func performMigration(generation: Int) {
+        // Every exit below is terminal for this run: done, deferred, or
+        // nothing to do. Record which run reached it.
+        defer { runGenerationLock.withLock { settledRunGeneration = max(settledRunGeneration, generation) } }
         let defaults = UserDefaults.standard
 
         // Path 1 — already migrated. One-shot, single-release migration plan:
@@ -142,13 +173,15 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         // Clear stale defer flags before re-evaluating. The runtime reads
         // any flag as permission to stop waiting for migration — leaving
         // a stale value would race the loop below.
-        clearDeferredFlags(in: defaults)
+        defaults.removeObject(forKey: deferredMultiWalletKey)
+        defaults.removeObject(forKey: deferredUnknownChainKey)
+        defaults.removeObject(forKey: deferredFailureKey)
 
         let mnemonicAccounts: [String]
         do {
             mnemonicAccounts = try strictlyEnumerateDashSyncMnemonicAccounts()
         } catch {
-            recordEnumerationFailure(in: defaults)
+            defaults.set(true, forKey: deferredFailureKey)
             logger.error(
                 "🔑 KEYMIG :: DashSync mnemonic enumeration failed: \(String(describing: error), privacy: .public)")
             return
@@ -224,41 +257,41 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
     // MARK: - Launch-decision probes
 
-    /// True while DashSync wallet material exists in the keychain and the
-    /// one-shot migration has not completed. The root controller holds its
-    /// initial-screen decision while this is true — deciding "no wallet"
-    /// inside the async migration window showed Create/Recover to upgrading
-    /// users whose wallet was milliseconds from landing (and routed their
-    /// typed phrase into the recover screen's wipe branch).
+    /// Whether DashSync wallet material still awaits the one-shot migration.
+    /// A keychain that cannot be read (for example a background launch on a
+    /// locked device) is reported as such rather than as "nothing there":
+    /// the launch hold must not release into setup on a read error, because
+    /// the upgrading user's wallet may well be behind it.
+    static func legacyWalletMaterialState() -> LegacyWalletMigrationLaunchCoordinator.LegacyMaterialState {
+        guard UserDefaults.standard.string(forKey: doneKey) == nil else { return .absent }
+        do {
+            return try strictlyEnumerateDashSyncMnemonicAccounts().isEmpty ? .absent : .pending
+        } catch {
+            logger.error(
+                "🔑 KEYMIG :: DashSync mnemonic enumeration failed during launch probe: \(String(describing: error), privacy: .public)")
+            return .unreadable
+        }
+    }
+
+    /// True unless the keychain confirms there is nothing to migrate. The
+    /// root controller holds its initial-screen decision while this is true
+    /// — deciding "no wallet" inside the async migration window showed
+    /// Create/Recover to upgrading users whose wallet was milliseconds from
+    /// landing (and routed their typed phrase into the recover screen's wipe
+    /// branch). An unreadable keychain also holds: the hold's card, not
+    /// setup, is the fail-closed answer to a read error.
     @objc
     static func legacyWalletMaterialPendingMigration() -> Bool {
-        legacyWalletMaterialState() == .pending
+        legacyWalletMaterialState() != .absent
     }
 
-    /// `legacyWalletMaterialPendingMigration` with the unreadable case kept
-    /// apart. The DashSync items are `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`
-    /// too, so on a locked device the probe fails and used to read as "nothing
-    /// pending" — letting the root controller fall through to setup. The root
-    /// controller holds on `.unknown`, exactly as it holds on `.pending`.
-    @objc(DWLegacyWalletMaterialState)
-    enum LegacyWalletMaterialState: Int {
-        /// Nothing to migrate: no DashSync material, or the migration is done.
-        case none = 0
-        /// DashSync material exists and the one-shot migration has not completed.
-        case pending = 1
-        /// The Keychain could not be enumerated; pending material cannot be ruled out.
-        case unknown = 2
-    }
-
+    /// True only when DashSync material was actually read from the keychain
+    /// and awaits migration — never on a read error. For decisions that
+    /// persist (the onboarding carousel's one-shot flag), where a locked or
+    /// failing keychain on a fresh install must not leave a permanent mark.
     @objc
-    static func legacyWalletMaterialState() -> LegacyWalletMaterialState {
-        guard UserDefaults.standard.string(forKey: doneKey) == nil else { return .none }
-        do {
-            return try strictlyEnumerateDashSyncMnemonicAccounts().isEmpty ? .none : .pending
-        } catch {
-            logger.error("🔑 KEYMIG :: legacy-material probe failed: \(String(describing: error), privacy: .public)")
-            return .unknown
-        }
+    static func legacyWalletMaterialPresent() -> Bool {
+        legacyWalletMaterialState() == .pending
     }
 
     /// True once the migrator reached a terminal state for this launch:
@@ -266,41 +299,20 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// waiter treats as "stop waiting").
     @objc
     static func migrationSettled() -> Bool {
-        migrationSettled(in: .standard)
-    }
-
-    static func migrationSettled(in defaults: UserDefaults) -> Bool {
+        let defaults = UserDefaults.standard
         if defaults.string(forKey: doneKey) != nil { return true }
-        return [deferredMultiWalletKey, deferredUnknownChainKey, deferredFailureKey]
+        let currentRun = runGenerationLock.withLock { settledRunGeneration >= requestedRunGeneration }
+        return currentRun && [deferredMultiWalletKey, deferredUnknownChainKey, deferredFailureKey]
             .contains { defaults.object(forKey: $0) != nil }
     }
 
-    /// Run the migration again after a launch on a locked device.
-    ///
-    /// The launch-time run cannot enumerate DashSync's keychain items then
-    /// and records `deferredFailureKey`. Once the device is unlocked that
-    /// flag is stale, but `migrationSettled()` would still report it as a
-    /// terminal state and the root controller's poller would present setup
-    /// over the un-imported wallet. The flags are cleared here, on the
-    /// caller's thread, before the run is queued, so a poller started right
-    /// after this call waits for the fresh result instead of the stale one.
-    @objc
-    static func retryMigrationAfterUnlock() {
-        clearDeferredFlags(in: .standard)
-        logger.info("🔑 KEYMIG :: retrying migration after unlock")
-        migrateIfNeeded()
-    }
-
-    static func clearDeferredFlags(in defaults: UserDefaults) {
-        defaults.removeObject(forKey: deferredMultiWalletKey)
-        defaults.removeObject(forKey: deferredUnknownChainKey)
-        defaults.removeObject(forKey: deferredFailureKey)
-    }
-
-    /// Records the flag a locked-device enumeration failure leaves behind,
-    /// so the retry path above can be exercised without a keychain.
-    static func recordEnumerationFailure(in defaults: UserDefaults) {
-        defaults.set(true, forKey: deferredFailureKey)
+    /// Which terminal flag a settled-without-success run left. The launch
+    /// hold turns it into the failure card's diagnostic code; only these two
+    /// names ever leave this file.
+    static func currentDeferralReason() -> WalletPreparationFailure.LegacyMigrationReason {
+        let defaults = UserDefaults.standard
+        if defaults.object(forKey: deferredUnknownChainKey) != nil { return .unknownChain }
+        return .failed
     }
 
     // MARK: - Explicit legacy wallet cleanup
@@ -637,4 +649,44 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     }
     #endif
 
+}
+
+// MARK: - Launch hold wiring
+
+/// Production wiring of the launch hold: the key migrator's own probes, the
+/// app-level wallet gate and the overlay presenter. Kept here, next to the
+/// probes it reads, so the coordinator's state machine stays free of
+/// keychain and SDK types.
+///
+/// A shared instance because one launch has one hold, and two parties that
+/// cannot be handed a reference must reach the same one: the Obj-C root
+/// controller (`DWLegacyWalletMigrationLaunchHold`) that begins it and the
+/// overlay view model whose Try Again retries it. Its seam is the injected
+/// `Dependencies`; tests build their own instances.
+extension LegacyWalletMigrationLaunchCoordinator {
+    @MainActor
+    static let shared = LegacyWalletMigrationLaunchCoordinator(
+        state: .shared,
+        dependencies: Dependencies(
+            isSettled: { SwiftDashSDKKeyMigrator.migrationSettled() },
+            hasWallet: { WalletEnvironment.hasWallet },
+            legacyMaterial: { SwiftDashSDKKeyMigrator.legacyWalletMaterialState() },
+            deferralReason: { SwiftDashSDKKeyMigrator.currentDeferralReason() },
+            startMigration: { SwiftDashSDKKeyMigrator.restartMigration() },
+            activateOverlay: { WalletLifecycleOverlayPresenter.shared.ensureActive() },
+            isProtectedDataAvailable: BackgroundRefreshCoordinator.defaultIsProtectedDataAvailable))
+
+}
+
+/// Obj-C entry point for the root controller. `completion` runs on the main
+/// thread exactly once: `hasWallet` true means present the wallet (behind
+/// the lock screen — `PinStore` reads DashSync's PIN records in place, so the
+/// migrated wallet keeps its old PIN); false means there was nothing to
+/// migrate and setup is correct.
+@objc(DWLegacyWalletMigrationLaunchHold)
+@MainActor
+final class LegacyWalletMigrationLaunchHold: NSObject {
+    @objc static func begin(completion: @escaping (Bool) -> Void) {
+        LegacyWalletMigrationLaunchCoordinator.shared.begin(completion: completion)
+    }
 }

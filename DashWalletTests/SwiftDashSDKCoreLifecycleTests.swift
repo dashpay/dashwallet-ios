@@ -160,21 +160,6 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             .absent)
     }
 
-    /// A migration that ran against a locked keychain leaves a failure flag
-    /// the launch poller reads as "settled". The unlock retry clears it
-    /// synchronously, so a poller started right after waits for the fresh run.
-    func testUnlockRetryClearsTheStaleMigrationFailureFlag() throws {
-        let defaults = try XCTUnwrap(UserDefaults(suiteName: "keymig.\(UUID().uuidString)"))
-
-        XCTAssertFalse(SwiftDashSDKKeyMigrator.migrationSettled(in: defaults))
-        SwiftDashSDKKeyMigrator.recordEnumerationFailure(in: defaults)
-        XCTAssertTrue(SwiftDashSDKKeyMigrator.migrationSettled(in: defaults))
-
-        SwiftDashSDKKeyMigrator.clearDeferredFlags(in: defaults)
-
-        XCTAssertFalse(SwiftDashSDKKeyMigrator.migrationSettled(in: defaults))
-    }
-
     /// A present mnemonic still counts only when this build can select it —
     /// the same rule `hasWallet` applies (devnet-only material in a shipping
     /// build routes to setup, not to a `walletNotFound` dead end).

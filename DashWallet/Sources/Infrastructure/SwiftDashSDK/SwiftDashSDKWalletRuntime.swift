@@ -334,6 +334,9 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         // belong to (deriving that is expensive); material changing is exactly
         // when the answer can change.
         WalletEnvironment.invalidateWalletMaterialCache()
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: .swiftDashSDKWalletMaterialDidChange, object: nil)
+        }
         dispatchOnPipeline {
             PlatformAddressSyncCoordinator.shared.invalidateBalancesIfSelectionChanged()
             shared.enqueueRefresh(trigger: .walletMaterialChanged)
