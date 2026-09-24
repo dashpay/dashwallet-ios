@@ -691,6 +691,29 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             }
         }
 
+        // A main name the create-username flow picked but could not store
+        // yet (see `promoteToMainName`) stands in for the stored pick as
+        // soon as the label is owned, so the display does not wait for the
+        // SDK persister. Once the persister holds the label, the pick is
+        // written for real — deferred, because this runs inside a
+        // property read.
+        var selectedMainName = persisted.mainDpnsName
+        if let promoted = Self.pendingMainName(identityId: identityId), !isPending(promoted) {
+            let persistedAsOwned = persisted.dpnsNames.contains {
+                $0.isOwned && DWContestedNameStatusService.labelsMatch($0.label, promoted)
+            }
+            if persistedAsOwned || usernames.contains(where: { DWContestedNameStatusService.labelsMatch($0, promoted) }) {
+                selectedMainName = promoted
+            }
+            if persistedAsOwned {
+                Task { @MainActor [weak self] in
+                    if Self.applyPendingMainName(identityId: identityId, walletId: walletId, container: container) {
+                        self?.invalidate()
+                    }
+                }
+            }
+        }
+
         // The user's picked display label (Identities → detail →
         // Usernames card, stored as `PersistentIdentity.mainDpnsName`).
         // Promote it to the front so `username` / `usernames.first` —
@@ -698,7 +721,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         // of DPNS-cache order. Only an owned label qualifies: it must
         // appear in the managed cache or the SwiftData label cache, so
         // a stale pick (name transferred away) can't resurface.
-        if let mainName = Self.nilIfEmpty(persisted.mainDpnsName), !isPending(mainName) {
+        if let mainName = Self.nilIfEmpty(selectedMainName), !isPending(mainName) {
             if let index = usernames.firstIndex(where: {
                 DWContestedNameStatusService.labelsMatch($0, mainName)
             }) {
@@ -829,6 +852,108 @@ public final class DWCurrentUserIdentityInfo: NSObject {
     private static func nilIfEmpty(_ value: String?) -> String? {
         guard let value, !value.isEmpty else { return nil }
         return value
+    }
+
+    // MARK: - Main-name promotion
+
+    /// Make `label` the identity's main DPNS name: first in `usernames`,
+    /// in the `DWGlobalOptions` mirror and in Identities → Usernames. The
+    /// create-username flow calls this for the name it registers, because
+    /// that is the name the user asked to be known by. Names acquired in
+    /// the username marketplace never come through here, so they do not
+    /// displace it; the user can still pick another main name manually.
+    ///
+    /// The pick is held as an intent until the SDK persister stores an
+    /// owned row for the label, and only then written to
+    /// `PersistentIdentity.mainDpnsName`. Writing it earlier does not
+    /// stick: every identity flush resets a main name that is not among
+    /// the labels it carries, and a flush queued before the name landed
+    /// can still be applied after our write. Flushes are applied in order,
+    /// so once the owned row exists, no later flush predates the name.
+    /// The snapshot honours the intent meanwhile (see `computeSnapshot`).
+    ///
+    /// The caller has already checked that the identity belongs to the
+    /// active wallet and network; the mirror is written only when it is
+    /// also the selected identity.
+    @nonobjc
+    func promoteToMainName(_ label: String, identityId: Data, walletId: Data, network: Network) {
+        Self.setPendingMainName(label, identityId: identityId)
+        let container = SwiftDashSDKHost.shared.modelContainer
+        let stored = Self.applyPendingMainName(identityId: identityId, walletId: walletId, container: container)
+        invalidate()
+        let current = snapshot
+        if SwiftDashSDKHost.shared.wallet?.walletId == walletId,
+           SwiftDashSDKHost.shared.runningNetwork == network,
+           current.identityId == identityId {
+            let options = DWGlobalOptions.sharedInstance()
+            // The snapshot carries the label as Platform spells it.
+            options.dashpayUsername = current.usernames.first {
+                DWContestedNameStatusService.labelsMatch($0, label)
+            } ?? label
+            options.dashpayRegistrationCompleted = true
+        }
+        Self.logger.info(
+            "🪪 IDENT-INFO :: main name → \(label, privacy: .public) stored=\(stored, privacy: .public)")
+    }
+
+    /// Drop a pending promotion, e.g. when the user picks a main name by
+    /// hand: their choice must not be overridden once the promoted label
+    /// reaches the persister.
+    static func discardPendingMainName(identityId: Data) {
+        setPendingMainName(nil, identityId: identityId)
+    }
+
+    /// Identity ids are unique across networks and wallets, so the id alone
+    /// scopes the intent to the identity that registered the name.
+    private nonisolated static let pendingMainNameKeyPrefix = "DWPendingMainDpnsName."
+
+    private static func pendingMainNameKey(identityId: Data) -> String {
+        pendingMainNameKeyPrefix + identityId.map { String(format: "%02x", $0) }.joined()
+    }
+
+    private static func pendingMainName(identityId: Data) -> String? {
+        nilIfEmpty(UserDefaults.standard.string(forKey: pendingMainNameKey(identityId: identityId)))
+    }
+
+    private static func setPendingMainName(_ label: String?, identityId: Data) {
+        let key = pendingMainNameKey(identityId: identityId)
+        if let label {
+            UserDefaults.standard.set(label, forKey: key)
+        } else {
+            UserDefaults.standard.removeObject(forKey: key)
+        }
+    }
+
+    /// Store the pending pick once the persister owns the label; true when
+    /// it was stored (the intent is then consumed).
+    @discardableResult
+    private static func applyPendingMainName(identityId: Data, walletId: Data, container: ModelContainer?) -> Bool {
+        guard let label = pendingMainName(identityId: identityId),
+              let context = container?.mainContext else { return false }
+        let descriptor = FetchDescriptor<PersistentWallet>(predicate: #Predicate { $0.walletId == walletId })
+        guard let wallet = try? context.fetch(descriptor).first,
+              let identity = wallet.identities.first(where: { $0.identityId == identityId }),
+              let owned = identity.dpnsNames.first(where: {
+                  $0.isOwned && DWContestedNameStatusService.labelsMatch($0.label, label)
+              })
+        else { return false }
+        PersistentIdentity.updateMainDpnsName(in: context, identityId: identityId, mainDpnsName: owned.label)
+        do {
+            try context.save()
+        } catch {
+            Self.logger.warning("Could not store the main DPNS name: \(error.localizedDescription)")
+            return false
+        }
+        setPendingMainName(nil, identityId: identityId)
+        return true
+    }
+
+    /// Wallet wipe: no promotion may outlive the identities it names.
+    nonisolated static func resetPendingMainNamesForWipe() {
+        let defaults = UserDefaults.standard
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(pendingMainNameKeyPrefix) {
+            defaults.removeObject(forKey: key)
+        }
     }
 }
 
