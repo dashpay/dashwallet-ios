@@ -56,13 +56,17 @@ NS_ASSUME_NONNULL_BEGIN
     DWDemoAppRootViewController *controller = [[DWDemoAppRootViewController alloc] init];
     [self transitionToController:controller];
 #else
-    if ([self shouldDisplayOnboarding]) {
+    // One keychain read decides both the skip and the preference write:
+    // the migrator can set its done sentinel between two probes, which
+    // would skip the carousel now and still let it play next launch.
+    const BOOL legacyMaterialPresent = [DWSwiftDashSDKKeyMigrator legacyWalletMaterialPresent];
+    if ([self shouldDisplayOnboardingWithLegacyMaterialPresent:legacyMaterialPresent]) {
         DWOnboardingViewController *onboarding = [DWOnboardingViewController controller];
         onboarding.delegate = self;
         [self transitionToController:onboarding];
     }
     else {
-        if ([DWSwiftDashSDKKeyMigrator legacyWalletMaterialPresent]) {
+        if (legacyMaterialPresent) {
             // The upgrader's carousel is skipped for good, not merely for
             // this launch: otherwise it would play on the next launch, over
             // the migrated wallet. Written only on a confirmed read of the
@@ -204,7 +208,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Private
 
-- (BOOL)shouldDisplayOnboarding {
+- (BOOL)shouldDisplayOnboardingWithLegacyMaterialPresent:(BOOL)legacyMaterialPresent {
     // The carousel is a new-user intro. An upgrader whose DashSync wallet
     // is pending migration skips it: the root controller's migration hold
     // presents their wallet (behind the lock screen) directly, instead of
@@ -212,7 +216,10 @@ NS_ASSUME_NONNULL_BEGIN
     // The reinstall case (SDK wallet material with wiped defaults) keeps
     // the carousel — its Keep/Delete prompt is wired to the carousel's
     // completion.
-    if ([DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration]) {
+    // `legacyMaterialPresent` is the confirmed read; an unreadable keychain
+    // (the pending probe without the present one) also skips, but writes
+    // nothing.
+    if (legacyMaterialPresent || [DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration]) {
         return NO;
     }
     return [DWGlobalOptions sharedInstance].shouldDisplayOnboarding;

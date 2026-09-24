@@ -249,6 +249,7 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         XCTAssertNil(idle.preparationFailure)
 
         let state = makeState(in: .migratingLegacyWallet)
+        state.setLegacyLaunchHold(active: true)
         state.failLegacyMigration(failure)
         XCTAssertEqual(state.phase, .failedLegacyMigration(failure))
         XCTAssertEqual(state.preparationFailure, failure)
@@ -576,6 +577,38 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         probe.hasWallet = true  // settled stays false
         await settle(probe.outcomes == [true])
         XCTAssertEqual(probe.outcomes, [true])
+        XCTAssertEqual(state.phase, .idle)
+    }
+
+    /// A verdict reached while another operation owns the window is shown
+    /// when that operation releases it, with Try Again available.
+    func testVerdictReachedBehindABusyWindowIsShownWhenItFrees() async {
+        let state = WalletLifecycleTransitionState()
+        XCTAssertTrue(state.tryBegin(.switchingNetwork(from: .mainnet, to: .testnet)))
+        let probe = HoldProbe()
+        let coordinator = probe.makeCoordinator(state: state)
+        coordinator.begin { probe.outcomes.append($0) }
+        probe.settled = true
+        await settle(state.deferredLegacyFailure != nil)
+        XCTAssertEqual(state.phase, .switchingNetwork(from: .mainnet, to: .testnet), "the verdict waits for the switch")
+        state.finish()
+        guard case let .failedLegacyMigration(failure) = state.phase else { return XCTFail("expected the card, got \(state.phase.logLabel)") }
+        XCTAssertEqual(state.preparationFailure, failure)
+        XCTAssertNil(state.deferredLegacyFailure)
+        XCTAssertEqual(probe.outcomes, [])
+        coordinator.retry()
+        XCTAssertEqual(probe.migrationStarts, 1)
+        XCTAssertEqual(state.phase, .migratingLegacyWallet)
+    }
+
+    /// Without an active hold, `finish()` still goes to idle and a stray
+    /// verdict is rejected.
+    func testFinishWithoutAHoldGoesIdle() {
+        let state = WalletLifecycleTransitionState()
+        XCTAssertTrue(state.tryBegin(.switchingNetwork(from: .mainnet, to: .testnet)))
+        state.failLegacyMigration(WalletPreparationFailure(legacyMigration: .failed))
+        XCTAssertNil(state.deferredLegacyFailure)
+        state.finish()
         XCTAssertEqual(state.phase, .idle)
     }
 

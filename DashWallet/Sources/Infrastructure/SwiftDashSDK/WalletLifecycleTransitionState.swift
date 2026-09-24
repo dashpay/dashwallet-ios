@@ -195,6 +195,15 @@ final class WalletLifecycleTransitionState: ObservableObject {
     }
 
     func finish() {
+        // An operation that held the window while the launch hold reached
+        // its verdict releases it to that verdict, not to idle: the card
+        // and its Try Again would otherwise never appear.
+        if legacyLaunchHoldActive, let deferred = deferredLegacyFailure {
+            deferredLegacyFailure = nil
+            phase = .failedLegacyMigration(deferred)
+            preparationFailure = deferred
+            return
+        }
         phase = .idle
         preparationFailure = nil
     }
@@ -207,15 +216,17 @@ final class WalletLifecycleTransitionState: ObservableObject {
     /// and records the diagnostic the card's Export Logs / Help read. Only
     /// the hold's owner calls this, and only from its own phase.
     func failLegacyMigration(_ failure: WalletPreparationFailure) {
-        if phase == .openingWallet, legacyLaunchHoldActive {
-            // The runtime took the window over; keep the verdict for the
-            // hand-back should that open fail for an unrelated reason.
-            deferredLegacyFailure = failure
-            DWLogger.log("🚦 LIFECYCLE failLegacyMigration deferred behind the runtime's open")
+        guard legacyLaunchHoldActive else {
+            DWLogger.log("🚦 LIFECYCLE failLegacyMigration rejected: no active hold, phase=\(phase.logLabel)")
             return
         }
         guard phase == .migratingLegacyWallet else {
-            DWLogger.log("🚦 LIFECYCLE failLegacyMigration rejected: phase=\(phase.logLabel)")
+            // Another operation owns the window (the runtime's open of the
+            // imported wallet, or a switch): keep the verdict. It is
+            // presented when that operation releases the window — by
+            // `prepareWallet`'s hand-back or by `finish()`.
+            deferredLegacyFailure = failure
+            DWLogger.log("🚦 LIFECYCLE failLegacyMigration deferred behind \(phase.logLabel)")
             return
         }
         phase = .failedLegacyMigration(failure)
