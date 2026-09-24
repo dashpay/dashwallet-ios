@@ -188,6 +188,21 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertFalse(LaunchDecision(applicationState: .active).isDeferred)
     }
 
+    /// While the launch decision is pending, the runtime refuses automatic
+    /// kicks (the sync monitor's connectivity kick, a network change); once
+    /// the activation's wallet start releases the hold they pass again. A
+    /// launch that never raised the hold is unaffected.
+    func testAutomaticRuntimeKicksAreHeldWhileTheLaunchDecisionIsPending() {
+        XCTAssertTrue(SwiftDashSDKWalletRuntime.automaticStartAllowedForLaunchDecision("foreground launch"))
+
+        SwiftDashSDKWalletRuntime.holdAutomaticStartsUntilLaunchDecision()
+        XCTAssertFalse(SwiftDashSDKWalletRuntime.automaticStartAllowedForLaunchDecision("connectivity-return kick"))
+        XCTAssertFalse(SwiftDashSDKWalletRuntime.automaticStartAllowedForLaunchDecision("networkDidChange"))
+
+        SwiftDashSDKWalletRuntime.releaseAutomaticStartsForLaunchDecision()
+        XCTAssertTrue(SwiftDashSDKWalletRuntime.automaticStartAllowedForLaunchDecision("startIfReady"))
+    }
+
     func testRestartPropagatesStartFailureAndAlwaysResetsBusyState() async {
         var events: [String] = []
         var restartingStates: [Bool] = []

@@ -190,6 +190,10 @@ NS_ASSUME_NONNULL_BEGIN
     self.launchDecision = [[DWLaunchDecision alloc] initWithApplicationState:application.applicationState];
     if (self.launchDecision.isDeferred) {
         DWLog(@"LAUNCH background launch; deferring key migration, runtime start and the root decision until the app becomes active");
+        // Lifecycle observers (the sync monitor's connectivity kick, a
+        // network-change notification) may ask the runtime to start before
+        // the activation; the runtime refuses them until `startWalletServices`.
+        [DWSwiftDashSDKWalletRuntime holdAutomaticStartsUntilLaunchDecision];
         self.window.rootViewController = [self launchPlaceholderController];
     }
     else {
@@ -210,6 +214,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// runtime wallet is restored from app-owned Keychain state, not from a
 /// SwiftData wallet store.
 - (void)startWalletServices {
+    [DWSwiftDashSDKWalletRuntime releaseAutomaticStartsForLaunchDecision];
     [DWSwiftDashSDKKeyMigrator migrateIfNeeded];
     [DWSwiftDashSDKWalletRuntime startIfReady];
 }
