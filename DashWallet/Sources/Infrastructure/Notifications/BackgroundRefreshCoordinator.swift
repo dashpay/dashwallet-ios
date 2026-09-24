@@ -89,10 +89,11 @@ struct BackgroundRefreshStartGate {
 
 // MARK: - BackgroundTaskScheduling
 
-/// Seam over `BGTaskScheduler`: registration and request submission are the
-/// only calls the coordinator makes, and both are recorded by a fake in
-/// tests (the real scheduler refuses double registration and rejects
-/// submissions outside a real app process).
+/// Seam over `BGTaskScheduler`: registration, request submission and
+/// (while background refresh is paused) request cancellation are the only
+/// calls the coordinator makes, and all are recorded by a fake in tests (the
+/// real scheduler refuses double registration and rejects submissions
+/// outside a real app process).
 protocol BackgroundTaskScheduling: AnyObject {
     /// Register `launchHandler` for `identifier`. Returns whether the
     /// registration was accepted.
@@ -351,8 +352,9 @@ final class BackgroundRefreshCoordinator {
 
     // MARK: App-lifecycle handlers (trampolined from the observers above)
 
-    /// Backgrounding: submit the next refresh request (skipped only when no
-    /// wallet exists — see `scheduleNextRefresh`).
+    /// Backgrounding: submit the next refresh request (skipped while
+    /// background refresh is paused, or when no wallet exists — see
+    /// `scheduleNextRefresh`).
     func noteDidEnterBackground() {
         // Give the catch-up sweep a boundary BEFORE the process suspends.
         //
@@ -381,7 +383,8 @@ final class BackgroundRefreshCoordinator {
     /// Submit a request to run no earlier than ~15 minutes from now. iOS
     /// may run it much later or not at all; each run re-submits.
     ///
-    /// Skipped only when a wallet is provably absent. On a locked device the
+    /// Skipped while background refresh is paused (`isEnabledInThisBuild`)
+    /// and otherwise only when a wallet is provably absent. On a locked device the
     /// wallet-presence read fails and says "no wallet"; refusing to submit
     /// then ended the refresh chain until the user next opened the app, and
     /// app refreshes run almost exclusively while the device is locked.
