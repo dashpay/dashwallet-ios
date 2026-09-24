@@ -18,6 +18,7 @@
 #import <Foundation/Foundation.h>
 
 #import "DWHomeProtocol.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,11 +27,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, assign) BOOL hasAWallet;
 
 /**
- YES while wallet presence cannot be read from the keychain (device locked
- during a background launch). `hasAWallet` is NO then, but it must not be
- acted on: the launch decision waits until protected data is available.
+ The tri-state behind `hasAWallet`, read once per decision. `Unknown` while
+ wallet presence cannot be read from the keychain (device locked during a
+ background launch): `hasAWallet` is NO then, but it must not be acted on —
+ the launch decision waits until protected data is available.
  */
-@property (readonly, nonatomic, assign) BOOL walletPresenceUnknown;
+@property (readonly, nonatomic, assign) DWWalletPresence walletPresence;
 
 @property (readonly, nonatomic, strong) id<DWHomeProtocol> homeModel;
 

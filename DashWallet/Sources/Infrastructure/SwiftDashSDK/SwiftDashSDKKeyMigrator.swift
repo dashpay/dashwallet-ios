@@ -195,7 +195,12 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             // lock: an empty answer read while the device is locked — whatever
             // status the keychain used — must not mark the migration done.
             // Left as a failure the launch hold retries after unlock.
-            guard protectedDataAvailable else {
+            //
+            // Sampled on both sides of the read: the value captured before
+            // the queue hop answers for the enqueue, and the device can lock
+            // between that and this run. Only a read bracketed by two
+            // "available" answers is trusted with the permanent sentinel.
+            guard protectedDataAvailable, WalletEnvironment.isProtectedDataAvailable() else {
                 defaults.set(true, forKey: deferredFailureKey)
                 logger.warning("🔑 KEYMIG :: no DashSync mnemonics readable while the device is locked; not marking done")
                 return

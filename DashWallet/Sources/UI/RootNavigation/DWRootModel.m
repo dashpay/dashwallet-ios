@@ -55,12 +55,12 @@ NS_ASSUME_NONNULL_BEGIN
     return DWWalletEnvironment.hasWallet;
 }
 
-- (BOOL)walletPresenceUnknown {
+- (DWWalletPresence)walletPresence {
     // The SDK mnemonic inventory is unreadable while the device is locked
     // (a background launch). The DashSync material the key migrator would
     // import is read behind the same lock, and its own unreadable answer
     // already holds the launch through `legacyWalletMaterialPendingMigration`.
-    return DWWalletEnvironment.isWalletPresenceUnknown;
+    return DWWalletEnvironment.walletPresence;
 }
 
 - (BOOL)walletOperationAllowed {

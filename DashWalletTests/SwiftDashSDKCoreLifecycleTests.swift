@@ -202,6 +202,17 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             .absent)
     }
 
+    /// The selectable-material gate reads the stored phrases, and that read
+    /// fails behind the device lock even when the attributes-only inventory
+    /// succeeded. A gate that could not read answers nil, and the presence
+    /// is unknown — not "present" (a devnet-only wallet would open into a
+    /// `walletNotFound` dead end in a shipping build) and not "absent".
+    func testAppWalletPresenceIsUnknownWhenTheMaterialReadFails() {
+        XCTAssertEqual(
+            WalletEnvironment.walletPresence(hostPresence: .present, hasSelectableMaterial: { nil }),
+            .unknown)
+    }
+
     func testRestartPropagatesStartFailureAndAlwaysResetsBusyState() async {
         var events: [String] = []
         var restartingStates: [Bool] = []

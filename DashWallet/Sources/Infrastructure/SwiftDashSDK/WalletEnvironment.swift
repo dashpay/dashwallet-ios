@@ -276,22 +276,29 @@ public final class WalletEnvironment: NSObject {
     }
 
     /// Pure composition of the Keychain read and the selectable-material
-    /// gate, so the routing can be tested without a Keychain.
+    /// gate, so the routing can be tested without a Keychain. The gate
+    /// answers nil when its own Keychain read failed: a present inventory
+    /// whose material cannot be classified is unknown, not selectable.
     static func walletPresence(
         hostPresence: SwiftDashSDKHost.PersistedWalletPresence,
-        hasSelectableMaterial: () -> Bool
+        hasSelectableMaterial: () -> Bool?
     ) -> WalletPresence {
         switch hostPresence {
         case .unknown: return .unknown
         case .absent: return .absent
-        case .present: return hasSelectableMaterial() ? .present : .absent
+        case .present:
+            switch hasSelectableMaterial() {
+            case .some(true): return .present
+            case .some(false): return .absent
+            case .none: return .unknown
+            }
         }
     }
 
     @objc public static var walletPresence: WalletPresence {
         walletPresence(
             hostPresence: SwiftDashSDKHost.persistedSDKWalletPresence(),
-            hasSelectableMaterial: { isDevnetAvailable || hasSelectableWalletMaterial })
+            hasSelectableMaterial: { isDevnetAvailable ? true : hasSelectableWalletMaterial })
     }
 
     @objc public static var isWalletPresenceUnknown: Bool {
@@ -359,7 +366,9 @@ public final class WalletEnvironment: NSObject {
     @objc public static var hasWallet: Bool {
         guard hasSDKWallet else { return false }
         guard !isDevnetAvailable else { return true }
-        return hasSelectableWalletMaterial
+        // nil — the material could not be read — is not a wallet this build
+        // can select; `walletPresence` reports it as unknown.
+        return hasSelectableWalletMaterial == true
     }
 
     /// Whether any persisted wallet belongs to a network this build can
@@ -438,7 +447,11 @@ public final class WalletEnvironment: NSObject {
         }
     }
 
-    private static var hasSelectableWalletMaterial: Bool {
+    /// nil when the Keychain read behind the verdict failed (the device is
+    /// locked, or the Keychain is failing): unknown, not empty and not
+    /// selectable — and never cached, so the next read after unlock derives
+    /// the real answer instead of inheriting a verdict the lock produced.
+    private static var hasSelectableWalletMaterial: Bool? {
         walletMaterialCacheLock.lock()
         let cached = cachedSelectableWalletMaterial
         let generation = walletMaterialCacheGeneration
@@ -458,9 +471,7 @@ public final class WalletEnvironment: NSObject {
                     .save(to: .standard)
             }
         } catch {
-            // Unknown, not empty: a keychain read failure must not present a
-            // funded install as a fresh one.
-            selectable = true
+            return nil
         }
         walletMaterialCacheLock.lock()
         // Only if nothing invalidated the cache while this derivation ran: a

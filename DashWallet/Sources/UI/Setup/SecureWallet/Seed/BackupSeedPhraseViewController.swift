@@ -76,7 +76,22 @@ class BackupSeedPhraseViewController: DWPreviewSeedPhraseViewController {
 
             self.feedbackGenerator.notificationOccurred(.error)
 
-            let seedPhrase = self.model.getOrCreateNewWallet()
+            // nil: the keychain could not be read after the wipe, so no
+            // replacement was generated. Say so instead of animating in a
+            // blank phrase over the one that was just deleted.
+            guard let seedPhrase = self.model.getOrCreateNewWallet() else {
+                let alert = UIAlertController(
+                    title: nil,
+                    message: NSLocalizedString(
+                        "Your wallet couldn't be read right now. Please try again.",
+                        comment: ""),
+                    preferredStyle: .alert)
+                alert.addAction(UIAlertAction(
+                    title: NSLocalizedString("OK", comment: ""),
+                    style: .default))
+                self.present(alert, animated: true)
+                return
+            }
             self.contentView.updateSeedPhraseModelAnimated(seedPhrase)
             self.contentView.showScreenshotDetectedErrorMessage()
             self.actionButton?.isEnabled = false
