@@ -157,6 +157,7 @@ final class FakeBackgroundTaskScheduler: BackgroundTaskScheduling {
     private(set) var registeredIdentifiers: [String] = []
     private(set) var launchHandlers: [String: (BackgroundRefreshTaskHandle) -> Void] = [:]
     private(set) var submissions: [Submission] = []
+    private(set) var cancelledIdentifiers: [String] = []
     var registerResult = true
     var submitError: Error?
     var onSubmit: ((Submission) -> Void)?
@@ -174,6 +175,10 @@ final class FakeBackgroundTaskScheduler: BackgroundTaskScheduling {
         let submission = Submission(identifier: identifier, earliestBeginDate: earliestBeginDate)
         submissions.append(submission)
         onSubmit?(submission)
+    }
+
+    func cancel(identifier: String) {
+        cancelledIdentifiers.append(identifier)
     }
 }
 
