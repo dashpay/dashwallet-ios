@@ -104,6 +104,40 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         }
     }
 
+    // MARK: - Displayed username (per-identity pick)
+
+    /// The user's pick in Identities → detail → Usernames. The SDK column
+    /// `PersistentIdentity.mainDpnsName` cannot hold it on its own: on every
+    /// launch `syncDpnsNames` persists the owned names one at a time, and the
+    /// SDK persister resets a pick missing from that partial list to the first
+    /// name (fixed SDK-side in dashpay/platform#4978; this copy also covers
+    /// picks lost under an SDK without it). So the app keeps its own copy —
+    /// one UserDefaults slot per identity, like the main-identity pick above
+    /// — and every reader prefers it. Callers still apply their ownership /
+    /// pending filters.
+    private nonisolated static let mainDpnsNameKeyPrefix = "DWMainDpnsName."
+
+    private static func mainDpnsNameDefaultsKey(identityId: Data) -> String {
+        mainDpnsNameKeyPrefix + identityId.map { String(format: "%02x", $0) }.joined()
+    }
+
+    /// Store (or clear, with nil) the displayed-username pick for `identityId`.
+    static func setMainDpnsName(_ name: String?, identityId: Data) {
+        let key = mainDpnsNameDefaultsKey(identityId: identityId)
+        if let name = nilIfEmpty(name) {
+            UserDefaults.standard.set(name, forKey: key)
+        } else {
+            UserDefaults.standard.removeObject(forKey: key)
+        }
+    }
+
+    /// The displayed-username pick for `identity`: the app's stored copy,
+    /// else the SDK column (picks made before the app kept its own copy).
+    static func mainDpnsName(for identity: PersistentIdentity) -> String? {
+        nilIfEmpty(UserDefaults.standard.string(forKey: mainDpnsNameDefaultsKey(identityId: identity.identityId)))
+            ?? nilIfEmpty(identity.mainDpnsName)
+    }
+
     // MARK: - Snapshot
 
     /// Cached read of the SDK's current identity info. Rebuilt lazily
@@ -382,7 +416,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
                let persistedIdentity = persistedWallet.identities.first(where: {
                    $0.identityId == recoveredIdentityId
                }) {
-                recoveredUsername = [persistedIdentity.mainDpnsName, persistedIdentity.dpnsName]
+                recoveredUsername = [Self.mainDpnsName(for: persistedIdentity), persistedIdentity.dpnsName]
                     .compactMap { Self.nilIfEmpty($0) }
                     .first(where: { candidate in
                         guard let network = SwiftDashSDKHost.shared.runningNetwork else { return false }
@@ -697,7 +731,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         // SDK persister. Once the persister holds the label, the pick is
         // written for real — deferred, because this runs inside a
         // property read.
-        var selectedMainName = persisted.mainDpnsName
+        var selectedMainName = Self.mainDpnsName(for: persisted)
         if let promoted = Self.pendingMainName(identityId: identityId), !isPending(promoted) {
             let persistedAsOwned = persisted.dpnsNames.contains {
                 $0.isOwned && DWContestedNameStatusService.labelsMatch($0.label, promoted)
@@ -715,7 +749,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         }
 
         // The user's picked display label (Identities → detail →
-        // Usernames card, stored as `PersistentIdentity.mainDpnsName`).
+        // Usernames card, read through `mainDpnsName(for:)`).
         // Promote it to the front so `username` / `usernames.first` —
         // and every mirror written from them — render the pick instead
         // of DPNS-cache order. Only an owned label qualifies: it must
@@ -758,7 +792,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             var persistedCandidates = persisted.dpnsNames
                 .filter { $0.isOwned }
                 .map { $0.label }
-            persistedCandidates.append(contentsOf: [persisted.mainDpnsName, persisted.dpnsName]
+            persistedCandidates.append(contentsOf: [Self.mainDpnsName(for: persisted), persisted.dpnsName]
                 .compactMap { Self.nilIfEmpty($0) })
             for candidate in persistedCandidates where !isPending(candidate) {
                 if !usernames.contains(where: {
@@ -937,6 +971,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
                   $0.isOwned && DWContestedNameStatusService.labelsMatch($0.label, label)
               })
         else { return false }
+        setMainDpnsName(owned.label, identityId: identityId)
         PersistentIdentity.updateMainDpnsName(in: context, identityId: identityId, mainDpnsName: owned.label)
         do {
             try context.save()
@@ -948,10 +983,12 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         return true
     }
 
-    /// Wallet wipe: no promotion may outlive the identities it names.
+    /// Wallet wipe: no promotion or stored pick may outlive the identities
+    /// it names.
     nonisolated static func resetPendingMainNamesForWipe() {
         let defaults = UserDefaults.standard
-        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(pendingMainNameKeyPrefix) {
+        for key in defaults.dictionaryRepresentation().keys
+        where key.hasPrefix(pendingMainNameKeyPrefix) || key.hasPrefix(mainDpnsNameKeyPrefix) {
             defaults.removeObject(forKey: key)
         }
     }
