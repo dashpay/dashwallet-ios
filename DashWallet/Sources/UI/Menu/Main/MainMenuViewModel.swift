@@ -27,6 +27,9 @@ enum MainMenuNavigationDestination {
     case settings
     case tools
     case support
+    #if DASHPAY
+    case voting
+    #endif
     case governance
 }
 
@@ -209,6 +212,21 @@ class MainMenuViewModel: ObservableObject {
             }
         ))
         
+        #if DASHPAY
+        // Voting — between Tools and Support, where Android has it. Not an
+        // advanced-mode row: a masternode owner votes whatever mode the
+        // wallet is in. Behind Settings → "Enable Voting".
+        if VotingPrefs.shared.votingEnabled {
+            allItems.append(MenuItemModel(
+                title: NSLocalizedString("Voting", comment: ""),
+                icon: .custom("menu_voting", maxHeight: 30),
+                action: { [weak self] in
+                    self?.navigationDestination = .voting
+                }
+            ))
+        }
+        #endif
+
         // Support
         allItems.append(MenuItemModel(
             title: NSLocalizedString("Support", comment: ""),
@@ -218,16 +236,18 @@ class MainMenuViewModel: ObservableObject {
             }
         ))
         
-        // Governance — Masternodes plus (on DashPay builds, when enabled)
-        // username Voting. Not DashPay-gated: Masternodes is a Core-side
-        // surface that every build configuration can reach.
-        allItems.append(MenuItemModel(
-            title: NSLocalizedString("Governance", comment: "Governance"),
-            icon: .custom("menu_voting", maxHeight: 30),
-            action: { [weak self] in
-                self?.navigationDestination = .governance
-            }
-        ))
+        // Governance — Masternodes, the operator's tools. Advanced mode only;
+        // voting moved out of it to its own row above. Not DashPay-gated:
+        // Masternodes is a Core-side surface every build configuration has.
+        if showsAdvancedRows {
+            allItems.append(MenuItemModel(
+                title: NSLocalizedString("Governance", comment: "Governance"),
+                icon: .system("server.rack"),
+                action: { [weak self] in
+                    self?.navigationDestination = .governance
+                }
+            ))
+        }
         
         self.items = allItems
     }
