@@ -41,8 +41,11 @@ func isPiggyCardsGeoRestricted() -> Bool {
 class GeoRestrictionService {
     static let shared = GeoRestrictionService()
 
-    /// Country codes that are restricted from using PiggyCards
-    private let restrictedCountryCodes: Set<String> = ["RU", "CU"]
+    /// Country codes that are restricted from using PiggyCards, listed in both
+    /// ISO 3166-1 alpha-2 and alpha-3 form because the sources disagree:
+    /// CoreLocation's `isoCountryCode` and `Locale.Region` are alpha-2, while
+    /// StoreKit's `Storefront.countryCode` is alpha-3.
+    private let restrictedCountryCodes: Set<String> = ["RU", "RUS", "CU", "CUB"]
 
     /// UserDefaults keys for thread-safe access
     private enum Keys {
@@ -75,8 +78,8 @@ class GeoRestrictionService {
 
     enum DetectionSource: String {
         case gpsLocation = "GPS Location"
-        case ipGeolocation = "IP Geolocation"
         case appStore = "App Store"
+        case deviceRegion = "Device Region"
         case unknown = "Unknown"
     }
 
@@ -90,11 +93,6 @@ class GeoRestrictionService {
         if let sourceString = UserDefaults.standard.string(forKey: Keys.detectionSource) {
             detectionSource = DetectionSource(rawValue: sourceString)
         }
-
-        DWLogger.log("🌍 GeoRestrictionService: Initialized")
-        DWLogger.log("🌍 GeoRestrictionService: Persisted restriction status: \(isPiggyCardsRestricted)")
-        DWLogger.log("🌍 GeoRestrictionService: Persisted country code: \(detectedCountryCode ?? "nil")")
-        DWLogger.log("🌍 GeoRestrictionService: Persisted detection source: \(detectionSource?.rawValue ?? "nil")")
 
         // Listen for location changes to update restriction status
         setupLocationObserver()
@@ -111,90 +109,49 @@ class GeoRestrictionService {
             .store(in: &cancellables)
     }
 
-    /// Check if PiggyCards is restricted for the current user
-    /// This should be called when the app needs to determine PiggyCards availability
+    /// Resolve the user's country and cache the resulting restriction status.
+    ///
+    /// Every source consulted here is local to the device — none of them
+    /// contacts a remote service, so opening the app does not disclose the
+    /// user's IP address to a third party.
+    ///
+    /// Runs at most once per launch: the first call that resolves a country
+    /// sets `hasCheckedRestriction`. Later GPS fixes still refresh the status
+    /// through `setupLocationObserver`, and `refreshRestriction()` forces a
+    /// re-check.
     func checkRestriction() async {
-        DWLogger.log("🌍 GeoRestrictionService: ========== LOCATION CHECK START ==========")
+        guard !hasCheckedRestriction else { return }
 
-        // Gather all location attributes for logging
-        let gpsAuthorized = DWLocationManager.shared.isAuthorized
-        let gpsCountry = DWLocationManager.shared.currentPlacemark?.isoCountryCode
-        let ipCountry = await fetchCountryFromIP()
-        let appStoreCountry = await fetchAppStoreCountry()
-
-        DWLogger.log("🌍 GeoRestrictionService: 1. GPS Location:")
-        DWLogger.log("🌍    - Permission granted: \(gpsAuthorized)")
-        DWLogger.log("🌍    - Country code: \(gpsCountry ?? "nil")")
-
-        DWLogger.log("🌍 GeoRestrictionService: 2. IP Geolocation:")
-        DWLogger.log("🌍    - Country code: \(ipCountry ?? "nil")")
-
-        DWLogger.log("🌍 GeoRestrictionService: 3. App Store:")
-        DWLogger.log("🌍    - Country code: \(appStoreCountry ?? "nil")")
-
-        DWLogger.log("🌍 GeoRestrictionService: ========================================")
-
-        // Priority: GPS -> IP -> App Store
-        if gpsAuthorized, let countryCode = gpsCountry {
-            DWLogger.log("🌍 GeoRestrictionService: ✅ Using GPS location: \(countryCode)")
+        // Priority: GPS -> App Store storefront -> device region.
+        if DWLocationManager.shared.isAuthorized,
+           let countryCode = DWLocationManager.shared.currentPlacemark?.isoCountryCode {
             updateRestrictionStatus(countryCode: countryCode, source: .gpsLocation)
             return
         }
 
-        if let countryCode = ipCountry {
-            DWLogger.log("🌍 GeoRestrictionService: ✅ Using IP geolocation: \(countryCode)")
-            updateRestrictionStatus(countryCode: countryCode, source: .ipGeolocation)
-            return
-        }
-
-        if let countryCode = appStoreCountry {
-            DWLogger.log("🌍 GeoRestrictionService: ✅ Using App Store country: \(countryCode)")
+        if let countryCode = await fetchAppStoreCountry() {
             updateRestrictionStatus(countryCode: countryCode, source: .appStore)
             return
         }
 
-        // If all methods fail, assume not restricted
-        DWLogger.log("🌍 GeoRestrictionService: ⚠️ Unable to determine country, assuming not restricted")
+        if let countryCode = Locale.current.region?.identifier {
+            updateRestrictionStatus(countryCode: countryCode, source: .deviceRegion)
+            return
+        }
+
+        // Nothing resolved. Leave `hasCheckedRestriction` false so a later call
+        // can retry once a source becomes available.
+        DWLogger.log("GeoRestrictionService: country undetermined, leaving PiggyCards unrestricted")
         isPiggyCardsRestricted = false
         detectedCountryCode = nil
         detectionSource = .unknown
     }
 
-    /// Fetch country code from IP geolocation service
-    private func fetchCountryFromIP() async -> String? {
-        // Using ip-api.com - free, no API key required, returns country code
-        guard let url = URL(string: "https://ip-api.com/json/?fields=countryCode") else {
-            return nil
-        }
-
-        do {
-            let (data, response) = try await URLSession.shared.data(from: url)
-
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode) else {
-                DWLogger.log("GeoRestrictionService: IP geolocation request failed")
-                return nil
-            }
-
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let countryCode = json["countryCode"] as? String {
-                DWLogger.log("GeoRestrictionService: IP geolocation returned country: \(countryCode)")
-                return countryCode
-            }
-        } catch {
-            DWLogger.log("GeoRestrictionService: IP geolocation error: \(error.localizedDescription)")
-        }
-
-        return nil
-    }
-
-    /// Fetch country code from App Store storefront
+    /// Fetch country code from App Store storefront. Returns an ISO 3166-1
+    /// alpha-3 code, which `restrictedCountryCodes` accounts for.
     private func fetchAppStoreCountry() async -> String? {
-        if let storefront = await Storefront.current {
-            DWLogger.log("GeoRestrictionService: App Store country: \(storefront.countryCode)")
-            return storefront.countryCode
-        }
-        return nil
+        guard let storefront = await Storefront.current else { return nil }
+        return storefront.countryCode
     }
 
     /// Update the restriction status based on detected country
@@ -202,18 +159,12 @@ class GeoRestrictionService {
         let normalizedCode = countryCode.uppercased()
         let isRestricted = restrictedCountryCodes.contains(normalizedCode)
 
-        DWLogger.log("🌍 GeoRestrictionService: updateRestrictionStatus called")
-        DWLogger.log("🌍 GeoRestrictionService: Country code: \(normalizedCode)")
-        DWLogger.log("🌍 GeoRestrictionService: Source: \(source.rawValue)")
-        DWLogger.log("🌍 GeoRestrictionService: Is restricted country: \(isRestricted)")
-        DWLogger.log("🌍 GeoRestrictionService: Restricted countries list: \(restrictedCountryCodes)")
-
         self.detectedCountryCode = normalizedCode
         self.detectionSource = source
         self.isPiggyCardsRestricted = isRestricted
         self.hasCheckedRestriction = true
 
-        DWLogger.log("🌍 GeoRestrictionService: ✅ Restriction status updated - isPiggyCardsRestricted = \(isRestricted)")
+        DWLogger.log("GeoRestrictionService: \(normalizedCode) via \(source.rawValue), PiggyCards restricted: \(isRestricted)")
     }
 
     /// Force refresh the restriction check

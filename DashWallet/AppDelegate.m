@@ -216,8 +216,8 @@ NS_ASSUME_NONNULL_BEGIN
     // DWNotificationsBootstrap's NotificationLifecycle, which observes
     // UIApplicationDidBecomeActiveNotification itself.
 
-    // Check geo-restriction for PiggyCards (if available)
-    // This logs location info each time the app becomes active for debugging
+    // Check geo-restriction for PiggyCards (if available). No-ops once the
+    // country has been resolved for this launch.
     SEL checkGeoRestrictionSelector = NSSelectorFromString(@"checkGeoRestriction");
     if ([ExploreDashObjcWrapper respondsToSelector:checkGeoRestrictionSelector]) {
 #pragma clang diagnostic push
