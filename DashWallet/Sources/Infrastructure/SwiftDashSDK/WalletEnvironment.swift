@@ -17,6 +17,7 @@
 
 import Foundation
 import SwiftDashSDK
+import UIKit
 
 /// DashSync-free network identity + wallet presence for the app.
 ///
@@ -256,6 +257,22 @@ public final class WalletEnvironment: NSObject {
         /// failed for another reason. Says nothing about whether a wallet
         /// exists; re-read once protected data is available.
         case unknown = 2
+    }
+
+    /// Whether keychain items stored "when unlocked" — the mnemonics, the
+    /// DashSync material — are readable right now. False for a background
+    /// launch on a locked device. `UIApplication.isProtectedDataAvailable`
+    /// is main-thread state; a reader on a worker queue (the receive model's
+    /// presence check) hops over for the one Bool. The migrator reads it on
+    /// its caller's thread before hopping to its own queue. Injectable so
+    /// the presence classification can be tested without an application.
+    nonisolated(unsafe) static var isProtectedDataAvailable: () -> Bool = {
+        if Thread.isMainThread {
+            return MainActor.assumeIsolated { UIApplication.shared.isProtectedDataAvailable }
+        }
+        return DispatchQueue.main.sync {
+            MainActor.assumeIsolated { UIApplication.shared.isProtectedDataAvailable }
+        }
     }
 
     /// Pure composition of the Keychain read and the selectable-material

@@ -181,9 +181,8 @@ final class BackupInfoViewController: BaseViewController {
             // on "Show Recovery Phrase" or "Skip" — so the user can still pick
             // the phrase length on this screen first.
             seedPhraseModel = DWPreviewSeedPhraseModel()
-            // Only a definite "no wallet" creates one. An unreadable keychain
-            // (`.unknown`) must not — that would generate a second wallet next
-            // to the one the read could not see.
+            // Only for the phrase-length picker below; whether a wallet gets
+            // created is decided at the action, from a fresh read.
             createsNewWallet = WalletEnvironment.walletPresence == .absent
         }
 
@@ -250,12 +249,18 @@ extension BackupInfoViewController {
     /// persisted even if this runs again. Returns `false` — and shows why —
     /// when the wallet cannot be created right now, so the caller neither
     /// reports the step complete nor shows a phrase there is none of.
+    ///
+    /// Decided from the keychain at the action, not from `viewDidLoad`: the
+    /// read can fail when this screen loads and succeed by the tap, or the
+    /// other way round, and a cached answer would either skip the creation
+    /// (completing setup with no wallet) or generate a second wallet next to
+    /// the one the read could not see.
     private func createNewWalletIfNeeded() -> Bool {
-        guard createsNewWallet else { return true }
-        // Re-read at the action, not only in `viewDidLoad`: the keychain can
-        // become unreadable in between, and the seed model then refuses to
-        // generate (`DWPreviewSeedPhraseModel.getOrCreateNewWallet`).
-        guard WalletEnvironment.walletPresence != .unknown else {
+        guard type == .setup else { return true }
+        switch WalletEnvironment.walletPresence {
+        case .present:
+            return true
+        case .unknown:
             DWLogger.log("BACKUP wallet presence unreadable; refusing to create a wallet")
             let alert = UIAlertController(
                 title: nil,
@@ -264,12 +269,13 @@ extension BackupInfoViewController {
             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
             present(alert, animated: true)
             return false
+        case .absent:
+            seedPhraseModel.newWalletWordCount = UInt(phraseLengthModel.selection.rawValue)
+            seedPhraseModel.getOrCreateNewWallet()
+            phraseLengthModel.isLocked = true
+            phraseLengthPickerHost?.view.isHidden = true
+            return true
         }
-        seedPhraseModel.newWalletWordCount = UInt(phraseLengthModel.selection.rawValue)
-        seedPhraseModel.getOrCreateNewWallet()
-        phraseLengthModel.isLocked = true
-        phraseLengthPickerHost?.view.isHidden = true
-        return true
     }
 
     private func showSeedPhraseViewController() {

@@ -267,6 +267,8 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         var hasWallet = false
         var legacy: LegacyWalletMigrationLaunchCoordinator.LegacyMaterialState = .pending
         var reason: WalletPreparationFailure.LegacyMigrationReason = .failed
+        var protectedDataAvailable = true
+        var walletPresenceUnknown = false
         var migrationStarts = 0
         var overlayActivations = 0
         var outcomes: [Bool] = []
@@ -295,6 +297,8 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
                     }
                 },
                 activateOverlay: { self.overlayActivations += 1 },
+                isProtectedDataAvailable: { self.protectedDataAvailable },
+                walletPresenceUnknown: { self.walletPresenceUnknown },
                 walletMaterialChanges: { AsyncStream { self.materialChanged = $0 } },
                 pollInterval: 0.005,
                 settleTimeout: settleTimeout,
@@ -432,6 +436,86 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         coordinator.retry()
         await settle(probe.outcomes == [false])
         XCTAssertEqual(probe.outcomes, [false])
+        XCTAssertEqual(state.phase, .idle)
+    }
+
+    /// A background launch on a locked device: the launch-time run already
+    /// settled with a verdict read behind the lock, and the probes say
+    /// "unreadable". The hold must neither act on that verdict nor show the
+    /// card; once protected data is back it re-runs the migrator and only
+    /// then decides — here, the wallet that was there all along.
+    func testLockedLaunchWaitsSilentlyAndDecidesFromARunAfterUnlock() async {
+        let state = WalletLifecycleTransitionState()
+        let probe = HoldProbe()
+        probe.protectedDataAvailable = false
+        probe.legacy = .unreadable
+        probe.settled = true
+        let coordinator = probe.makeCoordinator(state: state, settleTimeout: 0.02)
+        coordinator.begin { probe.outcomes.append($0) }
+        try? await Task.sleep(nanoseconds: 60_000_000)
+        XCTAssertEqual(state.phase, .migratingLegacyWallet, "no verdict and no card while the device is locked")
+        XCTAssertEqual(probe.outcomes, [])
+        XCTAssertEqual(probe.migrationStarts, 0, "nothing to re-run until the keychain can be read")
+
+        probe.onMigrationRun = {
+            probe.hasWallet = true
+            probe.legacy = .absent
+            probe.settled = true
+        }
+        probe.protectedDataAvailable = true
+        await settle(probe.outcomes == [true])
+        XCTAssertEqual(probe.migrationStarts, 1, "the verdict comes from a run made after unlock")
+        XCTAssertEqual(probe.outcomes, [true])
+        XCTAssertEqual(state.phase, .idle)
+    }
+
+    /// The same locked launch on a fresh install: after unlock the re-run
+    /// confirms there is nothing, and only then is setup offered.
+    func testLockedLaunchOnAFreshInstallReachesSetupOnlyAfterUnlock() async {
+        let state = WalletLifecycleTransitionState()
+        let probe = HoldProbe()
+        probe.protectedDataAvailable = false
+        probe.legacy = .unreadable
+        probe.settled = true
+        let coordinator = probe.makeCoordinator(state: state)
+        coordinator.begin { probe.outcomes.append($0) }
+        try? await Task.sleep(nanoseconds: 30_000_000)
+        XCTAssertEqual(probe.outcomes, [])
+
+        probe.onMigrationRun = {
+            probe.legacy = .absent
+            probe.settled = true
+        }
+        probe.protectedDataAvailable = true
+        await settle(probe.outcomes == [false])
+        XCTAssertEqual(probe.outcomes, [false])
+        XCTAssertEqual(probe.migrationStarts, 1)
+        XCTAssertEqual(state.phase, .idle)
+    }
+
+    /// An SDK wallet inventory that cannot be read with the device unlocked
+    /// is a failure to show, not "nothing to migrate": the card blocks
+    /// instead of setup, and a later successful read completes the launch.
+    func testUnreadableWalletInventoryWhileUnlockedShowsTheCardNotSetup() async {
+        let state = WalletLifecycleTransitionState()
+        let probe = HoldProbe()
+        probe.walletPresenceUnknown = true
+        probe.legacy = .absent
+        probe.settled = true
+        let coordinator = probe.makeCoordinator(state: state, lateSuccessInterval: 30)
+        coordinator.begin { probe.outcomes.append($0) }
+        await settle({ if case .failedLegacyMigration = state.phase { return true } else { return false } }())
+        guard case let .failedLegacyMigration(failure) = state.phase else { return XCTFail("expected the failure card") }
+        XCTAssertEqual(failure.kind, .keychain)
+        XCTAssertEqual(failure.codes, ["Keychain:unreadableWalletInventory"])
+        XCTAssertEqual(probe.outcomes, [], "an unreadable inventory never releases into setup")
+
+        await settle(probe.materialChanged != nil)
+        probe.walletPresenceUnknown = false
+        probe.hasWallet = true
+        probe.materialChanged?.yield()
+        await settle(probe.outcomes == [true], within: 1)
+        XCTAssertEqual(probe.outcomes, [true])
         XCTAssertEqual(state.phase, .idle)
     }
 

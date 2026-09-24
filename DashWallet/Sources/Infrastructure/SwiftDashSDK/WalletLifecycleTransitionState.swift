@@ -343,6 +343,12 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
         /// not for the wallet, so the hold waits silently — no verdict, no
         /// card, no timeout — and re-runs the migrator once this is true.
         var isProtectedDataAvailable: () -> Bool = { true }
+        /// The SDK wallet inventory could not be read although protected data
+        /// is available (a keychain failure that is not the lock). `hasWallet`
+        /// is false then, but that is not "nothing to migrate": the hold shows
+        /// the failure card, whose Try Again re-reads, and its late-success
+        /// watcher completes the launch once the read works.
+        var walletPresenceUnknown: () -> Bool = { false }
         /// Fires whenever persisted wallet material changed (the migrator
         /// reports its success through it); the failure card re-checks
         /// `hasWallet` on each element instead of polling the keychain.
@@ -448,21 +454,30 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
             deliver(hasWallet: true)
             return
         }
-        let reason: WalletPreparationFailure.LegacyMigrationReason
-        switch dependencies.legacyMaterial() {
-        case .absent:
-            deliver(hasWallet: false)
-            return
-        case .unreadable:
-            reason = .unreadableKeychain
-        case .pending:
-            reason = timedOut ? .timedOut : dependencies.deferralReason()
+        let failure: WalletPreparationFailure
+        if dependencies.walletPresenceUnknown() {
+            // Only a definite "no SDK wallet" may go on to ask about legacy
+            // material; an unreadable inventory with the device unlocked is a
+            // failure to show, never setup over a wallet the read missed.
+            failure = WalletPreparationFailure(unreadableWallet: ())
+        } else {
+            let reason: WalletPreparationFailure.LegacyMigrationReason
+            switch dependencies.legacyMaterial() {
+            case .absent:
+                deliver(hasWallet: false)
+                return
+            case .unreadable:
+                reason = .unreadableKeychain
+            case .pending:
+                reason = timedOut ? .timedOut : dependencies.deferralReason()
+            }
+            failure = WalletPreparationFailure(legacyMigration: reason)
         }
         if state.phase == .idle, !state.tryBegin(.migratingLegacyWallet) {
             DWLogger.log("🚦 LIFECYCLE legacy-migration hold could not take the window for its verdict")
         }
-        state.failLegacyMigration(WalletPreparationFailure(legacyMigration: reason))
-        DWLogger.log("🚦 LIFECYCLE legacy migration did not deliver a wallet (\(reason.rawValue)); holding on the failure card")
+        state.failLegacyMigration(failure)
+        DWLogger.log("🚦 LIFECYCLE launch hold did not deliver a wallet (\(failure.codes.joined(separator: ","))); holding on the failure card")
         watchForLateSuccess()
     }
 

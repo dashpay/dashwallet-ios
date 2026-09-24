@@ -58,6 +58,22 @@ final class SerialAsyncLifecycleQueue {
     }
 }
 
+/// When a start deferred on a locked keychain may be retried from a
+/// become-active. Separated from the runtime so the rule is testable.
+struct DeferredStartRetryPolicy {
+    /// The launch hold's phases are fine — the runtime's open takes the
+    /// window over from them by design — and so is an idle window. Any
+    /// other phase means an operation owns the runtime right now.
+    static func mayRetry(during phase: WalletLifecycleTransitionState.Phase) -> Bool {
+        switch phase {
+        case .idle, .migratingLegacyWallet, .failedLegacyMigration:
+            return true
+        default:
+            return false
+        }
+    }
+}
+
 /// Which readiness each refresh trigger is allowed to elide a rebuild on.
 ///
 /// Separated from the runtime so the routing can be exercised without a live
@@ -1066,36 +1082,46 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     /// Re-kick a start that `refresh` deferred because the device was locked.
     ///
-    /// `protectedDataDidBecomeAvailable` fires when the device is unlocked,
-    /// even while this process is still in the background, so the wallet is
-    /// usually up before the user reaches it. `didBecomeActive` is the
-    /// fallback for the transition-only notification racing this
-    /// registration: a frontmost app implies an unlocked device.
+    /// Only on become-active. The unlock itself
+    /// (`protectedDataDidBecomeAvailable`) usually arrives while the process
+    /// is still in the background, and a runtime started there belongs to
+    /// nobody: `BackgroundRefreshCoordinator` owns the runtimes it starts in
+    /// the background — bounded by the task's expiration and torn down before
+    /// suspension — and an unlock is not one of its runs. A frontmost app
+    /// implies an unlocked device, so the deferral simply stays armed until
+    /// then; a background refresh that runs in between starts the runtime
+    /// under its own ownership and `refresh` disarms it.
     private func installProtectedDataObservers() {
         guard protectedDataObserverTokens.isEmpty else { return }
 
-        for name in [UIApplication.protectedDataDidBecomeAvailableNotification,
-                     UIApplication.didBecomeActiveNotification] {
-            protectedDataObserverTokens.append(NotificationCenter.default.addObserver(
-                forName: name,
-                object: nil,
-                queue: .main
-            ) { note in
-                MainActor.assumeIsolated {
-                    Self.shared.retryStartDeferredForUnknownWalletPresence(reason: note.name.rawValue)
-                }
-            })
-        }
+        protectedDataObserverTokens.append(NotificationCenter.default.addObserver(
+            forName: UIApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { _ in
+            MainActor.assumeIsolated {
+                Self.shared.retryStartDeferredForUnknownWalletPresence()
+            }
+        })
     }
 
-    private func retryStartDeferredForUnknownWalletPresence(reason: String) {
+    private func retryStartDeferredForUnknownWalletPresence() {
         guard startDeferredForUnknownWalletPresence else { return }
+        let phase = WalletLifecycleTransitionState.shared.phase
+        guard DeferredStartRetryPolicy.mayRetry(during: phase) else {
+            // Become-active also fires mid-transition (a Face ID prompt over
+            // a network switch): leave the deferral armed for the next one
+            // instead of queueing a refresh behind an operation that owns
+            // the runtime.
+            Self.logger.info("🧭 RUNTIME :: deferred start kept armed behind \(phase.logLabel, privacy: .public)")
+            return
+        }
         // Cleared here, not in `refresh`: a retry that finds the keychain
         // still unreadable sets it again, and one that finds a wallet (or
         // none) has nothing left to defer.
         startDeferredForUnknownWalletPresence = false
-        Self.logger.info("🧭 RUNTIME :: protected data available (\(reason, privacy: .public)); retrying the deferred start")
-        DWLogger.log("RUNTIME retrying the start deferred on a locked device (\(reason))")
+        Self.logger.info("🧭 RUNTIME :: app active after a locked launch; retrying the deferred start")
+        DWLogger.log("RUNTIME retrying the start deferred on a locked device")
         enqueueRefresh(trigger: .startIfReady)
     }
 

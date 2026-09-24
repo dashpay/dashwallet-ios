@@ -5,7 +5,7 @@ import SQLite3
 /// import of the previous app generation's wallet. Never retains an Error or
 /// its userInfo: Core Data errors can contain paths and stored values.
 struct WalletPreparationFailure: Equatable, Identifiable {
-    enum Kind: String { case database, storage, legacyMigration }
+    enum Kind: String { case database, storage, legacyMigration, keychain }
 
     /// Why the DashSync → SwiftDashSDK key migration did not deliver a wallet.
     /// Only the migrator's terminal flag names leave this boundary.
@@ -21,6 +21,18 @@ struct WalletPreparationFailure: Equatable, Identifiable {
         occurredAt = now
         kind = .legacyMigration
         codes = ["KeyMigrator:\(reason.rawValue)"]
+    }
+
+    /// The SDK wallet inventory could not be read from the keychain while
+    /// the device was unlocked, so the launch cannot tell a wallet from a
+    /// fresh install. Generic "could not be opened" copy: no data is lost and
+    /// nothing is being moved. Carries no status code — the keychain status
+    /// is in the app log, and this attachment stays free of it.
+    init(unreadableWallet: Void, now: Date = Date()) {
+        id = UUID()
+        occurredAt = now
+        kind = .keychain
+        codes = ["Keychain:unreadableWalletInventory"]
     }
 
     init(error: Error, now: Date = Date()) {

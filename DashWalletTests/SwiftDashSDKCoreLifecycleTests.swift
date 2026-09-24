@@ -124,24 +124,54 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
     /// and must not be classified as a fresh install.
     func testKeychainReadFailureClassifiesAsUnknownPresenceWithItsStatus() {
         let locked = SwiftDashSDKHost.PersistedWalletPresence.classify(
-            .failure(WalletStorageError.keychainError(errSecInteractionNotAllowed)))
+            .failure(WalletStorageError.keychainError(errSecInteractionNotAllowed)),
+            protectedDataAvailable: false)
 
         XCTAssertEqual(locked, .unknown(errSecInteractionNotAllowed))
         XCTAssertTrue(locked.isUnknown)
         XCTAssertEqual(
             SwiftDashSDKHost.PersistedWalletPresence.classify(
-                .failure(CoreLifecycleTestError.start)),
+                .failure(CoreLifecycleTestError.start), protectedDataAvailable: true),
             .unknown(nil))
     }
 
     func testInventoryReadClassifiesPresentAndAbsent() {
         XCTAssertEqual(
-            SwiftDashSDKHost.PersistedWalletPresence.classify(.success([Data([0x01])])),
+            SwiftDashSDKHost.PersistedWalletPresence.classify(
+                .success([Data([0x01])]), protectedDataAvailable: true),
             .present)
         XCTAssertEqual(
-            SwiftDashSDKHost.PersistedWalletPresence.classify(.success([])),
+            SwiftDashSDKHost.PersistedWalletPresence.classify(.success([]), protectedDataAvailable: true),
             .absent)
         XCTAssertFalse(SwiftDashSDKHost.PersistedWalletPresence.absent.isUnknown)
+    }
+
+    /// Whatever status a locked device returns for an attributes-only query,
+    /// an empty inventory read behind the lock proves nothing: it must not
+    /// classify as a fresh install. A present one is still present.
+    func testEmptyInventoryBehindTheDeviceLockIsUnknownNotAbsent() {
+        XCTAssertEqual(
+            SwiftDashSDKHost.PersistedWalletPresence.classify(.success([]), protectedDataAvailable: false),
+            .unknown(nil))
+        XCTAssertEqual(
+            SwiftDashSDKHost.PersistedWalletPresence.classify(
+                .success([Data([0x01])]), protectedDataAvailable: false),
+            .present)
+    }
+
+    /// A start deferred on a locked keychain is retried from become-active
+    /// only while nothing else owns the runtime: the launch hold's own phases
+    /// are fine (the runtime's open takes the window over from them), any
+    /// interactive transition keeps the deferral armed for the next one.
+    func testDeferredStartRetriesOnlyWhenNoOperationOwnsTheRuntime() {
+        XCTAssertTrue(DeferredStartRetryPolicy.mayRetry(during: .idle))
+        XCTAssertTrue(DeferredStartRetryPolicy.mayRetry(during: .migratingLegacyWallet))
+        XCTAssertTrue(DeferredStartRetryPolicy.mayRetry(
+            during: .failedLegacyMigration(WalletPreparationFailure(legacyMigration: .failed))))
+        XCTAssertFalse(DeferredStartRetryPolicy.mayRetry(
+            during: .switchingNetwork(from: .mainnet, to: .testnet)))
+        XCTAssertFalse(DeferredStartRetryPolicy.mayRetry(during: .openingWallet))
+        XCTAssertFalse(DeferredStartRetryPolicy.mayRetry(during: .wiping(title: nil)))
     }
 
     /// The app-level presence keeps "unknown" apart from both answers, and

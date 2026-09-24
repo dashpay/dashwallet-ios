@@ -279,10 +279,22 @@ final class SwiftDashSDKHost {
 
         /// Pure classification of an inventory read, so the mapping can be
         /// tested without a Keychain.
-        static func classify(_ inventory: Result<[Data], Error>) -> PersistedWalletPresence {
+        ///
+        /// An empty inventory is `.absent` only while protected data is
+        /// available: which status a locked device returns for an
+        /// attributes-only query is not something to build a wallet
+        /// decision on, so an empty answer read behind the lock is as
+        /// unknown as a failed one.
+        static func classify(
+            _ inventory: Result<[Data], Error>,
+            protectedDataAvailable: Bool
+        ) -> PersistedWalletPresence {
             switch inventory {
             case .success(let walletIds):
-                return walletIds.isEmpty ? .absent : .present
+                if walletIds.isEmpty {
+                    return protectedDataAvailable ? .absent : .unknown(nil)
+                }
+                return .present
             case .failure(let error):
                 if case WalletStorageError.keychainError(let status) = error {
                     return .unknown(status)
@@ -299,7 +311,8 @@ final class SwiftDashSDKHost {
     /// failure is reported as `.unknown` (logged), not as "no wallet".
     nonisolated static func persistedSDKWalletPresence() -> PersistedWalletPresence {
         let presence = PersistedWalletPresence.classify(
-            Result { try WalletStorage().listWalletIdsWithMnemonic() })
+            Result { try WalletStorage().listWalletIdsWithMnemonic() },
+            protectedDataAvailable: WalletEnvironment.isProtectedDataAvailable())
         if case .unknown(let status) = presence {
             logger.error("🪺 HOST :: wallet-presence keychain read failed: status \(String(describing: status), privacy: .public)")
         }
