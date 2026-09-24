@@ -381,8 +381,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         }
     }
     else if ([DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration]) {
-        // Same as the launch path: an upgrader's wallet is still being
-        // imported, so the migration hold takes over.
+        // An upgrader's wallet is still in DashSync's keychain: the
+        // launch-time migration ran against the locked keychain and recorded
+        // a failure, which the poller would otherwise read as settled and
+        // present setup. Re-run it now, then let the migration hold decide.
+        [DWSwiftDashSDKKeyMigrator retryMigrationAfterUnlock];
         [self presentInitialControllerWhenKeyMigrationSettles:
                   [NSDate dateWithTimeIntervalSinceNow:10.0]];
     }

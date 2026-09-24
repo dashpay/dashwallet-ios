@@ -874,6 +874,10 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     private func fullReset(
         lastError: String?, forWipe: Bool, preservingShieldedRecovery: Bool = false
     ) async {
+        // Every teardown supersedes a start deferred on a locked keychain: an
+        // explicit Stop or a wipe must not be undone by the next unlock. A
+        // refresh that is still waiting re-sets the flag after its own reset.
+        startDeferredForUnknownWalletPresence = false
         if forWipe {
             await PlatformAddressSyncCoordinator.stopForWipeAsync()
         } else {

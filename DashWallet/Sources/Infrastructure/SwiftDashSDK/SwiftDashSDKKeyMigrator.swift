@@ -142,15 +142,13 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         // Clear stale defer flags before re-evaluating. The runtime reads
         // any flag as permission to stop waiting for migration — leaving
         // a stale value would race the loop below.
-        defaults.removeObject(forKey: deferredMultiWalletKey)
-        defaults.removeObject(forKey: deferredUnknownChainKey)
-        defaults.removeObject(forKey: deferredFailureKey)
+        clearDeferredFlags(in: defaults)
 
         let mnemonicAccounts: [String]
         do {
             mnemonicAccounts = try strictlyEnumerateDashSyncMnemonicAccounts()
         } catch {
-            defaults.set(true, forKey: deferredFailureKey)
+            recordEnumerationFailure(in: defaults)
             logger.error(
                 "🔑 KEYMIG :: DashSync mnemonic enumeration failed: \(String(describing: error), privacy: .public)")
             return
@@ -268,10 +266,41 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// waiter treats as "stop waiting").
     @objc
     static func migrationSettled() -> Bool {
-        let defaults = UserDefaults.standard
+        migrationSettled(in: .standard)
+    }
+
+    static func migrationSettled(in defaults: UserDefaults) -> Bool {
         if defaults.string(forKey: doneKey) != nil { return true }
         return [deferredMultiWalletKey, deferredUnknownChainKey, deferredFailureKey]
             .contains { defaults.object(forKey: $0) != nil }
+    }
+
+    /// Run the migration again after a launch on a locked device.
+    ///
+    /// The launch-time run cannot enumerate DashSync's keychain items then
+    /// and records `deferredFailureKey`. Once the device is unlocked that
+    /// flag is stale, but `migrationSettled()` would still report it as a
+    /// terminal state and the root controller's poller would present setup
+    /// over the un-imported wallet. The flags are cleared here, on the
+    /// caller's thread, before the run is queued, so a poller started right
+    /// after this call waits for the fresh result instead of the stale one.
+    @objc
+    static func retryMigrationAfterUnlock() {
+        clearDeferredFlags(in: .standard)
+        logger.info("🔑 KEYMIG :: retrying migration after unlock")
+        migrateIfNeeded()
+    }
+
+    static func clearDeferredFlags(in defaults: UserDefaults) {
+        defaults.removeObject(forKey: deferredMultiWalletKey)
+        defaults.removeObject(forKey: deferredUnknownChainKey)
+        defaults.removeObject(forKey: deferredFailureKey)
+    }
+
+    /// Records the flag a locked-device enumeration failure leaves behind,
+    /// so the retry path above can be exercised without a keychain.
+    static func recordEnumerationFailure(in defaults: UserDefaults) {
+        defaults.set(true, forKey: deferredFailureKey)
     }
 
     // MARK: - Explicit legacy wallet cleanup
