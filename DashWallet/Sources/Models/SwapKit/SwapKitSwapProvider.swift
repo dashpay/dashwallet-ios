@@ -75,7 +75,8 @@ final class SwapKitSwapProvider: SwapProvider {
     /// Small batch size to keep verification bounded without spamming the quote endpoint.
     private let buyRoutabilityProbeBatchSize: Int = 8
 
-    private enum BuyRoutability {
+    /// Internal rather than private so the tests can assert `routability(from:)` directly.
+    enum BuyRoutability {
         case routable
         case notRoutable
     }
@@ -175,7 +176,9 @@ final class SwapKitSwapProvider: SwapProvider {
         scheduleBuyRoutabilityVerification(for: candidates.map { $0.asset })
 
         // Optimistic filter: show until a probe conclusively proves the asset cannot route
-        // NEAR→DASH. This keeps first-open responsive while background verification prunes.
+        // NEAR→DASH — which now means NEAR itself reporting a no-route in `providerErrors`, the
+        // only unambiguous negative (see `routability(from:)`). This keeps first-open responsive
+        // while background verification prunes.
         return candidates.filter { pool in
             cachedBuyRoutability(for: pool.asset) != .notRoutable
         }
@@ -346,7 +349,8 @@ final class SwapKitSwapProvider: SwapProvider {
         }
 
         guard let best = bestRoute(from: quoteResponse.routes ?? []) else {
-            let msg = quoteResponse.providerErrors?.first?.message
+            let providerError = quoteResponse.providerErrors?.first
+            let msg = SwapKitErrorCopy.providerErrorMessage(providerError)
                 ?? NSLocalizedString("No route available", comment: "SwapKit")
             return errorResult(msg)
         }
@@ -375,7 +379,8 @@ final class SwapKitSwapProvider: SwapProvider {
 
         // Step 2: pick RECOMMENDED → CHEAPEST → first (mirrors Android bestRoute()).
         guard let best = bestRoute(from: quoteResponse.routes ?? []) else {
-            let msg = quoteResponse.providerErrors?.first?.message
+            let providerError = quoteResponse.providerErrors?.first
+            let msg = SwapKitErrorCopy.providerErrorMessage(providerError)
                 ?? NSLocalizedString("No route available", comment: "SwapKit")
             return errorResult(msg)
         }
@@ -566,7 +571,7 @@ final class SwapKitSwapProvider: SwapProvider {
         do {
             return try await SwapKitAPIService.shared.quote(quoteRequest)
         } catch {
-            if let apiError = decodeQuoteError(from: error) {
+            if let apiError = Self.decodeQuoteError(from: error) {
                 return SwapKitQuoteResponse(
                     quoteId: nil,
                     routes: nil,
@@ -602,7 +607,7 @@ final class SwapKitSwapProvider: SwapProvider {
         do {
             quoteResponse = try await SwapKitAPIService.shared.quote(quoteRequest)
         } catch {
-            if let apiError = decodeQuoteError(from: error) {
+            if let apiError = Self.decodeQuoteError(from: error) {
                 throw NSError(domain: "SwapKit", code: 1, userInfo: [NSLocalizedDescriptionKey: apiError])
             }
             throw error
@@ -614,7 +619,8 @@ final class SwapKitSwapProvider: SwapProvider {
         }
 
         guard let best = bestRoute(from: quoteResponse.routes ?? []) else {
-            let message = quoteResponse.providerErrors?.first?.message
+            let providerError = quoteResponse.providerErrors?.first
+            let message = SwapKitErrorCopy.providerErrorMessage(providerError)
                 ?? quoteResponse.message
                 ?? quoteResponse.error
                 ?? NSLocalizedString("No route available", comment: "SwapKit")
@@ -722,24 +728,37 @@ final class SwapKitSwapProvider: SwapProvider {
         }
     }
 
-    private static func routability(from response: SwapKitQuoteResponse) -> BuyRoutability? {
+    /// Internal rather than private so the tests can drive the picker-pruning rule with recorded
+    /// responses; nothing outside this type calls it.
+    static func routability(from response: SwapKitQuoteResponse) -> BuyRoutability? {
         if response.routes?.isEmpty == false {
             return .routable
         }
 
-        let message = [response.error, response.message, response.providerErrors?.first?.message]
-            .compactMap { $0 }
-            .joined(separator: " ")
+        // Classify on the codes, not the prose: a provider reports its reason in
+        // `providerErrors[].errorCode`, and only the code is a stable identifier.
+        let providerCode = SwapKitErrorCopy.providerErrorMessage(response.providerErrors?.first)
 
-        if isConfirmedNoRoute(message) {
-            return .notRoutable
+        guard let providerCode else {
+            // A top-level `noRoutesFound` is deliberately NOT treated as proof of unroutability.
+            // SwapKit answers with it for an amount far below a route's floor as well as for a
+            // pair it cannot carry — measured 2026-08-28, DASH → BTC returned it at 0.01 DASH
+            // and quoted a route at 0.3 — and the probe amount is a $50 estimate that falls back
+            // to one whole unit when no USD price is cached. Pruning on it would drop a routable
+            // asset out of the picker for the whole cache window.
+            return nil
         }
 
-        if isMinimumOrAmountError(message) {
+        if SwapKitErrorCopy.isBelowMinimum(providerCode) {
+            // The probe amount was under this route's floor, which says nothing about whether
+            // the asset is routable — the picker must not hide it on this evidence.
             return .routable
         }
 
-        return nil
+        // A provider naming its own no-route is the one conclusive negative: it is answering for
+        // the single provider the probe asked about. Anything else it reports (an upstream
+        // `apiRequestFailed`, say) leaves the question open.
+        return SwapKitErrorCopy.isNoRoute(providerCode) ? .notRoutable : nil
     }
 
     private static func decodedQuoteResponse(from error: Error) -> SwapKitQuoteResponse? {
@@ -747,27 +766,23 @@ final class SwapKitSwapProvider: SwapProvider {
         return try? JSONDecoder().decode(SwapKitQuoteResponse.self, from: response.data)
     }
 
-    private static func isConfirmedNoRoute(_ message: String) -> Bool {
-        let normalized = message.lowercased()
-        return normalized.contains("noroutesfound") || normalized.contains("no routes found")
-    }
-
-    private static func isMinimumOrAmountError(_ message: String) -> Bool {
-        let normalized = message.lowercased()
-        return normalized.contains("below minimum")
-            || normalized.contains("amount too small")
-            || normalized.contains("too small")
-            || normalized.contains("minimum")
-    }
-
-    private func decodeQuoteError(from error: Error) -> String? {
+    /// Internal rather than private so the tests can feed it a recorded non-2xx body and pin the
+    /// code-first ordering; nothing outside this type calls it.
+    static func decodeQuoteError(from error: Error) -> String? {
         guard case HTTPClientError.statusCode(let response) = error,
               let body = try? JSONDecoder().decode(SwapKitQuoteResponse.self, from: response.data)
         else {
             return nil
         }
 
-        return body.message ?? body.error ?? body.providerErrors?.first?.message
+        if let code = body.error, !code.isEmpty {
+            if let message = body.message, !message.isEmpty {
+                return "\(code): \(message)"
+            }
+            return code
+        }
+
+        return SwapKitErrorCopy.providerErrorMessage(body.providerErrors?.first) ?? body.message
     }
 
     private func decodeSwapError(from error: Error) -> String? {
