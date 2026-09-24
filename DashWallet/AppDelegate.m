@@ -23,6 +23,7 @@
 
 #import "DWInitialViewController.h"
 #import "DWVersionManager.h"
+#import "UIColor+DWStyle.h"
 #import "DWWindow.h"
 #import "DWURLParser.h"
 #import "dashwallet-Swift.h"
@@ -59,6 +60,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// dispatcher, lifecycle (the UNUserNotificationCenter delegate), router,
 /// and the transaction producer.
 @property (nonatomic, strong) DWNotificationsBootstrap *notifications;
+
+/// Whether the launch-time wallet work still waits for the first activation.
+@property (nonatomic, strong) DWLaunchDecision *launchDecision;
 
 @end
 
@@ -166,9 +170,6 @@ NS_ASSUME_NONNULL_BEGIN
     // so on a fresh install it must not race the migration that creates the table.
     [SwapTrackingServiceObjcWrapper start];
 
-    // Kick off the SwiftDashSDK key migration and app-owned runtime early.
-    // The runtime wallet is restored from app-owned Keychain state,
-    // not from a SwiftData wallet store.
 #ifdef DEBUG
     // QA fixture: fabricate DashSync's legacy keychain layout when either
     // LEGACY_KEYCHAIN_MNEMONIC or LEGACY_KEYCHAIN_INVALID=1 is set in the
@@ -176,17 +177,65 @@ NS_ASSUME_NONNULL_BEGIN
     // DEBUG builds only.
     [DWSwiftDashSDKKeyMigrator debugInstallLegacyFixtureIfRequested];
 #endif
-    [DWSwiftDashSDKKeyMigrator migrateIfNeeded];
     [DWSwiftDashSDKWalletRuntime startObservingNetworkChanges];
-    [DWSwiftDashSDKWalletRuntime startIfReady];
 
-    [self performNormalStartWithLaunchOptions:launchOptions];
-    
+    // A launch in the background (BGAppRefresh) happens on a locked device:
+    // the mnemonics are unreadable, so "no wallet" would describe the lock,
+    // not the wallet, and this process would later be brought to the
+    // foreground onto Create/Recover over a funded wallet. Decide nothing
+    // now: a neutral placeholder is the root, and the key migration, the
+    // runtime start and the root decision run once, on the first activation
+    // (`applicationDidBecomeActive:`), which implies an unlocked device. A
+    // foreground launch runs them here, as before.
+    self.launchDecision = [[DWLaunchDecision alloc] initWithApplicationState:application.applicationState];
+    if (self.launchDecision.isDeferred) {
+        DWLog(@"LAUNCH background launch; deferring key migration, runtime start and the root decision until the app becomes active");
+        self.window.rootViewController = [self launchPlaceholderController];
+    }
+    else {
+        [self startWalletServices];
+        DWInitialViewController *controller = [[DWInitialViewController alloc] init];
+        self.window.rootViewController = controller;
+    }
+    [self setupDashWalletComponentsWithOptions:launchOptions];
+
     NSParameterAssert(self.window.rootViewController);
-    
+
     [self.window makeKeyAndVisible];
 
     return YES;
+}
+
+/// Kick off the SwiftDashSDK key migration and app-owned runtime. The
+/// runtime wallet is restored from app-owned Keychain state, not from a
+/// SwiftData wallet store.
+- (void)startWalletServices {
+    [DWSwiftDashSDKKeyMigrator migrateIfNeeded];
+    [DWSwiftDashSDKWalletRuntime startIfReady];
+}
+
+/// The launch screen, shown while a background launch waits for its first
+/// activation: it decides nothing and reads nothing.
+- (UIViewController *)launchPlaceholderController {
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"LaunchScreen" bundle:nil];
+    UIViewController *controller = [storyboard instantiateInitialViewController];
+    if (controller == nil) {
+        controller = [[UIViewController alloc] init];
+        controller.view.backgroundColor = [UIColor dw_backgroundColor];
+    }
+    return controller;
+}
+
+/// The deferred half of a background launch, once: start the wallet
+/// services and replace the placeholder with the real root.
+- (void)completeDeferredLaunchIfNeeded {
+    if (![self.launchDecision takeAtActivation]) {
+        return;
+    }
+    DWLog(@"LAUNCH app active after a background launch; running the deferred key migration, runtime start and root decision");
+    [self startWalletServices];
+    DWInitialViewController *controller = [[DWInitialViewController alloc] init];
+    self.window.rootViewController = controller;
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
@@ -211,6 +260,10 @@ NS_ASSUME_NONNULL_BEGIN
     //
     // When adding any logic here mind the migration process
     //
+
+    // A background launch decided nothing; the first activation runs the
+    // launch-time wallet work (see `didFinishLaunching`).
+    [self completeDeferredLaunchIfNeeded];
 
     // Badge reset and delivered-notification clearing live in
     // DWNotificationsBootstrap's NotificationLifecycle, which observes
@@ -310,13 +363,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark - Private
-
-- (void)performNormalStartWithLaunchOptions:(NSDictionary *)launchOptions {
-    DWInitialViewController *controller = [[DWInitialViewController alloc] init];
-    self.window.rootViewController = controller;
-
-    [self setupDashWalletComponentsWithOptions:launchOptions];
-}
 
 - (void)setupDashWalletComponentsWithOptions:(NSDictionary *)launchOptions {
     // TODO_outdated: bitcoin protocol/payment protocol over multipeer connectivity

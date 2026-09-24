@@ -118,8 +118,12 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     @objc(migrateIfNeeded)
     static func migrateIfNeeded() {
         let generation = runGenerationLock.withLock { requestedRunGeneration }
+        // Read here, before the hop: a run on the legacy queue must know
+        // whether the keychain it is about to read is behind the device
+        // lock, and the answer is main-thread state.
+        let protectedDataAvailable = WalletEnvironment.isProtectedDataAvailable()
         legacyWalletQueue.async {
-            performMigration(generation: generation)
+            performMigration(generation: generation, protectedDataAvailable: protectedDataAvailable)
         }
     }
 
@@ -156,7 +160,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// validates DashSync's mnemonic on a background queue, then synchronously
     /// asks `SwiftDashSDKHost` on the main actor to create/import the managed
     /// wallet and store mnemonic material in `WalletStorage`.
-    private static func performMigration(generation: Int) {
+    private static func performMigration(generation: Int, protectedDataAvailable: Bool) {
         // Every exit below is terminal for this run: done, deferred, or
         // nothing to do. Record which run reached it.
         defer { runGenerationLock.withLock { settledRunGeneration = max(settledRunGeneration, generation) } }
@@ -187,6 +191,19 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             return
         }
         if mnemonicAccounts.isEmpty {
+            // Done is permanent, and an upgrader's wallet is behind the
+            // lock: an empty answer read while the device is locked — whatever
+            // status the keychain used — must not mark the migration done.
+            // Left as a failure the next run retries. Sampled on both sides
+            // of the read: the value captured before the queue hop answers
+            // for the enqueue, and the device can lock between that and this
+            // run. Only a read bracketed by two "available" answers is
+            // trusted with the permanent sentinel.
+            guard protectedDataAvailable, WalletEnvironment.isProtectedDataAvailable() else {
+                defaults.set(true, forKey: deferredFailureKey)
+                logger.warning("🔑 KEYMIG :: no DashSync mnemonics readable while the device is locked; not marking done")
+                return
+            }
             defaults.set("v1", forKey: doneKey)
             logger.info("🔑 KEYMIG :: no DashSync mnemonics found — fresh install or post-wipe, marking done")
             return
@@ -265,7 +282,10 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     static func legacyWalletMaterialState() -> LegacyWalletMigrationLaunchCoordinator.LegacyMaterialState {
         guard UserDefaults.standard.string(forKey: doneKey) == nil else { return .absent }
         do {
-            return try strictlyEnumerateDashSyncMnemonicAccounts().isEmpty ? .absent : .pending
+            guard try strictlyEnumerateDashSyncMnemonicAccounts().isEmpty else { return .pending }
+            // Same rule as the migrator: nothing read behind the device lock
+            // confirms an absence.
+            return WalletEnvironment.isProtectedDataAvailable() ? .absent : .unreadable
         } catch {
             logger.error(
                 "🔑 KEYMIG :: DashSync mnemonic enumeration failed during launch probe: \(String(describing: error), privacy: .public)")
@@ -466,11 +486,9 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
     /// Enumerate all keychain accounts in `org.dashfoundation.dash` whose
     /// account name starts with `WALLET_MNEMONIC_KEY_`. Returns the full
-    /// account names (including the prefix), sorted for determinism.
-    private static func enumerateDashSyncMnemonicAccounts() -> [String] {
-        (try? strictlyEnumerateDashSyncMnemonicAccounts()) ?? []
-    }
-
+    /// account names (including the prefix), sorted for determinism. Throws
+    /// on any Keychain status other than "not found": a locked device must
+    /// not read as "no legacy material".
     private static func strictlyEnumerateDashSyncMnemonicAccounts() throws -> [String] {
         let query: [String: Any] = [
             kSecClass as String:           kSecClassGenericPassword,

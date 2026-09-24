@@ -17,6 +17,7 @@
 
 import Foundation
 import SwiftDashSDK
+import UIKit
 
 /// DashSync-free network identity + wallet presence for the app.
 ///
@@ -238,6 +239,73 @@ public final class WalletEnvironment: NSObject {
         SwiftDashSDKHost.hasPersistedSDKWallet()
     }
 
+    /// App-level wallet presence with the locked-device case kept apart.
+    ///
+    /// `hasWallet` answers "is there definitely a wallet this build can
+    /// select?" and stays `false` whenever that cannot be established — the
+    /// right posture for every gate that merely skips work. A caller that
+    /// would create a wallet, wipe one or offer setup on `false` reads this
+    /// instead and holds on `.unknown`: acting on a `false` that only means
+    /// "the Keychain could not be read" offers Create/Recover over a funded
+    /// wallet, or generates a second one.
+    @objc(DWWalletPresence)
+    public enum WalletPresence: Int {
+        case absent = 0
+        case present = 1
+        /// Protected data is unavailable (the mnemonics are
+        /// `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`, so nothing was
+        /// read), or the Keychain read failed. Says nothing about whether a
+        /// wallet exists.
+        case unknown = 2
+    }
+
+    /// Whether keychain items stored "when unlocked" — the mnemonics, the
+    /// DashSync material — are readable right now. False for a background
+    /// launch on a locked device; iOS keeps it true for about ten seconds
+    /// after a lock, so a synchronous main-thread function cannot see it
+    /// flip between two reads. `UIApplication.isProtectedDataAvailable` is
+    /// main-thread state; a reader on a worker queue hops over for the one
+    /// Bool. Injectable so the presence classification can be tested
+    /// without an application.
+    nonisolated(unsafe) static var isProtectedDataAvailable: () -> Bool = {
+        if Thread.isMainThread {
+            return MainActor.assumeIsolated { UIApplication.shared.isProtectedDataAvailable }
+        }
+        return DispatchQueue.main.sync {
+            MainActor.assumeIsolated { UIApplication.shared.isProtectedDataAvailable }
+        }
+    }
+
+    /// Pure composition of the Keychain read and the selectable-material
+    /// gate, so the routing can be tested without a Keychain. The gate
+    /// answers nil when its own Keychain read failed: a present inventory
+    /// whose material cannot be classified is unknown, not selectable.
+    static func walletPresence(
+        hostPresence: SwiftDashSDKHost.PersistedWalletPresence,
+        hasSelectableMaterial: () -> Bool?
+    ) -> WalletPresence {
+        switch hostPresence {
+        case .unknown: return .unknown
+        case .absent: return .absent
+        case .present:
+            switch hasSelectableMaterial() {
+            case .some(true): return .present
+            case .some(false): return .absent
+            case .none: return .unknown
+            }
+        }
+    }
+
+    @objc public static var walletPresence: WalletPresence {
+        walletPresence(
+            hostPresence: SwiftDashSDKHost.persistedSDKWalletPresence(),
+            hasSelectableMaterial: { isDevnetAvailable ? true : hasSelectableWalletMaterial })
+    }
+
+    @objc public static var isWalletPresenceUnknown: Bool {
+        walletPresence == .unknown
+    }
+
     // MARK: - Active-wallet registry
 
     /// UserDefaults key holding the raw walletId `Data` chosen as active on
@@ -299,7 +367,9 @@ public final class WalletEnvironment: NSObject {
     @objc public static var hasWallet: Bool {
         guard hasSDKWallet else { return false }
         guard !isDevnetAvailable else { return true }
-        return hasSelectableWalletMaterial
+        // nil — the material could not be read — is not a wallet this build
+        // can select; `walletPresence` reports it as unknown.
+        return hasSelectableWalletMaterial == true
     }
 
     /// Whether any persisted wallet belongs to a network this build can
@@ -378,7 +448,12 @@ public final class WalletEnvironment: NSObject {
         }
     }
 
-    private static var hasSelectableWalletMaterial: Bool {
+    /// nil when the Keychain read behind the verdict failed: unknown, not
+    /// empty and not selectable — and never cached, so the next read derives
+    /// the real answer instead of inheriting a verdict a failed read
+    /// produced (a cached "selectable" would open a devnet-only wallet into
+    /// a `walletNotFound` dead end in a shipping build).
+    private static var hasSelectableWalletMaterial: Bool? {
         walletMaterialCacheLock.lock()
         let cached = cachedSelectableWalletMaterial
         let generation = walletMaterialCacheGeneration
@@ -398,9 +473,7 @@ public final class WalletEnvironment: NSObject {
                     .save(to: .standard)
             }
         } catch {
-            // Unknown, not empty: a keychain read failure must not present a
-            // funded install as a fresh one.
-            selectable = true
+            return nil
         }
         walletMaterialCacheLock.lock()
         // Only if nothing invalidated the cache while this derivation ran: a

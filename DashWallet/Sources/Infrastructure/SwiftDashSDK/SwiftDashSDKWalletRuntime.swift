@@ -57,6 +57,35 @@ final class SerialAsyncLifecycleQueue {
     }
 }
 
+/// When the launch-time wallet work — the key migration, the runtime start
+/// and the root controller's decision — runs.
+///
+/// At a launch in the background (a BGAppRefresh launch, always on a locked
+/// device) nothing is decided: the mnemonics are readable only when the
+/// device is unlocked, and reading presence there once turned a funded wallet
+/// into a fresh install. The work runs once, at the first foreground
+/// activation, which implies an unlocked device. A foreground launch runs it
+/// at launch, as before. Separated from `AppDelegate` so the one-shot rule
+/// is testable.
+@objc(DWLaunchDecision)
+final class LaunchDecision: NSObject {
+    /// True until the deferred work has run.
+    @objc private(set) var isDeferred: Bool
+
+    @objc init(applicationState: UIApplication.State) {
+        isDeferred = applicationState == .background
+    }
+
+    /// The first activation while deferred returns true, exactly once; every
+    /// later activation, and every activation of a launch that was not
+    /// deferred, returns false.
+    @objc func takeAtActivation() -> Bool {
+        guard isDeferred else { return false }
+        isDeferred = false
+        return true
+    }
+}
+
 /// Which readiness each refresh trigger is allowed to elide a rebuild on.
 ///
 /// Separated from the runtime so the routing can be exercised without a live
@@ -746,9 +775,24 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // re-triggers a refresh (the creator's and migrator's
             // handleWalletMaterialChanged) — and the migrator is awaited
             // above, so a legacy-upgrade launch has its mnemonic by this line.
-            guard WalletEnvironment.hasSDKWallet else {
+            //
+            // Only a definite "present" starts. "Unknown" (protected data
+            // unavailable, or the read failed) is left stopped like "absent"
+            // — a launch in the background never reaches this line
+            // (`LaunchDecision`), so it is logged apart, as the diagnosis it
+            // is, and the next start request re-reads.
+            switch SwiftDashSDKHost.persistedSDKWalletPresence() {
+            case .present:
+                break
+            case .absent:
                 PlatformAddressSyncCoordinator.shared.stopShieldedRecoveryMonitoring()
                 Self.logger.info("🧭 RUNTIME :: no SDK wallet persisted; leaving runtime stopped for \(network.rawValue, privacy: .public)")
+                DWLogger.log("RUNTIME no SDK wallet persisted; leaving runtime stopped for \(network.rawValue)")
+                return
+            case .unknown(let status):
+                PlatformAddressSyncCoordinator.shared.stopShieldedRecoveryMonitoring()
+                Self.logger.warning("🧭 RUNTIME :: wallet presence unreadable (keychain status \(String(describing: status), privacy: .public)); leaving runtime stopped for \(network.rawValue, privacy: .public)")
+                DWLogger.log("RUNTIME wallet presence unreadable (keychain status \(String(describing: status))); leaving runtime stopped for \(network.rawValue)")
                 return
             }
 
