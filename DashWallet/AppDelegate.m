@@ -235,6 +235,11 @@ NS_ASSUME_NONNULL_BEGIN
     DWLog(@"LAUNCH app active after a background launch; running the deferred key migration, runtime start and root decision");
     [self startWalletServices];
     DWInitialViewController *controller = [[DWInitialViewController alloc] init];
+    // The root presents the lock screen from its own become-active observer,
+    // which this activation has already passed: mark it deferred, so it
+    // performs that step on appearance (the same path a root installed
+    // after onboarding takes).
+    [controller setLaunchingAsDeferredController];
     self.window.rootViewController = controller;
 }
 
