@@ -331,6 +331,39 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             .init(discoveredCount: 1, identityCount: 1, adopted: true, identitiesPersisted: true))
     }
 
+    /// A run cancelled while its discovery is out (its start is being torn
+    /// down) stops there: no name refresh and no adoption against a wallet on
+    /// its way out.
+    func testSameSeedIdentityRecoveryStopsBeforeNameRefreshWhenCancelled() async {
+        let identityId = Data(repeating: 0x18, count: 32)
+
+        let run = Task { @MainActor () -> (threwCancellation: Bool, refreshCalls: Int, adoptCalls: Int) in
+            var refreshCalls = 0
+            var adoptCalls = 0
+            do {
+                _ = try await SameSeedIdentityRecoveryPipeline.run(
+                    localIdentityIds: { [] },
+                    discover: {
+                        withUnsafeCurrentTask { $0?.cancel() }
+                        return [identityId]
+                    },
+                    refreshNames: { _ in refreshCalls += 1 },
+                    adopt: {
+                        adoptCalls += 1
+                        return true
+                    })
+                return (false, refreshCalls, adoptCalls)
+            } catch {
+                return (error is CancellationError, refreshCalls, adoptCalls)
+            }
+        }
+
+        let result = await run.value
+        XCTAssertTrue(result.threwCancellation, "a run cancelled during discovery must throw CancellationError")
+        XCTAssertEqual(result.refreshCalls, 0)
+        XCTAssertEqual(result.adoptCalls, 0)
+    }
+
     func testSameSeedIdentityRecoveryUsesPersistedIdentityWithoutRescanning() async throws {
         let identityId = Data(repeating: 0x17, count: 32)
         var discoveryCalls = 0
@@ -700,6 +733,21 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 RuntimeRefreshPolicy.shouldSkipRebuild(
                     trigger: trigger, isCoreReady: false, isFullyReady: false),
                 "\(trigger.rawValue) must rebuild when Core is not running")
+        }
+    }
+
+    /// Only a network switch leaves the identity recovery's DAPI round trips
+    /// out of the refresh its verdict waits for. A wallet switch relies on the
+    /// recovery's adopt step to repoint the username mirror before the change
+    /// is announced, so it and every other trigger await it.
+    func testOnlyANetworkChangeRunsIdentityRecoveryInBackground() {
+        typealias Trigger = SwiftDashSDKWalletRuntime.RefreshTrigger
+
+        XCTAssertTrue(RuntimeRefreshPolicy.runsIdentityRecoveryInBackground(trigger: .networkDidChange))
+        for trigger in [Trigger.startIfReady, .walletMaterialChanged, .walletDidChange, .walletRowsChanged, .platformSyncRearm] {
+            XCTAssertFalse(
+                RuntimeRefreshPolicy.runsIdentityRecoveryInBackground(trigger: trigger),
+                "\(trigger.rawValue) must await the identity recovery")
         }
     }
 

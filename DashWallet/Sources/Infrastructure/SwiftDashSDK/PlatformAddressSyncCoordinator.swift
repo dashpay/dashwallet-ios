@@ -188,6 +188,10 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     private var syncStateCancellable: AnyCancellable?
     private var shieldedEventCancellable: AnyCancellable?
     private var shieldedFreshnessTask: Task<Void, Never>?
+    /// Same-seed identity recovery left running by a start that did not await
+    /// it (`identityRecoveryInBackground`). `performStop` cancels it and waits
+    /// for it before tearing anything down.
+    private var identityRecoveryTask: Task<Void, Never>?
     private var shieldedMonitoringStartedAt = Date()
     private var lastFullShieldedSyncAt: Date?
     private var shieldedReconciliationTask: Task<Void, Never>?
@@ -493,9 +497,12 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     // Used by `SwiftDashSDKWalletRuntime`'s single async lifecycle pipeline.
     // The nonisolated/objc wrappers above stay for fire-and-forget callers.
 
+    /// `identityRecoveryInBackground`: return once the sync loops are up and
+    /// leave the same-seed identity recovery running (see `performStart`)
+    /// instead of awaiting its DAPI round trips.
     @MainActor
-    public func startAsync(for network: Network) async throws {
-        await performStart(network: network)
+    public func startAsync(for network: Network, identityRecoveryInBackground: Bool = false) async throws {
+        await performStart(network: network, identityRecoveryInBackground: identityRecoveryInBackground)
         if isRunning && runningNetwork == network {
             return
         }
@@ -1013,6 +1020,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// funds for the whole transition.
     public func prepareForNetworkSwitch() {
         lifecycleGeneration &+= 1
+        // Stop the background identity recovery at its next network step; the
+        // switch's teardown (`performStop`) waits for it to finish.
+        identityRecoveryTask?.cancel()
         isShieldedRunning = false
         stopShieldedRecoveryMonitoring()
         detachSyncSubscriptions()
@@ -1061,7 +1071,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         await performStart(network: network)
     }
 
-    private func performStart(network: Network) async {
+    private func performStart(network: Network, identityRecoveryInBackground: Bool = false) async {
         if let manager = walletManager, let walletId = wallet?.walletId,
            runningNetwork == network, SwiftDashSDKHost.shared.manager === manager,
            isSelectedWalletScope(walletId: walletId, network: network) {
@@ -1249,11 +1259,26 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         // start it hands its verdict to the coordinator
         // (`recordStartupDiscovery`), and `recoverIfNeeded` skips the repeat
         // discovery for a seed that pass found no identity for.
+        //
+        // The recovery refreshes DPNS names over DAPI. With
+        // `identityRecoveryInBackground` the start returns without waiting for
+        // it; `performStop` cancels the task and waits for it, so it never
+        // outlives the manager it runs against.
         if let container = SwiftDashSDKHost.shared.modelContainer {
-            await DWSameSeedIdentityRecoveryCoordinator.shared.recoverIfNeeded(
-                wallet: resolvedWallet,
-                modelContainer: container,
-                network: network)
+            if identityRecoveryInBackground {
+                identityRecoveryTask?.cancel()
+                identityRecoveryTask = Task {
+                    await DWSameSeedIdentityRecoveryCoordinator.shared.recoverIfNeeded(
+                        wallet: resolvedWallet,
+                        modelContainer: container,
+                        network: network)
+                }
+            } else {
+                await DWSameSeedIdentityRecoveryCoordinator.shared.recoverIfNeeded(
+                    wallet: resolvedWallet,
+                    modelContainer: container,
+                    network: network)
+            }
         }
 #endif
 
@@ -1262,6 +1287,16 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     private func performStop(deletingPersistedWallet: Bool, preservingRecovery: Bool = false) async {
         lifecycleGeneration &+= 1
+        // A background identity recovery (see `performStart`) holds the wallet
+        // it runs against, and on a wipe it could still write identity rows
+        // after the deletion below. Let it wind down first: cancellation lands
+        // between its network steps, so this waits for at most the step in
+        // flight. Everything after this point runs without suspending.
+        if let recovery = identityRecoveryTask {
+            identityRecoveryTask = nil
+            recovery.cancel()
+            await recovery.value
+        }
         isShieldedRunning = false
         if preservingRecovery {
             shieldedRecovery.suspendForRuntimeRestart()
