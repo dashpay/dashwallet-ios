@@ -499,6 +499,68 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         }
     }
 
+    /// The migrator can settle with a failure while the runtime owns the
+    /// window (SDK material present, none selectable). The hold's verdict
+    /// is deferred, not lost: an unrelated open failure then hands back the
+    /// failure card with Try Again, never a progress card nothing clears.
+    func testVerdictReachedDuringTheTakeoverComesBackAsTheFailureCard() async {
+        let state = WalletLifecycleTransitionState()
+        let probe = HoldProbe()
+        probe.reason = .unknownChain
+        let coordinator = probe.makeCoordinator(state: state)
+        coordinator.begin { probe.outcomes.append($0) }
+
+        do {
+            try await state.prepareWallet {
+                XCTAssertEqual(state.phase, .openingWallet)
+                probe.settled = true  // hasWallet stays false, legacy stays pending
+                await self.settle(state.deferredLegacyFailure != nil)
+                XCTAssertEqual(state.phase, .openingWallet, "the verdict must wait behind the open")
+                XCTAssertEqual(state.deferredLegacyFailure?.codes, ["KeyMigrator:unknownChain"])
+                throw NSError(domain: "SDKInit", code: 1)
+            } failure: { _ in nil }
+            XCTFail("expected the open failure")
+        } catch {}
+        guard case let .failedLegacyMigration(failure) = state.phase else {
+            return XCTFail("expected the failure card, got \(state.phase.logLabel)")
+        }
+        XCTAssertEqual(failure.codes, ["KeyMigrator:unknownChain"])
+        XCTAssertEqual(state.preparationFailure, failure)
+        XCTAssertNil(state.deferredLegacyFailure)
+        XCTAssertEqual(probe.outcomes, [])
+
+        // Try Again works from the handed-back card and discards the verdict.
+        coordinator.retry()
+        XCTAssertEqual(probe.migrationStarts, 1)
+        XCTAssertEqual(state.phase, .migratingLegacyWallet)
+        probe.hasWallet = true
+        probe.legacy = .absent
+        probe.settled = true
+        await settle(probe.outcomes == [true])
+        XCTAssertEqual(probe.outcomes, [true])
+        XCTAssertEqual(state.phase, .idle)
+        XCTAssertNil(state.deferredLegacyFailure)
+    }
+
+    /// A verdict deferred behind an open that then succeeds is dropped with
+    /// the hold: the wallet is present and the runtime owns recovery.
+    func testDeferredVerdictIsDroppedWhenTheHoldReports() async {
+        let state = WalletLifecycleTransitionState()
+        let probe = HoldProbe()
+        let coordinator = probe.makeCoordinator(state: state)
+        coordinator.begin { probe.outcomes.append($0) }
+        let result = try? await state.prepareWallet {
+            probe.settled = true
+            await self.settle(state.deferredLegacyFailure != nil)
+            probe.hasWallet = true
+            await self.settle(probe.outcomes == [true])
+            return 1
+        } failure: { _ in nil }
+        XCTAssertEqual(result, 1)
+        XCTAssertEqual(state.phase, .idle)
+        XCTAssertNil(state.deferredLegacyFailure)
+    }
+
     /// The runtime's real entry point takes the launch window over from
     /// either hold phase, so the hold's release cannot dismiss an open in
     /// progress and an open failure lands on the usual blocking card.

@@ -105,10 +105,18 @@ final class WalletLifecycleTransitionState: ObservableObject {
     /// left to own the window, so restoring its phase would strand a
     /// blocking card nothing can clear.
     private(set) var legacyLaunchHoldActive = false
+    /// A verdict the hold reached while the runtime owned the window
+    /// (`failLegacyMigration` during `.openingWallet`). The hand-back in
+    /// `prepareWallet` presents it instead of the phase saved before the
+    /// open, so the user gets the card with Try Again rather than a
+    /// progress card nothing can clear. Cleared with the hold's lifetime and
+    /// by every new migration attempt.
+    private(set) var deferredLegacyFailure: WalletPreparationFailure?
 
     /// Only the launch hold flips this, around its own lifetime.
     func setLegacyLaunchHold(active: Bool) {
         legacyLaunchHoldActive = active
+        if !active { deferredLegacyFailure = nil }
     }
 
     /// Internal (not private) so the admission-matrix table test can build
@@ -134,6 +142,7 @@ final class WalletLifecycleTransitionState: ObservableObject {
     /// database-open failure offers Retry and Help, preserving data.
     /// Every other combination is rejected and the caller surfaces or logs it.
     func tryBegin(_ next: Phase) -> Bool {
+        if next == .migratingLegacyWallet { deferredLegacyFailure = nil }
         switch (phase, next) {
         case (.idle, .openingWallet),
              (.failedWalletOpen, .openingWallet),
@@ -198,6 +207,13 @@ final class WalletLifecycleTransitionState: ObservableObject {
     /// and records the diagnostic the card's Export Logs / Help read. Only
     /// the hold's owner calls this, and only from its own phase.
     func failLegacyMigration(_ failure: WalletPreparationFailure) {
+        if phase == .openingWallet, legacyLaunchHoldActive {
+            // The runtime took the window over; keep the verdict for the
+            // hand-back should that open fail for an unrelated reason.
+            deferredLegacyFailure = failure
+            DWLogger.log("🚦 LIFECYCLE failLegacyMigration deferred behind the runtime's open")
+            return
+        }
         guard phase == .migratingLegacyWallet else {
             DWLogger.log("🚦 LIFECYCLE failLegacyMigration rejected: phase=\(phase.logLabel)")
             return
@@ -246,11 +262,18 @@ final class WalletLifecycleTransitionState: ObservableObject {
                 if let detail {
                     phase = .failedWalletOpen(detail)
                 } else if let takenOverHold, legacyLaunchHoldActive {
-                    // The hold is still waiting: give it its window back.
-                    // If it reported while the open ran, the wallet is
-                    // present and the runtime's own recovery applies.
-                    phase = takenOverHold
-                    if case let .failedLegacyMigration(held) = takenOverHold { preparationFailure = held }
+                    // The hold is still waiting: give it its window back,
+                    // showing any verdict it reached meanwhile. If it
+                    // reported while the open ran, the wallet is present
+                    // and the runtime's own recovery applies.
+                    if let deferred = deferredLegacyFailure {
+                        deferredLegacyFailure = nil
+                        phase = .failedLegacyMigration(deferred)
+                        preparationFailure = deferred
+                    } else {
+                        phase = takenOverHold
+                        if case let .failedLegacyMigration(held) = takenOverHold { preparationFailure = held }
+                    }
                 } else {
                     // Unrelated startup errors keep their existing recovery flow.
                     finish()
