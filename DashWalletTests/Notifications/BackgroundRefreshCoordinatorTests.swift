@@ -111,12 +111,16 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
     /// deadline sleep never wins); `false` leaves the wait pending so only
     /// the deadline sleep — immediate by default in that mode — or an
     /// expiration can end it. `runtimeStartOverride` replaces the counted
-    /// instant runtime start (the counter still ticks).
-    private func makeCoordinator(syncDoneImmediately: Bool = true,
+    /// instant runtime start (the counter still ticks). `isEnabled` is passed
+    /// explicitly: the build-level pause (`isEnabledInThisBuild`) must not
+    /// decide what these tests exercise.
+    private func makeCoordinator(isEnabled: Bool = true,
+                                 syncDoneImmediately: Bool = true,
                                  deadlineSleepsForever: Bool = false,
                                  runtimeStartOverride: ((BackgroundRefreshStartGate) async -> Bool)? = nil) {
         coordinator = BackgroundRefreshCoordinator(
             scheduler: scheduler,
+            isEnabled: isEnabled,
             hasWallet: { [weak self] in self?.walletExists ?? false },
             isProtectedDataAvailable: { [weak self] in self?.protectedDataAvailable ?? true },
             runtimeStart: { @MainActor [weak self] gate in
@@ -503,6 +507,46 @@ final class BackgroundRefreshCoordinatorTests: XCTestCase {
         let task = try await runTask()
 
         XCTAssertEqual(task.completions, [false])
+        XCTAssertEqual(runtimeStartCalls, 0)
+        XCTAssertEqual(runtimeStopCalls, 0)
+        XCTAssertEqual(sweepCalls, 0)
+        XCTAssertTrue(scheduler.submissions.isEmpty)
+    }
+
+    // MARK: Paused in this build
+
+    /// Paused: the handler is still registered — a request submitted by an
+    /// earlier build can launch this one, and a permitted identifier without
+    /// a handler is a crash — and the pending request is withdrawn.
+    func testPausedStartStillRegistersAndWithdrawsThePendingRequest() {
+        makeCoordinator(isEnabled: false)
+
+        coordinator.start()
+        coordinator.start()
+
+        XCTAssertEqual(scheduler.registeredIdentifiers, [BackgroundRefreshCoordinator.taskIdentifier])
+        XCTAssertEqual(scheduler.cancelledIdentifiers, [BackgroundRefreshCoordinator.taskIdentifier])
+    }
+
+    func testPausedBackgroundingSubmitsNothingEvenWithAWalletOrALockedDevice() {
+        makeCoordinator(isEnabled: false)
+        coordinator.start()
+
+        coordinator.noteDidEnterBackground()
+        protectedDataAvailable = false
+        coordinator.noteDidEnterBackground()
+
+        XCTAssertTrue(scheduler.submissions.isEmpty)
+    }
+
+    /// A task delivered anyway (an earlier build's request that outran the
+    /// cancel) completes at once: no runtime, no sync, no next request.
+    func testPausedDeliveredTaskCompletesWithoutRuntimeOrSubmission() async throws {
+        makeCoordinator(isEnabled: false)
+
+        let task = try await runTask()
+
+        XCTAssertEqual(task.completions, [true])
         XCTAssertEqual(runtimeStartCalls, 0)
         XCTAssertEqual(runtimeStopCalls, 0)
         XCTAssertEqual(sweepCalls, 0)

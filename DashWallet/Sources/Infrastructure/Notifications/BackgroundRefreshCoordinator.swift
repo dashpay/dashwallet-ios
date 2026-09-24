@@ -100,6 +100,8 @@ protocol BackgroundTaskScheduling: AnyObject {
     /// Submit an app-refresh request for `identifier`, to run no earlier
     /// than `earliestBeginDate`.
     func submit(identifier: String, earliestBeginDate: Date?) throws
+    /// Withdraw a pending request for `identifier`, if any.
+    func cancel(identifier: String)
 }
 
 /// Production scheduler over `BGTaskScheduler.shared`.
@@ -114,6 +116,10 @@ final class SystemBackgroundTaskScheduler: BackgroundTaskScheduling {
         let request = BGAppRefreshTaskRequest(identifier: identifier)
         request.earliestBeginDate = earliestBeginDate
         try BGTaskScheduler.shared.submit(request)
+    }
+
+    func cancel(identifier: String) {
+        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: identifier)
     }
 }
 
@@ -173,6 +179,17 @@ enum SyncCatchUpPolicy {
 /// chain.
 @MainActor
 final class BackgroundRefreshCoordinator {
+    /// Release safety valve. Background refresh is paused in this build
+    /// until the locked-launch fix lands: a refresh launches the app while
+    /// the device is locked, the mnemonic keychain
+    /// (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`) then reads as "no
+    /// wallet", and the launch path offers Create/Recover over a funded
+    /// wallet with the SDK runtime never started. Flip to `true` to
+    /// re-enable once that fix has shipped. While paused, registration
+    /// stays (see `start`), pending requests are withdrawn, nothing is
+    /// submitted, and a delivered task completes without work.
+    nonisolated static let isEnabledInThisBuild = false
+
     /// Production boundary stamp: only for a wallet whose foreground sync
     /// actually finished. Mid-sync the app has not seen everything up to now,
     /// so moving the floor forward would skip whatever the sync had not
@@ -210,6 +227,8 @@ final class BackgroundRefreshCoordinator {
     nonisolated static let syncDeadline: TimeInterval = 20
 
     private let scheduler: BackgroundTaskScheduling
+    /// `isEnabledInThisBuild`, injected so both modes are testable.
+    private let isEnabled: Bool
     /// Records the instant the foreground app stopped watching, as the floor
     /// for the next catch-up sweep. Injected so tests can observe it without
     /// touching user defaults.
@@ -251,6 +270,7 @@ final class BackgroundRefreshCoordinator {
     private var observers: [NSObjectProtocol] = []
 
     init(scheduler: BackgroundTaskScheduling = SystemBackgroundTaskScheduler(),
+         isEnabled: Bool = BackgroundRefreshCoordinator.isEnabledInThisBuild,
          hasWallet: @escaping () -> Bool = { WalletEnvironment.hasWallet },
          isProtectedDataAvailable: @escaping () -> Bool = BackgroundRefreshCoordinator.defaultIsProtectedDataAvailable,
          runtimeStart: @escaping (BackgroundRefreshStartGate) async -> Bool = BackgroundRefreshCoordinator.defaultRuntimeStart,
@@ -262,6 +282,7 @@ final class BackgroundRefreshCoordinator {
          sleep: @escaping (TimeInterval) async -> Void = BackgroundRefreshCoordinator.defaultSleep,
          now: @escaping () -> Date = Date.init) {
         self.scheduler = scheduler
+        self.isEnabled = isEnabled
         self.markForegroundCaughtUp = markForegroundCaughtUp
         self.hasWallet = hasWallet
         self.isProtectedDataAvailable = isProtectedDataAvailable
@@ -299,6 +320,15 @@ final class BackgroundRefreshCoordinator {
         }
         if !registered {
             DWLogger.log("BackgroundRefreshCoordinator: BGTask registration refused for \(Self.taskIdentifier)")
+        }
+        // Registration above is unconditional even while paused: a request
+        // an earlier build submitted can still launch this one, and
+        // `BGTaskScheduler` requires a handler for every permitted
+        // identifier at that moment. The handler then only completes the
+        // task; here the pending request is withdrawn so it does not.
+        if !isEnabled {
+            scheduler.cancel(identifier: Self.taskIdentifier)
+            DWLogger.log("BackgroundRefreshCoordinator: background refresh is paused in this build; pending request withdrawn, none will be submitted")
         }
 
         observers.append(NotificationCenter.default.addObserver(
@@ -356,6 +386,7 @@ final class BackgroundRefreshCoordinator {
     /// then ended the refresh chain until the user next opened the app, and
     /// app refreshes run almost exclusively while the device is locked.
     func scheduleNextRefresh() {
+        guard isEnabled else { return }
         guard hasWallet() || !isProtectedDataAvailable() else { return }
         do {
             try scheduler.submit(identifier: Self.taskIdentifier,
@@ -380,6 +411,14 @@ final class BackgroundRefreshCoordinator {
     /// afterwards (teardown included) with its completion call a no-op.
     nonisolated func handleRefreshTask(_ task: BackgroundRefreshTaskHandle) {
         let completion = BackgroundRefreshTaskCompletion(task)
+        // Paused: no runtime, no sync, no next request. Completed as a
+        // success — nothing failed, and a failure would only count against
+        // the app's refresh budget for a task that is not meant to run.
+        guard isEnabled else {
+            DWLogger.log("BackgroundRefreshCoordinator: background refresh is paused in this build; completing the task without work")
+            completion.complete(success: true)
+            return
+        }
         let run = Task { @MainActor in
             await self.run(completion: completion)
         }
