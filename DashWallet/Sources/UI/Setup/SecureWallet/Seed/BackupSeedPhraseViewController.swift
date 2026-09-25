@@ -41,9 +41,11 @@ class BackupSeedPhraseViewController: DWPreviewSeedPhraseViewController {
     }
 
     @objc override func actionButtonAction(_ sender: Any) {
-        let seedPhrase = self.contentView.model
+        // The preview leaves the screen when it has no phrase; never verify
+        // an empty one.
+        guard let seedPhrase = self.contentView.model else { return }
 
-        let controller = DWVerifySeedPhraseViewController(seedPhrase: seedPhrase!)
+        let controller = DWVerifySeedPhraseViewController(seedPhrase: seedPhrase)
         controller.delegate = self.delegate
         self.navigationController?.pushViewController(controller, animated: true)
     }

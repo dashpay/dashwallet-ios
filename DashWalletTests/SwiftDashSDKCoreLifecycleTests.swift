@@ -213,6 +213,27 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertNil(foreground.takePendingURL())
     }
 
+    /// A recover import in flight refuses a second submission, and only the
+    /// completion of the current attempt counts: a stale one is ignored, so
+    /// it can neither clear a newer command nor advance setup.
+    func testRecoverImportAttemptsAdmitOneAtATimeAndIgnoreStaleCompletions() {
+        let attempts = RecoverImportAttempts()
+        XCTAssertFalse(attempts.isInFlight)
+
+        let first = attempts.begin()
+        XCTAssertTrue(attempts.isInFlight)
+        XCTAssertTrue(attempts.finish(first))
+        XCTAssertFalse(attempts.isInFlight)
+        XCTAssertFalse(attempts.finish(first), "an attempt finishes once")
+
+        let second = attempts.begin()
+        let third = attempts.begin()
+        XCTAssertFalse(attempts.finish(second), "an older attempt's completion is stale")
+        XCTAssertTrue(attempts.isInFlight, "the current attempt is still running")
+        XCTAssertTrue(attempts.finish(third))
+        XCTAssertFalse(attempts.isInFlight)
+    }
+
     /// While the launch decision is pending, the runtime refuses automatic
     /// kicks (the sync monitor's connectivity kick, a network change); once
     /// the activation's wallet start releases the hold they pass again. A

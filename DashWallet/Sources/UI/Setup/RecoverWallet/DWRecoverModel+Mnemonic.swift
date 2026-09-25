@@ -38,6 +38,32 @@ private let dwRecoverLogger = Logger(
     subsystem: "org.dashfoundation.dash",
     category: "recover-wipe")
 
+/// Which recover import is the current one. The import runs off the main
+/// queue and reports back later; until it does, a second submission must not
+/// start another import, and a completion that belongs to an earlier attempt
+/// must not clear the command or advance setup. Separated from the setup
+/// controller so the rule is testable.
+@objc(DWRecoverImportAttempts)
+final class RecoverImportAttempts: NSObject {
+    @objc private(set) var isInFlight = false
+    private var current: UInt = 0
+
+    /// Start an attempt; the token identifies it to `finish`.
+    @objc func begin() -> UInt {
+        current += 1
+        isInFlight = true
+        return current
+    }
+
+    /// True when `token` is the attempt in flight, which is then over;
+    /// false for a stale completion, which the caller ignores.
+    @objc func finish(_ token: UInt) -> Bool {
+        guard isInFlight, token == current else { return false }
+        isInFlight = false
+        return true
+    }
+}
+
 extension DWRecoverModel {
     /// Whether a wallet this build can select is stored — one keychain read,
     /// taken once per submitted phrase and used for every route of it:

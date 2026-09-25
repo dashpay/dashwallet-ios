@@ -119,6 +119,9 @@ NS_ASSUME_NONNULL_BEGIN
             DWLog(@"SEED :: stored mnemonic unreadable; nothing to show");
             return nil;
         }
+        // Kept: the preview screen asks this same model again, and a second
+        // keychain read could fail where this one succeeded.
+        self.existingSeedPhrase = stored;
         seedPhrase = stored;
     }
 

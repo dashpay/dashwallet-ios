@@ -24,6 +24,7 @@
 #import "DWRecoverViewController.h"
 #import "DWSetPinModel.h"
 #import "DWSetPinViewController.h"
+#import "UIView+DWHUD.h"
 #import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -44,6 +45,9 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
 
 @property (nullable, nonatomic, strong) DWRecoverWalletCommand *recoverWalletCommand;
+/// The recover import in flight, if any: blocks a second submission and
+/// lets a completion tell whether it belongs to the current attempt.
+@property (nonatomic, strong) DWRecoverImportAttempts *recoverAttempts;
 
 @property (nonatomic, assign) BOOL launchingWasDeferred;
 
@@ -142,6 +146,13 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     [self executeRecoverCommandIfAllowedThenContinueSetup];
 }
 
+- (DWRecoverImportAttempts *)recoverAttempts {
+    if (_recoverAttempts == nil) {
+        _recoverAttempts = [[DWRecoverImportAttempts alloc] init];
+    }
+    return _recoverAttempts;
+}
+
 /// The recover screen accepted the phrase against a definite "no wallet"
 /// read; the PIN step took time, and the keychain is read again here, once,
 /// before the import runs. Only a read that still says "absent" imports:
@@ -163,11 +174,22 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
             // The import persists the mnemonic and creates the wallet off the
             // main queue; setup completes only once it has, so the main
             // screen never opens over a wallet that does not exist yet. A
-            // failed import keeps the command behind Try Again.
+            // failed import keeps the command behind Try Again. While it
+            // runs, a progress HUD over the navigation stack blocks a second
+            // submission and any navigation, and the attempt token makes a
+            // completion for an earlier attempt inert.
+            const NSUInteger attempt = [self.recoverAttempts begin];
+            UIView *hudHost = self.navigationController.view ?: self.view;
+            [hudHost dw_showProgressHUDWithMessage:NSLocalizedString(@"Recovering...", nil)];
             __weak typeof(self) weakSelf = self;
             [command executeWithCompletion:^(BOOL succeeded) {
                 __strong typeof(weakSelf) strongSelf = weakSelf;
                 if (strongSelf == nil) {
+                    return;
+                }
+                [hudHost dw_hideProgressHUD];
+                if (![strongSelf.recoverAttempts finish:attempt]) {
+                    DWLog(@"SETUP :: recover import completed for an earlier attempt; ignored");
                     return;
                 }
                 if (!succeeded) {
@@ -233,6 +255,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
 - (void)recoverViewControllerDidRecoverWallet:(DWRecoverViewController *)controller
                                recoverCommand:(nonnull DWRecoverWalletCommand *)recoverCommand {
+    if (self.recoverAttempts.isInFlight) {
+        // A submission while the previous import is still persisting the
+        // wallet would start a second import; the HUD normally prevents it.
+        DWLog(@"SETUP :: recover submitted while an import is in flight; ignored");
+        return;
+    }
     // Defer recovering until a pin is set
     self.recoverWalletCommand = recoverCommand;
 
