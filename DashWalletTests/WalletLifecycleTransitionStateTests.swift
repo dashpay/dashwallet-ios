@@ -517,9 +517,13 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         let setupProbe = HoldProbe()
         setupProbe.legacy = .absent
         setupProbe.settled = true
-        setupProbe.makeCoordinator(state: setupState).begin { setupProbe.outcomes.append($0) }
+        let setupCoordinator = setupProbe.makeCoordinator(state: setupState)
+        setupCoordinator.begin { setupProbe.outcomes.append($0) }
         await settle(setupProbe.outcomes == [false])
+        XCTAssertEqual(setupProbe.outcomes, [false], "the hold reported setup")
         XCTAssertEqual(setupProbe.walletDeliveries, 0)
+        // The coordinators' tasks hold them weakly: keep both alive until here.
+        withExtendedLifetime((coordinator, setupCoordinator)) {}
     }
 
     /// A takeover whose open fails for an unrelated reason (the failure

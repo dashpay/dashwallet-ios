@@ -380,23 +380,26 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
 }
 
-/// Hand a link kept while no wallet was presented (or while it was locked)
-/// to the main controller, once.
+/// Hand the links kept while no wallet was presented (or while it was
+/// locked) to the main controller. Each slot is emptied before its link is
+/// handled, so a link the handler keeps again (the screen locked meanwhile)
+/// returns to its slot for the next pass instead of being cleared with it;
+/// both slots are handled, an invitation first.
 - (void)processDeferredLinks {
-    if (self.deferredDeeplinkToProcess != nil || self.deferredURLToProcess != nil) {
-        DWLog(@"LAUNCH handling a link kept until the wallet was presented (%@)",
-              self.deferredDeeplinkToProcess != nil ? @"invitation" : @"url");
-    }
-    if (self.deferredDeeplinkToProcess) {
-#if DASHPAY
-        [self handleDeeplink:self.deferredDeeplinkToProcess];
-#endif
-    }
-    else if (self.deferredURLToProcess) {
-        [self handleURL:self.deferredURLToProcess];
-    }
+    NSURL *invitation = self.deferredDeeplinkToProcess;
+    NSURL *url = self.deferredURLToProcess;
     self.deferredDeeplinkToProcess = nil;
     self.deferredURLToProcess = nil;
+    if (invitation != nil) {
+        DWLog(@"LAUNCH handling a link kept until the wallet was presented (invitation)");
+#if DASHPAY
+        [self handleDeeplink:invitation];
+#endif
+    }
+    if (url != nil) {
+        DWLog(@"LAUNCH handling a link kept until the wallet was presented (url)");
+        [self handleURL:url];
+    }
 }
 
 #pragma mark - DWSetupViewControllerDelegate
