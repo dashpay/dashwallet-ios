@@ -18,6 +18,7 @@
 		E012FFCC6C3142B4B5869B72 /* ShieldedRecoveryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2ADF29244E649D8BE05FD93 /* ShieldedRecoveryController.swift */; };
 		4C9AC6D2EC13450DAC68FC90 /* ShieldedBalanceControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 930BFA9B069540D4A5CAD79A /* ShieldedBalanceControllerTests.swift */; };
 		525045ECC4BF30BBCB09E13C /* PlatformBalanceReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17921340EDF4455B62461AF8 /* PlatformBalanceReaderTests.swift */; };
+		D14F9F63DD9D8AE57D14B3FF /* MainDpnsNamePickTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B9C2C0E62850E8D5FBB2167 /* MainDpnsNamePickTests.swift */; };
 		C693C63758228F630D39F00E /* HomeBalancePresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F9884169298187E321C8804 /* HomeBalancePresentationTests.swift */; };
 		BCC98012E278206FC08FA8E3 /* PlatformBalanceControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71029F5975636F1DCFFFF85 /* PlatformBalanceControllerTests.swift */; };
 		FA87A306BF0E476385DA1C66 /* ShieldedBalanceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F5A428A4E24408592C674A0 /* ShieldedBalanceController.swift */; };
@@ -2174,6 +2175,7 @@
 		F2ADF29244E649D8BE05FD93 /* ShieldedRecoveryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedRecoveryController.swift; sourceTree = "<group>"; };
 		930BFA9B069540D4A5CAD79A /* ShieldedBalanceControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedBalanceControllerTests.swift; sourceTree = "<group>"; };
 		17921340EDF4455B62461AF8 /* PlatformBalanceReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBalanceReaderTests.swift; sourceTree = "<group>"; };
+		0B9C2C0E62850E8D5FBB2167 /* MainDpnsNamePickTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainDpnsNamePickTests.swift; sourceTree = "<group>"; };
 		6F9884169298187E321C8804 /* HomeBalancePresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeBalancePresentationTests.swift; sourceTree = "<group>"; };
 		D71029F5975636F1DCFFFF85 /* PlatformBalanceControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBalanceControllerTests.swift; sourceTree = "<group>"; };
 		9F5A428A4E24408592C674A0 /* ShieldedBalanceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedBalanceController.swift; sourceTree = "<group>"; };
@@ -7520,6 +7522,7 @@
 				B7C072AA26C7000000000002 /* DWContestedNameStatusServiceTests.swift */,
 				930BFA9B069540D4A5CAD79A /* ShieldedBalanceControllerTests.swift */,
 				17921340EDF4455B62461AF8 /* PlatformBalanceReaderTests.swift */,
+				0B9C2C0E62850E8D5FBB2167 /* MainDpnsNamePickTests.swift */,
 				6F9884169298187E321C8804 /* HomeBalancePresentationTests.swift */,
 				D71029F5975636F1DCFFFF85 /* PlatformBalanceControllerTests.swift */,
 				5798C63088F44013AEC5D85B /* ShieldedRecoveryControllerTests.swift */,
@@ -10831,6 +10834,7 @@
 				B7C072AA26C7000000000001 /* DWContestedNameStatusServiceTests.swift in Sources */,
 				4C9AC6D2EC13450DAC68FC90 /* ShieldedBalanceControllerTests.swift in Sources */,
 				525045ECC4BF30BBCB09E13C /* PlatformBalanceReaderTests.swift in Sources */,
+				D14F9F63DD9D8AE57D14B3FF /* MainDpnsNamePickTests.swift in Sources */,
 				C693C63758228F630D39F00E /* HomeBalancePresentationTests.swift in Sources */,
 				BCC98012E278206FC08FA8E3 /* PlatformBalanceControllerTests.swift in Sources */,
 				F0CAB696BC154E7EB3EC221D /* ShieldedRecoveryControllerTests.swift in Sources */,

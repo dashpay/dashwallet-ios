@@ -1090,6 +1090,9 @@ final class SwiftDashSDKHost {
             }
             let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
             container = cached.value
+            // Before the manager starts and any DPNS sync can rewrite the
+            // SDK's main-name column.
+            DWCurrentUserIdentityInfo.captureLegacyMainDpnsNames(in: container)
             Self.logger.info("🪺 HOST :: stage 2/4 ModelContainer \(cached.source.rawValue, privacy: .public) for \(network.rawValue, privacy: .public)")
             DWLogger.log("HOST stage 2/4 ModelContainer \(cached.source.rawValue) for \(network.rawValue) in \(ms)ms")
         } catch {
