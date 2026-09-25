@@ -217,7 +217,18 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
     [DWGlobalOptions sharedInstance].walletNeedsBackup = NO;
 
-    [self continueOrCompleteWalletSetup];
+    if (DWSetPinModel.shouldSetPin) {
+        // The PIN step's callback executes the command once the PIN is set.
+        [self continueOrCompleteWalletSetup];
+    }
+    else {
+        // A PIN already exists — kept through a reinstall, or set by an
+        // earlier recover attempt that stopped at the unreadable-wallet
+        // alert — so the PIN step, and with it the only callback that
+        // executed the command, is skipped. Execute here instead, with the
+        // same presence re-read, then continue.
+        [self executeRecoverCommandIfAllowedThenContinueSetup];
+    }
 }
 
 - (void)recoverViewControllerDidWipe:(DWRecoverViewController *)controller {
