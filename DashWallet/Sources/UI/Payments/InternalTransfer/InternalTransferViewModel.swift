@@ -407,22 +407,6 @@ enum PlatformShieldAmountPolicy {
         return requestedCredits <= capacity.maxShieldableCredits
     }
 
-    /// Informational remainder against the balance card's aggregate. The
-    /// preflight account remains the validation authority; `max` only avoids a
-    /// transient smaller published snapshot understating what is held back.
-    static func heldBackCredits(
-        displayedPlatformCredits: UInt64,
-        accountBalanceCredits: UInt64,
-        submittedDuffs: UInt64
-    ) -> UInt64 {
-        let submitted = submittedDuffs.multipliedReportingOverflow(by: 1000)
-        guard !submitted.overflow else { return 0 }
-        let displayedAggregate = max(displayedPlatformCredits, accountBalanceCredits)
-        return displayedAggregate > submitted.partialValue
-            ? displayedAggregate - submitted.partialValue
-            : 0
-    }
-
     /// A refreshed capacity may rewrite only an amount explicitly derived from
     /// Max. Manually entered text must remain untouched for the user to review.
     static func amountAfterCapacityChange(
@@ -448,9 +432,9 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
     @Published private(set) var isFullShieldedSweep = false
-    /// Why Max produced the amount it did — a held-back fee, a pending sweep
-    /// remainder, or why it could not produce one at all. Surfaced through
-    /// `amountValidationMessage` so tapping Max is never a silent no-op.
+    /// Why Max could not produce an amount (or is still resolving one).
+    /// Surfaced through `amountValidationMessage` so tapping Max is never a
+    /// silent no-op.
     @Published private(set) var maxNotice: String?
     /// Exact duff amount selected by Max. Fiat text is presentation-only and
     /// may round to two decimals, so reparsing it must never move the transfer
@@ -2079,13 +2063,10 @@ final class InternalTransferViewModel: ObservableObject {
                 route == .shieldedToCore ? .withdrawal : .unshield
             switch ShieldedTransferCoordinator.sweepAvailability(feeKind: feeKind) {
             case .ready(let plan):
+                // A remainder the plan leaves behind gets no notice either:
+                // the slot under the amount carries errors only.
                 isFullShieldedSweep = true
                 shieldedSweepAmountCredits = plan.amountCredits
-                if plan.remainingCredits > 0 {
-                    maxNotice = Self.shieldedRemainderMessage(
-                        plan.remainingCredits,
-                        followUpCredits: plan.followUpCredits)
-                }
                 sourceDuffs = plan.amountCredits / 1000
             case .waitingForConfirmation(let credits):
                 maxNotice = Self.shieldedConfirmingMessage(credits)
@@ -2122,6 +2103,10 @@ final class InternalTransferViewModel: ObservableObject {
     /// Identity Max: the credit balance less the fee reserve the transition
     /// is charged on top. Wait for the shared balance refresh before deriving
     /// an amount from the persisted snapshot.
+    ///
+    /// A Max below the balance card is not worth a notice — the slot under
+    /// the amount carries errors only, and the fee belongs on the confirm
+    /// sheet, not in a line that reads as one.
     private func fillIdentityWithdrawalMax() {
         guard !isIdentityBalanceRefreshing else {
             maxNotice = Self.identityBalanceRefreshingMessage
@@ -2130,18 +2115,17 @@ final class InternalTransferViewModel: ObservableObject {
         clearMaxSelection()
         let spendable = IdentityWithdrawViewModel.spendableCredits(
             balanceCredits: identityBalanceCredits)
-        if spendable == 0 {
+        // Credits below one duff cannot be sent either, so a remainder under
+        // 1000 credits fills "0" just like an empty one and needs the same
+        // explanation.
+        let spendableDuffs = spendable / 1000
+        if spendableDuffs == 0 {
             maxNotice = Self.feeReserveExceedsIdentityBalanceMessage
-        } else {
-            // The card shows the whole credit balance, so a Max that lands
-            // below it reads as a bug unless the reserve is accounted for.
-            maxNotice = Self.identityHeldBackMessage(
-                identityBalanceCredits - spendable)
         }
 
         isApplyingMax = true
         defer { isApplyingMax = false }
-        applyMaxAmountText(spendable / 1000)
+        applyMaxAmountText(spendableDuffs)
     }
 
     private static let identityBalanceRefreshingMessage = NSLocalizedString(
@@ -2150,14 +2134,6 @@ final class InternalTransferViewModel: ObservableObject {
     private static let feeReserveExceedsIdentityBalanceMessage = NSLocalizedString(
         "Your Identity balance is too low to cover the transfer fee.",
         comment: "Identity withdrawal — balance below the fee reserve")
-
-    private static func identityHeldBackMessage(_ heldBackCredits: UInt64) -> String {
-        String.localizedStringWithFormat(
-            NSLocalizedString(
-                "%@ DASH is held back to cover the transfer fee.",
-                comment: "Identity withdrawal — Max reserve note"),
-            (heldBackCredits / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol)
-    }
 
     /// Platform Max is asynchronous because only the Rust wallet knows which
     /// address suffix its shield builder can select. If that answer is not
@@ -2199,15 +2175,9 @@ final class InternalTransferViewModel: ObservableObject {
             maxNotice = capacity.accountBalanceCredits > 0
                 ? Self.platformShieldHeadroomUnavailableMessage
                 : Self.emptyBalanceMessage(.platform)
-        } else {
-            let heldBackCredits = PlatformShieldAmountPolicy.heldBackCredits(
-                displayedPlatformCredits: platformCredits,
-                accountBalanceCredits: capacity.accountBalanceCredits,
-                submittedDuffs: sourceDuffs)
-            if heldBackCredits > 0 {
-                maxNotice = Self.platformShieldHeldBackMessage(heldBackCredits)
-            }
         }
+        // No notice for a Max below the balance card — same reason as the
+        // Core branches of `fillMaxFromWallet`.
     }
 
     /// Render Max in the selected input unit while retaining `duffs` as the
@@ -2483,15 +2453,6 @@ final class InternalTransferViewModel: ObservableObject {
         "Your Platform balance cannot currently cover the Shield transfer selection headroom.",
         comment: "Platform balance cannot fund shield selection headroom")
 
-    private static func platformShieldHeldBackMessage(_ credits: UInt64) -> String {
-        let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
-        return String.localizedStringWithFormat(
-            NSLocalizedString(
-                "%@ DASH remains in Platform because some address funds cannot be selected and transfer headroom is reserved.",
-                comment: "Platform Shield Max leaves selection headroom and unselectable funds"),
-            formatted)
-    }
-
     private static func platformShieldCapacityChangedMessage(
         maxShieldableCredits: UInt64
     ) -> String {
@@ -2545,31 +2506,6 @@ final class InternalTransferViewModel: ObservableObject {
             formatted)
     }
 
-    /// Why Max offered less than the balance card shows — `nil` when the answer
-    /// is "tap Max again in a minute".
-    ///
-    /// A remainder that a later sweep can move is not worth a line in the slot
-    /// that carries errors: the user repeats Max once this transaction settles
-    /// and the rest follows. A remainder that no sweep can ever move is the
-    /// opposite — silence there would leave a permanent gap between the balance
-    /// and what the wallet will ever offer to send.
-    private static func shieldedRemainderMessage(
-        _ credits: UInt64,
-        followUpCredits: UInt64
-    ) -> String? {
-        let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
-        guard followUpCredits > 0 else {
-            // Spending these notes costs more than they hold, so no later
-            // sweep can move them — do not send the user round that loop.
-            return String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "%@ DASH stays in your Shielded balance: those notes are worth less than the fee to send them.",
-                    comment: "Shielded Max dust remainder"),
-                formatted)
-        }
-        return nil
-    }
-
     // MARK: - Conversion on unit toggle
 
     private func convertAmountText(from old: InternalTransferUnit, to new: InternalTransferUnit) {
@@ -2606,6 +2542,17 @@ final class InternalTransferViewModel: ObservableObject {
         formatter.decimalSeparator = "."
         let rounded = NSDecimalNumber(decimal: value)
         return formatter.string(from: rounded) ?? "\(value)"
+    }
+
+    /// Whether keypad text stays within what `unit` can express: 8 decimals
+    /// for DASH (one duff), 2 for fiat. A ninth DASH decimal is below a duff,
+    /// so the amount would read as zero duffs — Continue disabled with no
+    /// message to say why — so the keypad refuses that digit instead.
+    static func typedTextFitsPrecision(_ text: String, unit: InternalTransferUnit) -> Bool {
+        let maxFractionDigits = unit == .dash ? 8 : 2
+        let normalized = text.replacingOccurrences(of: ",", with: ".")
+        guard let separator = normalized.firstIndex(of: ".") else { return true }
+        return normalized[normalized.index(after: separator)...].count <= maxFractionDigits
     }
 }
 

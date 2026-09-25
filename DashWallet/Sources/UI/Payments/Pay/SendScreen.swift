@@ -691,7 +691,8 @@ struct ExternalSendAmountScreen: View {
             set: { newValue in
                 if newValue.isEmpty {
                     viewModel.amountText = "0"
-                } else {
+                } else if InternalTransferViewModel.typedTextFitsPrecision(
+                    newValue, unit: viewModel.unit) {
                     viewModel.amountText = newValue
                 }
             })
