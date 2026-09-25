@@ -156,37 +156,58 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
         const DWWalletPresence presence = DWWalletEnvironment.walletPresence;
         if (presence == DWWalletPresenceUnknown) {
             DWLog(@"SETUP :: wallet presence unreadable at recover execution; not importing");
-            UIAlertController *alert = [UIAlertController
-                alertControllerWithTitle:nil
-                                 message:NSLocalizedString(@"Your wallet couldn't be read right now. Please try again.", nil)
-                          preferredStyle:UIAlertControllerStyleAlert];
-            __weak typeof(self) weakSelf = self;
-            [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Try Again", nil)
-                                                      style:UIAlertActionStyleDefault
-                                                    handler:^(UIAlertAction *action) {
-                                                        [weakSelf executeRecoverCommandIfAllowedThenContinueSetup];
-                                                    }]];
-            [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil)
-                                                      style:UIAlertActionStyleCancel
-                                                    handler:^(UIAlertAction *action) {
-                                                        __strong typeof(weakSelf) strongSelf = weakSelf;
-                                                        strongSelf.recoverWalletCommand = nil;
-                                                        [strongSelf.navigationController popToViewController:strongSelf animated:YES];
-                                                    }]];
-            // The PIN screen is on top; this controller's view is not.
-            [self.navigationController presentViewController:alert animated:YES completion:nil];
+            [self presentRecoverRetryAlertWithMessage:NSLocalizedString(@"Your wallet couldn't be read right now. Please try again.", nil)];
             return;
         }
         if (presence == DWWalletPresenceAbsent) {
-            [command execute];
+            // The import persists the mnemonic and creates the wallet off the
+            // main queue; setup completes only once it has, so the main
+            // screen never opens over a wallet that does not exist yet. A
+            // failed import keeps the command behind Try Again.
+            __weak typeof(self) weakSelf = self;
+            [command executeWithCompletion:^(BOOL succeeded) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (strongSelf == nil) {
+                    return;
+                }
+                if (!succeeded) {
+                    DWLog(@"SETUP :: recover import did not complete; keeping the command for a retry");
+                    [strongSelf presentRecoverRetryAlertWithMessage:NSLocalizedString(@"Your wallet couldn't be recovered right now. Please try again.", nil)];
+                    return;
+                }
+                strongSelf.recoverWalletCommand = nil;
+                [strongSelf continueOrCompleteWalletSetup];
+            }];
+            return;
         }
-        else {
-            DWLog(@"SETUP :: a wallet is present at recover execution; not importing a second one");
-        }
+        DWLog(@"SETUP :: a wallet is present at recover execution; not importing a second one");
         self.recoverWalletCommand = nil;
     }
 
     [self continueOrCompleteWalletSetup];
+}
+
+/// Try Again re-runs `executeRecoverCommandIfAllowedThenContinueSetup` with
+/// the command still in hand; Cancel drops it and returns to this screen.
+/// Presented from the navigation controller: the PIN screen may be on top.
+- (void)presentRecoverRetryAlertWithMessage:(NSString *)message {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil
+                                                                   message:message
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    __weak typeof(self) weakSelf = self;
+    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Try Again", nil)
+                                              style:UIAlertActionStyleDefault
+                                            handler:^(UIAlertAction *action) {
+                                                [weakSelf executeRecoverCommandIfAllowedThenContinueSetup];
+                                            }]];
+    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                                              style:UIAlertActionStyleCancel
+                                            handler:^(UIAlertAction *action) {
+                                                __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                strongSelf.recoverWalletCommand = nil;
+                                                [strongSelf.navigationController popToViewController:strongSelf animated:YES];
+                                            }]];
+    [self.navigationController presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark - DWBiometricAuthViewControllerDelegate

@@ -26,6 +26,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)execute;
 
+/// `execute` with a verdict: `completion` runs on the main queue with YES
+/// once the wallet exists and its mnemonic is persisted, NO when the import
+/// was refused (no phrase, no PIN) or failed. Setup must not complete on NO.
+- (void)executeWithCompletion:(void (^)(BOOL succeeded))completion;
+
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 
