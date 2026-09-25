@@ -212,7 +212,9 @@ import XCTest
             lateSuccessInterval: 30))
         var outcomes: [Bool] = []
         coordinator.begin { outcomes.append($0) }
-        while materialChanged == nil { try? await Task.sleep(nanoseconds: 2_000_000) }
+        let subscribed = Date().addingTimeInterval(2)
+        while materialChanged == nil, Date() < subscribed { try? await Task.sleep(nanoseconds: 2_000_000) }
+        guard materialChanged != nil else { return XCTFail("the hold never subscribed to wallet material changes") }
         await runtime.drain()
         XCTAssertEqual(runtime.refreshCalls, 0, "the card is up; nothing starts")
 
@@ -250,4 +252,4 @@ let package = Package(name: "WalletPreparationHarness", platforms: [.macOS("15.0
     subprocess.run(["xcrun", "swift", "test", "--package-path", str(package),
                     "--scratch-path", str(package / ".build"), "--cache-path", str(package / "cache"),
                     "--config-path", str(package / "configuration"), "--security-path", str(package / "security"),
-                    "--disable-sandbox"], check=True, env=environment)
+                    "--disable-sandbox"], check=True, env=environment, timeout=900)
