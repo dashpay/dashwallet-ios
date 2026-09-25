@@ -23,11 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWURLParser
 
-+ (BOOL)allowsURLHandling {
-    // Don't allow URL handling without a wallet
-    return DWWalletEnvironment.hasWallet;
-}
-
 + (BOOL)canHandleURL:(NSURL *)url {
     if (!url) {
         return NO;
