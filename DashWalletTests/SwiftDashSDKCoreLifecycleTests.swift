@@ -188,6 +188,31 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertFalse(LaunchDecision(applicationState: .active).isDeferred)
     }
 
+    /// A link delivered while the launch is deferred is kept and handed
+    /// back exactly once after the activation; a later link replaces an
+    /// earlier one; a foreground launch, and a deferred launch once taken,
+    /// keep nothing (the handler proceeds as usual).
+    func testLinksDeliveredWhileDeferredAreKeptAndReplayedOnce() throws {
+        let decision = LaunchDecision(applicationState: .background)
+        let first = try XCTUnwrap(URL(string: "dash:XfirstAddress"))
+        let second = try XCTUnwrap(URL(string: "dash:XsecondAddress"))
+        XCTAssertTrue(decision.holdIfPending(url: first))
+        XCTAssertTrue(decision.holdIfPending(url: second), "a later link replaces the earlier one")
+        let activity = NSUserActivity(activityType: NSUserActivityTypeBrowsingWeb)
+        XCTAssertTrue(decision.holdIfPending(userActivity: activity))
+
+        XCTAssertTrue(decision.takeAtActivation())
+        XCTAssertEqual(decision.takePendingURL(), second)
+        XCTAssertNil(decision.takePendingURL(), "replayed once")
+        XCTAssertTrue(decision.takePendingUserActivity() === activity)
+        XCTAssertNil(decision.takePendingUserActivity())
+        XCTAssertFalse(decision.holdIfPending(url: first), "after the activation links are handled at once")
+
+        let foreground = LaunchDecision(applicationState: .inactive)
+        XCTAssertFalse(foreground.holdIfPending(url: first))
+        XCTAssertNil(foreground.takePendingURL())
+    }
+
     /// While the launch decision is pending, the runtime refuses automatic
     /// kicks (the sync monitor's connectivity kick, a network change); once
     /// the activation's wallet start releases the hold they pass again. A

@@ -84,6 +84,42 @@ final class LaunchDecision: NSObject {
         isDeferred = false
         return true
     }
+
+    // MARK: Links that arrive while deferred
+
+    /// A payment URL or an invitation link (universal or scheme) can bring
+    /// the process to the foreground, and it is delivered before the
+    /// activation that installs the real root; with the placeholder still
+    /// up there is nothing to hand it to. It is kept here and replayed once
+    /// the root exists. One of each: a later link replaces an earlier one,
+    /// as it would have on a normal launch.
+    @objc private(set) var pendingURL: URL?
+    @objc private(set) var pendingUserActivity: NSUserActivity?
+
+    /// True when the launch is still deferred and the link was kept.
+    @objc(holdURLIfPending:)
+    func holdIfPending(url: URL) -> Bool {
+        guard isDeferred else { return false }
+        pendingURL = url
+        return true
+    }
+
+    @objc(holdUserActivityIfPending:)
+    func holdIfPending(userActivity: NSUserActivity) -> Bool {
+        guard isDeferred else { return false }
+        pendingUserActivity = userActivity
+        return true
+    }
+
+    @objc func takePendingURL() -> URL? {
+        defer { pendingURL = nil }
+        return pendingURL
+    }
+
+    @objc func takePendingUserActivity() -> NSUserActivity? {
+        defer { pendingUserActivity = nil }
+        return pendingUserActivity
+    }
 }
 
 /// Which readiness each refresh trigger is allowed to elide a rebuild on.
