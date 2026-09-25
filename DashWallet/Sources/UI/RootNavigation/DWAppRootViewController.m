@@ -51,6 +51,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 @property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
 @property (nullable, nonatomic, strong) NSURL *deferredDeeplinkToProcess;
 @property (nonatomic, assign) BOOL walletWipeInProgress;
+/// The launch hold (legacy migration, or an unreadable inventory) has not
+/// reported yet: "no wallet" is not a verdict, so a link that arrives now
+/// waits for the hold's answer instead of going to onboarding's storage.
+@property (nonatomic, assign) BOOL launchHoldPending;
 
 - (void)beginWipeWalletWithAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
 - (void)presentWalletWipeFailureForAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
@@ -88,6 +92,15 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 #if DASHPAY
 - (void)handleDeeplink:(NSURL *)url {
+    // While the launch hold is still deciding, a wallet may be seconds away
+    // (the migrator) or merely unreadable: keep the invitation with the
+    // other deferred links, to be handled once the wallet is presented and
+    // unlocked; only the hold's own "setup" verdict moves it to onboarding.
+    if (self.launchHoldPending) {
+        DWLog(@"LAUNCH invitation kept until the launch hold reports");
+        self.deferredDeeplinkToProcess = url;
+        return;
+    }
     if (self.model.hasAWallet == NO) {
         self.invitationSetup.invitation = url;
         return;
@@ -239,6 +252,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         [self transitionToController:controller];
     }
 
+    self.launchHoldPending = keyMigrationPending;
     if (keyMigrationPending) {
         __weak typeof(self) weakSelf = self;
         [DWLegacyWalletMigrationLaunchHold beginWithCompletion:^(BOOL migratedWalletPresent) {
@@ -331,7 +345,19 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 /// The hold's verdict is the read: it reports `YES` only from a read that
 /// saw the wallet, and re-reading here could fail where that one succeeded.
 - (void)presentInitialControllerAfterKeyMigration:(BOOL)migratedWalletPresent {
+    self.launchHoldPending = NO;
     if (migratedWalletPresent) {
+#if DASHPAY
+        // An invitation that arrived before this controller's view loaded
+        // (the initial controller hands its kept link over at creation) went
+        // to onboarding's storage, which only a finished setup reads. The
+        // hold delivered a wallet, so it joins the deferred links instead.
+        if (_invitationSetup.invitation != nil && self.deferredDeeplinkToProcess == nil) {
+            DWLog(@"LAUNCH invitation moved from onboarding to the deferred links; the hold delivered a wallet");
+            self.deferredDeeplinkToProcess = _invitationSetup.invitation;
+            _invitationSetup = nil;
+        }
+#endif
         if ([self.model shouldShowLockScreen]) {
             // A link kept during the hold is handled after the unlock.
             [self showLockControllerIfNeeded];
@@ -342,6 +368,14 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         }
     }
     else {
+#if DASHPAY
+        // A definite "no wallet": an invitation kept during the hold now
+        // belongs to onboarding, which redeems it once setup finishes.
+        if (self.deferredDeeplinkToProcess != nil) {
+            self.invitationSetup.invitation = self.deferredDeeplinkToProcess;
+            self.deferredDeeplinkToProcess = nil;
+        }
+#endif
         [self transitionToController:[self setupController]];
     }
 }
@@ -349,6 +383,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 /// Hand a link kept while no wallet was presented (or while it was locked)
 /// to the main controller, once.
 - (void)processDeferredLinks {
+    if (self.deferredDeeplinkToProcess != nil || self.deferredURLToProcess != nil) {
+        DWLog(@"LAUNCH handling a link kept until the wallet was presented (%@)",
+              self.deferredDeeplinkToProcess != nil ? @"invitation" : @"url");
+    }
     if (self.deferredDeeplinkToProcess) {
 #if DASHPAY
         [self handleDeeplink:self.deferredDeeplinkToProcess];

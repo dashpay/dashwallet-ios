@@ -269,6 +269,7 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         var reason: WalletPreparationFailure.LegacyMigrationReason = .failed
         var migrationStarts = 0
         var overlayActivations = 0
+        var walletDeliveries = 0
         var outcomes: [Bool] = []
         /// What a retry's migrator run does once it actually starts; nil
         /// leaves the run pending until the test scripts its outcome.
@@ -295,6 +296,7 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
                     }
                 },
                 activateOverlay: { self.overlayActivations += 1 },
+                walletDelivered: { self.walletDeliveries += 1 },
                 walletMaterialChanges: { AsyncStream { self.materialChanged = $0 } },
                 pollInterval: 0.005,
                 settleTimeout: settleTimeout,
@@ -458,6 +460,7 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         await settle(probe.outcomes == [true], within: 1)
         XCTAssertEqual(probe.outcomes, [true])
         XCTAssertEqual(state.phase, .idle)
+        XCTAssertEqual(probe.walletDeliveries, 1, "the runtime, left stopped by the unreadable read, is asked to start")
     }
 
     /// Successive reads that answer unknown, unknown, present — the first
@@ -485,6 +488,38 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         XCTAssertEqual(probe.outcomes, [true], "an unreadable read must never be taken for an absent wallet")
         XCTAssertEqual(state.phase, .idle)
         XCTAssertEqual(probe.migrationStarts, 0)
+    }
+
+    /// Delivering the wallet asks the runtime to start — once, and only
+    /// then: reporting setup asks nothing, and Try Again's re-run that lands
+    /// the wallet asks once too.
+    func testDeliveringTheWalletRequestsARuntimeStartAndSetupDoesNot() async {
+        let state = WalletLifecycleTransitionState()
+        let probe = HoldProbe()
+        probe.presence = .unknown
+        probe.legacy = .absent
+        probe.settled = true
+        let coordinator = probe.makeCoordinator(state: state, lateSuccessInterval: 30)
+        coordinator.begin { probe.outcomes.append($0) }
+        await settle({ if case .failedLegacyMigration = state.phase { return true } else { return false } }())
+        XCTAssertEqual(probe.walletDeliveries, 0, "nothing to start while the card is up")
+
+        probe.onMigrationRun = {
+            probe.presence = .present
+            probe.settled = true
+        }
+        coordinator.retry()
+        await settle(probe.outcomes == [true])
+        XCTAssertEqual(probe.outcomes, [true])
+        XCTAssertEqual(probe.walletDeliveries, 1)
+
+        let setupState = WalletLifecycleTransitionState()
+        let setupProbe = HoldProbe()
+        setupProbe.legacy = .absent
+        setupProbe.settled = true
+        setupProbe.makeCoordinator(state: setupState).begin { setupProbe.outcomes.append($0) }
+        await settle(setupProbe.outcomes == [false])
+        XCTAssertEqual(setupProbe.walletDeliveries, 0)
     }
 
     /// A takeover whose open fails for an unrelated reason (the failure
