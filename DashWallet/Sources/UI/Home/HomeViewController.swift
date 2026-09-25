@@ -53,7 +53,6 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
     #if DASHPAY
     var isBackButtonHidden: Bool = false
-    private var invitationSetup: DWInvitationSetupState?
     private var avatarView: DWDPAvatarView!
     #else
     var isBackButtonHidden: Bool = true
@@ -141,38 +140,6 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         presentCrowdNodeBalanceReminderIfNeeded()
     }
 
-    #if DASHPAY
-    func handleDeeplink(_ url: URL, definedUsername: String?) {
-        if DWInvitationService.shared.hasLocalIdentity {
-            let title = NSLocalizedString("Username already found", comment: "")
-            let message = NSLocalizedString("You cannot claim this invite since you already have a Dash username", comment: "")
-            let alert = DPAlertViewController(icon: UIImage(named: "icon_invitation_error")!, title: title, description: message)
-            present(alert, animated: true, completion: nil)
-            return
-        }
-
-        if SyncingActivityMonitor.shared.state != .syncDone {
-            let state = DWInvitationSetupState()
-            state.invitation = url
-            state.chosenUsername = definedUsername
-            invitationSetup = state
-            return
-        }
-
-        // The redeem screen owns validation: an unrecognized or
-        // structurally invalid link renders its inline error state
-        // (and the field stays editable), so no pre-flight alert is
-        // needed. Claim-time failures (already claimed, wrong network,
-        // insufficient voucher) surface in the username form's error
-        // alert from the coordinator.
-        let prefill = DWInvitationLinkNormalizer.normalize(url) ?? url.absoluteString
-        ClaimInvitationFlow.pushRedeemScreen(
-            on: navigationController,
-            dashPayModel: model.dashPayModel,
-            initialLink: prefill,
-            definedUsername: definedUsername)
-    }
-    #endif
 
     // MARK: - Private
 
@@ -628,8 +595,29 @@ extension HomeViewController: HomeViewDelegate {
         showCreateUsernameForRecovery(definedUsername: username)
     }
 
-    func homeViewClaimInvitation() {
-        showClaimInvitation()
+    func homeViewScanInvitation() {
+        InvitationEntry.presentScanner(from: self) { [weak self] in
+            // The card is on Home; make sure that is where the user is.
+            self?.navigationController?.popToRootViewController(animated: true)
+        }
+    }
+
+    func homeViewCreateUsername(with invitation: PendingInvitation, tier: InvitationTier) {
+        showCreateUsername(withInvitation: invitation, tier: tier)
+    }
+
+    func homeViewPresentInvitationOutcome(_ outcome: InvitationValidation) {
+        // Every Home built this session hears the verdict; only the one on
+        // screen shows it.
+        guard viewIfLoaded?.window != nil,
+              let dialog = InvitationOutcomeDialogs.controller(for: outcome) else { return }
+        // Over whatever is already up (a sheet, another alert), or UIKit
+        // refuses the presentation silently.
+        var presenter: UIViewController = tabBarController ?? self
+        while let presented = presenter.presentedViewController, !presented.isBeingDismissed {
+            presenter = presented
+        }
+        presenter.present(dialog, animated: true)
     }
 
     /// Where the DashPay row goes while a contested name is being voted on —
@@ -751,14 +739,6 @@ extension HomeViewController: SyncingActivityMonitorObserver {
 
     func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
         if state == .syncDone {
-            #if DASHPAY
-            if let invitationSetup = invitationSetup, let invitation = invitationSetup.invitation {
-                handleDeeplink(invitation, definedUsername: invitationSetup.chosenUsername)
-                self.invitationSetup = nil
-                return
-            }
-            #endif
-
             presentCrowdNodeBalanceReminderIfNeeded()
         }
     }

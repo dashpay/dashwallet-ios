@@ -797,6 +797,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 signer: signer,
                 nowUnix: UInt32(Date().timeIntervalSince1970))
             identityId = try managed.getId()
+            // The voucher is spent now, whatever happens to the username
+            // next: from here on this is an ordinary "identity exists,
+            // username required" recovery, not an invitation.
+            PendingInvitationStore.shared.clear(reason: .claimed)
         }
         return identityId
     }

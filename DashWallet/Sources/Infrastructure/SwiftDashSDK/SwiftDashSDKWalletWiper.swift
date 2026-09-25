@@ -340,6 +340,9 @@ final class SwiftDashSDKWalletWiper: NSObject {
         DispatchQueue.main.sync {
             MainActor.assumeIsolated {
                 TrackedMasternodeKeyVault.wipeAllTrackedState()
+                // A pending invitation holds a voucher key; it goes with the
+                // wallet it was waiting for.
+                PendingInvitationStore.wipeAll()
             }
         }
 

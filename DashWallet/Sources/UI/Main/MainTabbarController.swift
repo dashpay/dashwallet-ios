@@ -581,11 +581,11 @@ extension MainTabbarController {
     }
     
     #if DASHPAY
+    /// An invitation was stored: bring Home forward, where its card is.
     @objc
-    public func handleDeeplink(_ url: URL, definedUsername: String?) {
+    public func showHomeForInvitation() {
         dismiss(animated: false, completion: nil)
         selectedIndex = MainTabbarTabs.home.rawValue
-        homeController?.handleDeeplink(url, definedUsername: definedUsername)
     }
     #endif
 }

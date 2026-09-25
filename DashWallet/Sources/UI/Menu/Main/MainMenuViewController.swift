@@ -159,6 +159,7 @@ struct MainMenuScreen: View {
     @State private var showSecurity: Bool = false
     @State private var showDashPayInfo: Bool = false
     @State private var navigateToDashPayFlow: Bool = false
+    @State private var navigateToScanInvitation: Bool = false
     
     #if DASHPAY
     private let joinDPViewModel = JoinDashPayViewModel(initialState: .none)
@@ -371,13 +372,17 @@ struct MainMenuScreen: View {
                 navigateToDashPayFlow = false
                 joinDashPay()
             }
+            if navigateToScanInvitation {
+                navigateToScanInvitation = false
+                scanInvitation()
+            }
         }) {
             let dialog = JoinDashPayInfoDialog(
                 action: {
                     navigateToDashPayFlow = true
                 },
                 onClaimInvitation: {
-                    self.claimInvitation()
+                    navigateToScanInvitation = true
                 },
                 onShieldFunds: {
                     self.shieldFunds()
@@ -588,10 +593,12 @@ struct MainMenuScreen: View {
     }
     
     #if DASHPAY
-    /// Manual redeem entry (Join DashPay dialog → "Have an invitation?").
-    private func claimInvitation() {
-        guard let dashPayModel = viewModel.dashPayModel else { return }
-        ClaimInvitationFlow.pushRedeemScreen(on: vc, dashPayModel: dashPayModel)
+    /// "Scan invitation QR" on the Join DashPay sheet: a scanned invitation
+    /// is stored and offered on Home's card, so that is where it leads.
+    private func scanInvitation() {
+        InvitationEntry.presentScanner(from: vc) { [weak navigation = vc] in
+            (navigation?.tabBarController as? MainTabbarController)?.showHomeForInvitation()
+        }
     }
 
     /// The "Shield your funds first" leg of the username privacy step.

@@ -850,7 +850,6 @@
 		755B4B232B0C903500B844F0 /* DWDateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755B4B212B0C903500B844F0 /* DWDateFormatter.swift */; };
 		755C32382C358FC0007DA721 /* BackupSeedPhraseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */; };
 		755C32392C358FC0007DA721 /* BackupSeedPhraseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */; };
-		755E6DFE2A99E7A000A42870 /* DWInvitationSetupState.m in Sources */ = {isa = PBXBuildFile; fileRef = 755E6DFC2A99E7A000A42870 /* DWInvitationSetupState.m */; };
 		756557B52CE84FFA0060348D /* FeeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756557B42CE84FF70060348D /* FeeInfo.swift */; };
 		756557B62CE84FFA0060348D /* FeeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756557B42CE84FF70060348D /* FeeInfo.swift */; };
 		7566F4832BB6949E005238D2 /* ToolsMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */; };
@@ -905,6 +904,7 @@
 		759ADD572BF3447400767ACD /* Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759ADD562BF3447400767ACD /* Button.swift */; };
 		759ADD582BF3447400767ACD /* Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759ADD562BF3447400767ACD /* Button.swift */; };
 		759AFDE02CC63571007072D2 /* JoinDashPayScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759AFDDF2CC6356D007072D2 /* JoinDashPayScreen.swift */; };
+		6EEA73178E9A9E221E43AFB0 /* UsernameTypesInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F8CD6705B090FCCFA9CC693 /* UsernameTypesInfoSheet.swift */; };
 		759AFDE32CC67E8E007072D2 /* VotingInfoScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759AFDE22CC67E89007072D2 /* VotingInfoScreen.swift */; };
 		759C8F9F2B593589004B1305 /* CrowdNodeAPYView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */; };
 		759C8FA02B593589004B1305 /* CrowdNodeAPYView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */; };
@@ -1065,7 +1065,12 @@
 		A1060800B200000000000001 /* ExplorePointOfUse+PreviewMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1060800F100000000000001 /* ExplorePointOfUse+PreviewMock.swift */; };
 		A11E57A70006C0DE0006B006 /* DWInvitationLinkNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E57A70001C0DE0001B001 /* DWInvitationLinkNormalizer.swift */; };
 		A11E57A70007C0DE0007B007 /* DWInvitationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E57A70002C0DE0002B002 /* DWInvitationService.swift */; };
-		A11E57A70008C0DE0008B008 /* ClaimInvitationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E57A70003C0DE0003B003 /* ClaimInvitationScreen.swift */; };
+		C85067CBF3243AC0B42E9A2C /* InvitationValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97944200EAC35405C7778C12 /* InvitationValidation.swift */; };
+		C06663A389FD6AD6F63DFE14 /* PendingInvitationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C55CC819E04C98DC75CE924C /* PendingInvitationStore.swift */; };
+		C8C7D78D54CAB7B2AAA05D48 /* InvitationEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56AE57329DB35B67B40C24B2 /* InvitationEntry.swift */; };
+		E677BB34463F6C9C80113AD5 /* InvitationOutcomeDialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DFFABC94558CE29099DDF3D /* InvitationOutcomeDialogs.swift */; };
+		1ED9585490A96F41543A5445 /* AcceptInvitationCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4472BBA3BDBBB967E169E1F0 /* AcceptInvitationCard.swift */; };
+		B3CA5369C7248973E001B5A8 /* PendingInvitationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A60A560865719E38F5E7F89 /* PendingInvitationViewModel.swift */; };
 		A11E57A7000AC0DE000AB00A /* SyncingAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E57A70009C0DE0009B009 /* SyncingAlertView.swift */; };
 		A11E57A7000BC0DE000BB00B /* SyncingAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E57A70009C0DE0009B009 /* SyncingAlertView.swift */; };
 		A140F8C774E7518488729D67 /* BIP70PaymentService+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9155233A128831C0ABF18A3 /* BIP70PaymentService+App.swift */; };
@@ -1258,6 +1263,7 @@
 		BD509A68B1A0B6E4599F9C7A /* DWProfileUpdateCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82926C69F3BB675BEF1A1FFD /* DWProfileUpdateCoordinator.swift */; };
 		C05FA6CE3DDE2D0327D334E5 /* CoinJoinRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = B478AD92C1F1C11D09645DF4 /* CoinJoinRecovery.swift */; };
 		C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */; };
+		2523A5799AB8F025BBFA7BEF /* InvitationValidationPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1C04D04FBAFFE0998528F13 /* InvitationValidationPolicyTests.swift */; };
 		C124DF94278D4238FAE0975D /* OrderPreviewFeeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */; };
 		C1A0B2C3D4E5F60718293A02 /* ShortcutsBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */; };
 		C1A0B2C3D4E5F60718293A03 /* ShortcutsBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */; };
@@ -3125,8 +3131,6 @@
 		7556EE402DF9876B004E8093 /* ExploreSyncBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreSyncBannerView.swift; sourceTree = "<group>"; };
 		755B4B212B0C903500B844F0 /* DWDateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWDateFormatter.swift; sourceTree = "<group>"; };
 		755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSeedPhraseViewController.swift; sourceTree = "<group>"; };
-		755E6DFC2A99E7A000A42870 /* DWInvitationSetupState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWInvitationSetupState.m; sourceTree = "<group>"; };
-		755E6DFD2A99E7A000A42870 /* DWInvitationSetupState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInvitationSetupState.h; sourceTree = "<group>"; };
 		756557B42CE84FF70060348D /* FeeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeInfo.swift; sourceTree = "<group>"; };
 		7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsMenuScreen.swift; sourceTree = "<group>"; };
 		5AGOV0002F9A0000000000S1 /* GovernanceMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GovernanceMenuScreen.swift; sourceTree = "<group>"; };
@@ -3163,6 +3167,7 @@
 		759816E619357D6F005060EA /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
 		759ADD562BF3447400767ACD /* Button.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Button.swift; sourceTree = "<group>"; };
 		759AFDDF2CC6356D007072D2 /* JoinDashPayScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinDashPayScreen.swift; sourceTree = "<group>"; };
+		9F8CD6705B090FCCFA9CC693 /* UsernameTypesInfoSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameTypesInfoSheet.swift; sourceTree = "<group>"; };
 		759AFDE22CC67E89007072D2 /* VotingInfoScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingInfoScreen.swift; sourceTree = "<group>"; };
 		759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeAPYView.swift; sourceTree = "<group>"; };
 		75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimeUtils.swift; sourceTree = "<group>"; };
@@ -3266,7 +3271,12 @@
 		A1060800F100000000000001 /* ExplorePointOfUse+PreviewMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExplorePointOfUse+PreviewMock.swift"; sourceTree = "<group>"; };
 		A11E57A70001C0DE0001B001 /* DWInvitationLinkNormalizer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWInvitationLinkNormalizer.swift; sourceTree = "<group>"; };
 		A11E57A70002C0DE0002B002 /* DWInvitationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWInvitationService.swift; sourceTree = "<group>"; };
-		A11E57A70003C0DE0003B003 /* ClaimInvitationScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ClaimInvitationScreen.swift; sourceTree = "<group>"; };
+		97944200EAC35405C7778C12 /* InvitationValidation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InvitationValidation.swift; sourceTree = "<group>"; };
+		C55CC819E04C98DC75CE924C /* PendingInvitationStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PendingInvitationStore.swift; sourceTree = "<group>"; };
+		56AE57329DB35B67B40C24B2 /* InvitationEntry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InvitationEntry.swift; sourceTree = "<group>"; };
+		0DFFABC94558CE29099DDF3D /* InvitationOutcomeDialogs.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InvitationOutcomeDialogs.swift; sourceTree = "<group>"; };
+		4472BBA3BDBBB967E169E1F0 /* AcceptInvitationCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AcceptInvitationCard.swift; sourceTree = "<group>"; };
+		8A60A560865719E38F5E7F89 /* PendingInvitationViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PendingInvitationViewModel.swift; sourceTree = "<group>"; };
 		A11E57A70009C0DE0009B009 /* SyncingAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncingAlertView.swift; sourceTree = "<group>"; };
 		A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletWipeSerialExecutorTests.swift; sourceTree = "<group>"; };
 		A59D5720437F8A4137605940 /* PaymentRequestVerifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentRequestVerifier.swift; sourceTree = "<group>"; };
@@ -3397,6 +3407,7 @@
 		BCD0199D74601A6150ABC8D1 /* WalletAccountDetailViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletAccountDetailViewModel.swift; sourceTree = "<group>"; };
 		C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OrderPreviewFeeRow.swift; sourceTree = "<group>"; };
 		C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKCoreLifecycleTests.swift; sourceTree = "<group>"; };
+		F1C04D04FBAFFE0998528F13 /* InvitationValidationPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationValidationPolicyTests.swift; sourceTree = "<group>"; };
 		C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsBarView.swift; sourceTree = "<group>"; };
 		C1D2E3F4A5B6C7D8E9F01234 /* TransferAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountView.swift; sourceTree = "<group>"; };
 		C3DAD266246AA6F10001624F /* DWScreenshotWarningViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWScreenshotWarningViewController.h; sourceTree = "<group>"; };
@@ -4813,8 +4824,6 @@
 		2A44311B22CC9B2C009BAF7F /* RootNavigation */ = {
 			isa = PBXGroup;
 			children = (
-				755E6DFD2A99E7A000A42870 /* DWInvitationSetupState.h */,
-				755E6DFC2A99E7A000A42870 /* DWInvitationSetupState.m */,
 				2A9CEBAB22E1DA4000A50237 /* DWAppRootViewController.h */,
 				2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */,
 				2A913E9323A3F75F006A2A59 /* DWInitialViewController.h */,
@@ -7352,6 +7361,7 @@
 				759AFDE22CC67E89007072D2 /* VotingInfoScreen.swift */,
 				75FEC6AE2CE0C58A00F87B48 /* VerifyIdentityScreen.swift */,
 				759AFDDF2CC6356D007072D2 /* JoinDashPayScreen.swift */,
+				9F8CD6705B090FCCFA9CC693 /* UsernameTypesInfoSheet.swift */,
 				754C27D02CC3C82300BA7B9F /* JoinDashPayInfoDialog.swift */,
 				754C27CE2CC3C7AB00BA7B9F /* MixDashDialog.swift */,
 				757514E42B1735370026AD8E /* JoinDashPayView.swift */,
@@ -7524,6 +7534,7 @@
 				D71029F5975636F1DCFFFF85 /* PlatformBalanceControllerTests.swift */,
 				5798C63088F44013AEC5D85B /* ShieldedRecoveryControllerTests.swift */,
 				C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */,
+				F1C04D04FBAFFE0998528F13 /* InvitationValidationPolicyTests.swift */,
 				CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */,
 				CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */,
 				7A30000130A1000000000001 /* TransactionDirectionTests.swift */,
@@ -7707,6 +7718,8 @@
 			children = (
 				A11E57A70001C0DE0001B001 /* DWInvitationLinkNormalizer.swift */,
 				A11E57A70002C0DE0002B002 /* DWInvitationService.swift */,
+				97944200EAC35405C7778C12 /* InvitationValidation.swift */,
+				C55CC819E04C98DC75CE924C /* PendingInvitationStore.swift */,
 			);
 			path = Invitations;
 			sourceTree = "<group>";
@@ -7714,7 +7727,10 @@
 		A11E57A70005C0DE0005B005 /* Invitations */ = {
 			isa = PBXGroup;
 			children = (
-				A11E57A70003C0DE0003B003 /* ClaimInvitationScreen.swift */,
+				56AE57329DB35B67B40C24B2 /* InvitationEntry.swift */,
+				0DFFABC94558CE29099DDF3D /* InvitationOutcomeDialogs.swift */,
+				4472BBA3BDBBB967E169E1F0 /* AcceptInvitationCard.swift */,
+				8A60A560865719E38F5E7F89 /* PendingInvitationViewModel.swift */,
 			);
 			path = Invitations;
 			sourceTree = "<group>";
@@ -10835,6 +10851,7 @@
 				BCC98012E278206FC08FA8E3 /* PlatformBalanceControllerTests.swift in Sources */,
 				F0CAB696BC154E7EB3EC221D /* ShieldedRecoveryControllerTests.swift in Sources */,
 				C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */,
+				2523A5799AB8F025BBFA7BEF /* InvitationValidationPolicyTests.swift in Sources */,
 				CB9000022FE1000000000002 /* CoinbaseTransactionMetadataTests.swift in Sources */,
 				CB9100022FE2000000000002 /* CoinbaseTransferAmountTests.swift in Sources */,
 				7A30000230A1000000000002 /* TransactionDirectionTests.swift in Sources */,
@@ -11404,7 +11421,6 @@
 				C943B3202A408CED00AF23C5 /* DWImgurInfoChildView.m in Sources */,
 				C9D2C7E92A320AA000D15901 /* AtmDAO.swift in Sources */,
 				C9D2C7EA2A320AA000D15901 /* App.swift in Sources */,
-				755E6DFE2A99E7A000A42870 /* DWInvitationSetupState.m in Sources */,
 				C9D2C7EB2A320AA000D15901 /* DWPaymentProcessor.m in Sources */,
 				C9D2C7ED2A320AA000D15901 /* SyncingHeaderView.swift in Sources */,
 				C9D2C7EE2A320AA000D15901 /* MinimumDepositBanner.swift in Sources */,
@@ -11488,6 +11504,7 @@
 				C9D2C83B2A320AA000D15901 /* TransactionMetadataDAO.swift in Sources */,
 				C9D2C83C2A320AA000D15901 /* DWModalContentView.m in Sources */,
 				759AFDE02CC63571007072D2 /* JoinDashPayScreen.swift in Sources */,
+				6EEA73178E9A9E221E43AFB0 /* UsernameTypesInfoSheet.swift in Sources */,
 				C9D2C83D2A320AA000D15901 /* DWUpholdConstants.m in Sources */,
 				C9D2C83F2A320AA000D15901 /* CoinbaseSwapeTradeResponse.swift in Sources */,
 				C9D2C8402A320AA000D15901 /* DWQRScanView.m in Sources */,
@@ -11762,7 +11779,12 @@
 				BABA10000000000000000002 /* DWIdentityBalanceRefresh.swift in Sources */,
 				A11E57A70006C0DE0006B006 /* DWInvitationLinkNormalizer.swift in Sources */,
 				A11E57A70007C0DE0007B007 /* DWInvitationService.swift in Sources */,
-				A11E57A70008C0DE0008B008 /* ClaimInvitationScreen.swift in Sources */,
+				C85067CBF3243AC0B42E9A2C /* InvitationValidation.swift in Sources */,
+				C06663A389FD6AD6F63DFE14 /* PendingInvitationStore.swift in Sources */,
+				C8C7D78D54CAB7B2AAA05D48 /* InvitationEntry.swift in Sources */,
+				E677BB34463F6C9C80113AD5 /* InvitationOutcomeDialogs.swift in Sources */,
+				1ED9585490A96F41543A5445 /* AcceptInvitationCard.swift in Sources */,
+				B3CA5369C7248973E001B5A8 /* PendingInvitationViewModel.swift in Sources */,
 				D2616FE9FE5ED53F26506A73 /* DWIdentityRegistrationBridge.swift in Sources */,
 				026B0383557D0181E034B64E /* SDKIdentityProfileSheet.swift in Sources */,
 				431DC6C9218C3DFAF6DE23C0 /* DWCurrentUserIdentityInfo.swift in Sources */,
