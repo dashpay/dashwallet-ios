@@ -194,7 +194,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
     // Display main controller initially if there is a wallet and lock screen is disabled
     // Otherwise main controller will be set as current in `lockScreenViewControllerDidUnlock:`
-    const BOOL hasAWallet = self.model.hasAWallet;
+    //
+    // One keychain read for the whole decision, so the wallet verdict and
+    // the hold verdict below cannot come from two different reads.
+    const DWWalletPresence walletPresence = self.model.walletPresence;
+    const BOOL hasAWallet = walletPresence == DWWalletPresencePresent;
     UIViewController *controller = nil;
     if (hasAWallet) {
         if (![self.model shouldShowLockScreen]) {
@@ -210,8 +214,14 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     // blocking Try Again card on failure, and calls back only once a wallet
     // is present or there is nothing to migrate. Setup is never offered
     // while the old wallet is still in the keychain.
+    //
+    // An inventory that cannot be read is handed to the same hold: "no
+    // wallet" would describe the keychain failure, not the wallet, and the
+    // hold's card offers Try Again instead of Create/Recover over a wallet
+    // the read missed.
     const BOOL keyMigrationPending =
-        !hasAWallet && [DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration];
+        !hasAWallet && (walletPresence == DWWalletPresenceUnknown ||
+                        [DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration]);
     if (!hasAWallet && !keyMigrationPending) {
         controller = [self setupController];
     }
@@ -309,8 +319,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 /// keeps its old PIN) when the wallet landed; setup only when the hold
 /// reports that nothing was left to migrate. A failed import never reaches
 /// this method — the hold keeps its blocking card up until a retry lands.
+/// The hold's verdict is the read: it reports `YES` only from a read that
+/// saw the wallet, and re-reading here could fail where that one succeeded.
 - (void)presentInitialControllerAfterKeyMigration:(BOOL)migratedWalletPresent {
-    if (migratedWalletPresent && self.model.hasAWallet) {
+    if (migratedWalletPresent) {
         if ([self.model shouldShowLockScreen]) {
             [self showLockControllerIfNeeded];
         }
