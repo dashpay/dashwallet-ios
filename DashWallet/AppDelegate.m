@@ -246,6 +246,44 @@ NS_ASSUME_NONNULL_BEGIN
     // after onboarding takes).
     [controller setLaunchingAsDeferredController];
     self.window.rootViewController = controller;
+
+    // A link that brought the process to the foreground arrived before this
+    // root existed; hand it to the initial controller now. Not through
+    // `application:openURL:options:`: its wallet gate reads presence at this
+    // very moment, when the key migration was only just enqueued and an
+    // upgrader's wallet has not landed, and would drop the link. The initial
+    // controller keeps it until its root controller exists, and the root
+    // controller until a wallet is presented and unlocked.
+    NSURL *pendingURL = [self.launchDecision takePendingURL];
+    if (pendingURL != nil) {
+        DWLog(@"LAUNCH replaying a link kept during the deferred launch (scheme %@)", pendingURL.scheme);
+        [self deliverReplayedURL:pendingURL toInitialController:controller];
+    }
+#if DASHPAY
+    NSUserActivity *pendingActivity = [self.launchDecision takePendingUserActivity];
+    NSURL *pendingActivityURL = pendingActivity.webpageURL;
+    if (pendingActivityURL != nil) {
+        DWLog(@"LAUNCH replaying a universal link kept during the deferred launch (host %@)", pendingActivityURL.host);
+        [controller handleDeeplink:pendingActivityURL];
+    }
+#endif
+}
+
+/// The replayed link, routed as the handlers route a live one but without
+/// the wallet gate (`DWURLParser.allowsURLHandling`), which cannot answer
+/// yet; malformed links are still refused.
+- (void)deliverReplayedURL:(NSURL *)url toInitialController:(DWInitialViewController *)controller {
+#if DASHPAY
+    if ([DWInvitationLinkNormalizer isInvitationURL:url]) {
+        [controller handleDeeplink:url];
+        return;
+    }
+#endif
+    if (![DWURLParser canHandleURL:url]) {
+        DWLog(@"LAUNCH replayed link is not a Dash URL (scheme %@); dropped", url.scheme);
+        return;
+    }
+    [controller handleURL:url];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
@@ -312,6 +350,12 @@ NS_ASSUME_NONNULL_BEGIN
     if (url == nil || ![DWInvitationLinkNormalizer isInvitationURL:url]) {
         return NO;
     }
+    // Delivered while a background launch still waits for its activation:
+    // kept, and replayed once the real root is installed.
+    if ([self.launchDecision holdUserActivityIfPending:userActivity]) {
+        DWLog(@"LAUNCH universal link kept until the deferred launch completes");
+        return YES;
+    }
     DWInitialViewController *controller = (DWInitialViewController *)self.window.rootViewController;
     if ([controller isKindOfClass:DWInitialViewController.class]) {
         [controller handleDeeplink:url];
@@ -324,6 +368,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    // Delivered while a background launch still waits for its activation:
+    // kept, and replayed through this method once the real root is installed.
+    // Only the scheme is logged: an invitation link carries a bearer key.
+    if ([self.launchDecision holdURLIfPending:url]) {
+        DWLog(@"LAUNCH link kept until the deferred launch completes (scheme %@)", url.scheme);
+        return YES;
+    }
 #if DASHPAY
     // dashpay://invite (and pasted-transport) invitation links open the
     // redeem flow; every other scheme falls through to DWURLParser.
