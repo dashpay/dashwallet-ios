@@ -689,7 +689,7 @@ extension LegacyWalletMigrationLaunchCoordinator {
         state: .shared,
         dependencies: Dependencies(
             isSettled: { SwiftDashSDKKeyMigrator.migrationSettled() },
-            hasWallet: { WalletEnvironment.hasWallet },
+            walletPresence: { WalletEnvironment.walletPresence },
             legacyMaterial: { SwiftDashSDKKeyMigrator.legacyWalletMaterialState() },
             deferralReason: { SwiftDashSDKKeyMigrator.currentDeferralReason() },
             startMigration: { SwiftDashSDKKeyMigrator.restartMigration() },
