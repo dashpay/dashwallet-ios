@@ -655,8 +655,9 @@ struct CreateUsernameView: View {
     /// a silent rule should not take a row's worth of space. A rule that is
     /// **met** is dropped too: a satisfied requirement has stopped being a
     /// requirement, and keeping it on screen buries the one thing that still
-    /// needs fixing among ticks. With everything met the block disappears and
-    /// Continue lighting up is the confirmation.
+    /// needs fixing among ticks. The one exception is availability: "Username
+    /// available" is news rather than a requirement — the answer the user was
+    /// waiting on — so it stays, as the confirmation beside Continue.
     ///
     /// Each row carries a stable `id` so a rule whose text changes (the cost
     /// line's amount, the blocked line's reason) updates in place instead of
@@ -664,10 +665,15 @@ struct CreateUsernameView: View {
     private var usernameCriteria: [DashUIKit.Criterion] {
         var items: [DashUIKit.Criterion] = []
 
-        func add(id: String, text: @autoclosure () -> String, rule: UsernameValidationRuleResult) {
+        func add(
+            id: String,
+            text: @autoclosure () -> String,
+            rule: UsernameValidationRuleResult,
+            showsWhenMet: Bool = false
+        ) {
             guard rule != .hidden else { return }
             let state = Self.criterionState(rule)
-            guard state != .met else { return }
+            guard state != .met || showsWhenMet else { return }
             items.append(DashUIKit.Criterion(id: id, text: text(), state: state))
         }
 
@@ -691,7 +697,8 @@ struct CreateUsernameView: View {
         add(
             id: "availability",
             text: getMessageForBlockedRule(),
-            rule: viewModel.uiState.usernameBlockedRule)
+            rule: viewModel.uiState.usernameBlockedRule,
+            showsWhenMet: true)
 
         return items
     }
@@ -1080,8 +1087,8 @@ struct CreateUsernameView: View {
     /// Only the contested request spends DASH: the companion is a second DPNS
     /// name on the identity that request funds, so nil — the sheet then says
     /// nothing extra is spent instead of naming a second amount.
-    private var confirmationAmountDuffs: UInt64? {
-        isNamingInstantUsername ? nil : UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME)
+    private var confirmationAmountDuffs: UInt64 {
+        isNamingInstantUsername ? 0 : UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME)
     }
 
     private func confirmContestedSubmission(temporaryUsername: String?) {

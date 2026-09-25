@@ -247,8 +247,11 @@ class SettingsMenuViewModel: ObservableObject {
                 title: "Enable Voting",
                 showToggle: true,
                 isToggled: VotingPrefs.shared.votingEnabled,
-                action: {
+                action: { [weak self] in
                     VotingPrefs.shared.votingEnabled.toggle()
+                    // The row renders from `items`, so without a rebuild the
+                    // switch stayed where it was while the preference flipped.
+                    self?.refreshMenuItems()
                 }
             )
         ])

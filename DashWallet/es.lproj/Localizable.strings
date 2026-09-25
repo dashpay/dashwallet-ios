@@ -6309,6 +6309,7 @@
 "Complete unban" = "Complete unban";
 "Completing DashConnect request…" = "Completing DashConnect request…";
 "Confirm username request" = "Confirm username request";
+"Confirm instant username" = "Confirm instant username";
 "Confirmed in block" = "Confirmed in block";
 "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset." = "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset.";
 "Connect your DashPay username to apps on the Dash network to sign in without passwords or accounts" = "Connect your DashPay username to apps on the Dash network to sign in without passwords or accounts";
@@ -6403,7 +6404,6 @@
 "Multiple Wallets Found" = "Multiple Wallets Found";
 "My profile, %@" = "My profile, %@";
 "No Accounts" = "No Accounts";
-"No additional Dash is spent — this username is registered to the identity you are already paying for." = "No additional Dash is spent — this username is registered to the identity you are already paying for.";
 "No apps connected yet" = "No apps connected yet";
 "No contacts match “%@”" = "No contacts match “%@”";
 "No contacts yet" = "No contacts yet";
@@ -6618,7 +6618,7 @@
 "What this person published to show the name is theirs. None of it is verified by the network — it is what you are voting on." = "What this person published to show the name is theirs. None of it is verified by the network — it is what you are voting on.";
 "While “%@” is out for a vote it does not belong to you yet and other users cannot find you by it. This username works right away and stays yours whatever the vote decides." = "While “%@” is out for a vote it does not belong to you yet and other users cannot find you by it. This username works right away and stays yours whatever the vote decides.";
 "You are offline. Connect to the internet and try again." = "You are offline. Connect to the internet and try again.";
-"You chose “%@” as an instant username. Please note that the username can NOT be changed once it is registered." = "You chose “%@” as an instant username. Please note that the username can NOT be changed once it is registered.";
+"You chose %@ as an instant username. Please note that the username can NOT be changed once it is registered." = "You chose %@ as an instant username. Please note that the username can NOT be changed once it is registered.";
 "You have %@ Dash available (network fee reserved).\nSome usernames cost up to %@ Dash." = "You have %1$@ Dash available (network fee reserved).\nSome usernames cost up to %2$@ Dash.";
 "You have chosen “%@” as your username. Please note that the username can NOT be changed once it is registered." = "You have chosen “%@” as your username. Please note that the username can NOT be changed once it is registered.";
 "You need a DashPay identity before you can move credits out of it." = "You need a DashPay identity before you can move credits out of it.";
