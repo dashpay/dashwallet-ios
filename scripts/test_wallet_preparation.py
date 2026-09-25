@@ -190,6 +190,40 @@ import XCTest
         // A launch that was never held (foreground) is unaffected.
         XCTAssertTrue(SwiftDashSDKWalletRuntime.automaticStartAllowedForLaunchDecision("test"))
     }
+    /// An inventory that cannot be read at launch leaves the runtime stopped
+    /// (its refresh returns on "unknown"); when the read recovers, the hold
+    /// delivers the wallet and asks the runtime to start through its usual
+    /// funnel — once — and the start is not held (the launch decision was
+    /// taken before the hold could run).
+    func testHoldRecoveringFromAnUnreadableInventoryStartsTheRuntime() async {
+        var presence: WalletEnvironment.WalletPresence = .unknown
+        var materialChanged: AsyncStream<Void>.Continuation?
+        let coordinator = LegacyWalletMigrationLaunchCoordinator(state: state, dependencies: .init(
+            isSettled: { true },
+            walletPresence: { presence },
+            legacyMaterial: { .absent },
+            deferralReason: { .failed },
+            startMigration: {},
+            activateOverlay: {},
+            walletDelivered: { self.runtime.enqueueRefresh(trigger: .startIfReady) },
+            walletMaterialChanges: { AsyncStream { materialChanged = $0 } },
+            pollInterval: 0.005,
+            settleTimeout: 5,
+            lateSuccessInterval: 30))
+        var outcomes: [Bool] = []
+        coordinator.begin { outcomes.append($0) }
+        while materialChanged == nil { try? await Task.sleep(nanoseconds: 2_000_000) }
+        await runtime.drain()
+        XCTAssertEqual(runtime.refreshCalls, 0, "the card is up; nothing starts")
+
+        presence = .present
+        materialChanged?.yield()
+        let deadline = Date().addingTimeInterval(2)
+        while outcomes.isEmpty, Date() < deadline { try? await Task.sleep(nanoseconds: 2_000_000) }
+        await runtime.drain()
+        XCTAssertEqual(outcomes, [true])
+        XCTAssertEqual(runtime.refreshCalls, 1, "the wallet the read now sees starts the runtime once")
+    }
     func testExplicitRetryAndSyncNowCanStillRecover() async {
         await failOpen()
         await runtime.retryWalletPreparation()

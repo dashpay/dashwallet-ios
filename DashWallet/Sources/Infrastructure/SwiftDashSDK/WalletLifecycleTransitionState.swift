@@ -346,6 +346,14 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
         var startMigration: () -> Void
         /// Subscribe the overlay window presenter before the first phase.
         var activateOverlay: () -> Void
+        /// The hold delivered the wallet. Wired to an idempotent runtime
+        /// start: a launch whose start saw an unreadable inventory left the
+        /// runtime stopped, and neither Try Again (the migrator returns at
+        /// its done sentinel without a material change) nor the late-success
+        /// watcher would start it otherwise. Foreground-owned by
+        /// construction — both run under the card, and the launch decision
+        /// has been taken by then.
+        var walletDelivered: () -> Void = {}
         /// Fires whenever persisted wallet material changed (the migrator
         /// reports its success through it); the failure card re-checks
         /// `hasWallet` on each element instead of polling the keychain.
@@ -514,6 +522,10 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
         let completion = self.completion
         self.completion = nil
         completion?(hasWallet)
+        if hasWallet {
+            // After the root has its controller and the window is released.
+            dependencies.walletDelivered()
+        }
     }
 }
 

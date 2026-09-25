@@ -693,7 +693,11 @@ extension LegacyWalletMigrationLaunchCoordinator {
             legacyMaterial: { SwiftDashSDKKeyMigrator.legacyWalletMaterialState() },
             deferralReason: { SwiftDashSDKKeyMigrator.currentDeferralReason() },
             startMigration: { SwiftDashSDKKeyMigrator.restartMigration() },
-            activateOverlay: { WalletLifecycleOverlayPresenter.shared.ensureActive() }))
+            activateOverlay: { WalletLifecycleOverlayPresenter.shared.ensureActive() },
+            // Idempotent: the refresh elides a rebuild when Core is already up,
+            // so a wallet the migrator just delivered (whose material change
+            // already started the runtime) is not restarted.
+            walletDelivered: { SwiftDashSDKWalletRuntime.startIfReady() }))
 
 }
 
