@@ -231,7 +231,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @MainActor
     func stopAsync(lastError: String?) async {
         do {
-            try performStop(lastError: lastError, clearBalance: true)
+            try await performStop(lastError: lastError, clearBalance: true)
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: stop failed during full reset: \(String(describing: error), privacy: .public)")
         }
@@ -241,7 +241,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @MainActor
     func stopCoreAsync() async {
         do {
-            try performStop(lastError: nil, clearBalance: false)
+            try await performStop(lastError: nil, clearBalance: false)
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: Core-only stop failed: \(String(describing: error), privacy: .public)")
         }
@@ -265,7 +265,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             try await CoreSPVRestartOperation.run(
                 setRestarting: { self.isRestarting = $0 },
                 stop: {
-                    try self.performStop(lastError: nil, clearBalance: false)
+                    try await self.performStop(lastError: nil, clearBalance: false)
                 },
                 start: {
                     switch await self.performStart(manager: manager, for: network) {
@@ -623,14 +623,18 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         SwiftDashSDKWalletState.shared.clearAllState()
     }
 
+    /// The native SPV stop waits for the client's current sync tick and task
+    /// drain (up to ~17 s), so it runs off the main thread through the SDK's
+    /// async `stopSpv()`. Subscriptions are detached before that wait, and
+    /// the runtime's lifecycle queue keeps any start behind this stop.
     @MainActor
-    private func performStop(lastError: String?, clearBalance: Bool) throws {
+    private func performStop(lastError: String?, clearBalance: Bool) async throws {
         detachManagerSubscriptions()
 
         if let manager = SwiftDashSDKHost.shared.manager {
             do {
                 if try manager.isSpvRunning() {
-                    try manager.stopSpv()
+                    try await manager.stopSpv()
                 }
                 Self.logger.info("🛰️ SPVCOORD :: stopped")
             } catch {
