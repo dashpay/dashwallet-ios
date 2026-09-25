@@ -246,6 +246,25 @@ NS_ASSUME_NONNULL_BEGIN
     // after onboarding takes).
     [controller setLaunchingAsDeferredController];
     self.window.rootViewController = controller;
+
+    // A link that brought the process to the foreground arrived before this
+    // root existed; hand it over now, through the same entry points, so it
+    // takes the path it would have taken on a normal launch (the initial
+    // controller keeps it until its root controller is built).
+    NSURL *pendingURL = [self.launchDecision takePendingURL];
+    if (pendingURL != nil) {
+        DWLog(@"LAUNCH replaying a link kept during the deferred launch: %@", pendingURL);
+        [self application:[UIApplication sharedApplication] openURL:pendingURL options:@{}];
+    }
+#if DASHPAY
+    NSUserActivity *pendingActivity = [self.launchDecision takePendingUserActivity];
+    if (pendingActivity != nil) {
+        DWLog(@"LAUNCH replaying a universal link kept during the deferred launch");
+        [self application:[UIApplication sharedApplication]
+            continueUserActivity:pendingActivity
+              restorationHandler:^(NSArray<id<UIUserActivityRestoring>> *_Nullable restorableObjects){}];
+    }
+#endif
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
@@ -312,6 +331,12 @@ NS_ASSUME_NONNULL_BEGIN
     if (url == nil || ![DWInvitationLinkNormalizer isInvitationURL:url]) {
         return NO;
     }
+    // Delivered while a background launch still waits for its activation:
+    // kept, and replayed once the real root is installed.
+    if ([self.launchDecision holdUserActivityIfPending:userActivity]) {
+        DWLog(@"LAUNCH universal link kept until the deferred launch completes");
+        return YES;
+    }
     DWInitialViewController *controller = (DWInitialViewController *)self.window.rootViewController;
     if ([controller isKindOfClass:DWInitialViewController.class]) {
         [controller handleDeeplink:url];
@@ -324,6 +349,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    // Delivered while a background launch still waits for its activation:
+    // kept, and replayed through this method once the real root is installed.
+    if ([self.launchDecision holdURLIfPending:url]) {
+        DWLog(@"LAUNCH link kept until the deferred launch completes: %@", url);
+        return YES;
+    }
 #if DASHPAY
     // dashpay://invite (and pasted-transport) invitation links open the
     // redeem flow; every other scheme falls through to DWURLParser.
