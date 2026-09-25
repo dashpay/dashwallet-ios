@@ -48,6 +48,13 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 /// The recover import in flight, if any: blocks a second submission and
 /// lets a completion tell whether it belongs to the current attempt.
 @property (nonatomic, strong) DWRecoverImportAttempts *recoverAttempts;
+/// The recover screen whose phrase is being imported: its input is blocked
+/// for the import's duration, so the keyboard's Done cannot resubmit or
+/// take the wipe route meanwhile.
+@property (nullable, nonatomic, weak) DWRecoverViewController *recoverController;
+/// Where the progress HUD was shown, to hide it from the same view.
+@property (nullable, nonatomic, weak) UIView *recoverProgressHost;
+@property (nonatomic, assign) BOOL popGestureWasEnabled;
 
 @property (nonatomic, assign) BOOL launchingWasDeferred;
 
@@ -78,6 +85,17 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
+
+    if (self.recoverAttempts.isInFlight) {
+        // Back on this screen while an import runs: the user left the
+        // recover flow, so its completion must neither advance setup nor
+        // keep a command around. The wallet the import may still persist
+        // is found by the next Create/Recover's presence read.
+        DWLog(@"SETUP :: recover flow left while an import was in flight; its completion is stale");
+        [self.recoverAttempts invalidate];
+        [self endRecoverImportBlocking];
+        self.recoverWalletCommand = nil;
+    }
 
     if (!self.initialAnimationCompleted) {
         self.initialAnimationCompleted = YES;
@@ -165,33 +183,33 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     DWRecoverWalletCommand *command = self.recoverWalletCommand;
     if (command != nil) {
         const DWWalletPresence presence = DWWalletEnvironment.walletPresence;
-        if (presence == DWWalletPresenceUnknown) {
+        const DWRecoverImportRoute route = [DWRecoverImportRouting routeAtExecutionWithPresence:presence];
+        if (route == DWRecoverImportRouteRetryUnreadable) {
             DWLog(@"SETUP :: wallet presence unreadable at recover execution; not importing");
             [self presentRecoverRetryAlertWithMessage:NSLocalizedString(@"Your wallet couldn't be read right now. Please try again.", nil)];
             return;
         }
-        if (presence == DWWalletPresenceAbsent) {
+        if (route == DWRecoverImportRouteImportWallet) {
             // The import persists the mnemonic and creates the wallet off the
             // main queue; setup completes only once it has, so the main
             // screen never opens over a wallet that does not exist yet. A
             // failed import keeps the command behind Try Again. While it
-            // runs, a progress HUD over the navigation stack blocks a second
-            // submission and any navigation, and the attempt token makes a
-            // completion for an earlier attempt inert.
+            // runs, input and navigation are blocked (`beginRecoverImportBlocking`)
+            // and the attempt token makes a completion for an earlier
+            // attempt inert.
             const NSUInteger attempt = [self.recoverAttempts begin];
-            UIView *hudHost = self.navigationController.view ?: self.view;
-            [hudHost dw_showProgressHUDWithMessage:NSLocalizedString(@"Recovering...", nil)];
+            [self beginRecoverImportBlocking];
             __weak typeof(self) weakSelf = self;
             [command executeWithCompletion:^(BOOL succeeded) {
                 __strong typeof(weakSelf) strongSelf = weakSelf;
                 if (strongSelf == nil) {
                     return;
                 }
-                [hudHost dw_hideProgressHUD];
                 if (![strongSelf.recoverAttempts finish:attempt]) {
                     DWLog(@"SETUP :: recover import completed for an earlier attempt; ignored");
                     return;
                 }
+                [strongSelf endRecoverImportBlocking];
                 if (!succeeded) {
                     DWLog(@"SETUP :: recover import did not complete; keeping the command for a retry");
                     [strongSelf presentRecoverRetryAlertWithMessage:NSLocalizedString(@"Your wallet couldn't be recovered right now. Please try again.", nil)];
@@ -207,6 +225,32 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     }
 
     [self continueOrCompleteWalletSetup];
+}
+
+/// While the import runs: the keyboard goes away and the recover screen
+/// takes no input (the text view's Done key would resubmit, or take the
+/// wipe route once the wallet lands), the navigation bar's back button and
+/// the interactive pop are off, and a progress HUD over the stack shows
+/// why. `endRecoverImportBlocking` restores all of it.
+- (void)beginRecoverImportBlocking {
+    UINavigationController *navigation = self.navigationController;
+    [self.recoverController.view endEditing:YES];
+    self.recoverController.view.userInteractionEnabled = NO;
+    navigation.navigationBar.userInteractionEnabled = NO;
+    self.popGestureWasEnabled = navigation.interactivePopGestureRecognizer.enabled;
+    navigation.interactivePopGestureRecognizer.enabled = NO;
+    UIView *host = navigation.view ?: self.view;
+    self.recoverProgressHost = host;
+    [host dw_showProgressHUDWithMessage:NSLocalizedString(@"Recovering...", nil)];
+}
+
+- (void)endRecoverImportBlocking {
+    UINavigationController *navigation = self.navigationController;
+    [self.recoverProgressHost dw_hideProgressHUD];
+    self.recoverProgressHost = nil;
+    self.recoverController.view.userInteractionEnabled = YES;
+    navigation.navigationBar.userInteractionEnabled = YES;
+    navigation.interactivePopGestureRecognizer.enabled = self.popGestureWasEnabled;
 }
 
 /// Try Again re-runs `executeRecoverCommandIfAllowedThenContinueSetup` with
@@ -255,18 +299,21 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
 - (void)recoverViewControllerDidRecoverWallet:(DWRecoverViewController *)controller
                                recoverCommand:(nonnull DWRecoverWalletCommand *)recoverCommand {
-    if (self.recoverAttempts.isInFlight) {
+    const DWRecoverImportRoute route = [DWRecoverImportRouting routeAtSubmissionInFlight:self.recoverAttempts.isInFlight
+                                                                            shouldSetPin:DWSetPinModel.shouldSetPin];
+    if (route == DWRecoverImportRouteIgnoreWhileInFlight) {
         // A submission while the previous import is still persisting the
-        // wallet would start a second import; the HUD normally prevents it.
+        // wallet would start a second import; the blocked input normally
+        // prevents it.
         DWLog(@"SETUP :: recover submitted while an import is in flight; ignored");
         return;
     }
-    // Defer recovering until a pin is set
+    self.recoverController = controller;
     self.recoverWalletCommand = recoverCommand;
 
     [DWGlobalOptions sharedInstance].walletNeedsBackup = NO;
 
-    if (DWSetPinModel.shouldSetPin) {
+    if (route == DWRecoverImportRouteDeferUntilPinSet) {
         // The PIN step's callback executes the command once the PIN is set.
         [self continueOrCompleteWalletSetup];
     }

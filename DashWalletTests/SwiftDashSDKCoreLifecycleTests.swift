@@ -232,6 +232,27 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertTrue(attempts.isInFlight, "the current attempt is still running")
         XCTAssertTrue(attempts.finish(third))
         XCTAssertFalse(attempts.isInFlight)
+
+        let fourth = attempts.begin()
+        attempts.invalidate()
+        XCTAssertFalse(attempts.isInFlight, "leaving the flow ends the attempt")
+        XCTAssertFalse(attempts.finish(fourth), "its completion is stale")
+    }
+
+    /// The recover flow's two decisions: at submission an import in flight
+    /// wins over everything, otherwise a missing PIN defers the command to
+    /// the PIN step and an existing PIN executes now; at execution only a
+    /// definite "absent" imports — unreadable retries, present completes
+    /// into the wallet that is there.
+    func testRecoverImportRoutingCoversSubmissionAndExecution() {
+        XCTAssertEqual(RecoverImportRouting.atSubmission(inFlight: true, shouldSetPin: true), .ignoreWhileInFlight)
+        XCTAssertEqual(RecoverImportRouting.atSubmission(inFlight: true, shouldSetPin: false), .ignoreWhileInFlight)
+        XCTAssertEqual(RecoverImportRouting.atSubmission(inFlight: false, shouldSetPin: true), .deferUntilPinSet)
+        XCTAssertEqual(RecoverImportRouting.atSubmission(inFlight: false, shouldSetPin: false), .executeNow)
+
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .unknown), .retryUnreadable)
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .absent), .importWallet)
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present), .completeWithExistingWallet)
     }
 
     /// While the launch decision is pending, the runtime refuses automatic

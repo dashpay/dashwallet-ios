@@ -62,6 +62,54 @@ final class RecoverImportAttempts: NSObject {
         isInFlight = false
         return true
     }
+
+    /// The user left the recover flow while an attempt was running: its
+    /// completion, whenever it arrives, is stale.
+    @objc func invalidate() {
+        current += 1
+        isInFlight = false
+    }
+}
+
+/// Where a submitted recovery phrase goes. Two decisions, both pure, so the
+/// controller's branches are testable without UIKit: one when the recover
+/// screen hands the phrase over, one when the import is about to run (the
+/// PIN step may lie between them, so the keychain is read again there).
+@objc(DWRecoverImportRoute)
+enum RecoverImportRoute: Int {
+    /// An import is still running; this submission is dropped.
+    case ignoreWhileInFlight
+    /// No PIN yet: keep the command, the PIN step's callback executes it.
+    case deferUntilPinSet
+    /// A PIN exists, so the PIN step is skipped: execute now.
+    case executeNow
+    /// The keychain could not be read: keep the command behind Try Again.
+    case retryUnreadable
+    /// Definitely no wallet: import.
+    case importWallet
+    /// A wallet is present (a late migration): nothing to import, complete
+    /// setup into it.
+    case completeWithExistingWallet
+}
+
+@objc(DWRecoverImportRouting)
+final class RecoverImportRouting: NSObject {
+    private override init() {}
+
+    @objc(routeAtSubmissionInFlight:shouldSetPin:)
+    static func atSubmission(inFlight: Bool, shouldSetPin: Bool) -> RecoverImportRoute {
+        if inFlight { return .ignoreWhileInFlight }
+        return shouldSetPin ? .deferUntilPinSet : .executeNow
+    }
+
+    @objc(routeAtExecutionWithPresence:)
+    static func atExecution(presence: WalletEnvironment.WalletPresence) -> RecoverImportRoute {
+        switch presence {
+        case .unknown: return .retryUnreadable
+        case .absent: return .importWallet
+        case .present: return .completeWithExistingWallet
+        }
+    }
 }
 
 extension DWRecoverModel {
