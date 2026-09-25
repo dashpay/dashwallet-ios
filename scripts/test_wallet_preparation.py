@@ -57,7 +57,11 @@ enum DWLogger { static func log(_ message: String) {} }
         "    private func enqueueRefresh(trigger:",
         "    private func handleObservedNetworkChange()",
         "    private func enqueueAwaitable(_ op:",
-    ))
+        # The launch-decision hold, as the funnel consults it.
+        "    @objc static func holdAutomaticStartsUntilLaunchDecision() {",
+        "    @objc static func releaseAutomaticStartsForLaunchDecision() {",
+        "    static func automaticStartAllowedForLaunchDecision(_ trigger: String)",
+    )).replace("@objc ", "")
     # Its closure default contains braces before the method body.
     rearm_start = runtime.index("    func rearmPlatformSync(")
     rearm_end = runtime.index("\n    /// Awaitable counterpart", rearm_start)
@@ -70,6 +74,8 @@ enum DWLogger { static func log(_ message: String) {} }
         + '''
 @MainActor final class SwiftDashSDKWalletRuntime {
     static let shared = SwiftDashSDKWalletRuntime()
+    static var automaticStartsHeldForLaunchDecision = false
+    static var loggedHeldAutomaticStart = false
     let lifecycleQueue = SerialAsyncLifecycleQueue()
     var refreshCalls = 0
     func enqueue(_ op: @escaping @MainActor () async -> Void) { lifecycleQueue.enqueue(op) }
@@ -164,6 +170,22 @@ import XCTest
         let ready = await BackgroundRefreshCoordinator.defaultRuntimeStart(while: .init(isWanted: { true }))
         XCTAssertTrue(ready)
         XCTAssertEqual(runtime.refreshCalls, 1)
+    }
+    func testAutomaticKicksAreHeldUntilTheLaunchDecisionAndPassAfterwards() async {
+        SwiftDashSDKWalletRuntime.holdAutomaticStartsUntilLaunchDecision()
+        for trigger: SwiftDashSDKWalletRuntime.RefreshTrigger in [.startIfReady, .walletMaterialChanged, .networkDidChange] {
+            runtime.enqueueRefresh(trigger: trigger)
+        }
+        runtime.handleObservedNetworkChange()
+        await runtime.drain()
+        XCTAssertEqual(runtime.refreshCalls, 0, "nothing starts before the launch decision")
+
+        SwiftDashSDKWalletRuntime.releaseAutomaticStartsForLaunchDecision()
+        runtime.enqueueRefresh(trigger: .startIfReady)
+        await runtime.drain()
+        XCTAssertEqual(runtime.refreshCalls, 1, "the activation's start runs")
+        // A launch that was never held (foreground) is unaffected.
+        XCTAssertTrue(SwiftDashSDKWalletRuntime.automaticStartAllowedForLaunchDecision("test"))
     }
     func testExplicitRetryAndSyncNowCanStillRecover() async {
         await failOpen()

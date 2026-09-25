@@ -244,6 +244,42 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         dispatchOnPipeline { shared.enqueueRefresh(trigger: .startIfReady) }
     }
 
+    // MARK: - Launch decision hold
+
+    /// While a background launch's decision is pending (`LaunchDecision`),
+    /// every automatic kick — `startIfReady`, the connectivity-return kick,
+    /// a network-change notification, a material change — is refused here,
+    /// at the funnel, instead of being gated in each caller: a start before
+    /// the first activation would wait on a migrator that has not been
+    /// asked to run and end in a stopped runtime with a transient error.
+    /// `AppDelegate` raises the hold at a background launch and lowers it in
+    /// its launch-time wallet start, so the hold never outlives the
+    /// decision. Not consulted by `BackgroundRefreshCoordinator`'s own
+    /// start (it owns the runtime it brings up and tears it down) nor by the
+    /// interactive operations (switches, wipes, Try Again), which only run
+    /// after activation.
+    private static var automaticStartsHeldForLaunchDecision = false
+    private static var loggedHeldAutomaticStart = false
+
+    @objc static func holdAutomaticStartsUntilLaunchDecision() {
+        automaticStartsHeldForLaunchDecision = true
+        loggedHeldAutomaticStart = false
+    }
+
+    @objc static func releaseAutomaticStartsForLaunchDecision() {
+        automaticStartsHeldForLaunchDecision = false
+    }
+
+    /// True when an automatic kick may proceed; logs the first refusal.
+    static func automaticStartAllowedForLaunchDecision(_ trigger: String) -> Bool {
+        guard automaticStartsHeldForLaunchDecision else { return true }
+        if !loggedHeldAutomaticStart {
+            loggedHeldAutomaticStart = true
+            DWLogger.log("RUNTIME \(trigger) held: the launch decision is pending until the app becomes active")
+        }
+        return false
+    }
+
     /// Explicit recovery from a failed database open. Waits for teardown and
     /// retries the whole start on the same serial queue as switches and wipes.
     func retryWalletPreparation() async {
@@ -266,6 +302,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// owns the runtime or does not.
     nonisolated static func startIfReadyWhenLifecycleIdle() {
         dispatchOnPipeline {
+            guard automaticStartAllowedForLaunchDecision("connectivity-return kick") else { return }
             shared.enqueue {
                 guard WalletLifecycleTransitionState.shared.phase == .idle else {
                     Self.logger.info(
@@ -693,6 +730,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     }
 
     private func enqueueRefresh(trigger: RefreshTrigger) {
+        guard Self.automaticStartAllowedForLaunchDecision(trigger.rawValue) else { return }
         enqueue { [weak self] in
             // Automatic kicks (including material-change notifications) must
             // leave Help and its unsent draft intact. Re-read on the serial
