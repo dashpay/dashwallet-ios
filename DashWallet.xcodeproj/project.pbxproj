@@ -1264,6 +1264,7 @@
 		C05FA6CE3DDE2D0327D334E5 /* CoinJoinRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = B478AD92C1F1C11D09645DF4 /* CoinJoinRecovery.swift */; };
 		C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */; };
 		2523A5799AB8F025BBFA7BEF /* InvitationValidationPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1C04D04FBAFFE0998528F13 /* InvitationValidationPolicyTests.swift */; };
+		BECA547342FBB4945119031B /* PendingInvitationStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D371B3F05242DD0F47028B8C /* PendingInvitationStoreTests.swift */; };
 		C124DF94278D4238FAE0975D /* OrderPreviewFeeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */; };
 		C1A0B2C3D4E5F60718293A02 /* ShortcutsBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */; };
 		C1A0B2C3D4E5F60718293A03 /* ShortcutsBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */; };
@@ -3408,6 +3409,7 @@
 		C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OrderPreviewFeeRow.swift; sourceTree = "<group>"; };
 		C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKCoreLifecycleTests.swift; sourceTree = "<group>"; };
 		F1C04D04FBAFFE0998528F13 /* InvitationValidationPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationValidationPolicyTests.swift; sourceTree = "<group>"; };
+		D371B3F05242DD0F47028B8C /* PendingInvitationStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingInvitationStoreTests.swift; sourceTree = "<group>"; };
 		C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsBarView.swift; sourceTree = "<group>"; };
 		C1D2E3F4A5B6C7D8E9F01234 /* TransferAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountView.swift; sourceTree = "<group>"; };
 		C3DAD266246AA6F10001624F /* DWScreenshotWarningViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWScreenshotWarningViewController.h; sourceTree = "<group>"; };
@@ -7535,6 +7537,7 @@
 				5798C63088F44013AEC5D85B /* ShieldedRecoveryControllerTests.swift */,
 				C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */,
 				F1C04D04FBAFFE0998528F13 /* InvitationValidationPolicyTests.swift */,
+				D371B3F05242DD0F47028B8C /* PendingInvitationStoreTests.swift */,
 				CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */,
 				CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */,
 				7A30000130A1000000000001 /* TransactionDirectionTests.swift */,
@@ -10852,6 +10855,7 @@
 				F0CAB696BC154E7EB3EC221D /* ShieldedRecoveryControllerTests.swift in Sources */,
 				C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */,
 				2523A5799AB8F025BBFA7BEF /* InvitationValidationPolicyTests.swift in Sources */,
+				BECA547342FBB4945119031B /* PendingInvitationStoreTests.swift in Sources */,
 				CB9000022FE1000000000002 /* CoinbaseTransactionMetadataTests.swift in Sources */,
 				CB9100022FE2000000000002 /* CoinbaseTransferAmountTests.swift in Sources */,
 				7A30000230A1000000000002 /* TransactionDirectionTests.swift in Sources */,

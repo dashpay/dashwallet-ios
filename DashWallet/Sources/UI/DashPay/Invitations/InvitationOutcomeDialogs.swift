@@ -57,6 +57,14 @@ enum InvitationOutcomeDialogs {
             message: NSLocalizedString("DashPay is currently processing an invite.", comment: "DashPay Invitations"))
     }
 
+    /// A valid invitation that could not be saved on this device.
+    @MainActor
+    static func storageFailed() -> UIViewController {
+        alert(
+            title: NSLocalizedString("Invitation Error", comment: "DashPay Invitations"),
+            message: NSLocalizedString("The invitation couldn't be saved on this device. Open the link again to retry.", comment: "DashPay Invitations"))
+    }
+
     /// The opened link or scanned code is not an invitation.
     @MainActor
     static func notAnInvitation() -> UIViewController {
@@ -89,8 +97,13 @@ enum InvitationOutcomeDialogs {
     }
 }
 
-/// Android's `InviteAlreadyClaimedDialog`: the inviter's avatar in a red
-/// "error" frame, no title, the sender named in bold, OK.
+/// Android's `InviteAlreadyClaimedDialog`: the inviter in a red "error"
+/// frame, no title, the sender named in bold, OK.
+///
+/// The frame shows the initials placeholder, never the link's `avatar-url`:
+/// that URL is whatever the link's author put there, unauthenticated, and
+/// fetching it would tell a tracking server when the recipient opened the
+/// link.
 struct InvitationAlreadyClaimedDialog: View {
     let inviter: InvitationInviter
     @Environment(\.dismiss) private var dismiss
@@ -116,7 +129,7 @@ struct InvitationAlreadyClaimedDialog: View {
                 ZStack(alignment: .bottomTrailing) {
                     ContactAvatarView(
                         title: inviter.bestName ?? "",
-                        avatarURL: inviter.avatarURL,
+                        avatarURL: nil,
                         identitySeed: Data((inviter.username ?? "").utf8),
                         size: 72)
                         .overlay(Circle().stroke(Color.dash.red, lineWidth: 3))

@@ -104,6 +104,37 @@ final class InvitationValidationPolicyTests: XCTestCase {
         XCTAssertEqual(verdict, .alreadyHasIdentity)
     }
 
+    // MARK: - Claim failures arrive wrapped by the coordinator
+
+    private func wrapped(_ error: Error) -> Error {
+        DWIdentityRegistrationCoordinator.CoordinatorError.identityRegistration(error)
+    }
+
+    func testWrappedDefinitiveClaimFailuresAreRecognized() {
+        XCTAssertEqual(
+            InvitationClaimFailure.classify(wrapped(PlatformWalletError.invalidNetwork("testnet"))), .invalid)
+        XCTAssertEqual(
+            InvitationClaimFailure.classify(wrapped(PlatformWalletError.invalidParameter("bad link"))), .invalid)
+        XCTAssertEqual(
+            InvitationClaimFailure.classify(wrapped(PlatformWalletError.assetLockAlreadyConsumed("outpoint"))), .alreadyUsed)
+        XCTAssertEqual(
+            InvitationClaimFailure.classify(wrapped(PlatformWalletError.walletOperation(
+                "IdentityAssetLockTransactionOutPointAlreadyConsumedError: asset lock outpoint already consumed"))),
+            .alreadyUsed)
+    }
+
+    func testStillConfirmingKeepsTheInvitation() {
+        let failure = InvitationClaimFailure.classify(wrapped(PlatformWalletError.walletOperation(
+            "invitation islock proof was rejected … the funding transaction is not yet chain-locked")))
+        XCTAssertEqual(failure, .stillConfirming)
+        XCTAssertEqual(failure?.endsInvitation, false)
+    }
+
+    func testUnrelatedFailureIsNotAnInvitationVerdict() {
+        XCTAssertNil(InvitationClaimFailure.classify(wrapped(PlatformWalletError.walletOperation("Timeout expired"))))
+        XCTAssertNil(InvitationClaimFailure.classify(DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled))
+    }
+
     // MARK: - Inviter name
 
     func testInviterBestNamePrefersDisplayName() {

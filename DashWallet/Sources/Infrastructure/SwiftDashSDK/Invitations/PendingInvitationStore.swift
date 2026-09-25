@@ -57,6 +57,9 @@ final class PendingInvitationStore: ObservableObject {
         case notAnInvitation
         /// This wallet already has a DashPay username; nothing stored.
         case alreadyHasIdentity
+        /// A valid invitation that could not be written to the Keychain.
+        /// Nothing is stored; opening the link again retries.
+        case storageFailed
     }
 
     enum ClearReason: String {
@@ -170,7 +173,7 @@ final class PendingInvitationStore: ObservableObject {
         }
         guard keychain.storeKeyData(Data(trimmed.utf8), identifier: keychainAccount(currentScope)) != nil else {
             Self.logger.error("🎟️ INVITE :: could not store the pending invitation in the Keychain")
-            return .notAnInvitation
+            return .storageFailed
         }
         let invitation = PendingInvitation(rawLink: trimmed, receivedAt: Date(), fromOnboarding: !hasWallet)
         writeMetadata(invitation, scope: currentScope)
@@ -224,7 +227,12 @@ final class PendingInvitationStore: ObservableObject {
     /// Delete every stored invitation, across networks and wallets (wallet
     /// wipe).
     static func wipeAll() {
-        let service = KeychainManager.shared.serviceName
+        shared.wipeAllScopes()
+    }
+
+    /// `wipeAll` for this store's Keychain service and defaults.
+    func wipeAllScopes() {
+        let service = keychain.serviceName
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -236,7 +244,7 @@ final class PendingInvitationStore: ObservableObject {
            let items = result as? [[String: Any]] {
             for item in items {
                 guard let account = item[kSecAttrAccount as String] as? String,
-                      account.hasPrefix(keychainPrefix) else { continue }
+                      account.hasPrefix(Self.keychainPrefix) else { continue }
                 let deleteQuery: [String: Any] = [
                     kSecClass as String: kSecClassGenericPassword,
                     kSecAttrService as String: service,
@@ -245,10 +253,9 @@ final class PendingInvitationStore: ObservableObject {
                 SecItemDelete(deleteQuery as CFDictionary)
             }
         }
-        let defaults = UserDefaults.standard
-        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(metadataPrefix) {
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(Self.metadataPrefix) {
             defaults.removeObject(forKey: key)
         }
-        shared.reload()
+        reload()
     }
 }

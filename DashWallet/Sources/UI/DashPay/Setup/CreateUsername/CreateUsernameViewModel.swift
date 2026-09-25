@@ -654,35 +654,23 @@ class CreateUsernameViewModel: ObservableObject {
     /// one that only needs time, in the invitation's own words. nil for
     /// everything else, which keeps the generic wording and the invitation.
     private func invitationClaimFailureMessage(_ error: Error) -> String? {
-        let raw = String(describing: error)
+        guard let failure = InvitationClaimFailure.classify(error) else { return nil }
+        if failure.endsInvitation {
+            PendingInvitationStore.shared.clear(reason: .definitiveOutcome)
+        }
         let sender = InvitationOutcomeDialogs.senderName(
             InvitationValidationPolicy.inviter(from: invitationURI.flatMap { DWInvitationService.shared.preview(for: $0) }))
-        let lowered = raw.lowercased()
-        let alreadyUsed: Bool
-        if case PlatformWalletError.assetLockAlreadyConsumed = error {
-            alreadyUsed = true
-        } else {
-            alreadyUsed = lowered.contains("asset lock") && lowered.contains("already")
-        }
-        if alreadyUsed {
-            PendingInvitationStore.shared.clear(reason: .definitiveOutcome)
+        switch failure {
+        case .alreadyUsed:
             return String.localizedStringWithFormat(
                 NSLocalizedString("Your invitation from %@ has been already claimed", comment: ""), sender)
-        }
-        // The IS proof went stale and the funding block is not chain-locked
-        // yet: the same invitation claims fine a few minutes later.
-        if lowered.contains("not yet chain-locked") {
+        case .invalid:
+            return String.localizedStringWithFormat(
+                NSLocalizedString("Your invitation from %@ is not valid", comment: ""), sender)
+        case .stillConfirming:
             return NSLocalizedString(
                 "The invitation is still confirming on the network. Try again in a few minutes.",
                 comment: "DashPay Invitations")
-        }
-        switch error {
-        case PlatformWalletError.invalidParameter, PlatformWalletError.invalidNetwork:
-            PendingInvitationStore.shared.clear(reason: .definitiveOutcome)
-            return String.localizedStringWithFormat(
-                NSLocalizedString("Your invitation from %@ is not valid", comment: ""), sender)
-        default:
-            return nil
         }
     }
 

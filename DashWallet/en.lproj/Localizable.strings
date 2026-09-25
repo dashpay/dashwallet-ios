@@ -6478,3 +6478,6 @@
 
 /* DashPay Invitations */
 "The invitation is still confirming on the network. Try again in a few minutes." = "The invitation is still confirming on the network. Try again in a few minutes.";
+
+/* DashPay Invitations */
+"The invitation couldn't be saved on this device. Open the link again to retry." = "The invitation couldn't be saved on this device. Open the link again to retry.";

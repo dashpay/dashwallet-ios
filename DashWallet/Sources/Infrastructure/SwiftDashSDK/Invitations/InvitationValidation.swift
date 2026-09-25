@@ -137,6 +137,52 @@ enum InvitationValidationPolicy {
     }
 }
 
+/// How a failed invitation claim ends — pure, so it is unit-testable.
+enum InvitationClaimFailure: Equatable {
+    /// Someone else's claim spent the voucher. Ends the invitation.
+    case alreadyUsed
+    /// The link can never be claimed by this wallet. Ends the invitation.
+    case invalid
+    /// The InstantSend proof went stale before the funding block was
+    /// chain-locked; the same invitation claims fine a few minutes later.
+    case stillConfirming
+
+    var endsInvitation: Bool { self != .stillConfirming }
+
+    /// nil for a failure that says nothing about the invitation (network,
+    /// PIN, DPNS) — the generic registration wording applies.
+    static func classify(_ error: Error) -> InvitationClaimFailure? {
+        let underlying = unwrap(error)
+        switch underlying {
+        case PlatformWalletError.assetLockAlreadyConsumed:
+            return .alreadyUsed
+        case PlatformWalletError.invalidParameter, PlatformWalletError.invalidNetwork:
+            return .invalid
+        default:
+            break
+        }
+        // Platform's consensus rejections reach the claim as a generic SDK
+        // error; only their text names the cause.
+        let text = String(describing: underlying).lowercased()
+        if text.contains("already consumed") || text.contains("already completely used") {
+            return .alreadyUsed
+        }
+        if text.contains("not yet chain-locked") {
+            return .stillConfirming
+        }
+        return nil
+    }
+
+    /// The coordinator reports an IdentityCreate failure wrapped in
+    /// `CoordinatorError.identityRegistration`.
+    private static func unwrap(_ error: Error) -> Error {
+        if case DWIdentityRegistrationCoordinator.CoordinatorError.identityRegistration(let inner) = error {
+            return inner
+        }
+        return error
+    }
+}
+
 /// Runs the checks against the live wallet.
 @MainActor
 enum InvitationValidator {

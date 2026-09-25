@@ -66,6 +66,8 @@ final class InvitationEntry: NSObject {
             dialog = InvitationOutcomeDialogs.notAnInvitation()
         case .alreadyHasIdentity:
             dialog = InvitationOutcomeDialogs.alreadyHasIdentity()
+        case .storageFailed:
+            dialog = InvitationOutcomeDialogs.storageFailed()
         }
         if let dialog, let presenter {
             topmost(from: presenter).present(dialog, animated: true)
