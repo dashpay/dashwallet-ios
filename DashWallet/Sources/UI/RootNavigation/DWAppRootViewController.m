@@ -556,11 +556,13 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             self.lockWindow.alpha = 0.0;
         }
         completion:^(BOOL finished) {
-            self.lockWindow.rootViewController = nil;
-            self.lockWindow.hidden = YES;
-            self.lockWindow.alpha = 1.0;
-            [DWWalletLifecycleOverlayBridge setLockScreenVisible:NO];
+            [self tearDownLockWindow];
 
+            // After `tearDownLockWindow`: the handlers read `lockController`
+            // to decide "still locked", and UIKit keeps the dismissed
+            // hierarchy alive through this run-loop pass, so the weak
+            // reference would not have zeroed by itself yet — the links
+            // would be kept again, into slots nothing drains later.
             [self processDeferredLinks];
 
             [[NSNotificationCenter defaultCenter] postNotificationName:DWAppDidUnlockNotification
@@ -573,14 +575,24 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
     [self hideAndRemoveOverlayImageView];
 
-    self.lockWindow.rootViewController = nil;
-    self.lockWindow.hidden = YES;
-    self.lockWindow.alpha = 1.0;
-    [DWWalletLifecycleOverlayBridge setLockScreenVisible:NO];
+    [self tearDownLockWindow];
 
     // The support recovery controller reports success only after the serial
     // wiper has completed. Transition to setup without issuing a second wipe.
     [self didWipeWallet];
+}
+
+/// Drop the lock screen and forget it at once. The two references are
+/// weak, but the dismissed hierarchy outlives this call by a run-loop pass,
+/// so anything that reads them right after (the deferred-link drain, the
+/// next `showLockControllerIfNeeded`) must not see the old screen.
+- (void)tearDownLockWindow {
+    self.lockWindow.rootViewController = nil;
+    self.lockWindow.hidden = YES;
+    self.lockWindow.alpha = 1.0;
+    self.lockController = nil;
+    self.displayedLockNavigationController = nil;
+    [DWWalletLifecycleOverlayBridge setLockScreenVisible:NO];
 }
 
 #pragma mark - Notifications
