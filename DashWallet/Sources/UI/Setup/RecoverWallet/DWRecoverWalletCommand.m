@@ -42,17 +42,17 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)execute {
-    [self executeWithCompletion:^(BOOL succeeded){
+    [self executeWithCompletion:^(DWRecoverImportOutcome outcome){
     }];
 }
 
-- (void)executeWithCompletion:(void (^)(BOOL succeeded))completion {
+- (void)executeWithCompletion:(void (^)(DWRecoverImportOutcome outcome))completion {
     [self recoverWalletWithPhrase:self.phrase completion:completion];
 }
 
 #pragma mark - Private
 
-- (void)recoverWalletWithPhrase:(NSString *)phrase completion:(void (^)(BOOL succeeded))completion {
+- (void)recoverWalletWithPhrase:(NSString *)phrase completion:(void (^)(DWRecoverImportOutcome outcome))completion {
     [self importWalletIntoSwiftDashSDK:phrase completion:completion];
 
     [DWGlobalOptions sharedInstance].resyncingWallet = YES;
@@ -63,15 +63,15 @@ NS_ASSUME_NONNULL_BEGIN
     // DashSync's parallel SPV was retired in M6.
 }
 
-- (void)importWalletIntoSwiftDashSDK:(NSString *)phrase completion:(void (^)(BOOL succeeded))completion {
+- (void)importWalletIntoSwiftDashSDK:(NSString *)phrase completion:(void (^)(DWRecoverImportOutcome outcome))completion {
     if (phrase.length == 0) {
-        completion(NO);
+        completion(DWRecoverImportOutcomeFailed);
         return;
     }
 
     NSString *pin = [DWAuthenticationService shared].currentPin;
     if (pin.length == 0) {
-        completion(NO);
+        completion(DWRecoverImportOutcomeFailed);
         return;
     }
 
@@ -86,7 +86,7 @@ NS_ASSUME_NONNULL_BEGIN
         network = DWSwiftDashSDKNetworkDevnet;
     }
     else {
-        completion(NO); // unreachable: networkKind is total over the three cases
+        completion(DWRecoverImportOutcomeFailed); // unreachable: networkKind is total over the three cases
         return;
     }
 

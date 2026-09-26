@@ -255,6 +255,31 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present), .completeWithExistingWallet)
     }
 
+    /// Regression: the first attempt persisted the current network's wallet
+    /// and failed provisioning the other one. On Try Again the keychain
+    /// reads "present" — that is the half-provisioned wallet, so the import
+    /// is re-run (it resumes) rather than completed around; without the
+    /// resume flag "present" still means a wallet that landed meanwhile.
+    /// The host's verdict maps to the flag through the creator.
+    func testRetryAfterAPartialImportRerunsTheImportInsteadOfCompletingAroundIt() {
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, resumingPartialImport: true), .importWallet)
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, resumingPartialImport: false), .completeWithExistingWallet)
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .unknown, resumingPartialImport: true), .retryUnreadable,
+                       "an unreadable keychain still waits, even mid-resume")
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .absent, resumingPartialImport: true), .importWallet)
+
+        struct OtherNetworkFailed: Error {}
+        XCTAssertEqual(
+            SwiftDashSDKWalletCreator.outcome(for: SwiftDashSDKHost.HostError.provisioningIncomplete(OtherNetworkFailed())),
+            .failedAfterPersisting)
+        XCTAssertEqual(
+            SwiftDashSDKWalletCreator.outcome(for: SwiftDashSDKHost.HostError.walletCreationFailed(OtherNetworkFailed())),
+            .failed)
+        XCTAssertEqual(
+            SwiftDashSDKWalletCreator.outcome(for: SwiftDashSDKHost.HostError.mnemonicPersistenceFailed(OtherNetworkFailed())),
+            .failed)
+    }
+
     /// While the launch decision is pending, the runtime refuses automatic
     /// kicks (the sync monitor's connectivity kick, a network change); once
     /// the activation's wallet start releases the hold they pass again. A
