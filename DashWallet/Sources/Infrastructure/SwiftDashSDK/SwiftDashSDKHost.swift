@@ -751,9 +751,13 @@ final class SwiftDashSDKHost {
     /// stored on this device. The check an import resumes on, and the one
     /// the recover flow asks before treating "a wallet is present" as a
     /// finished recovery: derived from the phrase and the keychain alone, so
-    /// no earlier attempt has to be remembered. Only a definite not-found is
-    /// `notPersisted`; a read refused or failed — or attempted while
-    /// protected data is unavailable — is `unknown`, never "not stored".
+    /// no earlier attempt has to be remembered. `notPersisted` only when a
+    /// successful attribute-only inventory read proves the id absent; an id
+    /// the inventory lists whose mnemonic cannot be read — refused, empty,
+    /// not UTF-8 (the SDK reports the last two as "not found" too) — is
+    /// `unknown`, as is an unreadable inventory or a read attempted while
+    /// protected data is unavailable. Never "not stored" for a wallet that
+    /// is there.
     enum PersistedWalletLookup: Equatable {
         case persisted(walletId: Data)
         case notPersisted
@@ -772,18 +776,47 @@ final class SwiftDashSDKHost {
             logger.error("🪺 HOST :: persisted-wallet lookup: walletId derivation failed: \(String(describing: error), privacy: .public)")
             return .unknown(nil)
         }
-        do {
-            _ = try WalletStorage().retrieveMnemonic(for: walletId)
-            return .persisted(walletId: walletId)
-        } catch WalletStorageError.mnemonicNotFound {
-            return .notPersisted
-        } catch WalletStorageError.keychainError(let status) {
-            logger.error("🪺 HOST :: persisted-wallet lookup: keychain read failed: status \(status, privacy: .public)")
-            return .unknown(status)
-        } catch {
-            logger.error("🪺 HOST :: persisted-wallet lookup failed: \(String(describing: error), privacy: .public)")
-            return .unknown(nil)
+        let storage = WalletStorage()
+        let lookup = classifyPersistedWalletLookup(
+            walletId: walletId,
+            inventory: Result { try storage.listWalletIdsWithMnemonic() },
+            mnemonic: { walletId in Result { try storage.retrieveMnemonic(for: walletId) } })
+        if case .unknown(let status) = lookup {
+            logger.error("🪺 HOST :: persisted-wallet lookup could not answer: status \(String(describing: status), privacy: .public)")
         }
+        return lookup
+    }
+
+    /// The lookup's verdict from the two reads, pure. `mnemonic` runs only
+    /// for an id the inventory lists.
+    nonisolated static func classifyPersistedWalletLookup(
+        walletId: Data,
+        inventory: Result<[Data], Error>,
+        mnemonic: (Data) -> Result<String, Error>
+    ) -> PersistedWalletLookup {
+        let listed: [Data]
+        switch inventory {
+        case .success(let ids):
+            listed = ids
+        case .failure(let error):
+            return .unknown(Self.keychainStatus(of: error))
+        }
+        guard listed.contains(walletId) else {
+            return .notPersisted
+        }
+        switch mnemonic(walletId) {
+        case .success(let phrase) where !phrase.isEmpty:
+            return .persisted(walletId: walletId)
+        case .success:
+            return .unknown(nil)
+        case .failure(let error):
+            return .unknown(Self.keychainStatus(of: error))
+        }
+    }
+
+    private nonisolated static func keychainStatus(of error: Error) -> OSStatus? {
+        if case WalletStorageError.keychainError(let status) = error { return status }
+        return nil
     }
 
     /// Outcome of `addWallet(mnemonic:isImported:)`. `Sendable` because it

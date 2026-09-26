@@ -285,6 +285,52 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                        "a definite absence imports; the lookup is only asked about a present wallet")
     }
 
+    /// The lookup behind the recover retry: "not stored" only when the
+    /// inventory proves the id absent. The SDK reports an empty item and
+    /// invalid UTF-8 as "not found" too, so for an id the inventory lists
+    /// every failed mnemonic read is `unknown` — the flow then waits behind
+    /// Try Again instead of completing around the wallet that is there.
+    func testPersistedWalletLookupTreatsOnlyAProvenAbsenceAsNotPersisted() {
+        let id = Data(repeating: 0xAB, count: 32)
+        let other = Data(repeating: 0xCD, count: 32)
+        typealias Host = SwiftDashSDKHost
+        let phraseOK: (Data) -> Result<String, Error> = { _ in .success("abandon abandon about") }
+
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .success([id, other]), mnemonic: phraseOK),
+                       .persisted(walletId: id))
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .success([other]), mnemonic: phraseOK),
+                       .notPersisted, "the inventory read succeeded and does not list the id: a genuine absence")
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .success([]), mnemonic: phraseOK),
+                       .notPersisted)
+
+        // The id is listed, the value cannot be read — whatever the SDK calls it.
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .success([id]),
+                                                          mnemonic: { _ in .failure(WalletStorageError.mnemonicNotFound) }),
+                       .unknown(nil), "empty data reads as not-found in the SDK; the id is there")
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .success([id]),
+                                                          mnemonic: { _ in .success("") }),
+                       .unknown(nil), "an empty phrase is not a wallet")
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .success([id]),
+                                                          mnemonic: { _ in .failure(WalletStorageError.keychainError(errSecInteractionNotAllowed)) }),
+                       .unknown(errSecInteractionNotAllowed), "access denied")
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .success([id]),
+                                                          mnemonic: { _ in .failure(WalletStorageError.keychainError(errSecAuthFailed)) }),
+                       .unknown(errSecAuthFailed))
+
+        // The inventory itself could not be read.
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .failure(WalletStorageError.keychainError(errSecInteractionNotAllowed)),
+                                                          mnemonic: phraseOK),
+                       .unknown(errSecInteractionNotAllowed))
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .failure(WalletStorageError.mnemonicNotFound),
+                                                          mnemonic: phraseOK),
+                       .unknown(nil))
+
+        // Only a listed id has its mnemonic read.
+        var reads = 0
+        _ = Host.classifyPersistedWalletLookup(walletId: id, inventory: .success([other]), mnemonic: { _ in reads += 1; return .success("x") })
+        XCTAssertEqual(reads, 0)
+    }
+
     /// While the launch decision is pending, the runtime refuses automatic
     /// kicks (the sync monitor's connectivity kick, a network change); once
     /// the activation's wallet start releases the hold they pass again. A
