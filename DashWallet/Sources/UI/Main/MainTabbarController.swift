@@ -499,9 +499,14 @@ extension MainTabbarController {
     // link never presents over an animation still in flight.
 
     /// Whether the home screen can take an invitation now (sync done).
+    /// Without DashPay there are no invitations to wait for.
     @objc
     public var isReadyForInvitations: Bool {
-        homeController?.isReadyForInvitations ?? false
+        #if DASHPAY
+        return homeController?.isReadyForInvitations ?? false
+        #else
+        return true
+        #endif
     }
 
     @objc
@@ -513,12 +518,14 @@ extension MainTabbarController {
         }
     }
 
+    /// `isAbandoned` answers whether the queue has given this link up (its
+    /// watchdog fired); a handler that learns so presents nothing.
     @objc
-    public func performPay(to url: URL, completion: @escaping () -> Void) {
+    public func performPay(to url: URL, completion: @escaping () -> Void, isAbandoned: @escaping () -> Bool) {
         afterDismissingPresented { [weak self] in
             guard let self, let home = self.homeController else { return completion() }
             self.selectedIndex = MainTabbarTabs.home.rawValue
-            home.performPay(to: url, completion: completion)
+            home.performPay(to: url, completion: completion, isAbandoned: isAbandoned)
         }
     }
 
@@ -531,14 +538,14 @@ extension MainTabbarController {
     /// error shown — whether the screen was pushed for it or was already
     /// on top (`ConnectionsViewModel.onURIReceived(_:settled:)`).
     @objc
-    public func openDashConnect(_ uri: String, completion: @escaping () -> Void) {
+    public func openDashConnect(_ uri: String, completion: @escaping () -> Void, isAbandoned: @escaping () -> Bool) {
         afterDismissingPresented { [weak self] in
             guard let self else { return completion() }
-            self.openDashConnectNow(uri, completion: completion)
+            self.openDashConnectNow(uri, completion: completion, isAbandoned: isAbandoned)
         }
     }
 
-    private func openDashConnectNow(_ uri: String, completion: (() -> Void)? = nil) {
+    private func openDashConnectNow(_ uri: String, completion: (() -> Void)? = nil, isAbandoned: (() -> Bool)? = nil) {
         guard let menuNav = menuNavigationController?.navigationController else {
             completion?()
             return
@@ -549,11 +556,11 @@ extension MainTabbarController {
         }
 
         if let connections = menuNav.topViewController as? DashConnectHostingController {
-            connections.handle(uri: uri, completion: completion)
+            connections.handle(uri: uri, completion: completion, isAbandoned: isAbandoned)
             return
         }
 
-        let controller = DashConnectHostingController(navigationController: menuNav, uri: uri, completion: completion)
+        let controller = DashConnectHostingController(navigationController: menuNav, uri: uri, completion: completion, isAbandoned: isAbandoned)
         controller.hidesBottomBarWhenPushed = true
         menuNav.pushViewController(controller, animated: true)
     }

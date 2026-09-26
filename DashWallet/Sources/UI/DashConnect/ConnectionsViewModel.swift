@@ -88,11 +88,25 @@ final class ConnectionsViewModel: ObservableObject {
     /// a sheet, or a newer request superseded it. The deep-link queue hands
     /// the next link over only then.
     private var settlement: (() -> Void)?
+    /// Whether the deep-link queue has given the request in flight up (its
+    /// watchdog fired during the metadata lookup). Asked before anything is
+    /// published: an abandoned request publishes nothing, so its approval
+    /// sheet never lands on top of the screen the next link opened.
+    private var isAbandoned: (() -> Bool)?
 
     private func settle() {
         let settled = settlement
         settlement = nil
+        isAbandoned = nil
         settled?()
+    }
+
+    /// True — logged and settled — when the queue moved on without this request.
+    private func dropIfAbandoned() -> Bool {
+        guard isAbandoned?() == true else { return false }
+        DWLogger.log("DASHCONNECT the link queue gave this request up before it resolved; publishing nothing")
+        settle()
+        return true
     }
 
     init(
@@ -120,10 +134,15 @@ final class ConnectionsViewModel: ObservableObject {
     /// request refused or failed, or a state transition completed — or was
     /// superseded by a newer one.
     func onQRScanned(_ content: String, settled: (() -> Void)?) {
+        onQRScanned(content, settled: settled, isAbandoned: nil)
+    }
+
+    func onQRScanned(_ content: String, settled: (() -> Void)?, isAbandoned: (() -> Bool)?) {
         // A request still resolving is superseded below; it will publish
         // nothing, so it is settled here.
         settle()
         settlement = settled
+        self.isAbandoned = isAbandoned
         guard !featureUnavailable else {
             settle()
             return
@@ -185,6 +204,7 @@ final class ConnectionsViewModel: ObservableObject {
                     // have to describe the same request.
                     let connectionRequest = await dataSource.makeConnectionRequest(from: request)
                     guard generation == requestGeneration else { return }
+                    if dropIfAbandoned() { return }
                     pendingLoginRequest = request
                     pendingRequest = connectionRequest
                     settle()
@@ -195,17 +215,20 @@ final class ConnectionsViewModel: ObservableObject {
 
                     switch try await dataSource.handleStateTransition(request) {
                     case .keyRegistrationCompleted:
+                        if dropIfAbandoned() { return }
                         message = ConnectionsScreenMessage(
                             kind: .success,
                             text: NSLocalizedString("DashConnect key registration completed.", comment: "DashConnect")
                         )
                     case let .tokenPurchaseApprovalRequired(purchase):
+                        if dropIfAbandoned() { return }
                         pendingTokenPurchase = purchase
                     }
                     settle()
                 }
             } catch {
                 guard generation == requestGeneration else { return }
+                if dropIfAbandoned() { return }
                 message = ConnectionsScreenMessage(
                     kind: .error,
                     text: String(
@@ -224,9 +247,9 @@ final class ConnectionsViewModel: ObservableObject {
         onQRScanned(uri)
     }
 
-    /// `onURIReceived` for the deep-link queue: see `onQRScanned(_:settled:)`.
-    func onURIReceived(_ uri: String, settled: @escaping () -> Void) {
-        onQRScanned(uri, settled: settled)
+    /// `onURIReceived` for the deep-link queue: see `onQRScanned(_:settled:isAbandoned:)`.
+    func onURIReceived(_ uri: String, settled: @escaping () -> Void, isAbandoned: (() -> Bool)? = nil) {
+        onQRScanned(uri, settled: settled, isAbandoned: isAbandoned)
     }
 
     func approvePendingRequest() {

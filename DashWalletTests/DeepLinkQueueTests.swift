@@ -118,7 +118,8 @@ final class DeepLinkQueueTests: XCTestCase {
         queue.enqueue(payment)
 
         XCTAssertNil(queue.takeNext(walletPresented: false, attached: true, unlocked: true, launchHoldPending: false, invitationsReady: true), "no wallet on screen: setup, or the hold's card")
-        XCTAssertNil(queue.takeNext(walletPresented: true, attached: false, unlocked: true, launchHoldPending: false, invitationsReady: true), "the hierarchy is not in a window yet (a root created during onboarding)")
+        XCTAssertNil(queue.takeNext(walletPresented: true, attached: false, unlocked: true, launchHoldPending: false, invitationsReady: true),
+                     "the hierarchy is not in a window yet (a root created during onboarding)")
         XCTAssertNil(queue.takeNext(walletPresented: true, attached: true, unlocked: false, launchHoldPending: false, invitationsReady: true), "locked")
         XCTAssertNil(queue.takeNext(walletPresented: true, attached: true, unlocked: true, launchHoldPending: true, invitationsReady: true), "the launch hold has not reported")
         XCTAssertNil(queue.takeNext(walletPresented: false, attached: false, unlocked: false, launchHoldPending: true, invitationsReady: false))

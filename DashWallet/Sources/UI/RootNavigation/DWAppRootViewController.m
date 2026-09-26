@@ -157,6 +157,12 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         }
         [strongSelf dispatchNextLinkIfReady];
     };
+    // Asked by a handler right before it presents: once the watchdog has
+    // released this dispatch, the handler presents nothing.
+    BOOL (^isAbandoned)(void) = ^BOOL {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        return strongSelf == nil || !strongSelf.linkQueue.isDispatching || strongSelf.linkQueue.dispatchToken != token;
+    };
     [self armLinkWatchdogForToken:token];
     if (link.isInvitation) {
 #if DASHPAY
@@ -168,19 +174,21 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 #endif
         return;
     }
-    [self performURL:link.url completion:done];
+    [self performURL:link.url completion:done isAbandoned:isAbandoned];
 }
 
 /// A handler whose completion never comes — a screen presented from a
 /// hierarchy that was detached after all, a flow torn down mid-way — must
-/// not hold the queue forever. Fifteen seconds after a hand-over, if that
-/// dispatch is still in flight and nothing is presented or animating, the
-/// dispatch is ended here and the queue asked again; while something is on
-/// screen the check is repeated. A late report from the handler is then
+/// not hold the queue forever. Forty-five seconds after a hand-over (above
+/// the longest legitimate preparation, the BIP70 transport's 30 s timeout),
+/// if that dispatch is still in flight and nothing is presented or
+/// animating, the dispatch is ended here and the queue asked again; while
+/// something is on screen the check is repeated. The handler learns it was
+/// given up through `isAbandoned` and presents nothing; its late report is
 /// ignored (its token no longer matches).
 - (void)armLinkWatchdogForToken:(NSInteger)token {
     __weak typeof(self) weakSelf = self;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(45 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (strongSelf == nil || !strongSelf.linkQueue.isDispatching || strongSelf.linkQueue.dispatchToken != token) {
             return;
@@ -191,7 +199,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             [strongSelf armLinkWatchdogForToken:token];
             return;
         }
-        DWLog(@"LINKS no screen appeared for the link handed over 15 s ago; releasing the queue");
+        DWLog(@"LINKS no screen appeared for the link handed over 45 s ago; releasing the queue");
         [strongSelf.linkQueue dispatchDidFinishWithToken:token];
         [strongSelf dispatchNextLinkIfReady];
     });
@@ -201,7 +209,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 /// handler is done presenting: its screen has finished its transition, its
 /// preparation ended without one (cancelled, failed), or the authentication
 /// it asked for resolved.
-- (void)performURL:(NSURL *)url completion:(void (^)(void))completion {
+- (void)performURL:(NSURL *)url completion:(void (^)(void))completion isAbandoned:(BOOL (^)(void))isAbandoned {
     DWURLAction *action = [DWURLParser actionForURL:url];
     if (!action) {
         UIAlertController *alert = [UIAlertController
@@ -237,10 +245,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
     else if ([action isKindOfClass:DWURLPayAction.class]) {
         NSURL *paymentURL = [(DWURLPayAction *)action paymentURL];
-        [self.mainController performPayTo:paymentURL completion:completion];
+        [self.mainController performPayTo:paymentURL completion:completion isAbandoned:isAbandoned];
     }
     else if ([action isKindOfClass:DWURLDashConnectAction.class]) {
-        [self.mainController openDashConnect:[(DWURLDashConnectAction *)action uri] completion:completion];
+        [self.mainController openDashConnect:[(DWURLDashConnectAction *)action uri] completion:completion isAbandoned:isAbandoned];
     }
     else {
         NSAssert(NO, @"Unhandled action", action);

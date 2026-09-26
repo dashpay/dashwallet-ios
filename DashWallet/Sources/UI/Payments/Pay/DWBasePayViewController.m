@@ -113,10 +113,10 @@ NS_ASSUME_NONNULL_BEGIN
     [self processPaymentInput:paymentInput];
 }
 
-- (void)performPayToURL:(NSURL *)url completion:(void (^)(void))completion {
+- (void)performPayToURL:(NSURL *)url completion:(void (^)(void))completion isAbandoned:(BOOL (^)(void))isAbandoned {
     DWPaymentInput *paymentInput = [self.payModel paymentInputWithURL:url];
 
-    [self.paymentController performPaymentWith:paymentInput presentationSettled:completion];
+    [self.paymentController performPaymentWith:paymentInput presentationSettled:completion isAbandoned:isAbandoned];
 }
 
 - (void)performPayToAddress:(NSString *)address amount:(uint64_t)amount {

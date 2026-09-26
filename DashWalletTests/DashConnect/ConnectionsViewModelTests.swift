@@ -128,6 +128,26 @@ final class ConnectionsViewModelTests: XCTestCase {
         XCTAssertEqual(firstSettled, 1, "settled once, not again when the superseded lookup returns")
     }
 
+    /// The metadata lookup outlasts the queue's watchdog: the queue moves on
+    /// (its next link opens its own screen), and when the lookup returns the
+    /// abandoned request publishes no approval sheet — nothing lands on top
+    /// of that screen.
+    func testARequestTheQueueGaveUpPublishesNothingWhenItsLookupReturns() async {
+        let dataSource = DelayedLookupDataSource()
+        let viewModel = ConnectionsViewModel(dataSource: dataSource, featureUnavailable: false)
+        var abandoned = false
+        var settled = 0
+        viewModel.onURIReceived(MockDashConnectDataSource.sampleLoginQRCode, settled: { settled += 1 }, isAbandoned: { abandoned })
+        await settle(dataSource.lookups == 1)
+
+        abandoned = true // the watchdog released the dispatch
+        dataSource.finishLookup()
+        await settle(settled == 1)
+        XCTAssertEqual(settled, 1, "settled, so a late report reaches the queue (which ignores it)")
+        XCTAssertNil(viewModel.pendingRequest, "no approval sheet for a request the queue gave up")
+        XCTAssertNil(viewModel.message)
+    }
+
     func testAnUnavailableFeatureSettlesAtOnce() {
         let viewModel = ConnectionsViewModel(dataSource: DelayedLookupDataSource(), featureUnavailable: true)
         var settled = 0

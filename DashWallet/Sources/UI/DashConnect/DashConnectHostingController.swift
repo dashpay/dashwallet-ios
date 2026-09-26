@@ -32,12 +32,16 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     /// model with it: it settles when the request has resolved as far as
     /// the screen (`ConnectionsViewModel.onURIReceived(_:settled:)`).
     private var pendingCompletion: (() -> Void)?
+    /// Whether the deep-link queue has given `pendingURI` up; the view model
+    /// asks it before publishing anything.
+    private var pendingIsAbandoned: (() -> Bool)?
 
-    init(navigationController: UINavigationController, uri: String? = nil, completion: (() -> Void)? = nil) {
+    init(navigationController: UINavigationController, uri: String? = nil, completion: (() -> Void)? = nil, isAbandoned: (() -> Bool)? = nil) {
         let viewModel = ConnectionsViewModel()
         self.viewModel = viewModel
         pendingURI = uri
         pendingCompletion = completion
+        pendingIsAbandoned = isAbandoned
 
         super.init(rootView: ConnectionsScreen(vc: navigationController, viewModel: viewModel))
     }
@@ -54,12 +58,13 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     /// Handles a link that arrived for a screen that is already on the stack.
     /// `completion` settles when the request has resolved as far as the
     /// screen — the approval sheet published, or a refusal or error shown.
-    func handle(uri: String, completion: (() -> Void)? = nil) {
+    func handle(uri: String, completion: (() -> Void)? = nil, isAbandoned: (() -> Bool)? = nil) {
         // A link this one replaces before it was consumed never reaches the
         // view model; its completion is settled here.
         pendingCompletion?()
         pendingURI = uri
         pendingCompletion = completion
+        pendingIsAbandoned = isAbandoned
 
         if isViewLoaded, view.window != nil {
             consumePendingURI()
@@ -69,10 +74,12 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     private func consumePendingURI() {
         guard let uri = pendingURI else { return }
         let completion = pendingCompletion
+        let isAbandoned = pendingIsAbandoned
         pendingURI = nil
         pendingCompletion = nil
+        pendingIsAbandoned = nil
         if let completion {
-            viewModel.onURIReceived(uri, settled: completion)
+            viewModel.onURIReceived(uri, settled: completion, isAbandoned: isAbandoned)
         } else {
             viewModel.onURIReceived(uri)
         }

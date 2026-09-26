@@ -43,8 +43,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performPayToURL:(NSURL *)url;
 /// `performPayToURL:` for a deep link: `completion` runs once the payment's
 /// first screen has finished presenting, or its preparation ended without
-/// one (`PaymentController.performPayment(with:presentationSettled:)`).
-- (void)performPayToURL:(NSURL *)url completion:(void (^)(void))completion;
+/// one; `isAbandoned` is asked right before a screen would be presented —
+/// a payment the link queue has given up on presents nothing
+/// (`PaymentController.performPayment(with:presentationSettled:isAbandoned:)`).
+- (void)performPayToURL:(NSURL *)url completion:(void (^)(void))completion isAbandoned:(BOOL (^)(void))isAbandoned;
 /// Pay a send this flow has already fully specified — the address and the
 /// amount are both known and there is nothing left to ask for.
 ///

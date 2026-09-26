@@ -86,18 +86,36 @@ final class PaymentController: NSObject {
     /// presenting (the amount step, the confirmation, an error alert), or
     /// when preparation ends without one (cancelled, or a failure with no
     /// message). The link queue hands the next link over only then.
-    @objc(performPaymentWith:presentationSettled:)
-    public func performPayment(with input: DWPaymentInput, presentationSettled: @escaping () -> Void) {
+    @objc(performPaymentWith:presentationSettled:isAbandoned:)
+    public func performPayment(with input: DWPaymentInput, presentationSettled: @escaping () -> Void, isAbandoned: @escaping () -> Bool) {
         self.presentationSettled = presentationSettled
+        self.isAbandoned = isAbandoned
         performPayment(with: input)
     }
 
     private var presentationSettled: (() -> Void)?
+    /// Whether the link queue has given this payment up (its watchdog fired
+    /// while preparation — a BIP70 fetch, say — was still running). Asked
+    /// right before a screen would be presented: an abandoned payment
+    /// presents nothing, so its confirmation never lands on top of the
+    /// screen the next link opened.
+    private var isAbandoned: (() -> Bool)?
 
     private func settlePresentation() {
         let settled = presentationSettled
         presentationSettled = nil
+        isAbandoned = nil
         settled?()
+    }
+
+    /// True — and the payment is dropped, logged and settled — when the
+    /// link queue has moved on without this payment.
+    private func dropIfAbandoned(_ screen: String) -> Bool {
+        guard isAbandoned?() == true else { return false }
+        DWLogger.log("PAY the link queue gave this payment up before its \(screen) was ready; presenting nothing")
+        paymentProcessor.reset()
+        settlePresentation()
+        return true
     }
 
     /// `settlePresentation` once `transition` (a push's coordinator) has
@@ -154,6 +172,7 @@ extension PaymentController: ConfirmPaymentViewControllerDelegate {
 extension PaymentController: DWPaymentProcessorDelegate {
     func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, amount: UInt64) {
         provideAmountViewController = nil
+        if dropIfAbandoned("amount step") { return }
         let vc = ProvideAmountViewController(address: sendingDestination, amount: amount)
         vc.locksBalance = locksBalance
         vc.delegate = self
@@ -167,6 +186,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
+        if dropIfAbandoned("confirmation") { return }
         self.paymentOutput = paymentOutput
 
         if let vc = confirmViewController {
@@ -203,6 +223,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
         presentationAnchor?.topController().view.dw_hideProgressHUD()
         provideAmountViewController?.hideActivityIndicator()
+        if dropIfAbandoned("error alert") { return }
 
         confirmViewController?.isSendingEnabled =
             Self.shouldReenableSending(after: error as NSError)
