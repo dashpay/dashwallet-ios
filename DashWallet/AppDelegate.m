@@ -269,8 +269,9 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 }
 
-/// The replayed link, routed as the handlers route a live one; malformed
-/// links are still refused.
+/// The replayed link, routed as the handlers route a live one but without
+/// the wallet gate (`DWURLParser.allowsURLHandling`), which cannot answer
+/// yet; malformed links are still refused.
 - (void)deliverReplayedURL:(NSURL *)url toInitialController:(DWInitialViewController *)controller {
 #if DASHPAY
     if ([DWInvitationLinkNormalizer isInvitationURL:url]) {
@@ -387,12 +388,11 @@ NS_ASSUME_NONNULL_BEGIN
 
     // Handle URL Scheme instead
 #endif
-
-    // No gate on a present wallet here: a link that arrives while the
-    // launch hold is still migrating (or its card is up), or while setup
-    // is on screen, is kept by the root controller until a wallet is
-    // presented, and by the initial controller until the root exists. The
-    // gate that used to sit here dropped such links without a trace.
+    
+    if (![DWURLParser allowsURLHandling]) {
+        return NO;
+    }
+    
     if (![DWURLParser canHandleURL:url]) {
         UIAlertController * alert = [UIAlertController
                                      alertControllerWithTitle:NSLocalizedString(@"Not a Dash URL", nil)
