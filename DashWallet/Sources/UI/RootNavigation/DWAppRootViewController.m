@@ -124,8 +124,13 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     // No wallet presented yet — the launch hold is still migrating (or
     // showing its card), or setup is on screen: keep the link, as the
     // invitation path does, and handle it once a wallet is presented —
-    // after the unlock, or right away when no lock screen is due.
-    if (self.model.hasAWallet == NO) {
+    // after the unlock, or right away when no lock screen is due. The
+    // hold's flag comes first: `hasAWallet` is a live keychain read, and
+    // between the inventory becoming readable again and the hold's next
+    // poll noticing it, the read says "present" while the main controller
+    // is not attached yet.
+    if (self.launchHoldPending || self.model.hasAWallet == NO) {
+        DWLog(@"LAUNCH link kept until %@", self.launchHoldPending ? @"the launch hold reports" : @"a wallet is presented");
         self.deferredURLToProcess = url;
         return;
     }
