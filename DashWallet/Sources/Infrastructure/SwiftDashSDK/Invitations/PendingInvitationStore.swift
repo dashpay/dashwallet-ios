@@ -41,6 +41,56 @@ struct PendingInvitation: Equatable, CustomStringConvertible {
     }
 }
 
+/// Where the bearer secret is kept. A seam so the store's decisions can be
+/// tested with failing writes and deletes; production is the Keychain.
+@MainActor
+protocol InvitationSecretStorage: AnyObject {
+    func read(_ account: String) -> Data?
+    /// false when the item could not be written.
+    func write(_ data: Data, account: String) -> Bool
+    /// true when the item is gone — deleted, or was never there.
+    func delete(_ account: String) -> Bool
+    /// Every account starting with `prefix`; nil when they cannot be listed.
+    func accounts(withPrefix prefix: String) -> [String]?
+}
+
+/// The Keychain, through the SDK's `KeychainManager` service (items are
+/// `WhenUnlockedThisDeviceOnly`, never synchronized).
+@MainActor
+final class KeychainInvitationSecretStorage: InvitationSecretStorage {
+    private let keychain: KeychainManager
+
+    init(keychain: KeychainManager = .shared) {
+        self.keychain = keychain
+    }
+
+    func read(_ account: String) -> Data? {
+        keychain.retrieveKeyData(identifier: account)
+    }
+
+    func write(_ data: Data, account: String) -> Bool {
+        keychain.storeKeyData(data, identifier: account) != nil
+    }
+
+    func delete(_ account: String) -> Bool {
+        keychain.deleteKeyData(identifier: account)
+    }
+
+    func accounts(withPrefix prefix: String) -> [String]? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychain.serviceName,
+            kSecMatchLimit as String: kSecMatchLimitAll,
+            kSecReturnAttributes as String: true,
+        ]
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        if status == errSecItemNotFound { return [] }
+        guard status == errSecSuccess, let items = result as? [[String: Any]] else { return nil }
+        return items.compactMap { $0[kSecAttrAccount as String] as? String }.filter { $0.hasPrefix(prefix) }
+    }
+}
+
 @MainActor
 final class PendingInvitationStore: ObservableObject {
 
@@ -67,6 +117,8 @@ final class PendingInvitationStore: ObservableObject {
         case definitiveOutcome
         case claimed
         case wiped
+        /// The pre-onboarding copy, once it is safely under the new wallet.
+        case movedToWallet
     }
 
     /// The invitation pending in the current network + wallet scope.
@@ -80,17 +132,17 @@ final class PendingInvitationStore: ObservableObject {
     static let keychainPrefix = "invitation.pending."
     private static let metadataPrefix = "pendingInvitationMeta."
 
-    private let keychain: KeychainManager
+    private let storage: InvitationSecretStorage
     private let defaults: UserDefaults
     private let scope: () -> String
     private let hasRegisteredUsername: @MainActor () -> Bool
     private var observers: [NSObjectProtocol] = []
 
-    init(keychain: KeychainManager = .shared,
+    init(storage: InvitationSecretStorage? = nil,
          defaults: UserDefaults = .standard,
          scope: @escaping () -> String = PendingInvitationStore.currentScope,
          hasRegisteredUsername: (@MainActor () -> Bool)? = nil) {
-        self.keychain = keychain
+        self.storage = storage ?? KeychainInvitationSecretStorage()
         self.defaults = defaults
         self.scope = scope
         self.hasRegisteredUsername = hasRegisteredUsername
@@ -122,7 +174,13 @@ final class PendingInvitationStore: ObservableObject {
         return "\(networkRawValue).\(wallet)"
     }
 
-    private func keychainAccount(_ scope: String) -> String { Self.keychainPrefix + scope }
+    /// The scope's network part, for the matching `unbound` slot.
+    private static func unboundScope(for scope: String) -> String {
+        let network = scope.split(separator: ".", maxSplits: 1).first.map(String.init) ?? scope
+        return "\(network).unbound"
+    }
+
+    private func account(_ scope: String) -> String { Self.keychainPrefix + scope }
     private func metadataKey(_ scope: String) -> String { Self.metadataPrefix + scope }
 
     // MARK: - Reading
@@ -137,7 +195,7 @@ final class PendingInvitationStore: ObservableObject {
     }
 
     private func load(_ scope: String) -> PendingInvitation? {
-        guard let data = keychain.retrieveKeyData(identifier: keychainAccount(scope)),
+        guard let data = storage.read(account(scope)),
               let rawLink = String(data: data, encoding: .utf8) else {
             return nil
         }
@@ -171,7 +229,7 @@ final class PendingInvitationStore: ObservableObject {
             }
             return .busy
         }
-        guard keychain.storeKeyData(Data(trimmed.utf8), identifier: keychainAccount(currentScope)) != nil else {
+        guard storage.write(Data(trimmed.utf8), account: account(currentScope)) else {
             Self.logger.error("🎟️ INVITE :: could not store the pending invitation in the Keychain")
             return .storageFailed
         }
@@ -186,35 +244,72 @@ final class PendingInvitationStore: ObservableObject {
         receive(url.absoluteString)
     }
 
-    /// Forget the invitation in the current scope.
-    func clear(reason: ClearReason) {
-        let currentScope = scope()
-        keychain.deleteKeyData(identifier: keychainAccount(currentScope))
-        defaults.removeObject(forKey: metadataKey(currentScope))
-        if pending != nil {
+    /// Forget the invitation in the current scope. false when the Keychain
+    /// item could not be deleted — the invitation is then still pending.
+    @discardableResult
+    func clear(reason: ClearReason) -> Bool {
+        remove(scope: scope(), reason: reason)
+    }
+
+    /// Forget one specific invitation wherever it is stored — for a result
+    /// that arrives after the user may have switched wallet or network, so
+    /// "the current scope" is no longer the one the claim ran in. Another
+    /// invitation is never touched. false when a matching item could not be
+    /// deleted or the stored items could not be listed.
+    @discardableResult
+    func clear(normalizedURI: String, reason: ClearReason) -> Bool {
+        guard let accounts = storage.accounts(withPrefix: Self.keychainPrefix) else {
+            Self.logger.error("🎟️ INVITE :: could not list stored invitations to clear one")
+            return false
+        }
+        var removedAll = true
+        for account in accounts {
+            let itemScope = String(account.dropFirst(Self.keychainPrefix.count))
+            guard load(itemScope)?.normalizedURI == normalizedURI else { continue }
+            removedAll = remove(scope: itemScope, reason: reason) && removedAll
+        }
+        return removedAll
+    }
+
+    private func remove(scope itemScope: String, reason: ClearReason) -> Bool {
+        guard storage.delete(account(itemScope)) else {
+            Self.logger.error("🎟️ INVITE :: could not delete the pending invitation (\(reason.rawValue, privacy: .public))")
+            return false
+        }
+        defaults.removeObject(forKey: metadataKey(itemScope))
+        if itemScope == scope(), pending != nil {
             pending = nil
         }
         Self.logger.info("🎟️ INVITE :: cleared pending invitation (\(reason.rawValue, privacy: .public))")
+        return true
     }
 
     /// Move an invitation received before the wallet existed under the newly
-    /// created wallet's scope.
-    func bindUnboundToCurrentWallet() {
+    /// created wallet's scope. The unbound copy is removed only once the
+    /// invitation is safely under the wallet (or the wallet already has one
+    /// pending, which wins); on a failed write it stays for the next attempt,
+    /// and false is returned.
+    @discardableResult
+    func bindUnboundToCurrentWallet() -> Bool {
         let currentScope = scope()
-        let unbound = Self.scope(networkRawValue: WalletEnvironment.networkKind.rawValue, walletIdHex: nil)
+        let unbound = Self.unboundScope(for: currentScope)
         guard currentScope != unbound, let invitation = load(unbound) else {
             reload()
-            return
+            return true
         }
-        if load(currentScope) == nil,
-           keychain.storeKeyData(Data(invitation.rawLink.utf8), identifier: keychainAccount(currentScope)) != nil {
+        if load(currentScope) == nil {
+            guard storage.write(Data(invitation.rawLink.utf8), account: account(currentScope)) else {
+                Self.logger.error("🎟️ INVITE :: could not move the pre-onboarding invitation under the wallet")
+                reload()
+                return false
+            }
             writeMetadata(
                 PendingInvitation(rawLink: invitation.rawLink, receivedAt: invitation.receivedAt, fromOnboarding: true),
                 scope: currentScope)
         }
-        keychain.deleteKeyData(identifier: keychainAccount(unbound))
-        defaults.removeObject(forKey: metadataKey(unbound))
+        _ = remove(scope: unbound, reason: .movedToWallet)
         reload()
+        return true
     }
 
     private func writeMetadata(_ invitation: PendingInvitation, scope: String) {
@@ -225,37 +320,33 @@ final class PendingInvitationStore: ObservableObject {
     }
 
     /// Delete every stored invitation, across networks and wallets (wallet
-    /// wipe).
-    static func wipeAll() {
+    /// wipe). false when any could not be deleted.
+    @discardableResult
+    static func wipeAll() -> Bool {
         shared.wipeAllScopes()
     }
 
-    /// `wipeAll` for this store's Keychain service and defaults.
-    func wipeAllScopes() {
-        let service = keychain.serviceName
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecMatchLimit as String: kSecMatchLimitAll,
-            kSecReturnAttributes as String: true,
-        ]
-        var result: AnyObject?
-        if SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
-           let items = result as? [[String: Any]] {
-            for item in items {
-                guard let account = item[kSecAttrAccount as String] as? String,
-                      account.hasPrefix(Self.keychainPrefix) else { continue }
-                let deleteQuery: [String: Any] = [
-                    kSecClass as String: kSecClassGenericPassword,
-                    kSecAttrService as String: service,
-                    kSecAttrAccount as String: account,
-                ]
-                SecItemDelete(deleteQuery as CFDictionary)
+    /// `wipeAll` for this store's storage and defaults. Metadata is removed
+    /// only for items that are gone, so a failure leaves a consistent slot.
+    @discardableResult
+    func wipeAllScopes() -> Bool {
+        guard let accounts = storage.accounts(withPrefix: Self.keychainPrefix) else {
+            Self.logger.error("🎟️ INVITE :: could not list stored invitations to wipe them")
+            return false
+        }
+        var removedAll = true
+        for account in accounts {
+            let itemScope = String(account.dropFirst(Self.keychainPrefix.count))
+            removedAll = remove(scope: itemScope, reason: .wiped) && removedAll
+        }
+        // Metadata whose secret is already gone (a crash between the two
+        // writes) is harmless, but nothing should outlive a wipe.
+        if removedAll {
+            for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(Self.metadataPrefix) {
+                defaults.removeObject(forKey: key)
             }
         }
-        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(Self.metadataPrefix) {
-            defaults.removeObject(forKey: key)
-        }
         reload()
+        return removedAll
     }
 }

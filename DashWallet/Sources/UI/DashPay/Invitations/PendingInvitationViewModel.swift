@@ -35,9 +35,12 @@ final class PendingInvitationViewModel: ObservableObject {
     @Published private(set) var invitation: PendingInvitation?
     @Published private(set) var cardState: CardState = .syncing
 
-    /// A verdict that ended the invitation, for Home to present — emitted
-    /// once; the store is already cleared by the time it arrives.
+    /// A verdict that ended the invitation, for Home to present; the store
+    /// is already cleared by the time it arrives. Emitted when it happens,
+    /// and also kept in `undeliveredOutcome` until a visible Home has shown
+    /// it — the check can finish while the user is on another tab.
     let definitiveOutcomes = PassthroughSubject<InvitationValidation, Never>()
+    private(set) var undeliveredOutcome: InvitationValidation?
 
     /// Android treats a check older than a minute as stale
     /// (`InvitationLinkData.expired`); Create re-checks past that.
@@ -46,6 +49,10 @@ final class PendingInvitationViewModel: ObservableObject {
     private let store: PendingInvitationStore
     private var lastVerdict: (validation: InvitationValidation, at: Date, link: String)?
     private var validationTask: Task<InvitationValidation?, Never>?
+    /// The link `validationTask` is checking, and the check's identity — a
+    /// finishing check clears only its own state, never a newer one's.
+    private var validationLink: String?
+    private var validationToken: UUID?
     private var cancellables = Set<AnyCancellable>()
     private var observers: [NSObjectProtocol] = []
 
@@ -116,6 +123,13 @@ final class PendingInvitationViewModel: ObservableObject {
         }
     }
 
+    /// Home showed the outcome; it is no longer waiting for a screen.
+    func acknowledgeOutcome(_ outcome: InvitationValidation) {
+        if undeliveredOutcome == outcome {
+            undeliveredOutcome = nil
+        }
+    }
+
     // MARK: - Validation
 
     private var canValidate: Bool {
@@ -138,27 +152,52 @@ final class PendingInvitationViewModel: ObservableObject {
 
     @discardableResult
     private func runValidation() async -> InvitationValidation? {
-        if let validationTask {
+        if let validationTask, validationLink == invitation?.rawLink {
             return await validationTask.value
+        }
+        // A check still running for an invitation that was hidden or
+        // replaced: let it finish (its result is discarded), then check this
+        // one.
+        if let stale = validationTask {
+            _ = await stale.value
         }
         guard let invitation, canValidate else {
             refreshCardState()
             return nil
         }
+        if let validationTask, validationLink == invitation.rawLink {
+            return await validationTask.value
+        }
         cardState = .verifying
+        let token = UUID()
         let task = Task { await InvitationValidator.validate(invitation) }
         validationTask = task
+        validationLink = invitation.rawLink
+        validationToken = token
         let verdict = await task.value
-        validationTask = nil
+        if validationToken == token {
+            validationTask = nil
+            validationLink = nil
+            validationToken = nil
+        }
 
-        // The invitation may have been hidden or replaced while the check ran.
+        // The invitation may have been hidden or replaced while the check ran;
+        // a replacement gets its own check.
         guard let verdict, self.invitation?.rawLink == invitation.rawLink else {
             refreshCardState()
+            if self.invitation != nil, self.invitation?.rawLink != invitation.rawLink {
+                validateIfPossible()
+            }
             return nil
         }
         lastVerdict = (verdict, Date(), invitation.rawLink)
         if verdict.isDefinitive {
-            store.clear(reason: .definitiveOutcome)
+            if let uri = invitation.normalizedURI {
+                store.clear(normalizedURI: uri, reason: .definitiveOutcome)
+            } else {
+                store.clear(reason: .definitiveOutcome)
+            }
+            undeliveredOutcome = verdict
             definitiveOutcomes.send(verdict)
         }
         refreshCardState()

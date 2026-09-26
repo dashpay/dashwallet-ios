@@ -655,8 +655,10 @@ class CreateUsernameViewModel: ObservableObject {
     /// everything else, which keeps the generic wording and the invitation.
     private func invitationClaimFailureMessage(_ error: Error) -> String? {
         guard let failure = InvitationClaimFailure.classify(error) else { return nil }
-        if failure.endsInvitation {
-            PendingInvitationStore.shared.clear(reason: .definitiveOutcome)
+        if failure.endsInvitation, let invitationURI {
+            // By link, not by the current wallet: the result can arrive after
+            // a wallet switch.
+            PendingInvitationStore.shared.clear(normalizedURI: invitationURI, reason: .definitiveOutcome)
         }
         let sender = InvitationOutcomeDialogs.senderName(
             InvitationValidationPolicy.inviter(from: invitationURI.flatMap { DWInvitationService.shared.preview(for: $0) }))

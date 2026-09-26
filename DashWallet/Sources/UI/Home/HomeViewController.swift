@@ -116,6 +116,13 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        #if DASHPAY
+        // A verdict that finished while Home was off screen is shown now.
+        if let outcome = PendingInvitationViewModel.shared.undeliveredOutcome {
+            homeViewPresentInvitationOutcome(outcome)
+        }
+        #endif
+
         // Evonode epoch-blocks card: cheap no-op inside its refresh throttle.
         viewModel.refreshEvonodeEpochBlocks()
 
@@ -608,9 +615,11 @@ extension HomeViewController: HomeViewDelegate {
 
     func homeViewPresentInvitationOutcome(_ outcome: InvitationValidation) {
         // Every Home built this session hears the verdict; only the one on
-        // screen shows it.
-        guard viewIfLoaded?.window != nil,
-              let dialog = InvitationOutcomeDialogs.controller(for: outcome) else { return }
+        // screen shows it. Off screen it stays undelivered and `viewDidAppear`
+        // shows it on return.
+        guard viewIfLoaded?.window != nil else { return }
+        PendingInvitationViewModel.shared.acknowledgeOutcome(outcome)
+        guard let dialog = InvitationOutcomeDialogs.controller(for: outcome) else { return }
         // Over whatever is already up (a sheet, another alert), or UIKit
         // refuses the presentation silently.
         var presenter: UIViewController = tabBarController ?? self

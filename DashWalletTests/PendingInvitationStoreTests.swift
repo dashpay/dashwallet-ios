@@ -11,10 +11,37 @@ import SwiftDashSDK
 import XCTest
 @testable import dashpay
 
+/// In-memory stand-in for the Keychain, with switchable failures.
+@MainActor
+private final class FakeSecretStorage: InvitationSecretStorage {
+    var items: [String: Data] = [:]
+    var failWrites = false
+    var failDeletes = false
+    var failListing = false
+
+    func read(_ account: String) -> Data? { items[account] }
+
+    func write(_ data: Data, account: String) -> Bool {
+        guard !failWrites else { return false }
+        items[account] = data
+        return true
+    }
+
+    func delete(_ account: String) -> Bool {
+        guard !failDeletes else { return false }
+        items[account] = nil
+        return true
+    }
+
+    func accounts(withPrefix prefix: String) -> [String]? {
+        failListing ? nil : items.keys.filter { $0.hasPrefix(prefix) }
+    }
+}
+
 @MainActor
 final class PendingInvitationStoreTests: XCTestCase {
 
-    private var keychain: KeychainManager!
+    private var storage: FakeSecretStorage!
     private var defaults: UserDefaults!
     private var suiteName: String!
     private var scope = "1.walletA"
@@ -25,9 +52,9 @@ final class PendingInvitationStoreTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        // Unique service and defaults suite: nothing here touches the app's
-        // own Keychain items or preferences.
-        keychain = KeychainManager(serviceName: "org.dash.tests.invitations.\(UUID().uuidString)")
+        // Fake storage and a unique defaults suite: nothing here touches the
+        // app's own Keychain items or preferences.
+        storage = FakeSecretStorage()
         suiteName = "PendingInvitationStoreTests.\(UUID().uuidString)"
         defaults = UserDefaults(suiteName: suiteName)
         scope = "1.walletA"
@@ -35,14 +62,13 @@ final class PendingInvitationStoreTests: XCTestCase {
     }
 
     override func tearDown() {
-        makeStore().wipeAllScopes()
         defaults.removePersistentDomain(forName: suiteName)
         super.tearDown()
     }
 
     private func makeStore() -> PendingInvitationStore {
         PendingInvitationStore(
-            keychain: keychain,
+            storage: storage,
             defaults: defaults,
             scope: { [unowned self] in self.scope },
             hasRegisteredUsername: { [unowned self] in self.hasUsername })
@@ -111,6 +137,85 @@ final class PendingInvitationStoreTests: XCTestCase {
         XCTAssertNil(makeStore().pending)
         scope = "1.walletA"
         XCTAssertNil(makeStore().pending)
+    }
+
+    // MARK: - Binding a pre-onboarding invitation to the new wallet
+
+    private func receiveBeforeWallet(_ link: String) -> PendingInvitationStore {
+        scope = "1.unbound"
+        let store = makeStore()
+        XCTAssertEqual(store.receive(link), .stored)
+        scope = "1.walletA"
+        return store
+    }
+
+    func testBindingMovesTheInvitationUnderTheWallet() {
+        let store = receiveBeforeWallet(linkA)
+        XCTAssertTrue(store.bindUnboundToCurrentWallet())
+        XCTAssertEqual(store.pending?.rawLink, linkA)
+        XCTAssertEqual(store.pending?.fromOnboarding, true)
+        scope = "1.unbound"
+        XCTAssertNil(makeStore().pending, "the unbound copy is gone once moved")
+    }
+
+    func testFailedBindingKeepsTheUnboundInvitation() {
+        let store = receiveBeforeWallet(linkA)
+        storage.failWrites = true
+        XCTAssertFalse(store.bindUnboundToCurrentWallet())
+        scope = "1.unbound"
+        XCTAssertEqual(makeStore().pending?.rawLink, linkA, "a failed move must not lose the invitation")
+
+        storage.failWrites = false
+        scope = "1.walletA"
+        XCTAssertTrue(store.bindUnboundToCurrentWallet(), "the next attempt moves it")
+        XCTAssertEqual(store.pending?.rawLink, linkA)
+    }
+
+    func testBindingKeepsTheWalletsOwnInvitation() {
+        XCTAssertEqual(makeStore().receive(linkB), .stored)
+        let store = receiveBeforeWallet(linkA)
+        XCTAssertTrue(store.bindUnboundToCurrentWallet())
+        XCTAssertEqual(store.pending?.rawLink, linkB, "an invitation already under the wallet wins")
+    }
+
+    // MARK: - Failures are reported, not hidden
+
+    func testFailedReceiveWriteStoresNothing() {
+        storage.failWrites = true
+        let store = makeStore()
+        XCTAssertEqual(store.receive(linkA), .storageFailed)
+        XCTAssertNil(store.pending)
+    }
+
+    func testFailedDeleteKeepsTheInvitationPending() {
+        let store = makeStore()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        storage.failDeletes = true
+        XCTAssertFalse(store.clear(reason: .hidden))
+        XCTAssertEqual(store.pending?.rawLink, linkA)
+        XCTAssertFalse(store.wipeAllScopes())
+        XCTAssertEqual(makeStore().pending?.rawLink, linkA)
+    }
+
+    func testUnlistableStorageFailsTheWipe() {
+        XCTAssertEqual(makeStore().receive(linkA), .stored)
+        storage.failListing = true
+        XCTAssertFalse(makeStore().wipeAllScopes())
+    }
+
+    // MARK: - Clearing by link
+
+    func testClearingByLinkReachesItsScopeAndSparesOthers() {
+        let store = makeStore()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        scope = "1.walletB"
+        XCTAssertEqual(store.receive(linkB), .stored)
+
+        // The claim for A finishes after the user switched to wallet B.
+        XCTAssertTrue(store.clear(normalizedURI: linkA, reason: .claimed))
+        XCTAssertEqual(store.pending?.rawLink, linkB, "B's invitation is untouched")
+        scope = "1.walletA"
+        XCTAssertNil(makeStore().pending, "A's consumed invitation is gone")
     }
 
     func testReceivedBeforeTheWalletIsMarkedFromOnboarding() {

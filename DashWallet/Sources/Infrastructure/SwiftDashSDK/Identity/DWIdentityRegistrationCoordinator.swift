@@ -799,8 +799,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             identityId = try managed.getId()
             // The voucher is spent now, whatever happens to the username
             // next: from here on this is an ordinary "identity exists,
-            // username required" recovery, not an invitation.
-            PendingInvitationStore.shared.clear(reason: .claimed)
+            // username required" recovery, not an invitation. Cleared by the
+            // link itself, not "the current wallet": the user may have
+            // switched wallet while the claim ran.
+            PendingInvitationStore.shared.clear(normalizedURI: invitationURI, reason: .claimed)
         }
         return identityId
     }
