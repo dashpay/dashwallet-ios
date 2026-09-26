@@ -45,7 +45,14 @@ protocol HomeViewDelegate: AnyObject {
     /// must not meet the funding-readiness gate — see
     /// `showCreateUsernameForRecovery`.
     func homeViewRequestUsernameForRecovery(username: String)
-    func homeViewClaimInvitation()
+    /// Opens the invitation QR scanner (the Join DashPay sheet's
+    /// "Scan invitation QR").
+    func homeViewScanInvitation()
+    /// Create on the pending-invitation card: the username form in
+    /// invitation mode, paid for by the invitation.
+    func homeViewCreateUsername(with invitation: PendingInvitation, tier: InvitationTier)
+    /// A verdict that ended the pending invitation — present its dialog.
+    func homeViewPresentInvitationOutcome(_ outcome: InvitationValidation)
     /// Opens the internal-transfer form with Shielded preselected as the
     /// destination — the "Shield your funds first" leg of the username
     /// privacy step.
@@ -70,6 +77,7 @@ final class HomeView: UIView {
     let viewModel: HomeViewModel
     #if DASHPAY
     let joinDPViewModel = JoinDashPayViewModel(initialState: .callToAction)
+    let pendingInvitationViewModel = PendingInvitationViewModel.shared
     #endif
 
     var model: DWHomeProtocol?
@@ -106,6 +114,7 @@ final class HomeView: UIView {
         let content = HomeViewContent(
             viewModel: self.viewModel,
             joinDPViewModel: self.joinDPViewModel,
+            pendingInvitationViewModel: self.pendingInvitationViewModel,
             delegate: self.delegate,
             performShortcut: performShortcut,
             headerView: { UIViewWrapper(uiView: self.headerView) }
@@ -159,6 +168,13 @@ final class HomeView: UIView {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.joinDPViewModel.checkUsername()
+            }
+            .store(in: &cancellableBag)
+
+        pendingInvitationViewModel.definitiveOutcomes
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] outcome in
+                self?.delegate?.homeViewPresentInvitationOutcome(outcome)
             }
             .store(in: &cancellableBag)
         #endif
@@ -240,7 +256,7 @@ struct HomeViewContent<Content: View>: View {
     @State private var showFilterDialog: Bool = false
     @State private var shouldShowJoinDashPayInfo: Bool = false
     @State private var navigateToDashPayFlow: Bool = false
-    @State private var navigateToClaimInvitation: Bool = false
+    @State private var navigateToScanInvitation: Bool = false
     /// Same hand-off shape as the two above: the sheet only records the
     /// intent, and the delegate acts on it once the sheet is gone.
     @State private var navigateToShieldFunds: Bool = false
@@ -275,6 +291,7 @@ struct HomeViewContent<Content: View>: View {
     @StateObject private var balanceModel = BalanceModel()
     #if DASHPAY
     @ObservedObject var joinDPViewModel: JoinDashPayViewModel
+    @ObservedObject var pendingInvitationViewModel: PendingInvitationViewModel
     #endif
     weak var delegate: HomeViewDelegate?
     /// Resolves the shortcuts delegate at tap time. A stored weak delegate
@@ -350,7 +367,19 @@ struct HomeViewContent<Content: View>: View {
                     })
 
                     #if DASHPAY
-                    if viewModel.showJoinDashpay {
+                    // A pending invitation takes the Join DashPay row's place
+                    // (Android hides that call to action while an invite is
+                    // stored) — except while the row is reporting a
+                    // registration, which is then the invitation's progress.
+                    if pendingInvitationViewModel.invitation != nil && !joinDPViewModel.state.isRegistrationReport {
+                        AcceptInvitationCard(
+                            viewModel: pendingInvitationViewModel,
+                            isSyncing: viewModel.isSyncing,
+                            onCreate: { invitation, tier in
+                                delegate?.homeViewCreateUsername(with: invitation, tier: tier)
+                            })
+                        .padding(.horizontal, 20)
+                    } else if viewModel.showJoinDashpay {
                         JoinDashPayMenuItem(
                             viewModel: joinDPViewModel,
                             // The row is the action now — this is what the
@@ -392,12 +421,10 @@ struct HomeViewContent<Content: View>: View {
                                 case .none, .callToAction, .failed, .blocked, .contested, .registered:
                                     // TODO: ? MOCK_DASHPAY if failed, maybe need to call model?.dashPayModel.retry()
                                     // Always open the info dialog. It carries the
-                                    // only "Have an invitation?" entry in the app,
+                                    // only "Scan invitation QR" entry in the app,
                                     // so latching it to the first-ever tap left an
-                                    // invited user with no way to reach the redeem
-                                    // path once they had dismissed it — which is
-                                    // every user whose invitation arrived after
-                                    // they first looked at DashPay.
+                                    // invited user with no way to scan once they
+                                    // had dismissed it.
                                     self.shouldShowJoinDashPayInfo = true
                                 }
                             }, onDismiss: { _ in
@@ -588,9 +615,9 @@ struct HomeViewContent<Content: View>: View {
                 navigateToDashPayFlow = false
                 delegate?.homeViewRequestUsername()
             }
-            if navigateToClaimInvitation {
-                navigateToClaimInvitation = false
-                delegate?.homeViewClaimInvitation()
+            if navigateToScanInvitation {
+                navigateToScanInvitation = false
+                delegate?.homeViewScanInvitation()
             }
             if navigateToShieldFunds {
                 navigateToShieldFunds = false
@@ -602,7 +629,7 @@ struct HomeViewContent<Content: View>: View {
                     navigateToDashPayFlow = true
                 },
                 onClaimInvitation: {
-                    navigateToClaimInvitation = true
+                    navigateToScanInvitation = true
                 },
                 onShieldFunds: {
                     navigateToShieldFunds = true

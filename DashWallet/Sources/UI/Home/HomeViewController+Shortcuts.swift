@@ -173,15 +173,24 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         presentControllerModallyInNavigationController(controller)
     }
 
+    #if DASHPAY
+    /// Create on the pending-invitation card: straight to the form in
+    /// invitation mode. The Join DashPay sheet is skipped — the invitation
+    /// pays, so there is no funding source to choose and no balance to check.
+    func showCreateUsername(withInvitation invitation: PendingInvitation, tier: InvitationTier) {
+        guard let uri = invitation.normalizedURI else { return }
+        let controller = CreateUsernameViewController(invitation: invitation, invitationURI: uri, invitationTier: tier)
+        controller.hidesBottomBarWhenPushed = true
+        controller.completionHandler = { [weak self] result in
+            guard result else { return }
+            self?.view.dw_showInfoHUD(withText: NSLocalizedString("Username was successfully requested", comment: "Usernames"), offsetForNavBar: true)
+        }
+        navigationController?.pushViewController(controller, animated: true)
+    }
+    #endif
+
     func showCreateUsername(withInvitation invitationURL: URL?, definedUsername: String?) {
         #if DASHPAY
-        // Invitation claim: the voucher funds the registration, so the
-        // shielded get-ready interstitial doesn't apply — straight to
-        // the form in invitation mode.
-        if invitationURL != nil {
-            pushCreateUsernameForm(invitationURL: invitationURL, definedUsername: definedUsername)
-            return
-        }
         // A registration waiting to be recovered goes straight to the form.
         // A Core-funded attempt that failed with a recoverable asset lock has
         // already spent the registration amount, so the remaining balance is
@@ -225,15 +234,6 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     }
     #endif
 
-    #if DASHPAY
-    /// Manual redeem entry (Join DashPay dialog → "Have an invitation?"):
-    /// paste/scan screen, then the username form in invitation mode.
-    func showClaimInvitation() {
-        ClaimInvitationFlow.pushRedeemScreen(
-            on: navigationController,
-            dashPayModel: model.dashPayModel)
-    }
-    #endif
 
     #if DASHPAY
     private func pushCreateUsernameForm(invitationURL: URL? = nil, definedUsername: String? = nil) {

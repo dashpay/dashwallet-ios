@@ -26,6 +26,10 @@ class CreateUsernameViewController: UIViewController {
     /// when this form is claiming a DIP-13 invitation; nil for the
     /// regular self-funded registration.
     private let invitationURI: String?
+    private let invitationTier: InvitationTier?
+    /// The Home card's invitation (scope + link), so a claim failure removes
+    /// that wallet's copy and no other.
+    private let pendingInvitation: PendingInvitation?
     private let definedUsername: String?
 
     @objc
@@ -35,7 +39,19 @@ class CreateUsernameViewController: UIViewController {
         // `DWIdentityRegistrationBridge` / the coordinator, so it is
         // not stored here.
         self.invitationURI = invitationURL?.absoluteString
+        self.invitationTier = nil
+        self.pendingInvitation = nil
         self.definedUsername = definedUsername
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    /// Invitation claim from the Home card: the invitation was validated
+    /// there, so its tier (which usernames it pays for) is already known.
+    init(invitation: PendingInvitation, invitationURI: String, invitationTier: InvitationTier) {
+        self.invitationURI = invitationURI
+        self.invitationTier = invitationTier
+        self.pendingInvitation = invitation
+        self.definedUsername = nil
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -57,10 +73,8 @@ class CreateUsernameViewController: UIViewController {
             #if DASHPAY
             let mainTabController = self.tabBarController as? MainTabbarController
             #endif
-            // Pop the whole registration stack, not one level. The invitation
-            // entry pushes this screen ON TOP of the redeem screen, so popping
-            // once lands the freshly-registered user back on "Claim your
-            // invitation" — a flow they just completed and cannot repeat.
+            // Pop the whole registration stack, not one level, so a finished
+            // registration never lands back on a screen that led into it.
             // Every push site roots this flow at a tab's own screen, so
             // unwinding to that root is the correct destination for all of
             // them (Home for the home/deep-link entries, More for the menu).
@@ -85,6 +99,8 @@ class CreateUsernameViewController: UIViewController {
 
         let content = CreateUsernameView(
             invitationURI: invitationURI,
+            invitationTier: invitationTier,
+            pendingInvitation: pendingInvitation,
             definedUsername: definedUsername,
             finish: { [weak self] in
                 leaveFlow(false)
@@ -212,6 +228,7 @@ struct CreateUsernameView: View {
     /// terminal `.completed` phase. OK dismisses the screen.
     @State private var showSuccess: Bool = false
     @State private var showVotingSubmitted: Bool = false
+    @State private var showUsernameTypesInfo: Bool = false
     /// Non-nil drives the error alert; holds the coordinator's
     /// human-readable failure message. OK clears it and keeps the
     /// screen up so the user can edit or retry.
@@ -223,6 +240,10 @@ struct CreateUsernameView: View {
     /// Normalized invitation URI when claiming (invitation mode); nil
     /// for the regular self-funded registration.
     var invitationURI: String? = nil
+    /// Which usernames the invitation pays for; nil when unknown.
+    var invitationTier: InvitationTier? = nil
+    /// The Home card's invitation this claim is for (scope + link).
+    var pendingInvitation: PendingInvitation? = nil
     /// Username prefill carried by the deep link (`definedUsername`).
     var definedUsername: String? = nil
     var finish: () -> Void
@@ -336,7 +357,7 @@ struct CreateUsernameView: View {
             // DPNS verdict from an earlier visit was reused unchecked.
             viewModel.refreshRegistrationRecoveryState()
             if let invitationURI {
-                viewModel.configureInvitationMode(uri: invitationURI)
+                viewModel.configureInvitationMode(uri: invitationURI, tier: invitationTier, invitation: pendingInvitation)
             }
             if let definedUsername, !definedUsername.isEmpty, viewModel.username.isEmpty {
                 viewModel.username = definedUsername
@@ -613,6 +634,11 @@ struct CreateUsernameView: View {
                 contestedNameWarning
                     .padding(.top, 20)
             }
+
+            if viewModel.isNonContestedInvitation {
+                nonContestedInvitationNote
+                    .padding(.top, 20)
+            }
         }
         .padding(14)
         .modifier(DashUIKit.MenuViewModifier())
@@ -680,6 +706,18 @@ struct CreateUsernameView: View {
             id: "characters",
             text: NSLocalizedString("Letter, numbers and hyphens only", comment: "Usernames"),
             rule: viewModel.uiState.allowedCharactersRule)
+
+        // A non-contested-only invitation: either rule makes a name
+        // non-contested, so they are one requirement shown as two lines and
+        // both drop out once it is met.
+        add(
+            id: "noncontested-length",
+            text: NSLocalizedString("Between 20 and 23 characters", comment: "DashPay Invitations"),
+            rule: viewModel.nonContestedRule)
+        add(
+            id: "noncontested-digits",
+            text: NSLocalizedString("Numbers 2-9", comment: "DashPay Invitations"),
+            rule: viewModel.nonContestedRule)
 
         add(
             id: "cost",
@@ -960,6 +998,35 @@ struct CreateUsernameView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.dash.blue.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    /// A non-contested-only invitation, and the explainer behind its info
+    /// control (Android: `invite_only_noncontested` + `UsernameTypesDialog`).
+    private var nonContestedInvitationNote: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Text(NSLocalizedString("You can only create a non-contested username using this invitation", comment: "DashPay Invitations"))
+                .dashFont(.footnote)
+                .foregroundColor(.dash.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Button {
+                showUsernameTypesInfo = true
+            } label: {
+                DashUIKit.InfoRoundIcon(size: 20, color: .dash.blueAlpha50)
+                    .frame(width: 30, height: 30)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(NSLocalizedString("What are contested and non-contested usernames?", comment: "DashPay Invitations"))
+        }
+        .sheet(isPresented: $showUsernameTypesInfo) {
+            DashUIKit.BottomSheet.selfSizing(
+                showBackButton: .constant(false),
+                fallback: 480
+            ) {
+                UsernameTypesInfoSheet { showUsernameTypesInfo = false }
+            }
+        }
     }
 
     /// Invitation-claim funding banner (invitation mode only).

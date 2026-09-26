@@ -581,11 +581,14 @@ extension MainTabbarController {
     }
     
     #if DASHPAY
+    /// An invitation was stored: bring Home forward, where its card is — out
+    /// of any modal, onto the Home tab, and back to Home's root screen. The
+    /// one route for an opened link and both scanners.
     @objc
-    public func handleDeeplink(_ url: URL, definedUsername: String?) {
+    public func showHomeForInvitation() {
         dismiss(animated: false, completion: nil)
         selectedIndex = MainTabbarTabs.home.rawValue
-        homeController?.handleDeeplink(url, definedUsername: definedUsername)
+        homeController?.navigationController?.popToRootViewController(animated: false)
     }
     #endif
 }

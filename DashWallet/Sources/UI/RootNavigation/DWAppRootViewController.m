@@ -25,10 +25,6 @@
 #import "DWURLRequestHandler.h"
 #import "dashwallet-Swift.h"
 
-#if DASHPAY
-#import "DWInvitationSetupState.h"
-#endif
-
 NS_ASSUME_NONNULL_BEGIN
 
 NSNotificationName const DWAppDidUnlockNotification = @"DWAppDidUnlockNotification";
@@ -54,9 +50,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 - (void)beginWipeWalletWithAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
 - (void)presentWalletWipeFailureForAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
-#if DASHPAY
-@property (null_resettable, nonatomic, strong) DWInvitationSetupState *invitationSetup;
-#endif
 
 @property (nonatomic, assign) BOOL launchingWasDeferred;
 
@@ -88,8 +81,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 #if DASHPAY
 - (void)handleDeeplink:(NSURL *)url {
+    // An invitation opened before the wallet exists is kept for it; the Home
+    // card offers it once setup finishes. Nothing is shown during onboarding.
     if (self.model.hasAWallet == NO) {
-        self.invitationSetup.invitation = url;
+        [DWInvitationEntry receive:url presenter:nil];
         return;
     }
 
@@ -101,7 +96,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         return;
     }
 
-    [self.mainController handleDeeplink:url definedUsername:nil];
+    if ([DWInvitationEntry receive:url presenter:self]) {
+        [self.mainController showHomeForInvitation];
+    }
 }
 #endif
 
@@ -339,13 +336,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
                   transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
 
 #if DASHPAY
-    if (self.invitationSetup.invitation != nil) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [self.mainController handleDeeplink:self.invitationSetup.invitation
-                                definedUsername:self.invitationSetup.chosenUsername];
-            self.invitationSetup = nil;
-        });
-    }
+    [DWInvitationEntry walletSetupDidFinish];
 #endif
 }
 
@@ -660,15 +651,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     self.lockController = controller;
     self.displayedLockNavigationController = navigationController;
 }
-
-#if DASHPAY
-- (DWInvitationSetupState *)invitationSetup {
-    if (_invitationSetup == nil) {
-        _invitationSetup = [[DWInvitationSetupState alloc] init];
-    }
-    return _invitationSetup;
-}
-#endif
 
 @end
 
