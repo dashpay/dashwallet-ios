@@ -25,10 +25,6 @@
 #import "DWURLRequestHandler.h"
 #import "dashwallet-Swift.h"
 
-#if DASHPAY
-#import "DWInvitationSetupState.h"
-#endif
-
 NS_ASSUME_NONNULL_BEGIN
 
 NSNotificationName const DWAppDidUnlockNotification = @"DWAppDidUnlockNotification";
@@ -48,21 +44,16 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 @property (nullable, nonatomic, weak) DWLockScreenViewController *lockController;
 @property (nullable, nonatomic, weak) UIViewController *displayedLockNavigationController;
 
-@property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
-@property (nullable, nonatomic, strong) NSURL *deferredDeeplinkToProcess;
+/// Every deep link the app accepted and has not handled yet, in arrival
+/// order; handed over one at a time by `dispatchNextLinkIfReady`.
+@property (nonatomic, strong) DWDeepLinkQueue *linkQueue;
 @property (nonatomic, assign) BOOL walletWipeInProgress;
 /// The launch hold (legacy migration, or an unreadable inventory) has not
-/// reported yet: "no wallet" is not a verdict, so a link that arrives now
-/// waits for the hold's answer instead of going to onboarding's storage.
+/// reported yet: "no wallet" is not a verdict, so nothing is handed over.
 @property (nonatomic, assign) BOOL launchHoldPending;
-/// Non-zero while a follow-up drain for a URL left behind is scheduled.
-@property (nonatomic, assign) NSInteger followUpDrainTicksLeft;
 
 - (void)beginWipeWalletWithAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
 - (void)presentWalletWipeFailureForAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
-#if DASHPAY
-@property (null_resettable, nonatomic, strong) DWInvitationSetupState *invitationSetup;
-#endif
 
 @property (nonatomic, assign) BOOL launchingWasDeferred;
 
@@ -78,6 +69,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _model = model;
+        _linkQueue = [[DWDeepLinkQueue alloc] init];
     }
     return self;
 }
@@ -94,57 +86,66 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 #if DASHPAY
 - (void)handleDeeplink:(NSURL *)url {
-    // While the launch hold is still deciding, a wallet may be seconds away
-    // (the migrator) or merely unreadable: keep the invitation with the
-    // other deferred links, to be handled once the wallet is presented and
-    // unlocked; only the hold's own "setup" verdict moves it to onboarding.
-    if (self.launchHoldPending) {
-        DWLog(@"LAUNCH invitation kept until the launch hold reports");
-        self.deferredDeeplinkToProcess = url;
-        return;
-    }
-    if (self.model.hasAWallet == NO) {
-        self.invitationSetup.invitation = url;
-        return;
-    }
-
-    // Defer URL until unlocked.
-    // This also prevents an issue with too fast unlocking via Face ID.
-    BOOL isLocked = [self.model shouldShowLockScreen] || self.lockController;
-    if (isLocked && self.deferredDeeplinkToProcess == nil) {
-        self.deferredDeeplinkToProcess = url;
-        return;
-    }
-
-    [self.mainController handleDeeplink:url definedUsername:nil];
+    [self handleURL:url];
 }
 #endif
 
+/// Every link enters here — a live one from the app delegate, one replayed
+/// after a deferred launch, one the initial controller kept until this
+/// controller existed — and joins the queue; it is handled when the app can
+/// act on it and every earlier link has had its screen.
 - (void)handleURL:(NSURL *)url {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
-    // No wallet presented yet — the launch hold is still migrating (or
-    // showing its card), or setup is on screen: keep the link, as the
-    // invitation path does, and handle it once a wallet is presented —
-    // after the unlock, or right away when no lock screen is due. The
-    // hold's flag comes first: `hasAWallet` is a live keychain read, and
-    // between the inventory becoming readable again and the hold's next
-    // poll noticing it, the read says "present" while the main controller
-    // is not attached yet.
-    if (self.launchHoldPending || self.model.hasAWallet == NO) {
-        DWLog(@"LAUNCH link kept until %@", self.launchHoldPending ? @"the launch hold reports" : @"a wallet is presented");
-        self.deferredURLToProcess = url;
+    DWDeepLink *link = [[DWDeepLink alloc] initWithURL:url];
+    [self.linkQueue enqueue:link];
+    DWLog(@"LINKS queued %@ (%lu pending)", link.isInvitation ? @"an invitation" : @"a url", (unsigned long)self.linkQueue.pending.count);
+    [self dispatchNextLinkIfReady];
+}
+
+/// The one rule for handing a link over: the wallet is on screen, the device
+/// is unlocked (no lock screen due, none displayed), the launch hold is not
+/// pending and no earlier link is still presenting. Called wherever one of
+/// those changes — a link arrives, the wallet is presented, the unlock
+/// completes, setup finishes, a link's screen settles.
+- (void)dispatchNextLinkIfReady {
+    const BOOL walletPresented = _mainController != nil && self.currentController == _mainController;
+    const BOOL unlocked = ![self.model shouldShowLockScreen] && self.lockController == nil;
+    DWDeepLink *link = [self.linkQueue takeNextWithWalletPresented:walletPresented
+                                                          unlocked:unlocked
+                                                 launchHoldPending:self.launchHoldPending];
+    if (link == nil) {
+        if (!self.linkQueue.isEmpty && !self.linkQueue.isDispatching) {
+            DWLog(@"LINKS %lu link(s) kept: wallet presented %d, unlocked %d, launch hold pending %d",
+                  (unsigned long)self.linkQueue.pending.count, walletPresented, unlocked, self.launchHoldPending);
+        }
         return;
     }
 
-    // Defer URL until unlocked.
-    // This also prevents an issue with too fast unlocking via Face ID.
-    BOOL isLocked = [self.model shouldShowLockScreen] || self.lockController;
-    if (isLocked && self.deferredURLToProcess == nil) {
-        self.deferredURLToProcess = url;
+    DWLog(@"LINKS handling %@ (%lu more pending)", link.isInvitation ? @"an invitation" : @"a url",
+          (unsigned long)self.linkQueue.pending.count);
+    __weak typeof(self) weakSelf = self;
+    void (^done)(void) = ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        [strongSelf.linkQueue dispatchDidFinish];
+        [strongSelf dispatchNextLinkIfReady];
+    };
+    if (link.isInvitation) {
+#if DASHPAY
+        [self.mainController handleDeeplink:link.url
+                            definedUsername:nil
+                                 completion:done];
+#else
+        done();
+#endif
         return;
     }
+    [self performURL:link.url completion:done];
+}
 
+/// Perform a non-invitation link's action; `completion` runs once the
+/// screen it presented (if any) has finished its transition.
+- (void)performURL:(NSURL *)url completion:(void (^)(void))completion {
     DWURLAction *action = [DWURLParser actionForURL:url];
     if (!action) {
         UIAlertController *alert = [UIAlertController
@@ -154,7 +155,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         UIAlertAction *okAction = [UIAlertAction
             actionWithTitle:NSLocalizedString(@"OK", nil)
                       style:UIAlertActionStyleCancel
-                    handler:nil];
+                    handler:^(UIAlertAction *action) {
+                        completion();
+                    }];
 
         [alert addAction:okAction];
 
@@ -166,24 +169,27 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
 
     if ([action isKindOfClass:DWURLScanQRAction.class]) {
-        [self.mainController performScanQRCodeAction];
+        [self.mainController performScanQRCodeActionWithCompletion:completion];
     }
     else if ([action isKindOfClass:DWURLIntegrationAction.class]) {
         NSURL *url = [(DWURLIntegrationAction *)action url];
         [[NSNotificationCenter defaultCenter] postNotificationName:NSNotification.authURLReceived object:url];
+        completion();
     }
     else if ([action isKindOfClass:DWURLRequestAction.class]) {
         [DWURLRequestHandler handleURLRequest:(DWURLRequestAction *)action];
+        completion();
     }
     else if ([action isKindOfClass:DWURLPayAction.class]) {
         NSURL *paymentURL = [(DWURLPayAction *)action paymentURL];
-        [self.mainController performPayTo:paymentURL];
+        [self.mainController performPayTo:paymentURL completion:completion];
     }
     else if ([action isKindOfClass:DWURLDashConnectAction.class]) {
-        [self.mainController openDashConnect:[(DWURLDashConnectAction *)action uri]];
+        [self.mainController openDashConnect:[(DWURLDashConnectAction *)action uri] completion:completion];
     }
     else {
         NSAssert(NO, @"Unhandled action", action);
+        completion();
     }
 }
 
@@ -266,6 +272,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             [weakSelf presentInitialControllerAfterKeyMigration:migratedWalletPresent];
         }];
     }
+    // Links the initial controller handed over before this view loaded: with
+    // the wallet on screen and no lock due they are handled now; otherwise
+    // the unlock, the hold's delivery or setup's completion hands them over.
+    [self dispatchNextLinkIfReady];
 
     if (hasAWallet) {
         // Lock controller will be shown in applicationDidBecomeActiveNotification.
@@ -354,108 +364,21 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (void)presentInitialControllerAfterKeyMigration:(BOOL)migratedWalletPresent {
     self.launchHoldPending = NO;
     if (migratedWalletPresent) {
-#if DASHPAY
-        // An invitation that arrived before this controller's view loaded
-        // (the initial controller hands its kept link over at creation) went
-        // to onboarding's storage, which only a finished setup reads. The
-        // hold delivered a wallet, so it joins the deferred links instead.
-        if (_invitationSetup.invitation != nil && self.deferredDeeplinkToProcess == nil) {
-            DWLog(@"LAUNCH invitation moved from onboarding to the deferred links; the hold delivered a wallet");
-            self.deferredDeeplinkToProcess = _invitationSetup.invitation;
-            _invitationSetup = nil;
-        }
-#endif
         if ([self.model shouldShowLockScreen]) {
-            // A link kept during the hold is handled after the unlock.
+            // The links kept during the hold are handled after the unlock.
             [self showLockControllerIfNeeded];
         }
         else {
             [self transitionToController:[self mainController]];
-            [self processDeferredLinks];
+            [self dispatchNextLinkIfReady];
         }
     }
     else {
-#if DASHPAY
-        // A definite "no wallet": an invitation kept during the hold now
-        // belongs to onboarding, which redeems it once setup finishes.
-        if (self.deferredDeeplinkToProcess != nil) {
-            self.invitationSetup.invitation = self.deferredDeeplinkToProcess;
-            self.deferredDeeplinkToProcess = nil;
-        }
-#endif
+        // A definite "no wallet": the links kept during the hold (an
+        // invitation that opened the app, say) wait through setup and are
+        // handled once it has presented the wallet.
         [self transitionToController:[self setupController]];
     }
-}
-
-/// Hand ONE link kept while no wallet was presented (or while it was
-/// locked) to the main controller: the invitation if one is kept, else the
-/// URL. The slot of the link being handled is emptied before the hand-over,
-/// so a link the handler keeps again (the screen locked meanwhile) returns
-/// to its slot for the next pass. A URL kept beside an invitation stays in
-/// its slot: handled in the same pass, its screen would be presented on top
-/// of the invitation's alert mid-animation (a Debug assert; refused by UIKit
-/// in Release). It is handled on the next pass — the next unlock, or the
-/// follow-up scheduled here for when nothing is being presented any more.
-- (void)processDeferredLinks {
-    if (self.deferredDeeplinkToProcess != nil) {
-        NSURL *invitation = self.deferredDeeplinkToProcess;
-        self.deferredDeeplinkToProcess = nil;
-        DWLog(@"LAUNCH handling a link kept until the wallet was presented (invitation)");
-#if DASHPAY
-        [self handleDeeplink:invitation];
-#endif
-        if (self.deferredURLToProcess != nil) {
-            DWLog(@"LAUNCH a url is kept beside the invitation; handled once nothing is presented");
-            [self scheduleFollowUpDrain];
-        }
-        return;
-    }
-    if (self.deferredURLToProcess != nil) {
-        NSURL *url = self.deferredURLToProcess;
-        self.deferredURLToProcess = nil;
-        DWLog(@"LAUNCH handling a link kept until the wallet was presented (url)");
-        [self handleURL:url];
-    }
-}
-
-/// The follow-up pass for a URL left behind by `processDeferredLinks`: polls
-/// twice a second until the window has nothing presented and the root is not
-/// mid-transition, then drains. Stops on its own when the slot was emptied by
-/// another pass (an unlock), and gives up after five minutes — the URL then
-/// waits for the next unlock. One follow-up at a time.
-- (void)scheduleFollowUpDrain {
-    if (self.followUpDrainTicksLeft > 0) {
-        return;
-    }
-    self.followUpDrainTicksLeft = 600;
-    [self followUpDrainTick];
-}
-
-- (void)followUpDrainTick {
-    __weak typeof(self) weakSelf = self;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (strongSelf == nil) {
-            return;
-        }
-        if (strongSelf.deferredURLToProcess == nil) {
-            strongSelf.followUpDrainTicksLeft = 0;
-            return;
-        }
-        strongSelf.followUpDrainTicksLeft -= 1;
-        if (strongSelf.followUpDrainTicksLeft == 0) {
-            DWLog(@"LAUNCH the kept url is still waiting for a free screen; it is handled after the next unlock");
-            return;
-        }
-        const BOOL presenting = strongSelf.view.window.rootViewController.presentedViewController != nil ||
-                                strongSelf.transitionCoordinator != nil || strongSelf.lockController != nil;
-        if (presenting) {
-            [strongSelf followUpDrainTick];
-            return;
-        }
-        strongSelf.followUpDrainTicksLeft = 0;
-        [strongSelf processDeferredLinks];
-    });
 }
 
 #pragma mark - DWSetupViewControllerDelegate
@@ -467,20 +390,13 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     [self transitionToController:mainController
                   transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
 
-#if DASHPAY
-    if (self.invitationSetup.invitation != nil) {
+    // The links kept through setup (an invitation that opened the app, a
+    // payment link) are handled once the transition above has played; the
+    // container transition reports no completion, hence the delay.
+    if (!self.linkQueue.isEmpty) {
+        __weak typeof(self) weakSelf = self;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [self.mainController handleDeeplink:self.invitationSetup.invitation
-                                definedUsername:self.invitationSetup.chosenUsername];
-            self.invitationSetup = nil;
-        });
-    }
-#endif
-    // A payment link kept while setup was on screen, on the same delay as
-    // the invitation above.
-    if (self.deferredURLToProcess != nil) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [self processDeferredLinks];
+            [weakSelf dispatchNextLinkIfReady];
         });
     }
 }
@@ -609,12 +525,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         completion:^(BOOL finished) {
             [self tearDownLockWindow];
 
-            // After `tearDownLockWindow`: the handlers read `lockController`
+            // After `tearDownLockWindow`: the queue reads `lockController`
             // to decide "still locked", and UIKit keeps the dismissed
             // hierarchy alive through this run-loop pass, so the weak
-            // reference would not have zeroed by itself yet — the links
-            // would be kept again, into slots nothing drains later.
-            [self processDeferredLinks];
+            // reference would not have zeroed by itself yet.
+            [self dispatchNextLinkIfReady];
 
             [[NSNotificationCenter defaultCenter] postNotificationName:DWAppDidUnlockNotification
                                                                 object:nil];
@@ -799,15 +714,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     self.lockController = controller;
     self.displayedLockNavigationController = navigationController;
 }
-
-#if DASHPAY
-- (DWInvitationSetupState *)invitationSetup {
-    if (_invitationSetup == nil) {
-        _invitationSetup = [[DWInvitationSetupState alloc] init];
-    }
-    return _invitationSetup;
-}
-#endif
 
 @end
 

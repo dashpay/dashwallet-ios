@@ -36,10 +36,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) DWAppRootViewController *rootController;
 @property (nullable, nonatomic, weak) UIViewController *reinstallWalletChoiceController;
 
-#if DASHPAY
-@property (nullable, nonatomic, strong) NSURL *deferredDeeplink;
-#endif
-@property (nullable, nonatomic, strong) NSURL *deferredURL;
+/// Links delivered before the root controller exists (onboarding still on
+/// screen), in arrival order; handed to the root at its creation.
+@property (nonatomic, strong) NSMutableArray<NSURL *> *deferredLinks;
 
 @end
 
@@ -90,28 +89,25 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if DASHPAY
 - (void)handleDeeplink:(NSURL *)url {
-    if (self.rootController) {
-        [self.rootController handleDeeplink:url];
-    }
-    else {
-        self.deferredDeeplink = url;
-    }
+    [self handleURL:url];
 }
 #endif
 
 - (void)handleURL:(NSURL *)url {
     // `application:openURL:` is delivered after `didFinishLaunching` has made
     // the window key, so `viewDidLoad` has normally already built the root
-    // controller. What is left is onboarding still holding the screen: a
-    // reinstall keeps the wallet in the Keychain, so `allowsURLHandling`
-    // passes while the Keep/Delete choice runs and the root controller does
-    // not exist yet. The link waits there, like a deeplink does, instead of
-    // being dropped.
+    // controller. What is left is onboarding still holding the screen (the
+    // carousel, or a reinstall's Keep/Delete choice) with the root controller
+    // not yet in existence. The link waits here, every one of them in order,
+    // and joins the root's queue at its creation.
     if (self.rootController) {
         [self.rootController handleURL:url];
     }
     else {
-        self.deferredURL = url;
+        if (self.deferredLinks == nil) {
+            self.deferredLinks = [NSMutableArray array];
+        }
+        [self.deferredLinks addObject:url];
     }
 }
 
@@ -235,17 +231,10 @@ NS_ASSUME_NONNULL_BEGIN
         [controller setLaunchingAsDeferredController];
     }
 
-#if DASHPAY
-    if (self.deferredDeeplink) {
-        [controller handleDeeplink:self.deferredDeeplink];
-        self.deferredDeeplink = nil;
+    for (NSURL *url in self.deferredLinks) {
+        [controller handleURL:url];
     }
-#endif
-
-    if (self.deferredURL) {
-        [controller handleURL:self.deferredURL];
-        self.deferredURL = nil;
-    }
+    self.deferredLinks = nil;
 
     return controller;
 }

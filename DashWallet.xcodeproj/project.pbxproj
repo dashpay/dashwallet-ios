@@ -275,6 +275,7 @@
 		2A9172C425233DC50024B4C5 /* DWPhraseRepairViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9172C325233DC50024B4C5 /* DWPhraseRepairViewController.m */; };
 		2A9172D325233F4F0024B4C5 /* DWPhraseRepairChildViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9172D225233F4F0024B4C5 /* DWPhraseRepairChildViewController.m */; };
 		2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */; };
+		D11E51A0C0DE000000000001 /* DeepLinkQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = D11E51A0C0DE000000000003 /* DeepLinkQueue.swift */; };
 		2A9FFDF42230FF1A00956D5F /* UIView+DWAnimations.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFDEF2230FF1A00956D5F /* UIView+DWAnimations.m */; };
 		2A9FFDF52230FF1A00956D5F /* SFSafariViewController+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFDF22230FF1A00956D5F /* SFSafariViewController+DashWallet.m */; };
 		2A9FFE032230FF2B00956D5F /* DWUpholdTransactionObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFDFD2230FF2B00956D5F /* DWUpholdTransactionObject.m */; };
@@ -1253,6 +1254,7 @@
 		BD509A68B1A0B6E4599F9C7A /* DWProfileUpdateCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82926C69F3BB675BEF1A1FFD /* DWProfileUpdateCoordinator.swift */; };
 		C05FA6CE3DDE2D0327D334E5 /* CoinJoinRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = B478AD92C1F1C11D09645DF4 /* CoinJoinRecovery.swift */; };
 		C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */; };
+		D11E51A0C0DE000000000004 /* DeepLinkQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D11E51A0C0DE000000000005 /* DeepLinkQueueTests.swift */; };
 		C124DF94278D4238FAE0975D /* OrderPreviewFeeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */; };
 		C1A0B2C3D4E5F60718293A02 /* ShortcutsBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */; };
 		C1A0B2C3D4E5F60718293A03 /* ShortcutsBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */; };
@@ -1736,6 +1738,7 @@
 		C9D2C8452A320AA000D15901 /* DWRecoverViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFEC2305318000C475EB /* DWRecoverViewController.m */; };
 		C9D2C8482A320AA000D15901 /* CoinbaseTransactionsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFA828C896BC000427E7 /* CoinbaseTransactionsRequest.swift */; };
 		C9D2C8492A320AA000D15901 /* DWAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */; };
+		D11E51A0C0DE000000000002 /* DeepLinkQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = D11E51A0C0DE000000000003 /* DeepLinkQueue.swift */; };
 		C9D2C84A2A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C84B2A320AA000D15901 /* UITableView+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F005FE297164600029EB10 /* UITableView+DashWallet.swift */; };
 		C9D2C84D2A320AA000D15901 /* ShortcutCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8D29D404850034FD57 /* ShortcutCell.swift */; };
@@ -2567,6 +2570,7 @@
 		2A9CEBA422E1D26500A50237 /* DWSecureWalletDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecureWalletDelegate.h; sourceTree = "<group>"; };
 		2A9CEBAB22E1DA4000A50237 /* DWAppRootViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAppRootViewController.h; sourceTree = "<group>"; };
 		2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAppRootViewController.m; sourceTree = "<group>"; };
+		D11E51A0C0DE000000000003 /* DeepLinkQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkQueue.swift; sourceTree = "<group>"; };
 		2A9FFDEE2230FF1A00956D5F /* UIView+DWAnimations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+DWAnimations.h"; sourceTree = "<group>"; };
 		2A9FFDEF2230FF1A00956D5F /* UIView+DWAnimations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWAnimations.m"; sourceTree = "<group>"; };
 		2A9FFDF02230FF1A00956D5F /* SFSafariViewController+DashWallet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SFSafariViewController+DashWallet.h"; sourceTree = "<group>"; };
@@ -3387,6 +3391,7 @@
 		BCD0199D74601A6150ABC8D1 /* WalletAccountDetailViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletAccountDetailViewModel.swift; sourceTree = "<group>"; };
 		C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OrderPreviewFeeRow.swift; sourceTree = "<group>"; };
 		C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKCoreLifecycleTests.swift; sourceTree = "<group>"; };
+		D11E51A0C0DE000000000005 /* DeepLinkQueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkQueueTests.swift; sourceTree = "<group>"; };
 		C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsBarView.swift; sourceTree = "<group>"; };
 		C1D2E3F4A5B6C7D8E9F01234 /* TransferAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountView.swift; sourceTree = "<group>"; };
 		C3DAD266246AA6F10001624F /* DWScreenshotWarningViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWScreenshotWarningViewController.h; sourceTree = "<group>"; };
@@ -4807,6 +4812,7 @@
 				755E6DFC2A99E7A000A42870 /* DWInvitationSetupState.m */,
 				2A9CEBAB22E1DA4000A50237 /* DWAppRootViewController.h */,
 				2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */,
+				D11E51A0C0DE000000000003 /* DeepLinkQueue.swift */,
 				2A913E9323A3F75F006A2A59 /* DWInitialViewController.h */,
 				2A913E9423A3F75F006A2A59 /* DWInitialViewController.m */,
 				2A44313E22CF642C009BAF7F /* DWRootModel.h */,
@@ -7510,6 +7516,7 @@
 				D71029F5975636F1DCFFFF85 /* PlatformBalanceControllerTests.swift */,
 				5798C63088F44013AEC5D85B /* ShieldedRecoveryControllerTests.swift */,
 				C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */,
+				D11E51A0C0DE000000000005 /* DeepLinkQueueTests.swift */,
 				CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */,
 				CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */,
 				7A30000130A1000000000001 /* TransactionDirectionTests.swift */,
@@ -10427,6 +10434,7 @@
 				2A74EFED2305318000C475EB /* DWRecoverViewController.m in Sources */,
 				0F6EDFCC28C896BD000427E7 /* CoinbaseTransactionsRequest.swift in Sources */,
 				2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */,
+				D11E51A0C0DE000000000001 /* DeepLinkQueue.swift in Sources */,
 				753F75352DD0D42300D40DFE /* DashSpendPayScreen.swift in Sources */,
 				D6C0C001D6C0C001D6C0C001 /* GiftCardDetailsInfoCard.swift in Sources */,
 				D6C0C002D6C0C002D6C0C002 /* GiftCardDetailsMerchantHeader.swift in Sources */,
@@ -10820,6 +10828,7 @@
 				BCC98012E278206FC08FA8E3 /* PlatformBalanceControllerTests.swift in Sources */,
 				F0CAB696BC154E7EB3EC221D /* ShieldedRecoveryControllerTests.swift in Sources */,
 				C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */,
+				D11E51A0C0DE000000000004 /* DeepLinkQueueTests.swift in Sources */,
 				CB9000022FE1000000000002 /* CoinbaseTransactionMetadataTests.swift in Sources */,
 				CB9100022FE2000000000002 /* CoinbaseTransferAmountTests.swift in Sources */,
 				7A30000230A1000000000002 /* TransactionDirectionTests.swift in Sources */,
@@ -11485,6 +11494,7 @@
 				C9D2C8482A320AA000D15901 /* CoinbaseTransactionsRequest.swift in Sources */,
 				C943B3372A408CED00AF23C5 /* DWEditProfileTextFieldCell.m in Sources */,
 				C9D2C8492A320AA000D15901 /* DWAppRootViewController.m in Sources */,
+				D11E51A0C0DE000000000002 /* DeepLinkQueue.swift in Sources */,
 				C9D2C84A2A320AA000D15901 /* (null) in Sources */,
 				7513DA882AB175E0005D55F6 /* TopperViewModel.swift in Sources */,
 				C9D2C84B2A320AA000D15901 /* UITableView+DashWallet.swift in Sources */,

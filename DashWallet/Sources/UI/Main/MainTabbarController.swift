@@ -489,18 +489,32 @@ extension MainTabbarController {
     }
     #endif
 
+    // MARK: Deep links
+    //
+    // Entry points of the root controller's link queue, which hands links
+    // over one at a time: each dismisses whatever is presented and waits for
+    // that, performs the action, and reports back once the screen the action
+    // presented (or pushed) has finished its transition — so the next link
+    // never presents over an animation still in flight.
+
     @objc
-    public func performScanQRCodeAction() {
-        dismiss(animated: false, completion: nil)
-        selectedIndex = MainTabbarTabs.home.rawValue
-        homeController?.performScanQRCodeAction()
+    public func performScanQRCodeAction(completion: @escaping () -> Void) {
+        afterDismissingPresented { [weak self] in
+            guard let self else { return completion() }
+            self.selectedIndex = MainTabbarTabs.home.rawValue
+            self.homeController?.performScanQRCodeAction()
+            self.settlePresentation(then: completion)
+        }
     }
 
     @objc
-    public func performPay(to url: URL) {
-        dismiss(animated: false, completion: nil)
-        selectedIndex = MainTabbarTabs.home.rawValue
-        homeController?.performPay(to: url)
+    public func performPay(to url: URL, completion: @escaping () -> Void) {
+        afterDismissingPresented { [weak self] in
+            guard let self else { return completion() }
+            self.selectedIndex = MainTabbarTabs.home.rawValue
+            self.homeController?.performPay(to: url)
+            self.settlePresentation(then: completion)
+        }
     }
 
     /// Opens the Connections screen for a `dash-key:` / `dash-st:` link.
@@ -508,9 +522,15 @@ extension MainTabbarController {
     /// The More tab's index moves with the DashPay layout, so it comes from
     /// `moreTabIndex` rather than from the tab enum.
     @objc
-    public func openDashConnect(_ uri: String) {
-        dismiss(animated: false, completion: nil)
+    public func openDashConnect(_ uri: String, completion: @escaping () -> Void) {
+        afterDismissingPresented { [weak self] in
+            guard let self else { return completion() }
+            self.openDashConnectNow(uri)
+            self.settlePresentation(then: completion)
+        }
+    }
 
+    private func openDashConnectNow(_ uri: String) {
         guard let menuNav = menuNavigationController?.navigationController else { return }
 
         if let moreTabIndex {
@@ -541,12 +561,39 @@ extension MainTabbarController {
     
     #if DASHPAY
     @objc
-    public func handleDeeplink(_ url: URL, definedUsername: String?) {
-        dismiss(animated: false, completion: nil)
-        selectedIndex = MainTabbarTabs.home.rawValue
-        homeController?.handleDeeplink(url, definedUsername: definedUsername)
+    public func handleDeeplink(_ url: URL, definedUsername: String?, completion: @escaping () -> Void) {
+        afterDismissingPresented { [weak self] in
+            guard let self else { return completion() }
+            self.selectedIndex = MainTabbarTabs.home.rawValue
+            self.homeController?.handleDeeplink(url, definedUsername: definedUsername)
+            self.settlePresentation(then: completion)
+        }
     }
     #endif
+
+    /// `dismiss` reports through its completion only when something was
+    /// presented; with nothing presented the body runs at once.
+    private func afterDismissingPresented(_ body: @escaping () -> Void) {
+        guard presentedViewController != nil else { return body() }
+        dismiss(animated: false, completion: body)
+    }
+
+    /// Calls `completion` once the transition an action started — a modal
+    /// on this controller's hierarchy, or a push on the selected tab's
+    /// navigation stack — has finished; on the next run-loop turn when
+    /// nothing is animating.
+    private func settlePresentation(then completion: @escaping () -> Void) {
+        let candidates: [UIViewControllerTransitionCoordinator?] = [
+            presentedViewController?.transitionCoordinator,
+            selectedViewController?.transitionCoordinator,
+            (selectedViewController as? UINavigationController)?.topViewController?.transitionCoordinator,
+        ]
+        if let coordinator = candidates.compactMap({ $0 }).first {
+            coordinator.animate(alongsideTransition: nil) { _ in completion() }
+        } else {
+            DispatchQueue.main.async(execute: completion)
+        }
+    }
 }
 
 // MARK: MainMenuViewControllerDelegate
