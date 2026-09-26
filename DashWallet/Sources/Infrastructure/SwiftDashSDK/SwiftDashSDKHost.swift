@@ -502,6 +502,11 @@ final class SwiftDashSDKHost {
         case invalidMnemonic
         case mnemonicPersistenceFailed(Error)
         case mnemonicRoundTripMismatch
+        /// The current network's wallet was persisted, then provisioning the
+        /// other supported network failed. Nothing is rolled back: a re-run
+        /// of the same import hydrates the persisted wallet and provisions
+        /// only what is missing.
+        case provisioningIncomplete(Error)
         /// The devnet quorum URL or name changed between the start of a runtime
         /// build and its SDK coming back, so the SDK and the store it would be
         /// paired with belong to different devnets.
@@ -527,6 +532,8 @@ final class SwiftDashSDKHost {
                 return "SwiftDashSDKHost received an invalid mnemonic"
             case .mnemonicPersistenceFailed(let error):
                 return "Mnemonic persistence failed: \(error.localizedDescription)"
+            case .provisioningIncomplete(let error):
+                return "Wallet persisted for the current network; provisioning the other network failed: \(error.localizedDescription)"
             case .mnemonicRoundTripMismatch:
                 return "Mnemonic round-trip mismatch"
             case .devnetConfigurationChanged:
@@ -630,55 +637,70 @@ final class SwiftDashSDKHost {
         let handles = try await buildRuntime(for: network)
         let createdWallet: ManagedPlatformWallet
         do {
-            createdWallet = try await createAndPersist(
-                mnemonic: mnemonic,
-                manager: handles.manager,
-                network: handles.network,
-                isImported: isImported,
-                // Imported mnemonics may hold history from long before
-                // this device: scan from the network's import floor
-                // (genesis on testnet, block 200,000 on mainnet — see
-                // `importedWalletBirthHeight`). Freshly generated
-                // mnemonics keep nil — nothing can predate them, so
-                // the scan anchors at the tip.
-                birthHeight: isImported
-                    ? Self.importedWalletBirthHeight(for: handles.network)
-                    : nil,
-                // Onboarding is not lifecycle-queue-serialized: keep the
-                // persist→create critical section MainActor-atomic.
-                offMainCreate: false)
+            if let persisted = try await persistedWalletForImport(mnemonic: mnemonic, handles: handles) {
+                // A previous import persisted this wallet and failed later
+                // (provisioning the other network): resume from it. The SDK
+                // refuses to create a registered id, and the store already
+                // holds the row, so it is hydrated rather than re-created.
+                Self.logger.info("🪺 HOST :: import resumed: wallet already persisted for \(network.rawValue, privacy: .public); provisioning what is missing")
+                createdWallet = persisted
+            } else {
+                createdWallet = try await createAndPersist(
+                    mnemonic: mnemonic,
+                    manager: handles.manager,
+                    network: handles.network,
+                    isImported: isImported,
+                    // Imported mnemonics may hold history from long before
+                    // this device: scan from the network's import floor
+                    // (genesis on testnet, block 200,000 on mainnet — see
+                    // `importedWalletBirthHeight`). Freshly generated
+                    // mnemonics keep nil — nothing can predate them, so
+                    // the scan anchors at the tip.
+                    birthHeight: isImported
+                        ? Self.importedWalletBirthHeight(for: handles.network)
+                        : nil,
+                    // Onboarding is not lifecycle-queue-serialized: keep the
+                    // persist→create critical section MainActor-atomic.
+                    offMainCreate: false)
+            }
 
             if provisionAcrossSupportedNetworks {
-                let persistedWalletIds = Set(try WalletStorage().listWalletIdsWithMnemonic())
-                let missingNetworks = try Self.missingWalletNetworks(
-                    mnemonic: mnemonic,
-                    persistedWalletIds: persistedWalletIds,
-                    currentNetwork: network)
+                do {
+                    let persistedWalletIds = Set(try WalletStorage().listWalletIdsWithMnemonic())
+                    let missingNetworks = try Self.missingWalletNetworks(
+                        mnemonic: mnemonic,
+                        persistedWalletIds: persistedWalletIds,
+                        currentNetwork: network)
 
-                for targetNetwork in missingNetworks where targetNetwork != network {
-                    // Always temporary here: `buildRuntime` just cleared the
-                    // published runtime, so `managerForStoredWalletOperation`
-                    // can never hand back a live manager — but keep the
-                    // guard so this call site stays correct if that changes.
-                    let (targetManager, isTemporary) = try await managerForStoredWalletOperation(
-                        network: targetNetwork)
-                    do {
-                        _ = try await createAndPersist(
-                            mnemonic: mnemonic,
-                            manager: targetManager,
-                            network: targetNetwork,
-                            isImported: isImported,
-                            birthHeight: isImported
-                                ? Self.importedWalletBirthHeight(for: targetNetwork)
-                                : nil,
-                            offMainCreate: false)
-                    } catch {
+                    for targetNetwork in missingNetworks where targetNetwork != network {
+                        // Always temporary here: `buildRuntime` just cleared the
+                        // published runtime, so `managerForStoredWalletOperation`
+                        // can never hand back a live manager — but keep the
+                        // guard so this call site stays correct if that changes.
+                        let (targetManager, isTemporary) = try await managerForStoredWalletOperation(
+                            network: targetNetwork)
+                        do {
+                            _ = try await createAndPersist(
+                                mnemonic: mnemonic,
+                                manager: targetManager,
+                                network: targetNetwork,
+                                isImported: isImported,
+                                birthHeight: isImported
+                                    ? Self.importedWalletBirthHeight(for: targetNetwork)
+                                    : nil,
+                                offMainCreate: false)
+                        } catch {
+                            if isTemporary { await targetManager.shutdown() }
+                            throw error
+                        }
                         if isTemporary { await targetManager.shutdown() }
-                        throw error
+                        Self.logger.info(
+                            "🪺 HOST :: provisioned onboarding wallet for \(targetNetwork.rawValue, privacy: .public)")
                     }
-                    if isTemporary { await targetManager.shutdown() }
-                    Self.logger.info(
-                        "🪺 HOST :: provisioned onboarding wallet for \(targetNetwork.rawValue, privacy: .public)")
+                } catch {
+                    // The current network's wallet is persisted by now and
+                    // stays: the caller learns that a re-run resumes from it.
+                    throw HostError.provisioningIncomplete(error)
                 }
             }
         } catch {
@@ -686,7 +708,8 @@ final class SwiftDashSDKHost {
             // runtime, so tear it down on failure — the manager was never
             // assigned to `self.manager`, so it must be shut down directly.
             // `createAndPersist` has already rolled back any provisional
-            // mnemonic it wrote.
+            // mnemonic it wrote; a wallet persisted before a later
+            // provisioning failure (`provisioningIncomplete`) stays.
             await handles.manager.shutdown()
             throw error
         }
@@ -699,6 +722,101 @@ final class SwiftDashSDKHost {
         let origin = isImported ? "imported" : "created"
         Self.logger.info("🪺 HOST :: \(origin, privacy: .public) managed wallet for \(network.rawValue, privacy: .public)")
         return createdWallet
+    }
+
+    /// The current network's wallet for `mnemonic` when an earlier import
+    /// already persisted it — its mnemonic is stored under the derived id and
+    /// the store still has its row — hydrated into the fresh manager. Nil
+    /// when nothing is persisted for that id, or its row is gone (then the
+    /// caller creates, as for a first import).
+    private func persistedWalletForImport(
+        mnemonic: String,
+        handles: RuntimeHandles
+    ) async throws -> ManagedPlatformWallet? {
+        switch Self.persistedWalletLookup(mnemonic: mnemonic, network: handles.network) {
+        case .notPersisted:
+            return nil
+        case .unknown(let status):
+            // Creating here could put a twin next to the wallet the read
+            // could not see; the import fails and can be retried.
+            throw HostError.mnemonicPersistenceFailed(
+                WalletStorageError.keychainError(status ?? errSecInteractionNotAllowed))
+        case .persisted(let walletId):
+            _ = try await handles.manager.loadFromPersistor()
+            return handles.manager.wallets[walletId]
+        }
+    }
+
+    /// Whether the wallet `mnemonic` derives for `network` has its mnemonic
+    /// stored on this device. The check an import resumes on, and the one
+    /// the recover flow asks before treating "a wallet is present" as a
+    /// finished recovery: derived from the phrase and the keychain alone, so
+    /// no earlier attempt has to be remembered. `notPersisted` only when a
+    /// successful attribute-only inventory read proves the id absent; an id
+    /// the inventory lists whose mnemonic cannot be read — refused, empty,
+    /// not UTF-8 (the SDK reports the last two as "not found" too) — is
+    /// `unknown`, as is an unreadable inventory or a read attempted while
+    /// protected data is unavailable. Never "not stored" for a wallet that
+    /// is there.
+    enum PersistedWalletLookup: Equatable {
+        case persisted(walletId: Data)
+        case notPersisted
+        case unknown(OSStatus?)
+    }
+
+    nonisolated static func persistedWalletLookup(mnemonic: String, network: Network) -> PersistedWalletLookup {
+        guard WalletEnvironment.isProtectedDataAvailable() else {
+            logger.warning("🪺 HOST :: persisted-wallet lookup not read: protected data unavailable (device locked)")
+            return .unknown(nil)
+        }
+        let walletId: Data
+        do {
+            walletId = try Wallet(mnemonic: mnemonic, network: network).id
+        } catch {
+            logger.error("🪺 HOST :: persisted-wallet lookup: walletId derivation failed: \(String(describing: error), privacy: .public)")
+            return .unknown(nil)
+        }
+        let storage = WalletStorage()
+        let lookup = classifyPersistedWalletLookup(
+            walletId: walletId,
+            inventory: Result { try storage.listWalletIdsWithMnemonic() },
+            mnemonic: { walletId in Result { try storage.retrieveMnemonic(for: walletId) } })
+        if case .unknown(let status) = lookup {
+            logger.error("🪺 HOST :: persisted-wallet lookup could not answer: status \(String(describing: status), privacy: .public)")
+        }
+        return lookup
+    }
+
+    /// The lookup's verdict from the two reads, pure. `mnemonic` runs only
+    /// for an id the inventory lists.
+    nonisolated static func classifyPersistedWalletLookup(
+        walletId: Data,
+        inventory: Result<[Data], Error>,
+        mnemonic: (Data) -> Result<String, Error>
+    ) -> PersistedWalletLookup {
+        let listed: [Data]
+        switch inventory {
+        case .success(let ids):
+            listed = ids
+        case .failure(let error):
+            return .unknown(Self.keychainStatus(of: error))
+        }
+        guard listed.contains(walletId) else {
+            return .notPersisted
+        }
+        switch mnemonic(walletId) {
+        case .success(let phrase) where !phrase.isEmpty:
+            return .persisted(walletId: walletId)
+        case .success:
+            return .unknown(nil)
+        case .failure(let error):
+            return .unknown(Self.keychainStatus(of: error))
+        }
+    }
+
+    private nonisolated static func keychainStatus(of error: Error) -> OSStatus? {
+        if case WalletStorageError.keychainError(let status) = error { return status }
+        return nil
     }
 
     /// Outcome of `addWallet(mnemonic:isImported:)`. `Sendable` because it

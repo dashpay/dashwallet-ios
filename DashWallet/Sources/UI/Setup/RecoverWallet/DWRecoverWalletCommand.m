@@ -42,13 +42,18 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)execute {
-    [self recoverWalletWithPhrase:self.phrase];
+    [self executeWithCompletion:^(BOOL succeeded){
+    }];
+}
+
+- (void)executeWithCompletion:(void (^)(BOOL succeeded))completion {
+    [self recoverWalletWithPhrase:self.phrase completion:completion];
 }
 
 #pragma mark - Private
 
-- (void)recoverWalletWithPhrase:(NSString *)phrase {
-    [self importWalletIntoSwiftDashSDK:phrase];
+- (void)recoverWalletWithPhrase:(NSString *)phrase completion:(void (^)(BOOL succeeded))completion {
+    [self importWalletIntoSwiftDashSDK:phrase completion:completion];
 
     [DWGlobalOptions sharedInstance].resyncingWallet = YES;
 
@@ -58,31 +63,50 @@ NS_ASSUME_NONNULL_BEGIN
     // DashSync's parallel SPV was retired in M6.
 }
 
-- (void)importWalletIntoSwiftDashSDK:(NSString *)phrase {
+- (void)importWalletIntoSwiftDashSDK:(NSString *)phrase completion:(void (^)(BOOL succeeded))completion {
     if (phrase.length == 0) {
+        completion(NO);
         return;
     }
 
     NSString *pin = [DWAuthenticationService shared].currentPin;
     if (pin.length == 0) {
+        completion(NO);
         return;
     }
 
     DWSwiftDashSDKNetwork network;
-    if (DWWalletEnvironment.isMainnet) {
-        network = DWSwiftDashSDKNetworkMainnet;
-    }
-    else if (DWWalletEnvironment.isTestnet) {
-        network = DWSwiftDashSDKNetworkTestnet;
-    }
-    else if (DWWalletEnvironment.isDevnet) {
-        network = DWSwiftDashSDKNetworkDevnet;
-    }
-    else {
-        return; // unreachable: networkKind is total over the three cases
+    if (![self.class currentNetwork:&network]) {
+        completion(NO); // unreachable: networkKind is total over the three cases
+        return;
     }
 
-    [DWSwiftDashSDKWalletCreator importWalletWithMnemonic:phrase pin:pin network:network];
+    [DWSwiftDashSDKWalletCreator importWalletWithMnemonic:phrase pin:pin network:network completion:completion];
+}
+
+- (DWPersistedWalletLookup)walletForPhraseLookup {
+    DWSwiftDashSDKNetwork network;
+    if (self.phrase.length == 0 || ![self.class currentNetwork:&network]) {
+        // Nothing to look up is not "not stored".
+        return DWPersistedWalletLookupUnknown;
+    }
+    return [DWSwiftDashSDKWalletCreator persistedWalletLookupForMnemonic:self.phrase network:network];
+}
+
++ (BOOL)currentNetwork:(DWSwiftDashSDKNetwork *)network {
+    if (DWWalletEnvironment.isMainnet) {
+        *network = DWSwiftDashSDKNetworkMainnet;
+    }
+    else if (DWWalletEnvironment.isTestnet) {
+        *network = DWSwiftDashSDKNetworkTestnet;
+    }
+    else if (DWWalletEnvironment.isDevnet) {
+        *network = DWSwiftDashSDKNetworkDevnet;
+    }
+    else {
+        return NO;
+    }
+    return YES;
 }
 
 @end

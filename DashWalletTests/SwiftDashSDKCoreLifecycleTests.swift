@@ -213,6 +213,124 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertNil(foreground.takePendingURL())
     }
 
+    /// A recover import in flight refuses a second submission, and only the
+    /// completion of the current attempt counts: a stale one is ignored, so
+    /// it can neither clear a newer command nor advance setup.
+    func testRecoverImportAttemptsAdmitOneAtATimeAndIgnoreStaleCompletions() {
+        let attempts = RecoverImportAttempts()
+        XCTAssertFalse(attempts.isInFlight)
+
+        let first = attempts.begin()
+        XCTAssertTrue(attempts.isInFlight)
+        XCTAssertTrue(attempts.finish(first))
+        XCTAssertFalse(attempts.isInFlight)
+        XCTAssertFalse(attempts.finish(first), "an attempt finishes once")
+
+        let second = attempts.begin()
+        let third = attempts.begin()
+        XCTAssertFalse(attempts.finish(second), "an older attempt's completion is stale")
+        XCTAssertTrue(attempts.isInFlight, "the current attempt is still running")
+        XCTAssertTrue(attempts.finish(third))
+        XCTAssertFalse(attempts.isInFlight)
+
+        let fourth = attempts.begin()
+        attempts.invalidate()
+        XCTAssertFalse(attempts.isInFlight, "leaving the flow ends the attempt")
+        XCTAssertFalse(attempts.finish(fourth), "its completion is stale")
+    }
+
+    /// The recover flow's two decisions: at submission an import in flight
+    /// wins over everything, otherwise a missing PIN defers the command to
+    /// the PIN step and an existing PIN executes now; at execution only a
+    /// definite "absent" imports — unreadable retries, present completes
+    /// into the wallet that is there.
+    func testRecoverImportRoutingCoversSubmissionAndExecution() {
+        XCTAssertEqual(RecoverImportRouting.atSubmission(inFlight: true, shouldSetPin: true), .ignoreWhileInFlight)
+        XCTAssertEqual(RecoverImportRouting.atSubmission(inFlight: true, shouldSetPin: false), .ignoreWhileInFlight)
+        XCTAssertEqual(RecoverImportRouting.atSubmission(inFlight: false, shouldSetPin: true), .deferUntilPinSet)
+        XCTAssertEqual(RecoverImportRouting.atSubmission(inFlight: false, shouldSetPin: false), .executeNow)
+
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .unknown), .retryUnreadable)
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .absent), .importWallet)
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present), .completeWithExistingWallet)
+    }
+
+    /// Regression: the first attempt persisted the current network's wallet
+    /// and failed provisioning the other one; the retry then failed for an
+    /// ordinary reason; the retry after that must still resume. The route
+    /// is derived from the keychain at each execution ("is the typed
+    /// phrase's own wallet stored?"), never from a remembered outcome, so
+    /// nothing in between can clear it: the same inputs give the same
+    /// route on every attempt. Without that wallet, "present" is a wallet
+    /// that landed meanwhile and setup completes into it — and when the
+    /// lookup could not answer (the attribute inventory says present, the
+    /// mnemonic read was refused), neither happens: Try Again keeps the
+    /// command.
+    func testRetryAfterAPartialImportRerunsTheImportWhateverHappenedInBetween() {
+        // Attempt 1: nothing stored yet — import (persists the wallet, then fails provisioning).
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .absent, walletForPhrase: .notPersisted), .importWallet)
+        // Attempt 2: the phrase's wallet is stored — import again (resume). It fails for another reason.
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, walletForPhrase: .persisted), .importWallet)
+        // Attempt 3: same inputs, same route — the ordinary failure changed nothing.
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, walletForPhrase: .persisted), .importWallet)
+
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, walletForPhrase: .notPersisted), .completeWithExistingWallet,
+                       "a wallet that is not the phrase's own landed meanwhile")
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, walletForPhrase: .unknown), .retryUnreadable,
+                       "the inventory says present but the phrase's wallet could not be looked up: keep the command, complete nothing")
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .unknown, walletForPhrase: .persisted), .retryUnreadable,
+                       "an unreadable keychain still waits, even mid-resume")
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .absent, walletForPhrase: .persisted), .importWallet)
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .absent, walletForPhrase: .unknown), .importWallet,
+                       "a definite absence imports; the lookup is only asked about a present wallet")
+    }
+
+    /// The lookup behind the recover retry: "not stored" only when the
+    /// inventory proves the id absent. The SDK reports an empty item and
+    /// invalid UTF-8 as "not found" too, so for an id the inventory lists
+    /// every failed mnemonic read is `unknown` — the flow then waits behind
+    /// Try Again instead of completing around the wallet that is there.
+    func testPersistedWalletLookupTreatsOnlyAProvenAbsenceAsNotPersisted() {
+        let id = Data(repeating: 0xAB, count: 32)
+        let other = Data(repeating: 0xCD, count: 32)
+        typealias Host = SwiftDashSDKHost
+        let phraseOK: (Data) -> Result<String, Error> = { _ in .success("abandon abandon about") }
+
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .success([id, other]), mnemonic: phraseOK),
+                       .persisted(walletId: id))
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .success([other]), mnemonic: phraseOK),
+                       .notPersisted, "the inventory read succeeded and does not list the id: a genuine absence")
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .success([]), mnemonic: phraseOK),
+                       .notPersisted)
+
+        // The id is listed, the value cannot be read — whatever the SDK calls it.
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .success([id]),
+                                                          mnemonic: { _ in .failure(WalletStorageError.mnemonicNotFound) }),
+                       .unknown(nil), "empty data reads as not-found in the SDK; the id is there")
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .success([id]),
+                                                          mnemonic: { _ in .success("") }),
+                       .unknown(nil), "an empty phrase is not a wallet")
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .success([id]),
+                                                          mnemonic: { _ in .failure(WalletStorageError.keychainError(errSecInteractionNotAllowed)) }),
+                       .unknown(errSecInteractionNotAllowed), "access denied")
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .success([id]),
+                                                          mnemonic: { _ in .failure(WalletStorageError.keychainError(errSecAuthFailed)) }),
+                       .unknown(errSecAuthFailed))
+
+        // The inventory itself could not be read.
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .failure(WalletStorageError.keychainError(errSecInteractionNotAllowed)),
+                                                          mnemonic: phraseOK),
+                       .unknown(errSecInteractionNotAllowed))
+        XCTAssertEqual(Host.classifyPersistedWalletLookup(walletId: id, inventory: .failure(WalletStorageError.mnemonicNotFound),
+                                                          mnemonic: phraseOK),
+                       .unknown(nil))
+
+        // Only a listed id has its mnemonic read.
+        var reads = 0
+        _ = Host.classifyPersistedWalletLookup(walletId: id, inventory: .success([other]), mnemonic: { _ in reads += 1; return .success("x") })
+        XCTAssertEqual(reads, 0)
+    }
+
     /// While the launch decision is pending, the runtime refuses automatic
     /// kicks (the sync monitor's connectivity kick, a network change); once
     /// the activation's wallet start releases the hold they pass again. A
