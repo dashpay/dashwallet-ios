@@ -84,9 +84,17 @@ struct PendingInvitation: Equatable, CustomStringConvertible {
 
 /// Where the bearer secret is kept. A seam so the store's decisions can be
 /// tested with failing writes and deletes; production is the Keychain.
+/// A Keychain read that tells "not there" from "could not read".
+enum InvitationSecretRead: Equatable {
+    case found(Data)
+    case missing
+    /// The item may exist but could not be read (e.g. the device is locked).
+    case failed
+}
+
 @MainActor
 protocol InvitationSecretStorage: AnyObject {
-    func read(_ account: String) -> Data?
+    func read(_ account: String) -> InvitationSecretRead
     /// false when the item could not be written.
     func write(_ data: Data, account: String) -> Bool
     /// true when the item is gone — deleted, or was never there.
@@ -105,8 +113,26 @@ final class KeychainInvitationSecretStorage: InvitationSecretStorage {
         self.keychain = keychain
     }
 
-    func read(_ account: String) -> Data? {
-        keychain.retrieveKeyData(identifier: account)
+    func read(_ account: String) -> InvitationSecretRead {
+        // Not `KeychainManager.retrieveKeyData`: it answers nil for every
+        // failure, and an unreadable invitation must not pass for an absent
+        // one.
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychain.serviceName,
+            kSecAttrAccount as String: account,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+        ]
+        var result: AnyObject?
+        switch SecItemCopyMatching(query as CFDictionary, &result) {
+        case errSecSuccess:
+            return (result as? Data).map(InvitationSecretRead.found) ?? .failed
+        case errSecItemNotFound:
+            return .missing
+        default:
+            return .failed
+        }
     }
 
     func write(_ data: Data, account: String) -> Bool {
@@ -214,19 +240,51 @@ final class PendingInvitationStore: ObservableObject {
         if !scope.isUnbound {
             bindUnbound(into: scope)
         }
-        let loaded = load(scope)
-        if loaded != pending {
-            pending = loaded
+        switch slot(scope) {
+        case .invitation(let loaded):
+            if loaded != pending { pending = loaded }
+        case .empty:
+            if pending != nil { pending = nil }
+        case .unreadable:
+            // Keep what is shown; the next reload reads again.
+            Self.logger.error("🎟️ INVITE :: could not read the pending invitation; keeping the last known state")
         }
     }
 
+    private enum Slot {
+        case invitation(PendingInvitation)
+        case empty
+        /// Could not be read; treat as neither empty nor this invitation.
+        case unreadable
+    }
+
+    private func slot(_ scope: InvitationScope) -> Slot {
+        switch storage.read(account(scope)) {
+        case .missing:
+            return .empty
+        case .failed:
+            return .unreadable
+        case .found(let data):
+            guard let invitation = load(scope, data: data) else { return .unreadable }
+            return .invitation(invitation)
+        }
+    }
+
+    /// The readable invitation in `scope`, or nil when empty or unreadable.
     private func load(_ scope: InvitationScope) -> PendingInvitation? {
-        guard let data = storage.read(account(scope)),
-              let rawLink = String(data: data, encoding: .utf8) else {
+        if case .invitation(let invitation) = slot(scope) { return invitation }
+        return nil
+    }
+
+    private func load(_ scope: InvitationScope, data: Data) -> PendingInvitation? {
+        guard let rawLink = String(data: data, encoding: .utf8) else {
             return nil
         }
         let meta = defaults.dictionary(forKey: metadataKey(scope)) ?? [:]
-        let receivedAt = (meta["receivedAt"] as? Double).map(Date.init(timeIntervalSince1970:)) ?? Date()
+        // Stored as `timeIntervalSinceReferenceDate`, Date's own
+        // representation, so it reads back equal: a reloaded invitation must
+        // compare equal to the one that was shown, or the card re-checks it.
+        let receivedAt = (meta["receivedAt"] as? Double).map(Date.init(timeIntervalSinceReferenceDate:)) ?? Date()
         let fromOnboarding = meta["fromOnboarding"] as? Bool ?? false
         return PendingInvitation(rawLink: rawLink, receivedAt: receivedAt, fromOnboarding: fromOnboarding, scope: scope)
     }
@@ -252,12 +310,18 @@ final class PendingInvitationStore: ObservableObject {
         if !scope.isUnbound && hasRegisteredUsername() {
             return .alreadyHasIdentity
         }
-        if let existing = load(scope) {
+        switch slot(scope) {
+        case .invitation(let existing):
             if existing.rawLink == trimmed || existing.normalizedURI == normalized {
                 pending = existing
                 return .duplicate
             }
             return .busy
+        case .unreadable:
+            // Never overwrite what could not be read.
+            return .storageFailed
+        case .empty:
+            break
         }
         guard storage.write(Data(trimmed.utf8), account: account(scope)) else {
             Self.logger.error("🎟️ INVITE :: could not store the pending invitation in the Keychain")
@@ -281,10 +345,16 @@ final class PendingInvitationStore: ObservableObject {
     /// not be deleted; the invitation is then still pending.
     @discardableResult
     func remove(_ invitation: PendingInvitation, reason: RemovalReason) -> Bool {
-        guard let stored = load(invitation.scope), stored.rawLink == invitation.rawLink else {
+        switch slot(invitation.scope) {
+        case .empty:
             return true
+        case .unreadable:
+            Self.logger.error("🎟️ INVITE :: could not read the invitation to remove it")
+            return false
+        case .invitation(let stored):
+            guard stored.rawLink == invitation.rawLink else { return true }
+            return remove(scope: invitation.scope, reason: reason)
         }
-        return remove(scope: invitation.scope, reason: reason)
     }
 
     /// Forget an invitation wherever it is stored — for facts about the
@@ -298,8 +368,16 @@ final class PendingInvitationStore: ObservableObject {
             return false
         }
         var removedAll = true
-        for scope in scopes where load(scope)?.normalizedURI == normalizedURI {
-            removedAll = remove(scope: scope, reason: reason) && removedAll
+        for scope in scopes {
+            switch slot(scope) {
+            case .invitation(let stored) where stored.normalizedURI == normalizedURI:
+                removedAll = remove(scope: scope, reason: reason) && removedAll
+            case .unreadable:
+                // Might be this voucher; cannot tell, so not "all removed".
+                removedAll = false
+            case .invitation, .empty:
+                break
+            }
         }
         return removedAll
     }
@@ -339,8 +417,19 @@ final class PendingInvitationStore: ObservableObject {
     /// it stays and the next reload tries again.
     @discardableResult
     private func bindUnbound(into wallet: InvitationScope) -> Bool {
-        guard let invitation = load(wallet.unbound) else { return true }
-        if load(wallet) == nil {
+        let invitation: PendingInvitation
+        switch slot(wallet.unbound) {
+        case .empty: return true
+        case .unreadable: return false
+        case .invitation(let unboundInvitation): invitation = unboundInvitation
+        }
+        switch slot(wallet) {
+        case .unreadable:
+            // The wallet's own slot may hold an invitation; don't overwrite.
+            return false
+        case .invitation:
+            break
+        case .empty:
             guard storage.write(Data(invitation.rawLink.utf8), account: account(wallet)) else {
                 Self.logger.error("🎟️ INVITE :: could not move the pre-onboarding invitation under the wallet")
                 return false
@@ -353,7 +442,7 @@ final class PendingInvitationStore: ObservableObject {
 
     private func writeMetadata(_ invitation: PendingInvitation) {
         defaults.set([
-            "receivedAt": invitation.receivedAt.timeIntervalSince1970,
+            "receivedAt": invitation.receivedAt.timeIntervalSinceReferenceDate,
             "fromOnboarding": invitation.fromOnboarding,
         ], forKey: metadataKey(invitation.scope))
     }

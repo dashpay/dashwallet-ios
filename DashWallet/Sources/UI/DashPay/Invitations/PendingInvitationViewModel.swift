@@ -54,6 +54,10 @@ final class PendingInvitationViewModel: ObservableObject {
     /// check's identity — a finishing check clears only its own state.
     private var validationFor: PendingInvitation?
     private var validationToken: UUID?
+    /// One delayed re-check while the wallet is not ready to answer, instead
+    /// of spinning on an unchanged invitation.
+    private var delayedRetry: Task<Void, Never>?
+    static let notReadyRetryDelay: UInt64 = 5_000_000_000
     private var cancellables = Set<AnyCancellable>()
     private var observers: [NSObjectProtocol] = []
 
@@ -188,7 +192,15 @@ final class PendingInvitationViewModel: ObservableObject {
         // check.
         guard let verdict, self.invitation == invitation else {
             refreshCardState()
-            if self.invitation != nil { validateIfPossible() }
+            if let current = self.invitation, current != invitation {
+                // A replacement is shown now: it gets its own check.
+                validateIfPossible()
+            } else if self.invitation != nil {
+                // Same invitation, but the wallet could not answer yet (not
+                // hydrated, or mid-switch). Sync, unlock, foreground and
+                // wallet-change events retry too; this is the backstop.
+                scheduleDelayedRetry()
+            }
             return nil
         }
         lastVerdict = (verdict, Date(), invitation)
@@ -203,6 +215,16 @@ final class PendingInvitationViewModel: ObservableObject {
         }
         refreshCardState()
         return verdict
+    }
+
+    private func scheduleDelayedRetry() {
+        guard delayedRetry == nil else { return }
+        delayedRetry = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: Self.notReadyRetryDelay)
+            guard let self, !Task.isCancelled else { return }
+            self.delayedRetry = nil
+            self.validateIfPossible()
+        }
     }
 
     private func refreshCardState() {

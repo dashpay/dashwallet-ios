@@ -18,8 +18,12 @@ private final class FakeSecretStorage: InvitationSecretStorage {
     var failWrites = false
     var failDeletes = false
     var failListing = false
+    var unreadable: Set<String> = []
 
-    func read(_ account: String) -> Data? { items[account] }
+    func read(_ account: String) -> InvitationSecretRead {
+        if unreadable.contains(account) { return .failed }
+        return items[account].map(InvitationSecretRead.found) ?? .missing
+    }
 
     func write(_ data: Data, account: String) -> Bool {
         guard !failWrites else { return false }
@@ -87,8 +91,10 @@ final class PendingInvitationStoreTests: XCTestCase {
     // MARK: - Receiving
 
     func testStoredInvitationSurvivesANewStoreAndCarriesItsScope() {
-        XCTAssertEqual(makeStore().receive(linkA), .stored)
+        let store = makeStore()
+        XCTAssertEqual(store.receive(linkA), .stored)
         let reloaded = makeStore().pending
+        XCTAssertEqual(reloaded, store.pending, "a reloaded invitation equals the one shown, timestamp included")
         XCTAssertEqual(reloaded?.rawLink, linkA, "a relaunch must find the invitation")
         XCTAssertEqual(reloaded?.scope, walletA)
     }
@@ -141,7 +147,11 @@ final class PendingInvitationStoreTests: XCTestCase {
         // other network must not delete wallet A's copy.
         XCTAssertTrue(store.remove(store.pending!, reason: .definitiveOutcome))
         XCTAssertNil(pending(in: otherNetworkA))
-        XCTAssertEqual(pending(in: walletA), shownInA)
+        // Scope and link, not whole-value equality: `receivedAt` loses
+        // sub-microsecond precision through the defaults round trip.
+        let stillInA = pending(in: walletA)
+        XCTAssertEqual(stillInA?.scope, shownInA.scope)
+        XCTAssertEqual(stillInA?.rawLink, shownInA.rawLink)
     }
 
     func testRemovingSparesADifferentInvitationStoredSince() {
@@ -224,6 +234,37 @@ final class PendingInvitationStoreTests: XCTestCase {
         XCTAssertFalse(store.remove(store.pending!, reason: .hidden))
         XCTAssertEqual(store.pending?.rawLink, linkA)
         XCTAssertFalse(store.wipeAllScopes())
+        XCTAssertEqual(makeStore().pending?.rawLink, linkA)
+    }
+
+    // MARK: - An unreadable item is not an absent one
+
+    private var accountA: String { PendingInvitationStore.keychainPrefix + walletA.storageKey }
+
+    func testUnreadableSlotIsNeverOverwrittenOrReportedRemoved() {
+        let store = makeStore()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        let shown = store.pending!
+        storage.unreadable = [accountA]
+
+        XCTAssertEqual(store.receive(linkB), .storageFailed, "must not overwrite what could not be read")
+        XCTAssertFalse(store.remove(shown, reason: .hidden))
+        XCTAssertFalse(store.removeEverywhere(normalizedURI: linkA, reason: .claimed))
+        store.reload()
+        XCTAssertEqual(store.pending?.rawLink, linkA, "an unreadable slot keeps the last known state")
+
+        storage.unreadable = []
+        XCTAssertTrue(store.remove(shown, reason: .hidden))
+        XCTAssertNil(store.pending)
+    }
+
+    func testUnreadableWalletSlotBlocksTheMove() {
+        receiveBeforeWallet(linkA)
+        storage.unreadable = [accountA]
+        _ = makeStore()
+        XCTAssertNotNil(storage.items[PendingInvitationStore.keychainPrefix + unbound.storageKey],
+                        "the pre-onboarding copy stays while the wallet's slot cannot be read")
+        storage.unreadable = []
         XCTAssertEqual(makeStore().pending?.rawLink, linkA)
     }
 
