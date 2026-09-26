@@ -50,6 +50,8 @@ final class PendingInvitationStoreTests: XCTestCase {
     private var suiteName: String!
     private var scope = InvitationScope(networkRawValue: 1, walletIdHex: "walletA")
     private var hasUsername = false
+    /// Whether the SDK host is bound to the selected scope (false mid-switch).
+    private var isBound = true
 
     private let walletA = InvitationScope(networkRawValue: 1, walletIdHex: "walletA")
     private let walletB = InvitationScope(networkRawValue: 1, walletIdHex: "walletB")
@@ -68,6 +70,7 @@ final class PendingInvitationStoreTests: XCTestCase {
         defaults = UserDefaults(suiteName: suiteName)
         scope = walletA
         hasUsername = false
+        isBound = true
     }
 
     override func tearDown() {
@@ -80,7 +83,8 @@ final class PendingInvitationStoreTests: XCTestCase {
             storage: storage,
             defaults: defaults,
             currentScope: { [unowned self] in self.scope },
-            hasRegisteredUsername: { [unowned self] in self.hasUsername })
+            hasRegisteredUsername: { [unowned self] in self.hasUsername },
+            isActiveAndBound: { [unowned self] _ in self.isBound })
     }
 
     private func pending(in scope: InvitationScope) -> PendingInvitation? {
@@ -118,6 +122,17 @@ final class PendingInvitationStoreTests: XCTestCase {
         let store = makeStore()
         XCTAssertEqual(store.receive(linkA), .alreadyHasIdentity)
         XCTAssertNil(store.pending)
+    }
+
+    /// Mid-switch to wallet B the identity snapshot still describes the
+    /// outgoing wallet A: its username must not reject B's invitation.
+    func testUsernameOfTheOutgoingWalletDoesNotRejectDuringASwitch() {
+        scope = walletB
+        isBound = false
+        hasUsername = true
+        let store = makeStore()
+        XCTAssertEqual(store.receive(linkA), .stored, "stored; the guarded check decides after rebinding")
+        XCTAssertEqual(store.pending?.scope, walletB)
     }
 
     func testFailedReceiveWriteStoresNothing() {

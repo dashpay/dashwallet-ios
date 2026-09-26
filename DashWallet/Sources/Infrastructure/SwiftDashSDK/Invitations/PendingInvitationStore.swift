@@ -234,17 +234,22 @@ final class PendingInvitationStore: ObservableObject {
     private let defaults: UserDefaults
     private let currentScope: () -> InvitationScope
     private let hasRegisteredUsername: @MainActor () -> Bool
+    /// Whether a scope is both selected and bound to the SDK host — only
+    /// then does the identity snapshot describe that scope's wallet.
+    private let isActiveAndBound: @MainActor (InvitationScope) -> Bool
     private var observers: [NSObjectProtocol] = []
 
     init(storage: InvitationSecretStorage? = nil,
          defaults: UserDefaults = .standard,
          currentScope: @escaping () -> InvitationScope = { InvitationScope.current },
-         hasRegisteredUsername: (@MainActor () -> Bool)? = nil) {
+         hasRegisteredUsername: (@MainActor () -> Bool)? = nil,
+         isActiveAndBound: (@MainActor (InvitationScope) -> Bool)? = nil) {
         self.storage = storage ?? KeychainInvitationSecretStorage()
         self.defaults = defaults
         self.currentScope = currentScope
         self.hasRegisteredUsername = hasRegisteredUsername
-            ?? { DWCurrentUserIdentityInfo.shared.username?.isEmpty == false }
+            ?? { DWCurrentUserIdentityInfo.shared.refreshedSnapshot().username?.isEmpty == false }
+        self.isActiveAndBound = isActiveAndBound ?? { InvitationScope.isActiveAndBound($0) }
         reload()
         observers.append(NotificationCenter.default.addObserver(
             forName: SwiftDashSDKWalletState.activeWalletDidChangeNotification,
@@ -338,11 +343,13 @@ final class PendingInvitationStore: ObservableObject {
             return .notAnInvitation
         }
         let scope = currentScope()
-        // Only answerable once a wallet exists; before that the card reports
-        // it after sync, as Android does. An identity without a username is
-        // not enough to refuse: it may be the one this invitation already
-        // created, and the card's check settles that.
-        if !scope.isUnbound && hasRegisteredUsername() {
+        // Only answerable once a wallet exists and the SDK is bound to it:
+        // mid-switch the identity snapshot still describes the outgoing
+        // wallet, so the invitation is stored and the card's guarded check
+        // decides after rebinding (as it does before a wallet exists, as on
+        // Android). An identity without a username is not enough to refuse:
+        // it may be the one this invitation already created.
+        if !scope.isUnbound && isActiveAndBound(scope) && hasRegisteredUsername() {
             return .alreadyHasIdentity
         }
         switch slot(scope) {
