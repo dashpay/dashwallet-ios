@@ -252,6 +252,10 @@ NS_ASSUME_NONNULL_BEGIN
     // The initial controller keeps them until its root controller exists,
     // and the root controller's queue until a wallet is presented and
     // unlocked.
+    if (self.launchDecision.droppedPendingLinks > 0) {
+        DWLog(@"LAUNCH %ld link(s) delivered during the deferred launch were dropped for newer ones",
+              (long)self.launchDecision.droppedPendingLinks);
+    }
     for (NSURL *url in [self.launchDecision takePendingLinks]) {
         DWLog(@"LAUNCH replaying a link kept during the deferred launch (scheme %@)", url.scheme);
         [self deliverReplayedURL:url toInitialController:controller];

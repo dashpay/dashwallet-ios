@@ -37,7 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, weak) UIViewController *reinstallWalletChoiceController;
 
 /// Links delivered before the root controller exists (onboarding still on
-/// screen), in arrival order; handed to the root at its creation.
+/// screen), in arrival order; handed to the root at its creation. The
+/// newest `DWDeepLinkQueue.capacity`, as the queue itself would keep.
 @property (nonatomic, strong) NSMutableArray<NSURL *> *deferredLinks;
 
 @end
@@ -108,6 +109,11 @@ NS_ASSUME_NONNULL_BEGIN
             self.deferredLinks = [NSMutableArray array];
         }
         [self.deferredLinks addObject:url];
+        if (self.deferredLinks.count > DWDeepLinkQueue.capacity) {
+            [self.deferredLinks removeObjectAtIndex:0];
+            DWLog(@"LINKS a link kept before the root existed was dropped for a newer one (%lu kept)",
+                  (unsigned long)self.deferredLinks.count);
+        }
     }
 }
 

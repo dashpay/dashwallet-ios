@@ -34,10 +34,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL locksBalance;
 
 - (void)performScanQRCodeAction;
+/// `performScanQRCodeAction` for a deep link: `completion` runs once the
+/// scanner has finished presenting — at once when it is already up.
+- (void)performScanQRCodeActionWithCompletion:(void (^)(void))completion;
 /// Assume pasteboard contains needed data and pay
 - (void)performPayToPasteboardAction;
 - (void)performNFCReadingAction;
 - (void)performPayToURL:(NSURL *)url;
+/// `performPayToURL:` for a deep link: `completion` runs once the payment's
+/// first screen has finished presenting, or its preparation ended without
+/// one (`PaymentController.performPayment(with:presentationSettled:)`).
+- (void)performPayToURL:(NSURL *)url completion:(void (^)(void))completion;
 /// Pay a send this flow has already fully specified — the address and the
 /// amount are both known and there is nothing left to ask for.
 ///

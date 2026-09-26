@@ -845,7 +845,6 @@
 		755B4B232B0C903500B844F0 /* DWDateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755B4B212B0C903500B844F0 /* DWDateFormatter.swift */; };
 		755C32382C358FC0007DA721 /* BackupSeedPhraseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */; };
 		755C32392C358FC0007DA721 /* BackupSeedPhraseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */; };
-		755E6DFE2A99E7A000A42870 /* DWInvitationSetupState.m in Sources */ = {isa = PBXBuildFile; fileRef = 755E6DFC2A99E7A000A42870 /* DWInvitationSetupState.m */; };
 		756557B52CE84FFA0060348D /* FeeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756557B42CE84FF70060348D /* FeeInfo.swift */; };
 		756557B62CE84FFA0060348D /* FeeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756557B42CE84FF70060348D /* FeeInfo.swift */; };
 		7566F4832BB6949E005238D2 /* ToolsMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */; };
@@ -3118,8 +3117,6 @@
 		7556EE402DF9876B004E8093 /* ExploreSyncBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreSyncBannerView.swift; sourceTree = "<group>"; };
 		755B4B212B0C903500B844F0 /* DWDateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWDateFormatter.swift; sourceTree = "<group>"; };
 		755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSeedPhraseViewController.swift; sourceTree = "<group>"; };
-		755E6DFC2A99E7A000A42870 /* DWInvitationSetupState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWInvitationSetupState.m; sourceTree = "<group>"; };
-		755E6DFD2A99E7A000A42870 /* DWInvitationSetupState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInvitationSetupState.h; sourceTree = "<group>"; };
 		756557B42CE84FF70060348D /* FeeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeInfo.swift; sourceTree = "<group>"; };
 		7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsMenuScreen.swift; sourceTree = "<group>"; };
 		5AGOV0002F9A0000000000S1 /* GovernanceMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GovernanceMenuScreen.swift; sourceTree = "<group>"; };
@@ -4808,8 +4805,6 @@
 		2A44311B22CC9B2C009BAF7F /* RootNavigation */ = {
 			isa = PBXGroup;
 			children = (
-				755E6DFD2A99E7A000A42870 /* DWInvitationSetupState.h */,
-				755E6DFC2A99E7A000A42870 /* DWInvitationSetupState.m */,
 				2A9CEBAB22E1DA4000A50237 /* DWAppRootViewController.h */,
 				2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */,
 				D11E51A0C0DE000000000003 /* DeepLinkQueue.swift */,
@@ -11398,7 +11393,6 @@
 				C943B3202A408CED00AF23C5 /* DWImgurInfoChildView.m in Sources */,
 				C9D2C7E92A320AA000D15901 /* AtmDAO.swift in Sources */,
 				C9D2C7EA2A320AA000D15901 /* App.swift in Sources */,
-				755E6DFE2A99E7A000A42870 /* DWInvitationSetupState.m in Sources */,
 				C9D2C7EB2A320AA000D15901 /* DWPaymentProcessor.m in Sources */,
 				C9D2C7ED2A320AA000D15901 /* SyncingHeaderView.swift in Sources */,
 				C9D2C7EE2A320AA000D15901 /* MinimumDepositBanner.swift in Sources */,

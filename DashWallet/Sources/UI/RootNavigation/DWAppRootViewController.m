@@ -33,7 +33,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 @interface DWAppRootViewController () <DWSetupViewControllerDelegate,
                                        DWWipeDelegate,
-                                       DWLockScreenViewControllerDelegate>
+                                       DWLockScreenViewControllerDelegate,
+                                       SyncingActivityMonitorObserver>
 
 @property (readonly, nonatomic, strong) id<DWRootProtocol> model;
 
@@ -97,9 +98,23 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (void)handleURL:(NSURL *)url {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
-    DWDeepLink *link = [[DWDeepLink alloc] initWithURL:url];
-    [self.linkQueue enqueue:link];
-    DWLog(@"LINKS queued %@ (%lu pending)", link.isInvitation ? @"an invitation" : @"a url", (unsigned long)self.linkQueue.pending.count);
+    DWDeepLink *link = [[DWDeepLink alloc] initWithURL:url isUnsupported:[DWURLParser actionForURL:url] == nil];
+    const DWDeepLinkAdmission admission = [self.linkQueue enqueue:link];
+    NSString *kind = link.isInvitation ? @"an invitation" : @"a url";
+    switch (admission) {
+        case DWDeepLinkAdmissionQueued:
+            DWLog(@"LINKS queued %@ (%lu pending)", kind, (unsigned long)self.linkQueue.pending.count);
+            break;
+        case DWDeepLinkAdmissionQueuedEvictingOldest:
+            DWLog(@"LINKS queued %@; the oldest pending link was dropped (%lu kept)", kind, (unsigned long)self.linkQueue.pending.count);
+            break;
+        case DWDeepLinkAdmissionDroppedDuplicate:
+            DWLog(@"LINKS dropped %@: the same link was queued just before", kind);
+            return;
+        case DWDeepLinkAdmissionDroppedUnsupportedCoalesced:
+            DWLog(@"LINKS dropped an unsupported url: one is already pending");
+            return;
+    }
     [self dispatchNextLinkIfReady];
 }
 
@@ -111,13 +126,15 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (void)dispatchNextLinkIfReady {
     const BOOL walletPresented = _mainController != nil && self.currentController == _mainController;
     const BOOL unlocked = ![self.model shouldShowLockScreen] && self.lockController == nil;
+    const BOOL invitationsReady = walletPresented && _mainController.isReadyForInvitations;
     DWDeepLink *link = [self.linkQueue takeNextWithWalletPresented:walletPresented
                                                           unlocked:unlocked
-                                                 launchHoldPending:self.launchHoldPending];
+                                                 launchHoldPending:self.launchHoldPending
+                                                  invitationsReady:invitationsReady];
     if (link == nil) {
         if (!self.linkQueue.isEmpty && !self.linkQueue.isDispatching) {
-            DWLog(@"LINKS %lu link(s) kept: wallet presented %d, unlocked %d, launch hold pending %d",
-                  (unsigned long)self.linkQueue.pending.count, walletPresented, unlocked, self.launchHoldPending);
+            DWLog(@"LINKS %lu link(s) kept: wallet presented %d, unlocked %d, launch hold pending %d, invitations ready %d",
+                  (unsigned long)self.linkQueue.pending.count, walletPresented, unlocked, self.launchHoldPending, invitationsReady);
         }
         return;
     }
@@ -144,7 +161,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 }
 
 /// Perform a non-invitation link's action; `completion` runs once the
-/// screen it presented (if any) has finished its transition.
+/// handler is done presenting: its screen has finished its transition, its
+/// preparation ended without one (cancelled, failed), or the authentication
+/// it asked for resolved.
 - (void)performURL:(NSURL *)url completion:(void (^)(void))completion {
     DWURLAction *action = [DWURLParser actionForURL:url];
     if (!action) {
@@ -177,8 +196,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         completion();
     }
     else if ([action isKindOfClass:DWURLRequestAction.class]) {
-        [DWURLRequestHandler handleURLRequest:(DWURLRequestAction *)action];
-        completion();
+        [DWURLRequestHandler handleURLRequest:(DWURLRequestAction *)action completion:completion];
     }
     else if ([action isKindOfClass:DWURLPayAction.class]) {
         NSURL *paymentURL = [(DWURLPayAction *)action paymentURL];
@@ -291,6 +309,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         [self.view addSubview:overlayImageView];
         self.overlayImageView = overlayImageView;
     }
+
+    // Invitations wait in the queue until the sync is done; ask again then.
+    [SyncingActivityMonitor.shared addObserver:self];
 
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self
@@ -559,6 +580,17 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     self.lockController = nil;
     self.displayedLockNavigationController = nil;
     [DWWalletLifecycleOverlayBridge setLockScreenVisible:NO];
+}
+
+#pragma mark - SyncingActivityMonitorObserver
+
+- (void)syncingActivityMonitorProgressDidChange:(double)progress {
+}
+
+- (void)syncingActivityMonitorStateDidChangeWithPreviousState:(enum SyncingActivityMonitorState)previousState state:(enum SyncingActivityMonitorState)state {
+    if (state == SyncingActivityMonitorStateSyncDone) {
+        [self dispatchNextLinkIfReady];
+    }
 }
 
 #pragma mark - Notifications

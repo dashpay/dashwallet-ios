@@ -215,6 +215,17 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(foreground.takePendingLinks(), [])
     }
 
+    /// A burst before the activation is bounded like the queue: the newest
+    /// `DeepLinkQueue.capacity` links are replayed, the rest counted.
+    func testLinksDeliveredWhileDeferredAreBoundedToTheNewest() throws {
+        let decision = LaunchDecision(applicationState: .background)
+        let links = try (1...25).map { try XCTUnwrap(URL(string: "dash:Xaddress\($0)")) }
+        links.forEach { XCTAssertTrue(decision.holdIfPending(url: $0)) }
+        XCTAssertEqual(decision.droppedPendingLinks, 15)
+        XCTAssertTrue(decision.takeAtActivation())
+        XCTAssertEqual(decision.takePendingLinks(), Array(links.suffix(DeepLinkQueue.capacity)))
+    }
+
     /// While the launch decision is pending, the runtime refuses automatic
     /// kicks (the sync monitor's connectivity kick, a network change); once
     /// the activation's wallet start releases the hold they pass again. A

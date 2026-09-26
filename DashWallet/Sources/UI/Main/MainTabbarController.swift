@@ -493,27 +493,32 @@ extension MainTabbarController {
     //
     // Entry points of the root controller's link queue, which hands links
     // over one at a time: each dismisses whatever is presented and waits for
-    // that, performs the action, and reports back once the screen the action
-    // presented (or pushed) has finished its transition — so the next link
-    // never presents over an animation still in flight.
+    // that, performs the action, and reports back through the handler's own
+    // completion — once the screen it presented (or pushed) has finished
+    // its transition, or its preparation ended without one — so the next
+    // link never presents over an animation still in flight.
+
+    /// Whether the home screen can take an invitation now (sync done).
+    @objc
+    public var isReadyForInvitations: Bool {
+        homeController?.isReadyForInvitations ?? false
+    }
 
     @objc
     public func performScanQRCodeAction(completion: @escaping () -> Void) {
         afterDismissingPresented { [weak self] in
-            guard let self else { return completion() }
+            guard let self, let home = self.homeController else { return completion() }
             self.selectedIndex = MainTabbarTabs.home.rawValue
-            self.homeController?.performScanQRCodeAction()
-            self.settlePresentation(then: completion)
+            home.performScanQRCodeAction(completion: completion)
         }
     }
 
     @objc
     public func performPay(to url: URL, completion: @escaping () -> Void) {
         afterDismissingPresented { [weak self] in
-            guard let self else { return completion() }
+            guard let self, let home = self.homeController else { return completion() }
             self.selectedIndex = MainTabbarTabs.home.rawValue
-            self.homeController?.performPay(to: url)
-            self.settlePresentation(then: completion)
+            home.performPay(to: url, completion: completion)
         }
     }
 
@@ -526,7 +531,9 @@ extension MainTabbarController {
         afterDismissingPresented { [weak self] in
             guard let self else { return completion() }
             self.openDashConnectNow(uri)
-            self.settlePresentation(then: completion)
+            // A push on the More tab's stack, or a handoff to the screen
+            // already on top: settled with its transition, or at once.
+            self.settle(after: self.menuNavigationController?.navigationController?.transitionCoordinator, then: completion)
         }
     }
 
@@ -563,10 +570,9 @@ extension MainTabbarController {
     @objc
     public func handleDeeplink(_ url: URL, definedUsername: String?, completion: @escaping () -> Void) {
         afterDismissingPresented { [weak self] in
-            guard let self else { return completion() }
+            guard let self, let home = self.homeController else { return completion() }
             self.selectedIndex = MainTabbarTabs.home.rawValue
-            self.homeController?.handleDeeplink(url, definedUsername: definedUsername)
-            self.settlePresentation(then: completion)
+            home.handleDeeplink(url, definedUsername: definedUsername, completion: completion)
         }
     }
     #endif
@@ -578,18 +584,11 @@ extension MainTabbarController {
         dismiss(animated: false, completion: body)
     }
 
-    /// Calls `completion` once the transition an action started — a modal
-    /// on this controller's hierarchy, or a push on the selected tab's
-    /// navigation stack — has finished; on the next run-loop turn when
-    /// nothing is animating.
-    private func settlePresentation(then completion: @escaping () -> Void) {
-        let candidates: [UIViewControllerTransitionCoordinator?] = [
-            presentedViewController?.transitionCoordinator,
-            selectedViewController?.transitionCoordinator,
-            (selectedViewController as? UINavigationController)?.topViewController?.transitionCoordinator,
-        ]
-        if let coordinator = candidates.compactMap({ $0 }).first {
-            coordinator.animate(alongsideTransition: nil) { _ in completion() }
+    /// Calls `completion` once `transition` has finished, or on the next
+    /// run-loop turn when nothing is animating.
+    private func settle(after transition: UIViewControllerTransitionCoordinator?, then completion: @escaping () -> Void) {
+        if let transition {
+            transition.animate(alongsideTransition: nil) { _ in completion() }
         } else {
             DispatchQueue.main.async(execute: completion)
         }

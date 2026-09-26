@@ -26,15 +26,20 @@ import XCTest
 #endif
 
 /// `DeepLinkQueue` is the single holder of pending deep links and the single
-/// rule for handing them over: in arrival order, one at a time, and only when
-/// the app can act on them.
+/// rule for handing them over: in arrival order, one at a time, only when
+/// the app can act on them, and bounded.
 final class DeepLinkQueueTests: XCTestCase {
-    private let invitation = DeepLink(url: URL(string: "dashpay://invite?du=x&pk=y")!, isInvitation: true)
-    private let scan = DeepLink(url: URL(string: "dashwallet://scanqr")!, isInvitation: false)
-    private let payment = DeepLink(url: URL(string: "dash:XpESxaUmonkq8RaLLp46Brx2K39ggQe226?amount=0.01")!, isInvitation: false)
+    private let invitation = DeepLink(url: URL(string: "dashpay://invite?du=x&pk=y")!, isInvitation: true, isUnsupported: false)
+    private let secondInvitation = DeepLink(url: URL(string: "dashpay://invite?du=z&pk=w")!, isInvitation: true, isUnsupported: false)
+    private let scan = DeepLink(url: URL(string: "dashwallet://scanqr")!, isInvitation: false, isUnsupported: false)
+    private let payment = DeepLink(url: URL(string: "dash:XpESxaUmonkq8RaLLp46Brx2K39ggQe226?amount=0.01")!, isInvitation: false, isUnsupported: false)
 
-    private func ready(_ queue: DeepLinkQueue) -> DeepLink? {
-        queue.takeNext(walletPresented: true, unlocked: true, launchHoldPending: false)
+    private func ready(_ queue: DeepLinkQueue, invitationsReady: Bool = true) -> DeepLink? {
+        queue.takeNext(walletPresented: true, unlocked: true, launchHoldPending: false, invitationsReady: invitationsReady)
+    }
+
+    private func url(_ n: Int, unsupported: Bool = false) -> DeepLink {
+        DeepLink(url: URL(string: "dash:Xaddress\(n)?amount=\(n)")!, isInvitation: false, isUnsupported: unsupported)
     }
 
     func testLinksAreHandedOverInArrivalOrderAndKeptWhole() {
@@ -54,7 +59,7 @@ final class DeepLinkQueueTests: XCTestCase {
         XCTAssertTrue(queue.isEmpty)
     }
 
-    func testOnlyOneLinkIsInFlightUntilItsScreenReportsBack() {
+    func testOnlyOneLinkIsInFlightUntilItsHandlerReportsBack() {
         let queue = DeepLinkQueue()
         queue.enqueue(invitation)
         queue.enqueue(scan)
@@ -68,14 +73,54 @@ final class DeepLinkQueueTests: XCTestCase {
         XCTAssertTrue(ready(queue) === scan)
     }
 
+    /// A payment link's handler prepares the send asynchronously and
+    /// presents its confirmation later; until it reports, nothing else is
+    /// handed over — however often the owner asks.
+    func testADelayedPaymentPreparationKeepsTheQueueBusy() {
+        let queue = DeepLinkQueue()
+        queue.enqueue(payment)
+        queue.enqueue(scan)
+
+        XCTAssertTrue(ready(queue) === payment)
+        for _ in 0..<5 {
+            XCTAssertNil(ready(queue), "still preparing")
+        }
+        XCTAssertEqual(queue.pending.count, 1)
+        queue.dispatchDidFinish()
+        XCTAssertTrue(ready(queue) === scan)
+    }
+
+    /// Two invitations before sync is done: both wait in the queue, in
+    /// order, without holding up a URL behind them; once the home screen
+    /// can take invitations they are handed over one after the other —
+    /// neither overwrites the other.
+    func testInvitationsWaitForSyncInOrderWithoutBlockingURLs() {
+        let queue = DeepLinkQueue()
+        queue.enqueue(invitation)
+        queue.enqueue(secondInvitation)
+        queue.enqueue(scan)
+
+        XCTAssertTrue(ready(queue, invitationsReady: false) === scan, "a URL is not gated on sync")
+        queue.dispatchDidFinish()
+        XCTAssertNil(ready(queue, invitationsReady: false), "the invitations wait")
+        XCTAssertEqual(queue.pending.count, 2, "both are kept")
+
+        XCTAssertTrue(ready(queue, invitationsReady: true) === invitation)
+        XCTAssertNil(ready(queue, invitationsReady: true), "one at a time")
+        queue.dispatchDidFinish()
+        XCTAssertTrue(ready(queue, invitationsReady: true) === secondInvitation)
+        queue.dispatchDidFinish()
+        XCTAssertTrue(queue.isEmpty)
+    }
+
     func testNothingIsHandedOverWhileTheAppCannotActOnLinks() {
         let queue = DeepLinkQueue()
         queue.enqueue(payment)
 
-        XCTAssertNil(queue.takeNext(walletPresented: false, unlocked: true, launchHoldPending: false), "no wallet on screen: setup, or the hold's card")
-        XCTAssertNil(queue.takeNext(walletPresented: true, unlocked: false, launchHoldPending: false), "locked")
-        XCTAssertNil(queue.takeNext(walletPresented: true, unlocked: true, launchHoldPending: true), "the launch hold has not reported")
-        XCTAssertNil(queue.takeNext(walletPresented: false, unlocked: false, launchHoldPending: true))
+        XCTAssertNil(queue.takeNext(walletPresented: false, unlocked: true, launchHoldPending: false, invitationsReady: true), "no wallet on screen: setup, or the hold's card")
+        XCTAssertNil(queue.takeNext(walletPresented: true, unlocked: false, launchHoldPending: false, invitationsReady: true), "locked")
+        XCTAssertNil(queue.takeNext(walletPresented: true, unlocked: true, launchHoldPending: true, invitationsReady: true), "the launch hold has not reported")
+        XCTAssertNil(queue.takeNext(walletPresented: false, unlocked: false, launchHoldPending: true, invitationsReady: false))
         XCTAssertEqual(queue.pending.count, 1, "refusing keeps the link")
         XCTAssertFalse(queue.isDispatching)
 
@@ -88,15 +133,48 @@ final class DeepLinkQueueTests: XCTestCase {
     func testWalletlessInvitationWaitsForSetupAndIsHandedOverFirst() {
         let queue = DeepLinkQueue()
         queue.enqueue(invitation)
-        XCTAssertNil(queue.takeNext(walletPresented: false, unlocked: true, launchHoldPending: false))
+        XCTAssertNil(queue.takeNext(walletPresented: false, unlocked: true, launchHoldPending: false, invitationsReady: true))
         queue.enqueue(payment)
-        XCTAssertNil(queue.takeNext(walletPresented: false, unlocked: true, launchHoldPending: false))
+        XCTAssertNil(queue.takeNext(walletPresented: false, unlocked: true, launchHoldPending: false, invitationsReady: true))
         XCTAssertEqual(queue.pending.count, 2)
 
         // Setup completed and presented the wallet.
         XCTAssertTrue(ready(queue) === invitation)
         queue.dispatchDidFinish()
         XCTAssertTrue(ready(queue) === payment)
+    }
+
+    /// A burst is bounded: the newest `capacity` links are kept, a link
+    /// identical to the one queued just before it is dropped, and
+    /// unsupported URLs collapse into one pending alert.
+    func testABurstIsBoundedDeduplicatedAndCoalesced() {
+        let queue = DeepLinkQueue()
+        XCTAssertEqual(DeepLinkQueue.capacity, 10)
+
+        var evictions = 0
+        for n in 1...25 {
+            if queue.enqueue(url(n)) == .queuedEvictingOldest { evictions += 1 }
+        }
+        XCTAssertEqual(queue.pending.count, 10)
+        XCTAssertEqual(evictions, 15)
+        XCTAssertEqual(queue.pending.map(\.url.absoluteString).first, url(16).url.absoluteString, "the oldest went, the newest stayed")
+        XCTAssertEqual(queue.pending.map(\.url.absoluteString).last, url(25).url.absoluteString)
+
+        let fresh = DeepLinkQueue()
+        XCTAssertEqual(fresh.enqueue(scan), .queued)
+        XCTAssertEqual(fresh.enqueue(scan), .droppedDuplicate, "the same link twice in a row is one link")
+        XCTAssertEqual(fresh.enqueue(payment), .queued)
+        XCTAssertEqual(fresh.enqueue(scan), .queued, "not consecutive: kept")
+        XCTAssertEqual(fresh.pending.count, 3)
+
+        let alerts = DeepLinkQueue()
+        XCTAssertEqual(alerts.enqueue(url(1, unsupported: true)), .queued)
+        XCTAssertEqual(alerts.enqueue(url(2, unsupported: true)), .droppedUnsupportedCoalesced, "one alert per burst")
+        XCTAssertEqual(alerts.enqueue(payment), .queued)
+        XCTAssertEqual(alerts.pending.count, 2)
+        XCTAssertTrue(ready(alerts)?.isUnsupported == true)
+        alerts.dispatchDidFinish()
+        XCTAssertEqual(alerts.enqueue(url(3, unsupported: true)), .queued, "the alert was shown; a new burst gets its own")
     }
 
     func testAnEmptyQueueHandsOverNothingAndStaysIdle() {
@@ -109,9 +187,12 @@ final class DeepLinkQueueTests: XCTestCase {
 
     func testAnInvitationIsRecognizedByItsLink() {
         #if DASHPAY
-        XCTAssertTrue(DeepLink(url: URL(string: "dashpay://invite?du=x&pk=y")!).isInvitation)
+        let invite = DeepLink(url: URL(string: "dashpay://invite?du=x&pk=y")!, isUnsupported: true)
+        XCTAssertTrue(invite.isInvitation)
+        XCTAssertFalse(invite.isUnsupported, "an invitation is never an unsupported URL")
         #endif
         XCTAssertFalse(DeepLink(url: URL(string: "dashwallet://scanqr")!).isInvitation)
         XCTAssertFalse(DeepLink(url: URL(string: "dash:XpESxaUmonkq8RaLLp46Brx2K39ggQe226")!).isInvitation)
+        XCTAssertTrue(DeepLink(url: URL(string: "dashwallet://nothing")!, isUnsupported: true).isUnsupported)
     }
 }

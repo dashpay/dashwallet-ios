@@ -91,22 +91,33 @@ final class LaunchDecision: NSObject {
     /// the process to the foreground, and it is delivered before the
     /// activation that installs the real root; with the placeholder still
     /// up there is nothing to hand it to. Every such link is kept here, in
-    /// arrival order, and replayed once the root exists.
+    /// arrival order, and replayed once the root exists — the newest
+    /// `DeepLinkQueue.capacity` of them, as the queue itself would keep.
     @objc private(set) var pendingLinks: [URL] = []
+    /// Links a burst pushed out of `pendingLinks`.
+    @objc private(set) var droppedPendingLinks = 0
 
     /// True when the launch is still deferred and the link was kept.
     @objc(holdURLIfPending:)
     func holdIfPending(url: URL) -> Bool {
         guard isDeferred else { return false }
-        pendingLinks.append(url)
+        keep(url)
         return true
     }
 
     @objc(holdUserActivityIfPending:)
     func holdIfPending(userActivity: NSUserActivity) -> Bool {
         guard isDeferred, let url = userActivity.webpageURL else { return false }
-        pendingLinks.append(url)
+        keep(url)
         return true
+    }
+
+    private func keep(_ url: URL) {
+        pendingLinks.append(url)
+        if pendingLinks.count > DeepLinkQueue.capacity {
+            pendingLinks.removeFirst()
+            droppedPendingLinks += 1
+        }
     }
 
     /// The kept links, in order, once; empty afterwards.
