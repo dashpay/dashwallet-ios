@@ -179,7 +179,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     /// pays, so there is no funding source to choose and no balance to check.
     func showCreateUsername(withInvitation invitation: PendingInvitation, tier: InvitationTier) {
         guard let uri = invitation.normalizedURI else { return }
-        let controller = CreateUsernameViewController(invitationURI: uri, invitationTier: tier)
+        let controller = CreateUsernameViewController(invitation: invitation, invitationURI: uri, invitationTier: tier)
         controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { [weak self] result in
             guard result else { return }

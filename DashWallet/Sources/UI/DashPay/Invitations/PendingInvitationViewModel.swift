@@ -47,11 +47,12 @@ final class PendingInvitationViewModel: ObservableObject {
     static let validationLifetime: TimeInterval = 60
 
     private let store: PendingInvitationStore
-    private var lastVerdict: (validation: InvitationValidation, at: Date, link: String)?
+    /// The last verdict and the invitation (scope + link) it is about.
+    private var lastVerdict: (validation: InvitationValidation, at: Date, invitation: PendingInvitation)?
     private var validationTask: Task<InvitationValidation?, Never>?
-    /// The link `validationTask` is checking, and the check's identity — a
-    /// finishing check clears only its own state, never a newer one's.
-    private var validationLink: String?
+    /// The invitation (scope + link) `validationTask` is checking, and the
+    /// check's identity — a finishing check clears only its own state.
+    private var validationFor: PendingInvitation?
     private var validationToken: UUID?
     private var cancellables = Set<AnyCancellable>()
     private var observers: [NSObjectProtocol] = []
@@ -63,7 +64,7 @@ final class PendingInvitationViewModel: ObservableObject {
             .sink { [weak self] pending in
                 guard let self else { return }
                 self.invitation = pending
-                if pending?.rawLink != self.lastVerdict?.link {
+                if pending != self.lastVerdict?.invitation {
                     self.lastVerdict = nil
                 }
                 self.refreshCardState()
@@ -94,8 +95,9 @@ final class PendingInvitationViewModel: ObservableObject {
     /// Forget the invitation locally; nothing goes to the network. Opening
     /// the link again brings it back.
     func hide() {
+        guard let invitation else { return }
         validationTask?.cancel()
-        store.clear(reason: .hidden)
+        store.remove(invitation, reason: .hidden)
     }
 
     func retry() {
@@ -108,7 +110,7 @@ final class PendingInvitationViewModel: ObservableObject {
     /// tier only when it is still valid.
     func create(proceed: @escaping (PendingInvitation, InvitationTier) -> Void) {
         guard let invitation else { return }
-        if let lastVerdict, lastVerdict.link == invitation.rawLink,
+        if let lastVerdict, lastVerdict.invitation == invitation,
            Date().timeIntervalSince(lastVerdict.at) < Self.validationLifetime,
            let tier = lastVerdict.validation.tier {
             proceed(invitation, tier)
@@ -118,8 +120,8 @@ final class PendingInvitationViewModel: ObservableObject {
         Task {
             guard let verdict = await self.runValidation(),
                   let tier = verdict.tier,
-                  let current = self.invitation, current.rawLink == invitation.rawLink else { return }
-            proceed(current, tier)
+                  self.invitation == invitation else { return }
+            proceed(invitation, tier)
         }
     }
 
@@ -152,12 +154,12 @@ final class PendingInvitationViewModel: ObservableObject {
 
     @discardableResult
     private func runValidation() async -> InvitationValidation? {
-        if let validationTask, validationLink == invitation?.rawLink {
+        if let validationTask, validationFor == invitation {
             return await validationTask.value
         }
-        // A check still running for an invitation that was hidden or
-        // replaced: let it finish (its result is discarded), then check this
-        // one.
+        // A check still running for an invitation that was hidden, replaced,
+        // or belongs to a scope the user left: let it finish (its result is
+        // discarded), then check this one.
         if let stale = validationTask {
             _ = await stale.value
         }
@@ -165,37 +167,36 @@ final class PendingInvitationViewModel: ObservableObject {
             refreshCardState()
             return nil
         }
-        if let validationTask, validationLink == invitation.rawLink {
+        if let validationTask, validationFor == invitation {
             return await validationTask.value
         }
         cardState = .verifying
         let token = UUID()
         let task = Task { await InvitationValidator.validate(invitation) }
         validationTask = task
-        validationLink = invitation.rawLink
+        validationFor = invitation
         validationToken = token
         let verdict = await task.value
         if validationToken == token {
             validationTask = nil
-            validationLink = nil
+            validationFor = nil
             validationToken = nil
         }
 
-        // The invitation may have been hidden or replaced while the check ran;
-        // a replacement gets its own check.
-        guard let verdict, self.invitation?.rawLink == invitation.rawLink else {
+        // The invitation may have been hidden, replaced or left behind by a
+        // wallet switch while the check ran; the one now shown gets its own
+        // check.
+        guard let verdict, self.invitation == invitation else {
             refreshCardState()
-            if self.invitation != nil, self.invitation?.rawLink != invitation.rawLink {
-                validateIfPossible()
-            }
+            if self.invitation != nil { validateIfPossible() }
             return nil
         }
-        lastVerdict = (verdict, Date(), invitation.rawLink)
+        lastVerdict = (verdict, Date(), invitation)
         if verdict.isDefinitive {
-            if let uri = invitation.normalizedURI {
-                store.clear(normalizedURI: uri, reason: .definitiveOutcome)
+            if verdict.clearsEverywhere, let uri = invitation.normalizedURI {
+                store.removeEverywhere(normalizedURI: uri, reason: .definitiveOutcome)
             } else {
-                store.clear(reason: .definitiveOutcome)
+                store.remove(invitation, reason: .definitiveOutcome)
             }
             undeliveredOutcome = verdict
             definitiveOutcomes.send(verdict)

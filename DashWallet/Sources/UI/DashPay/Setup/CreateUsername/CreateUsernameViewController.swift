@@ -27,6 +27,9 @@ class CreateUsernameViewController: UIViewController {
     /// regular self-funded registration.
     private let invitationURI: String?
     private let invitationTier: InvitationTier?
+    /// The Home card's invitation (scope + link), so a claim failure removes
+    /// that wallet's copy and no other.
+    private let pendingInvitation: PendingInvitation?
     private let definedUsername: String?
 
     @objc
@@ -37,15 +40,17 @@ class CreateUsernameViewController: UIViewController {
         // not stored here.
         self.invitationURI = invitationURL?.absoluteString
         self.invitationTier = nil
+        self.pendingInvitation = nil
         self.definedUsername = definedUsername
         super.init(nibName: nil, bundle: nil)
     }
 
     /// Invitation claim from the Home card: the invitation was validated
     /// there, so its tier (which usernames it pays for) is already known.
-    init(invitationURI: String, invitationTier: InvitationTier) {
+    init(invitation: PendingInvitation, invitationURI: String, invitationTier: InvitationTier) {
         self.invitationURI = invitationURI
         self.invitationTier = invitationTier
+        self.pendingInvitation = invitation
         self.definedUsername = nil
         super.init(nibName: nil, bundle: nil)
     }
@@ -68,10 +73,8 @@ class CreateUsernameViewController: UIViewController {
             #if DASHPAY
             let mainTabController = self.tabBarController as? MainTabbarController
             #endif
-            // Pop the whole registration stack, not one level. The invitation
-            // entry pushes this screen ON TOP of the redeem screen, so popping
-            // once lands the freshly-registered user back on "Claim your
-            // invitation" — a flow they just completed and cannot repeat.
+            // Pop the whole registration stack, not one level, so a finished
+            // registration never lands back on a screen that led into it.
             // Every push site roots this flow at a tab's own screen, so
             // unwinding to that root is the correct destination for all of
             // them (Home for the home/deep-link entries, More for the menu).
@@ -97,6 +100,7 @@ class CreateUsernameViewController: UIViewController {
         let content = CreateUsernameView(
             invitationURI: invitationURI,
             invitationTier: invitationTier,
+            pendingInvitation: pendingInvitation,
             definedUsername: definedUsername,
             finish: { [weak self] in
                 leaveFlow(false)
@@ -238,6 +242,8 @@ struct CreateUsernameView: View {
     var invitationURI: String? = nil
     /// Which usernames the invitation pays for; nil when unknown.
     var invitationTier: InvitationTier? = nil
+    /// The Home card's invitation this claim is for (scope + link).
+    var pendingInvitation: PendingInvitation? = nil
     /// Username prefill carried by the deep link (`definedUsername`).
     var definedUsername: String? = nil
     var finish: () -> Void
@@ -351,7 +357,7 @@ struct CreateUsernameView: View {
             // DPNS verdict from an earlier visit was reused unchecked.
             viewModel.refreshRegistrationRecoveryState()
             if let invitationURI {
-                viewModel.configureInvitationMode(uri: invitationURI, tier: invitationTier)
+                viewModel.configureInvitationMode(uri: invitationURI, tier: invitationTier, invitation: pendingInvitation)
             }
             if let definedUsername, !definedUsername.isEmpty, viewModel.username.isEmpty {
                 viewModel.username = definedUsername

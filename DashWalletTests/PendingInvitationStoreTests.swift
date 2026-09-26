@@ -44,8 +44,13 @@ final class PendingInvitationStoreTests: XCTestCase {
     private var storage: FakeSecretStorage!
     private var defaults: UserDefaults!
     private var suiteName: String!
-    private var scope = "1.walletA"
+    private var scope = InvitationScope(networkRawValue: 1, walletIdHex: "walletA")
     private var hasUsername = false
+
+    private let walletA = InvitationScope(networkRawValue: 1, walletIdHex: "walletA")
+    private let walletB = InvitationScope(networkRawValue: 1, walletIdHex: "walletB")
+    private let otherNetworkA = InvitationScope(networkRawValue: 2, walletIdHex: "walletA")
+    private let unbound = InvitationScope(networkRawValue: 1, walletIdHex: nil)
 
     private let linkA = "dashpay://invite?du=alice&assetlocktx=\(String(repeating: "ab", count: 32))&pk=A&islock=null"
     private let linkB = "dashpay://invite?du=bob&assetlocktx=\(String(repeating: "cd", count: 32))&pk=B&islock=null"
@@ -57,7 +62,7 @@ final class PendingInvitationStoreTests: XCTestCase {
         storage = FakeSecretStorage()
         suiteName = "PendingInvitationStoreTests.\(UUID().uuidString)"
         defaults = UserDefaults(suiteName: suiteName)
-        scope = "1.walletA"
+        scope = walletA
         hasUsername = false
     }
 
@@ -70,13 +75,22 @@ final class PendingInvitationStoreTests: XCTestCase {
         PendingInvitationStore(
             storage: storage,
             defaults: defaults,
-            scope: { [unowned self] in self.scope },
+            currentScope: { [unowned self] in self.scope },
             hasRegisteredUsername: { [unowned self] in self.hasUsername })
     }
 
-    func testStoredInvitationSurvivesANewStore() {
+    private func pending(in scope: InvitationScope) -> PendingInvitation? {
+        self.scope = scope
+        return makeStore().pending
+    }
+
+    // MARK: - Receiving
+
+    func testStoredInvitationSurvivesANewStoreAndCarriesItsScope() {
         XCTAssertEqual(makeStore().receive(linkA), .stored)
-        XCTAssertEqual(makeStore().pending?.rawLink, linkA, "a relaunch must find the invitation")
+        let reloaded = makeStore().pending
+        XCTAssertEqual(reloaded?.rawLink, linkA, "a relaunch must find the invitation")
+        XCTAssertEqual(reloaded?.scope, walletA)
     }
 
     func testSameLinkIsDuplicateAndADifferentOneIsRefused() {
@@ -100,86 +114,6 @@ final class PendingInvitationStoreTests: XCTestCase {
         XCTAssertNil(store.pending)
     }
 
-    func testOtherWalletAndNetworkDoNotSeeIt() {
-        let store = makeStore()
-        XCTAssertEqual(store.receive(linkA), .stored)
-
-        scope = "1.walletB"
-        store.reload()
-        XCTAssertNil(store.pending, "another wallet must not see the invitation")
-
-        scope = "2.walletA"
-        store.reload()
-        XCTAssertNil(store.pending, "another network must not see the invitation")
-
-        scope = "1.walletA"
-        store.reload()
-        XCTAssertEqual(store.pending?.rawLink, linkA)
-    }
-
-    func testClearRemovesItFromTheKeychain() {
-        let store = makeStore()
-        XCTAssertEqual(store.receive(linkA), .stored)
-        store.clear(reason: .hidden)
-        XCTAssertNil(store.pending)
-        XCTAssertNil(makeStore().pending)
-        XCTAssertEqual(store.receive(linkA), .stored, "opening the link again brings it back")
-    }
-
-    func testWipeRemovesEveryScope() {
-        let store = makeStore()
-        XCTAssertEqual(store.receive(linkA), .stored)
-        scope = "2.walletB"
-        XCTAssertEqual(store.receive(linkB), .stored)
-
-        store.wipeAllScopes()
-
-        XCTAssertNil(makeStore().pending)
-        scope = "1.walletA"
-        XCTAssertNil(makeStore().pending)
-    }
-
-    // MARK: - Binding a pre-onboarding invitation to the new wallet
-
-    private func receiveBeforeWallet(_ link: String) -> PendingInvitationStore {
-        scope = "1.unbound"
-        let store = makeStore()
-        XCTAssertEqual(store.receive(link), .stored)
-        scope = "1.walletA"
-        return store
-    }
-
-    func testBindingMovesTheInvitationUnderTheWallet() {
-        let store = receiveBeforeWallet(linkA)
-        XCTAssertTrue(store.bindUnboundToCurrentWallet())
-        XCTAssertEqual(store.pending?.rawLink, linkA)
-        XCTAssertEqual(store.pending?.fromOnboarding, true)
-        scope = "1.unbound"
-        XCTAssertNil(makeStore().pending, "the unbound copy is gone once moved")
-    }
-
-    func testFailedBindingKeepsTheUnboundInvitation() {
-        let store = receiveBeforeWallet(linkA)
-        storage.failWrites = true
-        XCTAssertFalse(store.bindUnboundToCurrentWallet())
-        scope = "1.unbound"
-        XCTAssertEqual(makeStore().pending?.rawLink, linkA, "a failed move must not lose the invitation")
-
-        storage.failWrites = false
-        scope = "1.walletA"
-        XCTAssertTrue(store.bindUnboundToCurrentWallet(), "the next attempt moves it")
-        XCTAssertEqual(store.pending?.rawLink, linkA)
-    }
-
-    func testBindingKeepsTheWalletsOwnInvitation() {
-        XCTAssertEqual(makeStore().receive(linkB), .stored)
-        let store = receiveBeforeWallet(linkA)
-        XCTAssertTrue(store.bindUnboundToCurrentWallet())
-        XCTAssertEqual(store.pending?.rawLink, linkB, "an invitation already under the wallet wins")
-    }
-
-    // MARK: - Failures are reported, not hidden
-
     func testFailedReceiveWriteStoresNothing() {
         storage.failWrites = true
         let store = makeStore()
@@ -187,41 +121,140 @@ final class PendingInvitationStoreTests: XCTestCase {
         XCTAssertNil(store.pending)
     }
 
+    func testOtherWalletAndNetworkDoNotSeeIt() {
+        XCTAssertEqual(makeStore().receive(linkA), .stored)
+        XCTAssertNil(pending(in: walletB), "another wallet must not see the invitation")
+        XCTAssertNil(pending(in: otherNetworkA), "another network must not see the invitation")
+        XCTAssertEqual(pending(in: walletA)?.rawLink, linkA)
+    }
+
+    // MARK: - Removal: one scope, or the voucher everywhere
+
+    func testRemovingAnInvitationTouchesOnlyItsOwnScope() {
+        let store = makeStore()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        let shownInA = store.pending!
+        scope = otherNetworkA
+        XCTAssertEqual(store.receive(linkA), .stored, "the same link opened on the other network")
+
+        // A wallet-local verdict (e.g. wrong network) for the copy on the
+        // other network must not delete wallet A's copy.
+        XCTAssertTrue(store.remove(store.pending!, reason: .definitiveOutcome))
+        XCTAssertNil(pending(in: otherNetworkA))
+        XCTAssertEqual(pending(in: walletA), shownInA)
+    }
+
+    func testRemovingSparesADifferentInvitationStoredSince() {
+        let store = makeStore()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        let old = store.pending!
+        XCTAssertTrue(store.remove(old, reason: .hidden))
+        XCTAssertEqual(store.receive(linkB), .stored)
+        XCTAssertTrue(store.remove(old, reason: .hidden), "the old one is already gone")
+        XCTAssertEqual(store.pending?.rawLink, linkB, "a stale removal must not delete the new invitation")
+    }
+
+    func testRemovingEverywhereReachesEveryScopeAndSparesOtherLinks() {
+        let store = makeStore()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        scope = walletB
+        XCTAssertEqual(store.receive(linkA), .stored)
+        scope = otherNetworkA
+        XCTAssertEqual(store.receive(linkB), .stored)
+
+        XCTAssertTrue(store.removeEverywhere(normalizedURI: linkA, reason: .claimed))
+        XCTAssertNil(pending(in: walletA))
+        XCTAssertNil(pending(in: walletB))
+        XCTAssertEqual(pending(in: otherNetworkA)?.rawLink, linkB)
+    }
+
+    func testRemovingAWalletRemovesOnlyItsInvitation() {
+        XCTAssertEqual(makeStore().receive(linkA), .stored)
+        scope = walletB
+        XCTAssertEqual(makeStore().receive(linkB), .stored)
+
+        XCTAssertTrue(makeStore().removeAll(walletIdHex: "walletA"))
+        XCTAssertNil(pending(in: walletA))
+        XCTAssertEqual(pending(in: walletB)?.rawLink, linkB)
+    }
+
+    // MARK: - Binding a pre-onboarding invitation (runs on every reload)
+
+    private func receiveBeforeWallet(_ link: String) {
+        scope = unbound
+        XCTAssertEqual(makeStore().receive(link), .stored)
+        XCTAssertEqual(makeStore().pending?.fromOnboarding, true)
+        scope = walletA
+    }
+
+    func testReloadMovesTheInvitationUnderTheNewWallet() {
+        receiveBeforeWallet(linkA)
+        let store = makeStore()
+        XCTAssertEqual(store.pending?.rawLink, linkA)
+        XCTAssertEqual(store.pending?.scope, walletA)
+        XCTAssertEqual(store.pending?.fromOnboarding, true)
+        XCTAssertNil(pending(in: unbound), "the unbound copy is gone once moved")
+    }
+
+    func testFailedMoveKeepsTheUnboundInvitationAndTheNextReloadRetries() {
+        receiveBeforeWallet(linkA)
+        storage.failWrites = true
+        let store = makeStore()
+        XCTAssertNil(store.pending)
+        XCTAssertNotNil(storage.items[PendingInvitationStore.keychainPrefix + unbound.storageKey],
+                        "a failed move must not lose the invitation")
+
+        storage.failWrites = false
+        store.reload()
+        XCTAssertEqual(store.pending?.rawLink, linkA, "the next reload moves it")
+    }
+
+    func testBindingKeepsTheWalletsOwnInvitation() {
+        XCTAssertEqual(makeStore().receive(linkB), .stored)
+        receiveBeforeWallet(linkA)
+        XCTAssertEqual(makeStore().pending?.rawLink, linkB, "an invitation already under the wallet wins")
+    }
+
+    // MARK: - Failures are reported, not hidden
+
     func testFailedDeleteKeepsTheInvitationPending() {
         let store = makeStore()
         XCTAssertEqual(store.receive(linkA), .stored)
         storage.failDeletes = true
-        XCTAssertFalse(store.clear(reason: .hidden))
+        XCTAssertFalse(store.remove(store.pending!, reason: .hidden))
         XCTAssertEqual(store.pending?.rawLink, linkA)
         XCTAssertFalse(store.wipeAllScopes())
         XCTAssertEqual(makeStore().pending?.rawLink, linkA)
     }
 
-    func testUnlistableStorageFailsTheWipe() {
+    func testUnlistableStorageFailsWipeAndBroadRemovals() {
         XCTAssertEqual(makeStore().receive(linkA), .stored)
         storage.failListing = true
-        XCTAssertFalse(makeStore().wipeAllScopes())
+        let store = makeStore()
+        XCTAssertFalse(store.wipeAllScopes())
+        XCTAssertFalse(store.removeEverywhere(normalizedURI: linkA, reason: .claimed))
+        XCTAssertFalse(store.removeAll(walletIdHex: "walletA"))
     }
 
-    // MARK: - Clearing by link
-
-    func testClearingByLinkReachesItsScopeAndSparesOthers() {
+    func testWipeRemovesEveryScope() {
         let store = makeStore()
         XCTAssertEqual(store.receive(linkA), .stored)
-        scope = "1.walletB"
+        scope = otherNetworkA
         XCTAssertEqual(store.receive(linkB), .stored)
 
-        // The claim for A finishes after the user switched to wallet B.
-        XCTAssertTrue(store.clear(normalizedURI: linkA, reason: .claimed))
-        XCTAssertEqual(store.pending?.rawLink, linkB, "B's invitation is untouched")
-        scope = "1.walletA"
-        XCTAssertNil(makeStore().pending, "A's consumed invitation is gone")
+        XCTAssertTrue(store.wipeAllScopes())
+
+        XCTAssertNil(pending(in: otherNetworkA))
+        XCTAssertNil(pending(in: walletA))
     }
 
-    func testReceivedBeforeTheWalletIsMarkedFromOnboarding() {
-        scope = PendingInvitationStore.scope(networkRawValue: 1, walletIdHex: nil)
-        let store = makeStore()
-        XCTAssertEqual(store.receive(linkA), .stored)
-        XCTAssertEqual(store.pending?.fromOnboarding, true)
+    // MARK: - Scope value
+
+    func testScopeStorageKeyRoundTrips() {
+        for scope in [walletA, unbound, otherNetworkA] {
+            XCTAssertEqual(InvitationScope(storageKey: scope.storageKey), scope)
+        }
+        XCTAssertEqual(InvitationScope(networkRawValue: 1, walletIdHex: ""), unbound)
+        XCTAssertNil(InvitationScope(storageKey: "garbage"))
     }
 }

@@ -147,6 +147,24 @@ final class InvitationValidationPolicyTests: XCTestCase {
         XCTAssertNil(InvitationClaimFailure.classify(DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled))
     }
 
+    // MARK: - Which copies a verdict removes
+
+    /// Facts about the voucher hold in every wallet; facts about the checked
+    /// wallet must not delete another wallet's copy.
+    func testOnlyVoucherFactsClearEveryCopy() {
+        XCTAssertTrue(InvitationValidation.alreadyClaimed(inviter: inviter).clearsEverywhere)
+        XCTAssertTrue(InvitationValidation.invalid(.malformed, inviter: inviter).clearsEverywhere)
+        XCTAssertTrue(InvitationValidation.invalid(.belowMinimum, inviter: inviter).clearsEverywhere)
+
+        XCTAssertFalse(InvitationValidation.invalid(.wrongNetwork, inviter: inviter).clearsEverywhere)
+        XCTAssertFalse(InvitationValidation.alreadyHasIdentity.clearsEverywhere)
+        XCTAssertFalse(InvitationValidation.alreadyRequestedUsername.clearsEverywhere)
+
+        XCTAssertTrue(InvitationClaimFailure.alreadyUsed.clearsEverywhere)
+        XCTAssertFalse(InvitationClaimFailure.invalid.clearsEverywhere, "may be this wallet's network only")
+        XCTAssertFalse(InvitationClaimFailure.stillConfirming.clearsEverywhere)
+    }
+
     // MARK: - Inviter name
 
     func testInviterBestNamePrefersDisplayName() {

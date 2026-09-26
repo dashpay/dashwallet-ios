@@ -22,11 +22,12 @@ final class InvitationEntry: NSObject {
         handle(PendingInvitationStore.shared.receive(url), presenter: presenter)
     }
 
-    /// Move an invitation opened before the wallet existed under the new
-    /// wallet.
+    /// The wallet exists now: an invitation opened before it moves under it
+    /// (the store retries that on every reload, so a failure here is not
+    /// final).
     @objc
     static func walletSetupDidFinish() {
-        PendingInvitationStore.shared.bindUnboundToCurrentWallet()
+        PendingInvitationStore.shared.reload()
     }
 
     /// Present the invitation QR scanner; a scanned invitation goes through

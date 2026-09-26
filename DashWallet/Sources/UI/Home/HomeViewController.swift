@@ -604,8 +604,7 @@ extension HomeViewController: HomeViewDelegate {
 
     func homeViewScanInvitation() {
         InvitationEntry.presentScanner(from: self) { [weak self] in
-            // The card is on Home; make sure that is where the user is.
-            self?.navigationController?.popToRootViewController(animated: true)
+            (self?.tabBarController as? MainTabbarController)?.showHomeForInvitation()
         }
     }
 

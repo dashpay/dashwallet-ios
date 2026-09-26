@@ -326,6 +326,10 @@ class CreateUsernameViewModel: ObservableObject {
     /// before the form opened. nil outside invitation mode.
     @Published private(set) var invitationTier: InvitationTier? = nil
 
+    /// The stored invitation being claimed (scope + link), when the form was
+    /// opened from the Home card.
+    private var pendingInvitation: PendingInvitation?
+
     /// The invitation pays for non-contested names only, so a name that
     /// would go to a masternode vote cannot be submitted with it.
     var isNonContestedInvitation: Bool { invitationTier == .nonContested }
@@ -337,9 +341,10 @@ class CreateUsernameViewModel: ObservableObject {
     /// Enter invitation-claim mode with a normalized invitation URI
     /// (see `DWInvitationLinkNormalizer`). Re-runs validation so the
     /// cost rule reflects the voucher funding.
-    func configureInvitationMode(uri: String, tier: InvitationTier? = nil) {
+    func configureInvitationMode(uri: String, tier: InvitationTier? = nil, invitation: PendingInvitation? = nil) {
         invitationURI = uri
         invitationTier = tier
+        pendingInvitation = invitation
         invitationInviterUsername = DWInvitationService.shared.preview(for: uri)?.inviterUsername
         // The invitation pays; no source is picked or judged.
         activeFundingSource = .invitation
@@ -655,10 +660,15 @@ class CreateUsernameViewModel: ObservableObject {
     /// everything else, which keeps the generic wording and the invitation.
     private func invitationClaimFailureMessage(_ error: Error) -> String? {
         guard let failure = InvitationClaimFailure.classify(error) else { return nil }
-        if failure.endsInvitation, let invitationURI {
-            // By link, not by the current wallet: the result can arrive after
-            // a wallet switch.
-            PendingInvitationStore.shared.clear(normalizedURI: invitationURI, reason: .definitiveOutcome)
+        if failure.endsInvitation {
+            // Spent is true in every wallet; "invalid" may be this wallet's
+            // network only. Either way named explicitly — the result can
+            // arrive after a wallet switch.
+            if failure.clearsEverywhere, let invitationURI {
+                PendingInvitationStore.shared.removeEverywhere(normalizedURI: invitationURI, reason: .definitiveOutcome)
+            } else if let pendingInvitation {
+                PendingInvitationStore.shared.remove(pendingInvitation, reason: .definitiveOutcome)
+            }
         }
         let sender = InvitationOutcomeDialogs.senderName(
             InvitationValidationPolicy.inviter(from: invitationURI.flatMap { DWInvitationService.shared.preview(for: $0) }))

@@ -71,6 +71,21 @@ enum InvitationValidation: Equatable {
         if case .valid(let tier, _, _) = self { return tier }
         return nil
     }
+
+    /// The verdict is a fact about the voucher itself, true in every wallet
+    /// and network the link is stored under — so every copy goes. The other
+    /// definitive verdicts are about the wallet that was checked (it already
+    /// has a username, it has a request in a vote, it is on the other
+    /// network) and remove only that wallet's copy.
+    var clearsEverywhere: Bool {
+        switch self {
+        case .alreadyClaimed, .invalid(.malformed, _), .invalid(.belowMinimum, _):
+            return true
+        case .invalid(.wrongNetwork, _), .alreadyHasIdentity, .alreadyRequestedUsername,
+             .valid, .undetermined, .awaitingChainLock:
+            return false
+        }
+    }
 }
 
 /// Pure mapping from what the SDK reported to a verdict — no I/O, so it is
@@ -154,6 +169,10 @@ enum InvitationClaimFailure: Equatable {
 
     var endsInvitation: Bool { self != .stillConfirming }
 
+    /// Spent is a fact about the voucher, in every wallet; "invalid" can be
+    /// the wrong network, a fact about this wallet only.
+    var clearsEverywhere: Bool { self == .alreadyUsed }
+
     /// nil for a failure that says nothing about the invitation (network,
     /// PIN, DPNS) — the generic registration wording applies.
     static func classify(_ error: Error) -> InvitationClaimFailure? {
@@ -196,12 +215,21 @@ enum InvitationValidator {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.invitations")
 
-    /// nil when the wallet is not ready to be asked (not hydrated yet).
+    /// nil when the wallet is not ready to be asked (not hydrated yet), or
+    /// when the active wallet or network is no longer the invitation's — the
+    /// checks read the live wallet, so their answer would be about another
+    /// scope.
     static func validate(_ invitation: PendingInvitation) async -> InvitationValidation? {
-        guard let wallet = SwiftDashSDKHost.shared.wallet,
+        guard InvitationScope.current == invitation.scope,
+              let wallet = SwiftDashSDKHost.shared.wallet,
               DWCurrentUserIdentityInfo.shared.isCurrentNetworkContextReady else {
             return nil
         }
+        let verdict = await check(invitation, wallet: wallet)
+        return InvitationScope.current == invitation.scope ? verdict : nil
+    }
+
+    private static func check(_ invitation: PendingInvitation, wallet: ManagedPlatformWallet) async -> InvitationValidation {
         let uri = invitation.normalizedURI
         let preview = uri.flatMap { try? wallet.parseInvitation(uri: $0) }
         let hasPendingRequest = DWContestedNameStatusService.shared.pendingLabel != nil

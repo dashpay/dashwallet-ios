@@ -337,12 +337,16 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // needs the host's manager and model container, which
         // `handleWalletWiped(completion:)` tears down. This body runs on the wipe
         // executor's background queue, so the main hop cannot deadlock.
+        var invitationsWiped = true
         DispatchQueue.main.sync {
             MainActor.assumeIsolated {
                 TrackedMasternodeKeyVault.wipeAllTrackedState()
+                #if DASHPAY
                 // A pending invitation holds a voucher key; it goes with the
-                // wallet it was waiting for.
-                PendingInvitationStore.wipeAll()
+                // wallet it was waiting for. A leftover is reported below as a
+                // failed wipe, after the teardown, so a retry removes it.
+                invitationsWiped = PendingInvitationStore.wipeAll()
+                #endif
             }
         }
 
@@ -383,7 +387,10 @@ final class SwiftDashSDKWalletWiper: NSObject {
         }
         let teardownMs = Int((CFAbsoluteTimeGetCurrent() - teardownStarted) * 1000)
         DWLogger.log("🧹 WIPE runtime teardown awaited \(teardownMs)ms")
-        return true
+        if !invitationsWiped {
+            logger.error("a pending DashPay invitation could not be removed from the Keychain; reporting wipe failure")
+        }
+        return invitationsWiped
     }
 
     /// Match each SDK-owned Keychain wallet id to the network discriminant
@@ -916,6 +923,11 @@ final class SwiftDashSDKWalletWiper: NSObject {
         GeneratedWalletIdentityMarker.clear(walletId: walletId)
 #if DASHPAY
         DWSameSeedIdentityRecoveryCoordinator.shared.forgetWallet(walletId: walletId)
+        // A pending invitation held for this wallet carries a voucher key.
+        let removedWalletHex = walletId.map { String(format: "%02x", $0) }.joined()
+        if !PendingInvitationStore.shared.removeAll(walletIdHex: removedWalletHex) {
+            logger.error("a pending DashPay invitation of the removed wallet could not be deleted")
+        }
 #endif
     }
 }
