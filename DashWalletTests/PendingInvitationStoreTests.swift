@@ -258,6 +258,24 @@ final class PendingInvitationStoreTests: XCTestCase {
         XCTAssertNil(store.pending)
     }
 
+    /// Switching to a wallet whose slot cannot be read must not leave the
+    /// previous wallet's card up: Create would then spend that wallet's
+    /// voucher from the new one, and Hide would delete it.
+    func testUnreadableSlotAfterASwitchDropsThePreviousWalletsCard() {
+        let store = makeStore()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        XCTAssertEqual(store.pending?.scope, walletA)
+
+        storage.unreadable = [PendingInvitationStore.keychainPrefix + walletB.storageKey]
+        scope = walletB
+        store.reload()
+        XCTAssertNil(store.pending, "wallet A's card must not stand in for wallet B's unreadable slot")
+
+        scope = walletA
+        store.reload()
+        XCTAssertEqual(store.pending?.rawLink, linkA, "wallet A's invitation is untouched")
+    }
+
     func testUnreadableWalletSlotBlocksTheMove() {
         receiveBeforeWallet(linkA)
         storage.unreadable = [accountA]

@@ -513,6 +513,14 @@ class CreateUsernameViewModel: ObservableObject {
         // `handleRegistrationPhase` — the coordinator publishes the
         // same phases for every funding source.
         if let invitationURI {
+            // The claim spends the voucher from the active wallet; an
+            // invitation stored for another wallet or network must not.
+            if let pendingInvitation, pendingInvitation.scope != InvitationScope.current {
+                DWLogger.log("CreateUsername: invitation belongs to another wallet or network; not claiming")
+                submittedRegistrationUsername = nil
+                self.onRegistrationStarted = nil
+                return .cancelled
+            }
             defer {
                 submittedRegistrationUsername = nil
                 didNotifyRegistrationStarted = false

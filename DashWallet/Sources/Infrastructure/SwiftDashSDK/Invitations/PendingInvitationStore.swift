@@ -246,8 +246,13 @@ final class PendingInvitationStore: ObservableObject {
         case .empty:
             if pending != nil { pending = nil }
         case .unreadable:
-            // Keep what is shown; the next reload reads again.
-            Self.logger.error("🎟️ INVITE :: could not read the pending invitation; keeping the last known state")
+            // Keep what is shown only if it is this scope's own card; a card
+            // left over from the wallet or network the user just left must
+            // never stand in for this one. The next reload reads again.
+            Self.logger.error("🎟️ INVITE :: could not read the pending invitation")
+            if pending?.scope != scope {
+                pending = nil
+            }
         }
     }
 
