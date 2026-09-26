@@ -55,6 +55,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 /// reported yet: "no wallet" is not a verdict, so a link that arrives now
 /// waits for the hold's answer instead of going to onboarding's storage.
 @property (nonatomic, assign) BOOL launchHoldPending;
+/// Non-zero while a follow-up drain for a URL left behind is scheduled.
+@property (nonatomic, assign) NSInteger followUpDrainTicksLeft;
 
 - (void)beginWipeWalletWithAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
 - (void)presentWalletWipeFailureForAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
@@ -385,26 +387,75 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
 }
 
-/// Hand the links kept while no wallet was presented (or while it was
-/// locked) to the main controller. Each slot is emptied before its link is
-/// handled, so a link the handler keeps again (the screen locked meanwhile)
-/// returns to its slot for the next pass instead of being cleared with it;
-/// both slots are handled, an invitation first.
+/// Hand ONE link kept while no wallet was presented (or while it was
+/// locked) to the main controller: the invitation if one is kept, else the
+/// URL. The slot of the link being handled is emptied before the hand-over,
+/// so a link the handler keeps again (the screen locked meanwhile) returns
+/// to its slot for the next pass. A URL kept beside an invitation stays in
+/// its slot: handled in the same pass, its screen would be presented on top
+/// of the invitation's alert mid-animation (a Debug assert; refused by UIKit
+/// in Release). It is handled on the next pass — the next unlock, or the
+/// follow-up scheduled here for when nothing is being presented any more.
 - (void)processDeferredLinks {
-    NSURL *invitation = self.deferredDeeplinkToProcess;
-    NSURL *url = self.deferredURLToProcess;
-    self.deferredDeeplinkToProcess = nil;
-    self.deferredURLToProcess = nil;
-    if (invitation != nil) {
+    if (self.deferredDeeplinkToProcess != nil) {
+        NSURL *invitation = self.deferredDeeplinkToProcess;
+        self.deferredDeeplinkToProcess = nil;
         DWLog(@"LAUNCH handling a link kept until the wallet was presented (invitation)");
 #if DASHPAY
         [self handleDeeplink:invitation];
 #endif
+        if (self.deferredURLToProcess != nil) {
+            DWLog(@"LAUNCH a url is kept beside the invitation; handled once nothing is presented");
+            [self scheduleFollowUpDrain];
+        }
+        return;
     }
-    if (url != nil) {
+    if (self.deferredURLToProcess != nil) {
+        NSURL *url = self.deferredURLToProcess;
+        self.deferredURLToProcess = nil;
         DWLog(@"LAUNCH handling a link kept until the wallet was presented (url)");
         [self handleURL:url];
     }
+}
+
+/// The follow-up pass for a URL left behind by `processDeferredLinks`: polls
+/// twice a second until the window has nothing presented and the root is not
+/// mid-transition, then drains. Stops on its own when the slot was emptied by
+/// another pass (an unlock), and gives up after five minutes — the URL then
+/// waits for the next unlock. One follow-up at a time.
+- (void)scheduleFollowUpDrain {
+    if (self.followUpDrainTicksLeft > 0) {
+        return;
+    }
+    self.followUpDrainTicksLeft = 600;
+    [self followUpDrainTick];
+}
+
+- (void)followUpDrainTick {
+    __weak typeof(self) weakSelf = self;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (strongSelf == nil) {
+            return;
+        }
+        if (strongSelf.deferredURLToProcess == nil) {
+            strongSelf.followUpDrainTicksLeft = 0;
+            return;
+        }
+        strongSelf.followUpDrainTicksLeft -= 1;
+        if (strongSelf.followUpDrainTicksLeft == 0) {
+            DWLog(@"LAUNCH the kept url is still waiting for a free screen; it is handled after the next unlock");
+            return;
+        }
+        const BOOL presenting = strongSelf.view.window.rootViewController.presentedViewController != nil ||
+                                strongSelf.transitionCoordinator != nil || strongSelf.lockController != nil;
+        if (presenting) {
+            [strongSelf followUpDrainTick];
+            return;
+        }
+        strongSelf.followUpDrainTicksLeft = 0;
+        [strongSelf processDeferredLinks];
+    });
 }
 
 #pragma mark - DWSetupViewControllerDelegate
