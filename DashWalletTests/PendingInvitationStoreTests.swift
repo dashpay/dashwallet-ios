@@ -309,6 +309,18 @@ final class PendingInvitationStoreTests: XCTestCase {
 
     // MARK: - Scope value
 
+    /// Mid-switch the selected wallet is B while the SDK host is still bound
+    /// to A: nothing may read wallet-local state or spend for B yet.
+    func testScopeIsActiveOnlyWhenSelectedAndBound() {
+        XCTAssertTrue(InvitationScope.isActiveAndBound(walletB, selected: walletB, bound: walletB))
+        XCTAssertFalse(InvitationScope.isActiveAndBound(walletB, selected: walletB, bound: walletA),
+                       "the host still exposes the outgoing wallet")
+        XCTAssertFalse(InvitationScope.isActiveAndBound(walletB, selected: walletB, bound: nil),
+                       "no wallet bound yet")
+        XCTAssertFalse(InvitationScope.isActiveAndBound(walletA, selected: walletB, bound: walletA),
+                       "the user already switched away")
+    }
+
     func testScopeStorageKeyRoundTrips() {
         for scope in [walletA, unbound, otherNetworkA] {
             XCTAssertEqual(InvitationScope(storageKey: scope.storageKey), scope)

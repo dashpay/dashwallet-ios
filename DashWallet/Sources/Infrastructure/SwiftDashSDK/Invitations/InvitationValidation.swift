@@ -220,13 +220,15 @@ enum InvitationValidator {
     /// checks read the live wallet, so their answer would be about another
     /// scope.
     static func validate(_ invitation: PendingInvitation) async -> InvitationValidation? {
-        guard InvitationScope.current == invitation.scope,
+        // Selected AND bound: mid-switch the host still exposes the outgoing
+        // wallet, whose identity would answer for this invitation's wallet.
+        guard InvitationScope.isActiveAndBound(invitation.scope),
               let wallet = SwiftDashSDKHost.shared.wallet,
               DWCurrentUserIdentityInfo.shared.isCurrentNetworkContextReady else {
             return nil
         }
         let verdict = await check(invitation, wallet: wallet)
-        return InvitationScope.current == invitation.scope ? verdict : nil
+        return InvitationScope.isActiveAndBound(invitation.scope) ? verdict : nil
     }
 
     private static func check(_ invitation: PendingInvitation, wallet: ManagedPlatformWallet) async -> InvitationValidation {

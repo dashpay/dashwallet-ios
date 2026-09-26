@@ -47,7 +47,8 @@ final class PendingInvitationViewModel: ObservableObject {
     static let validationLifetime: TimeInterval = 60
 
     private let store: PendingInvitationStore
-    private let activeScope: () -> InvitationScope
+    /// Whether a scope is both selected and bound to the SDK host.
+    private let isActive: @MainActor (InvitationScope) -> Bool
     /// The last verdict and the invitation (scope + link) it is about.
     private var lastVerdict: (validation: InvitationValidation, at: Date, invitation: PendingInvitation)?
     private var validationTask: Task<InvitationValidation?, Never>?
@@ -63,9 +64,9 @@ final class PendingInvitationViewModel: ObservableObject {
     private var observers: [NSObjectProtocol] = []
 
     init(store: PendingInvitationStore = .shared,
-         activeScope: @escaping () -> InvitationScope = { InvitationScope.current }) {
+         isActive: @escaping @MainActor (InvitationScope) -> Bool = { InvitationScope.isActiveAndBound($0) }) {
         self.store = store
-        self.activeScope = activeScope
+        self.isActive = isActive
         store.$pending
             .removeDuplicates()
             .sink { [weak self] pending in
@@ -102,7 +103,7 @@ final class PendingInvitationViewModel: ObservableObject {
     /// Forget the invitation locally; nothing goes to the network. Opening
     /// the link again brings it back.
     func hide() {
-        guard let invitation, invitation.scope == activeScope() else { return }
+        guard let invitation, isActive(invitation.scope) else { return }
         validationTask?.cancel()
         store.remove(invitation, reason: .hidden)
     }
@@ -118,7 +119,7 @@ final class PendingInvitationViewModel: ObservableObject {
     func create(proceed: @escaping (PendingInvitation, InvitationTier) -> Void) {
         // The claim spends the voucher from whatever wallet is active, so the
         // invitation must be that wallet's own.
-        guard let invitation, invitation.scope == activeScope() else { return }
+        guard let invitation, isActive(invitation.scope) else { return }
         if let lastVerdict, lastVerdict.invitation == invitation,
            Date().timeIntervalSince(lastVerdict.at) < Self.validationLifetime,
            let tier = lastVerdict.validation.tier {
@@ -130,7 +131,7 @@ final class PendingInvitationViewModel: ObservableObject {
             guard let verdict = await self.runValidation(),
                   let tier = verdict.tier,
                   self.invitation == invitation,
-                  invitation.scope == self.activeScope() else { return }
+                  self.isActive(invitation.scope) else { return }
             proceed(invitation, tier)
         }
     }

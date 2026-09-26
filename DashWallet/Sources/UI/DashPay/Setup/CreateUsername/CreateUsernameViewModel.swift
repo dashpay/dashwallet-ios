@@ -515,7 +515,7 @@ class CreateUsernameViewModel: ObservableObject {
         if let invitationURI {
             // The claim spends the voucher from the active wallet; an
             // invitation stored for another wallet or network must not.
-            if let pendingInvitation, pendingInvitation.scope != InvitationScope.current {
+            if let pendingInvitation, !InvitationScope.isActiveAndBound(pendingInvitation.scope) {
                 DWLogger.log("CreateUsername: invitation belongs to another wallet or network; not claiming")
                 submittedRegistrationUsername = nil
                 self.onRegistrationStarted = nil

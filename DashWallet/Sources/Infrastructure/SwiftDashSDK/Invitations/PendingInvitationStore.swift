@@ -61,6 +61,36 @@ struct InvitationScope: Hashable, CustomStringConvertible {
     var description: String { storageKey }
 }
 
+extension InvitationScope {
+    /// The network and wallet the SDK host is bound to right now. During a
+    /// wallet switch this lags `current` (the selected wallet is recorded
+    /// before the host rebinds), so the two can name different wallets.
+    @MainActor
+    static var hostBound: InvitationScope? {
+        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+              let network = SwiftDashSDKHost.shared.runningNetwork else { return nil }
+        return InvitationScope(
+            networkRawValue: WalletEnvironment.networkKind(for: network).rawValue,
+            walletIdHex: walletId.map { String(format: "%02x", $0) }.joined())
+    }
+
+    /// `scope` is both the selected wallet and the one the SDK is bound to —
+    /// the only state in which reading wallet-local facts (identity, a
+    /// request in a vote) or spending a voucher answers for that scope.
+    @MainActor
+    static func isActiveAndBound(_ scope: InvitationScope) -> Bool {
+        isActiveAndBound(scope, selected: .current, bound: hostBound)
+    }
+
+    static func isActiveAndBound(
+        _ scope: InvitationScope,
+        selected: InvitationScope,
+        bound: InvitationScope?
+    ) -> Bool {
+        scope == selected && scope == bound
+    }
+}
+
 /// A stored, not yet accepted invitation.
 struct PendingInvitation: Equatable, CustomStringConvertible {
     /// The link as received. Contains the voucher key — never log it.
