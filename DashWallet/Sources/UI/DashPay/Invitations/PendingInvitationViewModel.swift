@@ -27,6 +27,8 @@ final class PendingInvitationViewModel: ObservableObject {
         case verifying
         /// The network could not answer; the user can retry.
         case undetermined
+        /// A ChainLock-only invitation still waiting for its ChainLock.
+        case awaitingChainLock
         case valid(tier: InvitationTier, amountDuffs: UInt64)
     }
 
@@ -174,6 +176,8 @@ final class PendingInvitationViewModel: ObservableObject {
             cardState = .valid(tier: tier, amountDuffs: amount)
         case .undetermined?:
             cardState = .undetermined
+        case .awaitingChainLock?:
+            cardState = .awaitingChainLock
         default:
             cardState = SyncingActivityMonitor.shared.state == .syncDone ? .verifying : .syncing
         }

@@ -13,12 +13,14 @@ final class InvitationValidationPolicyTests: XCTestCase {
     private let minimum: UInt64 = 300_000
     private let contested: UInt64 = 25_000_000
 
-    private func status(amount: UInt64, claimed: Bool = false) -> ManagedPlatformWallet.InvitationClaimStatus {
+    private func status(
+        amount: UInt64, claimed: Bool = false, isInstant: Bool = true, isChainLocked: Bool = true
+    ) -> ManagedPlatformWallet.InvitationClaimStatus {
         ManagedPlatformWallet.InvitationClaimStatus(
             prospectiveIdentityId: Data(repeating: 1, count: 32),
             amountDuffs: amount,
-            isInstant: true,
-            isChainLocked: true,
+            isInstant: isInstant,
+            isChainLocked: isChainLocked,
             alreadyClaimed: claimed)
     }
 
@@ -46,6 +48,16 @@ final class InvitationValidationPolicyTests: XCTestCase {
 
     func testClaimedWinsOverAmount() {
         XCTAssertEqual(verdict(status(amount: 25_000_000, claimed: true)), .alreadyClaimed(inviter: inviter))
+    }
+
+    /// A ChainLock-only link before its ChainLock cannot be claimed yet —
+    /// kept and re-checked, not offered for Create and not forgotten.
+    func testChainLockOnlyInvitationWaitsForItsChainLock() {
+        let waiting = verdict(status(amount: 3_000_000, isInstant: false, isChainLocked: false))
+        XCTAssertEqual(waiting, .awaitingChainLock)
+        XCTAssertFalse(waiting.isDefinitive)
+        XCTAssertNil(waiting.tier)
+        XCTAssertEqual(verdict(status(amount: 3_000_000, isInstant: false, isChainLocked: true)).tier, .nonContested)
     }
 
     // MARK: - Errors: definitive vs undetermined

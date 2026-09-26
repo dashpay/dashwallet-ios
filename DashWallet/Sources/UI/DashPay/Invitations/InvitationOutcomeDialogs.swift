@@ -28,7 +28,7 @@ enum InvitationOutcomeDialogs {
                 message: NSLocalizedString("You cannot claim this invite since you have already requested a Dash username", comment: "DashPay Invitations"))
         case .alreadyClaimed(let inviter):
             return alreadyClaimed(inviter: inviter)
-        case .valid, .undetermined:
+        case .valid, .undetermined, .awaitingChainLock:
             return nil
         }
     }

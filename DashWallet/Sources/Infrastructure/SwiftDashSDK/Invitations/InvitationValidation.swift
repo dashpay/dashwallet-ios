@@ -53,12 +53,16 @@ enum InvitationValidation: Equatable {
     /// The network could not answer (not propagated yet, transport failure).
     /// Not a verdict: the invitation is kept and checked again.
     case undetermined
+    /// A ChainLock-only invitation (the link carries no InstantSend lock)
+    /// whose funding transaction is not chain-locked yet. It cannot be
+    /// claimed until it is; kept and checked again.
+    case awaitingChainLock
 
     /// A verdict that ends the invitation: shown once, then the invitation is
     /// forgotten.
     var isDefinitive: Bool {
         switch self {
-        case .valid, .undetermined: return false
+        case .valid, .undetermined, .awaitingChainLock: return false
         case .invalid, .alreadyClaimed, .alreadyHasIdentity, .alreadyRequestedUsername: return true
         }
     }
@@ -111,6 +115,7 @@ enum InvitationValidationPolicy {
         }
         if status.alreadyClaimed { return .alreadyClaimed(inviter: inviter) }
         if status.amountDuffs < minimumDuffs { return .invalid(.belowMinimum, inviter: inviter) }
+        if !status.isInstant && !status.isChainLocked { return .awaitingChainLock }
         return .valid(tier: tier, amountDuffs: status.amountDuffs, inviter: inviter)
     }
 

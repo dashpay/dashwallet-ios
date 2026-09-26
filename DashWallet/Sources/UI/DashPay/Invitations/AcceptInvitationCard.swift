@@ -81,17 +81,23 @@ struct AcceptInvitationCard: View {
             case .verifying:
                 hintText(NSLocalizedString("Verifying invitation", comment: "DashPay Invitations"))
             case .undetermined:
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    hintText(NSLocalizedString("Couldn't verify the invitation. Check your connection and try again.", comment: "DashPay Invitations"))
-                    DashUIKit.DashButton(
-                        text: NSLocalizedString("Retry", comment: ""),
-                        size: .extraSmall,
-                        style: .tintedBlue,
-                        action: { viewModel.retry() })
-                }
+                hintWithRetry(NSLocalizedString("Couldn't verify the invitation. Check your connection and try again.", comment: "DashPay Invitations"))
+            case .awaitingChainLock:
+                hintWithRetry(NSLocalizedString("The invitation is still confirming on the network. Try again in a few minutes.", comment: "DashPay Invitations"))
             case .syncing, .valid:
                 EmptyView()
             }
+        }
+    }
+
+    private func hintWithRetry(_ text: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            hintText(text)
+            DashUIKit.DashButton(
+                text: NSLocalizedString("Retry", comment: ""),
+                size: .extraSmall,
+                style: .tintedBlue,
+                action: { viewModel.retry() })
         }
     }
 
