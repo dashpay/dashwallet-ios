@@ -262,20 +262,27 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
     /// phrase's own wallet stored?"), never from a remembered outcome, so
     /// nothing in between can clear it: the same inputs give the same
     /// route on every attempt. Without that wallet, "present" is a wallet
-    /// that landed meanwhile and setup completes into it.
+    /// that landed meanwhile and setup completes into it — and when the
+    /// lookup could not answer (the attribute inventory says present, the
+    /// mnemonic read was refused), neither happens: Try Again keeps the
+    /// command.
     func testRetryAfterAPartialImportRerunsTheImportWhateverHappenedInBetween() {
         // Attempt 1: nothing stored yet — import (persists the wallet, then fails provisioning).
-        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .absent, walletForPhrasePersisted: false), .importWallet)
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .absent, walletForPhrase: .notPersisted), .importWallet)
         // Attempt 2: the phrase's wallet is stored — import again (resume). It fails for another reason.
-        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, walletForPhrasePersisted: true), .importWallet)
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, walletForPhrase: .persisted), .importWallet)
         // Attempt 3: same inputs, same route — the ordinary failure changed nothing.
-        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, walletForPhrasePersisted: true), .importWallet)
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, walletForPhrase: .persisted), .importWallet)
 
-        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, walletForPhrasePersisted: false), .completeWithExistingWallet,
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, walletForPhrase: .notPersisted), .completeWithExistingWallet,
                        "a wallet that is not the phrase's own landed meanwhile")
-        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .unknown, walletForPhrasePersisted: true), .retryUnreadable,
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, walletForPhrase: .unknown), .retryUnreadable,
+                       "the inventory says present but the phrase's wallet could not be looked up: keep the command, complete nothing")
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .unknown, walletForPhrase: .persisted), .retryUnreadable,
                        "an unreadable keychain still waits, even mid-resume")
-        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .absent, walletForPhrasePersisted: true), .importWallet)
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .absent, walletForPhrase: .persisted), .importWallet)
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .absent, walletForPhrase: .unknown), .importWallet,
+                       "a definite absence imports; the lookup is only asked about a present wallet")
     }
 
     /// While the launch decision is pending, the runtime refuses automatic

@@ -121,19 +121,26 @@ final class SwiftDashSDKWalletCreator: NSObject {
         }
     }
 
-    /// Whether the wallet `mnemonic` derives for `network` has its mnemonic
-    /// stored on this device — the host's own resume check. The recover
-    /// flow asks this when the keychain says a wallet is present: the typed
-    /// phrase's own wallet means an import to resume (or a no-op re-run),
-    /// any other wallet means one that landed meanwhile. A read failure is
-    /// logged and reads as "not stored".
-    @objc(isWalletPersistedForMnemonic:network:)
-    static func isWalletPersisted(mnemonic: String, network: BridgeNetwork) -> Bool {
-        do {
-            return try SwiftDashSDKHost.persistedWalletId(mnemonic: mnemonic, network: appNetwork(for: network)) != nil
-        } catch {
-            logger.error("persisted-wallet lookup failed: \(String(describing: error), privacy: .public)")
-            return false
+    /// The host's resume check (`SwiftDashSDKHost.persistedWalletLookup`)
+    /// for Objective-C: whether the wallet `mnemonic` derives for `network`
+    /// has its mnemonic stored on this device. The recover flow asks this
+    /// when the keychain says a wallet is present: the typed phrase's own
+    /// wallet means an import to resume (or a no-op re-run), another wallet
+    /// means one that landed meanwhile, and a read that could not answer
+    /// means neither — the flow waits behind Try Again.
+    @objc(DWPersistedWalletLookup)
+    enum PersistedWalletLookupVerdict: Int {
+        case persisted
+        case notPersisted
+        case unknown
+    }
+
+    @objc(persistedWalletLookupForMnemonic:network:)
+    static func persistedWalletLookup(mnemonic: String, network: BridgeNetwork) -> PersistedWalletLookupVerdict {
+        switch SwiftDashSDKHost.persistedWalletLookup(mnemonic: mnemonic, network: appNetwork(for: network)) {
+        case .persisted: return .persisted
+        case .notPersisted: return .notPersisted
+        case .unknown: return .unknown
         }
     }
 

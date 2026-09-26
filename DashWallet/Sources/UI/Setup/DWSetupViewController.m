@@ -185,12 +185,15 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
         const DWWalletPresence presence = DWWalletEnvironment.walletPresence;
         // Asked only when a wallet is present: is it the typed phrase's own
         // (an earlier attempt persisted it and failed afterwards — the same
-        // import resumes) or another one that landed meanwhile?
-        const BOOL ownWalletPersisted = presence == DWWalletPresencePresent && [command walletForPhraseIsPersisted];
+        // import resumes), another one that landed meanwhile, or could the
+        // keychain not say (then neither import nor completion)?
+        const DWPersistedWalletLookup walletForPhrase =
+            presence == DWWalletPresencePresent ? [command walletForPhraseLookup] : DWPersistedWalletLookupNotPersisted;
         const DWRecoverImportRoute route = [DWRecoverImportRouting routeAtExecutionWithPresence:presence
-                                                                       walletForPhrasePersisted:ownWalletPersisted];
+                                                                                walletForPhrase:walletForPhrase];
         if (route == DWRecoverImportRouteRetryUnreadable) {
-            DWLog(@"SETUP :: wallet presence unreadable at recover execution; not importing");
+            DWLog(@"SETUP :: %@ at recover execution; not importing, not completing",
+                  presence == DWWalletPresenceUnknown ? @"wallet presence unreadable" : @"the typed phrase's wallet could not be looked up");
             [self presentRecoverRetryAlertWithMessage:NSLocalizedString(@"Your wallet couldn't be read right now. Please try again.", nil)];
             return;
         }
@@ -202,7 +205,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
             // runs, input and navigation are blocked (`beginRecoverImportBlocking`)
             // and the attempt token makes a completion for an earlier
             // attempt inert.
-            if (ownWalletPersisted) {
+            if (walletForPhrase == DWPersistedWalletLookupPersisted) {
                 DWLog(@"SETUP :: the typed phrase's wallet is already stored; running the import again to resume it");
             }
             const NSUInteger attempt = [self.recoverAttempts begin];
@@ -220,7 +223,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
                 [strongSelf endRecoverImportBlocking];
                 if (!succeeded) {
                     // Whatever the failure left behind is found by the next
-                    // execution's own read (`walletForPhraseIsPersisted`).
+                    // execution's own read (`walletForPhraseLookup`).
                     DWLog(@"SETUP :: recover import did not complete; keeping the command for a retry");
                     [strongSelf presentRecoverRetryAlertWithMessage:NSLocalizedString(@"Your wallet couldn't be recovered right now. Please try again.", nil)];
                     return;

@@ -17,6 +17,11 @@
 
 #import <Foundation/Foundation.h>
 
+/// Defined in Swift (`SwiftDashSDKWalletCreator.PersistedWalletLookupVerdict`);
+/// forward-declared so this header, which the bridging header exposes,
+/// need not import the generated Swift header.
+typedef NS_ENUM(NSInteger, DWPersistedWalletLookup);
+
 NS_ASSUME_NONNULL_BEGIN
 
 /// Recovers a wallet from a seed phrase and starts syncing
@@ -36,7 +41,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// (and failed afterwards), or the same wallet exists. Either way the
 /// import can run again — it resumes, or is a no-op — instead of the flow
 /// completing into "a wallet that is present" as if it were another one.
-- (BOOL)walletForPhraseIsPersisted;
+/// `DWPersistedWalletLookupUnknown` when the keychain could not answer:
+/// the flow then neither imports nor completes.
+- (DWPersistedWalletLookup)walletForPhraseLookup;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

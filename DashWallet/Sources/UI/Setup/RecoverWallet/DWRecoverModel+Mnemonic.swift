@@ -102,22 +102,30 @@ final class RecoverImportRouting: NSObject {
         return shouldSetPin ? .deferUntilPinSet : .executeNow
     }
 
-    /// `walletForPhrasePersisted`: the wallet the typed phrase derives for
-    /// the current network has its mnemonic stored (an earlier attempt of
-    /// this import persisted it and failed afterwards, or the same wallet
-    /// exists) — "present" is then that wallet, and the import is run
-    /// again: it resumes what is missing, or is a no-op. Read from the
-    /// keychain at execution, never remembered, so no earlier failure can
-    /// clear it. Without it, "present" is a wallet that landed meanwhile.
-    @objc(routeAtExecutionWithPresence:walletForPhrasePersisted:)
+    /// `walletForPhrase`: whether the wallet the typed phrase derives for
+    /// the current network has its mnemonic stored. `persisted` (an earlier
+    /// attempt of this import persisted it and failed afterwards, or the
+    /// same wallet exists) — "present" is then that wallet, and the import
+    /// is run again: it resumes what is missing, or is a no-op.
+    /// `notPersisted` — "present" is a wallet that landed meanwhile, and
+    /// setup completes into it. `unknown` — the keychain could not answer,
+    /// so neither: the command is kept behind Try Again, as for an
+    /// unreadable presence. Read from the keychain at execution, never
+    /// remembered, so no earlier failure can clear it.
+    @objc(routeAtExecutionWithPresence:walletForPhrase:)
     static func atExecution(
         presence: WalletEnvironment.WalletPresence,
-        walletForPhrasePersisted: Bool = false
+        walletForPhrase: SwiftDashSDKWalletCreator.PersistedWalletLookupVerdict = .notPersisted
     ) -> RecoverImportRoute {
         switch presence {
         case .unknown: return .retryUnreadable
         case .absent: return .importWallet
-        case .present: return walletForPhrasePersisted ? .importWallet : .completeWithExistingWallet
+        case .present:
+            switch walletForPhrase {
+            case .persisted: return .importWallet
+            case .notPersisted: return .completeWithExistingWallet
+            case .unknown: return .retryUnreadable
+            }
         }
     }
 }

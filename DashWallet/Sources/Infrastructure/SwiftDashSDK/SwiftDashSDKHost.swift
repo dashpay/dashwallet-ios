@@ -733,32 +733,56 @@ final class SwiftDashSDKHost {
         mnemonic: String,
         handles: RuntimeHandles
     ) async throws -> ManagedPlatformWallet? {
-        guard let walletId = try Self.persistedWalletId(mnemonic: mnemonic, network: handles.network) else {
+        switch Self.persistedWalletLookup(mnemonic: mnemonic, network: handles.network) {
+        case .notPersisted:
             return nil
+        case .unknown(let status):
+            // Creating here could put a twin next to the wallet the read
+            // could not see; the import fails and can be retried.
+            throw HostError.mnemonicPersistenceFailed(
+                WalletStorageError.keychainError(status ?? errSecInteractionNotAllowed))
+        case .persisted(let walletId):
+            _ = try await handles.manager.loadFromPersistor()
+            return handles.manager.wallets[walletId]
         }
-        _ = try await handles.manager.loadFromPersistor()
-        return handles.manager.wallets[walletId]
     }
 
-    /// The id of the wallet `mnemonic` derives for `network` when its
-    /// mnemonic is stored on this device, nil when it is not. The check an
-    /// import resumes on, and the one the recover flow asks before treating
-    /// "a wallet is present" as a finished recovery: derived from the phrase
-    /// and the keychain alone, so no earlier attempt has to be remembered.
-    nonisolated static func persistedWalletId(mnemonic: String, network: Network) throws -> Data? {
+    /// Whether the wallet `mnemonic` derives for `network` has its mnemonic
+    /// stored on this device. The check an import resumes on, and the one
+    /// the recover flow asks before treating "a wallet is present" as a
+    /// finished recovery: derived from the phrase and the keychain alone, so
+    /// no earlier attempt has to be remembered. Only a definite not-found is
+    /// `notPersisted`; a read refused or failed — or attempted while
+    /// protected data is unavailable — is `unknown`, never "not stored".
+    enum PersistedWalletLookup: Equatable {
+        case persisted(walletId: Data)
+        case notPersisted
+        case unknown(OSStatus?)
+    }
+
+    nonisolated static func persistedWalletLookup(mnemonic: String, network: Network) -> PersistedWalletLookup {
+        guard WalletEnvironment.isProtectedDataAvailable() else {
+            logger.warning("🪺 HOST :: persisted-wallet lookup not read: protected data unavailable (device locked)")
+            return .unknown(nil)
+        }
         let walletId: Data
         do {
             walletId = try Wallet(mnemonic: mnemonic, network: network).id
         } catch {
-            throw HostError.walletCreationFailed(error)
+            logger.error("🪺 HOST :: persisted-wallet lookup: walletId derivation failed: \(String(describing: error), privacy: .public)")
+            return .unknown(nil)
         }
         do {
             _ = try WalletStorage().retrieveMnemonic(for: walletId)
-            return walletId
+            return .persisted(walletId: walletId)
         } catch WalletStorageError.mnemonicNotFound {
-            return nil
+            return .notPersisted
+        } catch WalletStorageError.keychainError(let status) {
+            logger.error("🪺 HOST :: persisted-wallet lookup: keychain read failed: status \(status, privacy: .public)")
+            return .unknown(status)
         } catch {
-            throw HostError.mnemonicPersistenceFailed(error)
+            logger.error("🪺 HOST :: persisted-wallet lookup failed: \(String(describing: error), privacy: .public)")
+            return .unknown(nil)
         }
     }
 

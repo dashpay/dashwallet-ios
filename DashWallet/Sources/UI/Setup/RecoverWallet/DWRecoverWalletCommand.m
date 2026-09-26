@@ -84,12 +84,13 @@ NS_ASSUME_NONNULL_BEGIN
     [DWSwiftDashSDKWalletCreator importWalletWithMnemonic:phrase pin:pin network:network completion:completion];
 }
 
-- (BOOL)walletForPhraseIsPersisted {
+- (DWPersistedWalletLookup)walletForPhraseLookup {
     DWSwiftDashSDKNetwork network;
     if (self.phrase.length == 0 || ![self.class currentNetwork:&network]) {
-        return NO;
+        // Nothing to look up is not "not stored".
+        return DWPersistedWalletLookupUnknown;
     }
-    return [DWSwiftDashSDKWalletCreator isWalletPersistedForMnemonic:self.phrase network:network];
+    return [DWSwiftDashSDKWalletCreator persistedWalletLookupForMnemonic:self.phrase network:network];
 }
 
 + (BOOL)currentNetwork:(DWSwiftDashSDKNetwork *)network {
