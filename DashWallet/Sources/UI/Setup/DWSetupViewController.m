@@ -406,10 +406,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 - (void)completeSetup {
     // Setup can complete into a wallet nothing started: one that an earlier
     // attempt persisted, or one found present at recover execution. A
-    // successful create/import already asked for this; the runtime elides
-    // a refresh it has satisfied, so asking again is cheap, and the main
-    // screen never opens over a stopped runtime.
-    [DWSwiftDashSDKWalletRuntime handleWalletMaterialChanged];
+    // successful create/import already asked for a material-change refresh
+    // (a full rebuild, never elided); this is the idempotent start request
+    // instead — a no-op while Core is up, a start when it is not — so the
+    // main screen never opens over a stopped runtime, and a runtime the
+    // import just built is not torn down and rebuilt a second time.
+    [DWSwiftDashSDKWalletRuntime startIfReady];
     [self.delegate setupViewControllerDidFinish:self];
 }
 
