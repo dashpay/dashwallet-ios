@@ -73,6 +73,10 @@ public final class DWContestedNameStatusService: NSObject {
     private static let submittedField = "submitted"
     private static let endField = "end"
     private static let identityField = "identityId"
+    /// Set only by the create-username flow: a win makes this label the
+    /// identity's main name. Absent for marketplace requests and for
+    /// bookmarks rebuilt from Platform, whose origin is unknown.
+    private static let promoteOnWinField = "promoteOnWin"
 
     /// Protocol vote-poll durations in the Platform v2 settings. The fallback
     /// starts at OUR submission time, which is at or after the first contender's
@@ -133,14 +137,17 @@ public final class DWContestedNameStatusService: NSObject {
     /// captures the runtime network before any async FFI work, avoiding a
     /// late completion being written into the newly-selected network.
     /// Upserts — an existing entry for the label keeps its original
-    /// submission time (re-recording from recovery must not reorder).
+    /// submission time (re-recording from recovery must not reorder)
+    /// and its `promoteOnWin` mark: a later upsert that does not pass the
+    /// flag never withdraws it.
     @nonobjc
     func recordSubmission(
         label: String,
         network: Network,
         identityId: Data?,
         walletId: Data? = nil,
-        submittedAt: Date = Date()
+        submittedAt: Date = Date(),
+        promoteOnWin: Bool = false
     ) {
         guard let identityId, let key = Self.entriesKey(for: network, walletId: walletId) else {
             // A submission is always made by an active wallet, so this cannot
@@ -165,9 +172,12 @@ public final class DWContestedNameStatusService: NSObject {
             ]
         }
         entries[canonical]?[Self.identityField] = identityId.map { String(format: "%02x", $0) }.joined()
+        if promoteOnWin {
+            entries[canonical]?[Self.promoteOnWinField] = true
+        }
         UserDefaults.standard.set(entries, forKey: key)
         Self.logger.info(
-            "🪪 CONTEST-SVC :: recordSubmission label=\(canonical, privacy: .public) network=\(network.rawValue, privacy: .public) inFlight=\(entries.count, privacy: .public)")
+            "🪪 CONTEST-SVC :: recordSubmission label=\(canonical, privacy: .public) network=\(network.rawValue, privacy: .public) promoteOnWin=\(promoteOnWin, privacy: .public) inFlight=\(entries.count, privacy: .public)")
     }
 
     /// Cache the real contest deadline for one label once Platform exposes
@@ -264,19 +274,28 @@ public final class DWContestedNameStatusService: NSObject {
     }
 
     @nonobjc
-    func finalizeWon(username: String, network: Network) {
-        // Backfill the global username mirror only when it's empty (the
-        // setup-flow first-username case). A contested win on a SECOND
-        // name — requested from the username marketplace — must not
-        // displace the username the user already shows everywhere.
+    func finalizeWon(username: String, network: Network, identityId: Data? = nil, walletId: Data? = nil) {
+        // Read before `clearPending` drops the entry.
+        let promote = Self.entries(for: network, walletId: walletId)[Self.canonicalLabel(username)]?[Self.promoteOnWinField] as? Bool == true
+        // Only the WON label's bookmark clears — other contests stay in flight.
+        // Cleared before the promotion below, which must no longer see the
+        // label as pending.
+        clearPending(label: username, for: network, walletId: walletId)
         let options = DWGlobalOptions.sharedInstance()
-        if options.dashpayUsername?.isEmpty != false {
+        if promote, let identityId, let walletId {
+            // A name requested through create-username is the one the user
+            // asked to be known by: it takes over from the instant companion
+            // that stood in while the vote ran (what Android shows too).
+            DWCurrentUserIdentityInfo.shared.promoteToMainName(
+                username, identityId: identityId, walletId: walletId, network: network)
+        } else if options.dashpayUsername?.isEmpty != false {
+            // Marketplace wins only backfill an empty mirror: a SECOND name
+            // bought or requested there must not displace the username the
+            // user already shows everywhere.
             options.dashpayUsername = username
         }
         options.dashpayRegistrationCompleted = true
-        // Only the WON label's bookmark clears — other contests stay in flight.
-        clearPending(label: username, for: network)
-        Self.logger.info("🪪 CONTEST-SVC :: finalizeWon label=\(username, privacy: .public)")
+        Self.logger.info("🪪 CONTEST-SVC :: finalizeWon label=\(username, privacy: .public) promoted=\(promote, privacy: .public)")
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()
         NotificationCenter.default.post(
             name: Notification.Name("DWDashPayRegistrationStatusUpdatedNotification"),

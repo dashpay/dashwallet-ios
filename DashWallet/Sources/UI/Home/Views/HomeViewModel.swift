@@ -3094,18 +3094,36 @@ enum JoinDashPayRegistrationPolicy {
 }
 
 enum JoinDashPayBannerPolicy {
+    /// - Parameters:
+    ///   - hasVotePending: a contested name this wallet submitted is out for a
+    ///     masternode vote. It SHOWS the row: the vote is the row's own
+    ///     `.voting` state, and the row is the only place that reports it.
+    ///     Without this the row vanished the moment the instant companion
+    ///     registered — `hasRegisteredUsername` went true while the requested
+    ///     name was still being voted on, so the wallet reported no progress
+    ///     for the name the user actually asked for. Still subject to
+    ///     dismissal, so Home's close control keeps working.
+    ///   - hasRegistrationInProgress: an attempt is running, which SUPPRESSES
+    ///     the call to action — offering to join is wrong while an attempt is
+    ///     in flight.
     static func shouldShow(
         contextReady: Bool,
         syncDone: Bool,
         dismissed: Bool,
         hasRegisteredUsername: Bool,
-        hasRegistrationInProgress: Bool
+        hasRegistrationInProgress: Bool,
+        hasVotePending: Bool = false,
+        reportsRegistration: Bool = false
     ) -> Bool {
-        contextReady &&
-            syncDone &&
-            !dismissed &&
-            !hasRegisteredUsername &&
-            !hasRegistrationInProgress
+        // A registration this wallet started is reported on the same row, and
+        // that report is its only surface once the create screen has stepped
+        // aside — so it shows whether or not the call to action was dismissed.
+        reportsRegistration ||
+            (contextReady &&
+                syncDone &&
+                !dismissed &&
+                (hasVotePending ||
+                    (!hasRegisteredUsername && !hasRegistrationInProgress)))
     }
 }
 
@@ -3146,7 +3164,11 @@ extension HomeViewModel {
             syncDone: true,
             dismissed: UsernamePrefs.shared.joinDashPayDismissed,
             hasRegisteredUsername: hasRegisteredUsername,
-            hasRegistrationInProgress: identityScopedRegistrationState)
+            hasRegistrationInProgress: identityScopedRegistrationState,
+            // The vote is progress on the name the user asked for, so the row
+            // stays up for it even once a companion name has registered.
+            hasVotePending: identityState.hasIdentity && joinDashPayState == .voting,
+            reportsRegistration: joinDashPayState.isRegistrationReport)
     }
     
     private func observeDashPay() {

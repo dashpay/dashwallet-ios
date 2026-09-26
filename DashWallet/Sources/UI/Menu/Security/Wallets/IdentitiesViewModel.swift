@@ -178,6 +178,9 @@ final class IdentitiesViewModel: ObservableObject {
         guard row.dpnsNames.contains(where: { DWContestedNameStatusService.labelsMatch($0, name) }) else {
             return
         }
+        // A manual pick overrides any promotion still waiting for the
+        // persister (see `DWCurrentUserIdentityInfo.promoteToMainName`).
+        DWCurrentUserIdentityInfo.discardPendingMainName(identityId: row.identityId)
         PersistentIdentity.updateMainDpnsName(
             in: container.mainContext,
             identityId: row.identityId,

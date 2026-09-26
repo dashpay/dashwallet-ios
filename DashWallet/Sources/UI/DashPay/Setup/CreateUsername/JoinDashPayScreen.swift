@@ -19,78 +19,220 @@ import SwiftUI
 import DashUIKit
 
 public struct JoinDashPayScreen: View {
-    @StateObject private var viewModel = CreateUsernameViewModel.shared
-    @State private var navigateToVotingInfo = false
+    @StateObject private var viewModel: CreateUsernameViewModel
+    /// Continue was tapped. The sheet that hosts this screen owns what comes
+    /// next — `JoinDashPayInfoDialog` turns it into its voting-info page.
     var action: () -> Void
     /// Non-nil renders the "Have an invitation?" entry — the
     /// install-then-paste redeem path for invited users (DIP-13).
     var onClaimInvitation: (() -> Void)? = nil
 
-    public var body: some View {
-        ZStack {
-            VStack(spacing: 0) {
-                TextIntro(
-                    buttonLabel: NSLocalizedString("Continue", comment: ""),
-                    action: { navigateToVotingInfo = true },
-                    // A transparent balance is no longer a hard precondition:
-                    // the shielded route starts with ADDING funds (via the
-                    // get-ready checklist after Continue), so the button only
-                    // stays disabled while the wallet hasn't hydrated yet.
-                    isActionEnabled: viewModel.hasMinimumRequiredBalance || viewModel.shieldedReadiness != nil,
-                    inProgress: .constant(false),
-                    topText: {
-                        FeatureTopText(
-                            title: NSLocalizedString("Join DashPay", comment: ""),
-                            text: NSLocalizedString("Forget about long crypto addresses, create the username, find friends and add them to your contacts", comment: "")
-                        )
-                    },
-                    features: {[
-                        FeatureSingleItem(iconName: .custom("username.letter"), title: NSLocalizedString("Create a username", comment: ""), description: NSLocalizedString("Pay to usernames. No more alphanumeric addresses.", comment: "")),
-                        FeatureSingleItem(iconName: .custom("friends.add"), title: NSLocalizedString("Add your friends & family", comment: ""), description: NSLocalizedString("Invite your family, find your friends by searching their usernames.", comment: "")),
-                        FeatureSingleItem(iconName: .custom("profile.personalized"), title: NSLocalizedString("Personalise profile", comment: ""), description: NSLocalizedString("Upload your picture, personalize your identity.", comment: "")),
-                        FeatureSingleItem(iconName: .system("shield.lefthalf.filled"), title: NSLocalizedString("Private by design", comment: "Usernames"), description: NSLocalizedString("Fund your username from your Shielded balance. Add funds a few hours ahead — the short rest keeps your username unlinkable to your other Dash.", comment: "Usernames"))
-                    ]},
-                    info: getInfo()
-                )
+    init(action: @escaping () -> Void, onClaimInvitation: (() -> Void)? = nil) {
+        self.action = action
+        self.onClaimInvitation = onClaimInvitation
+        // Same shared instance the form itself runs on — the sheet must read
+        // the balance the next screen will spend, not a second tally of it.
+        _viewModel = StateObject(wrappedValue: CreateUsernameViewModel.shared)
+    }
 
-                if let onClaimInvitation {
-                    Button(action: onClaimInvitation) {
-                        Text(NSLocalizedString("Have an invitation?", comment: "DashPay Invitations"))
-                            .font(.subheadline)
-                            .foregroundColor(.dash.blue)
+    #if DEBUG
+    /// Preview-only entry point: takes a posed view model so the canvas never
+    /// builds `CreateUsernameViewModel.shared`, whose init subscribes to the
+    /// SDK wallet state and the registration coordinator.
+    init(previewViewModel: CreateUsernameViewModel,
+         action: @escaping () -> Void = {},
+         onClaimInvitation: (() -> Void)? = nil) {
+        self.action = action
+        self.onClaimInvitation = onClaimInvitation
+        _viewModel = StateObject(wrappedValue: previewViewModel)
+    }
+    #endif
+
+    public var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+                .frame(maxHeight: 20)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(NSLocalizedString("Create username", comment: ""))
+                    .dashFont(.title1)
+                    .foregroundStyle(Color.dash.primaryText)
+
+                Text(NSLocalizedString("Forget about long crypto addresses, create the username, find friends and add them to your contacts", comment: ""))
+                    .dashFont(.body)
+                    .foregroundStyle(Color.dash.secondaryText)
+            }
+            .padding(.horizontal, 40)
+            .padding(.vertical, 20)
+
+            VStack(alignment: .leading, spacing: 16) {
+                SheetFeature(
+                    title: NSLocalizedString("Pay to usernames", comment: ""),
+                    description: NSLocalizedString("No more alphanumeric addresses", comment: ""),
+                    icon: DashIcon.Features.username.source
+                )
+                SheetFeature(
+                    title: NSLocalizedString("Add your friends & family", comment: ""),
+                    description: NSLocalizedString("Invite your family, find your friends by searching their usernames", comment: ""),
+                    icon: DashIcon.Features.friends.source
+                )
+                SheetFeature(
+                    title: NSLocalizedString("Personalize profile", comment: ""),
+                    description: NSLocalizedString("Upload your picture, personalize your identity", comment: ""),
+                    icon: DashIcon.Features.profile.source
+                )
+            }
+            .padding(.horizontal, 40)
+            .padding(.top, 10)
+            .padding(.bottom, 20)
+
+            Spacer()
+                .frame(maxHeight: 20)
+
+            VStack(spacing: 20) {
+                if let balanceNote {
+                    Text(balanceNote)
+                        .dashFont(.caption1)
+                        .foregroundStyle(Color.dash.secondaryText)
+                        .multilineTextAlignment(.center)
+                }
+
+                VStack(spacing: 10) {
+                    // Nothing spendable on either route: the form behind this
+                    // button has nothing to fund a registration with, so the
+                    // label drops back to a neutral "Continue" that reads as
+                    // "not yet" rather than promising a registration.
+                    DashUIKit.DashButton(
+                        text: canProceed
+                            ? NSLocalizedString("Create username", comment: "")
+                            : NSLocalizedString("Continue", comment: ""),
+                        isEnabled: canProceed,
+                        fillsWidth: true,
+                        size: .large,
+                        style: .filledBlue,
+                        action: action
+                    )
+
+                    // The redeem screen takes both a pasted link and a scan,
+                    // and it funds the registration itself — so it stays
+                    // tappable while the button above is greyed out.
+                    if let onClaimInvitation {
+                        DashUIKit.DashButton(
+                            text: NSLocalizedString("Scan invitation QR", comment: ""),
+                            fillsWidth: true,
+                            size: .large,
+                            style: .tintedBlue,
+                            action: onClaimInvitation
+                        )
                     }
-                    .padding(.bottom, 12)
                 }
             }
-
-            NavigationLink(
-                destination: VotingInfoScreen(action: action).navigationBarHidden(true),
-                isActive: $navigateToVotingInfo
-            ) {
-                EmptyView()
-            }
+            .padding(.horizontal, 40)
+            .padding(.vertical, 20)
         }
     }
     
-    private func getInfo() -> String? {
-        if viewModel.hasRecommendedBalance {
-            return nil
+    /// The single question this screen asks: can the registration be paid for
+    /// right now — by a transparent balance that clears the minimum, or by a
+    /// shielded balance that is actually `.ready`.
+    ///
+    /// Deliberately NOT `shieldedReadiness != nil`: that snapshot is assigned
+    /// unconditionally once the readiness pass runs
+    /// (`CreateUsernameViewModel.updateUsernameValidity`), so it is non-nil
+    /// with a `.needsFunding` state and an empty shielded balance. Testing it
+    /// asks whether the wallet has hydrated, not whether there is anything to
+    /// spend — which left the button inviting while the line above it said
+    /// the balance was short.
+    private var canProceed: Bool {
+        viewModel.hasMinimumRequiredBalance || viewModel.hasReadyShieldedFunding
+    }
+
+    /// The caption above the button. One slot, two different things to say:
+    ///
+    /// - Below the minimum, it names the minimum — same predicate as the
+    ///   button, so a line saying the balance is short can never sit over a
+    ///   button offering to spend it.
+    /// - Above the minimum but below what a contested name costs, it names
+    ///   that ceiling. The user picks the name on the NEXT screen, and by then
+    ///   a short balance reads as the name being refused rather than as a
+    ///   price they were never told.
+    private var balanceNote: String? {
+        if !canProceed {
+            return String.localizedStringWithFormat(
+                NSLocalizedString("You should have at least %@ Dash to create a username", comment: "Usernames"),
+                viewModel.minimumRequiredBalance)
         }
 
-        if viewModel.hasMinimumRequiredBalance {
-            return String.localizedStringWithFormat(NSLocalizedString("You have %@ Dash.\nSome usernames cost up to %@ Dash.", comment: "Usernames"), viewModel.balance, viewModel.recommendedBalance)
+        if !viewModel.hasRecommendedBalance {
+            // "available", not "you have": the figure is what can actually be
+            // spent — `coreSpendableDuffs`, i.e. confirmed inputs less the
+            // miner fee an ordinary send still needs. Home's header shows the
+            // total, so without saying which is which the two numbers read as
+            // a bug (0.25 in the header, 0.24999661 here).
+            return String.localizedStringWithFormat(
+                NSLocalizedString("You have %@ Dash available (network fee reserved).\nSome usernames cost up to %@ Dash.", comment: "Usernames"),
+                viewModel.balance,
+                viewModel.recommendedBalance)
         }
 
-        if viewModel.hasReadyShieldedFunding {
-            // No transparent balance, but the shielded route is fully
-            // ready — nothing to warn about.
-            return nil
-        }
-
-        let shieldedMinimum = (ShieldedIdentityFundingReadiness.standardDenominationCredits / 1_000)
-            .dashAmount.formattedDashAmountWithoutCurrencySymbol
-        return String.localizedStringWithFormat(
-            NSLocalizedString("Registering privately takes at least %@ Dash in your Shielded balance plus a few hours of rest time — the next screens walk you through it.", comment: "Usernames"),
-            shieldedMinimum)
+        return nil
     }
 }
+
+// MARK: - Previews
+
+#if DEBUG
+
+/// Enough for a contested name (0.25 DASH, `DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME`):
+/// no info line at all, Continue enabled. This is the state the redesign's
+/// "has enough balance" sheet starts from.
+#Preview("Enough for a contested name") {
+    JoinDashPayScreen(
+        previewViewModel: .makeForPreview(
+            balance: "0.30000000",
+            hasMinimumRequiredBalance: true,
+            hasRecommendedBalance: true),
+        onClaimInvitation: {})
+}
+
+/// Enough for a standard name but not for a contested one — the info line
+/// names both numbers ("You have 0.05 Dash. Some usernames cost up to 0.25 Dash.").
+#Preview("Standard balance only") {
+    JoinDashPayScreen(
+        previewViewModel: .makeForPreview(
+            balance: "0.05000000",
+            hasMinimumRequiredBalance: true),
+        onClaimInvitation: {})
+}
+
+/// No transparent funds and a shielded route that is known but NOT funded
+/// (`.needsFunding`). Nothing is spendable on either route, so the shortfall
+/// line shows and the button is the greyed-out "Continue" — the snapshot
+/// merely existing no longer counts as a funding source.
+#Preview("No funds — shielded route not ready") {
+    JoinDashPayScreen(
+        previewViewModel: .makeForPreview(
+            balance: "0.00999774",
+            shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot(
+                state: .needsFunding(shortfallCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits),
+                requiredCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits,
+                matureCredits: 0,
+                unspentCredits: 0,
+                poolNoteCount: nil)),
+        onClaimInvitation: {})
+}
+
+/// Wallet not hydrated yet: no balance and no readiness snapshot at all.
+/// Greyed out for the same reason as the preview above. No invitation entry
+/// here, so the sheet's short form is visible too.
+#Preview("Wallet not hydrated — Continue disabled") {
+    JoinDashPayScreen(previewViewModel: .makeForPreview())
+}
+
+/// The same greyed-out state with an invitation entry: the only way forward
+/// for a wallet with nothing in it, since the voucher funds the registration.
+#Preview("No funds — invitation is the only route") {
+    JoinDashPayScreen(previewViewModel: .makeForPreview(), onClaimInvitation: {})
+}
+
+#endif

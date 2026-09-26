@@ -301,8 +301,14 @@ final class VotingViewModel: ObservableObject {
 
     // MARK: Vote history
 
-    /// Votes this wallet has cast on `contest`, and how many it could cast in
-    /// total — the "2 of 5" the row and detail screen show.
+    /// Live vote per node per contest, and how many casts each node has spent.
+    /// Both are rebuilt by `loadVotedNodes(for:)`.
+    private var latestVoteByNodeByContest: [String: [Data: CastVoteRecord]] = [:]
+    private var castsPerNodeByContest: [String: [Data: Int]] = [:]
+
+    /// Vote *records* this wallet holds on `contest` — a node that changed its
+    /// mind contributes more than one. `votedNodeCount(on:)` is the per-node
+    /// figure the screens show.
     func castCount(for normalizedLabel: String) -> Int {
         castCountsByContest[normalizedLabel] ?? 0
     }
@@ -332,7 +338,54 @@ final class VotingViewModel: ObservableObject {
             network: MasternodeVoteCaster.networkKey)
         votedProTxHashesByContest[normalizedLabel] = Set(records.map(\.proTxHash))
         castCountsByContest[normalizedLabel] = records.count
+
+        // One row per node per contest — a change overwrites the row it came
+        // from — so the ceiling is read from the row's own `castCount`, not
+        // from how many rows a node has. Counting rows could never reach five.
+        var latest: [Data: CastVoteRecord] = [:]
+        var casts: [Data: Int] = [:]
+        for record in records {
+            casts[record.proTxHash] = max(casts[record.proTxHash] ?? 0, record.castCount)
+            if let seen = latest[record.proTxHash], seen.castAt >= record.castAt { continue }
+            latest[record.proTxHash] = record
+        }
+        latestVoteByNodeByContest[normalizedLabel] = latest
+        castsPerNodeByContest[normalizedLabel] = casts
     }
+
+    /// How many of this wallet's nodes have a live vote here — nodes, not
+    /// records. A node that changed its mind has two records and is still one
+    /// node, which is what "%d of %d nodes voted" is counting.
+    func votedNodeCount(on normalizedLabel: String) -> Int {
+        votedProTxHashesByContest[normalizedLabel]?.count ?? 0
+    }
+
+    /// This node's live choice on this contest, when it has one.
+    func liveChoice(of node: VoterNode, on normalizedLabel: String) -> VoteChoice? {
+        latestVoteByNodeByContest[normalizedLabel]?[node.proTxHash]?.choice
+    }
+
+    /// The nodes a tap on `choice` should cast with: the remembered selection,
+    /// minus nodes already holding that exact choice (Platform rejects a
+    /// duplicate) and minus nodes that have spent the five casts it allows per
+    /// contest. A node holding a *different* choice belongs here — replacing
+    /// its vote is one state transition, and it is the whole point of being
+    /// able to change your mind from this screen.
+    func nodesForVote(_ choice: VoteChoice, on normalizedLabel: String) -> [VoterNode] {
+        guard hasLoadedVoteHistory(for: normalizedLabel) else { return [] }
+        let chosen = effectiveSelectedNodeIDs
+        let latest = latestVoteByNodeByContest[normalizedLabel] ?? [:]
+        let casts = castsPerNodeByContest[normalizedLabel] ?? [:]
+        return votableNodes.filter { node in
+            guard chosen.contains(node.proTxHash) else { return false }
+            guard (casts[node.proTxHash] ?? 0) < Self.maxCastsPerNodePerContest else { return false }
+            return latest[node.proTxHash]?.choice != choice
+        }
+    }
+
+    /// `votes_allowed_per_masternode` in the platform version this app talks
+    /// to; the sixth cast is refused with `MasternodeVotedTooManyTimesError`.
+    static let maxCastsPerNodePerContest = 5
 
     /// The nodes a single tap should vote with: the remembered selection,
     /// minus any that already voted on this contest.

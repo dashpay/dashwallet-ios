@@ -23,6 +23,16 @@ enum JoinDashPayState {
     case retryLoading
     case none
     case callToAction
+    /// A username registration the create screen handed off is running.
+    /// `JoinDashPayViewModel.registrationStep` says which of its three stages.
+    case creating
+    /// That registration stopped at `registrationStep` and will not advance.
+    case creationFailed
+    /// A registration was recorded and the app died before it finished. The
+    /// coordinator is idle after a relaunch, so there is no stage to claim.
+    case interrupted
+    /// An identity exists with credits but no username yet — the
+    /// registration can be finished from where it stopped.
     case usernameRequired
     case voting
     case approved
@@ -35,6 +45,23 @@ enum JoinDashPayState {
 extension JoinDashPayState {
     func hasAction() -> Bool {
         return self == .usernameRequired || self == .callToAction || self == .approved || self == .failed || self == .blocked || self == .contested
+            || self == .creationFailed || self == .interrupted
+    }
+
+    /// The row is reporting on a registration this wallet started, rather than
+    /// inviting the user to start one. Home shows these regardless of whether
+    /// the call to action was dismissed: they are that registration's only
+    /// surface once the create screen has stepped aside. A lost vote
+    /// (`.contested`, `.blocked`) is that registration's outcome and is
+    /// reported until acted on — otherwise a companion name registered
+    /// alongside it hid the rejection for good.
+    var isRegistrationReport: Bool {
+        switch self {
+        case .creating, .creationFailed, .interrupted, .approved, .contested, .blocked:
+            return true
+        case .none, .loading, .retryLoading, .callToAction, .usernameRequired, .voting, .failed, .registered:
+            return false
+        }
     }
 }
 
@@ -46,15 +73,47 @@ extension JoinDashPayState {
 /// `DWContestedNameStatusService.shared`, which is main-actor isolated.
 @MainActor
 struct JoinDashPayCopy {
+    /// Which surface is asking. The two say different things about a
+    /// registration in flight: Home is where the user watches it happen, so it
+    /// counts the stages (1/3 → 3/3, as Android's home does); More is a menu
+    /// entry they pass by, so it states what is happening in one sentence.
+    enum Surface {
+        case home
+        case more
+    }
+
     let state: JoinDashPayState
     let username: String
+    var surface: Surface = .home
     let shieldedSnapshot: ShieldedIdentityFundingReadiness.Snapshot?
+    /// Which stage `.creating` and `.creationFailed` describe. Ignored by
+    /// every other state.
+    var registrationStep: DWDPRegistrationState = .processingPayment
+
+    /// The legacy status object that owns the "(1/3) Processing Payment" copy
+    /// and its failure variants in all 43 locales. Built rather than
+    /// reimplemented; only the interrupted line has no equivalent there.
+    private var registrationStatus: DWDPRegistrationStatus {
+        DWDPRegistrationStatus(state: registrationStep, failed: state == .creationFailed, username: username)
+    }
+
+    /// Contested names get the redesigned reporting — one plain sentence about
+    /// the submission, then the vote — because their registration is not three
+    /// payment stages to the user, it is a request that has to be voted on.
+    /// An uncontested one keeps the staged "(1/3) Processing Payment" copy,
+    /// which is accurate for it and already translated into 43 locales.
+    ///
+    /// `dash_sdk_dpns_is_contested_username` on the label: a local predicate,
+    /// no network, the same one the create form validates with.
+    private var isContested: Bool {
+        DWContestedNameStatusService.isContestedLabel(username)
+    }
 
     var iconName: String {
         switch state {
         case .loading, .retryLoading, .none, .callToAction, .usernameRequired, .registered:
             return "dp_user_generic"
-        case .voting:
+        case .voting, .creating, .interrupted:
             return "username_requested"
         case .approved:
             return "username_approved"
@@ -73,18 +132,36 @@ struct JoinDashPayCopy {
             return NSLocalizedString("Join DashPay", comment: "")
         case .callToAction:
             return NSLocalizedString("Upgrade to DashPay", comment: "")
+        case .creating:
+            return isContested
+                ? String.localizedStringWithFormat(
+                    NSLocalizedString("Requesting – %@", comment: "Usernames — Home row title while a contested username is being submitted"),
+                    username)
+                : String.localizedStringWithFormat(
+                    NSLocalizedString("Creating – %@", comment: "Usernames — Home row title while a username is being registered"),
+                    username)
+        case .voting:
+            return String.localizedStringWithFormat(
+                NSLocalizedString("Voting – %@", comment: "Usernames — Home row title while the network votes on a username"),
+                username)
         case .usernameRequired:
             return NSLocalizedString("Finish username registration", comment: "DashPay registration recovery")
-        case .voting, .registered:
+        case .registered, .creationFailed, .interrupted:
             return username
         case .approved:
             return NSLocalizedString("Your username has been successfully created", comment: "Usernames")
-        case .failed:
-            return NSLocalizedString("Username request failed", comment: "Usernames")
+        // A request that never completed and a name given to someone else
+        // are both "rejected"; a locked name is its own ending, and saying
+        // so is the difference between "pick another name" and "this name
+        // now exists for nobody".
+        case .failed, .contested:
+            return String.localizedStringWithFormat(
+                NSLocalizedString("Rejected – %@", comment: "Usernames — Home row title after a username request was refused"),
+                username)
         case .blocked:
-            return NSLocalizedString("Requested username has been blocked", comment: "Usernames")
-        case .contested:
-            return NSLocalizedString("Requested username has been given to someone else", comment: "Usernames")
+            return String.localizedStringWithFormat(
+                NSLocalizedString("Blocked – %@", comment: "Usernames — Home row title after the network locked a requested username"),
+                username)
         }
     }
     
@@ -106,29 +183,37 @@ struct JoinDashPayCopy {
             case .needsFunding, .poolTooSmall, nil:
                 return NSLocalizedString("Add to your Shielded balance now and register your username privately a few hours later", comment: "Usernames")
             }
+        case .creating where surface == .more:
+            return NSLocalizedString("Submitting username to the Dash network. It might take a few minutes.", comment: "Usernames")
+        case .creating, .creationFailed:
+            return registrationStatus.stateDescription()
+        case .interrupted:
+            return NSLocalizedString(
+                "Registration was interrupted",
+                comment: "Usernames — the app closed before the registration finished")
         case .voting:
+            let deciding = NSLocalizedString(
+                "Masternode owners are deciding whether you get this username.",
+                comment: "Usernames")
             if let endTime = DWContestedNameStatusService.shared.pendingVotingEndTime {
-                let endDate = DWDateFormatter.sharedInstance.dateAndTime(from: endTime)
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Username %@ has been submitted for voting. Voting ends around %@.",
-                        comment: "Usernames"),
-                    username,
-                    endDate)
+                return deciding + "\n" + String.localizedStringWithFormat(
+                    NSLocalizedString("Results on %@", comment: "Usernames — when a username vote closes"),
+                    DWDateFormatter.sharedInstance.dateOnly(from: endTime))
             }
-            return String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "Username %@ has been submitted for voting. We will notify you when voting ends.",
-                    comment: "Usernames"),
-                username)
+            return deciding + " " + NSLocalizedString(
+                "We will notify you when voting ends.",
+                comment: "Usernames")
         case .approved:
             return NSLocalizedString("Get started by setting up your profile picture and other information.", comment: "Usernames")
+        // One title, three reasons: the request never completed, the network
+        // refused the name, or the vote went to someone else. Only the last
+        // two are verdicts on the name itself.
         case .failed:
-            return String.localizedStringWithFormat(NSLocalizedString("For some reason, the request for the username '%@' has failed.", comment: "Usernames"), username)
+            return NSLocalizedString("Your username request did not go through. Try again.", comment: "Usernames")
         case .blocked:
-            return String.localizedStringWithFormat(NSLocalizedString("The username '%@' was blocked by the Dash Network. Please try again by requesting another username.", comment: "Usernames"), username)
+            return NSLocalizedString("The Dash network blocked this username. Nobody can register it — please try a different one.", comment: "Usernames")
         case .contested:
-            return String.localizedStringWithFormat(NSLocalizedString("Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username.", comment: "Usernames"), username)
+            return NSLocalizedString("The voting gave this username to someone else. Please try again with a different username.", comment: "Usernames")
         case .loading, .retryLoading, .registered:
             return ""
         }
@@ -142,14 +227,40 @@ struct JoinDashPayCopy {
             return NSLocalizedString("Upgrade", comment: "")
         case .approved:
             return NSLocalizedString("Edit profile", comment: "")
+        case .failed, .blocked, .contested:
+            return NSLocalizedString("Try again", comment: "Usernames")
         default:
             return NSLocalizedString("Retry", comment: "")
         }
     }
 
-    var actionIcon: IconName? {
+    /// The row explains a contested registration in flight — submitted, or
+    /// out for a vote — and the info button opens what that means.
+    var showsVotingInfo: Bool {
+        switch state {
+        case .voting:
+            return true
+        case .creating:
+            return isContested
+        default:
+            return false
+        }
+    }
+
+    /// A refused request: the row carries its own "Try again" alongside the
+    /// tap, because the retry is the only thing left to do with it.
+    var showsRetryButton: Bool {
         switch state {
         case .failed, .blocked, .contested:
+            return true
+        default:
+            return false
+        }
+    }
+
+    var actionIcon: IconName? {
+        switch state {
+        case .failed, .blocked, .contested, .creationFailed, .interrupted:
             return .system("arrow.counterclockwise")
         default:
             return nil
@@ -172,6 +283,13 @@ struct JoinDashPayMenuItem: View {
     @ObservedObject private var shieldedReadiness = ShieldedIdentityFundingReadiness.shared
     var onTap: (JoinDashPayState) -> Void
     var onDismiss: ((JoinDashPayState) -> Void)?
+    /// Opens the username-voting explainer. Rendered as the round info button
+    /// on the trailing edge while a contested request is in flight; without a
+    /// handler the button is not drawn at all rather than drawn and dead.
+    var onShowVotingInfo: (() -> Void)?
+    /// Which surface this row is on — it decides how a running registration is
+    /// described (see `JoinDashPayCopy.Surface`).
+    var surface: JoinDashPayCopy.Surface = .home
     /// Chain still catching up. The row stays visible but presents itself as
     /// unavailable — greyed icon and text, a note saying why, and no action —
     /// because registration cannot start before the chain is synced. Showing
@@ -184,46 +302,30 @@ struct JoinDashPayMenuItem: View {
         JoinDashPayCopy(
             state: viewModel.state,
             username: viewModel.username,
-            shieldedSnapshot: shieldedReadiness.standardSnapshot)
+            surface: surface,
+            shieldedSnapshot: shieldedReadiness.standardSnapshot,
+            registrationStep: viewModel.registrationStep)
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            DashUIKit.MenuItem(
-                leadingIcon: .custom(copy.iconName, bundle: .main),
-                isEnabled: !isSyncing && viewModel.state != .loading,
-                disabledLeadingIcon: .custom("menu-send-account-disabled", bundle: .dashUIKit),
-                title: copy.title,
-                helpText: viewModel.state == .registered ? nil : copy.subtitle,
-                accessory: .none
-            )
-            // No action while the chain is catching up: every destination this
-            // row leads to (join, retry, edit profile) needs a synced chain, so
-            // a tap here could only fail. The note below says why.
-            .onTapGesture {
-                guard !isSyncing && viewModel.state != .loading else { return }
-                if viewModel.state == .retryLoading {
-                    viewModel.retryLoading()
-                } else {
-                    onTap(viewModel.state)
-                }
-            }
-            .overlay(alignment: .topTrailing) {
-                if let onDismiss {
-                    Button {
-                        onDismiss(viewModel.state)
-                    } label: {
-                        XmarkIcon(size: 10, color: .dash.tertiaryText)
-                            // Keep the tap target comfortable without letting
-                            // the glyph itself push the row's layout around.
-                            .padding(14)
-                            .contentShape(Rectangle())
-                    }
-                    // An overlay rather than `MenuItem`'s `accessory:` — the
-                    // accessory sits vertically centred in the row, and this
-                    // close belongs in the top trailing corner.
-                    .buttonStyle(.plain)
-                }
+            row
+
+            if copy.showsRetryButton {
+                DashUIKit.DashButton(
+                    text: copy.actionText,
+                    // Same gate as the row: every destination this button leads
+                    // to needs a synced chain, and the note under it already
+                    // says so. Without this the button acted while the row
+                    // beside it read "Available after sync finishes".
+                    isEnabled: !isSyncing,
+                    size: .small,
+                    style: .filledBlue,
+                    action: { onTap(viewModel.state) }
+                )
+                .padding(.leading, Self.textInset)
+                .padding(.trailing, 10)
+                .padding(.bottom, 12)
             }
 
             if isSyncing {
@@ -243,6 +345,20 @@ struct JoinDashPayMenuItem: View {
                 .padding(.bottom, 8)
             }
         }
+        .overlay(alignment: .topTrailing) {
+            if let onDismiss {
+                Button {
+                    onDismiss(viewModel.state)
+                } label: {
+                    XmarkIcon(size: 10, color: .dash.tertiaryText)
+                        // Keep the tap target comfortable without letting the
+                        // glyph itself push the row's layout around.
+                        .padding(14)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
         .modifier(MenuViewModifier())
         .onAppear {
             viewModel.checkUsername()
@@ -257,6 +373,95 @@ struct JoinDashPayMenuItem: View {
             viewModel.finishLoadingAttempt()
         }
     }
+
+    /// The row, built here rather than with `DashUIKit.MenuItem`.
+    ///
+    /// The reporting states need slots a menu row does not have — a round info
+    /// button beside the text, and a "Try again" button under it — and
+    /// `MenuItem`'s accessory is a single vertically centred element with a
+    /// fixed inset. The styling is deliberately the same as `MenuItem`'s for
+    /// now (30pt icon box, `.subheadMedium` title, `.footnote` help text, the
+    /// same colours and the same 10 + 6 insets), so only the layout is ours.
+    private var row: some View {
+        HStack(alignment: .center, spacing: 10) {
+            // Icon + text carry the row's own tap; the trailing button sits
+            // OUTSIDE this group on purpose. A tap gesture on the whole row
+            // swallows a `Button` inside it — which is why the info control
+            // did nothing at all.
+            HStack(alignment: .center, spacing: 10) {
+                icon
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(copy.title)
+                        .dashFont(.subheadMedium)
+                        .foregroundColor(isSyncing ? Color.dash.secondaryText : Color.dash.primaryText)
+
+                    // `.registered` is the resting state of a wallet that has a
+                    // username: the row shows the name and nothing else.
+                    if viewModel.state != .registered {
+                        Text(copy.subtitle)
+                            .dashFont(.footnote)
+                            .foregroundColor(isSyncing ? Color.dash.tertiaryText : Color.dash.secondaryText)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(.horizontal, 6)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.trailing, 30)
+            }
+            // Tappable except while the chain is catching up: every
+            // destination the row leads to (join, retry, edit profile) needs a
+            // synced chain, so the note under it says why instead.
+            .contentShape(Rectangle())
+            .onTapGesture {
+                guard !isSyncing, viewModel.state != .loading else { return }
+                // The row IS the retry while the identity's names are being
+                // re-read: `retryLoading()` has no other caller, so dispatching
+                // this state to `onTap` left the control dead on every surface.
+                if viewModel.state == .retryLoading {
+                    viewModel.retryLoading()
+                } else {
+                    onTap(viewModel.state)
+                }
+            }
+            // The row is a control, and its label is what it says.
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isButton)
+
+            // Not on Home: the close control already occupies that corner, and
+            // two round buttons at the same edge read as a mistake. Tapping the
+            // row leads to the same place.
+            if let onShowVotingInfo, surface == .more, copy.showsVotingInfo, !isSyncing {
+                Button(action: onShowVotingInfo) {
+                    // 20pt mark in a 30pt target: the glyph stays small beside
+                    // the text while the tap area remains comfortable.
+                    DashUIKit.InfoRoundIcon(size: 20, color: .dash.blueAlpha50)
+                        .frame(width: 30, height: 30)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                // A glyph with no text child says nothing to VoiceOver — the
+                // same control on the request-details screen is named, and this
+                // one has to be too.
+                .accessibilityLabel(NSLocalizedString("What is username voting?", comment: "Usernames"))
+            }
+        }
+        .padding(10)
+    }
+
+    private var icon: some View {
+        Image(dash: isSyncing
+            ? .custom("menu-send-account-disabled", bundle: .dashUIKit)
+            : .custom(copy.iconName, bundle: .main))
+            .resizable()
+            .scaledToFit()
+            .frame(width: 30, height: 30)
+    }
+
+    /// Where the row's text starts: this view's own padding, the icon box and
+    /// the gaps around it. Anything that has to line up with the title (the
+    /// retry button) uses it rather than repeating the arithmetic.
+    private static let textInset: CGFloat = 10 + 30 + 10 + 6
 }
 
 // MARK: - Previews
@@ -298,8 +503,11 @@ struct JoinDashPayMenuItem: View {
                 id: \.self
             ) { state in
                 JoinDashPayMenuItem(
-                    viewModel: JoinDashPayViewModel(initialState: state),
-                    onTap: { _ in })
+                    viewModel: JoinDashPayViewModel(initialState: state, username: "jordan"),
+                    onTap: { _ in },
+                    // Both hosts pass this, so the preview does too — without
+                    // it the info button is absent here and present in the app.
+                    onShowVotingInfo: { })
                     .padding(6)
                     .background(Color.dash.secondaryBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
@@ -318,6 +526,9 @@ struct JoinDashPayMenuItem: View {
             ForEach(
                 [
                     JoinDashPayState.callToAction,
+                    .creating,
+                    .creationFailed,
+                    .interrupted,
                     .voting,
                     .approved,
                     .failed,
@@ -326,9 +537,10 @@ struct JoinDashPayMenuItem: View {
                 id: \.self
             ) { state in
                 JoinDashPayMenuItem(
-                    viewModel: JoinDashPayViewModel(initialState: state),
+                    viewModel: JoinDashPayViewModel(initialState: state, username: "jordan12345"),
                     onTap: { _ in },
-                    onDismiss: { _ in })
+                    onDismiss: { _ in },
+                    onShowVotingInfo: { })
                     .padding(6)
                     .background(Color.dash.secondaryBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
@@ -337,3 +549,56 @@ struct JoinDashPayMenuItem: View {
         .padding(20)
     }
 }
+
+/// The contested reporting, which is what the row's redesigned states are for.
+///
+/// The username drives them: `isContestedLabel` is a local SDK predicate, so
+/// "jordan" (letters only, short, no hyphen) takes the contested copy and the
+/// info button, while "jordan2" is auto-approved and keeps the staged
+/// "(1/3) Processing Payment" reporting. Both are rendered here so the pair is
+/// compared rather than described.
+#Preview("Menu row — contested reporting") {
+    ScrollView {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Contested — “jordan”")
+                .dashFont(.footnote)
+                .foregroundStyle(Color.dash.secondaryText)
+
+            ForEach(
+                [
+                    JoinDashPayState.creating,
+                    .voting,
+                    .contested,
+                    .blocked,
+                    .failed
+                ],
+                id: \.self
+            ) { state in
+                JoinDashPayMenuItem(
+                    viewModel: JoinDashPayViewModel(initialState: state, username: "jordan"),
+                    onTap: { _ in },
+                    // Non-nil, so the info button is drawn on the two states
+                    // that report a vote in flight.
+                    onShowVotingInfo: { })
+                    .padding(6)
+                    .background(Color.dash.secondaryBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            }
+
+            Text("Auto-approved — “jordan2”")
+                .dashFont(.footnote)
+                .foregroundStyle(Color.dash.secondaryText)
+                .padding(.top, 8)
+
+            JoinDashPayMenuItem(
+                viewModel: JoinDashPayViewModel(initialState: .creating, username: "jordan2"),
+                onTap: { _ in },
+                onShowVotingInfo: { })
+                .padding(6)
+                .background(Color.dash.secondaryBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        }
+        .padding(20)
+    }
+}
+

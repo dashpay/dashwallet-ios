@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7AAA3D6377574710B6A420AE /* IdentityVerifyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C51EA0FFB45F445599AE7057 /* IdentityVerifyService.swift */; };
+		C14B59948983452F8113CFCF /* IdentityCreditBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5BAF897476041FCA61DB38A /* IdentityCreditBalance.swift */; };
+		D0ABA907D39E44399DEF9A4F /* ConfirmUsernameRequestSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 952CB943CE454B259A8DA893 /* ConfirmUsernameRequestSheet.swift */; };
+		6A41B9080AA4477194582230 /* CreateInstantUsernameSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68980E7BED9847A8BDCFCC08 /* CreateInstantUsernameSheet.swift */; };
+		4EBBA2659FFA168700F2242C /* UsernameFundingPrivacyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4C98149B99AA3A48220D0D /* UsernameFundingPrivacyScreen.swift */; };
+		4836792999634AC6B1D00392 /* VerifyIdentityOfferSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E34597FC3444713A7A9B4C1 /* VerifyIdentityOfferSheet.swift */; };
 		F0CAB696BC154E7EB3EC221D /* ShieldedRecoveryControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C63088F44013AEC5D85B /* ShieldedRecoveryControllerTests.swift */; };
 		B16D9D3F361A448E8A9FEBAF /* ShieldedRecoveryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2ADF29244E649D8BE05FD93 /* ShieldedRecoveryController.swift */; };
 		E012FFCC6C3142B4B5869B72 /* ShieldedRecoveryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2ADF29244E649D8BE05FD93 /* ShieldedRecoveryController.swift */; };
@@ -1208,7 +1214,6 @@
 		B1700000B1700000B1700021 /* DEXOfflineToastModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1700000B1700000B1700002 /* DEXOfflineToastModifier.swift */; };
 		B3A1F2C4D5E6078901234568 /* ExtendedPublicKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A1F2C4D5E6078901234567 /* ExtendedPublicKeySheet.swift */; };
 		B3A1F2C4D5E6078901234569 /* ExtendedPublicKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A1F2C4D5E6078901234567 /* ExtendedPublicKeySheet.swift */; };
-		B420473EF13CB7EE5F339349 /* JoinDashPayReadinessScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97AA6C01B7CED63D37D3652B /* JoinDashPayReadinessScreen.swift */; };
 		B453B34B871E4125607DACDC /* NavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD6615F1246B5935365B05BD /* NavigationBar.swift */; };
 		5E1C0A0100000000000000F2 /* MerchantLogoPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1C0A0100000000000000F1 /* MerchantLogoPlaceholder.swift */; };
 		B56469D438692B0A0B771EA6 /* PinPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AC52AE587802170368F6177 /* PinPromptView.swift */; };
@@ -2159,6 +2164,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C51EA0FFB45F445599AE7057 /* IdentityVerifyService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IdentityVerifyService.swift; sourceTree = "<group>"; };
+		C5BAF897476041FCA61DB38A /* IdentityCreditBalance.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IdentityCreditBalance.swift; sourceTree = "<group>"; };
+		952CB943CE454B259A8DA893 /* ConfirmUsernameRequestSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConfirmUsernameRequestSheet.swift; sourceTree = "<group>"; };
+		68980E7BED9847A8BDCFCC08 /* CreateInstantUsernameSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CreateInstantUsernameSheet.swift; sourceTree = "<group>"; };
+		CD4C98149B99AA3A48220D0D /* UsernameFundingPrivacyScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameFundingPrivacyScreen.swift; sourceTree = "<group>"; };
+		7E34597FC3444713A7A9B4C1 /* VerifyIdentityOfferSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VerifyIdentityOfferSheet.swift; sourceTree = "<group>"; };
 		5798C63088F44013AEC5D85B /* ShieldedRecoveryControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedRecoveryControllerTests.swift; sourceTree = "<group>"; };
 		F2ADF29244E649D8BE05FD93 /* ShieldedRecoveryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedRecoveryController.swift; sourceTree = "<group>"; };
 		930BFA9B069540D4A5CAD79A /* ShieldedBalanceControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedBalanceControllerTests.swift; sourceTree = "<group>"; };
@@ -3246,7 +3257,6 @@
 		8E6FAA6524ACE5F315B57AC3 /* SendViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SendViewModel.swift; sourceTree = "<group>"; };
 		91F0B8B82F3FAB7C00E713AE /* KeysOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysOverviewView.swift; sourceTree = "<group>"; };
 		94606903417F75BE99D4B31C /* BIP70Error.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BIP70Error.swift; sourceTree = "<group>"; };
-		97AA6C01B7CED63D37D3652B /* JoinDashPayReadinessScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = JoinDashPayReadinessScreen.swift; sourceTree = "<group>"; };
 		97E3D9AE002847AABFDA5537 /* Pods-TodayExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.release.xcconfig"; path = "Target Support Files/Pods-TodayExtension/Pods-TodayExtension.release.xcconfig"; sourceTree = "<group>"; };
 		9A461F75E1E170FFE3294337 /* DWAvatarUploadClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DWAvatarUploadClient.swift; path = Networking/DWAvatarUploadClient.swift; sourceTree = "<group>"; };
 		9A52F6A39C711B1E955B7E3A /* QRCodeGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QRCodeGenerator.swift; sourceTree = "<group>"; };
@@ -7328,6 +7338,7 @@
 			isa = PBXGroup;
 			children = (
 				759609202C4553A400F3BF04 /* BuyCreditsViewController.swift */,
+				C5BAF897476041FCA61DB38A /* IdentityCreditBalance.swift */,
 			);
 			path = Credits;
 			sourceTree = "<group>";
@@ -7344,7 +7355,10 @@
 				754C27D02CC3C82300BA7B9F /* JoinDashPayInfoDialog.swift */,
 				754C27CE2CC3C7AB00BA7B9F /* MixDashDialog.swift */,
 				757514E42B1735370026AD8E /* JoinDashPayView.swift */,
-				97AA6C01B7CED63D37D3652B /* JoinDashPayReadinessScreen.swift */,
+				952CB943CE454B259A8DA893 /* ConfirmUsernameRequestSheet.swift */,
+				68980E7BED9847A8BDCFCC08 /* CreateInstantUsernameSheet.swift */,
+				CD4C98149B99AA3A48220D0D /* UsernameFundingPrivacyScreen.swift */,
+				7E34597FC3444713A7A9B4C1 /* VerifyIdentityOfferSheet.swift */,
 			);
 			path = CreateUsername;
 			sourceTree = "<group>";
@@ -7620,6 +7634,7 @@
 				82926C69F3BB675BEF1A1FFD /* DWProfileUpdateCoordinator.swift */,
 				EAA91E4239626E28125CC0E2 /* DWProfileUpdateBridge.swift */,
 				E950113F9E258B2F1CC0D50C /* DWContestedNameStatusService.swift */,
+				C51EA0FFB45F445599AE7057 /* IdentityVerifyService.swift */,
 				3FF3451257DC1D5B6DC2CE0E /* ShieldedIdentityFundingReadiness.swift */,
 			);
 			path = Identity;
@@ -11871,7 +11886,12 @@
 				A140F8C774E7518488729D67 /* BIP70PaymentService+App.swift in Sources */,
 				9E8A618E9D824AFFEDAC4F0A /* BIP70InteractiveCoordinator.swift in Sources */,
 				00B3E9708BF84A08409B431B /* BIP70PaymentOutputFactory.swift in Sources */,
-				B420473EF13CB7EE5F339349 /* JoinDashPayReadinessScreen.swift in Sources */,
+				7AAA3D6377574710B6A420AE /* IdentityVerifyService.swift in Sources */,
+				C14B59948983452F8113CFCF /* IdentityCreditBalance.swift in Sources */,
+				D0ABA907D39E44399DEF9A4F /* ConfirmUsernameRequestSheet.swift in Sources */,
+				6A41B9080AA4477194582230 /* CreateInstantUsernameSheet.swift in Sources */,
+				4EBBA2659FFA168700F2242C /* UsernameFundingPrivacyScreen.swift in Sources */,
+				4836792999634AC6B1D00392 /* VerifyIdentityOfferSheet.swift in Sources */,
 				FCDF0FF6DC442DBE3C9713FD /* DiagnosticLogExporter.swift in Sources */,
 				4720E26BFE56A4559C602ED5 /* ShieldedIdentityFundingReadiness.swift in Sources */,
 				D15607B6987D27ACDC844F9E /* DWAvatarUploadClient.swift in Sources */,

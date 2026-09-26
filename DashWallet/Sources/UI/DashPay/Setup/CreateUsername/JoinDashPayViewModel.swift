@@ -15,14 +15,38 @@
 //  limitations under the License.
 //
 
+import Combine
+import Foundation
+
+extension Notification.Name {
+    /// A username registration has been handed from the create screen to the
+    /// Home row. Its own event rather than a re-post of the registration
+    /// status: the status has not changed, the surface reporting it has.
+    static let DWUsernameRegistrationHandedOff = Notification.Name("DWUsernameRegistrationHandedOff")
+
+    /// The user acted on (or dismissed) the row's report on one surface, so
+    /// the records behind it changed. Home and More each hold their own row
+    /// and More caches its visibility in `CurrentUserProfileModel`; without
+    /// this, acknowledging a finished registration on Home left More's row up
+    /// until some unrelated refresh.
+    static let DWUsernameRegistrationReportChanged = Notification.Name("DWUsernameRegistrationReportChanged")
+}
+
 class JoinDashPayViewModel: ObservableObject {
     private let initialState: JoinDashPayState
     @Published private(set) var state: JoinDashPayState
     @Published private(set) var username: String = ""
-    
-    init(initialState: JoinDashPayState) {
+    /// Which of the three registration stages `.creating` and
+    /// `.creationFailed` refer to. Meaningless in every other state.
+    @Published private(set) var registrationStep: DWDPRegistrationState = .processingPayment
+
+    private var cancellableBag = Set<AnyCancellable>()
+
+    init(initialState: JoinDashPayState, username: String = "") {
         self.initialState = initialState
         self.state = initialState
+        self.username = username
+        observeRegistration()
     }
 
     @MainActor
@@ -34,7 +58,21 @@ class JoinDashPayViewModel: ObservableObject {
             return
         }
 
-        if let pending = identity.pendingContestedName {
+        if let report = registrationReport() {
+            // A registration this wallet started outranks everything else the
+            // row could say: it is the only surface reporting on it.
+            self.state = report.state
+            self.username = report.username
+            self.registrationStep = report.step
+        } else if let lost = UsernamePrefs.shared.lostContestUsername, !lost.isEmpty {
+            // The vote went against this wallet. Reported until the user acts
+            // on it — a lost request that silently became "request a username"
+            // again looked like the request had never been made. The two
+            // endings carry different advice, so they stay distinct here.
+            self.state = UsernamePrefs.shared.lostContestWasBlocked ? .blocked : .contested
+            self.username = lost
+        } else if let pending = DWContestedNameStatusService.shared.pendingLabel
+                    ?? identity.pendingContestedName {
             // Same-seed recovery reconstructs this bookmark from Platform.
             // Surface the real voting state instead of offering Join DashPay
             // for an identity that already has a submitted name.
@@ -53,6 +91,8 @@ class JoinDashPayViewModel: ObservableObject {
         }
     }
 
+    /// The identity-name load did not answer in time: offer the row as a retry
+    /// rather than leaving it spinning.
     @MainActor
     func finishLoadingAttempt() {
         if state == .loading { state = .retryLoading }
@@ -64,9 +104,197 @@ class JoinDashPayViewModel: ObservableObject {
         checkUsername()
     }
 
+    /// The X on the row, and the tap that acts on a finished registration.
+    ///
+    /// What "dismissed" means depends on what the row was showing. For a
+    /// registration report the record behind it is dropped — the user loses
+    /// nothing, a Core-funded attempt's recovery lock is persisted SDK-side
+    /// and the create screen still surfaces it through
+    /// `hasPendingRegistrationRecovery` on the next visit. For the call to
+    /// action it is the persisted per-wallet dismissal, as before.
     @MainActor
     func markAsDismissed() {
-        UsernamePrefs.shared.joinDashPayDismissed = true
+        let prefs = UsernamePrefs.shared
+        switch state {
+        case .creating, .creationFailed, .interrupted:
+            prefs.inFlightRegistrationUsername = nil
+            prefs.completedTileUsername = nil
+        case .approved:
+            // Acting on the success is also what settles the banner into
+            // `.registered`, the state a registered user's row rests in.
+            prefs.completedTileUsername = nil
+            prefs.joinDashPayDismissed = true
+        case .contested, .blocked:
+            // Acting on (or dismissing) the rejection is what retires it.
+            prefs.lostContestUsername = nil
+            prefs.lostContestWasBlocked = false
+        case .none, .loading, .retryLoading, .callToAction, .usernameRequired, .voting, .failed, .registered:
+            prefs.joinDashPayDismissed = true
+        }
         self.checkUsername()
+        NotificationCenter.default.post(name: .DWUsernameRegistrationReportChanged, object: nil)
+    }
+
+    // MARK: - Registration handoff
+
+    /// Records that the create screen has stepped aside for `username` and the
+    /// Home row now owns reporting it. Called from `performSubmit` once the
+    /// registration is actually running, which is after the PIN gate.
+    ///
+    /// The row keys off this record rather than off bridge activity alone,
+    /// because the bridge also carries registrations that keep their own
+    /// screen. A contested submission is the case that forces this: it stays
+    /// on the create screen through to the voting explanation, yet the label
+    /// the bridge reports for it is the *temporary companion* name, which is
+    /// not contested and so cannot be told apart by inspecting the label.
+    /// Without this gate the user would get a Home report and a blocking
+    /// screen for one operation.
+    @MainActor
+    static func markRegistrationHandedOff(username: String) {
+        let trimmed = username.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        UsernamePrefs.shared.inFlightRegistrationUsername = trimmed
+        UsernamePrefs.shared.completedTileUsername = nil
+        // A new attempt answers the previous rejection. The retry actions open
+        // this flow without dismissing it, and left in place it outranked the
+        // new request's voting state once the handoff record was settled — a
+        // rejection for one name reported over a request for another.
+        UsernamePrefs.shared.lostContestUsername = nil
+        UsernamePrefs.shared.lostContestWasBlocked = false
+        // Without this the row would wait for the registration's next phase
+        // change to notice the record, leaving Home showing the call to action
+        // for an attempt that is already running.
+        NotificationCenter.default.post(name: .DWUsernameRegistrationHandedOff, object: nil)
+    }
+
+    private struct RegistrationReport {
+        let state: JoinDashPayState
+        let username: String
+        let step: DWDPRegistrationState
+    }
+
+    /// What the row says about a registration handed off to it, or `nil`
+    /// when there is none to report.
+    @MainActor
+    private func registrationReport() -> RegistrationReport? {
+        let prefs = UsernamePrefs.shared
+        let bridge = DWIdentityRegistrationBridge.shared
+        let handedOff = prefs.inFlightRegistrationUsername
+
+        // Only the registration this row was handed (see
+        // `markRegistrationHandedOff`). Contested submissions and invitation
+        // claims travel the same bridge but keep their own screen, and must
+        // not raise a second report here.
+        if let username = bridge.currentUsername,
+           !username.isEmpty,
+           username == handedOff,
+           // Where the ATTEMPT was started, which the bridge stamps for every
+           // coordinator entry point — not where the last handoff happened.
+           // Invitation claims and username purchases reach the coordinator
+           // without a handoff, so the two are not the same thing: a stale
+           // handoff marker plus a same-label invitation finishing elsewhere
+           // was read here as this scope's own success.
+           bridge.currentAttemptScope == RegistrationAttemptScope.current {
+            if bridge.isCompleted {
+                return complete(username)
+            }
+            return RegistrationReport(
+                state: bridge.isFailed ? .creationFailed : .creating,
+                username: username,
+                step: bridge.currentState)
+        }
+
+        // Nothing is running. Either a finished registration is still waiting
+        // to be acted on, or an attempt was recorded and never came back.
+        if let completed = prefs.completedTileUsername, !completed.isEmpty {
+            return RegistrationReport(state: .approved, username: completed, step: .done)
+        }
+
+        guard let pending = prefs.inFlightRegistrationUsername, !pending.isEmpty else {
+            return nil
+        }
+
+        // A contested submission that is out for a vote is not an interrupted
+        // one. It looks like it here — the coordinator is idle, and the label
+        // is filtered out of `usernames` until the vote is won — and reporting
+        // it as interrupted offered a retry that would start (and pay for) a
+        // second registration for a name already in the contest. Checked
+        // before ownership: an app killed after the instant companion landed
+        // but before the flow finished has an owned name, the companion, that
+        // is not the one handed off. The bookmark means the request is in, so
+        // it settles the way a live completion would — as voting.
+        if DWContestedNameStatusService.shared.isPendingLabel(pending) {
+            return complete(pending)
+        }
+
+        // The attempt may well have landed while the app was dead — the
+        // registration runs in the coordinator and the last leg is Platform's,
+        // not ours. If the handed-off name now resolves as owned, report the
+        // success the user never got to see. That name only: any other owned
+        // label proves nothing about this attempt.
+        let identity = DWCurrentUserIdentityInfo.shared
+        if identity.hasIdentity,
+           identity.usernames.contains(where: { DWContestedNameStatusService.labelsMatch($0, pending) }) {
+            return complete(pending)
+        }
+
+        // Otherwise the honest answer is that we do not know how far it got:
+        // the coordinator is `.idle` after a relaunch and there is no step to
+        // claim. Resuming is the user's call — it re-enters the PIN gate,
+        // which must never fire on its own at launch.
+        return RegistrationReport(state: .interrupted, username: pending, step: .processingPayment)
+    }
+
+    /// The in-flight record becomes the completed one: the bridge drops
+    /// `currentUsername` once a registration is done, so without a record of
+    /// its own the success would be wiped by the next status notification
+    /// before the user ever saw it.
+    @MainActor
+    private func complete(_ username: String) -> RegistrationReport {
+        let prefs = UsernamePrefs.shared
+        prefs.inFlightRegistrationUsername = nil
+
+        // A contested submission "completes" when the network has accepted it
+        // for a vote — the name is not the user's until the vote says so.
+        // Reporting `.approved` announced "Your username has been successfully
+        // created" for a name nobody owns yet, and the row corrected itself to
+        // `.voting` a moment later. The `completedTileUsername` record would
+        // have outlived that too, offering "Edit profile" for the same name.
+        if DWContestedNameStatusService.shared.isPendingLabel(username) {
+            prefs.completedTileUsername = nil
+            return RegistrationReport(state: .voting, username: username, step: .done)
+        }
+
+        prefs.completedTileUsername = username
+        return RegistrationReport(state: .approved, username: username, step: .done)
+    }
+
+    /// Listens to the canonical `DWDashPayModel` notification rather than
+    /// subscribing to `DWIdentityRegistrationCoordinator.$phase` directly.
+    ///
+    /// The bridge exists precisely to serialise "mirror the state, then
+    /// announce it" — a second direct subscriber would race the mirror and
+    /// read a phase the cached fields have not caught up with. It is also the
+    /// signal `HomeViewModel` and `MainTabbarController` already act on, so
+    /// all three surfaces move on the same tick.
+    private func observeRegistration() {
+        let triggers: [Notification.Name] = [
+            .DWDashPayRegistrationStatusUpdated,
+            .DWUsernameRegistrationHandedOff,
+            .DWUsernameRegistrationReportChanged,
+            // Both records are scoped per wallet + network, so a switch
+            // changes which keys are read. Nothing recomputes them on its own.
+            SwiftDashSDKWalletState.activeWalletDidChangeNotification
+        ]
+        for name in triggers {
+            NotificationCenter.default.publisher(for: name)
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in
+                    MainActor.assumeIsolated {
+                        self?.checkUsername()
+                    }
+                }
+                .store(in: &cancellableBag)
+        }
     }
 }

@@ -18,9 +18,9 @@ import DashUIKit
 import SwiftUI
 import UIKit
 
-/// Governance submenu: the wallet's masternode-facing surfaces, reached from
-/// the main menu's "Governance" row. Groups Masternodes (moved here from
-/// Tools) with username Voting (moved here from the main menu).
+/// Governance submenu: the masternode operator's surfaces, reached from the
+/// main menu's "Governance" row in advanced mode. Username voting is not here:
+/// it has its own row on the main menu, available in every mode.
 struct GovernanceMenuScreen: View {
     private let vc: UINavigationController
 
@@ -76,10 +76,6 @@ struct GovernanceMenuScreen: View {
         switch destination {
         case .masternodes:
             showMasternodes()
-        #if DASHPAY
-        case .voting:
-            showVoting()
-        #endif
         case .none:
             break
         }
@@ -95,29 +91,4 @@ struct GovernanceMenuScreen: View {
     private func showMasternodes() {
         vc.pushViewController(MasternodesScreen.hostingController(popFrom: vc), animated: true)
     }
-
-    #if DASHPAY
-    private func showVoting() {
-        // Same wrapper as `showMasternodes` above, and for the same reasons.
-        // A bare hosting controller inherits this screen's hidden navigation
-        // bar (`BaseNavigationController.willShow` only restores it for a
-        // `NavigationBarDisplayable`), which left the voting screens with no
-        // back button and no way out — and silently dropped the `.toolbar`
-        // and `.navigationTitle` as well, since neither renders outside a
-        // navigation container.
-        let navController = vc
-        let popRoot: () -> Void = { [weak navController] in
-            _ = navController?.popViewController(animated: true)
-        }
-        let hosting = UIHostingController(
-            rootView: AnyView(
-                NavigationStack {
-                    UsernameVotingScreen(onClose: popRoot)
-                }
-            )
-        )
-        hosting.hidesBottomBarWhenPushed = true
-        vc.pushViewController(hosting, animated: true)
-    }
-    #endif
 }

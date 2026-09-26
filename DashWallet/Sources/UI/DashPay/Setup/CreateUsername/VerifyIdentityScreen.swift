@@ -26,7 +26,13 @@ public struct VerifyIdentityScreen: View {
     @State private var canContinue: Bool = false
     @State private var confirmUsernameRequest: Bool = false
     
-    @StateObject var viewModel: CreateUsernameViewModel
+    /// `url`'s `maxLength` in the `identityVerify` contract.
+    private static let maxURLLength = 128
+
+    /// The requested label this proof is for. A plain string: the screen is
+    /// reached both from the registration flow and from "Request details",
+    /// and neither owns a `CreateUsernameViewModel` the other can see.
+    let username: String
     var onConfirmed: (URL?) -> Void
     
     public var body: some View {
@@ -45,7 +51,7 @@ public struct VerifyIdentityScreen: View {
                     .foregroundColor(.dash.secondaryText)
 
                 HStack(spacing: 0) {
-                    let text = String.localizedStringWithFormat(NSLocalizedString("Please vote to approve my requested Dash username - %@", comment: "Usernames"), viewModel.username)
+                    let text = String.localizedStringWithFormat(NSLocalizedString("Please vote to approve my requested Dash username - %@", comment: "Usernames"), username)
                     
                     VStack(alignment: .leading, spacing: 0) {
                         Text(NSLocalizedString("Copy text", comment: ""))
@@ -114,11 +120,16 @@ public struct VerifyIdentityScreen: View {
                 ) {
                     let trimmed = link.trimmingCharacters(in: .whitespacesAndNewlines)
                     
-                    if let url = URL(string: trimmed), url.scheme != nil {
+                    // The contract's own pattern is `^https?://.*`, so a
+                    // link with any other scheme is rejected here rather than
+                    // after a PIN prompt and a failed state transition.
+                    if let url = URL(string: trimmed),
+                       let scheme = url.scheme?.lowercased(),
+                       scheme == "http" || scheme == "https" {
                         onConfirmed(url)
                     } else {
                         isInputError = true
-                        errorText = NSLocalizedString("Not a valid URL", comment: "Usernames")
+                        errorText = NSLocalizedString("Enter a link starting with http:// or https://", comment: "Usernames")
                     }
                 }
             }
@@ -132,9 +143,14 @@ public struct VerifyIdentityScreen: View {
         .onChange(of: link) { link in
             let trimmed = link.trimmingCharacters(in: .whitespacesAndNewlines)
             
-            if trimmed.count > 75 {
+            // 128, not a rounder number of our own: that is the `url` field's
+            // `maxLength` in the `identityVerify` contract, and anything
+            // longer is refused by Platform rather than by us.
+            if trimmed.count > Self.maxURLLength {
                 isInputError = true
-                errorText = NSLocalizedString("Maximum 75 characters", comment: "Usernames")
+                errorText = String.localizedStringWithFormat(
+                    NSLocalizedString("Maximum %ld characters", comment: "Usernames"),
+                    Self.maxURLLength)
                 canContinue = false
                 return
             }

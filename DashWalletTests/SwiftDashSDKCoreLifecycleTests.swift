@@ -1551,6 +1551,46 @@ final class JoinDashPayBannerPolicyTests: XCTestCase {
                 hasRegistrationInProgress: false))
     }
 
+    /// The regression this parameter exists for: the instant companion
+    /// registers, so the wallet "has a username", while the contested name it
+    /// was created alongside is still out for a vote. The row reports that
+    /// vote, so it must stay.
+    func testPendingVoteKeepsBannerAfterCompanionUsernameRegisters() {
+        XCTAssertTrue(
+            JoinDashPayBannerPolicy.shouldShow(
+                contextReady: true,
+                syncDone: true,
+                dismissed: false,
+                hasRegisteredUsername: true,
+                hasRegistrationInProgress: true,
+                hasVotePending: true))
+    }
+
+    /// Dismissal still wins on Home, which is the only surface with a close
+    /// control; More passes `dismissed: false` and so keeps the row.
+    func testDismissalHidesTheVotingBanner() {
+        XCTAssertFalse(
+            JoinDashPayBannerPolicy.shouldShow(
+                contextReady: true,
+                syncDone: true,
+                dismissed: true,
+                hasRegisteredUsername: true,
+                hasRegistrationInProgress: true,
+                hasVotePending: true))
+    }
+
+    /// A registered user with no vote pending keeps the row hidden — the
+    /// vote flag is the only thing that overrides an existing username.
+    func testRegisteredWalletWithoutVoteHidesBanner() {
+        XCTAssertFalse(
+            JoinDashPayBannerPolicy.shouldShow(
+                contextReady: true,
+                syncDone: true,
+                dismissed: false,
+                hasRegisteredUsername: true,
+                hasRegistrationInProgress: false))
+    }
+
     func testDismissalStorageIsScopedByNetworkAndWallet() {
         let testnetWalletA = JoinDashPayDismissalScope.storageKey(
             networkRawValue: WalletEnvironment.NetworkKind.testnet.rawValue,

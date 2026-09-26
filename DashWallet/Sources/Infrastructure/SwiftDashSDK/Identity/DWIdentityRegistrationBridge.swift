@@ -78,6 +78,30 @@ extension DWIdentityFundingSource {
     }
 }
 
+// MARK: - RegistrationAttemptScope
+
+/// The wallet and network a username registration belongs to.
+///
+/// `DWIdentityRegistrationCoordinator` and the bridge that mirrors it are
+/// process-global, while the records a registration leaves behind
+/// (`UsernamePrefs`) are per wallet and network. One label can legitimately
+/// exist in two scopes at once — the same name failing on mainnet and
+/// succeeding on testnet is routine for anyone testing — so a label alone
+/// never identifies an attempt. This is what an attempt is qualified by.
+struct RegistrationAttemptScope: Equatable {
+    let networkRawValue: Int
+    /// `nil` on an unsupported network, which then compares equal only to
+    /// another reading taken in the same state — enough, because a
+    /// registration cannot run there.
+    let walletIdHex: String?
+
+    static var current: RegistrationAttemptScope {
+        RegistrationAttemptScope(
+            networkRawValue: WalletEnvironment.networkKind.rawValue,
+            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+    }
+}
+
 @objc(DWIdentityRegistrationBridge)
 @MainActor
 @objcMembers
@@ -116,6 +140,24 @@ public final class DWIdentityRegistrationBridge: NSObject {
     /// attempt).
     @objc public private(set) var currentUsername: String?
 
+    /// Which wallet and network the attempt behind `currentUsername` was
+    /// STARTED on, stamped when the bridge first sees that attempt and left
+    /// alone for the rest of its life.
+    ///
+    /// The bridge mirrors every coordinator phase, so it carries attempts no
+    /// screen handed anywhere — an invitation claim and a username purchase
+    /// both reach the coordinator through `startCreateUsername`'s siblings and
+    /// set `currentUsername` without a handoff. A reader that qualified bridge
+    /// results by the last HANDOFF's scope therefore had no way to tell "the
+    /// attempt this wallet handed off" from "some other attempt running under
+    /// the same label", and a same-label registration finishing on another
+    /// network read as this one's success.
+    ///
+    /// Not re-stamped on later phases: a network switch mid-registration must
+    /// not move an attempt to the scope the user happens to be looking at.
+    /// Swift-only — the Obj-C surface has no use for it.
+    private(set) var currentAttemptScope: RegistrationAttemptScope?
+
     /// Last failure description, or nil if no failure recorded.
     @objc public private(set) var lastErrorMessage: String?
 
@@ -142,9 +184,50 @@ public final class DWIdentityRegistrationBridge: NSObject {
     /// a retry keeps the user's choice, reset on `.completed`.
     @objc public var pendingTemporaryUsername: String?
 
+    /// Proof-of-identity link the user chose to publish with a contested
+    /// submission, in the same shape as `pendingTemporaryUsername`: written by
+    /// the form right before submit, carried into the coordinator, cleared on
+    /// `.completed`. Android carries it the same way — the link is captured on
+    /// the request screen and published once the identity exists
+    /// (`CreateIdentityService`), inside the flow that already holds the
+    /// signer, so it costs no second PIN prompt.
+    /// The proof-of-identity link the user gave, together with the label they
+    /// gave it for. Paired deliberately: a link is a claim about one name, and
+    /// keeping the URL alone let an abandoned attempt hand its link to the next
+    /// submission — publishing, for a different username, a public document the
+    /// user had declined to create for it.
+    private var pendingVerification: (label: String, url: URL)?
+
+    /// Records `url` as the link for `label`, or clears the pending link when
+    /// `url` is nil.
+    @objc public func setPendingVerificationURL(_ url: URL?, forLabel label: String) {
+        guard let url else {
+            pendingVerification = nil
+            return
+        }
+        pendingVerification = (Self.verificationKey(label), url)
+    }
+
+    /// The link to hand to a submission of `username` that does not go
+    /// through `startCreateUsername` — an invitation claim calls the
+    /// coordinator directly, and without this the link captured on its form
+    /// was silently dropped. Same staleness rules as the bridge's own path.
+    func verificationURL(forSubmissionOf username: String) -> URL? {
+        sanitizedVerificationURL(for: username)
+    }
+
+    /// Labels compare the way DPNS treats them: trimmed and case-folded.
+    private static func verificationKey(_ label: String) -> String {
+        label.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
     // MARK: - Subscriptions
 
     private var coordinatorSubscription: AnyCancellable?
+    /// The phase behind the last `refreshFromCoordinator`, so a fresh attempt
+    /// can be told from another tick of the one already running — see
+    /// `currentAttemptScope`.
+    private var lastObservedPhase: DWIdentityRegistrationController.Phase?
 
     private override init() {
         super.init()
@@ -165,13 +248,15 @@ public final class DWIdentityRegistrationBridge: NSObject {
     ) {
         let source = preferredFundingSource
         let temporaryUsername = sanitizedTemporaryUsername(for: username)
-        Self.logger.info("🪪 IDENT-BRIDGE :: startCreateUsername username=\(username, privacy: .public) funding=\(source.logLabel, privacy: .public) temporary=\(temporaryUsername ?? "none", privacy: .public)")
+        let verificationURL = sanitizedVerificationURL(for: username)
+        Self.logger.info("🪪 IDENT-BRIDGE :: startCreateUsername username=\(username, privacy: .public) funding=\(source.logLabel, privacy: .public) temporary=\(temporaryUsername ?? "none", privacy: .public) verified=\(verificationURL != nil, privacy: .public)")
         Task { @MainActor in
             do {
                 let identityId = try await DWIdentityRegistrationCoordinator.shared.startCreateUsername(
                     username,
                     fundingSource: source,
-                    temporaryUsername: temporaryUsername)
+                    temporaryUsername: temporaryUsername,
+                    verificationURL: verificationURL)
                 let hex = identityId.map { String(format: "%02x", $0) }.joined()
                 completion(hex, nil)
             } catch {
@@ -255,6 +340,27 @@ public final class DWIdentityRegistrationBridge: NSObject {
         return temporary
     }
 
+    /// Same staleness rule as the companion: a link only belongs to a
+    /// contested submission, so anything left over from an abandoned attempt
+    /// is dropped rather than attached to an unrelated registration.
+    private func sanitizedVerificationURL(for username: String) -> URL? {
+        guard let pending = pendingVerification else { return nil }
+        // The link belongs to the label it was entered for. A submission of any
+        // other name — after the user went back and retyped, or abandoned the
+        // sheet — must not inherit it.
+        guard pending.label == Self.verificationKey(username) else {
+            Self.logger.warning("🪪 IDENT-BRIDGE :: dropping a verification link captured for another label before submitting \(username, privacy: .public)")
+            pendingVerification = nil
+            return nil
+        }
+        guard DWContestedNameStatusService.isContestedLabel(username) else {
+            Self.logger.warning("🪪 IDENT-BRIDGE :: dropping stale verification link for submission of \(username, privacy: .public)")
+            pendingVerification = nil
+            return nil
+        }
+        return pending.url
+    }
+
     /// Subscribe to the coordinator's published surface and mirror
     /// each transition into the cached @objc state + post the internal
     /// `stateChangedNotification`. `DWDashPayModel` is the sole
@@ -307,7 +413,21 @@ public final class DWIdentityRegistrationBridge: NSObject {
             isFailed = false
             isCompleted = false
         }
+        let previousUsername = currentUsername
+        let wasActive = lastObservedPhase?.isActive ?? false
+        lastObservedPhase = phase
         currentUsername = coord.currentUsername
+        if let running = coord.currentUsername, !running.isEmpty {
+            // An attempt begins where an inactive phase turns active — which
+            // covers a retry of the SAME label after a failure, possibly on a
+            // different wallet or network. A changed label is the other start,
+            // and a nil scope catches a bridge built mid-registration.
+            if (phase.isActive && !wasActive) || running != previousUsername || currentAttemptScope == nil {
+                currentAttemptScope = RegistrationAttemptScope.current
+            }
+        } else {
+            currentAttemptScope = nil
+        }
         lastErrorMessage = coord.lastErrorMessage
 
         // Reset preferredFundingSource to the safe default on
@@ -320,6 +440,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         if case .completed = phase {
             preferredFundingSource = .core
             pendingTemporaryUsername = nil
+            pendingVerification = nil
         }
 
         // Internal notification — DWDashPayModel observes this,
