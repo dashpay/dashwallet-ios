@@ -53,7 +53,6 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
     #if DASHPAY
     var isBackButtonHidden: Bool = false
-    private var invitationSetup: DWInvitationSetupState?
     private var avatarView: DWDPAvatarView!
     #else
     var isBackButtonHidden: Bool = true
@@ -142,20 +141,31 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     }
 
     #if DASHPAY
-    func handleDeeplink(_ url: URL, definedUsername: String?) {
+    /// Whether an invitation can be handled now: the redeem flow needs the
+    /// sync to be done. The root controller's link queue keeps invitations
+    /// until this is true, and asks again when the sync state changes.
+    @objc var isReadyForInvitations: Bool {
+        SyncingActivityMonitor.shared.state == .syncDone
+    }
+
+    /// `completion` runs once the invitation's screen has finished
+    /// presenting — the "already have a username" alert, or the redeem
+    /// screen's push — so the next deep link never presents over it.
+    @objc
+    func handleDeeplink(_ url: URL, definedUsername: String?, completion: @escaping () -> Void) {
         if DWInvitationService.shared.hasLocalIdentity {
             let title = NSLocalizedString("Username already found", comment: "")
             let message = NSLocalizedString("You cannot claim this invite since you already have a Dash username", comment: "")
             let alert = DPAlertViewController(icon: UIImage(named: "icon_invitation_error")!, title: title, description: message)
-            present(alert, animated: true, completion: nil)
+            present(alert, animated: true, completion: completion)
             return
         }
 
-        if SyncingActivityMonitor.shared.state != .syncDone {
-            let state = DWInvitationSetupState()
-            state.invitation = url
-            state.chosenUsername = definedUsername
-            invitationSetup = state
+        guard isReadyForInvitations else {
+            // The queue hands invitations over only once the sync is done;
+            // nothing can be shown for one before that.
+            DWLogger.log("INVITE handed over before the sync was done; nothing shown")
+            completion()
             return
         }
 
@@ -171,6 +181,11 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             dashPayModel: model.dashPayModel,
             initialLink: prefill,
             definedUsername: definedUsername)
+        if let transition = navigationController?.transitionCoordinator {
+            transition.animate(alongsideTransition: nil) { _ in completion() }
+        } else {
+            DispatchQueue.main.async(execute: completion)
+        }
     }
     #endif
 
@@ -696,14 +711,6 @@ extension HomeViewController: SyncingActivityMonitorObserver {
 
     func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
         if state == .syncDone {
-            #if DASHPAY
-            if let invitationSetup = invitationSetup, let invitation = invitationSetup.invitation {
-                handleDeeplink(invitation, definedUsername: invitationSetup.chosenUsername)
-                self.invitationSetup = nil
-                return
-            }
-            #endif
-
             presentCrowdNodeBalanceReminderIfNeeded()
         }
     }

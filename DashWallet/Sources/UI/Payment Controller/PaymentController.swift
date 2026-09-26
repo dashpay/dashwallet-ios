@@ -80,6 +80,36 @@ final class PaymentController: NSObject {
         paymentProcessor.reset()
         paymentProcessor.processPaymentInput(input)
     }
+
+    /// `performPayment(with:)` for a deep link: `presentationSettled` runs
+    /// once — when the first screen this payment shows has finished
+    /// presenting (the amount step, the confirmation, an error alert), or
+    /// when preparation ends without one (cancelled, or a failure with no
+    /// message). The link queue hands the next link over only then.
+    @objc(performPaymentWith:presentationSettled:)
+    public func performPayment(with input: DWPaymentInput, presentationSettled: @escaping () -> Void) {
+        self.presentationSettled = presentationSettled
+        performPayment(with: input)
+    }
+
+    private var presentationSettled: (() -> Void)?
+
+    private func settlePresentation() {
+        let settled = presentationSettled
+        presentationSettled = nil
+        settled?()
+    }
+
+    /// `settlePresentation` once `transition` (a push's coordinator) has
+    /// finished, or on the next run-loop turn when nothing is animating.
+    private func settlePresentation(after transition: UIViewControllerTransitionCoordinator?) {
+        guard presentationSettled != nil else { return }
+        if let transition {
+            transition.animate(alongsideTransition: nil) { [weak self] _ in self?.settlePresentation() }
+        } else {
+            DispatchQueue.main.async { [weak self] in self?.settlePresentation() }
+        }
+    }
 }
 
 extension PaymentController {
@@ -96,7 +126,9 @@ extension PaymentController {
 
     private func show(modalController: UIViewController) {
         precondition(presentationAnchor != nil)
-        presentationAnchor!.topController().present(modalController, animated: true)
+        presentationAnchor!.topController().present(modalController, animated: true) { [weak self] in
+            self?.settlePresentation()
+        }
     }
 }
 
@@ -128,8 +160,10 @@ extension PaymentController: DWPaymentProcessorDelegate {
         vc.hidesBottomBarWhenPushed = true
         vc.definesPresentationContext = true
         // vc.demoMode = self.demoMode; //TODO: demoMode
-        presentationAnchor!.navigationController?.pushViewController(vc, animated: true)
+        let navigation = presentationAnchor!.navigationController
+        navigation?.pushViewController(vc, animated: true)
         provideAmountViewController = vc
+        settlePresentation(after: navigation?.transitionCoordinator)
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
@@ -137,13 +171,16 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
         if let vc = confirmViewController {
             vc.update(with: paymentOutput)
+            settlePresentation()
         } else {
             let vc = ConfirmPaymentViewController(dataSource: paymentOutput, fiatCurrency: fiatCurrency)
             vc.delegate = self
 
             // TODO: demo mode
 
-            presentationAnchor?.topController().present(vc, animated: true)
+            presentationAnchor?.topController().present(vc, animated: true) { [weak self] in
+                self?.settlePresentation()
+            }
             confirmViewController = vc
         }
     }
@@ -152,6 +189,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
         provideAmountViewController?.hideActivityIndicator()
         delegate?.paymentControllerDidCancelTransaction(self)
         confirmViewController?.isSendingEnabled = true
+        settlePresentation()
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, didFailWithError error: Error?, title: String?, message: String?) {
@@ -159,6 +197,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
         // stay silent here. The DashSync DSErrorDomain special-case is gone — live
         // errors carry WalletSendService / SDK / BIP70 domains.
         guard let error else {
+            settlePresentation()
             return
         }
 
@@ -173,6 +212,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
     func paymentProcessor(_ processor: DWPaymentProcessor, didSendWithTxidWire txidWire: Data) {
         presentationAnchor?.topController().view.dw_hideProgressHUD()
+        settlePresentation()
 
         let finishBlock = {
             // The pop is for the LEGACY amount screen, which the redesigned

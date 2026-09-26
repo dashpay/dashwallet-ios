@@ -83,6 +83,18 @@ final class ConnectionsViewModel: ObservableObject {
     /// registration, which are already committing to the network.
     private var isResolvingRequest = false
 
+    /// Reports, once, when the request in flight has settled: its approval
+    /// sheet was published, it was refused, it failed, it completed without
+    /// a sheet, or a newer request superseded it. The deep-link queue hands
+    /// the next link over only then.
+    private var settlement: (() -> Void)?
+
+    private func settle() {
+        let settled = settlement
+        settlement = nil
+        settled?()
+    }
+
     init(
         dataSource: (any DashConnectDataSource)? = nil,
         featureUnavailable: Bool? = nil
@@ -100,7 +112,22 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     func onQRScanned(_ content: String) {
-        guard !featureUnavailable else { return }
+        onQRScanned(content, settled: nil)
+    }
+
+    /// `onQRScanned` for a deep link: `settled` runs once the request has
+    /// resolved as far as the screen — the approval sheet published, the
+    /// request refused or failed, or a state transition completed — or was
+    /// superseded by a newer one.
+    func onQRScanned(_ content: String, settled: (() -> Void)?) {
+        // A request still resolving is superseded below; it will publish
+        // nothing, so it is settled here.
+        settle()
+        settlement = settled
+        guard !featureUnavailable else {
+            settle()
+            return
+        }
 
         // A request the user is already looking at owns the screen until they
         // answer it. Both sheets count: `pendingRequest` presents the connection
@@ -125,6 +152,7 @@ final class ConnectionsViewModel: ObservableObject {
             } else {
                 approveError = refusal
             }
+            settle()
             return
         }
 
@@ -134,6 +162,7 @@ final class ConnectionsViewModel: ObservableObject {
                 text: NSLocalizedString("Finish the current DashConnect request first, then try again.",
                                         comment: "DashConnect: a second request arrived during key registration")
             )
+            settle()
             return
         }
 
@@ -158,6 +187,7 @@ final class ConnectionsViewModel: ObservableObject {
                     guard generation == requestGeneration else { return }
                     pendingLoginRequest = request
                     pendingRequest = connectionRequest
+                    settle()
                 case let .stateTransition(request):
                     guard generation == requestGeneration else { return }
                     isProcessingStateTransition = true
@@ -172,6 +202,7 @@ final class ConnectionsViewModel: ObservableObject {
                     case let .tokenPurchaseApprovalRequired(purchase):
                         pendingTokenPurchase = purchase
                     }
+                    settle()
                 }
             } catch {
                 guard generation == requestGeneration else { return }
@@ -182,6 +213,7 @@ final class ConnectionsViewModel: ObservableObject {
                         error.localizedDescription
                     )
                 )
+                settle()
             }
         }
     }
@@ -190,6 +222,11 @@ final class ConnectionsViewModel: ObservableObject {
     /// It carries exactly what the QR code encodes, so it takes the same path.
     func onURIReceived(_ uri: String) {
         onQRScanned(uri)
+    }
+
+    /// `onURIReceived` for the deep-link queue: see `onQRScanned(_:settled:)`.
+    func onURIReceived(_ uri: String, settled: @escaping () -> Void) {
+        onQRScanned(uri, settled: settled)
     }
 
     func approvePendingRequest() {

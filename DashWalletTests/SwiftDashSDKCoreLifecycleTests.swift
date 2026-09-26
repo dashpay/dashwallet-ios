@@ -196,21 +196,34 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         let decision = LaunchDecision(applicationState: .background)
         let first = try XCTUnwrap(URL(string: "dash:XfirstAddress"))
         let second = try XCTUnwrap(URL(string: "dash:XsecondAddress"))
+        let universal = try XCTUnwrap(URL(string: "https://invitations.dashpay.io/applink?du=x"))
         XCTAssertTrue(decision.holdIfPending(url: first))
-        XCTAssertTrue(decision.holdIfPending(url: second), "a later link replaces the earlier one")
+        XCTAssertTrue(decision.holdIfPending(url: second), "every link is kept, in order")
         let activity = NSUserActivity(activityType: NSUserActivityTypeBrowsingWeb)
+        activity.webpageURL = universal
         XCTAssertTrue(decision.holdIfPending(userActivity: activity))
+        XCTAssertFalse(decision.holdIfPending(userActivity: NSUserActivity(activityType: NSUserActivityTypeBrowsingWeb)),
+                       "an activity without a URL is nothing to keep")
 
         XCTAssertTrue(decision.takeAtActivation())
-        XCTAssertEqual(decision.takePendingURL(), second)
-        XCTAssertNil(decision.takePendingURL(), "replayed once")
-        XCTAssertTrue(decision.takePendingUserActivity() === activity)
-        XCTAssertNil(decision.takePendingUserActivity())
+        XCTAssertEqual(decision.takePendingLinks(), [first, second, universal])
+        XCTAssertEqual(decision.takePendingLinks(), [], "replayed once")
         XCTAssertFalse(decision.holdIfPending(url: first), "after the activation links are handled at once")
 
         let foreground = LaunchDecision(applicationState: .inactive)
         XCTAssertFalse(foreground.holdIfPending(url: first))
-        XCTAssertNil(foreground.takePendingURL())
+        XCTAssertEqual(foreground.takePendingLinks(), [])
+    }
+
+    /// A burst before the activation is bounded like the queue: the newest
+    /// `DeepLinkQueue.capacity` links are replayed, the rest counted.
+    func testLinksDeliveredWhileDeferredAreBoundedToTheNewest() throws {
+        let decision = LaunchDecision(applicationState: .background)
+        let links = try (1...25).map { try XCTUnwrap(URL(string: "dash:Xaddress\($0)")) }
+        links.forEach { XCTAssertTrue(decision.holdIfPending(url: $0)) }
+        XCTAssertEqual(decision.droppedPendingLinks, 15)
+        XCTAssertTrue(decision.takeAtActivation())
+        XCTAssertEqual(decision.takePendingLinks(), Array(links.suffix(DeepLinkQueue.capacity)))
     }
 
     /// While the launch decision is pending, the runtime refuses automatic

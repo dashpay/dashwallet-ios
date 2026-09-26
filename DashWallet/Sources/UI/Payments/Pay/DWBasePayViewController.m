@@ -67,7 +67,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 - (void)performScanQRCodeAction {
+    [self performScanQRCodeActionWithCompletion:^{
+    }];
+}
+
+- (void)performScanQRCodeActionWithCompletion:(void (^)(void))completion {
     if ([self.presentedViewController isKindOfClass:DWQRScanViewController.class]) {
+        completion();
         return;
     }
 
@@ -76,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     DWQRScanViewController *controller = [[DWQRScanViewController alloc] init];
     controller.model.delegate = self;
-    [self presentViewController:controller animated:YES completion:nil];
+    [self presentViewController:controller animated:YES completion:completion];
 }
 
 - (void)performPayToPasteboardAction {
@@ -105,6 +111,12 @@ NS_ASSUME_NONNULL_BEGIN
     DWPaymentInput *paymentInput = [self.payModel paymentInputWithURL:url];
 
     [self processPaymentInput:paymentInput];
+}
+
+- (void)performPayToURL:(NSURL *)url completion:(void (^)(void))completion {
+    DWPaymentInput *paymentInput = [self.payModel paymentInputWithURL:url];
+
+    [self.paymentController performPaymentWith:paymentInput presentationSettled:completion];
 }
 
 - (void)performPayToAddress:(NSString *)address amount:(uint64_t)amount {

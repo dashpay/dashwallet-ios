@@ -489,40 +489,71 @@ extension MainTabbarController {
     }
     #endif
 
+    // MARK: Deep links
+    //
+    // Entry points of the root controller's link queue, which hands links
+    // over one at a time: each dismisses whatever is presented and waits for
+    // that, performs the action, and reports back through the handler's own
+    // completion — once the screen it presented (or pushed) has finished
+    // its transition, or its preparation ended without one — so the next
+    // link never presents over an animation still in flight.
+
+    /// Whether the home screen can take an invitation now (sync done).
     @objc
-    public func performScanQRCodeAction() {
-        dismiss(animated: false, completion: nil)
-        selectedIndex = MainTabbarTabs.home.rawValue
-        homeController?.performScanQRCodeAction()
+    public var isReadyForInvitations: Bool {
+        homeController?.isReadyForInvitations ?? false
     }
 
     @objc
-    public func performPay(to url: URL) {
-        dismiss(animated: false, completion: nil)
-        selectedIndex = MainTabbarTabs.home.rawValue
-        homeController?.performPay(to: url)
+    public func performScanQRCodeAction(completion: @escaping () -> Void) {
+        afterDismissingPresented { [weak self] in
+            guard let self, let home = self.homeController else { return completion() }
+            self.selectedIndex = MainTabbarTabs.home.rawValue
+            home.performScanQRCodeAction(completion: completion)
+        }
+    }
+
+    @objc
+    public func performPay(to url: URL, completion: @escaping () -> Void) {
+        afterDismissingPresented { [weak self] in
+            guard let self, let home = self.homeController else { return completion() }
+            self.selectedIndex = MainTabbarTabs.home.rawValue
+            home.performPay(to: url, completion: completion)
+        }
     }
 
     /// Opens the Connections screen for a `dash-key:` / `dash-st:` link.
     ///
     /// The More tab's index moves with the DashPay layout, so it comes from
     /// `moreTabIndex` rather than from the tab enum.
+    /// `completion` settles when the request has resolved as far as the
+    /// Connections screen — its approval sheet published, or a refusal or
+    /// error shown — whether the screen was pushed for it or was already
+    /// on top (`ConnectionsViewModel.onURIReceived(_:settled:)`).
     @objc
-    public func openDashConnect(_ uri: String) {
-        dismiss(animated: false, completion: nil)
+    public func openDashConnect(_ uri: String, completion: @escaping () -> Void) {
+        afterDismissingPresented { [weak self] in
+            guard let self else { return completion() }
+            self.openDashConnectNow(uri, completion: completion)
+        }
+    }
 
-        guard let menuNav = menuNavigationController?.navigationController else { return }
+    private func openDashConnectNow(_ uri: String, completion: (() -> Void)? = nil) {
+        guard let menuNav = menuNavigationController?.navigationController else {
+            completion?()
+            return
+        }
 
         if let moreTabIndex {
             selectedIndex = moreTabIndex
         }
 
         if let connections = menuNav.topViewController as? DashConnectHostingController {
-            connections.handle(uri: uri)
+            connections.handle(uri: uri, completion: completion)
             return
         }
 
-        let controller = DashConnectHostingController(navigationController: menuNav, uri: uri)
+        let controller = DashConnectHostingController(navigationController: menuNav, uri: uri, completion: completion)
         controller.hidesBottomBarWhenPushed = true
         menuNav.pushViewController(controller, animated: true)
     }
@@ -541,12 +572,21 @@ extension MainTabbarController {
     
     #if DASHPAY
     @objc
-    public func handleDeeplink(_ url: URL, definedUsername: String?) {
-        dismiss(animated: false, completion: nil)
-        selectedIndex = MainTabbarTabs.home.rawValue
-        homeController?.handleDeeplink(url, definedUsername: definedUsername)
+    public func handleDeeplink(_ url: URL, definedUsername: String?, completion: @escaping () -> Void) {
+        afterDismissingPresented { [weak self] in
+            guard let self, let home = self.homeController else { return completion() }
+            self.selectedIndex = MainTabbarTabs.home.rawValue
+            home.handleDeeplink(url, definedUsername: definedUsername, completion: completion)
+        }
     }
     #endif
+
+    /// `dismiss` reports through its completion only when something was
+    /// presented; with nothing presented the body runs at once.
+    private func afterDismissingPresented(_ body: @escaping () -> Void) {
+        guard presentedViewController != nil else { return body() }
+        dismiss(animated: false, completion: body)
+    }
 }
 
 // MARK: MainMenuViewControllerDelegate
