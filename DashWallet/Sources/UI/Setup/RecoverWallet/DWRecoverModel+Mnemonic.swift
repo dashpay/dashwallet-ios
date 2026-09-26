@@ -102,20 +102,22 @@ final class RecoverImportRouting: NSObject {
         return shouldSetPin ? .deferUntilPinSet : .executeNow
     }
 
-    /// `resumingPartialImport`: the previous attempt of this same command
-    /// persisted the current network's wallet and failed afterwards
-    /// (`RecoverImportOutcome.failedAfterPersisting`) — "present" is then
-    /// that wallet, and the import is re-run to finish provisioning, not
-    /// completed around.
-    @objc(routeAtExecutionWithPresence:resumingPartialImport:)
+    /// `walletForPhrasePersisted`: the wallet the typed phrase derives for
+    /// the current network has its mnemonic stored (an earlier attempt of
+    /// this import persisted it and failed afterwards, or the same wallet
+    /// exists) — "present" is then that wallet, and the import is run
+    /// again: it resumes what is missing, or is a no-op. Read from the
+    /// keychain at execution, never remembered, so no earlier failure can
+    /// clear it. Without it, "present" is a wallet that landed meanwhile.
+    @objc(routeAtExecutionWithPresence:walletForPhrasePersisted:)
     static func atExecution(
         presence: WalletEnvironment.WalletPresence,
-        resumingPartialImport: Bool = false
+        walletForPhrasePersisted: Bool = false
     ) -> RecoverImportRoute {
         switch presence {
         case .unknown: return .retryUnreadable
         case .absent: return .importWallet
-        case .present: return resumingPartialImport ? .importWallet : .completeWithExistingWallet
+        case .present: return walletForPhrasePersisted ? .importWallet : .completeWithExistingWallet
         }
     }
 }

@@ -256,28 +256,26 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
     }
 
     /// Regression: the first attempt persisted the current network's wallet
-    /// and failed provisioning the other one. On Try Again the keychain
-    /// reads "present" — that is the half-provisioned wallet, so the import
-    /// is re-run (it resumes) rather than completed around; without the
-    /// resume flag "present" still means a wallet that landed meanwhile.
-    /// The host's verdict maps to the flag through the creator.
-    func testRetryAfterAPartialImportRerunsTheImportInsteadOfCompletingAroundIt() {
-        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, resumingPartialImport: true), .importWallet)
-        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, resumingPartialImport: false), .completeWithExistingWallet)
-        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .unknown, resumingPartialImport: true), .retryUnreadable,
-                       "an unreadable keychain still waits, even mid-resume")
-        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .absent, resumingPartialImport: true), .importWallet)
+    /// and failed provisioning the other one; the retry then failed for an
+    /// ordinary reason; the retry after that must still resume. The route
+    /// is derived from the keychain at each execution ("is the typed
+    /// phrase's own wallet stored?"), never from a remembered outcome, so
+    /// nothing in between can clear it: the same inputs give the same
+    /// route on every attempt. Without that wallet, "present" is a wallet
+    /// that landed meanwhile and setup completes into it.
+    func testRetryAfterAPartialImportRerunsTheImportWhateverHappenedInBetween() {
+        // Attempt 1: nothing stored yet — import (persists the wallet, then fails provisioning).
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .absent, walletForPhrasePersisted: false), .importWallet)
+        // Attempt 2: the phrase's wallet is stored — import again (resume). It fails for another reason.
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, walletForPhrasePersisted: true), .importWallet)
+        // Attempt 3: same inputs, same route — the ordinary failure changed nothing.
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, walletForPhrasePersisted: true), .importWallet)
 
-        struct OtherNetworkFailed: Error {}
-        XCTAssertEqual(
-            SwiftDashSDKWalletCreator.outcome(for: SwiftDashSDKHost.HostError.provisioningIncomplete(OtherNetworkFailed())),
-            .failedAfterPersisting)
-        XCTAssertEqual(
-            SwiftDashSDKWalletCreator.outcome(for: SwiftDashSDKHost.HostError.walletCreationFailed(OtherNetworkFailed())),
-            .failed)
-        XCTAssertEqual(
-            SwiftDashSDKWalletCreator.outcome(for: SwiftDashSDKHost.HostError.mnemonicPersistenceFailed(OtherNetworkFailed())),
-            .failed)
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .present, walletForPhrasePersisted: false), .completeWithExistingWallet,
+                       "a wallet that is not the phrase's own landed meanwhile")
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .unknown, walletForPhrasePersisted: true), .retryUnreadable,
+                       "an unreadable keychain still waits, even mid-resume")
+        XCTAssertEqual(RecoverImportRouting.atExecution(presence: .absent, walletForPhrasePersisted: true), .importWallet)
     }
 
     /// While the launch decision is pending, the runtime refuses automatic

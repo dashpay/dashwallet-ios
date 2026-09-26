@@ -733,21 +733,33 @@ final class SwiftDashSDKHost {
         mnemonic: String,
         handles: RuntimeHandles
     ) async throws -> ManagedPlatformWallet? {
+        guard let walletId = try Self.persistedWalletId(mnemonic: mnemonic, network: handles.network) else {
+            return nil
+        }
+        _ = try await handles.manager.loadFromPersistor()
+        return handles.manager.wallets[walletId]
+    }
+
+    /// The id of the wallet `mnemonic` derives for `network` when its
+    /// mnemonic is stored on this device, nil when it is not. The check an
+    /// import resumes on, and the one the recover flow asks before treating
+    /// "a wallet is present" as a finished recovery: derived from the phrase
+    /// and the keychain alone, so no earlier attempt has to be remembered.
+    nonisolated static func persistedWalletId(mnemonic: String, network: Network) throws -> Data? {
         let walletId: Data
         do {
-            walletId = try Wallet(mnemonic: mnemonic, network: handles.network).id
+            walletId = try Wallet(mnemonic: mnemonic, network: network).id
         } catch {
             throw HostError.walletCreationFailed(error)
         }
         do {
             _ = try WalletStorage().retrieveMnemonic(for: walletId)
+            return walletId
         } catch WalletStorageError.mnemonicNotFound {
             return nil
         } catch {
             throw HostError.mnemonicPersistenceFailed(error)
         }
-        _ = try await handles.manager.loadFromPersistor()
-        return handles.manager.wallets[walletId]
     }
 
     /// Outcome of `addWallet(mnemonic:isImported:)`. `Sendable` because it

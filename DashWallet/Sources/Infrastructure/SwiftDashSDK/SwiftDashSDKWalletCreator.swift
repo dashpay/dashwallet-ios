@@ -97,36 +97,52 @@ final class SwiftDashSDKWalletCreator: NSObject {
 
     /// `importWallet` with a verdict: `completion` runs on the main queue
     /// once the host has persisted the mnemonic and created the wallet on
-    /// every supported network, or once the import was refused or failed.
-    /// For the flows that must not report a step complete before the
-    /// wallet exists — the recover flow completes setup on it.
+    /// every supported network (`true`), or once the import was refused or
+    /// failed (`false`). For the flows that must not report a step complete
+    /// before the wallet exists — the recover flow completes setup on it.
+    /// A failure after the current network's wallet was persisted leaves
+    /// that wallet in place; the same import, run again, resumes from it
+    /// (`SwiftDashSDKHost.createOrImportWallet`).
     @objc(importWalletWithMnemonic:pin:network:completion:)
     static func importWallet(
         mnemonic: String,
         pin: String,
         network: BridgeNetwork,
-        completion: @escaping (RecoverImportOutcome) -> Void
+        completion: @escaping (Bool) -> Void
     ) {
         DispatchQueue.global(qos: .userInitiated).async {
-            let outcome = performCreate(
+            let succeeded = performCreate(
                 mnemonic: mnemonic,
                 pin: pin,
                 network: network,
                 isImported: true,
                 label: "Imported wallet")
-            DispatchQueue.main.async { completion(outcome) }
+            DispatchQueue.main.async { completion(succeeded) }
         }
     }
 
-    /// How a host failure reads to the recover flow: after
-    /// `provisioningIncomplete` the current network's wallet is persisted
-    /// and a re-run of the same import resumes from it; everything else
-    /// left nothing behind (`createAndPersist` rolls its own write back).
-    static func outcome(for error: Error) -> RecoverImportOutcome {
-        if case SwiftDashSDKHost.HostError.provisioningIncomplete = error {
-            return .failedAfterPersisting
+    /// Whether the wallet `mnemonic` derives for `network` has its mnemonic
+    /// stored on this device — the host's own resume check. The recover
+    /// flow asks this when the keychain says a wallet is present: the typed
+    /// phrase's own wallet means an import to resume (or a no-op re-run),
+    /// any other wallet means one that landed meanwhile. A read failure is
+    /// logged and reads as "not stored".
+    @objc(isWalletPersistedForMnemonic:network:)
+    static func isWalletPersisted(mnemonic: String, network: BridgeNetwork) -> Bool {
+        do {
+            return try SwiftDashSDKHost.persistedWalletId(mnemonic: mnemonic, network: appNetwork(for: network)) != nil
+        } catch {
+            logger.error("persisted-wallet lookup failed: \(String(describing: error), privacy: .public)")
+            return false
         }
-        return .failed
+    }
+
+    private static func appNetwork(for network: BridgeNetwork) -> Network {
+        switch network {
+        case .mainnet: return .mainnet
+        case .testnet: return .testnet
+        case .devnet: return .devnet
+        }
     }
 
     // MARK: - Background creation body
@@ -148,25 +164,20 @@ final class SwiftDashSDKWalletCreator: NSObject {
         network: BridgeNetwork,
         isImported: Bool,
         label: String
-    ) -> RecoverImportOutcome {
-        let appNetwork: Network
-        switch network {
-        case .mainnet: appNetwork = .mainnet
-        case .testnet: appNetwork = .testnet
-        case .devnet: appNetwork = .devnet
-        }
+    ) -> Bool {
+        let appNetwork = appNetwork(for: network)
 
         guard !mnemonic.isEmpty else {
             logger.error("\(label, privacy: .public): empty mnemonic — refusing")
-            return .failed
+            return false
         }
         guard !pin.isEmpty else {
             logger.error("\(label, privacy: .public): empty PIN — refusing")
-            return .failed
+            return false
         }
         guard Mnemonic.validate(mnemonic) else {
             logger.error("\(label, privacy: .public): mnemonic failed BIP39 validation — refusing")
-            return .failed
+            return false
         }
 
         do {
@@ -174,7 +185,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
             let seed = try Mnemonic.toSeed(mnemonic: mnemonic)
             guard seed.count == 64 else {
                 logger.error("\(label, privacy: .public): seed length invalid: \(seed.count, privacy: .public)")
-                return .failed
+                return false
             }
 
             let walletId = try createWalletOnHost(
@@ -187,10 +198,10 @@ final class SwiftDashSDKWalletCreator: NSObject {
 
             // Refresh the app-owned runtime now that wallet material is ready.
             SwiftDashSDKWalletRuntime.handleWalletMaterialChanged()
-            return .imported
+            return true
         } catch {
             logger.error("\(label, privacy: .public) threw: \(String(describing: error), privacy: .public)")
-            return outcome(for: error)
+            return false
         }
     }
 
@@ -225,19 +236,6 @@ final class SwiftDashSDKWalletCreator: NSObject {
             throw CreateError.hostCreateDidNotReturn
         }
         return try result.get()
-    }
-
-    /// Verdict of a recover import.
-    @objc(DWRecoverImportOutcome)
-    enum RecoverImportOutcome: Int {
-        /// The wallet exists on every supported network and is published.
-        case imported
-        /// Nothing was persisted.
-        case failed
-        /// The current network's wallet was persisted before provisioning
-        /// the other supported network failed; the same import, re-run,
-        /// resumes from it.
-        case failedAfterPersisting
     }
 
     private enum CreateError: LocalizedError {

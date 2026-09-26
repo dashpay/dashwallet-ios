@@ -42,17 +42,17 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)execute {
-    [self executeWithCompletion:^(DWRecoverImportOutcome outcome){
+    [self executeWithCompletion:^(BOOL succeeded){
     }];
 }
 
-- (void)executeWithCompletion:(void (^)(DWRecoverImportOutcome outcome))completion {
+- (void)executeWithCompletion:(void (^)(BOOL succeeded))completion {
     [self recoverWalletWithPhrase:self.phrase completion:completion];
 }
 
 #pragma mark - Private
 
-- (void)recoverWalletWithPhrase:(NSString *)phrase completion:(void (^)(DWRecoverImportOutcome outcome))completion {
+- (void)recoverWalletWithPhrase:(NSString *)phrase completion:(void (^)(BOOL succeeded))completion {
     [self importWalletIntoSwiftDashSDK:phrase completion:completion];
 
     [DWGlobalOptions sharedInstance].resyncingWallet = YES;
@@ -63,34 +63,49 @@ NS_ASSUME_NONNULL_BEGIN
     // DashSync's parallel SPV was retired in M6.
 }
 
-- (void)importWalletIntoSwiftDashSDK:(NSString *)phrase completion:(void (^)(DWRecoverImportOutcome outcome))completion {
+- (void)importWalletIntoSwiftDashSDK:(NSString *)phrase completion:(void (^)(BOOL succeeded))completion {
     if (phrase.length == 0) {
-        completion(DWRecoverImportOutcomeFailed);
+        completion(NO);
         return;
     }
 
     NSString *pin = [DWAuthenticationService shared].currentPin;
     if (pin.length == 0) {
-        completion(DWRecoverImportOutcomeFailed);
+        completion(NO);
         return;
     }
 
     DWSwiftDashSDKNetwork network;
-    if (DWWalletEnvironment.isMainnet) {
-        network = DWSwiftDashSDKNetworkMainnet;
-    }
-    else if (DWWalletEnvironment.isTestnet) {
-        network = DWSwiftDashSDKNetworkTestnet;
-    }
-    else if (DWWalletEnvironment.isDevnet) {
-        network = DWSwiftDashSDKNetworkDevnet;
-    }
-    else {
-        completion(DWRecoverImportOutcomeFailed); // unreachable: networkKind is total over the three cases
+    if (![self.class currentNetwork:&network]) {
+        completion(NO); // unreachable: networkKind is total over the three cases
         return;
     }
 
     [DWSwiftDashSDKWalletCreator importWalletWithMnemonic:phrase pin:pin network:network completion:completion];
+}
+
+- (BOOL)walletForPhraseIsPersisted {
+    DWSwiftDashSDKNetwork network;
+    if (self.phrase.length == 0 || ![self.class currentNetwork:&network]) {
+        return NO;
+    }
+    return [DWSwiftDashSDKWalletCreator isWalletPersistedForMnemonic:self.phrase network:network];
+}
+
++ (BOOL)currentNetwork:(DWSwiftDashSDKNetwork *)network {
+    if (DWWalletEnvironment.isMainnet) {
+        *network = DWSwiftDashSDKNetworkMainnet;
+    }
+    else if (DWWalletEnvironment.isTestnet) {
+        *network = DWSwiftDashSDKNetworkTestnet;
+    }
+    else if (DWWalletEnvironment.isDevnet) {
+        *network = DWSwiftDashSDKNetworkDevnet;
+    }
+    else {
+        return NO;
+    }
+    return YES;
 }
 
 @end

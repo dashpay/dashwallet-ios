@@ -55,11 +55,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 /// Where the progress HUD was shown, to hide it from the same view.
 @property (nullable, nonatomic, weak) UIView *recoverProgressHost;
 @property (nonatomic, assign) BOOL popGestureWasEnabled;
-/// The last attempt of `recoverWalletCommand` persisted the current
-/// network's wallet and failed provisioning the other one: the next
-/// execution re-runs the import (which resumes) instead of treating the
-/// wallet it left as a finished recovery.
-@property (nonatomic, assign) BOOL recoverImportLeftMaterial;
 
 @property (nonatomic, assign) BOOL launchingWasDeferred;
 
@@ -188,8 +183,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     DWRecoverWalletCommand *command = self.recoverWalletCommand;
     if (command != nil) {
         const DWWalletPresence presence = DWWalletEnvironment.walletPresence;
+        // Asked only when a wallet is present: is it the typed phrase's own
+        // (an earlier attempt persisted it and failed afterwards — the same
+        // import resumes) or another one that landed meanwhile?
+        const BOOL ownWalletPersisted = presence == DWWalletPresencePresent && [command walletForPhraseIsPersisted];
         const DWRecoverImportRoute route = [DWRecoverImportRouting routeAtExecutionWithPresence:presence
-                                                                          resumingPartialImport:self.recoverImportLeftMaterial];
+                                                                       walletForPhrasePersisted:ownWalletPersisted];
         if (route == DWRecoverImportRouteRetryUnreadable) {
             DWLog(@"SETUP :: wallet presence unreadable at recover execution; not importing");
             [self presentRecoverRetryAlertWithMessage:NSLocalizedString(@"Your wallet couldn't be read right now. Please try again.", nil)];
@@ -203,10 +202,13 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
             // runs, input and navigation are blocked (`beginRecoverImportBlocking`)
             // and the attempt token makes a completion for an earlier
             // attempt inert.
+            if (ownWalletPersisted) {
+                DWLog(@"SETUP :: the typed phrase's wallet is already stored; running the import again to resume it");
+            }
             const NSUInteger attempt = [self.recoverAttempts begin];
             [self beginRecoverImportBlocking];
             __weak typeof(self) weakSelf = self;
-            [command executeWithCompletion:^(DWRecoverImportOutcome outcome) {
+            [command executeWithCompletion:^(BOOL succeeded) {
                 __strong typeof(weakSelf) strongSelf = weakSelf;
                 if (strongSelf == nil) {
                     return;
@@ -216,17 +218,13 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
                     return;
                 }
                 [strongSelf endRecoverImportBlocking];
-                if (outcome != DWRecoverImportOutcomeImported) {
-                    // `failedAfterPersisting`: the current network's wallet
-                    // is stored; Try Again re-runs the same import, which
-                    // resumes from it and provisions only what is missing.
-                    strongSelf.recoverImportLeftMaterial = (outcome == DWRecoverImportOutcomeFailedAfterPersisting);
-                    DWLog(@"SETUP :: recover import did not complete (%@); keeping the command for a retry",
-                          strongSelf.recoverImportLeftMaterial ? @"wallet persisted, provisioning incomplete" : @"nothing persisted");
+                if (!succeeded) {
+                    // Whatever the failure left behind is found by the next
+                    // execution's own read (`walletForPhraseIsPersisted`).
+                    DWLog(@"SETUP :: recover import did not complete; keeping the command for a retry");
                     [strongSelf presentRecoverRetryAlertWithMessage:NSLocalizedString(@"Your wallet couldn't be recovered right now. Please try again.", nil)];
                     return;
                 }
-                strongSelf.recoverImportLeftMaterial = NO;
                 strongSelf.recoverWalletCommand = nil;
                 [strongSelf continueOrCompleteWalletSetup];
             }];
@@ -283,7 +281,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
                                             handler:^(UIAlertAction *action) {
                                                 __strong typeof(weakSelf) strongSelf = weakSelf;
                                                 strongSelf.recoverWalletCommand = nil;
-                                                strongSelf.recoverImportLeftMaterial = NO;
                                                 [strongSelf.navigationController popToViewController:strongSelf animated:YES];
                                             }]];
     [self.navigationController presentViewController:alert animated:YES completion:nil];
@@ -323,7 +320,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     }
     self.recoverController = controller;
     self.recoverWalletCommand = recoverCommand;
-    self.recoverImportLeftMaterial = NO;
 
     [DWGlobalOptions sharedInstance].walletNeedsBackup = NO;
 
