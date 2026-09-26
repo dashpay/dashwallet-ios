@@ -251,21 +251,73 @@ final class SwiftDashSDKHost {
 
     // MARK: - Wallet presence
 
-    /// True when at least one SDK wallet mnemonic is persisted in
-    /// `WalletStorage`'s keychain (global — the mnemonic is network-agnostic;
-    /// survives app reinstall). The app's sanctioned presence reader: FFI-free
-    /// (a plain SecItem query), valid before `start()` and from any thread —
-    /// the same posture as the KeyMigrator/WalletWiper storage reads. A
-    /// keychain read error reports as "no wallet" (logged); app-level checks
-    /// union this with DashSync presence (`WalletEnvironment.hasWallet`) for
-    /// the migration window.
-    nonisolated static func hasPersistedSDKWallet() -> Bool {
-        do {
-            return try !WalletStorage().listWalletIdsWithMnemonic().isEmpty
-        } catch {
-            logger.error("🪺 HOST :: wallet-presence keychain read failed: \(String(describing: error), privacy: .public)")
+    /// Three-way answer to "is an SDK wallet persisted?".
+    ///
+    /// The mnemonic items are `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`.
+    /// While protected data is unavailable — a background launch on a locked
+    /// device — the inventory is not read at all: whatever the Keychain
+    /// would answer says nothing about whether a wallet exists, and reading
+    /// it there once turned a locked launch into a fresh install (the
+    /// runtime stayed stopped and the root controller offered Create/Recover
+    /// over a funded wallet). A read that fails for another reason is
+    /// unknown too, with its status. Callers that decide something from
+    /// presence treat `.unknown` as "wait", never as "absent".
+    enum PersistedWalletPresence: Equatable {
+        /// At least one mnemonic is persisted.
+        case present
+        /// The Keychain answered definitively: no mnemonic items.
+        case absent
+        /// Not read (protected data unavailable, status nil) or the read
+        /// failed (its `OSStatus`, or nil for a non-Keychain error).
+        case unknown(OSStatus?)
+
+        var isUnknown: Bool {
+            if case .unknown = self { return true }
             return false
         }
+
+        /// Pure classification of an inventory read, so the mapping can be
+        /// tested without a Keychain. Only for a read made while protected
+        /// data was available.
+        static func classify(_ inventory: Result<[Data], Error>) -> PersistedWalletPresence {
+            switch inventory {
+            case .success(let walletIds):
+                return walletIds.isEmpty ? .absent : .present
+            case .failure(let error):
+                if case WalletStorageError.keychainError(let status) = error {
+                    return .unknown(status)
+                }
+                return .unknown(nil)
+            }
+        }
+    }
+
+    /// The app's sanctioned presence reader: FFI-free (a plain attributes-only
+    /// SecItem query), valid before `start()` and from any thread — the same
+    /// posture as the KeyMigrator/WalletWiper storage reads. Global: the
+    /// mnemonic is network-agnostic and survives app reinstall. Reads the
+    /// Keychain only while protected data is available; otherwise, and on a
+    /// read failure, reports `.unknown` (logged), not "no wallet".
+    nonisolated static func persistedSDKWalletPresence() -> PersistedWalletPresence {
+        guard WalletEnvironment.isProtectedDataAvailable() else {
+            logger.warning("🪺 HOST :: wallet presence not read: protected data unavailable (device locked)")
+            return .unknown(nil)
+        }
+        let presence = PersistedWalletPresence.classify(
+            Result { try WalletStorage().listWalletIdsWithMnemonic() })
+        if case .unknown(let status) = presence {
+            logger.error("🪺 HOST :: wallet-presence keychain read failed: status \(String(describing: status), privacy: .public)")
+        }
+        return presence
+    }
+
+    /// True when at least one SDK wallet mnemonic is persisted. Boolean view
+    /// of `persistedSDKWalletPresence()` for callers that only act on a
+    /// definite "present"; a locked-device read reads as `false` here, so a
+    /// caller that would create, wipe or offer setup on `false` must consult
+    /// the tri-state instead (`WalletEnvironment.walletPresence`).
+    nonisolated static func hasPersistedSDKWallet() -> Bool {
+        persistedSDKWalletPresence() == .present
     }
 
     /// Every persisted SDK wallet mnemonic, keyed by its stored walletId —

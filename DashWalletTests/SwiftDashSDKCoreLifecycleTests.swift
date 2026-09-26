@@ -117,6 +117,117 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertNil(WalletEnvironment.SelectableWalletMaterialMemo.load(from: defaults))
     }
 
+    // MARK: - Wallet presence
+
+    /// A failed Keychain inventory read is "unknown", not "absent": the
+    /// status is kept for the log, a non-Keychain error has none.
+    func testKeychainReadFailureClassifiesAsUnknownPresenceWithItsStatus() {
+        let failed = SwiftDashSDKHost.PersistedWalletPresence.classify(
+            .failure(WalletStorageError.keychainError(errSecInteractionNotAllowed)))
+
+        XCTAssertEqual(failed, .unknown(errSecInteractionNotAllowed))
+        XCTAssertTrue(failed.isUnknown)
+        XCTAssertEqual(
+            SwiftDashSDKHost.PersistedWalletPresence.classify(.failure(CoreLifecycleTestError.start)),
+            .unknown(nil))
+    }
+
+    func testInventoryReadClassifiesPresentAndAbsent() {
+        XCTAssertEqual(
+            SwiftDashSDKHost.PersistedWalletPresence.classify(.success([Data([0x01])])), .present)
+        XCTAssertEqual(SwiftDashSDKHost.PersistedWalletPresence.classify(.success([])), .absent)
+        XCTAssertFalse(SwiftDashSDKHost.PersistedWalletPresence.absent.isUnknown)
+    }
+
+    /// The app-level presence keeps "unknown" apart from both answers and
+    /// never consults the selectable-material derivation for it — that
+    /// derivation reads the same Keychain.
+    func testAppWalletPresenceHoldsUnknownWithoutDerivingMaterial() {
+        var derived = false
+        let presence = WalletEnvironment.walletPresence(
+            hostPresence: .unknown(nil),
+            hasSelectableMaterial: { derived = true; return true })
+
+        XCTAssertEqual(presence, .unknown)
+        XCTAssertFalse(derived)
+        XCTAssertEqual(
+            WalletEnvironment.walletPresence(hostPresence: .absent, hasSelectableMaterial: { true }),
+            .absent)
+    }
+
+    /// A present mnemonic counts only when this build can select it — the
+    /// rule `hasWallet` applies (devnet-only material in a shipping build
+    /// routes to setup, not to a `walletNotFound` dead end) — and a gate
+    /// whose own read failed answers nil, which is unknown, not present.
+    func testAppWalletPresenceAppliesTheSelectableMaterialGate() {
+        XCTAssertEqual(
+            WalletEnvironment.walletPresence(hostPresence: .present, hasSelectableMaterial: { true }),
+            .present)
+        XCTAssertEqual(
+            WalletEnvironment.walletPresence(hostPresence: .present, hasSelectableMaterial: { false }),
+            .absent)
+        XCTAssertEqual(
+            WalletEnvironment.walletPresence(hostPresence: .present, hasSelectableMaterial: { nil }),
+            .unknown)
+    }
+
+    // MARK: - Launch decision
+
+    /// A launch in the background defers the wallet work to the first
+    /// activation, exactly once; a foreground launch defers nothing.
+    func testBackgroundLaunchDefersTheWalletWorkToTheFirstActivationOnce() {
+        let background = LaunchDecision(applicationState: .background)
+        XCTAssertTrue(background.isDeferred)
+        XCTAssertTrue(background.takeAtActivation())
+        XCTAssertFalse(background.isDeferred)
+        XCTAssertFalse(background.takeAtActivation(), "later activations run nothing")
+
+        let foreground = LaunchDecision(applicationState: .inactive)
+        XCTAssertFalse(foreground.isDeferred)
+        XCTAssertFalse(foreground.takeAtActivation())
+        XCTAssertFalse(LaunchDecision(applicationState: .active).isDeferred)
+    }
+
+    /// A link delivered while the launch is deferred is kept and handed
+    /// back exactly once after the activation; a later link replaces an
+    /// earlier one; a foreground launch, and a deferred launch once taken,
+    /// keep nothing (the handler proceeds as usual).
+    func testLinksDeliveredWhileDeferredAreKeptAndReplayedOnce() throws {
+        let decision = LaunchDecision(applicationState: .background)
+        let first = try XCTUnwrap(URL(string: "dash:XfirstAddress"))
+        let second = try XCTUnwrap(URL(string: "dash:XsecondAddress"))
+        XCTAssertTrue(decision.holdIfPending(url: first))
+        XCTAssertTrue(decision.holdIfPending(url: second), "a later link replaces the earlier one")
+        let activity = NSUserActivity(activityType: NSUserActivityTypeBrowsingWeb)
+        XCTAssertTrue(decision.holdIfPending(userActivity: activity))
+
+        XCTAssertTrue(decision.takeAtActivation())
+        XCTAssertEqual(decision.takePendingURL(), second)
+        XCTAssertNil(decision.takePendingURL(), "replayed once")
+        XCTAssertTrue(decision.takePendingUserActivity() === activity)
+        XCTAssertNil(decision.takePendingUserActivity())
+        XCTAssertFalse(decision.holdIfPending(url: first), "after the activation links are handled at once")
+
+        let foreground = LaunchDecision(applicationState: .inactive)
+        XCTAssertFalse(foreground.holdIfPending(url: first))
+        XCTAssertNil(foreground.takePendingURL())
+    }
+
+    /// While the launch decision is pending, the runtime refuses automatic
+    /// kicks (the sync monitor's connectivity kick, a network change); once
+    /// the activation's wallet start releases the hold they pass again. A
+    /// launch that never raised the hold is unaffected.
+    func testAutomaticRuntimeKicksAreHeldWhileTheLaunchDecisionIsPending() {
+        XCTAssertTrue(SwiftDashSDKWalletRuntime.automaticStartAllowedForLaunchDecision("foreground launch"))
+
+        SwiftDashSDKWalletRuntime.holdAutomaticStartsUntilLaunchDecision()
+        XCTAssertFalse(SwiftDashSDKWalletRuntime.automaticStartAllowedForLaunchDecision("connectivity-return kick"))
+        XCTAssertFalse(SwiftDashSDKWalletRuntime.automaticStartAllowedForLaunchDecision("networkDidChange"))
+
+        SwiftDashSDKWalletRuntime.releaseAutomaticStartsForLaunchDecision()
+        XCTAssertTrue(SwiftDashSDKWalletRuntime.automaticStartAllowedForLaunchDecision("startIfReady"))
+    }
+
     func testRestartPropagatesStartFailureAndAlwaysResetsBusyState() async {
         var events: [String] = []
         var restartingStates: [Bool] = []

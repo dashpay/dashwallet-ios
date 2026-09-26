@@ -57,6 +57,71 @@ final class SerialAsyncLifecycleQueue {
     }
 }
 
+/// When the launch-time wallet work — the key migration, the runtime start
+/// and the root controller's decision — runs.
+///
+/// At a launch in the background (a BGAppRefresh launch, always on a locked
+/// device) nothing is decided: the mnemonics are readable only when the
+/// device is unlocked, and reading presence there once turned a funded wallet
+/// into a fresh install. The work runs once, at the first foreground
+/// activation, which implies an unlocked device. A foreground launch runs it
+/// at launch, as before. Separated from `AppDelegate` so the one-shot rule
+/// is testable.
+@objc(DWLaunchDecision)
+final class LaunchDecision: NSObject {
+    /// True until the deferred work has run.
+    @objc private(set) var isDeferred: Bool
+
+    @objc init(applicationState: UIApplication.State) {
+        isDeferred = applicationState == .background
+    }
+
+    /// The first activation while deferred returns true, exactly once; every
+    /// later activation, and every activation of a launch that was not
+    /// deferred, returns false.
+    @objc func takeAtActivation() -> Bool {
+        guard isDeferred else { return false }
+        isDeferred = false
+        return true
+    }
+
+    // MARK: Links that arrive while deferred
+
+    /// A payment URL or an invitation link (universal or scheme) can bring
+    /// the process to the foreground, and it is delivered before the
+    /// activation that installs the real root; with the placeholder still
+    /// up there is nothing to hand it to. It is kept here and replayed once
+    /// the root exists. One of each: a later link replaces an earlier one,
+    /// as it would have on a normal launch.
+    @objc private(set) var pendingURL: URL?
+    @objc private(set) var pendingUserActivity: NSUserActivity?
+
+    /// True when the launch is still deferred and the link was kept.
+    @objc(holdURLIfPending:)
+    func holdIfPending(url: URL) -> Bool {
+        guard isDeferred else { return false }
+        pendingURL = url
+        return true
+    }
+
+    @objc(holdUserActivityIfPending:)
+    func holdIfPending(userActivity: NSUserActivity) -> Bool {
+        guard isDeferred else { return false }
+        pendingUserActivity = userActivity
+        return true
+    }
+
+    @objc func takePendingURL() -> URL? {
+        defer { pendingURL = nil }
+        return pendingURL
+    }
+
+    @objc func takePendingUserActivity() -> NSUserActivity? {
+        defer { pendingUserActivity = nil }
+        return pendingUserActivity
+    }
+}
+
 /// Which readiness each refresh trigger is allowed to elide a rebuild on.
 ///
 /// Separated from the runtime so the routing can be exercised without a live
@@ -215,6 +280,42 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         dispatchOnPipeline { shared.enqueueRefresh(trigger: .startIfReady) }
     }
 
+    // MARK: - Launch decision hold
+
+    /// While a background launch's decision is pending (`LaunchDecision`),
+    /// every automatic kick — `startIfReady`, the connectivity-return kick,
+    /// a network-change notification, a material change — is refused here,
+    /// at the funnel, instead of being gated in each caller: a start before
+    /// the first activation would wait on a migrator that has not been
+    /// asked to run and end in a stopped runtime with a transient error.
+    /// `AppDelegate` raises the hold at a background launch and lowers it in
+    /// its launch-time wallet start, so the hold never outlives the
+    /// decision. Not consulted by `BackgroundRefreshCoordinator`'s own
+    /// start (it owns the runtime it brings up and tears it down) nor by the
+    /// interactive operations (switches, wipes, Try Again), which only run
+    /// after activation.
+    private static var automaticStartsHeldForLaunchDecision = false
+    private static var loggedHeldAutomaticStart = false
+
+    @objc static func holdAutomaticStartsUntilLaunchDecision() {
+        automaticStartsHeldForLaunchDecision = true
+        loggedHeldAutomaticStart = false
+    }
+
+    @objc static func releaseAutomaticStartsForLaunchDecision() {
+        automaticStartsHeldForLaunchDecision = false
+    }
+
+    /// True when an automatic kick may proceed; logs the first refusal.
+    static func automaticStartAllowedForLaunchDecision(_ trigger: String) -> Bool {
+        guard automaticStartsHeldForLaunchDecision else { return true }
+        if !loggedHeldAutomaticStart {
+            loggedHeldAutomaticStart = true
+            DWLogger.log("RUNTIME \(trigger) held: the launch decision is pending until the app becomes active")
+        }
+        return false
+    }
+
     /// Explicit recovery from a failed database open. Waits for teardown and
     /// retries the whole start on the same serial queue as switches and wipes.
     func retryWalletPreparation() async {
@@ -237,6 +338,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// owns the runtime or does not.
     nonisolated static func startIfReadyWhenLifecycleIdle() {
         dispatchOnPipeline {
+            guard automaticStartAllowedForLaunchDecision("connectivity-return kick") else { return }
             shared.enqueue {
                 guard WalletLifecycleTransitionState.shared.phase == .idle else {
                     Self.logger.info(
@@ -664,6 +766,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     }
 
     private func enqueueRefresh(trigger: RefreshTrigger) {
+        guard Self.automaticStartAllowedForLaunchDecision(trigger.rawValue) else { return }
         enqueue { [weak self] in
             // Automatic kicks (including material-change notifications) must
             // leave Help and its unsent draft intact. Re-read on the serial
@@ -746,9 +849,24 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // re-triggers a refresh (the creator's and migrator's
             // handleWalletMaterialChanged) — and the migrator is awaited
             // above, so a legacy-upgrade launch has its mnemonic by this line.
-            guard WalletEnvironment.hasSDKWallet else {
+            //
+            // Only a definite "present" starts. "Unknown" (protected data
+            // unavailable, or the read failed) is left stopped like "absent"
+            // — a launch in the background never reaches this line
+            // (`LaunchDecision`), so it is logged apart, as the diagnosis it
+            // is, and the next start request re-reads.
+            switch SwiftDashSDKHost.persistedSDKWalletPresence() {
+            case .present:
+                break
+            case .absent:
                 PlatformAddressSyncCoordinator.shared.stopShieldedRecoveryMonitoring()
                 Self.logger.info("🧭 RUNTIME :: no SDK wallet persisted; leaving runtime stopped for \(network.rawValue, privacy: .public)")
+                DWLogger.log("RUNTIME no SDK wallet persisted; leaving runtime stopped for \(network.rawValue)")
+                return
+            case .unknown(let status):
+                PlatformAddressSyncCoordinator.shared.stopShieldedRecoveryMonitoring()
+                Self.logger.warning("🧭 RUNTIME :: wallet presence unreadable (keychain status \(String(describing: status), privacy: .public)); leaving runtime stopped for \(network.rawValue, privacy: .public)")
+                DWLogger.log("RUNTIME wallet presence unreadable (keychain status \(String(describing: status))); leaving runtime stopped for \(network.rawValue)")
                 return
             }
 

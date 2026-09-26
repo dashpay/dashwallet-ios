@@ -23,6 +23,7 @@
 
 #import "DWInitialViewController.h"
 #import "DWVersionManager.h"
+#import "UIColor+DWStyle.h"
 #import "DWWindow.h"
 #import "DWURLParser.h"
 #import "dashwallet-Swift.h"
@@ -59,6 +60,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// dispatcher, lifecycle (the UNUserNotificationCenter delegate), router,
 /// and the transaction producer.
 @property (nonatomic, strong) DWNotificationsBootstrap *notifications;
+
+/// Whether the launch-time wallet work still waits for the first activation.
+@property (nonatomic, strong) DWLaunchDecision *launchDecision;
 
 @end
 
@@ -166,9 +170,6 @@ NS_ASSUME_NONNULL_BEGIN
     // so on a fresh install it must not race the migration that creates the table.
     [SwapTrackingServiceObjcWrapper start];
 
-    // Kick off the SwiftDashSDK key migration and app-owned runtime early.
-    // The runtime wallet is restored from app-owned Keychain state,
-    // not from a SwiftData wallet store.
 #ifdef DEBUG
     // QA fixture: fabricate DashSync's legacy keychain layout when either
     // LEGACY_KEYCHAIN_MNEMONIC or LEGACY_KEYCHAIN_INVALID=1 is set in the
@@ -176,17 +177,113 @@ NS_ASSUME_NONNULL_BEGIN
     // DEBUG builds only.
     [DWSwiftDashSDKKeyMigrator debugInstallLegacyFixtureIfRequested];
 #endif
-    [DWSwiftDashSDKKeyMigrator migrateIfNeeded];
     [DWSwiftDashSDKWalletRuntime startObservingNetworkChanges];
-    [DWSwiftDashSDKWalletRuntime startIfReady];
 
-    [self performNormalStartWithLaunchOptions:launchOptions];
-    
+    // A launch in the background (BGAppRefresh) happens on a locked device:
+    // the mnemonics are unreadable, so "no wallet" would describe the lock,
+    // not the wallet, and this process would later be brought to the
+    // foreground onto Create/Recover over a funded wallet. Decide nothing
+    // now: a neutral placeholder is the root, and the key migration, the
+    // runtime start and the root decision run once, on the first activation
+    // (`applicationDidBecomeActive:`), which implies an unlocked device. A
+    // foreground launch runs them here, as before.
+    self.launchDecision = [[DWLaunchDecision alloc] initWithApplicationState:application.applicationState];
+    if (self.launchDecision.isDeferred) {
+        DWLog(@"LAUNCH background launch; deferring key migration, runtime start and the root decision until the app becomes active");
+        // Lifecycle observers (the sync monitor's connectivity kick, a
+        // network-change notification) may ask the runtime to start before
+        // the activation; the runtime refuses them until `startWalletServices`.
+        [DWSwiftDashSDKWalletRuntime holdAutomaticStartsUntilLaunchDecision];
+        self.window.rootViewController = [self launchPlaceholderController];
+    }
+    else {
+        [self startWalletServices];
+        DWInitialViewController *controller = [[DWInitialViewController alloc] init];
+        self.window.rootViewController = controller;
+    }
+    [self setupDashWalletComponentsWithOptions:launchOptions];
+
     NSParameterAssert(self.window.rootViewController);
-    
+
     [self.window makeKeyAndVisible];
 
     return YES;
+}
+
+/// Kick off the SwiftDashSDK key migration and app-owned runtime. The
+/// runtime wallet is restored from app-owned Keychain state, not from a
+/// SwiftData wallet store.
+- (void)startWalletServices {
+    [DWSwiftDashSDKWalletRuntime releaseAutomaticStartsForLaunchDecision];
+    [DWSwiftDashSDKKeyMigrator migrateIfNeeded];
+    [DWSwiftDashSDKWalletRuntime startIfReady];
+}
+
+/// The launch screen, shown while a background launch waits for its first
+/// activation: it decides nothing and reads nothing.
+- (UIViewController *)launchPlaceholderController {
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"LaunchScreen" bundle:nil];
+    UIViewController *controller = [storyboard instantiateInitialViewController];
+    if (controller == nil) {
+        controller = [[UIViewController alloc] init];
+        controller.view.backgroundColor = [UIColor dw_backgroundColor];
+    }
+    return controller;
+}
+
+/// The deferred half of a background launch, once: start the wallet
+/// services and replace the placeholder with the real root.
+- (void)completeDeferredLaunchIfNeeded {
+    if (![self.launchDecision takeAtActivation]) {
+        return;
+    }
+    DWLog(@"LAUNCH app active after a background launch; running the deferred key migration, runtime start and root decision");
+    [self startWalletServices];
+    DWInitialViewController *controller = [[DWInitialViewController alloc] init];
+    // The root presents the lock screen from its own become-active observer,
+    // which this activation has already passed: mark it deferred, so it
+    // performs that step on appearance (the same path a root installed
+    // after onboarding takes).
+    [controller setLaunchingAsDeferredController];
+    self.window.rootViewController = controller;
+
+    // A link that brought the process to the foreground arrived before this
+    // root existed; hand it to the initial controller now. Not through
+    // `application:openURL:options:`: its wallet gate reads presence at this
+    // very moment, when the key migration was only just enqueued and an
+    // upgrader's wallet has not landed, and would drop the link. The initial
+    // controller keeps it until its root controller exists, and the root
+    // controller until a wallet is presented and unlocked.
+    NSURL *pendingURL = [self.launchDecision takePendingURL];
+    if (pendingURL != nil) {
+        DWLog(@"LAUNCH replaying a link kept during the deferred launch (scheme %@)", pendingURL.scheme);
+        [self deliverReplayedURL:pendingURL toInitialController:controller];
+    }
+#if DASHPAY
+    NSUserActivity *pendingActivity = [self.launchDecision takePendingUserActivity];
+    NSURL *pendingActivityURL = pendingActivity.webpageURL;
+    if (pendingActivityURL != nil) {
+        DWLog(@"LAUNCH replaying a universal link kept during the deferred launch (host %@)", pendingActivityURL.host);
+        [controller handleDeeplink:pendingActivityURL];
+    }
+#endif
+}
+
+/// The replayed link, routed as the handlers route a live one but without
+/// the wallet gate (`DWURLParser.allowsURLHandling`), which cannot answer
+/// yet; malformed links are still refused.
+- (void)deliverReplayedURL:(NSURL *)url toInitialController:(DWInitialViewController *)controller {
+#if DASHPAY
+    if ([DWInvitationLinkNormalizer isInvitationURL:url]) {
+        [controller handleDeeplink:url];
+        return;
+    }
+#endif
+    if (![DWURLParser canHandleURL:url]) {
+        DWLog(@"LAUNCH replayed link is not a Dash URL (scheme %@); dropped", url.scheme);
+        return;
+    }
+    [controller handleURL:url];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
@@ -211,6 +308,10 @@ NS_ASSUME_NONNULL_BEGIN
     //
     // When adding any logic here mind the migration process
     //
+
+    // A background launch decided nothing; the first activation runs the
+    // launch-time wallet work (see `didFinishLaunching`).
+    [self completeDeferredLaunchIfNeeded];
 
     // Badge reset and delivered-notification clearing live in
     // DWNotificationsBootstrap's NotificationLifecycle, which observes
@@ -249,6 +350,12 @@ NS_ASSUME_NONNULL_BEGIN
     if (url == nil || ![DWInvitationLinkNormalizer isInvitationURL:url]) {
         return NO;
     }
+    // Delivered while a background launch still waits for its activation:
+    // kept, and replayed once the real root is installed.
+    if ([self.launchDecision holdUserActivityIfPending:userActivity]) {
+        DWLog(@"LAUNCH universal link kept until the deferred launch completes");
+        return YES;
+    }
     DWInitialViewController *controller = (DWInitialViewController *)self.window.rootViewController;
     if ([controller isKindOfClass:DWInitialViewController.class]) {
         [controller handleDeeplink:url];
@@ -261,6 +368,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    // Delivered while a background launch still waits for its activation:
+    // kept, and replayed through this method once the real root is installed.
+    // Only the scheme is logged: an invitation link carries a bearer key.
+    if ([self.launchDecision holdURLIfPending:url]) {
+        DWLog(@"LAUNCH link kept until the deferred launch completes (scheme %@)", url.scheme);
+        return YES;
+    }
 #if DASHPAY
     // dashpay://invite (and pasted-transport) invitation links open the
     // redeem flow; every other scheme falls through to DWURLParser.
@@ -310,13 +424,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark - Private
-
-- (void)performNormalStartWithLaunchOptions:(NSDictionary *)launchOptions {
-    DWInitialViewController *controller = [[DWInitialViewController alloc] init];
-    self.window.rootViewController = controller;
-
-    [self setupDashWalletComponentsWithOptions:launchOptions];
-}
 
 - (void)setupDashWalletComponentsWithOptions:(NSDictionary *)launchOptions {
     // TODO_outdated: bitcoin protocol/payment protocol over multipeer connectivity
