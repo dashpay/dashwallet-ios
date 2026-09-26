@@ -102,10 +102,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)handleURL:(NSURL *)url {
     // `application:openURL:` is delivered after `didFinishLaunching` has made
     // the window key, so `viewDidLoad` has normally already built the root
-    // controller. What is left is onboarding still holding the screen (the
-    // carousel, or a reinstall's Keep/Delete choice) with the root controller
-    // not yet in existence. The link waits there, like a deeplink does,
-    // instead of being dropped.
+    // controller. What is left is onboarding still holding the screen: a
+    // reinstall keeps the wallet in the Keychain, so `allowsURLHandling`
+    // passes while the Keep/Delete choice runs and the root controller does
+    // not exist yet. The link waits there, like a deeplink does, instead of
+    // being dropped.
     if (self.rootController) {
         [self.rootController handleURL:url];
     }

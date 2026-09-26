@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWURLParser : NSObject
 
++ (BOOL)allowsURLHandling;
 + (BOOL)canHandleURL:(NSURL *)url;
 
 + (nullable DWURLAction *)actionForURL:(NSURL *)url;
