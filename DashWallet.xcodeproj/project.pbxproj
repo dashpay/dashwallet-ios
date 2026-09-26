@@ -30,6 +30,7 @@
 		02EED2FC7EAC55B96ECEAB01 /* MainThreadStallMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C18FCF827D815007BAEB01 /* MainThreadStallMonitor.swift */; };
 		0308E777B29CC6DE1DB30FDD /* PlatformSyncStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A58BF094C42E410DD1A71B6 /* PlatformSyncStatusScreen.swift */; };
 		0438F3D117619B14594F95E6 /* DashConnectUriTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A7CAFFF191922CBF6075212 /* DashConnectUriTests.swift */; };
+		D11E51A0C0DE000000000006 /* ConnectionsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D11E51A0C0DE000000000007 /* ConnectionsViewModelTests.swift */; };
 		06132521E7B4D21B4A1597E7 /* PlatformSendExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DCDC3A2B92601BB1E61FD9 /* PlatformSendExecutor.swift */; };
 		06E16A070A3C48883BBDA137 /* BIP70InteractiveCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36BCF99A4D30077C9C9B0EB /* BIP70InteractiveCoordinator.swift */; };
 		07B6BD15F525AAF000B53162 /* AddContactScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3498B2E247B2CADBF02DC0B1 /* AddContactScreen.swift */; };
@@ -2478,6 +2479,7 @@
 		2A7A7C1E234B79B700451078 /* DWLocalCurrencyTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyTableViewCell.h; sourceTree = "<group>"; };
 		2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyTableViewCell.m; sourceTree = "<group>"; };
 		2A7CAFFF191922CBF6075212 /* DashConnectUriTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DashConnectUriTests.swift; path = DashConnect/DashConnectUriTests.swift; sourceTree = "<group>"; };
+		D11E51A0C0DE000000000007 /* ConnectionsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ConnectionsViewModelTests.swift; path = DashConnect/ConnectionsViewModelTests.swift; sourceTree = "<group>"; };
 		2A7F3B19238C646600DEA3EF /* DWAdvancedSecurityViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAdvancedSecurityViewController.h; sourceTree = "<group>"; };
 		2A7F3B1A238C646600DEA3EF /* DWAdvancedSecurityViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAdvancedSecurityViewController.m; sourceTree = "<group>"; };
 		2A7F3B1D238C651200DEA3EF /* DWSecurityStatusView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecurityStatusView.h; sourceTree = "<group>"; };
@@ -7496,6 +7498,7 @@
 				BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */,
 				471DD1BB290AE30B00E030C8 /* String+DashWalletTests.swift */,
 				2A7CAFFF191922CBF6075212 /* DashConnectUriTests.swift */,
+				D11E51A0C0DE000000000007 /* ConnectionsViewModelTests.swift */,
 				7C172F43568AE0A5AFDB5349 /* Secp256k1Tests.swift */,
 				AA03A0032FF3000000000003 /* KeyExchangeCryptoTests.swift */,
 				AA03A0042FF3000000000004 /* LoginKeyDerivationTests.swift */,
@@ -10808,6 +10811,7 @@
 				BABA10000000000000000004 /* IdentityBalanceRefreshTests.swift in Sources */,
 				471DD1C0290AECE900E030C8 /* String+DashWalletTests.swift in Sources */,
 				0438F3D117619B14594F95E6 /* DashConnectUriTests.swift in Sources */,
+				D11E51A0C0DE000000000006 /* ConnectionsViewModelTests.swift in Sources */,
 				8D66A1B0E97F5B50411765B4 /* Secp256k1Tests.swift in Sources */,
 				AA03A0012FF3000000000001 /* KeyExchangeCryptoTests.swift in Sources */,
 				AA03A0022FF3000000000002 /* LoginKeyDerivationTests.swift in Sources */,

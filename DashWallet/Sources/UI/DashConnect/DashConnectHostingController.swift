@@ -28,11 +28,16 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     /// Held until `viewDidAppear`: the approval sheet is presented from the
     /// screen, which cannot present while it is still being pushed.
     private var pendingURI: String?
+    /// The deep-link queue's completion for `pendingURI`, handed to the view
+    /// model with it: it settles when the request has resolved as far as
+    /// the screen (`ConnectionsViewModel.onURIReceived(_:settled:)`).
+    private var pendingCompletion: (() -> Void)?
 
-    init(navigationController: UINavigationController, uri: String? = nil) {
+    init(navigationController: UINavigationController, uri: String? = nil, completion: (() -> Void)? = nil) {
         let viewModel = ConnectionsViewModel()
         self.viewModel = viewModel
         pendingURI = uri
+        pendingCompletion = completion
 
         super.init(rootView: ConnectionsScreen(vc: navigationController, viewModel: viewModel))
     }
@@ -47,8 +52,14 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     }
 
     /// Handles a link that arrived for a screen that is already on the stack.
-    func handle(uri: String) {
+    /// `completion` settles when the request has resolved as far as the
+    /// screen — the approval sheet published, or a refusal or error shown.
+    func handle(uri: String, completion: (() -> Void)? = nil) {
+        // A link this one replaces before it was consumed never reaches the
+        // view model; its completion is settled here.
+        pendingCompletion?()
         pendingURI = uri
+        pendingCompletion = completion
 
         if isViewLoaded, view.window != nil {
             consumePendingURI()
@@ -57,7 +68,13 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
 
     private func consumePendingURI() {
         guard let uri = pendingURI else { return }
+        let completion = pendingCompletion
         pendingURI = nil
-        viewModel.onURIReceived(uri)
+        pendingCompletion = nil
+        if let completion {
+            viewModel.onURIReceived(uri, settled: completion)
+        } else {
+            viewModel.onURIReceived(uri)
+        }
     }
 }

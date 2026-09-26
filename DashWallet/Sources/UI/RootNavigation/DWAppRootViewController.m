@@ -125,28 +125,39 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 /// completes, setup finishes, a link's screen settles.
 - (void)dispatchNextLinkIfReady {
     const BOOL walletPresented = _mainController != nil && self.currentController == _mainController;
+    // A screen presented from a hierarchy that is not in a window yet — this
+    // controller created but not attached, or the main controller's view
+    // not yet added — never completes its presentation, so nothing is
+    // handed over until both are attached (`viewDidAppear` asks again).
+    const BOOL attached = self.viewIfLoaded.window != nil && _mainController.viewIfLoaded.window != nil;
     const BOOL unlocked = ![self.model shouldShowLockScreen] && self.lockController == nil;
     const BOOL invitationsReady = walletPresented && _mainController.isReadyForInvitations;
     DWDeepLink *link = [self.linkQueue takeNextWithWalletPresented:walletPresented
+                                                          attached:attached
                                                           unlocked:unlocked
                                                  launchHoldPending:self.launchHoldPending
                                                   invitationsReady:invitationsReady];
     if (link == nil) {
         if (!self.linkQueue.isEmpty && !self.linkQueue.isDispatching) {
-            DWLog(@"LINKS %lu link(s) kept: wallet presented %d, unlocked %d, launch hold pending %d, invitations ready %d",
-                  (unsigned long)self.linkQueue.pending.count, walletPresented, unlocked, self.launchHoldPending, invitationsReady);
+            DWLog(@"LINKS %lu link(s) kept: wallet presented %d, attached %d, unlocked %d, launch hold pending %d, invitations ready %d",
+                  (unsigned long)self.linkQueue.pending.count, walletPresented, attached, unlocked, self.launchHoldPending, invitationsReady);
         }
         return;
     }
 
+    const NSInteger token = self.linkQueue.dispatchToken;
     DWLog(@"LINKS handling %@ (%lu more pending)", link.isInvitation ? @"an invitation" : @"a url",
           (unsigned long)self.linkQueue.pending.count);
     __weak typeof(self) weakSelf = self;
     void (^done)(void) = ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        [strongSelf.linkQueue dispatchDidFinish];
+        if (![strongSelf.linkQueue dispatchDidFinishWithToken:token]) {
+            DWLog(@"LINKS a link's handler reported after the queue had moved on; ignored");
+            return;
+        }
         [strongSelf dispatchNextLinkIfReady];
     };
+    [self armLinkWatchdogForToken:token];
     if (link.isInvitation) {
 #if DASHPAY
         [self.mainController handleDeeplink:link.url
@@ -158,6 +169,32 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         return;
     }
     [self performURL:link.url completion:done];
+}
+
+/// A handler whose completion never comes — a screen presented from a
+/// hierarchy that was detached after all, a flow torn down mid-way — must
+/// not hold the queue forever. Fifteen seconds after a hand-over, if that
+/// dispatch is still in flight and nothing is presented or animating, the
+/// dispatch is ended here and the queue asked again; while something is on
+/// screen the check is repeated. A late report from the handler is then
+/// ignored (its token no longer matches).
+- (void)armLinkWatchdogForToken:(NSInteger)token {
+    __weak typeof(self) weakSelf = self;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (strongSelf == nil || !strongSelf.linkQueue.isDispatching || strongSelf.linkQueue.dispatchToken != token) {
+            return;
+        }
+        const BOOL busy = strongSelf.view.window.rootViewController.presentedViewController != nil ||
+                          strongSelf.transitionCoordinator != nil;
+        if (busy) {
+            [strongSelf armLinkWatchdogForToken:token];
+            return;
+        }
+        DWLog(@"LINKS no screen appeared for the link handed over 15 s ago; releasing the queue");
+        [strongSelf.linkQueue dispatchDidFinishWithToken:token];
+        [strongSelf dispatchNextLinkIfReady];
+    });
 }
 
 /// Perform a non-invitation link's action; `completion` runs once the
@@ -370,6 +407,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
         [self applicationDidBecomeActiveNotification];
     }
+
+    // Now attached to a window: links kept because the hierarchy was not
+    // (a link opened during onboarding, handed over at this controller's
+    // creation) can have their screens.
+    [self dispatchNextLinkIfReady];
 }
 
 #pragma mark - Key migration launch hold

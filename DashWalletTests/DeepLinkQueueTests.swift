@@ -35,7 +35,7 @@ final class DeepLinkQueueTests: XCTestCase {
     private let payment = DeepLink(url: URL(string: "dash:XpESxaUmonkq8RaLLp46Brx2K39ggQe226?amount=0.01")!, isInvitation: false, isUnsupported: false)
 
     private func ready(_ queue: DeepLinkQueue, invitationsReady: Bool = true) -> DeepLink? {
-        queue.takeNext(walletPresented: true, unlocked: true, launchHoldPending: false, invitationsReady: invitationsReady)
+        queue.takeNext(walletPresented: true, attached: true, unlocked: true, launchHoldPending: false, invitationsReady: invitationsReady)
     }
 
     private func url(_ n: Int, unsupported: Bool = false) -> DeepLink {
@@ -117,10 +117,11 @@ final class DeepLinkQueueTests: XCTestCase {
         let queue = DeepLinkQueue()
         queue.enqueue(payment)
 
-        XCTAssertNil(queue.takeNext(walletPresented: false, unlocked: true, launchHoldPending: false, invitationsReady: true), "no wallet on screen: setup, or the hold's card")
-        XCTAssertNil(queue.takeNext(walletPresented: true, unlocked: false, launchHoldPending: false, invitationsReady: true), "locked")
-        XCTAssertNil(queue.takeNext(walletPresented: true, unlocked: true, launchHoldPending: true, invitationsReady: true), "the launch hold has not reported")
-        XCTAssertNil(queue.takeNext(walletPresented: false, unlocked: false, launchHoldPending: true, invitationsReady: false))
+        XCTAssertNil(queue.takeNext(walletPresented: false, attached: true, unlocked: true, launchHoldPending: false, invitationsReady: true), "no wallet on screen: setup, or the hold's card")
+        XCTAssertNil(queue.takeNext(walletPresented: true, attached: false, unlocked: true, launchHoldPending: false, invitationsReady: true), "the hierarchy is not in a window yet (a root created during onboarding)")
+        XCTAssertNil(queue.takeNext(walletPresented: true, attached: true, unlocked: false, launchHoldPending: false, invitationsReady: true), "locked")
+        XCTAssertNil(queue.takeNext(walletPresented: true, attached: true, unlocked: true, launchHoldPending: true, invitationsReady: true), "the launch hold has not reported")
+        XCTAssertNil(queue.takeNext(walletPresented: false, attached: false, unlocked: false, launchHoldPending: true, invitationsReady: false))
         XCTAssertEqual(queue.pending.count, 1, "refusing keeps the link")
         XCTAssertFalse(queue.isDispatching)
 
@@ -133,9 +134,9 @@ final class DeepLinkQueueTests: XCTestCase {
     func testWalletlessInvitationWaitsForSetupAndIsHandedOverFirst() {
         let queue = DeepLinkQueue()
         queue.enqueue(invitation)
-        XCTAssertNil(queue.takeNext(walletPresented: false, unlocked: true, launchHoldPending: false, invitationsReady: true))
+        XCTAssertNil(queue.takeNext(walletPresented: false, attached: true, unlocked: true, launchHoldPending: false, invitationsReady: true))
         queue.enqueue(payment)
-        XCTAssertNil(queue.takeNext(walletPresented: false, unlocked: true, launchHoldPending: false, invitationsReady: true))
+        XCTAssertNil(queue.takeNext(walletPresented: false, attached: true, unlocked: true, launchHoldPending: false, invitationsReady: true))
         XCTAssertEqual(queue.pending.count, 2)
 
         // Setup completed and presented the wallet.
@@ -175,6 +176,28 @@ final class DeepLinkQueueTests: XCTestCase {
         XCTAssertTrue(ready(alerts)?.isUnsupported == true)
         alerts.dispatchDidFinish()
         XCTAssertEqual(alerts.enqueue(url(3, unsupported: true)), .queued, "the alert was shown; a new burst gets its own")
+    }
+
+    /// A handler's report belongs to one hand-over. After the owner's
+    /// watchdog ended a dispatch whose screen never came, a late report
+    /// from that handler must not end the next link's dispatch.
+    func testALateReportCannotFinishALaterDispatch() {
+        let queue = DeepLinkQueue()
+        queue.enqueue(scan)
+        queue.enqueue(payment)
+
+        XCTAssertTrue(ready(queue) === scan)
+        let first = queue.dispatchToken
+        XCTAssertTrue(queue.dispatchDidFinish(token: first), "the watchdog ends the dispatch")
+        XCTAssertFalse(queue.dispatchDidFinish(token: first), "already over")
+
+        XCTAssertTrue(ready(queue) === payment)
+        let second = queue.dispatchToken
+        XCTAssertNotEqual(first, second)
+        XCTAssertFalse(queue.dispatchDidFinish(token: first), "the scanner's late report is ignored")
+        XCTAssertTrue(queue.isDispatching, "the payment is still in flight")
+        XCTAssertTrue(queue.dispatchDidFinish(token: second))
+        XCTAssertFalse(queue.isDispatching)
     }
 
     func testAnEmptyQueueHandsOverNothingAndStaysIdle() {

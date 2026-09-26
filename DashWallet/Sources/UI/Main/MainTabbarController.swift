@@ -526,30 +526,34 @@ extension MainTabbarController {
     ///
     /// The More tab's index moves with the DashPay layout, so it comes from
     /// `moreTabIndex` rather than from the tab enum.
+    /// `completion` settles when the request has resolved as far as the
+    /// Connections screen — its approval sheet published, or a refusal or
+    /// error shown — whether the screen was pushed for it or was already
+    /// on top (`ConnectionsViewModel.onURIReceived(_:settled:)`).
     @objc
     public func openDashConnect(_ uri: String, completion: @escaping () -> Void) {
         afterDismissingPresented { [weak self] in
             guard let self else { return completion() }
-            self.openDashConnectNow(uri)
-            // A push on the More tab's stack, or a handoff to the screen
-            // already on top: settled with its transition, or at once.
-            self.settle(after: self.menuNavigationController?.navigationController?.transitionCoordinator, then: completion)
+            self.openDashConnectNow(uri, completion: completion)
         }
     }
 
-    private func openDashConnectNow(_ uri: String) {
-        guard let menuNav = menuNavigationController?.navigationController else { return }
+    private func openDashConnectNow(_ uri: String, completion: (() -> Void)? = nil) {
+        guard let menuNav = menuNavigationController?.navigationController else {
+            completion?()
+            return
+        }
 
         if let moreTabIndex {
             selectedIndex = moreTabIndex
         }
 
         if let connections = menuNav.topViewController as? DashConnectHostingController {
-            connections.handle(uri: uri)
+            connections.handle(uri: uri, completion: completion)
             return
         }
 
-        let controller = DashConnectHostingController(navigationController: menuNav, uri: uri)
+        let controller = DashConnectHostingController(navigationController: menuNav, uri: uri, completion: completion)
         controller.hidesBottomBarWhenPushed = true
         menuNav.pushViewController(controller, animated: true)
     }
@@ -582,16 +586,6 @@ extension MainTabbarController {
     private func afterDismissingPresented(_ body: @escaping () -> Void) {
         guard presentedViewController != nil else { return body() }
         dismiss(animated: false, completion: body)
-    }
-
-    /// Calls `completion` once `transition` has finished, or on the next
-    /// run-loop turn when nothing is animating.
-    private func settle(after transition: UIViewControllerTransitionCoordinator?, then completion: @escaping () -> Void) {
-        if let transition {
-            transition.animate(alongsideTransition: nil) { _ in completion() }
-        } else {
-            DispatchQueue.main.async(execute: completion)
-        }
     }
 }
 

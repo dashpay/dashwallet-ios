@@ -96,6 +96,10 @@ final class DeepLinkQueue: NSObject {
     @objc private(set) var pending: [DeepLink] = []
     /// A link was handed over and its handler has not reported back yet.
     @objc private(set) var isDispatching = false
+    /// Identifies the hand-over in flight: a completion — or the owner's
+    /// watchdog — finishes only the dispatch it belongs to, so a report
+    /// that arrives after the queue moved on cannot finish a later link.
+    @objc private(set) var dispatchToken = 0
 
     @objc var isEmpty: Bool { pending.isEmpty }
 
@@ -117,20 +121,35 @@ final class DeepLinkQueue: NSObject {
     }
 
     /// The next link to hand over, or nil: nothing pending that can be acted
-    /// on, one still in flight, or the app cannot act on links right now. A
-    /// returned link is in flight until `dispatchDidFinish()`.
-    @objc(takeNextWithWalletPresented:unlocked:launchHoldPending:invitationsReady:)
-    func takeNext(walletPresented: Bool, unlocked: Bool, launchHoldPending: Bool, invitationsReady: Bool) -> DeepLink? {
-        guard !isDispatching, walletPresented, unlocked, !launchHoldPending else {
+    /// on, one still in flight, or the app cannot act on links right now —
+    /// `attached` is the owner's presentation hierarchy being in a window,
+    /// without which a handler's screen is presented from nowhere and its
+    /// completion never comes. A returned link is in flight, under the new
+    /// `dispatchToken`, until `dispatchDidFinish(token:)`.
+    @objc(takeNextWithWalletPresented:attached:unlocked:launchHoldPending:invitationsReady:)
+    func takeNext(walletPresented: Bool, attached: Bool, unlocked: Bool, launchHoldPending: Bool, invitationsReady: Bool) -> DeepLink? {
+        guard !isDispatching, walletPresented, attached, unlocked, !launchHoldPending else {
             return nil
         }
         guard let index = pending.firstIndex(where: { !$0.isInvitation || invitationsReady }) else {
             return nil
         }
         isDispatching = true
+        dispatchToken &+= 1
         return pending.remove(at: index)
     }
 
+    /// Ends the dispatch `token` belongs to; false — and nothing changes —
+    /// when that dispatch is already over.
+    @objc(dispatchDidFinishWithToken:)
+    @discardableResult
+    func dispatchDidFinish(token: Int) -> Bool {
+        guard isDispatching, token == dispatchToken else { return false }
+        isDispatching = false
+        return true
+    }
+
+    /// Ends the dispatch in flight, whichever it is.
     @objc func dispatchDidFinish() {
         isDispatching = false
     }
