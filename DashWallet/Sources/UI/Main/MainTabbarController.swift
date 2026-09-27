@@ -588,11 +588,17 @@ extension MainTabbarController {
     }
     #endif
 
-    /// `dismiss` reports through its completion only when something was
-    /// presented; with nothing presented the body runs at once.
+    /// Takes down whatever is presented over the active hierarchy, then runs
+    /// `body`. `presentedViewController` here sees only what this controller
+    /// or an ancestor presents; a screen that defines its own presentation
+    /// context (the amount step under a payment's confirmation) presents on
+    /// its own, so the owner is resolved by walking the active chain
+    /// (`PresentationOwner`) and the dismissal is asked of that owner — it
+    /// takes the whole presented chain with it. With nothing presented the
+    /// body runs at once.
     private func afterDismissingPresented(_ body: @escaping () -> Void) {
-        guard presentedViewController != nil else { return body() }
-        dismiss(animated: false, completion: body)
+        guard let owner = PresentationOwner.find(from: self) as? UIViewController else { return body() }
+        owner.dismiss(animated: false, completion: body)
     }
 }
 

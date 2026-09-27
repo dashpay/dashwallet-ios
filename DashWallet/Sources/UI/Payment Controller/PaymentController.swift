@@ -125,6 +125,12 @@ final class PaymentController: NSObject {
             gate.end(previous.token)
             previous.settle()
         }
+        // The previous operation's screens are not this one's: the link
+        // queue dismissed them before handing this link over, and a
+        // confirmation left behind must never be updated with this payment.
+        confirmViewController = nil
+        provideAmountViewController = nil
+        paymentOutput = nil
         let processor = DWPaymentProcessor()
         processor.delegate = self
         let current = PaymentOperation(token: gate.begin(), processor: processor)
