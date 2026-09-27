@@ -61,6 +61,9 @@ final class InvitationEntry: NSObject {
         switch outcome {
         case .stored, .duplicate:
             return true
+        case .suspended:
+            // The wipe's own screen is up; the link is simply not taken.
+            return false
         case .busy:
             dialog = InvitationOutcomeDialogs.busy()
         case .notAnInvitation:

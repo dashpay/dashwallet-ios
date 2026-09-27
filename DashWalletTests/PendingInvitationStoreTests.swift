@@ -136,6 +136,15 @@ final class PendingInvitationStoreTests: XCTestCase {
         XCTAssertEqual(store.pending?.scope, walletB)
     }
 
+    func testReceiptIsRefusedWhileAWipeRuns() {
+        let store = makeStore()
+        store.suspendReceipt()
+        XCTAssertEqual(store.receive(linkA), .suspended)
+        XCTAssertTrue(storage.items.isEmpty, "nothing may be written under a wallet being deleted")
+        store.resumeReceipt()
+        XCTAssertEqual(store.receive(linkA), .stored)
+    }
+
     func testFailedReceiveWriteStoresNothing() {
         storage.failWrites = true
         let store = makeStore()

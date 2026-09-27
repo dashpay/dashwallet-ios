@@ -227,18 +227,23 @@ enum InvitationValidator {
               DWCurrentUserIdentityInfo.shared.isCurrentNetworkContextReady else {
             return nil
         }
-        let verdict = await check(invitation, wallet: wallet)
+        guard let verdict = await check(invitation, wallet: wallet) else { return nil }
         return InvitationScope.isActiveAndBound(invitation.scope) ? verdict : nil
     }
 
-    private static func check(_ invitation: PendingInvitation, wallet: ManagedPlatformWallet) async -> InvitationValidation {
+    /// nil while the wallet's identity snapshot is still loading: an absent
+    /// identity or username then means "not known yet", not "none", and
+    /// reading it as "none" turns this wallet's own earlier claim into
+    /// "already claimed".
+    private static func check(_ invitation: PendingInvitation, wallet: ManagedPlatformWallet) async -> InvitationValidation? {
+        let identity = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        guard !identity.isLoading else { return nil }
         let uri = invitation.normalizedURI
         let preview = uri.flatMap { try? wallet.parseInvitation(uri: $0) }
         let hasPendingRequest = DWContestedNameStatusService.shared.pendingLabel != nil
-            || DWCurrentUserIdentityInfo.shared.refreshedSnapshot().pendingContestedName != nil
-        let identityInfo = DWCurrentUserIdentityInfo.shared
+            || identity.pendingContestedName != nil
         if let local = InvitationValidationPolicy.localVerdict(
-            hasRegisteredUsername: identityInfo.username?.isEmpty == false,
+            hasRegisteredUsername: identity.username?.isEmpty == false,
             hasPendingUsernameRequest: hasPendingRequest,
             preview: preview) {
             return local
@@ -253,7 +258,7 @@ enum InvitationValidator {
                 inviter: inviter,
                 minimumDuffs: ManagedPlatformWallet.minInvitationDuffs,
                 contestedDuffs: UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME),
-                localIdentityId: identityInfo.identityId)
+                localIdentityId: identity.identityId)
             logger.info(
                 "🎟️ INVITE :: status amount=\(status.amountDuffs, privacy: .public) claimed=\(status.alreadyClaimed, privacy: .public)")
         } catch {

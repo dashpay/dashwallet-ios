@@ -82,6 +82,10 @@ NS_ASSUME_NONNULL_BEGIN
         [self.rootController handleDeeplink:url];
     }
     else {
+        // Onboarding has not built the root yet: store the invitation now so
+        // it survives the app being closed on the carousel, and defer only
+        // the navigation to its card.
+        [DWInvitationEntry receive:url presenter:nil];
         self.deferredDeeplink = url;
     }
 }

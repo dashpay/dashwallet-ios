@@ -207,6 +207,8 @@ final class PendingInvitationStore: ObservableObject {
         /// A valid invitation that could not be written to the Keychain.
         /// Nothing is stored; opening the link again retries.
         case storageFailed
+        /// A wallet wipe is running; nothing is stored.
+        case suspended
     }
 
     enum RemovalReason: String {
@@ -221,6 +223,14 @@ final class PendingInvitationStore: ObservableObject {
 
     /// The invitation pending in the current network + wallet scope.
     @Published private(set) var pending: PendingInvitation?
+
+    /// Receipt is refused while a wallet wipe runs, from its first erase of
+    /// invitations until its registry reset: a link stored in between would
+    /// be written under a wallet that is being deleted and outlive the wipe.
+    private(set) var isReceiptSuspended = false
+
+    func suspendReceipt() { isReceiptSuspended = true }
+    func resumeReceipt() { isReceiptSuspended = false }
 
     private static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
@@ -344,6 +354,10 @@ final class PendingInvitationStore: ObservableObject {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let normalized = DWInvitationLinkNormalizer.normalize(trimmed) else {
             return .notAnInvitation
+        }
+        guard !isReceiptSuspended else {
+            Self.logger.info("🎟️ INVITE :: a wallet wipe is running; invitation not stored")
+            return .suspended
         }
         let scope = currentScope()
         // Only answerable once a wallet exists and the SDK is bound to it:

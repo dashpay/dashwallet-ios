@@ -223,6 +223,15 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // Whatever this wipe leaves behind, the app-level gate's cached view of
         // which networks hold material is about to be wrong.
         defer { WalletEnvironment.invalidateWalletMaterialCache() }
+        #if DASHPAY
+        // Invitation receipt is suspended by the first erase and stays so
+        // until the wipe — registry reset and teardown included — is over.
+        defer {
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated { PendingInvitationStore.shared.resumeReceipt() }
+            }
+        }
+        #endif
         let storage = WalletStorage()
         let walletIdsByNetwork: [Network: Set<Data>]
 
@@ -395,7 +404,14 @@ final class SwiftDashSDKWalletWiper: NSObject {
     private static func eraseInvitationsBeforeDestruction() -> Bool {
         #if DASHPAY
         var erased = true
-        let erase = { erased = MainActor.assumeIsolated { PendingInvitationStore.wipeAll() } }
+        // Suspend receipt first, so no link can be stored again until the
+        // wipe is over (`performWipe` resumes it on every exit).
+        let erase = {
+            erased = MainActor.assumeIsolated {
+                PendingInvitationStore.shared.suspendReceipt()
+                return PendingInvitationStore.wipeAll()
+            }
+        }
         if Thread.isMainThread { erase() } else { DispatchQueue.main.sync(execute: erase) }
         if !erased {
             logger.error("a pending DashPay invitation could not be removed from the Keychain; refusing the wipe")
