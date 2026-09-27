@@ -212,13 +212,20 @@ final class PendingInvitationViewModel: ObservableObject {
         }
         lastVerdict = (verdict, Date(), invitation)
         if verdict.isDefinitive {
+            let removed: Bool
             if verdict.clearsEverywhere, let uri = invitation.normalizedURI {
-                store.removeEverywhere(normalizedURI: uri, reason: .definitiveOutcome)
+                removed = store.removeEverywhere(normalizedURI: uri, reason: .definitiveOutcome)
             } else {
-                store.remove(invitation, reason: .definitiveOutcome)
+                removed = store.remove(invitation, reason: .definitiveOutcome)
             }
-            undeliveredOutcome = verdict
-            definitiveOutcomes.send(verdict)
+            if removed {
+                undeliveredOutcome = verdict
+                definitiveOutcomes.send(verdict)
+            } else {
+                // The invitation is still stored. Say nothing final; the card
+                // offers Retry, which repeats the check and the removal.
+                lastVerdict = (.undetermined, Date(), invitation)
+            }
         }
         refreshCardState()
         return verdict

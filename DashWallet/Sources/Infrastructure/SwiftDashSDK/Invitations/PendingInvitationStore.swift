@@ -229,6 +229,9 @@ final class PendingInvitationStore: ObservableObject {
     /// Keychain account prefix; every stored invitation lives under it.
     static let keychainPrefix = "invitation.pending."
     private static let metadataPrefix = "pendingInvitationMeta."
+    /// Unbound-slot metadata: the wallet a pre-onboarding invitation is being
+    /// moved under.
+    private static let bindingDestinationKey = "boundTo"
 
     private let storage: InvitationSecretStorage
     private let defaults: UserDefaults
@@ -464,6 +467,18 @@ final class PendingInvitationStore: ObservableObject {
         case .empty: return true
         case .unreadable: return false
         case .invitation(let unboundInvitation): invitation = unboundInvitation
+        }
+        // The destination is recorded before it is written, so a move that
+        // was interrupted or whose clean-up failed is finished for the wallet
+        // it started for — never repeated for whichever wallet is selected
+        // next.
+        let unboundMetaKey = metadataKey(wallet.unbound)
+        var unboundMeta = defaults.dictionary(forKey: unboundMetaKey) ?? [:]
+        if let destination = unboundMeta[Self.bindingDestinationKey] as? String {
+            guard destination == wallet.walletIdHex else { return true }
+        } else {
+            unboundMeta[Self.bindingDestinationKey] = wallet.walletIdHex
+            defaults.set(unboundMeta, forKey: unboundMetaKey)
         }
         switch slot(wallet) {
         case .unreadable:

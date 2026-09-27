@@ -234,6 +234,23 @@ final class PendingInvitationStoreTests: XCTestCase {
         XCTAssertEqual(store.pending?.rawLink, linkA, "the next reload moves it")
     }
 
+    /// The move under wallet A wrote the destination but could not delete the
+    /// pre-onboarding copy. Switching to wallet B must not move it there too;
+    /// back in A the clean-up finishes.
+    func testHalfFinishedMoveIsFinishedForItsWalletOnly() {
+        receiveBeforeWallet(linkA)
+        storage.failDeletes = true
+        XCTAssertEqual(makeStore().pending?.rawLink, linkA, "written under wallet A")
+
+        storage.failDeletes = false
+        XCTAssertNil(pending(in: walletB), "never offered to a wallet it was not opened for")
+        XCTAssertNil(storage.items[PendingInvitationStore.keychainPrefix + walletB.storageKey])
+
+        XCTAssertEqual(pending(in: walletA)?.rawLink, linkA)
+        XCTAssertNil(storage.items[PendingInvitationStore.keychainPrefix + unbound.storageKey],
+                     "the pre-onboarding copy is cleaned up once back in wallet A")
+    }
+
     func testBindingKeepsTheWalletsOwnInvitation() {
         XCTAssertEqual(makeStore().receive(linkB), .stored)
         receiveBeforeWallet(linkA)
