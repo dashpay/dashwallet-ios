@@ -74,4 +74,31 @@ final class PaymentOperationGateTests: XCTestCase {
         let c = gate.begin()
         XCTAssertTrue(gate.admits(c), "a new operation after an ended one")
     }
+
+    /// Payment A pushed its amount step, payment B started and pushed its
+    /// own: an amount from A's step (reached by Back, or left on the stack)
+    /// is refused even though B's processor is current; B's own step is
+    /// admitted; a step never bound to any operation is refused.
+    func testOnlyTheCurrentOperationsOwnScreenFeedsIt() {
+        final class Screen {}
+        let stepA = Screen(), stepB = Screen(), stranger = Screen()
+        var gate = PaymentOperationGate()
+
+        let a = gate.begin()
+        gate.bind(ObjectIdentifier(stepA), to: a)
+        XCTAssertTrue(gate.admits(screen: ObjectIdentifier(stepA)))
+
+        let b = gate.begin()
+        XCTAssertFalse(gate.admits(screen: ObjectIdentifier(stepA)), "A's step is not B's")
+        gate.bind(ObjectIdentifier(stepB), to: b)
+        XCTAssertTrue(gate.admits(screen: ObjectIdentifier(stepB)))
+        XCTAssertFalse(gate.admits(screen: ObjectIdentifier(stepA)), "still refused after B bound its own")
+        XCTAssertFalse(gate.admits(screen: ObjectIdentifier(stranger)), "never bound")
+
+        gate.bind(ObjectIdentifier(stepA), to: a)
+        XCTAssertFalse(gate.admits(screen: ObjectIdentifier(stepA)), "binding to an obsolete operation is refused")
+
+        XCTAssertTrue(gate.end(b))
+        XCTAssertFalse(gate.admits(screen: ObjectIdentifier(stepB)), "an ended operation's step is refused")
+    }
 }

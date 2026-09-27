@@ -126,10 +126,14 @@ final class PaymentController: NSObject {
             previous.settle()
         }
         // The previous operation's screens are not this one's: the link
-        // queue dismissed them before handing this link over, and a
-        // confirmation left behind must never be updated with this payment.
+        // queue dismissed what was presented before handing this link over,
+        // a confirmation left behind must never be updated with this
+        // payment, and an amount step left on the navigation stack — it was
+        // pushed, not presented — must not sit beneath this payment's screen
+        // where Back would reach it, so it is taken out of the stack and
+        // unhooked from this controller.
         confirmViewController = nil
-        provideAmountViewController = nil
+        removeSupersededAmountStep()
         paymentOutput = nil
         let processor = DWPaymentProcessor()
         processor.delegate = self
@@ -138,6 +142,22 @@ final class PaymentController: NSObject {
         current.isAbandoned = isAbandoned
         operation = current
         processor.processPaymentInput(input)
+    }
+
+    /// Takes the previous operation's amount step out of its navigation
+    /// stack (without animation: the new operation is about to push or
+    /// present) and detaches it, so it can neither be reached by Back nor
+    /// hand this controller an amount.
+    private func removeSupersededAmountStep() {
+        guard let stale = provideAmountViewController else { return }
+        provideAmountViewController = nil
+        (stale as? ProvideAmountViewController)?.delegate = nil
+        guard let screen = stale as? UIViewController, let navigation = screen.navigationController else { return }
+        let stack = navigation.viewControllers
+        let remaining = stack.filter { $0 !== screen }
+        guard remaining.count < stack.count else { return }
+        navigation.setViewControllers(remaining, animated: false)
+        DWLogger.log("PAY removed the previous payment's amount step from the navigation stack (\(stack.count) → \(remaining.count))")
     }
 
     /// The current operation when `processor` is its processor; nil — and
@@ -230,6 +250,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
         let navigation = presentationAnchor!.navigationController
         navigation?.pushViewController(vc, animated: true)
         provideAmountViewController = vc
+        gate.bind(ObjectIdentifier(vc), to: operation.token)
         settlePresentation(after: navigation?.transitionCoordinator)
     }
 
@@ -327,8 +348,16 @@ extension PaymentController: DWPaymentProcessorDelegate {
 // MARK: ProvideAmountViewControllerDelegate
 
 extension PaymentController: ProvideAmountViewControllerDelegate {
-    func provideAmountViewControllerDidInput(amount: UInt64, selectedCurrency: String) {
+    /// Only the current operation's own amount step may feed it an amount:
+    /// a step left over from an earlier payment is refused, whichever
+    /// processor is current.
+    func provideAmountViewController(_ controller: ProvideAmountViewController, didInput amount: UInt64, selectedCurrency: String) {
+        guard let operation, gate.admits(screen: ObjectIdentifier(controller)) else {
+            DWLogger.log("PAY an amount from a screen that is not the current payment's; ignored")
+            controller.hideActivityIndicator()
+            return
+        }
         fiatCurrency = selectedCurrency
-        operation?.processor.provideAmount(amount)
+        operation.processor.provideAmount(amount)
     }
 }
