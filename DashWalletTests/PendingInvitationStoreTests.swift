@@ -19,6 +19,7 @@ private final class FakeSecretStorage: InvitationSecretStorage {
     var failDeletes = false
     var failListing = false
     var unreadable: Set<String> = []
+    var undeletable: Set<String> = []
 
     func read(_ account: String) -> InvitationSecretRead {
         if unreadable.contains(account) { return .failed }
@@ -32,7 +33,7 @@ private final class FakeSecretStorage: InvitationSecretStorage {
     }
 
     func delete(_ account: String) -> Bool {
-        guard !failDeletes else { return false }
+        guard !failDeletes, !undeletable.contains(account) else { return false }
         items[account] = nil
         return true
     }
@@ -278,6 +279,23 @@ final class PendingInvitationStoreTests: XCTestCase {
         store.reload()
         XCTAssertNil(store.pending, "a reload must not bring the hidden invitation back")
         XCTAssertTrue(storage.items.isEmpty)
+    }
+
+    /// The shown copy is removed but its assigned pre-onboarding copy is not:
+    /// the card goes (so the verdict for it is shown), the failure is
+    /// reported, and the leftover comes back as a card on the next reload to
+    /// be judged — and removed — again rather than being lost silently.
+    func testFailedAssignedCopyRemovalStillRemovesTheShownCardAndResurfacesLater() {
+        halfFinishedMoveUnderWalletA()
+        let unboundAccount = PendingInvitationStore.keychainPrefix + unbound.storageKey
+        storage.undeletable = [unboundAccount]
+        let store = makeStore()
+        XCTAssertFalse(store.remove(store.pending!, reason: .definitiveOutcome))
+        XCTAssertNil(store.pending, "the shown copy is gone")
+
+        storage.undeletable = []
+        store.reload()
+        XCTAssertEqual(store.pending?.rawLink, linkA, "the leftover comes back to be handled again")
     }
 
     func testBindingKeepsTheWalletsOwnInvitation() {
