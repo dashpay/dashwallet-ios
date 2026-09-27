@@ -212,11 +212,13 @@ final class PendingInvitationViewModel: ObservableObject {
         }
         lastVerdict = (verdict, Date(), invitation)
         if verdict.isDefinitive {
-            let removed: Bool
+            // The shown copy decides what the user sees. Copies of the same
+            // voucher in other wallets are cleaned up too, but a failure there
+            // does not hide this verdict: that copy gets the same verdict when
+            // its wallet is shown, and is removed then.
+            let removed = store.remove(invitation, reason: .definitiveOutcome)
             if verdict.clearsEverywhere, let uri = invitation.normalizedURI {
-                removed = store.removeEverywhere(normalizedURI: uri, reason: .definitiveOutcome)
-            } else {
-                removed = store.remove(invitation, reason: .definitiveOutcome)
+                store.removeEverywhere(normalizedURI: uri, reason: .definitiveOutcome)
             }
             if removed {
                 undeliveredOutcome = verdict

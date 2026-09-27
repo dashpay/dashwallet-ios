@@ -251,6 +251,35 @@ final class PendingInvitationStoreTests: XCTestCase {
                      "the pre-onboarding copy is cleaned up once back in wallet A")
     }
 
+    private func halfFinishedMoveUnderWalletA() {
+        receiveBeforeWallet(linkA)
+        storage.failDeletes = true
+        XCTAssertEqual(makeStore().pending?.rawLink, linkA)
+        storage.failDeletes = false
+        XCTAssertNotNil(storage.items[PendingInvitationStore.keychainPrefix + unbound.storageKey])
+    }
+
+    func testRemovingTheWalletAlsoRemovesItsAssignedPreOnboardingCopy() {
+        halfFinishedMoveUnderWalletA()
+        scope = walletB
+        XCTAssertTrue(makeStore().removeAll(walletIdHex: "walletA"))
+        XCTAssertTrue(storage.items.isEmpty, "no voucher key may outlive its wallet")
+    }
+
+    func testHidingAlsoRemovesTheAssignedPreOnboardingCopy() {
+        halfFinishedMoveUnderWalletA()
+        // Keep the leftover through this store's own reload, which would
+        // otherwise finish the clean-up before Hide is tried.
+        storage.failDeletes = true
+        let store = makeStore()
+        storage.failDeletes = false
+        XCTAssertNotNil(storage.items[PendingInvitationStore.keychainPrefix + unbound.storageKey])
+        XCTAssertTrue(store.remove(store.pending!, reason: .hidden))
+        store.reload()
+        XCTAssertNil(store.pending, "a reload must not bring the hidden invitation back")
+        XCTAssertTrue(storage.items.isEmpty)
+    }
+
     func testBindingKeepsTheWalletsOwnInvitation() {
         XCTAssertEqual(makeStore().receive(linkB), .stored)
         receiveBeforeWallet(linkA)

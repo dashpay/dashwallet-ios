@@ -398,7 +398,34 @@ final class PendingInvitationStore: ObservableObject {
             return false
         case .invitation(let stored):
             guard stored.rawLink == invitation.rawLink else { return true }
-            return remove(scope: invitation.scope, reason: reason)
+            guard remove(scope: invitation.scope, reason: reason) else { return false }
+            // A pre-onboarding copy already assigned to this wallet (its move
+            // was not cleaned up) would bring the invitation back on the next
+            // reload.
+            return removeAssignedUnbound(to: invitation.scope, link: invitation.rawLink, reason: reason)
+        }
+    }
+
+    /// The pre-onboarding copy on `wallet`'s network whose move was already
+    /// assigned to `wallet` (`boundTo`), removed — optionally only when it
+    /// holds `link`. true when there is none. false when it could not be read
+    /// or deleted.
+    private func removeAssignedUnbound(
+        to wallet: InvitationScope, link: String? = nil, reason: RemovalReason
+    ) -> Bool {
+        guard let walletIdHex = wallet.walletIdHex else { return true }
+        let unbound = wallet.unbound
+        let destination = defaults.dictionary(forKey: metadataKey(unbound))?[Self.bindingDestinationKey] as? String
+        guard destination == walletIdHex else { return true }
+        switch slot(unbound) {
+        case .empty:
+            return true
+        case .unreadable:
+            Self.logger.error("🎟️ INVITE :: could not read a pre-onboarding copy assigned to the wallet")
+            return false
+        case .invitation(let stored):
+            if let link, stored.rawLink != link { return true }
+            return remove(scope: unbound, reason: reason)
         }
     }
 
@@ -439,6 +466,13 @@ final class PendingInvitationStore: ObservableObject {
         var removedAll = true
         for scope in scopes where scope.walletIdHex == walletIdHex {
             removedAll = remove(scope: scope, reason: .walletRemoved) && removedAll
+            // Including a pre-onboarding copy already assigned to it.
+            removedAll = removeAssignedUnbound(to: scope, reason: .walletRemoved) && removedAll
+        }
+        // An assigned copy whose move never wrote the wallet's own slot.
+        for scope in scopes where scope.isUnbound {
+            let wallet = InvitationScope(networkRawValue: scope.networkRawValue, walletIdHex: walletIdHex)
+            removedAll = removeAssignedUnbound(to: wallet, reason: .walletRemoved) && removedAll
         }
         return removedAll
     }
