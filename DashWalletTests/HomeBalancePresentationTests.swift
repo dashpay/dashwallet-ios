@@ -2,7 +2,7 @@ import XCTest
 #if canImport(dashwallet)
 @testable import dashwallet
 #elseif canImport(dashpay)
-@testable import dashpay
+@testable import dashwallet
 #else
 @testable import ShieldedBalanceHarness
 #endif

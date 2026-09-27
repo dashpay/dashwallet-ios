@@ -93,9 +93,13 @@ final class ConnectionsViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.pendingRequest)
 
         dataSource.finishLookup()
-        await settle(firstSettled == 1)
-        XCTAssertEqual(firstSettled, 1, "settled once the approval sheet was published")
+        await settle(viewModel.pendingRequest != nil)
         XCTAssertEqual(viewModel.pendingRequest, MockDashConnectDataSource.sampleRequest)
+        XCTAssertEqual(firstSettled, 0, "published is not presented: the queue waits for the sheet to be on screen")
+        viewModel.presentationDidAppear()
+        XCTAssertEqual(firstSettled, 1, "settled once the approval sheet appeared")
+        viewModel.presentationDidAppear()
+        XCTAssertEqual(firstSettled, 1, "once")
 
         // The queue hands the second link over only now; the first request is
         // on screen and owns it, so the second is refused — and settles at once.
@@ -146,6 +150,25 @@ final class ConnectionsViewModelTests: XCTestCase {
         XCTAssertEqual(settled, 1, "settled, so a late report reaches the queue (which ignores it)")
         XCTAssertNil(viewModel.pendingRequest, "no approval sheet for a request the queue gave up")
         XCTAssertNil(viewModel.message)
+    }
+
+    /// The screen reporting an appearance while nothing waits for one (a
+    /// sheet opened by a QR scan, a re-appearance) settles nothing.
+    func testAnAppearanceNobodyWaitsForSettlesNothing() async {
+        let dataSource = DelayedLookupDataSource()
+        let viewModel = ConnectionsViewModel(dataSource: dataSource, featureUnavailable: false)
+        viewModel.presentationDidAppear()
+
+        var settled = 0
+        viewModel.onURIReceived(MockDashConnectDataSource.sampleLoginQRCode) { settled += 1 }
+        await settle(dataSource.lookups == 1)
+        viewModel.presentationDidAppear()
+        XCTAssertEqual(settled, 0, "nothing published yet: an appearance now is not this request's")
+        dataSource.finishLookup()
+        await settle(viewModel.pendingRequest != nil)
+        XCTAssertEqual(settled, 0)
+        viewModel.presentationDidAppear()
+        XCTAssertEqual(settled, 1)
     }
 
     func testAnUnavailableFeatureSettlesAtOnce() {

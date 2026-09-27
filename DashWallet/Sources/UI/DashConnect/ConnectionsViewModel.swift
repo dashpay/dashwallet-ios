@@ -88,6 +88,12 @@ final class ConnectionsViewModel: ObservableObject {
     /// a sheet, or a newer request superseded it. The deep-link queue hands
     /// the next link over only then.
     private var settlement: (() -> Void)?
+    /// A UI outcome was published (a sheet, an alert) and the settlement
+    /// waits for the presentation layer to report it on screen
+    /// (`presentationDidAppear`): publishing a `@Published` value does not
+    /// present it, and settling before the sheet is up let the next link's
+    /// screen race the sheet's binding.
+    private var settlementAwaitsPresentation = false
     /// Whether the deep-link queue has given the request in flight up (its
     /// watchdog fired during the metadata lookup). Asked before anything is
     /// published: an abandoned request publishes nothing, so its approval
@@ -95,10 +101,25 @@ final class ConnectionsViewModel: ObservableObject {
     private var isAbandoned: (() -> Bool)?
 
     private func settle() {
+        settlementAwaitsPresentation = false
         let settled = settlement
         settlement = nil
         isAbandoned = nil
         settled?()
+    }
+
+    /// Settles once the UI this request produced is on screen; the screen
+    /// calls it from the sheet's or the alert's `onAppear`.
+    private func settleWhenPresented() {
+        guard settlement != nil else { return }
+        settlementAwaitsPresentation = true
+    }
+
+    /// The screen reports that the sheet or alert published for the request
+    /// in flight has appeared. Nothing happens when nothing waits for it.
+    func presentationDidAppear() {
+        guard settlementAwaitsPresentation else { return }
+        settle()
     }
 
     /// True — logged and settled — when the queue moved on without this request.
@@ -171,6 +192,7 @@ final class ConnectionsViewModel: ObservableObject {
             } else {
                 approveError = refusal
             }
+            // Shown on the sheet that is already up: no new presentation.
             settle()
             return
         }
@@ -181,7 +203,7 @@ final class ConnectionsViewModel: ObservableObject {
                 text: NSLocalizedString("Finish the current DashConnect request first, then try again.",
                                         comment: "DashConnect: a second request arrived during key registration")
             )
-            settle()
+            settleWhenPresented()
             return
         }
 
@@ -207,7 +229,7 @@ final class ConnectionsViewModel: ObservableObject {
                     if dropIfAbandoned() { return }
                     pendingLoginRequest = request
                     pendingRequest = connectionRequest
-                    settle()
+                    settleWhenPresented()
                 case let .stateTransition(request):
                     guard generation == requestGeneration else { return }
                     isProcessingStateTransition = true
@@ -224,7 +246,7 @@ final class ConnectionsViewModel: ObservableObject {
                         if dropIfAbandoned() { return }
                         pendingTokenPurchase = purchase
                     }
-                    settle()
+                    settleWhenPresented()
                 }
             } catch {
                 guard generation == requestGeneration else { return }
@@ -236,7 +258,7 @@ final class ConnectionsViewModel: ObservableObject {
                         error.localizedDescription
                     )
                 )
-                settle()
+                settleWhenPresented()
             }
         }
     }
