@@ -1,6 +1,6 @@
 import XCTest
 #if canImport(dashpay)
-@testable import dashwallet
+@testable import dashpay
 #elseif canImport(dashwallet)
 @testable import dashwallet
 #else
