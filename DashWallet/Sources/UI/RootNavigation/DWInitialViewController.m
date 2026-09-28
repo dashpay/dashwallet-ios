@@ -93,11 +93,15 @@ NS_ASSUME_NONNULL_BEGIN
     if (self.rootController) {
         [self.rootController handleDeeplink:url];
     }
-    else {
+    else if ([DWInvitationLinkNormalizer isInvitationURL:url]) {
         // Onboarding has not built the root yet: store the invitation now so
-        // it survives the app being closed on the carousel, and defer only
-        // the navigation to its card.
+        // it survives the app being closed on the carousel. It is not kept
+        // for replay — the link carries the voucher key, and replaying it
+        // after an onboarding wipe would write the erased invitation back.
+        // Home shows the stored invitation's card once setup finishes.
         [DWInvitationEntry receive:url presenter:nil];
+    }
+    else {
         self.deferredDeeplink = url;
     }
 }
