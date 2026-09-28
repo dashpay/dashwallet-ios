@@ -31,10 +31,14 @@ final class VotingKeyFormatTests: XCTestCase {
         XCTAssertNil(VotingKeyFormat.problem(with: testnetWIF, isMainnet: false))
     }
 
-    func testUncompressedKeyPasses() {
-        // Version 0xCC + 32 bytes of 0x07, no compression flag.
+    func testUncompressedKeyIsRefused() {
+        // Version 0xCC + 32 bytes of 0x07, no compression flag. The signer
+        // only ever votes as the compressed key, so this one could be
+        // imported but never vote.
         let uncompressed = "7qbxVhSx957Z7NQFXgCMNX41jMpFkHWdnHeDizMetMcun7wmJEt"
-        XCTAssertNil(VotingKeyFormat.problem(with: uncompressed, isMainnet: true))
+        XCTAssertEqual(VotingKeyFormat.problem(with: uncompressed, isMainnet: true), .uncompressed)
+        // The network is still checked first.
+        XCTAssertEqual(VotingKeyFormat.problem(with: uncompressed, isMainnet: false), .wrongNetwork)
     }
 
     func testOtherNetworksKeyIsWrongNetwork() {

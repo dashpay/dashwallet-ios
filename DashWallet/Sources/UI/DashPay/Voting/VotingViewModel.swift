@@ -128,6 +128,8 @@ final class VotingViewModel: ObservableObject {
     private let caster: MasternodeVoteCaster
     private let history: VoteHistoryDAO = VoteHistoryDAOImpl.shared
     private let vault: TrackedMasternodeKeyVaulting
+    /// Read when needed, not once: the SDK manager comes and goes with the wallet.
+    private let tracker: @MainActor () -> VotingKeyMasternodeTracking?
 
     /// Default arguments would have to be evaluated in a nonisolated context,
     /// but both services are `@MainActor`, so the defaults are applied inside
@@ -135,13 +137,15 @@ final class VotingViewModel: ObservableObject {
     init(
         contestsService: ContestedNamesService? = nil,
         registry: MasternodeVoterRegistry? = nil,
-        vault: TrackedMasternodeKeyVaulting? = nil
+        vault: TrackedMasternodeKeyVaulting? = nil,
+        tracker: (@MainActor () -> VotingKeyMasternodeTracking?)? = nil
     ) {
         let contestsService = contestsService ?? ContestedNamesService()
         let registry = registry ?? MasternodeVoterRegistry()
         self.contestsService = contestsService
         self.registry = registry
         self.vault = vault ?? TrackedMasternodeKeyVault()
+        self.tracker = tracker ?? { SwiftDashSDKHost.shared.manager }
         self.caster = MasternodeVoteCaster(registry: registry, contests: contestsService)
     }
 
@@ -452,10 +456,10 @@ final class VotingViewModel: ObservableObject {
         let othersConfirmedAbsent = TrackedMasternodeKeyVault.managedRoles
             .filter { $0 != .voting }
             .allSatisfy { vault.keyPresence(for: node.proTxHash, role: $0) == .absent }
-        if othersConfirmedAbsent, let manager = SwiftDashSDKHost.shared.manager {
+        if othersConfirmedAbsent, let manager = tracker() {
             // Best-effort: a registry row left behind holds no key and cannot
             // vote, so a failure here changes nothing the user can see.
-            _ = try? manager.untrackMasternode(proTxHash: node.proTxHash)
+            manager.untrackForVoting(proTxHash: node.proTxHash)
         }
         refreshVotableNodes()
         return nil

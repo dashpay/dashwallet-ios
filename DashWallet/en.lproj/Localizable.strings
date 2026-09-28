@@ -6147,6 +6147,7 @@
 "%d evonodes" = "%d evonodes";
 "%d masternodes" = "%d masternodes";
 "%d of %d masternodes voted" = "%1$d of %2$d masternodes voted";
+"%d masternodes that vote with this key are registered to a wallet in this app and were not added. Their voting key cannot be added separately." = "%d masternodes that vote with this key are registered to a wallet in this app and were not added. Their voting key cannot be added separately.";
 "%d of %d nodes voted" = "%1$d of %2$d nodes voted";
 "%d of %d usernames voted on" = "%1$d of %2$d usernames voted on";
 "%d of your nodes already voted this way and are not listed. Any node voting differently is listed — its vote will be replaced." = "%d of your nodes already voted this way and are not listed. Any node voting differently is listed — its vote will be replaced.";
@@ -6281,6 +6282,7 @@
 "Not enough shielded funds" = "Not enough shielded funds";
 "Nothing is left to cast." = "Nothing is left to cast.";
 "Observed" = "Observed";
+"One masternode that votes with this key is registered to a wallet in this app and was not added. Its voting key cannot be added separately." = "One masternode that votes with this key is registered to a wallet in this app and was not added. Its voting key cannot be added separately.";
 "Only masternodes and evonodes can vote on usernames. Add a masternode voting key to vote from this wallet." = "Only masternodes and evonodes can vote on usernames. Add a masternode voting key to vote from this wallet.";
 "Only this node votes, so it stays unlinked from your other masternodes. Add more nodes for greater voting weight." = "Only this node votes, so it stays unlinked from your other masternodes. Add more nodes for greater voting weight.";
 "Open Wallets" = "Open Wallets";
@@ -6401,6 +6403,7 @@
 "You have entered a private key that is too short. Here is an example (%@)" = "You have entered a private key that is too short. Here is an example (%@)";
 "You have entered a private key with some incorrect characters. Here is an example (%@)" = "You have entered a private key with some incorrect characters. Here is an example (%@)";
 "You have entered an address instead of a masternode voting private key. It should be in WIF format (%@)" = "You have entered an address instead of a masternode voting private key. It should be in WIF format (%@)";
+"You have entered an uncompressed private key. This app can only vote with a compressed voting key. Here is an example (%@)" = "You have entered an uncompressed private key. This app can only vote with a compressed voting key. Here is an example (%@)";
 "used" = "used";
 "User" = "User";
 "Username locked by masternode vote — it cannot be registered" = "Username locked by masternode vote — it cannot be registered";

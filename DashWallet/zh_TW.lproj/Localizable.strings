@@ -6258,6 +6258,7 @@
 "%d finished" = "%d finished";
 "%d masternodes" = "%d masternodes";
 "%d of %d masternodes voted" = "%1$d of %2$d masternodes voted";
+"%d masternodes that vote with this key are registered to a wallet in this app and were not added. Their voting key cannot be added separately." = "%d masternodes that vote with this key are registered to a wallet in this app and were not added. Their voting key cannot be added separately.";
 "%d of %d nodes voted" = "%1$d of %2$d nodes voted";
 "%d of %d usernames voted on" = "%1$d of %2$d usernames voted on";
 "%d of your nodes already voted this way and are not listed. Any node voting differently is listed — its vote will be replaced." = "%d of your nodes already voted this way and are not listed. Any node voting differently is listed — its vote will be replaced.";
@@ -6378,6 +6379,7 @@
 "From this wallet" = "From this wallet";
 "Masternode Voting Private Key" = "Masternode Voting Private Key";
 "Masternodes and evonodes vote on usernames. Enter a node's voting private key to vote with it from this wallet. The key is kept in this device's keychain." = "Masternodes and evonodes vote on usernames. Enter a node's voting private key to vote with it from this wallet. The key is kept in this device's keychain.";
+"One masternode that votes with this key is registered to a wallet in this app and was not added. Its voting key cannot be added separately." = "One masternode that votes with this key is registered to a wallet in this app and was not added. Its voting key cannot be added separately.";
 "Only masternodes and evonodes can vote on usernames. Add a masternode voting key to vote from this wallet." = "Only masternodes and evonodes can vote on usernames. Add a masternode voting key to vote from this wallet.";
 "Paste or scan the key" = "Paste or scan the key";
 "Remove voting key" = "Remove voting key";
@@ -6395,6 +6397,7 @@
 "You have entered a private key that is too short. Here is an example (%@)" = "You have entered a private key that is too short. Here is an example (%@)";
 "You have entered a private key with some incorrect characters. Here is an example (%@)" = "You have entered a private key with some incorrect characters. Here is an example (%@)";
 "You have entered an address instead of a masternode voting private key. It should be in WIF format (%@)" = "You have entered an address instead of a masternode voting private key. It should be in WIF format (%@)";
+"You have entered an uncompressed private key. This app can only vote with a compressed voting key. Here is an example (%@)" = "You have entered an uncompressed private key. This app can only vote with a compressed voting key. Here is an example (%@)";
 "e.g. moutai (matches dashd -devnet=<name>)" = "e.g. moutai (matches dashd -devnet=<name>)";
 "Ends around %@" = "Ends around %@";
 "Enter a link starting with http:// or https://" = "Enter a link starting with http:// or https://";

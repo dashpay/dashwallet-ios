@@ -28,9 +28,10 @@ import SwiftDashSDK
 enum VotingKeyImportOutcome: Equatable {
     /// Every node the key votes with is now votable.
     case added
-    /// Some nodes were added and the rest failed. The added ones are complete
-    /// and vote, so the flow moves on — but the notice has to travel with it,
-    /// or the user would go on voting without learning some nodes are missing.
+    /// Some nodes were added and the rest failed or cannot be added here (they
+    /// belong to a wallet in this app). The added ones are complete and vote,
+    /// so the flow moves on — but the notice has to travel with it, or the
+    /// user would go on voting without learning some nodes are missing.
     case partiallyAdded(notice: String)
     /// Nothing was added; ``VotingKeyInputViewModel/error`` says why.
     case failed
@@ -59,15 +60,23 @@ final class VotingKeyInputViewModel: ObservableObject {
     @Published private(set) var error: String?
 
     private let vault: TrackedMasternodeKeyVaulting
-    private let registry: MasternodeVoterRegistry
+    private let tracker: @MainActor () -> VotingKeyMasternodeTracking?
+    private let votableProTxHashes: @MainActor () -> Set<Data>
 
     /// Defaults are applied inside the `@MainActor` body; see `VotingViewModel`.
+    /// `tracker` and `votableProTxHashes` are read on every Verify, not once:
+    /// the SDK manager comes and goes with the wallet.
     init(
         vault: TrackedMasternodeKeyVaulting? = nil,
-        registry: MasternodeVoterRegistry? = nil
+        registry: MasternodeVoterRegistry? = nil,
+        tracker: (@MainActor () -> VotingKeyMasternodeTracking?)? = nil,
+        votableProTxHashes: (@MainActor () -> Set<Data>)? = nil
     ) {
         self.vault = vault ?? TrackedMasternodeKeyVault()
-        self.registry = registry ?? MasternodeVoterRegistry()
+        let registry = registry ?? MasternodeVoterRegistry()
+        self.tracker = tracker ?? { SwiftDashSDKHost.shared.manager }
+        self.votableProTxHashes = votableProTxHashes
+            ?? { Set(registry.votableNodes().nodes.map(\.proTxHash)) }
     }
 
     private var trimmedKey: String {
@@ -92,7 +101,7 @@ final class VotingKeyInputViewModel: ObservableObject {
             return .failed
         }
 
-        guard let manager = SwiftDashSDKHost.shared.manager else {
+        guard let manager = tracker() else {
             error = NSLocalizedString("Wallet is not ready. Try again in a moment.", comment: "Evonode withdrawal")
             return .failed
         }
@@ -100,12 +109,9 @@ final class VotingKeyInputViewModel: ObservableObject {
         isVerifying = true
         defer { isVerifying = false }
 
-        let result: MasternodeLocateResult
+        let located: [VotingKeyLocatedNode]
         do {
-            // Never `searchPlatform`: a voting key is on the masternode list
-            // itself, and asking Platform would only reveal the key's hash to
-            // a DAPI node for nothing.
-            result = try await manager.locateMasternode(key, searchPlatform: false)
+            located = try await manager.locateVotingKeyNodes(key)
         } catch let sdkError as PlatformWalletError {
             switch sdkError {
             case .masternodeListUnavailable:
@@ -127,9 +133,7 @@ final class VotingKeyInputViewModel: ObservableObject {
         // to an owner key, and one of those would be tracked here and then
         // never vote. A PoSe-banned node is left out too: Platform refuses its
         // vote, and `MasternodeVoterRegistry` would not list it anyway.
-        let votingMatches = result.matches.filter {
-            $0.matchedBy == .key && $0.matchedKeys.contains(.voting) && $0.isValid
-        }
+        let votingMatches = located.filter { $0.isVotingKeyMatch && $0.isValid }
         guard !votingMatches.isEmpty else {
             error = NSLocalizedString(
                 "You have entered a key that is not associated to an active Masternode",
@@ -137,13 +141,14 @@ final class VotingKeyInputViewModel: ObservableObject {
             return .failed
         }
 
-        let votable = Set(registry.votableNodes().nodes.map(\.proTxHash))
+        let votable = votableProTxHashes()
         let notYetVotable = votingMatches.filter { !votable.contains($0.proTxHash) }
         // A node registered to a loaded wallet votes through that wallet's
         // derived key or not at all: the registry deliberately never lists it
         // as a tracked node, so storing a key for it here would claim a vote
         // that cannot happen.
-        let addable = notYetVotable.filter { $0.inWalletId == nil }
+        let addable = notYetVotable.filter { !$0.isInLoadedWallet }
+        let walletOwnedCount = notYetVotable.count - addable.count
         guard !addable.isEmpty else {
             error = notYetVotable.isEmpty
                 ? NSLocalizedString("You have already entered this masternode key", comment: "Voting")
@@ -165,7 +170,7 @@ final class VotingKeyInputViewModel: ObservableObject {
             var trackedNow = false
             if !match.alreadyTracked {
                 do {
-                    try manager.trackMasternode(proTxHash: match.proTxHash, label: nil)
+                    try manager.trackForVoting(proTxHash: match.proTxHash)
                     trackedNow = true
                 } catch {
                     failure = (error as? PlatformWalletError)?.errorDescription ?? error.localizedDescription
@@ -176,7 +181,7 @@ final class VotingKeyInputViewModel: ObservableObject {
                 // Undo only what this attempt did: a node the user tracked
                 // earlier keeps its row and whatever keys it had.
                 if trackedNow {
-                    _ = try? manager.untrackMasternode(proTxHash: match.proTxHash)
+                    manager.untrackForVoting(proTxHash: match.proTxHash)
                 }
                 failure = NSLocalizedString(
                     "Could not save a key to the keychain. Nothing was lost — try again.",
@@ -186,21 +191,97 @@ final class VotingKeyInputViewModel: ObservableObject {
             added += 1
         }
 
-        guard let failure else {
-            keyText = ""
-            return .added
+        // Wallet-owned nodes are reported apart from `failure`: entering the
+        // key again cannot add them, so they must never read as "try again",
+        // and while they exist the import is not complete.
+        let walletOwnedNote: String?
+        switch walletOwnedCount {
+        case 0:
+            walletOwnedNote = nil
+        case 1:
+            walletOwnedNote = NSLocalizedString(
+                "One masternode that votes with this key is registered to a wallet in this app and was not added. Its voting key cannot be added separately.",
+                comment: "Voting")
+        default:
+            walletOwnedNote = String(
+                format: NSLocalizedString(
+                    "%d masternodes that vote with this key are registered to a wallet in this app and were not added. Their voting key cannot be added separately.",
+                    comment: "Voting"),
+                walletOwnedCount)
         }
-        guard added > 0 else {
-            error = failure
-            return .failed
+
+        var retryPart: [String] = []
+        if let failure {
+            guard added > 0 else {
+                error = ([failure] + [walletOwnedNote].compactMap { $0 }).joined(separator: "\n")
+                return .failed
+            }
+            // Counted against `addable` only, so "the rest" is exactly what a
+            // retry can add.
+            retryPart = [
+                String(
+                    format: NSLocalizedString(
+                        "Added %1$d of %2$d masternodes that vote with this key. Enter the key again to add the rest.",
+                        comment: "Voting"),
+                    added, addable.count),
+                failure,
+            ]
         }
         keyText = ""
-        let summary = String(
-            format: NSLocalizedString(
-                "Added %1$d of %2$d masternodes that vote with this key. Enter the key again to add the rest.",
-                comment: "Voting"),
-            added, addable.count)
-        return .partiallyAdded(notice: "\(summary)\n\(failure)")
+        let notice = (retryPart + [walletOwnedNote].compactMap { $0 }).joined(separator: "\n")
+        return notice.isEmpty ? .added : .partiallyAdded(notice: notice)
+    }
+}
+
+// MARK: - VotingKeyMasternodeTracking
+
+/// A node the locator matched, reduced to what the voting-key import decides
+/// on. The SDK's `MasternodeLocateMatch` has no public initializer, so tests
+/// could not build one; this can be.
+struct VotingKeyLocatedNode: Equatable {
+    /// 32 WIRE-order bytes, as `MasternodeLocateMatch.proTxHash`.
+    let proTxHash: Data
+    /// The key was matched as this node's VOTING key — not only as its owner
+    /// key, and not by address or proTxHash.
+    let isVotingKeyMatch: Bool
+    /// `false` when PoSe-banned.
+    let isValid: Bool
+    /// One of a loaded wallet's own masternodes.
+    let isInLoadedWallet: Bool
+    let alreadyTracked: Bool
+}
+
+/// The SDK calls the voting-key import and removal make — a seam so tests can
+/// stand in for `PlatformWalletManager`.
+@MainActor
+protocol VotingKeyMasternodeTracking: AnyObject {
+    func locateVotingKeyNodes(_ key: String) async throws -> [VotingKeyLocatedNode]
+    func trackForVoting(proTxHash: Data) throws
+    /// Best-effort: a registry row left behind holds no key and cannot vote.
+    func untrackForVoting(proTxHash: Data)
+}
+
+extension PlatformWalletManager: VotingKeyMasternodeTracking {
+    func locateVotingKeyNodes(_ key: String) async throws -> [VotingKeyLocatedNode] {
+        // Never `searchPlatform`: a voting key is on the masternode list
+        // itself, and asking Platform would only reveal the key's hash to a
+        // DAPI node for nothing.
+        try await locateMasternode(key, searchPlatform: false).matches.map {
+            VotingKeyLocatedNode(
+                proTxHash: $0.proTxHash,
+                isVotingKeyMatch: $0.matchedBy == .key && $0.matchedKeys.contains(.voting),
+                isValid: $0.isValid,
+                isInLoadedWallet: $0.inWalletId != nil,
+                alreadyTracked: $0.alreadyTracked)
+        }
+    }
+
+    func trackForVoting(proTxHash: Data) throws {
+        try trackMasternode(proTxHash: proTxHash, label: nil)
+    }
+
+    func untrackForVoting(proTxHash: Data) {
+        _ = try? untrackMasternode(proTxHash: proTxHash)
     }
 }
 
@@ -219,6 +300,13 @@ enum VotingKeyProblem: Equatable {
     case tooShort
     /// Base58 characters, but the checksum does not add up — a mistyped key.
     case checksum
+    /// A valid WIF for this network without the compression flag. The
+    /// locator would match it — it honours the flag when hashing the key —
+    /// but signing hands the SDK only the 32-byte secret, and the vote is
+    /// signed as the COMPRESSED key's address: a different voter identity,
+    /// which Platform refuses. So it is turned away before it is imported
+    /// as a node that looks votable and never is.
+    case uncompressed
     /// A character Base58 does not use (`0`, `O`, `I`, `l`, punctuation…).
     case invalidCharacter
     case invalid
@@ -260,6 +348,12 @@ enum VotingKeyProblem: Equatable {
                     "You have entered a private key with some incorrect characters. Here is an example (%@)",
                     comment: "Voting"),
                 example)
+        case .uncompressed:
+            return String(
+                format: NSLocalizedString(
+                    "You have entered an uncompressed private key. This app can only vote with a compressed voting key. Here is an example (%@)",
+                    comment: "Voting"),
+                example)
         case .invalidCharacter:
             return String(
                 format: NSLocalizedString(
@@ -285,7 +379,8 @@ enum VotingKeyFormat {
     /// Base58 of 1 version + 32 key + 1 compression flag + 4 checksum bytes.
     static let maxWIFLength = 52
 
-    /// `nil` when `text` is a well-formed WIF private key for this network.
+    /// `nil` when `text` is a well-formed compressed WIF private key for this
+    /// network.
     ///
     /// Well-formed only: whether a masternode votes with it is the locator's
     /// question. Hex is refused even though the signer could use it, because
@@ -321,14 +416,16 @@ enum VotingKeyFormat {
         // Version byte + hash160.
         if payload.count == 21 { return .address }
 
-        // Version + 32-byte key, plus the 0x01 flag of a compressed key.
+        // Version + 32-byte key, plus the 0x01 flag of a compressed key. The
+        // uncompressed shape is still recognised here, so it can be named
+        // below rather than reported as unreadable.
         let isKeyShaped = payload.count == 33 || (payload.count == 34 && payload.last == 0x01)
         guard isKeyShaped else { return payload.count < 33 ? .tooShort : .invalid }
 
         let expected = isMainnet ? mainnetVersion : testnetVersion
         let other = isMainnet ? testnetVersion : mainnetVersion
         switch payload.first {
-        case expected: return nil
+        case expected: return payload.count == 33 ? .uncompressed : nil
         case other: return .wrongNetwork
         default: return .invalid
         }
