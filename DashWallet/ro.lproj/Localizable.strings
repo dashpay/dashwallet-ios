@@ -4301,6 +4301,7 @@
 
 /* No comment provided by engineer. */
 "%.3f s" = "%.3f s";
+"Shielded sync is not running" = "Shielded sync is not running";
 
 /* No comment provided by engineer. */
 "Node status" = "Starea nodului";
@@ -6225,6 +6226,20 @@
 "Your identity is ready. Finish registering a username using its existing credits." = "Your identity is ready. Finish registering a username using its existing credits.";
 "Your identity is ready. Use its existing credits to register a username." = "Your identity is ready. Use its existing credits to register a username.";
 "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again." = "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.";
+"Couldn't move your wallet" = "Couldn't move your wallet";
+"Do not delete the app. Try moving your wallet again, or contact support if the problem continues." = "Do not delete the app. Try moving your wallet again, or contact support if the problem continues.";
+"To: %@\n\nI couldn't move my wallet from the previous version of the app.\n\nWhat happened before the error:\n" = "To: %@\n\nI couldn't move my wallet from the previous version of the app.\n\nWhat happened before the error:\n";
+"Unlock with your wallet PIN to export logs." = "Unlock with your wallet PIN to export logs.";
+"The wallet from the previous version of this app is still on this device but could not be prepared. Do not delete this app. Try again or contact support for help." = "The wallet from the previous version of this app is still on this device but could not be prepared. Do not delete this app. Try again or contact support for help.";
+"Do not delete the app. Try opening your wallet again, or contact support if the problem continues." = "Do not delete the app. Try opening your wallet again, or contact support if the problem continues.";
+"Never share your recovery phrase or private keys with anyone, including support." = "Never share your recovery phrase or private keys with anyone, including support.";
+"Include diagnostic report" = "Include diagnostic report";
+"Preview diagnostic report" = "Preview diagnostic report";
+"Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically." = "Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically.";
+"Contact Support" = "Contact Support";
+"Review and send the message in your mail app, or choose a sharing option." = "Review and send the message in your mail app, or choose a sharing option.";
+"Couldn't prepare the support message" = "Couldn't prepare the support message";
+"Try again or copy the support address and write to us from your mail app." = "Try again or copy the support address and write to us from your mail app.";
 
 /* Contested usernames */
 "%1$@ at %2$@" = "%1$@ at %2$@";
@@ -6663,24 +6678,19 @@
 "“%1$@” has been submitted for voting. It is not registered to you yet. Voting ends around %2$@ — we will notify you with the result." = "“%1$@” has been submitted for voting. It is not registered to you yet. Voting ends around %2$@ — we will notify you with the result.";
 "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends." = "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends.";
 "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username." = "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username.";
+"Preparing logs…" = "Preparing logs…";
 
 /* DashPay Invitations */
-"Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
-
-/* DashPay Invitations */
-"Create" = "Create";
-
-/* DashPay Invitations */
-"Wait until syncing is finished to create a username" = "Wait until syncing is finished to create a username";
-
-/* DashPay Invitations */
-"Verifying invitation" = "Verifying invitation";
+"Between 20 and 23 characters" = "Between 20 and 23 characters";
 
 /* DashPay Invitations */
 "Couldn't verify the invitation. Check your connection and try again." = "Couldn't verify the invitation. Check your connection and try again.";
 
 /* DashPay Invitations */
-"Invitation Error" = "Invitation Error";
+"Create" = "Create";
+
+/* DashPay Invitations */
+"Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
 
 /* DashPay Invitations */
 "DashPay is currently processing an invite." = "DashPay is currently processing an invite.";
@@ -6689,28 +6699,34 @@
 "Invalid Invitation" = "Invalid Invitation";
 
 /* DashPay Invitations */
-"Username already requested" = "Username already requested";
-
-/* DashPay Invitations */
-"You cannot claim this invite since you have already requested a Dash username" = "You cannot claim this invite since you have already requested a Dash username";
-
-/* DashPay Invitations */
-"Between 20 and 23 characters" = "Between 20 and 23 characters";
+"Invitation Error" = "Invitation Error";
 
 /* DashPay Invitations */
 "Numbers 2-9" = "Numbers 2-9";
 
 /* DashPay Invitations */
-"You can only create a non-contested username using this invitation" = "You can only create a non-contested username using this invitation";
-
-/* DashPay Invitations */
-"What are contested and non-contested usernames?" = "What are contested and non-contested usernames?";
-
-/* DashPay Invitations */
-"There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are longer than 20 characters and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period." = "There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are longer than 20 characters and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period.";
+"The invitation couldn't be saved on this device. Open the link again to retry." = "The invitation couldn't be saved on this device. Open the link again to retry.";
 
 /* DashPay Invitations */
 "The invitation is still confirming on the network. Try again in a few minutes." = "The invitation is still confirming on the network. Try again in a few minutes.";
 
 /* DashPay Invitations */
-"The invitation couldn't be saved on this device. Open the link again to retry." = "The invitation couldn't be saved on this device. Open the link again to retry.";
+"There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are longer than 20 characters and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period." = "There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are longer than 20 characters and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period.";
+
+/* DashPay Invitations */
+"Username already requested" = "Username already requested";
+
+/* DashPay Invitations */
+"Verifying invitation" = "Verifying invitation";
+
+/* DashPay Invitations */
+"Wait until syncing is finished to create a username" = "Wait until syncing is finished to create a username";
+
+/* DashPay Invitations */
+"What are contested and non-contested usernames?" = "What are contested and non-contested usernames?";
+
+/* DashPay Invitations */
+"You can only create a non-contested username using this invitation" = "You can only create a non-contested username using this invitation";
+
+/* DashPay Invitations */
+"You cannot claim this invite since you have already requested a Dash username" = "You cannot claim this invite since you have already requested a Dash username";
