@@ -55,8 +55,8 @@ enum DeepLinkAdmission: Int {
     case queued
     /// The same URL as the link queued just before it: dropped.
     case droppedDuplicate
-    /// An unsupported URL while one is already pending: dropped, its
-    /// alert is the pending one's.
+    /// An unsupported URL while one is already pending or its alert is
+    /// being shown: dropped, its alert is that one's.
     case droppedUnsupportedCoalesced
     /// Queued, and the oldest pending link was dropped to stay within
     /// `DeepLinkQueue.capacity`.
@@ -100,16 +100,20 @@ final class DeepLinkQueue: NSObject {
     /// watchdog — finishes only the dispatch it belongs to, so a report
     /// that arrives after the queue moved on cannot finish a later link.
     @objc private(set) var dispatchToken = 0
+    /// The unsupported link handed over and not finished yet: its alert is
+    /// the burst's one alert, so unsupported links arriving while it is up
+    /// are coalesced into it as if it were still pending.
+    private var activeUnsupported: DeepLink?
 
     @objc var isEmpty: Bool { pending.isEmpty }
 
     @objc(enqueue:)
     @discardableResult
     func enqueue(_ link: DeepLink) -> DeepLinkAdmission {
-        if let last = pending.last, last.url == link.url {
+        if let last = pending.last ?? activeUnsupported, last.url == link.url {
             return .droppedDuplicate
         }
-        if link.isUnsupported, pending.contains(where: { $0.isUnsupported }) {
+        if link.isUnsupported, activeUnsupported != nil || pending.contains(where: { $0.isUnsupported }) {
             return .droppedUnsupportedCoalesced
         }
         pending.append(link)
@@ -136,7 +140,9 @@ final class DeepLinkQueue: NSObject {
         }
         isDispatching = true
         dispatchToken &+= 1
-        return pending.remove(at: index)
+        let link = pending.remove(at: index)
+        activeUnsupported = link.isUnsupported ? link : nil
+        return link
     }
 
     /// Ends the dispatch `token` belongs to; false — and nothing changes —
@@ -146,11 +152,13 @@ final class DeepLinkQueue: NSObject {
     func dispatchDidFinish(token: Int) -> Bool {
         guard isDispatching, token == dispatchToken else { return false }
         isDispatching = false
+        activeUnsupported = nil
         return true
     }
 
     /// Ends the dispatch in flight, whichever it is.
     @objc func dispatchDidFinish() {
         isDispatching = false
+        activeUnsupported = nil
     }
 }

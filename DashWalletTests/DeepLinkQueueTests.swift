@@ -179,6 +179,35 @@ final class DeepLinkQueueTests: XCTestCase {
         XCTAssertEqual(alerts.enqueue(url(3, unsupported: true)), .queued, "the alert was shown; a new burst gets its own")
     }
 
+    /// An unsupported link is handed over and its alert is still up when
+    /// more unsupported links arrive — one of them identical to it — and a
+    /// supported one. The burst gets its one alert: once the first
+    /// dispatch finishes, no second unsupported link is handed over, while
+    /// the supported link is. After the burst, a new unsupported link is
+    /// queued again.
+    func testUnsupportedLinksArrivingWhileTheAlertIsUpAreCoalescedIntoIt() {
+        let queue = DeepLinkQueue()
+        let first = url(1, unsupported: true)
+        queue.enqueue(first)
+        XCTAssertTrue(ready(queue) === first)
+        let token = queue.dispatchToken
+
+        XCTAssertEqual(queue.enqueue(DeepLink(url: first.url, isInvitation: false, isUnsupported: true)), .droppedDuplicate,
+                       "identical to the link whose alert is up")
+        XCTAssertEqual(queue.enqueue(url(2, unsupported: true)), .droppedUnsupportedCoalesced)
+        XCTAssertEqual(queue.enqueue(payment), .queued, "a supported link is kept")
+        XCTAssertEqual(queue.enqueue(url(3, unsupported: true)), .droppedUnsupportedCoalesced)
+
+        XCTAssertTrue(queue.dispatchDidFinish(token: token)) // the alert's OK
+        XCTAssertTrue(ready(queue) === payment, "the supported link is handed over; no second unsupported one")
+        queue.dispatchDidFinish()
+        XCTAssertNil(ready(queue))
+        XCTAssertTrue(queue.isEmpty)
+
+        XCTAssertEqual(queue.enqueue(url(4, unsupported: true)), .queued, "a later unsupported link gets its own alert")
+        XCTAssertEqual(queue.enqueue(DeepLink(url: first.url, isInvitation: false, isUnsupported: true)), .droppedUnsupportedCoalesced)
+    }
+
     /// A handler's report belongs to one hand-over. After the owner's
     /// watchdog ended a dispatch whose screen never came, a late report
     /// from that handler must not end the next link's dispatch.
