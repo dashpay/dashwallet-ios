@@ -74,3 +74,89 @@ struct PaymentOperationGate {
         return true
     }
 }
+
+/// Replacement and link settlement of a controller's payment operations,
+/// over `PaymentOperationGate`.
+///
+/// A deep-link payment carries the link queue's completion (`settled`) and
+/// its abandonment check. Every operation's completion runs exactly once:
+/// when the operation settles itself, or when a later operation replaces it
+/// — whoever replaces it. Replacement is reentrancy-safe:
+///
+/// - the new operation is current before any predecessor is notified, so
+///   nothing a notification triggers can be overwritten by the caller that
+///   started the replacement;
+/// - a completion is detached at once but delivered through `deliver` —
+///   the next main-queue turn in the app — so the queue's next hand-over,
+///   which can start another payment on this same controller, never runs
+///   inside the call that settled the previous one;
+/// - a caller that did get re-entered finds its token no longer admitted
+///   (`admits(_:)`) and stops; its operation was settled by the one that
+///   replaced it.
+///
+/// Pure apart from `deliver`, so the ordering is unit-tested.
+final class PaymentOperationSequence {
+    typealias Token = PaymentOperationGate.Token
+
+    private struct Settlement {
+        let settled: () -> Void
+        let isAbandoned: (() -> Bool)?
+    }
+
+    private var gate = PaymentOperationGate()
+    private var settlements: [Token: Settlement] = [:]
+    private let deliver: (@escaping () -> Void) -> Void
+
+    init(deliver: @escaping (@escaping () -> Void) -> Void = { DispatchQueue.main.async(execute: $0) }) {
+        self.deliver = deliver
+    }
+
+    var current: Token? { gate.current }
+
+    /// Starts an operation and makes it current, then settles every
+    /// operation it replaces. `settled` (nil for a payment that no link
+    /// waits on) runs once, later, on the delivery queue.
+    func begin(settled: (() -> Void)?, isAbandoned: (() -> Bool)?) -> Token {
+        let token = gate.begin()
+        if let settled {
+            settlements[token] = Settlement(settled: settled, isAbandoned: isAbandoned)
+        }
+        for replaced in settlements.keys.filter({ $0 != token }).sorted() {
+            settle(replaced)
+        }
+        return token
+    }
+
+    /// Whether a callback tagged `token` belongs to the current operation.
+    func admits(_ token: Token) -> Bool {
+        gate.admits(token)
+    }
+
+    func bind(_ screen: ObjectIdentifier, to token: Token) {
+        gate.bind(screen, to: token)
+    }
+
+    func admits(screen: ObjectIdentifier) -> Bool {
+        gate.admits(screen: screen)
+    }
+
+    /// Whether `token`'s link still waits for its completion.
+    func awaitsSettlement(_ token: Token) -> Bool {
+        settlements[token] != nil
+    }
+
+    /// Whether the link queue has given `token`'s payment up. False once
+    /// the payment is settled: a settled link is no longer the queue's
+    /// concern, and the payment's later screens (a confirmation after its
+    /// amount step) are its own.
+    func isAbandoned(_ token: Token) -> Bool {
+        settlements[token]?.isAbandoned?() == true
+    }
+
+    /// Detaches `token`'s completion and delivers it; a no-op when it has
+    /// already been settled (or never had one).
+    func settle(_ token: Token) {
+        guard let settlement = settlements.removeValue(forKey: token) else { return }
+        deliver(settlement.settled)
+    }
+}

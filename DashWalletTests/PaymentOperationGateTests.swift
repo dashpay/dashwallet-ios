@@ -102,3 +102,177 @@ final class PaymentOperationGateTests: XCTestCase {
         XCTAssertFalse(gate.admits(screen: ObjectIdentifier(stepB)), "an ended operation's step is refused")
     }
 }
+
+/// `PaymentOperationSequence` is what `PaymentController.performPayment`
+/// runs every replacement through: the new operation becomes current, then
+/// the replaced one's link completion is delivered. These tests drive it
+/// with the real `DeepLinkQueue` and a copy of the root controller's
+/// completion (`dispatchDidFinish(token:)`, then the next hand-over, which
+/// — with nothing presented — starts the next payment synchronously), so
+/// the ordering the controller relies on is checked without UIKit or a
+/// payment processor.
+final class PaymentOperationSequenceTests: XCTestCase {
+    /// The root controller's side: the queue, one completion per hand-over
+    /// that ends that hand-over and asks for the next one, and the payment
+    /// each hand-over starts on the same controller.
+    private final class LinkRoot {
+        let queue = DeepLinkQueue()
+        let sequence: PaymentOperationSequence
+        private(set) var completions: [String: Int] = [:]
+        private(set) var tokens: [String: PaymentOperationSequence.Token] = [:]
+        /// A payment that found its token replaced before it could install
+        /// its operation: it must stop there.
+        private(set) var stopped: [String] = []
+
+        init(deliver: @escaping (@escaping () -> Void) -> Void) {
+            sequence = PaymentOperationSequence(deliver: deliver)
+        }
+
+        func enqueue(_ name: String) {
+            queue.enqueue(DeepLink(url: URL(string: "dash:\(name)")!, isInvitation: false, isUnsupported: false))
+        }
+
+        /// `dispatchNextLinkIfReady` with everything ready and nothing
+        /// presented: the payment starts inside this call.
+        func dispatchNext() {
+            guard let link = queue.takeNext(walletPresented: true, attached: true, unlocked: true, launchHoldPending: false, invitationsReady: true) else { return }
+            let name = String(link.url.absoluteString.dropFirst("dash:".count))
+            let token = queue.dispatchToken
+            let done = { [unowned self] in
+                self.completions[name, default: 0] += 1
+                guard self.queue.dispatchDidFinish(token: token) else { return }
+                self.dispatchNext()
+            }
+            perform(name, settled: done, isAbandoned: { [unowned self] in !self.queue.isDispatching || self.queue.dispatchToken != token })
+        }
+
+        /// `performPayment`'s ordering: begin (current first, predecessor
+        /// notified after), then stop if the token was replaced meanwhile.
+        func perform(_ name: String, settled: (() -> Void)?, isAbandoned: (() -> Bool)?) {
+            let token = sequence.begin(settled: settled, isAbandoned: isAbandoned)
+            guard sequence.admits(token) else {
+                stopped.append(name)
+                return
+            }
+            tokens[name] = token
+        }
+
+        func current() -> String? {
+            tokens.first { sequence.current == $0.value }?.key
+        }
+    }
+
+    /// Settlements delivered on a later turn, drained by hand.
+    private final class Turns {
+        var pending: [() -> Void] = []
+        func deliver(_ work: @escaping () -> Void) { pending.append(work) }
+        func drain() {
+            while !pending.isEmpty {
+                pending.removeFirst()()
+            }
+        }
+    }
+
+    /// The reported scenario: link A is preparing (its BIP70 fetch has not
+    /// returned), link C is queued behind it, and the user scans payment B
+    /// by hand. Starting B must not start C inside B's own start; B is
+    /// current when B's start returns; A's completion then runs once, the
+    /// queue hands C over, and C — not B — owns the controller, with C's
+    /// hand-over still in flight until C settles, exactly once.
+    func testManualPaymentOverAPreparingLinkDoesNotReenterOrOverwriteTheQueuedOne() {
+        let turns = Turns()
+        let root = LinkRoot(deliver: turns.deliver)
+        root.enqueue("A")
+        root.enqueue("C")
+        root.dispatchNext()
+        XCTAssertEqual(root.current(), "A")
+        XCTAssertTrue(root.sequence.awaitsSettlement(root.tokens["A"]!))
+
+        root.perform("B", settled: nil, isAbandoned: nil) // the scanner's payment
+
+        XCTAssertEqual(root.current(), "B", "B is current when its start returns")
+        XCTAssertNil(root.tokens["C"], "C did not start inside B's start")
+        XCTAssertEqual(root.completions["A"] ?? 0, 0, "A's completion is delivered later, not inside B's start")
+        XCTAssertFalse(root.sequence.awaitsSettlement(root.tokens["A"]!), "A is detached at once")
+        XCTAssertTrue(root.queue.isDispatching, "A's hand-over is still in flight until the delivery")
+
+        turns.drain()
+
+        XCTAssertEqual(root.completions["A"], 1)
+        XCTAssertEqual(root.current(), "C", "the queued link owns the controller")
+        XCTAssertFalse(root.sequence.admits(root.tokens["B"]!), "B's late callbacks are refused")
+        XCTAssertTrue(root.queue.isDispatching, "C's hand-over waits for C's screen")
+        XCTAssertTrue(root.sequence.awaitsSettlement(root.tokens["C"]!))
+        XCTAssertTrue(root.stopped.isEmpty)
+
+        // C's amount step finishes presenting.
+        root.sequence.settle(root.tokens["C"]!)
+        root.sequence.settle(root.tokens["C"]!) // a second report is a no-op
+        turns.drain()
+
+        XCTAssertEqual(root.completions, ["A": 1, "C": 1], "each link settled exactly once")
+        XCTAssertFalse(root.queue.isDispatching)
+        XCTAssertTrue(root.queue.isEmpty)
+    }
+
+    /// The same scenario with the predecessor notified synchronously (the
+    /// ordering before the fix): C starts inside B's start. B's start must
+    /// then find its token replaced and stop instead of overwriting C, and
+    /// every link still settles exactly once.
+    func testAReentrantStartStopsTheOuterOneInsteadOfOverwritingTheInner() {
+        let root = LinkRoot(deliver: { $0() })
+        root.enqueue("A")
+        root.enqueue("C")
+        root.dispatchNext()
+
+        root.perform("B", settled: nil, isAbandoned: nil)
+
+        XCTAssertEqual(root.stopped, ["B"], "B's start stops once C has replaced it")
+        XCTAssertEqual(root.current(), "C", "C's operation is not overwritten")
+        XCTAssertEqual(root.completions["A"], 1)
+        XCTAssertTrue(root.sequence.awaitsSettlement(root.tokens["C"]!), "C's link is still C's to settle")
+
+        root.sequence.settle(root.tokens["C"]!)
+        XCTAssertEqual(root.completions, ["A": 1, "C": 1])
+        XCTAssertFalse(root.queue.isDispatching)
+    }
+
+    /// Whoever replaces an operation settles it: a link payment replaced by
+    /// another link payment is settled by the replacement, once, and its
+    /// own late settlement afterwards changes nothing.
+    func testAReplacedLinkIsSettledOnceByItsReplacement() {
+        let turns = Turns()
+        let sequence = PaymentOperationSequence(deliver: turns.deliver)
+        var settled: [String: Int] = [:]
+        let a = sequence.begin(settled: { settled["A", default: 0] += 1 }, isAbandoned: nil)
+        let b = sequence.begin(settled: { settled["B", default: 0] += 1 }, isAbandoned: nil)
+        XCTAssertTrue(settled.isEmpty, "nothing runs inside begin")
+        turns.drain()
+        XCTAssertEqual(settled, ["A": 1])
+
+        sequence.settle(a) // A's own late presentation completion
+        sequence.settle(b)
+        sequence.settle(b)
+        turns.drain()
+        XCTAssertEqual(settled, ["A": 1, "B": 1])
+    }
+
+    /// A settled payment is no longer the queue's: its later screens (the
+    /// confirmation after its amount step) are not dropped because the
+    /// queue has since moved on.
+    func testASettledPaymentIsNotAbandoned() {
+        let turns = Turns()
+        let sequence = PaymentOperationSequence(deliver: turns.deliver)
+        var queueMovedOn = false
+        let a = sequence.begin(settled: {}, isAbandoned: { queueMovedOn })
+        queueMovedOn = true
+        XCTAssertTrue(sequence.isAbandoned(a), "the queue gave A up before A showed anything")
+
+        sequence.settle(a)
+        XCTAssertFalse(sequence.isAbandoned(a), "after A settled, the queue's state is not A's")
+
+        let manual = sequence.begin(settled: nil, isAbandoned: nil)
+        XCTAssertFalse(sequence.isAbandoned(manual))
+        XCTAssertFalse(sequence.awaitsSettlement(manual))
+    }
+}

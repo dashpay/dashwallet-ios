@@ -47,30 +47,19 @@ protocol AmountProviding: ActivityIndicatorPreviewing, ErrorPresentable, Payment
 
 // MARK: - PaymentController
 
-/// One payment this controller runs: its own processor, its own link
-/// settlement and abandonment. A controller serves a screen for its
-/// lifetime, so payment B can start while A's preparation (a BIP70 fetch,
-/// a BIP73 hop) is still alive; A's processor keeps calling back, and only
-/// the operation the gate admits may act on a callback.
+/// One payment this controller runs: its own processor; its link
+/// settlement and abandonment live in `PaymentOperationSequence` under its
+/// token. A controller serves a screen for its lifetime, so payment B can
+/// start while A's preparation (a BIP70 fetch, a BIP73 hop) is still alive;
+/// A's processor keeps calling back, and only the operation the sequence
+/// admits may act on a callback.
 private final class PaymentOperation {
-    let token: PaymentOperationGate.Token
+    let token: PaymentOperationSequence.Token
     let processor: DWPaymentProcessor
-    /// The link queue's completion, run once.
-    var presentationSettled: (() -> Void)?
-    /// Whether the link queue has given this payment up (its watchdog
-    /// fired while preparation was still running).
-    var isAbandoned: (() -> Bool)?
 
-    init(token: PaymentOperationGate.Token, processor: DWPaymentProcessor) {
+    init(token: PaymentOperationSequence.Token, processor: DWPaymentProcessor) {
         self.token = token
         self.processor = processor
-    }
-
-    func settle() {
-        let settled = presentationSettled
-        presentationSettled = nil
-        isAbandoned = nil
-        settled?()
     }
 }
 
@@ -80,7 +69,7 @@ final class PaymentController: NSObject {
 
     @objc public var locksBalance = false
 
-    private var gate = PaymentOperationGate()
+    private let operations = PaymentOperationSequence()
     private var operation: PaymentOperation?
     private var fiatCurrency: String = App.fiatCurrency
     private weak var paymentOutput: DWPaymentOutput?
@@ -120,10 +109,21 @@ final class PaymentController: NSObject {
     /// before it is obsolete from here on, its processor's callbacks are
     /// refused by `admitted(_:)` and its link (if any) is settled, since it
     /// will show nothing.
+    ///
+    /// The new operation is current before the previous one's link is
+    /// settled, and that settlement is delivered on the next main-queue
+    /// turn: settling a link hands the queue's next link over, which can
+    /// start another payment on this controller, and that must not run
+    /// inside this call (it would install its operation and push its
+    /// amount step, and this call would then overwrite both). Should
+    /// anything below re-enter all the same, the token is no longer
+    /// admitted and this call stops; the payment that replaced it has
+    /// settled it.
     private func performPayment(with input: DWPaymentInput, presentationSettled: (() -> Void)?, isAbandoned: (() -> Bool)?) {
-        if let previous = operation {
-            gate.end(previous.token)
-            previous.settle()
+        let token = operations.begin(settled: presentationSettled, isAbandoned: isAbandoned)
+        guard operations.admits(token) else {
+            DWLogger.log("PAY a payment started while this one was being installed; this one is dropped")
+            return
         }
         // The previous operation's screens are not this one's: the link
         // queue dismissed what was presented before handing this link over,
@@ -135,12 +135,13 @@ final class PaymentController: NSObject {
         confirmViewController = nil
         removeSupersededAmountStep()
         paymentOutput = nil
+        guard operations.admits(token) else {
+            DWLogger.log("PAY a payment started while this one was being installed; this one is dropped")
+            return
+        }
         let processor = DWPaymentProcessor()
         processor.delegate = self
-        let current = PaymentOperation(token: gate.begin(), processor: processor)
-        current.presentationSettled = presentationSettled
-        current.isAbandoned = isAbandoned
-        operation = current
+        operation = PaymentOperation(token: token, processor: processor)
         processor.processPaymentInput(input)
     }
 
@@ -164,35 +165,38 @@ final class PaymentController: NSObject {
     /// a log line — for a callback from an operation this controller has
     /// moved past, which then mutates nothing and presents nothing.
     private func admitted(_ processor: DWPaymentProcessor, _ callback: StaticString = #function) -> PaymentOperation? {
-        guard let operation, operation.processor === processor, gate.admits(operation.token) else {
+        guard let operation, operation.processor === processor, operations.admits(operation.token) else {
             DWLogger.log("PAY a callback (\(callback)) from a payment this controller has moved past; ignored")
             return nil
         }
         return operation
     }
 
-    private func settlePresentation() {
-        operation?.settle()
+    /// Settles `token`'s link — that operation's own, never whichever
+    /// operation is current by the time a presentation completes. Once per
+    /// operation; later calls are no-ops.
+    private func settlePresentation(of token: PaymentOperationSequence.Token) {
+        operations.settle(token)
     }
 
     /// True — and the payment is dropped, logged and settled — when the
     /// link queue has moved on without this payment.
     private func dropIfAbandoned(_ operation: PaymentOperation, _ screen: String) -> Bool {
-        guard operation.isAbandoned?() == true else { return false }
+        guard operations.isAbandoned(operation.token) else { return false }
         DWLogger.log("PAY the link queue gave this payment up before its \(screen) was ready; presenting nothing")
         operation.processor.reset()
-        operation.settle()
+        settlePresentation(of: operation.token)
         return true
     }
 
-    /// `settlePresentation` once `transition` (a push's coordinator) has
-    /// finished, or on the next run-loop turn when nothing is animating.
-    private func settlePresentation(after transition: UIViewControllerTransitionCoordinator?) {
-        guard operation?.presentationSettled != nil else { return }
+    /// `settlePresentation(of:)` once `transition` (a push's coordinator)
+    /// has finished, or on the next run-loop turn when nothing is animating.
+    private func settlePresentation(of token: PaymentOperationSequence.Token, after transition: UIViewControllerTransitionCoordinator?) {
+        guard operations.awaitsSettlement(token) else { return }
         if let transition {
-            transition.animate(alongsideTransition: nil) { [weak self] _ in self?.settlePresentation() }
+            transition.animate(alongsideTransition: nil) { [weak self] _ in self?.settlePresentation(of: token) }
         } else {
-            DispatchQueue.main.async { [weak self] in self?.settlePresentation() }
+            DispatchQueue.main.async { [weak self] in self?.settlePresentation(of: token) }
         }
     }
 }
@@ -202,17 +206,17 @@ extension PaymentController {
         provideAmountViewController ?? presentationContextProvider?.presentationAnchorForPaymentController(self)
     }
 
-    private func showAlert(with title: String?, message: String?) {
+    private func showAlert(with title: String?, message: String?, for token: PaymentOperationSequence.Token) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel)
         alert.addAction(okAction)
-        show(modalController: alert)
+        show(modalController: alert, for: token)
     }
 
-    private func show(modalController: UIViewController) {
+    private func show(modalController: UIViewController, for token: PaymentOperationSequence.Token) {
         precondition(presentationAnchor != nil)
         presentationAnchor!.topController().present(modalController, animated: true) { [weak self] in
-            self?.settlePresentation()
+            self?.settlePresentation(of: token)
         }
     }
 }
@@ -250,8 +254,8 @@ extension PaymentController: DWPaymentProcessorDelegate {
         let navigation = presentationAnchor!.navigationController
         navigation?.pushViewController(vc, animated: true)
         provideAmountViewController = vc
-        gate.bind(ObjectIdentifier(vc), to: operation.token)
-        settlePresentation(after: navigation?.transitionCoordinator)
+        operations.bind(ObjectIdentifier(vc), to: operation.token)
+        settlePresentation(of: operation.token, after: navigation?.transitionCoordinator)
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
@@ -261,26 +265,27 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
         if let vc = confirmViewController {
             vc.update(with: paymentOutput)
-            settlePresentation()
+            settlePresentation(of: operation.token)
         } else {
             let vc = ConfirmPaymentViewController(dataSource: paymentOutput, fiatCurrency: fiatCurrency)
             vc.delegate = self
 
             // TODO: demo mode
 
+            let token = operation.token
             presentationAnchor?.topController().present(vc, animated: true) { [weak self] in
-                self?.settlePresentation()
+                self?.settlePresentation(of: token)
             }
             confirmViewController = vc
         }
     }
 
     func paymentProcessorDidCancelTransactionSigning(_ processor: DWPaymentProcessor) {
-        guard admitted(processor) != nil else { return }
+        guard let operation = admitted(processor) else { return }
         provideAmountViewController?.hideActivityIndicator()
         delegate?.paymentControllerDidCancelTransaction(self)
         confirmViewController?.isSendingEnabled = true
-        settlePresentation()
+        settlePresentation(of: operation.token)
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, didFailWithError error: Error?, title: String?, message: String?) {
@@ -289,7 +294,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
         // stay silent here. The DashSync DSErrorDomain special-case is gone — live
         // errors carry WalletSendService / SDK / BIP70 domains.
         guard let error else {
-            settlePresentation()
+            settlePresentation(of: operation.token)
             return
         }
 
@@ -300,13 +305,13 @@ extension PaymentController: DWPaymentProcessorDelegate {
         confirmViewController?.isSendingEnabled =
             Self.shouldReenableSending(after: error as NSError)
 
-        showAlert(with: title, message: message)
+        showAlert(with: title, message: message, for: operation.token)
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, didSendWithTxidWire txidWire: Data) {
-        guard admitted(processor) != nil else { return }
+        guard let operation = admitted(processor) else { return }
         presentationAnchor?.topController().view.dw_hideProgressHUD()
-        settlePresentation()
+        settlePresentation(of: operation.token)
 
         let finishBlock = {
             // The pop is for the LEGACY amount screen, which the redesigned
@@ -352,7 +357,7 @@ extension PaymentController: ProvideAmountViewControllerDelegate {
     /// a step left over from an earlier payment is refused, whichever
     /// processor is current.
     func provideAmountViewController(_ controller: ProvideAmountViewController, didInput amount: UInt64, selectedCurrency: String) {
-        guard let operation, gate.admits(screen: ObjectIdentifier(controller)) else {
+        guard let operation, operations.admits(screen: ObjectIdentifier(controller)) else {
             DWLogger.log("PAY an amount from a screen that is not the current payment's; ignored")
             controller.hideActivityIndicator()
             return
