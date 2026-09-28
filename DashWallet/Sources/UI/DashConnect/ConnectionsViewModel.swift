@@ -101,17 +101,16 @@ final class ConnectionsViewModel: ObservableObject {
     /// its approval sheet never lands on top of the screen the next link
     /// opened.
     private let operations = LinkOperationSequence()
-    /// A UI outcome was published (a sheet, an alert) for this request, and
-    /// its settlement waits for the presentation layer to report it on
-    /// screen (`presentationDidAppear`): publishing a `@Published` value
-    /// does not present it, and settling before the sheet is up let the
-    /// next link's screen race the sheet's binding.
-    private var awaitingPresentation: LinkOperationSequence.Token?
+    /// Requests that published a UI outcome (a sheet, an alert) and whose
+    /// settlement waits for the presentation layer to report it on screen
+    /// (`presentationDidAppear`), oldest first: publishing a `@Published`
+    /// value does not present it, and settling before the sheet is up let
+    /// the next link's screen race the sheet's binding. Neither a refused
+    /// newcomer nor a newer request settles one of these early.
+    private var awaitingPresentation: [LinkOperationSequence.Token] = []
 
     private func settle(_ token: LinkOperationSequence.Token) {
-        if awaitingPresentation == token {
-            awaitingPresentation = nil
-        }
+        awaitingPresentation.removeAll { $0 == token }
         operations.settle(token)
     }
 
@@ -119,14 +118,14 @@ final class ConnectionsViewModel: ObservableObject {
     /// calls `presentationDidAppear` from the sheet's or the alert's
     /// `onAppear`.
     private func settleWhenPresented(_ token: LinkOperationSequence.Token) {
-        guard operations.awaitsSettlement(token) else { return }
-        awaitingPresentation = token
+        guard operations.awaitsSettlement(token), !awaitingPresentation.contains(token) else { return }
+        awaitingPresentation.append(token)
     }
 
-    /// The screen reports that the sheet or alert published for the request
-    /// in flight has appeared. Nothing happens when nothing waits for it.
+    /// The screen reports that a sheet or alert has appeared: the oldest
+    /// request waiting for one settles. Nothing happens when nothing waits.
     func presentationDidAppear() {
-        guard let token = awaitingPresentation else { return }
+        guard let token = awaitingPresentation.first else { return }
         settle(token)
     }
 
@@ -168,17 +167,13 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     func onQRScanned(_ content: String, settled: (() -> Void)?, isAbandoned: (() -> Bool)?) {
-        // This request is current from here on. A request still resolving
-        // is superseded below and will publish nothing, so `begin` settles
-        // it — on the next turn, never inside this call.
-        let token = operations.begin(settled: settled, isAbandoned: isAbandoned)
-        awaitingPresentation = nil
-        guard operations.admits(token) else {
-            DWLogger.log("DASHCONNECT a request arrived while this one was being installed; this one is dropped")
-            return
-        }
+        // Refusals are decided first, and a refused newcomer never starts:
+        // the request that owns the screen stays current, keeps its
+        // settlement and keeps waiting for its sheet or alert to appear;
+        // only the newcomer's own completion is settled (a manual scan has
+        // none).
         guard !featureUnavailable else {
-            settle(token)
+            settle(operations.refuse(settled: settled))
             return
         }
 
@@ -205,8 +200,9 @@ final class ConnectionsViewModel: ObservableObject {
             } else {
                 approveError = refusal
             }
-            // Shown on the sheet that is already up: no new presentation.
-            settle(token)
+            // Shown on the sheet that is already up (or about to appear):
+            // no new presentation of its own.
+            settle(operations.refuse(settled: settled))
             return
         }
 
@@ -216,7 +212,18 @@ final class ConnectionsViewModel: ObservableObject {
                 text: NSLocalizedString("Finish the current DashConnect request first, then try again.",
                                         comment: "DashConnect: a second request arrived during key registration")
             )
-            settleWhenPresented(token)
+            settleWhenPresented(operations.refuse(settled: settled))
+            return
+        }
+
+        // This request replaces whatever is still resolving, and is current
+        // from here on. The replaced request will publish nothing, so
+        // `begin` settles it — on the next turn, never inside this call —
+        // unless it already published an alert that has yet to appear: that
+        // one still settles on its appearance.
+        let token = operations.begin(settled: settled, isAbandoned: isAbandoned, keeping: Set(awaitingPresentation))
+        guard operations.admits(token) else {
+            DWLogger.log("DASHCONNECT a request arrived while this one was being installed; this one is dropped")
             return
         }
 

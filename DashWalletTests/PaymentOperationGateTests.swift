@@ -275,4 +275,47 @@ final class LinkOperationSequenceTests: XCTestCase {
         XCTAssertFalse(sequence.isAbandoned(manual))
         XCTAssertFalse(sequence.awaitsSettlement(manual))
     }
+
+    /// A refused newcomer does not start: the current operation stays
+    /// current and keeps its pending settlement; only the newcomer's own
+    /// completion is settled, and its token is never admitted.
+    func testARefusedNewcomerLeavesTheCurrentOperationAndItsSettlementAlone() {
+        let turns = Turns()
+        let sequence = LinkOperationSequence(deliver: turns.deliver)
+        var settled: [String: Int] = [:]
+        let c = sequence.begin(settled: { settled["C", default: 0] += 1 }, isAbandoned: nil)
+
+        let refused = sequence.refuse(settled: { settled["X", default: 0] += 1 })
+        let manual = sequence.refuse(settled: nil)
+        XCTAssertEqual(sequence.current, c, "C is still current")
+        XCTAssertFalse(sequence.admits(refused))
+        XCTAssertFalse(sequence.admits(manual))
+        XCTAssertTrue(sequence.awaitsSettlement(c))
+        sequence.settle(refused)
+        sequence.settle(manual)
+        turns.drain()
+        XCTAssertEqual(settled, ["X": 1], "only the refused newcomer settled")
+
+        sequence.settle(c)
+        turns.drain()
+        XCTAssertEqual(settled, ["X": 1, "C": 1])
+    }
+
+    /// A replaced operation whose alert has yet to appear is kept: the
+    /// replacement does not settle it, its own appearance does.
+    func testAReplacementKeepsAnOperationWaitingForItsAlert() {
+        let turns = Turns()
+        let sequence = LinkOperationSequence(deliver: turns.deliver)
+        var settled: [String: Int] = [:]
+        let a = sequence.begin(settled: { settled["A", default: 0] += 1 }, isAbandoned: nil)
+        let b = sequence.begin(settled: nil, isAbandoned: nil, keeping: [a])
+        turns.drain()
+        XCTAssertEqual(sequence.current, b)
+        XCTAssertTrue(settled.isEmpty, "A still waits for its alert")
+        XCTAssertTrue(sequence.awaitsSettlement(a))
+
+        sequence.settle(a) // A's alert appeared
+        turns.drain()
+        XCTAssertEqual(settled, ["A": 1])
+    }
 }

@@ -284,4 +284,46 @@ final class ConnectionsViewModelTests: XCTestCase {
         XCTAssertTrue(root.queue.isEmpty)
         XCTAssertEqual(dataSource.lookups, 3, "no lookup for the refused D")
     }
+
+    /// Link C has published its approval, but its sheet has not appeared
+    /// yet, when a manual scan arrives (C's lookup finished while the
+    /// scanner was being dismissed). The newcomer is refused without
+    /// starting: C stays current, C's link is not settled and link D is not
+    /// handed over until C's sheet appears; a refused newcomer that carries
+    /// a completion settles it once. Then C's appearance settles C once and
+    /// D proceeds.
+    func testARefusedNewcomerBeforeTheSheetAppearsLeavesThePendingRequestWaiting() async {
+        let dataSource = DelayedLookupDataSource()
+        let viewModel = ConnectionsViewModel(dataSource: dataSource, featureUnavailable: false)
+        let root = LinkRoot(viewModel: viewModel)
+        root.enqueue("link-c")
+        root.enqueue("link-d")
+        root.dispatchNext()
+        await settle(dataSource.waitingLabels == ["link-c"])
+        dataSource.finishLookup("link-c")
+        await settle(viewModel.pendingRequest != nil)
+        XCTAssertEqual(viewModel.pendingRequest?.appLabel, "link-c", "C's approval is published, its sheet not yet on screen")
+
+        viewModel.onQRScanned("scan-x") // the scanner's late callback
+        var newcomerSettled = 0
+        viewModel.onQRScanned("scan-y", settled: { newcomerSettled += 1 })
+
+        await settle(newcomerSettled == 1)
+        await settle(root.completions["link-c"] != nil, within: 0.3)
+        XCTAssertEqual(newcomerSettled, 1, "the refused newcomer's own completion settles")
+        XCTAssertNil(root.completions["link-c"], "C still waits for its sheet to appear")
+        XCTAssertEqual(root.dispatched, ["link-c"], "D is not handed over before C's sheet appears")
+        XCTAssertTrue(root.queue.isDispatching)
+        XCTAssertEqual(viewModel.pendingRequest?.appLabel, "link-c", "C's approval is not replaced")
+        XCTAssertNotNil(viewModel.approveError, "the refusal is shown on C's sheet")
+        XCTAssertEqual(dataSource.lookups, 1, "the refused newcomers start no lookup")
+
+        viewModel.presentationDidAppear() // C's sheet appeared
+        await settle(root.completions["link-d"] == 1)
+        XCTAssertEqual(root.completions, ["link-c": 1, "link-d": 1], "C settled once, on its appearance; D (refused: C's sheet is up) once")
+        XCTAssertEqual(root.dispatched, ["link-c", "link-d"])
+        XCTAssertEqual(newcomerSettled, 1, "once")
+        XCTAssertFalse(root.queue.isDispatching)
+        XCTAssertTrue(root.queue.isEmpty)
+    }
 }

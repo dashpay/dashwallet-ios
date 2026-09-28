@@ -45,6 +45,14 @@ struct PaymentOperationGate {
         return next
     }
 
+    /// A token for an operation that never becomes current (a newcomer
+    /// refused while another one owns the screen): nothing it reports is
+    /// admitted, and the current operation and its screens are untouched.
+    mutating func issue() -> Token {
+        next += 1
+        return next
+    }
+
     /// Binds `screen` to the operation `token`; refused — and nothing
     /// changes — unless `token` is current.
     mutating func bind(_ screen: ObjectIdentifier, to token: Token) {
@@ -116,15 +124,29 @@ final class LinkOperationSequence {
     var current: Token? { gate.current }
 
     /// Starts an operation and makes it current, then settles every
-    /// operation it replaces. `settled` (nil for a payment that no link
-    /// waits on) runs once, later, on the delivery queue.
-    func begin(settled: (() -> Void)?, isAbandoned: (() -> Bool)?) -> Token {
+    /// operation it replaces — except those in `kept`, whose settlement
+    /// still waits for something of theirs (a published alert) to appear.
+    /// `settled` (nil for an operation that no link waits on) runs once,
+    /// later, on the delivery queue.
+    func begin(settled: (() -> Void)?, isAbandoned: (() -> Bool)?, keeping kept: Set<Token> = []) -> Token {
         let token = gate.begin()
         if let settled {
             settlements[token] = Settlement(settled: settled, isAbandoned: isAbandoned)
         }
-        for replaced in settlements.keys.filter({ $0 != token }).sorted() {
+        for replaced in settlements.keys.filter({ $0 != token && !kept.contains($0) }).sorted() {
             settle(replaced)
+        }
+        return token
+    }
+
+    /// Takes a newcomer that is refused, without starting it: the current
+    /// operation stays current and nothing already pending is settled.
+    /// The returned token carries only the newcomer's own `settled`, for
+    /// `settle(_:)` once its refusal is shown; it is never admitted.
+    func refuse(settled: (() -> Void)?) -> Token {
+        let token = gate.issue()
+        if let settled {
+            settlements[token] = Settlement(settled: settled, isAbandoned: nil)
         }
         return token
     }
