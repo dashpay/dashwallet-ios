@@ -205,9 +205,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     // still running means "no wallet" is a lie about to become true.
     // Deciding now would show Create/Recover to an upgrading user whose
     // wallet is milliseconds from appearing — and route their typed
-    // phrase into the recover screen's wipe branch. Hold the launch
-    // background and decide once the migrator settles (typically well
-    // under a second; bounded fallback in the poller).
+    // phrase into the recover screen's wipe branch. Hand the launch to the
+    // migration hold: it keeps the launch background, shows progress and a
+    // blocking Try Again card on failure, and calls back only once a wallet
+    // is present or there is nothing to migrate. Setup is never offered
+    // while the old wallet is still in the keychain.
     const BOOL keyMigrationPending =
         !hasAWallet && [DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration];
     if (!hasAWallet && !keyMigrationPending) {
@@ -219,8 +221,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
 
     if (keyMigrationPending) {
-        [self presentInitialControllerWhenKeyMigrationSettles:
-                  [NSDate dateWithTimeIntervalSinceNow:10.0]];
+        __weak typeof(self) weakSelf = self;
+        [DWLegacyWalletMigrationLaunchHold beginWithCompletion:^(BOOL migratedWalletPresent) {
+            [weakSelf presentInitialControllerAfterKeyMigration:migratedWalletPresent];
+        }];
     }
 
     if (hasAWallet) {
@@ -299,24 +303,14 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 #pragma mark - Key migration launch hold
 
-/// Poll the key migrator's terminal state, then present the initial
-/// controller the normal launch decision would have picked: main (behind
-/// the lock screen — `PinStore` reads DashSync's PIN records in place, so
-/// the migrated wallet keeps its old PIN) when the wallet landed, setup
-/// otherwise. Bounded by `deadline` so a wedged migrator degrades to the
-/// old behavior instead of a blank screen.
-- (void)presentInitialControllerWhenKeyMigrationSettles:(NSDate *)deadline {
-    if (![DWSwiftDashSDKKeyMigrator migrationSettled] && [deadline timeIntervalSinceNow] > 0) {
-        __weak typeof(self) weakSelf = self;
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)),
-                       dispatch_get_main_queue(), ^{
-                           [weakSelf presentInitialControllerWhenKeyMigrationSettles:deadline];
-                       });
-        return;
-    }
-
-    const BOOL hasAWallet = self.model.hasAWallet;
-    if (hasAWallet) {
+/// Completion of the migration hold: present the initial controller the
+/// normal launch decision would have picked. Main (behind the lock screen —
+/// `PinStore` reads DashSync's PIN records in place, so the migrated wallet
+/// keeps its old PIN) when the wallet landed; setup only when the hold
+/// reports that nothing was left to migrate. A failed import never reaches
+/// this method — the hold keeps its blocking card up until a retry lands.
+- (void)presentInitialControllerAfterKeyMigration:(BOOL)migratedWalletPresent {
+    if (migratedWalletPresent && self.model.hasAWallet) {
         if ([self.model shouldShowLockScreen]) {
             [self showLockControllerIfNeeded];
         }

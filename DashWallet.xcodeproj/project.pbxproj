@@ -12376,7 +12376,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Dash;
+				INFOPLIST_KEY_CFBundleDisplayName = DashPay;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -12505,7 +12505,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Dash;
+				INFOPLIST_KEY_CFBundleDisplayName = DashPay;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -12845,7 +12845,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Dash;
+				INFOPLIST_KEY_CFBundleDisplayName = DashPay;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -13092,7 +13092,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Dash;
+				INFOPLIST_KEY_CFBundleDisplayName = DashPay;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -13220,7 +13220,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Dash;
+				INFOPLIST_KEY_CFBundleDisplayName = DashPay;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -13411,7 +13411,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Dash;
+				INFOPLIST_KEY_CFBundleDisplayName = DashPay;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -13709,7 +13709,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Dash;
+				INFOPLIST_KEY_CFBundleDisplayName = DashPay;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
