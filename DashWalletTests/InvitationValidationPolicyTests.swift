@@ -177,6 +177,35 @@ final class InvitationValidationPolicyTests: XCTestCase {
         XCTAssertEqual(InvitationNotReadyPolicy.next(afterAttempts: 10), .offerRetry)
     }
 
+    // MARK: - Explanations for a link taken while locked
+
+    /// Locked, into a wallet that already has a username: nothing is stored,
+    /// so the explanation is held for after unlock.
+    func testLockedReceiptIntoARegisteredWalletHoldsItsExplanation() {
+        var notice = InvitationReceiptNotice()
+        notice.hold(.alreadyHasIdentity)
+        XCTAssertEqual(notice.take(), .alreadyHasIdentity)
+        XCTAssertNil(notice.take(), "shown once")
+    }
+
+    func testFailedWriteWhileLockedHoldsItsExplanation() {
+        var notice = InvitationReceiptNotice()
+        notice.hold(.storageFailed)
+        XCTAssertEqual(notice.outcome, .storageFailed)
+    }
+
+    func testStoredOrSuspendedNeedsNoExplanationAndAWipeDiscardsOne() {
+        var notice = InvitationReceiptNotice()
+        notice.hold(.busy)
+        notice.hold(.stored)
+        XCTAssertNil(notice.outcome, "a later stored invitation makes the refusal moot")
+        notice.hold(.suspended)
+        XCTAssertNil(notice.outcome)
+        notice.hold(.storageFailed)
+        notice.discard()
+        XCTAssertNil(notice.take(), "nothing received before a wipe is explained after it")
+    }
+
     // MARK: - Inviter name
 
     func testInviterBestNamePrefersDisplayName() {

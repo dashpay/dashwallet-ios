@@ -339,6 +339,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 #if DASHPAY
     [DWInvitationEntry walletSetupDidFinish];
+    [DWInvitationEntry presentHeldNoticeFrom:self];
 #endif
 }
 
@@ -347,6 +348,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (void)didWipeWallet {
     // Nothing received before the wipe may be acted on after it.
     self.showsInvitationAfterUnlock = NO;
+    [DWInvitationEntry discardHeldNotice];
 
     UIViewController *setupController = [self setupController];
     [self transitionToController:setupController
@@ -472,14 +474,18 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             self.lockWindow.alpha = 1.0;
             [DWWalletLifecycleOverlayBridge setLockScreenVisible:NO];
 
+            BOOL showsInvitation = NO;
 #if DASHPAY
-            if (self.showsInvitationAfterUnlock) {
-                self.showsInvitationAfterUnlock = NO;
+            showsInvitation = self.showsInvitationAfterUnlock;
+            self.showsInvitationAfterUnlock = NO;
+            if (showsInvitation) {
                 [self.mainController showHomeForInvitation];
             }
-            else
+            // Explain a link refused while locked (already has a username,
+            // another invitation pending, could not be saved).
+            [DWInvitationEntry presentHeldNoticeFrom:self];
 #endif
-                if (self.deferredURLToProcess) {
+            if (!showsInvitation && self.deferredURLToProcess) {
                 [self handleURL:self.deferredURLToProcess];
             }
             self.deferredURLToProcess = nil;
