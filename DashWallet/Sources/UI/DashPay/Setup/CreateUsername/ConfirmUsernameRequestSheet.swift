@@ -35,14 +35,15 @@ struct ConfirmUsernameRequestSheet: View {
 
     let kind: Kind
     let username: String
-    /// What this pass costs in duffs, or nil when it costs nothing.
+    /// What this pass costs in duffs.
     ///
-    /// The instant companion is nil by nature: it is a second DPNS name on
-    /// the identity the contested submission just funded
+    /// Zero for the instant companion: it is a second DPNS name on the
+    /// identity the contested submission just funded
     /// (`DWIdentityRegistrationCoordinator`, step 3.6 — `registerDpnsName`
     /// with no asset lock), so it is paid in that identity's credits and no
-    /// further DASH is spent. Showing a figure there invented a second charge.
-    let amountDuffs: UInt64?
+    /// further DASH is spent. The sheet says so with the figure itself, as
+    /// the design does, rather than with a sentence.
+    let amountDuffs: UInt64
     /// Contested submissions spend the contest fee whatever the vote decides,
     /// which is the one thing about the amount that is not obvious.
     let showsContestFeeNote: Bool
@@ -56,7 +57,7 @@ struct ConfirmUsernameRequestSheet: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(spacing: 20) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(NSLocalizedString("Confirm username request", comment: "Usernames"))
+                    Text(title)
                         .dashFont(.title1)
                         .foregroundStyle(Color.dash.primaryText)
 
@@ -66,18 +67,7 @@ struct ConfirmUsernameRequestSheet: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                if amountDuffs != nil {
-                    amountSection
-                } else {
-                    Text(NSLocalizedString(
-                        "No additional Dash is spent — this username is registered to the identity you are already paying for.",
-                        comment: "Usernames"))
-                        .dashFont(.footnote)
-                        .foregroundStyle(Color.dash.secondaryText)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: .infinity)
-                }
+                amountSection
             }
 
             if showsContestFeeNote {
@@ -110,6 +100,15 @@ struct ConfirmUsernameRequestSheet: View {
         .padding(.vertical, 20)
     }
 
+    private var title: String {
+        switch kind {
+        case .requested:
+            return NSLocalizedString("Confirm username request", comment: "Usernames")
+        case .instant:
+            return NSLocalizedString("Confirm instant username", comment: "Usernames")
+        }
+    }
+
     private var message: String {
         switch kind {
         case .requested:
@@ -121,7 +120,7 @@ struct ConfirmUsernameRequestSheet: View {
         case .instant:
             return String.localizedStringWithFormat(
                 NSLocalizedString(
-                    "You chose “%@” as an instant username. Please note that the username can NOT be changed once it is registered.",
+                    "You chose %@ as an instant username. Please note that the username can NOT be changed once it is registered.",
                     comment: "Usernames"),
                 username)
         }
@@ -130,22 +129,18 @@ struct ConfirmUsernameRequestSheet: View {
     /// The cost, in the design system's amount presentation. `SwapAmountView`
     /// renders the Dash figure with its logo and the converted value under it,
     /// which is the layout the mock asks for; nothing here is editable.
-    @ViewBuilder
     private var amountSection: some View {
-        if let amountDuffs {
-            SwapAmountView(
-                amount: amountDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol,
-                secondaryText: fiatText,
-                showDashLogo: true)
-                .frame(maxWidth: .infinity)
-        }
+        SwapAmountView(
+            amount: amountDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol,
+            secondaryText: fiatText,
+            showDashLogo: true)
+            .frame(maxWidth: .infinity)
     }
 
     /// nil while rates are unavailable — the sheet then shows the Dash figure
     /// alone rather than a placeholder that looks like a price.
     private var fiatText: String? {
-        guard let amountDuffs,
-              let fiatAmount = try? CurrencyExchanger.shared.convertDash(
+        guard let fiatAmount = try? CurrencyExchanger.shared.convertDash(
                   amount: amountDuffs.dashAmount,
                   to: App.fiatCurrency) else { return nil }
 
@@ -194,13 +189,13 @@ struct ConfirmUsernameRequestSheet: View {
         .background(Color.dash.primaryBackground)
 }
 
-/// The instant companion, confirmed on its own pass: same sheet, its own
-/// sentence, and no contest fee to warn about.
+/// The instant companion, confirmed on its own pass: its own title and
+/// sentence, a zero amount, and no contest fee to warn about.
 #Preview("Instant username") {
     ConfirmUsernameRequestSheet(
         kind: .instant,
         username: "TestUser012",
-        amountDuffs: nil,
+        amountDuffs: 0,
         showsContestFeeNote: false,
         onConfirm: {})
         .background(Color.dash.primaryBackground)

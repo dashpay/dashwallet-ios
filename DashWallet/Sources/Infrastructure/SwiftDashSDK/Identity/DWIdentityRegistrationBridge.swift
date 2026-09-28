@@ -161,6 +161,13 @@ public final class DWIdentityRegistrationBridge: NSObject {
     /// Last failure description, or nil if no failure recorded.
     @objc public private(set) var lastErrorMessage: String?
 
+    /// `lastErrorMessage` in the words the user reads — the same mapping the
+    /// create screen's alert uses (`UsernameRegistrationFailureWording`), so
+    /// the Home / More row can say why a registration it reports stopped once
+    /// that screen has stepped aside. Held in memory only: after a relaunch
+    /// the row reports the attempt as interrupted, without a reason.
+    public private(set) var lastFailureReason: String?
+
     /// Funding source the SwiftUI form picked for the next
     /// `startCreateUsername:` call. Defaults to `.core` so any caller
     /// that doesn't set it (legacy Obj-C call sites, future paths)
@@ -401,6 +408,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
             assetLockStatus: assetLockStatus,
             fundingSource: coord.currentFundingSource,
             isRegisteringUsername: coord.isRegisteringUsername,
+            isFundingExistingIdentity: coord.isFundingExistingIdentity,
             failedAtPhase: coord.failedAtPhase)
         switch phase {
         case .failed:
@@ -429,6 +437,9 @@ public final class DWIdentityRegistrationBridge: NSObject {
             currentAttemptScope = nil
         }
         lastErrorMessage = coord.lastErrorMessage
+        lastFailureReason = coord.lastErrorMessage.map {
+            UsernameRegistrationFailureWording.message(forRaw: $0, username: coord.currentUsername ?? "")
+        }
 
         // Reset preferredFundingSource to the safe default on
         // `.completed` only. On `.failed`, preserve the source so a
