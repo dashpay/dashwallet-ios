@@ -45,7 +45,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 @property (nullable, nonatomic, weak) UIViewController *displayedLockNavigationController;
 
 @property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
-@property (nullable, nonatomic, strong) NSURL *deferredDeeplinkToProcess;
+/// An invitation arrived while locked: it is already stored; after unlock
+/// only Home is brought forward. The link itself (a voucher key) is never
+/// kept for replay.
+@property (nonatomic, assign) BOOL showsInvitationAfterUnlock;
 @property (nonatomic, assign) BOOL walletWipeInProgress;
 
 - (void)beginWipeWalletWithAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
@@ -88,11 +91,16 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         return;
     }
 
-    // Defer URL until unlocked.
-    // This also prevents an issue with too fast unlocking via Face ID.
+    // While locked: store the invitation now and defer only bringing Home
+    // forward. Keeping the URL for replay would let a wipe from the lock
+    // screen be followed by the erased invitation being written back.
+    // Deferring navigation also avoids an issue with too fast unlocking via
+    // Face ID.
     BOOL isLocked = [self.model shouldShowLockScreen] || self.lockController;
-    if (isLocked && self.deferredDeeplinkToProcess == nil) {
-        self.deferredDeeplinkToProcess = url;
+    if (isLocked) {
+        if ([DWInvitationEntry receive:url presenter:nil]) {
+            self.showsInvitationAfterUnlock = YES;
+        }
         return;
     }
 
@@ -337,6 +345,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 #pragma mark - DWWipeDelegate
 
 - (void)didWipeWallet {
+    // Nothing received before the wipe may be acted on after it.
+    self.showsInvitationAfterUnlock = NO;
+
     UIViewController *setupController = [self setupController];
     [self transitionToController:setupController
                   transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
@@ -461,15 +472,16 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             self.lockWindow.alpha = 1.0;
             [DWWalletLifecycleOverlayBridge setLockScreenVisible:NO];
 
-            if (self.deferredDeeplinkToProcess) {
 #if DASHPAY
-                [self handleDeeplink:self.deferredDeeplinkToProcess];
-#endif
+            if (self.showsInvitationAfterUnlock) {
+                self.showsInvitationAfterUnlock = NO;
+                [self.mainController showHomeForInvitation];
             }
-            else if (self.deferredURLToProcess) {
+            else
+#endif
+                if (self.deferredURLToProcess) {
                 [self handleURL:self.deferredURLToProcess];
             }
-            self.deferredDeeplinkToProcess = nil;
             self.deferredURLToProcess = nil;
 
             [[NSNotificationCenter defaultCenter] postNotificationName:DWAppDidUnlockNotification
