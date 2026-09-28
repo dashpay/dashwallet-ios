@@ -189,8 +189,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     private var shieldedEventCancellable: AnyCancellable?
     private var shieldedFreshnessTask: Task<Void, Never>?
     /// Same-seed identity recovery left running by a start that did not await
-    /// it (`identityRecoveryInBackground`). `performStop` cancels it and waits
-    /// for it before tearing anything down.
+    /// it (`identityRecoveryInBackground`). `performStop` and the wallet wipe
+    /// cancel it and wait for it (`cancelAndAwaitIdentityRecovery`) before
+    /// tearing anything down or deleting wallet data.
     private var identityRecoveryTask: Task<Void, Never>?
     private var shieldedMonitoringStartedAt = Date()
     private var lastFullShieldedSyncAt: Date?
@@ -517,6 +518,25 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     @MainActor
     public static func stopForWipeAsync() async {
         await shared.performStop(deletingPersistedWallet: true)
+    }
+
+    /// Cancel the background identity recovery (see `performStart`) and wait
+    /// until it has returned; on return no recovery task is left. The slot is
+    /// cleared only after the task returns, so a concurrent caller finds the
+    /// same task and waits for it too, and the loop also waits for a recovery
+    /// a start put in the slot meanwhile.
+    ///
+    /// The recovery checks for cancellation between its steps; a step already
+    /// running finishes first. Discovery is a single FFI call covering the
+    /// whole gap-limit scan, so this can wait for that entire scan.
+    public func cancelAndAwaitIdentityRecovery() async {
+        while let recovery = identityRecoveryTask {
+            recovery.cancel()
+            await recovery.value
+            if identityRecoveryTask == recovery {
+                identityRecoveryTask = nil
+            }
+        }
     }
 
     enum StartError: LocalizedError {
@@ -1289,14 +1309,10 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         lifecycleGeneration &+= 1
         // A background identity recovery (see `performStart`) holds the wallet
         // it runs against, and on a wipe it could still write identity rows
-        // after the deletion below. Let it wind down first: cancellation lands
-        // between its network steps, so this waits for at most the step in
-        // flight. Everything after this point runs without suspending.
-        if let recovery = identityRecoveryTask {
-            identityRecoveryTask = nil
-            recovery.cancel()
-            await recovery.value
-        }
+        // after the deletion below. Let it wind down first; see
+        // `cancelAndAwaitIdentityRecovery` for how long that can take.
+        // Everything after this point runs without suspending.
+        await cancelAndAwaitIdentityRecovery()
         isShieldedRunning = false
         if preservingRecovery {
             shieldedRecovery.suspendForRuntimeRestart()

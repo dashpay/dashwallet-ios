@@ -565,6 +565,12 @@ final class SwiftDashSDKWalletWiper: NSObject {
         let finished = DispatchSemaphore(value: 0)
         let result = WalletWipeResultAccumulator()
         Task { @MainActor in
+            // A background identity recovery can still write identity rows and
+            // DPNS names for the wallet deleted below. The runtime teardown
+            // that would stop it (`handleWalletWiped`) runs only after this
+            // deletion, so stop it here first.
+            await PlatformAddressSyncCoordinator.shared.cancelAndAwaitIdentityRecovery()
+
             let host = SwiftDashSDKHost.shared
             var networks: [Network] = [.mainnet, .testnet]
             // Devnet joins the wipe when this device holds devnet material:
