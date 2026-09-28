@@ -129,6 +129,35 @@ final class DeepLinkQueueTests: XCTestCase {
         XCTAssertTrue(ready(queue) === payment)
     }
 
+    /// A link that is not a Dash URL (`dashid://invalid`: a registered
+    /// scheme the parser rejects) is queued as unsupported rather than
+    /// answered on the spot: during setup or the launch hold it waits like
+    /// any other link, a second one in the same burst joins it, and its one
+    /// alert is handed over only once the gates open — the dispatch ends
+    /// with the alert's OK, and nothing else is handed over for that burst.
+    func testALinkThatIsNotADashURLWaitsForTheGatesLikeAnyOther() {
+        let queue = DeepLinkQueue()
+        let rejected = DeepLink(url: URL(string: "dashid://invalid")!, isUnsupported: true)
+        XCTAssertFalse(rejected.isInvitation)
+        XCTAssertTrue(rejected.isUnsupported)
+        XCTAssertEqual(queue.enqueue(rejected), .queued)
+        XCTAssertEqual(queue.enqueue(DeepLink(url: URL(string: "dashid://other")!, isUnsupported: true)), .droppedUnsupportedCoalesced)
+
+        XCTAssertNil(queue.takeNext(walletPresented: false, attached: true, unlocked: true, launchHoldPending: false, invitationsReady: false), "setup on screen")
+        XCTAssertNil(queue.takeNext(walletPresented: false, attached: true, unlocked: true, launchHoldPending: true, invitationsReady: false), "the launch hold is migrating")
+        XCTAssertNil(queue.takeNext(walletPresented: true, attached: true, unlocked: true, launchHoldPending: true, invitationsReady: true), "the hold has not delivered")
+        XCTAssertNil(queue.takeNext(walletPresented: true, attached: true, unlocked: false, launchHoldPending: false, invitationsReady: true), "locked")
+        XCTAssertFalse(queue.isDispatching, "no alert yet")
+        XCTAssertEqual(queue.pending.count, 1)
+
+        XCTAssertTrue(ready(queue) === rejected, "one alert, once the wallet is on screen")
+        let token = queue.dispatchToken
+        XCTAssertEqual(queue.enqueue(DeepLink(url: URL(string: "dashid://invalid")!, isUnsupported: true)), .droppedDuplicate)
+        XCTAssertTrue(queue.dispatchDidFinish(token: token)) // the alert's OK
+        XCTAssertNil(ready(queue), "nothing more for that burst")
+        XCTAssertTrue(queue.isEmpty)
+    }
+
     /// A walletless install: the invitation that opened the app (and any
     /// URL after it) waits in the queue through setup — no separate store —
     /// and is handed over, in order, once setup has presented the wallet.

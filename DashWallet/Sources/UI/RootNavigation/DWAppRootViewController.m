@@ -98,7 +98,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (void)handleURL:(NSURL *)url {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
-    DWDeepLink *link = [[DWDeepLink alloc] initWithURL:url isUnsupported:[DWURLParser actionForURL:url] == nil];
+    DWDeepLink *link = [[DWDeepLink alloc] initWithURL:url isUnsupported:[self.class actionForURL:url] == nil];
     const DWDeepLinkAdmission admission = [self.linkQueue enqueue:link];
     NSString *kind = link.isInvitation ? @"an invitation" : @"a url";
     switch (admission) {
@@ -209,11 +209,24 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 /// handler is done presenting: its screen has finished its transition, its
 /// preparation ended without one (cancelled, failed), or the authentication
 /// it asked for resolved.
+/// The action for a link, or nil when it has none: a URL the parser does
+/// not accept at all (a registered scheme that is not a Dash URL) has none,
+/// whatever its text — `actionForURL:` alone would read an integration
+/// action into any URL that mentions it.
++ (nullable DWURLAction *)actionForURL:(NSURL *)url {
+    return [DWURLParser canHandleURL:url] ? [DWURLParser actionForURL:url] : nil;
+}
+
 - (void)performURL:(NSURL *)url completion:(void (^)(void))completion isAbandoned:(BOOL (^)(void))isAbandoned {
-    DWURLAction *action = [DWURLParser actionForURL:url];
+    DWURLAction *action = [self.class actionForURL:url];
     if (!action) {
+        // A URL that is not a Dash URL keeps the alert the app delegate
+        // used to present for it on the spot; a Dash URL with no action is
+        // unsupported.
+        NSString *title = [DWURLParser canHandleURL:url] ? NSLocalizedString(@"Unsupported URL", nil)
+                                                         : NSLocalizedString(@"Not a Dash URL", nil);
         UIAlertController *alert = [UIAlertController
-            alertControllerWithTitle:NSLocalizedString(@"Unsupported URL", nil)
+            alertControllerWithTitle:title
                              message:url.absoluteString
                       preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction *okAction = [UIAlertAction

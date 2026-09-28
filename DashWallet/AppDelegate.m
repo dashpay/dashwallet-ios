@@ -263,8 +263,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /// The replayed link, routed as the handlers route a live one: an invitation
-/// to the invitation entry, anything else through the URL parser's check —
-/// malformed links are refused.
+/// to the invitation entry, anything else to the initial controller — a
+/// link that is not a Dash URL included, which the root controller's queue
+/// classifies as unsupported and answers with its one alert once a wallet
+/// is on screen.
 - (void)deliverReplayedURL:(NSURL *)url toInitialController:(DWInitialViewController *)controller {
 #if DASHPAY
     if ([DWInvitationLinkNormalizer isInvitationURL:url]) {
@@ -272,10 +274,6 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 #endif
-    if (![DWURLParser canHandleURL:url]) {
-        DWLog(@"LAUNCH replayed link is not a Dash URL (scheme %@); dropped", url.scheme);
-        return;
-    }
     [controller handleURL:url];
 }
 
@@ -382,28 +380,15 @@ NS_ASSUME_NONNULL_BEGIN
     // Handle URL Scheme instead
 #endif
 
-    // No gate on a present wallet here: a link that arrives while the
-    // launch hold is still migrating (or its card is up), or while setup
-    // is on screen, waits in the root controller's queue until a wallet is
-    // presented, and in the initial controller until the root exists.
-    if (![DWURLParser canHandleURL:url]) {
-        UIAlertController * alert = [UIAlertController
-                                     alertControllerWithTitle:NSLocalizedString(@"Not a Dash URL", nil)
-                                     message:url.absoluteString
-                                     preferredStyle:UIAlertControllerStyleAlert];
-        UIAlertAction* okAction = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"OK", nil)
-                                       style:UIAlertActionStyleCancel
-                                       handler:nil];
-
-        [alert addAction:okAction];
-        
-        UIViewController *presentingController = [application.keyWindow.rootViewController topController];
-        [presentingController presentViewController:alert animated:YES completion:nil];
-        
-        return NO;
-    }
-    
+    // No gate on a present wallet here, and nothing is presented here: a
+    // link that arrives while the launch hold is still migrating (or its
+    // card is up), or while setup is on screen, waits in the root
+    // controller's queue until a wallet is presented, and in the initial
+    // controller until the root exists. That holds for a link that is not
+    // a Dash URL too (a registered scheme the parser rejects): the queue
+    // classifies it as unsupported and shows its "Not a Dash URL" alert as
+    // one of its dispatches, under the same gates as any other link.
+    const BOOL isDashURL = [DWURLParser canHandleURL:url];
     DWInitialViewController *controller = (DWInitialViewController *)self.window.rootViewController;
     if ([controller isKindOfClass:DWInitialViewController.class]) {
         [controller handleURL:url];
@@ -413,7 +398,7 @@ NS_ASSUME_NONNULL_BEGIN
         DWLog(@"Ignoring handle URL: %@. Root controller hasn't been set up yet", url);
     }
 
-    return YES;
+    return isDashURL;
 }
 
 #pragma mark - Private
