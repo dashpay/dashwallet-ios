@@ -187,6 +187,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @MainActor
     private(set) var subscriptionsDetached: Bool = false
 
+    /// Counts `prepareForNetworkSwitch()` calls. `performStop` compares it
+    /// across its `stopSpv()` await, which a preparation can land in.
+    @MainActor
+    private var networkSwitchPreparations = 0
+
     @MainActor
     var isRunning: Bool { runningNetwork != nil }
 
@@ -619,6 +624,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// the home screen renders as the newly selected network's funds.
     @MainActor
     func prepareForNetworkSwitch() {
+        networkSwitchPreparations &+= 1
         detachManagerSubscriptions()
         SwiftDashSDKWalletState.shared.clearAllState()
     }
@@ -630,6 +636,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @MainActor
     private func performStop(lastError: String?, clearBalance: Bool) async throws {
         detachManagerSubscriptions()
+        let preparations = networkSwitchPreparations
 
         if let manager = SwiftDashSDKHost.shared.manager {
             do {
@@ -639,7 +646,13 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 Self.logger.info("🛰️ SPVCOORD :: stopped")
             } catch {
                 Self.logger.error("🛰️ SPVCOORD :: stopSpv threw: \(String(describing: error), privacy: .public)")
-                subscribeToManagerProgress(manager: manager)
+                // A network switch prepared during the await detached this
+                // manager's subscriptions for the new network; re-attaching
+                // them would publish the outgoing network's progress and
+                // balance again.
+                if networkSwitchPreparations == preparations {
+                    subscribeToManagerProgress(manager: manager)
+                }
                 self.lastError = error.localizedDescription
                 state = .error
                 throw StartError.stopSpv(error)
