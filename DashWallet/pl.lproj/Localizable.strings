@@ -4299,6 +4299,7 @@
 
 /* No comment provided by engineer. */
 "%.3f s" = "%.3f s";
+"Shielded sync is not running" = "Shielded sync is not running";
 
 /* No comment provided by engineer. */
 "Node status" = "Status węzła";
@@ -6223,6 +6224,20 @@
 "Your identity is ready. Finish registering a username using its existing credits." = "Your identity is ready. Finish registering a username using its existing credits.";
 "Your identity is ready. Use its existing credits to register a username." = "Your identity is ready. Use its existing credits to register a username.";
 "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again." = "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.";
+"Couldn't move your wallet" = "Couldn't move your wallet";
+"Do not delete the app. Try moving your wallet again, or contact support if the problem continues." = "Do not delete the app. Try moving your wallet again, or contact support if the problem continues.";
+"To: %@\n\nI couldn't move my wallet from the previous version of the app.\n\nWhat happened before the error:\n" = "To: %@\n\nI couldn't move my wallet from the previous version of the app.\n\nWhat happened before the error:\n";
+"Unlock with your wallet PIN to export logs." = "Unlock with your wallet PIN to export logs.";
+"The wallet from the previous version of this app is still on this device but could not be prepared. Do not delete this app. Try again or contact support for help." = "The wallet from the previous version of this app is still on this device but could not be prepared. Do not delete this app. Try again or contact support for help.";
+"Do not delete the app. Try opening your wallet again, or contact support if the problem continues." = "Do not delete the app. Try opening your wallet again, or contact support if the problem continues.";
+"Never share your recovery phrase or private keys with anyone, including support." = "Never share your recovery phrase or private keys with anyone, including support.";
+"Include diagnostic report" = "Include diagnostic report";
+"Preview diagnostic report" = "Preview diagnostic report";
+"Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically." = "Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically.";
+"Contact Support" = "Contact Support";
+"Review and send the message in your mail app, or choose a sharing option." = "Review and send the message in your mail app, or choose a sharing option.";
+"Couldn't prepare the support message" = "Couldn't prepare the support message";
+"Try again or copy the support address and write to us from your mail app." = "Try again or copy the support address and write to us from your mail app.";
 
 /* Contested usernames */
 "%1$@ at %2$@" = "%1$@ at %2$@";
@@ -6661,3 +6676,4 @@
 "“%1$@” has been submitted for voting. It is not registered to you yet. Voting ends around %2$@ — we will notify you with the result." = "“%1$@” has been submitted for voting. It is not registered to you yet. Voting ends around %2$@ — we will notify you with the result.";
 "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends." = "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends.";
 "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username." = "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username.";
+"Preparing logs…" = "Preparing logs…";
