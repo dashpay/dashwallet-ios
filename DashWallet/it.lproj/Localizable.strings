@@ -6271,6 +6271,7 @@
 "Add someone as a contact and you can pay them by username instead of an address." = "Add someone as a contact and you can pay them by username instead of an address.";
 "Add this masternode's operator key to unban it from here." = "Add this masternode's operator key to unban it from here.";
 "Add voting key" = "Add voting key";
+"Added %1$d of %2$d masternodes that vote with this key. Enter the key again to add the rest." = "Added %1$d of %2$d masternodes that vote with this key. Enter the key again to add the rest.";
 "Added by you" = "Added by you";
 "Address Pool" = "Address Pool";
 "Addresses Used" = "Addresses Used";

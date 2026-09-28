@@ -437,16 +437,22 @@ final class VotingViewModel: ObservableObject {
     func removeImportedVotingKey(for node: VoterNode) -> String? {
         guard node.keySource == .trackedVault else { return nil }
 
-        vault.removeKey(for: node.proTxHash, role: .voting)
-        // Judged by what the keychain holds afterwards rather than by the
-        // delete's return value, which is also false for an item already gone.
-        let remaining = vault.attachedRoles(for: node.proTxHash)
-        guard !remaining.contains(.voting) else {
+        // `removeKey` already counts an item that was gone as removed, so
+        // `false` is a real keychain failure: the key may still be stored,
+        // and the node must stay exactly as it was.
+        guard vault.removeKey(for: node.proTxHash, role: .voting) else {
             return NSLocalizedString(
                 "Could not remove the voting key. Try again.",
                 comment: "Voting")
         }
-        if remaining.isEmpty, let manager = SwiftDashSDKHost.shared.manager {
+        // Untrack only once every other key of the node is confirmed gone. A
+        // read that fails says nothing about the key, and untracking a node
+        // that still holds an owner or payout key would take its withdrawals
+        // away — so any doubt keeps it tracked.
+        let othersConfirmedAbsent = TrackedMasternodeKeyVault.managedRoles
+            .filter { $0 != .voting }
+            .allSatisfy { vault.keyPresence(for: node.proTxHash, role: $0) == .absent }
+        if othersConfirmedAbsent, let manager = SwiftDashSDKHost.shared.manager {
             // Best-effort: a registry row left behind holds no key and cannot
             // vote, so a failure here changes nothing the user can see.
             _ = try? manager.untrackMasternode(proTxHash: node.proTxHash)

@@ -30,8 +30,10 @@ struct VotingKeyInputScreen: View {
     /// over the voting-keys list.
     let leadingElement: DashUIKit.NavigationBarElement
     let onLeading: () -> Void
-    /// Called once the key made at least one node votable.
-    let onVerified: () -> Void
+    /// Called once the key made at least one node votable, with a notice
+    /// when some of its nodes could not be added — the caller shows it where
+    /// the flow lands, since this screen is gone by then.
+    let onVerified: (_ partialImportNotice: String?) -> Void
 
     @StateObject private var viewModel = VotingKeyInputViewModel()
     @State private var isFieldFocused = false
@@ -107,8 +109,10 @@ struct VotingKeyInputScreen: View {
         guard viewModel.canVerify else { return }
         isFieldFocused = false
         Task {
-            if await viewModel.verifyAndAdd() {
-                onVerified()
+            switch await viewModel.verifyAndAdd() {
+            case .added: onVerified(nil)
+            case .partiallyAdded(let notice): onVerified(notice)
+            case .failed: break
             }
         }
     }

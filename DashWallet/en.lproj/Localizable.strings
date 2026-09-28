@@ -6172,6 +6172,7 @@
 "Accounts are created automatically when the wallet syncs." = "Accounts are created automatically when the wallet syncs.";
 "Add masternode voting key" = "Add masternode voting key";
 "Add voting key" = "Add voting key";
+"Added %1$d of %2$d masternodes that vote with this key. Enter the key again to add the rest." = "Added %1$d of %2$d masternodes that vote with this key. Enter the key again to add the rest.";
 "Added by you" = "Added by you";
 "Address Pool" = "Address Pool";
 "Addresses Used" = "Addresses Used";

@@ -22,6 +22,20 @@ import CryptoKit
 import Foundation
 import SwiftDashSDK
 
+// MARK: - VotingKeyImportOutcome
+
+/// How a Verify tap ended.
+enum VotingKeyImportOutcome: Equatable {
+    /// Every node the key votes with is now votable.
+    case added
+    /// Some nodes were added and the rest failed. The added ones are complete
+    /// and vote, so the flow moves on — but the notice has to travel with it,
+    /// or the user would go on voting without learning some nodes are missing.
+    case partiallyAdded(notice: String)
+    /// Nothing was added; ``VotingKeyInputViewModel/error`` says why.
+    case failed
+}
+
 // MARK: - VotingKeyInputViewModel
 
 /// Voting → "Enter your voting key": takes one masternode voting private key,
@@ -63,11 +77,10 @@ final class VotingKeyInputViewModel: ObservableObject {
     var canVerify: Bool { !isVerifying && !trimmedKey.isEmpty }
 
     /// Check the key and, when it belongs to active masternodes this wallet
-    /// cannot vote with yet, add it. Returns `true` once at least one node
-    /// became votable; otherwise ``error`` says why not.
-    func verifyAndAdd() async -> Bool {
+    /// cannot vote with yet, add it. On `.failed`, ``error`` says why.
+    func verifyAndAdd() async -> VotingKeyImportOutcome {
         let key = trimmedKey
-        guard !key.isEmpty, !isVerifying else { return false }
+        guard !key.isEmpty, !isVerifying else { return .failed }
         error = nil
 
         let isMainnet = WalletEnvironment.network == .mainnet
@@ -76,12 +89,12 @@ final class VotingKeyInputViewModel: ObservableObject {
         // wrong with it — an address, hex, the other network's key.
         if let problem = VotingKeyFormat.problem(with: key, isMainnet: isMainnet) {
             error = problem.message(isMainnet: isMainnet)
-            return false
+            return .failed
         }
 
         guard let manager = SwiftDashSDKHost.shared.manager else {
             error = NSLocalizedString("Wallet is not ready. Try again in a moment.", comment: "Evonode withdrawal")
-            return false
+            return .failed
         }
 
         isVerifying = true
@@ -104,10 +117,10 @@ final class VotingKeyInputViewModel: ObservableObject {
             default:
                 error = sdkError.errorDescription ?? sdkError.localizedDescription
             }
-            return false
+            return .failed
         } catch {
             self.error = error.localizedDescription
-            return false
+            return .failed
         }
 
         // Only nodes this key is the VOTING key of. The locator also answers
@@ -121,7 +134,7 @@ final class VotingKeyInputViewModel: ObservableObject {
             error = NSLocalizedString(
                 "You have entered a key that is not associated to an active Masternode",
                 comment: "Voting")
-            return false
+            return .failed
         }
 
         let votable = Set(registry.votableNodes().nodes.map(\.proTxHash))
@@ -137,14 +150,17 @@ final class VotingKeyInputViewModel: ObservableObject {
                 : NSLocalizedString(
                     "This masternode is registered to a wallet in this app. Its voting key cannot be added separately.",
                     comment: "Voting")
-            return false
+            return .failed
         }
 
         // Every node sharing the key is added — an operator can point several
         // nodes at one voting key, and voting with only some of them would
         // under-count what this key controls. A failure stops the run but keeps
-        // the nodes already added: each of those is complete and votes.
+        // the nodes already added: each of those is complete and votes. Entering
+        // the key again retries the rest — added nodes are votable by then and
+        // drop out of `addable`.
         var added = 0
+        var failure: String?
         for match in addable {
             var trackedNow = false
             if !match.alreadyTracked {
@@ -152,8 +168,8 @@ final class VotingKeyInputViewModel: ObservableObject {
                     try manager.trackMasternode(proTxHash: match.proTxHash, label: nil)
                     trackedNow = true
                 } catch {
-                    self.error = (error as? PlatformWalletError)?.errorDescription ?? error.localizedDescription
-                    return added > 0
+                    failure = (error as? PlatformWalletError)?.errorDescription ?? error.localizedDescription
+                    break
                 }
             }
             guard vault.store(key, for: match.proTxHash, role: .voting) else {
@@ -162,16 +178,29 @@ final class VotingKeyInputViewModel: ObservableObject {
                 if trackedNow {
                     _ = try? manager.untrackMasternode(proTxHash: match.proTxHash)
                 }
-                error = NSLocalizedString(
+                failure = NSLocalizedString(
                     "Could not save a key to the keychain. Nothing was lost — try again.",
                     comment: "Add masternode")
-                return added > 0
+                break
             }
             added += 1
         }
 
+        guard let failure else {
+            keyText = ""
+            return .added
+        }
+        guard added > 0 else {
+            error = failure
+            return .failed
+        }
         keyText = ""
-        return true
+        let summary = String(
+            format: NSLocalizedString(
+                "Added %1$d of %2$d masternodes that vote with this key. Enter the key again to add the rest.",
+                comment: "Voting"),
+            added, addable.count)
+        return .partiallyAdded(notice: "\(summary)\n\(failure)")
     }
 }
 
@@ -253,6 +282,8 @@ enum VotingKeyFormat {
     /// share testnet's.
     private static let mainnetVersion: UInt8 = 0xCC
     private static let testnetVersion: UInt8 = 0xEF
+    /// Base58 of 1 version + 32 key + 1 compression flag + 4 checksum bytes.
+    static let maxWIFLength = 52
 
     /// `nil` when `text` is a well-formed WIF private key for this network.
     ///
@@ -269,6 +300,11 @@ enum VotingKeyFormat {
             default: break
             }
         }
+
+        // Nothing longer than a compressed WIF can be a key, and the Base58
+        // decoder is quadratic: a long paste would stall the main actor for
+        // seconds before being refused anyway.
+        guard text.utf8.count <= maxWIFLength else { return .invalid }
 
         guard let raw = ScriptAddressCodec.base58Decode(text) else { return .invalidCharacter }
         guard raw.count > 4 else { return .tooShort }

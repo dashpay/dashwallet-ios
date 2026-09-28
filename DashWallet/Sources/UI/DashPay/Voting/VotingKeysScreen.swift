@@ -53,6 +53,9 @@ struct VotingKeysFlow: View {
     /// a step that leads nowhere.
     @State private var showsList: Bool
     @State private var isAddingKey = false
+    /// Set when the last key entered added only some of its nodes; shown on
+    /// the list until the next attempt.
+    @State private var importNotice: String?
 
     init(
         start: Start,
@@ -74,13 +77,18 @@ struct VotingKeysFlow: View {
                     VotingKeysScreen(
                         viewModel: viewModel,
                         continuesToVote: continuesToVote,
-                        onAddKey: { isAddingKey = true },
+                        importNotice: importNotice,
+                        onAddKey: {
+                            importNotice = nil
+                            isAddingKey = true
+                        },
                         onFinish: onFinish)
                 } else {
                     VotingKeyInputScreen(
                         leadingElement: .close,
                         onLeading: { onFinish(false) },
-                        onVerified: {
+                        onVerified: { notice in
+                            importNotice = notice
                             viewModel.refreshVotableNodes()
                             withAnimation { showsList = true }
                         })
@@ -90,7 +98,8 @@ struct VotingKeysFlow: View {
                 VotingKeyInputScreen(
                     leadingElement: .back,
                     onLeading: { isAddingKey = false },
-                    onVerified: {
+                    onVerified: { notice in
+                        importNotice = notice
                         viewModel.refreshVotableNodes()
                         isAddingKey = false
                     })
@@ -115,6 +124,8 @@ extension VotingKeysFlow.Start: Identifiable {
 private struct VotingKeysScreen: View {
     @ObservedObject var viewModel: VotingViewModel
     let continuesToVote: Bool
+    /// Some nodes of the last key entered were not added.
+    let importNotice: String?
     let onAddKey: () -> Void
     let onFinish: (_ continueToVote: Bool) -> Void
 
@@ -140,6 +151,11 @@ private struct VotingKeysScreen: View {
                         mainDescription: NSLocalizedString(
                             "The IP address(es) below are associated with this wallet",
                             comment: "Voting"))
+
+                    if let importNotice {
+                        VotingBanner(text: importNotice, tone: .warning)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    }
 
                     if let removalError {
                         VotingBanner(text: removalError, tone: .error)
