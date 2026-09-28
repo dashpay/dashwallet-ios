@@ -455,6 +455,12 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             return .failure(StartError.walletImport(error))
         }
 
+        // `host.start` can take seconds, and a switch prepared meanwhile
+        // overtakes this start before it publishes the outgoing balance.
+        if isOvertakenByNetworkSwitch(since: preparationsAtStart) {
+            return .failure(StartError.superseded)
+        }
+
         // Publish the persisted balance before any network work. `host.start`
         // has run `loadFromPersistor` (HOST stage 4/4), which hydrates the core
         // wallet's balance from SwiftData, and `coreWallet().balance()` reads
@@ -604,12 +610,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         let appliedChainResync = await applyPendingChainResyncIfNeeded(
             for: network, dataDir: dataDir, manager: manager)
 
-        // A network switch prepared after this start began (while it awaited
-        // the host start, say) overtakes it: starting SPV now would publish
-        // the outgoing network's progress and balance again. A start that
-        // began after the preparation consumes it.
-        guard networkSwitchPreparations == preparationsAtStart else {
-            Self.logger.info("🛰️ SPVCOORD :: start superseded by a network switch preparation")
+        // A start that began after the preparation consumes it.
+        if isOvertakenByNetworkSwitch(since: preparationsAtStart) {
             return .failure(StartError.superseded)
         }
         networkSwitchPrepared = false
@@ -636,6 +638,16 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
         Self.logger.info("🛰️ SPVCOORD :: started on \(network.rawValue, privacy: .public)")
         return .success(())
+    }
+
+    /// Whether a network switch was prepared after a start that recorded
+    /// `preparationsAtStart` began. Such a start must not publish a balance or
+    /// start SPV: both would belong to the outgoing network.
+    @MainActor
+    private func isOvertakenByNetworkSwitch(since preparationsAtStart: Int) -> Bool {
+        guard networkSwitchPreparations != preparationsAtStart else { return false }
+        Self.logger.info("🛰️ SPVCOORD :: start superseded by a network switch preparation")
+        return true
     }
 
     /// Detach every publisher that feeds published state, without touching the
