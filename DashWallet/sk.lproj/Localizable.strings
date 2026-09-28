@@ -6256,6 +6256,7 @@
 "%d could not be reached" = "%d could not be reached";
 "%d evonodes" = "%d evonodes";
 "%d finished" = "%d finished";
+"%d have used all 5 votes Dash Platform allows on one contest and will be skipped." = "%d have used all 5 votes Dash Platform allows on one contest and will be skipped.";
 "%d masternodes" = "%d masternodes";
 "%d of %d masternodes voted" = "%1$d of %2$d masternodes voted";
 "%d of %d nodes voted" = "%1$d of %2$d nodes voted";

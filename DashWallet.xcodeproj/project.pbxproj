@@ -2077,6 +2077,7 @@
 		7843C0A14DF4CBD4FFA605CD /* DWUsernameRegistrationRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF36BF1A7ACD652EDDA7D25D /* DWUsernameRegistrationRecovery.swift */; };
 		BABA10000000000000000002 /* DWIdentityBalanceRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000001 /* DWIdentityBalanceRefresh.swift */; };
 		F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */; };
+		B17E5A0C9D3F4E21A6C80B01 /* BulkVotePlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */; };
 		BABA10000000000000000004 /* IdentityBalanceRefreshTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */; };
 		17E47391430C11AC728B69A3 /* DWRegistrationPhaseAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */; };
 		A00CC68AE2499E4496BAECC6 /* UsernameRecoveryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */; };
@@ -3923,6 +3924,7 @@
 		CF36BF1A7ACD652EDDA7D25D /* DWUsernameRegistrationRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWUsernameRegistrationRecovery.swift; sourceTree = "<group>"; };
 		BABA10000000000000000001 /* DWIdentityBalanceRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWIdentityBalanceRefresh.swift; sourceTree = "<group>"; };
 		701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRegistrationRecoveryTests.swift; sourceTree = "<group>"; };
+		B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulkVotePlanTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityBalanceRefreshTests.swift; sourceTree = "<group>"; };
 		951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWRegistrationPhaseAdapterTests.swift; sourceTree = "<group>"; };
 		C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameRecoveryUITests.swift; sourceTree = "<group>"; };
@@ -7506,6 +7508,7 @@
 				2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */,
 				951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */,
 				701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */,
+				B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */,
 				BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */,
 				471DD1BB290AE30B00E030C8 /* String+DashWalletTests.swift */,
 				2A7CAFFF191922CBF6075212 /* DashConnectUriTests.swift */,
@@ -10817,6 +10820,7 @@
 				2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */,
 				17E47391430C11AC728B69A3 /* DWRegistrationPhaseAdapterTests.swift in Sources */,
 				F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */,
+				B17E5A0C9D3F4E21A6C80B01 /* BulkVotePlanTests.swift in Sources */,
 				BABA10000000000000000004 /* IdentityBalanceRefreshTests.swift in Sources */,
 				471DD1C0290AECE900E030C8 /* String+DashWalletTests.swift in Sources */,
 				0438F3D117619B14594F95E6 /* DashConnectUriTests.swift in Sources */,
