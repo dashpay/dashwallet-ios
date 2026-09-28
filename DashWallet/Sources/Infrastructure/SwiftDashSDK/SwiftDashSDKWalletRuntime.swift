@@ -90,35 +90,40 @@ final class LaunchDecision: NSObject {
     /// A payment URL or an invitation link (universal or scheme) can bring
     /// the process to the foreground, and it is delivered before the
     /// activation that installs the real root; with the placeholder still
-    /// up there is nothing to hand it to. It is kept here and replayed once
-    /// the root exists. One of each: a later link replaces an earlier one,
-    /// as it would have on a normal launch.
-    @objc private(set) var pendingURL: URL?
-    @objc private(set) var pendingUserActivity: NSUserActivity?
+    /// up there is nothing to hand it to. Every such link is kept here, in
+    /// arrival order, and replayed once the root exists — the newest
+    /// `DeepLinkQueue.capacity` of them, as the queue itself would keep.
+    @objc private(set) var pendingLinks: [URL] = []
+    /// Links a burst pushed out of `pendingLinks`.
+    @objc private(set) var droppedPendingLinks = 0
 
     /// True when the launch is still deferred and the link was kept.
     @objc(holdURLIfPending:)
     func holdIfPending(url: URL) -> Bool {
         guard isDeferred else { return false }
-        pendingURL = url
+        keep(url)
         return true
     }
 
     @objc(holdUserActivityIfPending:)
     func holdIfPending(userActivity: NSUserActivity) -> Bool {
-        guard isDeferred else { return false }
-        pendingUserActivity = userActivity
+        guard isDeferred, let url = userActivity.webpageURL else { return false }
+        keep(url)
         return true
     }
 
-    @objc func takePendingURL() -> URL? {
-        defer { pendingURL = nil }
-        return pendingURL
+    private func keep(_ url: URL) {
+        pendingLinks.append(url)
+        if pendingLinks.count > DeepLinkQueue.capacity {
+            pendingLinks.removeFirst()
+            droppedPendingLinks += 1
+        }
     }
 
-    @objc func takePendingUserActivity() -> NSUserActivity? {
-        defer { pendingUserActivity = nil }
-        return pendingUserActivity
+    /// The kept links, in order, once; empty afterwards.
+    @objc func takePendingLinks() -> [URL] {
+        defer { pendingLinks = [] }
+        return pendingLinks
     }
 }
 

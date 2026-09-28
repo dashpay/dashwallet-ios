@@ -24,6 +24,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWURLRequestHandler : NSObject
 
 + (void)handleURLRequest:(DWURLRequestAction *)action;
+/// `handleURLRequest:` for a deep link: `completion` runs once the
+/// authentication it asks for has resolved — granted, denied or cancelled —
+/// and the reply (if any) was handed to the system.
++ (void)handleURLRequest:(DWURLRequestAction *)action completion:(void (^)(void))completion;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

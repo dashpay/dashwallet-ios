@@ -83,6 +83,61 @@ final class ConnectionsViewModel: ObservableObject {
     /// registration, which are already committing to the network.
     private var isResolvingRequest = false
 
+    /// Every call to `onQRScanned` is an operation with its own token, and
+    /// the deep-link queue's completion for it (`settled`) is kept here: it
+    /// reports, once, when that request has settled — its approval sheet is
+    /// on screen, it was refused, it failed, it completed without a sheet,
+    /// or a newer request superseded it. The queue hands the next link over
+    /// only then. A newer request becomes current before the one it
+    /// supersedes is settled, and that settlement is delivered on the next
+    /// main-queue turn: settling a link hands the next one over, which can
+    /// call back into this view model, and must not run inside the call
+    /// that superseded it. Every settle site names the token of the request
+    /// it belongs to, so a late report settles that request or nothing.
+    ///
+    /// The sequence also answers whether the queue has given a request up
+    /// (its watchdog fired during the metadata lookup), asked before
+    /// anything is published: an abandoned request publishes nothing, so
+    /// its approval sheet never lands on top of the screen the next link
+    /// opened.
+    private let operations = LinkOperationSequence()
+    /// Requests that published a UI outcome (a sheet, an alert) and whose
+    /// settlement waits for the presentation layer to report it on screen
+    /// (`presentationDidAppear`), oldest first: publishing a `@Published`
+    /// value does not present it, and settling before the sheet is up let
+    /// the next link's screen race the sheet's binding. Neither a refused
+    /// newcomer nor a newer request settles one of these early.
+    private var awaitingPresentation: [LinkOperationSequence.Token] = []
+
+    private func settle(_ token: LinkOperationSequence.Token) {
+        awaitingPresentation.removeAll { $0 == token }
+        operations.settle(token)
+    }
+
+    /// Settles `token` once the UI it produced is on screen; the screen
+    /// calls `presentationDidAppear` from the sheet's or the alert's
+    /// `onAppear`.
+    private func settleWhenPresented(_ token: LinkOperationSequence.Token) {
+        guard operations.awaitsSettlement(token), !awaitingPresentation.contains(token) else { return }
+        awaitingPresentation.append(token)
+    }
+
+    /// The screen reports that a sheet or alert has appeared: the oldest
+    /// request waiting for one settles. Nothing happens when nothing waits.
+    func presentationDidAppear() {
+        guard let token = awaitingPresentation.first else { return }
+        settle(token)
+    }
+
+    /// True — logged and settled — when the queue moved on without the
+    /// request `token`.
+    private func dropIfAbandoned(_ token: LinkOperationSequence.Token) -> Bool {
+        guard operations.isAbandoned(token) else { return false }
+        DWLogger.log("DASHCONNECT the link queue gave this request up before it resolved; publishing nothing")
+        settle(token)
+        return true
+    }
+
     init(
         dataSource: (any DashConnectDataSource)? = nil,
         featureUnavailable: Bool? = nil
@@ -100,7 +155,27 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     func onQRScanned(_ content: String) {
-        guard !featureUnavailable else { return }
+        onQRScanned(content, settled: nil)
+    }
+
+    /// `onQRScanned` for a deep link: `settled` runs once the request has
+    /// resolved as far as the screen — the approval sheet published, the
+    /// request refused or failed, or a state transition completed — or was
+    /// superseded by a newer one.
+    func onQRScanned(_ content: String, settled: (() -> Void)?) {
+        onQRScanned(content, settled: settled, isAbandoned: nil)
+    }
+
+    func onQRScanned(_ content: String, settled: (() -> Void)?, isAbandoned: (() -> Bool)?) {
+        // Refusals are decided first, and a refused newcomer never starts:
+        // the request that owns the screen stays current, keeps its
+        // settlement and keeps waiting for its sheet or alert to appear;
+        // only the newcomer's own completion is settled (a manual scan has
+        // none).
+        guard !featureUnavailable else {
+            settle(operations.refuse(settled: settled))
+            return
+        }
 
         // A request the user is already looking at owns the screen until they
         // answer it. Both sheets count: `pendingRequest` presents the connection
@@ -125,6 +200,9 @@ final class ConnectionsViewModel: ObservableObject {
             } else {
                 approveError = refusal
             }
+            // Shown on the sheet that is already up (or about to appear):
+            // no new presentation of its own.
+            settle(operations.refuse(settled: settled))
             return
         }
 
@@ -134,6 +212,18 @@ final class ConnectionsViewModel: ObservableObject {
                 text: NSLocalizedString("Finish the current DashConnect request first, then try again.",
                                         comment: "DashConnect: a second request arrived during key registration")
             )
+            settleWhenPresented(operations.refuse(settled: settled))
+            return
+        }
+
+        // This request replaces whatever is still resolving, and is current
+        // from here on. The replaced request will publish nothing, so
+        // `begin` settles it — on the next turn, never inside this call —
+        // unless it already published an alert that has yet to appear: that
+        // one still settles on its appearance.
+        let token = operations.begin(settled: settled, isAbandoned: isAbandoned, keeping: Set(awaitingPresentation))
+        guard operations.admits(token) else {
+            DWLogger.log("DASHCONNECT a request arrived while this one was being installed; this one is dropped")
             return
         }
 
@@ -156,8 +246,10 @@ final class ConnectionsViewModel: ObservableObject {
                     // have to describe the same request.
                     let connectionRequest = await dataSource.makeConnectionRequest(from: request)
                     guard generation == requestGeneration else { return }
+                    if dropIfAbandoned(token) { return }
                     pendingLoginRequest = request
                     pendingRequest = connectionRequest
+                    settleWhenPresented(token)
                 case let .stateTransition(request):
                     guard generation == requestGeneration else { return }
                     isProcessingStateTransition = true
@@ -165,16 +257,20 @@ final class ConnectionsViewModel: ObservableObject {
 
                     switch try await dataSource.handleStateTransition(request) {
                     case .keyRegistrationCompleted:
+                        if dropIfAbandoned(token) { return }
                         message = ConnectionsScreenMessage(
                             kind: .success,
                             text: NSLocalizedString("DashConnect key registration completed.", comment: "DashConnect")
                         )
                     case let .tokenPurchaseApprovalRequired(purchase):
+                        if dropIfAbandoned(token) { return }
                         pendingTokenPurchase = purchase
                     }
+                    settleWhenPresented(token)
                 }
             } catch {
                 guard generation == requestGeneration else { return }
+                if dropIfAbandoned(token) { return }
                 message = ConnectionsScreenMessage(
                     kind: .error,
                     text: String(
@@ -182,6 +278,7 @@ final class ConnectionsViewModel: ObservableObject {
                         error.localizedDescription
                     )
                 )
+                settleWhenPresented(token)
             }
         }
     }
@@ -190,6 +287,11 @@ final class ConnectionsViewModel: ObservableObject {
     /// It carries exactly what the QR code encodes, so it takes the same path.
     func onURIReceived(_ uri: String) {
         onQRScanned(uri)
+    }
+
+    /// `onURIReceived` for the deep-link queue: see `onQRScanned(_:settled:isAbandoned:)`.
+    func onURIReceived(_ uri: String, settled: @escaping () -> Void, isAbandoned: (() -> Bool)? = nil) {
+        onQRScanned(uri, settled: settled, isAbandoned: isAbandoned)
     }
 
     func approvePendingRequest() {
