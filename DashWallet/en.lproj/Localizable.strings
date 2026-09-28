@@ -6205,6 +6205,7 @@
 "Could not complete the DashConnect request: %@" = "Could not complete the DashConnect request: %@";
 "Could not publish the link" = "Could not publish the link";
 "Could Not Read Wallets" = "Could Not Read Wallets";
+"Couldn’t check your identity balance. Check your connection and try again." = "Couldn’t check your identity balance. Check your connection and try again.";
 "Couldn’t Delete Wallet" = "Couldn’t Delete Wallet";
 "Create an instant username" = "Create an instant username";
 "Create instant username" = "Create instant username";
@@ -6409,6 +6410,8 @@
 "Your available Platform balance changed. The new maximum is %@ DASH. Review it and confirm again." = "Your available Platform balance changed. The new maximum is %@ DASH. Review it and confirm again.";
 "Your credit balance could not be read. Check your connection and try again." = "Your credit balance could not be read. Check your connection and try again.";
 "Your Identity balance is too low to cover the transfer fee." = "Your Identity balance is too low to cover the transfer fee.";
+"Your identity needs %@ DASH more to register this name, and it can’t be added from your Shielded balance here. Use Top Up in My Profile, then try again." = "Your identity needs %@ DASH more to register this name, and it can’t be added from your Shielded balance here. Use Top Up in My Profile, then try again.";
+"Your identity needs %@ DASH more to register this name, but only %@ DASH can be sent from your wallet. Add funds and try again." = "Your identity needs %1$@ DASH more to register this name, but only %2$@ DASH can be sent from your wallet. Add funds and try again.";
 "Your identity needs an encryption and a decryption key so contact requests can be encrypted between you and other users. Enabling adds whichever of them are missing with a single network transaction. This is a one time event." = "Your identity needs an encryption and a decryption key so contact requests can be encrypted between you and other users. Enabling adds whichever of them are missing with a single network transaction. This is a one time event.";
 "Your Platform balance cannot currently cover the Shield transfer selection headroom." = "Your Platform balance cannot currently cover the Shield transfer selection headroom.";
 "Your previous payment was found. Continue to finish creating the identity and username without paying again." = "Your previous payment was found. Continue to finish creating the identity and username without paying again.";

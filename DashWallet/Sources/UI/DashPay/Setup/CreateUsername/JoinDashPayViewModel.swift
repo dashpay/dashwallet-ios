@@ -39,6 +39,10 @@ class JoinDashPayViewModel: ObservableObject {
     /// Which of the three registration stages `.creating` and
     /// `.creationFailed` refer to. Meaningless in every other state.
     @Published private(set) var registrationStep: DWDPRegistrationState = .processingPayment
+    /// Why the reported registration stopped, in the user's words. Set only
+    /// with `.creationFailed`, and only while the failure is in memory — after
+    /// a relaunch the attempt reads as `.interrupted`, which has no reason.
+    @Published private(set) var failureReason: String?
 
     private var cancellableBag = Set<AnyCancellable>()
 
@@ -58,12 +62,14 @@ class JoinDashPayViewModel: ObservableObject {
             return
         }
 
+        failureReason = nil
         if let report = registrationReport() {
             // A registration this wallet started outranks everything else the
             // row could say: it is the only surface reporting on it.
             self.state = report.state
             self.username = report.username
             self.registrationStep = report.step
+            self.failureReason = report.failureReason
         } else if let lost = UsernamePrefs.shared.lostContestUsername, !lost.isEmpty {
             // The vote went against this wallet. Reported until the user acts
             // on it — a lost request that silently became "request a username"
@@ -171,6 +177,7 @@ class JoinDashPayViewModel: ObservableObject {
         let state: JoinDashPayState
         let username: String
         let step: DWDPRegistrationState
+        var failureReason: String? = nil
     }
 
     /// What the row says about a registration handed off to it, or `nil`
@@ -201,7 +208,8 @@ class JoinDashPayViewModel: ObservableObject {
             return RegistrationReport(
                 state: bridge.isFailed ? .creationFailed : .creating,
                 username: username,
-                step: bridge.currentState)
+                step: bridge.currentState,
+                failureReason: bridge.isFailed ? bridge.lastFailureReason : nil)
         }
 
         // Nothing is running. Either a finished registration is still waiting

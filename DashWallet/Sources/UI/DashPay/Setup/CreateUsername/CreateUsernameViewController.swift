@@ -390,6 +390,11 @@ struct CreateUsernameView: View {
         .onChange(of: viewModel.hasPendingRegistrationRecovery) { _ in
             syncFundingSourceToViableSource()
         }
+        .onChange(of: viewModel.identityTopUpDuffs) { _ in
+            // Whether Shielded can pay turns on the existing identity's
+            // shortfall, which moves without the readiness snapshot changing.
+            syncFundingSourceToViableSource()
+        }
         .sheet(isPresented: $showVotingInfo) {
             DashUIKit.BottomSheet.selfSizing(
                 showBackButton: .constant(false),
@@ -1048,11 +1053,25 @@ struct CreateUsernameView: View {
     /// - The requested name on its own: offer the companion first. Android
     ///   asks at exactly this moment too, which is why the offer is a second
     ///   sheet rather than a section of the first.
+    /// - The requested name for an identity that already owns a name: no
+    ///   offer. A companion exists to give the user a name while the vote
+    ///   runs, and this one has one — after a lost contest, typically the
+    ///   companion from that round. Android skips it the same way
+    ///   (`hasSecondaryName()`).
     private func confirmRequestAccepted() {
-        sheetFollowUp = isNamingInstantUsername
-            ? .submit(temporaryUsername: viewModel.temporaryField.trimmedText)
-            : .offerInstantUsername
+        if isNamingInstantUsername {
+            sheetFollowUp = .submit(temporaryUsername: viewModel.temporaryField.trimmedText)
+        } else if identityOwnsUsername {
+            sheetFollowUp = .submit(temporaryUsername: nil)
+        } else {
+            sheetFollowUp = .offerInstantUsername
+        }
         showConfirmRequest = false
+    }
+
+    private var identityOwnsUsername: Bool {
+        let identity = DWCurrentUserIdentityInfo.shared
+        return identity.hasIdentity && !identity.usernames.isEmpty
     }
 
     /// Runs whatever the sheet that just closed asked for. Called from the
@@ -1087,8 +1106,17 @@ struct CreateUsernameView: View {
     /// Only the contested request spends DASH: the companion is a second DPNS
     /// name on the identity that request funds, so nil — the sheet then says
     /// nothing extra is spent instead of naming a second amount.
+    /// What the confirmation shows. A new identity is funded with the full
+    /// contested minimum; an identity that already exists is not created
+    /// again, so only the name's contest fund is at stake — Android's
+    /// `DASH_PAY_FEE_CONTESTED_NAME` case. The fund is the marketplace's
+    /// figure, credits to duffs (1 duff = 1000 credits).
     private var confirmationAmountDuffs: UInt64 {
-        isNamingInstantUsername ? 0 : UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME)
+        if isNamingInstantUsername { return 0 }
+        if DWCurrentUserIdentityInfo.shared.hasIdentity {
+            return UsernameMarketplaceService.contestedFundCredits / 1000
+        }
+        return UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME)
     }
 
     private func confirmContestedSubmission(temporaryUsername: String?) {
@@ -1110,11 +1138,11 @@ struct CreateUsernameView: View {
     /// single write is the only synchronization needed.
     private func performSubmit(temporaryUsername: String? = nil) {
         if !viewModel.isInvitationMode {
-            if viewModel.registrationRecovery == .pendingCoreAssetLock {
-                DWIdentityRegistrationBridge.shared.preferredFundingSource = .core
-            } else if !viewModel.isResumingUsername {
-                DWIdentityRegistrationBridge.shared.preferredFundingSource = fundingSource
-            }
+            // An identity that already exists — resumed or not — is topped up
+            // from this source when it holds less than the name needs, so the
+            // pick matters on that path too.
+            DWIdentityRegistrationBridge.shared.preferredFundingSource =
+                viewModel.registrationRecovery == .pendingCoreAssetLock ? .core : fundingSource
         }
         // Every submission except an invitation claim reports its progress on
         // the More row and this screen steps aside straight after the PIN.
