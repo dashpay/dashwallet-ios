@@ -348,7 +348,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (void)didWipeWallet {
     // Nothing received before the wipe may be acted on after it.
     self.showsInvitationAfterUnlock = NO;
+#if DASHPAY
     [DWInvitationEntry discardHeldNotice];
+#endif
 
     UIViewController *setupController = [self setupController];
     [self transitionToController:setupController
