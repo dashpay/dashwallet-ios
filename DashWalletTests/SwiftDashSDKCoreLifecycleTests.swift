@@ -36,9 +36,37 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         try await CoreSPVRestartOperation.run(
             setRestarting: { restartingStates.append($0) },
             stop: { events.append("stop") },
+            networkSwitchPrepared: { false },
             start: { events.append("start") })
 
         XCTAssertEqual(events, ["stop", "start"])
+        XCTAssertEqual(restartingStates, [true, false])
+    }
+
+    /// A network switch prepared while the restart's stop was awaited owns the
+    /// next start: the restart throws instead of starting the outgoing network.
+    func testRestartDoesNotStartAfterANetworkSwitchWasPreparedDuringItsStop() async {
+        var events: [String] = []
+        var restartingStates: [Bool] = []
+        var prepared = false
+
+        do {
+            try await CoreSPVRestartOperation.run(
+                setRestarting: { restartingStates.append($0) },
+                stop: {
+                    events.append("stop")
+                    prepared = true
+                },
+                networkSwitchPrepared: { prepared },
+                start: { events.append("start") })
+            XCTFail("Expected the restart to stop without starting")
+        } catch SwiftDashSDKSPVCoordinator.StartError.networkSwitchPending {
+            // Expected.
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+
+        XCTAssertEqual(events, ["stop"])
         XCTAssertEqual(restartingStates, [true, false])
     }
 
@@ -125,6 +153,7 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             try await CoreSPVRestartOperation.run(
                 setRestarting: { restartingStates.append($0) },
                 stop: { events.append("stop") },
+                networkSwitchPrepared: { false },
                 start: {
                     events.append("start")
                     throw CoreLifecycleTestError.start
