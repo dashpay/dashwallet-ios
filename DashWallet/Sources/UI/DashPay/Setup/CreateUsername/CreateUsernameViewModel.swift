@@ -237,7 +237,21 @@ class CreateUsernameViewModel: ObservableObject {
     /// silently funded from whatever source happened to be viable instead of
     /// the one that was picked. The choice belongs to the flow, not to either
     /// object. `@MainActor` on the class covers it.
-    private static var chosenFundingSource: DWIdentityFundingSource?
+    ///
+    /// Being process-global, it is also scoped: it carries the wallet and
+    /// network it was made on, so a form opened for another wallet ignores it,
+    /// and the Join DashPay sheet discards it when it closes without handing
+    /// off to the form (`discardChosenFundingSource()`). Otherwise a pick made
+    /// in an abandoned sheet was adopted by the next form — a recovery
+    /// included — as an explicit choice, and auto-pinning then left Shielded
+    /// in place for a top-up Shielded cannot pay, with no picker to change it.
+    private static var chosenFundingSource: PendingFundingChoice?
+
+    private struct PendingFundingChoice {
+        let source: DWIdentityFundingSource
+        let walletId: Data?
+        let network: SwiftDashSDK.Network?
+    }
 
     /// Which source will actually pay, once the form has adopted the pick.
     ///
@@ -255,7 +269,17 @@ class CreateUsernameViewModel: ObservableObject {
 
     /// Records the privacy page's pick.
     func chooseFundingSource(_ source: DWIdentityFundingSource) {
-        Self.chosenFundingSource = source
+        Self.chosenFundingSource = PendingFundingChoice(
+            source: source,
+            walletId: SwiftDashSDKHost.shared.wallet?.walletId,
+            network: WalletEnvironment.network)
+    }
+
+    /// Drops a pick that will not reach the form: the Join DashPay sheet
+    /// closed some other way than handing off to it, or the form is being
+    /// opened by an entry that never passes the privacy page.
+    static func discardChosenFundingSource() {
+        chosenFundingSource = nil
     }
 
     /// Told by the form which source it settled on, on appear and whenever it
@@ -271,9 +295,19 @@ class CreateUsernameViewModel: ObservableObject {
     /// later visit that never passes the privacy page — a recovery, an
     /// invitation claim — must not inherit a choice made for a previous
     /// attempt.
+    ///
+    /// A pick made on another wallet or network is not this form's to adopt:
+    /// it is dropped, and the form pins a viable source itself.
     func consumeChosenFundingSource() -> DWIdentityFundingSource? {
         defer { Self.chosenFundingSource = nil }
-        return Self.chosenFundingSource
+        guard let pending = Self.chosenFundingSource else { return nil }
+        guard let walletId = pending.walletId,
+              walletId == SwiftDashSDKHost.shared.wallet?.walletId,
+              let network = pending.network,
+              network == WalletEnvironment.network else {
+            return nil
+        }
+        return pending.source
     }
 
     /// Shielded-funding readiness for the CURRENT typed name (contested

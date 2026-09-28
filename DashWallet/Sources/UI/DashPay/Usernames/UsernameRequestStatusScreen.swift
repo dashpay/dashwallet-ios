@@ -48,6 +48,11 @@ final class UsernameRequestStatusViewModel: ObservableObject {
     /// Treating those as one offered "Verify Now" over a link that was about
     /// to appear, inviting a second publication of a link the user already has.
     @Published private(set) var isReadingVerification = true
+    /// The last lookup failed, so `verificationURL == nil` means "unknown",
+    /// not "nothing published". Kept apart for the same reason as the reading
+    /// state: offering "Verify Now" here invites publishing a second link over
+    /// one that may already be on Platform — which the contract then refuses.
+    @Published private(set) var didVerificationLookupFail = false
     /// Non-nil drives the failure alert. Cancelling the PIN is not an error.
     @Published var verificationError: String?
 
@@ -78,9 +83,10 @@ final class UsernameRequestStatusViewModel: ObservableObject {
         identityVerify.isAvailable
     }
 
-    /// Reads the published link, if any. Silent on failure: the link is extra
-    /// information about a request whose status is already on screen, so a
-    /// lookup that fails must not present itself as the request failing.
+    /// Reads the published link, if any. Quiet on failure — no alert: the
+    /// link is extra information about a request whose status is already on
+    /// screen, so a lookup that fails must not present itself as the request
+    /// failing. The link row reports it in place, with a retry.
     func refreshVerificationURL() async {
         guard identityVerify.isAvailable else {
             isReadingVerification = false
@@ -88,7 +94,13 @@ final class UsernameRequestStatusViewModel: ObservableObject {
         }
         isReadingVerification = true
         defer { isReadingVerification = false }
-        verificationURL = try? await identityVerify.publishedURL(forLabel: label)
+        do {
+            verificationURL = try await identityVerify.publishedURL(forLabel: label)
+            didVerificationLookupFail = false
+        } catch {
+            verificationURL = nil
+            didVerificationLookupFail = true
+        }
     }
 
     /// Publishes `url` as this request's proof of identity (PIN-gated inside
@@ -101,6 +113,7 @@ final class UsernameRequestStatusViewModel: ObservableObject {
 
         do {
             verificationURL = try await identityVerify.publish(url: url, forLabel: label)
+            didVerificationLookupFail = false
         } catch IdentityVerifyService.ServiceError.authCancelled {
             // The user backed out of the PIN prompt; nothing happened.
         } catch {
@@ -336,6 +349,18 @@ struct UsernameRequestStatusScreen: View {
                 Text(NSLocalizedString("Checking…", comment: "Usernames"))
             }
             .foregroundStyle(Color.dash.secondaryText)
+        } else if viewModel.didVerificationLookupFail {
+            // Not "Verify Now": the lookup did not answer, so a link may well
+            // be published already. Same wording as the contender details.
+            Button {
+                Task { await viewModel.refreshVerificationURL() }
+            } label: {
+                HStack(spacing: 6) {
+                    Text(NSLocalizedString("Could not check — retry", comment: "Voting"))
+                    Image(systemName: "arrow.clockwise")
+                }
+                .foregroundStyle(Color.dash.blue)
+            }
         } else if viewModel.canVerifyIdentity {
             Button {
                 showVerifyIdentity = true

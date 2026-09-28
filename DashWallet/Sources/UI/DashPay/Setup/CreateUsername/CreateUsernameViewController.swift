@@ -343,8 +343,12 @@ struct CreateUsernameView: View {
             }
             // The funding source is chosen on the Join DashPay sheet's privacy
             // page, one screen back. Adopting it counts as an explicit pick, so
-            // the auto-pinning below leaves it alone.
-            if let chosen = viewModel.consumeChosenFundingSource() {
+            // the auto-pinning below leaves it alone. An invitation claim never
+            // passes that page — the voucher pays — so a pick left over from an
+            // earlier sheet is dropped rather than adopted.
+            if invitationURI != nil {
+                CreateUsernameViewModel.discardChosenFundingSource()
+            } else if let chosen = viewModel.consumeChosenFundingSource() {
                 fundingSource = chosen
                 didUserPickFundingSource = true
             }

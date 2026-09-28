@@ -1421,12 +1421,21 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         if let verificationURL = pendingVerificationURL, isContestedSubmission {
             pendingVerificationURL = nil
             do {
+                // The awaits above (registration, contested-name sync, vote
+                // state) leave room for a wallet or network switch; a document
+                // written after one would land for the wrong context. Skipped,
+                // not retried: the link can still be added from "Request
+                // details".
+                try validateRegistrationContext(walletId: wallet.walletId, network: network)
                 try await IdentityVerifyService.shared.publish(
                     url: verificationURL,
                     forLabel: username,
                     identityId: identityId,
                     wallet: wallet,
+                    network: network,
                     signer: signer)
+            } catch CoordinatorError.contextChanged {
+                Self.logger.info("🪪 IDENT-COORD :: identity-verify publish skipped: registration context changed")
             } catch {
                 Self.logger.error("🪪 IDENT-COORD :: identity-verify publish failed: \(String(describing: error), privacy: .public)")
             }
