@@ -148,7 +148,10 @@ struct ContestDetailScreen: View {
                         contender: contender,
                         normalizedLabel: contest.normalizedLabel,
                         votingEndsAt: current.endTime,
+                        // Nobody leads before the first vote: with every tally at
+                        // zero the first row was highlighted as if it were ahead.
                         isLeading: contender.id == current.leadingContender?.id
+                            && contender.voteTally > 0
                             && current.lockVotes <= contender.voteTally,
                         canVote: canVote(.towards(identityId: contender.identityId)),
                         voteTitle: voteTitle(for: .towards(identityId: contender.identityId)),
@@ -246,9 +249,9 @@ private struct ContenderRow: View {
                             .foregroundColor(isLeading ? .green : Color.dash.secondaryText)
                             .fontWeight(isLeading ? .semibold : .regular)
                     }
-                    Image(systemName: "chevron.right")
-                        .font(.caption2)
-                        .foregroundColor(Color.dash.secondaryText)
+                    // No chevron of our own: the List already draws the
+                    // disclosure for a NavigationLink row, and two read as a
+                    // glitch.
                 }
                 .contentShape(Rectangle())
             }
