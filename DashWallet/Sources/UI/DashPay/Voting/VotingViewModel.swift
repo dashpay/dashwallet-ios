@@ -127,18 +127,21 @@ final class VotingViewModel: ObservableObject {
     private let registry: MasternodeVoterRegistry
     private let caster: MasternodeVoteCaster
     private let history: VoteHistoryDAO = VoteHistoryDAOImpl.shared
+    private let vault: TrackedMasternodeKeyVaulting
 
     /// Default arguments would have to be evaluated in a nonisolated context,
     /// but both services are `@MainActor`, so the defaults are applied inside
     /// this `@MainActor` body instead.
     init(
         contestsService: ContestedNamesService? = nil,
-        registry: MasternodeVoterRegistry? = nil
+        registry: MasternodeVoterRegistry? = nil,
+        vault: TrackedMasternodeKeyVaulting? = nil
     ) {
         let contestsService = contestsService ?? ContestedNamesService()
         let registry = registry ?? MasternodeVoterRegistry()
         self.contestsService = contestsService
         self.registry = registry
+        self.vault = vault ?? TrackedMasternodeKeyVault()
         self.caster = MasternodeVoteCaster(registry: registry, contests: contestsService)
     }
 
@@ -198,6 +201,26 @@ final class VotingViewModel: ObservableObject {
             hasLoadedOnce = true
         }
 
+        refreshVotableNodes()
+
+        castCountsByContest = await history.voteCountsByContest(
+            network: MasternodeVoteCaster.networkKey)
+
+        do {
+            contests = try await contestsService.activeContests()
+            loadError = nil
+            didLoadContests = true
+        } catch {
+            loadError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
+        }
+    }
+
+    /// Re-resolve which nodes this wallet can vote with, and nothing else.
+    ///
+    /// The voting-key screens call this after adding or removing a key. A full
+    /// ``refresh()`` would also re-query every open contest over the network,
+    /// which a key change does not affect.
+    func refreshVotableNodes() {
         let resolution = registry.votableNodes()
         votableNodes = resolution.nodes
         nodeListMayBeIncomplete = resolution.mayBeIncomplete
@@ -216,17 +239,6 @@ final class VotingViewModel: ObservableObject {
             if settled != selectedNodeIDs {
                 selectedNodeIDs = settled
             }
-        }
-
-        castCountsByContest = await history.voteCountsByContest(
-            network: MasternodeVoteCaster.networkKey)
-
-        do {
-            contests = try await contestsService.activeContests()
-            loadError = nil
-            didLoadContests = true
-        } catch {
-            loadError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
         }
     }
 
@@ -409,6 +421,38 @@ final class VotingViewModel: ObservableObject {
         let live = selectedNodeIDs.intersection(Set(votableNodes.map(\.proTxHash)))
         if !live.isEmpty { return live }
         return Set(votableNodes.first.map { [$0.proTxHash] } ?? [])
+    }
+
+    // MARK: Voting keys
+
+    /// Remove a voting key the user added, so that node stops voting from this
+    /// wallet. Returns a message when the key could not be removed.
+    ///
+    /// Only for ``VotingKeySource/trackedVault`` nodes: a key derived from the
+    /// wallet cannot be removed, only the wallet can. The node is untracked as
+    /// well once no other key of it is left, so it does not linger in the
+    /// tracked-masternode registry as a key-less row nobody asked to keep — but
+    /// a node that still holds an owner or payout key stays tracked, because
+    /// those keys serve withdrawals, not voting.
+    func removeImportedVotingKey(for node: VoterNode) -> String? {
+        guard node.keySource == .trackedVault else { return nil }
+
+        vault.removeKey(for: node.proTxHash, role: .voting)
+        // Judged by what the keychain holds afterwards rather than by the
+        // delete's return value, which is also false for an item already gone.
+        let remaining = vault.attachedRoles(for: node.proTxHash)
+        guard !remaining.contains(.voting) else {
+            return NSLocalizedString(
+                "Could not remove the voting key. Try again.",
+                comment: "Voting")
+        }
+        if remaining.isEmpty, let manager = SwiftDashSDKHost.shared.manager {
+            // Best-effort: a registry row left behind holds no key and cannot
+            // vote, so a failure here changes nothing the user can see.
+            _ = try? manager.untrackMasternode(proTxHash: node.proTxHash)
+        }
+        refreshVotableNodes()
+        return nil
     }
 
     // MARK: Casting
