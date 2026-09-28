@@ -103,7 +103,7 @@ final class PaymentOperationGateTests: XCTestCase {
     }
 }
 
-/// `PaymentOperationSequence` is what `PaymentController.performPayment`
+/// `LinkOperationSequence` is what `PaymentController.performPayment`
 /// runs every replacement through: the new operation becomes current, then
 /// the replaced one's link completion is delivered. These tests drive it
 /// with the real `DeepLinkQueue` and a copy of the root controller's
@@ -111,21 +111,21 @@ final class PaymentOperationGateTests: XCTestCase {
 /// — with nothing presented — starts the next payment synchronously), so
 /// the ordering the controller relies on is checked without UIKit or a
 /// payment processor.
-final class PaymentOperationSequenceTests: XCTestCase {
+final class LinkOperationSequenceTests: XCTestCase {
     /// The root controller's side: the queue, one completion per hand-over
     /// that ends that hand-over and asks for the next one, and the payment
     /// each hand-over starts on the same controller.
     private final class LinkRoot {
         let queue = DeepLinkQueue()
-        let sequence: PaymentOperationSequence
+        let sequence: LinkOperationSequence
         private(set) var completions: [String: Int] = [:]
-        private(set) var tokens: [String: PaymentOperationSequence.Token] = [:]
+        private(set) var tokens: [String: LinkOperationSequence.Token] = [:]
         /// A payment that found its token replaced before it could install
         /// its operation: it must stop there.
         private(set) var stopped: [String] = []
 
         init(deliver: @escaping (@escaping () -> Void) -> Void) {
-            sequence = PaymentOperationSequence(deliver: deliver)
+            sequence = LinkOperationSequence(deliver: deliver)
         }
 
         func enqueue(_ name: String) {
@@ -242,7 +242,7 @@ final class PaymentOperationSequenceTests: XCTestCase {
     /// own late settlement afterwards changes nothing.
     func testAReplacedLinkIsSettledOnceByItsReplacement() {
         let turns = Turns()
-        let sequence = PaymentOperationSequence(deliver: turns.deliver)
+        let sequence = LinkOperationSequence(deliver: turns.deliver)
         var settled: [String: Int] = [:]
         let a = sequence.begin(settled: { settled["A", default: 0] += 1 }, isAbandoned: nil)
         let b = sequence.begin(settled: { settled["B", default: 0] += 1 }, isAbandoned: nil)
@@ -262,7 +262,7 @@ final class PaymentOperationSequenceTests: XCTestCase {
     /// queue has since moved on.
     func testASettledPaymentIsNotAbandoned() {
         let turns = Turns()
-        let sequence = PaymentOperationSequence(deliver: turns.deliver)
+        let sequence = LinkOperationSequence(deliver: turns.deliver)
         var queueMovedOn = false
         let a = sequence.begin(settled: {}, isAbandoned: { queueMovedOn })
         queueMovedOn = true

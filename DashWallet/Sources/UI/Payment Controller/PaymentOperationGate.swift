@@ -75,11 +75,13 @@ struct PaymentOperationGate {
     }
 }
 
-/// Replacement and link settlement of a controller's payment operations,
-/// over `PaymentOperationGate`.
+/// Replacement and link settlement of the operations a link handler runs
+/// one after another, over `PaymentOperationGate`: `PaymentController`'s
+/// payments and `ConnectionsViewModel`'s DashConnect requests.
 ///
-/// A deep-link payment carries the link queue's completion (`settled`) and
-/// its abandonment check. Every operation's completion runs exactly once:
+/// An operation started by a deep link carries the link queue's completion
+/// (`settled`) and its abandonment check; one started by hand carries
+/// neither. Every operation's completion runs exactly once:
 /// when the operation settles itself, or when a later operation replaces it
 /// — whoever replaces it. Replacement is reentrancy-safe:
 ///
@@ -88,14 +90,14 @@ struct PaymentOperationGate {
 ///   started the replacement;
 /// - a completion is detached at once but delivered through `deliver` —
 ///   the next main-queue turn in the app — so the queue's next hand-over,
-///   which can start another payment on this same controller, never runs
+///   which can start another operation on this same handler, never runs
 ///   inside the call that settled the previous one;
 /// - a caller that did get re-entered finds its token no longer admitted
 ///   (`admits(_:)`) and stops; its operation was settled by the one that
 ///   replaced it.
 ///
 /// Pure apart from `deliver`, so the ordering is unit-tested.
-final class PaymentOperationSequence {
+final class LinkOperationSequence {
     typealias Token = PaymentOperationGate.Token
 
     private struct Settlement {

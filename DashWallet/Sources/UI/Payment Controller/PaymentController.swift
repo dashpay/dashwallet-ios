@@ -48,16 +48,16 @@ protocol AmountProviding: ActivityIndicatorPreviewing, ErrorPresentable, Payment
 // MARK: - PaymentController
 
 /// One payment this controller runs: its own processor; its link
-/// settlement and abandonment live in `PaymentOperationSequence` under its
+/// settlement and abandonment live in `LinkOperationSequence` under its
 /// token. A controller serves a screen for its lifetime, so payment B can
 /// start while A's preparation (a BIP70 fetch, a BIP73 hop) is still alive;
 /// A's processor keeps calling back, and only the operation the sequence
 /// admits may act on a callback.
 private final class PaymentOperation {
-    let token: PaymentOperationSequence.Token
+    let token: LinkOperationSequence.Token
     let processor: DWPaymentProcessor
 
-    init(token: PaymentOperationSequence.Token, processor: DWPaymentProcessor) {
+    init(token: LinkOperationSequence.Token, processor: DWPaymentProcessor) {
         self.token = token
         self.processor = processor
     }
@@ -69,7 +69,7 @@ final class PaymentController: NSObject {
 
     @objc public var locksBalance = false
 
-    private let operations = PaymentOperationSequence()
+    private let operations = LinkOperationSequence()
     private var operation: PaymentOperation?
     private var fiatCurrency: String = App.fiatCurrency
     private weak var paymentOutput: DWPaymentOutput?
@@ -175,7 +175,7 @@ final class PaymentController: NSObject {
     /// Settles `token`'s link — that operation's own, never whichever
     /// operation is current by the time a presentation completes. Once per
     /// operation; later calls are no-ops.
-    private func settlePresentation(of token: PaymentOperationSequence.Token) {
+    private func settlePresentation(of token: LinkOperationSequence.Token) {
         operations.settle(token)
     }
 
@@ -191,7 +191,7 @@ final class PaymentController: NSObject {
 
     /// `settlePresentation(of:)` once `transition` (a push's coordinator)
     /// has finished, or on the next run-loop turn when nothing is animating.
-    private func settlePresentation(of token: PaymentOperationSequence.Token, after transition: UIViewControllerTransitionCoordinator?) {
+    private func settlePresentation(of token: LinkOperationSequence.Token, after transition: UIViewControllerTransitionCoordinator?) {
         guard operations.awaitsSettlement(token) else { return }
         if let transition {
             transition.animate(alongsideTransition: nil) { [weak self] _ in self?.settlePresentation(of: token) }
@@ -206,14 +206,14 @@ extension PaymentController {
         provideAmountViewController ?? presentationContextProvider?.presentationAnchorForPaymentController(self)
     }
 
-    private func showAlert(with title: String?, message: String?, for token: PaymentOperationSequence.Token) {
+    private func showAlert(with title: String?, message: String?, for token: LinkOperationSequence.Token) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel)
         alert.addAction(okAction)
         show(modalController: alert, for: token)
     }
 
-    private func show(modalController: UIViewController, for token: PaymentOperationSequence.Token) {
+    private func show(modalController: UIViewController, for token: LinkOperationSequence.Token) {
         precondition(presentationAnchor != nil)
         presentationAnchor!.topController().present(modalController, animated: true) { [weak self] in
             self?.settlePresentation(of: token)

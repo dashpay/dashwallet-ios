@@ -83,50 +83,59 @@ final class ConnectionsViewModel: ObservableObject {
     /// registration, which are already committing to the network.
     private var isResolvingRequest = false
 
-    /// Reports, once, when the request in flight has settled: its approval
-    /// sheet was published, it was refused, it failed, it completed without
-    /// a sheet, or a newer request superseded it. The deep-link queue hands
-    /// the next link over only then.
-    private var settlement: (() -> Void)?
-    /// A UI outcome was published (a sheet, an alert) and the settlement
-    /// waits for the presentation layer to report it on screen
-    /// (`presentationDidAppear`): publishing a `@Published` value does not
-    /// present it, and settling before the sheet is up let the next link's
-    /// screen race the sheet's binding.
-    private var settlementAwaitsPresentation = false
-    /// Whether the deep-link queue has given the request in flight up (its
-    /// watchdog fired during the metadata lookup). Asked before anything is
-    /// published: an abandoned request publishes nothing, so its approval
-    /// sheet never lands on top of the screen the next link opened.
-    private var isAbandoned: (() -> Bool)?
+    /// Every call to `onQRScanned` is an operation with its own token, and
+    /// the deep-link queue's completion for it (`settled`) is kept here: it
+    /// reports, once, when that request has settled — its approval sheet is
+    /// on screen, it was refused, it failed, it completed without a sheet,
+    /// or a newer request superseded it. The queue hands the next link over
+    /// only then. A newer request becomes current before the one it
+    /// supersedes is settled, and that settlement is delivered on the next
+    /// main-queue turn: settling a link hands the next one over, which can
+    /// call back into this view model, and must not run inside the call
+    /// that superseded it. Every settle site names the token of the request
+    /// it belongs to, so a late report settles that request or nothing.
+    ///
+    /// The sequence also answers whether the queue has given a request up
+    /// (its watchdog fired during the metadata lookup), asked before
+    /// anything is published: an abandoned request publishes nothing, so
+    /// its approval sheet never lands on top of the screen the next link
+    /// opened.
+    private let operations = LinkOperationSequence()
+    /// A UI outcome was published (a sheet, an alert) for this request, and
+    /// its settlement waits for the presentation layer to report it on
+    /// screen (`presentationDidAppear`): publishing a `@Published` value
+    /// does not present it, and settling before the sheet is up let the
+    /// next link's screen race the sheet's binding.
+    private var awaitingPresentation: LinkOperationSequence.Token?
 
-    private func settle() {
-        settlementAwaitsPresentation = false
-        let settled = settlement
-        settlement = nil
-        isAbandoned = nil
-        settled?()
+    private func settle(_ token: LinkOperationSequence.Token) {
+        if awaitingPresentation == token {
+            awaitingPresentation = nil
+        }
+        operations.settle(token)
     }
 
-    /// Settles once the UI this request produced is on screen; the screen
-    /// calls it from the sheet's or the alert's `onAppear`.
-    private func settleWhenPresented() {
-        guard settlement != nil else { return }
-        settlementAwaitsPresentation = true
+    /// Settles `token` once the UI it produced is on screen; the screen
+    /// calls `presentationDidAppear` from the sheet's or the alert's
+    /// `onAppear`.
+    private func settleWhenPresented(_ token: LinkOperationSequence.Token) {
+        guard operations.awaitsSettlement(token) else { return }
+        awaitingPresentation = token
     }
 
     /// The screen reports that the sheet or alert published for the request
     /// in flight has appeared. Nothing happens when nothing waits for it.
     func presentationDidAppear() {
-        guard settlementAwaitsPresentation else { return }
-        settle()
+        guard let token = awaitingPresentation else { return }
+        settle(token)
     }
 
-    /// True — logged and settled — when the queue moved on without this request.
-    private func dropIfAbandoned() -> Bool {
-        guard isAbandoned?() == true else { return false }
+    /// True — logged and settled — when the queue moved on without the
+    /// request `token`.
+    private func dropIfAbandoned(_ token: LinkOperationSequence.Token) -> Bool {
+        guard operations.isAbandoned(token) else { return false }
         DWLogger.log("DASHCONNECT the link queue gave this request up before it resolved; publishing nothing")
-        settle()
+        settle(token)
         return true
     }
 
@@ -159,13 +168,17 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     func onQRScanned(_ content: String, settled: (() -> Void)?, isAbandoned: (() -> Bool)?) {
-        // A request still resolving is superseded below; it will publish
-        // nothing, so it is settled here.
-        settle()
-        settlement = settled
-        self.isAbandoned = isAbandoned
+        // This request is current from here on. A request still resolving
+        // is superseded below and will publish nothing, so `begin` settles
+        // it — on the next turn, never inside this call.
+        let token = operations.begin(settled: settled, isAbandoned: isAbandoned)
+        awaitingPresentation = nil
+        guard operations.admits(token) else {
+            DWLogger.log("DASHCONNECT a request arrived while this one was being installed; this one is dropped")
+            return
+        }
         guard !featureUnavailable else {
-            settle()
+            settle(token)
             return
         }
 
@@ -193,7 +206,7 @@ final class ConnectionsViewModel: ObservableObject {
                 approveError = refusal
             }
             // Shown on the sheet that is already up: no new presentation.
-            settle()
+            settle(token)
             return
         }
 
@@ -203,7 +216,7 @@ final class ConnectionsViewModel: ObservableObject {
                 text: NSLocalizedString("Finish the current DashConnect request first, then try again.",
                                         comment: "DashConnect: a second request arrived during key registration")
             )
-            settleWhenPresented()
+            settleWhenPresented(token)
             return
         }
 
@@ -226,10 +239,10 @@ final class ConnectionsViewModel: ObservableObject {
                     // have to describe the same request.
                     let connectionRequest = await dataSource.makeConnectionRequest(from: request)
                     guard generation == requestGeneration else { return }
-                    if dropIfAbandoned() { return }
+                    if dropIfAbandoned(token) { return }
                     pendingLoginRequest = request
                     pendingRequest = connectionRequest
-                    settleWhenPresented()
+                    settleWhenPresented(token)
                 case let .stateTransition(request):
                     guard generation == requestGeneration else { return }
                     isProcessingStateTransition = true
@@ -237,20 +250,20 @@ final class ConnectionsViewModel: ObservableObject {
 
                     switch try await dataSource.handleStateTransition(request) {
                     case .keyRegistrationCompleted:
-                        if dropIfAbandoned() { return }
+                        if dropIfAbandoned(token) { return }
                         message = ConnectionsScreenMessage(
                             kind: .success,
                             text: NSLocalizedString("DashConnect key registration completed.", comment: "DashConnect")
                         )
                     case let .tokenPurchaseApprovalRequired(purchase):
-                        if dropIfAbandoned() { return }
+                        if dropIfAbandoned(token) { return }
                         pendingTokenPurchase = purchase
                     }
-                    settleWhenPresented()
+                    settleWhenPresented(token)
                 }
             } catch {
                 guard generation == requestGeneration else { return }
-                if dropIfAbandoned() { return }
+                if dropIfAbandoned(token) { return }
                 message = ConnectionsScreenMessage(
                     kind: .error,
                     text: String(
@@ -258,7 +271,7 @@ final class ConnectionsViewModel: ObservableObject {
                         error.localizedDescription
                     )
                 )
-                settleWhenPresented()
+                settleWhenPresented(token)
             }
         }
     }
