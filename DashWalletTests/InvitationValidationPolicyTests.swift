@@ -165,6 +165,18 @@ final class InvitationValidationPolicyTests: XCTestCase {
         XCTAssertFalse(InvitationClaimFailure.stillConfirming.clearsEverywhere)
     }
 
+    // MARK: - Waiting for the wallet
+
+    /// A failed identity-name read keeps the check unanswered; the card
+    /// waits a few rounds (re-arming the read each time) and then offers
+    /// Retry instead of Verifying forever.
+    func testNotReadyChecksEndInRetryNotEndlessVerifying() {
+        XCTAssertEqual(InvitationNotReadyPolicy.next(afterAttempts: 1), .waitAndRecheck)
+        XCTAssertEqual(InvitationNotReadyPolicy.next(afterAttempts: 2), .waitAndRecheck)
+        XCTAssertEqual(InvitationNotReadyPolicy.next(afterAttempts: 3), .offerRetry)
+        XCTAssertEqual(InvitationNotReadyPolicy.next(afterAttempts: 10), .offerRetry)
+    }
+
     // MARK: - Inviter name
 
     func testInviterBestNamePrefersDisplayName() {

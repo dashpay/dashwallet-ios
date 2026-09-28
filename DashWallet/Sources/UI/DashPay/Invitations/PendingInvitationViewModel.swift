@@ -60,13 +60,21 @@ final class PendingInvitationViewModel: ObservableObject {
     /// of spinning on an unchanged invitation.
     private var delayedRetry: Task<Void, Never>?
     static let notReadyRetryDelay: UInt64 = 5_000_000_000
+    /// Consecutive "the wallet cannot answer yet" results for the shown
+    /// invitation (identity names not loaded, host mid-switch).
+    private var notReadyAttempts = 0
+    /// Re-arms the wallet's identity-name read, which does not retry by
+    /// itself once it failed; a read already running is left alone.
+    private let rearmIdentityRefresh: @MainActor () -> Void
     private var cancellables = Set<AnyCancellable>()
     private var observers: [NSObjectProtocol] = []
 
     init(store: PendingInvitationStore = .shared,
-         isActive: @escaping @MainActor (InvitationScope) -> Bool = { InvitationScope.isActiveAndBound($0) }) {
+         isActive: @escaping @MainActor (InvitationScope) -> Bool = { InvitationScope.isActiveAndBound($0) },
+         rearmIdentityRefresh: @escaping @MainActor () -> Void = { DWCurrentUserIdentityInfo.shared.syncFromNetwork() }) {
         self.store = store
         self.isActive = isActive
+        self.rearmIdentityRefresh = rearmIdentityRefresh
         store.$pending
             .removeDuplicates()
             .sink { [weak self] pending in
@@ -74,6 +82,7 @@ final class PendingInvitationViewModel: ObservableObject {
                 self.invitation = pending
                 if pending != self.lastVerdict?.invitation {
                     self.lastVerdict = nil
+                    self.notReadyAttempts = 0
                 }
                 self.refreshCardState()
                 self.validateIfPossible()
@@ -110,6 +119,8 @@ final class PendingInvitationViewModel: ObservableObject {
 
     func retry() {
         lastVerdict = nil
+        notReadyAttempts = 0
+        rearmIdentityRefresh()
         validateIfPossible()
     }
 
@@ -203,13 +214,24 @@ final class PendingInvitationViewModel: ObservableObject {
                 // A replacement is shown now: it gets its own check.
                 validateIfPossible()
             } else if self.invitation != nil {
-                // Same invitation, but the wallet could not answer yet (not
-                // hydrated, or mid-switch). Sync, unlock, foreground and
-                // wallet-change events retry too; this is the backstop.
-                scheduleDelayedRetry()
+                // Same invitation, but the wallet could not answer yet
+                // (identity names not loaded, or mid-switch). Re-arm the
+                // name read — a failed one does not retry by itself — and
+                // check again; after a few tries, offer Retry instead of an
+                // endless Verifying.
+                notReadyAttempts += 1
+                rearmIdentityRefresh()
+                switch InvitationNotReadyPolicy.next(afterAttempts: notReadyAttempts) {
+                case .waitAndRecheck:
+                    scheduleDelayedRetry()
+                case .offerRetry:
+                    lastVerdict = (.undetermined, Date(), invitation)
+                    refreshCardState()
+                }
             }
             return nil
         }
+        notReadyAttempts = 0
         lastVerdict = (verdict, Date(), invitation)
         if verdict.isDefinitive {
             // The shown copy decides what the user sees. Other copies of the

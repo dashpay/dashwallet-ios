@@ -207,6 +207,24 @@ enum InvitationClaimFailure: Equatable {
     }
 }
 
+/// What the card does while the wallet cannot answer a check yet — pure, so
+/// it is unit-testable.
+enum InvitationNotReadyPolicy {
+    enum Step: Equatable {
+        /// Keep Verifying and check again shortly.
+        case waitAndRecheck
+        /// Stop waiting: show "couldn't verify" with Retry.
+        case offerRetry
+    }
+
+    /// Checks (about 5 s apart) before the card offers Retry.
+    static let attemptsBeforeRetry = 3
+
+    static func next(afterAttempts attempts: Int) -> Step {
+        attempts >= attemptsBeforeRetry ? .offerRetry : .waitAndRecheck
+    }
+}
+
 /// Runs the checks against the live wallet.
 @MainActor
 enum InvitationValidator {
