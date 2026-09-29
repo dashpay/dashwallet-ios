@@ -181,6 +181,10 @@ final class IdentitiesViewModel: ObservableObject {
         // A manual pick overrides any promotion still waiting for the
         // persister (see `DWCurrentUserIdentityInfo.promoteToMainName`).
         DWCurrentUserIdentityInfo.discardPendingMainName(identityId: row.identityId)
+        // The app's copy is the one that survives relaunch (see
+        // `DWCurrentUserIdentityInfo.mainDpnsName(for:)`); the SDK column is
+        // kept in step for anything that reads it directly.
+        DWCurrentUserIdentityInfo.setMainDpnsName(name, identityId: row.identityId)
         PersistentIdentity.updateMainDpnsName(
             in: container.mainContext,
             identityId: row.identityId,
@@ -338,8 +342,9 @@ final class IdentitiesViewModel: ObservableObject {
             guard let candidate else { return false }
             return departedLabels.contains { DWContestedNameStatusService.labelsMatch($0, candidate) }
         }
+        let pickedName = DWCurrentUserIdentityInfo.mainDpnsName(for: identity)
         let pendingBelongsToIdentity = pendingLabel != nil && (
-            isPending(identity.mainDpnsName)
+            isPending(pickedName)
                 || isPending(identity.dpnsName)
                 || allNames.contains(where: { isPending($0) })
         )
@@ -349,9 +354,9 @@ final class IdentitiesViewModel: ObservableObject {
         // a KNOWN-departed label falls through to the next candidate.
         // (Scalars are still trusted while the label cache is empty —
         // they double as the hydration fallback.)
-        let mainName = isPending(identity.mainDpnsName) || isSoldAway(identity.mainDpnsName)
+        let mainName = isPending(pickedName) || isSoldAway(pickedName)
             ? nil
-            : identity.mainDpnsName?.nonEmptyString
+            : pickedName
         let preferredName = isPending(identity.dpnsName) || isSoldAway(identity.dpnsName)
             ? nil
             : identity.dpnsName?.nonEmptyString
