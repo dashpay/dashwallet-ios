@@ -70,21 +70,6 @@ final class IdentityWithdrawViewModel: ObservableObject {
     /// output and carries no equivalent protocol floor.
     static let minimumWithdrawalCredits: UInt64 = 1_000_000
 
-    /// Held back from the identity balance so the transition can pay its own
-    /// fee, which is charged to the identity on top of the amount.
-    ///
-    /// The SDK exposes no fee estimator for either of these transitions — the
-    /// same gap `PlatformPaymentIdentityFundingPolicy` documents for identity
-    /// funding — so this reuses that policy's reserve rather than repeating
-    /// its measurement: both bound an identity-signed transition whose
-    /// observed base fee is ~0.0004 DASH, and only the real fee is deducted.
-    ///
-    /// TODO(SwiftDashSDK): replace with the SDK's own estimate once one is
-    /// exposed for IdentityCreditWithdrawal / identity credit transfer.
-    static var feeHeadroomCredits: UInt64 {
-        PlatformPaymentIdentityFundingPolicy.feeHeadroomCredits
-    }
-
     /// Platform's minimum fee for the transition a withdrawal to `target`
     /// runs, mirroring `STATE_TRANSITION_MIN_FEES_VERSION1`. Consensus checks
     /// the identity balance against amount + this minimum before executing.
@@ -101,10 +86,39 @@ final class IdentityWithdrawViewModel: ObservableObject {
         }
     }
 
-    /// The largest amount `balanceCredits` can send: everything above the fee
-    /// reserve. Zero when the balance cannot cover the reserve at all.
-    static func spendableCredits(balanceCredits: UInt64) -> UInt64 {
-        balanceCredits > feeHeadroomCredits ? balanceCredits - feeHeadroomCredits : 0
+    /// Held back from the identity balance so the transition can pay its own
+    /// fee, which is charged to the identity on top of the amount. Must be at
+    /// least `minimumFeeCredits(target:)`, or consensus refuses every Max.
+    ///
+    /// - `.transparent`: the minimum plus 0.001 DASH of margin — the same
+    ///   0.005 DASH `EvonodeWithdrawalViewModel.feeReserveCredits` holds back
+    ///   for the same transition.
+    /// - `.platform`: 0.002 DASH, well above its 0.000065 DASH minimum.
+    ///
+    /// Owned here rather than borrowed from
+    /// `PlatformPaymentIdentityFundingPolicy.feeHeadroomCredits`: that reserve
+    /// bounds the opposite direction and must stay small, which is below the
+    /// withdrawal minimum.
+    ///
+    /// TODO(SwiftDashSDK): replace with the SDK's own estimate once one is
+    /// exposed for IdentityCreditWithdrawal / identity credit transfer.
+    static func feeReserveCredits(target: IdentityWithdrawalTarget) -> UInt64 {
+        switch target {
+        case .transparent: return minimumFeeCredits(target: .transparent) + 100_000_000
+        case .platform: return 200_000_000
+        }
+    }
+
+    /// The largest amount `balanceCredits` can send to `target`: everything
+    /// above that target's fee reserve. Zero when the balance cannot cover the
+    /// reserve at all.
+    static func spendableCredits(
+        balanceCredits: UInt64,
+        target: IdentityWithdrawalTarget
+    ) -> UInt64 {
+        TransferSpendAmountPolicy.spendableCredits(
+            balanceCredits: balanceCredits,
+            feeReserveCredits: feeReserveCredits(target: target))
     }
 
     /// True on success. False = cancelled at the PIN prompt (no
@@ -154,9 +168,23 @@ final class IdentityWithdrawViewModel: ObservableObject {
             }
             return true
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = Self.userFacingMessage(for: error)
             return false
         }
+    }
+
+    /// Platform's balance refusal (`IdentityInsufficientBalanceError`) reads
+    /// as a protocol dump with the identity id and two raw credit figures;
+    /// say what it means instead. Reachable when the balance moved between
+    /// Continue and Confirm — the reserve above keeps Max itself clear of it.
+    /// Everything else keeps the SDK's own description.
+    static func userFacingMessage(for error: Error) -> String {
+        if case .insufficientIdentityCredits? = error as? PlatformWalletError {
+            return NSLocalizedString(
+                "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again.",
+                comment: "Identity withdrawal — Platform refused the amount as more than the balance can cover")
+        }
+        return error.localizedDescription
     }
 
     /// Credits → the wallet's own next Platform receive address. The address
