@@ -502,9 +502,20 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         throw StartError.failed(lastError ?? "BLAST start failed")
     }
 
+    /// Stop for a caller that shuts the host's manager down next
+    /// (`SwiftDashSDKWalletRuntime.fullReset`). Tears down like `stop()` but
+    /// leaves the shielded sync loop running: the host teardown
+    /// (`SwiftDashSDKHost.stopAsync`) stops it off the main thread before
+    /// destroying the manager. `stopShieldedSync()` is synchronous on the
+    /// main actor and waits, for up to 10 s, for a shielded pass in flight to
+    /// finish, so stopping the loop here would block the main thread for that
+    /// wait.
     @MainActor
-    public func stopAsync(preservingRecovery: Bool = false) async {
-        await performStop(deletingPersistedWallet: false, preservingRecovery: preservingRecovery)
+    public func stopBeforeHostShutdownAsync(preservingRecovery: Bool = false) async {
+        await performStop(
+            deletingPersistedWallet: false,
+            preservingRecovery: preservingRecovery,
+            stoppingShieldedSync: false)
     }
 
     @MainActor
@@ -1260,7 +1271,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         Self.logger.info("🛰️ PLATFORM-ADDR :: started for \(network.rawValue, privacy: .public)")
     }
 
-    private func performStop(deletingPersistedWallet: Bool, preservingRecovery: Bool = false) async {
+    private func performStop(
+        deletingPersistedWallet: Bool, preservingRecovery: Bool = false, stoppingShieldedSync: Bool = true
+    ) async {
         lifecycleGeneration &+= 1
         isShieldedRunning = false
         if preservingRecovery {
@@ -1305,16 +1318,21 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                 Self.logger.error("🛰️ PLATFORM-ADDR :: stopPlatformAddressSync threw: \(String(describing: error), privacy: .public)")
             }
             // Stop the shielded sync loop alongside BLAST so it doesn't outlive
-            // the manager (also covers network switch — performStart calls
-            // performStop first). Independent do/catch so a shielded-stop throw
-            // can't skip, and isn't skipped by, the BLAST stop above.
-            do {
-                if try manager.isShieldedSyncRunning() {
-                    try manager.stopShieldedSync()
+            // the manager, unless the host teardown that follows stops it
+            // (`stopBeforeHostShutdownAsync`). Independent do/catch so a
+            // shielded-stop throw can't skip, and isn't skipped by, the BLAST
+            // stop above.
+            if stoppingShieldedSync {
+                do {
+                    if try manager.isShieldedSyncRunning() {
+                        try manager.stopShieldedSync()
+                    }
+                    Self.logger.info("🛡️ SHIELD :: stopped")
+                } catch {
+                    Self.logger.error("🛡️ SHIELD :: stopShieldedSync threw: \(String(describing: error), privacy: .public)")
                 }
-                Self.logger.info("🛡️ SHIELD :: stopped")
-            } catch {
-                Self.logger.error("🛡️ SHIELD :: stopShieldedSync threw: \(String(describing: error), privacy: .public)")
+            } else {
+                Self.logger.info("🛡️ SHIELD :: stop left to the host teardown")
             }
 #if DASHPAY
             // Stop the DashPay sync loop alongside BLAST/shielded so it
