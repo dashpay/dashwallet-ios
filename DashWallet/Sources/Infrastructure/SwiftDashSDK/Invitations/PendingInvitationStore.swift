@@ -488,19 +488,29 @@ final class PendingInvitationStore: ObservableObject {
         return true
     }
 
+    /// A marker is retired only once every stored item was read and none of
+    /// them is that voucher any more. An item that cannot be read might be
+    /// it, so while any is unreadable every marker stays.
     private func retryConsumedRemovals() {
-        var consumed = Set(defaults.stringArray(forKey: Self.consumedKey) ?? [])
+        let consumed = Set(defaults.stringArray(forKey: Self.consumedKey) ?? [])
         guard !consumed.isEmpty, let scopes = storedScopes() else { return }
-        var failed = Set<String>()
+        var stillStored = Set<String>()
+        var anyUnreadable = false
         for scope in scopes {
-            guard case .invitation(let stored) = slot(scope),
-                  let uri = stored.normalizedURI else { continue }
-            let digest = Self.digest(uri)
-            guard consumed.contains(digest) else { continue }
-            if !remove(scope: scope, reason: .claimed) { failed.insert(digest) }
+            switch slot(scope) {
+            case .unreadable:
+                anyUnreadable = true
+            case .invitation(let stored):
+                guard let uri = stored.normalizedURI else { continue }
+                let digest = Self.digest(uri)
+                guard consumed.contains(digest) else { continue }
+                if !remove(scope: scope, reason: .claimed) { stillStored.insert(digest) }
+            case .empty:
+                break
+            }
         }
-        consumed = consumed.intersection(failed)
-        defaults.set(Array(consumed), forKey: Self.consumedKey)
+        let remaining = anyUnreadable ? consumed : consumed.intersection(stillStored)
+        defaults.set(Array(remaining), forKey: Self.consumedKey)
     }
 
     private static func digest(_ normalizedURI: String) -> String {

@@ -399,6 +399,28 @@ final class PendingInvitationStoreTests: XCTestCase {
 
     /// Mid-switch the selected wallet is B while the SDK host is still bound
     /// to A: nothing may read wallet-local state or spend for B yet.
+    /// A claim spent the voucher but removing its stored copy failed; a
+    /// reload that cannot read the item must keep the "spent" marker, so the
+    /// copy is removed once it can be read again.
+    func testSpentVoucherMarkerSurvivesAnUnreadableReload() {
+        let store = makeStore()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        let account = PendingInvitationStore.keychainPrefix + walletA.storageKey
+
+        storage.undeletable = [account]
+        XCTAssertFalse(store.retireConsumed(normalizedURI: linkA), "the removal failed; the marker stays")
+
+        storage.undeletable = []
+        storage.unreadable = [account]
+        store.reload()
+        XCTAssertNotNil(storage.items[account], "not readable, so not removed yet")
+
+        storage.unreadable = []
+        store.reload()
+        XCTAssertNil(storage.items[account], "removed once readable: the marker survived")
+        XCTAssertNil(store.pending)
+    }
+
     func testScopeIsActiveOnlyWhenSelectedAndBound() {
         XCTAssertTrue(InvitationScope.isActiveAndBound(walletB, selected: walletB, bound: walletB))
         XCTAssertFalse(InvitationScope.isActiveAndBound(walletB, selected: walletB, bound: walletA),
