@@ -898,7 +898,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             // username required" recovery, not an invitation. Cleared by the
             // link itself, not "the current wallet": the user may have
             // switched wallet while the claim ran.
-            PendingInvitationStore.shared.removeEverywhere(normalizedURI: invitationURI, reason: .claimed)
+            // A failed removal is retried on every reload until it succeeds.
+            PendingInvitationStore.shared.retireConsumed(normalizedURI: invitationURI)
         }
         return identityId
     }

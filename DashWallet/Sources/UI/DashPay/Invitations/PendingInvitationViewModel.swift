@@ -66,15 +66,26 @@ final class PendingInvitationViewModel: ObservableObject {
     /// Re-arms the wallet's identity-name read, which does not retry by
     /// itself once it failed; a read already running is left alone.
     private let rearmIdentityRefresh: @MainActor () -> Void
+    /// The wallet can no longer take an invitation (it has a username, or a
+    /// name request in a vote) — checked again right before Create, since a
+    /// cached "valid" may predate a registration made elsewhere.
+    private let isWalletIneligible: @MainActor () -> Bool
     private var cancellables = Set<AnyCancellable>()
     private var observers: [NSObjectProtocol] = []
 
     init(store: PendingInvitationStore = .shared,
          isActive: @escaping @MainActor (InvitationScope) -> Bool = { InvitationScope.isActiveAndBound($0) },
-         rearmIdentityRefresh: @escaping @MainActor () -> Void = { DWCurrentUserIdentityInfo.shared.syncFromNetwork() }) {
+         rearmIdentityRefresh: @escaping @MainActor () -> Void = { DWCurrentUserIdentityInfo.shared.syncFromNetwork() },
+         isWalletIneligible: @escaping @MainActor () -> Bool = {
+             let identity = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+             return identity.username?.isEmpty == false
+                 || identity.pendingContestedName != nil
+                 || DWContestedNameStatusService.shared.pendingLabel != nil
+         }) {
         self.store = store
         self.isActive = isActive
         self.rearmIdentityRefresh = rearmIdentityRefresh
+        self.isWalletIneligible = isWalletIneligible
         store.$pending
             .removeDuplicates()
             .sink { [weak self] pending in
@@ -90,6 +101,15 @@ final class PendingInvitationViewModel: ObservableObject {
             .store(in: &cancellables)
 
         let center = NotificationCenter.default
+        // A username registered or requested elsewhere changes whether this
+        // wallet can take the invitation: the cached verdict is stale.
+        observers.append(center.addObserver(
+            forName: .DWDashPayRegistrationStatusUpdated, object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    self?.lastVerdict = nil
+                    self?.validateIfPossible()
+                }
+            })
         for name in [Notification.Name("DWAppDidUnlockNotification"),
                      UIApplication.didBecomeActiveNotification,
                      SwiftDashSDKWalletState.activeWalletDidChangeNotification] {
@@ -131,6 +151,11 @@ final class PendingInvitationViewModel: ObservableObject {
         // The claim spends the voucher from whatever wallet is active, so the
         // invitation must be that wallet's own.
         guard let invitation, isActive(invitation.scope) else { return }
+        if isWalletIneligible() {
+            // Registered or requested elsewhere since the last check: re-run
+            // it, which reports why and removes this wallet's copy.
+            lastVerdict = nil
+        }
         if let lastVerdict, lastVerdict.invitation == invitation,
            Date().timeIntervalSince(lastVerdict.at) < Self.validationLifetime,
            let tier = lastVerdict.validation.tier {
@@ -145,6 +170,12 @@ final class PendingInvitationViewModel: ObservableObject {
                   self.isActive(invitation.scope) else { return }
             proceed(invitation, tier)
         }
+    }
+
+    /// A wipe: a verdict reached for the old wallet is not shown after it.
+    func discardUndeliveredOutcome() {
+        undeliveredOutcome = nil
+        lastVerdict = nil
     }
 
     /// Home showed the outcome; it is no longer waiting for a screen.

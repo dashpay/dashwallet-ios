@@ -82,6 +82,8 @@ final class InvitationEntry: NSObject {
     @objc
     static func discardHeldNotice() {
         heldNotice.discard()
+        // And a validation verdict reached off screen for the old wallet.
+        PendingInvitationViewModel.shared.discardUndeliveredOutcome()
     }
 
     private static func dialog(for outcome: PendingInvitationStore.ReceiveOutcome) -> UIViewController? {

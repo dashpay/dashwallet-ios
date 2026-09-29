@@ -21,7 +21,7 @@ struct UsernameTypesInfoSheet: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             Text(NSLocalizedString(
-                "There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are longer than 20 characters and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period.",
+                "There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are between 20 and 23 characters long and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period.",
                 comment: "DashPay Invitations"))
                 .dashFont(.body)
                 .foregroundColor(.dash.secondaryText)

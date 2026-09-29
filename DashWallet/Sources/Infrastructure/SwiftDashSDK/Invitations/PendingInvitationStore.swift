@@ -18,6 +18,7 @@
 //
 
 import Combine
+import CryptoKit
 import Foundation
 import OSLog
 import SwiftDashSDK
@@ -242,6 +243,9 @@ final class PendingInvitationStore: ObservableObject {
     /// Unbound-slot metadata: the wallet a pre-onboarding invitation is being
     /// moved under.
     private static let bindingDestinationKey = "boundTo"
+    /// Vouchers a successful claim spent whose stored copies could not all be
+    /// removed yet — SHA-256 of the normalized link, never the link itself.
+    private static let consumedKey = "pendingInvitationConsumed"
 
     private let storage: InvitationSecretStorage
     private let defaults: UserDefaults
@@ -285,6 +289,7 @@ final class PendingInvitationStore: ObservableObject {
     /// it is moved under it first — every reload is a retry of that move.
     func reload() {
         let scope = currentScope()
+        retryConsumedRemovals()
         if !scope.isUnbound {
             bindUnbound(into: scope)
         }
@@ -466,6 +471,40 @@ final class PendingInvitationStore: ObservableObject {
             }
         }
         return removedAll
+    }
+
+    /// A claim spent this voucher: remove every stored copy, and if that
+    /// fails, keep retrying on each reload until it succeeds — a spent
+    /// voucher's key must not stay behind.
+    @discardableResult
+    func retireConsumed(normalizedURI: String) -> Bool {
+        let digest = Self.digest(normalizedURI)
+        var consumed = Set(defaults.stringArray(forKey: Self.consumedKey) ?? [])
+        consumed.insert(digest)
+        defaults.set(Array(consumed), forKey: Self.consumedKey)
+        guard removeEverywhere(normalizedURI: normalizedURI, reason: .claimed) else { return false }
+        consumed.remove(digest)
+        defaults.set(Array(consumed), forKey: Self.consumedKey)
+        return true
+    }
+
+    private func retryConsumedRemovals() {
+        var consumed = Set(defaults.stringArray(forKey: Self.consumedKey) ?? [])
+        guard !consumed.isEmpty, let scopes = storedScopes() else { return }
+        var failed = Set<String>()
+        for scope in scopes {
+            guard case .invitation(let stored) = slot(scope),
+                  let uri = stored.normalizedURI else { continue }
+            let digest = Self.digest(uri)
+            guard consumed.contains(digest) else { continue }
+            if !remove(scope: scope, reason: .claimed) { failed.insert(digest) }
+        }
+        consumed = consumed.intersection(failed)
+        defaults.set(Array(consumed), forKey: Self.consumedKey)
+    }
+
+    private static func digest(_ normalizedURI: String) -> String {
+        SHA256.hash(data: Data(normalizedURI.utf8)).map { String(format: "%02x", $0) }.joined()
     }
 
     /// Forget every invitation stored for a wallet that is being removed
