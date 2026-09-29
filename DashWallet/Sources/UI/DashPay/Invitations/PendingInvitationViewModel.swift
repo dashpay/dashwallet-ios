@@ -57,7 +57,6 @@ final class PendingInvitationViewModel: ObservableObject {
     /// One delayed re-check while the wallet is not ready to answer, instead
     /// of spinning on an unchanged invitation.
     private var delayedRetry: Task<Void, Never>?
-    static let notReadyRetryDelay: UInt64 = 5_000_000_000
     private let notReadyRetryDelay: UInt64
     /// Consecutive "the wallet cannot answer yet" results for the shown
     /// invitation (identity names not loaded, host mid-switch).
@@ -77,7 +76,7 @@ final class PendingInvitationViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var observers: [NSObjectProtocol] = []
 
-    init(store: PendingInvitationStore = .shared,
+    init(store: PendingInvitationStore? = nil,
          isActive: @escaping @MainActor (InvitationScope) -> Bool = { InvitationScope.isActiveAndBound($0) },
          rearmIdentityRefresh: @escaping @MainActor () -> Void = { DWCurrentUserIdentityInfo.shared.syncFromNetwork() },
          isWalletIneligible: @escaping @MainActor () -> Bool = {
@@ -96,8 +95,8 @@ final class PendingInvitationViewModel: ObservableObject {
          },
          isSynced: @escaping @MainActor () -> Bool = { SyncingActivityMonitor.shared.state == .syncDone },
          observesSyncMonitor: Bool = true,
-         notReadyRetryDelay: UInt64 = PendingInvitationViewModel.notReadyRetryDelay) {
-        self.store = store
+         notReadyRetryDelay: UInt64 = 5_000_000_000) {
+        self.store = store ?? .shared
         self.isActive = isActive
         self.rearmIdentityRefresh = rearmIdentityRefresh
         self.isWalletIneligible = isWalletIneligible
@@ -105,7 +104,7 @@ final class PendingInvitationViewModel: ObservableObject {
         self.isReadyToValidate = isReadyToValidate
         self.isSynced = isSynced
         self.notReadyRetryDelay = notReadyRetryDelay
-        store.$pending
+        self.store.$pending
             .removeDuplicates()
             .sink { [weak self] pending in
                 guard let self else { return }
@@ -119,7 +118,7 @@ final class PendingInvitationViewModel: ObservableObject {
             }
             .store(in: &cancellables)
         // A verdict reached for the wallet being wiped is not shown after it.
-        store.wipeStarted
+        self.store.wipeStarted
             .sink { [weak self] in self?.discardUndeliveredOutcome() }
             .store(in: &cancellables)
 

@@ -131,11 +131,14 @@ final class InvitationValidationPolicyTests: XCTestCase {
             InvitationClaimFailure.classify(wrapped(PlatformWalletError.invalidParameter("bad link"))), .invalid)
         XCTAssertEqual(
             InvitationClaimFailure.classify(wrapped(PlatformWalletError.assetLockAlreadyConsumed("outpoint"))), .alreadyUsed)
-        // The shape the SDK produces for Platform's consensus rejection.
-        XCTAssertEqual(
-            InvitationClaimFailure.classify(wrapped(PlatformWalletError.consensusRejection(
-                PlatformConsensusError(code: 10504, kind: .basic), "reworded by Platform"))),
-            .alreadyUsed)
+        // The shape the SDK produces for a node's consensus rejection. It is
+        // not proof-verified, so it is only reported: nothing is deleted
+        // until the card's status query confirms it.
+        let reported = InvitationClaimFailure.classify(wrapped(PlatformWalletError.consensusRejection(
+            PlatformConsensusError(code: 10504, kind: .basic), "reworded by Platform")))
+        XCTAssertEqual(reported, .reportedUsed)
+        XCTAssertEqual(reported?.endsInvitation, false)
+        XCTAssertEqual(reported?.clearsEverywhere, false)
         XCTAssertNil(
             InvitationClaimFailure.classify(wrapped(PlatformWalletError.consensusRejection(
                 PlatformConsensusError(code: 40722, kind: .state), "some other rejection"))))
@@ -171,6 +174,61 @@ final class InvitationValidationPolicyTests: XCTestCase {
             "invitation islock proof was rejected … the funding transaction is not yet chain-locked")))
         XCTAssertEqual(failure, .stillConfirming)
         XCTAssertEqual(failure?.endsInvitation, false)
+    }
+
+    // MARK: - The wallet's state is read again after the status query
+
+    private func state(identity: Data? = nil, loading: Bool = false) -> InvitationWalletState {
+        InvitationWalletState(
+            isLoading: loading, hasRegisteredUsername: false, hasPendingUsernameRequest: false, identityId: identity)
+    }
+
+    @MainActor
+    func testOwnIdentityLearnedDuringTheQueryIsNotAlreadyClaimed() async {
+        let claimed = status(amount: 3_000_000, claimed: true)
+        var current = state()
+        let verdict = await InvitationValidationPolicy.decide(
+            uri: "dashpay://invite?x",
+            previewIsValid: true,
+            inviter: inviter,
+            walletState: { current },
+            queryStatus: { _ in
+                // The wallet finishes loading its own earlier claim while
+                // the query is in flight.
+                current = self.state(identity: claimed.prospectiveIdentityId)
+                return claimed
+            })
+        XCTAssertEqual(verdict?.tier, .nonContested, "our own claim resumes; it is not \"already claimed\"")
+    }
+
+    @MainActor
+    func testUsernameRegisteredDuringTheQueryWins() async {
+        var current = state()
+        let verdict = await InvitationValidationPolicy.decide(
+            uri: "dashpay://invite?x",
+            previewIsValid: true,
+            inviter: inviter,
+            walletState: { current },
+            queryStatus: { _ in
+                current.hasRegisteredUsername = true
+                return self.status(amount: 3_000_000)
+            })
+        XCTAssertEqual(verdict, .alreadyHasIdentity)
+    }
+
+    @MainActor
+    func testSnapshotReloadingDuringTheQueryIsNotAVerdict() async {
+        var current = state()
+        let verdict = await InvitationValidationPolicy.decide(
+            uri: "dashpay://invite?x",
+            previewIsValid: true,
+            inviter: inviter,
+            walletState: { current },
+            queryStatus: { _ in
+                current.isLoading = true
+                return self.status(amount: 3_000_000, claimed: true)
+            })
+        XCTAssertNil(verdict)
     }
 
     func testClaimFailureWordingNamesTheSender() {
