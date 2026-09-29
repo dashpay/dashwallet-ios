@@ -14,7 +14,7 @@
 //
 //  Public surface is the Combine `@Published` state consumed by
 //  `SyncingActivityMonitor` and `SwiftDashSDKSPVStatusScreen` plus the
-//  `startAsync(for:)` / `stopAsync(lastError:)` lifecycle driven by
+//  `startAsync(for:preparationsAtStart:)` / `stopAsync(lastError:)` lifecycle driven by
 //  `SwiftDashSDKWalletRuntime`'s serial async pipeline.
 //
 //  The local stand-in types (`SPVSyncState`, `SPVSyncProgress`,
@@ -61,9 +61,9 @@ enum CoreSPVRestartOperation {
 /// and clears its balance ahead of the switch's stop. Until a start that
 /// began after that preparation consumes it, a failed stop does not re-attach
 /// the outgoing manager's subscriptions, and a restart does not start the
-/// network it captured before its stop. A start takes a token before its
-/// first await and gives up, without publishing a balance or starting SPV,
-/// when a preparation landed while it awaited.
+/// network it captured before its stop. A start takes a token when it picks
+/// its network, before its first await, and gives up, without publishing a
+/// balance or starting SPV, when a preparation landed since.
 struct NetworkSwitchPreparationGate {
     /// A preparation that no start has consumed yet.
     private(set) var isPending = false
@@ -74,7 +74,8 @@ struct NetworkSwitchPreparationGate {
         preparations &+= 1
     }
 
-    /// Taken by a start before its first await.
+    /// Taken by a start when it picks its network, before its first await.
+    /// A runtime refresh takes it before its reset.
     func startToken() -> Int { preparations }
 
     /// Whether a preparation landed after the start that took `token` began.
@@ -269,12 +270,21 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     // which owns the canonical `currentNetwork` state and serializes
     // start / stop ordering.
 
+    /// `preparationsAtStart` is the `networkSwitchStartToken()` the runtime
+    /// took when it resolved `network`, before its reset.
     @MainActor
-    func startAsync(for network: Network) async throws {
-        switch await performStart(for: network) {
+    func startAsync(for network: Network, preparationsAtStart: Int) async throws {
+        switch await performStart(for: network, preparationsAtStart: preparationsAtStart) {
         case .success: return
         case .failure(let error): throw error
         }
+    }
+
+    /// The token for a start that picks its network now (see
+    /// `NetworkSwitchPreparationGate.startToken()`).
+    @MainActor
+    func networkSwitchStartToken() -> Int {
+        switchPreparation.startToken()
     }
 
     @MainActor
@@ -404,8 +414,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     }
 
     @MainActor
-    private func performStart(for network: Network) async -> Result<Void, Error> {
-        let preparationsAtStart = switchPreparation.startToken()
+    private func performStart(for network: Network, preparationsAtStart: Int) async -> Result<Void, Error> {
         // Checked before `host.start` builds the SDK: an unconfigured devnet
         // would otherwise surface as a cryptic SDK-init failure (the SDK
         // reads the quorum URL itself and can't discover DAPI nodes without
@@ -525,7 +534,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     }
 
     /// `preparationsAtStart` is the `switchPreparation` token taken when the
-    /// whole start began, before any of its awaits.
+    /// whole start picked its network, before any of its awaits.
     @MainActor
     private func performStart(
         manager: PlatformWalletManager,
@@ -669,7 +678,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// `preparationsAtStart` began. Such a start must not publish a balance or
     /// start SPV: both would belong to the outgoing network.
     @MainActor
-    private func isOvertakenByNetworkSwitch(since preparationsAtStart: Int) -> Bool {
+    func isOvertakenByNetworkSwitch(since preparationsAtStart: Int) -> Bool {
         guard switchPreparation.isOvertaken(since: preparationsAtStart) else { return false }
         Self.logger.info("🛰️ SPVCOORD :: start superseded by a network switch preparation")
         return true

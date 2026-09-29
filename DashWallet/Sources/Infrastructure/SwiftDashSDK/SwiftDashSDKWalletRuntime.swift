@@ -715,6 +715,10 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             return
         }
 
+        // Taken in the same main-actor step that resolves the network, before
+        // any await: a network switch prepared from here on overtakes this
+        // refresh's Core start (see `NetworkSwitchPreparationGate`).
+        let preparationsAtStart = SwiftDashSDKSPVCoordinator.shared.networkSwitchStartToken()
         switch resolveCurrentNetwork() {
         case .failure(let error):
             await fullReset(lastError: error.localizedDescription, forWipe: false)
@@ -731,6 +735,16 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             }
 
             await fullReset(lastError: nil, forWipe: false, preservingShieldedRecovery: true)
+
+            // The reset awaits the SPV stop and the host teardown. A network
+            // switch prepared meanwhile queued its own refresh behind this
+            // one, and the next start belongs to that refresh: `network` may
+            // no longer be the selected network.
+            if SwiftDashSDKSPVCoordinator.shared.isOvertakenByNetworkSwitch(since: preparationsAtStart) {
+                Self.logger.info(
+                    "🧭 RUNTIME :: network switch prepared during the reset; leaving the start of \(network.rawValue, privacy: .public) to its refresh")
+                return
+            }
 
             // A reinstall clears the selected-network UserDefaults key but
             // preserves SDK mnemonics. If every stored wallet belongs to the
@@ -780,7 +794,8 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                     manager: manager, walletId: wallet.walletId, network: network)
                 await PlatformAddressSyncCoordinator.shared.prepareLocalShieldedState(
                     manager: manager, walletId: wallet.walletId, network: network)
-                try await SwiftDashSDKSPVCoordinator.shared.startAsync(for: network)
+                try await SwiftDashSDKSPVCoordinator.shared.startAsync(
+                    for: network, preparationsAtStart: preparationsAtStart)
             } catch {
                 Self.logger.error("🧭 RUNTIME :: Core start failed: \(String(describing: error), privacy: .public)")
                 await fullReset(lastError: error.localizedDescription, forWipe: false)

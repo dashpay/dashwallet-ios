@@ -113,6 +113,26 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertFalse(gate.isPending)
     }
 
+    /// A runtime refresh takes its token when it resolves its network, before
+    /// its reset. A switch prepared during that reset overtakes the refresh,
+    /// and the switch's own refresh, queued behind it, does the start.
+    func testSwitchPreparedDuringARefreshResetOvertakesThatRefresh() {
+        var gate = NetworkSwitchPreparationGate()
+        let refreshToken = gate.startToken()
+
+        gate.prepare()
+
+        XCTAssertTrue(
+            gate.isOvertaken(since: refreshToken),
+            "the refresh must not start the network it resolved before the switch")
+        XCTAssertTrue(gate.isPending, "the overtaken refresh must leave the preparation to the switch")
+
+        let switchRefreshToken = gate.startToken()
+        XCTAssertFalse(gate.isOvertaken(since: switchRefreshToken))
+        gate.consume()
+        XCTAssertFalse(gate.isPending)
+    }
+
     // MARK: - Devnet start preflight
 
     /// The runtime discovers devnet peers before the SDK is built; the SPV
