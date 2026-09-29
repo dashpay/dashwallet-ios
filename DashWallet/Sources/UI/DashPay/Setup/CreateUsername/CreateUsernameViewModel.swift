@@ -700,11 +700,15 @@ class CreateUsernameViewModel: ObservableObject {
             } else if let pendingInvitation {
                 PendingInvitationStore.shared.remove(pendingInvitation, reason: .definitiveOutcome)
             }
+        } else if failure == .reportedUsed {
+            // Not proof: the card re-checks through the typed status query
+            // instead of trusting a cached "valid".
+            PendingInvitationViewModel.shared.recheck()
         }
         let sender = InvitationOutcomeDialogs.senderName(
             InvitationValidationPolicy.inviter(from: invitationURI.flatMap { DWInvitationService.shared.preview(for: $0) }))
         switch failure {
-        case .alreadyUsed:
+        case .alreadyUsed, .reportedUsed:
             return String.localizedStringWithFormat(
                 NSLocalizedString("Your invitation from %@ has been already claimed", comment: ""), sender)
         case .invalid:

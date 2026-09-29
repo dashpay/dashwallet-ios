@@ -262,8 +262,9 @@ NS_ASSUME_NONNULL_BEGIN
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
 #if DASHPAY
-    // dashpay://invite (and pasted-transport) invitation links open the
-    // redeem flow; every other scheme falls through to DWURLParser.
+    // dashpay://invite (and pasted-transport) invitation links are stored
+    // (PendingInvitationStore) and shown on the Home card; every other
+    // scheme falls through to DWURLParser.
     if ([DWInvitationLinkNormalizer isInvitationURL:url]) {
         DWInitialViewController *controller = (DWInitialViewController *)self.window.rootViewController;
         if ([controller isKindOfClass:DWInitialViewController.class]) {

@@ -132,7 +132,27 @@ final class InvitationValidationPolicyTests: XCTestCase {
         XCTAssertEqual(
             InvitationClaimFailure.classify(wrapped(PlatformWalletError.walletOperation(
                 "IdentityAssetLockTransactionOutPointAlreadyConsumedError: asset lock outpoint already consumed"))),
-            .alreadyUsed)
+            .reportedUsed)
+    }
+
+    func testUntypedSpentTextNeverDeletesTheInvitation() {
+        let failure = InvitationClaimFailure.classify(wrapped(PlatformWalletError.walletOperation(
+            "asset lock outpoint already completely used")))
+        XCTAssertEqual(failure, .reportedUsed)
+        XCTAssertEqual(failure?.endsInvitation, false)
+        XCTAssertEqual(failure?.clearsEverywhere, false)
+        XCTAssertEqual(InvitationClaimFailure.alreadyUsed.endsInvitation, true)
+    }
+
+    func testFailedNameRefreshNotificationsStayWithinTheRetryBudget() {
+        // A fresh or answered invitation re-checks on a status change.
+        XCTAssertTrue(InvitationNotReadyPolicy.revalidatesOnStatusChange(afterAttempts: 0))
+        // Each not-ready check re-arms the name read; its failure posts the
+        // status notification. That must not start another check, or the
+        // budget below never runs out.
+        for attempts in 1...InvitationNotReadyPolicy.attemptsBeforeRetry + 2 {
+            XCTAssertFalse(InvitationNotReadyPolicy.revalidatesOnStatusChange(afterAttempts: attempts))
+        }
     }
 
     func testStillConfirmingKeepsTheInvitation() {

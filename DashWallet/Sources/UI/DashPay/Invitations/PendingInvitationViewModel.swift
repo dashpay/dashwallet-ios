@@ -106,8 +106,11 @@ final class PendingInvitationViewModel: ObservableObject {
         observers.append(center.addObserver(
             forName: .DWDashPayRegistrationStatusUpdated, object: nil, queue: .main) { [weak self] _ in
                 MainActor.assumeIsolated {
-                    self?.lastVerdict = nil
-                    self?.validateIfPossible()
+                    guard let self,
+                          InvitationNotReadyPolicy.revalidatesOnStatusChange(afterAttempts: self.notReadyAttempts)
+                    else { return }
+                    self.lastVerdict = nil
+                    self.validateIfPossible()
                 }
             })
         for name in [Notification.Name("DWAppDidUnlockNotification"),
@@ -138,9 +141,14 @@ final class PendingInvitationViewModel: ObservableObject {
     }
 
     func retry() {
+        rearmIdentityRefresh()
+        recheck()
+    }
+
+    /// Drops the cached verdict and checks the shown invitation again.
+    func recheck() {
         lastVerdict = nil
         notReadyAttempts = 0
-        rearmIdentityRefresh()
         validateIfPossible()
     }
 

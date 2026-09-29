@@ -163,11 +163,15 @@ enum InvitationClaimFailure: Equatable {
     case alreadyUsed
     /// The link can never be claimed by this wallet. Ends the invitation.
     case invalid
+    /// Only the error text says the voucher was spent. Untyped text is not
+    /// proof, so the invitation stays; the card's typed status check
+    /// confirms it and removes it.
+    case reportedUsed
     /// The InstantSend proof went stale before the funding block was
     /// chain-locked; the same invitation claims fine a few minutes later.
     case stillConfirming
 
-    var endsInvitation: Bool { self != .stillConfirming }
+    var endsInvitation: Bool { self == .alreadyUsed || self == .invalid }
 
     /// Spent is a fact about the voucher, in every wallet; "invalid" can be
     /// the wrong network, a fact about this wallet only.
@@ -186,10 +190,10 @@ enum InvitationClaimFailure: Equatable {
             break
         }
         // Platform's consensus rejections reach the claim as a generic SDK
-        // error; only their text names the cause.
+        // error; only their text names the cause, and text never deletes.
         let text = String(describing: underlying).lowercased()
         if text.contains("already consumed") || text.contains("already completely used") {
-            return .alreadyUsed
+            return .reportedUsed
         }
         if text.contains("not yet chain-locked") {
             return .stillConfirming
@@ -222,6 +226,15 @@ enum InvitationNotReadyPolicy {
 
     static func next(afterAttempts attempts: Int) -> Step {
         attempts >= attemptsBeforeRetry ? .offerRetry : .waitAndRecheck
+    }
+
+    /// Whether a registration-status notification starts a check. A failed
+    /// identity-name read posts the same notification as a real change, and
+    /// every not-ready check re-arms that read — so while the wallet cannot
+    /// answer, the bounded re-checks (or Retry) own the next check, or a
+    /// failing read would loop past the budget.
+    static func revalidatesOnStatusChange(afterAttempts attempts: Int) -> Bool {
+        attempts == 0
     }
 }
 
