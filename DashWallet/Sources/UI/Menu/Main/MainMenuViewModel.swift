@@ -15,8 +15,9 @@
 //  limitations under the License.
 //
 
-import SwiftUI
 import Combine
+import DashUIKit
+import SwiftUI
 
 enum MainMenuNavigationDestination {
     case explore
@@ -169,7 +170,7 @@ class MainMenuViewModel: ObservableObject {
             // Wallets
             allItems.append(MenuItemModel(
                 title: NSLocalizedString("Wallets", comment: ""),
-                icon: .custom("image.wallets", maxHeight: 30),
+                icon: .custom(DashIcon.Menu.wallet.rawValue, bundle: .dashUIKit, maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .wallets
                 }
@@ -178,7 +179,7 @@ class MainMenuViewModel: ObservableObject {
             // Identities — the device's Dash Platform identities (under Wallets)
             allItems.append(MenuItemModel(
                 title: NSLocalizedString("Identities", comment: "Identities"),
-                icon: .system("person.crop.circle"),
+                icon: .custom(DashIcon.Menu.identities.rawValue, bundle: .dashUIKit, maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .identities
                 }
@@ -188,7 +189,7 @@ class MainMenuViewModel: ObservableObject {
         // Security
         allItems.append(MenuItemModel(
             title: NSLocalizedString("Security", comment: ""),
-            icon: .custom("image.security", maxHeight: 30),
+            icon: .custom(DashIcon.Menu.security.rawValue, bundle: .dashUIKit, maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .security
             }
@@ -197,7 +198,7 @@ class MainMenuViewModel: ObservableObject {
         // Settings
         allItems.append(MenuItemModel(
             title: NSLocalizedString("Settings", comment: ""),
-            icon: .custom("image.settings", maxHeight: 30),
+            icon: .custom(DashIcon.Menu.settings.rawValue, bundle: .dashUIKit, maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .settings
             }
@@ -206,7 +207,7 @@ class MainMenuViewModel: ObservableObject {
         // Tools
         allItems.append(MenuItemModel(
             title: NSLocalizedString("Tools", comment: ""),
-            icon: .custom("image.tools", maxHeight: 30),
+            icon: .custom(DashIcon.Menu.tools.rawValue, bundle: .dashUIKit, maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .tools
             }
@@ -219,7 +220,7 @@ class MainMenuViewModel: ObservableObject {
         if VotingPrefs.shared.votingEnabled {
             allItems.append(MenuItemModel(
                 title: NSLocalizedString("Voting", comment: ""),
-                icon: .custom("menu_voting", maxHeight: 30),
+                icon: .custom(DashIcon.Menu.voting.rawValue, bundle: .dashUIKit, maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .voting
                 }
@@ -230,7 +231,7 @@ class MainMenuViewModel: ObservableObject {
         // Support
         allItems.append(MenuItemModel(
             title: NSLocalizedString("Support", comment: ""),
-            icon: .custom("image.support", maxHeight: 30),
+            icon: .custom(DashIcon.Menu.support.rawValue, bundle: .dashUIKit, maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .support
             }
