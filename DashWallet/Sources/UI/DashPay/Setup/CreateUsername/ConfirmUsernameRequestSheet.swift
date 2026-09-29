@@ -35,18 +35,24 @@ struct ConfirmUsernameRequestSheet: View {
 
     let kind: Kind
     let username: String
-    /// What this pass costs in duffs.
+    /// What this pass moves from the wallet, in duffs.
     ///
-    /// Zero for the instant companion: it is a second DPNS name on the
-    /// identity the contested submission just funded
+    /// Zero for the instant companion of a new identity: it is a second DPNS
+    /// name on the identity the contested submission just funded
     /// (`DWIdentityRegistrationCoordinator`, step 3.6 — `registerDpnsName`
     /// with no asset lock), so it is paid in that identity's credits and no
     /// further DASH is spent. The sheet says so with the figure itself, as
-    /// the design does, rather than with a sentence.
+    /// the design does, rather than with a sentence. For an existing identity
+    /// it is the top-up — or, on the companion pass, what the second name
+    /// adds to it.
     let amountDuffs: UInt64
     /// Contested submissions spend the contest fee whatever the vote decides,
     /// which is the one thing about the amount that is not obvious.
     let showsContestFeeNote: Bool
+    /// Set when an existing identity is topped up: `amountDuffs` is then only
+    /// what moves from the wallet, and the contest fund — paid from the
+    /// identity's credits — is stated separately so neither hides the other.
+    var identityPaidContestFeeDuffs: UInt64? = nil
     let onConfirm: () -> Void
 
     /// Nothing is pre-accepted: the checkbox IS the acknowledgement, so
@@ -68,6 +74,20 @@ struct ConfirmUsernameRequestSheet: View {
                 }
 
                 amountSection
+            }
+
+            if let identityPaidContestFeeDuffs {
+                Text(String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "Added to your identity’s credits, which pay the %@ DASH contest fee.",
+                        comment: "Usernames: confirmation of a top-up for an existing identity"),
+                    identityPaidContestFeeDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol))
+                    .dashFont(.footnote)
+                    .foregroundStyle(Color.dash.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 10)
             }
 
             if showsContestFeeNote {

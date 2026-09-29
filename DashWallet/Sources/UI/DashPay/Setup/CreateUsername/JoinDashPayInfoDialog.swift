@@ -66,6 +66,11 @@ public struct JoinDashPayInfoDialog: View {
     /// the leading one — and that reads from the direction, not from the page.
     @State private var isMovingBack = false
 
+    /// Set by `finishFlow()` only. The privacy page records its pick on a
+    /// process-global slot for the form to collect; any other way out of this
+    /// sheet — a swipe down, the invitation or shield-first legs — strands it
+    /// there for the next form, whichever wallet or entry that is for.
+    @State private var didHandOffToForm = false
 
     public var body: some View {
         // `selfSizing` rather than a pinned detent: each page is a different
@@ -101,6 +106,11 @@ public struct JoinDashPayInfoDialog: View {
             // The container clips, or the leaving page keeps drawing past the
             // sheet's edges, over the dimmed background behind it.
             .clipped()
+        }
+        .onDisappear {
+            if !didHandOffToForm {
+                CreateUsernameViewModel.discardChosenFundingSource()
+            }
         }
     }
 
@@ -174,6 +184,7 @@ public struct JoinDashPayInfoDialog: View {
     /// create-username flow from its `onDismiss` (`HomeView`,
     /// `MainMenuViewController`) — the dialog itself never navigates.
     private func finishFlow() {
+        didHandOffToForm = true
         presentationMode.wrappedValue.dismiss()
         action()
     }

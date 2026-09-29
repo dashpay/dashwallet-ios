@@ -216,12 +216,20 @@ final class IdentityVerifyService {
     /// place Android publishes the document from (`CreateIdentityService`).
     /// Failure is the caller's to treat as non-fatal: the request itself has
     /// already been submitted by then.
+    ///
+    /// `network` is the one the registration captured alongside `wallet`, and
+    /// the contract is resolved from it rather than from the live environment:
+    /// the registration awaits Platform several times before it gets here, and
+    /// a network switch in between would otherwise pair this wallet with the
+    /// other network's contract id. The caller revalidates its context right
+    /// before calling; nothing here suspends before the write goes out.
     @discardableResult
     func publish(
         url: URL,
         forLabel label: String,
         identityId: Data,
         wallet: ManagedPlatformWallet,
+        network: Network,
         signer: KeychainSigner
     ) async throws -> URL {
         guard let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https" else {
@@ -229,7 +237,7 @@ final class IdentityVerifyService {
         }
         guard let sdk = SwiftDashSDKHost.shared.sdk else { throw ServiceError.noIdentity }
 
-        let contractId = try requireContractIdentifier()
+        let contractId = try requireContractIdentifier(for: WalletEnvironment.networkKind(for: network))
         let normalized = try normalizedLabel(label, sdk: sdk)
         let properties: [String: String] = [
             "normalizedLabel": normalized,
@@ -362,16 +370,20 @@ final class IdentityVerifyService {
 
     /// The contract id in base58, for the document queries that address it as
     /// a string.
-    private func requireContractIdBase58() throws -> String {
-        guard let contractId = Self.contractIdByNetwork[WalletEnvironment.networkKind] else {
+    private func requireContractIdBase58(
+        for networkKind: WalletEnvironment.NetworkKind = WalletEnvironment.networkKind
+    ) throws -> String {
+        guard let contractId = Self.contractIdByNetwork[networkKind] else {
             throw ServiceError.unsupportedNetwork
         }
         return contractId
     }
 
     /// The same id as raw 32 bytes, which is what `createDocument` takes.
-    private func requireContractIdentifier() throws -> Data {
-        guard let identifier = Data.identifier(fromBase58: try requireContractIdBase58()),
+    private func requireContractIdentifier(
+        for networkKind: WalletEnvironment.NetworkKind = WalletEnvironment.networkKind
+    ) throws -> Data {
+        guard let identifier = Data.identifier(fromBase58: try requireContractIdBase58(for: networkKind)),
               identifier.count == 32 else {
             throw ServiceError.unsupportedNetwork
         }

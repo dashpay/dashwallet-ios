@@ -622,6 +622,9 @@ struct MainMenuScreen: View {
     /// it.
     private func openCreateUsernameForRecovery(username: String) {
         guard let dashPayModel = viewModel.dashPayModel else { return }
+        // Not reached through the Join DashPay sheet, so no funding pick
+        // belongs to this visit: the form pins a source the recovery can use.
+        CreateUsernameViewModel.discardChosenFundingSource()
         let trimmed = username.trimmingCharacters(in: .whitespacesAndNewlines)
         Self.pushCreateUsernameForm(
             on: vc,

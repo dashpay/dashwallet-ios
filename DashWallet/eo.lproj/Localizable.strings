@@ -6258,6 +6258,7 @@
 "%d could not be reached" = "%d could not be reached";
 "%d evonodes" = "%d evonodes";
 "%d finished" = "%d finished";
+"%d have used all 5 votes Dash Platform allows on one contest and will be skipped." = "%d have used all 5 votes Dash Platform allows on one contest and will be skipped.";
 "%d masternodes" = "%d masternodes";
 "%d of %d masternodes voted" = "%1$d of %2$d masternodes voted";
 "%d of %d nodes voted" = "%1$d of %2$d nodes voted";
@@ -6285,6 +6286,7 @@
 "Accounts are created automatically when the wallet syncs." = "Accounts are created automatically when the wallet syncs.";
 "Add someone as a contact and you can pay them by username instead of an address." = "Add someone as a contact and you can pay them by username instead of an address.";
 "Add this masternode's operator key to unban it from here." = "Add this masternode's operator key to unban it from here.";
+"Added to your identity’s credits, which pay the %@ DASH contest fee." = "Added to your identity’s credits, which pay the %@ DASH contest fee.";
 "Address Pool" = "Address Pool";
 "Addresses Used" = "Addresses Used";
 "Advanced mode" = "Advanced mode";
@@ -6476,6 +6478,7 @@
 "Receive some DASH to this wallet, or fund its shielded balance, then return here." = "Receive some DASH to this wallet, or fund its shielded balance, then return here.";
 "Refresh keys from Platform" = "Refresh keys from Platform";
 "Refreshing your Platform balance before checking the new maximum…" = "Refreshing your Platform balance before checking the new maximum…";
+"Registering this name now needs %1$@ DASH from your wallet, more than the %2$@ DASH you confirmed. Nothing was sent. Try again to confirm the new amount." = "Registering this name now needs %1$@ DASH from your wallet, more than the %2$@ DASH you confirmed. Nothing was sent. Try again to confirm the new amount.";
 "Registration was interrupted" = "Registration was interrupted";
 "Rejected – %@" = "Rejected – %@";
 "Remind me later" = "Remind me later";
