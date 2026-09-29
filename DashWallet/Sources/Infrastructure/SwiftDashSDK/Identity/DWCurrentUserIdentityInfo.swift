@@ -388,6 +388,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
                         guard let network = SwiftDashSDKHost.shared.runningNetwork else { return false }
                         let service = DWContestedNameStatusService.shared
                         let pending = service.pendingLabels(for: network, identityId: recoveredIdentityId, walletId: walletId)
+                            + service.provisionalLabels(for: network, identityId: recoveredIdentityId, walletId: walletId)
                             + service.unattributedLabels(for: network, walletId: walletId)
                         return !pending.contains { DWContestedNameStatusService.labelsMatch(candidate, $0) }
                     })
@@ -675,8 +676,13 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         let pendingContested = DWContestedNameStatusService.shared.pendingLabels(
             for: network, identityId: identityId, walletId: walletId)
         let unattributed = DWContestedNameStatusService.shared.unattributedLabels(for: network, walletId: walletId)
+        // A marker an earlier launch left before its DPNS write is not a
+        // request, but the name is not known to be ours either: hidden until
+        // the coordinator reconciles it.
+        let provisional = DWContestedNameStatusService.shared.provisionalLabels(
+            for: network, identityId: identityId, walletId: walletId)
         let isPending: (String) -> Bool = { name in
-            (pendingContested + unattributed).contains { DWContestedNameStatusService.labelsMatch(name, $0) }
+            (pendingContested + provisional + unattributed).contains { DWContestedNameStatusService.labelsMatch(name, $0) }
         }
 
         if let managed = try? wallet.managedIdentity(identityId: identityId) {

@@ -6145,6 +6145,7 @@
 "%@ DASH stays in your Shielded balance: those notes are worth less than the fee to send them." = "%@ DASH stays in your Shielded balance: those notes are worth less than the fee to send them.";
 "%d change" = "%d change";
 "%d evonodes" = "%d evonodes";
+"%d have used all 5 votes Dash Platform allows on one contest and will be skipped." = "%d have used all 5 votes Dash Platform allows on one contest and will be skipped.";
 "%d masternodes" = "%d masternodes";
 "%d of %d masternodes voted" = "%1$d of %2$d masternodes voted";
 "%d masternodes that vote with this key are registered to a wallet in this app and were not added. Their voting key cannot be added separately." = "%d masternodes that vote with this key are registered to a wallet in this app and were not added. Their voting key cannot be added separately.";
@@ -6171,6 +6172,7 @@
 "Account Not Found" = "Account Not Found";
 "Accounts" = "Accounts";
 "Accounts are created automatically when the wallet syncs." = "Accounts are created automatically when the wallet syncs.";
+"Added to your identity’s credits, which pay the %@ DASH contest fee." = "Added to your identity’s credits, which pay the %@ DASH contest fee.";
 "Add masternode voting key" = "Add masternode voting key";
 "Add voting key" = "Add voting key";
 "Added %1$d of %2$d masternodes that vote with this key. Enter the key again to add the rest." = "Added %1$d of %2$d masternodes that vote with this key. Enter the key again to add the rest.";
@@ -6310,6 +6312,7 @@
 "Receive another" = "Receive another";
 "Refresh keys from Platform" = "Refresh keys from Platform";
 "Refreshing your Platform balance before checking the new maximum…" = "Refreshing your Platform balance before checking the new maximum…";
+"Registering this name now needs %1$@ DASH from your wallet, more than the %2$@ DASH you confirmed. Nothing was sent. Try again to confirm the new amount." = "Registering this name now needs %1$@ DASH from your wallet, more than the %2$@ DASH you confirmed. Nothing was sent. Try again to confirm the new amount.";
 "Rejected – %@" = "Rejected – %@";
 "Remove voting key" = "Remove voting key";
 "Removing wallet failed" = "Removing wallet failed";

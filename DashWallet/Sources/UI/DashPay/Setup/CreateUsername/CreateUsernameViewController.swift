@@ -343,8 +343,12 @@ struct CreateUsernameView: View {
             }
             // The funding source is chosen on the Join DashPay sheet's privacy
             // page, one screen back. Adopting it counts as an explicit pick, so
-            // the auto-pinning below leaves it alone.
-            if let chosen = viewModel.consumeChosenFundingSource() {
+            // the auto-pinning below leaves it alone. An invitation claim never
+            // passes that page — the voucher pays — so a pick left over from an
+            // earlier sheet is dropped rather than adopted.
+            if invitationURI != nil {
+                CreateUsernameViewModel.discardChosenFundingSource()
+            } else if let chosen = viewModel.consumeChosenFundingSource() {
                 fundingSource = chosen
                 didUserPickFundingSource = true
             }
@@ -460,6 +464,10 @@ struct CreateUsernameView: View {
                     // Only the contested request spends a contest fee; the
                     // instant companion is an ordinary registration.
                     showsContestFeeNote: !isNamingInstantUsername,
+                    identityPaidContestFeeDuffs:
+                        !isNamingInstantUsername && existingIdentityTopUpDuffs(nameCount: 1) != nil
+                            ? UsernameMarketplaceService.contestedFundCredits / 1000
+                            : nil,
                     onConfirm: { confirmRequestAccepted() })
             }
         }
@@ -1101,22 +1109,34 @@ struct CreateUsernameView: View {
         }
     }
 
-    /// What the confirmation sheet states as the cost.
-    ///
-    /// Only the contested request spends DASH: the companion is a second DPNS
-    /// name on the identity that request funds, so nil — the sheet then says
-    /// nothing extra is spent instead of naming a second amount.
-    /// What the confirmation shows. A new identity is funded with the full
-    /// contested minimum; an identity that already exists is not created
-    /// again, so only the name's contest fund is at stake — Android's
-    /// `DASH_PAY_FEE_CONTESTED_NAME` case. The fund is the marketplace's
-    /// figure, credits to duffs (1 duff = 1000 credits).
+    /// What the confirmation shows: what actually leaves the chosen source.
+    /// A new identity is funded with the full contested minimum, and its
+    /// companion costs nothing more. An existing identity is not created
+    /// again: it is topped up by its shortfall for the final name count —
+    /// the requested pass shows the top-up for that name alone, the companion
+    /// pass what the second name adds — and the contest fund, paid from its
+    /// credits, is stated beside it (`identityPaidContestFeeDuffs`).
     private var confirmationAmountDuffs: UInt64 {
+        if let single = existingIdentityTopUpDuffs(nameCount: 1) {
+            guard isNamingInstantUsername else { return single }
+            return (existingIdentityTopUpDuffs(nameCount: 2) ?? single) - single
+        }
         if isNamingInstantUsername { return 0 }
         if DWCurrentUserIdentityInfo.shared.hasIdentity {
+            // An identity with no top-up route here (an invitation claim)
+            // registers on what it holds: only the contest fund is at stake.
+            // The fund is the marketplace's figure, credits to duffs
+            // (1 duff = 1000 credits).
             return UsernameMarketplaceService.contestedFundCredits / 1000
         }
         return UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME)
+    }
+
+    /// The top-up the confirmation states for an existing identity, or nil
+    /// when none can happen (new identity, invitation claim).
+    private func existingIdentityTopUpDuffs(nameCount: UInt64) -> UInt64? {
+        guard !viewModel.isInvitationMode else { return nil }
+        return viewModel.existingIdentityTopUpDuffs(isContested: true, nameCount: nameCount)
     }
 
     private func confirmContestedSubmission(temporaryUsername: String?) {
@@ -1143,6 +1163,12 @@ struct CreateUsernameView: View {
             // pick matters on that path too.
             DWIdentityRegistrationBridge.shared.preferredFundingSource =
                 viewModel.registrationRecovery == .pendingCoreAssetLock ? .core : fundingSource
+            // The top-up the confirmation showed for the final name count is
+            // the most the coordinator may move without asking again. Only the
+            // contested sheet confirms an amount; other submissions carry none.
+            DWIdentityRegistrationBridge.shared.authorizedTopUpDuffs = viewModel.isContestedCandidate
+                ? existingIdentityTopUpDuffs(nameCount: temporaryUsername == nil ? 1 : 2)
+                : nil
         }
         // Every submission except an invitation claim reports its progress on
         // the More row and this screen steps aside straight after the PIN.
