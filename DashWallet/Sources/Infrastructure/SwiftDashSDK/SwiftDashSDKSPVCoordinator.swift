@@ -54,6 +54,40 @@ enum CoreSPVRestartOperation {
     }
 }
 
+/// The SPV coordinator's record of network-switch preparations, kept free of
+/// SDK types so its decisions can be tested on their own.
+///
+/// `prepareForNetworkSwitch()` detaches the outgoing network's subscriptions
+/// and clears its balance ahead of the switch's stop. Until a start that
+/// began after that preparation consumes it, a failed stop does not re-attach
+/// the outgoing manager's subscriptions, and a restart does not start the
+/// network it captured before its stop. A start takes a token before its
+/// first await and gives up, without publishing a balance or starting SPV,
+/// when a preparation landed while it awaited.
+struct NetworkSwitchPreparationGate {
+    /// A preparation that no start has consumed yet.
+    private(set) var isPending = false
+    private var preparations = 0
+
+    mutating func prepare() {
+        isPending = true
+        preparations &+= 1
+    }
+
+    /// Taken by a start before its first await.
+    func startToken() -> Int { preparations }
+
+    /// Whether a preparation landed after the start that took `token` began.
+    func isOvertaken(since token: Int) -> Bool { preparations != token }
+
+    /// Called by a start that was not overtaken, just before it starts SPV.
+    mutating func consume() { isPending = false }
+
+    /// Whether a failed stop may re-attach the outgoing manager's
+    /// subscriptions.
+    var allowsReattachingAfterFailedStop: Bool { !isPending }
+}
+
 /// A devnet start's validated configuration and the peers discovered for it,
 /// captured BEFORE the SDK is built.
 ///
@@ -196,20 +230,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @MainActor
     private(set) var subscriptionsDetached: Bool = false
 
-    /// Set by `prepareForNetworkSwitch()` and cleared by the next start that
-    /// began after it, just before that start starts SPV. While it is set,
-    /// the manager subscriptions belong to the outgoing network: a failed stop
-    /// does not re-attach them, and a restart does not start that network
-    /// again. The stop's `stopSpv()` await is long enough for a preparation to
-    /// land in it, so both check it after the await.
+    /// Network-switch preparations (see `NetworkSwitchPreparationGate`). The
+    /// stop's `stopSpv()` await is long enough for a preparation to land in
+    /// it, so the stop and the restart check the gate after that await.
     @MainActor
-    private var networkSwitchPrepared = false
-
-    /// Counts `prepareForNetworkSwitch()` calls. A start records it when it
-    /// begins, and a start that sees it changed before `startSpv` was
-    /// overtaken by a preparation while it awaited, so it does not start SPV.
-    @MainActor
-    private var networkSwitchPreparations = 0
+    private var switchPreparation = NetworkSwitchPreparationGate()
 
     @MainActor
     var isRunning: Bool { runningNetwork != nil }
@@ -291,11 +316,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 stop: {
                     try await self.performStop(lastError: nil, clearBalance: false)
                 },
-                networkSwitchPrepared: { self.networkSwitchPrepared },
+                networkSwitchPrepared: { self.switchPreparation.isPending },
                 start: {
                     switch await self.performStart(
                         manager: manager, for: network,
-                        preparationsAtStart: self.networkSwitchPreparations) {
+                        preparationsAtStart: self.switchPreparation.startToken()) {
                     case .success:
                         return
                     case .failure(let error):
@@ -380,7 +405,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     @MainActor
     private func performStart(for network: Network) async -> Result<Void, Error> {
-        let preparationsAtStart = networkSwitchPreparations
+        let preparationsAtStart = switchPreparation.startToken()
         // Checked before `host.start` builds the SDK: an unconfigured devnet
         // would otherwise surface as a cryptic SDK-init failure (the SDK
         // reads the quorum URL itself and can't discover DAPI nodes without
@@ -499,8 +524,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             discoveredDevnetPeers: discoveredDevnetPeers)
     }
 
-    /// `preparationsAtStart` is `networkSwitchPreparations` when the whole
-    /// start began, before any of its awaits.
+    /// `preparationsAtStart` is the `switchPreparation` token taken when the
+    /// whole start began, before any of its awaits.
     @MainActor
     private func performStart(
         manager: PlatformWalletManager,
@@ -614,7 +639,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         if isOvertakenByNetworkSwitch(since: preparationsAtStart) {
             return .failure(StartError.superseded)
         }
-        networkSwitchPrepared = false
+        switchPreparation.consume()
 
         do {
             try manager.startSpv(config: config)
@@ -645,7 +670,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// start SPV: both would belong to the outgoing network.
     @MainActor
     private func isOvertakenByNetworkSwitch(since preparationsAtStart: Int) -> Bool {
-        guard networkSwitchPreparations != preparationsAtStart else { return false }
+        guard switchPreparation.isOvertaken(since: preparationsAtStart) else { return false }
         Self.logger.info("🛰️ SPVCOORD :: start superseded by a network switch preparation")
         return true
     }
@@ -673,17 +698,18 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// the home screen renders as the newly selected network's funds.
     @MainActor
     func prepareForNetworkSwitch() {
-        networkSwitchPrepared = true
-        networkSwitchPreparations &+= 1
+        switchPreparation.prepare()
         detachManagerSubscriptions()
         SwiftDashSDKWalletState.shared.clearAllState()
     }
 
     /// The native SPV stop waits for the client's current sync tick and task
     /// drain. The SDK bounds the client stop at 15 s and the run-loop join at
-    /// 15 s plus a 2 s abort grace, so it can take about 32 s; it runs off the
-    /// main thread through the SDK's async `stopSpv()`. Subscriptions are detached before that wait, and
-    /// the runtime's lifecycle queue keeps any start behind this stop.
+    /// 15 s plus a 2 s abort grace, about 32 s in all, after first waiting for
+    /// any SPV broadcast still awaiting acceptance. It runs off the main thread
+    /// through the SDK's async `stopSpv()`. Subscriptions are detached before
+    /// that wait, and the runtime's lifecycle queue keeps any start behind
+    /// this stop.
     @MainActor
     private func performStop(lastError: String?, clearBalance: Bool) async throws {
         detachManagerSubscriptions()
@@ -699,7 +725,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 // A network switch prepared before or during this stop
                 // detached the outgoing manager's subscriptions; re-attaching
                 // them would publish that network's progress and balance again.
-                if !networkSwitchPrepared {
+                if switchPreparation.allowsReattachingAfterFailedStop {
                     subscribeToManagerProgress(manager: manager)
                 }
                 self.lastError = error.localizedDescription

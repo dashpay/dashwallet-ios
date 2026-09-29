@@ -70,6 +70,49 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(restartingStates, [true, false])
     }
 
+    // MARK: - Network switch preparation
+
+    /// A preparation made before the stop, or during its await (the check
+    /// runs after the await either way), keeps a failed stop from
+    /// re-attaching the outgoing manager until a later start consumes it.
+    func testFailedStopDoesNotReattachAfterAPreparationUntilAStartConsumesIt() {
+        var gate = NetworkSwitchPreparationGate()
+        XCTAssertTrue(gate.allowsReattachingAfterFailedStop)
+
+        gate.prepare()
+        XCTAssertFalse(gate.allowsReattachingAfterFailedStop)
+
+        let token = gate.startToken()
+        XCTAssertFalse(gate.isOvertaken(since: token))
+        gate.consume()
+        XCTAssertTrue(gate.allowsReattachingAfterFailedStop)
+    }
+
+    /// A start that a preparation overtakes while it awaits gives up, and
+    /// leaves the preparation pending for the switch's own start.
+    func testStartOvertakenByAPreparationDoesNotConsumeIt() {
+        var gate = NetworkSwitchPreparationGate()
+        let token = gate.startToken()
+        gate.prepare()
+
+        XCTAssertTrue(
+            gate.isOvertaken(since: token),
+            "the start must give up before it publishes a balance or starts SPV")
+        XCTAssertTrue(gate.isPending, "an overtaken start must not consume the preparation")
+    }
+
+    /// A start that began after the preparation is the switch's own start:
+    /// it goes ahead and consumes the preparation.
+    func testStartBegunAfterAPreparationConsumesIt() {
+        var gate = NetworkSwitchPreparationGate()
+        gate.prepare()
+        let token = gate.startToken()
+
+        XCTAssertFalse(gate.isOvertaken(since: token))
+        gate.consume()
+        XCTAssertFalse(gate.isPending)
+    }
+
     // MARK: - Devnet start preflight
 
     /// The runtime discovers devnet peers before the SDK is built; the SPV
