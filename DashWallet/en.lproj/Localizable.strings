@@ -4522,9 +4522,6 @@
 /* Identities */
 "The main identity can only be chosen from the active wallet" = "The main identity can only be chosen from the active wallet";
 
-/* Dash DEX */
-"The maximum transaction amount is %@" = "The maximum transaction amount is %@";
-
 /* Coinbase */
 "The minimum amount you can send is %@" = "The minimum amount you can send is %@";
 
