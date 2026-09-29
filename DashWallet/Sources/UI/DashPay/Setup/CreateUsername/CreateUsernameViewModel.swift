@@ -359,19 +359,28 @@ class CreateUsernameViewModel: ObservableObject {
     /// existing identity (the coordinator tops it up), or a new identity's full
     /// funding. Updates `identityTopUpDuffs` for the label being judged.
     private func requiredFundingDuffs(isContested: Bool) -> UInt64 {
-        let topUp = existingIdentityCredits.map { held in
-            DWIdentityRegistrationCoordinator.identityTopUpDuffs(
-                // One name: the companion is chosen only after this verdict,
-                // and the coordinator re-judges with it at submit.
-                requiredCredits: DWIdentityRegistrationCoordinator.requiredRegistrationCredits(
-                    isContested: isContested, nameCount: 1),
-                heldCredits: held)
-        }
+        // One name: the companion is chosen only after this verdict, and the
+        // confirmation sheet states what it adds.
+        let topUp = existingIdentityTopUpDuffs(isContested: isContested, nameCount: 1)
         if identityTopUpDuffs != topUp {
             identityTopUpDuffs = topUp
         }
         if let topUp { return topUp }
         return UInt64(isContested ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME : DWDP_MIN_BALANCE_TO_CREATE_USERNAME)
+    }
+
+    /// What the chosen source sends to top up the existing identity so it can
+    /// register `nameCount` names (the coordinator's own formula, from the
+    /// persisted balance), or nil when there is no existing identity to top
+    /// up. The confirmation sheet shows this figure and the submission carries
+    /// it as the ceiling the coordinator may spend without asking again.
+    func existingIdentityTopUpDuffs(isContested: Bool, nameCount: UInt64) -> UInt64? {
+        existingIdentityCredits.map { held in
+            DWIdentityRegistrationCoordinator.identityTopUpDuffs(
+                requiredCredits: DWIdentityRegistrationCoordinator.requiredRegistrationCredits(
+                    isContested: isContested, nameCount: nameCount),
+                heldCredits: held)
+        }
     }
 
     /// Non-nil puts the form in invitation-claim mode (DIP-13): the
