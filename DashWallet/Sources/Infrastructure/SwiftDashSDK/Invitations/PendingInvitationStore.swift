@@ -113,8 +113,6 @@ struct PendingInvitation: Equatable, CustomStringConvertible {
     }
 }
 
-/// Where the bearer secret is kept. A seam so the store's decisions can be
-/// tested with failing writes and deletes; production is the Keychain.
 /// A Keychain read that tells "not there" from "could not read".
 enum InvitationSecretRead: Equatable {
     case found(Data)
@@ -123,6 +121,8 @@ enum InvitationSecretRead: Equatable {
     case failed
 }
 
+/// Where the bearer secret is kept. A seam so the store's decisions can be
+/// tested with failing writes and deletes; production is the Keychain.
 @MainActor
 protocol InvitationSecretStorage: AnyObject {
     func read(_ account: String) -> InvitationSecretRead

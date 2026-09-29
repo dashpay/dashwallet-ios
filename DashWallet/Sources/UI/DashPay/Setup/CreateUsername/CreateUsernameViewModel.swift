@@ -602,8 +602,11 @@ class CreateUsernameViewModel: ObservableObject {
             } catch DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled {
                 return .cancelled
             } catch {
-                if let message = invitationClaimFailureMessage(error) {
-                    return .failure(message)
+                // A failure about the invitation itself, in its own words;
+                // anything else keeps the generic wording and the invitation.
+                if let failure = InvitationClaimFailure.classify(error) {
+                    handleInvitationClaimFailure(failure)
+                    return .failure(failure.message(sender: invitationSenderName()))
                 }
                 return .failure(
                     Self.registrationFailureMessage(error, username: submittedUsername))
@@ -686,11 +689,10 @@ class CreateUsernameViewModel: ObservableObject {
         return UsernameRegistrationFailureWording.message(forRaw: raw, username: username)
     }
 
-    /// A claim failure that ends the invitation (it can never be claimed) or
-    /// one that only needs time, in the invitation's own words. nil for
-    /// everything else, which keeps the generic wording and the invitation.
-    private func invitationClaimFailureMessage(_ error: Error) -> String? {
-        guard let failure = InvitationClaimFailure.classify(error) else { return nil }
+    /// What a failed claim does to the stored invitation: a spent or
+    /// invalid voucher is removed, a spent one reported only in untyped text
+    /// is re-checked by the Home card, and one still confirming is kept.
+    private func handleInvitationClaimFailure(_ failure: InvitationClaimFailure) {
         if failure.endsInvitation {
             // Spent is true in every wallet; "invalid" may be this wallet's
             // network only. Either way named explicitly — the result can
@@ -701,24 +703,13 @@ class CreateUsernameViewModel: ObservableObject {
                 PendingInvitationStore.shared.remove(pendingInvitation, reason: .definitiveOutcome)
             }
         } else if failure == .reportedUsed {
-            // Not proof: the card re-checks through the typed status query
-            // instead of trusting a cached "valid".
             PendingInvitationViewModel.shared.recheck()
         }
-        let sender = InvitationOutcomeDialogs.senderName(
+    }
+
+    private func invitationSenderName() -> String {
+        InvitationOutcomeDialogs.senderName(
             InvitationValidationPolicy.inviter(from: invitationURI.flatMap { DWInvitationService.shared.preview(for: $0) }))
-        switch failure {
-        case .alreadyUsed, .reportedUsed:
-            return String.localizedStringWithFormat(
-                NSLocalizedString("Your invitation from %@ has been already claimed", comment: ""), sender)
-        case .invalid:
-            return String.localizedStringWithFormat(
-                NSLocalizedString("Your invitation from %@ is not valid", comment: ""), sender)
-        case .stillConfirming:
-            return NSLocalizedString(
-                "The invitation is still confirming on the network. Try again in a few minutes.",
-                comment: "DashPay Invitations")
-        }
     }
 
     private func registrationOutcome(for username: String) -> UsernameRegistrationOutcome {

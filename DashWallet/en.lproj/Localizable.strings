@@ -6489,3 +6489,9 @@
 
 /* DashPay Invitations */
 "The invitation couldn't be saved on this device. Open the link again to retry." = "The invitation couldn't be saved on this device. Open the link again to retry.";
+
+/* DashPay Invitations */
+"Identity already found" = "Identity already found";
+
+/* DashPay Invitations */
+"You cannot claim this invite since this wallet already has a Dash identity" = "You cannot claim this invite since this wallet already has a Dash identity";

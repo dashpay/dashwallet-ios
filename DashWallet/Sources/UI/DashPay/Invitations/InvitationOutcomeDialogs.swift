@@ -22,6 +22,10 @@ enum InvitationOutcomeDialogs {
             return invalid(inviter: inviter)
         case .alreadyHasIdentity:
             return alreadyHasIdentity()
+        case .alreadyHasOtherIdentity:
+            return alert(
+                title: NSLocalizedString("Identity already found", comment: "DashPay Invitations"),
+                message: NSLocalizedString("You cannot claim this invite since this wallet already has a Dash identity", comment: "DashPay Invitations"))
         case .alreadyRequestedUsername:
             return alert(
                 title: NSLocalizedString("Username already requested", comment: "DashPay Invitations"),

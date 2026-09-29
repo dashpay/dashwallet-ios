@@ -113,7 +113,9 @@ final class InvitationValidationPolicyTests: XCTestCase {
         let verdict = InvitationValidationPolicy.verdict(
             status: status(amount: 3_000_000), inviter: inviter, minimumDuffs: minimum, contestedDuffs: contested,
             localIdentityId: Data(repeating: 9, count: 32))
-        XCTAssertEqual(verdict, .alreadyHasIdentity)
+        XCTAssertEqual(verdict, .alreadyHasOtherIdentity)
+        XCTAssertTrue(verdict.isDefinitive)
+        XCTAssertFalse(verdict.clearsEverywhere)
     }
 
     // MARK: - Claim failures arrive wrapped by the coordinator
@@ -129,6 +131,15 @@ final class InvitationValidationPolicyTests: XCTestCase {
             InvitationClaimFailure.classify(wrapped(PlatformWalletError.invalidParameter("bad link"))), .invalid)
         XCTAssertEqual(
             InvitationClaimFailure.classify(wrapped(PlatformWalletError.assetLockAlreadyConsumed("outpoint"))), .alreadyUsed)
+        // The shape the SDK produces for Platform's consensus rejection.
+        XCTAssertEqual(
+            InvitationClaimFailure.classify(wrapped(PlatformWalletError.consensusRejection(
+                PlatformConsensusError(code: 10504, kind: .basic), "reworded by Platform"))),
+            .alreadyUsed)
+        XCTAssertNil(
+            InvitationClaimFailure.classify(wrapped(PlatformWalletError.consensusRejection(
+                PlatformConsensusError(code: 40722, kind: .state), "some other rejection"))))
+        // No consensus code: text is only a fallback, never definitive.
         XCTAssertEqual(
             InvitationClaimFailure.classify(wrapped(PlatformWalletError.walletOperation(
                 "IdentityAssetLockTransactionOutPointAlreadyConsumedError: asset lock outpoint already consumed"))),
@@ -160,6 +171,14 @@ final class InvitationValidationPolicyTests: XCTestCase {
             "invitation islock proof was rejected … the funding transaction is not yet chain-locked")))
         XCTAssertEqual(failure, .stillConfirming)
         XCTAssertEqual(failure?.endsInvitation, false)
+    }
+
+    func testClaimFailureWordingNamesTheSender() {
+        XCTAssertTrue(InvitationClaimFailure.alreadyUsed.message(sender: "alice").contains("alice"))
+        XCTAssertEqual(InvitationClaimFailure.reportedUsed.message(sender: "alice"),
+                       InvitationClaimFailure.alreadyUsed.message(sender: "alice"))
+        XCTAssertTrue(InvitationClaimFailure.invalid.message(sender: "alice").contains("alice"))
+        XCTAssertFalse(InvitationClaimFailure.stillConfirming.message(sender: "alice").contains("alice"))
     }
 
     func testUnrelatedFailureIsNotAnInvitationVerdict() {

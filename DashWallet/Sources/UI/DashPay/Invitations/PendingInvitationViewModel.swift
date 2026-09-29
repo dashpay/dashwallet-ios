@@ -17,8 +17,6 @@ final class PendingInvitationViewModel: ObservableObject {
     /// One per app, not one per Home view: every instance validates the same
     /// stored invitation, so several would race each other over the network
     /// and the verdict could land on a Home that is no longer on screen.
-    /// (`SyncingActivityMonitor` holds its observers strongly, so a per-view
-    /// instance would also never be released.)
     static let shared = PendingInvitationViewModel()
 
     enum CardState: Equatable {

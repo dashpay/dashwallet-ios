@@ -53,12 +53,12 @@ final class InvitationEntry: NSObject {
         presenter.present(scanner, animated: true)
     }
 
-    /// Present the dialog an outcome needs; true when the invitation is (or
-    /// already was) stored.
     /// An explanation owed for a link taken while nothing could show it
     /// (locked, onboarding). Holds the outcome only, never the link.
     private static var heldNotice = InvitationReceiptNotice()
 
+    /// Present the dialog an outcome needs; true when the invitation is (or
+    /// already was) stored.
     private static func handle(_ outcome: PendingInvitationStore.ReceiveOutcome,
                                presenter: UIViewController?) -> Bool {
         guard let presenter else {

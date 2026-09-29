@@ -48,7 +48,11 @@ enum InvitationValidation: Equatable {
     case valid(tier: InvitationTier, amountDuffs: UInt64, inviter: InvitationInviter)
     case invalid(InvalidReason, inviter: InvitationInviter)
     case alreadyClaimed(inviter: InvitationInviter)
+    /// The wallet already has a username.
     case alreadyHasIdentity
+    /// The wallet has an identity, without a username, other than the one
+    /// this invitation would create.
+    case alreadyHasOtherIdentity
     case alreadyRequestedUsername
     /// The network could not answer (not propagated yet, transport failure).
     /// Not a verdict: the invitation is kept and checked again.
@@ -63,7 +67,8 @@ enum InvitationValidation: Equatable {
     var isDefinitive: Bool {
         switch self {
         case .valid, .undetermined, .awaitingChainLock: return false
-        case .invalid, .alreadyClaimed, .alreadyHasIdentity, .alreadyRequestedUsername: return true
+        case .invalid, .alreadyClaimed, .alreadyHasIdentity, .alreadyHasOtherIdentity, .alreadyRequestedUsername:
+            return true
         }
     }
 
@@ -81,7 +86,7 @@ enum InvitationValidation: Equatable {
         switch self {
         case .alreadyClaimed, .invalid(.malformed, _), .invalid(.belowMinimum, _):
             return true
-        case .invalid(.wrongNetwork, _), .alreadyHasIdentity, .alreadyRequestedUsername,
+        case .invalid(.wrongNetwork, _), .alreadyHasIdentity, .alreadyHasOtherIdentity, .alreadyRequestedUsername,
              .valid, .undetermined, .awaitingChainLock:
             return false
         }
@@ -124,7 +129,7 @@ enum InvitationValidationPolicy {
     ) -> InvitationValidation {
         let tier: InvitationTier = status.amountDuffs >= contestedDuffs ? .contested : .nonContested
         if let localIdentityId {
-            guard localIdentityId == status.prospectiveIdentityId else { return .alreadyHasIdentity }
+            guard localIdentityId == status.prospectiveIdentityId else { return .alreadyHasOtherIdentity }
             // Our own earlier claim: only the username is left to register.
             return .valid(tier: tier, amountDuffs: status.amountDuffs, inviter: inviter)
         }
@@ -177,6 +182,10 @@ enum InvitationClaimFailure: Equatable {
     /// the wrong network, a fact about this wallet only.
     var clearsEverywhere: Bool { self == .alreadyUsed }
 
+    /// `IdentityAssetLockTransactionOutPointAlreadyConsumedError`: Platform's
+    /// own verdict that the voucher's outpoint was spent.
+    static let outPointAlreadyConsumedCode: UInt32 = 10504
+
     /// nil for a failure that says nothing about the invitation (network,
     /// PIN, DPNS) — the generic registration wording applies.
     static func classify(_ error: Error) -> InvitationClaimFailure? {
@@ -186,11 +195,14 @@ enum InvitationClaimFailure: Equatable {
             return .alreadyUsed
         case PlatformWalletError.invalidParameter, PlatformWalletError.invalidNetwork:
             return .invalid
+        case let error as PlatformWalletError where error.consensusError?.code == outPointAlreadyConsumedCode:
+            return .alreadyUsed
         default:
             break
         }
-        // Platform's consensus rejections reach the claim as a generic SDK
-        // error; only their text names the cause, and text never deletes.
+        // Fallback for an error that carries no consensus code: its text is
+        // not proof, so it never deletes. "Not yet chain-locked" is decided
+        // wallet-side and has no code at all.
         let text = String(describing: underlying).lowercased()
         if text.contains("already consumed") || text.contains("already completely used") {
             return .reportedUsed
@@ -199,6 +211,22 @@ enum InvitationClaimFailure: Equatable {
             return .stillConfirming
         }
         return nil
+    }
+
+    /// The user-facing wording; `sender` is the inviter's name.
+    func message(sender: String) -> String {
+        switch self {
+        case .alreadyUsed, .reportedUsed:
+            return String.localizedStringWithFormat(
+                NSLocalizedString("Your invitation from %@ has been already claimed", comment: ""), sender)
+        case .invalid:
+            return String.localizedStringWithFormat(
+                NSLocalizedString("Your invitation from %@ is not valid", comment: ""), sender)
+        case .stillConfirming:
+            return NSLocalizedString(
+                "The invitation is still confirming on the network. Try again in a few minutes.",
+                comment: "DashPay Invitations")
+        }
     }
 
     /// The coordinator reports an IdentityCreate failure wrapped in

@@ -6728,3 +6728,9 @@
 
 /* DashPay Invitations */
 "You cannot claim this invite since you have already requested a Dash username" = "You cannot claim this invite since you have already requested a Dash username";
+
+/* DashPay Invitations */
+"Identity already found" = "Identity already found";
+
+/* DashPay Invitations */
+"You cannot claim this invite since this wallet already has a Dash identity" = "You cannot claim this invite since this wallet already has a Dash identity";
