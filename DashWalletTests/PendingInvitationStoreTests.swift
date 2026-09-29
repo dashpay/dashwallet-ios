@@ -7,13 +7,14 @@
 //  another, and that every way out removes it.
 //
 
+import Combine
 import SwiftDashSDK
 import XCTest
 @testable import dashpay
 
 /// In-memory stand-in for the Keychain, with switchable failures.
 @MainActor
-private final class FakeSecretStorage: InvitationSecretStorage {
+final class FakeSecretStorage: InvitationSecretStorage {
     var items: [String: Data] = [:]
     var failWrites = false
     var failDeletes = false
@@ -138,7 +139,11 @@ final class PendingInvitationStoreTests: XCTestCase {
 
     func testReceiptIsRefusedWhileAWipeRuns() {
         let store = makeStore()
-        store.suspendReceipt()
+        var wipeEvents = 0
+        let subscription = store.wipeStarted.sink { wipeEvents += 1 }
+        XCTAssertTrue(store.eraseForWipe())
+        subscription.cancel()
+        XCTAssertEqual(wipeEvents, 1, "held notices and undelivered verdicts are dropped through this event")
         XCTAssertEqual(store.receive(linkA), .suspended)
         XCTAssertTrue(storage.items.isEmpty, "nothing may be written under a wallet being deleted")
         store.resumeReceipt()

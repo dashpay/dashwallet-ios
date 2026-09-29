@@ -408,12 +408,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // wipe is over (`performWipe` resumes it on every exit).
         let erase = {
             erased = MainActor.assumeIsolated {
-                PendingInvitationStore.shared.suspendReceipt()
-                // An explanation held for a link refused before the wipe
-                // must not be shown after it — on every wipe path, not only
-                // the ones that reach the root's `didWipeWallet`.
-                InvitationEntry.discardHeldNotice()
-                return PendingInvitationStore.wipeAll()
+                PendingInvitationStore.shared.eraseForWipe()
             }
         }
         if Thread.isMainThread { erase() } else { DispatchQueue.main.sync(execute: erase) }

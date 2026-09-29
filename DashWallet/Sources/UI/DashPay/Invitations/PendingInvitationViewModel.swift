@@ -58,6 +58,7 @@ final class PendingInvitationViewModel: ObservableObject {
     /// of spinning on an unchanged invitation.
     private var delayedRetry: Task<Void, Never>?
     static let notReadyRetryDelay: UInt64 = 5_000_000_000
+    private let notReadyRetryDelay: UInt64
     /// Consecutive "the wallet cannot answer yet" results for the shown
     /// invitation (identity names not loaded, host mid-switch).
     private var notReadyAttempts = 0
@@ -68,6 +69,11 @@ final class PendingInvitationViewModel: ObservableObject {
     /// name request in a vote) — checked again right before Create, since a
     /// cached "valid" may predate a registration made elsewhere.
     private let isWalletIneligible: @MainActor () -> Bool
+    /// The network check; nil when the wallet cannot answer yet.
+    private let validate: @MainActor (PendingInvitation) async -> InvitationValidation?
+    /// The chain is synced, the app is in front and unlocked.
+    private let isReadyToValidate: @MainActor () -> Bool
+    private let isSynced: @MainActor () -> Bool
     private var cancellables = Set<AnyCancellable>()
     private var observers: [NSObjectProtocol] = []
 
@@ -79,11 +85,26 @@ final class PendingInvitationViewModel: ObservableObject {
              return identity.username?.isEmpty == false
                  || identity.pendingContestedName != nil
                  || DWContestedNameStatusService.shared.pendingLabel != nil
-         }) {
+         },
+         validate: @escaping @MainActor (PendingInvitation) async -> InvitationValidation? = {
+             await InvitationValidator.validate($0)
+         },
+         isReadyToValidate: @escaping @MainActor () -> Bool = {
+             SyncingActivityMonitor.shared.state == .syncDone
+                 && !WalletLifecycleOverlayPresenter.shared.lockScreenVisible
+                 && UIApplication.shared.applicationState == .active
+         },
+         isSynced: @escaping @MainActor () -> Bool = { SyncingActivityMonitor.shared.state == .syncDone },
+         observesSyncMonitor: Bool = true,
+         notReadyRetryDelay: UInt64 = PendingInvitationViewModel.notReadyRetryDelay) {
         self.store = store
         self.isActive = isActive
         self.rearmIdentityRefresh = rearmIdentityRefresh
         self.isWalletIneligible = isWalletIneligible
+        self.validate = validate
+        self.isReadyToValidate = isReadyToValidate
+        self.isSynced = isSynced
+        self.notReadyRetryDelay = notReadyRetryDelay
         store.$pending
             .removeDuplicates()
             .sink { [weak self] pending in
@@ -96,6 +117,10 @@ final class PendingInvitationViewModel: ObservableObject {
                 self.refreshCardState()
                 self.validateIfPossible()
             }
+            .store(in: &cancellables)
+        // A verdict reached for the wallet being wiped is not shown after it.
+        store.wipeStarted
+            .sink { [weak self] in self?.discardUndeliveredOutcome() }
             .store(in: &cancellables)
 
         let center = NotificationCenter.default
@@ -121,7 +146,9 @@ final class PendingInvitationViewModel: ObservableObject {
                 }
             })
         }
-        SyncingActivityMonitor.shared.add(observer: self)
+        if observesSyncMonitor {
+            SyncingActivityMonitor.shared.add(observer: self)
+        }
     }
 
     deinit {
@@ -194,10 +221,7 @@ final class PendingInvitationViewModel: ObservableObject {
     // MARK: - Validation
 
     private var canValidate: Bool {
-        invitation != nil
-            && SyncingActivityMonitor.shared.state == .syncDone
-            && !WalletLifecycleOverlayPresenter.shared.lockScreenVisible
-            && UIApplication.shared.applicationState == .active
+        invitation != nil && isReadyToValidate()
     }
 
     func validateIfPossible() {
@@ -231,7 +255,8 @@ final class PendingInvitationViewModel: ObservableObject {
         }
         cardState = .verifying
         let token = UUID()
-        let task = Task { await InvitationValidator.validate(invitation) }
+        let validate = self.validate
+        let task = Task { await validate(invitation) }
         validationTask = task
         validationFor = invitation
         validationToken = token
@@ -298,7 +323,7 @@ final class PendingInvitationViewModel: ObservableObject {
     private func scheduleDelayedRetry() {
         guard delayedRetry == nil else { return }
         delayedRetry = Task { [weak self] in
-            try? await Task.sleep(nanoseconds: Self.notReadyRetryDelay)
+            try? await Task.sleep(nanoseconds: self?.notReadyRetryDelay ?? 0)
             guard let self, !Task.isCancelled else { return }
             self.delayedRetry = nil
             self.validateIfPossible()
@@ -319,7 +344,7 @@ final class PendingInvitationViewModel: ObservableObject {
         case .awaitingChainLock?:
             cardState = .awaitingChainLock
         default:
-            cardState = SyncingActivityMonitor.shared.state == .syncDone ? .verifying : .syncing
+            cardState = isSynced() ? .verifying : .syncing
         }
     }
 }

@@ -16,6 +16,32 @@
 //  change of the canonical link form touches `DWInvitationLinkNormalizer`
 //  only, never stored data.
 //
+//  Persisted state, per invitation scope `<net>.<wallet id | unbound>`:
+//
+//  | Where                                  | Holds                          | Written by           | Cleared by                        |
+//  |----------------------------------------|--------------------------------|----------------------|-----------------------------------|
+//  | Keychain `invitation.pending.<scope>`  | the link (bearer secret)       | receive, bindUnbound | every removal path below          |
+//  | Defaults `pendingInvitationMeta.<scope>` | receivedAt, fromOnboarding;  | receive, bindUnbound | with its Keychain item, never     |
+//  |                                        | `boundTo` on the unbound slot  |                      | before it; stray ones by a wipe   |
+//  | Defaults `pendingInvitationConsumed`   | SHA-256 of spent vouchers'     | retireConsumed       | retireConsumed, or a later reload |
+//  |                                        | normalized links (global)      |                      | once no copy can remain           |
+//
+//  Removal paths, from narrowest to widest:
+//  - `remove(_:reason:)` — the shown copy, plus an unbound copy already
+//    assigned to its wallet (hidden, or a verdict about this wallet).
+//  - `removeEverywhere` — every copy of one voucher (a fact about the
+//    voucher: claimed, malformed, below the minimum).
+//  - `retireConsumed` — `removeEverywhere` after our own claim, backed by
+//    a marker so a failed delete is retried on each reload.
+//  - `removeAll(walletIdHex:)` — a wallet being removed, including unbound
+//    copies assigned to it.
+//  - `eraseForWipe` / `wipeAllScopes` — everything, every network.
+//
+//  Invariants: `boundTo` is recorded before the wallet slot is written, so
+//  an interrupted move finishes for the wallet it started for; metadata is
+//  removed only after its Keychain item; a consumed marker stays while any
+//  stored item is unreadable, since that item might be the spent voucher.
+//
 
 import Combine
 import CryptoKit
@@ -230,8 +256,21 @@ final class PendingInvitationStore: ObservableObject {
     /// be written under a wallet that is being deleted and outlive the wipe.
     private(set) var isReceiptSuspended = false
 
-    func suspendReceipt() { isReceiptSuspended = true }
     func resumeReceipt() { isReceiptSuspended = false }
+
+    /// Fires when a wallet wipe starts erasing invitations. State derived from
+    /// them elsewhere (a held receipt notice, an undelivered verdict)
+    /// subscribes and drops itself, so the wiper only talks to this store.
+    let wipeStarted = PassthroughSubject<Void, Never>()
+
+    /// The wipe's first step: refuse new links until `resumeReceipt`, tell
+    /// the subscribers, then delete every stored invitation. false when any
+    /// could not be deleted.
+    func eraseForWipe() -> Bool {
+        isReceiptSuspended = true
+        wipeStarted.send()
+        return wipeAllScopes()
+    }
 
     private static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
@@ -601,15 +640,9 @@ final class PendingInvitationStore: ObservableObject {
         ], forKey: metadataKey(invitation.scope))
     }
 
-    /// Delete every stored invitation, across networks and wallets (wallet
-    /// wipe). false when any could not be deleted.
-    @discardableResult
-    static func wipeAll() -> Bool {
-        shared.wipeAllScopes()
-    }
-
-    /// `wipeAll` for this store's storage and defaults. Metadata is removed
-    /// only for items that are gone, so a failure leaves a consistent slot.
+    /// Delete every stored invitation, across networks and wallets. Metadata
+    /// is removed only for items that are gone, so a failure leaves a
+    /// consistent slot.
     @discardableResult
     func wipeAllScopes() -> Bool {
         guard let scopes = storedScopes() else {

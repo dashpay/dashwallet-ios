@@ -56,12 +56,17 @@ final class InvitationEntry: NSObject {
     /// An explanation owed for a link taken while nothing could show it
     /// (locked, onboarding). Holds the outcome only, never the link.
     private static var heldNotice = InvitationReceiptNotice()
+    /// Drops the held notice when a wipe starts — on every wipe path, not
+    /// only the ones that reach the root's `didWipeWallet`.
+    private static let wipeSubscription = PendingInvitationStore.shared.wipeStarted
+        .sink { heldNotice.discard() }
 
     /// Present the dialog an outcome needs; true when the invitation is (or
     /// already was) stored.
     private static func handle(_ outcome: PendingInvitationStore.ReceiveOutcome,
                                presenter: UIViewController?) -> Bool {
         guard let presenter else {
+            _ = wipeSubscription
             heldNotice.hold(outcome)
             return InvitationReceiptNotice.isStored(outcome)
         }
@@ -82,8 +87,6 @@ final class InvitationEntry: NSObject {
     @objc
     static func discardHeldNotice() {
         heldNotice.discard()
-        // And a validation verdict reached off screen for the old wallet.
-        PendingInvitationViewModel.shared.discardUndeliveredOutcome()
     }
 
     private static func dialog(for outcome: PendingInvitationStore.ReceiveOutcome) -> UIViewController? {
