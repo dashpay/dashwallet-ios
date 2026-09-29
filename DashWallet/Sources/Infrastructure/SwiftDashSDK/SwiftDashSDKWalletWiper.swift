@@ -609,6 +609,10 @@ final class SwiftDashSDKWalletWiper: NSObject {
             for network in networks {
                 do {
                     let backend = try await deletionBackend(for: network, forFullWipe: true)
+                    // The live manager's synchronous `deleteWallet` throws
+                    // while a shielded stop is in flight on it. Nothing below
+                    // suspends before the deletions.
+                    await PlatformAddressSyncCoordinator.shared.awaitPendingShieldedStop()
                     var walletIds = backend.loadedWalletIds
                     walletIds.formUnion(storedWalletIdsByNetwork[network] ?? [])
 
@@ -833,6 +837,10 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 }
             }
 
+            // The live manager's synchronous `deleteWallet` throws while a
+            // shielded stop is in flight on it. Nothing below suspends before
+            // the deletions.
+            await PlatformAddressSyncCoordinator.shared.awaitPendingShieldedStop()
             for deletion in deletions {
                 try deleteWalletFromSDK(
                     deletion.walletId,

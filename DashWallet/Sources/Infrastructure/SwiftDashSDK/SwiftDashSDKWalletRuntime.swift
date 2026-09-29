@@ -892,20 +892,19 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// Both BLAST and Core SPV consume `SwiftDashSDKHost.shared`; releasing
     /// the FFI handle while either tokio task is still running would be a
     /// use-after-free, so the host stop happens strictly after both
-    /// coordinators have settled. Outside a wipe, the shielded sync loop is
-    /// still running when the host stop begins: the manager's shutdown stops
-    /// it off the main thread before destroying the handle (see
-    /// `PlatformAddressSyncCoordinator.stopBeforeHostShutdownAsync`).
+    /// coordinators have settled. The BLAST stop only starts the shielded
+    /// sync stop, which drains a pass in flight off the main thread while SPV
+    /// stops; it is awaited before the host stop.
     private func fullReset(
         lastError: String?, forWipe: Bool, preservingShieldedRecovery: Bool = false
     ) async {
         if forWipe {
             await PlatformAddressSyncCoordinator.stopForWipeAsync()
         } else {
-            await PlatformAddressSyncCoordinator.shared.stopBeforeHostShutdownAsync(
-                preservingRecovery: preservingShieldedRecovery)
+            await PlatformAddressSyncCoordinator.shared.stopAsync(preservingRecovery: preservingShieldedRecovery)
         }
         await SwiftDashSDKSPVCoordinator.shared.stopAsync(lastError: lastError)
+        await PlatformAddressSyncCoordinator.shared.awaitPendingShieldedStop()
         SwiftDashSDKWalletState.shared.clearAllState()
         // Blocking native teardown runs off-main inside stopAsync; this only
         // suspends. The shutdown metrics are logged by the host (DWLogger)
