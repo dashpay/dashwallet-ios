@@ -1,0 +1,13 @@
+{
+  "format_version": 1,
+  "release_id": "5b8cbff0-0c0f-4385-b79b-1248d2d8e142",
+  "app_id": "1206647026",
+  "bundle_id": "org.dashfoundation.dash",
+  "app_version": "9.1.2",
+  "build_number": "8",
+  "build_id": "03c26744-be42-4467-a5d1-2126466e2680",
+  "observed_state": "READY_FOR_DISTRIBUTION",
+  "manifest_path": "builds/org.dashfoundation.dash/9.1.2/8/manifest.json",
+  "manifest_sha256": "d8896af5756865f369d8d6f90659c8c0955eb30df58bc4bed23792b9c703f33c",
+  "observed_at": "2026-09-29T17:29:07Z"
+}
