@@ -689,17 +689,14 @@ class CreateUsernameViewModel: ObservableObject {
         return UsernameRegistrationFailureWording.message(forRaw: raw, username: username)
     }
 
-    /// What a failed claim does to the stored invitation: a spent or
-    /// invalid voucher is removed, a spent one reported only in untyped text
-    /// is re-checked by the Home card, and one still confirming is kept.
+    /// What a failed claim does to the stored invitation: an invalid one is
+    /// removed from this wallet, a reported spend is re-checked by the Home
+    /// card, and one still confirming is kept.
     private func handleInvitationClaimFailure(_ failure: InvitationClaimFailure) {
         if failure.endsInvitation {
-            // Spent is true in every wallet; "invalid" may be this wallet's
-            // network only. Either way named explicitly — the result can
-            // arrive after a wallet switch.
-            if failure.clearsEverywhere, let invitationURI {
-                PendingInvitationStore.shared.removeEverywhere(normalizedURI: invitationURI, reason: .definitiveOutcome)
-            } else if let pendingInvitation {
+            // "Invalid" may be this wallet's network only; named explicitly
+            // because the result can arrive after a wallet switch.
+            if let pendingInvitation {
                 PendingInvitationStore.shared.remove(pendingInvitation, reason: .definitiveOutcome)
             }
         } else if failure == .reportedUsed {

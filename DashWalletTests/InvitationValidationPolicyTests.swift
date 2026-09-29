@@ -124,13 +124,16 @@ final class InvitationValidationPolicyTests: XCTestCase {
         DWIdentityRegistrationCoordinator.CoordinatorError.identityRegistration(error)
     }
 
-    func testWrappedDefinitiveClaimFailuresAreRecognized() {
+    func testWrappedClaimFailuresAreRecognized() {
         XCTAssertEqual(
             InvitationClaimFailure.classify(wrapped(PlatformWalletError.invalidNetwork("testnet"))), .invalid)
         XCTAssertEqual(
             InvitationClaimFailure.classify(wrapped(PlatformWalletError.invalidParameter("bad link"))), .invalid)
-        XCTAssertEqual(
-            InvitationClaimFailure.classify(wrapped(PlatformWalletError.assetLockAlreadyConsumed("outpoint"))), .alreadyUsed)
+        // The wallet's typed error can concern another asset lock of the
+        // same registration (a recovered Core lock): only reported.
+        let typed = InvitationClaimFailure.classify(wrapped(PlatformWalletError.assetLockAlreadyConsumed("other outpoint")))
+        XCTAssertEqual(typed, .reportedUsed)
+        XCTAssertEqual(typed?.endsInvitation, false)
         // The shape the SDK produces for a node's consensus rejection. It is
         // not proof-verified, so it is only reported: nothing is deleted
         // until the card's status query confirms it.
@@ -138,7 +141,6 @@ final class InvitationValidationPolicyTests: XCTestCase {
             PlatformConsensusError(code: 10504, kind: .basic), "reworded by Platform")))
         XCTAssertEqual(reported, .reportedUsed)
         XCTAssertEqual(reported?.endsInvitation, false)
-        XCTAssertEqual(reported?.clearsEverywhere, false)
         XCTAssertNil(
             InvitationClaimFailure.classify(wrapped(PlatformWalletError.consensusRejection(
                 PlatformConsensusError(code: 40722, kind: .state), "some other rejection"))))
@@ -154,8 +156,7 @@ final class InvitationValidationPolicyTests: XCTestCase {
             "asset lock outpoint already completely used")))
         XCTAssertEqual(failure, .reportedUsed)
         XCTAssertEqual(failure?.endsInvitation, false)
-        XCTAssertEqual(failure?.clearsEverywhere, false)
-        XCTAssertEqual(InvitationClaimFailure.alreadyUsed.endsInvitation, true)
+        XCTAssertEqual(InvitationClaimFailure.invalid.endsInvitation, true)
     }
 
     func testFailedNameRefreshNotificationsStayWithinTheRetryBudget() {
@@ -232,9 +233,7 @@ final class InvitationValidationPolicyTests: XCTestCase {
     }
 
     func testClaimFailureWordingNamesTheSender() {
-        XCTAssertTrue(InvitationClaimFailure.alreadyUsed.message(sender: "alice").contains("alice"))
-        XCTAssertEqual(InvitationClaimFailure.reportedUsed.message(sender: "alice"),
-                       InvitationClaimFailure.alreadyUsed.message(sender: "alice"))
+        XCTAssertTrue(InvitationClaimFailure.reportedUsed.message(sender: "alice").contains("alice"))
         XCTAssertTrue(InvitationClaimFailure.invalid.message(sender: "alice").contains("alice"))
         XCTAssertFalse(InvitationClaimFailure.stillConfirming.message(sender: "alice").contains("alice"))
     }
@@ -257,9 +256,6 @@ final class InvitationValidationPolicyTests: XCTestCase {
         XCTAssertFalse(InvitationValidation.alreadyHasIdentity.clearsEverywhere)
         XCTAssertFalse(InvitationValidation.alreadyRequestedUsername.clearsEverywhere)
 
-        XCTAssertTrue(InvitationClaimFailure.alreadyUsed.clearsEverywhere)
-        XCTAssertFalse(InvitationClaimFailure.invalid.clearsEverywhere, "may be this wallet's network only")
-        XCTAssertFalse(InvitationClaimFailure.stillConfirming.clearsEverywhere)
     }
 
     // MARK: - Waiting for the wallet

@@ -234,23 +234,20 @@ enum InvitationValidationPolicy {
 
 /// How a failed invitation claim ends — pure, so it is unit-testable.
 enum InvitationClaimFailure: Equatable {
-    /// Someone else's claim spent the voucher. Ends the invitation.
-    case alreadyUsed
-    /// The link can never be claimed by this wallet. Ends the invitation.
+    /// The link can never be claimed by this wallet. Ends this wallet's copy.
     case invalid
-    /// The node says the voucher was spent — its consensus code or its
-    /// error text — but that is not proof, so the invitation stays; the
-    /// card's status check confirms it and removes it.
+    /// The claim failed with a "spent" report — the wallet's typed error,
+    /// the node's consensus code, or error text. None is proof that this
+    /// voucher was spent: the node's rejection is not proof-verified, and
+    /// the typed error can concern another asset lock in the same
+    /// registration. The invitation stays; the card's proof-verified status
+    /// query is the only thing that removes a spent voucher.
     case reportedUsed
     /// The InstantSend proof went stale before the funding block was
     /// chain-locked; the same invitation claims fine a few minutes later.
     case stillConfirming
 
-    var endsInvitation: Bool { self == .alreadyUsed || self == .invalid }
-
-    /// Spent is a fact about the voucher, in every wallet; "invalid" can be
-    /// the wrong network, a fact about this wallet only.
-    var clearsEverywhere: Bool { self == .alreadyUsed }
+    var endsInvitation: Bool { self == .invalid }
 
     /// `IdentityAssetLockTransactionOutPointAlreadyConsumedError`, as a node
     /// reports it.
@@ -262,19 +259,16 @@ enum InvitationClaimFailure: Equatable {
         let underlying = unwrap(error)
         switch underlying {
         case PlatformWalletError.assetLockAlreadyConsumed:
-            return .alreadyUsed
+            return .reportedUsed
         case PlatformWalletError.invalidParameter, PlatformWalletError.invalidNetwork:
             return .invalid
         case let error as PlatformWalletError where error.consensusError?.code == outPointAlreadyConsumedCode:
-            // The node's rejection is not proof-verified (the SDK returns it
-            // before checking a proof), so it is reported, not trusted: the
-            // card's status query confirms it before anything is deleted.
             return .reportedUsed
         default:
             break
         }
-        // An error without a consensus code: its text is not proof either.
-        // "Not yet chain-locked" is decided wallet-side and has no code.
+        // An error without a typed case or a consensus code: only its text
+        // names the cause. "Not yet chain-locked" is decided wallet-side.
         let text = String(describing: underlying).lowercased()
         if text.contains("already consumed") || text.contains("already completely used") {
             return .reportedUsed
@@ -288,7 +282,7 @@ enum InvitationClaimFailure: Equatable {
     /// The user-facing wording; `sender` is the inviter's name.
     func message(sender: String) -> String {
         switch self {
-        case .alreadyUsed, .reportedUsed:
+        case .reportedUsed:
             return String.localizedStringWithFormat(
                 NSLocalizedString("Your invitation from %@ has been already claimed", comment: ""), sender)
         case .invalid:
