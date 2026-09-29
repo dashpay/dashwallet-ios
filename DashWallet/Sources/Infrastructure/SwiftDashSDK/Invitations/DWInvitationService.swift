@@ -41,17 +41,6 @@ protocol DWInvitationServicing: AnyObject {
     /// request from the (just-claimed) local identity. PIN-gated by the
     /// contacts service; throws on resolution or send failure.
     func sendContactRequestToInviter(username: String) async throws
-    /// Whether the voucher behind `uri` has already funded an identity.
-    ///
-    /// Structural parsing is local and says nothing about whether the voucher
-    /// is still spendable, so a spent invitation used to be discovered only at
-    /// the very end of registration, as a raw SDK
-    /// "asset lock … already completely used".
-    ///
-    /// `nil` means undetermined — no wallet, or the lookup failed. Callers
-    /// must treat that as "proceed", never as "spent": a network hiccup must
-    /// not block a good invitation.
-    func isVoucherAlreadyClaimed(uri: String) async -> Bool?
 }
 
 @MainActor
@@ -92,43 +81,6 @@ final class DWInvitationService: DWInvitationServicing {
 
     var hasLocalIdentity: Bool {
         DWCurrentUserIdentityInfo.shared.identityId != nil
-    }
-
-    /// See the protocol. Platform derives a created identity's id from the
-    /// asset-lock outpoint, so the id an invitation *would* produce is knowable
-    /// before the claim — and an identity already existing under it is exactly
-    /// the "this voucher is spent" signal.
-    ///
-    /// Two round trips: the SDK refetches the funding transaction to locate the
-    /// credit output the voucher controls (it need not be output 0), then we
-    /// fetch the identity under the resulting id.
-    func isVoucherAlreadyClaimed(uri: String) async -> Bool? {
-        guard let wallet = SwiftDashSDKHost.shared.wallet,
-              let sdk = SwiftDashSDKHost.shared.sdk
-        else {
-            return nil
-        }
-        do {
-            let prospectiveId = try await wallet.invitationProspectiveIdentityId(uri: uri)
-            let base58 = prospectiveId.toBase58String()
-            let identity = try await sdk.identityGet(identityId: base58)
-            let claimed = !identity.isEmpty
-            // Logged with the id because the verdict is otherwise unauditable
-            // after the fact: the screen shows only "already used", and a
-            // not-found goes down the catch below, so a silent success left no
-            // trace of WHICH identity Platform matched.
-            Self.logger.info(
-                "🎟️ INVITE :: claimed-check verdict=\(claimed, privacy: .public) prospectiveIdentity=\(base58, privacy: .public)")
-            return claimed
-        } catch {
-            // Undetermined, not "unclaimed". A miss and a transport failure are
-            // indistinguishable at this layer, and an unclaimed invitation is
-            // *expected* to miss — so the only safe reading is "proceed" and
-            // let the claim be the authority.
-            Self.logger.info(
-                "🎟️ INVITE :: claimed-check inconclusive (proceeding): \(String(describing: error), privacy: .public)")
-            return nil
-        }
     }
 
     func sendContactRequestToInviter(username: String) async throws {

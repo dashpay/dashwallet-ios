@@ -223,6 +223,15 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // Whatever this wipe leaves behind, the app-level gate's cached view of
         // which networks hold material is about to be wrong.
         defer { WalletEnvironment.invalidateWalletMaterialCache() }
+        #if DASHPAY
+        // Invitation receipt is suspended by the first erase and stays so
+        // until the wipe — registry reset and teardown included — is over.
+        defer {
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated { PendingInvitationStore.shared.resumeReceipt() }
+            }
+        }
+        #endif
         let storage = WalletStorage()
         let walletIdsByNetwork: [Network: Set<Data>]
 
@@ -235,6 +244,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
                         "recovery wipe requires exactly one distinct SDK mnemonic; refusing legacy and SDK deletion")
                     return false
                 }
+
+                guard eraseInvitationsBeforeDestruction() else { return false }
 
                 try SwiftDashSDKKeyMigrator.removeLegacyMnemonicAccountsBeforeWipe(
                     matching: authorizedMnemonic)
@@ -255,6 +266,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 return false
             }
         } else {
+            guard eraseInvitationsBeforeDestruction() else { return false }
+
             if authorization.removesAllLegacyMnemonicAccounts {
                 do {
                     try SwiftDashSDKKeyMigrator.removeAllLegacyMnemonicAccounts()
@@ -381,6 +394,31 @@ final class SwiftDashSDKWalletWiper: NSObject {
         let teardownMs = Int((CFAbsoluteTimeGetCurrent() - teardownStarted) * 1000)
         DWLogger.log("🧹 WIPE runtime teardown awaited \(teardownMs)ms")
         return true
+    }
+
+    /// Erase every pending DashPay invitation (each holds a voucher key)
+    /// before anything else is destroyed: once the mnemonics are gone a
+    /// phrase-authorized wipe can no longer be retried, and a surviving
+    /// pre-onboarding copy would bind to the next wallet. On failure the wipe
+    /// stops here with nothing deleted, so a retry repeats it.
+    private static func eraseInvitationsBeforeDestruction() -> Bool {
+        #if DASHPAY
+        var erased = true
+        // Suspend receipt first, so no link can be stored again until the
+        // wipe is over (`performWipe` resumes it on every exit).
+        let erase = {
+            erased = MainActor.assumeIsolated {
+                PendingInvitationStore.shared.eraseForWipe()
+            }
+        }
+        if Thread.isMainThread { erase() } else { DispatchQueue.main.sync(execute: erase) }
+        if !erased {
+            logger.error("a pending DashPay invitation could not be removed from the Keychain; refusing the wipe")
+        }
+        return erased
+        #else
+        return true
+        #endif
     }
 
     /// Match each SDK-owned Keychain wallet id to the network discriminant
@@ -878,6 +916,16 @@ final class SwiftDashSDKWalletWiper: NSObject {
             }
             try manager.deleteWallet(walletId: walletId)
         }
+
+#if DASHPAY
+        // First, while a failure still leaves the wallet intact for a retry:
+        // a pending invitation held for this wallet carries a voucher key.
+        let removedWalletHex = walletId.map { String(format: "%02x", $0) }.joined()
+        guard PendingInvitationStore.shared.removeAll(walletIdHex: removedWalletHex) else {
+            logger.error("a pending DashPay invitation of the wallet could not be deleted; refusing the removal")
+            throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
+        }
+#endif
 
         do {
             try deleteWallet(walletId)

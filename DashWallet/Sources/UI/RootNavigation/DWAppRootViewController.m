@@ -25,10 +25,6 @@
 #import "DWURLRequestHandler.h"
 #import "dashwallet-Swift.h"
 
-#if DASHPAY
-#import "DWInvitationSetupState.h"
-#endif
-
 NS_ASSUME_NONNULL_BEGIN
 
 NSNotificationName const DWAppDidUnlockNotification = @"DWAppDidUnlockNotification";
@@ -49,14 +45,14 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 @property (nullable, nonatomic, weak) UIViewController *displayedLockNavigationController;
 
 @property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
-@property (nullable, nonatomic, strong) NSURL *deferredDeeplinkToProcess;
+/// An invitation arrived while locked: it is already stored; after unlock
+/// only Home is brought forward. The link itself (a voucher key) is never
+/// kept for replay.
+@property (nonatomic, assign) BOOL showsInvitationAfterUnlock;
 @property (nonatomic, assign) BOOL walletWipeInProgress;
 
 - (void)beginWipeWalletWithAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
 - (void)presentWalletWipeFailureForAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
-#if DASHPAY
-@property (null_resettable, nonatomic, strong) DWInvitationSetupState *invitationSetup;
-#endif
 
 @property (nonatomic, assign) BOOL launchingWasDeferred;
 
@@ -88,20 +84,29 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 #if DASHPAY
 - (void)handleDeeplink:(NSURL *)url {
+    // An invitation opened before the wallet exists is kept for it; the Home
+    // card offers it once setup finishes. Nothing is shown during onboarding.
     if (self.model.hasAWallet == NO) {
-        self.invitationSetup.invitation = url;
+        [DWInvitationEntry receive:url presenter:nil];
         return;
     }
 
-    // Defer URL until unlocked.
-    // This also prevents an issue with too fast unlocking via Face ID.
+    // While locked: store the invitation now and defer only bringing Home
+    // forward. Keeping the URL for replay would let a wipe from the lock
+    // screen be followed by the erased invitation being written back.
+    // Deferring navigation also avoids an issue with too fast unlocking via
+    // Face ID.
     BOOL isLocked = [self.model shouldShowLockScreen] || self.lockController;
-    if (isLocked && self.deferredDeeplinkToProcess == nil) {
-        self.deferredDeeplinkToProcess = url;
+    if (isLocked) {
+        if ([DWInvitationEntry receive:url presenter:nil]) {
+            self.showsInvitationAfterUnlock = YES;
+        }
         return;
     }
 
-    [self.mainController handleDeeplink:url definedUsername:nil];
+    if ([DWInvitationEntry receive:url presenter:self]) {
+        [self.mainController showHomeForInvitation];
+    }
 }
 #endif
 
@@ -333,19 +338,20 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
                   transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
 
 #if DASHPAY
-    if (self.invitationSetup.invitation != nil) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [self.mainController handleDeeplink:self.invitationSetup.invitation
-                                definedUsername:self.invitationSetup.chosenUsername];
-            self.invitationSetup = nil;
-        });
-    }
+    [DWInvitationEntry walletSetupDidFinish];
+    [DWInvitationEntry presentHeldNoticeFrom:self];
 #endif
 }
 
 #pragma mark - DWWipeDelegate
 
 - (void)didWipeWallet {
+    // Nothing received before the wipe may be acted on after it.
+    self.showsInvitationAfterUnlock = NO;
+#if DASHPAY
+    [DWInvitationEntry discardHeldNotice];
+#endif
+
     UIViewController *setupController = [self setupController];
     [self transitionToController:setupController
                   transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
@@ -470,15 +476,20 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             self.lockWindow.alpha = 1.0;
             [DWWalletLifecycleOverlayBridge setLockScreenVisible:NO];
 
-            if (self.deferredDeeplinkToProcess) {
+            BOOL showsInvitation = NO;
 #if DASHPAY
-                [self handleDeeplink:self.deferredDeeplinkToProcess];
-#endif
+            showsInvitation = self.showsInvitationAfterUnlock;
+            self.showsInvitationAfterUnlock = NO;
+            if (showsInvitation) {
+                [self.mainController showHomeForInvitation];
             }
-            else if (self.deferredURLToProcess) {
+            // Explain a link refused while locked (already has a username,
+            // another invitation pending, could not be saved).
+            [DWInvitationEntry presentHeldNoticeFrom:self];
+#endif
+            if (!showsInvitation && self.deferredURLToProcess) {
                 [self handleURL:self.deferredURLToProcess];
             }
-            self.deferredDeeplinkToProcess = nil;
             self.deferredURLToProcess = nil;
 
             [[NSNotificationCenter defaultCenter] postNotificationName:DWAppDidUnlockNotification
@@ -654,15 +665,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     self.lockController = controller;
     self.displayedLockNavigationController = navigationController;
 }
-
-#if DASHPAY
-- (DWInvitationSetupState *)invitationSetup {
-    if (_invitationSetup == nil) {
-        _invitationSetup = [[DWInvitationSetupState alloc] init];
-    }
-    return _invitationSetup;
-}
-#endif
 
 @end
 

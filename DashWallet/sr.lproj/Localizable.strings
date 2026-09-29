@@ -6682,3 +6682,60 @@
 "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends." = "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends.";
 "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username." = "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username.";
 "Preparing logs…" = "Preparing logs…";
+
+/* DashPay Invitations */
+"Between 20 and 23 characters" = "Between 20 and 23 characters";
+
+/* DashPay Invitations */
+"Couldn't verify the invitation. Check your connection and try again." = "Couldn't verify the invitation. Check your connection and try again.";
+
+/* DashPay Invitations */
+"Create" = "Create";
+
+/* DashPay Invitations */
+"Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
+
+/* DashPay Invitations */
+"DashPay is currently processing an invite." = "DashPay is currently processing an invite.";
+
+/* DashPay Invitations */
+"Invalid Invitation" = "Invalid Invitation";
+
+/* DashPay Invitations */
+"Invitation Error" = "Invitation Error";
+
+/* DashPay Invitations */
+"Numbers 2-9" = "Numbers 2-9";
+
+/* DashPay Invitations */
+"The invitation couldn't be saved on this device. Open the link again to retry." = "The invitation couldn't be saved on this device. Open the link again to retry.";
+
+/* DashPay Invitations */
+"The invitation is still confirming on the network. Try again in a few minutes." = "The invitation is still confirming on the network. Try again in a few minutes.";
+
+/* DashPay Invitations */
+"There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are between 20 and 23 characters long and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period." = "There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are between 20 and 23 characters long and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period.";
+
+/* DashPay Invitations */
+"Username already requested" = "Username already requested";
+
+/* DashPay Invitations */
+"Verifying invitation" = "Verifying invitation";
+
+/* DashPay Invitations */
+"Wait until syncing is finished to create a username" = "Wait until syncing is finished to create a username";
+
+/* DashPay Invitations */
+"What are contested and non-contested usernames?" = "What are contested and non-contested usernames?";
+
+/* DashPay Invitations */
+"You can only create a non-contested username using this invitation" = "You can only create a non-contested username using this invitation";
+
+/* DashPay Invitations */
+"You cannot claim this invite since you have already requested a Dash username" = "You cannot claim this invite since you have already requested a Dash username";
+
+/* DashPay Invitations */
+"Identity already found" = "Identity already found";
+
+/* DashPay Invitations */
+"You cannot claim this invite since this wallet already has a Dash identity" = "You cannot claim this invite since this wallet already has a Dash identity";

@@ -242,9 +242,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)application:(UIApplication *)application continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> *_Nullable))restorationHandler {
     // Universal links (invitations.dashpay.io applink). Firebase
     // Dynamic Links previously unwrapped these; the service was shut
-    // down in 2025, so the invitation URL is now routed directly —
-    // normalization/validation happens in the redeem flow
-    // (DWInvitationLinkNormalizer + ClaimInvitationScreen).
+    // down in 2025, so the invitation URL is now routed directly — the
+    // root controller stores it (PendingInvitationStore) and the Home card
+    // validates it.
     NSURL *url = userActivity.webpageURL;
     if (url == nil || ![DWInvitationLinkNormalizer isInvitationURL:url]) {
         return NO;
@@ -262,8 +262,9 @@ NS_ASSUME_NONNULL_BEGIN
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
 #if DASHPAY
-    // dashpay://invite (and pasted-transport) invitation links open the
-    // redeem flow; every other scheme falls through to DWURLParser.
+    // dashpay://invite (and pasted-transport) invitation links are stored
+    // (PendingInvitationStore) and shown on the Home card; every other
+    // scheme falls through to DWURLParser.
     if ([DWInvitationLinkNormalizer isInvitationURL:url]) {
         DWInitialViewController *controller = (DWInitialViewController *)self.window.rootViewController;
         if ([controller isKindOfClass:DWInitialViewController.class]) {
