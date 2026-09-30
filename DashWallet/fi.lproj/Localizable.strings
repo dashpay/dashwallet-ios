@@ -6063,6 +6063,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Historiasi, järjestyksessä";
 
+/* Identity withdrawal — Platform refused the amount as more than the balance can cover */
+"Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again." = "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again.";
+
 /* Username marketplace */
 "Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Identiteettisi saldo ei kata tätä ostoa: tarvitaan %1$@ DASH (mukaan lukien maksuvaraus), käytettävissä %2$@ DASH. Lataa identiteettisi saldoa ja yritä uudelleen.";
 
