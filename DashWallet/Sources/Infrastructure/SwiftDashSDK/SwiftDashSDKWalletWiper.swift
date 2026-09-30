@@ -521,6 +521,11 @@ final class SwiftDashSDKWalletWiper: NSObject {
     /// and must not be papered over by a weaker deletion path.
     @MainActor
     private static func deletionBackend(for network: Network, forFullWipe: Bool = false) async throws -> DeletionBackend {
+        // A shielded stop in flight keeps the SDK's manager registry
+        // read-locked for its whole drain (up to 10 s). A temporary manager
+        // built below registers there synchronously on the main actor, so it
+        // would block the UI until the drain ends.
+        await PlatformAddressSyncCoordinator.shared.awaitPendingShieldedStop()
         let host = SwiftDashSDKHost.shared
         let backend: DeletionBackend
         do {

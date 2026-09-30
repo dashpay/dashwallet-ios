@@ -411,6 +411,10 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     private func prepareShieldedForRecovery() async throws {
         // The SDK refuses `startShieldedSync` while a stop is in flight.
         await awaitPendingShieldedStop()
+        // Every recovery generation bump also cancels this operation. Past a
+        // cancelled wait, the generation read below is already the new one
+        // and would pass `isCurrentSession`.
+        try Task.checkCancellation()
         guard let recoveryNetwork = WalletEnvironment.network,
               SwiftDashSDKWalletRuntime.shared.isCoreRuntimeReady(for: recoveryNetwork) else {
             throw CancellationError()
@@ -550,9 +554,10 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// returned. The SDK's async stop cancels the loop at once, then waits up
     /// to 10 s off the main thread for a pass in flight; one that times out
     /// returns while that pass keeps running. While a stop is in flight the
-    /// SDK refuses to start the loop again, and its synchronous wallet
-    /// deletion refuses to run, so the callers that do either wait here
-    /// first, as does the runtime's `fullReset` before the host teardown.
+    /// SDK refuses to start the loop again and to run its synchronous wallet
+    /// deletion, and building a new manager blocks until the drain ends, so
+    /// the callers that do any of these wait here first, as does the
+    /// runtime's `fullReset` before the host teardown.
     public func awaitPendingShieldedStop() async {
         while let stop = pendingShieldedStop {
             await stop.value
@@ -1166,13 +1171,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         if walletManager != nil {
             await performStop(deletingPersistedWallet: false)
         }
+        lifecycleGeneration &+= 1
+        let generation = lifecycleGeneration
         // A shielded stop started by that stop, or by an earlier one, must
         // return before this start restarts the loop, possibly on the same
         // manager: the SDK refuses `startShieldedSync` while one is in flight.
+        // A network switch or stop during the wait supersedes this start.
         await awaitPendingShieldedStop()
-
-        lifecycleGeneration &+= 1
-        let generation = lifecycleGeneration
+        guard lifecycleGeneration == generation else { return }
 
         Self.logger.info("🛰️ PLATFORM-ADDR :: starting for \(network.rawValue, privacy: .public)")
 
