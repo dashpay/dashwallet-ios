@@ -1376,7 +1376,13 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             if stoppingShieldedSync {
                 do {
                     if try manager.isShieldedSyncRunning() {
-                        try manager.stopShieldedSync()
+                        // The blocking SDK overload, forced by the explicit
+                        // non-async function type: in this async context an
+                        // async `stopShieldedSync()` overload would be preferred.
+                        // TODO(shielded-stop-off-main): await the SDK's async
+                        // stop instead (dashpay/platform#5201).
+                        let blockingStop: () throws -> Void = { try manager.stopShieldedSync() }
+                        try blockingStop()
                     }
                     Self.logger.info("🛡️ SHIELD :: stopped")
                 } catch {
