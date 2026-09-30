@@ -6060,6 +6060,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "정리된 내역";
 
+/* Identity withdrawal — Platform refused the amount as more than the balance can cover */
+"Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again." = "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again.";
+
 /* Username marketplace */
 "Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "아이덴티티 잔액으로 이 구매를 감당할 수 없습니다: %1$@ DASH 필요(수수료 예비분 포함), %2$@ DASH 사용 가능. 아이덴티티 잔액을 충전하고 다시 시도하세요.";
 

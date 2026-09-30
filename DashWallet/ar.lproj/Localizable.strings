@@ -6062,6 +6062,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "سجلك، منظّمًا";
 
+/* Identity withdrawal — Platform refused the amount as more than the balance can cover */
+"Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again." = "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again.";
+
 /* Username marketplace */
 "Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "لا يكفي رصيد هويتك لهذا الشراء: المطلوب %1$@ DASH (بما في ذلك احتياطي الرسوم)، والمتاح %2$@ DASH. اشحن رصيد هويتك وأعد المحاولة.";
 

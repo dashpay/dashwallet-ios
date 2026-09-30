@@ -6060,6 +6060,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Geçmişiniz, düzenli";
 
+/* Identity withdrawal — Platform refused the amount as more than the balance can cover */
+"Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again." = "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again.";
+
 /* Username marketplace */
 "Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Kimlik bakiyeniz bu satın almayı karşılamıyor: %1$@ DASH gerekli (ücret payı dahil), %2$@ DASH mevcut. Kimlik bakiyenizi yükleyip yeniden deneyin.";
 

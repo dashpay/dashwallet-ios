@@ -173,11 +173,16 @@ final class IdentityWithdrawViewModel: ObservableObject {
         }
     }
 
-    /// Platform's balance refusal (`IdentityInsufficientBalanceError`) reads
-    /// as a protocol dump with the identity id and two raw credit figures;
-    /// say what it means instead. Reachable when the balance moved between
-    /// Continue and Confirm — the reserve above keeps Max itself clear of it.
-    /// Everything else keeps the SDK's own description.
+    /// Wording for a failed withdrawal: Platform's balance refusal
+    /// (`IdentityInsufficientBalanceError`, possible when the balance moved
+    /// between Continue and Confirm — the reserve above keeps Max itself clear
+    /// of it) as a sentence; everything else keeps the SDK's own description.
+    ///
+    /// TODO(SwiftDashSDK): the SDK this builds against still reports that
+    /// refusal from `withdrawCredits` / `transferCreditsToAddresses` as an
+    /// untyped `InvalidIdentityData` carrying the protocol text, so the
+    /// `.insufficientIdentityCredits` branch below is not reached yet. It
+    /// takes effect once the SDK ships dashpay/platform#5206, which types it.
     static func userFacingMessage(for error: Error) -> String {
         if case .insufficientIdentityCredits? = error as? PlatformWalletError {
             return NSLocalizedString(
