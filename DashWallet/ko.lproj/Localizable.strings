@@ -1289,10 +1289,6 @@
 /* Send confirm sheet */
 "Double-check the address" = "주소를 다시 확인하세요";
 
-/* Edit profile — usernames list section header
-   SDK identity profile sheet — usernames list */
-"DPNS Names" = "DPNS Names";
-
 /* SPV diagnostics */
 "Drop & rescan" = "버리고 재검색";
 

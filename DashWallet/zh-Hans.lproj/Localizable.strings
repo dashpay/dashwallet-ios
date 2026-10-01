@@ -1289,10 +1289,6 @@
 /* Send confirm sheet */
 "Double-check the address" = "请再次核对地址";
 
-/* Edit profile — usernames list section header
-   SDK identity profile sheet — usernames list */
-"DPNS Names" = "DPNS Names";
-
 /* SPV diagnostics */
 "Drop & rescan" = "丢弃并重新扫描";
 

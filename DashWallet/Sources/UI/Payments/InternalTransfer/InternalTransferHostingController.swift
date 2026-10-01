@@ -59,9 +59,12 @@ final class InternalTransferHostingController: UIViewController {
     }()
 
     private func leave(completion: (() -> Void)? = nil) {
-        // As the root of a stack presented for the top-up there is nothing
-        // to pop back to, so the whole presented stack is dismissed instead.
-        if let navigationController, navigationController.viewControllers.first !== self {
+        // As the root of a presented stack (the credit gate's top-up) there is
+        // nothing to pop back to, so the whole presented stack is dismissed.
+        let isRootOfPresentedStack = navigationController.map {
+            $0.viewControllers.first === self && $0.presentingViewController != nil
+        } ?? false
+        if let navigationController, !isRootOfPresentedStack {
             // `popViewController` takes no completion handler, so the pop's own
             // CoreAnimation transaction carries one.
             CATransaction.begin()

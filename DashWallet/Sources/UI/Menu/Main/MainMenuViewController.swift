@@ -213,23 +213,24 @@ struct MainMenuScreen: View {
                 // profile. This is also what a won vote resolves into: the
                 // request row goes, the profile appears.
                 if let username = viewModel.profileUsername {
-                    DashUIKit.MenuItem(
-                        leadingIcon: .custom("dp_user_generic", bundle: .main),
-                        title: NSLocalizedString("Profile", comment: "DashPay"),
-                        helpText: username,
-                        accessory: .none
-                    )
-                    // `MenuItem` draws no background of its own, so without a
-                    // shape only the icon and text would take the tap.
-                    .contentShape(Rectangle())
-                    .onTapGesture { editProfile() }
-                    // The row is a control: one element, named by what it
-                    // leads to, with the trait VoiceOver reads as tappable.
+                    // A button around the whole card: `MenuItem` draws no
+                    // background of its own, so the shape is what lets the
+                    // gaps and the card's padding take the tap too.
+                    Button(action: editProfile) {
+                        DashUIKit.MenuItem(
+                            leadingIcon: .custom("dp_user_generic", bundle: .main),
+                            title: NSLocalizedString("Profile", comment: "DashPay"),
+                            helpText: username,
+                            accessory: .none
+                        )
+                        .modifier(MenuViewModifier())
+                        .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    // One element, named by what it leads to.
                     .accessibilityElement(children: .combine)
-                    .accessibilityAddTraits(.isButton)
                     .accessibilityLabel(String.localizedStringWithFormat(
                         NSLocalizedString("Profile, %@", comment: "DashPay"), username))
-                    .modifier(MenuViewModifier())
                     .padding(.vertical, 20)
                     .padding(.horizontal, 20)
                 }

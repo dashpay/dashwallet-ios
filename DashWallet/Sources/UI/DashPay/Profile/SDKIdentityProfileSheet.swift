@@ -472,13 +472,16 @@ struct SDKIdentityProfileSheet: View {
 
     // MARK: - Side effects
 
+    /// Restarts the toast on a second copy: `transientToast` times a flag
+    /// that is already up only for what is left of its first run.
     private func showCopyToast() {
-        showingCopiedToast = true
+        showingCopiedToast = false
+        DispatchQueue.main.async { showingCopiedToast = true }
     }
 
     /// The design system's copy glyph, the one the receive screens use.
     private var copyIcon: some View {
-        Image(dash: .custom(DashIcon.Icons.copyOutline.rawValue, bundle: .dashUIKit))
+        Image(dash: DashIcon.Icons.copyOutline.source)
             .frame(width: 24, height: 24)
             .accessibilityLabel(NSLocalizedString("Copy", comment: ""))
     }
@@ -1034,23 +1037,32 @@ enum ProfileInfoTopic: String, Identifiable {
 struct ProfileInfoSheet: View {
     let topic: ProfileInfoTopic
 
+    private var explainer: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(topic.title)
+                .dashFont(.title1)
+                .foregroundStyle(Color.dash.primaryText)
+
+            Text(topic.message)
+                .dashFont(.body)
+                .foregroundStyle(Color.dash.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 40)
+        .padding(.vertical, 20)
+    }
+
     var body: some View {
         DashUIKit.BottomSheet.selfSizing(
             showBackButton: .constant(false)
         ) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(topic.title)
-                    .dashFont(.title1)
-                    .foregroundStyle(Color.dash.primaryText)
-
-                Text(topic.message)
-                    .dashFont(.body)
-                    .foregroundStyle(Color.dash.secondaryText)
-                    .fixedSize(horizontal: false, vertical: true)
+            // A self-sizing sheet stops short of the screen top, so at the
+            // largest text sizes the explainer scrolls instead of being cut.
+            ViewThatFits(in: .vertical) {
+                explainer
+                ScrollView { explainer }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 40)
-            .padding(.vertical, 20)
         }
     }
 }

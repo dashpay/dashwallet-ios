@@ -1611,10 +1611,6 @@
 /* Send confirm sheet */
 "Double-check the address" = "Double-check the address";
 
-/* Edit profile — usernames list section header
-   SDK identity profile sheet — usernames list */
-"DPNS Names" = "DPNS Names";
-
 /* SPV diagnostics */
 "Drop & rescan" = "Drop & rescan";
 
