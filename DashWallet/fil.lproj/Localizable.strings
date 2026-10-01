@@ -210,6 +210,12 @@
 /* SDK identity profile sheet — info button */
 "About the identity account balance" = "Tungkol sa balanse ng identity account";
 
+/* SDK identity profile sheet — explains the usernames list */
+"A username is how people find and pay you on Dash. Every username here belongs to this identity, so they all lead to the same profile, with the same display name and photo." = "A username is how people find and pay you on Dash. Every username here belongs to this identity, so they all lead to the same profile, with the same display name and photo.";
+
+/* SDK identity profile sheet — info button */
+"About usernames" = "About usernames";
+
 "Abstain" = "Umabstain";
 
 "Abstain on “%@”" = "Umabstain sa “%@”";

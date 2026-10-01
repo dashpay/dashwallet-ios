@@ -28,14 +28,15 @@ struct SDKIdentityProfileSheet: View {
     /// submission-time estimate and is replaced by Platform's
     /// `ContestVoteState.endTime` once the contest is indexed.
     @State private var pendingVotingEndTime: Date? = nil
-    @State private var copyToast: String? = nil
+    @State private var showingCopiedToast = false
     /// The identity's credit balance (credits, 1000 credits = 1 duff),
     /// refreshed from Platform when the profile opens. nil until the
     /// identity row loads; read failures retain the last known balance.
     @State private var identityBalanceCredits: UInt64?
     /// 32-byte identity id the top-up transition targets.
     @State private var identityIdData: Data?
-    @State private var showingBalanceInfo = false
+    /// The topic whose explainer sheet is up, from a section's info glyph.
+    @State private var infoTopic: ProfileInfoTopic?
     @State private var showingTopUp = false
     @State private var showingUsernameMarketplace = false
     @State private var showingUsernameRecovery = false
@@ -63,7 +64,12 @@ struct SDKIdentityProfileSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        // The design system's sheet: its header carries the title and the
+        // close button, so there is no navigation bar or Done of our own.
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("My Profile", comment: "SDK identity profile sheet — title"),
+            showBackButton: .constant(false)
+        ) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     header
@@ -102,28 +108,12 @@ struct SDKIdentityProfileSheet: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 24)
             }
-            .background(Color.dash.primaryBackground)
-            .navigationTitle(NSLocalizedString("My Profile", comment: "SDK identity profile sheet — title"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(NSLocalizedString("Done", comment: "")) {
-                        dismiss()
-                    }
-                }
-            }
-            .overlay(alignment: .bottom) {
-                if let toast = copyToast {
-                    Text(toast)
-                        .font(.subheadline)
-                        .foregroundColor(Color.dash.whiteText)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(Color.dash.backgroundOverlay)
-                        .clipShape(Capsule())
-                        .padding(.bottom, 32)
-                        .transition(.opacity)
-                }
+            .transientToast(
+                isPresented: $showingCopiedToast,
+                style: .copied,
+                message: NSLocalizedString("Copied", comment: "SDK identity profile sheet — copy confirmation"))
+            .sheet(item: $infoTopic) { topic in
+                ProfileInfoSheet(topic: topic)
             }
             .onAppear(perform: reloadIdentitySnapshot)
             .task(id: "\(identityIsLoading)-\(identityLoadAttempt)") {
@@ -308,7 +298,7 @@ struct SDKIdentityProfileSheet: View {
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
                 Button {
-                    showingBalanceInfo = true
+                    infoTopic = .identityBalance
                 } label: {
                     Image(systemName: "info.circle")
                         .font(.caption)
@@ -337,16 +327,6 @@ struct SDKIdentityProfileSheet: View {
                 }
             }
         }
-        .alert(
-            NSLocalizedString("Identity Account Balance", comment: "SDK identity profile sheet — the identity's credit balance"),
-            isPresented: $showingBalanceInfo
-        ) {
-            Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
-        } message: {
-            Text(NSLocalizedString(
-                "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits.",
-                comment: "SDK identity profile sheet — explains the identity credit balance"))
-        }
         .sheet(isPresented: $showingTopUp) {
             if let identityIdData {
                 IdentityTopUpSheet(
@@ -371,9 +351,20 @@ struct SDKIdentityProfileSheet: View {
     /// with an explicit voting status, never in this owned-names list.
     private var namesSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString("DPNS Names", comment: "SDK identity profile sheet — usernames list"))
-                .font(.caption)
-                .foregroundColor(.dash.secondaryText)
+            HStack(spacing: 5) {
+                Text(NSLocalizedString("Usernames", comment: "SDK identity profile sheet — usernames list"))
+                    .font(.caption)
+                    .foregroundColor(.dash.secondaryText)
+                Button {
+                    infoTopic = .usernames
+                } label: {
+                    Image(systemName: "info.circle")
+                        .font(.caption)
+                        .foregroundColor(.dash.blue)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(NSLocalizedString("About usernames", comment: "SDK identity profile sheet — info button"))
+            }
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(dpnsNames.enumerated()), id: \.offset) { index, name in
                     HStack {
@@ -385,8 +376,7 @@ struct SDKIdentityProfileSheet: View {
                             UIPasteboard.general.string = name
                             showCopyToast()
                         } label: {
-                            Image(systemName: "doc.on.doc")
-                                .foregroundColor(.dash.secondaryText)
+                            copyIcon
                         }
                         .buttonStyle(.plain)
                     }
@@ -438,10 +428,14 @@ struct SDKIdentityProfileSheet: View {
             Text(title)
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
-            HStack(alignment: .top, spacing: 8) {
+            HStack(alignment: .center, spacing: 8) {
+                // One line, cut in the middle: the start and end are what
+                // people compare by eye; Copy still takes the full value.
                 Text(value)
                     .font(monospaced ? .system(.body, design: .monospaced) : .body)
                     .foregroundColor(.dash.primaryText)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 if copyable {
@@ -449,8 +443,7 @@ struct SDKIdentityProfileSheet: View {
                         UIPasteboard.general.string = value
                         showCopyToast()
                     } label: {
-                        Image(systemName: "doc.on.doc")
-                            .foregroundColor(.dash.secondaryText)
+                        copyIcon
                     }
                     .buttonStyle(.plain)
                 }
@@ -480,10 +473,14 @@ struct SDKIdentityProfileSheet: View {
     // MARK: - Side effects
 
     private func showCopyToast() {
-        copyToast = NSLocalizedString("Copied", comment: "SDK identity profile sheet — copy confirmation")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            withAnimation { copyToast = nil }
-        }
+        showingCopiedToast = true
+    }
+
+    /// The design system's copy glyph, the one the receive screens use.
+    private var copyIcon: some View {
+        Image(dash: .custom(DashIcon.Icons.copyOutline.rawValue, bundle: .dashUIKit))
+            .frame(width: 24, height: 24)
+            .accessibilityLabel(NSLocalizedString("Copy", comment: ""))
     }
 
 
@@ -995,6 +992,65 @@ struct IdentityTopUpSheet: View {
                 onToppedUp(newBalance)
                 dismiss()
             }
+        }
+    }
+}
+
+
+// MARK: - Info sheets
+
+/// A section of the profile whose info glyph explains it.
+enum ProfileInfoTopic: String, Identifiable {
+    case identityBalance
+    case usernames
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .identityBalance:
+            return NSLocalizedString("Identity Account Balance", comment: "SDK identity profile sheet — the identity's credit balance")
+        case .usernames:
+            return NSLocalizedString("Usernames", comment: "SDK identity profile sheet — usernames list")
+        }
+    }
+
+    var message: String {
+        switch self {
+        case .identityBalance:
+            return NSLocalizedString(
+                "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits.",
+                comment: "SDK identity profile sheet — explains the identity credit balance")
+        case .usernames:
+            return NSLocalizedString(
+                "A username is how people find and pay you on Dash. Every username here belongs to this identity, so they all lead to the same profile, with the same display name and photo.",
+                comment: "SDK identity profile sheet — explains the usernames list")
+        }
+    }
+}
+
+/// The explainer behind a profile section's info glyph, in the design
+/// system's bottom sheet — the same shape as Settings' Advanced mode one.
+struct ProfileInfoSheet: View {
+    let topic: ProfileInfoTopic
+
+    var body: some View {
+        DashUIKit.BottomSheet.selfSizing(
+            showBackButton: .constant(false)
+        ) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(topic.title)
+                    .dashFont(.title1)
+                    .foregroundStyle(Color.dash.primaryText)
+
+                Text(topic.message)
+                    .dashFont(.body)
+                    .foregroundStyle(Color.dash.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 40)
+            .padding(.vertical, 20)
         }
     }
 }
