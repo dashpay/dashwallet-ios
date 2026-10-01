@@ -162,8 +162,19 @@ struct SettingsScreen: View {
         } else if let action = item.action {
             // For a plain toggle row the action is the toggle itself, so a tap
             // anywhere on the row flips the switch.
-            Button(action: action) { content }
-                .buttonStyle(.plain)
+            if item.showToggle {
+                // One element for VoiceOver: the row reads as the switch it
+                // flips, with its state, rather than a stateless button next
+                // to a second switch element.
+                Button(action: action) { content }
+                    .buttonStyle(.plain)
+                    .accessibilityRepresentation {
+                        Toggle(item.title, isOn: Self.toggleBinding(item))
+                    }
+            } else {
+                Button(action: action) { content }
+                    .buttonStyle(.plain)
+            }
         } else {
             content
         }
