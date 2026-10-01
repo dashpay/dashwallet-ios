@@ -174,8 +174,6 @@ final class ShieldedRecoveryViewModel: ObservableObject {
             // The shield consumed the lock; refresh so the history row flips
             // pending → completed without waiting for the next sync pass.
             if case .success = coordinator.phase {
-                // The failure that left this lock pending is no longer true.
-                InternalTransferRunner.shared.clearFailureNotice()
                 await ShieldedTxLookup.shared.refresh(reason: "shield-recovery-completed")
             }
         }

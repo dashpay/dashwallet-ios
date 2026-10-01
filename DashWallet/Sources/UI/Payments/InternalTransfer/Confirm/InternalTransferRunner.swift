@@ -103,7 +103,7 @@ final class InternalTransferRunner: ObservableObject {
     /// outcome arrives with nothing of the transfer's own left on screen —
     /// this is how it reaches the surface the user actually landed on.
     /// Cleared by that surface once shown — except a failure, which stays
-    /// until the user closes it or `clearFailureNotice()` retires it.
+    /// until the user closes it or the next transfer replaces it.
     @Published var notice: Notice? {
         didSet { noticeRaisedAt = notice == nil ? nil : Date() }
     }
@@ -138,16 +138,6 @@ final class InternalTransferRunner: ObservableObject {
         }
     }
 
-    /// Retires a failure notice that something else has made untrue — a
-    /// recovery that succeeded, or a switch to another wallet or network,
-    /// where the failed transfer does not exist. Other notices time out on
-    /// their own and are left alone.
-    func clearFailureNotice() {
-        if notice?.isFailure == true {
-            notice = nil
-        }
-    }
-
     private let coordinator = ShieldedTransferCoordinator()
     private let topUpExecutor = IdentityTopUpViewModel()
     private let withdrawExecutor = IdentityWithdrawViewModel()
@@ -162,14 +152,6 @@ final class InternalTransferRunner: ObservableObject {
         coordinator.$phase
             .sink { [weak self] routePhase in
                 self?.apply(routePhase)
-            }
-            .store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
-            .merge(with: NotificationCenter.default.publisher(for: .DWCurrentNetworkDidChange))
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.clearFailureNotice()
             }
             .store(in: &cancellables)
     }
