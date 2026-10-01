@@ -146,6 +146,9 @@ struct SettingsScreen: View {
                 ? .toggle(isOn: Self.toggleBinding(item))
                 : (item.details.map { .text($0) } ?? .none)
         )
+        // `MenuItem` draws no background of its own, so a plain-style button
+        // around it would answer only on the icon and text, not on the gaps.
+        .contentShape(Rectangle())
 
         if item.showToggle {
             if let infoAction = item.infoAction {
