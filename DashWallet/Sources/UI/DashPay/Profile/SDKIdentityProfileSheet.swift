@@ -294,7 +294,7 @@ struct SDKIdentityProfileSheet: View {
     private var identityBalanceRow: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 5) {
-                Text(NSLocalizedString("Identity Account Balance", comment: "SDK identity profile sheet — the identity's credit balance"))
+                Text(ProfileInfoTopic.identityBalance.title)
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
                 Button {
@@ -303,6 +303,10 @@ struct SDKIdentityProfileSheet: View {
                     Image(systemName: "info.circle")
                         .font(.caption)
                         .foregroundColor(.dash.blue)
+                        // A 44 pt tap area that leaves the caption's layout alone.
+                        .padding(14)
+                        .contentShape(Rectangle())
+                        .padding(-14)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(NSLocalizedString("About the identity account balance", comment: "SDK identity profile sheet — info button"))
@@ -352,7 +356,7 @@ struct SDKIdentityProfileSheet: View {
     private var namesSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 5) {
-                Text(NSLocalizedString("Usernames", comment: "SDK identity profile sheet — usernames list"))
+                Text(ProfileInfoTopic.usernames.title)
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
                 Button {
@@ -361,6 +365,10 @@ struct SDKIdentityProfileSheet: View {
                     Image(systemName: "info.circle")
                         .font(.caption)
                         .foregroundColor(.dash.blue)
+                        // A 44 pt tap area that leaves the caption's layout alone.
+                        .padding(14)
+                        .contentShape(Rectangle())
+                        .padding(-14)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(NSLocalizedString("About usernames", comment: "SDK identity profile sheet — info button"))

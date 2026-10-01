@@ -86,12 +86,11 @@ final class InternalTransferHostingController: UIViewController {
     /// while the tab swapped underneath it, and the two read as one jolt. Held
     /// onto beforehand because popping detaches this controller, and
     /// `tabBarController` is nil by the time the completion runs. A presented
-    /// stack has no tab bar of its own, so its Home comes from the presenter.
+    /// stack has no tab bar of its own, so the tab bar is searched down from
+    /// the window's root, which is a container rather than the tab bar itself.
     private func leaveForHistory() {
-        let presenter = navigationController?.presentingViewController ?? presentingViewController
         let tabBarController = (tabBarController
-            ?? presenter as? UITabBarController
-            ?? presenter?.tabBarController) as? MainTabbarController
+            ?? view.window?.rootViewController?.dw_firstTabBarController()) as? MainTabbarController
         leave { tabBarController?.showHome() }
     }
 
