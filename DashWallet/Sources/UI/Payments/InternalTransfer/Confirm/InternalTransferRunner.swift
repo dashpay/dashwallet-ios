@@ -102,7 +102,8 @@ final class InternalTransferRunner: ObservableObject {
     /// The confirm sheet closes as soon as the transfer starts, so the
     /// outcome arrives with nothing of the transfer's own left on screen —
     /// this is how it reaches the surface the user actually landed on.
-    /// Cleared by that surface once shown.
+    /// Cleared by that surface once shown — except a failure, which stays
+    /// until the user closes it or `clearFailureNotice()` retires it.
     @Published var notice: Notice? {
         didSet { noticeRaisedAt = notice == nil ? nil : Date() }
     }
@@ -111,8 +112,9 @@ final class InternalTransferRunner: ObservableObject {
     ///
     /// The toast lives on `HomeView`, and a notice raised while the user is
     /// elsewhere stays set until something clears it. Without a timestamp the
-    /// next appearance of that screen would announce an outcome from an
-    /// arbitrary time ago as if it had just happened.
+    /// next appearance of that screen would announce a progress or success
+    /// notice from an arbitrary time ago as if it had just happened. A failure
+    /// is exempt: it is shown whenever the user next arrives, until closed.
     private(set) var noticeRaisedAt: Date?
 
     /// The things worth saying, in the order they can happen.
@@ -127,6 +129,23 @@ final class InternalTransferRunner: ObservableObject {
         /// whose receipt has not landed.
         case submitted
         case failed(String)
+
+        /// A failure stays up until the user closes it: its reason is the one
+        /// thing the history will not show.
+        var isFailure: Bool {
+            if case .failed = self { return true }
+            return false
+        }
+    }
+
+    /// Retires a failure notice that something else has made untrue — a
+    /// recovery that succeeded, or a switch to another wallet or network,
+    /// where the failed transfer does not exist. Other notices time out on
+    /// their own and are left alone.
+    func clearFailureNotice() {
+        if notice?.isFailure == true {
+            notice = nil
+        }
     }
 
     private let coordinator = ShieldedTransferCoordinator()
@@ -143,6 +162,14 @@ final class InternalTransferRunner: ObservableObject {
         coordinator.$phase
             .sink { [weak self] routePhase in
                 self?.apply(routePhase)
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
+            .merge(with: NotificationCenter.default.publisher(for: .DWCurrentNetworkDidChange))
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.clearFailureNotice()
             }
             .store(in: &cancellables)
     }

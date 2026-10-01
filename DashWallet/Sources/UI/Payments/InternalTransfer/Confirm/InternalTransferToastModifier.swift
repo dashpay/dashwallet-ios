@@ -105,10 +105,3 @@ private struct InternalTransferToastModifier: ViewModifier {
         }
     }
 }
-
-private extension InternalTransferRunner.Notice {
-    var isFailure: Bool {
-        if case .failed = self { return true }
-        return false
-    }
-}
