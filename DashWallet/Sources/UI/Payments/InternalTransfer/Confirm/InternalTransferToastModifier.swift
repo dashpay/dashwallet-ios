@@ -45,7 +45,7 @@ private struct InternalTransferToastModifier: ViewModifier {
                     DashUIKit.Toast(
                         style: style(for: notice),
                         message: message(for: notice),
-                        onDismiss: notice.isFailure ? { runner.notice = nil } : nil)
+                        onDismiss: notice.isFailure ? { dismiss(notice) } : nil)
                         .padding(.horizontal, 20)
                         .padding(.bottom, 16)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -71,6 +71,14 @@ private struct InternalTransferToastModifier: ViewModifier {
                 guard !Task.isCancelled else { return }
                 runner.notice = nil
             }
+    }
+
+    /// Closes the notice this toast was drawn for, not whatever has replaced
+    /// it since — a newer outcome must not be swept away by a stale tap.
+    private func dismiss(_ notice: InternalTransferRunner.Notice) {
+        if runner.notice == notice {
+            runner.notice = nil
+        }
     }
 
     private func style(for notice: InternalTransferRunner.Notice) -> ToastStyle {
