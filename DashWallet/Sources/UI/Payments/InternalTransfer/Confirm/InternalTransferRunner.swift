@@ -105,7 +105,8 @@ final class InternalTransferRunner: ObservableObject {
     /// Cleared by that surface once shown — except a failure, which stays
     /// until the user closes it or the next transfer replaces it.
     @Published var notice: Notice? {
-        didSet { noticeRaisedAt = notice == nil ? nil : Date() }
+        // A failure is not age-gated, so only the notices that time out are stamped.
+        didSet { noticeRaisedAt = (notice == nil || notice?.isFailure == true) ? nil : Date() }
     }
 
     /// When the current notice was raised.
@@ -114,7 +115,7 @@ final class InternalTransferRunner: ObservableObject {
     /// elsewhere stays set until something clears it. Without a timestamp the
     /// next appearance of that screen would announce a progress or success
     /// notice from an arbitrary time ago as if it had just happened. A failure
-    /// is exempt: it is shown whenever the user next arrives, until closed.
+    /// is never stamped: it is shown whenever the user next arrives, until closed.
     private(set) var noticeRaisedAt: Date?
 
     /// The things worth saying, in the order they can happen.
@@ -175,7 +176,11 @@ final class InternalTransferRunner: ObservableObject {
     /// keeps that inner gate from asking a second time.
     func start(_ request: InternalTransferRequest) async -> StartOutcome {
         guard phase != .inFlight, !isAwaitingAuthorization else {
-            notice = .busy
+            // A failure still up outranks the busy notice: it closes only by
+            // hand, and the busy one would time out and take its reason along.
+            if notice?.isFailure != true {
+                notice = .busy
+            }
             return .busy
         }
 
