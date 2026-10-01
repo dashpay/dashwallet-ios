@@ -46,6 +46,12 @@ private struct InternalTransferToastModifier: ViewModifier {
                         style: style(for: notice),
                         message: message(for: notice),
                         onDismiss: notice.isFailure ? { dismiss(notice) } : nil)
+                        // The pinned DashUIKit draws the close glyph unlabelled,
+                        // and for a failure it is the only way out — VoiceOver
+                        // gets it as a named action on the toast.
+                        .accessibilityAction(named: Text(NSLocalizedString("Close", comment: ""))) {
+                            if notice.isFailure { dismiss(notice) }
+                        }
                         .padding(.horizontal, 20)
                         .padding(.bottom, 16)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
