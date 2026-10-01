@@ -293,24 +293,7 @@ struct SDKIdentityProfileSheet: View {
     /// user-selected balance, Shielded by default.
     private var identityBalanceRow: some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 5) {
-                Text(ProfileInfoTopic.identityBalance.title)
-                    .font(.caption)
-                    .foregroundColor(.dash.secondaryText)
-                Button {
-                    infoTopic = .identityBalance
-                } label: {
-                    Image(systemName: "info.circle")
-                        .font(.caption)
-                        .foregroundColor(.dash.blue)
-                        // A 44 pt tap area that leaves the caption's layout alone.
-                        .padding(14)
-                        .contentShape(Rectangle())
-                        .padding(-14)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(NSLocalizedString("About the identity account balance", comment: "SDK identity profile sheet — info button"))
-            }
+            sectionHeader(.identityBalance)
             HStack(alignment: .center, spacing: 8) {
                 Text(identityBalanceFormatted)
                     .font(.body)
@@ -355,24 +338,7 @@ struct SDKIdentityProfileSheet: View {
     /// with an explicit voting status, never in this owned-names list.
     private var namesSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 5) {
-                Text(ProfileInfoTopic.usernames.title)
-                    .font(.caption)
-                    .foregroundColor(.dash.secondaryText)
-                Button {
-                    infoTopic = .usernames
-                } label: {
-                    Image(systemName: "info.circle")
-                        .font(.caption)
-                        .foregroundColor(.dash.blue)
-                        // A 44 pt tap area that leaves the caption's layout alone.
-                        .padding(14)
-                        .contentShape(Rectangle())
-                        .padding(-14)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(NSLocalizedString("About usernames", comment: "SDK identity profile sheet — info button"))
-            }
+            sectionHeader(.usernames)
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(dpnsNames.enumerated()), id: \.offset) { index, name in
                     HStack {
@@ -496,6 +462,28 @@ struct SDKIdentityProfileSheet: View {
         showingCopiedToast = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             showingCopiedToast = true
+        }
+    }
+
+    /// A section caption with the info glyph that opens its explainer. The
+    /// glyph's tap area is a 44 pt square that leaves the caption's layout alone.
+    private func sectionHeader(_ topic: ProfileInfoTopic) -> some View {
+        HStack(spacing: 5) {
+            Text(topic.title)
+                .font(.caption)
+                .foregroundColor(.dash.secondaryText)
+            Button {
+                infoTopic = topic
+            } label: {
+                Image(systemName: "info.circle")
+                    .font(.caption)
+                    .foregroundColor(.dash.blue)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+                    .padding(-16)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(topic.infoButtonLabel)
         }
     }
 
@@ -1038,6 +1026,15 @@ enum ProfileInfoTopic: String, Identifiable {
             return NSLocalizedString("Identity Account Balance", comment: "SDK identity profile sheet — the identity's credit balance")
         case .usernames:
             return NSLocalizedString("Usernames", comment: "SDK identity profile sheet — usernames list")
+        }
+    }
+
+    var infoButtonLabel: String {
+        switch self {
+        case .identityBalance:
+            return NSLocalizedString("About the identity account balance", comment: "SDK identity profile sheet — info button")
+        case .usernames:
+            return NSLocalizedString("About usernames", comment: "SDK identity profile sheet — info button")
         }
     }
 

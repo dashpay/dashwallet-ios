@@ -50,9 +50,8 @@ final class InternalTransferHostingController: UIViewController {
             // Confirm hands the transfer to `InternalTransferRunner`; the
             // screen waits for the confirm sheet to finish closing and then
             // calls this, so it fires while the transfer is still running.
-            // Leave for the history, where the outcome shows up: the home tab
-            // when this was pushed inside the tab bar, otherwise just pop or
-            // dismiss whatever presented us.
+            // Leave for the history, where the outcome shows up: pop or
+            // dismiss, then switch the tab bar to Home.
             self?.leaveForHistory()
         }
         // Only inside a navigation stack: presented bare as a sheet there is
