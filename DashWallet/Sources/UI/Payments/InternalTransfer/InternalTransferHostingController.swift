@@ -48,8 +48,10 @@ final class InternalTransferHostingController: UIViewController {
             // dismiss whatever presented us.
             self?.leaveForHistory()
         }
-        // Only when pushed: presented as a sheet there is nothing to go back
-        // to, and the grabber is the way out.
+        // Only inside a navigation stack: presented bare as a sheet there is
+        // nothing to go back to, and the grabber is the way out. As the root
+        // of a full-screen stack (the top-up) Back is the only way out, and
+        // `leave()` dismisses rather than pops.
         if navigationController != nil {
             screen.onBack = { [weak self] in self?.leave() }
         }
@@ -57,7 +59,9 @@ final class InternalTransferHostingController: UIViewController {
     }()
 
     private func leave(completion: (() -> Void)? = nil) {
-        if let navigationController {
+        // As the root of a stack presented for the top-up there is nothing
+        // to pop back to, so the whole presented stack is dismissed instead.
+        if let navigationController, navigationController.viewControllers.first !== self {
             // `popViewController` takes no completion handler, so the pop's own
             // CoreAnimation transaction carries one.
             CATransaction.begin()
