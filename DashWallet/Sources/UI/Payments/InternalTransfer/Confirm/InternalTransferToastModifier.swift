@@ -33,15 +33,19 @@ extension View {
 private struct InternalTransferToastModifier: ViewModifier {
     @ObservedObject var runner: InternalTransferRunner
 
-    /// Long enough to read a failure reason, which is the only one that says
-    /// something the history will not.
+    /// How long a progress or success notice stays up. A failure has no
+    /// timer: its reason is the one thing the history will not show, so it
+    /// stays until the user closes it.
     private static let duration: TimeInterval = 3
 
     func body(content: Content) -> some View {
         content
             .overlay(alignment: .bottom) {
                 if let notice = runner.notice {
-                    DashUIKit.Toast(style: style(for: notice), message: message(for: notice))
+                    DashUIKit.Toast(
+                        style: style(for: notice),
+                        message: message(for: notice),
+                        onDismiss: notice.isFailure ? { runner.notice = nil } : nil)
                         .padding(.horizontal, 20)
                         .padding(.bottom, 16)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -49,7 +53,7 @@ private struct InternalTransferToastModifier: ViewModifier {
             }
             .animation(.easeInOut(duration: 0.3), value: runner.notice)
             .task(id: runner.notice) {
-                guard runner.notice != nil else { return }
+                guard let notice = runner.notice, !notice.isFailure else { return }
 
                 // A notice raised while this screen was away has already spent
                 // its life unseen — announcing it now would date-stamp an old
@@ -99,5 +103,12 @@ private struct InternalTransferToastModifier: ViewModifier {
         case .failed(let reason):
             return reason
         }
+    }
+}
+
+private extension InternalTransferRunner.Notice {
+    var isFailure: Bool {
+        if case .failed = self { return true }
+        return false
     }
 }
