@@ -42,10 +42,12 @@ public final class SendCoinsService: NSObject {
     /// - Returns: the wire-order txid of the broadcast transaction
     ///   (`Transaction.txHashData` convention).
     func sendSwapKitSwap(depositAddress: String, dashAmount: UInt64, memo: String?) async throws -> Data {
-        // Serialise swaps: don't start a new one until the previous swap tx is InstantSend-locked.
-        if SwapPendingGate.shared.isAwaitingISLock {
+        // Serialise swaps: don't start a new one while another deposit is being
+        // broadcast or until the previous swap tx is InstantSend-locked.
+        guard SwapPendingGate.shared.beginSubmission() else {
             throw DashSpendError.swapAwaitingInstantLock
         }
+        defer { SwapPendingGate.shared.endSubmission() }
 
         let txidWire: Data
         do {

@@ -425,11 +425,15 @@ struct ExternalSendAmountScreen: View {
                 SendStepHeader(onBack: onBack)
                     .padding(.horizontal, 20)
                     .padding(.top, 10)
+                    // Leaving mid-broadcast would drop the outcome it shows.
+                    .disabled(viewModel.isSendingCore)
             }
             #else
             SendStepHeader(onBack: onBack)
                 .padding(.horizontal, 20)
                 .padding(.top, 10)
+                // Leaving mid-broadcast would drop the outcome it shows.
+                .disabled(viewModel.isSendingCore)
             #endif
 
             ScrollView {
@@ -467,6 +471,9 @@ struct ExternalSendAmountScreen: View {
                 .padding(.bottom, 8)
             }
             .scrollBounceBehavior(.basedOnSize)
+            // The address and From cards lead back; the amount must not change
+            // under a send that is already on the network.
+            .disabled(viewModel.isSendingCore)
 
             keyboardSection
         }
@@ -555,7 +562,7 @@ struct ExternalSendAmountScreen: View {
                 ? NSLocalizedString("Send", comment: "")
                 : NSLocalizedString("Continue", comment: ""),
             actionEnabled: viewModel.canContinue,
-            inProgress: isContactSendInFlight,
+            inProgress: isContactSendInFlight || viewModel.isSendingCore,
             actionHandler: continueAction
         )
     }

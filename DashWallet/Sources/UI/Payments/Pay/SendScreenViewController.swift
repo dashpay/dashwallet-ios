@@ -229,6 +229,20 @@ extension DWBasePayViewController {
             },
             onSendCompleted: onSendCompleted)
         let host = UIHostingController(rootView: screen)
+        // Kept set after the amount step is gone: it answers false then, and a
+        // later send from this controller gets the HUD instead.
+        sendInProgressHandler = { [weak self, weak viewModel, weak host] inProgress in
+            if !inProgress {
+                self?.navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+            }
+            guard let viewModel, let host, host.navigationController != nil else { return false }
+            viewModel.setSendingCore(inProgress)
+            if inProgress {
+                // The edge swipe would pop the amount step the outcome shows on.
+                self?.navigationController?.interactivePopGestureRecognizer?.isEnabled = false
+            }
+            return true
+        }
         navigationController?.pushViewController(host, animated: true)
     }
 

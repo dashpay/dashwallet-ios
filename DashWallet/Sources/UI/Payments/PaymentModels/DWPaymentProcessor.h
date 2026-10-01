@@ -53,6 +53,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
      didSendWithTxidWire:(NSData *)txidWire;
 
+// Broadcast progress
+
+// Brackets the network wait of a confirmed send (up to about a minute when no peer
+// answers): YES right before the broadcast starts, NO right before its outcome is
+// reported through `didSendWithTxidWire:` or `didFailWithError:`.
+- (void)paymentProcessor:(DWPaymentProcessor *)processor
+     broadcastInProgress:(BOOL)inProgress;
+
 // Progress HUD
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor

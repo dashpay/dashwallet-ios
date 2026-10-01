@@ -52,12 +52,23 @@ final class PaymentController: NSObject {
     @objc weak var presentationContextProvider: PaymentControllerPresentationContextProviding?
 
     @objc public var locksBalance = false
+    /// Called with true when a confirmed send starts waiting for the network,
+    /// and with false right before its outcome is shown. Returns whether the
+    /// screen shows that progress itself; when it does not (or no handler is
+    /// set), a "Sending" HUD covers the screen for the wait.
+    @objc var sendInProgressHandler: ((Bool) -> Bool)?
 
     private var paymentProcessor: DWPaymentProcessor
     private var fiatCurrency: String = App.fiatCurrency
     private weak var paymentOutput: DWPaymentOutput?
     private weak var confirmViewController: ConfirmPaymentViewController?
     private weak var provideAmountViewController: AmountProviding?
+    /// The presented controller held modal while a send is in progress, and
+    /// whether it was modal before.
+    private weak var sendInProgressModalHost: UIViewController?
+    private var sendInProgressModalHostWasModal = false
+    /// The view carrying the "Sending" HUD when no `sendInProgressHandler` is set.
+    private weak var sendInProgressHUDView: UIView?
 
     static func shouldReenableSending(after error: NSError) -> Bool {
         !WalletSendService.isBroadcastUnknownError(error)
@@ -197,6 +208,37 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
         vc.dismiss(animated: true) {
             finishBlock()
+        }
+    }
+
+    /// While the send waits, its screen must stay: swiped away, the outcome
+    /// would have nowhere to show, and a live screen would take a second tap —
+    /// a second payment. A screen that shows the progress itself says so
+    /// through `sendInProgressHandler`; on every other one a "Sending" HUD
+    /// covers the screen and blocks touches for the wait.
+    func paymentProcessor(_ processor: DWPaymentProcessor, broadcastInProgress inProgress: Bool) {
+        let shownByScreen = sendInProgressHandler?(inProgress) ?? false
+        guard inProgress else {
+            sendInProgressModalHost?.isModalInPresentation = sendInProgressModalHostWasModal
+            sendInProgressModalHost = nil
+            sendInProgressHUDView?.dw_hideProgressHUD()
+            sendInProgressHUDView = nil
+            return
+        }
+        guard let anchor = presentationAnchor else { return }
+        // Both resolved from the anchor's own stack, not `topController()`: a
+        // PIN prompt still finishing its dismissal would otherwise be the one
+        // held modal and the one carrying the HUD.
+        let stack = anchor.navigationController ?? anchor
+        var presented: UIViewController = stack
+        while let parent = presented.parent { presented = parent }
+        sendInProgressModalHost = presented
+        sendInProgressModalHostWasModal = presented.isModalInPresentation
+        presented.isModalInPresentation = true
+        if !shownByScreen {
+            let screen = (stack as? UINavigationController)?.topViewController ?? stack
+            screen.view.dw_showProgressHUD(withMessage: NSLocalizedString("Sending", comment: ""))
+            sendInProgressHUDView = screen.view
         }
     }
 

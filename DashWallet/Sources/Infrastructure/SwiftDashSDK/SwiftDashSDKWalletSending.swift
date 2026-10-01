@@ -29,7 +29,7 @@ final class SwiftDashSDKWalletSending: WalletSending {
             throw SwiftDashSDKTransactionSender.SendError.invalidInput(
                 "PreparedSend carries no SDK transaction handle")
         }
-        let outcome = try SwiftDashSDKTransactionSender.broadcast(tx)
+        let outcome = try await SwiftDashSDKTransactionSender.broadcast(tx)
         do {
             _ = try SwiftDashSDKTransactionSender.requireAccepted(outcome)
         } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(_, let reason) {

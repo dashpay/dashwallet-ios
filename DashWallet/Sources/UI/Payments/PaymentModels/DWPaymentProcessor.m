@@ -147,11 +147,14 @@ static NSString *DWReversedHexString(NSData *data) {
         return;
     }
 
+    [self.delegate paymentProcessor:self broadcastInProgress:YES];
+
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
         NSError *error = nil;
         [preparedSend broadcastAndReturnError:&error];
 
         dispatch_async(dispatch_get_main_queue(), ^{
+            [self.delegate paymentProcessor:self broadcastInProgress:NO];
             if (error) {
                 NSString *title = NSLocalizedString(@"Couldn't make payment", nil);
                 if ([DWWalletSendService isBroadcastUnknownError:error]) {

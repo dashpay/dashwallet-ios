@@ -577,16 +577,7 @@ extension CrowdNode {
         // the stored account rather than resetting it. false is returned only
         // for an address that cannot belong to this wallet (not a P2PKH
         // address of the running network).
-        let owns: CrowdNodeMessageSigner.Ownership
-        if Thread.isMainThread {
-            owns = MainActor.assumeIsolated { CrowdNodeMessageSigner.ownership(of: accountAddress) }
-        } else {
-            var captured: CrowdNodeMessageSigner.Ownership = .walletUnavailable
-            DispatchQueue.main.sync {
-                captured = MainActor.assumeIsolated { CrowdNodeMessageSigner.ownership(of: accountAddress) }
-            }
-            owns = captured
-        }
+        let owns = MainThread.sync { CrowdNodeMessageSigner.ownership(of: accountAddress) }
 
         switch CrowdNode.storedAccountVerdict(ownership: owns) {
         case .alien:
