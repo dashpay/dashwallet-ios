@@ -210,6 +210,12 @@
 /* SDK identity profile sheet — info button */
 "About the identity account balance" = "關於身分帳戶餘額";
 
+/* SDK identity profile sheet — explains the usernames list */
+"A username is how people find and pay you on Dash. Every username here belongs to this identity, so they all lead to the same profile, with the same display name and photo." = "A username is how people find and pay you on Dash. Every username here belongs to this identity, so they all lead to the same profile, with the same display name and photo.";
+
+/* SDK identity profile sheet — info button */
+"About usernames" = "About usernames";
+
 "Abstain" = "棄權";
 
 "Abstain on “%@”" = "在「%@」上棄權";
@@ -1282,10 +1288,6 @@
 
 /* Send confirm sheet */
 "Double-check the address" = "請再次核對位址";
-
-/* Edit profile — usernames list section header
-   SDK identity profile sheet — usernames list */
-"DPNS Names" = "DPNS Names";
 
 /* SPV diagnostics */
 "Drop & rescan" = "捨棄並重新掃描";
@@ -5455,7 +5457,8 @@
 /* Usernames */
 "Username was successfully requested" = "使用者名稱申请成功";
 
-/* Identities */
+/* Identities
+   SDK identity profile sheet — usernames list */
 "Usernames" = "用戶名稱";
 
 "Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed." = "用戶名稱以正規化形式儲存，以防止出現形似名稱，因此這可能與每個人輸入的內容不同。";

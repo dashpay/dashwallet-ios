@@ -140,7 +140,7 @@ extension IdentityCreditGate {
     /// screen that asked has gone away.
     @MainActor
     static func makeTopUpController() -> UIViewController {
-        let controller = InternalTransferHostingController(transferTo: .identity)
+        let controller = InternalTransferHostingController(transferTo: .identity, dismissesWhenLeaving: true)
         controller.hidesBottomBarWhenPushed = true
         let navigation = BaseNavigationController(rootViewController: controller)
         navigation.modalPresentationStyle = .fullScreen

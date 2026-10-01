@@ -33,23 +33,31 @@ final class InternalTransferHostingController: UIViewController {
     /// offer identity (the app implements identity top-up but not withdrawal
     /// yet), so there is nothing to swap into; the From row still picks among
     /// all three balances.
-    convenience init(transferTo destination: TransferDestination) {
+    ///
+    /// `dismissesWhenLeaving` is for a host that presents this screen as the
+    /// root of its own stack (the credit gate's top-up): there is nothing to
+    /// pop back to, so leaving closes the presented stack instead.
+    convenience init(transferTo destination: TransferDestination, dismissesWhenLeaving: Bool = false) {
         self.init(nibName: nil, bundle: nil)
+        self.dismissesWhenLeaving = dismissesWhenLeaving
         viewModel.selectStandaloneDestination(destination)
     }
+
+    private var dismissesWhenLeaving = false
 
     private lazy var hostingController: UIHostingController<InternalTransferScreen> = {
         var screen = InternalTransferScreen(viewModel: viewModel) { [weak self] in
             // Confirm hands the transfer to `InternalTransferRunner`; the
             // screen waits for the confirm sheet to finish closing and then
             // calls this, so it fires while the transfer is still running.
-            // Leave for the history, where the outcome shows up: the home tab
-            // when this was pushed inside the tab bar, otherwise just pop or
-            // dismiss whatever presented us.
+            // Leave for the history, where the outcome shows up: pop or
+            // dismiss, then switch the tab bar to Home.
             self?.leaveForHistory()
         }
-        // Only when pushed: presented as a sheet there is nothing to go back
-        // to, and the grabber is the way out.
+        // Only inside a navigation stack: presented bare as a sheet there is
+        // nothing to go back to, and the grabber is the way out. As the root
+        // of a full-screen stack (the top-up) Back is the only way out, and
+        // `leave()` dismisses rather than pops.
         if navigationController != nil {
             screen.onBack = { [weak self] in self?.leave() }
         }
@@ -57,7 +65,7 @@ final class InternalTransferHostingController: UIViewController {
     }()
 
     private func leave(completion: (() -> Void)? = nil) {
-        if let navigationController {
+        if let navigationController, !dismissesWhenLeaving {
             // `popViewController` takes no completion handler, so the pop's own
             // CoreAnimation transaction carries one.
             CATransaction.begin()
@@ -76,9 +84,12 @@ final class InternalTransferHostingController: UIViewController {
     /// The tab change waits for the pop: run together, the stack slid back
     /// while the tab swapped underneath it, and the two read as one jolt. Held
     /// onto beforehand because popping detaches this controller, and
-    /// `tabBarController` is nil by the time the completion runs.
+    /// `tabBarController` is nil by the time the completion runs. A presented
+    /// stack has no tab bar of its own, so the tab bar is searched down from
+    /// the window's root, which is a container rather than the tab bar itself.
     private func leaveForHistory() {
-        let tabBarController = tabBarController as? MainTabbarController
+        let tabBarController = (tabBarController
+            ?? view.window?.rootViewController?.dw_firstTabBarController()) as? MainTabbarController
         leave { tabBarController?.showHome() }
     }
 

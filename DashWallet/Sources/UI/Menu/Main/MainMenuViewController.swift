@@ -213,20 +213,21 @@ struct MainMenuScreen: View {
                 // profile. This is also what a won vote resolves into: the
                 // request row goes, the profile appears.
                 if let username = viewModel.profileUsername {
-                    DashUIKit.MenuItem(
-                        leadingIcon: .custom("dp_user_generic", bundle: .main),
-                        title: NSLocalizedString("Profile", comment: "DashPay"),
-                        helpText: username,
-                        accessory: .none
-                    )
-                    .onTapGesture { editProfile() }
-                    // The row is a control: one element, named by what it
-                    // leads to, with the trait VoiceOver reads as tappable.
-                    .accessibilityElement(children: .combine)
-                    .accessibilityAddTraits(.isButton)
+                    // A button around the whole card: the card's filled
+                    // background makes all of it, padding included, take the tap.
+                    Button(action: editProfile) {
+                        DashUIKit.MenuItem(
+                            leadingIcon: .custom("dp_user_generic", bundle: .main),
+                            title: NSLocalizedString("Profile", comment: "DashPay"),
+                            helpText: username,
+                            accessory: .none
+                        )
+                        .modifier(MenuViewModifier())
+                    }
+                    .buttonStyle(.plain)
+                    // Named by what it leads to.
                     .accessibilityLabel(String.localizedStringWithFormat(
                         NSLocalizedString("Profile, %@", comment: "DashPay"), username))
-                    .modifier(MenuViewModifier())
                     .padding(.vertical, 20)
                     .padding(.horizontal, 20)
                 }

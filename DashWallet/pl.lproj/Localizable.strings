@@ -210,6 +210,12 @@
 /* SDK identity profile sheet — info button */
 "About the identity account balance" = "O saldzie konta tożsamości";
 
+/* SDK identity profile sheet — explains the usernames list */
+"A username is how people find and pay you on Dash. Every username here belongs to this identity, so they all lead to the same profile, with the same display name and photo." = "A username is how people find and pay you on Dash. Every username here belongs to this identity, so they all lead to the same profile, with the same display name and photo.";
+
+/* SDK identity profile sheet — info button */
+"About usernames" = "About usernames";
+
 "Abstain" = "Wstrzymaj się";
 
 "Abstain on “%@”" = "Wstrzymaj się w sprawie „%@”";
@@ -1282,10 +1288,6 @@
 
 /* Send confirm sheet */
 "Double-check the address" = "Sprawdź adres jeszcze raz";
-
-/* Edit profile — usernames list section header
-   SDK identity profile sheet — usernames list */
-"DPNS Names" = "DPNS Names";
 
 /* SPV diagnostics */
 "Drop & rescan" = "Odrzuć i przeskanuj";
@@ -5455,7 +5457,8 @@
 /* Usernames */
 "Username was successfully requested" = "Pomyślnie poproszono o nazwę użytkownika";
 
-/* Identities */
+/* Identities
+   SDK identity profile sheet — usernames list */
 "Usernames" = "Nazwy użytkowników";
 
 "Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed." = "Nazwy użytkowników są przechowywane w formie znormalizowanej, aby zapobiec łudząco podobnym nazwom, więc może się to różnić od tego, co wpisała każda osoba.";
