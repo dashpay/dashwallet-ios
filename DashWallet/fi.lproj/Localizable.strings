@@ -5459,7 +5459,8 @@
 /* Usernames */
 "Username was successfully requested" = "Username was successfully requested";
 
-/* Identities */
+/* Identities
+   SDK identity profile sheet — usernames list */
 "Usernames" = "Käyttäjätunnukset";
 
 "Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed." = "Käyttäjätunnukset tallennetaan normalisoidussa muodossa samannäköisten nimien estämiseksi, joten tämä voi poiketa siitä, mitä kukin on kirjoittanut.";

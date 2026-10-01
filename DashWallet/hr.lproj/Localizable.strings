@@ -5459,7 +5459,8 @@
 /* Usernames */
 "Username was successfully requested" = "Username was successfully requested";
 
-/* Identities */
+/* Identities
+   SDK identity profile sheet — usernames list */
 "Usernames" = "Korisnička imena";
 
 "Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed." = "Korisnička imena čuvaju se u normaliziranom obliku kako bi se spriječila slična imena, pa se to može razlikovati od onoga što je svatko upisao.";

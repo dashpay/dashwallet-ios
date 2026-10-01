@@ -5459,7 +5459,8 @@
 /* Usernames */
 "Username was successfully requested" = "Username was successfully requested";
 
-/* Identities */
+/* Identities
+   SDK identity profile sheet — usernames list */
 "Usernames" = "用戶名稱";
 
 "Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed." = "用戶名稱以正規化形式儲存，以防止出現形似名稱，因此這可能與每個人輸入的內容不同。";

@@ -62,7 +62,7 @@ final class InternalTransferHostingController: UIViewController {
         // As the root of a presented stack (the credit gate's top-up) there is
         // nothing to pop back to, so the whole presented stack is dismissed.
         let isRootOfPresentedStack = navigationController.map {
-            $0.viewControllers.first === self && $0.presentingViewController != nil
+            $0.viewControllers.first === self && $0.presentingViewController?.presentedViewController === $0
         } ?? false
         if let navigationController, !isRootOfPresentedStack {
             // `popViewController` takes no completion handler, so the pop's own

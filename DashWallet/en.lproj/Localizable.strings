@@ -4880,7 +4880,8 @@
 /* Raw transaction inspector */
 "Unknown special type %d" = "Unknown special type %d";
 
-/* Identities */
+/* Identities
+   SDK identity profile sheet — usernames list */
 "Usernames" = "Usernames";
 
 /* Balance info sheet */

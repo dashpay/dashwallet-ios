@@ -213,9 +213,8 @@ struct MainMenuScreen: View {
                 // profile. This is also what a won vote resolves into: the
                 // request row goes, the profile appears.
                 if let username = viewModel.profileUsername {
-                    // A button around the whole card: `MenuItem` draws no
-                    // background of its own, so the shape is what lets the
-                    // gaps and the card's padding take the tap too.
+                    // A button around the whole card: the card's filled
+                    // background makes all of it, padding included, take the tap.
                     Button(action: editProfile) {
                         DashUIKit.MenuItem(
                             leadingIcon: .custom("dp_user_generic", bundle: .main),
@@ -224,11 +223,9 @@ struct MainMenuScreen: View {
                             accessory: .none
                         )
                         .modifier(MenuViewModifier())
-                        .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                     }
                     .buttonStyle(.plain)
-                    // One element, named by what it leads to.
-                    .accessibilityElement(children: .combine)
+                    // Named by what it leads to.
                     .accessibilityLabel(String.localizedStringWithFormat(
                         NSLocalizedString("Profile, %@", comment: "DashPay"), username))
                     .padding(.vertical, 20)

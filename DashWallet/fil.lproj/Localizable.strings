@@ -5457,7 +5457,8 @@
 /* Usernames */
 "Username was successfully requested" = "Matagumpay na hiniling ang username";
 
-/* Identities */
+/* Identities
+   SDK identity profile sheet — usernames list */
 "Usernames" = "Mga Username";
 
 "Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed." = "Nakaimbak sa normalisadong anyo ang mga username para maiwasan ang magkakahawig na pangalan, kaya maaaring iba ito sa tinipa ng bawat tao.";

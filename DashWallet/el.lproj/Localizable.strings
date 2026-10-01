@@ -5457,7 +5457,8 @@
 /* Usernames */
 "Username was successfully requested" = "Το όνομα χρήστη αιτήθηκε επιτυχώς";
 
-/* Identities */
+/* Identities
+   SDK identity profile sheet — usernames list */
 "Usernames" = "Ονόματα χρήστη";
 
 "Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed." = "Τα ονόματα χρήστη αποθηκεύονται σε κανονικοποιημένη μορφή για να αποτρέπονται τα παρόμοια ονόματα, οπότε αυτό μπορεί να διαφέρει από αυτό που πληκτρολόγησε ο καθένας.";

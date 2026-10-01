@@ -379,6 +379,9 @@ struct SDKIdentityProfileSheet: View {
                             copyIcon
                         }
                         .buttonStyle(.plain)
+                        // Read as "Copy, <name>": each copy control says what it copies.
+                        .accessibilityLabel(NSLocalizedString("Copy", comment: ""))
+                        .accessibilityValue(name)
                     }
                     .padding(.vertical, 12)
                     if index < dpnsNames.count - 1 {
@@ -446,6 +449,8 @@ struct SDKIdentityProfileSheet: View {
                         copyIcon
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(NSLocalizedString("Copy", comment: ""))
+                    .accessibilityValue(title)
                 }
             }
         }
@@ -472,18 +477,18 @@ struct SDKIdentityProfileSheet: View {
 
     // MARK: - Side effects
 
-    /// Restarts the toast on a second copy: `transientToast` times a flag
-    /// that is already up only for what is left of its first run.
     private func showCopyToast() {
-        showingCopiedToast = false
-        DispatchQueue.main.async { showingCopiedToast = true }
+        showingCopiedToast = true
     }
 
-    /// The design system's copy glyph, the one the receive screens use.
+    /// The design system's copy glyph, the one the receive screens use, with
+    /// a 44 pt tap area that does not change the row's layout.
     private var copyIcon: some View {
         Image(dash: DashIcon.Icons.copyOutline.source)
             .frame(width: 24, height: 24)
-            .accessibilityLabel(NSLocalizedString("Copy", comment: ""))
+            .padding(10)
+            .contentShape(Rectangle())
+            .padding(-10)
     }
 
 
@@ -1057,12 +1062,7 @@ struct ProfileInfoSheet: View {
         DashUIKit.BottomSheet.selfSizing(
             showBackButton: .constant(false)
         ) {
-            // A self-sizing sheet stops short of the screen top, so at the
-            // largest text sizes the explainer scrolls instead of being cut.
-            ViewThatFits(in: .vertical) {
-                explainer
-                ScrollView { explainer }
-            }
+            explainer
         }
     }
 }

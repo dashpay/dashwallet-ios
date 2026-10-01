@@ -5457,7 +5457,8 @@
 /* Usernames */
 "Username was successfully requested" = "Запит на ім’я користувача успішно виконано";
 
-/* Identities */
+/* Identities
+   SDK identity profile sheet — usernames list */
 "Usernames" = "Імена користувачів";
 
 "Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed." = "Імена користувачів зберігаються в нормалізованому вигляді, щоб уникнути схожих імен, тож це може відрізнятися від того, що ввела кожна людина.";

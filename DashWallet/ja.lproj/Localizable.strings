@@ -5457,7 +5457,8 @@
 /* Usernames */
 "Username was successfully requested" = "ユーザー名を正常に申請できました";
 
-/* Identities */
+/* Identities
+   SDK identity profile sheet — usernames list */
 "Usernames" = "ユーザー名";
 
 "Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed." = "ユーザー名は紛らわしい名前を防ぐため正規化された形で保存されるため、各人が入力した内容と異なる場合があります。";
