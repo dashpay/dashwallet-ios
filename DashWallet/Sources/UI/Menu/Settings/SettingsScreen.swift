@@ -53,7 +53,6 @@ struct SettingsScreen: View {
             VStack(spacing: 2) {
                 ForEach(viewModel.items) { item in
                     row(for: item)
-                        .frame(minHeight: 60)
                 }
             }
             .padding(6)
@@ -130,11 +129,11 @@ struct SettingsScreen: View {
     /// `DashUIKit.MenuItem` draws the row and nothing else — it carries no tap
     /// handler of its own — so what a tap means is decided here, per row:
     ///
-    /// - a switch owns its own gesture, so a plain toggle row is not wrapped;
-    /// - a row that also has something to explain puts the explanation on the
-    ///   row body, leaving the switch to toggle and the rest to inform (the
-    ///   info glyph is drawn by `MenuItem` but is not itself a button);
-    /// - everything else is a button that runs the row's action.
+    /// - a toggle row that also has something to explain puts the explanation
+    ///   on the row body, leaving the switch to toggle and the rest to inform
+    ///   (the info glyph is drawn by `MenuItem` but is not itself a button);
+    /// - every other row with an action is a button that runs it — for a plain
+    ///   toggle row that is the toggle, so the whole row flips the switch.
     @ViewBuilder
     private func row(for item: MenuItemModel) -> some View {
         let content = DashUIKit.MenuItem(
@@ -146,22 +145,23 @@ struct SettingsScreen: View {
                 ? .toggle(isOn: Self.toggleBinding(item))
                 : (item.details.map { .text($0) } ?? .none)
         )
-        // `MenuItem` draws no background of its own, so a plain-style button
-        // around it would answer only on the icon and text, not on the gaps.
+        // The row's full height is the tap target: `MenuItem` draws no
+        // background of its own, so without the shape a plain-style button
+        // would answer only on the icon and text, not on the gaps or the
+        // strip the minimum height adds.
+        .frame(minHeight: 60)
         .contentShape(Rectangle())
 
-        if item.showToggle {
-            if let infoAction = item.infoAction {
-                // The switch owns its own tap, so the rest of the row is free
-                // to answer the question the info glyph poses. Named so a UI
-                // test can tap the switch alone and assert the sheet stays shut.
-                Button(action: infoAction) { content }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("settings_row_\(item.title.lowercased().replacingOccurrences(of: " ", with: "_"))")
-            } else {
-                content
-            }
+        if item.showToggle, let infoAction = item.infoAction {
+            // The switch owns its own tap, so the rest of the row is free
+            // to answer the question the info glyph poses. Named so a UI
+            // test can tap the switch alone and assert the sheet stays shut.
+            Button(action: infoAction) { content }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("settings_row_\(item.title.lowercased().replacingOccurrences(of: " ", with: "_"))")
         } else if let action = item.action {
+            // For a plain toggle row the action is the toggle itself, so a tap
+            // anywhere on the row flips the switch.
             Button(action: action) { content }
                 .buttonStyle(.plain)
         } else {
