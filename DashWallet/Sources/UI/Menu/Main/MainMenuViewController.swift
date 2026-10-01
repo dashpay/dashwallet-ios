@@ -219,6 +219,9 @@ struct MainMenuScreen: View {
                         helpText: username,
                         accessory: .none
                     )
+                    // `MenuItem` draws no background of its own, so without a
+                    // shape only the icon and text would take the tap.
+                    .contentShape(Rectangle())
                     .onTapGesture { editProfile() }
                     // The row is a control: one element, named by what it
                     // leads to, with the trait VoiceOver reads as tappable.
