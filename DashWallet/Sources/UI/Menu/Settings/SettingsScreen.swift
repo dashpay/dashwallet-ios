@@ -51,7 +51,10 @@ struct SettingsScreen: View {
 
             // Menu list
             VStack(spacing: 2) {
-                ForEach(viewModel.items) { item in
+                // Keyed by title, not by the model's per-build UUID: a toggle
+                // rebuilds the items, and a stable key lets SwiftUI update each
+                // row in place — the switch slides and VoiceOver keeps its focus.
+                ForEach(viewModel.items, id: \.title) { item in
                     row(for: item)
                 }
             }
