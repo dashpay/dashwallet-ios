@@ -477,8 +477,18 @@ struct SDKIdentityProfileSheet: View {
 
     // MARK: - Side effects
 
+    /// A copy while the toast is still up restarts it: `transientToast` keeps
+    /// timing a flag that is already raised, so it is lowered first and raised
+    /// again once the hide has rendered.
     private func showCopyToast() {
-        showingCopiedToast = true
+        guard showingCopiedToast else {
+            showingCopiedToast = true
+            return
+        }
+        showingCopiedToast = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            showingCopiedToast = true
+        }
     }
 
     /// The design system's copy glyph, the one the receive screens use, with
@@ -1042,27 +1052,23 @@ enum ProfileInfoTopic: String, Identifiable {
 struct ProfileInfoSheet: View {
     let topic: ProfileInfoTopic
 
-    private var explainer: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(topic.title)
-                .dashFont(.title1)
-                .foregroundStyle(Color.dash.primaryText)
-
-            Text(topic.message)
-                .dashFont(.body)
-                .foregroundStyle(Color.dash.secondaryText)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 40)
-        .padding(.vertical, 20)
-    }
-
     var body: some View {
         DashUIKit.BottomSheet.selfSizing(
             showBackButton: .constant(false)
         ) {
-            explainer
+            VStack(alignment: .leading, spacing: 6) {
+                Text(topic.title)
+                    .dashFont(.title1)
+                    .foregroundStyle(Color.dash.primaryText)
+
+                Text(topic.message)
+                    .dashFont(.body)
+                    .foregroundStyle(Color.dash.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 40)
+            .padding(.vertical, 20)
         }
     }
 }
