@@ -20,7 +20,10 @@ with tempfile.TemporaryDirectory(prefix="wallet-preparation-tests-") as director
     # Only unrelated app dependencies are substituted; state and diagnostics
     # are the production files, including their real Combine publishers.
     (sources / "AppDependencies.swift").write_text('''
-enum WalletEnvironment { enum NetworkKind { case mainnet, testnet, devnet } }
+enum WalletEnvironment {
+    enum NetworkKind { case mainnet, testnet, devnet }
+    enum WalletPresence: Int { case absent = 0, present = 1, unknown = 2 }
+}
 enum DWLogger { static func log(_ message: String) {} }
 @MainActor final class SwiftDashSDKSPVCoordinator {
     static let shared = SwiftDashSDKSPVCoordinator()
@@ -57,7 +60,11 @@ enum DWLogger { static func log(_ message: String) {} }
         "    private func enqueueRefresh(trigger:",
         "    private func handleObservedNetworkChange()",
         "    private func enqueueAwaitable(_ op:",
-    ))
+        # The launch-decision hold, as the funnel consults it.
+        "    @objc static func holdAutomaticStartsUntilLaunchDecision() {",
+        "    @objc static func releaseAutomaticStartsForLaunchDecision() {",
+        "    static func automaticStartAllowedForLaunchDecision(_ trigger: String)",
+    )).replace("@objc ", "")
     # Its closure default contains braces before the method body.
     rearm_start = runtime.index("    func rearmPlatformSync(")
     rearm_end = runtime.index("\n    /// Awaitable counterpart", rearm_start)
@@ -70,6 +77,8 @@ enum DWLogger { static func log(_ message: String) {} }
         + '''
 @MainActor final class SwiftDashSDKWalletRuntime {
     static let shared = SwiftDashSDKWalletRuntime()
+    static var automaticStartsHeldForLaunchDecision = false
+    static var loggedHeldAutomaticStart = false
     let lifecycleQueue = SerialAsyncLifecycleQueue()
     var refreshCalls = 0
     func enqueue(_ op: @escaping @MainActor () async -> Void) { lifecycleQueue.enqueue(op) }
@@ -165,6 +174,58 @@ import XCTest
         XCTAssertTrue(ready)
         XCTAssertEqual(runtime.refreshCalls, 1)
     }
+    func testAutomaticKicksAreHeldUntilTheLaunchDecisionAndPassAfterwards() async {
+        SwiftDashSDKWalletRuntime.holdAutomaticStartsUntilLaunchDecision()
+        for trigger: SwiftDashSDKWalletRuntime.RefreshTrigger in [.startIfReady, .walletMaterialChanged, .networkDidChange] {
+            runtime.enqueueRefresh(trigger: trigger)
+        }
+        runtime.handleObservedNetworkChange()
+        await runtime.drain()
+        XCTAssertEqual(runtime.refreshCalls, 0, "nothing starts before the launch decision")
+
+        SwiftDashSDKWalletRuntime.releaseAutomaticStartsForLaunchDecision()
+        runtime.enqueueRefresh(trigger: .startIfReady)
+        await runtime.drain()
+        XCTAssertEqual(runtime.refreshCalls, 1, "the activation's start runs")
+        // A launch that was never held (foreground) is unaffected.
+        XCTAssertTrue(SwiftDashSDKWalletRuntime.automaticStartAllowedForLaunchDecision("test"))
+    }
+    /// An inventory that cannot be read at launch leaves the runtime stopped
+    /// (its refresh returns on "unknown"); when the read recovers, the hold
+    /// delivers the wallet and asks the runtime to start through its usual
+    /// funnel — once — and the start is not held (the launch decision was
+    /// taken before the hold could run).
+    func testHoldRecoveringFromAnUnreadableInventoryStartsTheRuntime() async {
+        var presence: WalletEnvironment.WalletPresence = .unknown
+        var materialChanged: AsyncStream<Void>.Continuation?
+        let coordinator = LegacyWalletMigrationLaunchCoordinator(state: state, dependencies: .init(
+            isSettled: { true },
+            walletPresence: { presence },
+            legacyMaterial: { .absent },
+            deferralReason: { .failed },
+            startMigration: {},
+            activateOverlay: {},
+            walletDelivered: { self.runtime.enqueueRefresh(trigger: .startIfReady) },
+            walletMaterialChanges: { AsyncStream { materialChanged = $0 } },
+            pollInterval: 0.005,
+            settleTimeout: 5,
+            lateSuccessInterval: 30))
+        var outcomes: [Bool] = []
+        coordinator.begin { outcomes.append($0) }
+        let subscribed = Date().addingTimeInterval(2)
+        while materialChanged == nil, Date() < subscribed { try? await Task.sleep(nanoseconds: 2_000_000) }
+        guard materialChanged != nil else { return XCTFail("the hold never subscribed to wallet material changes") }
+        await runtime.drain()
+        XCTAssertEqual(runtime.refreshCalls, 0, "the card is up; nothing starts")
+
+        presence = .present
+        materialChanged?.yield()
+        let deadline = Date().addingTimeInterval(2)
+        while outcomes.isEmpty, Date() < deadline { try? await Task.sleep(nanoseconds: 2_000_000) }
+        await runtime.drain()
+        XCTAssertEqual(outcomes, [true])
+        XCTAssertEqual(runtime.refreshCalls, 1, "the wallet the read now sees starts the runtime once")
+    }
     func testExplicitRetryAndSyncNowCanStillRecover() async {
         await failOpen()
         await runtime.retryWalletPreparation()
@@ -191,4 +252,4 @@ let package = Package(name: "WalletPreparationHarness", platforms: [.macOS("15.0
     subprocess.run(["xcrun", "swift", "test", "--package-path", str(package),
                     "--scratch-path", str(package / ".build"), "--cache-path", str(package / "cache"),
                     "--config-path", str(package / "configuration"), "--security-path", str(package / "security"),
-                    "--disable-sandbox"], check=True, env=environment)
+                    "--disable-sandbox"], check=True, env=environment, timeout=900)

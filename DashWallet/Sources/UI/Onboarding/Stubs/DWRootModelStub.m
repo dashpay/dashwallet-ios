@@ -43,6 +43,10 @@ NS_ASSUME_NONNULL_BEGIN
     return YES;
 }
 
+- (DWWalletPresence)walletPresence {
+    return DWWalletPresencePresent;
+}
+
 - (BOOL)walletOperationAllowed {
     return YES;
 }
