@@ -162,19 +162,9 @@ struct SettingsScreen: View {
         } else if let action = item.action {
             // For a plain toggle row the action is the toggle itself, so a tap
             // anywhere on the row flips the switch.
-            if item.showToggle {
-                // One element for VoiceOver: the row reads as the switch it
-                // flips, with its state, rather than a stateless button next
-                // to a second switch element.
-                Button(action: action) { content }
-                    .buttonStyle(.plain)
-                    .accessibilityRepresentation {
-                        Toggle(item.title, isOn: Self.toggleBinding(item))
-                    }
-            } else {
-                Button(action: action) { content }
-                    .buttonStyle(.plain)
-            }
+            Button(action: action) { content }
+                .buttonStyle(.plain)
+                .modifier(ToggleRowAccessibility(item: item, isOn: Self.toggleBinding(item)))
         } else {
             content
         }
@@ -328,5 +318,28 @@ extension AboutDashHostingViewController: NavigationBarDisplayable {
 extension AboutDashHostingViewController: MFMailComposeViewControllerDelegate {
     func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
         controller.dismiss(animated: true)
+    }
+}
+
+/// One element for VoiceOver on a plain toggle row: the row reads as the
+/// switch it flips, with its state and subtitle, rather than a stateless
+/// button next to a second switch element. Other rows are left as they are.
+private struct ToggleRowAccessibility: ViewModifier {
+    let item: MenuItemModel
+    let isOn: Binding<Bool>
+
+    func body(content: Content) -> some View {
+        if item.showToggle {
+            content.accessibilityRepresentation {
+                Toggle(isOn: isOn) {
+                    Text(item.title)
+                    if let subtitle = item.subtitle {
+                        Text(subtitle)
+                    }
+                }
+            }
+        } else {
+            content
+        }
     }
 }
