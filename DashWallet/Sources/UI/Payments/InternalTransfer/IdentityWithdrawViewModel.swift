@@ -90,9 +90,9 @@ final class IdentityWithdrawViewModel: ObservableObject {
     /// fee, which is charged to the identity on top of the amount. Must be at
     /// least `minimumFeeCredits(target:)`, or consensus refuses every Max.
     ///
-    /// - `.transparent`: the minimum plus 0.001 DASH of margin — the same
-    ///   0.005 DASH `EvonodeWithdrawalViewModel.feeReserveCredits` holds back
-    ///   for the same transition.
+    /// - `.transparent`: the minimum plus 0.001 DASH of margin. Masternode
+    ///   withdrawals run the same transition and read their reserve from here
+    ///   (`EvonodeWithdrawalViewModel.feeReserveCredits`).
     /// - `.platform`: 0.002 DASH, well above its 0.000065 DASH minimum.
     ///
     /// Owned here rather than borrowed from
