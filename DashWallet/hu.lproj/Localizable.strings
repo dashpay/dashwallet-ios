@@ -6063,6 +6063,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Az előzményeid, rendezve";
 
+/* Identity withdrawal — Platform refused the amount as more than the balance can cover */
+"Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again." = "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again.";
+
 /* Username marketplace */
 "Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Az identitásod egyenlege nem fedezi ezt a vásárlást: %1$@ DASH szükséges (a díjtartalékkal együtt), %2$@ DASH áll rendelkezésre. Töltsd fel az identitásegyenlegedet, és próbáld újra.";
 
