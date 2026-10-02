@@ -182,6 +182,7 @@
 		2A392568234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A392567234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m */; };
 		2A3DC86E239717C2004B3DBA /* DWRecoverWalletCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3DC86D239717C2004B3DBA /* DWRecoverWalletCommand.m */; };
 		2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4430E622CBB6EC009BAF7F /* AppDelegate.m */; };
+		9E66D0E1B2BF2F52C82BB227 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2350DF4247B02C974F8A3628 /* SceneDelegate.m */; };
 		2A4430EB22CBBA82009BAF7F /* Setup.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A4430EA22CBBA82009BAF7F /* Setup.storyboard */; };
 		2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4430ED22CBBAC9009BAF7F /* DWSetupViewController.m */; };
 		2A4430F222CBD57A009BAF7F /* AppAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A4430F122CBD57A009BAF7F /* AppAssets.xcassets */; };
@@ -1704,6 +1705,7 @@
 		C9D2C81D2A320AA000D15901 /* MessageStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11AE3DD52997AA36000856EE /* MessageStatus.swift */; };
 		C9D2C81E2A320AA000D15901 /* DWGlobalOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CEAA22E18F1800C99324 /* DWGlobalOptions.m */; };
 		C9D2C81F2A320AA000D15901 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4430E622CBB6EC009BAF7F /* AppDelegate.m */; };
+		1535CD04CB1E10BA219A614E /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2350DF4247B02C974F8A3628 /* SceneDelegate.m */; };
 		C9D2C8202A320AA000D15901 /* SendReceivePageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C917023E29D44E0B008C034D /* SendReceivePageController.swift */; };
 		C9D2C8232A320AA000D15901 /* BaseNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A2C6E28DC457000AD1420 /* BaseNavigationController.swift */; };
 		C9D2C8242A320AA000D15901 /* UIViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CDEECB294A2BAD008AE06D /* UIViewController+Coinbase.swift */; };
@@ -2374,6 +2376,8 @@
 		2A430F0B26EF5A0F00D8A196 /* DWNavigationAppearance.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNavigationAppearance.h; sourceTree = "<group>"; };
 		2A4430E522CBB6EC009BAF7F /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2A4430E622CBB6EC009BAF7F /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		35400227B4C46E9F9885D9EE /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
+		2350DF4247B02C974F8A3628 /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
 		2A4430EA22CBBA82009BAF7F /* Setup.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Setup.storyboard; sourceTree = "<group>"; };
 		2A4430EC22CBBAC9009BAF7F /* DWSetupViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSetupViewController.h; sourceTree = "<group>"; };
 		2A4430ED22CBBAC9009BAF7F /* DWSetupViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSetupViewController.m; sourceTree = "<group>"; };
@@ -7459,6 +7463,8 @@
 				FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */,
 				2A4430E522CBB6EC009BAF7F /* AppDelegate.h */,
 				2A4430E622CBB6EC009BAF7F /* AppDelegate.m */,
+				35400227B4C46E9F9885D9EE /* SceneDelegate.h */,
+				2350DF4247B02C974F8A3628 /* SceneDelegate.m */,
 			);
 			path = DashWallet;
 			sourceTree = "<group>";
@@ -10378,6 +10384,7 @@
 				2AD1CEAB22E18F1800C99324 /* DWGlobalOptions.m in Sources */,
 				754BEA122C0B6BD700E8C93C /* HomeViewModel.swift in Sources */,
 				2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */,
+				9E66D0E1B2BF2F52C82BB227 /* SceneDelegate.m in Sources */,
 				514AF1C12FB5F02D00F9B54C /* SwapConvertViewModel.swift in Sources */,
 				514BEA022FB5F02D00F9B54C /* SwapConvertAmount.swift in Sources */,
 				75D2B4A12D9D28AC00228DB0 /* BlockExplorerSelectionView.swift in Sources */,
@@ -11440,6 +11447,7 @@
 				C9D2C81D2A320AA000D15901 /* MessageStatus.swift in Sources */,
 				C9D2C81E2A320AA000D15901 /* DWGlobalOptions.m in Sources */,
 				C9D2C81F2A320AA000D15901 /* AppDelegate.m in Sources */,
+				1535CD04CB1E10BA219A614E /* SceneDelegate.m in Sources */,
 				C9D2C8202A320AA000D15901 /* SendReceivePageController.swift in Sources */,
 				C943B5242A40A54600AF23C5 /* UIColor+DWDashPay.m in Sources */,
 				C9D2C8232A320AA000D15901 /* BaseNavigationController.swift in Sources */,
@@ -12878,7 +12886,7 @@
 					"\"UIKit\"",
 					"-weak_framework",
 					"\"WebKit\"",
-					"-ld64",
+					"-ld_classic",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Moya/Moya.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLiteMigrationManager.swift/SQLiteMigrationManager.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/FBLPromises/PromisesObjC.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/SSZipArchive/SSZipArchive.modulemap\" -DDASHPAY";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
@@ -12996,7 +13004,7 @@
 					"\"UIKit\"",
 					"-weak_framework",
 					"\"WebKit\"",
-					"-ld64",
+					"-ld_classic",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Moya/Moya.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLiteMigrationManager.swift/SQLiteMigrationManager.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/FBLPromises/PromisesObjC.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/SSZipArchive/SSZipArchive.modulemap\"";
 				"OTHER_SWIFT_FLAGS[arch=*]" = "-DDebug -DDASH_TESTNET -DDASHPAY";
@@ -13125,7 +13133,7 @@
 					"\"UIKit\"",
 					"-weak_framework",
 					"\"WebKit\"",
-					"-ld64",
+					"-ld_classic",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Moya/Moya.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLiteMigrationManager.swift/SQLiteMigrationManager.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/FBLPromises/PromisesObjC.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/SSZipArchive/SSZipArchive.modulemap\" -DDASHPAY";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
@@ -13253,7 +13261,7 @@
 					"\"UIKit\"",
 					"-weak_framework",
 					"\"WebKit\"",
-					"-ld64",
+					"-ld_classic",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Moya/Moya.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLiteMigrationManager.swift/SQLiteMigrationManager.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/FBLPromises/PromisesObjC.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/SSZipArchive/SSZipArchive.modulemap\"";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
