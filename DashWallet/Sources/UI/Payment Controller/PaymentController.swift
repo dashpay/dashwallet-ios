@@ -55,7 +55,7 @@ final class PaymentController: NSObject {
     /// Called with true when a confirmed send starts waiting for the network,
     /// and with false right before its outcome is shown. Returns whether the
     /// screen shows that progress itself; when it does not (or no handler is
-    /// set), a "Sending" HUD covers the screen for the wait.
+    /// set), a "Sending" HUD covers the window for the wait.
     @objc var sendInProgressHandler: ((Bool) -> Bool)?
 
     private var paymentProcessor: DWPaymentProcessor
@@ -214,8 +214,8 @@ extension PaymentController: DWPaymentProcessorDelegate {
     /// While the send waits, its screen must stay: swiped away, the outcome
     /// would have nowhere to show, and a live screen would take a second tap —
     /// a second payment. A screen that shows the progress itself says so
-    /// through `sendInProgressHandler`; on every other one a "Sending" HUD
-    /// covers the screen and blocks touches for the wait.
+    /// through `sendInProgressHandler`; otherwise a "Sending" HUD covers the
+    /// whole window and blocks touches for the wait.
     func paymentProcessor(_ processor: DWPaymentProcessor, broadcastInProgress inProgress: Bool) {
         let shownByScreen = sendInProgressHandler?(inProgress) ?? false
         guard inProgress else {
@@ -236,9 +236,12 @@ extension PaymentController: DWPaymentProcessorDelegate {
         sendInProgressModalHostWasModal = presented.isModalInPresentation
         presented.isModalInPresentation = true
         if !shownByScreen {
+            // On the window, not the screen: a screen inside a tab leaves the
+            // tab bar — and its Send button — live around a screen-sized HUD.
             let screen = (stack as? UINavigationController)?.topViewController ?? stack
-            screen.view.dw_showProgressHUD(withMessage: NSLocalizedString("Sending", comment: ""))
-            sendInProgressHUDView = screen.view
+            let host: UIView = screen.view.window ?? screen.view
+            host.dw_showProgressHUD(withMessage: NSLocalizedString("Sending", comment: ""))
+            sendInProgressHUDView = host
         }
     }
 
