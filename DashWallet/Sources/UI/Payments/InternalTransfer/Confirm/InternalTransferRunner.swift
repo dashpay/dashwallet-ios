@@ -136,6 +136,26 @@ final class InternalTransferRunner: ObservableObject {
             if case .failed = self { return true }
             return false
         }
+
+        /// How much longer this notice stays up, given when it was raised.
+        ///
+        /// `nil` means no timer at all — a failure waits for the user. Zero
+        /// means its time is already spent: a notice raised while its screen
+        /// was away has lived its life unseen, and announcing it now would
+        /// date-stamp an old outcome as current. Anything still inside its
+        /// window is shown for the rest of that window.
+        func remainingDisplayTime(raisedAt: Date?, now: Date, duration: TimeInterval) -> TimeInterval? {
+            guard !isFailure else { return nil }
+            let age = raisedAt.map { now.timeIntervalSince($0) } ?? 0
+            return max(0, duration - age)
+        }
+    }
+
+    /// Whether closing the toast drawn for `dismissed` clears `current`.
+    /// Only the notice that toast was drawn for — a newer outcome must not be
+    /// swept away by a stale tap.
+    nonisolated static func dismissal(of dismissed: Notice, clears current: Notice?) -> Bool {
+        current == dismissed
     }
 
     private let coordinator = ShieldedTransferCoordinator()
