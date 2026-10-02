@@ -421,6 +421,8 @@ struct ExternalSendAmountScreen: View {
                     onBack: onBack)
                     .padding(.horizontal, 20)
                     .padding(.top, 10)
+                    // Leaving mid-payment would drop the outcome it shows.
+                    .disabled(viewModel.isSendingToContact)
             } else {
                 SendStepHeader(onBack: onBack)
                     .padding(.horizontal, 20)
@@ -473,12 +475,13 @@ struct ExternalSendAmountScreen: View {
             .scrollBounceBehavior(.basedOnSize)
             // The address and From cards lead back; the amount must not change
             // under a send that is already on the network.
-            .disabled(viewModel.isSendingCore)
+            .disabled(viewModel.isSendingCore || isContactSendInFlight)
 
             keyboardSection
         }
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
+        .lockingExit(viewModel.isSendingCore || isContactSendInFlight)
         // `onDismiss`, not the sheet's own completion closure: leaving the flow
         // pops the steps under this sheet, and doing that while it is still
         // presented tears down the presenter mid-dismissal. A cancel dismisses

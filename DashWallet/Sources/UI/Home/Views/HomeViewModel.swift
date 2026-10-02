@@ -1391,7 +1391,7 @@ extension HomeViewModel {
     /// the Settings row remains for retry on other failures.
     func performCoinJoinSweep() async -> String? {
         do {
-            _ = try await WalletSendService.shared.sweepCoinJoin()
+            _ = try await WalletSendService.shared.sweepCoinJoin(onNetworkWait: WindowProgressHUD.showMovingFunds)
             return nil
         } catch {
             DWLogger.log("HomeViewModel: sweep (home popup) failed: \(error)")

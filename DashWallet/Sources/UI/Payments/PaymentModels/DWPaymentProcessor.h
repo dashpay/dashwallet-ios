@@ -55,9 +55,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Broadcast progress
 
-// Brackets the network wait of a confirmed send (up to about a minute when no peer
-// answers): YES right before the broadcast starts, NO right before its outcome is
-// reported through `didSendWithTxidWire:` or `didFailWithError:`.
+// Brackets the network wait of a confirmed send — a plain broadcast or a BIP70
+// payment (up to about a minute when no peer answers): YES right before it starts,
+// NO right before its outcome is reported through `didSendWithTxidWire:` or
+// `didFailWithError:`.
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
      broadcastInProgress:(BOOL)inProgress;
 

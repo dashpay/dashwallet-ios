@@ -428,15 +428,21 @@ final class WalletSendService: NSObject {
     /// - Returns: the CoinJoin balance (duffs) that was swept, for the success
     ///   message; the on-chain amount delivered is this minus the network fee.
     ///
-    /// Single-flight per wallet: the UI stays live while a sweep waits on the
-    /// network, and four surfaces offer it (Home popup, Move Funds sheet,
+    /// Single-flight per wallet: a sweep waits on the network for up to a
+    /// minute per chunk, and four surfaces offer it (Home popup, Move Funds sheet,
     /// Settings, Tools). A call made while the same
     /// wallet's sweep is running joins it — no second PIN prompt, no second
     /// snapshot of coins the first is already spending — and gets its result.
     /// A call for another wallet waits for the running sweep to end, then
     /// starts its own.
+    ///
+    /// `onNetworkWait` is called on the main actor with true once the user has
+    /// authorized and the sweep starts waiting on the network, and with false
+    /// when it stops — for a surface with no progress state of its own. Only
+    /// the call that starts the sweep gets it; a joining call shows nothing
+    /// and gets the running sweep's result.
     @discardableResult
-    func sweepCoinJoin() async throws -> UInt64 {
+    func sweepCoinJoin(onNetworkWait: (@MainActor (Bool) -> Void)? = nil) async throws -> UInt64 {
         // Read once, here: the destination, its wallet and its network are what
         // the sweep is bound to, and what a later call joins on.
         let target = await MainActor.run { () -> CoinJoinSweepTarget? in
@@ -458,7 +464,7 @@ final class WalletSendService: NSObject {
                 }
                 let started = Task { [self] in
                     defer { sweepInFlightLock.withLock { sweepInFlight = nil } }
-                    return try await performCoinJoinSweep(target)
+                    return try await performCoinJoinSweep(target, onNetworkWait: onNetworkWait)
                 }
                 sweepInFlight = (target.walletId, target.network, started)
                 return (started, true)
@@ -495,7 +501,9 @@ final class WalletSendService: NSObject {
             description: "CoinJoin sweep stopped: its wallet is no longer selected")
     }
 
-    private func performCoinJoinSweep(_ target: CoinJoinSweepTarget) async throws -> UInt64 {
+    private func performCoinJoinSweep(
+        _ target: CoinJoinSweepTarget, onNetworkWait: (@MainActor (Bool) -> Void)?
+    ) async throws -> UInt64 {
         // The balance shown in the PIN prompt must be the target wallet's: a
         // call that waited behind another wallet's sweep may find the user
         // back on yet another wallet.
@@ -530,15 +538,18 @@ final class WalletSendService: NSObject {
         // screen that started the sweep belongs to that wallet too. A restart
         // of the same wallet falls through and reports as usual.
         let outcome: SwiftDashSDKTransactionSender.CoinJoinSweepOutcome
+        await MainActor.run { onNetworkWait?(true) }
         do {
             outcome = try await SwiftDashSDKTransactionSender.waitingForNetwork {
                 try SwiftDashSDKTransactionSender.sweepCoinJoin(
                     to: target.address, ofWallet: target.walletId, on: target.network)
             }
         } catch {
+            await MainActor.run { onNetworkWait?(false) }
             guard target.isSelected else { throw Self.coinJoinSweepInterruptedError() }
             throw error
         }
+        await MainActor.run { onNetworkWait?(false) }
         let txids = outcome.txids
         guard target.isSelected else {
             let walletStillStored = (try? SwiftDashSDKHost.persistedWalletIds())?.contains(target.walletId) == true

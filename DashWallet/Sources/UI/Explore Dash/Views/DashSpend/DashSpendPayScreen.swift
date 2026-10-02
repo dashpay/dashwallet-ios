@@ -83,6 +83,9 @@ struct DashSpendPayScreen: View {
                 NavBarBack {
                     presentationMode.wrappedValue.dismiss()
                 }
+                // The payment waits for the network with the UI live;
+                // leaving would drop its outcome.
+                .disabled(viewModel.isProcessingPayment)
 
                 if viewModel.isFixedDenomination {
                     DashSpendFixedContent(
@@ -101,6 +104,7 @@ struct DashSpendPayScreen: View {
             overlays
         }
         .background(Color.dash.primaryBackground)
+        .lockingExit(viewModel.isProcessingPayment)
         .onAppear {
             viewModel.subscribeToUpdates()
 
@@ -114,7 +118,10 @@ struct DashSpendPayScreen: View {
             viewModel.unsubscribeFromAll()
         }
         .onChange(of: viewModel.isUserSignedIn) { isSignedIn in
-            if !isSignedIn {
+            // Not while a payment waits for the network: leaving would drop
+            // its outcome, which this screen shows. The user leaves by Back
+            // once it is shown.
+            if !isSignedIn && !viewModel.isProcessingPayment {
                 presentationMode.wrappedValue.dismiss()
             }
         }
