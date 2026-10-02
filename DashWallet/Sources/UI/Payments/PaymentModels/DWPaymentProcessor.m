@@ -147,11 +147,14 @@ static NSString *DWReversedHexString(NSData *data) {
         return;
     }
 
+    [self.delegate paymentProcessor:self broadcastInProgress:YES];
+
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
         NSError *error = nil;
         [preparedSend broadcastAndReturnError:&error];
 
         dispatch_async(dispatch_get_main_queue(), ^{
+            [self.delegate paymentProcessor:self broadcastInProgress:NO];
             if (error) {
                 NSString *title = NSLocalizedString(@"Couldn't make payment", nil);
                 if ([DWWalletSendService isBroadcastUnknownError:error]) {
@@ -257,14 +260,14 @@ static NSString *DWReversedHexString(NSData *data) {
 }
 
 - (void)performBIP70Send:(DWPaymentOutput *)paymentOutput {
-    [self.delegate paymentProcessor:self showProgressHUDWithMessage:NSLocalizedString(@"Sending", nil)];
+    [self.delegate paymentProcessor:self broadcastInProgress:YES];
 
     DWBIP70InteractiveCoordinator *coordinator = [[DWBIP70InteractiveCoordinator alloc] init];
     self.bip70Coordinator = coordinator; // retain for the duration of the async send
 
     [coordinator confirmAndSend:paymentOutput.bip70Confirmation
                      completion:^(DWBIP70SendResultBox *_Nullable result, NSError *_Nullable error) {
-                         [self.delegate paymentInputProcessorHideProgressHUD:self];
+                         [self.delegate paymentProcessor:self broadcastInProgress:NO];
                          self.bip70Coordinator = nil;
 
                          if (error || result == nil) {

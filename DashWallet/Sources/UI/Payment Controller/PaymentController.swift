@@ -45,6 +45,39 @@ protocol PaymentControllerPresentationContextProviding: AnyObject {
 
 protocol AmountProviding: ActivityIndicatorPreviewing, ErrorPresentable, PaymentControllerPresentationAnchor { }
 
+// MARK: - WindowProgressHUD
+
+/// A touch-blocking HUD over the whole app window — tab bar, navigation and
+/// any sheet included — for a payment waiting on the network on a screen that
+/// shows no progress of its own. Counted: each `show` is paired with a `hide`,
+/// and the HUD stays up until the last owner hides it.
+@MainActor
+enum WindowProgressHUD {
+    private static weak var host: UIView?
+    private static var owners = 0
+
+    static func show(_ message: String) {
+        owners += 1
+        guard host == nil, let window = PinPromptPresenter.appWindows().first else { return }
+        window.dw_showProgressHUD(withMessage: message)
+        host = window
+    }
+
+    static func hide() {
+        guard owners > 0 else { return }
+        owners -= 1
+        guard owners == 0 else { return }
+        host?.dw_hideProgressHUD()
+        host = nil
+    }
+
+    /// For a CoinJoin sweep started from a row or a popup, which has no
+    /// progress state of its own (`WalletSendService.sweepCoinJoin`).
+    static func showMovingFunds(_ waiting: Bool) {
+        waiting ? show(NSLocalizedString("Moving funds", comment: "CoinJoin")) : hide()
+    }
+}
+
 // MARK: - PaymentController
 
 final class PaymentController: NSObject {
@@ -52,12 +85,21 @@ final class PaymentController: NSObject {
     @objc weak var presentationContextProvider: PaymentControllerPresentationContextProviding?
 
     @objc public var locksBalance = false
+    /// Called with true when a confirmed send starts waiting for the network,
+    /// and with false right before its outcome is shown. Returns whether the
+    /// screen shows that progress itself; when it does not (or no handler is
+    /// set), a "Sending" HUD covers the window for the wait.
+    @objc var sendInProgressHandler: ((Bool) -> Bool)?
 
     private var paymentProcessor: DWPaymentProcessor
     private var fiatCurrency: String = App.fiatCurrency
     private weak var paymentOutput: DWPaymentOutput?
     private weak var confirmViewController: ConfirmPaymentViewController?
     private weak var provideAmountViewController: AmountProviding?
+    /// The hold on the paying screen's ways out while a send is in progress.
+    private var sendInProgressExitHold: ExitHold?
+    /// This controller put up the window HUD for the send in progress.
+    private var showsWindowProgressHUD = false
 
     static func shouldReenableSending(after error: NSError) -> Bool {
         !WalletSendService.isBroadcastUnknownError(error)
@@ -73,6 +115,17 @@ final class PaymentController: NSObject {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    deinit {
+        // Released mid-send, the NO callback never arrives (the processor's
+        // delegate is weak): give back what this controller holds.
+        let exitHold = sendInProgressExitHold
+        let ownsWindowHUD = showsWindowProgressHUD
+        Task { @MainActor in
+            exitHold?.release()
+            if ownsWindowHUD { WindowProgressHUD.hide() }
+        }
     }
 
     @objc
@@ -198,6 +251,54 @@ extension PaymentController: DWPaymentProcessorDelegate {
         vc.dismiss(animated: true) {
             finishBlock()
         }
+    }
+
+    /// While the send waits, its screen must stay: swiped away, the outcome
+    /// would have nowhere to show, and a live screen would take a second tap —
+    /// a second payment. A screen that shows the progress itself says so
+    /// through `sendInProgressHandler`; otherwise a "Sending" HUD covers the
+    /// whole window and blocks touches for the wait.
+    func paymentProcessor(_ processor: DWPaymentProcessor, broadcastInProgress inProgress: Bool) {
+        let shownByHandler = sendInProgressHandler?(inProgress) ?? false
+        guard inProgress else {
+            MainActor.assumeIsolated {
+                sendInProgressExitHold?.release()
+                sendInProgressExitHold = nil
+            }
+            if showsWindowProgressHUD {
+                MainActor.assumeIsolated { WindowProgressHUD.hide() }
+                showsWindowProgressHUD = false
+            }
+            setAmountScreenLeavable(true)
+            return
+        }
+        // The legacy amount screen keeps its button spinner from the tap to the
+        // outcome; it only needs its way back closed.
+        let amountScreenOnScreen = provideAmountViewController?.viewIfLoaded?.window != nil
+        if amountScreenOnScreen {
+            setAmountScreenLeavable(false)
+        }
+        let shownByScreen = shownByHandler || amountScreenOnScreen
+        guard let anchor = presentationAnchor else { return }
+        // Both resolved from the anchor's own stack, not `topController()`: a
+        // PIN prompt still finishing its dismissal would otherwise be the one
+        // held modal and the one carrying the HUD.
+        let stack = anchor.navigationController ?? anchor
+        let screen = (stack as? UINavigationController)?.topViewController ?? stack
+        sendInProgressExitHold = MainActor.assumeIsolated { ExitHold(on: screen) }
+        if !shownByScreen {
+            // On the window, not the screen: a screen inside a tab leaves the
+            // tab bar — and its Send button — live around a screen-sized HUD.
+            MainActor.assumeIsolated { WindowProgressHUD.show(NSLocalizedString("Sending", comment: "")) }
+            showsWindowProgressHUD = true
+        }
+    }
+
+    /// Back of the legacy amount screen, a navigation-bar button, closed while
+    /// its send waits so the outcome keeps its screen. The edge swipe is held
+    /// with the other ways out (`ExitHold`).
+    private func setAmountScreenLeavable(_ leavable: Bool) {
+        provideAmountViewController?.navigationController?.navigationBar.isUserInteractionEnabled = leavable
     }
 
     func paymentInputProcessorHideProgressHUD(_ processor: DWPaymentProcessor) {

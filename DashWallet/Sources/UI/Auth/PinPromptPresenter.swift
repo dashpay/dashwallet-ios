@@ -93,9 +93,9 @@ enum PinPromptPresenter {
         }
     }
 
-    /// The controller a modal should be presented from: the top of the key
-    /// window's presentation stack.
-    private static func topPresentedController() -> UIViewController? {
+    /// The app's visible, normal-level windows, the AppDelegate window first —
+    /// the windows UI may be put on. Shared with `WindowProgressHUD`.
+    static func appWindows() -> [UIWindow] {
         let scenes = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
 
@@ -120,14 +120,21 @@ enum PinPromptPresenter {
         windows.append(contentsOf: UIApplication.shared.windows)
 
         var seen = Set<ObjectIdentifier>()
-        for window in windows where seen.insert(ObjectIdentifier(window)).inserted {
-            guard !window.isHidden,
-                  window.alpha > 0,
-                  window.windowLevel == .normal,
-                  let root = window.rootViewController
-            else {
-                continue
-            }
+        return windows.filter { window in
+            seen.insert(ObjectIdentifier(window)).inserted
+                && !window.isHidden
+                && window.alpha > 0
+                && window.windowLevel == .normal
+                && window.rootViewController != nil
+        }
+    }
+
+    /// The controller a modal should be presented from: the top of the key
+    /// window's presentation stack.
+    private static func topPresentedController() -> UIViewController? {
+        let windows = appWindows()
+        for window in windows {
+            guard let root = window.rootViewController else { continue }
 
             if let anchor = attachedTopController(from: root, in: window) {
                 return anchor
@@ -147,7 +154,7 @@ enum PinPromptPresenter {
         NSLog(
             "🔐 PINPROMPT :: anchor scan exhausted — windows=%ld scenes=%ld appWindow=%@",
             windows.count,
-            scenes.count,
+            UIApplication.shared.connectedScenes.count,
             (UIApplication.shared.delegate?.window ?? nil) == nil ? "nil" : "set")
         return nil
     }

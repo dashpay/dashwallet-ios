@@ -32,6 +32,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, weak) id<DWDemoDelegate> demoDelegate;
 
 @property (nonatomic, assign) BOOL locksBalance;
+/// Called with YES when a confirmed send starts waiting for the network, and with
+/// NO right before its outcome is shown. Returns whether the screen shows that
+/// progress itself; when it does not, or no handler is set, a "Sending" HUD does.
+@property (nullable, nonatomic, copy) BOOL (^sendInProgressHandler)(BOOL inProgress);
 
 - (void)performScanQRCodeAction;
 /// Assume pasteboard contains needed data and pay

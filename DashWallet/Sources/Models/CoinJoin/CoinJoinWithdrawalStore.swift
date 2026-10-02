@@ -50,6 +50,11 @@ final class CoinJoinWithdrawalStore {
               !walletIdHex.isEmpty else {
             return legacyKey
         }
+        return seededKey(walletIdHex: walletIdHex)
+    }
+
+    /// The per-wallet key, seeded once from the legacy value.
+    private func seededKey(walletIdHex: String) -> String {
         let key = "\(legacyKey)_\(walletIdHex)"
         if defaults.object(forKey: key) == nil,
            let legacyValue = defaults.array(forKey: legacyKey) {
@@ -68,14 +73,27 @@ final class CoinJoinWithdrawalStore {
         return set
     }
 
-    /// Record a swept tx's txid (WIRE order). Idempotent and thread-safe.
-    func record(txid: Data) {
+    /// Record a swept tx's txid (WIRE order) for the wallet the sweep ran on,
+    /// which need not be the active one by the time the sweep returns.
+    /// Idempotent and thread-safe.
+    func record(txid: Data, walletId: Data) {
+        // Lowercase, like `WalletEnvironment.activeWalletIdHex`, which keys `resolvedKey()`.
+        let walletIdHex = walletId.hexEncodedString()
         lock.lock(); defer { lock.unlock() }
-        var set = loaded()
-        guard !set.contains(txid) else { return }
-        set.insert(txid)
-        cache = set
-        defaults.set(Array(set), forKey: resolvedKey())
+        insert(txid, forKey: seededKey(walletIdHex: walletIdHex))
+    }
+
+    /// Caller holds `lock`.
+    private func insert(_ txid: Data, forKey key: String) {
+        var set: Set<Data>
+        if key == cacheKey, let cache {
+            set = cache
+        } else {
+            set = Set((defaults.array(forKey: key) as? [Data]) ?? [])
+        }
+        guard set.insert(txid).inserted else { return }
+        if key == cacheKey { cache = set }
+        defaults.set(Array(set), forKey: key)
     }
 
     /// Whether `txid` (WIRE order, e.g. `Transaction.txHashData`) is a recorded

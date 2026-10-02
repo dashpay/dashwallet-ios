@@ -39,6 +39,7 @@ struct OrderPreviewView: View {
         // full-screen transaction status flow (pending → success / failure) is pushed by
         // OrderPreviewHostingController, which observes `viewModel.swapStatus`.
         orderPreviewContent
+            .lockingExit(viewModel.isSubmitting)
             .dexOfflineToast(isOnline: viewModel.isOnline)
             .task { await viewModel.onAppearLoad() }
             .alert(
@@ -68,6 +69,9 @@ struct OrderPreviewView: View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(leading: {
                 DashUIKit.NavigationBarElement.back.button { onCancel() }
+                    // The deposit waits for the network with the UI live;
+                    // leaving would drop the swap's status screen.
+                    .disabled(viewModel.isSubmitting)
             })
 
             TopIntro(title: String(format: NSLocalizedString("Order preview", comment: "Dash DEX")))
@@ -121,7 +125,8 @@ struct OrderPreviewView: View {
 
                 DashUIKit.DashButton(
                     text: viewModel.confirmButtonText,
-                    isEnabled: !(viewModel.isSubmitting || viewModel.isRefreshing || !viewModel.isOnline),
+                    isEnabled: !(viewModel.isRefreshing || !viewModel.isOnline),
+                    isLoading: viewModel.isSubmitting,
                     fillsWidth: true,
                     size: .large,
                     style: .filledBlue
