@@ -102,7 +102,8 @@ final class InternalTransferRunner: ObservableObject {
     /// The confirm sheet closes as soon as the transfer starts, so the
     /// outcome arrives with nothing of the transfer's own left on screen —
     /// this is how it reaches the surface the user actually landed on.
-    /// Cleared by that surface once shown.
+    /// Cleared by that surface once shown — except a failure, which stays
+    /// until the user closes it or the next transfer replaces it.
     @Published var notice: Notice? {
         didSet { noticeRaisedAt = notice == nil ? nil : Date() }
     }
@@ -111,8 +112,9 @@ final class InternalTransferRunner: ObservableObject {
     ///
     /// The toast lives on `HomeView`, and a notice raised while the user is
     /// elsewhere stays set until something clears it. Without a timestamp the
-    /// next appearance of that screen would announce an outcome from an
-    /// arbitrary time ago as if it had just happened.
+    /// next appearance of that screen would announce a progress or success
+    /// notice from an arbitrary time ago as if it had just happened. A failure
+    /// is exempt: it is shown whenever the user next arrives, until closed.
     private(set) var noticeRaisedAt: Date?
 
     /// The things worth saying, in the order they can happen.
@@ -127,6 +129,33 @@ final class InternalTransferRunner: ObservableObject {
         /// whose receipt has not landed.
         case submitted
         case failed(String)
+
+        /// A failure stays up until the user closes it: its reason is the one
+        /// thing the history will not show.
+        var isFailure: Bool {
+            if case .failed = self { return true }
+            return false
+        }
+
+        /// How much longer this notice stays up, given when it was raised.
+        ///
+        /// `nil` means no timer at all — a failure waits for the user. Zero
+        /// means its time is already spent: a notice raised while its screen
+        /// was away has lived its life unseen, and announcing it now would
+        /// date-stamp an old outcome as current. Anything still inside its
+        /// window is shown for the rest of that window.
+        func remainingDisplayTime(raisedAt: Date?, now: Date, duration: TimeInterval) -> TimeInterval? {
+            guard !isFailure else { return nil }
+            let age = raisedAt.map { now.timeIntervalSince($0) } ?? 0
+            return max(0, duration - age)
+        }
+    }
+
+    /// Whether closing the toast drawn for `dismissed` clears `current`.
+    /// Only the notice that toast was drawn for — a newer outcome must not be
+    /// swept away by a stale tap.
+    nonisolated static func dismissal(of dismissed: Notice, clears current: Notice?) -> Bool {
+        current == dismissed
     }
 
     private let coordinator = ShieldedTransferCoordinator()
