@@ -85,6 +85,22 @@ final class IdentityWithdrawViewModel: ObservableObject {
         PlatformPaymentIdentityFundingPolicy.feeHeadroomCredits
     }
 
+    /// Platform's minimum fee for the transition a withdrawal to `target`
+    /// runs, mirroring `STATE_TRANSITION_MIN_FEES_VERSION1`. Consensus checks
+    /// the identity balance against amount + this minimum before executing.
+    ///
+    /// - `.transparent`: IdentityCreditWithdrawal — `credit_withdrawal`,
+    ///   400,000,000 credits (0.004 DASH).
+    /// - `.platform`: IdentityCreditTransferToAddresses to one address —
+    ///   `credit_transfer_to_addresses` (500,000) plus one
+    ///   `address_funds_transfer_output_cost` (6,000,000).
+    static func minimumFeeCredits(target: IdentityWithdrawalTarget) -> UInt64 {
+        switch target {
+        case .transparent: return 400_000_000
+        case .platform: return 500_000 + 6_000_000
+        }
+    }
+
     /// The largest amount `balanceCredits` can send: everything above the fee
     /// reserve. Zero when the balance cannot cover the reserve at all.
     static func spendableCredits(balanceCredits: UInt64) -> UInt64 {
