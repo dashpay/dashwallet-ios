@@ -725,29 +725,57 @@ final class DashSyncChainWalletListsTests: XCTestCase {
     private let testnet = "2cbcf83"
     private let devnet = "1a2b3c4"
 
+    private func inventory(_ lists: [String: [String]], unreadable: Set<String> = []) -> Lists.Inventory {
+        Lists.Inventory(lists: lists, unreadableChains: unreadable)
+    }
+
     func testAListedWalletReportsTheChainsNamingIt() {
-        XCTAssertEqual(Lists.membership(ofWalletID: "a1", in: [mainnet: ["a1"], testnet: []]),
+        XCTAssertEqual(Lists.membership(ofWalletID: "a1", in: inventory([mainnet: ["a1"], testnet: []])),
                        .listed(chains: [mainnet]))
-        XCTAssertEqual(Lists.membership(ofWalletID: "d1", in: [mainnet: [], devnet: ["d1"]]),
+        XCTAssertEqual(Lists.membership(ofWalletID: "d1", in: inventory([mainnet: [], devnet: ["d1"]])),
                        .listed(chains: [devnet]))
+    }
+
+    /// One list that does not read must not hold back a wallet a readable
+    /// list names.
+    func testAReadableListStillNamesAWalletWhenAnotherListIsUnreadable() {
+        XCTAssertEqual(Lists.membership(ofWalletID: "a1", in: inventory([mainnet: ["a1"]], unreadable: [devnet])),
+                       .listed(chains: [mainnet]))
     }
 
     /// DashSync's Reset rewrites the list without the id, empty for the last
     /// wallet, and leaves the mnemonic behind.
     func testAMnemonicNoReadableListNamesIsOrphaned() {
-        XCTAssertEqual(Lists.membership(ofWalletID: "r1", in: [mainnet: []]), .orphaned)
-        XCTAssertEqual(Lists.membership(ofWalletID: "r1", in: [mainnet: ["a1"], testnet: ["t1"]]), .orphaned)
+        XCTAssertEqual(Lists.membership(ofWalletID: "r1", in: inventory([mainnet: []])), .orphaned)
+        XCTAssertEqual(Lists.membership(ofWalletID: "r1", in: inventory([mainnet: ["a1"], testnet: ["t1"]])), .orphaned)
+    }
+
+    /// A list that does not read might name the mnemonic, so it is never
+    /// judged orphaned then.
+    func testAnUnreadableListLeavesAnUnnamedMnemonicUndetermined() {
+        XCTAssertEqual(Lists.membership(ofWalletID: "r1", in: inventory([mainnet: []], unreadable: [devnet])), .undetermined)
+        XCTAssertEqual(Lists.membership(ofWalletID: "r1", in: inventory([:], unreadable: [mainnet])), .undetermined)
     }
 
     func testNoChainListAtAllIsUnresolvedNotOrphaned() {
-        XCTAssertEqual(Lists.membership(ofWalletID: "x1", in: [:]), .unresolved)
+        XCTAssertEqual(Lists.membership(ofWalletID: "x1", in: inventory([:])), .unresolved)
     }
 
     func testOnlyOrphanedMnemonicsReleaseTheLaunch() {
-        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["r1", "r2"], chainLists: [mainnet: []]), .absent)
-        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["r1", "a1"], chainLists: [mainnet: ["a1"]]), .pending)
-        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["d1"], chainLists: [devnet: ["d1"]]), .pending)
-        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["x1"], chainLists: [:]), .pending)
+        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["r1", "r2"], inventory: inventory([mainnet: []])), .absent)
+        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["r1", "a1"], inventory: inventory([mainnet: ["a1"]])), .pending)
+        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["d1"], inventory: inventory([devnet: ["d1"]])), .pending)
+        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["x1"], inventory: inventory([:])), .pending)
+    }
+
+    /// A wallet left to migrate keeps the launch waiting for the migrator;
+    /// only undetermined leftovers make the keychain unreadable.
+    func testAnUnreadableListMakesTheLaunchUnreadableUnlessAWalletIsListed() {
+        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["r1"], inventory: inventory([mainnet: []], unreadable: [devnet])),
+                       .unreadable)
+        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["r1", "a1"],
+                                           inventory: inventory([mainnet: ["a1"]], unreadable: [devnet])),
+                       .pending)
     }
 
     /// DashSync archives an `NSMutableArray` with `requiringSecureCoding: NO`.

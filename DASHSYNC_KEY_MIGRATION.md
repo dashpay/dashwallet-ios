@@ -60,19 +60,21 @@ work on a background queue:
    (attributes only).
 3. If no `WALLET_MNEMONIC_KEY_*` account exists, mark migration done (fresh
    install or already wiped device).
-4. Read every `CHAIN_WALLETS_KEY_*` list, one item at a time. If any list
-   cannot be read or decoded, set `deferredFailure` and stop: a list that
-   cannot be read might name any wallet.
+4. Read every `CHAIN_WALLETS_KEY_*` list, one item at a time. A list that
+   cannot be read or decoded is recorded as unreadable, never as empty: it
+   might name any wallet.
 5. For each DashSync wallet ID not already present in the success ledger,
    classify it against the lists (`DashSyncChainWalletLists`):
    - orphaned (every list read, none names it): skip it. It stays in the
      keychain, neither migrated nor deleted;
+   - named by no readable list while some list is unreadable: undetermined,
+     a failure for this run;
    - listed only by an unsupported chain, or no chain list exists at all:
      unknown chain;
-   - listed on mainnet or testnet: read and validate the mnemonic,
-     sanity-check deterministic seed derivation, call
-     `SwiftDashSDKHost.createOrImportWallet` on the main actor, and persist
-     the DashSync wallet ID in
+   - listed on a readable mainnet or testnet list, whatever happened to the
+     other lists: read and validate the mnemonic, sanity-check deterministic
+     seed derivation, call `SwiftDashSDKHost.createOrImportWallet` on the main
+     actor, and persist the DashSync wallet ID in
      `swiftSDKKeyMigration.v1.migratedDashSyncWalletIds`.
 6. Set the done sentinel only when every discovered wallet migrated, was
    already in the ledger, or is orphaned, and no wallet has an unknown chain or
@@ -88,8 +90,9 @@ again, while failures are retried on a later launch.
 The launch decision (`legacyWalletMaterialState()`) applies the same
 classification before the run finishes: a keychain holding only orphaned
 mnemonics is absent, so setup is offered at once; any listed or unresolved
-mnemonic is pending, and the launch hold waits for the migrator; a keychain or
-chain-list read failure is unreadable, and the hold fails closed.
+mnemonic is pending, and the launch hold waits for the migrator; a keychain
+that cannot be enumerated, or whose only unsettled mnemonics are undetermined,
+is unreadable, and the hold fails closed.
 
 ## Multi-wallet behavior
 
@@ -112,7 +115,7 @@ than one wallet exists; that previously mirrored or displayed the wrong wallet.
 |---|---|
 | Wallet ID listed only by an unsupported DashSync chain (devnet/regtest/evonet) | Set `swiftSDKKeyMigration.v1.deferredUnknownChain`; leave done unset; retry later. |
 | Mnemonics exist but no `CHAIN_WALLETS_KEY_*` list exists at all | Same as an unsupported chain: fail closed. A real Reset keeps its (emptied) list, so no list at all is a layout the migrator cannot vouch for. |
-| A chain list cannot be read or decoded | Set `swiftSDKKeyMigration.v1.deferredFailure`; leave done unset; retry later. The launch probe reports the keychain unreadable. |
+| A chain list cannot be read or decoded | Wallets that a readable mainnet or testnet list names still migrate. Any mnemonic no readable list names is undetermined: set `swiftSDKKeyMigration.v1.deferredFailure`; leave done unset; retry later. With only undetermined mnemonics left, the launch probe reports the keychain unreadable. |
 | Mnemonic missing/invalid or host creation fails | Leave done unset; retain successes in the per-wallet ledger; retry later. |
 | No old mnemonics, or only orphaned ones | Mark done so SDK runtime startup does not wait indefinitely. Orphaned mnemonics stay in the keychain. |
 
@@ -199,8 +202,11 @@ entry point must collect one of these authorizations before invoking the wiper.
 - a partial failure resumes without duplicating successful wallets;
 - a mnemonic orphaned by a DashSync Reset neither holds the launch nor blocks
   the done sentinel, and stays in the keychain;
-- an unreadable or undecodable chain list, a keychain without any chain list,
-  and an unsupported chain all keep the launch hold (fail closed);
+- an unreadable or undecodable chain list never makes a mnemonic orphaned, yet
+  does not stop a wallet that a readable mainnet or testnet list names from
+  migrating;
+- a mnemonic that only an unreadable list could name, a keychain without any
+  chain list, and an unsupported chain all keep the launch hold (fail closed);
 - mainnet and testnet retain separate active-wallet choices;
 - create/import/recovery use the same host boundary;
 - create/import persist and verify the mnemonic before the wallet becomes live;
