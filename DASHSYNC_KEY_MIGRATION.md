@@ -2,7 +2,8 @@
 
 Current contract for importing wallet mnemonics from DashSync-owned keychain
 entries into the host-owned SwiftDashSDK runtime. Updated 2026-07-11 to include
-multi-wallet and active-wallet behavior.
+multi-wallet and active-wallet behavior, and 2026-09-30 for mnemonics orphaned
+by a DashSync Reset.
 
 ## Deployment model and invariant
 
@@ -35,6 +36,13 @@ Only compatibility code may know these old layouts:
 DashSync wallet IDs are short hash strings. SDK wallet IDs are 32-byte SDK
 identifiers and are not expected to match.
 
+DashSync loaded wallets only from the per-chain lists. Its Reset
+(`DSChain.unregisterWallet`) rewrites the list without the wallet ID (an empty
+array for the last wallet) and deletes the PIN, but never deletes the wallet's
+`WALLET_MNEMONIC_KEY_*` account. A mnemonic that no list names is therefore a
+wallet the user reset in the previous app, which that app no longer showed
+either: an **orphaned mnemonic**.
+
 Known chain suffixes:
 
 | Network | Genesis short hex |
@@ -48,22 +56,40 @@ Known chain suffixes:
 work on a background queue:
 
 1. If `swiftSDKKeyMigration.v1.done` exists, return.
-2. Clear stale legacy defer flags and enumerate every
-   `WALLET_MNEMONIC_KEY_*` account.
-3. If none exist, mark migration done (fresh install or already wiped device).
-4. For each DashSync wallet ID not already present in the success ledger:
-   - resolve mainnet/testnet membership from the frozen chain-wallet lists;
-   - read and validate the mnemonic;
-   - sanity-check deterministic seed derivation;
-   - call `SwiftDashSDKHost.createOrImportWallet` on the main actor;
-   - persist the DashSync wallet ID in
+2. Clear stale legacy defer flags and enumerate the service's accounts
+   (attributes only).
+3. If no `WALLET_MNEMONIC_KEY_*` account exists, mark migration done (fresh
+   install or already wiped device).
+4. Read every `CHAIN_WALLETS_KEY_*` list, one item at a time. If any list
+   cannot be read or decoded, set `deferredFailure` and stop: a list that
+   cannot be read might name any wallet.
+5. For each DashSync wallet ID not already present in the success ledger,
+   classify it against the lists (`DashSyncChainWalletLists`):
+   - orphaned (every list read, none names it): skip it. It stays in the
+     keychain, neither migrated nor deleted;
+   - listed only by an unsupported chain, or no chain list exists at all:
+     unknown chain;
+   - listed on mainnet or testnet: read and validate the mnemonic,
+     sanity-check deterministic seed derivation, call
+     `SwiftDashSDKHost.createOrImportWallet` on the main actor, and persist
+     the DashSync wallet ID in
      `swiftSDKKeyMigration.v1.migratedDashSyncWalletIds`.
-5. Set the done sentinel only when every discovered wallet either migrated or
-   was already in the ledger and no wallet has an unknown chain/failure.
-6. Notify `SwiftDashSDKWalletRuntime` after the done sentinel is written.
+6. Set the done sentinel only when every discovered wallet migrated, was
+   already in the ledger, or is orphaned, and no wallet has an unknown chain or
+   failure.
+7. Notify `SwiftDashSDKWalletRuntime` after the done sentinel is written.
+8. Every run past step 1 writes one summary line with counts, never wallet
+   IDs, to the app log, so diagnostic exports show the outcome (the
+   migrator's os_log lines do not reach them).
 
 Partial runs are resumable: successfully migrated wallet IDs are not imported
 again, while failures are retried on a later launch.
+
+The launch decision (`legacyWalletMaterialState()`) applies the same
+classification before the run finishes: a keychain holding only orphaned
+mnemonics is absent, so setup is offered at once; any listed or unresolved
+mnemonic is pending, and the launch hold waits for the migrator; a keychain or
+chain-list read failure is unreadable, and the hold fails closed.
 
 ## Multi-wallet behavior
 
@@ -84,9 +110,11 @@ than one wallet exists; that previously mirrored or displayed the wrong wallet.
 
 | Condition | Behavior |
 |---|---|
-| Unknown/unsupported DashSync chain | Set `swiftSDKKeyMigration.v1.deferredUnknownChain`; leave done unset; retry later. |
+| Wallet ID listed only by an unsupported DashSync chain (devnet/regtest/evonet) | Set `swiftSDKKeyMigration.v1.deferredUnknownChain`; leave done unset; retry later. |
+| Mnemonics exist but no `CHAIN_WALLETS_KEY_*` list exists at all | Same as an unsupported chain: fail closed. A real Reset keeps its (emptied) list, so no list at all is a layout the migrator cannot vouch for. |
+| A chain list cannot be read or decoded | Set `swiftSDKKeyMigration.v1.deferredFailure`; leave done unset; retry later. The launch probe reports the keychain unreadable. |
 | Mnemonic missing/invalid or host creation fails | Leave done unset; retain successes in the per-wallet ledger; retry later. |
-| No old mnemonics | Mark done so SDK runtime startup does not wait indefinitely. |
+| No old mnemonics, or only orphaned ones | Mark done so SDK runtime startup does not wait indefinitely. Orphaned mnemonics stay in the keychain. |
 
 The runtime treats legacy defer flags as permission to stop waiting, but the
 migrator remains responsible for clearing stale values and retrying incomplete
@@ -121,15 +149,18 @@ that wallet during a partially successful attempt.
 Every wipe entry point waits for the same explicit result before navigating or
 creating a replacement wallet. Production recovery removes only the legacy
 mnemonic accounts matching its single authorized SDK seed; confirmed Delete
-All removes every legacy mnemonic account. Both run before SDK deletion, and a
+All removes every legacy mnemonic account, orphaned ones included. Both run
+before SDK deletion, and a
 cleanup failure aborts the SDK wipe. Debug reset and screenshot replacement
 preserve legacy data. The app never deletes the whole
 `org.dashfoundation.dash` service.
 
 Per-wallet Remove deletes matching legacy mnemonic accounts, then the
 deterministic mainnet and testnet SDK IDs for that seed, with the live network
-last. The old `CHAIN_WALLETS_KEY_*` lists may retain harmless orphan IDs: they
-contain no seed and the migrator only starts from mnemonic accounts.
+last. The old `CHAIN_WALLETS_KEY_*` lists may retain harmless IDs whose
+mnemonic is gone: they contain no seed and the migrator only starts from
+mnemonic accounts. The reverse, a mnemonic that no list names, is an orphaned
+mnemonic (see the frozen contract above).
 
 A Wallets-screen Remove may route into the global wipe only after Keychain
 ground truth proves every stored wallet ID belongs to the same recovery phrase
@@ -166,6 +197,10 @@ entry point must collect one of these authorizations before invoking the wiper.
 - one and multiple DashSync wallets import without selecting the wrong active
   wallet;
 - a partial failure resumes without duplicating successful wallets;
+- a mnemonic orphaned by a DashSync Reset neither holds the launch nor blocks
+  the done sentinel, and stays in the keychain;
+- an unreadable or undecodable chain list, a keychain without any chain list,
+  and an unsupported chain all keep the launch hold (fail closed);
 - mainnet and testnet retain separate active-wallet choices;
 - create/import/recovery use the same host boundary;
 - create/import persist and verify the mnemonic before the wallet becomes live;
@@ -184,6 +219,8 @@ entry point must collect one of these authorizations before invoking the wiper.
 ## Source files
 
 - `DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKKeyMigrator.swift`
+- `DashWallet/Sources/Infrastructure/SwiftDashSDK/WalletLifecycleTransitionState.swift`
+  (`DashSyncChainWalletLists`, the launch hold)
 - `DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKHost.swift`
 - `DashWallet/Sources/Infrastructure/SwiftDashSDK/WalletEnvironment.swift`
 - `DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKWalletRuntime.swift`

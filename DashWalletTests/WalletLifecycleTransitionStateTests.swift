@@ -715,3 +715,57 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         XCTAssertEqual(state.phase, .openingWallet)
     }
 }
+
+/// The verdict the launch probe and the key migrator share: a DashSync
+/// mnemonic that no readable chain list names was reset in the previous app
+/// and is not material to migrate; anything else keeps the launch hold.
+final class DashSyncChainWalletListsTests: XCTestCase {
+    private typealias Lists = DashSyncChainWalletLists
+    private let mainnet = "b67a40f"
+    private let testnet = "2cbcf83"
+    private let devnet = "1a2b3c4"
+
+    func testAListedWalletReportsTheChainsNamingIt() {
+        XCTAssertEqual(Lists.membership(ofWalletID: "a1", in: [mainnet: ["a1"], testnet: []]),
+                       .listed(chains: [mainnet]))
+        XCTAssertEqual(Lists.membership(ofWalletID: "d1", in: [mainnet: [], devnet: ["d1"]]),
+                       .listed(chains: [devnet]))
+    }
+
+    /// DashSync's Reset rewrites the list without the id, empty for the last
+    /// wallet, and leaves the mnemonic behind.
+    func testAMnemonicNoReadableListNamesIsOrphaned() {
+        XCTAssertEqual(Lists.membership(ofWalletID: "r1", in: [mainnet: []]), .orphaned)
+        XCTAssertEqual(Lists.membership(ofWalletID: "r1", in: [mainnet: ["a1"], testnet: ["t1"]]), .orphaned)
+    }
+
+    func testNoChainListAtAllIsUnresolvedNotOrphaned() {
+        XCTAssertEqual(Lists.membership(ofWalletID: "x1", in: [:]), .unresolved)
+    }
+
+    func testOnlyOrphanedMnemonicsReleaseTheLaunch() {
+        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["r1", "r2"], chainLists: [mainnet: []]), .absent)
+        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["r1", "a1"], chainLists: [mainnet: ["a1"]]), .pending)
+        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["d1"], chainLists: [devnet: ["d1"]]), .pending)
+        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["x1"], chainLists: [:]), .pending)
+    }
+
+    /// DashSync archives an `NSMutableArray` with `requiringSecureCoding: NO`.
+    func testDecodesListsAsDashSyncWroteThem() throws {
+        let emptied = try NSKeyedArchiver.archivedData(withRootObject: NSMutableArray(), requiringSecureCoding: false)
+        XCTAssertEqual(Lists.decodeWalletIDs(emptied), [])
+        let listed = try NSKeyedArchiver.archivedData(
+            withRootObject: NSMutableArray(array: ["a1", "b2"]), requiringSecureCoding: false)
+        XCTAssertEqual(Lists.decodeWalletIDs(listed), ["a1", "b2"])
+    }
+
+    func testAnUndecodableListIsNilNeverEmpty() throws {
+        XCTAssertNil(Lists.decodeWalletIDs(Data("not an archive".utf8)))
+        let numbers = try NSKeyedArchiver.archivedData(
+            withRootObject: NSMutableArray(array: [1, 2]), requiringSecureCoding: false)
+        XCTAssertNil(Lists.decodeWalletIDs(numbers))
+        let dictionary = try NSKeyedArchiver.archivedData(
+            withRootObject: NSDictionary(dictionary: ["a1": "b2"]), requiringSecureCoding: false)
+        XCTAssertNil(Lists.decodeWalletIDs(dictionary))
+    }
+}

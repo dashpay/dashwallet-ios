@@ -177,41 +177,93 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         defaults.removeObject(forKey: deferredUnknownChainKey)
         defaults.removeObject(forKey: deferredFailureKey)
 
-        let mnemonicAccounts: [String]
+        // The os_log lines below never reach a diagnostic export, so every run
+        // that gets past the done check also leaves one summary line in the
+        // app log: counts only, never wallet ids.
+        let accounts: [String]
         do {
-            mnemonicAccounts = try strictlyEnumerateDashSyncMnemonicAccounts()
+            accounts = try strictlyEnumerateDashSyncAccounts()
         } catch {
             defaults.set(true, forKey: deferredFailureKey)
             logger.error(
                 "🔑 KEYMIG :: DashSync mnemonic enumeration failed: \(String(describing: error), privacy: .public)")
+            DWLogger.log("🔑 KEYMIG :: legacy keychain unreadable (enumeration failed); migration deferred")
             return
         }
+        let mnemonicAccounts = accounts.filter { $0.hasPrefix(dashSyncMnemonicAccountPrefix) }
         if mnemonicAccounts.isEmpty {
             defaults.set("v1", forKey: doneKey)
             logger.info("🔑 KEYMIG :: no DashSync mnemonics found — fresh install or post-wipe, marking done")
+            DWLogger.log("🔑 KEYMIG :: no legacy mnemonics; migration complete")
             return
         }
+
+        // Read the chain lists once, before any verdict: one that cannot be
+        // read or decoded might name any wallet, so no mnemonic may be judged
+        // orphaned without all of them.
+        let chainLists: [String: [String]]
+        do {
+            chainLists = try readDashSyncChainWalletLists(from: accounts)
+        } catch {
+            defaults.set(true, forKey: deferredFailureKey)
+            logger.error(
+                "🔑 KEYMIG :: DashSync chain-wallet lists unreadable: \(String(describing: error), privacy: .public)")
+            DWLogger.log("🔑 KEYMIG :: \(mnemonicAccounts.count) legacy mnemonic(s), chain-wallet lists unreadable; migration deferred")
+            return
+        }
+        let chainsPresent = chainLists.keys.sorted().joined(separator: ",")
 
         var migrated = Set(defaults.stringArray(forKey: migratedDashSyncWalletIdsKey) ?? [])
         var hadUnknownChain = false
         var hadFailure = false
         var migratedThisRun = 0
+        var alreadyMigrated = 0
+        var orphaned = 0
+        var unsupportedChain = 0
+        var unresolved = 0
+        var failed = 0
 
         for account in mnemonicAccounts {
             let walletID = String(account.dropFirst(dashSyncMnemonicAccountPrefix.count))
             if migrated.contains(walletID) {
+                alreadyMigrated += 1
                 continue
             }
 
-            guard let network = detectNetwork(forWalletID: walletID) else {
-                logger.warning("🔑 KEYMIG :: \(walletID, privacy: .public) chain unresolved/unsupported")
-                hadUnknownChain = true
+            let network: Network
+            switch DashSyncChainWalletLists.membership(ofWalletID: walletID, in: chainLists) {
+            case .orphaned:
+                // Reset in the previous app, which no longer showed it either.
+                // Not material to migrate, and never deleted here.
+                orphaned += 1
+                logger.info(
+                    "🔑 KEYMIG :: \(walletID, privacy: .public) not listed by any chain (reset in the previous app) — left in place, not migrated")
                 continue
+            case .unresolved:
+                unresolved += 1
+                hadUnknownChain = true
+                logger.error(
+                    "🔑 KEYMIG :: \(walletID, privacy: .public) cannot be mapped: no \(dashSyncChainWalletsKeyPrefix, privacy: .public)* list in the keychain")
+                continue
+            case let .listed(chains):
+                if chains.contains(mainnetGenesisShortHex) {
+                    network = .mainnet
+                } else if chains.contains(testnetGenesisShortHex) {
+                    network = .testnet
+                } else {
+                    // Unknown chain (devnet/regtest/evonet) — defer in v1.
+                    unsupportedChain += 1
+                    hadUnknownChain = true
+                    logger.error(
+                        "🔑 KEYMIG :: \(walletID, privacy: .public) belongs to unsupported chain(s) \(chains.sorted().joined(separator: ","), privacy: .public)")
+                    continue
+                }
             }
 
             guard let mnemonic = readKeychainString(service: dashSyncService, account: account),
                   Mnemonic.validate(mnemonic) else {
                 logger.error("🔑 KEYMIG :: \(walletID, privacy: .public) mnemonic read/validate failed")
+                failed += 1
                 hadFailure = true
                 continue
             }
@@ -220,6 +272,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
                 let seed = try Mnemonic.toSeed(mnemonic: mnemonic)
                 guard seed.count == 64, try Mnemonic.toSeed(mnemonic: mnemonic) == seed else {
                     logger.error("🔑 KEYMIG :: \(walletID, privacy: .public) seed sanity check failed")
+                    failed += 1
                     hadFailure = true
                     continue
                 }
@@ -235,11 +288,18 @@ final class SwiftDashSDKKeyMigrator: NSObject {
                 migratedThisRun += 1
             } catch {
                 logger.error("🔑 KEYMIG :: \(walletID, privacy: .public) threw: \(String(describing: error), privacy: .public)")
+                failed += 1
                 hadFailure = true
             }
         }
 
-        if !hadFailure && !hadUnknownChain {
+        let complete = !hadFailure && !hadUnknownChain
+        DWLogger.log(
+            "🔑 KEYMIG :: \(mnemonicAccounts.count) legacy mnemonic(s), chain lists [\(chainsPresent)]: \(migratedThisRun) migrated, "
+                + "\(alreadyMigrated) already migrated, \(orphaned) orphaned (left in place), "
+                + "\(unsupportedChain) unsupported chain, \(unresolved) without a chain list, \(failed) failed; "
+                + (complete ? "migration complete" : "migration incomplete, will retry on next launch"))
+        if complete {
             defaults.set("v1", forKey: doneKey)
             logger.info("🔑 KEYMIG :: migration complete (\(migrated.count, privacy: .public) total, \(migratedThisRun, privacy: .public) this run)")
             // Notify runtime only after doneKey is set — its wait loop polls for it.
@@ -258,17 +318,28 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     // MARK: - Launch-decision probes
 
     /// Whether DashSync wallet material still awaits the one-shot migration.
-    /// A keychain that cannot be read (for example a background launch on a
-    /// locked device) is reported as such rather than as "nothing there":
-    /// the launch hold must not release into setup on a read error, because
-    /// the upgrading user's wallet may well be behind it.
+    /// Mnemonics that no chain list names were reset in the previous app and
+    /// are not material to wait for (`DashSyncChainWalletLists`); a keychain
+    /// holding only those is `.absent`, so setup is offered at once. A
+    /// keychain that cannot be read (for example a background launch on a
+    /// locked device), including a chain list that does not read or decode,
+    /// is reported as such rather than as "nothing there": the launch hold
+    /// must not release into setup on a read error, because the upgrading
+    /// user's wallet may well be behind it.
     static func legacyWalletMaterialState() -> LegacyWalletMigrationLaunchCoordinator.LegacyMaterialState {
         guard UserDefaults.standard.string(forKey: doneKey) == nil else { return .absent }
         do {
-            return try strictlyEnumerateDashSyncMnemonicAccounts().isEmpty ? .absent : .pending
+            let accounts = try strictlyEnumerateDashSyncAccounts()
+            let walletIDs = accounts
+                .filter { $0.hasPrefix(dashSyncMnemonicAccountPrefix) }
+                .map { String($0.dropFirst(dashSyncMnemonicAccountPrefix.count)) }
+            guard !walletIDs.isEmpty else { return .absent }
+            return DashSyncChainWalletLists.materialState(
+                mnemonicWalletIDs: walletIDs,
+                chainLists: try readDashSyncChainWalletLists(from: accounts))
         } catch {
             logger.error(
-                "🔑 KEYMIG :: DashSync mnemonic enumeration failed during launch probe: \(String(describing: error), privacy: .public)")
+                "🔑 KEYMIG :: DashSync keychain read failed during launch probe: \(String(describing: error), privacy: .public)")
             return .unreadable
         }
     }
@@ -324,6 +395,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
     private enum LegacyMnemonicCleanupError: LocalizedError {
         case keychainRead(OSStatus)
+        case chainListUndecodable
         case mnemonicRead
         case deletionFailed
         case verificationFailed
@@ -472,6 +544,13 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     }
 
     private static func strictlyEnumerateDashSyncMnemonicAccounts() throws -> [String] {
+        try strictlyEnumerateDashSyncAccounts().filter { $0.hasPrefix(dashSyncMnemonicAccountPrefix) }
+    }
+
+    /// Every account in DashSync's service, sorted. Attributes only, so it
+    /// works where a data query would not (the mnemonics are
+    /// WhenUnlockedThisDeviceOnly).
+    private static func strictlyEnumerateDashSyncAccounts() throws -> [String] {
         let query: [String: Any] = [
             kSecClass as String:           kSecClassGenericPassword,
             kSecAttrService as String:     dashSyncService,
@@ -488,82 +567,38 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         }
         return items
             .compactMap { $0[kSecAttrAccount as String] as? String }
-            .filter { $0.hasPrefix(dashSyncMnemonicAccountPrefix) }
             .sorted()
     }
 
-    /// Determine which network a wallet ID belongs to by enumerating
-    /// `CHAIN_WALLETS_KEY_<chainGenesisShortHex>` items, decoding each as an
-    /// NSKeyedArchiver `NSArray<NSString *>` of wallet IDs, and matching the
-    /// chain genesis short-hex against our hard-coded mainnet/testnet
-    /// constants. Returns `nil` for devnet/regtest/evonet (unsupported in v1).
-    private static func detectNetwork(forWalletID walletID: String) -> Network? {
-        let query: [String: Any] = [
-            kSecClass as String:            kSecClassGenericPassword,
-            kSecAttrService as String:      dashSyncService,
-            kSecMatchLimit as String:       kSecMatchLimitAll,
-            kSecReturnAttributes as String: true,
-            kSecReturnData as String:       true
-        ]
-        var result: AnyObject?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-        guard status == errSecSuccess, let items = result as? [[String: Any]] else {
-            // Distinguish "the keychain would not talk to us" from "no chain
-            // claims this wallet": both used to surface as the same silent nil,
-            // and the caller's log line ("chain unresolved/unsupported") reads
-            // as the second while an upgrade on a locked device produces the
-            // first. `errSecInteractionNotAllowed` (-25308) is that case — this
-            // query asks for kSecValueData, which the enumeration pass does
-            // not, so it can fail where enumeration just succeeded.
-            logger.error(
-                "🔑 KEYMIG :: chain-wallets keychain query failed, status \(status, privacy: .public)")
-            return nil
-        }
-
-        let chainItems = items.filter {
-            ($0[kSecAttrAccount as String] as? String)?
-                .hasPrefix(dashSyncChainWalletsKeyPrefix) == true
-        }
-        if chainItems.isEmpty {
-            logger.error(
-                "🔑 KEYMIG :: no \(dashSyncChainWalletsKeyPrefix, privacy: .public)* items among \(items.count, privacy: .public) keychain item(s) — cannot map any wallet to a chain")
-        }
-
-        for item in items {
-            guard let account = item[kSecAttrAccount as String] as? String,
-                  account.hasPrefix(dashSyncChainWalletsKeyPrefix),
-                  let data = item[kSecValueData as String] as? Data else {
-                continue
+    /// DashSync's per-chain wallet lists, keyed by chain genesis short hex:
+    /// every `CHAIN_WALLETS_KEY_*` among `accounts`, read one item at a time.
+    /// The lists are AfterFirstUnlockThisDeviceOnly; a service-wide data query
+    /// would also pull every mnemonic secret and fail whenever the device is
+    /// locked. Throws on any read or decode failure rather than dropping that
+    /// list: a list that cannot be read might name any wallet, and missing
+    /// it must never turn a wallet into an orphan.
+    private static func readDashSyncChainWalletLists(from accounts: [String]) throws -> [String: [String]] {
+        var lists: [String: [String]] = [:]
+        for account in accounts where account.hasPrefix(dashSyncChainWalletsKeyPrefix) {
+            let query: [String: Any] = [
+                kSecClass as String:       kSecClassGenericPassword,
+                kSecAttrService as String: dashSyncService,
+                kSecAttrAccount as String: account,
+                kSecMatchLimit as String:  kSecMatchLimitOne,
+                kSecReturnData as String:  true
+            ]
+            var result: AnyObject?
+            let status = SecItemCopyMatching(query as CFDictionary, &result)
+            guard status == errSecSuccess else {
+                throw LegacyMnemonicCleanupError.keychainRead(status)
             }
-
-            let chainSuffix = String(account.dropFirst(dashSyncChainWalletsKeyPrefix.count))
-
-            let allowedClasses: [AnyClass] = [NSArray.self, NSString.self]
-            guard let unarchived = try? NSKeyedUnarchiver.unarchivedObject(
-                    ofClasses: allowedClasses, from: data),
-                  let walletIDs = unarchived as? [String] else {
-                continue
+            guard let data = result as? Data,
+                  let walletIDs = DashSyncChainWalletLists.decodeWalletIDs(data) else {
+                throw LegacyMnemonicCleanupError.chainListUndecodable
             }
-
-            if walletIDs.contains(walletID) {
-                if chainSuffix == mainnetGenesisShortHex { return .mainnet }
-                if chainSuffix == testnetGenesisShortHex { return .testnet }
-                // Unknown chain (devnet/regtest/evonet) — defer in v1.
-                logger.error(
-                    "🔑 KEYMIG :: \(walletID, privacy: .public) belongs to unsupported chain \(chainSuffix, privacy: .public)")
-                return nil
-            }
+            lists[String(account.dropFirst(dashSyncChainWalletsKeyPrefix.count))] = walletIDs
         }
-        // The wallet has a mnemonic but no chain list claims it. Name the
-        // suffixes that were present, so a prefix/format change in the source
-        // keychain is distinguishable from a genuinely orphaned wallet.
-        let suffixes = chainItems
-            .compactMap { ($0[kSecAttrAccount as String] as? String) }
-            .map { String($0.dropFirst(dashSyncChainWalletsKeyPrefix.count)) }
-            .joined(separator: ",")
-        logger.error(
-            "🔑 KEYMIG :: \(walletID, privacy: .public) not listed by any chain; chains present: [\(suffixes, privacy: .public)]")
-        return nil
+        return lists
     }
 
     /// Read a UTF-8 string value from a keychain item. Returns nil on any
@@ -580,13 +615,18 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// path can be exercised on a simulator without a real legacy install.
     /// Two mutually exclusive triggers, each clearing the migration
     /// sentinel so the migrator re-runs:
-    /// - `LEGACY_KEYCHAIN_INVALID=1` plants one never-valid mnemonic entry
-    ///   (the perpetually-failing-migration state) and nothing else.
+    /// - `LEGACY_KEYCHAIN_INVALID=1` plants one never-valid mnemonic entry,
+    ///   listed on mainnet (the perpetually-failing-migration state), and no
+    ///   PIN.
     /// - `LEGACY_KEYCHAIN_MNEMONIC` = BIP39 phrase to plant, with a legacy
     ///   PIN (`LEGACY_KEYCHAIN_PIN`, default 1111); optional
-    ///   `LEGACY_KEYCHAIN_ORPHAN=1` skips the chain-wallets list (the
-    ///   unknown-chain defer path). This variant also clears the per-wallet
-    ///   ledger and removes any previously planted invalid entry.
+    ///   `LEGACY_KEYCHAIN_ORPHAN=1` deletes the mainnet chain-wallets list
+    ///   instead of writing it. On a keychain with no other list that leaves
+    ///   no list at all: the fail-closed unknown-chain card, with a PIN. It
+    ///   is NOT what a real 8.x Reset leaves (that keeps an emptied list and
+    ///   deletes the PIN; its mnemonic is orphaned and skipped). This variant
+    ///   also clears the per-wallet ledger and removes any previously planted
+    ///   invalid entry.
     /// Call before `migrateIfNeeded`.
     @objc
     static func debugInstallLegacyFixtureIfRequested() {
@@ -598,12 +638,36 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         if env["LEGACY_KEYCHAIN_INVALID"] == "1" {
             let defaults = UserDefaults.standard
             defaults.removeObject(forKey: doneKey)
+            let invalidWalletID = "deadbeefdeadbeef"
             _ = KeychainStore.set(
                 data: Data("definitely not a valid bip39 phrase".utf8),
                 service: dashSyncService,
-                account: dashSyncMnemonicAccountPrefix + "deadbeefdeadbeef",
+                account: dashSyncMnemonicAccountPrefix + invalidWalletID,
                 accessibility: .whenUnlockedThisDeviceOnly)
-            logger.warning("🔑 KEYMIG :: DEBUG invalid-mnemonic fixture installed")
+            // List it on mainnet, as DashSync would: an unlisted mnemonic is
+            // one reset in the previous app and is skipped, never the failure
+            // this fixture exists to reproduce. Ids already listed stay; a
+            // list that does not read or decode is left alone.
+            let listAccount = dashSyncChainWalletsKeyPrefix + mainnetGenesisShortHex
+            var listedIDs: [String]?
+            if let accounts = try? strictlyEnumerateDashSyncAccounts() {
+                listedIDs = accounts.contains(listAccount)
+                    ? (try? readDashSyncChainWalletLists(from: [listAccount]))?[mainnetGenesisShortHex]
+                    : []
+            }
+            if let listedIDs,
+               let archive = try? NSKeyedArchiver.archivedData(
+                   withRootObject: NSMutableArray(
+                       array: listedIDs.contains(invalidWalletID) ? listedIDs : listedIDs + [invalidWalletID]),
+                   requiringSecureCoding: false) {
+                _ = KeychainStore.set(
+                    data: archive,
+                    service: dashSyncService,
+                    account: listAccount,
+                    accessibility: .whenUnlockedThisDeviceOnly)
+            }
+            logger.warning(
+                "🔑 KEYMIG :: DEBUG invalid-mnemonic fixture installed (listed on mainnet: \(listedIDs != nil, privacy: .public))")
             return
         }
         guard let phrase = env["LEGACY_KEYCHAIN_MNEMONIC"], !phrase.isEmpty else { return }

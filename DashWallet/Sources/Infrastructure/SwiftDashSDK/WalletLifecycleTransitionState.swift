@@ -498,6 +498,63 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
     }
 }
 
+/// What DashSync's own per-chain wallet lists say about its keychain
+/// mnemonics. Pure over plain data, so the launch probe and the key migrator
+/// reach the same verdict and it is testable without the keychain or the SDK.
+/// Deliberately not actor-isolated: the migrator calls it from its queue.
+///
+/// DashSync (the 8.x app) instantiated wallets only from the ids in
+/// `CHAIN_WALLETS_KEY_<genesisShortHex>`. Its Reset removes the id from that
+/// list (rewriting it, empty if need be) and deletes the PIN, but never
+/// deletes `WALLET_MNEMONIC_KEY_<id>`. A mnemonic that no list names is
+/// therefore a wallet the user reset in the previous app, one 8.x itself no
+/// longer showed: nothing to migrate, and it stays in the keychain untouched.
+/// That verdict needs every list read and decoded. With no list at all the
+/// mnemonics stay unresolved, failing closed: a real Reset keeps its list,
+/// so a keychain without any is a layout nothing here can vouch for.
+enum DashSyncChainWalletLists {
+    enum Membership: Equatable {
+        /// Named by the lists of these chains (genesis short hex).
+        case listed(chains: Set<String>)
+        /// Every list was read and none names it: reset in the previous app.
+        case orphaned
+        /// No chain list exists at all, so nothing can be told.
+        case unresolved
+    }
+
+    /// `lists` maps each chain's genesis short hex to the wallet ids its list
+    /// names, as read from the keychain.
+    static func membership(ofWalletID walletID: String, in lists: [String: [String]]) -> Membership {
+        guard !lists.isEmpty else { return .unresolved }
+        let chains = Set(lists.compactMap { $0.value.contains(walletID) ? $0.key : nil })
+        return chains.isEmpty ? .orphaned : .listed(chains: chains)
+    }
+
+    /// The launch probe's verdict for mnemonics whose lists were all read:
+    /// only a keychain of orphaned mnemonics leaves nothing to wait for.
+    static func materialState(
+        mnemonicWalletIDs: [String],
+        chainLists: [String: [String]]
+    ) -> LegacyWalletMigrationLaunchCoordinator.LegacyMaterialState {
+        let onlyOrphans = mnemonicWalletIDs.allSatisfy {
+            membership(ofWalletID: $0, in: chainLists) == .orphaned
+        }
+        return onlyOrphans ? .absent : .pending
+    }
+
+    /// One list decoded the way DashSync wrote it: `NSKeyedArchiver` with
+    /// `requiringSecureCoding: NO`, an `NSMutableArray` of `NSString` ids
+    /// (empty after a Reset). Anything else is `nil`, never an empty list,
+    /// because a list that does not decode might name any wallet.
+    static func decodeWalletIDs(_ data: Data) -> [String]? {
+        guard let object = try? NSKeyedUnarchiver.unarchivedObject(
+                ofClasses: [NSArray.self, NSString.self], from: data) else {
+            return nil
+        }
+        return object as? [String]
+    }
+}
+
 extension Notification.Name {
     /// Posted (main queue) by `SwiftDashSDKWalletRuntime.handleWalletMaterialChanged`
     /// whenever persisted wallet material changed — the migrator's success,
