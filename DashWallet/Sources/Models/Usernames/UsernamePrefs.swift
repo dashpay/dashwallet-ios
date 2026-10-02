@@ -22,6 +22,10 @@ private let kJoinDashPayInfoShown = "joinDashPayInfoShownKey"
 private let kRequestedUsernameId = "requestedUsernameIdKey"
 private let kAlreadyPaid = "alreadyPaidForUsernameKey"
 private let kJoinDashPayDismissed = "joinDashPayDismissed"
+private let kInFlightRegistrationUsername = "inFlightRegistrationUsername"
+private let kLostContestUsername = "lostContestUsername"
+private let kLostContestWasBlocked = "lostContestWasBlocked"
+private let kCompletedTileUsername = "usernameRegistrationCompletedTile"
 
 /// Keeps the Upgrade-to-DashPay banner dismissal attached to the wallet and
 /// network where the user made that choice. A global flag leaks between
@@ -29,8 +33,14 @@ private let kJoinDashPayDismissed = "joinDashPayDismissed"
 /// network round-trip.
 enum JoinDashPayDismissalScope {
     static func storageKey(networkRawValue: Int, walletIdHex: String?) -> String {
+        scopedKey(kJoinDashPayDismissed, networkRawValue: networkRawValue, walletIdHex: walletIdHex)
+    }
+
+    /// The same wallet + network scoping, for the other username-registration
+    /// flags that must not leak across a network switch.
+    static func scopedKey(_ base: String, networkRawValue: Int, walletIdHex: String?) -> String {
         let walletScope = walletIdHex.flatMap { $0.isEmpty ? nil : $0 } ?? "unbound"
-        return "\(kJoinDashPayDismissed).v2.\(networkRawValue).\(walletScope)"
+        return "\(base).v2.\(networkRawValue).\(walletScope)"
     }
 }
 
@@ -84,6 +94,115 @@ class UsernamePrefs {
 
     private var joinDashPayDismissedKey: String {
         JoinDashPayDismissalScope.storageKey(
+            networkRawValue: WalletEnvironment.networkKind.rawValue,
+            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+    }
+
+    /// The label of a registration that was handed off to the Home tile and has
+    /// not reached a terminal state yet.
+    ///
+    /// The SDK persists the *money* side of a Core-funded attempt (the
+    /// asset-lock recovery row, the identity row) but nothing persists the
+    /// label once the SwiftUI form is used — `submitUsernameRequest` goes
+    /// straight to the bridge, and the `DWGlobalOptions` mirror is written only
+    /// on completion. Without this record, an app killed mid-registration comes
+    /// back showing the "Upgrade to DashPay" call to action to a user whose
+    /// funds may already be spent, which is indistinguishable from never having
+    /// tried.
+    var inFlightRegistrationUsername: String? {
+        get { UserDefaults.standard.string(forKey: inFlightRegistrationUsernameKey) }
+        set(value) {
+            if let value, !value.isEmpty {
+                UserDefaults.standard.set(value, forKey: inFlightRegistrationUsernameKey)
+            } else {
+                UserDefaults.standard.removeObject(forKey: inFlightRegistrationUsernameKey)
+            }
+        }
+    }
+
+    private var inFlightRegistrationUsernameKey: String {
+        JoinDashPayDismissalScope.scopedKey(
+            kInFlightRegistrationUsername,
+            networkRawValue: WalletEnvironment.networkKind.rawValue,
+            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+    }
+
+    /// The username whose registration finished and whose success tile the user
+    /// has not acted on yet. Cleared when they open the profile from it or
+    /// dismiss it.
+    ///
+    /// A name rather than an acknowledged flag because the bridge drops
+    /// `currentUsername` once the registration is done: with only a flag, the
+    /// next status notification would have nothing to rebuild the success tile
+    /// from and would wipe it before the user ever saw it. Presence here is
+    /// also what distinguishes "just registered" from "registered long ago" —
+    /// the latter has no record, so no tile.
+    var completedTileUsername: String? {
+        get { UserDefaults.standard.string(forKey: completedTileUsernameKey) }
+        set(value) {
+            if let value, !value.isEmpty {
+                UserDefaults.standard.set(value, forKey: completedTileUsernameKey)
+            } else {
+                UserDefaults.standard.removeObject(forKey: completedTileUsernameKey)
+            }
+        }
+    }
+
+    /// The contested name this wallet asked for and did NOT get — its vote
+    /// ended in someone else's favour or in a lock. Which of the two is in
+    /// `lostContestWasBlocked`.
+    ///
+    /// Kept for the same reason as `completedTileUsername`: when the bookmark
+    /// is cleared the row has nothing left to report from, and the loss went
+    /// straight back to "Join DashPay — request your username" as if the
+    /// request had never happened. Cleared when the user acts on the row
+    /// (retry) or dismisses it.
+    var lostContestUsername: String? {
+        get { UserDefaults.standard.string(forKey: lostContestUsernameKey) }
+        set(value) {
+            if let value, !value.isEmpty {
+                UserDefaults.standard.set(value, forKey: lostContestUsernameKey)
+            } else {
+                UserDefaults.standard.removeObject(forKey: lostContestUsernameKey)
+            }
+        }
+    }
+
+    /// `true` when `lostContestUsername` was locked by the network rather
+    /// than won by another identity.
+    ///
+    /// The two outcomes are not interchangeable advice: a locked name is
+    /// gone for everyone and asking for it again achieves nothing, while a
+    /// name given to someone else is simply taken. Written together with
+    /// `lostContestUsername` and cleared with it.
+    var lostContestWasBlocked: Bool {
+        get { UserDefaults.standard.bool(forKey: lostContestWasBlockedKey) }
+        set(value) {
+            if value {
+                UserDefaults.standard.set(true, forKey: lostContestWasBlockedKey)
+            } else {
+                UserDefaults.standard.removeObject(forKey: lostContestWasBlockedKey)
+            }
+        }
+    }
+
+    private var lostContestWasBlockedKey: String {
+        JoinDashPayDismissalScope.scopedKey(
+            kLostContestWasBlocked,
+            networkRawValue: WalletEnvironment.networkKind.rawValue,
+            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+    }
+
+    private var lostContestUsernameKey: String {
+        JoinDashPayDismissalScope.scopedKey(
+            kLostContestUsername,
+            networkRawValue: WalletEnvironment.networkKind.rawValue,
+            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+    }
+
+    private var completedTileUsernameKey: String {
+        JoinDashPayDismissalScope.scopedKey(
+            kCompletedTileUsername,
             networkRawValue: WalletEnvironment.networkKind.rawValue,
             walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
     }

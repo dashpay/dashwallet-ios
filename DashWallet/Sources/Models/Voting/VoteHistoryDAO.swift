@@ -35,6 +35,10 @@ struct CastVoteRecord: Hashable {
     let normalizedLabel: String
     let choice: VoteChoice
     let castAt: Date
+    /// How many votes this node has spent on this contest, live vote included.
+    /// The row is upserted, so it is not the number of rows — and Platform's
+    /// `votes_allowed_per_masternode` ceiling counts casts, not live votes.
+    var castCount: Int = 1
 }
 
 // MARK: - VoteHistoryDAO
@@ -63,12 +67,16 @@ actor VoteHistoryDAOImpl: VoteHistoryDAO {
     func record(_ record: CastVoteRecord, network: String) async {
         let query = """
             INSERT INTO masternode_vote_history
-                (proTxHash, normalizedLabel, network, choice, contenderIdentityId, castAt)
-            VALUES (?, ?, ?, ?, ?, ?)
+                (proTxHash, normalizedLabel, network, choice, contenderIdentityId, castAt, castCount)
+            VALUES (?, ?, ?, ?, ?, ?, 1)
             ON CONFLICT (proTxHash, normalizedLabel, network) DO UPDATE SET
                 choice = excluded.choice,
                 contenderIdentityId = excluded.contenderIdentityId,
-                castAt = excluded.castAt
+                castAt = excluded.castAt,
+                -- The row holds the LIVE vote, so a change overwrites it — but
+                -- Platform counts casts, not live votes, and refuses the sixth.
+                -- Counting rows could therefore never reach the ceiling.
+                castCount = masternode_vote_history.castCount + 1
         """
         let bindings: [Binding?] = [
             Blob(bytes: [UInt8](record.proTxHash)),
@@ -88,7 +96,7 @@ actor VoteHistoryDAOImpl: VoteHistoryDAO {
 
     func votes(forContest normalizedLabel: String, network: String) async -> [CastVoteRecord] {
         let query = """
-            SELECT proTxHash, normalizedLabel, choice, contenderIdentityId, castAt
+            SELECT proTxHash, normalizedLabel, choice, contenderIdentityId, castAt, castCount
             FROM masternode_vote_history
             WHERE normalizedLabel = ? AND network = ?
             ORDER BY castAt DESC
@@ -108,7 +116,8 @@ actor VoteHistoryDAOImpl: VoteHistoryDAO {
                     proTxHash: Data(blob.bytes),
                     normalizedLabel: label,
                     choice: choice,
-                    castAt: Date(timeIntervalSince1970: Double(castAt) / 1000))
+                    castAt: Date(timeIntervalSince1970: Double(castAt) / 1000),
+                    castCount: Int(row[5] as? Int64 ?? 1))
             }
         } catch {
             DWLogger.log("VoteHistoryDAO: votes(forContest:) failed: \(error)")

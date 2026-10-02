@@ -301,8 +301,44 @@ final class VotingViewModel: ObservableObject {
 
     // MARK: Vote history
 
-    /// Votes this wallet has cast on `contest`, and how many it could cast in
-    /// total — the "2 of 5" the row and detail screen show.
+    /// One contest's history reduced to what the casting rules read: each
+    /// node's live vote and how many casts it has spent.
+    ///
+    /// Shared by the single-contest screen and the bulk planner so the five-
+    /// cast ceiling is applied by one rule — a planner that only looked at the
+    /// live choice offered exhausted nodes that Platform then rejects.
+    struct NodeVoteHistory {
+        private(set) var latest: [Data: CastVoteRecord] = [:]
+        private(set) var casts: [Data: Int] = [:]
+
+        init(_ records: [CastVoteRecord]) {
+            // One row per node per contest — a change overwrites the row it
+            // came from — so the ceiling is read from the row's own
+            // `castCount`, not from how many rows a node has. Counting rows
+            // could never reach five.
+            for record in records {
+                casts[record.proTxHash] = max(casts[record.proTxHash] ?? 0, record.castCount)
+                if let seen = latest[record.proTxHash], seen.castAt >= record.castAt { continue }
+                latest[record.proTxHash] = record
+            }
+        }
+
+        func liveChoice(of proTxHash: Data) -> VoteChoice? {
+            latest[proTxHash]?.choice
+        }
+
+        /// Whether Platform would still accept another vote from this node here.
+        func hasCastsLeft(_ proTxHash: Data) -> Bool {
+            (casts[proTxHash] ?? 0) < VotingViewModel.maxCastsPerNodePerContest
+        }
+    }
+
+    /// Per contest, rebuilt by `loadVotedNodes(for:)`.
+    private var voteHistoryByContest: [String: NodeVoteHistory] = [:]
+
+    /// Vote *records* this wallet holds on `contest` — a node that changed its
+    /// mind contributes more than one. `votedNodeCount(on:)` is the per-node
+    /// figure the screens show.
     func castCount(for normalizedLabel: String) -> Int {
         castCountsByContest[normalizedLabel] ?? 0
     }
@@ -332,7 +368,41 @@ final class VotingViewModel: ObservableObject {
             network: MasternodeVoteCaster.networkKey)
         votedProTxHashesByContest[normalizedLabel] = Set(records.map(\.proTxHash))
         castCountsByContest[normalizedLabel] = records.count
+        voteHistoryByContest[normalizedLabel] = NodeVoteHistory(records)
     }
+
+    /// How many of this wallet's nodes have a live vote here — nodes, not
+    /// records. A node that changed its mind has two records and is still one
+    /// node, which is what "%d of %d nodes voted" is counting.
+    func votedNodeCount(on normalizedLabel: String) -> Int {
+        votedProTxHashesByContest[normalizedLabel]?.count ?? 0
+    }
+
+    /// This node's live choice on this contest, when it has one.
+    func liveChoice(of node: VoterNode, on normalizedLabel: String) -> VoteChoice? {
+        voteHistoryByContest[normalizedLabel]?.liveChoice(of: node.proTxHash)
+    }
+
+    /// The nodes a tap on `choice` should cast with: the remembered selection,
+    /// minus nodes already holding that exact choice (Platform rejects a
+    /// duplicate) and minus nodes that have spent the five casts it allows per
+    /// contest. A node holding a *different* choice belongs here — replacing
+    /// its vote is one state transition, and it is the whole point of being
+    /// able to change your mind from this screen.
+    func nodesForVote(_ choice: VoteChoice, on normalizedLabel: String) -> [VoterNode] {
+        guard hasLoadedVoteHistory(for: normalizedLabel) else { return [] }
+        let chosen = effectiveSelectedNodeIDs
+        let history = voteHistoryByContest[normalizedLabel] ?? NodeVoteHistory([])
+        return votableNodes.filter { node in
+            guard chosen.contains(node.proTxHash) else { return false }
+            guard history.hasCastsLeft(node.proTxHash) else { return false }
+            return history.liveChoice(of: node.proTxHash) != choice
+        }
+    }
+
+    /// `votes_allowed_per_masternode` in the platform version this app talks
+    /// to; the sixth cast is refused with `MasternodeVotedTooManyTimesError`.
+    static let maxCastsPerNodePerContest = 5
 
     /// The nodes a single tap should vote with: the remembered selection,
     /// minus any that already voted on this contest.
@@ -470,6 +540,11 @@ final class VotingViewModel: ObservableObject {
         let duplicatePairs: Int
         /// (node, name) pairs that will REPLACE a different earlier vote.
         let changedPairs: Int
+        /// (node, name) pairs dropped because that node has spent every cast
+        /// Platform allows on that contest. Kept apart from `duplicatePairs`:
+        /// those already hold the requested choice, these could not get it at
+        /// all, and the user should be told which.
+        let exhaustedPairs: Int
         /// The choice being replaced, when every replaced vote agrees — `nil`
         /// when they differ, so the prompt never names one falsely.
         let replacedChoice: VoteChoice?
@@ -477,7 +552,46 @@ final class VotingViewModel: ObservableObject {
         var hasWork: Bool { work.contains { !$0.nodes.isEmpty } }
         var totalPairs: Int { work.reduce(0) { $0 + $1.nodes.count } }
         /// Whether the user should be asked before this runs.
-        var needsConfirmation: Bool { duplicatePairs > 0 || changedPairs > 0 }
+        var needsConfirmation: Bool { duplicatePairs > 0 || changedPairs > 0 || exhaustedPairs > 0 }
+    }
+
+    /// How one contest's selected nodes split under a bulk choice.
+    struct BulkContestSplit {
+        var casting: [VoterNode] = []
+        var duplicates = 0
+        var changed = 0
+        var exhausted = 0
+        var replacedChoices = Set<VoteChoice>()
+    }
+
+    /// Split `nodes` for one contest by what each already did there.
+    ///
+    /// A node already holding `choice` is a duplicate whatever its allowance —
+    /// nothing is lost by skipping it. Otherwise a node with no casts left is
+    /// dropped as exhausted before it can be counted as a replacement: the
+    /// caster does not re-check the allowance, so anything that reaches the
+    /// batch is broadcast and refused.
+    static func splitForBulk(
+        _ nodes: [VoterNode],
+        choice: VoteChoice,
+        history: NodeVoteHistory
+    ) -> BulkContestSplit {
+        var split = BulkContestSplit()
+        for node in nodes {
+            let prior = history.liveChoice(of: node.proTxHash)
+            if prior == choice {
+                split.duplicates += 1
+            } else if !history.hasCastsLeft(node.proTxHash) {
+                split.exhausted += 1
+            } else if let prior {
+                split.changed += 1
+                split.replacedChoices.insert(prior)
+                split.casting.append(node)
+            } else {
+                split.casting.append(node)
+            }
+        }
+        return split
     }
 
     /// Build the plan for the current selection without casting anything.
@@ -490,6 +604,7 @@ final class VotingViewModel: ObservableObject {
         var work: [(label: String, choice: VoteChoice, nodes: [VoterNode])] = []
         var duplicatePairs = 0
         var changedPairs = 0
+        var exhaustedPairs = 0
         var replacedChoices = Set<VoteChoice>()
 
         for contest in selected {
@@ -498,33 +613,15 @@ final class VotingViewModel: ObservableObject {
                 forContest: contest.normalizedLabel,
                 network: MasternodeVoteCaster.networkKey)
 
-            // A node can appear more than once here (it voted, then changed);
-            // only its most recent vote says what its live choice is.
-            var latestByNode: [Data: CastVoteRecord] = [:]
-            for record in records {
-                if let seen = latestByNode[record.proTxHash], seen.castAt >= record.castAt {
-                    continue
-                }
-                latestByNode[record.proTxHash] = record
-            }
+            let split = Self.splitForBulk(
+                nodes, choice: wireChoice, history: NodeVoteHistory(records))
+            duplicatePairs += split.duplicates
+            changedPairs += split.changed
+            exhaustedPairs += split.exhausted
+            replacedChoices.formUnion(split.replacedChoices)
 
-            var casting: [VoterNode] = []
-            for node in nodes {
-                guard let prior = latestByNode[node.proTxHash] else {
-                    casting.append(node)
-                    continue
-                }
-                if prior.choice == wireChoice {
-                    duplicatePairs += 1
-                } else {
-                    changedPairs += 1
-                    replacedChoices.insert(prior.choice)
-                    casting.append(node)
-                }
-            }
-
-            if !casting.isEmpty {
-                work.append((contest.normalizedLabel, wireChoice, casting))
+            if !split.casting.isEmpty {
+                work.append((contest.normalizedLabel, wireChoice, split.casting))
             }
         }
 
@@ -532,6 +629,7 @@ final class VotingViewModel: ObservableObject {
             work: work,
             duplicatePairs: duplicatePairs,
             changedPairs: changedPairs,
+            exhaustedPairs: exhaustedPairs,
             replacedChoice: replacedChoices.count == 1 ? replacedChoices.first : nil)
     }
 

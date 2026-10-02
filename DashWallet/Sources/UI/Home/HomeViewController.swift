@@ -578,14 +578,35 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
 extension HomeViewController: RootEditProfileViewControllerDelegate {
     func editProfileViewController(_ controller: RootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?, avatarImage: UIImage?) {
-        // Pass the cropped image through so the profile bridge can compute
-        // the avatar hash from the uploaded bytes.
-        model.dashPayModel.userProfile.updateModel.update(
-            withDisplayName: rawDisplayName,
-            aboutMe: rawAboutMe,
-            avatarURLString: avatarURLString,
-            avatarImage: avatarImage)
-        controller.dismiss(animated: true, completion: nil)
+        // Same credit gate as the More entry: a write the identity cannot pay
+        // for must not be broadcast, and a balance running low is worth saying
+        // once — before the write, not after it.
+        Task { @MainActor in
+            switch await controller.confirmAgainstIdentityCredits() {
+            case .proceed:
+                break
+            case .stop:
+                controller.dismiss(animated: true)
+                return
+            case .topUp:
+                // After the editor is gone, not onto it: this screen is the one
+                // being dismissed, so whatever presented it does the presenting.
+                let presenter = controller.presentingViewController
+                controller.dismiss(animated: true) {
+                    presenter?.present(IdentityCreditGate.makeTopUpController(), animated: true)
+                }
+                return
+            }
+
+            // Pass the cropped image through so the profile bridge can compute
+            // the avatar hash from the uploaded bytes.
+            model.dashPayModel.userProfile.updateModel.update(
+                withDisplayName: rawDisplayName,
+                aboutMe: rawAboutMe,
+                avatarURLString: avatarURLString,
+                avatarImage: avatarImage)
+            controller.dismiss(animated: true, completion: nil)
+        }
     }
 
     func editProfileViewControllerDidCancel(_ controller: RootEditProfileViewController) {
@@ -603,8 +624,42 @@ extension HomeViewController: HomeViewDelegate {
     }
 
     #if DASHPAY
+    func homeViewRequestUsernameForRecovery(username: String) {
+        showCreateUsernameForRecovery(definedUsername: username)
+    }
+
     func homeViewClaimInvitation() {
         showClaimInvitation()
+    }
+
+    /// Where the DashPay row goes while a contested name is being voted on —
+    /// the same screen the More row pushes (`MainMenuScreen`), so both
+    /// surfaces report the vote in one place.
+    func homeViewShowUsernameRequestStatus(username: String?) {
+        // The label the row is showing wins. It reaches `.voting` from the
+        // bookmark OR from the identity's pending contested name, and the
+        // bookmark itself returns nothing while `identityId` is unresolved —
+        // so navigating on the bookmark alone left the row's tap and its ⓘ
+        // dead on exactly the wallets that can display it.
+        guard let label = (username?.isEmpty == false ? username : nil)
+            ?? DWContestedNameStatusService.shared.pendingLabel
+            ?? DWCurrentUserIdentityInfo.shared.refreshedSnapshot().pendingContestedName
+        else { return }
+
+        let screen = UsernameRequestStatusScreen(
+            viewModel: UsernameRequestStatusViewModel(label: label),
+            onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) })
+        let controller = UIHostingController(rootView: screen)
+        controller.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(controller, animated: true)
+    }
+
+    func homeViewShieldFunds() {
+        // Preselected, not pinned — the transfer form still lets the user
+        // change their mind about either endpoint.
+        let controller = InternalTransferHostingController(transferTo: .balance(.shielded))
+        controller.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(controller, animated: true)
     }
     #endif
 
