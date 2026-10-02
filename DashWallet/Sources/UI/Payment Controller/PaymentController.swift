@@ -217,14 +217,22 @@ extension PaymentController: DWPaymentProcessorDelegate {
     /// through `sendInProgressHandler`; otherwise a "Sending" HUD covers the
     /// whole window and blocks touches for the wait.
     func paymentProcessor(_ processor: DWPaymentProcessor, broadcastInProgress inProgress: Bool) {
-        let shownByScreen = sendInProgressHandler?(inProgress) ?? false
+        let shownByHandler = sendInProgressHandler?(inProgress) ?? false
         guard inProgress else {
             sendInProgressModalHost?.isModalInPresentation = sendInProgressModalHostWasModal
             sendInProgressModalHost = nil
             sendInProgressHUDView?.dw_hideProgressHUD()
             sendInProgressHUDView = nil
+            setAmountScreenLeavable(true)
             return
         }
+        // The legacy amount screen keeps its button spinner from the tap to the
+        // outcome; it only needs its way back closed.
+        let amountScreenOnScreen = provideAmountViewController?.viewIfLoaded?.window != nil
+        if amountScreenOnScreen {
+            setAmountScreenLeavable(false)
+        }
+        let shownByScreen = shownByHandler || amountScreenOnScreen
         guard let anchor = presentationAnchor else { return }
         // Both resolved from the anchor's own stack, not `topController()`: a
         // PIN prompt still finishing its dismissal would otherwise be the one
@@ -243,6 +251,14 @@ extension PaymentController: DWPaymentProcessorDelegate {
             host.dw_showProgressHUD(withMessage: NSLocalizedString("Sending", comment: ""))
             sendInProgressHUDView = host
         }
+    }
+
+    /// Back and the edge swipe of the legacy amount screen, closed while its
+    /// send waits so the outcome keeps its screen.
+    private func setAmountScreenLeavable(_ leavable: Bool) {
+        guard let navigationController = provideAmountViewController?.navigationController else { return }
+        navigationController.navigationBar.isUserInteractionEnabled = leavable
+        navigationController.interactivePopGestureRecognizer?.isEnabled = leavable
     }
 
     func paymentInputProcessorHideProgressHUD(_ processor: DWPaymentProcessor) {
