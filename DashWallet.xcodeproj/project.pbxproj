@@ -2075,6 +2075,7 @@
 		BABA10000000000000000004 /* IdentityBalanceRefreshTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */; };
 		17E47391430C11AC728B69A3 /* DWRegistrationPhaseAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */; };
 		A00CC68AE2499E4496BAECC6 /* UsernameRecoveryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */; };
+		21360CD4E679B2CFEBA61EC0 /* SettingsRowsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4105B7F65847F4A633063BD0 /* SettingsRowsUITests.swift */; };
 		0CC58E06B79948481E52B517 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2ABCA9172357A61B00092C09 /* Foundation.framework */; };
 /* End PBXBuildFile section */
 
@@ -3916,6 +3917,7 @@
 		BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityBalanceRefreshTests.swift; sourceTree = "<group>"; };
 		951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWRegistrationPhaseAdapterTests.swift; sourceTree = "<group>"; };
 		C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameRecoveryUITests.swift; sourceTree = "<group>"; };
+		4105B7F65847F4A633063BD0 /* SettingsRowsUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsRowsUITests.swift; sourceTree = "<group>"; };
 		222014736AFDB62525FA244F /* DashPayRecoveryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashPayRecoveryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -9085,6 +9087,7 @@
 			isa = PBXGroup;
 			children = (
 				C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */,
+				4105B7F65847F4A633063BD0 /* SettingsRowsUITests.swift */,
 			);
 			name = DashPayRecoveryUITests;
 			path = DashPayRecoveryUITests;
@@ -11884,6 +11887,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A00CC68AE2499E4496BAECC6 /* UsernameRecoveryUITests.swift in Sources */,
+				21360CD4E679B2CFEBA61EC0 /* SettingsRowsUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -161,16 +161,22 @@ struct SettingsScreen: View {
             // test can tap the switch alone and assert the sheet stays shut.
             Button(action: infoAction) { content }
                 .buttonStyle(.plain)
-                .accessibilityIdentifier("settings_row_\(item.title.lowercased().replacingOccurrences(of: " ", with: "_"))")
+                .accessibilityIdentifier(Self.accessibilityIdentifier(item))
         } else if let action = item.action {
             // For a plain toggle row the action is the toggle itself, so a tap
             // anywhere on the row flips the switch.
             Button(action: action) { content }
                 .buttonStyle(.plain)
                 .modifier(ToggleRowAccessibility(item: item, isOn: Self.toggleBinding(item)))
+                .accessibilityIdentifier(Self.accessibilityIdentifier(item))
         } else {
             content
         }
+    }
+
+    /// Names a row for UI tests, e.g. `settings_row_enable_voting`.
+    private static func accessibilityIdentifier(_ item: MenuItemModel) -> String {
+        "settings_row_\(item.title.lowercased().replacingOccurrences(of: " ", with: "_"))"
     }
 
     /// Writing through the switch runs the row's action, which is what the
@@ -346,3 +352,19 @@ private struct ToggleRowAccessibility: ViewModifier {
         }
     }
 }
+
+#if DEBUG && targetEnvironment(simulator)
+/// Isolated UI-test launch surface for the Settings rows: the real
+/// `SettingsScreen` with no wallet behind it, so `SettingsRowsUITests` can
+/// tap the rows without navigating there first.
+@objc(DWSettingsRowsUITestFixture)
+final class DWSettingsRowsUITestFixture: NSObject {
+    @objc static func makeViewControllerIfRequested() -> UIViewController? {
+        guard ProcessInfo.processInfo.environment["SETTINGS_ROWS_UI_TEST"] == "1" else { return nil }
+        let navigation = UINavigationController()
+        navigation.setNavigationBarHidden(true, animated: false)
+        navigation.viewControllers = [UIHostingController(rootView: SettingsScreen(vc: navigation, onDidRescan: {}))]
+        return navigation
+    }
+}
+#endif

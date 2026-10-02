@@ -86,6 +86,13 @@ NS_ASSUME_NONNULL_BEGIN
         [self.window makeKeyAndVisible];
         return YES;
     }
+    UIViewController *settingsFixture = [DWSettingsRowsUITestFixture makeViewControllerIfRequested];
+    if (settingsFixture != nil) {
+        self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+        self.window.rootViewController = settingsFixture;
+        [self.window makeKeyAndVisible];
+        return YES;
+    }
 #endif
     if ([NSProcessInfo.processInfo.environment[@"XCODE_RUNNING_FOR_PREVIEWS"] isEqualToString:@"1"]) {
         return YES;
