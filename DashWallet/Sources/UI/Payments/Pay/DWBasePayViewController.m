@@ -65,6 +65,10 @@ NS_ASSUME_NONNULL_BEGIN
     return _paymentController;
 }
 
+- (BOOL)hasPaymentInFlight {
+    return _paymentController.hasPaymentInFlight;
+}
+
 
 - (void)performScanQRCodeAction {
     [self performScanQRCodeActionWithCompletion:^{

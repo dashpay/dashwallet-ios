@@ -120,6 +120,19 @@ final class PaymentController: NSObject {
     /// admitted and this call stops; the payment that replaced it has
     /// settled it.
     private func performPayment(with input: DWPaymentInput, presentationSettled: (() -> Void)?, isAbandoned: (() -> Bool)?) {
+        // A confirmed send keeps this controller until it reports its
+        // outcome: replacing it would drop that outcome, the
+        // unknown-broadcast warning included. The newcomer is refused with an
+        // alert and its link settles once the alert is on screen.
+        guard !operations.isCommitted else {
+            DWLogger.log("PAY a payment arrived while a confirmed send is in flight; refused")
+            let refused = operations.refuse(settled: presentationSettled)
+            showAlert(with: nil,
+                      message: NSLocalizedString("A payment is still being sent. Open the link again once it finishes.",
+                                                 comment: "Payment: a payment link arrived while a send is in flight"),
+                      for: refused)
+            return
+        }
         let token = operations.begin(settled: presentationSettled, isAbandoned: isAbandoned)
         guard operations.admits(token) else {
             DWLogger.log("PAY a payment started while this one was being installed; this one is dropped")
@@ -143,6 +156,12 @@ final class PaymentController: NSObject {
         processor.delegate = self
         operation = PaymentOperation(token: token, processor: processor)
         processor.processPaymentInput(input)
+    }
+
+    /// Whether a send the user confirmed has not reported its outcome yet;
+    /// a payment started meanwhile is refused.
+    @objc public var hasPaymentInFlight: Bool {
+        operations.isCommitted
     }
 
     /// Takes the previous operation's amount step out of its navigation
@@ -185,6 +204,7 @@ final class PaymentController: NSObject {
         guard operations.isAbandoned(operation.token) else { return false }
         DWLogger.log("PAY the link queue gave this payment up before its \(screen) was ready; presenting nothing")
         operation.processor.reset()
+        operations.finishCommitted(operation.token)
         settlePresentation(of: operation.token)
         return true
     }
@@ -224,7 +244,13 @@ extension PaymentController {
 // MARK: ConfirmPaymentViewControllerDelegate
 
 extension PaymentController: ConfirmPaymentViewControllerDelegate {
+    /// From here on the send is committed: no other payment may replace
+    /// this one until its processor reports success, failure or a
+    /// cancelled authentication.
     func confirmPaymentViewControllerDidConfirm(_ controller: ConfirmPaymentViewController) {
+        if let operation, paymentOutput != nil {
+            operations.commit(operation.token)
+        }
         controller.dismiss(animated: true) { [weak self] in
             if let output = self?.paymentOutput {
                 self?.operation?.processor.confirmPaymentOutput(output)
@@ -233,6 +259,9 @@ extension PaymentController: ConfirmPaymentViewControllerDelegate {
     }
 
     func confirmPaymentViewControllerDidCancel(_ controller: ConfirmPaymentViewController) {
+        if let operation {
+            operations.finishCommitted(operation.token)
+        }
         provideAmountViewController?.hideActivityIndicator()
         delegate?.paymentControllerDidCancelTransaction(self)
     }
@@ -243,6 +272,8 @@ extension PaymentController: ConfirmPaymentViewControllerDelegate {
 extension PaymentController: DWPaymentProcessorDelegate {
     func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, amount: UInt64) {
         guard let operation = admitted(processor) else { return }
+        // Back in preparation: whatever was confirmed was not sent.
+        operations.finishCommitted(operation.token)
         provideAmountViewController = nil
         if dropIfAbandoned(operation, "amount step") { return }
         let vc = ProvideAmountViewController(address: sendingDestination, amount: amount)
@@ -260,6 +291,9 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
     func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
         guard let operation = admitted(processor) else { return }
+        // A new confirmation is asked for: nothing was sent yet, and the user
+        // decides again.
+        operations.finishCommitted(operation.token)
         if dropIfAbandoned(operation, "confirmation") { return }
         self.paymentOutput = paymentOutput
 
@@ -282,6 +316,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
     func paymentProcessorDidCancelTransactionSigning(_ processor: DWPaymentProcessor) {
         guard let operation = admitted(processor) else { return }
+        operations.finishCommitted(operation.token)
         provideAmountViewController?.hideActivityIndicator()
         delegate?.paymentControllerDidCancelTransaction(self)
         confirmViewController?.isSendingEnabled = true
@@ -290,6 +325,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
     func paymentProcessor(_ processor: DWPaymentProcessor, didFailWithError error: Error?, title: String?, message: String?) {
         guard let operation = admitted(processor) else { return }
+        operations.finishCommitted(operation.token)
         // Pre-existing behavior kept: nil-error failures (invalid-address rejections)
         // stay silent here. The DashSync DSErrorDomain special-case is gone — live
         // errors carry WalletSendService / SDK / BIP70 domains.
@@ -310,6 +346,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
     func paymentProcessor(_ processor: DWPaymentProcessor, didSendWithTxidWire txidWire: Data) {
         guard let operation = admitted(processor) else { return }
+        operations.finishCommitted(operation.token)
         presentationAnchor?.topController().view.dw_hideProgressHUD()
         settlePresentation(of: operation.token)
 

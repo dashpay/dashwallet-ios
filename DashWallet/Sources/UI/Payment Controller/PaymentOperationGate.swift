@@ -81,6 +81,27 @@ struct PaymentOperationGate {
         screens = [:]
         return true
     }
+
+    /// The operation whose send the user confirmed and that has not reported
+    /// a terminal outcome yet. While there is one, no other operation may
+    /// begin: its success, failure or unknown-broadcast outcome must reach
+    /// the screen.
+    private(set) var committed: Token?
+
+    var isCommitted: Bool { committed != nil }
+
+    /// Marks the current operation `token` as committed; refused — and
+    /// nothing changes — unless `token` is current.
+    mutating func commit(_ token: Token) {
+        guard admits(token) else { return }
+        committed = token
+    }
+
+    /// `token`'s send has reported its outcome; a no-op for any other token.
+    mutating func finishCommitted(_ token: Token) {
+        guard committed == token else { return }
+        committed = nil
+    }
 }
 
 /// Replacement and link settlement of the operations a link handler runs
@@ -162,6 +183,16 @@ final class LinkOperationSequence {
 
     func admits(screen: ObjectIdentifier) -> Bool {
         gate.admits(screen: screen)
+    }
+
+    var isCommitted: Bool { gate.isCommitted }
+
+    func commit(_ token: Token) {
+        gate.commit(token)
+    }
+
+    func finishCommitted(_ token: Token) {
+        gate.finishCommitted(token)
     }
 
     /// Whether `token`'s link still waits for its completion.

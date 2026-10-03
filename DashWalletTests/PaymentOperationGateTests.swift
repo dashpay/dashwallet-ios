@@ -318,4 +318,47 @@ final class LinkOperationSequenceTests: XCTestCase {
         turns.drain()
         XCTAssertEqual(settled, ["A": 1])
     }
+
+    /// Payment A is confirmed and awaiting its broadcast (or a merchant's
+    /// ACK) when link B arrives. B is refused without starting: A stays
+    /// current, so its success or unknown-broadcast outcome is admitted, and
+    /// B's link settles on its own. Once A reports, a payment can begin.
+    func testAConfirmedSendIsNotReplacedAndItsOutcomeIsAdmitted() {
+        let turns = Turns()
+        let sequence = LinkOperationSequence(deliver: turns.deliver)
+        var settled: [String: Int] = [:]
+        let a = sequence.begin(settled: nil, isAbandoned: nil)
+        sequence.commit(a)
+        XCTAssertTrue(sequence.isCommitted)
+
+        let b = sequence.refuse(settled: { settled["B", default: 0] += 1 })
+        sequence.settle(b) // B's refusal alert is on screen
+        turns.drain()
+        XCTAssertEqual(settled, ["B": 1])
+        XCTAssertFalse(sequence.admits(b))
+        XCTAssertTrue(sequence.admits(a), "A's outcome still reaches the controller")
+        XCTAssertTrue(sequence.isCommitted)
+
+        sequence.finishCommitted(a) // A reported success, failure or an unknown broadcast
+        XCTAssertFalse(sequence.isCommitted)
+        let c = sequence.begin(settled: nil, isAbandoned: nil)
+        XCTAssertTrue(sequence.admits(c))
+    }
+
+    func testOnlyTheCurrentOperationCommitsAndOnlyItsOutcomeFinishesTheCommit() {
+        var gate = PaymentOperationGate()
+        let a = gate.begin()
+        let b = gate.begin()
+        gate.commit(a)
+        XCTAssertFalse(gate.isCommitted, "an obsolete operation cannot commit")
+
+        gate.commit(b)
+        XCTAssertEqual(gate.committed, b)
+        gate.finishCommitted(a)
+        XCTAssertTrue(gate.isCommitted, "another operation's outcome does not finish B's send")
+        gate.finishCommitted(b)
+        XCTAssertFalse(gate.isCommitted)
+        gate.finishCommitted(b)
+        XCTAssertFalse(gate.isCommitted, "once")
+    }
 }

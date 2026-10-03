@@ -33,6 +33,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL locksBalance;
 
+/// A send the user confirmed has not reported its outcome yet; a payment
+/// link handed over meanwhile is refused (`PaymentController.hasPaymentInFlight`).
+@property (readonly, nonatomic, assign) BOOL hasPaymentInFlight;
+
 - (void)performScanQRCodeAction;
 /// `performScanQRCodeAction` for a deep link: `completion` runs once the
 /// scanner has finished presenting — at once when it is already up.

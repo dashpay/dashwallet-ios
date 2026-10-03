@@ -522,6 +522,13 @@ extension MainTabbarController {
     /// watchdog fired); a handler that learns so presents nothing.
     @objc
     public func performPay(to url: URL, completion: @escaping () -> Void, isAbandoned: @escaping () -> Bool) {
+        // A confirmed send in flight keeps what is on screen (its
+        // authentication may be up): nothing is dismissed, and the payment
+        // controller refuses this link with an alert.
+        if let home = homeController, home.hasPaymentInFlight {
+            home.performPay(to: url, completion: completion, isAbandoned: isAbandoned)
+            return
+        }
         afterDismissingPresented { [weak self] in
             guard let self, let home = self.homeController else { return completion() }
             self.selectedIndex = MainTabbarTabs.home.rawValue
