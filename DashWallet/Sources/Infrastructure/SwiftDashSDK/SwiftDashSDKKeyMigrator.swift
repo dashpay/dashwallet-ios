@@ -87,7 +87,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// Stores a version sentinel (`"v1"`) when migration is complete;
     /// absent before first run. Used purely for idempotency; the migrator only
     /// owns the one-time DashSync → SwiftDashSDK handoff.
-    private static let doneKey = "swiftSDKKeyMigration.v1.done"
+    static let doneKey = "swiftSDKKeyMigration.v1.done"
 
     private static let deferredMultiWalletKey   = "swiftSDKKeyMigration.v1.deferredMultiWallet"
     private static let deferredUnknownChainKey  = "swiftSDKKeyMigration.v1.deferredUnknownChain"
@@ -96,7 +96,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// (the runtime's 30s poll, the root controller's launch decision) timed
     /// out on every launch while the migrator kept failing — stranding a
     /// restored wallet behind a permanently stopped runtime.
-    private static let deferredFailureKey = "swiftSDKKeyMigration.v1.deferredFailure"
+    static let deferredFailureKey = "swiftSDKKeyMigration.v1.deferredFailure"
 
     /// Per-wallet success ledger — DashSync walletIDs that already round-tripped
     /// through `createOrImportWallet`. Lets a partial-failure run resume on next
@@ -156,6 +156,28 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
     // MARK: - Background migration body
 
+    /// An enumeration that found no DashSync mnemonics. Done is permanent,
+    /// and an upgrader's wallet is behind the lock: an empty answer read
+    /// while the device is locked — whatever status the keychain used — must
+    /// not mark the migration done. Left as a failure the next run retries.
+    /// Sampled on both sides of the read: the value captured before the
+    /// queue hop answers for the enqueue, and the device can lock between
+    /// that and this run. Only a read bracketed by two "available" answers is
+    /// trusted with the permanent sentinel.
+    static func recordEmptyInventory(
+        in defaults: UserDefaults,
+        availableAtEnqueue: Bool,
+        availableAfterRead: () -> Bool
+    ) {
+        guard availableAtEnqueue, availableAfterRead() else {
+            defaults.set(true, forKey: deferredFailureKey)
+            logger.warning("🔑 KEYMIG :: no DashSync mnemonics readable while the device is locked; not marking done")
+            return
+        }
+        defaults.set("v1", forKey: doneKey)
+        logger.info("🔑 KEYMIG :: no DashSync mnemonics found — fresh install or post-wipe, marking done")
+    }
+
     /// The actual migration body. Runs on a background `DispatchQueue` —
     /// validates DashSync's mnemonic on a background queue, then synchronously
     /// asks `SwiftDashSDKHost` on the main actor to create/import the managed
@@ -191,21 +213,10 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             return
         }
         if mnemonicAccounts.isEmpty {
-            // Done is permanent, and an upgrader's wallet is behind the
-            // lock: an empty answer read while the device is locked — whatever
-            // status the keychain used — must not mark the migration done.
-            // Left as a failure the next run retries. Sampled on both sides
-            // of the read: the value captured before the queue hop answers
-            // for the enqueue, and the device can lock between that and this
-            // run. Only a read bracketed by two "available" answers is
-            // trusted with the permanent sentinel.
-            guard protectedDataAvailable, WalletEnvironment.isProtectedDataAvailable() else {
-                defaults.set(true, forKey: deferredFailureKey)
-                logger.warning("🔑 KEYMIG :: no DashSync mnemonics readable while the device is locked; not marking done")
-                return
-            }
-            defaults.set("v1", forKey: doneKey)
-            logger.info("🔑 KEYMIG :: no DashSync mnemonics found — fresh install or post-wipe, marking done")
+            recordEmptyInventory(
+                in: defaults,
+                availableAtEnqueue: protectedDataAvailable,
+                availableAfterRead: WalletEnvironment.isProtectedDataAvailable)
             return
         }
 
