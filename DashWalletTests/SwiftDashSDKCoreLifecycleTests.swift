@@ -280,6 +280,20 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertFalse(LaunchDecision(sceneActivationState: .foregroundActive).isDeferred)
     }
 
+    /// A scene that connects still unattached proves neither an activation
+    /// nor an unlocked device: the launch waits for the first activation,
+    /// exactly as a background connection does, and keeps a link meanwhile.
+    func testUnattachedSceneConnectionDefersTheWalletWorkToTheFirstActivation() throws {
+        let unattached = LaunchDecision(sceneActivationState: .unattached)
+        XCTAssertTrue(unattached.isDeferred)
+        let link = try XCTUnwrap(URL(string: "dash:XunattachedAddress"))
+        XCTAssertTrue(unattached.holdIfPending(url: link), "a link before the activation is kept")
+
+        XCTAssertTrue(unattached.takeAtActivation(), "the first activation runs the deferred work")
+        XCTAssertEqual(unattached.takePendingURL(), link)
+        XCTAssertFalse(unattached.takeAtActivation())
+    }
+
     /// A link delivered while the launch is deferred is kept and handed
     /// back exactly once after the activation; a later link replaces an
     /// earlier one; a foreground launch, and a deferred launch once taken,
