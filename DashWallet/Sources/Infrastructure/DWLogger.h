@@ -83,6 +83,18 @@ NSString *DWCurrentThreadName(void);
  */
 + (void)log:(NSString *)message className:(NSString *)className;
 
+/** @fn logWarning:
+ *  @brief Logs a message at the warning level (`DWLogWarn`)
+ *  @param message Final message to log
+ */
++ (void)logWarning:(NSString *)message;
+
+/** @fn logError:
+ *  @brief Logs a message at the error level (`DWLogError`)
+ *  @param message Final message to log
+ */
++ (void)logError:(NSString *)message;
+
 /** @fn logVersionInfo
  *  @brief Logs the app version at startup.
  */
