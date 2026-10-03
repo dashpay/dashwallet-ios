@@ -623,11 +623,9 @@ extension TxDetailModel {
     /// never mined), which is exactly the state a network-dropped send
     /// (e.g. a stalled CoinJoin sweep chunk) is stuck in.
     /// `UnconfirmedTransactionRemover` re-verifies the local state and
-    /// checks a block explorer before touching anything. Not offered once the
-    /// network has answered that it has the send (`PendingSendOutcomes`).
+    /// checks a block explorer before touching anything.
     var supportsUnconfirmedRemoval: Bool {
         transaction.state == .processing
-            && PendingSendOutcomes.displayStatus(txidWire: transaction.txHashData) != .accepted
     }
 
     /// Non-nil when this transaction is a funding asset lock whose transfer

@@ -635,15 +635,11 @@ class Transaction: TransactionDataItem, Identifiable {
             case .sent:
                 if state == .processing {
                     // A send whose broadcast had no answer is followed by
-                    // `PendingSendOutcomes` until the network has it.
-                    switch PendingSendOutcomes.displayStatus(txidWire: snapshot.txid) {
-                    case .waiting:
+                    // `PendingSendOutcomes` until its row is locked or mined.
+                    if PendingSendOutcomes.isWaiting(txidWire: snapshot.txid) {
                         return NSLocalizedString("Waiting for the network", comment: "Sent transaction whose broadcast got no answer from the network yet")
-                    case .accepted:
-                        return NSLocalizedString("Sent", comment: "")
-                    case nil:
-                        return NSLocalizedString("Sending", comment: "")
                     }
+                    return NSLocalizedString("Sending", comment: "")
                 } else if state == .invalid {
                     return NSLocalizedString("Invalid", comment: "")
                 } else {

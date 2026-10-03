@@ -24,10 +24,11 @@ import SwiftDashSDK
 /// unknown"), followed until the network answers.
 ///
 /// Such a send is handed back to the history instead of an error: its row
-/// reads "Waiting for the network" until the SDK's broadcast probe reports the
-/// network has it (`OutgoingTransactionVerdict.accepted`), or its stored row is
-/// InstantSend-locked or mined. Either moves it to "Sent" and raises a one-time
-/// notice. An `.unresolved` verdict changes nothing — the send keeps waiting.
+/// reads "Waiting for the network" until its stored row is InstantSend-locked
+/// or mined, which moves it to "Sent" and raises a one-time notice. The SDK's
+/// broadcast probe only prompts that check: an `.accepted` verdict means a
+/// node took the bytes, not that the payment will settle, so it is never
+/// shown as "Sent" on its own. An `.unresolved` verdict changes nothing.
 ///
 /// A shared instance, not an injected one: the record has to outlive the send
 /// screen that made it and be read by the history rows, the home notice and a
@@ -50,15 +51,6 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         let address: String
         let amount: UInt64
         let sentAt: Date
-        /// The probe heard the network take it; the stored row has not caught
-        /// up yet (still mempool). Shown as "Sent".
-        var networkAccepted: Bool
-    }
-
-    /// What a history row shows for a send that is still unconfirmed locally.
-    enum DisplayStatus {
-        case waiting
-        case accepted
     }
 
     /// A send that went through after all. Equatable for the toast's animation.
@@ -72,8 +64,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
 
     /// Read by `Transaction.stateTitle`, which is not main-actor isolated.
     /// Mirrors `entries`, written only from the main actor.
-    private nonisolated static let displayStatuses =
-        OSAllocatedUnfairLock<[Data: DisplayStatus]>(initialState: [:])
+    private nonisolated static let waitingTxids =
+        OSAllocatedUnfairLock<Set<Data>>(initialState: [])
 
     private static let defaultsKey = "PendingSendOutcomes.entries.v1"
     /// A row that is still missing this long after its send is taken as gone
@@ -91,7 +83,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
            let stored = try? JSONDecoder().decode([Entry].self, from: data) {
             entries = Dictionary(stored.map { ($0.txidWire, $0) }, uniquingKeysWith: { a, _ in a })
         }
-        publishDisplayStatuses()
+        publishWaitingTxids()
         // A save that touched the wallet's transactions may have locked or
         // mined a waiting send. Throttled: during sync the persister saves
         // several times a second.
@@ -115,22 +107,17 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             walletId: walletId,
             address: address,
             amount: amount,
-            sentAt: Date(),
-            networkAccepted: false)
+            sentAt: Date())
         DWLogger.log("💸 TXSEND :: waiting for the network on \(Transaction.displayHex(txidWire))")
         didChangeEntries()
-        // A verdict may already be in (the probe runs right after an
-        // uncertain broadcast); otherwise it arrives through the watch.
-        if let manager = SwiftDashSDKHost.shared.manager {
-            apply(Array(manager.outgoingTransactionVerdicts.values))
-        }
         reconcile()
     }
 
     // MARK: - Reading
 
-    nonisolated static func displayStatus(txidWire: Data) -> DisplayStatus? {
-        displayStatuses.withLock { $0[txidWire] }
+    /// Whether `txidWire` is a send still waiting for the network.
+    nonisolated static func isWaiting(txidWire: Data) -> Bool {
+        waitingTxids.withLock { $0.contains(txidWire) }
     }
 
     /// The newest send to `address` that the network has not confirmed yet,
@@ -138,7 +125,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     func waitingPayment(to address: String) -> Entry? {
         let walletId = SwiftDashSDKHost.shared.wallet?.walletId
         return entries.values
-            .filter { $0.address == address && $0.walletId == walletId && !$0.networkAccepted }
+            .filter { $0.address == address && $0.walletId == walletId }
             .max { $0.sentAt < $1.sentAt }
     }
 
@@ -154,31 +141,20 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             }
     }
 
+    /// An `.accepted` verdict on a waiting send re-reads the stored rows: the
+    /// lock or block that settles it may already be there. The verdict itself
+    /// changes nothing — a node that took the bytes is not a settled payment.
     private func apply(_ events: [OutgoingTransactionProbeEvent]) {
-        var changed = false
-        for event in events {
-            guard var entry = entries[event.txidWire],
-                  entry.walletId == event.walletId,
-                  !entry.networkAccepted else { continue }
-            switch event.verdict {
-            case .accepted:
-                entry.networkAccepted = true
-                entries[event.txidWire] = entry
-                changed = true
-                DWLogger.log("💸 TXSEND :: network has \(event.txidDisplayHex), shown as sent")
-                raiseNotice(for: entry)
-            case .unresolved:
-                continue
-            }
+        let heard = events.contains { event in
+            event.verdict == .accepted && entries[event.txidWire]?.walletId == event.walletId
         }
-        if changed { didChangeEntries() }
+        if heard { reconcile() }
     }
 
     // MARK: - Settling against the stored rows
 
     /// Drop the sends whose stored row is now InstantSend-locked or mined (or
-    /// gone). A send that settles without an earlier `.accepted` verdict
-    /// raises the notice here.
+    /// gone). Each one that settled raises the notice.
     private func reconcile() {
         guard !entries.isEmpty else { return }
         guard !reconcileInFlight else {
@@ -211,9 +187,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             if let row = rows[entry.txidWire] {
                 guard row.state != .processing else { continue }
                 DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(entry.txidWire)) settled on chain")
-                if entries[entry.txidWire]?.networkAccepted == false {
-                    raiseNotice(for: entry)
-                }
+                raiseNotice(for: entry)
             } else {
                 guard Date().timeIntervalSince(entry.sentAt) > Self.missingRowGrace else { continue }
                 DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(entry.txidWire)) left the wallet, no longer tracked")
@@ -232,15 +206,15 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     }
 
     private func didChangeEntries() {
-        publishDisplayStatuses()
+        publishWaitingTxids()
         NotificationCenter.default.post(name: Self.didChangeNotification, object: nil)
         if let data = try? JSONEncoder().encode(Array(entries.values)) {
             UserDefaults.standard.set(data, forKey: Self.defaultsKey)
         }
     }
 
-    private func publishDisplayStatuses() {
-        let statuses = entries.mapValues { $0.networkAccepted ? DisplayStatus.accepted : .waiting }
-        Self.displayStatuses.withLock { $0 = statuses }
+    private func publishWaitingTxids() {
+        let txids = Set(entries.keys)
+        Self.waitingTxids.withLock { $0 = txids }
     }
 }
