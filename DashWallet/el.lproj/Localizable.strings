@@ -6602,3 +6602,10 @@
 "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends." = "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends.";
 "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username." = "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username.";
 "Preparing logs…" = "Preparing logs…";
+
+/* Send blocked until unconfirmed coins are confirmed */
+"Payment can't be made yet" = "Payment can't be made yet";
+
+/* Send blocked until unconfirmed coins are confirmed */
+"Some of your funds are waiting for the network to confirm an earlier payment. Try again in a moment." = "Some of your funds are waiting for the network to confirm an earlier payment. Try again in a moment.";
+

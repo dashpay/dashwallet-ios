@@ -6357,3 +6357,10 @@
 
 /* Log export progress */
 "Preparing logs…" = "Preparing logs…";
+
+/* Send blocked until unconfirmed coins are confirmed */
+"Payment can't be made yet" = "Payment can't be made yet";
+
+/* Send blocked until unconfirmed coins are confirmed */
+"Some of your funds are waiting for the network to confirm an earlier payment. Try again in a moment." = "Some of your funds are waiting for the network to confirm an earlier payment. Try again in a moment.";
+

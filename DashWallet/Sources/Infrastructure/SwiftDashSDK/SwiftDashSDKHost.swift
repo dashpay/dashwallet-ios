@@ -1110,6 +1110,15 @@ final class SwiftDashSDKHost {
             let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
             Self.logger.info("🪺 HOST :: stage 3/4 manager configured for \(network.rawValue, privacy: .public)")
             DWLogger.log("HOST stage 3/4 manager configured for \(network.rawValue) in \(ms)ms")
+            // Ask the network again about a send whose broadcast outcome was
+            // unknown, so its row can resolve instead of staying "Sending".
+            // Read-only: the probe resubmits bytes already signed and changes
+            // nothing in the wallet. A failure leaves sends unresolved, not broken.
+            do {
+                try newManager.setBroadcastProbeEnabled(true)
+            } catch {
+                DWLogger.log("HOST broadcast probe could not be enabled: \(error)")
+            }
         } catch {
             Self.logger.error("🪺 HOST :: configure failed: \(String(describing: error), privacy: .public)")
             throw HostError.configureFailed(error)

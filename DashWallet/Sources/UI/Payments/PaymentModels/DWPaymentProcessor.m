@@ -347,8 +347,12 @@ static NSString *DWReversedHexString(NSData *data) {
                                                        return;
                                                    }
 
+                                                   NSString *title = NSLocalizedString(@"Couldn't make payment", nil);
+                                                   if (error && [DWWalletSendService isFundsAwaitingNetworkError:error]) {
+                                                       title = DWWalletSendService.fundsAwaitingNetworkTitle;
+                                                   }
                                                    [self failedWithError:error
-                                                                   title:NSLocalizedString(@"Couldn't make payment", nil)
+                                                                   title:title
                                                                  message:error.localizedDescription];
                                                    return;
                                                }

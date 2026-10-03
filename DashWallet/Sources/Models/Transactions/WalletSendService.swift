@@ -382,6 +382,8 @@ final class WalletSendService: NSObject {
                     description: BroadcastOutcomeCopy.unknown,
                     diagnostic: reason
                 )
+            } catch {
+                throw Self.sendBuildError(from: error)
             }
         }
 
@@ -725,6 +727,17 @@ final class WalletSendService: NSObject {
         error.domain == errorDomain && error.code == ErrorCode.broadcastUnknown.rawValue
     }
 
+    @objc(isFundsAwaitingNetworkError:)
+    static func isFundsAwaitingNetworkError(_ error: NSError) -> Bool {
+        error.domain == errorDomain && error.code == ErrorCode.fundsAwaitingNetwork.rawValue
+    }
+
+    /// Title for a send that cannot be built yet because the coins it needs
+    /// wait for the network to confirm them (see `sendBuildError(from:)`).
+    @objc static var fundsAwaitingNetworkTitle: String {
+        NSLocalizedString("Payment can't be made yet", comment: "Send blocked until unconfirmed coins are confirmed")
+    }
+
     /// ObjC facade over `AuthenticationGate` for completion-based callers
     /// (DWPaymentProcessor's broadcast paths). Reads the user's biometric
     /// preference like every other spend gate, and guarantees the completion
@@ -764,7 +777,12 @@ final class WalletSendService: NSObject {
     }
 
     private func buildPreparedStandardSend(address: String, amount: UInt64) throws -> PreparedStandardSend {
-        let (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSign(address: address, amount: amount)
+        let (tx, txHash): (FinalizedCoreTransaction, Data)
+        do {
+            (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSign(address: address, amount: amount)
+        } catch {
+            throw Self.sendBuildError(from: error)
+        }
 
         return PreparedStandardSend(
             txData: try tx.serializedData(),
@@ -777,11 +795,16 @@ final class WalletSendService: NSObject {
     }
 
     private func buildPreparedSwapDeposit(vaultAddress: String, amount: UInt64, memo: String) throws -> PreparedStandardSend {
-        let (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSignSwapDeposit(
-            vaultAddress: vaultAddress,
-            amountDuffs: amount,
-            memo: memo
-        )
+        let (tx, txHash): (FinalizedCoreTransaction, Data)
+        do {
+            (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSignSwapDeposit(
+                vaultAddress: vaultAddress,
+                amountDuffs: amount,
+                memo: memo
+            )
+        } catch {
+            throw Self.sendBuildError(from: error)
+        }
 
         return PreparedStandardSend(
             txData: try tx.serializedData(),
@@ -893,6 +916,7 @@ private extension WalletSendService {
         case invalidSwapMemo = 11
         case coinJoinSweepPartial = 12
         case coinJoinSweepInterrupted = 13
+        case fundsAwaitingNetwork = 14
     }
 
     static let errorDomain = "org.dashfoundation.dash.wallet-send-service"
@@ -921,6 +945,8 @@ private extension WalletSendService {
         // of the app — the amount step's terminal state included — recognises
         // it only in this service's domain, the same codes a standard send gets.
         switch error as? PlatformWalletError {
+        case .coreFundsAwaitingNetwork:
+            return sendBuildError(from: error)
         case .transactionBroadcastUnconfirmed(let reason):
             return makeError(
                 code: .broadcastUnknown,
@@ -945,6 +971,25 @@ private extension WalletSendService {
             description: NSLocalizedString(
                 "This contact's payment channel isn't ready yet. It's still being set up in the background — please try again in a few minutes.",
                 comment: "DashPay Contacts"))
+    }
+
+    /// A build the SDK refused because the coins that would fund it are not
+    /// confirmed yet — change of an earlier send the network has not taken, or
+    /// a fresh incoming payment — becomes this service's
+    /// `fundsAwaitingNetwork` with copy a user can act on. The SDK's own text
+    /// (amounts in duffs, internal wording) goes to the diagnostic only. Every
+    /// other error is returned untouched.
+    static func sendBuildError(from error: Error) -> Error {
+        guard case .coreFundsAwaitingNetwork(let detail) = error as? PlatformWalletError else {
+            return error
+        }
+        logger.info("💸 TXSEND :: build refused, funds await network confirmation: \(detail, privacy: .public)")
+        return makeError(
+            code: .fundsAwaitingNetwork,
+            description: NSLocalizedString(
+                "Some of your funds are waiting for the network to confirm an earlier payment. Try again in a moment.",
+                comment: "Send blocked until unconfirmed coins are confirmed"),
+            diagnostic: detail)
     }
 
     /// The two broadcast outcomes a user can be shown, in one place.
