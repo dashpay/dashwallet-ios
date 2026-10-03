@@ -180,11 +180,8 @@ static NSString *DWReversedHexString(NSData *data) {
             [self setBroadcastInProgress:NO];
             if (error && [DWWalletSendService isBroadcastUnknownError:error]) {
                 // No answer is not a failure: the payment may well have gone
-                // through. It goes to the history as "Waiting for the network"
-                // instead of an error that invites sending it again.
-                [DWPendingSendOutcomes.shared recordUnknownOutcomeWithTxidWire:preparedSend.txidWire
-                                                                       address:address
-                                                                        amount:preparedSend.amount];
+                // through. The send service has put it in the history as
+                // "Waiting for the network"; no error invites sending it again.
                 [self.delegate paymentProcessor:self didSendWithUnknownOutcomeTxidWire:preparedSend.txidWire];
                 [self reset];
             }

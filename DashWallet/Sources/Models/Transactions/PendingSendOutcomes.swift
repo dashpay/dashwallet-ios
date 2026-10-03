@@ -48,7 +48,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         /// 32 bytes, wire order (`Transaction.txHashData`).
         let txidWire: Data
         let walletId: Data
-        let address: String
+        /// Nil for a route that does not know the recipient's address.
+        let address: String?
         let amount: UInt64
         let sentAt: Date
     }
@@ -97,7 +98,9 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     // MARK: - Recording
 
     /// The broadcast of `txidWire` ended with no answer from the network.
-    @objc func recordUnknownOutcome(txidWire: Data, address: String, amount: UInt64) {
+    /// Called by `WalletSendService` wherever it maps a broadcast to
+    /// `broadcastUnknown`, and from nowhere else.
+    func recordUnknownOutcome(txidWire: Data, address: String?, amount: UInt64) {
         guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
             DWLogger.log("💸 TXSEND :: unknown outcome not tracked, no active wallet")
             return

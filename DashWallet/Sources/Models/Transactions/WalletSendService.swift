@@ -171,11 +171,8 @@ final class PreparedStandardSend: NSObject {
             // launch-time re-registration is dashpay/platform#4659 and is
             // not in the SDK this builds against. See
             // `BroadcastOutcomeCopy.unknown` for when that qualifier can go.
-            let error = WalletSendService.makeError(
-                code: .broadcastUnknown,
-                description: WalletSendService.BroadcastOutcomeCopy.unknown,
-                diagnostic: reason
-            )
+            let error = WalletSendService.unknownOutcomeError(
+                txidWire: txidWire, address: address, amount: amount, reason: reason)
             claimLock.lock()
             broadcastState = .unknown(error)
             claimLock.unlock()
@@ -387,12 +384,16 @@ final class WalletSendService: NSObject {
                     description: BroadcastOutcomeCopy.rejected,
                     diagnostic: reason
                 )
-            } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(_, let reason) {
-                throw Self.makeError(
-                    code: .broadcastUnknown,
-                    description: BroadcastOutcomeCopy.unknown,
-                    diagnostic: reason
-                )
+            } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(let txid, let reason) {
+                // `txid` is the display-order hash `buildAndSignFromAddress` computed.
+                guard let txHash = Data(hex: txid), txHash.count == 32 else {
+                    throw Self.makeError(
+                        code: .broadcastUnknown,
+                        description: BroadcastOutcomeCopy.unknown,
+                        diagnostic: reason)
+                }
+                throw Self.unknownOutcomeError(
+                    txidWire: Data(txHash.reversed()), address: address, amount: amount, reason: reason)
             } catch {
                 throw Self.sendBuildError(from: error)
             }
@@ -982,6 +983,21 @@ private extension WalletSendService {
             description: NSLocalizedString(
                 "This contact's payment channel isn't ready yet. It's still being set up in the background — please try again in a few minutes.",
                 comment: "DashPay Contacts"))
+    }
+
+    /// A broadcast of `txidWire` that ended with no answer from the network.
+    ///
+    /// The one place a send with an unknown outcome is recorded: every route
+    /// that knows its txid — the prepared standard send (plain sends, swap
+    /// deposits, `SendCoinsService`) and the selected-input send — maps the
+    /// outcome here, and the send is followed in the history as "Waiting for
+    /// the network" (`PendingSendOutcomes`). A contact payment's unknown outcome
+    /// carries no txid from the SDK, so it is not followed.
+    static func unknownOutcomeError(txidWire: Data, address: String?, amount: UInt64, reason: String) -> NSError {
+        MainThread.sync {
+            PendingSendOutcomes.shared.recordUnknownOutcome(txidWire: txidWire, address: address, amount: amount)
+        }
+        return makeError(code: .broadcastUnknown, description: BroadcastOutcomeCopy.unknown, diagnostic: reason)
     }
 
     /// A build the SDK refused because the coins that would fund it are not

@@ -445,9 +445,16 @@ final class SwiftDashSDKTransactionSender: NSObject {
         // Serialize BEFORE broadcast — broadcasting consumes the handle.
         let txData = try tx.serializedData()
         let exactFee = tx.fee
-        _ = try Self.requireAccepted(try await waitingForNetwork { try submit(tx, through: wallet) })
-
         let txHash = computeTxHash(from: txData)
+        do {
+            _ = try Self.requireAccepted(try await waitingForNetwork { try submit(tx, through: wallet) })
+        } catch SendError.transactionStatusUnknown(_, let reason) {
+            // Carry the app-computed hash (display order, as every other route
+            // reports it) so the caller can follow the send by its txid.
+            throw SendError.transactionStatusUnknown(
+                txid: txHash.map { String(format: "%02x", $0) }.joined(), reason: reason)
+        }
+
         logger.info("💸 TXSEND :: selected-input send broadcast — txHash=\(txHash.map { String(format: "%02x", $0) }.joined()) fee=\(exactFee) adjusted=\(adjusted) inputs=\(utxos.count)")
         return (txData, exactFee, txHash)
     }
