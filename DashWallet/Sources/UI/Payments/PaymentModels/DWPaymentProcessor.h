@@ -35,6 +35,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Confirmation
 
+// Asked before a plain send to `address` is authorized and built. The delegate
+// calls `completion` once, on the main queue: YES goes on, NO ends the send
+// through `paymentProcessorDidCancelTransactionSigning:`.
+- (void)paymentProcessor:(DWPaymentProcessor *)processor
+        shouldPayAddress:(NSString *)address
+              completion:(void (^)(BOOL proceed))completion;
+
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
     confirmPaymentOutput:(DWPaymentOutput *)paymentOutput;
 

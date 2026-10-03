@@ -365,7 +365,28 @@ static NSString *DWReversedHexString(NSData *data) {
 }
 
 /// Shared SwiftDashSDK build+sign then show the confirmation UI with the real fee.
+/// The delegate is asked first, before the PIN prompt and the build.
 - (void)confirmSwiftDashSDKSendToAddress:(NSString *)address
+                                  amount:(uint64_t)amount
+                                    name:(nullable NSString *)name
+                                    memo:(nullable NSString *)memo
+                           localCurrency:(nullable NSString *)localCurrency {
+    [self.delegate paymentProcessor:self
+                   shouldPayAddress:address
+                         completion:^(BOOL proceed) {
+                             if (!proceed) {
+                                 [self.delegate paymentProcessorDidCancelTransactionSigning:self];
+                                 return;
+                             }
+                             [self prepareSwiftDashSDKSendToAddress:address
+                                                             amount:amount
+                                                               name:name
+                                                               memo:memo
+                                                      localCurrency:localCurrency];
+                         }];
+}
+
+- (void)prepareSwiftDashSDKSendToAddress:(NSString *)address
                                   amount:(uint64_t)amount
                                     name:(nullable NSString *)name
                                     memo:(nullable NSString *)memo

@@ -191,26 +191,21 @@ extension PaymentController: DWPaymentProcessorDelegate {
         provideAmountViewController = vc
     }
 
-    func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
-        self.paymentOutput = paymentOutput
-
-        // A payment to an address that still has one waiting for the network
-        // asks first: the earlier one may yet arrive, and the recipient would
-        // get both. Asked before the confirm sheet first appears; other
-        // addresses are not interrupted.
-        if confirmViewController == nil,
-           let waiting = MainActor.assumeIsolated({ PendingSendOutcomes.shared.waitingPayment(to: paymentOutput.address) }) {
-            askBeforeRepeating(waiting) { [weak self] sendAnyway in
-                guard let self else { return }
-                if sendAnyway {
-                    self.presentConfirm(for: paymentOutput)
-                } else {
-                    self.provideAmountViewController?.hideActivityIndicator()
-                    self.delegate?.paymentControllerDidCancelTransaction(self)
-                }
-            }
+    /// A payment to an address that still has one waiting for the network
+    /// asks first: the earlier one may yet arrive, and the recipient would get
+    /// both. Asked before the PIN prompt and the build, and not again while
+    /// the confirm sheet is up; other addresses are not interrupted.
+    func paymentProcessor(_ processor: DWPaymentProcessor, shouldPayAddress address: String, completion: @escaping (Bool) -> Void) {
+        guard confirmViewController == nil,
+              let waiting = MainActor.assumeIsolated({ PendingSendOutcomes.shared.waitingPayment(to: address) }) else {
+            completion(true)
             return
         }
+        askBeforeRepeating(waiting, completion: completion)
+    }
+
+    func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
+        self.paymentOutput = paymentOutput
         presentConfirm(for: paymentOutput)
     }
 
