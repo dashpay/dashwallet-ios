@@ -226,18 +226,22 @@ NS_ASSUME_NONNULL_BEGIN
     self.window.backgroundColor = [UIColor blackColor];
 
     // The first scene of the process decides the launch. One connected in
-    // the background belongs to a background launch: a neutral placeholder
+    // the background (or not yet attached) may belong to a background launch,
+    // on a locked device: a neutral placeholder
     // is the root, and the key migration, the runtime start and the root
     // decision run once, on the first activation (`handleDidBecomeActive`),
     // which implies an unlocked device. One connected for the foreground runs
-    // them here. A scene reconnected later (the system discarded the first)
+    // them here. A cold launch from the Home screen may also connect its
+    // scene still unattached and is then decided at its activation, a moment
+    // later. A scene reconnected later (the system discarded the first)
     // finds the launch already decided, or still waiting for its activation.
     BOOL decidesLaunch = (self.launchDecision == nil);
     if (decidesLaunch) {
         self.launchDecision = [[DWLaunchDecision alloc] initWithSceneActivationState:scene.activationState];
     }
     if (self.launchDecision.isDeferred) {
-        DWLog(@"LAUNCH background launch; deferring key migration, runtime start and the root decision until the app becomes active");
+        DWLog(@"LAUNCH scene connected not in the foreground (activation state %ld); deferring key migration, runtime start and the root decision until the app becomes active",
+              (long)scene.activationState);
         self.window.rootViewController = [self launchPlaceholderController];
     }
     else {
@@ -270,13 +274,14 @@ NS_ASSUME_NONNULL_BEGIN
     return controller;
 }
 
-/// The deferred half of a background launch, once: start the wallet
-/// services and replace the placeholder with the real root.
+/// The deferred half of a launch whose scene did not connect in the
+/// foreground, once: start the wallet services and replace the placeholder
+/// with the real root.
 - (void)completeDeferredLaunchIfNeeded {
     if (![self.launchDecision takeAtActivation]) {
         return;
     }
-    DWLog(@"LAUNCH app active after a background launch; running the deferred key migration, runtime start and root decision");
+    DWLog(@"LAUNCH first activation; running the deferred key migration, runtime start and root decision");
     [self startWalletServices];
     DWInitialViewController *controller = [[DWInitialViewController alloc] init];
     // The root presents the lock screen from its own become-active observer,
