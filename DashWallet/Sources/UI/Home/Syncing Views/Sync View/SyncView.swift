@@ -77,6 +77,12 @@ final class SyncView: UIView {
         model.stateDidChage = { [weak self] _ in
             self?.updateView()
         }
+
+        // The state stays `.syncing` across this flip, so `stateDidChage`
+        // never fires for it; the title still has to switch.
+        model.persistingDidChange = { [weak self] _ in
+            self?.updateView()
+        }
     }
 
     private func set(progress: Float, animated: Bool) {
@@ -142,7 +148,9 @@ extension SyncView {
             percentLabel.isHidden = false
             retryButton.isHidden = true
             progressView.isHidden = false
-            titleLabel.text = NSLocalizedString("Syncing", comment: "")
+            titleLabel.text = SyncingActivityMonitor.shared.isPersistingScannedHistory
+                ? NSLocalizedString("Processing transactions", comment: "Sync phase: scan finished, transactions still being written")
+                : NSLocalizedString("Syncing", comment: "")
             updateUIForViewStateSeeingBlocks()
 
         case .syncFailed:
