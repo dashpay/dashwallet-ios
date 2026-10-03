@@ -69,17 +69,18 @@ enum InternalTransferSummaryFigures {
         dashDuffs.formattedDashAmount
     }
 
-    /// No fee number for an identity withdrawal. Neither transition it can
-    /// run — IdentityCreditWithdrawal or the credit transfer — has an SDK fee
-    /// estimator, the same gap `PlatformPaymentIdentityFundingPolicy`
-    /// documents. `IdentityWithdrawViewModel.feeHeadroomCredits` is a reserve
-    /// held back, deliberately several times the observed fee, so printing it
-    /// here would overstate what the transfer costs. The row shows an em dash
-    /// instead.
+    /// Fee for an identity withdrawal to `target`, as fiat: the protocol's
+    /// minimum fee for the transition it runs
+    /// (`IdentityWithdrawViewModel.minimumFeeCredits`). A lower bound, like
+    /// the Shield route's base fee — the SDK exposes no estimator for either
+    /// transition, and the reserve Max holds back is not what the transfer
+    /// costs.
     ///
-    /// TODO(SwiftDashSDK): price this once an identity-transition fee
-    /// estimate is exposed.
-    static let identityWithdrawalFeeFiat: String? = nil
+    /// TODO(SwiftDashSDK): price this from the SDK once an identity-transition
+    /// fee estimate is exposed.
+    static func identityWithdrawalFeeFiat(target: IdentityWithdrawalTarget) -> String {
+        feeFiatString(credits: IdentityWithdrawViewModel.minimumFeeCredits(target: target))
+    }
 
     /// The summary label for the identity endpoint, on whichever side it
     /// sits — matches the payments landing's row title.

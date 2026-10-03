@@ -61,8 +61,14 @@ NS_ASSUME_NONNULL_BEGIN
 /// and the transaction producer.
 @property (nonatomic, strong) DWNotificationsBootstrap *notifications;
 
-/// Whether the launch-time wallet work still waits for the first activation.
-@property (nonatomic, strong) DWLaunchDecision *launchDecision;
+/// Whether the launch-time wallet work still waits for the first activation;
+/// nil until the scene connects.
+@property (nullable, nonatomic, strong) DWLaunchDecision *launchDecision;
+
+#if DEBUG && TARGET_OS_SIMULATOR && DASHPAY
+/// Built in `didFinishLaunching`, shown by `installWindowInScene:` instead of the wallet UI.
+@property (nullable, nonatomic, strong) UIViewController *recoveryFixture;
+#endif
 
 @end
 
@@ -85,8 +91,13 @@ NS_ASSUME_NONNULL_BEGIN
 #if TARGET_OS_SIMULATOR && DASHPAY
     UIViewController *recoveryFixture = [DWUsernameRecoveryUITestFixture makeViewControllerIfRequested];
     if (recoveryFixture != nil) {
+        self.recoveryFixture = recoveryFixture;
+        return YES;
+    }
+    UIViewController *settingsFixture = [DWSettingsRowsUITestFixture makeViewControllerIfRequested];
+    if (settingsFixture != nil) {
         self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
-        self.window.rootViewController = recoveryFixture;
+        self.window.rootViewController = settingsFixture;
         [self.window makeKeyAndVisible];
         return YES;
     }
@@ -142,10 +153,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                object:nil];
     
     [CLMCloudInAppMessaging setupWithCloudKitContainerIdentifier:@"iCloud.org.dash.dashwallet"];
-    
-    self.window = [[DWWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-    self.window.backgroundColor = [UIColor blackColor];
-    
+
     [[DWVersionManager sharedInstance] migrateUserDefaults];
     [[DWAuthenticationService shared] enableAuthenticationIfNeeded];
 #ifdef DEBUG
@@ -179,35 +187,66 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
     [DWSwiftDashSDKWalletRuntime startObservingNetworkChanges];
 
-    // A launch in the background (BGAppRefresh) happens on a locked device:
-    // the mnemonics are unreadable, so "no wallet" would describe the lock,
-    // not the wallet, and this process would later be brought to the
-    // foreground onto Create/Recover over a funded wallet. Decide nothing
-    // now: a neutral placeholder is the root, and the key migration, the
-    // runtime start and the root decision run once, on the first activation
-    // (`applicationDidBecomeActive:`), which implies an unlocked device. A
-    // foreground launch runs them here, as before.
-    self.launchDecision = [[DWLaunchDecision alloc] initWithApplicationState:application.applicationState];
+    // Nothing here decides whether a wallet exists. A launch in the
+    // background (BGAppRefresh) happens on a locked device: the mnemonics are
+    // unreadable, so "no wallet" would describe the lock, not the wallet, and
+    // this process would later be brought to the foreground onto
+    // Create/Recover over a funded wallet. Whether this launch is one is known
+    // only when the scene connects (`installWindowInScene:`), and a
+    // background launch may connect none. Until then lifecycle observers (the
+    // sync monitor's connectivity kick, a network-change notification) may
+    // ask the runtime to start; the runtime refuses them until
+    // `startWalletServices`.
+    [DWSwiftDashSDKWalletRuntime holdAutomaticStartsUntilLaunchDecision];
+
+    // The window is created later, when the scene connects (`installWindowInScene:`).
+    [self setupDashWalletComponentsWithOptions:launchOptions];
+
+    return YES;
+}
+
+#pragma mark - Scene
+
+- (void)installWindowInScene:(UIWindowScene *)scene {
+#if DEBUG
+#if TARGET_OS_SIMULATOR && DASHPAY
+    if (self.recoveryFixture != nil) {
+        self.window = [[UIWindow alloc] initWithWindowScene:scene];
+        self.window.rootViewController = self.recoveryFixture;
+        [self.window makeKeyAndVisible];
+        return;
+    }
+#endif
+    if ([NSProcessInfo.processInfo.environment[@"XCODE_RUNNING_FOR_PREVIEWS"] isEqualToString:@"1"]) {
+        return;
+    }
+#endif /* DEBUG */
+
+    self.window = [[DWWindow alloc] initWithWindowScene:scene];
+    self.window.backgroundColor = [UIColor blackColor];
+
+    // The first scene of the process decides the launch. One connected in
+    // the background belongs to a background launch: a neutral placeholder
+    // is the root, and the key migration, the runtime start and the root
+    // decision run once, on the first activation (`handleDidBecomeActive`),
+    // which implies an unlocked device. One connected for the foreground runs
+    // them here. A scene reconnected later (the system discarded the first)
+    // finds the launch already decided, or still waiting for its activation.
+    BOOL decidesLaunch = (self.launchDecision == nil);
+    if (decidesLaunch) {
+        self.launchDecision = [[DWLaunchDecision alloc] initWithSceneActivationState:scene.activationState];
+    }
     if (self.launchDecision.isDeferred) {
         DWLog(@"LAUNCH background launch; deferring key migration, runtime start and the root decision until the app becomes active");
-        // Lifecycle observers (the sync monitor's connectivity kick, a
-        // network-change notification) may ask the runtime to start before
-        // the activation; the runtime refuses them until `startWalletServices`.
-        [DWSwiftDashSDKWalletRuntime holdAutomaticStartsUntilLaunchDecision];
         self.window.rootViewController = [self launchPlaceholderController];
     }
     else {
-        [self startWalletServices];
-        DWInitialViewController *controller = [[DWInitialViewController alloc] init];
-        self.window.rootViewController = controller;
+        if (decidesLaunch) {
+            [self startWalletServices];
+        }
+        self.window.rootViewController = [[DWInitialViewController alloc] init];
     }
-    [self setupDashWalletComponentsWithOptions:launchOptions];
-
-    NSParameterAssert(self.window.rootViewController);
-
     [self.window makeKeyAndVisible];
-
-    return YES;
 }
 
 /// Kick off the SwiftDashSDK key migration and app-owned runtime. The
@@ -277,23 +316,7 @@ NS_ASSUME_NONNULL_BEGIN
     [controller handleURL:url];
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application {
-    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-    // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
-}
-
-- (void)applicationDidEnterBackground:(UIApplication *)application {
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-}
-
-- (void)applicationWillEnterForeground:(UIApplication *)application {
-    // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
-}
-
-- (void)applicationDidBecomeActive:(UIApplication *)application {
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-
+- (void)handleDidBecomeActive {
     //
     // THIS IS IMPORTANT!
     //
@@ -301,7 +324,7 @@ NS_ASSUME_NONNULL_BEGIN
     //
 
     // A background launch decided nothing; the first activation runs the
-    // launch-time wallet work (see `didFinishLaunching`).
+    // launch-time wallet work (see `installWindowInScene:`).
     [self completeDeferredLaunchIfNeeded];
 
     // Badge reset and delivered-notification clearing live in
@@ -330,8 +353,8 @@ NS_ASSUME_NONNULL_BEGIN
     return NO; // disable extensions such as custom keyboards for security purposes
 }
 
+- (void)handleUserActivity:(NSUserActivity *)userActivity {
 #if DASHPAY
-- (BOOL)application:(UIApplication *)application continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> *_Nullable))restorationHandler {
     // Universal links (invitations.dashpay.io applink). Firebase
     // Dynamic Links previously unwrapped these; the service was shut
     // down in 2025, so the invitation URL is now routed directly —
@@ -339,32 +362,28 @@ NS_ASSUME_NONNULL_BEGIN
     // (DWInvitationLinkNormalizer + ClaimInvitationScreen).
     NSURL *url = userActivity.webpageURL;
     if (url == nil || ![DWInvitationLinkNormalizer isInvitationURL:url]) {
-        return NO;
+        return;
     }
     // Delivered while a background launch still waits for its activation:
     // kept, and replayed once the real root is installed.
     if ([self.launchDecision holdUserActivityIfPending:userActivity]) {
         DWLog(@"LAUNCH universal link kept until the deferred launch completes");
-        return YES;
+        return;
     }
     DWInitialViewController *controller = (DWInitialViewController *)self.window.rootViewController;
     if ([controller isKindOfClass:DWInitialViewController.class]) {
         [controller handleDeeplink:url];
-        return YES;
     }
-    return NO;
-}
 #endif
+}
 
-- (BOOL)application:(UIApplication *)application
-            openURL:(NSURL *)url
-            options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+- (void)handleOpenURL:(NSURL *)url {
     // Delivered while a background launch still waits for its activation:
-    // kept, and replayed through this method once the real root is installed.
+    // kept, and replayed once the real root is installed.
     // Only the scheme is logged: an invitation link carries a bearer key.
     if ([self.launchDecision holdURLIfPending:url]) {
         DWLog(@"LAUNCH link kept until the deferred launch completes (scheme %@)", url.scheme);
-        return YES;
+        return;
     }
 #if DASHPAY
     // dashpay://invite (and pasted-transport) invitation links open the
@@ -374,7 +393,7 @@ NS_ASSUME_NONNULL_BEGIN
         if ([controller isKindOfClass:DWInitialViewController.class]) {
             [controller handleDeeplink:url];
         }
-        return YES;
+        return;
     }
 
     // Handle URL Scheme instead
@@ -388,7 +407,6 @@ NS_ASSUME_NONNULL_BEGIN
     // a Dash URL too (a registered scheme the parser rejects): the queue
     // classifies it as unsupported and shows its "Not a Dash URL" alert as
     // one of its dispatches, under the same gates as any other link.
-    const BOOL isDashURL = [DWURLParser canHandleURL:url];
     DWInitialViewController *controller = (DWInitialViewController *)self.window.rootViewController;
     if ([controller isKindOfClass:DWInitialViewController.class]) {
         [controller handleURL:url];
@@ -397,8 +415,6 @@ NS_ASSUME_NONNULL_BEGIN
         // TODO: defer action when start controller finish
         DWLog(@"Ignoring handle URL: %@. Root controller hasn't been set up yet", url);
     }
-
-    return isDashURL;
 }
 
 #pragma mark - Private
@@ -423,8 +439,12 @@ NS_ASSUME_NONNULL_BEGIN
 
     // The notifications composition root: builds the module graph and
     // installs NotificationLifecycle as the UNUserNotificationCenter
-    // delegate (foreground presentation, tap routing, clearing).
-    self.notifications = [[DWNotificationsBootstrap alloc] initWithWindow:self.window];
+    // delegate (foreground presentation, tap routing, clearing). It must
+    // exist before launch returns, so it reads the window lazily.
+    __weak typeof(self) weakSelf = self;
+    self.notifications = [[DWNotificationsBootstrap alloc] initWithWindowProvider:^UIWindow *_Nullable {
+        return weakSelf.window;
+    }];
 }
 
 #pragma mark - Notifications
