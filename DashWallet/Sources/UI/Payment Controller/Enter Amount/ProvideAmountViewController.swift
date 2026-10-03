@@ -50,6 +50,7 @@ final class ProvideAmountViewController: SendAmountViewController {
     }
 
     override func actionButtonAction(sender: UIView) {
+        guard !isSubmissionInFlight else { return }
         guard validateInputAmount() else { return }
         // Cheap rejection before the leftover-balance alert: no reason to ask
         // the user to confirm emptying their wallet for an amount that cannot
@@ -62,9 +63,9 @@ final class ProvideAmountViewController: SendAmountViewController {
             // Continue/Cancel alert and the ceiling can drop while that alert is
             // open. This is the last statement before the amount leaves the
             // screen, so this is where affordability has to be settled.
-            guard wSelf.amountIsStillAffordable() else { return }
+            guard wSelf.amountIsStillAffordable(), !wSelf.isSubmissionInFlight else { return }
 
-            wSelf.showActivityIndicator()
+            wSelf.beginSubmission()
             let paymentCurrency: DWPaymentCurrency = wSelf.sendAmountModel.activeAmountType == .main ? .dash : .fiat
             DWGlobalOptions.sharedInstance().selectedPaymentCurrency = paymentCurrency
 

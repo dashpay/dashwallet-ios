@@ -213,12 +213,14 @@ extension PaymentController: DWPaymentProcessorDelegate {
         // Pre-existing behavior kept: nil-error failures (invalid-address rejections)
         // stay silent here. The DashSync DSErrorDomain special-case is gone — live
         // errors carry WalletSendService / SDK / BIP70 domains.
+        // The amount screen's submission ends either way, or a silent failure
+        // would leave it locked.
+        provideAmountViewController?.hideActivityIndicator()
         guard let error else {
             return
         }
 
         presentationAnchor?.topController().view.dw_hideProgressHUD()
-        provideAmountViewController?.hideActivityIndicator()
 
         confirmViewController?.isSendingEnabled =
             Self.shouldReenableSending(after: error as NSError)
