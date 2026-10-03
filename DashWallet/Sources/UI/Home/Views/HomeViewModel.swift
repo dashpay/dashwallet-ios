@@ -564,7 +564,7 @@ class HomeViewModel: ObservableObject {
     /// Fails OPEN: a save whose payload we can't inspect is treated as
     /// relevant, so an unexpected notification shape costs a redundant reload
     /// rather than a feed that stops updating.
-    private static func saveTouchesFeedRows(_ notification: Notification) -> Bool {
+    static func saveTouchesFeedRows(_ notification: Notification) -> Bool {
         guard let userInfo = notification.userInfo else { return true }
         var sawInspectableChange = false
         for key in [NSInsertedObjectsKey, NSUpdatedObjectsKey, NSDeletedObjectsKey, NSRefreshedObjectsKey] {
@@ -2083,6 +2083,27 @@ class SwiftDashSDKWalletSource: TransactionSource {
             .filter { isWalletMember($0, walletId: walletId) }
             .map { wrap($0, walletId: walletId) }
         return SwiftDashSDKWalletTransactionSnapshot(walletId: walletId, transactions: transactions)
+    }
+
+    /// Duffs of the active wallet's own coins that a payment cannot use until
+    /// the network confirms or InstantSend-locks them: unspent outputs of the
+    /// standard accounts (BIP44 and BIP32, every index) that are neither in a
+    /// block nor locked — an incoming payment not locked yet, or the change of
+    /// a send the network has not taken. CoinJoin and the other account types
+    /// are left out, as are outputs paid to others. One fetch of the saved
+    /// state; safe from any thread. Nil when it could not be read.
+    static func awaitingConfirmationDuffs() -> UInt64? {
+        guard let (container, walletId) = hostHandles() else { return nil }
+        let descriptor = FetchDescriptor<PersistentTxo>(predicate: #Predicate {
+            $0.walletId == walletId && !$0.isSpent && !$0.isConfirmed && !$0.isInstantLocked
+        })
+        guard let rows = try? ModelContext(container).fetch(descriptor) else { return nil }
+        var total: UInt64 = 0
+        for txo in rows where (txo.coreAddress?.account ?? txo.account)?.accountType == standardAccountType {
+            let (sum, overflow) = total.addingReportingOverflow(txo.amount)
+            total = overflow ? UInt64.max : sum
+        }
+        return total
     }
 
     /// Ids, in `ShieldedActivityItem.id` form, of every shielded activity row

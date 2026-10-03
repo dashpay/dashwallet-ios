@@ -29,7 +29,8 @@ final class BalanceModel: ObservableObject {
     /// other Home balance rows.
     @Published private(set) var value: UInt64?
     /// Part of `value` that a payment cannot use until the network confirms
-    /// it (`SwiftDashSDKWalletState.awaitingConfirmationDuffs`); 0 when none.
+    /// it (`SwiftDashSDKWalletSource.awaitingConfirmationDuffs()`); 0 when
+    /// none or unreadable.
     @Published private(set) var awaitingConfirmationDuffs: UInt64 = 0
     /// Badge text for the home header while the wallet runs on a test
     /// network ("TESTNET"/"DEVNET"), so test funds can't be mistaken for
@@ -62,12 +63,25 @@ final class BalanceModel: ObservableObject {
             }
             .store(in: &cancellableBag)
 
-        // Recomputed from all three inputs: the pooled and CoinJoin figures
-        // are read after the balance event, so the balance alone would leave
-        // the figure one read behind.
-        let state = SwiftDashSDKWalletState.shared
-        Publishers.CombineLatest3(state.$balance, state.$pooledSpendableDuffs, state.$coinJoinBalanceDuffs)
-            .map { SwiftDashSDKWalletState.awaitingConfirmation(balance: $0, pooled: $1, coinJoin: $2) }
+        // Read from the saved coins in one fetch, off the main thread, after a
+        // balance event or a save that touched them — the coins are saved a
+        // moment after the balance moves. The newest read wins.
+        let coinSaves = NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
+            .filter { HomeViewModel.saveTouchesFeedRows($0) }
+            .map { _ in () }
+        SwiftDashSDKWalletState.shared.$balance
+            .map { _ in () }
+            .merge(with: coinSaves)
+            .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
+            .map { _ in
+                Future<UInt64, Never> { promise in
+                    DispatchQueue.global(qos: .utility).async {
+                        promise(.success(SwiftDashSDKWalletSource.awaitingConfirmationDuffs() ?? 0))
+                    }
+                }
+            }
+            .switchToLatest()
+            .receive(on: DispatchQueue.main)
             .removeDuplicates()
             .sink { [weak self] duffs in
                 self?.awaitingConfirmationDuffs = duffs
