@@ -15,7 +15,7 @@ on:
       platform_ref:
         description: "dashpay/platform branch, tag, or commit SHA"
         required: true
-        default: v4.2-dev
+        default: v5.0-dev
         type: string
       dashuikit_ref:
         description: "dashpay/DashUIKit branch, tag, or full commit SHA — blank uses the pin committed in Package.resolved"

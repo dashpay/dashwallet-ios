@@ -49,8 +49,10 @@ final class NotificationsBootstrap: NSObject {
     let contactsProducer: DashPayContactsNotificationProducer
     #endif
 
+    /// `windowProvider` is read at routing time: the bootstrap is built in
+    /// `didFinishLaunching`, before the scene connects and creates the window.
     @objc
-    init(window: UIWindow) {
+    init(windowProvider: @escaping () -> UIWindow?) {
         let client = SystemUserNotificationCenterClient()
         let store = NotifiedEventStore.onSharedDatabase()
         let permissionCoordinator = NotificationPermissionCoordinator(client: client)
@@ -62,8 +64,8 @@ final class NotificationsBootstrap: NSObject {
                                                 store: store,
                                                 permissions: permissionCoordinator,
                                                 submissions: submissions)
-        let router = NotificationRouter(presentingController: { [weak window] in
-            window?.rootViewController
+        let router = NotificationRouter(presentingController: {
+            windowProvider()?.rootViewController
         })
         let lifecycle = NotificationLifecycle(client: client,
                                               store: store,

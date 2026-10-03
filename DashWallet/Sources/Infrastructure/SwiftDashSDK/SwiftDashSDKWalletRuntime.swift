@@ -65,15 +65,17 @@ final class SerialAsyncLifecycleQueue {
 /// device is unlocked, and reading presence there once turned a funded wallet
 /// into a fresh install. The work runs once, at the first foreground
 /// activation, which implies an unlocked device. A foreground launch runs it
-/// at launch, as before. Separated from `AppDelegate` so the one-shot rule
-/// is testable.
+/// when its scene connects. Which of the two a launch is, is read from the
+/// activation state of the first scene that connects: under the scene life
+/// cycle the application state at `didFinishLaunching` does not tell them
+/// apart. Separated from `AppDelegate` so the one-shot rule is testable.
 @objc(DWLaunchDecision)
 final class LaunchDecision: NSObject {
     /// True until the deferred work has run.
     @objc private(set) var isDeferred: Bool
 
-    @objc init(applicationState: UIApplication.State) {
-        isDeferred = applicationState == .background
+    @objc init(sceneActivationState: UIScene.ActivationState) {
+        isDeferred = sceneActivationState == .background
     }
 
     /// The first activation while deferred returns true, exactly once; every
@@ -160,6 +162,29 @@ struct RuntimeRefreshPolicy {
             return isCoreReady
         case .networkDidChange:
             return isFullyReady
+        }
+    }
+
+    /// Whether the Platform start behind `trigger` leaves the same-seed
+    /// identity recovery running in the background instead of awaiting it.
+    ///
+    /// The recovery refreshes DPNS names over DAPI, and the refresh that awaits
+    /// it is the one a network switch's verdict (and its blocking overlay)
+    /// waits for. Only a network change runs it in the background:
+    /// `WalletEnvironment.switchToNetwork` has already cleared the
+    /// wallet-global DashPay username mirror, so nothing renders another
+    /// identity's name while the recovery is still out. The other triggers
+    /// await it — on a wallet switch its adopt step
+    /// (`reconcileRecoveredIdentity`) repoints that mirror at the selected
+    /// wallet before `switchWallet` announces the change.
+    static func runsIdentityRecoveryInBackground(
+        trigger: SwiftDashSDKWalletRuntime.RefreshTrigger
+    ) -> Bool {
+        switch trigger {
+        case .networkDidChange:
+            return true
+        case .startIfReady, .walletMaterialChanged, .walletDidChange, .walletRowsChanged, .platformSyncRearm:
+            return false
         }
     }
 }
@@ -818,6 +843,10 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             return
         }
 
+        // Taken in the same main-actor step that resolves the network, before
+        // any await: a network switch prepared from here on overtakes this
+        // refresh's Core start (see `NetworkSwitchPreparationGate`).
+        let preparationsAtStart = SwiftDashSDKSPVCoordinator.shared.networkSwitchStartToken()
         switch resolveCurrentNetwork() {
         case .failure(let error):
             await fullReset(lastError: error.localizedDescription, forWipe: false)
@@ -834,6 +863,16 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             }
 
             await fullReset(lastError: nil, forWipe: false, preservingShieldedRecovery: true)
+
+            // The reset awaits the SPV stop and the host teardown. A network
+            // switch prepared meanwhile queued its own refresh behind this
+            // one, and the next start belongs to that refresh: `network` may
+            // no longer be the selected network.
+            if SwiftDashSDKSPVCoordinator.shared.isOvertakenByNetworkSwitch(since: preparationsAtStart) {
+                Self.logger.info(
+                    "🧭 RUNTIME :: network switch prepared during the reset; leaving the start of \(network.rawValue, privacy: .public) to its refresh")
+                return
+            }
 
             // A reinstall clears the selected-network UserDefaults key but
             // preserves SDK mnemonics. If every stored wallet belongs to the
@@ -898,7 +937,8 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                     manager: manager, walletId: wallet.walletId, network: network)
                 await PlatformAddressSyncCoordinator.shared.prepareLocalShieldedState(
                     manager: manager, walletId: wallet.walletId, network: network)
-                try await SwiftDashSDKSPVCoordinator.shared.startAsync(for: network)
+                try await SwiftDashSDKSPVCoordinator.shared.startAsync(
+                    for: network, preparationsAtStart: preparationsAtStart)
             } catch {
                 Self.logger.error("🧭 RUNTIME :: Core start failed: \(String(describing: error), privacy: .public)")
                 await fullReset(lastError: error.localizedDescription, forWipe: false)
@@ -934,17 +974,23 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 publishActiveWalletDidChange(reason: "wallet-rows-changed")
             }
 
-            await startPlatform(for: network)
+            await startPlatform(
+                for: network,
+                identityRecoveryInBackground: RuntimeRefreshPolicy.runsIdentityRecoveryInBackground(trigger: trigger))
         }
     }
 
     /// Start Platform/BLAST for `network` and record the verdict in
     /// `platformPhase`. A Platform failure is contained here: the host, Core
     /// SPV, the published balance and the SwiftData handles the home
-    /// transaction list reads all stay up.
-    private func startPlatform(for network: Network) async {
+    /// transaction list reads all stay up. See
+    /// `RuntimeRefreshPolicy.runsIdentityRecoveryInBackground` for
+    /// `identityRecoveryInBackground`.
+    private func startPlatform(for network: Network, identityRecoveryInBackground: Bool = false) async {
         do {
-            try await PlatformAddressSyncCoordinator.shared.startAsync(for: network)
+            try await PlatformAddressSyncCoordinator.shared.startAsync(
+                for: network,
+                identityRecoveryInBackground: identityRecoveryInBackground)
             platformPhase = .running(network)
         } catch {
             platformPhase = .degraded(network)
@@ -966,7 +1012,9 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// Both BLAST and Core SPV consume `SwiftDashSDKHost.shared`; releasing
     /// the FFI handle while either tokio task is still running would be a
     /// use-after-free, so the host stop happens strictly after both
-    /// coordinators have settled.
+    /// coordinators have settled. The BLAST stop only starts the shielded
+    /// sync stop, which drains a pass in flight off the main thread while SPV
+    /// stops; it is awaited before the host stop.
     private func fullReset(
         lastError: String?, forWipe: Bool, preservingShieldedRecovery: Bool = false
     ) async {
@@ -976,6 +1024,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             await PlatformAddressSyncCoordinator.shared.stopAsync(preservingRecovery: preservingShieldedRecovery)
         }
         await SwiftDashSDKSPVCoordinator.shared.stopAsync(lastError: lastError)
+        await PlatformAddressSyncCoordinator.shared.awaitPendingShieldedStop()
         SwiftDashSDKWalletState.shared.clearAllState()
         // Blocking native teardown runs off-main inside stopAsync; this only
         // suspends. The shutdown metrics are logged by the host (DWLogger)
