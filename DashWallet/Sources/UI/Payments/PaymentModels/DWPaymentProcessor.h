@@ -53,6 +53,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
      didSendWithTxidWire:(NSData *)txidWire;
 
+// The broadcast of `txidWire` got no answer from the network: it may have gone
+// through. Not a failure — the send is followed in the history
+// (`PendingSendOutcomes`) until the network answers.
+- (void)paymentProcessor:(DWPaymentProcessor *)processor
+    didSendWithUnknownOutcomeTxidWire:(NSData *)txidWire;
+
 // Broadcast progress
 
 // Brackets the network wait of a confirmed send — a plain broadcast or a BIP70

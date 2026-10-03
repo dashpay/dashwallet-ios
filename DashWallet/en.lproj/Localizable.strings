@@ -6364,3 +6364,12 @@
 /* Send blocked until unconfirmed coins are confirmed */
 "Some of your funds are waiting for the network to confirm an earlier payment. Try again in a moment." = "Some of your funds are waiting for the network to confirm an earlier payment. Try again in a moment.";
 
+/* Sent transaction whose broadcast got no answer from the network yet */
+"Waiting for the network" = "Waiting for the network";
+
+/* A payment that had been waiting for the network was confirmed; %@ is the amount */
+"Payment of %@ went through" = "Payment of %@ went through";
+
+/* Send: the broadcast got no answer; the payment is followed in the history */
+"The network hasn't confirmed this payment yet. It's in your history as \"Waiting for the network\" — don't send it again." = "The network hasn't confirmed this payment yet. It's in your history as \"Waiting for the network\" — don't send it again.";
+

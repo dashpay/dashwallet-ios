@@ -32,6 +32,10 @@ protocol PaymentControllerDelegate: AnyObject {
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, txidWire: Data)
     func paymentControllerDidCancelTransaction(_ controller: PaymentController)
     func paymentControllerDidFailTransaction(_ controller: PaymentController)
+    /// The broadcast got no answer from the network; the send now waits in the
+    /// history (`PendingSendOutcomes`). A delegate that does not implement this
+    /// shows the outcome as an alert on the paying screen instead.
+    @objc optional func paymentControllerDidSubmitWithUnknownOutcome(_ controller: PaymentController, txidWire: Data)
 }
 
 // MARK: - PaymentControllerPresentationContextProviding
@@ -252,6 +256,36 @@ extension PaymentController: DWPaymentProcessorDelegate {
             finishBlock()
         }
     }
+
+    func paymentProcessor(_ processor: DWPaymentProcessor, didSendWithUnknownOutcomeTxidWire txidWire: Data) {
+        presentationAnchor?.topController().view.dw_hideProgressHUD()
+        provideAmountViewController?.hideActivityIndicator()
+
+        guard let delegate,
+              (delegate as? NSObject)?.responds(
+                  to: #selector(PaymentControllerDelegate.paymentControllerDidSubmitWithUnknownOutcome(_:txidWire:))) == true
+        else {
+            confirmViewController?.isSendingEnabled = false
+            showAlert(with: NSLocalizedString("Waiting for the network", comment: "Sent transaction whose broadcast got no answer from the network yet"),
+                      message: Self.unknownOutcomeMessage)
+            return
+        }
+
+        let finish = {
+            DispatchQueue.main.async {
+                delegate.paymentControllerDidSubmitWithUnknownOutcome?(self, txidWire: txidWire)
+            }
+        }
+        guard let vc = confirmViewController else {
+            finish()
+            return
+        }
+        vc.dismiss(animated: true) { finish() }
+    }
+
+    static let unknownOutcomeMessage = NSLocalizedString(
+        "The network hasn't confirmed this payment yet. It's in your history as \"Waiting for the network\" — don't send it again.",
+        comment: "Send: the broadcast got no answer; the payment is followed in the history")
 
     /// While the send waits, its screen must stay: swiped away, the outcome
     /// would have nowhere to show, and a live screen would take a second tap —

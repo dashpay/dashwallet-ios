@@ -233,6 +233,7 @@ struct HomeViewContent<Content: View>: View {
     /// confirm sheet closes the moment it begins — so its outcome is
     /// announced here, where the user lands.
     @ObservedObject private var internalTransfers = InternalTransferRunner.shared
+    @ObservedObject private var pendingSends = PendingSendOutcomes.shared
     /// Balance whose explainer sheet is up (tap on a breakdown row's body).
     @State private var balanceInfoNetwork: ChainNetwork? = nil
 
@@ -496,6 +497,7 @@ struct HomeViewContent<Content: View>: View {
             }
         }
         .internalTransferToast(runner: internalTransfers)
+        .pendingSendToast(outcomes: pendingSends)
         .sheet(item: $selectedTxDataItem) { item in
             TransactionDetailsSheet(item: item)
         }
@@ -1126,5 +1128,49 @@ struct TransactionDetailsSheet: View {
 extension Data: Identifiable {
     public var id: String {
         return self.base64EncodedString()
+    }
+}
+
+extension View {
+    /// Tells, once, that a payment that had been waiting for the network went
+    /// through — its history row moves to "Sent" at the same moment.
+    func pendingSendToast(outcomes: PendingSendOutcomes) -> some View {
+        modifier(PendingSendToastModifier(outcomes: outcomes))
+    }
+}
+
+private struct PendingSendToastModifier: ViewModifier {
+    @ObservedObject var outcomes: PendingSendOutcomes
+
+    private static let duration: TimeInterval = 3
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(alignment: .bottom) {
+                if let notice = outcomes.notice {
+                    DashUIKit.Toast(
+                        style: .success,
+                        message: String(
+                            format: NSLocalizedString("Payment of %@ went through", comment: "A payment that had been waiting for the network was confirmed; %@ is the amount"),
+                            notice.amount.formattedDashAmount))
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 16)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .animation(.easeInOut(duration: 0.3), value: outcomes.notice)
+            .task(id: outcomes.notice) {
+                guard outcomes.notice != nil else { return }
+                // A notice raised while home was away keeps only what is left
+                // of its window, like the internal-transfer notice.
+                let age = outcomes.noticeRaisedAt.map { Date().timeIntervalSince($0) } ?? 0
+                guard age < Self.duration else {
+                    outcomes.notice = nil
+                    return
+                }
+                try? await Task.sleep(for: .seconds(Self.duration - age))
+                guard !Task.isCancelled else { return }
+                outcomes.notice = nil
+            }
     }
 }

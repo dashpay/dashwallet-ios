@@ -155,12 +155,19 @@ static NSString *DWReversedHexString(NSData *data) {
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.delegate paymentProcessor:self broadcastInProgress:NO];
-            if (error) {
+            if (error && [DWWalletSendService isBroadcastUnknownError:error]) {
+                // No answer is not a failure: the payment may well have gone
+                // through. It goes to the history as "Waiting for the network"
+                // instead of an error that invites sending it again.
+                [DWPendingSendOutcomes.shared recordUnknownOutcomeWithTxidWire:preparedSend.txidWire
+                                                                       address:address
+                                                                        amount:preparedSend.amount];
+                [self.delegate paymentProcessor:self didSendWithUnknownOutcomeTxidWire:preparedSend.txidWire];
+                [self reset];
+            }
+            else if (error) {
                 NSString *title = NSLocalizedString(@"Couldn't make payment", nil);
-                if ([DWWalletSendService isBroadcastUnknownError:error]) {
-                    title = NSLocalizedString(@"Transaction status unknown", nil);
-                }
-                else if ([DWWalletSendService isBroadcastRejectedError:error]) {
+                if ([DWWalletSendService isBroadcastRejectedError:error]) {
                     title = NSLocalizedString(@"Transaction not sent", nil);
                 }
                 [self failedWithError:error

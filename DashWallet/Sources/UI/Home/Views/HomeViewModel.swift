@@ -483,6 +483,15 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
 
+        // A send waiting for the network changes its row's title while its
+        // stored row stays as it was.
+        NotificationCenter.default.publisher(for: PendingSendOutcomes.didChangeNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.txReloadRequests.send()
+            }
+            .store(in: &cancellableBag)
+
         // The platform-address recorder inserts into the app's SQLite —
         // invisible to the SwiftData save trigger above — so it posts its
         // own signal when a received row lands.
