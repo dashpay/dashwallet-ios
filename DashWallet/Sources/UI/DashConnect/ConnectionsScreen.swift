@@ -66,23 +66,30 @@ struct ConnectionsScreen: View {
         }
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
-        .alert(item: messageBinding) { message in
-            Alert(
-                title: Text(message.title),
-                message: Text(message.text),
-                dismissButton: .default(Text(NSLocalizedString("OK", comment: ""))) {
-                    viewModel.message = nil
-                }
-            )
+        .alert(
+            viewModel.message?.title ?? "",
+            isPresented: isMessagePresented,
+            presenting: viewModel.message
+        ) { _ in
+            Button(NSLocalizedString("OK", comment: "")) {
+                viewModel.message = nil
+            }
+        } message: { message in
+            // The deep-link queue waits for this alert's dismissal, which
+            // clears `message`.
+            Text(message.text)
         }
         .sheet(isPresented: isApproveSheetPresented) {
             if let request = viewModel.pendingRequest {
                 approveSheet(for: request)
+                    // The deep-link queue waits for this: the sheet is on screen.
+                    .onAppear { viewModel.sheetDidAppear() }
             }
         }
         .sheet(isPresented: isTokenPurchaseSheetPresented) {
             if let purchase = viewModel.pendingTokenPurchase {
                 tokenPurchaseSheet(for: purchase)
+                    .onAppear { viewModel.sheetDidAppear() }
             }
         }
     }
@@ -151,10 +158,10 @@ struct ConnectionsScreen: View {
         )
     }
 
-    private var messageBinding: Binding<ConnectionsScreenMessage?> {
+    private var isMessagePresented: Binding<Bool> {
         Binding(
-            get: { viewModel.message },
-            set: { viewModel.message = $0 }
+            get: { viewModel.message != nil },
+            set: { if !$0 { viewModel.message = nil } }
         )
     }
 

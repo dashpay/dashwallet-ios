@@ -489,40 +489,85 @@ extension MainTabbarController {
     }
     #endif
 
+    // MARK: Deep links
+    //
+    // Entry points of the root controller's link queue, which hands links
+    // over one at a time: each dismisses whatever is presented and waits for
+    // that, performs the action, and reports back through the handler's own
+    // completion — once the screen it presented (or pushed) has finished
+    // its transition, or its preparation ended without one — so the next
+    // link never presents over an animation still in flight.
+
+    /// Whether the home screen can take an invitation now (sync done).
+    /// Without DashPay there are no invitations to wait for.
     @objc
-    public func performScanQRCodeAction() {
-        dismiss(animated: false, completion: nil)
-        selectedIndex = MainTabbarTabs.home.rawValue
-        homeController?.performScanQRCodeAction()
+    public var isReadyForInvitations: Bool {
+        #if DASHPAY
+        return homeController?.isReadyForInvitations ?? false
+        #else
+        return true
+        #endif
     }
 
     @objc
-    public func performPay(to url: URL) {
-        dismiss(animated: false, completion: nil)
-        selectedIndex = MainTabbarTabs.home.rawValue
-        homeController?.performPay(to: url)
+    public func performScanQRCodeAction(completion: @escaping () -> Void) {
+        afterDismissingPresented { [weak self] in
+            guard let self, let home = self.homeController else { return completion() }
+            self.selectedIndex = MainTabbarTabs.home.rawValue
+            home.performScanQRCodeAction(completion: completion)
+        }
+    }
+
+    /// `isAbandoned` answers whether the queue has given this link up (its
+    /// watchdog fired); a handler that learns so presents nothing.
+    @objc
+    public func performPay(to url: URL, completion: @escaping () -> Void, isAbandoned: @escaping () -> Bool) {
+        // A confirmed send in flight keeps what is on screen (its
+        // authentication may be up): nothing is dismissed, and the payment
+        // controller refuses this link with an alert.
+        if let home = homeController, home.hasPaymentInFlight {
+            home.performPay(to: url, completion: completion, isAbandoned: isAbandoned)
+            return
+        }
+        afterDismissingPresented { [weak self] in
+            guard let self, let home = self.homeController else { return completion() }
+            self.selectedIndex = MainTabbarTabs.home.rawValue
+            home.performPay(to: url, completion: completion, isAbandoned: isAbandoned)
+        }
     }
 
     /// Opens the Connections screen for a `dash-key:` / `dash-st:` link.
     ///
     /// The More tab's index moves with the DashPay layout, so it comes from
     /// `moreTabIndex` rather than from the tab enum.
+    /// `completion` settles when the request has resolved as far as the
+    /// Connections screen — its approval sheet published, or a refusal or
+    /// error shown — whether the screen was pushed for it or was already
+    /// on top (`ConnectionsViewModel.onURIReceived(_:settled:)`).
     @objc
-    public func openDashConnect(_ uri: String) {
-        dismiss(animated: false, completion: nil)
+    public func openDashConnect(_ uri: String, completion: @escaping () -> Void, isAbandoned: @escaping () -> Bool) {
+        afterDismissingPresented { [weak self] in
+            guard let self else { return completion() }
+            self.openDashConnectNow(uri, completion: completion, isAbandoned: isAbandoned)
+        }
+    }
 
-        guard let menuNav = menuNavigationController?.navigationController else { return }
+    private func openDashConnectNow(_ uri: String, completion: (() -> Void)? = nil, isAbandoned: (() -> Bool)? = nil) {
+        guard let menuNav = menuNavigationController?.navigationController else {
+            completion?()
+            return
+        }
 
         if let moreTabIndex {
             selectedIndex = moreTabIndex
         }
 
         if let connections = menuNav.topViewController as? DashConnectHostingController {
-            connections.handle(uri: uri)
+            connections.handle(uri: uri, completion: completion, isAbandoned: isAbandoned)
             return
         }
 
-        let controller = DashConnectHostingController(navigationController: menuNav, uri: uri)
+        let controller = DashConnectHostingController(navigationController: menuNav, uri: uri, completion: completion, isAbandoned: isAbandoned)
         controller.hidesBottomBarWhenPushed = true
         menuNav.pushViewController(controller, animated: true)
     }
@@ -541,12 +586,49 @@ extension MainTabbarController {
     
     #if DASHPAY
     @objc
-    public func handleDeeplink(_ url: URL, definedUsername: String?) {
-        dismiss(animated: false, completion: nil)
-        selectedIndex = MainTabbarTabs.home.rawValue
-        homeController?.handleDeeplink(url, definedUsername: definedUsername)
+    public func handleDeeplink(_ url: URL, definedUsername: String?, completion: @escaping () -> Void) {
+        afterDismissingPresented { [weak self] in
+            guard let self, let home = self.homeController else { return completion() }
+            self.selectedIndex = MainTabbarTabs.home.rawValue
+            home.handleDeeplink(url, definedUsername: definedUsername, completion: completion)
+        }
     }
     #endif
+
+    /// Takes down whatever is presented over the active hierarchy, then runs
+    /// `body`. `presentedViewController` here sees only what this controller
+    /// or an ancestor presents; a screen that defines its own presentation
+    /// context (the amount step under a payment's confirmation) presents on
+    /// its own, so the owner is resolved by walking the active chain
+    /// (`PresentationOwner`) and the dismissal is asked of that owner — it
+    /// takes the whole presented chain with it. With nothing presented the
+    /// body runs at once.
+    private func afterDismissingPresented(_ body: @escaping () -> Void, attempt: Int = 0) {
+        switch PresentationOwner.step(from: self) {
+        case .none:
+            body()
+        case let .wait(owner) where attempt < Self.presentationTransitionWaits:
+            // A presentation still animating cannot be dismissed: wait for
+            // its transition to end, then decide again.
+            let retry = { [weak self] in
+                guard let self else { return body() }
+                self.afterDismissingPresented(body, attempt: attempt + 1)
+            }
+            if let coordinator = (owner as? UIViewController)?.presentedViewController?.transitionCoordinator {
+                coordinator.animate(alongsideTransition: nil) { _ in DispatchQueue.main.async(execute: retry) }
+            } else {
+                DispatchQueue.main.asyncAfter(deadline: .now() + Self.presentationTransitionPoll, execute: retry)
+            }
+        case let .wait(owner), let .dismiss(owner):
+            guard let owner = owner as? UIViewController else { return body() }
+            owner.dismiss(animated: false, completion: body)
+        }
+    }
+
+    /// How often, and how long apart, a deep link waits for a presentation
+    /// transition before dismissing anyway (about 2 s in all).
+    private static let presentationTransitionWaits = 20
+    private static let presentationTransitionPoll: TimeInterval = 0.1
 }
 
 // MARK: MainMenuViewControllerDelegate
