@@ -68,14 +68,24 @@ final class SerialAsyncLifecycleQueue {
 /// when its scene connects. Which of the two a launch is, is read from the
 /// activation state of the first scene that connects: under the scene life
 /// cycle the application state at `didFinishLaunching` does not tell them
-/// apart. Separated from `AppDelegate` so the one-shot rule is testable.
+/// apart. Only a scene already in the foreground proves a foreground launch;
+/// one that connects `.background` or still `.unattached` proves neither an
+/// activation nor an unlocked device, so the launch waits for the first
+/// activation. Separated from `AppDelegate` so the one-shot rule is testable.
 @objc(DWLaunchDecision)
 final class LaunchDecision: NSObject {
     /// True until the deferred work has run.
     @objc private(set) var isDeferred: Bool
 
     @objc init(sceneActivationState: UIScene.ActivationState) {
-        isDeferred = sceneActivationState == .background
+        switch sceneActivationState {
+        case .foregroundActive, .foregroundInactive:
+            isDeferred = false
+        case .background, .unattached:
+            isDeferred = true
+        @unknown default:
+            isDeferred = true
+        }
     }
 
     /// The first activation while deferred returns true, exactly once; every
