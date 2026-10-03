@@ -124,6 +124,17 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         return true
     }
 
+    /// Stop following `txidsWire` — their rows were removed by the user
+    /// (`UnconfirmedTransactionRemover`).
+    func forget(txidsWire: [Data]) {
+        var changed = false
+        for txid in txidsWire where entries.removeValue(forKey: txid) != nil {
+            changed = true
+            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) removed, no longer tracked")
+        }
+        if changed { didChangeEntries() }
+    }
+
     // MARK: - Reading
 
     /// Whether `txidWire` is a send still waiting for the network.

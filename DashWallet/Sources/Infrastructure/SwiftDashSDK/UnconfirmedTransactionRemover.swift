@@ -281,6 +281,10 @@ struct UnconfirmedTransactionRemover {
                 TransactionMetadataDAOImpl.shared.delete(dto: metadata)
             }
         }
+        // A removed send no longer waits for the network: no row to title,
+        // no repeat warning, and no "went through" notice if a rescan brings
+        // it back mined.
+        await MainActor.run { PendingSendOutcomes.shared.forget(txidsWire: txidsWire) }
 
         // How deep the recovery rescan reaches is decided HERE, before the
         // reload, because the reload stops SPV and `resetPublishedState`
