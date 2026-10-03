@@ -33,9 +33,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
 
     // MARK: - Logging
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.transaction-sender")
+    /// Through `DWLogger`, so the send log reaches the shared log export.
+    private static let logger = SendLog()
 
     // MARK: - CoinJoin sweep constants (documented mirrors; core is the backstop)
 
@@ -98,7 +97,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// carry several outputs. Build + sign via the same `CoreTransactionBuilder`
     /// path as the single-recipient variant; broadcast is deferred to `broadcast(_:)`.
     static func buildAndSign(recipients: [(address: String, amountDuffs: UInt64)]) throws -> (tx: FinalizedCoreTransaction, txHash: Data) {
-        logger.info("💸 TXSEND :: building+signing \(recipients.count, privacy: .public) recipient(s) via PlatformWalletManager.coreWallet")
+        logger.info("💸 TXSEND :: building+signing \(recipients.count) recipient(s) via PlatformWalletManager.coreWallet")
 
         let build = { @MainActor () throws -> FinalizedCoreTransaction in
             guard let wallet = SwiftDashSDKHost.shared.wallet,
@@ -128,7 +127,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
 
         let txData = try tx.serializedData()
         let txHash = computeTxHash(from: txData)
-        logger.info("💸 TXSEND :: built+signed — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public) fee=\(tx.fee, privacy: .public) duffs size=\(txData.count, privacy: .public) bytes")
+        logger.info("💸 TXSEND :: built+signed — txHash=\(txHash.map { String(format: "%02x", $0) }.joined()) fee=\(tx.fee) duffs size=\(txData.count) bytes")
         return (tx, txHash)
     }
 
@@ -180,7 +179,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
         )
 
         let txHash = computeTxHash(from: txData)
-        logger.info("💸 TXSEND :: built+signed MAYA swap deposit — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public) fee=\(built.tx.fee, privacy: .public) duffs size=\(txData.count, privacy: .public) bytes")
+        logger.info("💸 TXSEND :: built+signed MAYA swap deposit — txHash=\(txHash.map { String(format: "%02x", $0) }.joined()) fee=\(built.tx.fee) duffs size=\(txData.count) bytes")
         return (built.tx, txHash)
     }
 
@@ -302,7 +301,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
             guard let wallet = current else {
                 unattemptedChunkCount = chunks.count - index
                 Self.logger.error(
-                    "💸 TXSEND :: coinjoin sweep stopped before chunk \(index + 1, privacy: .public) of \(chunks.count, privacy: .public): its wallet or network is no longer running")
+                    "💸 TXSEND :: coinjoin sweep stopped before chunk \(index + 1) of \(chunks.count): its wallet or network is no longer running")
                 break
             }
             do {
@@ -335,7 +334,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
                 failedChunkCount += 1
                 firstError = firstError ?? error
                 Self.logger.error(
-                    "💸 TXSEND :: coinjoin sweep chunk \(index + 1, privacy: .public) failed to broadcast, continuing: \(String(describing: error), privacy: .public)")
+                    "💸 TXSEND :: coinjoin sweep chunk \(index + 1) failed to broadcast, continuing: \(String(describing: error))")
             }
         }
         if txids.isEmpty, unattemptedChunkCount == 0, let error = firstError { throw error }
@@ -347,7 +346,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
         let hexes = outcome.txids.map { txid -> String in
             Data(txid.reversed()).map { String(format: "%02x", $0) }.joined()
         }
-        logger.info("💸 TXSEND :: coinjoin sweep broadcast — \(outcome.txids.count, privacy: .public) tx(s), \(outcome.failedChunkCount, privacy: .public) chunk(s) failed, \(outcome.unattemptedChunkCount, privacy: .public) not attempted: \(hexes.joined(separator: ","), privacy: .public)")
+        logger.info("💸 TXSEND :: coinjoin sweep broadcast — \(outcome.txids.count) tx(s), \(outcome.failedChunkCount) chunk(s) failed, \(outcome.unattemptedChunkCount) not attempted: \(hexes.joined(separator: ","))")
         return outcome
     }
 
@@ -387,7 +386,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
         amount: UInt64,
         adjustAmountDownwards: Bool
     ) async throws -> (txData: Data, fee: UInt64, txHash: Data) {
-        logger.info("💸 TXSEND :: selected-input send — amount=\(amount, privacy: .public) adjust=\(adjustAmountDownwards, privacy: .public)")
+        logger.info("💸 TXSEND :: selected-input send — amount=\(amount) adjust=\(adjustAmountDownwards)")
 
         // Resolve the sender address to its P2PKH/P2SH script for byte-exact
         // UTXO matching (`AccountUtxo` carries scriptPubkey, not an address).
@@ -449,7 +448,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
         _ = try Self.requireAccepted(try await waitingForNetwork { try submit(tx, through: wallet) })
 
         let txHash = computeTxHash(from: txData)
-        logger.info("💸 TXSEND :: selected-input send broadcast — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public) fee=\(exactFee, privacy: .public) adjusted=\(adjusted, privacy: .public) inputs=\(utxos.count, privacy: .public)")
+        logger.info("💸 TXSEND :: selected-input send broadcast — txHash=\(txHash.map { String(format: "%02x", $0) }.joined()) fee=\(exactFee) adjusted=\(adjusted) inputs=\(utxos.count)")
         return (txData, exactFee, txHash)
     }
 
@@ -487,7 +486,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
             let utxos = try await MainActor.run { try addressUtxos(script: script) }
             let total = utxos.reduce(UInt64(0)) { $0 + $1.valueDuffs }
             if total >= minimumTotal || Date() >= deadline {
-                logger.info("💸 TXSEND :: selected-input UTXO wait — polls=\(polls, privacy: .public) utxos=\(utxos.count, privacy: .public) total=\(total, privacy: .public) needed=\(minimumTotal, privacy: .public)")
+                logger.info("💸 TXSEND :: selected-input UTXO wait — polls=\(polls) utxos=\(utxos.count) total=\(total) needed=\(minimumTotal)")
                 return utxos
             }
             try await Task.sleep(nanoseconds: UInt64(selectedInputPollInterval * 1_000_000_000))
@@ -595,11 +594,11 @@ final class SwiftDashSDKTransactionSender: NSObject {
 
         switch outcome {
         case .accepted(let txid):
-            logger.info("💸 TXSEND :: broadcast accepted — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public)")
+            logger.info("💸 TXSEND :: broadcast accepted — sdkTxid=\(txid) txHash=\(displayHash)")
         case .rejected(let txid, let reason):
-            logger.error("💸 TXSEND :: broadcast rejected — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public) reason=\(reason, privacy: .public)")
+            logger.error("💸 TXSEND :: broadcast rejected — sdkTxid=\(txid) txHash=\(displayHash) reason=\(reason)")
         case .unknown(let txid, let reason):
-            logger.error("💸 TXSEND :: broadcast unknown — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public) reason=\(reason, privacy: .public)")
+            logger.error("💸 TXSEND :: broadcast unknown — sdkTxid=\(txid) txHash=\(displayHash) reason=\(reason)")
         }
         return outcome
     }

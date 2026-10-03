@@ -254,13 +254,24 @@ final class UnknownContactPaymentOutcomes {
 }
 #endif
 
+/// `os.Logger`-shaped front for `DWLogger`, for the send path's 💸 TXSEND
+/// lines: a send that failed, was refused or ended with no answer has to be
+/// readable from the "Share application logs" export, which ships only the
+/// DWLogger files (an `os.Logger` line never reaches it). DWLogger still
+/// mirrors to the console. It records every line at one level, so the level
+/// travels as a text tag.
+struct SendLog {
+    func debug(_ message: String) { DWLogger.log(message) }
+    func info(_ message: String) { DWLogger.log(message) }
+    func warning(_ message: String) { DWLogger.log("WARNING " + message) }
+    func error(_ message: String) { DWLogger.log("ERROR " + message) }
+}
+
 @objc(DWWalletSendService)
 final class WalletSendService: NSObject {
     @objc(sharedService) static let shared = WalletSendService()
 
-    fileprivate static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.wallet-send-service")
+    fileprivate static let logger = SendLog()
 
     /// `userInfo` key carrying the SDK's own explanation of a broadcast
     /// outcome.
@@ -529,10 +540,10 @@ final class WalletSendService: NSObject {
             )
         }
 
-        Self.logger.info("💸 TXSEND :: preparing CoinJoin sweep — balance \(amount, privacy: .public) duffs (\(Double(amount) / 1e8, privacy: .public) DASH)")
+        Self.logger.info("💸 TXSEND :: preparing CoinJoin sweep — balance \(amount) duffs (\(Double(amount) / 1e8) DASH)")
         try await sendAuthorizer.authorizeSend(spendAmount: amount)
 
-        Self.logger.info("💸 TXSEND :: CoinJoin sweep destination resolved \(target.address, privacy: .public)")
+        Self.logger.info("💸 TXSEND :: CoinJoin sweep destination resolved \(target.address)")
         // If the user switched to another wallet or network while the sweep
         // ran — before, between or during its chunks — its outcome belongs to
         // the wallet that left: keep the chunks that went out grouped under
@@ -560,7 +571,7 @@ final class WalletSendService: NSObject {
                     CoinJoinWithdrawalStore.shared.record(txid: txid, walletId: target.walletId)
                 }
             }
-            Self.logger.error("💸 TXSEND :: CoinJoin sweep outcome dropped: its wallet is no longer selected; \(txids.count, privacy: .public) chunk(s) went out")
+            Self.logger.error("💸 TXSEND :: CoinJoin sweep outcome dropped: its wallet is no longer selected; \(txids.count) chunk(s) went out")
             throw Self.coinJoinSweepInterruptedError()
         }
         guard !txids.isEmpty else {
@@ -570,7 +581,7 @@ final class WalletSendService: NSObject {
             // A reported-success sweep that produced no transaction is treated
             // as a failure, so the caller surfaces an error (the sweep alert)
             // rather than silently "succeeding" with the balance unchanged.
-            Self.logger.error("💸 TXSEND :: CoinJoin sweep returned no transactions for \(amount, privacy: .public) duffs — treating as failure")
+            Self.logger.error("💸 TXSEND :: CoinJoin sweep returned no transactions for \(amount) duffs — treating as failure")
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
                 description: "CoinJoin sweep produced no transactions"
@@ -587,12 +598,12 @@ final class WalletSendService: NSObject {
         let recordedHexes: [String] = txids.map { (txid: Data) in
             txid.reversed().map { String(format: "%02x", $0) }.joined()
         }
-        Self.logger.info("💸 TXSEND :: recorded \(txids.count, privacy: .public) sweep txid(s) in CoinJoinWithdrawalStore: \(recordedHexes.joined(separator: ","), privacy: .public)")
+        Self.logger.info("💸 TXSEND :: recorded \(txids.count) sweep txid(s) in CoinJoinWithdrawalStore: \(recordedHexes.joined(separator: ","))")
 
         await MainActor.run {
             SwiftDashSDKWalletState.shared.refreshCoinJoinBalance()
             let post = SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs
-        Self.logger.info("💸 TXSEND :: post-sweep CoinJoin balance \(post, privacy: .public) duffs (was \(amount, privacy: .public))")
+        Self.logger.info("💸 TXSEND :: post-sweep CoinJoin balance \(post) duffs (was \(amount))")
             // The per-network recovery flag is owned solely by the recovery scan-
             // completion path (SwiftDashSDKSPVCoordinator.maybeCompleteCoinJoinRecovery,
             // which marks recovered once the one-time wide scan reaches .synced). A
@@ -608,7 +619,7 @@ final class WalletSendService: NSObject {
         // a success screen would tell the user there is nothing left to move.
         if outcome.isPartial {
             Self.logger.error(
-                "💸 TXSEND :: CoinJoin sweep partial — \(txids.count, privacy: .public) chunk(s) broadcast, \(outcome.failedChunkCount, privacy: .public) failed, \(outcome.unattemptedChunkCount, privacy: .public) not attempted: \(String(describing: outcome.firstFailure), privacy: .public)")
+                "💸 TXSEND :: CoinJoin sweep partial — \(txids.count) chunk(s) broadcast, \(outcome.failedChunkCount) failed, \(outcome.unattemptedChunkCount) not attempted: \(String(describing: outcome.firstFailure))")
             throw Self.makeError(
                 code: .coinJoinSweepPartial,
                 description: "CoinJoin sweep moved \(txids.count) of \(txids.count + outcome.failedChunkCount + outcome.unattemptedChunkCount) transactions"
@@ -638,7 +649,7 @@ final class WalletSendService: NSObject {
         amount: UInt64,
         memo: String? = nil
     ) async throws -> (txid: Data, feeDuffs: UInt64) {
-        Self.logger.info("💸 TXSEND :: pay-to-contact starting — \(amount, privacy: .public) duffs")
+        Self.logger.info("💸 TXSEND :: pay-to-contact starting — \(amount) duffs")
         // Refused before the PIN prompt: see `UnknownContactPaymentOutcomes`.
         if unknownContactPaymentOutcomes.contains(contactIdentityId: contactIdentityId) {
             throw Self.makeError(
@@ -680,7 +691,7 @@ final class WalletSendService: NSObject {
             }
             throw mapped
         }
-        Self.logger.info("💸 TXSEND :: pay-to-contact broadcast, txid \(txid.map { String(format: "%02x", $0) }.joined(), privacy: .public), fee \(feeDuffs, privacy: .public) duffs")
+        Self.logger.info("💸 TXSEND :: pay-to-contact broadcast, txid \(txid.map { String(format: "%02x", $0) }.joined()), fee \(feeDuffs) duffs")
         // The send-success screen resolves the amount from this registry while
         // the Rust persister hasn't written the transaction row yet — same as
         // every other broadcast-success point. `txid` is already wire order
@@ -983,7 +994,7 @@ private extension WalletSendService {
         guard case .coreFundsAwaitingNetwork(let detail) = error as? PlatformWalletError else {
             return error
         }
-        logger.info("💸 TXSEND :: build refused, funds await network confirmation: \(detail, privacy: .public)")
+        logger.info("💸 TXSEND :: build refused, funds await network confirmation: \(detail)")
         return makeError(
             code: .fundsAwaitingNetwork,
             description: NSLocalizedString(
