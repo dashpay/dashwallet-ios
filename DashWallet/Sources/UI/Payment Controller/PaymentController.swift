@@ -192,6 +192,44 @@ extension PaymentController: DWPaymentProcessorDelegate {
     func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
         self.paymentOutput = paymentOutput
 
+        // A payment to an address that still has one waiting for the network
+        // asks first: the earlier one may yet arrive, and the recipient would
+        // get both. Asked before the confirm sheet first appears; other
+        // addresses are not interrupted.
+        if confirmViewController == nil,
+           let waiting = MainActor.assumeIsolated({ PendingSendOutcomes.shared.waitingPayment(to: paymentOutput.address) }) {
+            askBeforeRepeating(waiting) { [weak self] sendAnyway in
+                guard let self else { return }
+                if sendAnyway {
+                    self.presentConfirm(for: paymentOutput)
+                } else {
+                    self.provideAmountViewController?.hideActivityIndicator()
+                    self.delegate?.paymentControllerDidCancelTransaction(self)
+                }
+            }
+            return
+        }
+        presentConfirm(for: paymentOutput)
+    }
+
+    private func askBeforeRepeating(_ waiting: PendingSendOutcomes.Entry, completion: @escaping (Bool) -> Void) {
+        let message = String(
+            format: NSLocalizedString(
+                "Your previous payment to this address (%1$@, %2$@) hasn't been confirmed by the network yet. If you send again, the recipient may get both.",
+                comment: "Send: an earlier payment to the same address is still waiting for the network; %1$@ is its amount, %2$@ when it was sent"),
+            waiting.amount.formattedDashAmount,
+            "\(DWDateFormatter.sharedInstance.shortStringFromDate(waiting.sentAt)) \(DWDateFormatter.sharedInstance.timeOnly(from: waiting.sentAt))")
+        let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(
+            title: NSLocalizedString("Wait", comment: "Send: don't repeat a payment that is still waiting for the network"),
+            style: .cancel) { _ in completion(false) })
+        alert.addAction(UIAlertAction(
+            title: NSLocalizedString("Send anyway", comment: "Send: repeat a payment although the earlier one is still waiting for the network"),
+            style: .default) { _ in completion(true) })
+        show(modalController: alert)
+    }
+
+    private func presentConfirm(for paymentOutput: DWPaymentOutput) {
         if let vc = confirmViewController {
             vc.update(with: paymentOutput)
         } else {
