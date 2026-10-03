@@ -324,6 +324,29 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         return walletSpendable - pooled
     }
 
+    /// The part of the balance a payment cannot use until the network
+    /// confirms or InstantSend-locks it: an incoming payment not locked yet,
+    /// or the change of our own send the network has not taken yet.
+    ///
+    /// `unconfirmed` holds the first kind; the second sits in `confirmed`
+    /// (key-wallet counts its own change as trusted) while the funding pool
+    /// leaves it out. The CoinJoin account is also outside the pool, for a
+    /// different reason, so its balance is taken off before the pool is
+    /// compared. Zero while the pooled figure is unknown: an outage is not
+    /// evidence that anything is waiting.
+    public var awaitingConfirmationDuffs: UInt64 {
+        Self.awaitingConfirmation(
+            balance: balance, pooled: pooledSpendableDuffs, coinJoin: coinJoinBalanceDuffs)
+    }
+
+    static func awaitingConfirmation(balance: WalletBalance?, pooled: UInt64?, coinJoin: UInt64) -> UInt64 {
+        guard let balance, let pooled else { return 0 }
+        let poolable = balance.confirmed > coinJoin ? balance.confirmed - coinJoin : 0
+        let trustedWaiting = poolable > pooled ? poolable - pooled : 0
+        let (sum, overflow) = balance.unconfirmed.addingReportingOverflow(trustedWaiting)
+        return overflow ? UInt64.max : sum
+    }
+
     // MARK: - Obj-C bridge
 
     /// Notification posted on the main queue whenever the published

@@ -6620,3 +6620,6 @@
 /* Send: the broadcast got no answer; the payment is followed in the history */
 "The network hasn't confirmed this payment yet. It's in your history as \"Waiting for the network\" — don't send it again." = "The network hasn't confirmed this payment yet. It's in your history as \"Waiting for the network\" — don't send it again.";
 
+/* Home balance: the part a payment can't use until the network confirms it; %@ is the amount */
+"%@ waiting for confirmation" = "%@ waiting for confirmation";
+

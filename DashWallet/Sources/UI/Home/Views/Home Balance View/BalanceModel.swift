@@ -28,6 +28,9 @@ final class BalanceModel: ObservableObject {
     /// is an amount; an unavailable snapshot uses the same placeholder as the
     /// other Home balance rows.
     @Published private(set) var value: UInt64?
+    /// Part of `value` that a payment cannot use until the network confirms
+    /// it (`SwiftDashSDKWalletState.awaitingConfirmationDuffs`); 0 when none.
+    @Published private(set) var awaitingConfirmationDuffs: UInt64 = 0
     /// Badge text for the home header while the wallet runs on a test
     /// network ("TESTNET"/"DEVNET"), so test funds can't be mistaken for
     /// real Dash; nil on mainnet.
@@ -56,6 +59,18 @@ final class BalanceModel: ObservableObject {
         SwiftDashSDKWalletState.shared.$balance
             .sink { [weak self] snapshot in
                 self?.applyBalance(snapshot)
+            }
+            .store(in: &cancellableBag)
+
+        // Recomputed from all three inputs: the pooled and CoinJoin figures
+        // are read after the balance event, so the balance alone would leave
+        // the figure one read behind.
+        let state = SwiftDashSDKWalletState.shared
+        Publishers.CombineLatest3(state.$balance, state.$pooledSpendableDuffs, state.$coinJoinBalanceDuffs)
+            .map { SwiftDashSDKWalletState.awaitingConfirmation(balance: $0, pooled: $1, coinJoin: $2) }
+            .removeDuplicates()
+            .sink { [weak self] duffs in
+                self?.awaitingConfirmationDuffs = duffs
             }
             .store(in: &cancellableBag)
 
