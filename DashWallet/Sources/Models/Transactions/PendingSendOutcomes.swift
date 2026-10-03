@@ -100,10 +100,14 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// The broadcast of `txidWire` ended with no answer from the network.
     /// Called by `WalletSendService` wherever it maps a broadcast to
     /// `broadcastUnknown`, and from nowhere else.
-    func recordUnknownOutcome(txidWire: Data, address: String?, amount: UInt64) {
+    ///
+    /// - Returns: false when the send could not be followed (no active
+    ///   wallet), so its row will not say "Waiting for the network".
+    @discardableResult
+    func recordUnknownOutcome(txidWire: Data, address: String?, amount: UInt64) -> Bool {
         guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
             DWLogger.log("💸 TXSEND :: unknown outcome not tracked, no active wallet")
-            return
+            return false
         }
         entries[txidWire] = Entry(
             txidWire: txidWire,
@@ -114,6 +118,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         DWLogger.log("💸 TXSEND :: waiting for the network on \(Transaction.displayHex(txidWire))")
         didChangeEntries()
         reconcile()
+        return true
     }
 
     // MARK: - Reading

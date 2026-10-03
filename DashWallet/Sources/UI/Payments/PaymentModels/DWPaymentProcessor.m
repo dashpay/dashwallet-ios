@@ -178,7 +178,7 @@ static NSString *DWReversedHexString(NSData *data) {
             // Ends the in-flight state (exit holds, HUD, deferred links) on every
             // outcome, the unknown one included.
             [self setBroadcastInProgress:NO];
-            if (error && [DWWalletSendService isBroadcastUnknownError:error]) {
+            if (error && [DWWalletSendService isFollowedUnknownOutcomeError:error]) {
                 // No answer is not a failure: the payment may well have gone
                 // through. The send service has put it in the history as
                 // "Waiting for the network"; no error invites sending it again.
@@ -189,6 +189,11 @@ static NSString *DWReversedHexString(NSData *data) {
                 NSString *title = NSLocalizedString(@"Couldn't make payment", nil);
                 if ([DWWalletSendService isBroadcastRejectedError:error]) {
                     title = NSLocalizedString(@"Transaction not sent", nil);
+                }
+                else if ([DWWalletSendService isBroadcastUnknownError:error]) {
+                    // Not followed in the history: the error's own copy says
+                    // what is known, without pointing at a row that won't say it.
+                    title = NSLocalizedString(@"Transaction status unknown", nil);
                 }
                 [self failedWithError:error
                                 title:title

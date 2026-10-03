@@ -279,6 +279,10 @@ final class WalletSendService: NSObject {
     /// tests in other files can read it back.
     static let diagnosticKey = "org.dashfoundation.dash.send.diagnostic"
 
+    /// `userInfo` key, true on a `broadcastUnknown` error whose send is
+    /// followed in the history (`unknownOutcomeError`).
+    static let followedKey = "org.dashfoundation.dash.send.followed"
+
     /// See `RecentSendsRegistry` — the send-success screen's fallback source.
     let recentSends = RecentSendsRegistry()
     #if DASHPAY
@@ -739,6 +743,14 @@ final class WalletSendService: NSObject {
         error.domain == errorDomain && error.code == ErrorCode.broadcastUnknown.rawValue
     }
 
+    /// A `broadcastUnknown` error whose send is in the history as "Waiting for
+    /// the network". Without it (no active wallet to follow it in) the outcome
+    /// is told with the error's own copy, and nothing points at the history.
+    @objc(isFollowedUnknownOutcomeError:)
+    static func isFollowedUnknownOutcomeError(_ error: NSError) -> Bool {
+        isBroadcastUnknownError(error) && (error.userInfo[followedKey] as? Bool) == true
+    }
+
     @objc(isFundsAwaitingNetworkError:)
     static func isFundsAwaitingNetworkError(_ error: NSError) -> Bool {
         error.domain == errorDomain && error.code == ErrorCode.fundsAwaitingNetwork.rawValue
@@ -994,10 +1006,14 @@ private extension WalletSendService {
     /// the network" (`PendingSendOutcomes`). A contact payment's unknown outcome
     /// carries no txid from the SDK, so it is not followed.
     static func unknownOutcomeError(txidWire: Data, address: String?, amount: UInt64, reason: String) -> NSError {
-        MainThread.sync {
+        let followed = MainThread.sync {
             PendingSendOutcomes.shared.recordUnknownOutcome(txidWire: txidWire, address: address, amount: amount)
         }
-        return makeError(code: .broadcastUnknown, description: BroadcastOutcomeCopy.unknown, diagnostic: reason)
+        let error = makeError(code: .broadcastUnknown, description: BroadcastOutcomeCopy.unknown, diagnostic: reason)
+        guard followed else { return error }
+        var userInfo = error.userInfo
+        userInfo[followedKey] = true
+        return NSError(domain: error.domain, code: error.code, userInfo: userInfo)
     }
 
     /// A build the SDK refused because the coins that would fund it are not
