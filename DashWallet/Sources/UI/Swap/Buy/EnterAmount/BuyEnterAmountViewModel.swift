@@ -141,7 +141,7 @@ final class BuyEnterAmountViewModel: ObservableObject {
         } catch {
             guard requestID == validationRequestID else { return }
             isValidating = false
-            validationErrorMessage = Self.validationMessage(from: error)
+            validationErrorMessage = validationMessage(from: error)
         }
     }
 
@@ -343,19 +343,9 @@ final class BuyEnterAmountViewModel: ObservableObject {
         return formatter.string(from: rounded as NSDecimalNumber) ?? rounded.string
     }
 
-    private static func validationMessage(from error: Error) -> String {
+    private func validationMessage(from error: Error) -> String {
         let raw = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-        if raw.localizedCaseInsensitiveContains("noRoutesFound") {
-            return NSLocalizedString(
-                "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.",
-                comment: "Dash DEX / dex_error_no_route"
-            )
-        }
-
-        return NSLocalizedString(
-            "This amount can't be swapped right now. Try a different amount, or try again shortly.",
-            comment: "Dash DEX / dex_enter_amount_invalid"
-        )
+        return SwapKitErrorCopy.message(for: raw, coin: coin)
     }
 
     private enum RateError: Error {
