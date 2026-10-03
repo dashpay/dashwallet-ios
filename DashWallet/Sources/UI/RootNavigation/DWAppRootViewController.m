@@ -50,6 +50,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 @property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
 @property (nullable, nonatomic, strong) NSURL *deferredDeeplinkToProcess;
+/// A payment URL / deep link that arrived while a payment was waiting for the
+/// network (`DWPaymentInFlight`). Routing it would dismiss or replace the
+/// screen that shows that payment's outcome, so it waits until the outcome.
+@property (nullable, nonatomic, strong) NSURL *urlDeferredForPaymentInFlight;
+@property (nullable, nonatomic, strong) NSURL *deeplinkDeferredForPaymentInFlight;
 @property (nonatomic, assign) BOOL walletWipeInProgress;
 
 - (void)beginWipeWalletWithAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
@@ -101,6 +106,13 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         return;
     }
 
+    if ([DWPaymentInFlight isActive]) {
+        if (self.deeplinkDeferredForPaymentInFlight == nil) {
+            self.deeplinkDeferredForPaymentInFlight = url;
+        }
+        return;
+    }
+
     [self.mainController handleDeeplink:url definedUsername:nil];
 }
 #endif
@@ -113,6 +125,13 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     BOOL isLocked = [self.model shouldShowLockScreen] || self.lockController;
     if (isLocked && self.deferredURLToProcess == nil) {
         self.deferredURLToProcess = url;
+        return;
+    }
+
+    if ([DWPaymentInFlight isActive]) {
+        if (self.urlDeferredForPaymentInFlight == nil) {
+            self.urlDeferredForPaymentInFlight = url;
+        }
         return;
     }
 
@@ -262,6 +281,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     [notificationCenter addObserver:self
                            selector:@selector(windowDidBecomeKeyNotification:)
                                name:UIWindowDidBecomeKeyNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(paymentInFlightDidEndNotification)
+                               name:DWPaymentInFlight.didEndNotification
                              object:nil];
 
     __weak typeof(self) weakSelf = self;
@@ -502,6 +525,27 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 }
 
 #pragma mark - Notifications
+
+- (void)paymentInFlightDidEndNotification {
+    // Let the outcome's alert or success screen present first.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([DWPaymentInFlight isActive]) {
+            return;
+        }
+        NSURL *url = self.urlDeferredForPaymentInFlight;
+        self.urlDeferredForPaymentInFlight = nil;
+        if (url) {
+            [self handleURL:url];
+        }
+#if DASHPAY
+        NSURL *deeplink = self.deeplinkDeferredForPaymentInFlight;
+        self.deeplinkDeferredForPaymentInFlight = nil;
+        if (deeplink) {
+            [self handleDeeplink:deeplink];
+        }
+#endif
+    });
+}
 
 - (void)applicationDidBecomeActiveNotification {
     [self showLockControllerIfNeeded];
