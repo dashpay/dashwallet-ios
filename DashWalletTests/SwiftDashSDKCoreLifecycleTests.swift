@@ -290,7 +290,7 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertTrue(unattached.holdIfPending(url: link), "a link before the activation is kept")
 
         XCTAssertTrue(unattached.takeAtActivation(), "the first activation runs the deferred work")
-        XCTAssertEqual(unattached.takePendingURL(), link)
+        XCTAssertEqual(unattached.takePendingLinks(), [link])
         XCTAssertFalse(unattached.takeAtActivation())
     }
 
