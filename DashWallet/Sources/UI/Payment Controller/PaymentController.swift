@@ -62,6 +62,7 @@ enum WindowProgressHUD {
 
     static func show(_ message: String) {
         owners += 1
+        PaymentInFlight.begin()
         guard host == nil, let window = PinPromptPresenter.appWindows().first else { return }
         window.dw_showProgressHUD(withMessage: message)
         host = window
@@ -70,6 +71,7 @@ enum WindowProgressHUD {
     static func hide() {
         guard owners > 0 else { return }
         owners -= 1
+        PaymentInFlight.end()
         guard owners == 0 else { return }
         host?.dw_hideProgressHUD()
         host = nil
@@ -253,12 +255,14 @@ extension PaymentController: DWPaymentProcessorDelegate {
         // Pre-existing behavior kept: nil-error failures (invalid-address rejections)
         // stay silent here. The DashSync DSErrorDomain special-case is gone — live
         // errors carry WalletSendService / SDK / BIP70 domains.
+        // The amount screen's submission ends either way, or a silent failure
+        // would leave it locked.
+        provideAmountViewController?.hideActivityIndicator()
         guard let error else {
             return
         }
 
         presentationAnchor?.topController().view.dw_hideProgressHUD()
-        provideAmountViewController?.hideActivityIndicator()
 
         confirmViewController?.isSendingEnabled =
             Self.shouldReenableSending(after: error as NSError)

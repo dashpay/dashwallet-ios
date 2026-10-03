@@ -55,6 +55,29 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
 
     internal let model: BaseAmountModel
 
+    /// From the tap that submits the amount to its outcome: the amount and the
+    /// keypad take no input, the action button keeps its spinner and stays
+    /// disabled through validation updates, and a second submission is refused.
+    /// Ended by `hideActivityIndicator()`, which the payment flow calls with
+    /// the outcome.
+    private(set) var isSubmissionInFlight = false
+
+    internal func beginSubmission() {
+        isSubmissionInFlight = true
+        amountView?.isUserInteractionEnabled = false
+        keyboardContainer?.isUserInteractionEnabled = false
+        actionButton?.isEnabled = false
+        super.showActivityIndicator()
+    }
+
+    override func hideActivityIndicator() {
+        isSubmissionInFlight = false
+        amountView?.isUserInteractionEnabled = true
+        keyboardContainer?.isUserInteractionEnabled = true
+        super.hideActivityIndicator()
+        actionButton?.isEnabled = model.isAllowedToContinue
+    }
+
     private func maxButtonAction() {
         model.selectAllFunds()
     }
@@ -96,13 +119,17 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     }
 
     private func amountDidChange() {
-        actionButton?.isEnabled = model.isAllowedToContinue
+        actionButton?.isEnabled = model.isAllowedToContinue && !isSubmissionInFlight
         amountView.amountInputControl.reloadData()
         showErrorIfNeeded()
     }
 
     internal func show(error: Error) {
-        hideActivityIndicator()
+        // A validation message during a submission leaves it running: only the
+        // submission's outcome ends it.
+        if !isSubmissionInFlight {
+            hideActivityIndicator()
+        }
         present(error: error)
     }
 

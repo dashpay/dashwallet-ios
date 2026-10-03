@@ -41,6 +41,33 @@ extension View {
     }
 }
 
+/// Whether a payment is waiting on the network anywhere in the app — a held
+/// payment screen (`ExitHold`), the window HUD, or a broadcast in the payment
+/// processor. External routing (payment URLs, deep links) waits while it is
+/// active: it dismisses or replaces the screen the outcome is shown on.
+@objc(DWPaymentInFlight)
+@MainActor
+final class PaymentInFlight: NSObject {
+    /// Posted on the main thread when the last payment in flight ends.
+    @objc static let didEndNotification = Notification.Name("DWPaymentInFlightDidEndNotification")
+
+    private static var count = 0
+
+    @objc static var isActive: Bool { count > 0 }
+
+    @objc static func begin() {
+        count += 1
+    }
+
+    @objc static func end() {
+        guard count > 0 else { return }
+        count -= 1
+        if count == 0 {
+            NotificationCenter.default.post(name: didEndNotification, object: nil)
+        }
+    }
+}
+
 /// One hold on the ways out of a screen: its navigation stack's edge swipe and
 /// its presented root's swipe-down. Holds are counted per stack and per root,
 /// so independent owners (`lockingExit`, `PaymentController`) can overlap: the
@@ -57,8 +84,11 @@ final class ExitHold {
 
     private weak var navigation: UINavigationController?
     private weak var presentedRoot: UIViewController?
+    /// Whether this hold still counts towards `PaymentInFlight`.
+    private var counted = true
 
     init(on controller: UIViewController) {
+        PaymentInFlight.begin()
         if let navigationController = controller.navigationController {
             let count = Self.count(for: navigationController, in: Self.navigationCounts)
             if count.holds == 0 {
@@ -100,6 +130,10 @@ final class ExitHold {
         }
         navigation = nil
         presentedRoot = nil
+        if counted {
+            counted = false
+            PaymentInFlight.end()
+        }
     }
 
     private static func count<Key: AnyObject>(for key: Key, in table: NSMapTable<Key, Count>) -> Count {

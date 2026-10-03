@@ -50,12 +50,22 @@ static NSString *DWReversedHexString(NSData *data) {
 
 @property (nonatomic, assign) BOOL didSendRequestDelegateNotified;
 
+/// A confirmed send is waiting for the network. While it is, the processor
+/// takes no new input, amount or confirmation and keeps its payment intent:
+/// the outcome belongs to the request that was confirmed.
+@property (nonatomic, assign) BOOL broadcastInFlight;
+
 @end
 
 @implementation DWPaymentProcessor
 
 - (void)processPaymentInput:(DWPaymentInput *)paymentInput {
     NSParameterAssert(self.delegate);
+
+    if (self.broadcastInFlight) {
+        DWLog(@"PaymentProcessor: payment input ignored — a send is waiting for the network");
+        return;
+    }
 
 #if DASHPAY
     // Row #18: the DashSync "re-build input for a DashPay username"
@@ -87,6 +97,10 @@ static NSString *DWReversedHexString(NSData *data) {
 }
 
 - (void)provideAmount:(uint64_t)amount {
+    if (self.broadcastInFlight) {
+        DWLog(@"PaymentProcessor: amount ignored — a send is waiting for the network");
+        return;
+    }
     self.amount = amount;
 
     NSParameterAssert(self.paymentIntent);
@@ -94,6 +108,10 @@ static NSString *DWReversedHexString(NSData *data) {
 }
 
 - (void)confirmPaymentOutput:(DWPaymentOutput *)paymentOutput {
+    if (self.broadcastInFlight) {
+        DWLog(@"PaymentProcessor: confirmation ignored — a send is waiting for the network");
+        return;
+    }
     self.didSendRequestDelegateNotified = NO;
 
     // App-side BIP70 path: build + broadcast + POST the Payment via the Swift orchestrator.
@@ -147,14 +165,19 @@ static NSString *DWReversedHexString(NSData *data) {
         return;
     }
 
-    [self.delegate paymentProcessor:self broadcastInProgress:YES];
+    // The confirmed request's callback, taken now: `paymentIntent` must not be
+    // what answers the outcome if anything replaced it meanwhile.
+    NSString *callbackScheme = self.paymentIntent.callbackScheme;
+    [self setBroadcastInProgress:YES];
 
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
         NSError *error = nil;
         [preparedSend broadcastAndReturnError:&error];
 
         dispatch_async(dispatch_get_main_queue(), ^{
-            [self.delegate paymentProcessor:self broadcastInProgress:NO];
+            // Ends the in-flight state (exit holds, HUD, deferred links) on every
+            // outcome, the unknown one included.
+            [self setBroadcastInProgress:NO];
             if (error && [DWWalletSendService isBroadcastUnknownError:error]) {
                 // No answer is not a failure: the payment may well have gone
                 // through. It goes to the history as "Waiting for the network"
@@ -176,7 +199,8 @@ static NSString *DWReversedHexString(NSData *data) {
             }
             else {
                 [self sendCompletedToAddress:address
-                                    txidWire:preparedSend.txidWire];
+                                    txidWire:preparedSend.txidWire
+                              callbackScheme:callbackScheme];
             }
         });
     });
@@ -267,14 +291,14 @@ static NSString *DWReversedHexString(NSData *data) {
 }
 
 - (void)performBIP70Send:(DWPaymentOutput *)paymentOutput {
-    [self.delegate paymentProcessor:self broadcastInProgress:YES];
+    [self setBroadcastInProgress:YES];
 
     DWBIP70InteractiveCoordinator *coordinator = [[DWBIP70InteractiveCoordinator alloc] init];
     self.bip70Coordinator = coordinator; // retain for the duration of the async send
 
     [coordinator confirmAndSend:paymentOutput.bip70Confirmation
                      completion:^(DWBIP70SendResultBox *_Nullable result, NSError *_Nullable error) {
-                         [self.delegate paymentProcessor:self broadcastInProgress:NO];
+                         [self setBroadcastInProgress:NO];
                          self.bip70Coordinator = nil;
 
                          if (error || result == nil) {
@@ -385,14 +409,16 @@ static NSString *DWReversedHexString(NSData *data) {
 
 #pragma mark - Handlers
 
-/// Successful SwiftDashSDK broadcast: notify the delegate and fire the URI's callback scheme.
+/// Successful SwiftDashSDK broadcast: notify the delegate and fire the confirmed request's
+/// callback scheme.
 - (void)sendCompletedToAddress:(NSString *)address
-                      txidWire:(NSData *)txidWire {
+                      txidWire:(NSData *)txidWire
+                callbackScheme:(nullable NSString *)callbackScheme {
     [self.delegate paymentProcessor:self didSendWithTxidWire:txidWire];
 
     self.didSendRequestDelegateNotified = YES;
 
-    [self handleCallbackSchemeIfNeeded:self.paymentIntent.callbackScheme
+    [self handleCallbackSchemeIfNeeded:callbackScheme
                                address:address
                               txidWire:txidWire];
 
@@ -428,7 +454,27 @@ static NSString *DWReversedHexString(NSData *data) {
     self.amount = 0;
 }
 
+/// Brackets a confirmed send's network wait: the processor's own guard, the
+/// app-wide `DWPaymentInFlight` signal, and the delegate's progress state.
+- (void)setBroadcastInProgress:(BOOL)inProgress {
+    if (self.broadcastInFlight == inProgress) {
+        return;
+    }
+    self.broadcastInFlight = inProgress;
+    if (inProgress) {
+        [DWPaymentInFlight begin];
+    }
+    [self.delegate paymentProcessor:self broadcastInProgress:inProgress];
+    if (!inProgress) {
+        [DWPaymentInFlight end];
+    }
+}
+
 - (void)reset {
+    if (self.broadcastInFlight) {
+        DWLog(@"PaymentProcessor: reset ignored — a send is waiting for the network");
+        return;
+    }
     self.paymentInput = nil;
     self.paymentIntent = nil;
     [self cancel];
