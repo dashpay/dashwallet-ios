@@ -362,3 +362,37 @@ final class LinkOperationSequenceTests: XCTestCase {
         XCTAssertFalse(gate.isCommitted, "once")
     }
 }
+
+/// A payment link refused while a confirmed send is in flight can arrive
+/// while that send's confirmation is still animating away.
+final class RefusalPresentationTests: XCTestCase {
+    func testARefusalWaitsWhileTheTopIsInTransition() {
+        XCTAssertEqual(RefusalPresentation.decide(topInTransition: true, topInWindow: true, attempt: 0), .wait)
+        XCTAssertEqual(
+            RefusalPresentation.decide(topInTransition: true, topInWindow: true, attempt: RefusalPresentation.waits - 1),
+            .wait)
+    }
+
+    func testARefusalIsPresentedFromAStableTopInAWindow() {
+        XCTAssertEqual(RefusalPresentation.decide(topInTransition: false, topInWindow: true, attempt: 0), .present)
+        XCTAssertEqual(RefusalPresentation.decide(topInTransition: false, topInWindow: true, attempt: 3), .present)
+    }
+
+    /// The wait is bounded: a transition that never reports its end does not
+    /// hold the refused link forever.
+    func testARefusalStopsWaitingAfterItsLastAttempt() {
+        XCTAssertEqual(
+            RefusalPresentation.decide(topInTransition: true, topInWindow: true, attempt: RefusalPresentation.waits),
+            .present)
+    }
+
+    /// With nothing in a window to present from, the refused link settles
+    /// at once instead of waiting for the queue's watchdog.
+    func testARefusalWithNothingOnScreenSettlesWithoutAnAlert() {
+        XCTAssertEqual(
+            RefusalPresentation.decide(topInTransition: false, topInWindow: false, attempt: 0), .settleWithoutAlert)
+        XCTAssertEqual(
+            RefusalPresentation.decide(topInTransition: true, topInWindow: false, attempt: RefusalPresentation.waits),
+            .settleWithoutAlert)
+    }
+}

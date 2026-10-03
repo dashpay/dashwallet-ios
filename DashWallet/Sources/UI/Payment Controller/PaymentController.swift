@@ -126,11 +126,7 @@ final class PaymentController: NSObject {
         // alert and its link settles once the alert is on screen.
         guard !operations.isCommitted else {
             DWLogger.log("PAY a payment arrived while a confirmed send is in flight; refused")
-            let refused = operations.refuse(settled: presentationSettled)
-            showAlert(with: nil,
-                      message: NSLocalizedString("A payment is still being sent. Open the link again once it finishes.",
-                                                 comment: "Payment: a payment link arrived while a send is in flight"),
-                      for: refused)
+            showRefusal(for: operations.refuse(settled: presentationSettled))
             return
         }
         let token = operations.begin(settled: presentationSettled, isAbandoned: isAbandoned)
@@ -231,6 +227,38 @@ extension PaymentController {
         let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel)
         alert.addAction(okAction)
         show(modalController: alert, for: token)
+    }
+
+    /// The refusal of a payment that arrived while a confirmed send is in
+    /// flight. The confirmation may still be animating away (the send is
+    /// committed at the tap, before its dismissal ends), and a controller
+    /// in transition can refuse the alert or take it down with it: the top
+    /// is resolved again once its transition has ended. With nothing on
+    /// screen to present from, the link settles without an alert rather
+    /// than waiting for the queue's watchdog.
+    private func showRefusal(for token: LinkOperationSequence.Token, attempt: Int = 0) {
+        let top = presentationAnchor?.topController()
+        let decision = RefusalPresentation.decide(
+            topInTransition: top.map { $0.isInTransition || $0.transitionCoordinator != nil } ?? false,
+            topInWindow: top?.viewIfLoaded?.window != nil,
+            attempt: attempt)
+        switch decision {
+        case .wait:
+            let retry: () -> Void = { [weak self] in self?.showRefusal(for: token, attempt: attempt + 1) }
+            if let coordinator = top?.transitionCoordinator {
+                coordinator.animate(alongsideTransition: nil) { _ in DispatchQueue.main.async(execute: retry) }
+            } else {
+                DispatchQueue.main.asyncAfter(deadline: .now() + RefusalPresentation.poll, execute: retry)
+            }
+        case .present:
+            showAlert(with: nil,
+                      message: NSLocalizedString("A payment is still being sent. Open the link again once it finishes.",
+                                                 comment: "Payment: a payment link arrived while a send is in flight"),
+                      for: token)
+        case .settleWithoutAlert:
+            DWLogger.log("PAY nothing on screen to present the refusal from; settling the refused link")
+            settlePresentation(of: token)
+        }
     }
 
     private func show(modalController: UIViewController, for token: LinkOperationSequence.Token) {
@@ -401,5 +429,31 @@ extension PaymentController: ProvideAmountViewControllerDelegate {
         }
         fiatCurrency = selectedCurrency
         operation.processor.provideAmount(amount)
+    }
+}
+
+/// Where the refusal of a payment link goes, given the top of the hierarchy
+/// it would be presented from. Separated so the decision is testable
+/// without a window.
+enum RefusalPresentation {
+    enum Decision: Equatable {
+        /// The top is still being presented or dismissed: wait and resolve
+        /// it again.
+        case wait
+        case present
+        /// Nothing in a window to present from.
+        case settleWithoutAlert
+    }
+
+    /// How often, and how long apart, the refusal waits for a transition
+    /// before presenting anyway (about 2 s in all).
+    static let waits = 20
+    static let poll: TimeInterval = 0.1
+
+    static func decide(topInTransition: Bool, topInWindow: Bool, attempt: Int) -> Decision {
+        if topInTransition && attempt < waits {
+            return .wait
+        }
+        return topInWindow ? .present : .settleWithoutAlert
     }
 }
