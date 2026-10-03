@@ -31,7 +31,9 @@ extern NSInteger const DW_PHRASE_MULTIPLE;
 
 @property (readonly, nonatomic, assign) DWRecoverAction action;
 
-- (BOOL)hasWallet;
+// `walletPresence` (the tri-state keychain read every route of a submitted
+// phrase derives from) is declared in `DWRecoverModel+Mnemonic.swift`: its
+// type is Swift-defined, and this header is part of the bridging header.
 
 /// Whether a PIN record exists in the keychain. In ResetPin mode the screen's
 /// copy depends on it: an existing PIN is "reset", a missing record (partial

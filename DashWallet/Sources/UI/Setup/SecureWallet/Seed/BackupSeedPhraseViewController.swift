@@ -41,9 +41,11 @@ class BackupSeedPhraseViewController: DWPreviewSeedPhraseViewController {
     }
 
     @objc override func actionButtonAction(_ sender: Any) {
-        let seedPhrase = self.contentView.model
+        // The preview leaves the screen when it has no phrase; never verify
+        // an empty one.
+        guard let seedPhrase = self.contentView.model else { return }
 
-        let controller = DWVerifySeedPhraseViewController(seedPhrase: seedPhrase!)
+        let controller = DWVerifySeedPhraseViewController(seedPhrase: seedPhrase)
         controller.delegate = self.delegate
         self.navigationController?.pushViewController(controller, animated: true)
     }
@@ -76,7 +78,27 @@ class BackupSeedPhraseViewController: DWPreviewSeedPhraseViewController {
 
             self.feedbackGenerator.notificationOccurred(.error)
 
-            let seedPhrase = self.model.getOrCreateNewWallet()
+            // nil: the keychain could not be read after the wipe, so no
+            // replacement was generated. The phrase on screen belongs to the
+            // wallet that was just deleted, and the seed view cannot show
+            // nothing — leave this screen (as it does on resign-active) for
+            // the backup-info step, whose Show Recovery Phrase / Skip generate
+            // the replacement on the next tap, and say why there.
+            guard let seedPhrase = self.model.getOrCreateNewWallet() else {
+                let navigation = self.navigationController
+                navigation?.popViewController(animated: false)
+                let alert = UIAlertController(
+                    title: nil,
+                    message: NSLocalizedString(
+                        "Your wallet couldn't be read right now. Please try again.",
+                        comment: ""),
+                    preferredStyle: .alert)
+                alert.addAction(UIAlertAction(
+                    title: NSLocalizedString("OK", comment: ""),
+                    style: .default))
+                (navigation?.topViewController ?? self).present(alert, animated: true)
+                return
+            }
             self.contentView.updateSeedPhraseModelAnimated(seedPhrase)
             self.contentView.showScreenshotDetectedErrorMessage()
             self.actionButton?.isEnabled = false
