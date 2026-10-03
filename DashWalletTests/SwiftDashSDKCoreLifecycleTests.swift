@@ -262,6 +262,32 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             .unknown)
     }
 
+    // MARK: - Key migration on an empty inventory
+
+    /// An empty DashSync inventory read with protected data unavailable on
+    /// either side of the read never sets the permanent done sentinel; it
+    /// records a deferral, and a later run with both samples available marks
+    /// the migration done.
+    func testEmptyInventoryMarksMigrationDoneOnlyWhenReadWhileUnlocked() throws {
+        let suite = "keymig.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let done = SwiftDashSDKKeyMigrator.doneKey
+        let deferred = SwiftDashSDKKeyMigrator.deferredFailureKey
+
+        for (atEnqueue, afterRead) in [(false, true), (true, false), (false, false)] {
+            defaults.removeObject(forKey: deferred)
+            SwiftDashSDKKeyMigrator.recordEmptyInventory(
+                in: defaults, availableAtEnqueue: atEnqueue, availableAfterRead: { afterRead })
+            XCTAssertNil(defaults.string(forKey: done), "enqueue \(atEnqueue), after read \(afterRead)")
+            XCTAssertTrue(defaults.bool(forKey: deferred), "enqueue \(atEnqueue), after read \(afterRead)")
+        }
+
+        SwiftDashSDKKeyMigrator.recordEmptyInventory(
+            in: defaults, availableAtEnqueue: true, availableAfterRead: { true })
+        XCTAssertEqual(defaults.string(forKey: done), "v1")
+    }
+
     // MARK: - Launch decision
 
     /// A scene connected in the background defers the wallet work to the
