@@ -44,6 +44,30 @@ final class SwiftDashSDKWalletCreator: NSObject {
         case devnet = 2
     }
 
+    // MARK: - Creations in flight
+
+    /// Counts the creations and imports this type has dispatched and not yet
+    /// finished. Counted from the call, not from the background block, so a
+    /// caller that dispatched one sees it in flight at once.
+    final class InFlightCounter {
+        private let lock = NSLock()
+        private var count = 0
+
+        var isIdle: Bool { lock.withLock { count == 0 } }
+        func begin() { lock.withLock { count += 1 } }
+        func end() { lock.withLock { count -= 1 } }
+    }
+
+    static let creations = InFlightCounter()
+
+    /// Whether a creation or import is still running. Setup completion asks
+    /// for a runtime start only when none is: a running one is not
+    /// serialized with the runtime's lifecycle queue, publishes its own
+    /// manager, and asks for the start itself once it lands
+    /// (`handleWalletMaterialChanged`); a start beside it would build a
+    /// second manager for the same wallet.
+    @objc static var isCreationInFlight: Bool { !creations.isIdle }
+
     // MARK: - Public entry point
 
     /// Create a fresh SwiftDashSDK wallet from a just-generated mnemonic.
@@ -62,7 +86,9 @@ final class SwiftDashSDKWalletCreator: NSObject {
     ///   - network: 0 = mainnet, 1 = testnet, 2 = devnet.
     @objc(createWalletWithMnemonic:pin:network:)
     static func createWallet(mnemonic: String, pin: String, network: BridgeNetwork) {
+        creations.begin()
         DispatchQueue.global(qos: .userInitiated).async {
+            defer { creations.end() }
             performCreate(
                 mnemonic: mnemonic,
                 pin: pin,
@@ -85,7 +111,9 @@ final class SwiftDashSDKWalletCreator: NSObject {
     ///   - network: 0 = mainnet, 1 = testnet, 2 = devnet.
     @objc(importWalletWithMnemonic:pin:network:)
     static func importWallet(mnemonic: String, pin: String, network: BridgeNetwork) {
+        creations.begin()
         DispatchQueue.global(qos: .userInitiated).async {
+            defer { creations.end() }
             performCreate(
                 mnemonic: mnemonic,
                 pin: pin,
@@ -110,6 +138,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
         network: BridgeNetwork,
         completion: @escaping (Bool) -> Void
     ) {
+        creations.begin()
         DispatchQueue.global(qos: .userInitiated).async {
             let succeeded = performCreate(
                 mnemonic: mnemonic,
@@ -117,6 +146,9 @@ final class SwiftDashSDKWalletCreator: NSObject {
                 network: network,
                 isImported: true,
                 label: "Imported wallet")
+            // Before the completion: the flow it completes must not see this
+            // import still in flight.
+            creations.end()
             DispatchQueue.main.async { completion(succeeded) }
         }
     }

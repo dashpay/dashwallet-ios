@@ -411,7 +411,17 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     // instead — a no-op while Core is up, a start when it is not — so the
     // main screen never opens over a stopped runtime, and a runtime the
     // import just built is not torn down and rebuilt a second time.
-    [DWSwiftDashSDKWalletRuntime startIfReady];
+    //
+    // Not while a creation is still running: Skip finishes fresh-wallet
+    // setup while `createWallet` may still be provisioning, and a start
+    // beside it would build a second manager for the same wallet. That
+    // creation asks for the start itself when it lands.
+    if (DWSwiftDashSDKWalletCreator.isCreationInFlight) {
+        DWLog(@"SETUP complete while a wallet creation is still running; the creation starts the runtime when it lands");
+    }
+    else {
+        [DWSwiftDashSDKWalletRuntime startIfReady];
+    }
     [self.delegate setupViewControllerDidFinish:self];
 }
 

@@ -280,6 +280,52 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertFalse(LaunchDecision(sceneActivationState: .foregroundActive).isDeferred)
     }
 
+    // MARK: - Creations in flight
+
+    func testInFlightCounterIsIdleOnlyWhenEveryBeginHasEnded() {
+        let counter = SwiftDashSDKWalletCreator.InFlightCounter()
+        XCTAssertTrue(counter.isIdle)
+        counter.begin()
+        counter.begin()
+        counter.end()
+        XCTAssertFalse(counter.isIdle, "one creation still running")
+        counter.end()
+        XCTAssertTrue(counter.isIdle)
+    }
+
+    /// Setup completion reads `isCreationInFlight` right after Skip has
+    /// dispatched a creation: the creation must count from the call, not
+    /// from its background block, and stop counting once it has finished —
+    /// here, a refused one (an empty phrase never reaches the host).
+    func testACreationCountsAsInFlightFromTheCallUntilItFinishes() {
+        XCTAssertFalse(SwiftDashSDKWalletCreator.isCreationInFlight)
+        SwiftDashSDKWalletCreator.createWallet(mnemonic: "", pin: "", network: .testnet)
+        XCTAssertTrue(SwiftDashSDKWalletCreator.isCreationInFlight, "in flight as soon as it is dispatched")
+
+        let settled = expectation(description: "creation finished")
+        func poll() {
+            if !SwiftDashSDKWalletCreator.isCreationInFlight {
+                settled.fulfill()
+            } else {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.01, execute: poll)
+            }
+        }
+        poll()
+        wait(for: [settled], timeout: 5)
+    }
+
+    /// An import with a completion stops counting before the completion
+    /// runs, so the recover flow it completes asks for the runtime start.
+    func testAnImportIsNoLongerInFlightWhenItsCompletionRuns() {
+        let completed = expectation(description: "import completion")
+        SwiftDashSDKWalletCreator.importWallet(mnemonic: "", pin: "", network: .testnet) { succeeded in
+            XCTAssertFalse(succeeded)
+            XCTAssertFalse(SwiftDashSDKWalletCreator.isCreationInFlight)
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 5)
+    }
+
     /// A scene that connects still unattached proves neither an activation
     /// nor an unlocked device: the launch waits for the first activation,
     /// exactly as a background connection does, and keeps a link meanwhile.
