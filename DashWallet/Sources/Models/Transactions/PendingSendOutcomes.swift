@@ -86,9 +86,12 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         }
         publishWaitingTxids()
         // A save that touched the wallet's transactions may have locked or
-        // mined a waiting send. Throttled: during sync the persister saves
-        // several times a second.
+        // mined a waiting send; the bookkeeping saves are skipped with the
+        // home feed's filter (inspected on the posting thread, before the
+        // hop). Throttled: during sync the persister saves several times a
+        // second.
         saveWatch = NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
+            .filter { HomeViewModel.saveTouchesFeedRows($0) }
             .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
             .sink { [weak self] _ in
                 MainActor.assumeIsolated { self?.reconcile() }
@@ -140,8 +143,10 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     // MARK: - Verdicts
 
     /// Follow `manager`'s probe verdicts. Called for each manager the host
-    /// configures; replaces the previous watch.
+    /// configures; replaces the previous watch. Also settles, once, the sends
+    /// that went through while the app was closed.
     func observeVerdicts(of manager: PlatformWalletManager) {
+        reconcile()
         verdictWatch = manager.$outgoingTransactionVerdicts
             .receive(on: DispatchQueue.main)
             .sink { [weak self] verdicts in
