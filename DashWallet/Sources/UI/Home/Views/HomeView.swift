@@ -1142,35 +1142,39 @@ extension View {
 private struct PendingSendToastModifier: ViewModifier {
     @ObservedObject var outcomes: PendingSendOutcomes
 
-    private static let duration: TimeInterval = 3
-
     func body(content: Content) -> some View {
         content
             .overlay(alignment: .bottom) {
                 if let notice = outcomes.notice {
-                    DashUIKit.Toast(
-                        style: .success,
-                        message: String(
-                            format: NSLocalizedString("Payment of %@ went through", comment: "A payment that had been waiting for the network was confirmed; %@ is the amount"),
-                            notice.amount.formattedDashAmount))
+                    DashUIKit.Toast(style: .success, message: Self.message(for: notice))
                         .padding(.horizontal, 20)
                         .padding(.bottom, 16)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
             .animation(.easeInOut(duration: 0.3), value: outcomes.notice)
-            .task(id: outcomes.notice) {
-                guard outcomes.notice != nil else { return }
+            .task(id: outcomes.notice?.id) {
+                guard let id = outcomes.notice?.id else { return }
                 // A notice raised while home was away keeps only what is left
                 // of its window, like the internal-transfer notice.
                 let age = outcomes.noticeRaisedAt.map { Date().timeIntervalSince($0) } ?? 0
-                guard age < Self.duration else {
-                    outcomes.notice = nil
-                    return
+                let duration = PendingSendOutcomes.noticeDuration
+                if age < duration {
+                    try? await Task.sleep(for: .seconds(duration - age))
+                    guard !Task.isCancelled else { return }
                 }
-                try? await Task.sleep(for: .seconds(Self.duration - age))
-                guard !Task.isCancelled else { return }
-                outcomes.notice = nil
+                outcomes.dismissNotice(id: id)
             }
+    }
+
+    private static func message(for notice: PendingSendOutcomes.Notice) -> String {
+        if notice.count == 1 {
+            return String(
+                format: NSLocalizedString("Payment of %@ went through", comment: "A payment that had been waiting for the network was confirmed; %@ is the amount"),
+                notice.total.formattedDashAmount)
+        }
+        return String(
+            format: NSLocalizedString("%1$ld payments went through, %2$@ in total", comment: "Several payments that had been waiting for the network were confirmed; %1$ld is how many, %2$@ their total amount"),
+            notice.count, notice.total.formattedDashAmount)
     }
 }

@@ -54,13 +54,20 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         let sentAt: Date
     }
 
-    /// A send that went through after all. Equatable for the toast's animation.
+    /// Sends that went through after all: one, or several that settled while
+    /// an earlier notice was still up, told together. Each raise is a new `id`,
+    /// so two payments of the same amount are two notices.
     struct Notice: Equatable {
-        let amount: UInt64
+        let id = UUID()
+        let count: Int
+        let total: UInt64
     }
 
+    /// How long a notice stays up.
+    static let noticeDuration: TimeInterval = 3
+
     @Published private(set) var entries: [Data: Entry] = [:]
-    @Published var notice: Notice?
+    @Published private(set) var notice: Notice?
     private(set) var noticeRaisedAt: Date?
 
     /// Read by `Transaction.stateTitle`, which is not main-actor isolated.
@@ -224,9 +231,24 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
 
     // MARK: - Private
 
+    /// Clear `notice` if it is still the one with `id` — a notice raised
+    /// meanwhile stays.
+    func dismissNotice(id: UUID) {
+        guard notice?.id == id else { return }
+        notice = nil
+    }
+
     private func raiseNotice(for entry: Entry) {
-        noticeRaisedAt = Date()
-        notice = Notice(amount: entry.amount)
+        let now = Date()
+        if let current = notice,
+           let raisedAt = noticeRaisedAt,
+           now.timeIntervalSince(raisedAt) < Self.noticeDuration {
+            let (total, overflow) = current.total.addingReportingOverflow(entry.amount)
+            notice = Notice(count: current.count + 1, total: overflow ? UInt64.max : total)
+        } else {
+            notice = Notice(count: 1, total: entry.amount)
+        }
+        noticeRaisedAt = now
     }
 
     private func didChangeEntries() {
