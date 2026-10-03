@@ -75,21 +75,21 @@ struct ConnectionsScreen: View {
                 viewModel.message = nil
             }
         } message: { message in
-            // The deep-link queue waits for this: the alert is on screen.
+            // The deep-link queue waits for this alert's dismissal, which
+            // clears `message`.
             Text(message.text)
-                .onAppear { viewModel.presentationDidAppear() }
         }
         .sheet(isPresented: isApproveSheetPresented) {
             if let request = viewModel.pendingRequest {
                 approveSheet(for: request)
                     // The deep-link queue waits for this: the sheet is on screen.
-                    .onAppear { viewModel.presentationDidAppear() }
+                    .onAppear { viewModel.sheetDidAppear() }
             }
         }
         .sheet(isPresented: isTokenPurchaseSheetPresented) {
             if let purchase = viewModel.pendingTokenPurchase {
                 tokenPurchaseSheet(for: purchase)
-                    .onAppear { viewModel.presentationDidAppear() }
+                    .onAppear { viewModel.sheetDidAppear() }
             }
         }
     }

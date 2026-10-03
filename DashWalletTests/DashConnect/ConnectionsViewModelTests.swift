@@ -81,6 +81,53 @@ private final class DelayedLookupDataSource: DashConnectDataSource {
     func remove(id: String) async {}
 }
 
+/// A data source with no lookup delay: content starting with `bad` fails to
+/// parse, content starting with `st-` is a state transition that completes
+/// a key registration — held until the test lets it go when
+/// `holdsStateTransitions` is set — and anything else is a login request
+/// labelled with that content.
+private final class ScriptedDataSource: DashConnectDataSource {
+    var connections: AnyPublisher<[DAppConnection], Never> { Just([]).eraseToAnyPublisher() }
+
+    var holdsStateTransitions = false
+    private var heldTransitions: [CheckedContinuation<Void, Never>] = []
+    var heldTransitionCount: Int { heldTransitions.count }
+
+    func finishStateTransition() {
+        guard !heldTransitions.isEmpty else { return }
+        heldTransitions.removeFirst().resume()
+    }
+
+    func parseQR(_ content: String) async throws -> DashConnectQr {
+        let sample = MockDashConnectDataSource.sampleLoginRequest
+        if content.hasPrefix("bad") { throw DashConnectMockError.stateTransitionNotSupported }
+        if content.hasPrefix("st-") { return .stateTransition(DashStRequest(transitionBytes: Data(content.utf8), network: sample.network)) }
+        return .login(DashKeyRequest(appEphemeralPubKey: sample.appEphemeralPubKey, contractId: sample.contractId, label: content, network: sample.network))
+    }
+
+    func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest {
+        ConnectionRequest(appLabel: loginRequest.label, appUrl: "", appContractId: "", walletUsername: nil, walletIdentityId: nil, existingConnection: nil)
+    }
+
+    func approveLogin(_ request: DashKeyRequest) async throws -> DAppConnection {
+        throw DashConnectMockError.approveFailed
+    }
+
+    func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction {
+        if holdsStateTransitions {
+            await withCheckedContinuation { heldTransitions.append($0) }
+        }
+        return .keyRegistrationCompleted
+    }
+
+    func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws {
+        throw DashConnectMockError.approveFailed
+    }
+
+    func disconnect(id: String) async {}
+    func remove(id: String) async {}
+}
+
 /// The deep-link queue hands a `dash-key:` link to the Connections screen and
 /// waits for the view model's settlement — the approval sheet published, or
 /// a refusal shown — before the next link. Without it, a second link that
@@ -111,10 +158,10 @@ final class ConnectionsViewModelTests: XCTestCase {
         await settle(viewModel.pendingRequest != nil)
         XCTAssertEqual(viewModel.pendingRequest, MockDashConnectDataSource.sampleRequest)
         XCTAssertEqual(firstSettled, 0, "published is not presented: the queue waits for the sheet to be on screen")
-        viewModel.presentationDidAppear()
+        viewModel.sheetDidAppear()
         await settle(firstSettled == 1)
         XCTAssertEqual(firstSettled, 1, "settled once the approval sheet appeared")
-        viewModel.presentationDidAppear()
+        viewModel.sheetDidAppear()
         await settle(firstSettled > 1, within: 0.1)
         XCTAssertEqual(firstSettled, 1, "once")
 
@@ -179,17 +226,17 @@ final class ConnectionsViewModelTests: XCTestCase {
     func testAnAppearanceNobodyWaitsForSettlesNothing() async {
         let dataSource = DelayedLookupDataSource()
         let viewModel = ConnectionsViewModel(dataSource: dataSource, featureUnavailable: false)
-        viewModel.presentationDidAppear()
+        viewModel.sheetDidAppear()
 
         var settled = 0
         viewModel.onURIReceived(MockDashConnectDataSource.sampleLoginQRCode) { settled += 1 }
         await settle(dataSource.lookups == 1)
-        viewModel.presentationDidAppear()
+        viewModel.sheetDidAppear()
         XCTAssertEqual(settled, 0, "nothing published yet: an appearance now is not this request's")
         dataSource.finishLookup()
         await settle(viewModel.pendingRequest != nil)
         XCTAssertEqual(settled, 0)
-        viewModel.presentationDidAppear()
+        viewModel.sheetDidAppear()
         await settle(settled == 1)
         XCTAssertEqual(settled, 1)
     }
@@ -273,7 +320,7 @@ final class ConnectionsViewModelTests: XCTestCase {
         XCTAssertNil(root.completions["link-c"], "C waits for its sheet to be on screen")
         XCTAssertEqual(root.dispatched, ["link-a", "link-c"], "D waits for C")
 
-        viewModel.presentationDidAppear() // C's sheet appeared
+        viewModel.sheetDidAppear() // C's sheet appeared
         await settle(root.completions["link-d"] == 1)
 
         XCTAssertEqual(root.dispatched, ["link-a", "link-c", "link-d"], "D is handed over once C settled")
@@ -318,12 +365,108 @@ final class ConnectionsViewModelTests: XCTestCase {
         XCTAssertNotNil(viewModel.approveError, "the refusal is shown on C's sheet")
         XCTAssertEqual(dataSource.lookups, 1, "the refused newcomers start no lookup")
 
-        viewModel.presentationDidAppear() // C's sheet appeared
+        viewModel.sheetDidAppear() // C's sheet appeared
         await settle(root.completions["link-d"] == 1)
         XCTAssertEqual(root.completions, ["link-c": 1, "link-d": 1], "C settled once, on its appearance; D (refused: C's sheet is up) once")
         XCTAssertEqual(root.dispatched, ["link-c", "link-d"])
         XCTAssertEqual(newcomerSettled, 1, "once")
         XCTAssertFalse(root.queue.isDispatching)
         XCTAssertTrue(root.queue.isEmpty)
+    }
+
+    // MARK: Alerts settle on dismissal
+
+    /// A link that fails shows an error alert. A native alert hosts no view,
+    /// so nothing reports it on screen; the link settles when the alert is
+    /// dismissed, and a sheet appearing meanwhile is not its settlement.
+    func testAFailedLinkSettlesWhenItsAlertIsDismissed() async {
+        let viewModel = ConnectionsViewModel(dataSource: ScriptedDataSource(), featureUnavailable: false)
+        var settled = 0
+        viewModel.onURIReceived("bad-link") { settled += 1 }
+        await settle(viewModel.message != nil)
+        XCTAssertEqual(viewModel.message?.kind, .error)
+
+        viewModel.sheetDidAppear()
+        await settle(settled > 0, within: 0.1)
+        XCTAssertEqual(settled, 0, "the alert is up: the queue waits for its dismissal")
+
+        viewModel.message = nil // OK
+        await settle(settled == 1)
+        XCTAssertEqual(settled, 1)
+        await settle(settled > 1, within: 0.1)
+        XCTAssertEqual(settled, 1, "once")
+    }
+
+    func testAKeyRegistrationSettlesWhenItsSuccessAlertIsDismissed() async {
+        let viewModel = ConnectionsViewModel(dataSource: ScriptedDataSource(), featureUnavailable: false)
+        var settled = 0
+        viewModel.onURIReceived("st-registration") { settled += 1 }
+        await settle(viewModel.message != nil)
+        XCTAssertEqual(viewModel.message?.kind, .success)
+        await settle(settled > 0, within: 0.1)
+        XCTAssertEqual(settled, 0)
+
+        viewModel.message = nil
+        await settle(settled == 1)
+        XCTAssertEqual(settled, 1)
+    }
+
+    /// A failed link's alert is still up when the queue moves on (its
+    /// watchdog released it) and the next link publishes an approval sheet.
+    /// That sheet's appearance settles the sheet's own link, not the
+    /// failed one, which settles when its alert is dismissed.
+    func testASheetAppearanceSettlesItsOwnLinkWhileAnEarlierAlertIsUp() async {
+        let viewModel = ConnectionsViewModel(dataSource: ScriptedDataSource(), featureUnavailable: false)
+        var failedSettled = 0
+        viewModel.onURIReceived("bad-link") { failedSettled += 1 }
+        await settle(viewModel.message != nil)
+
+        var loginSettled = 0
+        viewModel.onURIReceived("login-b") { loginSettled += 1 }
+        await settle(viewModel.pendingRequest != nil)
+        XCTAssertEqual(viewModel.pendingRequest?.appLabel, "login-b")
+
+        viewModel.sheetDidAppear()
+        await settle(loginSettled == 1)
+        XCTAssertEqual(loginSettled, 1, "the sheet's appearance is the login link's")
+        XCTAssertEqual(failedSettled, 0, "the failed link still waits for its alert to be dismissed")
+
+        viewModel.message = nil
+        await settle(failedSettled == 1)
+        XCTAssertEqual(failedSettled, 1)
+        XCTAssertEqual(loginSettled, 1)
+    }
+
+    /// A link refused while a key registration is running shows its refusal
+    /// as an alert and settles when that alert is dismissed; the
+    /// registration's own link settles when its success alert is dismissed.
+    func testALinkRefusedDuringAKeyRegistrationSettlesWhenItsAlertIsDismissed() async {
+        let dataSource = ScriptedDataSource()
+        dataSource.holdsStateTransitions = true
+        let viewModel = ConnectionsViewModel(dataSource: dataSource, featureUnavailable: false)
+        var registrationSettled = 0
+        viewModel.onURIReceived("st-registration") { registrationSettled += 1 }
+        await settle(dataSource.heldTransitionCount == 1)
+        XCTAssertTrue(viewModel.isProcessingStateTransition)
+
+        var refusedSettled = 0
+        viewModel.onURIReceived("login-b") { refusedSettled += 1 }
+        XCTAssertEqual(viewModel.message?.kind, .error, "the refusal is an alert")
+        viewModel.sheetDidAppear()
+        await settle(refusedSettled > 0, within: 0.1)
+        XCTAssertEqual(refusedSettled, 0, "the refusal waits for its alert to be dismissed")
+
+        viewModel.message = nil
+        await settle(refusedSettled == 1)
+        XCTAssertEqual(refusedSettled, 1)
+        XCTAssertEqual(registrationSettled, 0, "the registration is still running")
+
+        dataSource.finishStateTransition()
+        await settle(viewModel.message?.kind == .success)
+        XCTAssertEqual(registrationSettled, 0)
+        viewModel.message = nil
+        await settle(registrationSettled == 1)
+        XCTAssertEqual(registrationSettled, 1)
+        XCTAssertEqual(refusedSettled, 1)
     }
 }

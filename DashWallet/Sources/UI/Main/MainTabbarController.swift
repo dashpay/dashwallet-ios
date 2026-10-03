@@ -596,10 +596,32 @@ extension MainTabbarController {
     /// (`PresentationOwner`) and the dismissal is asked of that owner — it
     /// takes the whole presented chain with it. With nothing presented the
     /// body runs at once.
-    private func afterDismissingPresented(_ body: @escaping () -> Void) {
-        guard let owner = PresentationOwner.find(from: self) as? UIViewController else { return body() }
-        owner.dismiss(animated: false, completion: body)
+    private func afterDismissingPresented(_ body: @escaping () -> Void, attempt: Int = 0) {
+        switch PresentationOwner.step(from: self) {
+        case .none:
+            body()
+        case let .wait(owner) where attempt < Self.presentationTransitionWaits:
+            // A presentation still animating cannot be dismissed: wait for
+            // its transition to end, then decide again.
+            let retry = { [weak self] in
+                guard let self else { return body() }
+                self.afterDismissingPresented(body, attempt: attempt + 1)
+            }
+            if let coordinator = (owner as? UIViewController)?.presentedViewController?.transitionCoordinator {
+                coordinator.animate(alongsideTransition: nil) { _ in DispatchQueue.main.async(execute: retry) }
+            } else {
+                DispatchQueue.main.asyncAfter(deadline: .now() + Self.presentationTransitionPoll, execute: retry)
+            }
+        case let .wait(owner), let .dismiss(owner):
+            guard let owner = owner as? UIViewController else { return body() }
+            owner.dismiss(animated: false, completion: body)
+        }
     }
+
+    /// How often, and how long apart, a deep link waits for a presentation
+    /// transition before dismissing anyway (about 2 s in all).
+    private static let presentationTransitionWaits = 20
+    private static let presentationTransitionPoll: TimeInterval = 0.1
 }
 
 // MARK: MainMenuViewControllerDelegate

@@ -28,6 +28,8 @@ protocol PresentationNode: AnyObject {
     /// The child that is on screen: a tab's selected controller, a
     /// navigation stack's top; nil for a leaf.
     var activeChildNode: PresentationNode? { get }
+    /// Whether this node is still being presented or dismissed.
+    var isInTransition: Bool { get }
 }
 
 /// Finds who owns the presentation over the active hierarchy, so a deep
@@ -57,6 +59,25 @@ enum PresentationOwner {
         }
         return root.presentedNode != nil ? root : nil
     }
+
+    /// What a deep link's handler does before presenting its own screen.
+    enum Step {
+        /// Nothing is presented: go ahead.
+        case none
+        /// The presentation over `owner` is still animating in or out; UIKit
+        /// refuses a dismissal until that transition ends, so wait for it.
+        case wait(PresentationNode)
+        /// Dismiss what `owner` presents, then go ahead.
+        case dismiss(PresentationNode)
+    }
+
+    static func step(from root: PresentationNode) -> Step {
+        guard let owner = find(from: root) else { return .none }
+        if owner.presentedNode?.isInTransition == true {
+            return .wait(owner)
+        }
+        return .dismiss(owner)
+    }
 }
 
 extension UIViewController: PresentationNode {
@@ -67,4 +88,5 @@ extension UIViewController: PresentationNode {
         if let navigation = self as? UINavigationController { return navigation.topViewController }
         return nil
     }
+    var isInTransition: Bool { isBeingPresented || isBeingDismissed }
 }

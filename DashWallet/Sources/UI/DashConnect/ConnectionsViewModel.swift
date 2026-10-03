@@ -52,7 +52,16 @@ final class ConnectionsViewModel: ObservableObject {
     @Published var isApproving = false
     @Published var isApprovingPurchase = false
     @Published var isProcessingStateTransition = false
-    @Published var message: ConnectionsScreenMessage?
+    /// Clearing it — the alert's OK, or the alert going away — settles the
+    /// requests that wait for their alert to be dismissed.
+    @Published var message: ConnectionsScreenMessage? {
+        didSet {
+            guard message == nil, !awaitingDismissal.isEmpty else { return }
+            let dismissed = awaitingDismissal
+            awaitingDismissal = []
+            dismissed.forEach(settle)
+        }
+    }
     /// Failure of the last approve attempt, rendered **inside** the approve sheet.
     /// A screen-level `.alert` cannot appear over a presented sheet, so routing this
     /// through `message` would leave the user with no feedback at all.
@@ -101,31 +110,43 @@ final class ConnectionsViewModel: ObservableObject {
     /// its approval sheet never lands on top of the screen the next link
     /// opened.
     private let operations = LinkOperationSequence()
-    /// Requests that published a UI outcome (a sheet, an alert) and whose
-    /// settlement waits for the presentation layer to report it on screen
-    /// (`presentationDidAppear`), oldest first: publishing a `@Published`
-    /// value does not present it, and settling before the sheet is up let
-    /// the next link's screen race the sheet's binding. Neither a refused
-    /// newcomer nor a newer request settles one of these early.
-    private var awaitingPresentation: [LinkOperationSequence.Token] = []
+    /// The request that published an approval sheet and whose settlement
+    /// waits for the screen to report the sheet on screen (`sheetDidAppear`):
+    /// publishing a `@Published` value does not present it, and settling
+    /// before the sheet is up let the next link's screen race the sheet's
+    /// binding. One at most: a request is refused while a sheet is pending.
+    private var awaitingSheet: LinkOperationSequence.Token?
+    /// Requests that published an alert, settled when it is dismissed
+    /// (`message` cleared). A native alert hosts no view of its own, so it
+    /// has no appearance to wait for. Neither a refused newcomer nor a newer
+    /// request settles one of these, or the pending sheet, early.
+    private var awaitingDismissal: [LinkOperationSequence.Token] = []
 
     private func settle(_ token: LinkOperationSequence.Token) {
-        awaitingPresentation.removeAll { $0 == token }
+        if awaitingSheet == token { awaitingSheet = nil }
+        awaitingDismissal.removeAll { $0 == token }
         operations.settle(token)
     }
 
-    /// Settles `token` once the UI it produced is on screen; the screen
-    /// calls `presentationDidAppear` from the sheet's or the alert's
-    /// `onAppear`.
-    private func settleWhenPresented(_ token: LinkOperationSequence.Token) {
-        guard operations.awaitsSettlement(token), !awaitingPresentation.contains(token) else { return }
-        awaitingPresentation.append(token)
+    /// Settles `token` once its approval sheet is on screen; the screen
+    /// calls `sheetDidAppear` from the sheet's `onAppear`.
+    private func settleWhenSheetAppears(_ token: LinkOperationSequence.Token) {
+        guard operations.awaitsSettlement(token) else { return }
+        if let earlier = awaitingSheet, earlier != token { settle(earlier) }
+        awaitingSheet = token
     }
 
-    /// The screen reports that a sheet or alert has appeared: the oldest
-    /// request waiting for one settles. Nothing happens when nothing waits.
-    func presentationDidAppear() {
-        guard let token = awaitingPresentation.first else { return }
+    /// Shows `message` and settles `token` once the alert is dismissed.
+    private func show(_ message: ConnectionsScreenMessage, settlingOnDismissal token: LinkOperationSequence.Token) {
+        self.message = message
+        guard operations.awaitsSettlement(token), !awaitingDismissal.contains(token) else { return }
+        awaitingDismissal.append(token)
+    }
+
+    /// The screen reports that an approval sheet has appeared: the request
+    /// waiting for it settles. Nothing happens when nothing waits.
+    func sheetDidAppear() {
+        guard let token = awaitingSheet else { return }
         settle(token)
     }
 
@@ -207,21 +228,22 @@ final class ConnectionsViewModel: ObservableObject {
         }
 
         guard !isProcessingStateTransition else {
-            message = ConnectionsScreenMessage(
+            show(ConnectionsScreenMessage(
                 kind: .error,
                 text: NSLocalizedString("Finish the current DashConnect request first, then try again.",
                                         comment: "DashConnect: a second request arrived during key registration")
-            )
-            settleWhenPresented(operations.refuse(settled: settled))
+            ), settlingOnDismissal: operations.refuse(settled: settled))
             return
         }
 
         // This request replaces whatever is still resolving, and is current
         // from here on. The replaced request will publish nothing, so
         // `begin` settles it — on the next turn, never inside this call —
-        // unless it already published an alert that has yet to appear: that
-        // one still settles on its appearance.
-        let token = operations.begin(settled: settled, isAbandoned: isAbandoned, keeping: Set(awaitingPresentation))
+        // unless it already published a sheet that has yet to appear or an
+        // alert that has yet to be dismissed: that one still settles then.
+        var kept = Set(awaitingDismissal)
+        if let awaitingSheet { kept.insert(awaitingSheet) }
+        let token = operations.begin(settled: settled, isAbandoned: isAbandoned, keeping: kept)
         guard operations.admits(token) else {
             DWLogger.log("DASHCONNECT a request arrived while this one was being installed; this one is dropped")
             return
@@ -249,7 +271,7 @@ final class ConnectionsViewModel: ObservableObject {
                     if dropIfAbandoned(token) { return }
                     pendingLoginRequest = request
                     pendingRequest = connectionRequest
-                    settleWhenPresented(token)
+                    settleWhenSheetAppears(token)
                 case let .stateTransition(request):
                     guard generation == requestGeneration else { return }
                     isProcessingStateTransition = true
@@ -258,27 +280,26 @@ final class ConnectionsViewModel: ObservableObject {
                     switch try await dataSource.handleStateTransition(request) {
                     case .keyRegistrationCompleted:
                         if dropIfAbandoned(token) { return }
-                        message = ConnectionsScreenMessage(
+                        show(ConnectionsScreenMessage(
                             kind: .success,
                             text: NSLocalizedString("DashConnect key registration completed.", comment: "DashConnect")
-                        )
+                        ), settlingOnDismissal: token)
                     case let .tokenPurchaseApprovalRequired(purchase):
                         if dropIfAbandoned(token) { return }
                         pendingTokenPurchase = purchase
+                        settleWhenSheetAppears(token)
                     }
-                    settleWhenPresented(token)
                 }
             } catch {
                 guard generation == requestGeneration else { return }
                 if dropIfAbandoned(token) { return }
-                message = ConnectionsScreenMessage(
+                show(ConnectionsScreenMessage(
                     kind: .error,
                     text: String(
                         format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
                         error.localizedDescription
                     )
-                )
-                settleWhenPresented(token)
+                ), settlingOnDismissal: token)
             }
         }
     }

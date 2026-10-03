@@ -62,6 +62,7 @@ private final class Node: PresentationNode {
 
     var presentingNode: PresentationNode? { presenter }
     var activeChildNode: PresentationNode? { child }
+    var isInTransition = false
 }
 
 /// `PresentationOwner.find` returns the controller whose `dismiss` takes the
@@ -119,6 +120,39 @@ final class PresentationOwnerTests: XCTestCase {
         XCTAssertTrue(PresentationOwner.find(from: tab) === home)
         home.dismiss()
         XCTAssertTrue(PresentationOwner.find(from: tab) === tab, "then only the ancestor's presentation remains")
+    }
+
+    // MARK: Step
+
+    func testNothingPresentedStepsStraightOn() {
+        let (_, tab, _, _) = hierarchy()
+        guard case .none = PresentationOwner.step(from: tab) else { return XCTFail("expected .none") }
+    }
+
+    /// A sheet still animating in is not dismissed — UIKit refuses that —
+    /// but waited for; once on screen it is dismissed at its owner.
+    func testAPresentationInTransitionIsWaitedForThenDismissed() {
+        let (root, tab, _, _) = hierarchy()
+        let sheet = Node("sheet")
+        root.present(sheet)
+        sheet.isInTransition = true
+        guard case let .wait(waiting) = PresentationOwner.step(from: tab) else { return XCTFail("expected .wait") }
+        XCTAssertTrue(waiting === tab)
+
+        sheet.isInTransition = false
+        guard case let .dismiss(owner) = PresentationOwner.step(from: tab) else { return XCTFail("expected .dismiss") }
+        XCTAssertTrue(owner === tab)
+    }
+
+    /// The wait is decided at the owner the walk finds: a descendant whose
+    /// presentation is still animating is waited for there.
+    func testADescendantsPresentationInTransitionIsWaitedForAtTheDescendant() {
+        let (_, tab, _, home) = hierarchy()
+        let modal = Node("modal")
+        home.present(modal)
+        modal.isInTransition = true
+        guard case let .wait(waiting) = PresentationOwner.step(from: tab) else { return XCTFail("expected .wait") }
+        XCTAssertTrue(waiting === home)
     }
 
     func testACycleInTheActiveChainDoesNotLoop() {
