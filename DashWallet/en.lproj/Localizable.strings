@@ -6388,3 +6388,6 @@
 /* Several payments that had been waiting for the network were confirmed; %1$ld is how many, %2$@ their total amount */
 "%1$ld payments went through, %2$@ in total" = "%1$ld payments went through, %2$@ in total";
 
+/* Send: an earlier payment to the same address is still waiting for the network */
+"Pay this address again?" = "Pay this address again?";
+

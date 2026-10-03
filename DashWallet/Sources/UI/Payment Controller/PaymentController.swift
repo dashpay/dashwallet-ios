@@ -216,14 +216,20 @@ extension PaymentController: DWPaymentProcessorDelegate {
                 comment: "Send: an earlier payment to the same address is still waiting for the network; %1$@ is its amount, %2$@ when it was sent"),
             waiting.amount.formattedDashAmount,
             "\(DWDateFormatter.sharedInstance.shortStringFromDate(waiting.sentAt)) \(DWDateFormatter.sharedInstance.timeOnly(from: waiting.sentAt))")
-        let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(
-            title: NSLocalizedString("Wait", comment: "Send: don't repeat a payment that is still waiting for the network"),
-            style: .cancel) { _ in completion(false) })
-        alert.addAction(UIAlertAction(
-            title: NSLocalizedString("Send anyway", comment: "Send: repeat a payment although the earlier one is still waiting for the network"),
-            style: .default) { _ in completion(true) })
-        show(modalController: alert)
+        precondition(presentationAnchor != nil)
+        let presenter = presentationAnchor!.topController()
+        Task { @MainActor in
+            // Resumes once the dialog is gone, so the PIN prompt that follows
+            // "Send anyway" presents over a settled screen.
+            let waits = await presenter.showModalDialog(
+                style: .warning,
+                icon: .system("exclamationmark.triangle"),
+                heading: NSLocalizedString("Pay this address again?", comment: "Send: an earlier payment to the same address is still waiting for the network"),
+                textBlock1: message,
+                positiveButtonText: NSLocalizedString("Wait", comment: "Send: don't repeat a payment that is still waiting for the network"),
+                negativeButtonText: NSLocalizedString("Send anyway", comment: "Send: repeat a payment although the earlier one is still waiting for the network"))
+            completion(!waits)
+        }
     }
 
     private func presentConfirm(for paymentOutput: DWPaymentOutput) {
@@ -303,8 +309,13 @@ extension PaymentController: DWPaymentProcessorDelegate {
                   to: #selector(PaymentControllerDelegate.paymentControllerDidSubmitWithUnknownOutcome(_:txidWire:))) == true
         else {
             confirmViewController?.isSendingEnabled = false
-            showAlert(with: NSLocalizedString("Waiting for the network", comment: "Sent transaction whose broadcast got no answer from the network yet"),
-                      message: Self.unknownOutcomeMessage)
+            presentationAnchor?.topController().showModalDialog(
+                style: .warning,
+                icon: .system("exclamationmark.triangle"),
+                heading: NSLocalizedString("Waiting for the network", comment: "Sent transaction whose broadcast got no answer from the network yet"),
+                textBlock1: Self.unknownOutcomeMessage,
+                positiveButtonText: NSLocalizedString("OK", comment: ""),
+                positiveButtonAction: nil)
             return
         }
 
