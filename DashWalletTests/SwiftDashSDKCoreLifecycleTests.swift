@@ -293,25 +293,30 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertTrue(counter.isIdle)
     }
 
-    /// Setup completion reads `isCreationInFlight` right after Skip has
-    /// dispatched a creation: the creation must count from the call, not
-    /// from its background block, and stop counting once it has finished —
-    /// here, a refused one (an empty phrase never reaches the host).
-    func testACreationCountsAsInFlightFromTheCallUntilItFinishes() {
-        XCTAssertFalse(SwiftDashSDKWalletCreator.isCreationInFlight)
-        SwiftDashSDKWalletCreator.createWallet(mnemonic: "", pin: "", network: .testnet)
-        XCTAssertTrue(SwiftDashSDKWalletCreator.isCreationInFlight, "in flight as soon as it is dispatched")
+    /// Setup completion reads the count right after Skip has dispatched a
+    /// creation: the work counts from the call, for as long as it runs, and
+    /// stops counting once it has returned. The work is held open so the
+    /// in-flight state is observed while it is certainly still running.
+    func testDispatchedWorkCountsFromTheCallUntilItReturns() {
+        let counter = SwiftDashSDKWalletCreator.InFlightCounter()
+        let release = DispatchSemaphore(value: 0)
+        let started = expectation(description: "work started")
+        let ended = expectation(description: "work no longer counted")
 
-        let settled = expectation(description: "creation finished")
-        func poll() {
-            if !SwiftDashSDKWalletCreator.isCreationInFlight {
-                settled.fulfill()
-            } else {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.01, execute: poll)
-            }
-        }
-        poll()
-        wait(for: [settled], timeout: 5)
+        counter.dispatch(on: .global(), {
+            started.fulfill()
+            release.wait()
+        }, afterEnd: {
+            XCTAssertTrue(counter.isIdle)
+            ended.fulfill()
+        })
+        XCTAssertFalse(counter.isIdle, "counted from the call, before the work runs")
+        wait(for: [started], timeout: 5)
+        XCTAssertFalse(counter.isIdle, "counted while the work runs")
+
+        release.signal()
+        wait(for: [ended], timeout: 5)
+        XCTAssertTrue(counter.isIdle)
     }
 
     /// An import with a completion stops counting before the completion
