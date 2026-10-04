@@ -127,6 +127,12 @@ final class WalletLifecycleOverlayPresenter {
         } else {
             blockedByLock = lockScreenVisible
         }
+        // A window created before any scene connected (a background launch,
+        // or a failure reported while `didFinishLaunching` is still running)
+        // is never shown; attach it once a scene exists.
+        if let overlayWindow, overlayWindow.windowScene == nil {
+            overlayWindow.windowScene = OverlayWindow.currentWindowScene()
+        }
         overlayWindow?.isHidden = blockedByLock || authenticationPromptVisible || !applicationActive
     }
 
@@ -134,6 +140,7 @@ final class WalletLifecycleOverlayPresenter {
         // Re-evaluate even when reusing a hidden failure window for a wipe.
         defer { updateVisibility() }
         guard overlayWindow == nil else { return }
+        // Without a scene yet, `updateVisibility()` attaches the window later.
         let window = OverlayWindow.make(UIWindow.self)
         window.rootViewController = UIHostingController(rootView: WalletLifecycleOverlayView())
         window.rootViewController?.view.backgroundColor = .clear
@@ -149,13 +156,15 @@ final class WalletLifecycleOverlayPresenter {
 @MainActor
 enum OverlayWindow {
     static func make<Window: UIWindow>(_ type: Window.Type) -> Window {
-        let scene = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first { $0.activationState == .foregroundActive }
-            ?? UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first
-        let window = scene.map { Window(windowScene: $0) } ?? Window(frame: UIScreen.main.bounds)
+        let window = currentWindowScene().map { Window(windowScene: $0) } ?? Window(frame: UIScreen.main.bounds)
         window.windowLevel = .alert + 1
         return window
+    }
+
+    /// The foreground scene, or the first connected one.
+    static func currentWindowScene() -> UIWindowScene? {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        return scenes.first { $0.activationState == .foregroundActive } ?? scenes.first
     }
 }
 

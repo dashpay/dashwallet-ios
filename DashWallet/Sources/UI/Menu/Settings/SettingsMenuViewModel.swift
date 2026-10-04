@@ -247,8 +247,10 @@ class SettingsMenuViewModel: ObservableObject {
                 title: "Enable Voting",
                 showToggle: true,
                 isToggled: VotingPrefs.shared.votingEnabled,
-                action: {
+                action: { [weak self] in
                     VotingPrefs.shared.votingEnabled.toggle()
+                    // The switch reads the item, so the items are rebuilt for it to move.
+                    self?.refreshMenuItems()
                 }
             )
         ])
