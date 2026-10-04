@@ -7,7 +7,9 @@
 //  payment screens (`lockingExit`) and `PaymentController`. These pin the
 //  counting: overlapping owners in either release order, repeated releases,
 //  restoring an original value that was already locked, and independence of
-//  separate stacks and roots. `PaymentInFlight` follows the same holds.
+//  separate stacks and roots.
+//
+//  Exit holds take no part in routing (`PaymentLinkRoutingTests`).
 //
 
 import UIKit
@@ -121,31 +123,10 @@ final class ExitHoldTests: XCTestCase {
         XCTAssertTrue(navigation.isModalInPresentation, "an originally modal root stays modal")
     }
 
-    func testPaymentInFlightFollowsTheHoldsAndAnnouncesTheEndOnce() {
+    func testExitHoldsLeaveRoutingToTheirOwners() {
         let (_, screen) = makeStack()
-        XCTAssertFalse(PaymentInFlight.isActive)
-
-        let endings = Endings()
-        let observer = NotificationCenter.default.addObserver(
-            forName: PaymentInFlight.didEndNotification, object: nil, queue: nil) { _ in endings.count += 1 }
-        defer { NotificationCenter.default.removeObserver(observer) }
-
-        let first = ExitHold(on: screen)
-        let second = ExitHold(on: screen)
-        XCTAssertTrue(PaymentInFlight.isActive)
-
-        first.release()
-        first.release()
-        XCTAssertTrue(PaymentInFlight.isActive)
-        XCTAssertEqual(endings.count, 0)
-
-        second.release()
-        XCTAssertFalse(PaymentInFlight.isActive)
-        XCTAssertEqual(endings.count, 1)
+        let hold = ExitHold(on: screen)
+        XCTAssertFalse(PaymentInFlight.isActive, "routing is held by the payment, not by the screen's exits")
+        hold.release()
     }
-}
-
-/// The notification is posted synchronously on the main thread.
-private final class Endings: @unchecked Sendable {
-    var count = 0
 }

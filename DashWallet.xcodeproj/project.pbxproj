@@ -1069,6 +1069,8 @@
 		A15ED0B9E7AAF29C694E4E17 /* DWIdentityAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FBA94DA84A9EE303FF48B4 /* DWIdentityAuthorizer.swift */; };
 		A17EED0126C7000000000001 /* WalletWipeSerialExecutorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */; };
 		E41D0A0126C7000000000001 /* ExitHoldTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E41D0A0126C7000000000002 /* ExitHoldTests.swift */; };
+		B0D7E50126C7000000000001 /* PaymentLinkRoutingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0D7E50126C7000000000002 /* PaymentLinkRoutingTests.swift */; };
+		C015EE0126C7000000000001 /* CoinJoinSweepTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C015EE0126C7000000000002 /* CoinJoinSweepTests.swift */; };
 		A361573C34CF9107E6B8A221 /* SwiftDashSDKWalletCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B697D56A525CBF142F4401FE /* SwiftDashSDKWalletCreator.swift */; };
 		A365C2F95472285830E6CDEB /* HomeUsernameRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E55DD28C4EBE049216291A2 /* HomeUsernameRow.swift */; };
 		A3ED42ED80F32AA5CA530A40 /* DamerauLevenshtein.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CE60A95629A2883710A75C /* DamerauLevenshtein.swift */; };
@@ -3264,6 +3266,8 @@
 		A11E57A70009C0DE0009B009 /* SyncingAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncingAlertView.swift; sourceTree = "<group>"; };
 		A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletWipeSerialExecutorTests.swift; sourceTree = "<group>"; };
 		E41D0A0126C7000000000002 /* ExitHoldTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExitHoldTests.swift; sourceTree = "<group>"; };
+		B0D7E50126C7000000000002 /* PaymentLinkRoutingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentLinkRoutingTests.swift; sourceTree = "<group>"; };
+		C015EE0126C7000000000002 /* CoinJoinSweepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinSweepTests.swift; sourceTree = "<group>"; };
 		A59D5720437F8A4137605940 /* PaymentRequestVerifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentRequestVerifier.swift; sourceTree = "<group>"; };
 		A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InternalTransferScreen.swift; sourceTree = "<group>"; };
 		C0172000000000000003A1 /* PaymentsTabRootController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsTabRootController.swift; sourceTree = "<group>"; };
@@ -7510,6 +7514,8 @@
 				47976E492987772700612988 /* AmountObjectTests.swift */,
 				A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */,
 				E41D0A0126C7000000000002 /* ExitHoldTests.swift */,
+				B0D7E50126C7000000000002 /* PaymentLinkRoutingTests.swift */,
+				C015EE0126C7000000000002 /* CoinJoinSweepTests.swift */,
 				B7C072AA26C7000000000002 /* DWContestedNameStatusServiceTests.swift */,
 				930BFA9B069540D4A5CAD79A /* ShieldedBalanceControllerTests.swift */,
 				17921340EDF4455B62461AF8 /* PlatformBalanceReaderTests.swift */,
@@ -10822,6 +10828,8 @@
 				47976E4A2987772700612988 /* AmountObjectTests.swift in Sources */,
 				A17EED0126C7000000000001 /* WalletWipeSerialExecutorTests.swift in Sources */,
 				E41D0A0126C7000000000001 /* ExitHoldTests.swift in Sources */,
+				B0D7E50126C7000000000001 /* PaymentLinkRoutingTests.swift in Sources */,
+				C015EE0126C7000000000001 /* CoinJoinSweepTests.swift in Sources */,
 				B7C072AA26C7000000000001 /* DWContestedNameStatusServiceTests.swift in Sources */,
 				4C9AC6D2EC13450DAC68FC90 /* ShieldedBalanceControllerTests.swift in Sources */,
 				525045ECC4BF30BBCB09E13C /* PlatformBalanceReaderTests.swift in Sources */,
