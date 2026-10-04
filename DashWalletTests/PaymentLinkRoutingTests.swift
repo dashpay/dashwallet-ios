@@ -303,10 +303,7 @@ final class PaymentLinkRoutingTests: XCTestCase {
     /// the deposit may still settle: its pushed failure (More-menu entry, so
     /// nothing is presented) holds routing and the tab bar until it is left.
     func testASwapFailedByAnUnknownBroadcastOwnsRoutingUntilClosed() async throws {
-        let unknownOutcome = NSError(
-            domain: "org.dashfoundation.dash.wallet-send-service",
-            code: 10,
-            userInfo: [NSLocalizedDescriptionKey: "Transaction status unknown"])
+        let unknownOutcome = Self.unknownBroadcastError
         XCTAssertTrue(WalletSendService.isBroadcastUnknownError(unknownOutcome))
         let deposit = FailingDeposit(error: unknownOutcome)
         let viewModel = makeSwapViewModel(providerQuote: Self.swapQuote, deposit: deposit)
@@ -329,6 +326,38 @@ final class PaymentLinkRoutingTests: XCTestCase {
         navigation.popViewController(animated: false)
         spin(until: { !PaymentInFlight.isActive })
         XCTAssertFalse(PaymentInFlight.isActive, "leaving the screen releases it")
+    }
+
+    /// A Retry whose quote refresh fails leaves the unresolved deposit's
+    /// failure on screen: it keeps holding.
+    func testAFailedRetryKeepsAnUnknownDepositsFailureHeld() async throws {
+        let unknownOutcome = Self.unknownBroadcastError
+        XCTAssertTrue(WalletSendService.isBroadcastUnknownError(unknownOutcome))
+        let provider = QuoteOnlySwapProvider(quote: Self.swapQuote)
+        let viewModel = makeSwapViewModel(provider: provider, deposit: FailingDeposit(error: unknownOutcome))
+        await viewModel.handlePrimaryAction()
+
+        let (root, _, _) = try pushSwapStatus(for: viewModel)
+        spin(until: { PaymentInFlight.isActive })
+        XCTAssertTrue(PaymentInFlight.isActive)
+
+        let depositFailure = viewModel.swapStatus
+
+        // A quote the provider answers with an error, then one it throws on.
+        provider.quote = SwapQuoteResult(
+            error: "noRoutesFound", expectedAmountOut: nil, fees: nil,
+            inboundAddress: nil, memo: nil, executionNetwork: nil)
+        for attempt in ["answered with an error", "threw"] {
+            if attempt == "threw" { provider.quoteError = URLError(.timedOut) }
+            let retried = await viewModel.retryQuote()
+            XCTAssertNil(retried, "the Retry \(attempt)")
+            XCTAssertTrue(viewModel.failedAfterDepositAttempt, "the Retry \(attempt)")
+            XCTAssertEqual("\(viewModel.swapStatus)", "\(depositFailure)", "the deposit failure's reason stays")
+            spin(until: { !PaymentInFlight.isActive }, timeout: 0.3)
+            XCTAssertTrue(PaymentInFlight.isActive, "the deposit's outcome is still unresolved")
+            XCTAssertTrue(PaymentInFlight.refusesTabChange())
+            XCTAssertTrue(PaymentInFlight.refusesLink(over: root))
+        }
     }
 
     /// A quote failure before the deposit moved nothing: its pushed result
@@ -356,11 +385,24 @@ final class PaymentLinkRoutingTests: XCTestCase {
         XCTAssertFalse(PaymentInFlight.refusesLink(over: root))
     }
 
+    /// WalletSendService's broadcast-unknown error (its code type is fileprivate).
+    private static let unknownBroadcastError = NSError(
+        domain: "org.dashfoundation.dash.wallet-send-service",
+        code: 10,
+        userInfo: [NSLocalizedDescriptionKey: "Transaction status unknown"])
+
     private static let swapQuote = SwapQuoteResult(
         error: nil, expectedAmountOut: "100000", fees: nil,
         inboundAddress: "XvaultAddress", memo: nil, executionNetwork: "Test")
 
-    private func makeSwapViewModel(providerQuote: SwapQuoteResult, deposit: SwapDepositSending) -> OrderPreviewViewModel {
+    private func makeSwapViewModel(
+        providerQuote: SwapQuoteResult,
+        deposit: SwapDepositSending
+    ) -> OrderPreviewViewModel {
+        makeSwapViewModel(provider: QuoteOnlySwapProvider(quote: providerQuote), deposit: deposit)
+    }
+
+    private func makeSwapViewModel(provider: QuoteOnlySwapProvider, deposit: SwapDepositSending) -> OrderPreviewViewModel {
         OrderPreviewViewModel(
             coin: SwapCryptoCurrency(id: "btc", code: "BTC", name: "Bitcoin", swapAsset: "BTC.BTC", chain: "BTC"),
             address: "bc1qdestination",
@@ -370,7 +412,7 @@ final class PaymentLinkRoutingTests: XCTestCase {
             cryptoFiatRate: 0,
             fiatCurrencyCode: "USD",
             initialQuote: Self.swapQuote,
-            swapProvider: QuoteOnlySwapProvider(quote: providerQuote),
+            swapProvider: provider,
             networkStatus: AlwaysOnline(),
             depositSender: deposit)
     }
@@ -424,9 +466,11 @@ private final class AlwaysOnline: NetworkStatusProviding {
     var statusPublisher: AnyPublisher<NetworkStatus, Never> { Just(.online).eraseToAnyPublisher() }
 }
 
-/// Answers every quote with `quote`; nothing else is used by a swap submission.
+/// Answers every quote with `quote`, or throws `quoteError` when set; nothing
+/// else is used by a swap submission.
 private final class QuoteOnlySwapProvider: SwapProvider {
-    let quote: SwapQuoteResult
+    var quote: SwapQuoteResult
+    var quoteError: Error?
     var displayName: String { "Test" }
     var onBuyRoutabilityChanged: (() -> Void)?
 
@@ -435,7 +479,10 @@ private final class QuoteOnlySwapProvider: SwapProvider {
     func fetchPools() async throws -> [SwapPool] { [] }
     func fetchInboundAddresses() async throws -> [SwapInboundAddress] { [] }
     func validateAddress(destination: String, toAsset: String) async -> String? { nil }
-    func fetchQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult { quote }
+    func fetchQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult {
+        if let quoteError { throw quoteError }
+        return quote
+    }
     func fetchSwapStatus(txid: String, depositAddress: String?) async throws -> SwapStatusResult {
         SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil)
     }

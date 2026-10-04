@@ -128,9 +128,12 @@ final class OrderPreviewViewModel: ObservableObject {
     // Records that the Dash transaction was submitted to the blockchain network.
     // This does NOT confirm Maya swap completion — that requires separate on-chain confirmation.
     @Published var submittedTxId: String?
-    /// The current failure came from the deposit send itself
+    /// The failure on screen came from the deposit send itself
     /// (`submitDashTransaction` was called), whether or not a txid came back:
-    /// such a failure may still have moved funds. False for every other state.
+    /// such a failure may still have moved funds. Set only by a submission (and
+    /// cleared when one starts); a failed Retry's quote refresh leaves it, and
+    /// the failure's reason, as they are, since that deposit's outcome is still
+    /// unresolved.
     @Published private(set) var failedAfterDepositAttempt = false
     @Published var swapStatus: SwapStatus = .idle
     @Published var pendingSwapAlertMessage: String?
@@ -329,7 +332,7 @@ final class OrderPreviewViewModel: ObservableObject {
         do {
             let freshQuote = try await fetchFreshQuote()
             if let apiError = freshQuote.error {
-                setFailure(apiError)
+                setRetryFailure(apiError)
                 return nil
             }
             return OrderPreviewViewModel(
@@ -347,9 +350,20 @@ final class OrderPreviewViewModel: ObservableObject {
                 depositSender: depositSender
             )
         } catch {
-            setFailure(error.localizedDescription)
+            setRetryFailure(error.localizedDescription)
             return nil
         }
+    }
+
+    /// A failed Retry over a failure from the deposit send keeps that
+    /// failure's reason on screen: it is the one that says funds may have
+    /// moved. Any other failure shows the Retry's own.
+    private func setRetryFailure(_ message: String) {
+        guard failedAfterDepositAttempt, case .failed = swapStatus else {
+            setFailure(message)
+            return
+        }
+        DWLogger.log("Swap: retry quote failed for \(coin.code) — raw: \(message); keeping the deposit failure")
     }
 
     // MARK: - Private: Network Status
@@ -430,6 +444,7 @@ final class OrderPreviewViewModel: ObservableObject {
     private func submitSwap() async {
         guard !isSubmitting else { return }
         submittedTxId = nil
+        failedAfterDepositAttempt = false
         var depositAttempted = false
         lastDepositAddress = nil
         pendingSwapAlertMessage = nil
@@ -470,7 +485,8 @@ final class OrderPreviewViewModel: ObservableObject {
                 swapStatus = .idle
                 return
             }
-            setFailure(error.localizedDescription, afterDepositAttempt: depositAttempted)
+            failedAfterDepositAttempt = depositAttempted
+            setFailure(error.localizedDescription)
         }
     }
 
@@ -533,8 +549,7 @@ final class OrderPreviewViewModel: ObservableObject {
 
     // MARK: - Private: State Mutation
 
-    private func setFailure(_ message: String, afterDepositAttempt: Bool = false) {
-        failedAfterDepositAttempt = afterDepositAttempt
+    private func setFailure(_ message: String) {
         // Log before mapping: `userFacingErrorMessage` collapses anything unrecognised into a
         // generic "something went wrong", so this is the last point at which the real reason
         // still exists. Without it a "Conversion failed" screenshot has no counterpart in the
