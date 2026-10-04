@@ -35,6 +35,18 @@ public final class SendCoinsService: NSObject {
         )
     }
 
+    /// `sendCoins` without the routing hold (`WalletSendService.sendWithoutRoutingHold`),
+    /// so incoming links are not refused while it runs. For CrowdNode, hidden in
+    /// this release, whose sends mostly run with no screen waiting for them.
+    func sendCoinsWithoutRoutingHold(address: String, amount: UInt64,
+                                     inputSelector: SingleInputAddressSelector? = nil,
+                                     adjustAmountDownwards: Bool = false,
+                                     sessionAuthSufficient: Bool = false) async throws -> Data {
+        try await walletSendService.sendWithoutRoutingHold(
+            address: address, amount: amount, inputSelector: inputSelector,
+            adjustAmountDownwards: adjustAmountDownwards, sessionAuthSufficient: sessionAuthSufficient)
+    }
+
     /// Submits a DashDEX (SwapKit) deposit. Memo-less routes remain a plain send to the
     /// route's deposit address; memo-bearing routes build a MAYACHAIN-style deposit with the
     /// memo encoded in a zero-value OP_RETURN output.

@@ -423,6 +423,11 @@ final class OrderPreviewViewModel: ObservableObject {
         pendingSwapAlertMessage = nil
         isSubmitting = true
         defer { isSubmitting = false }
+        // The quote refresh and the deposit wait on the network with nothing
+        // presented over this screen: incoming links are refused until the
+        // submission returns (`PaymentInFlight`).
+        let routingHold = PaymentInFlightHold()
+        defer { routingHold.end() }
 
         do {
             // Refresh quote immediately before commit so vault address and memo are fresh.

@@ -112,6 +112,11 @@ class ToastHostingView: UIView {
 }
 
 extension UIViewController {
+    /// How far `showToast` keeps the toast from the sides and bottom of the view.
+    static let toastEdgeInset: CGFloat = 10
+
+    /// - Returns: the toast view, added to `view`.
+    @discardableResult
     func showToast(
         text: String,
         icon: IconName? = nil,
@@ -120,7 +125,7 @@ extension UIViewController {
         action: ((ToastHostingView) -> Void)? = nil,
         closeButtonIcon: IconName? = nil,
         closeAction: ((ToastHostingView) -> Void)? = nil
-    ) {
+    ) -> ToastHostingView {
         var toastView: ToastHostingView!
         let actionClosure: () -> Void = { action?(toastView) }
         let closeActionClosure: () -> Void = { closeAction?(toastView) }
@@ -139,10 +144,10 @@ extension UIViewController {
         
         NSLayoutConstraint.activate([
             toastView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            toastView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 10).withPriority(.defaultHigh),
-            view.trailingAnchor.constraint(greaterThanOrEqualTo: toastView.trailingAnchor, constant: 10).withPriority(.defaultHigh),
-            toastView.widthAnchor.constraint(lessThanOrEqualTo: view.widthAnchor, constant: -20),
-            toastView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10)
+            toastView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: Self.toastEdgeInset).withPriority(.defaultHigh),
+            view.trailingAnchor.constraint(greaterThanOrEqualTo: toastView.trailingAnchor, constant: Self.toastEdgeInset).withPriority(.defaultHigh),
+            toastView.widthAnchor.constraint(lessThanOrEqualTo: view.widthAnchor, constant: -2 * Self.toastEdgeInset),
+            toastView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -Self.toastEdgeInset)
         ])
         
         toastView.alpha = 0.0
@@ -157,6 +162,7 @@ extension UIViewController {
                 }
             }
         }
+        return toastView
     }
     
     func hideToast(toastView: ToastHostingView) {

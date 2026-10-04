@@ -41,30 +41,182 @@ extension View {
     }
 }
 
-/// Whether a payment is waiting on the network anywhere in the app — a held
-/// payment screen (`ExitHold`), the window HUD, or a broadcast in the payment
-/// processor. External routing (payment URLs, deep links) waits while it is
-/// active: it dismisses or replaces the screen the outcome is shown on.
+/// Whether a send is waiting on the network — held by each Core send's
+/// network wait (`SwiftDashSDKTransactionSender.waitingForNetwork`), by the
+/// payment processor's broadcast through its outcome callback, and by the
+/// DashSpend purchase and the swap submission as a whole — each through a
+/// `PaymentInFlightHold`. With what is presented on screen, it decides
+/// whether an incoming link may replace what is shown (`refusesLink(over:)`).
 @objc(DWPaymentInFlight)
-@MainActor
 final class PaymentInFlight: NSObject {
-    /// Posted on the main thread when the last payment in flight ends.
-    @objc static let didEndNotification = Notification.Name("DWPaymentInFlightDidEndNotification")
+    /// How long after the last send's hold ends links are still refused.
+    /// Some send results reach the screen a beat after the send returns — one
+    /// executor hop or one render pass: the Home popup sweep's error dialog
+    /// (its model is not main-actor), the Tools sweep's SwiftUI alert, the
+    /// DashSpend purchase's error dialog. A link routed in that beat would
+    /// dismiss or bury the result before it shows.
+    static let resultGracePeriod: TimeInterval = 1
 
-    private static var count = 0
+    /// Live `PaymentInFlightHold`s. Guarded by `lock`: a hold can be freed on
+    /// any thread, and it ends there and then.
+    private static var holds = Set<UInt64>()
+    private static var nextHoldToken: UInt64 = 0
+    /// When the last hold ended; links stay refused for `resultGracePeriod`.
+    private static var lastHoldEnded: Date?
+    private static let lock = NSLock()
 
-    @objc static var isActive: Bool { count > 0 }
+    /// A send's hold is live. For tests; routing asks `isActiveOrSettling`.
+    static var isActive: Bool { lock.withLock { !holds.isEmpty } }
 
-    @objc static func begin() {
-        count += 1
+    /// A send is in progress, or its result may still be on its way to the
+    /// screen (`resultGracePeriod`).
+    static var isActiveOrSettling: Bool {
+        lock.withLock {
+            guard holds.isEmpty else { return true }
+            guard let lastHoldEnded else { return false }
+            return Date().timeIntervalSince(lastHoldEnded) < resultGracePeriod
+        }
     }
 
-    @objc static func end() {
-        guard count > 0 else { return }
-        count -= 1
-        if count == 0 {
-            NotificationCenter.default.post(name: didEndNotification, object: nil)
+    static func beginHold() -> UInt64 {
+        lock.withLock {
+            nextHoldToken += 1
+            holds.insert(nextHoldToken)
+            return nextHoldToken
         }
+    }
+
+    static func endHold(_ token: UInt64) {
+        lock.withLock {
+            guard holds.remove(token) != nil, holds.isEmpty else { return }
+            lastHoldEnded = Date()
+        }
+    }
+
+    /// The wallet or network the holds belong to is gone (wipe, network
+    /// switch): links must not be refused for its sends. The holds end here,
+    /// with no grace period; ending them again is a no-op.
+    @objc static func abandonHolds() {
+        lock.withLock {
+            holds.removeAll()
+            lastHoldEnded = nil
+        }
+    }
+
+    /// Shows the notice for a refused link (`LinkRefusedNotice`); tests
+    /// replace it.
+    @MainActor
+    static var showRefusalNotice: () -> Void = { LinkRefusedNotice.show() }
+
+    /// For a link whose routing would dismiss or replace what is on screen
+    /// (`MainTabbarController.performPay(to:)` and its siblings start with
+    /// `dismiss(animated: false)` on the main screen): such a link never
+    /// destroys what is shown. While a send is in progress or its result is
+    /// settling (`isActiveOrSettling`), or while anything is presented in the
+    /// chain that dismissal would tear down — a sheet, an alert, a send's
+    /// success screen — the link is refused and a short notice says so; it is
+    /// not kept for later.
+    ///
+    /// - Parameter root: the window's root, which contains the main screen.
+    /// - Returns: whether the link was refused.
+    @MainActor
+    @objc(refusesLinkOverRoot:)
+    static func refusesLink(over root: UIViewController) -> Bool {
+        guard isActiveOrSettling || isAnythingPresented(over: root) else { return false }
+        showRefusalNotice()
+        return true
+    }
+
+    /// Something is presented that the router's `dismiss(animated: false)`
+    /// would tear down: a presentation by `root` or by one of its direct
+    /// children (the main screen), which is where every presentation lands
+    /// that does not stay inside a screen's own presentation context.
+    /// Presentations kept inside a context (a search field's controller in a
+    /// tab, a screen that defines its own context) are not dismissed by the
+    /// router and do not count.
+    @MainActor
+    static func isAnythingPresented(over root: UIViewController) -> Bool {
+        root.presentedViewController != nil
+            || root.children.contains { $0.presentedViewController != nil }
+    }
+}
+
+/// The notice for a refused link (`PaymentInFlight.refusesLink(over:)`): the app's
+/// toast (`showToast`) in a window of its own above the app's, so it shows
+/// over an alert or a success screen — also one presented after it. The
+/// window is a strip just below the status bar, where an open keyboard does
+/// not hide it; it never becomes key and takes no touches, so it leaves the
+/// status bar, the key window and the screens under it alone.
+@MainActor
+private enum LinkRefusedNotice {
+    static let text = NSLocalizedString(
+        "Finish or close the current screen first, then open the link again.",
+        comment: "Notice: a link was opened while a send was in progress or another screen was open; the link was ignored")
+    private static let duration: TimeInterval = 3
+    private static var window: NoticeWindow?
+    private static var hideWork: DispatchWorkItem?
+
+    private final class NoticeWindow: UIWindow {
+        override var canBecomeKey: Bool { false }
+    }
+
+    static func show() {
+        // After the app has become active: VoiceOver drops an announcement
+        // made while the screen changes under it.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            UIAccessibility.post(notification: .announcement, argument: text)
+        }
+        let appWindow = PinPromptPresenter.appWindows().first
+        let screenBounds = appWindow?.bounds ?? UIScreen.main.bounds
+
+        // Reused while it is in the app window's scene; a reconnected scene
+        // gets a new one.
+        let window = Self.window.flatMap { $0.windowScene === appWindow?.windowScene ? $0 : nil }
+            ?? OverlayWindow.make(NoticeWindow.self)
+        window.isUserInteractionEnabled = false
+        let root = window.rootViewController ?? UIViewController()
+        root.view.backgroundColor = .clear
+        root.view.subviews.forEach { $0.removeFromSuperview() }
+        window.rootViewController = root
+        Self.window = window
+
+        // Starts below the status bar, so it has no say over it; the toast
+        // sits on the strip's bottom edge, and the strip is as tall as the
+        // toast is at the current text size.
+        let width = screenBounds.width
+        let top = appWindow?.safeAreaInsets.top ?? 0
+        window.frame = CGRect(x: 0, y: top, width: width, height: screenBounds.height - top)
+        window.isHidden = false
+        let toast = root.showToast(text: text, duration: duration)
+        root.view.layoutIfNeeded()
+        let inset = UIViewController.toastEdgeInset
+        window.frame = CGRect(x: 0, y: top, width: width, height: max(toast.bounds.height, 44) + 2 * inset)
+
+        // The toast's own fade-out ends a second after `duration`.
+        hideWork?.cancel()
+        let hide = DispatchWorkItem {
+            Self.window?.isHidden = true
+        }
+        hideWork = hide
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration + 1.5, execute: hide)
+    }
+}
+
+/// One owner's share of `PaymentInFlight`: a send waiting on the network. It ends
+/// exactly once — by `end()`, when a teardown abandons it
+/// (`PaymentInFlight.abandonHolds`), or when the hold itself is freed,
+/// so an owner that drops it cannot leave links refused for good. Thread-safe.
+@objc(DWPaymentInFlightHold)
+final class PaymentInFlightHold: NSObject {
+    private let token = PaymentInFlight.beginHold()
+
+    /// Idempotent.
+    @objc func end() {
+        PaymentInFlight.endHold(token)
+    }
+
+    deinit {
+        PaymentInFlight.endHold(token)
     }
 }
 
@@ -84,11 +236,8 @@ final class ExitHold {
 
     private weak var navigation: UINavigationController?
     private weak var presentedRoot: UIViewController?
-    /// Whether this hold still counts towards `PaymentInFlight`.
-    private var counted = true
 
     init(on controller: UIViewController) {
-        PaymentInFlight.begin()
         if let navigationController = controller.navigationController {
             let count = Self.count(for: navigationController, in: Self.navigationCounts)
             if count.holds == 0 {
@@ -130,10 +279,6 @@ final class ExitHold {
         }
         navigation = nil
         presentedRoot = nil
-        if counted {
-            counted = false
-            PaymentInFlight.end()
-        }
     }
 
     private static func count<Key: AnyObject>(for key: Key, in table: NSMapTable<Key, Count>) -> Count {

@@ -254,6 +254,37 @@ final class UnknownContactPaymentOutcomes {
 }
 #endif
 
+/// Single-flight admission for CoinJoin sweeps (`WalletSendService.sweepCoinJoin`),
+/// keyed by what a sweep is bound to — its wallet and network. A call for the
+/// key that is running joins that sweep and gets its result; a call for
+/// another key waits for it to end, whatever its outcome, then starts its own.
+/// The slot frees when the running sweep ends, failures included.
+final class CoinJoinSweepAdmission<Key: Equatable> {
+    private var running: (key: Key, task: Task<UInt64, Error>)?
+    private let lock = NSLock()
+
+    /// `sweep` runs only if this call starts the sweep for `key`.
+    func run(_ key: Key, sweep: @escaping () async throws -> UInt64) async throws -> UInt64 {
+        while true {
+            let next: (task: Task<UInt64, Error>, isThisKeys: Bool) = lock.withLock {
+                if let running {
+                    return (running.task, running.key == key)
+                }
+                let started = Task { [self] in
+                    defer { lock.withLock { running = nil } }
+                    return try await sweep()
+                }
+                running = (key, started)
+                return (started, true)
+            }
+            if next.isThisKeys {
+                return try await next.task.value
+            }
+            _ = try? await next.task.value
+        }
+    }
+}
+
 @objc(DWWalletSendService)
 final class WalletSendService: NSObject {
     @objc(sharedService) static let shared = WalletSendService()
@@ -279,8 +310,7 @@ final class WalletSendService: NSObject {
 
     private let sendAuthorizer = SendAuthorizer()
     /// The CoinJoin sweep in flight, if any — see `sweepCoinJoin()`.
-    private var sweepInFlight: (walletId: Data, network: Network, task: Task<UInt64, Error>)?
-    private let sweepInFlightLock = NSLock()
+    private let sweepAdmission = CoinJoinSweepAdmission<CoinJoinSweepKey>()
 
     private override init() {
         super.init()
@@ -338,12 +368,44 @@ final class WalletSendService: NSObject {
 
     /// - Returns: the wire-order txid of the broadcast transaction
     ///   (`Transaction.txHashData` convention).
+    ///
+    /// Holds routing for the network wait
+    /// (`SwiftDashSDKTransactionSender.waitingForNetwork`).
     func send(
         address: String,
         amount: UInt64,
         inputSelector: SingleInputAddressSelector? = nil,
         adjustAmountDownwards: Bool = false,
         sessionAuthSufficient: Bool = false
+    ) async throws -> Data {
+        try await performSend(
+            address: address, amount: amount, inputSelector: inputSelector,
+            adjustAmountDownwards: adjustAmountDownwards, sessionAuthSufficient: sessionAuthSufficient,
+            holdingRouting: true)
+    }
+
+    /// `send` without the routing hold. Used for CrowdNode's sends (hidden in
+    /// this release; see `SendCoinsService.sendCoinsWithoutRoutingHold`).
+    func sendWithoutRoutingHold(
+        address: String,
+        amount: UInt64,
+        inputSelector: SingleInputAddressSelector? = nil,
+        adjustAmountDownwards: Bool = false,
+        sessionAuthSufficient: Bool = false
+    ) async throws -> Data {
+        try await performSend(
+            address: address, amount: amount, inputSelector: inputSelector,
+            adjustAmountDownwards: adjustAmountDownwards, sessionAuthSufficient: sessionAuthSufficient,
+            holdingRouting: false)
+    }
+
+    private func performSend(
+        address: String,
+        amount: UInt64,
+        inputSelector: SingleInputAddressSelector?,
+        adjustAmountDownwards: Bool,
+        sessionAuthSufficient: Bool,
+        holdingRouting: Bool
     ) async throws -> Data {
         try Self.ensureInitialRestoreSyncCompleted()
         // Also covers the selected-input path below, whose `buildAndSignFromAddress`
@@ -387,12 +449,17 @@ final class WalletSendService: NSObject {
 
         let preparedSend = try await prepareStandardSendForConfirmation(
             address: address, amount: amount, sessionAuthSufficient: sessionAuthSufficient)
-        try await SwiftDashSDKTransactionSender.waitingForNetwork { try preparedSend.broadcast() }
+        try await SwiftDashSDKTransactionSender.waitingForNetwork(holdingRouting: holdingRouting) {
+            try preparedSend.broadcast()
+        }
         return preparedSend.txidWire
     }
 
     /// - Returns: the wire-order txid of the broadcast transaction
     ///   (`Transaction.txHashData` convention).
+    ///
+    /// Holds routing for the network wait
+    /// (`SwiftDashSDKTransactionSender.waitingForNetwork`).
     func sendSwapDeposit(vaultAddress: String, amount: UInt64, memo: String) async throws -> Data {
         try Self.ensureInitialRestoreSyncCompleted()
         try Self.ensureOnline()
@@ -404,7 +471,9 @@ final class WalletSendService: NSObject {
                 amount: amount,
                 memo: memo
             )
-            try await SwiftDashSDKTransactionSender.waitingForNetwork { try preparedSend.broadcast() }
+            try await SwiftDashSDKTransactionSender.waitingForNetwork(holdingRouting: true) {
+                try preparedSend.broadcast()
+            }
             return preparedSend.txidWire
         } catch SwiftDashSDKTransactionSender.SendError.invalidSwapMemo(let reason) {
             throw Self.makeError(code: .invalidSwapMemo, description: reason)
@@ -441,6 +510,9 @@ final class WalletSendService: NSObject {
     /// when it stops — for a surface with no progress state of its own. Only
     /// the call that starts the sweep gets it; a joining call shows nothing
     /// and gets the running sweep's result.
+    ///
+    /// Holds routing for the network wait
+    /// (`SwiftDashSDKTransactionSender.waitingForNetwork`).
     @discardableResult
     func sweepCoinJoin(onNetworkWait: (@MainActor (Bool) -> Void)? = nil) async throws -> UInt64 {
         // Read once, here: the destination, its wallet and its network are what
@@ -457,23 +529,14 @@ final class WalletSendService: NSObject {
                 description: "Could not resolve a destination address for the CoinJoin sweep"
             )
         }
-        while true {
-            let next: (task: Task<UInt64, Error>, isThisWallets: Bool) = sweepInFlightLock.withLock {
-                if let running = sweepInFlight {
-                    return (running.task, running.walletId == target.walletId && running.network == target.network)
-                }
-                let started = Task { [self] in
-                    defer { sweepInFlightLock.withLock { sweepInFlight = nil } }
-                    return try await performCoinJoinSweep(target, onNetworkWait: onNetworkWait)
-                }
-                sweepInFlight = (target.walletId, target.network, started)
-                return (started, true)
-            }
-            if next.isThisWallets {
-                return try await next.task.value
-            }
-            _ = try? await next.task.value
+        return try await sweepAdmission.run(CoinJoinSweepKey(walletId: target.walletId, network: target.network)) {
+            [self] in try await performCoinJoinSweep(target, onNetworkWait: onNetworkWait)
         }
+    }
+
+    private struct CoinJoinSweepKey: Equatable {
+        let walletId: Data
+        let network: Network
     }
 
     private struct CoinJoinSweepTarget {
@@ -499,6 +562,55 @@ final class WalletSendService: NSObject {
         makeError(
             code: .coinJoinSweepInterrupted,
             description: "CoinJoin sweep stopped: its wallet is no longer selected")
+    }
+
+    /// Records a finished sweep's accepted chunks under the wallet that ran
+    /// it, so the home screen groups them into the single "CoinJoin
+    /// Withdrawals" cell — the sender returns wire-order txids (matching
+    /// `PersistentTransaction.txid` / `Transaction.txHashData`) — and throws
+    /// for an outcome with nothing to show for it.
+    ///
+    /// If the user switched to another wallet or network while the sweep ran,
+    /// the chunks that went out stay with the wallet that left (unless it was
+    /// removed meanwhile) and it throws `coinJoinSweepInterrupted`: no alert,
+    /// the screen that started the sweep belongs to that wallet too.
+    ///
+    /// - Parameters:
+    ///   - record: `(txid, walletId)` into the withdrawal store.
+    static func recordCoinJoinSweepChunks(
+        _ outcome: SwiftDashSDKTransactionSender.CoinJoinSweepOutcome,
+        ofWallet walletId: Data,
+        amount: UInt64,
+        isWalletSelected: Bool,
+        isWalletStored: () -> Bool,
+        record: (_ txid: Data, _ walletId: Data) -> Void
+    ) throws {
+        let txids = outcome.txids
+        guard isWalletSelected else {
+            if isWalletStored() {
+                for txid in txids {
+                    record(txid, walletId)
+                }
+            }
+            logger.error("💸 TXSEND :: CoinJoin sweep outcome dropped: its wallet is no longer selected; \(txids.count, privacy: .public) chunk(s) went out")
+            throw coinJoinSweepInterruptedError()
+        }
+        guard !txids.isEmpty else {
+            if let failure = outcome.firstFailure {
+                throw failure
+            }
+            // A reported-success sweep that produced no transaction is treated
+            // as a failure, so the caller surfaces an error (the sweep alert)
+            // rather than silently "succeeding" with the balance unchanged.
+            logger.error("💸 TXSEND :: CoinJoin sweep returned no transactions for \(amount, privacy: .public) duffs — treating as failure")
+            throw makeError(
+                code: .coinJoinSweepUnavailable,
+                description: "CoinJoin sweep produced no transactions"
+            )
+        }
+        for txid in txids {
+            record(txid, walletId)
+        }
     }
 
     private func performCoinJoinSweep(
@@ -540,7 +652,7 @@ final class WalletSendService: NSObject {
         let outcome: SwiftDashSDKTransactionSender.CoinJoinSweepOutcome
         await MainActor.run { onNetworkWait?(true) }
         do {
-            outcome = try await SwiftDashSDKTransactionSender.waitingForNetwork {
+            outcome = try await SwiftDashSDKTransactionSender.waitingForNetwork(holdingRouting: true) {
                 try SwiftDashSDKTransactionSender.sweepCoinJoin(
                     to: target.address, ofWallet: target.walletId, on: target.network)
             }
@@ -551,37 +663,11 @@ final class WalletSendService: NSObject {
         }
         await MainActor.run { onNetworkWait?(false) }
         let txids = outcome.txids
-        guard target.isSelected else {
-            let walletStillStored = (try? SwiftDashSDKHost.persistedWalletIds())?.contains(target.walletId) == true
-            if walletStillStored {
-                for txid in txids {
-                    CoinJoinWithdrawalStore.shared.record(txid: txid, walletId: target.walletId)
-                }
-            }
-            Self.logger.error("💸 TXSEND :: CoinJoin sweep outcome dropped: its wallet is no longer selected; \(txids.count, privacy: .public) chunk(s) went out")
-            throw Self.coinJoinSweepInterruptedError()
-        }
-        guard !txids.isEmpty else {
-            if let failure = outcome.firstFailure {
-                throw failure
-            }
-            // A reported-success sweep that produced no transaction is treated
-            // as a failure, so the caller surfaces an error (the sweep alert)
-            // rather than silently "succeeding" with the balance unchanged.
-            Self.logger.error("💸 TXSEND :: CoinJoin sweep returned no transactions for \(amount, privacy: .public) duffs — treating as failure")
-            throw Self.makeError(
-                code: .coinJoinSweepUnavailable,
-                description: "CoinJoin sweep produced no transactions"
-            )
-        }
-        // Tag every sweep tx's txid so the home screen groups them into the
-        // single "CoinJoin Withdrawals" cell. A large UTXO set is swept across
-        // multiple transactions (chunks); the sender returns wire-order txids
-        // (matching PersistentTransaction.txid / Transaction.txHashData), so
-        // record each directly.
-        for txid in txids {
-            CoinJoinWithdrawalStore.shared.record(txid: txid, walletId: target.walletId)
-        }
+        try Self.recordCoinJoinSweepChunks(
+            outcome, ofWallet: target.walletId, amount: amount,
+            isWalletSelected: target.isSelected,
+            isWalletStored: { (try? SwiftDashSDKHost.persistedWalletIds())?.contains(target.walletId) == true },
+            record: { CoinJoinWithdrawalStore.shared.record(txid: $0, walletId: $1) })
         let recordedHexes: [String] = txids.map { (txid: Data) in
             txid.reversed().map { String(format: "%02x", $0) }.joined()
         }

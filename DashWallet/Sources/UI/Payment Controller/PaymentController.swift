@@ -58,7 +58,6 @@ enum WindowProgressHUD {
 
     static func show(_ message: String) {
         owners += 1
-        PaymentInFlight.begin()
         guard host == nil, let window = PinPromptPresenter.appWindows().first else { return }
         window.dw_showProgressHUD(withMessage: message)
         host = window
@@ -67,7 +66,6 @@ enum WindowProgressHUD {
     static func hide() {
         guard owners > 0 else { return }
         owners -= 1
-        PaymentInFlight.end()
         guard owners == 0 else { return }
         host?.dw_hideProgressHUD()
         host = nil

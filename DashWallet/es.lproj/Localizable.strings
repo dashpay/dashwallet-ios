@@ -6602,3 +6602,5 @@
 "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends." = "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends.";
 "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username." = "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username.";
 "Preparing logs…" = "Preparing logs…";
+/* Notice: a link was opened while a send was in progress or another screen was open; the link was ignored */
+"Finish or close the current screen first, then open the link again." = "Finish or close the current screen first, then open the link again.";

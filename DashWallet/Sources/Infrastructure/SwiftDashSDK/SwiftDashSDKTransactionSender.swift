@@ -280,32 +280,21 @@ final class SwiftDashSDKTransactionSender: NSObject {
         // `SelectionStrategy.all` makes core compute output = Σinputs − fee with
         // no change (the addOutput amount is ignored); `finalizeAtomic` resolves
         // dual-chain `/0/`+`/1/` signing.
-        // Partial-failure tolerant: keep the txs that broadcast, log the rest, and
-        // throw only if nothing broadcast at all (a re-run sweeps the remainder).
-        // A mixed outcome is reported through `CoinJoinSweepOutcome`, not swallowed.
-        var txids: [Data] = []
-        var failedChunkCount = 0
-        var firstError: Error?
-        var unattemptedChunkCount = 0
-        let chunks = Self.balancedChunks(utxos)
-        for (index, chunk) in chunks.enumerated() {
+        let outcome = try sweepChunks(
+            Self.balancedChunks(utxos),
             // Re-resolved per chunk: a restart of the same wallet publishes a new
             // handle, and the old one belongs to a stopped manager. The network
             // is checked with the id because the chunks' destination and
             // `network` were fixed when the sweep started.
-            let current = MainThread.sync { () -> ManagedPlatformWallet? in
-                let host = SwiftDashSDKHost.shared
-                guard host.runningNetwork == network, let wallet = host.wallet,
-                      wallet.walletId == walletId else { return nil }
-                return wallet
-            }
-            guard let wallet = current else {
-                unattemptedChunkCount = chunks.count - index
-                Self.logger.error(
-                    "💸 TXSEND :: coinjoin sweep stopped before chunk \(index + 1, privacy: .public) of \(chunks.count, privacy: .public): its wallet or network is no longer running")
-                break
-            }
-            do {
+            runningWallet: {
+                MainThread.sync { () -> ManagedPlatformWallet? in
+                    let host = SwiftDashSDKHost.shared
+                    guard host.runningNetwork == network, let wallet = host.wallet,
+                          wallet.walletId == walletId else { return nil }
+                    return wallet
+                }
+            },
+            broadcast: { chunk, wallet in
                 let builder = try CoreTransactionBuilder(network: network)
                 try builder.addInputs(
                     wallet: wallet, accountType: .coinJoin,
@@ -330,7 +319,47 @@ final class SwiftDashSDKTransactionSender: NSObject {
                 // Wire (internal) byte order to match `Transaction.txHashData` /
                 // `CoinJoinWithdrawalStore`: `computeTxHash` yields display order,
                 // so reverse it back to wire order.
-                txids.append(Data(Self.computeTxHash(from: txData).reversed()))
+                return Data(Self.computeTxHash(from: txData).reversed())
+            })
+
+        // Log display-order hex (byte-reversed wire order) to match explorers.
+        let hexes = outcome.txids.map { txid -> String in
+            Data(txid.reversed()).map { String(format: "%02x", $0) }.joined()
+        }
+        logger.info("💸 TXSEND :: coinjoin sweep broadcast — \(outcome.txids.count, privacy: .public) tx(s), \(outcome.failedChunkCount, privacy: .public) chunk(s) failed, \(outcome.unattemptedChunkCount, privacy: .public) not attempted: \(hexes.joined(separator: ","), privacy: .public)")
+        return outcome
+    }
+
+    /// The chunk loop of `sweepCoinJoin`: broadcast each chunk with the swept
+    /// wallet while it still runs, and stop at the first chunk it no longer
+    /// does — the remaining chunks count as unattempted, the accepted ones
+    /// keep their txids. Partial-failure tolerant: a chunk that fails is
+    /// counted and the loop goes on, and it throws only if nothing broadcast
+    /// and nothing was left unattempted (a re-run sweeps the remainder).
+    ///
+    /// - Parameters:
+    ///   - runningWallet: the swept wallet's current handle, or nil once it
+    ///     no longer runs on the swept network; asked before every chunk.
+    ///   - broadcast: builds, signs and broadcasts one chunk; returns its
+    ///     wire-order txid once the network accepted it.
+    static func sweepChunks<Chunk, Wallet>(
+        _ chunks: [Chunk],
+        runningWallet: () -> Wallet?,
+        broadcast: (Chunk, Wallet) throws -> Data
+    ) throws -> CoinJoinSweepOutcome {
+        var txids: [Data] = []
+        var failedChunkCount = 0
+        var firstError: Error?
+        var unattemptedChunkCount = 0
+        for (index, chunk) in chunks.enumerated() {
+            guard let wallet = runningWallet() else {
+                unattemptedChunkCount = chunks.count - index
+                Self.logger.error(
+                    "💸 TXSEND :: coinjoin sweep stopped before chunk \(index + 1, privacy: .public) of \(chunks.count, privacy: .public): its wallet or network is no longer running")
+                break
+            }
+            do {
+                txids.append(try broadcast(chunk, wallet))
             } catch {
                 failedChunkCount += 1
                 firstError = firstError ?? error
@@ -339,16 +368,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
             }
         }
         if txids.isEmpty, unattemptedChunkCount == 0, let error = firstError { throw error }
-        let outcome = CoinJoinSweepOutcome(
+        return CoinJoinSweepOutcome(
             txids: txids, failedChunkCount: failedChunkCount,
             firstFailure: firstError, unattemptedChunkCount: unattemptedChunkCount)
-
-        // Log display-order hex (byte-reversed wire order) to match explorers.
-        let hexes = outcome.txids.map { txid -> String in
-            Data(txid.reversed()).map { String(format: "%02x", $0) }.joined()
-        }
-        logger.info("💸 TXSEND :: coinjoin sweep broadcast — \(outcome.txids.count, privacy: .public) tx(s), \(outcome.failedChunkCount, privacy: .public) chunk(s) failed, \(outcome.unattemptedChunkCount, privacy: .public) not attempted: \(hexes.joined(separator: ","), privacy: .public)")
-        return outcome
     }
 
     // MARK: - Selected-input send (CrowdNode signal txs)
@@ -446,7 +468,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
         // Serialize BEFORE broadcast — broadcasting consumes the handle.
         let txData = try tx.serializedData()
         let exactFee = tx.fee
-        _ = try Self.requireAccepted(try await waitingForNetwork { try submit(tx, through: wallet) })
+        // Unheld: the selected-input send is CrowdNode's, whose sends run
+        // without the routing hold (`WalletSendService.sendWithoutRoutingHold`).
+        _ = try Self.requireAccepted(try await waitingForNetwork(holdingRouting: false) { try submit(tx, through: wallet) })
 
         let txHash = computeTxHash(from: txData)
         logger.info("💸 TXSEND :: selected-input send broadcast — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public) fee=\(exactFee, privacy: .public) adjusted=\(adjusted, privacy: .public) inputs=\(utxos.count, privacy: .public)")
@@ -605,20 +629,39 @@ final class SwiftDashSDKTransactionSender: NSObject {
     }
 
     /// `broadcast(_:)` on a background queue, for callers on the main actor or
-    /// in Swift concurrency.
+    /// in Swift concurrency. Holds routing for the network wait.
     @discardableResult
     static func broadcast(_ tx: FinalizedCoreTransaction) async throws -> CoreTransactionBroadcastOutcome {
-        try await waitingForNetwork { try broadcast(tx) }
+        try await waitingForNetwork(holdingRouting: true) { try broadcast(tx) }
+    }
+
+    /// The async `broadcast(_:)` without the routing hold, for a broadcast
+    /// whose payment already holds it or that runs with no payment on screen.
+    static func broadcastWithoutRoutingHold(
+        _ tx: FinalizedCoreTransaction
+    ) async throws -> CoreTransactionBroadcastOutcome {
+        try await waitingForNetwork(holdingRouting: false) { try broadcast(tx) }
     }
 
     /// Run blocking work that waits for the network (a broadcast, a sweep) on
     /// a background queue and await its result. On the main actor such a wait
     /// freezes the UI; inline in a Swift-concurrency task it holds one of the
     /// few cooperative threads for up to a minute.
-    static func waitingForNetwork<T>(_ work: @escaping () throws -> T) async throws -> T {
-        try await withCheckedThrowingContinuation { continuation in
+    ///
+    /// With `holdingRouting`, a `PaymentInFlightHold` covers the wait, so an
+    /// incoming link cannot replace the screen while the send waits; the
+    /// result's way back to the screen is covered by
+    /// `PaymentInFlight.resultGracePeriod`. Only the wait: a PIN prompt before
+    /// it holds nothing (when it shows, it is a presented screen).
+    static func waitingForNetwork<T>(
+        holdingRouting: Bool, _ work: @escaping () throws -> T
+    ) async throws -> T {
+        let hold = holdingRouting ? PaymentInFlightHold() : nil
+        return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
-                continuation.resume(with: Result { try work() })
+                let result = Result { try work() }
+                hold?.end()
+                continuation.resume(with: result)
             }
         }
     }

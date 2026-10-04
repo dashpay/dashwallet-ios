@@ -134,18 +134,28 @@ final class WalletLifecycleOverlayPresenter {
         // Re-evaluate even when reusing a hidden failure window for a wipe.
         defer { updateVisibility() }
         guard overlayWindow == nil else { return }
-        let scene = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first { $0.activationState == .foregroundActive }
-            ?? UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first
-
-        let window = scene.map { UIWindow(windowScene: $0) } ?? UIWindow(frame: UIScreen.main.bounds)
-        window.windowLevel = .alert + 1
+        let window = OverlayWindow.make(UIWindow.self)
         window.rootViewController = UIHostingController(rootView: WalletLifecycleOverlayView())
         window.rootViewController?.view.backgroundColor = .clear
         window.rootViewController?.view.accessibilityViewIsModal = true
         window.backgroundColor = .clear
         overlayWindow = window
+    }
+}
+
+/// A window above the app's, for an overlay: in the foreground scene (or the
+/// first connected one), or — on a launch with no connected scene — over the
+/// whole screen. Shared by the lifecycle overlay and the refused-link notice.
+@MainActor
+enum OverlayWindow {
+    static func make<Window: UIWindow>(_ type: Window.Type) -> Window {
+        let scene = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }
+            ?? UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first
+        let window = scene.map { Window(windowScene: $0) } ?? Window(frame: UIScreen.main.bounds)
+        window.windowLevel = .alert + 1
+        return window
     }
 }
 

@@ -6357,3 +6357,5 @@
 
 /* Log export progress */
 "Preparing logs…" = "Preparing logs…";
+/* Notice: a link was opened while a send was in progress or another screen was open; the link was ignored */
+"Finish or close the current screen first, then open the link again." = "Finish or close the current screen first, then open the link again.";
