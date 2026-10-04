@@ -37,7 +37,8 @@ final class WalletLifecycleOverlayPresenter {
     private let state = WalletLifecycleTransitionState.shared
     private var cancellables = Set<AnyCancellable>()
     private var openingDelay: Task<Void, Never>?
-    private var lockScreenVisible = false
+    /// The lock screen is up (`DWWalletLifecycleOverlayBridge.setLockScreenVisible`).
+    private(set) var lockScreenVisible = false
     private var applicationActive = false
     /// The migration card's Export Logs authenticates first. The PIN prompt
     /// presents from a `.normal`-level window, below this overlay's

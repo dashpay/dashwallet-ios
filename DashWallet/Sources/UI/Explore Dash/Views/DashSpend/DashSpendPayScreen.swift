@@ -29,12 +29,26 @@ struct DashSpendPayScreen: View {
     @State private var showConfirmationDialog = false
     @State private var showErrorDialog = false
     @State private var showCustomErrorDialog = false
+    /// "Sign in required": shown like the error dialog, but not a purchase's
+    /// result, so it holds nothing.
+    @State private var showSignInDialog = false
     @State private var errorMessage = ""
     @State private var errorTitle = ""
     @State private var quantities: [Decimal: Int] = [:]
     @State private var confirmationQuantities: [Decimal: Int] = [:]
     @State private var confirmationOriginalPrice: Decimal = 0
     let onPurchaseSuccess: ((Data) -> Void)?
+
+    /// A purchase's result is up as an inline dialog the user has not
+    /// dismissed yet.
+    private var isPurchaseResultUp: Bool {
+        showErrorDialog || showCustomErrorDialog
+    }
+
+    /// A purchase waits for the network, or its result is up.
+    private var isPurchaseOnScreen: Bool {
+        viewModel.isProcessingPayment || isPurchaseResultUp
+    }
 
     init(
         merchant: ExplorePointOfUse,
@@ -83,9 +97,9 @@ struct DashSpendPayScreen: View {
                 NavBarBack {
                     presentationMode.wrappedValue.dismiss()
                 }
-                // The payment waits for the network with the UI live;
-                // leaving would drop its outcome.
-                .disabled(viewModel.isProcessingPayment)
+                // The payment waits for the network with the UI live, or its
+                // result is up; leaving would drop the outcome.
+                .disabled(isPurchaseOnScreen)
 
                 if viewModel.isFixedDenomination {
                     DashSpendFixedContent(
@@ -104,7 +118,10 @@ struct DashSpendPayScreen: View {
             overlays
         }
         .background(Color.dash.primaryBackground)
-        .lockingExit(viewModel.isProcessingPayment)
+        // Also while a purchase's result is up as an inline dialog: it is not a
+        // presentation, so the screen holds its exits — and with them the
+        // app's routing and tab bar (`ExitHold`) — until it is acknowledged.
+        .lockingExit(isPurchaseOnScreen)
         .onAppear {
             viewModel.subscribeToUpdates()
 
@@ -118,10 +135,19 @@ struct DashSpendPayScreen: View {
             viewModel.unsubscribeFromAll()
         }
         .onChange(of: viewModel.isUserSignedIn) { isSignedIn in
-            // Not while a payment waits for the network: leaving would drop
-            // its outcome, which this screen shows. The user leaves by Back
-            // once it is shown.
-            if !isSignedIn && !viewModel.isProcessingPayment {
+            // Not while a payment waits for the network or its result is up:
+            // leaving would drop the outcome this screen shows. The user
+            // leaves by Back once it is acknowledged.
+            if !isSignedIn && !isPurchaseOnScreen {
+                presentationMode.wrappedValue.dismiss()
+            }
+        }
+        .onChange(of: isPurchaseResultUp) { resultUp in
+            // A sign-out held back while the purchase's result was up applies
+            // once that result is acknowledged. Keyed on the result dialog, not
+            // on the purchase: a successful purchase shows no dialog and has
+            // already left this screen.
+            if !resultUp && !viewModel.isProcessingPayment && !viewModel.isUserSignedIn {
                 presentationMode.wrappedValue.dismiss()
             }
         }
@@ -160,14 +186,17 @@ struct DashSpendPayScreen: View {
                 .padding(.bottom, 30)
         }
 
-        if showErrorDialog {
+        if showErrorDialog || showSignInDialog {
             ModalDialog(
                 style: .error,
                 icon: .system("exclamationmark.triangle.fill"),
                 heading: errorTitle,
                 textBlock1: errorMessage,
                 positiveButtonText: NSLocalizedString("OK", comment: ""),
-                positiveButtonAction: { showErrorDialog = false }
+                positiveButtonAction: {
+                    showErrorDialog = false
+                    showSignInDialog = false
+                }
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.dash.backgroundOverlay)
@@ -260,7 +289,7 @@ struct DashSpendPayScreen: View {
     private func showSignInError() {
         errorTitle = NSLocalizedString("Sign in required", comment: "Alert title")
         errorMessage = NSLocalizedString("You need to sign in to DashSpend to purchase gift cards.", comment: "DashSpend")
-        showErrorDialog = true
+        showSignInDialog = true
     }
 }
 

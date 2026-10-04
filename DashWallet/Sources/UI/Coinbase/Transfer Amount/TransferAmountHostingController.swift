@@ -152,7 +152,7 @@ extension TransferAmountHostingController: PaymentControllerDelegate {
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, txidWire: Data) {
         // Tags the tx so its home-screen row resolves the Coinbase title and icon.
         CoinbaseTransactionMetadataTagger.shared.track(sentTransactionTxidWire: txidWire)
-        showSuccessTransactionStatus(text: Self.transferSuccessText)
+        showSuccessTransactionStatus(text: Self.transferSuccessText, holdsExitsWhileShown: true)
     }
 
     func paymentControllerDidCancelTransaction(_ controller: PaymentController) {}

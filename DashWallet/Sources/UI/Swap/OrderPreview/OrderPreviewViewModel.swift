@@ -280,7 +280,9 @@ final class OrderPreviewViewModel: ObservableObject {
     }
 
     func handlePrimaryAction() async {
-        guard isOnline else { return }
+        // The button shows progress during a submission but stays tappable;
+        // a refresh then would replace the quote under the pending deposit.
+        guard isOnline, !isSubmitting else { return }
         if remainingSubmitSeconds > 0 {
             await submitSwap()
         } else {

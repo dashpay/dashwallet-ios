@@ -142,6 +142,7 @@ class MainTabbarController: UITabBarController {
     #if DASHPAY
     weak var exploreNavigationController: ExploreViewController?
     private var pendingDashPayTabReconfiguration = false
+    private var deferredDashPayTabReconfigurationScheduled = false
     #endif
 
     // TODO: Refactor this and send notification about wiped wallet instead of chaining the delegate
@@ -349,6 +350,15 @@ extension MainTabbarController {
             pendingDashPayTabReconfiguration = true
             return
         }
+        // Rebuilding the tabs deallocates their stacks: not under a payment —
+        // its send, its unacknowledged result, or a result still on its way
+        // to the screen (`isActiveOrSettling`) — nor under anything presented,
+        // which may be a result too. Retried once that has settled.
+        if PaymentInFlight.isActiveOrSettling || isAnythingPresentedOverRoot {
+            pendingDashPayTabReconfiguration = true
+            scheduleDeferredDashPayTabReconfiguration()
+            return
+        }
 
         reconfigureDashPayTabsPreservingSelection()
     }
@@ -381,6 +391,25 @@ extension MainTabbarController {
         selectedIndex = 0
         view.setNeedsLayout()
         view.layoutIfNeeded()
+    }
+
+    private var isAnythingPresentedOverRoot: Bool {
+        guard let root = view.window?.rootViewController else { return presentedViewController != nil }
+        return PaymentInFlight.isAnythingPresented(over: root)
+    }
+
+    /// A rebuild deferred while a payment owned the screen or something was
+    /// presented: retried after the result grace, and again while it stays
+    /// blocked — neither a hold's end nor a dismissed sheet posts anything.
+    private func scheduleDeferredDashPayTabReconfiguration() {
+        guard pendingDashPayTabReconfiguration, !deferredDashPayTabReconfigurationScheduled else { return }
+        deferredDashPayTabReconfigurationScheduled = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + PaymentInFlight.resultGracePeriod) { [weak self] in
+            guard let self else { return }
+            self.deferredDashPayTabReconfigurationScheduled = false
+            guard self.pendingDashPayTabReconfiguration else { return }
+            self.reconfigureDashPayTabsIfNeeded()
+        }
     }
 
     private func reconfigureDashPayTabsPreservingSelection() {
@@ -721,6 +750,12 @@ extension MainTabbarController: HomeViewControllerDelegate {
 
 extension MainTabbarController: UITabBarControllerDelegate {
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
+        // A payment owns the screen — its send, or its result shown inline:
+        // another tab or the payments sheet would hide it, and tapping the
+        // selected tab again would pop it.
+        if PaymentInFlight.refusesTabChange() {
+            return false
+        }
         // Payments is a sheet, not a destination. Its tab item is kept because
         // it is the button everyone reaches for, but selecting the index would
         // put the landing full screen — the presentation it was moved off.

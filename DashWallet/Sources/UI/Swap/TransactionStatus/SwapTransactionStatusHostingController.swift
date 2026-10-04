@@ -105,8 +105,11 @@ final class SwapTransactionStatusHostingController: UIViewController, Navigation
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        // No swipe-back while the status screen is active.
-        navigationController?.interactivePopGestureRecognizer?.isEnabled = false
+        // No swipe-back while the status screen is active. Through a counted
+        // exit hold, which the content's own (`lockingExit`) can overlap.
+        if swipeBackHold == nil {
+            swipeBackHold = ExitHold(on: self, ownsRouting: false)
+        }
         // The user is now watching THIS swap's live progress, so
         // `SwapNotificationProducer` consumes its terminal transition
         // instead of showing a banner over it. Every other order still
@@ -116,12 +119,16 @@ final class SwapTransactionStatusHostingController: UIViewController, Navigation
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        // Restore normal swipe-back for whatever screen comes next (Home / Portal / Order Preview).
-        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+        // Restore normal swipe-back for whatever screen comes next (Home /
+        // Portal / Order Preview).
+        swipeBackHold?.release()
+        swipeBackHold = nil
         // The id registered on appear, not a re-read of `submittedTxId`,
         // which can have changed since.
         visibilityClaim.end()
     }
+
+    private var swipeBackHold: ExitHold?
 
     // MARK: - Retry
 
@@ -169,6 +176,18 @@ private struct SwapTransactionStatusView: View {
             Color.dash.primaryBackground.ignoresSafeArea()
             content
         }
+        // A failed swap deposit's reason and retry are a result to
+        // acknowledge: this screen is pushed, not presented, so while it shows
+        // that failure it holds its exits — and with them the app's routing
+        // and tab bar.
+        .lockingExit(isFailed)
+    }
+
+    /// A failure after the deposit was sent: a quote or setup failure before
+    /// it moved nothing and holds nothing.
+    private var isFailed: Bool {
+        if case .failed = viewModel.swapStatus { return viewModel.submittedTxId != nil }
+        return false
     }
 
     @ViewBuilder

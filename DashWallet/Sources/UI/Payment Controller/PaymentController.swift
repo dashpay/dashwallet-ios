@@ -287,7 +287,9 @@ extension PaymentController: DWPaymentProcessorDelegate {
         // held modal and the one carrying the HUD.
         let stack = anchor.navigationController ?? anchor
         let screen = (stack as? UINavigationController)?.topViewController ?? stack
-        sendInProgressExitHold = MainActor.assumeIsolated { ExitHold(on: screen) }
+        // Routing is held by the payment processor for the wait; this hold is
+        // for the exits only.
+        sendInProgressExitHold = MainActor.assumeIsolated { ExitHold(on: screen, ownsRouting: false) }
         if !shownByScreen {
             // On the window, not the screen: a screen inside a tab leaves the
             // tab bar — and its Send button — live around a screen-sized HUD.
