@@ -29,8 +29,22 @@ final class TransferAmountHostingController: BaseViewController, NavigationBarDi
         comment: "Coinbase"
     )
 
-    private let viewModel = TransferAmountViewModel()
-    private var paymentController: PaymentController!
+    private let viewModel: TransferAmountViewModel
+    /// The latest wallet send's controller, fresh for each send and kept after
+    /// its outcome until the next one replaces it.
+    private(set) var paymentController: PaymentController?
+    /// A wallet send started here has not reported its outcome yet.
+    private(set) var isWalletPaymentInFlight = false
+
+    init(viewModel: TransferAmountViewModel? = nil) {
+        self.viewModel = viewModel ?? TransferAmountViewModel()
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     weak var codeConfirmationController: TwoFactorAuthViewController?
 
     override func viewDidLoad() {
@@ -66,13 +80,44 @@ final class TransferAmountHostingController: BaseViewController, NavigationBarDi
         ])
     }
 
+    /// One wallet send at a time. Replacing the controller mid-send would drop
+    /// the first send's outcome: its processor's delegate is weak, so the old
+    /// controller would deallocate without showing it.
+    private func startWalletPayment(with input: DWPaymentInput) {
+        guard !isWalletPaymentInFlight else {
+            DWLogger.log("Coinbase: transfer from the wallet ignored — another one has not finished")
+            return
+        }
+        let controller = PaymentController()
+        controller.delegate = self
+        controller.presentationContextProvider = self
+        // A confirm sheet whose swipe-down was reported as a cancel and then
+        // abandoned stays up and can still confirm: its broadcast takes the
+        // screen back.
+        controller.sendInProgressHandler = { [weak self, weak controller] inProgress in
+            guard inProgress, let self, let controller, controller === self.paymentController else { return false }
+            self.isWalletPaymentInFlight = true
+            self.viewModel.walletPaymentDidStart()
+            return false
+        }
+        paymentController = controller
+        isWalletPaymentInFlight = true
+        controller.performPayment(with: input)
+    }
+
+    /// Only the current send's outcome counts; an earlier controller's late
+    /// callback changes nothing.
+    private func walletPaymentDidEnd(_ controller: PaymentController, keypadBack: Bool = true) {
+        guard controller === paymentController else { return }
+        isWalletPaymentInFlight = false
+        if keypadBack {
+            viewModel.walletPaymentDidEnd()
+        }
+    }
+
     private func wireCallbacks() {
         viewModel.onInitiatePayment = { [weak self] input in
-            guard let self else { return }
-            self.paymentController = PaymentController()
-            self.paymentController.delegate = self
-            self.paymentController.presentationContextProvider = self
-            self.paymentController.performPayment(with: input)
+            self?.startWalletPayment(with: input)
         }
 
         viewModel.onRequire2FA = { [weak self] idem in
@@ -152,12 +197,21 @@ extension TransferAmountHostingController: PaymentControllerDelegate {
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, txidWire: Data) {
         // Tags the tx so its home-screen row resolves the Coinbase title and icon.
         CoinbaseTransactionMetadataTagger.shared.track(sentTransactionTxidWire: txidWire)
+        // The success screen replaces this one: the keypad stays off, or a
+        // hardware Return during the push would start another transfer.
+        walletPaymentDidEnd(controller, keypadBack: false)
         showSuccessTransactionStatus(text: Self.transferSuccessText, holdsExitsWhileShown: true)
     }
 
-    func paymentControllerDidCancelTransaction(_ controller: PaymentController) {}
+    func paymentControllerDidCancelTransaction(_ controller: PaymentController) {
+        walletPaymentDidEnd(controller)
+    }
 
-    func paymentControllerDidFailTransaction(_ controller: PaymentController) {}
+    /// Arrives after the failure's alert is up, or with nothing shown for a
+    /// failure that carries no error.
+    func paymentControllerDidFailTransaction(_ controller: PaymentController) {
+        walletPaymentDidEnd(controller)
+    }
 }
 
 // MARK: - PaymentControllerPresentationContextProviding

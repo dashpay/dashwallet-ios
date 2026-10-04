@@ -128,6 +128,10 @@ final class OrderPreviewViewModel: ObservableObject {
     // Records that the Dash transaction was submitted to the blockchain network.
     // This does NOT confirm Maya swap completion — that requires separate on-chain confirmation.
     @Published var submittedTxId: String?
+    /// The current failure came from the deposit send itself
+    /// (`submitDashTransaction` was called), whether or not a txid came back:
+    /// such a failure may still have moved funds. False for every other state.
+    @Published private(set) var failedAfterDepositAttempt = false
     @Published var swapStatus: SwapStatus = .idle
     @Published var pendingSwapAlertMessage: String?
     /// The true backend outcome from Maya's API, tracked independently of `swapStatus`.
@@ -231,7 +235,7 @@ final class OrderPreviewViewModel: ObservableObject {
     private let targetReceiveAmount: Decimal?
     private var quote: SwapQuoteResult
     private var countdownCancellable: AnyCancellable?
-    private let sendCoinsService = SendCoinsService()
+    private let depositSender: SwapDepositSending
     private let swapProvider: SwapProvider
     private var daoCancellable: AnyCancellable?
     private var isLockCancellable: AnyCancellable?
@@ -254,8 +258,10 @@ final class OrderPreviewViewModel: ObservableObject {
         targetReceiveAmount: Decimal? = nil,
         initialQuote: SwapQuoteResult,
         swapProvider: SwapProvider = MayaSwapProvider(),
-        networkStatus: NetworkStatusProviding = NetworkStatusService.shared
+        networkStatus: NetworkStatusProviding = NetworkStatusService.shared,
+        depositSender: SwapDepositSending = SendCoinsService()
     ) {
+        self.depositSender = depositSender
         self.coin = coin
         self.address = address
         self.dashSatoshis = dashSatoshis
@@ -304,6 +310,7 @@ final class OrderPreviewViewModel: ObservableObject {
         submittedTxidWire = nil
         swapStatus = .idle
         submittedTxId = nil
+        failedAfterDepositAttempt = false
         lastDepositAddress = nil
         pendingSwapAlertMessage = nil
         backendOutcome = .pending
@@ -335,7 +342,9 @@ final class OrderPreviewViewModel: ObservableObject {
                 fiatCurrencyCode: fiatCurrencyCode,
                 targetReceiveAmount: targetReceiveAmount,
                 initialQuote: freshQuote,
-                swapProvider: swapProvider
+                swapProvider: swapProvider,
+                networkStatus: networkStatus,
+                depositSender: depositSender
             )
         } catch {
             setFailure(error.localizedDescription)
@@ -421,6 +430,7 @@ final class OrderPreviewViewModel: ObservableObject {
     private func submitSwap() async {
         guard !isSubmitting else { return }
         submittedTxId = nil
+        var depositAttempted = false
         lastDepositAddress = nil
         pendingSwapAlertMessage = nil
         isSubmitting = true
@@ -443,6 +453,7 @@ final class OrderPreviewViewModel: ObservableObject {
             applyQuote(freshQuote)
 
             let execution = try resolveExecutionData(from: freshQuote)
+            depositAttempted = true
             let txidWire = try await submitDashTransaction(using: execution)
             setSubmittedSwap(txidWire: txidWire, depositAddress: execution.vaultAddress)
         } catch {
@@ -459,7 +470,7 @@ final class OrderPreviewViewModel: ObservableObject {
                 swapStatus = .idle
                 return
             }
-            setFailure(error.localizedDescription)
+            setFailure(error.localizedDescription, afterDepositAttempt: depositAttempted)
         }
     }
 
@@ -513,7 +524,7 @@ final class OrderPreviewViewModel: ObservableObject {
     /// direct-Maya path adds the outbound fee to the vault output because MayaNode's
     /// `/quote/swap?amount=` means the swap amount, not the deposit — a different contract.)
     private func submitDashTransaction(using execution: SwapExecutionData) async throws -> Data {
-        try await sendCoinsService.sendSwapKitSwap(
+        try await depositSender.sendSwapKitSwap(
             depositAddress: execution.vaultAddress,
             dashAmount: UInt64(dashSatoshis),
             memo: execution.memo
@@ -522,7 +533,8 @@ final class OrderPreviewViewModel: ObservableObject {
 
     // MARK: - Private: State Mutation
 
-    private func setFailure(_ message: String) {
+    private func setFailure(_ message: String, afterDepositAttempt: Bool = false) {
+        failedAfterDepositAttempt = afterDepositAttempt
         // Log before mapping: `userFacingErrorMessage` collapses anything unrecognised into a
         // generic "something went wrong", so this is the last point at which the real reason
         // still exists. Without it a "Conversion failed" screenshot has no counterpart in the

@@ -134,3 +134,12 @@ public final class SendCoinsService: NSObject {
         return txidWire
     }
 }
+
+// MARK: - SwapDepositSending
+
+/// Broadcasts a swap's DASH deposit and returns its wire-order txid.
+protocol SwapDepositSending {
+    func sendSwapKitSwap(depositAddress: String, dashAmount: UInt64, memo: String?) async throws -> Data
+}
+
+extension SendCoinsService: SwapDepositSending {}

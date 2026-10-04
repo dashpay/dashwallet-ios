@@ -147,6 +147,17 @@ extension PaymentController {
         show(modalController: alert)
     }
 
+    /// Ends a payment that will not be sent and says so: the user may have
+    /// confirmed it already.
+    private func endWithoutSending(reason: String) {
+        DWLogger.log("PaymentController: \(reason)")
+        provideAmountViewController?.hideActivityIndicator()
+        if presentationAnchor != nil {
+            showAlert(with: NSLocalizedString("Couldn't make payment", comment: ""), message: nil)
+        }
+        delegate?.paymentControllerDidFailTransaction(self)
+    }
+
     private func show(modalController: UIViewController) {
         precondition(presentationAnchor != nil)
         presentationAnchor!.topController().present(modalController, animated: true)
@@ -158,9 +169,12 @@ extension PaymentController {
 extension PaymentController: ConfirmPaymentViewControllerDelegate {
     func confirmPaymentViewControllerDidConfirm(_ controller: ConfirmPaymentViewController) {
         controller.dismiss(animated: true) { [weak self] in
-            if let output = self?.paymentOutput {
-                self?.paymentProcessor.confirmPaymentOutput(output)
+            guard let self else { return }
+            guard let output = self.paymentOutput else {
+                self.endWithoutSending(reason: "the confirmed payment had no output left to send")
+                return
             }
+            self.paymentProcessor.confirmPaymentOutput(output)
         }
     }
 
@@ -214,6 +228,9 @@ extension PaymentController: DWPaymentProcessorDelegate {
         // The amount screen's submission ends either way, or a silent failure
         // would leave it locked.
         provideAmountViewController?.hideActivityIndicator()
+        // Told after the alert is up, silent failures included: a screen that
+        // keeps its input off until its payment ends would otherwise stay off.
+        defer { delegate?.paymentControllerDidFailTransaction(self) }
         guard let error else {
             return
         }

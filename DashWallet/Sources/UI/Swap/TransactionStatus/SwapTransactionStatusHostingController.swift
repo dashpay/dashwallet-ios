@@ -183,11 +183,15 @@ private struct SwapTransactionStatusView: View {
         .lockingExit(isFailed)
     }
 
-    /// A failure after the deposit was sent: a quote or setup failure before
-    /// it moved nothing and holds nothing.
+    /// A failure from the deposit send itself (`submitDashTransaction` was
+    /// called) or after it was accepted holds until Close, or a Retry that
+    /// gets a fresh quote and replaces this screen; a Retry that fails keeps
+    /// it. An unknown broadcast fails with no accepted txid and may still
+    /// settle, so the attempt counts, not the txid. A quote or setup failure
+    /// before the send moved nothing and holds nothing.
     private var isFailed: Bool {
-        if case .failed = viewModel.swapStatus { return viewModel.submittedTxId != nil }
-        return false
+        guard case .failed = viewModel.swapStatus else { return false }
+        return viewModel.failedAfterDepositAttempt || viewModel.submittedTxId != nil
     }
 
     @ViewBuilder

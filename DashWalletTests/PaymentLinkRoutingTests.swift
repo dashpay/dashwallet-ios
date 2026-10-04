@@ -10,6 +10,7 @@
 //  the screen is refused with a notice and not kept.
 //
 
+import Combine
 import SwiftUI
 import UIKit
 import XCTest
@@ -298,6 +299,94 @@ final class PaymentLinkRoutingTests: XCTestCase {
         XCTAssertFalse(PaymentInFlight.isActive)
     }
 
+    /// An unknown broadcast outcome fails the swap with no accepted txid, and
+    /// the deposit may still settle: its pushed failure (More-menu entry, so
+    /// nothing is presented) holds routing and the tab bar until it is left.
+    func testASwapFailedByAnUnknownBroadcastOwnsRoutingUntilClosed() async throws {
+        let unknownOutcome = NSError(
+            domain: "org.dashfoundation.dash.wallet-send-service",
+            code: 10,
+            userInfo: [NSLocalizedDescriptionKey: "Transaction status unknown"])
+        XCTAssertTrue(WalletSendService.isBroadcastUnknownError(unknownOutcome))
+        let deposit = FailingDeposit(error: unknownOutcome)
+        let viewModel = makeSwapViewModel(providerQuote: Self.swapQuote, deposit: deposit)
+
+        await viewModel.handlePrimaryAction()
+        guard case .failed = viewModel.swapStatus else {
+            return XCTFail("the unknown outcome is shown as a failure, got \(viewModel.swapStatus)")
+        }
+        XCTAssertEqual(deposit.attempts, 1, "the failure is the deposit's, not an earlier step's")
+        XCTAssertNil(viewModel.submittedTxId, "an unknown broadcast leaves no accepted txid")
+        XCTAssertFalse(PaymentInFlight.isActive, "the submission's own hold has ended")
+
+        let (root, navigation, _) = try pushSwapStatus(for: viewModel)
+        spin(until: { PaymentInFlight.isActive })
+        XCTAssertTrue(PaymentInFlight.isActive, "the failure holds routing")
+        XCTAssertTrue(PaymentInFlight.refusesTabChange())
+        XCTAssertTrue(PaymentInFlight.refusesLink(over: root))
+
+        // Close pops the screen (its `onClose`); popping it directly stands in.
+        navigation.popViewController(animated: false)
+        spin(until: { !PaymentInFlight.isActive })
+        XCTAssertFalse(PaymentInFlight.isActive, "leaving the screen releases it")
+    }
+
+    /// A quote failure before the deposit moved nothing: its pushed result
+    /// holds nothing.
+    func testASwapFailedBeforeItsDepositHoldsNothing() async throws {
+        let failedQuote = SwapQuoteResult(
+            error: "noRoutesFound", expectedAmountOut: nil, fees: nil,
+            inboundAddress: nil, memo: nil, executionNetwork: nil)
+        let deposit = FailingDeposit(error: NSError(domain: "test", code: 1))
+        let viewModel = makeSwapViewModel(providerQuote: failedQuote, deposit: deposit)
+
+        await viewModel.handlePrimaryAction()
+        guard case .failed = viewModel.swapStatus else {
+            return XCTFail("the quote error is shown as a failure, got \(viewModel.swapStatus)")
+        }
+        XCTAssertEqual(deposit.attempts, 0, "nothing was sent")
+
+        let (root, _, status) = try pushSwapStatus(for: viewModel)
+        spin(until: { status.view.window != nil })
+        spin(until: { PaymentInFlight.isActive }, timeout: 0.3)
+        XCTAssertFalse(PaymentInFlight.isActive, "the failure holds nothing")
+        // Only the submission's own grace is left, and it runs out.
+        spin(until: { !PaymentInFlight.isActiveOrSettling })
+        XCTAssertFalse(PaymentInFlight.refusesTabChange())
+        XCTAssertFalse(PaymentInFlight.refusesLink(over: root))
+    }
+
+    private static let swapQuote = SwapQuoteResult(
+        error: nil, expectedAmountOut: "100000", fees: nil,
+        inboundAddress: "XvaultAddress", memo: nil, executionNetwork: "Test")
+
+    private func makeSwapViewModel(providerQuote: SwapQuoteResult, deposit: SwapDepositSending) -> OrderPreviewViewModel {
+        OrderPreviewViewModel(
+            coin: SwapCryptoCurrency(id: "btc", code: "BTC", name: "Bitcoin", swapAsset: "BTC.BTC", chain: "BTC"),
+            address: "bc1qdestination",
+            dashSatoshis: 10_000_000,
+            fromDashAmount: "0.1",
+            fromFiatAmount: "",
+            cryptoFiatRate: 0,
+            fiatCurrencyCode: "USD",
+            initialQuote: Self.swapQuote,
+            swapProvider: QuoteOnlySwapProvider(quote: providerQuote),
+            networkStatus: AlwaysOnline(),
+            depositSender: deposit)
+    }
+
+    /// The swap status screen pushed inside a tab, as from the More menu.
+    private func pushSwapStatus(
+        for viewModel: OrderPreviewViewModel
+    ) throws -> (root: UIViewController, navigation: UINavigationController, status: UIViewController) {
+        let (root, _) = showMainScreen()
+        let tabs = try XCTUnwrap(root.children.first as? UITabBarController)
+        let navigation = try XCTUnwrap(tabs.viewControllers?.first as? UINavigationController)
+        let status = SwapTransactionStatusHostingController(viewModel: viewModel)
+        navigation.pushViewController(status, animated: false)
+        return (root, navigation, status)
+    }
+
     func testOnlyLinksThatReplaceTheScreenAreSubjectToTheRule() throws {
         func replacesScreen(_ className: String) throws -> Bool {
             let type = try XCTUnwrap(NSClassFromString(className) as? NSObject.Type, className)
@@ -326,5 +415,40 @@ private struct InlineResultScreen: View {
             }
         }
         .lockingExit(state.resultShown)
+    }
+}
+
+private final class AlwaysOnline: NetworkStatusProviding {
+    var currentStatus: NetworkStatus { .online }
+    var isOnline: Bool { true }
+    var statusPublisher: AnyPublisher<NetworkStatus, Never> { Just(.online).eraseToAnyPublisher() }
+}
+
+/// Answers every quote with `quote`; nothing else is used by a swap submission.
+private final class QuoteOnlySwapProvider: SwapProvider {
+    let quote: SwapQuoteResult
+    var displayName: String { "Test" }
+    var onBuyRoutabilityChanged: (() -> Void)?
+
+    init(quote: SwapQuoteResult) { self.quote = quote }
+
+    func fetchPools() async throws -> [SwapPool] { [] }
+    func fetchInboundAddresses() async throws -> [SwapInboundAddress] { [] }
+    func validateAddress(destination: String, toAsset: String) async -> String? { nil }
+    func fetchQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult { quote }
+    func fetchSwapStatus(txid: String, depositAddress: String?) async throws -> SwapStatusResult {
+        SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil)
+    }
+}
+
+private final class FailingDeposit: SwapDepositSending {
+    let error: Error
+    private(set) var attempts = 0
+
+    init(error: Error) { self.error = error }
+
+    func sendSwapKitSwap(depositAddress: String, dashAmount: UInt64, memo: String?) async throws -> Data {
+        attempts += 1
+        throw error
     }
 }
