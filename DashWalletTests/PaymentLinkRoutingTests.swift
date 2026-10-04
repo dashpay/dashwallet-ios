@@ -3,12 +3,14 @@
 //  DashWalletTests
 //
 //  A link never destroys what is on screen. While a send waits on the network
-//  (`PaymentInFlightHold`, ending exactly once, also when dropped), for
+//  or a payment screen holds its exits — also for an unacknowledged inline
+//  result — (`PaymentInFlightHold`, ending exactly once, also when dropped), for
 //  `PaymentInFlight.resultGracePeriod` after it, or while anything is
 //  presented in the chain the router would dismiss, a link that would replace
 //  the screen is refused with a notice and not kept.
 //
 
+import SwiftUI
 import UIKit
 import XCTest
 @testable import dashpay
@@ -16,14 +18,15 @@ import XCTest
 @MainActor
 final class PaymentLinkRoutingTests: XCTestCase {
     private var window: UIWindow!
-    private var notices = 0
-    private var realNotice: (() -> Void)!
+    private var refusals: [PaymentInFlight.Refusal] = []
+    private var notices: Int { refusals.count }
+    private var realNotice: ((PaymentInFlight.Refusal) -> Void)!
 
     override func setUp() {
         super.setUp()
         PaymentInFlight.abandonHolds()
         realNotice = PaymentInFlight.showRefusalNotice
-        PaymentInFlight.showRefusalNotice = { [unowned self] in self.notices += 1 }
+        PaymentInFlight.showRefusalNotice = { [unowned self] in self.refusals.append($0) }
         // Attached to the host app's scene: presentations only run for a
         // window that is really on screen.
         if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
@@ -178,6 +181,123 @@ final class PaymentLinkRoutingTests: XCTestCase {
         XCTAssertFalse(PaymentInFlight.refusesLink(over: root))
     }
 
+    func testAHeldPaymentScreenRefusesLinksAndTabChangesUntilReleased() {
+        let (root, tabScreen) = showMainScreen()
+        let hold = ExitHold(on: tabScreen)
+        XCTAssertTrue(PaymentInFlight.refusesLink(over: root))
+        XCTAssertTrue(PaymentInFlight.refusesTabChange(), "another tab or the payments sheet would hide it")
+        XCTAssertEqual(refusals, [.link, .navigation])
+
+        hold.release()
+        XCTAssertTrue(PaymentInFlight.refusesTabChange(), "a result may still be on its way")
+        spin(until: { !PaymentInFlight.isActiveOrSettling }, timeout: PaymentInFlight.resultGracePeriod + 2)
+        XCTAssertFalse(PaymentInFlight.refusesTabChange(), "the tab bar is free again after the grace")
+        XCTAssertFalse(PaymentInFlight.refusesLink(over: root))
+    }
+
+    func testAnInlineSwiftUIResultOwnsRoutingUntilItIsAcknowledged() {
+        let (root, _) = showMainScreen()
+        let navigation = (root.children.first as? UITabBarController)?.viewControllers?.first as? UINavigationController
+        let state = InlineResultState()
+        // A pushed payment screen whose result is a dialog in its own view
+        // hierarchy, as DashSpend's is — no presentation for the router to see.
+        let screen = UIHostingController(rootView: InlineResultScreen(state: state))
+        navigation?.pushViewController(screen, animated: false)
+        spin(until: { screen.view.window != nil })
+        XCTAssertFalse(PaymentInFlight.isAnythingPresented(over: root))
+
+        state.resultShown = true
+        spin(until: { PaymentInFlight.isActive })
+        XCTAssertTrue(PaymentInFlight.refusesLink(over: root), "refused while the inline result is up")
+        XCTAssertTrue(PaymentInFlight.refusesTabChange())
+
+        state.resultShown = false
+        spin(until: { !PaymentInFlight.isActive })
+        spin(until: { !PaymentInFlight.isActiveOrSettling }, timeout: PaymentInFlight.resultGracePeriod + 2)
+        XCTAssertFalse(PaymentInFlight.refusesTabChange(), "acknowledged")
+        XCTAssertFalse(PaymentInFlight.refusesLink(over: root))
+    }
+
+    func testAPaymentScreenLockedWhileCoveredByAPushTakesNoHoldUntilItIsBackOnScreen() throws {
+        let (root, _) = showMainScreen()
+        let tabs = try XCTUnwrap(root.children.first as? UITabBarController)
+        let navigation = try XCTUnwrap(tabs.viewControllers?.first as? UINavigationController)
+        let state = InlineResultState()
+        let screen = UIHostingController(rootView: InlineResultScreen(state: state))
+        navigation.pushViewController(screen, animated: false)
+        spin(until: { screen.view.window != nil })
+        XCTAssertNotNil(screen.view.window)
+        navigation.pushViewController(UIViewController(), animated: false)
+        spin(until: { screen.view.window == nil })
+        XCTAssertNil(screen.view.window, "covered")
+
+        // A result arriving for a screen nobody can see must not refuse
+        // routing app-wide with nothing on screen.
+        state.resultShown = true
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        XCTAssertFalse(PaymentInFlight.isActive)
+
+        navigation.popViewController(animated: false)
+        spin(until: { PaymentInFlight.isActive })
+        XCTAssertTrue(PaymentInFlight.isActive, "back on screen with its result: held")
+        state.resultShown = false
+        spin(until: { !PaymentInFlight.isActive })
+        XCTAssertFalse(PaymentInFlight.isActive)
+    }
+
+    func testAPaymentScreenLockedInAHiddenTabTakesNoHoldUntilItsTabIsBack() throws {
+        let (root, _) = showMainScreen()
+        let tabs = try XCTUnwrap(root.children.first as? UITabBarController)
+        tabs.viewControllers?.append(UINavigationController(rootViewController: UIViewController()))
+        let navigation = try XCTUnwrap(tabs.viewControllers?.first as? UINavigationController)
+        let state = InlineResultState()
+        let screen = UIHostingController(rootView: InlineResultScreen(state: state))
+        navigation.pushViewController(screen, animated: false)
+        spin(until: { screen.view.window != nil })
+        XCTAssertNotNil(screen.view.window)
+
+        tabs.selectedIndex = 1
+        spin(until: { screen.view.window == nil })
+        XCTAssertNil(screen.view.window, "its tab is hidden")
+        state.resultShown = true
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        XCTAssertFalse(PaymentInFlight.isActive, "a hidden tab's screen refuses nothing")
+
+        tabs.selectedIndex = 0
+        spin(until: { PaymentInFlight.isActive })
+        XCTAssertTrue(PaymentInFlight.isActive, "its tab is back: held")
+        state.resultShown = false
+        spin(until: { !PaymentInFlight.isActive })
+        XCTAssertFalse(PaymentInFlight.isActive)
+    }
+
+    func testAWalletSendsPushedResultScreenOwnsRoutingWhileVisible() throws {
+        let (root, _) = showMainScreen()
+        let tabs = try XCTUnwrap(root.children.first as? UITabBarController)
+        let navigation = try XCTUnwrap(tabs.viewControllers?.first as? UINavigationController)
+        let result = SuccessfulOperationStatusViewController.initiate(from: sb("OperationStatus"))
+        result.holdsExitsWhileShown = true
+        navigation.pushViewController(result, animated: false)
+        spin(until: { PaymentInFlight.isActive })
+        XCTAssertTrue(PaymentInFlight.refusesTabChange(), "the transfer's result is up")
+        XCTAssertEqual(navigation.interactivePopGestureRecognizer?.isEnabled, false, "its exits are held")
+
+        navigation.popViewController(animated: false)
+        spin(until: { !PaymentInFlight.isActive })
+        XCTAssertFalse(PaymentInFlight.isActive, "closed")
+        XCTAssertEqual(navigation.interactivePopGestureRecognizer?.isEnabled, true, "and given back")
+    }
+
+    func testACoinbaseAPITransfersResultScreenHoldsNothing() throws {
+        let (root, _) = showMainScreen()
+        let tabs = try XCTUnwrap(root.children.first as? UITabBarController)
+        let navigation = try XCTUnwrap(tabs.viewControllers?.first as? UINavigationController)
+        let result = SuccessfulOperationStatusViewController.initiate(from: sb("OperationStatus"))
+        navigation.pushViewController(result, animated: false)
+        spin(until: { result.view.window != nil })
+        XCTAssertFalse(PaymentInFlight.isActive)
+    }
+
     func testOnlyLinksThatReplaceTheScreenAreSubjectToTheRule() throws {
         func replacesScreen(_ className: String) throws -> Bool {
             let type = try XCTUnwrap(NSClassFromString(className) as? NSObject.Type, className)
@@ -188,5 +308,23 @@ final class PaymentLinkRoutingTests: XCTestCase {
         XCTAssertTrue(try replacesScreen("DWURLDashConnectAction"))
         XCTAssertFalse(try replacesScreen("DWURLIntegrationAction"), "a sign-in callback must not wait")
         XCTAssertFalse(try replacesScreen("DWURLRequestAction"), "an address request replaces nothing")
+    }
+}
+
+private final class InlineResultState: ObservableObject {
+    @Published var resultShown = false
+}
+
+private struct InlineResultScreen: View {
+    @ObservedObject var state: InlineResultState
+
+    var body: some View {
+        ZStack {
+            Text(verbatim: "Pay")
+            if state.resultShown {
+                Text(verbatim: "Purchase failed")
+            }
+        }
+        .lockingExit(state.resultShown)
     }
 }

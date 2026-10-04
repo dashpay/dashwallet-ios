@@ -9,7 +9,7 @@
 //  restoring an original value that was already locked, and independence of
 //  separate stacks and roots.
 //
-//  Exit holds take no part in routing (`PaymentLinkRoutingTests`).
+//  A held screen owns routing too (`PaymentLinkRoutingTests`).
 //
 
 import UIKit
@@ -22,10 +22,13 @@ final class ExitHoldTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        // Exit holds own routing: start and end with none left over.
+        PaymentInFlight.abandonHolds()
         window = UIWindow(frame: UIScreen.main.bounds)
     }
 
     override func tearDown() {
+        PaymentInFlight.abandonHolds()
         window.rootViewController?.dismiss(animated: false)
         window.isHidden = true
         window = nil
@@ -123,10 +126,12 @@ final class ExitHoldTests: XCTestCase {
         XCTAssertTrue(navigation.isModalInPresentation, "an originally modal root stays modal")
     }
 
-    func testExitHoldsLeaveRoutingToTheirOwners() {
+    func testAnExitHoldOwnsRoutingUntilReleased() {
         let (_, screen) = makeStack()
         let hold = ExitHold(on: screen)
-        XCTAssertFalse(PaymentInFlight.isActive, "routing is held by the payment, not by the screen's exits")
+        XCTAssertTrue(PaymentInFlight.isActive, "a screen with its exits held owns routing")
         hold.release()
+        hold.release()
+        XCTAssertFalse(PaymentInFlight.isActive)
     }
 }
