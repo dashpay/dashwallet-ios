@@ -750,8 +750,12 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // selectable wallet on an install that also carries devnet material
         // leaves `hasWallet` reporting true until the next launch — the
         // `walletNotFound` dead end the gate exists to prevent. On `defer`
-        // because a partial deletion changes the answer too.
-        defer { WalletEnvironment.invalidateWalletMaterialCache() }
+        // because a partial deletion changes the answer too. The removed
+        // wallets' waiting sends go with them, also after a partial deletion.
+        defer {
+            WalletEnvironment.invalidateWalletMaterialCache()
+            PendingSendOutcomes.shared.dropSendsOfRemovedWallets()
+        }
 
         let walletIds = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(
             for: mnemonic)
@@ -863,8 +867,6 @@ final class SwiftDashSDKWalletWiper: NSObject {
         await shutDownTemporaryManagers()
 
         let remaining = Set(try storage.listWalletIdsWithMnemonic())
-        // The removed wallets' waiting sends go with them.
-        PendingSendOutcomes.shared.forgetWallets(Set(walletIds.values).subtracting(remaining))
         guard walletIds.values.allSatisfy({ !remaining.contains($0) }) else {
             throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
         }

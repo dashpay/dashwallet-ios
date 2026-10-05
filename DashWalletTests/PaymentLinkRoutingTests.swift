@@ -840,14 +840,13 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
         XCTAssertEqual(Policy.notifiable(decision.notifying, shownWalletId: walletA), [sentFromA])
     }
 
-    /// A notice is the shown wallet's: the host stopping (a switch) clears it.
-    func testASwitchClearsTheShownNotice() async {
-        await MainActor.run {
-            let outcomes = PendingSendOutcomes.shared
-            outcomes.hostDidStop()
-            XCTAssertNil(outcomes.notice)
-            XCTAssertNil(outcomes.shownWalletId)
-        }
+    /// A notice is the shown wallet's: publishing another wallet drops it, a
+    /// rebuild of the same wallet keeps it.
+    func testASwitchDropsTheShownNoticeAndARebuildKeepsIt() {
+        let notice = Policy.merged(nil, adding: 1_000)
+        XCTAssertNil(Policy.noticeKept(notice, shownWalletId: walletA, published: walletB), "switched to B")
+        XCTAssertNil(Policy.noticeKept(notice, shownWalletId: walletA, published: nil))
+        XCTAssertEqual(Policy.noticeKept(notice, shownWalletId: walletA, published: walletA), notice, "A rebuilt")
     }
 
     func testNoticesMergeOnlyWithinTheShownWallet() {

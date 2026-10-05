@@ -965,7 +965,6 @@ final class SwiftDashSDKHost {
     /// Split out of `stopAsync` so the shutdown-first ordering is the only
     /// public shape; never call this with a still-configured manager.
     private func clearRuntimeReferences() {
-        PendingSendOutcomes.shared.hostDidStop()
         manager = nil
         wallet = nil
         sdk = nil

@@ -73,14 +73,14 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
 
     @Published private(set) var entries: [Data: Entry] = [:]
     /// The "went through" notice, always the shown wallet's: only a send of
-    /// the wallet on screen raises it, and it is cleared when the host stops
-    /// (switch, network change, wipe). A send that settles while its wallet
-    /// is not on screen raises none; its row reads "Sent" when the wallet is
-    /// shown again.
+    /// that wallet raises it, and it is cleared when the host publishes a
+    /// different wallet (switch, network change) or the wallet is wiped. A
+    /// send that settles while its wallet is not the shown one raises none;
+    /// its row reads "Sent" when that wallet is shown again.
     @Published private(set) var notice: Notice?
-    /// The wallet the host runs, set when it publishes a wallet
-    /// (`observeVerdicts`) and cleared when it stops (`hostDidStop`) — nil
-    /// while none runs, as during a switch.
+    /// The wallet the host last published (`observeVerdicts`). Kept through
+    /// a rebuild of the same wallet (the host stops and starts it again), so
+    /// a settlement read during the rebuild is still told.
     private(set) var shownWalletId: Data?
 
     /// Read by `Transaction.stateTitle`, which is not main-actor isolated.
@@ -126,21 +126,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         updateSaveWatch()
     }
 
-    /// The host stopped (switch, network change, wipe): no wallet is on
-    /// screen until the next one is published, and the notice goes with the
-    /// wallet that was.
-    func hostDidStop() {
-        shownWalletId = nil
-        notice = nil
-    }
 
-    /// Wallets deleted from the device: their waiting sends go.
-    func forgetWallets(_ walletIds: Set<Data>) {
-        let notFollowed = entries.values.filter { walletIds.contains($0.walletId) }.map(\.txidWire)
-        if !notFollowed.isEmpty {
-            forget(txidsWire: notFollowed, reason: "its wallet was removed")
-        }
-    }
 
     /// Watches saves only while a send is waiting. A save that touched the
     /// wallet's transactions may have locked or mined one; the bookkeeping
@@ -253,7 +239,9 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// configures; replaces the previous watch. Also settles, once, the sends
     /// that went through while the app was closed.
     func observeVerdicts(of manager: PlatformWalletManager) {
-        shownWalletId = SwiftDashSDKHost.shared.wallet?.walletId
+        let published = SwiftDashSDKHost.shared.wallet?.walletId
+        notice = Self.noticeKept(notice, shownWalletId: shownWalletId, published: published)
+        shownWalletId = published
         dropSendsOfRemovedWallets()
         reconcile()
         verdictWatch = manager.$outgoingTransactionVerdicts
@@ -431,6 +419,12 @@ extension PendingSendOutcomes {
             remaining.removeValue(forKey: txid)
         }
         return remaining
+    }
+
+    /// The notice once `published` is the host's wallet: kept for the same
+    /// wallet (a rebuild), dropped for another one.
+    nonisolated static func noticeKept(_ notice: Notice?, shownWalletId: Data?, published: Data?) -> Notice? {
+        published != nil && published == shownWalletId ? notice : nil
     }
 
     /// The settled payments to tell: only the shown wallet's. Another
