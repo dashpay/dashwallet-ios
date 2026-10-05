@@ -126,8 +126,6 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         updateSaveWatch()
     }
 
-
-
     /// Watches saves only while a send is waiting. A save that touched the
     /// wallet's transactions may have locked or mined one; the bookkeeping
     /// saves are skipped with the home feed's filter (inspected on the
