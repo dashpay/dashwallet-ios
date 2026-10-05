@@ -863,6 +863,9 @@ final class SwiftDashSDKWalletWiper: NSObject {
         await shutDownTemporaryManagers()
 
         let remaining = Set(try storage.listWalletIdsWithMnemonic())
+        // The removed wallets' waiting sends and notices go with them.
+        let removed = Set(walletIds.values).subtracting(remaining)
+        await MainActor.run { PendingSendOutcomes.shared.forgetWallets(removed) }
         guard walletIds.values.allSatisfy({ !remaining.contains($0) }) else {
             throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
         }

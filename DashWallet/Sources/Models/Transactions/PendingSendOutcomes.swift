@@ -72,14 +72,22 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     static let noticeDuration: TimeInterval = 3
 
     @Published private(set) var entries: [Data: Entry] = [:]
-    /// The "went through" notice of the wallet on screen (`notices` of the
-    /// active wallet), the only one Home shows and dismisses.
+    /// The "went through" notice of the wallet on screen — `notices` of
+    /// `shownWalletId`, re-derived whenever either changes — the only one
+    /// Home shows and dismisses.
     @Published private(set) var notice: Notice?
     /// Notices by wallet: a settlement is told only on its own wallet's Home.
     /// One raised for a wallet not on screen is kept until that wallet is
     /// shown again, and dropped with the wallet (wipe, removal).
-    private(set) var notices: [Data: Notice] = [:]
-    private var walletSwitchWatch: AnyCancellable?
+    private(set) var notices: [Data: Notice] = [:] {
+        didSet { deriveNotice() }
+    }
+    /// The wallet the host runs, set by the host when it publishes a wallet
+    /// (`observeVerdicts`) and cleared when it stops (`hostDidStop`) — nil
+    /// while none runs, as during a switch.
+    private(set) var shownWalletId: Data? {
+        didSet { deriveNotice() }
+    }
 
     /// Read by `Transaction.stateTitle`, which is not main-actor isolated.
     /// Mirrors `entries`, written only from the main actor; seeded from the
@@ -122,18 +130,26 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         entries = Dictionary(stored.map { ($0.txidWire, $0) }, uniquingKeysWith: { a, _ in a })
         publishWaitingTxids()
         updateSaveWatch()
-        walletSwitchWatch = NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
-            .merge(with: NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange))
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                MainActor.assumeIsolated { self?.showActiveWalletsNotice() }
-            }
     }
 
-    /// Publishes the active wallet's notice (nil when it has none).
-    private func showActiveWalletsNotice() {
-        let shown = Self.notice(in: notices, for: SwiftDashSDKHost.shared.wallet?.walletId)
+    private func deriveNotice() {
+        let shown = Self.notice(in: notices, for: shownWalletId)
         if shown != notice { notice = shown }
+    }
+
+    /// The host stopped (switch, network change, wipe): no wallet is on
+    /// screen until the next one is published.
+    func hostDidStop() {
+        shownWalletId = nil
+    }
+
+    /// Wallets deleted from the device: their waiting sends and notices go.
+    func forgetWallets(_ walletIds: Set<Data>) {
+        let notFollowed = entries.values.filter { walletIds.contains($0.walletId) }.map(\.txidWire)
+        if !notFollowed.isEmpty {
+            forget(txidsWire: notFollowed, reason: "its wallet was removed")
+        }
+        for walletId in walletIds { notices.removeValue(forKey: walletId) }
     }
 
     /// Watches saves only while a send is waiting. A save that touched the
@@ -207,7 +223,6 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     @objc func forgetAll() {
         // Raised notices not yet shown go too: they are the wiped wallets'.
         notices = [:]
-        showActiveWalletsNotice()
         guard !entries.isEmpty else { return }
         DWLogger.log("💸 TXSEND :: \(entries.count) waiting send(s) no longer tracked: wallet wiped")
         entries = [:]
@@ -239,10 +254,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     func dropSendsOfRemovedWallets() {
         guard !entries.isEmpty || !notices.isEmpty, UIApplication.shared.isProtectedDataAvailable,
               let stored = try? SwiftDashSDKHost.persistedWalletIds(), !stored.isEmpty else { return }
-        let removedNotices = notices.keys.filter { !stored.contains($0) }
-        if !removedNotices.isEmpty {
-            removedNotices.forEach { notices.removeValue(forKey: $0) }
-            showActiveWalletsNotice()
+        for walletId in notices.keys where !stored.contains(walletId) {
+            notices.removeValue(forKey: walletId)
         }
         let orphans = entries.values.filter { !stored.contains($0.walletId) }.map(\.txidWire)
         if !orphans.isEmpty {
@@ -255,7 +268,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// that went through while the app was closed.
     func observeVerdicts(of manager: PlatformWalletManager) {
         // The wallet is published by now: its own notice, if one is waiting.
-        showActiveWalletsNotice()
+        shownWalletId = SwiftDashSDKHost.shared.wallet?.walletId
         dropSendsOfRemovedWallets()
         reconcile()
         verdictWatch = manager.$outgoingTransactionVerdicts
@@ -331,19 +344,18 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         }
         if !decision.notifying.isEmpty {
             notices = Self.mergedNotices(notices, adding: decision.notifying)
-            showActiveWalletsNotice()
         }
         guard !decision.isEmpty else { return }
         entries = Self.applying(decision, to: entries)
         didChangeEntries()
     }
 
-    /// Clear the notice with `id` (the one Home showed) — a notice raised
-    /// meanwhile stays, and other wallets' notices are not touched.
+    /// Clear the notice with `id` if it is the shown wallet's — a notice
+    /// raised meanwhile stays, and another wallet's (Home's timer outliving a
+    /// switch) is kept for when that wallet is shown.
     func dismissNotice(id: UUID) {
-        guard let walletId = notices.first(where: { $0.value.id == id })?.key else { return }
-        notices.removeValue(forKey: walletId)
-        showActiveWalletsNotice()
+        guard let shownWalletId, notices[shownWalletId]?.id == id else { return }
+        notices.removeValue(forKey: shownWalletId)
     }
 
     // MARK: - Private
