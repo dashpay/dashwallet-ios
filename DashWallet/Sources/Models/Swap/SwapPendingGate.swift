@@ -43,7 +43,12 @@ final class SwapPendingGate {
     /// it returns, so this closes the gap in between.
     private var submitting = false
 
-    private init() {}
+    /// `shared` in the app; tests make their own.
+    init() {}
+
+    deinit {
+        if let observer { NotificationCenter.default.removeObserver(observer) }
+    }
 
     /// Claim the one swap-submission slot before broadcasting a deposit; pair
     /// with `endSubmission()`. False while another deposit is being broadcast
