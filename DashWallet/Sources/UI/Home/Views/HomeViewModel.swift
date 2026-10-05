@@ -2121,8 +2121,9 @@ class SwiftDashSDKWalletSource: TransactionSource {
         let isSpent: Bool
         /// A transaction spending it is saved (`spendingTransaction`). The SDK
         /// links a spender once it has resolved both rows, but sets `isSpent`
-        /// only for a spender in a block (or a sweep's stamp), so an output
-        /// spent by an unconfirmed transaction still reads unspent. The link is
+        /// only for a spender it treats as settled (in a block, InstantSend- or
+        /// finalized-locked, a sweep's stamp, a credit verdict), so an output
+        /// spent by a still-unconfirmed transaction reads unspent. The link is
         /// what is saved, not a network verdict: a spender that never reached
         /// the network keeps the output excluded until it is removed ("Remove
         /// if Not on Network"); a link the SDK has not written yet, or one it
