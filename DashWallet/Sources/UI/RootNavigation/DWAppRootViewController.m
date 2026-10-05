@@ -419,7 +419,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     self.walletWipeInProgress = YES;
     // The wiped wallet's sends are torn down with it.
     [DWPaymentInFlight abandonHolds];
-    [[DWPendingSendOutcomes shared] forgetAll];
 
     UIViewController *setupController = [self setupController];
     [self transitionToController:setupController
@@ -449,6 +448,12 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             // phase must never outlive the barrier, even if this controller
             // has gone away by the time it completes.
             [DWWalletLifecycleOverlayBridge finishWiping];
+            // Waiting sends go with a wipe that succeeded; after a partial
+            // one the surviving wallets keep theirs (a removed wallet's are
+            // dropped when the next wallet is published).
+            if (wipeSucceeded) {
+                [[DWPendingSendOutcomes shared] forgetAll];
+            }
             typeof(self) completedSelf = weakSelf;
             if (completedSelf == nil) {
                 return;

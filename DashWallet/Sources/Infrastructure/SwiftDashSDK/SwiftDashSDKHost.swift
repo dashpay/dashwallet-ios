@@ -1647,10 +1647,12 @@ final class SwiftDashSDKHost {
     private func publish(handles: RuntimeHandles, wallet resolvedWallet: ManagedPlatformWallet) {
         sdk = handles.sdk
         manager = handles.manager
-        PendingSendOutcomes.shared.observeVerdicts(of: handles.manager)
         wallet = resolvedWallet
         modelContainer = handles.modelContainer
         runningNetwork = handles.network
+        // After the wallet and its store are published: its first reconcile
+        // reads them.
+        PendingSendOutcomes.shared.observeVerdicts(of: handles.manager)
     }
 
     // MARK: - ModelContainer
