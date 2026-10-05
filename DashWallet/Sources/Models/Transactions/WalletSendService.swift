@@ -471,9 +471,10 @@ final class WalletSendService: NSObject {
         Self.logger.info("💸 TXSEND :: recorded \(txids.count, privacy: .public) sweep txid(s) in CoinJoinWithdrawalStore: \(recordedHexes.joined(separator: ","), privacy: .public)")
 
         await MainActor.run {
+            // The re-tally runs off the main thread and lands later, logged as
+            // `💰 WALLET :: coinJoinBalanceDuffs=` once the figure changes.
             SwiftDashSDKWalletState.shared.refreshCoinJoinBalance()
-            let post = SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs
-        Self.logger.info("💸 TXSEND :: post-sweep CoinJoin balance \(post, privacy: .public) duffs (was \(amount, privacy: .public))")
+            Self.logger.info("💸 TXSEND :: post-sweep CoinJoin re-tally requested (was \(amount, privacy: .public) duffs)")
             // The per-network recovery flag is owned solely by the recovery scan-
             // completion path (SwiftDashSDKSPVCoordinator.maybeCompleteCoinJoinRecovery,
             // which marks recovered once the one-time wide scan reaches .synced). A

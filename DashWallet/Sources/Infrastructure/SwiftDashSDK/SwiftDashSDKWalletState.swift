@@ -97,9 +97,10 @@ public struct WalletBalance: Equatable, Sendable {
 }
 
 /// The single-flight bookkeeping behind
-/// `SwiftDashSDKWalletState.refreshPooledSpendableBalance`, separated from the
-/// `Task` machinery so the ownership rule can be exercised without a wallet, an
-/// SDK handle or a live task.
+/// `SwiftDashSDKWalletState.refreshPooledSpendableBalance` (and, with its own
+/// instance, `refreshCoinJoinBalance`), separated from the `Task` machinery so
+/// the ownership rule can be exercised without a wallet, an SDK handle or a
+/// live task.
 ///
 /// A `Task` reference alone cannot express ownership: cancelling a read and
 /// starting its replacement leaves the cancelled read still scheduled, and when
@@ -517,15 +518,6 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         platformCreditsRerunRequested = false
     }
 
-    /// Re-tally the CoinJoin-account spendable balance via
-    /// `SwiftDashSDKCoinJoinBalanceReader` (an in-memory read of the live
-    /// per-account balances). Idempotent; safe to call from any MainActor
-    /// consumer that needs a fresh snapshot — e.g. the sweep coordinator
-    /// forces a refresh right after a successful sweep so the popup/Settings
-    /// row self-clear without waiting for the next balance event.
-    ///
-    /// `@MainActor` for symmetry with `refreshPlatformPaymentCredits`; the
-    /// reader detects the main thread and reads synchronously.
     /// Re-read the pooled spendable balance from the SDK. Refreshed with every
     /// balance event, like the CoinJoin tally beside it.
     ///
@@ -628,13 +620,74 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
 
     @MainActor private var hasLoggedPooledSpendableOutage = false
 
+    /// Re-tally the CoinJoin-account spendable balance via
+    /// `SwiftDashSDKCoinJoinBalanceReader`. Refreshed with every balance event;
+    /// also safe to call from any MainActor consumer that needs a fresh value —
+    /// e.g. the sweep forces a refresh right after it broadcasts so the
+    /// popup/Settings row self-clear without waiting for the next balance event.
+    ///
+    /// The read itself is NOT done here, for the same reason as
+    /// `refreshPooledSpendableBalance`: it waits on the wallet-manager read
+    /// lock, and this runs on every balance publication. The wallet is captured
+    /// here, the reader runs the read on its own queue, and the result is
+    /// published back on the main actor only if it still describes the wallet
+    /// that asked for it. A caller therefore sees the new value when it lands,
+    /// through `coinJoinBalanceDuffs`, not when this returns.
+    ///
+    /// Overlapping requests coalesce through a `PooledReadSlot`, like the pooled
+    /// read: one read in flight, and at most one re-run.
     @MainActor
     public func refreshCoinJoinBalance() {
-        let duffs = SwiftDashSDKCoinJoinBalanceReader.coinJoinSpendableDuffs()
-        if coinJoinBalanceDuffs != duffs {
-            coinJoinBalanceDuffs = duffs
-            Self.logger.info("💰 WALLET :: coinJoinBalanceDuffs=\(duffs, privacy: .public)")
+        guard let wallet = SwiftDashSDKHost.shared.wallet else {
+            cancelCoinJoinRead()
+            publishCoinJoinBalance(0)
+            return
         }
+        guard let generation = coinJoinReadSlot.begin() else { return }
+
+        let walletId = wallet.walletId
+        let network = SwiftDashSDKHost.shared.runningNetwork
+        coinJoinReadTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            let duffs = await SwiftDashSDKCoinJoinBalanceReader.coinJoinSpendableDuffs(for: wallet)
+
+            // Same rules as the pooled read: a read that no longer owns the
+            // slot touches nothing, and an answer for a wallet or network that
+            // is no longer current is dropped.
+            guard self.coinJoinReadSlot.owns(generation) else { return }
+            self.coinJoinReadTask = nil
+            let stillCurrent = SwiftDashSDKHost.shared.wallet?.walletId == walletId
+                && SwiftDashSDKHost.shared.runningNetwork == network
+            if stillCurrent, !Task.isCancelled {
+                self.publishCoinJoinBalance(duffs)
+            }
+
+            if self.coinJoinReadSlot.finish(generation) {
+                self.refreshCoinJoinBalance()
+            }
+        }
+    }
+
+    /// Non-nil while a CoinJoin read is in flight, purely so it can be
+    /// cancelled. `coinJoinReadSlot` decides which read owns the result.
+    @MainActor private var coinJoinReadTask: Task<Void, Never>?
+    @MainActor private var coinJoinReadSlot = PooledReadSlot()
+
+    @MainActor
+    private func publishCoinJoinBalance(_ duffs: UInt64) {
+        guard coinJoinBalanceDuffs != duffs else { return }
+        coinJoinBalanceDuffs = duffs
+        Self.logger.info("💰 WALLET :: coinJoinBalanceDuffs=\(duffs, privacy: .public)")
+    }
+
+    /// Drop any in-flight CoinJoin read so it cannot republish the outgoing
+    /// wallet's figure after a clear, for the reason given on
+    /// `cancelPooledSpendableRead`. Called from the same places.
+    @MainActor
+    private func cancelCoinJoinRead() {
+        coinJoinReadTask?.cancel()
+        coinJoinReadTask = nil
+        coinJoinReadSlot.cancel()
     }
 
     // MARK: - Clear
@@ -654,6 +707,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             MainActor.assumeIsolated {
                 self?.cancelPlatformCreditsTally()
                 self?.cancelPooledSpendableRead()
+                self?.cancelCoinJoinRead()
             }
             self?.platformPaymentCredits = 0
             self?.coinJoinBalanceDuffs = 0
@@ -674,6 +728,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             MainActor.assumeIsolated {
                 self?.cancelPlatformCreditsTally()
                 self?.cancelPooledSpendableRead()
+                self?.cancelCoinJoinRead()
             }
             self?.platformPaymentCredits = 0
             self?.coinJoinBalanceDuffs = 0

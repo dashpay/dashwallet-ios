@@ -966,8 +966,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         refreshBalanceBridge()
 
         // Once a wide recovery scan has fully synced, revert to the fast gap if
-        // there's nothing (left) to recover. Runs after the balance refresh so
-        // `coinJoinBalanceDuffs` reflects the completed scan.
+        // there's nothing (left) to recover.
         maybeCompleteCoinJoinRecovery(state: mappedState)
     }
 
