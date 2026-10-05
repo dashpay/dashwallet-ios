@@ -14,7 +14,6 @@ module SchemaRelease
   IOS_REPO = "dashpay/dashwallet-ios"
   PLATFORM_REPO = "dashpay/platform"
   DATA_BRANCH = "schema-release-data"
-  PLATFORM_BRANCH = "v4.2-dev"
   REGISTRY = "packages/swift-sdk/schema-releases.json"
   CAPTURE_FILES = %w[
     packages/swift-sdk/schema-models.json
@@ -134,9 +133,23 @@ module SchemaRelease
       Base64.decode64(result.fetch("content"))
     end
 
+    # Platform renames its development branch every release line; its default
+    # branch is the one place that name is kept current.
+    def platform_branch
+      @platform_branch ||= begin
+        name = request("get", "repos/#{PLATFORM_REPO}")["default_branch"]
+        unless name.is_a?(String) && name.match?(/\A[A-Za-z0-9][A-Za-z0-9._-]*\z/)
+          raise Error, "Unexpected default branch for #{PLATFORM_REPO}: #{name.inspect}"
+        end
+        name
+      rescue HTTPError => e
+        raise Error, "Cannot read the default branch of #{PLATFORM_REPO} (HTTP #{e.status}). Verify SCHEMA_RELEASE_TOKEN access and organization approval, then retry."
+      end
+    end
+
     def dispatch(release_id, data_commit)
       request("post", "repos/#{PLATFORM_REPO}/actions/workflows/swift-sdk-freeze-release.yml/dispatches",
-              { ref: PLATFORM_BRANCH, inputs: { release_id: release_id, data_commit: data_commit } })
+              { ref: platform_branch, inputs: { release_id: release_id, data_commit: data_commit } })
     end
 
     def retain_platform_source(commit)
@@ -407,10 +420,10 @@ module SchemaRelease
       records.each do |record|
         manifest, _path, hash = evidence(record)
         unless registered?(merged, record, manifest, hash)
-          raise Error, "App Store #{record['app_version']} still needs a merged freeze in #{PLATFORM_REPO}:#{PLATFORM_BRANCH}. Run the App Store schema workflow and merge its PR into that branch first."
+          raise Error, "App Store #{record['app_version']} still needs a merged freeze in #{PLATFORM_REPO}:#{platform_branch}. Run the App Store schema workflow and merge its PR into that branch first."
         end
         unless registered?(registry, record, manifest, hash)
-          raise Error, "App Store #{record['app_version']} has a freeze in #{PLATFORM_REPO}:#{PLATFORM_BRANCH}, but it is missing from the selected Platform commit. Select a commit containing that freeze before uploading."
+          raise Error, "App Store #{record['app_version']} has a freeze in #{PLATFORM_REPO}:#{platform_branch}, but it is missing from the selected Platform commit. Select a commit containing that freeze before uploading."
         end
         schema = registry.fetch("schemas").fetch(manifest.fetch("schema").fetch("schema_version"))
         fixture_path = File.expand_path(schema.fetch("fixture_path"), platform_dir)
@@ -487,9 +500,14 @@ module SchemaRelease
       parse_registry(File.read(File.join(platform_dir, REGISTRY)), checkout)
     end
 
+    def platform_branch
+      @store.github.platform_branch
+    end
+
     def merged_registry
-      location = "#{PLATFORM_REPO}:#{PLATFORM_BRANCH}/#{REGISTRY}"
-      bytes = @store.github.file(PLATFORM_REPO, REGISTRY, PLATFORM_BRANCH, optional: true)
+      location = "#{PLATFORM_REPO}:#{platform_branch}/#{REGISTRY}"
+      @out.puts "Schema registry: #{location}"
+      bytes = @store.github.file(PLATFORM_REPO, REGISTRY, platform_branch, optional: true)
       unless bytes
         raise Error, "Schema registry is unavailable at #{location}. Merge Platform schema release support first and verify SCHEMA_RELEASE_TOKEN access and organization approval."
       end
