@@ -292,11 +292,14 @@ extension PaymentController: DWPaymentProcessorDelegate {
             return
         }
         // The legacy amount screen keeps its button spinner from the tap to the
-        // outcome; it only needs its way back closed.
+        // outcome; it only needs its way back closed. A retry from the confirm
+        // sheet after a failure, which ended the first submission, starts it
+        // again so the amount is locked for this broadcast too.
         let amountScreenOnScreen = provideAmountViewController?.viewIfLoaded?.window != nil
         if amountScreenOnScreen {
             setAmountScreenLeavable(false)
         }
+        (provideAmountViewController as? BaseAmountViewController)?.beginSubmission()
         let shownByScreen = shownByHandler || amountScreenOnScreen
         guard let anchor = presentationAnchor else { return }
         // Both resolved from the anchor's own stack, not `topController()`: a

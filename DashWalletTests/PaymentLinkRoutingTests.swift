@@ -499,3 +499,53 @@ private final class FailingDeposit: SwapDepositSending {
         throw error
     }
 }
+
+/// The legacy amount screen during a submission (its broadcast waits with the
+/// UI live): a hardware keyboard edits nothing, and input comes back with the
+/// outcome.
+@MainActor
+final class LegacyAmountSubmissionTests: XCTestCase {
+    func testAHardwareEditDuringASubmissionChangesNothingAndInputReturnsWithTheOutcome() throws {
+        let screen = ProvideAmountViewController(address: "yXdxAYfK8RZgCRp4Rb3aW6oJpQ6BzTDvVL", amount: 100_000)
+        let previousKeyWindow = UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.keyWindow }.first
+        let window: UIWindow
+        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            window = UIWindow(windowScene: scene)
+        } else {
+            window = UIWindow(frame: UIScreen.main.bounds)
+        }
+        // Pushed, as the payment flow does.
+        window.rootViewController = UINavigationController(rootViewController: screen)
+        window.makeKeyAndVisible()
+        defer {
+            window.isHidden = true
+            previousKeyWindow?.makeKey()
+        }
+        screen.loadViewIfNeeded()
+        let field = try XCTUnwrap(screen.amountView.amountInputControl.textField)
+        let before = screen.model.amount.plainAmount
+        let deadline = Date().addingTimeInterval(3)
+        while !field.isFirstResponder, Date() < deadline {
+            RunLoop.main.run(until: Date().addingTimeInterval(0.01))
+        }
+        XCTAssertTrue(field.isFirstResponder, "the screen takes hardware input when it appears")
+
+        screen.beginSubmission()
+        XCTAssertFalse(field.isFirstResponder, "the hardware keyboard's responder is resigned")
+        XCTAssertFalse(field.isEnabled)
+
+        // What a hardware keystroke reaches if anything still routes it here.
+        _ = field.delegate?.textField?(field, shouldChangeCharactersIn: NSRange(location: 0, length: 0), replacementString: "9")
+        XCTAssertEqual(screen.model.amount.plainAmount, before, "the confirmed amount is what is sent")
+
+        screen.viewDidAppear(false)
+        XCTAssertFalse(field.isFirstResponder, "reappearing does not hand input back mid-submission")
+
+        screen.hideActivityIndicator()
+        XCTAssertTrue(field.isEnabled, "the outcome gives input back")
+        XCTAssertTrue(field.isFirstResponder, "with the hardware keyboard's responder")
+        _ = field.delegate?.textField?(field, shouldChangeCharactersIn: NSRange(location: 0, length: 0), replacementString: "9")
+        XCTAssertNotEqual(screen.model.amount.plainAmount, before, "and edits apply again")
+    }
+}
