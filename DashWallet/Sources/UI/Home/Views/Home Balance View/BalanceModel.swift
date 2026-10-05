@@ -36,6 +36,8 @@ final class BalanceModel: ObservableObject {
     @Published private(set) var awaitingConfirmationDuffs: UInt64?
     /// Bumped on every wallet or network switch (main queue only).
     private var walletGeneration = 0
+    /// Set on a switch, cleared by the next balance event (main queue only).
+    private var awaitingNewWalletBalance = false
     /// Badge text for the home header while the wallet runs on a test
     /// network ("TESTNET"/"DEVNET"), so test funds can't be mistaken for
     /// real Dash; nil on mainnet.
@@ -74,24 +76,32 @@ final class BalanceModel: ObservableObject {
             .filter { HomeViewModel.saveTouchesFeedRows($0) }
             .map { _ in () }
         // Another wallet's (or network's) waiting coins are not this one's:
-        // cleared at once, and a read for the new wallet starts — the one in
-        // flight for the old wallet is dropped by `switchToLatest`.
+        // cleared (nil, not known) at once; the new wallet's value comes with
+        // the first read after its first balance event.
         let walletChanges = NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
             .merge(with: NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification))
             .receive(on: DispatchQueue.main)
-            // Bumped before any subscriber sees the switch, so the read it
-            // starts carries the new generation.
-            .handleEvents(receiveOutput: { [weak self] _ in self?.walletGeneration += 1 })
+            // Bumped before any subscriber sees the switch: reads started
+            // earlier are the old wallet's. Until the new wallet's first
+            // balance event the host may still serve the old wallet, so no
+            // read counts before it either.
+            .handleEvents(receiveOutput: { [weak self] _ in
+                self?.walletGeneration += 1
+                self?.awaitingNewWalletBalance = true
+            })
             .map { _ in () }
             .share()
-        let reads = SwiftDashSDKWalletState.shared.$balance
+        let balanceEvents = SwiftDashSDKWalletState.shared.$balance
+            .receive(on: DispatchQueue.main)
+            .handleEvents(receiveOutput: { [weak self] _ in self?.awaitingNewWalletBalance = false })
             .map { _ in () }
-            .merge(with: coinSaves, walletChanges)
+        let reads = balanceEvents
+            .merge(with: coinSaves)
             .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
             .map { [weak self] _ in
                 // Tagged with the wallet generation it was started for: a read
                 // that lands after a switch is the old wallet's.
-                let generation = self?.walletGeneration ?? 0
+                let generation = (self?.awaitingNewWalletBalance ?? true) ? -1 : (self?.walletGeneration ?? 0)
                 return Future<(Int, UInt64?), Never> { promise in
                     DispatchQueue.global(qos: .utility).async {
                         promise(.success((generation, SwiftDashSDKWalletSource.awaitingConfirmationDuffs())))
