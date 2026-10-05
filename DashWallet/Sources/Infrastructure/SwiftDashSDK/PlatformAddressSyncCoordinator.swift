@@ -257,7 +257,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             }
             .store(in: &balanceObservers)
         shieldedBalances.$state
-            .sink { [weak self] in self?.shieldedBalanceState = $0 }
+            .sink { [weak self] state in
+                self?.shieldedBalanceState = state
+                // A wallet with spendable shielded funds is likely to prove
+                // this session; build the proving key before it does.
+                if ShieldedProverWarmupPolicy.holdsSpendableShieldedFunds(state) {
+                    ShieldedProverWarmup.shared.request(.shieldedBalance)
+                }
+            }
             .store(in: &balanceObservers)
         Publishers.CombineLatest(shieldedBalances.$lastError, shieldedBalances.$syncStartError)
             .sink { [weak self] restoreError, startError in
