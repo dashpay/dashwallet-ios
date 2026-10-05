@@ -19,6 +19,7 @@ import SwiftDashSDK
 final class SwiftDashSDKWalletSending: WalletSending {
 
     func buildSignedTransaction(recipients: [(address: String, amountDuffs: UInt64)]) async throws -> PreparedSend {
+        let walletId = WalletSendService.activeWalletId()
         let (tx, txHash): (FinalizedCoreTransaction, Data)
         do {
             (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSign(recipients: recipients)
@@ -27,7 +28,8 @@ final class SwiftDashSDKWalletSending: WalletSending {
             throw WalletSendService.sendBuildError(from: error)
         }
         return PreparedSend(
-            txData: try tx.serializedData(), fee: tx.fee, txHashDisplay: txHash, sdkTransaction: tx)
+            txData: try tx.serializedData(), fee: tx.fee, txHashDisplay: txHash, sdkTransaction: tx,
+            walletId: walletId)
     }
 
     func broadcast(_ prepared: PreparedSend) async throws -> String {

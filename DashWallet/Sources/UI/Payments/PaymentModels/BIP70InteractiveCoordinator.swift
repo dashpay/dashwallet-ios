@@ -74,6 +74,9 @@ final class BIP70InteractiveCoordinator: NSObject {
     @objc(confirmAndSend:completion:)
     func confirmAndSend(_ box: BIP70ConfirmationBox,
                         completion: @escaping (BIP70SendResultBox?, NSError?) -> Void) {
+        // The wallet paying, read before the send: its outcome is followed
+        // under it.
+        let walletId = WalletSendService.activeWalletId()
         Task {
             do {
                 let result = try await service.confirmAndSend(box.confirmation)
@@ -96,7 +99,8 @@ final class BIP70InteractiveCoordinator: NSObject {
                         txidWire: Data(txHashDisplay.reversed()),
                         address: box.confirmation.primaryAddress,
                         amount: box.confirmation.amount,
-                        reason: reason)
+                        reason: reason,
+                        walletId: walletId)
                     completion(nil, error)
                 }
             } catch {

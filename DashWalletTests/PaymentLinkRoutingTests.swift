@@ -694,9 +694,222 @@ final class PaymentDialogOutcomeTests: XCTestCase {
     func testAnUnknownOutcomeErrorCarriesItsTxid() {
         let txidWire = Data(repeating: 0x7e, count: 32)
         defer { PendingSendOutcomes.shared.forget(txidsWire: [txidWire]) }
-        let error = WalletSendService.unknownOutcomeError(txidWire: txidWire, address: nil, amount: 1, reason: "timeout")
+        let error = WalletSendService.unknownOutcomeError(txidWire: txidWire, address: nil, amount: 1, reason: "timeout", walletId: nil)
         XCTAssertTrue(WalletSendService.isBroadcastUnknownError(error))
         XCTAssertEqual(WalletSendService.unknownOutcomeTxidWire(of: error), txidWire)
         XCTAssertNil(WalletSendService.unknownOutcomeTxidWire(of: NSError(domain: "other", code: 10)))
     }
+}
+
+/// `PendingSendOutcomes`' settlement policy: when a waiting send settles,
+/// expires or is dropped, and how its notices merge — without a store,
+/// clock or SDK.
+final class PendingSendSettlementPolicyTests: XCTestCase {
+    private typealias Policy = PendingSendOutcomes
+    private let walletA = Data(repeating: 0xa1, count: 32)
+    private let walletB = Data(repeating: 0xb2, count: 32)
+    private let now = Date(timeIntervalSince1970: 1_800_000_000)
+
+    private func entry(_ byte: UInt8, wallet: Data? = nil, age: TimeInterval, amount: UInt64 = 1_000, notifies: Bool? = nil) -> PendingSendOutcomes.Entry {
+        PendingSendOutcomes.Entry(
+            txidWire: Data(repeating: byte, count: 32), walletId: wallet ?? walletA, address: "yAddress",
+            amount: amount, sentAt: now.addingTimeInterval(-age), notifies: notifies)
+    }
+
+    private func decide(
+        _ entries: [PendingSendOutcomes.Entry],
+        rows: [Data: Policy.RowState]?,
+        wallet: Data? = nil,
+        followed: Set<Data>? = nil
+    ) -> Policy.SettlementDecision {
+        let pending = Dictionary(uniqueKeysWithValues: entries.map { ($0.txidWire, $0) })
+        let followedNow = followed ?? Set(pending.keys)
+        return Policy.settlement(
+            of: pending, stillFollowed: { followedNow.contains($0) },
+            walletId: wallet ?? walletA, rows: rows, now: now)
+    }
+
+    func testAnAcceptedVerdictRereadsButAProcessingRowKeepsTheSendWaiting() {
+        let sent = entry(1, age: 60)
+        let heard = Policy.acceptances(
+            in: [(txidWire: sent.txidWire, walletId: walletA, accepted: true)],
+            following: [sent.txidWire: sent], alreadyHeard: [])
+        XCTAssertEqual(heard.accepted, [sent.txidWire])
+        XCTAssertTrue(heard.isNew, "the rows are read again")
+
+        let decision = decide([sent], rows: [sent.txidWire: .processing])
+        XCTAssertTrue(decision.isEmpty, "a node holding the bytes is not a settled payment")
+    }
+
+    func testAnAcceptanceIsActedOnOnceAndOnlyFromTheSendsOwnWallet() {
+        let sent = entry(1, age: 60)
+        let again = Policy.acceptances(
+            in: [(txidWire: sent.txidWire, walletId: walletA, accepted: true)],
+            following: [sent.txidWire: sent], alreadyHeard: [sent.txidWire])
+        XCTAssertFalse(again.isNew, "republished, not new")
+
+        let otherWallet = Policy.acceptances(
+            in: [(txidWire: sent.txidWire, walletId: walletB, accepted: true)],
+            following: [sent.txidWire: sent], alreadyHeard: [])
+        XCTAssertTrue(otherWallet.accepted.isEmpty)
+        XCTAssertFalse(otherWallet.isNew)
+    }
+
+    func testAFailedReadDecidesNothing() {
+        let old = entry(1, age: Policy.missingRowGrace + 3600)
+        XCTAssertTrue(decide([old], rows: nil).isEmpty, "a failed read is not \"the row is gone\"")
+    }
+
+    func testALockedOrMinedRowSettlesTheSendAndNotifiesOnce() {
+        let sent = entry(1, age: 60, amount: 2_500)
+        let decision = decide([sent], rows: [sent.txidWire: .settled])
+        XCTAssertEqual(decision.settled, [sent.txidWire])
+        XCTAssertEqual(decision.notifying, [sent])
+
+        // Settled and no longer followed: a second read changes nothing.
+        let after = decide([sent], rows: [sent.txidWire: .settled], followed: [])
+        XCTAssertTrue(after.isEmpty)
+    }
+
+    func testASendForgottenWhileTheRowsWereReadNeitherSettlesNorNotifies() {
+        let sent = entry(1, age: 60)
+        let decision = decide([sent], rows: [sent.txidWire: .settled], followed: [])
+        XCTAssertTrue(decision.isEmpty, "removed or wiped during the read")
+    }
+
+    func testOnlyTheReadWalletsSendsAreDecided() {
+        let mine = entry(1, wallet: walletA, age: 60)
+        let theirs = entry(2, wallet: walletB, age: Policy.maxFollowAge + 1)
+        let decision = decide([mine, theirs], rows: [mine.txidWire: .settled, theirs.txidWire: .processing], wallet: walletA)
+        XCTAssertEqual(decision.settled, [mine.txidWire])
+        XCTAssertTrue(decision.expired.isEmpty, "the other wallet's send is left alone")
+
+        // After a switch to B, B's rows decide B's send only: A's settled
+        // send is not touched by B's read.
+        let switched = decide([mine, theirs], rows: [mine.txidWire: .settled], wallet: walletB)
+        XCTAssertTrue(switched.settled.isEmpty, "after a switch, only the new wallet's sends are read")
+        XCTAssertEqual(switched.gone, [theirs.txidWire], "B's own send, missing past the grace, is B's to drop")
+    }
+
+    func testTheQuietWindowBoundary() {
+        let atWindow = entry(1, age: Policy.quietSettleWindow)
+        let past = entry(2, age: Policy.quietSettleWindow + 0.001)
+        let decision = decide([atWindow, past], rows: [atWindow.txidWire: .settled, past.txidWire: .settled])
+        XCTAssertEqual(Set(decision.settled), [atWindow.txidWire, past.txidWire], "both settle")
+        XCTAssertEqual(decision.notifying, [past], "only the one past the quiet window is told")
+    }
+
+    func testASendThatIsNotAPaymentSettlesWithoutANotice() {
+        let sweep = entry(1, age: 60, notifies: false)
+        let decision = decide([sweep], rows: [sweep.txidWire: .settled])
+        XCTAssertEqual(decision.settled, [sweep.txidWire])
+        XCTAssertTrue(decision.notifying.isEmpty)
+    }
+
+    func testTheMissingRowGraceBoundary() {
+        let atGrace = entry(1, age: Policy.missingRowGrace)
+        let past = entry(2, age: Policy.missingRowGrace + 1)
+        let decision = decide([atGrace, past], rows: [:])
+        XCTAssertEqual(decision.gone, [past.txidWire], "a missing row is gone only after the grace")
+        XCTAssertTrue(decision.notifying.isEmpty)
+    }
+
+    func testTheMaxFollowAgeBoundary() {
+        let atLimit = entry(1, age: Policy.maxFollowAge)
+        let past = entry(2, age: Policy.maxFollowAge + 1)
+        let decision = decide([atLimit, past], rows: [atLimit.txidWire: .processing, past.txidWire: .processing])
+        XCTAssertEqual(decision.expired, [past.txidWire], "still unconfirmed after a week: no longer followed")
+    }
+
+    func testNoticesMergeAndTheTotalSaturates() {
+        let first = Policy.merged(nil, adding: 1_000)
+        XCTAssertEqual(first.count, 1)
+        XCTAssertEqual(first.total, 1_000)
+
+        let second = Policy.merged(first, adding: 2_000)
+        XCTAssertEqual(second.count, 2)
+        XCTAssertEqual(second.total, 3_000)
+        XCTAssertNotEqual(second.id, first.id, "a merge is a new notice, shown for its full window")
+
+        let saturated = Policy.merged(second, adding: UInt64.max)
+        XCTAssertEqual(saturated.count, 3)
+        XCTAssertEqual(saturated.total, UInt64.max)
+    }
+}
+
+/// A send's unknown outcome is followed under the wallet it was prepared for,
+/// even when another wallet is active (or none) by the time it arrives — the
+/// detached CTX broadcast's case.
+@MainActor
+final class UnknownOutcomeWalletTests: XCTestCase {
+    func testAnOutcomeIsFollowedUnderTheWalletThatSentItNotTheActiveOne() throws {
+        let sentFrom = Data(repeating: 0x5c, count: 32)
+        let txidWire = Data(repeating: 0x6d, count: 32)
+        defer { PendingSendOutcomes.shared.forget(txidsWire: [txidWire], reason: "test send") }
+        XCTAssertNotEqual(SwiftDashSDKHost.shared.wallet?.walletId, sentFrom, "another wallet (or none) is active")
+
+        let followed = WalletSendService.followUnknownOutcome(
+            txidWire: txidWire, address: "yAddress", amount: 1_000, walletId: sentFrom)
+
+        XCTAssertTrue(followed)
+        XCTAssertEqual(PendingSendOutcomes.shared.entries[txidWire]?.walletId, sentFrom)
+    }
+
+    func testADetachedBroadcastWithNoAnswerReportsTheWalletThatBuiltIt() async throws {
+        let builtFor = Data(repeating: 0x3e, count: 32)
+        let wallet = DetachedUnknownWallet(walletId: builtFor)
+        let service = BIP70PaymentService(
+            transport: AcknowledgingTransport(),
+            wallet: wallet,
+            receiveAddress: StaticReceiveAddress(),
+            auth: NoAuth())
+        let reported = expectation(description: "the unknown outcome is reported")
+        var reportedWallet: Data?
+        service.onDetachedBroadcastUnknown = { _, _, _, walletId, _ in
+            reportedWallet = walletId
+            reported.fulfill()
+        }
+
+        let confirmation = try await service.prepareForConfirmation(
+            from: URL(string: "http://merchant/pr")!, scheme: "dash", network: .testnet)
+        _ = try await service.confirmAndSend(confirmation, awaitAcceptance: false)
+        await fulfillment(of: [reported], timeout: 3)
+
+        XCTAssertEqual(reportedWallet, builtFor, "booked under the wallet that built it, whatever is active now")
+    }
+}
+
+private final class DetachedUnknownWallet: WalletSending {
+    let prepared: PreparedSend
+    init(walletId: Data) {
+        prepared = PreparedSend(
+            txData: Data([0xde, 0xad]), fee: 226, txHashDisplay: Data(repeating: 0x42, count: 32), walletId: walletId)
+    }
+    func buildSignedTransaction(recipients: [(address: String, amountDuffs: UInt64)]) async throws -> PreparedSend { prepared }
+    func broadcast(_ prepared: PreparedSend) async throws -> String {
+        throw BIP70Error.broadcastOutcomeUnknown(txHashDisplay: prepared.txHashDisplay, reason: "no answer")
+    }
+}
+
+/// An unsigned testnet request with a payment URL, acknowledged on post.
+private final class AcknowledgingTransport: PaymentProtocolTransporting {
+    func fetchRequest(from url: URL, scheme: String) async throws -> PaymentRequest {
+        let script = ScriptAddressCodec.scriptPubKey(forAddress: "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr", network: .testnet)!
+        let details = PaymentDetails(
+            network: "test", outputs: [PaymentOutput(amount: 100_000, script: script)],
+            expires: UInt64(Date().timeIntervalSince1970) + 3600, memo: "memo",
+            paymentURL: "http://merchant/pay", merchantData: Data([0x01]))
+        return PaymentRequest(pkiType: "none", serializedDetails: details.encoded())
+    }
+    func postPayment(_ payment: Payment, to url: URL, scheme: String) async throws -> PaymentACK {
+        PaymentACK(payment: nil, memo: "thanks")
+    }
+}
+
+private final class StaticReceiveAddress: ReceiveAddressProviding {
+    func receiveAddress() -> String? { "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr" }
+}
+
+private final class NoAuth: SendAuthorizing {
+    func authorize() async throws {}
 }

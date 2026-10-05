@@ -109,6 +109,7 @@ public final class SendCoinsService: NSObject {
         }
 
         let network = try PaymentNetworkResolver.current()
+        let walletId = WalletSendService.activeWalletId()
         let service = BIP70PaymentService.makeForCurrentWallet()
         let result: SendResult
         do {
@@ -129,7 +130,7 @@ public final class SendCoinsService: NSObject {
             let txIdWire = Data(txHashDisplay.reversed())
             await MainActor.run {
                 _ = PendingSendOutcomes.shared.recordUnknownOutcome(
-                    txidWire: txIdWire, address: uri.address, amount: 0, notifies: false)
+                    txidWire: txIdWire, address: uri.address, amount: 0, notifies: false, walletId: walletId)
             }
             throw DashSpendError.paymentStatusUnknown(txIdWire: txIdWire, reason: reason)
         }

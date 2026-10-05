@@ -85,17 +85,17 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// A row that is still missing this long after its send is taken as gone
     /// (removed or swept) rather than not yet written by the persister — long,
     /// because on a large wallet the persister can lag by hours.
-    private static let missingRowGrace: TimeInterval = 24 * 60 * 60
+    nonisolated static let missingRowGrace: TimeInterval = 24 * 60 * 60
     /// A send still unconfirmed this long after it was recorded is no longer
     /// followed: one the network will never take (it spends coins the chain
     /// never had) would otherwise read "Waiting for the network", and warn
     /// on every payment to its address, for good. Its row goes back to
     /// "Sending", where Remove if Not on Network is offered.
-    private static let maxFollowAge: TimeInterval = 7 * 24 * 60 * 60
+    nonisolated static let maxFollowAge: TimeInterval = 7 * 24 * 60 * 60
     /// A send that settles this soon after it was recorded settled while its
     /// "Waiting for the network" notice is still being read: no second
     /// "went through" message on top of it.
-    private static let quietSettleWindow: TimeInterval = 10
+    nonisolated static let quietSettleWindow: TimeInterval = 10
 
     private nonisolated static func storedEntries() -> [Entry] {
         guard let data = UserDefaults.standard.data(forKey: defaultsKey) else { return [] }
@@ -243,14 +243,11 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// lock or block that settles it may already be there. The verdict itself
     /// changes nothing — a node that took the bytes is not a settled payment.
     private func apply(_ events: [OutgoingTransactionProbeEvent]) {
-        let accepted = Set(events.filter { event in
-            event.verdict == .accepted && entries[event.txidWire]?.walletId == event.walletId
-        }.map(\.txidWire))
-        // Only a newly heard acceptance re-reads the rows; the dictionary is
-        // republished on every other probe change too.
-        let new = accepted.subtracting(acceptedHeard)
-        acceptedHeard = accepted
-        if !new.isEmpty { reconcile() }
+        let heard = Self.acceptances(
+            in: events.map { (txidWire: $0.txidWire, walletId: $0.walletId, accepted: $0.verdict == .accepted) },
+            following: entries, alreadyHeard: acceptedHeard)
+        acceptedHeard = heard.accepted
+        if heard.isNew { reconcile() }
     }
 
     // MARK: - Settling against the stored rows
@@ -285,33 +282,29 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     }
 
     private func settle(pending: [Data: Entry], snapshot: SwiftDashSDKWalletTransactionSnapshot) {
-        let rows = Dictionary(snapshot.transactions.map { ($0.txHashData, $0) },
-                              uniquingKeysWith: { a, _ in a })
-        var changed = false
-        // Only sends still followed: one forgotten (removed, wiped) while the
-        // rows were being read neither settles nor raises a notice.
-        for entry in pending.values where entry.walletId == snapshot.walletId && entries[entry.txidWire] != nil {
-            if let row = rows[entry.txidWire] {
-                if row.state == .processing {
-                    guard Date().timeIntervalSince(entry.sentAt) > Self.maxFollowAge else { continue }
-                    DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(entry.txidWire)) still unconfirmed after a week, no longer tracked")
-                    entries.removeValue(forKey: entry.txidWire)
-                    changed = true
-                    continue
-                }
-                DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(entry.txidWire)) settled on chain")
-                if entry.notifies != false,
-                   Date().timeIntervalSince(entry.sentAt) > Self.quietSettleWindow {
-                    raiseNotice(for: entry)
-                }
-            } else {
-                guard Date().timeIntervalSince(entry.sentAt) > Self.missingRowGrace else { continue }
-                DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(entry.txidWire)) left the wallet, no longer tracked")
-            }
-            entries.removeValue(forKey: entry.txidWire)
-            changed = true
+        let rows = Dictionary(
+            snapshot.transactions.map { ($0.txHashData, $0.state == .processing ? RowState.processing : .settled) },
+            uniquingKeysWith: { a, _ in a })
+        let decision = Self.settlement(
+            of: pending, stillFollowed: { [entries] in entries[$0] != nil },
+            walletId: snapshot.walletId, rows: rows, now: Date())
+        for txid in decision.expired {
+            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) still unconfirmed after a week, no longer tracked")
         }
-        if changed { didChangeEntries() }
+        for txid in decision.settled {
+            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) settled on chain")
+        }
+        for txid in decision.gone {
+            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) left the wallet, no longer tracked")
+        }
+        for entry in decision.notifying {
+            notice = Self.merged(notice, adding: entry.amount)
+        }
+        guard !decision.isEmpty else { return }
+        for txid in decision.expired + decision.settled + decision.gone {
+            entries.removeValue(forKey: txid)
+        }
+        didChangeEntries()
     }
 
     /// Clear `notice` if it is still the one with `id` — a notice raised
@@ -322,17 +315,6 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     }
 
     // MARK: - Private
-
-    private func raiseNotice(for entry: Entry) {
-        // Merged into a notice not yet dismissed, so a settlement while home
-        // is away is not overwritten by the next one.
-        if let current = notice {
-            let (total, overflow) = current.total.addingReportingOverflow(entry.amount)
-            notice = Notice(count: current.count + 1, total: overflow ? UInt64.max : total)
-        } else {
-            notice = Notice(count: 1, total: entry.amount)
-        }
-    }
 
     private func didChangeEntries() {
         publishWaitingTxids()
@@ -346,5 +328,94 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     private func publishWaitingTxids() {
         let txids = Set(entries.keys)
         Self.waitingTxids.withLock { $0 = txids }
+    }
+}
+
+// MARK: - Settlement policy
+
+/// The rules that decide when a waiting send settles, expires or is dropped,
+/// and how notices merge. Pure (no store, no clock, no SDK), so they can be
+/// tested on their own; `PendingSendOutcomes` applies them.
+extension PendingSendOutcomes {
+    /// A stored row as the policy sees it.
+    enum RowState: Equatable {
+        /// Neither InstantSend-locked nor mined.
+        case processing
+        /// Locked, mined (or otherwise final).
+        case settled
+    }
+
+    struct SettlementDecision: Equatable {
+        /// Locked or mined: no longer followed.
+        var settled: [Data] = []
+        /// The settled ones that raise the "went through" notice.
+        var notifying: [Entry] = []
+        /// Still unconfirmed after `maxFollowAge`: no longer followed.
+        var expired: [Data] = []
+        /// Missing from the rows after `missingRowGrace`: no longer followed.
+        var gone: [Data] = []
+
+        var isEmpty: Bool { settled.isEmpty && expired.isEmpty && gone.isEmpty }
+    }
+
+    /// What a read of the stored rows decides for `pending`.
+    ///
+    /// - Parameters:
+    ///   - stillFollowed: whether a send is still followed now; one forgotten
+    ///     (removed, wiped) while the rows were being read is left alone.
+    ///   - walletId: the wallet whose rows were read; other wallets' sends are
+    ///     left alone.
+    ///   - rows: the rows found, by wire-order txid; nil when the read failed,
+    ///     which decides nothing (a failed read is not "the row is gone").
+    nonisolated static func settlement(
+        of pending: [Data: Entry],
+        stillFollowed: (Data) -> Bool,
+        walletId: Data,
+        rows: [Data: RowState]?,
+        now: Date
+    ) -> SettlementDecision {
+        var decision = SettlementDecision()
+        guard let rows else { return decision }
+        for entry in pending.values.sorted(by: { $0.sentAt < $1.sentAt })
+        where entry.walletId == walletId && stillFollowed(entry.txidWire) {
+            let age = now.timeIntervalSince(entry.sentAt)
+            switch rows[entry.txidWire] {
+            case .processing:
+                if age > maxFollowAge { decision.expired.append(entry.txidWire) }
+            case .settled:
+                decision.settled.append(entry.txidWire)
+                // No second message on top of the unknown-outcome notice that
+                // may still be up for a send that settled straight away.
+                if entry.notifies != false, age > quietSettleWindow {
+                    decision.notifying.append(entry)
+                }
+            case nil:
+                if age > missingRowGrace { decision.gone.append(entry.txidWire) }
+            }
+        }
+        return decision
+    }
+
+    /// `current` with one more payment of `amount` in it — a notice not yet
+    /// dismissed absorbs the next settlement instead of being overwritten.
+    /// Each result is a new notice (new `id`); the total saturates.
+    nonisolated static func merged(_ current: Notice?, adding amount: UInt64) -> Notice {
+        guard let current else { return Notice(count: 1, total: amount) }
+        let (total, overflow) = current.total.addingReportingOverflow(amount)
+        return Notice(count: current.count + 1, total: overflow ? UInt64.max : total)
+    }
+
+    /// The followed sends with an `.accepted` verdict from their own wallet,
+    /// and whether any of them was not heard before (only then are the rows
+    /// read again: the verdicts are republished on every probe change).
+    nonisolated static func acceptances(
+        in verdicts: [(txidWire: Data, walletId: Data, accepted: Bool)],
+        following entries: [Data: Entry],
+        alreadyHeard: Set<Data>
+    ) -> (accepted: Set<Data>, isNew: Bool) {
+        let accepted = Set(verdicts.filter { verdict in
+            verdict.accepted && entries[verdict.txidWire]?.walletId == verdict.walletId
+        }.map(\.txidWire))
+        return (accepted, !accepted.subtracting(alreadyHeard).isEmpty)
     }
 }

@@ -89,12 +89,18 @@ struct PreparedSend: Equatable {
     /// L6 adapter can broadcast the exact built tx. Kept as `AnyObject` so this module stays
     /// Foundation-only. nil in test fakes. Excluded from equality.
     let sdkTransaction: AnyObject?
+    /// The wallet the transaction was built for (opaque bytes to this layer),
+    /// so a broadcast outcome reported later is booked under it even if
+    /// another wallet is active by then. nil in test fakes. Excluded from
+    /// equality.
+    let walletId: Data?
 
-    init(txData: Data, fee: UInt64, txHashDisplay: Data, sdkTransaction: AnyObject? = nil) {
+    init(txData: Data, fee: UInt64, txHashDisplay: Data, sdkTransaction: AnyObject? = nil, walletId: Data? = nil) {
         self.txData = txData
         self.fee = fee
         self.txHashDisplay = txHashDisplay
         self.sdkTransaction = sdkTransaction
+        self.walletId = walletId
     }
 
     static func == (lhs: Self, rhs: Self) -> Bool {
@@ -168,10 +174,11 @@ final class BIP70PaymentService {
     private let allowUntrustedUnsigned: Bool
     /// Told when a broadcast handed off after the merchant's acknowledgement
     /// (`awaitAcceptance: false`) ends with no answer from the network, with
-    /// the display-order txid, the paid amount, the primary address and the
-    /// reason, so the app can follow the payment; the layer does not know
+    /// the display-order txid, the paid amount, the primary address, the
+    /// wallet the transaction was built for and the reason, so the app can
+    /// follow the payment; the layer does not know
     /// where sends are followed.
-    var onDetachedBroadcastUnknown: ((_ txHashDisplay: Data, _ amount: UInt64, _ address: String?, _ reason: String) -> Void)?
+    var onDetachedBroadcastUnknown: ((_ txHashDisplay: Data, _ amount: UInt64, _ address: String?, _ walletId: Data?, _ reason: String) -> Void)?
 
     init(transport: PaymentProtocolTransporting = PaymentProtocolTransport(),
          verifier: PaymentRequestVerifier = PaymentRequestVerifier(),
@@ -353,7 +360,7 @@ final class BIP70PaymentService {
                     _ = try await wallet.broadcast(prepared)
                 } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let reason) {
                     DWLogger.log("BIP70: background broadcast of \(txidHexDisplay) got no answer from the network: \(reason)")
-                    onUnknown?(txHashDisplay, amount, address, reason)
+                    onUnknown?(txHashDisplay, amount, address, prepared.walletId, reason)
                 } catch {
                     DWLogger.log("BIP70: background broadcast of \(txidHexDisplay) ended without acceptance: \(error)")
                 }
