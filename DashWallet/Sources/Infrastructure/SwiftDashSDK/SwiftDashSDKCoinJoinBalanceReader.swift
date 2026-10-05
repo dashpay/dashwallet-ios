@@ -15,8 +15,8 @@
 //  remain stranded in the CoinJoin account and, if so, offer to sweep them
 //  into the user's spendable balance.
 //
-//  Returns 0 (never throws) when the read fails — callers treat 0 as
-//  "nothing to move".
+//  Returns nil (never throws) when the read fails, so a failed read stays
+//  distinct from an empty account — callers treat 0 as "nothing to move".
 //
 
 import Foundation
@@ -47,14 +47,14 @@ final class SwiftDashSDKCoinJoinBalanceReader: NSObject {
         qos: .utility)
 
     /// Spendable balance (in duffs) of `wallet`'s CoinJoin account 0, read on
-    /// `readQueue`.
+    /// `readQueue`, or `nil` when the read fails.
     ///
     /// `pooledSpendableBalance(accountType: .coinJoin)` sums the account's
     /// `spendable_utxos` — unlocked, mature, 0-conf included — which is what
     /// the sweep moves, so the gate never hides funds the sweep would move.
     /// That is the account's `confirmed + unconfirmed`, read for one account
     /// instead of walking every account the wallet has.
-    static func coinJoinSpendableDuffs(for wallet: ManagedPlatformWallet) async -> UInt64 {
+    static func coinJoinSpendableDuffs(for wallet: ManagedPlatformWallet) async -> UInt64? {
         await withCheckedContinuation { continuation in
             readQueue.async {
                 continuation.resume(returning: read(wallet))
@@ -62,7 +62,7 @@ final class SwiftDashSDKCoinJoinBalanceReader: NSObject {
         }
     }
 
-    private static func read(_ wallet: ManagedPlatformWallet) -> UInt64 {
+    private static func read(_ wallet: ManagedPlatformWallet) -> UInt64? {
         do {
             let total = try wallet.coreWallet().pooledSpendableBalance(
                 accountType: .coinJoin,
@@ -77,7 +77,7 @@ final class SwiftDashSDKCoinJoinBalanceReader: NSObject {
             // read naming a single account requires that account to exist.
             Self.logger.warning(
                 "🪙 CJBAL :: coinjoin balance read failed: \(String(describing: error), privacy: .public)")
-            return 0
+            return nil
         }
     }
 }

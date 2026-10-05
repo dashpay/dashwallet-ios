@@ -634,6 +634,12 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// that asked for it. A caller therefore sees the new value when it lands,
     /// through `coinJoinBalanceDuffs`, not when this returns.
     ///
+    /// A failed read publishes nothing: the last figure stands until a later
+    /// refresh reads the account, so a transient failure cannot zero out coins
+    /// the sweep would move. That figure always belongs to the current wallet —
+    /// reads for another wallet are dropped, and a wallet or network switch
+    /// resets it through `clearAllState()`.
+    ///
     /// Overlapping requests coalesce through a `PooledReadSlot`, like the pooled
     /// read: one read in flight, and at most one re-run.
     @MainActor
@@ -658,7 +664,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             self.coinJoinReadTask = nil
             let stillCurrent = SwiftDashSDKHost.shared.wallet?.walletId == walletId
                 && SwiftDashSDKHost.shared.runningNetwork == network
-            if stillCurrent, !Task.isCancelled {
+            if stillCurrent, !Task.isCancelled, let duffs {
                 self.publishCoinJoinBalance(duffs)
             }
 
