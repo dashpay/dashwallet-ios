@@ -140,10 +140,6 @@ NSString *DWCurrentThreadName(void) {
     DWLogInfo(className, @"%@", message);
 }
 
-+ (void)logWarning:(NSString *)message {
-    DDLogWarn(@"%@", message);
-}
-
 + (void)logError:(NSString *)message {
     DDLogError(@"%@", message);
 }

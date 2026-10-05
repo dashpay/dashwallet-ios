@@ -166,6 +166,12 @@ final class BIP70PaymentService {
     /// When true, allow unsigned (`pki_type == "none"`) requests. Invalid SIGNED requests are
     /// always blocked regardless of this flag.
     private let allowUntrustedUnsigned: Bool
+    /// Told when a broadcast handed off after the merchant's acknowledgement
+    /// (`awaitAcceptance: false`) ends with no answer from the network, with
+    /// the display-order txid, the paid amount, the primary address and the
+    /// reason, so the app can follow the payment. The layer itself stays
+    /// SDK- and app-free.
+    var onDetachedBroadcastUnknown: ((_ txHashDisplay: Data, _ amount: UInt64, _ address: String?, _ reason: String) -> Void)?
 
     init(transport: PaymentProtocolTransporting = PaymentProtocolTransport(),
          verifier: PaymentRequestVerifier = PaymentRequestVerifier(),
@@ -339,9 +345,15 @@ final class BIP70PaymentService {
             // verdict only decides what gets logged here.
             txidHexDisplay = prepared.txHashDisplay.map { String(format: "%02x", $0) }.joined()
             let wallet = self.wallet
+            let onUnknown = onDetachedBroadcastUnknown
+            let amount = confirmation.amount
+            let address = confirmation.primaryAddress
             Task.detached(priority: .userInitiated) {
                 do {
                     _ = try await wallet.broadcast(prepared)
+                } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let reason) {
+                    DWLogger.log("BIP70: background broadcast of \(txidHexDisplay) got no answer from the network: \(reason)")
+                    onUnknown?(txHashDisplay, amount, address, reason)
                 } catch {
                     DWLogger.log("BIP70: background broadcast of \(txidHexDisplay) ended without acceptance: \(error)")
                 }

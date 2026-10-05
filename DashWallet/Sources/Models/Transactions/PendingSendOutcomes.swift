@@ -19,6 +19,7 @@ import Combine
 import Foundation
 import os
 import SwiftDashSDK
+import UIKit
 
 /// Sends whose broadcast ended without a word from the network ("status
 /// unknown"), followed until the network answers.
@@ -72,7 +73,6 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
 
     @Published private(set) var entries: [Data: Entry] = [:]
     @Published private(set) var notice: Notice?
-    private(set) var noticeRaisedAt: Date?
 
     /// Read by `Transaction.stateTitle`, which is not main-actor isolated.
     /// Mirrors `entries`, written only from the main actor.
@@ -122,9 +122,10 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
 
     /// The broadcast of `txidWire` ended with no answer from the network.
     /// Called by `WalletSendService.unknownOutcomeError` (every route it maps
-    /// to `broadcastUnknown`), by the CoinJoin sweep for a chunk
-    /// (`SwiftDashSDKTransactionSender.sweepCoinJoin`) and by the headless
-    /// BIP70 payment (`SendCoinsService.payWithDashUrl`).
+    /// to `broadcastUnknown`, and the headless BIP70 broadcast handed off
+    /// after the merchant's acknowledgement), by the CoinJoin sweep for a
+    /// chunk (`SwiftDashSDKTransactionSender.sweepCoinJoin`) and by the
+    /// awaited headless BIP70 payment (`SendCoinsService.payWithDashUrl`).
     ///
     /// - Returns: false when the send could not be followed (no active
     ///   wallet), so its row will not say "Waiting for the network".
@@ -194,7 +195,21 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// Follow `manager`'s probe verdicts. Called for each manager the host
     /// configures; replaces the previous watch. Also settles, once, the sends
     /// that went through while the app was closed.
+    /// A wallet removed from the device takes its waiting sends with it: they
+    /// would never settle against any wallet again. Checked when a wallet's
+    /// host is published, not on every save; only with the keychain readable
+    /// (a locked device lists no wallets) and a non-empty list.
+    func dropSendsOfRemovedWallets() {
+        guard !entries.isEmpty, UIApplication.shared.isProtectedDataAvailable,
+              let stored = try? SwiftDashSDKHost.persistedWalletIds(), !stored.isEmpty else { return }
+        let orphans = entries.values.filter { !stored.contains($0.walletId) }.map(\.txidWire)
+        if !orphans.isEmpty {
+            forget(txidsWire: orphans, reason: "its wallet was removed")
+        }
+    }
+
     func observeVerdicts(of manager: PlatformWalletManager) {
+        dropSendsOfRemovedWallets()
         reconcile()
         verdictWatch = manager.$outgoingTransactionVerdicts
             .receive(on: DispatchQueue.main)
@@ -226,14 +241,6 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         reconcileInFlight = true
         let pending = entries
         Task.detached(priority: .utility) { [weak self] in
-            // A wallet removed from the device takes its waiting sends with
-            // it: they would never settle against any wallet again.
-            if let stored = try? SwiftDashSDKHost.persistedWalletIds() {
-                let orphans = pending.values.filter { !stored.contains($0.walletId) }.map(\.txidWire)
-                if !orphans.isEmpty {
-                    await MainActor.run { self?.forget(txidsWire: orphans, reason: "its wallet was removed") }
-                }
-            }
             let snapshot = SwiftDashSDKWalletSource.fetch(txids: Set(pending.keys))
             await MainActor.run {
                 guard let self else { return }
@@ -282,16 +289,14 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     }
 
     private func raiseNotice(for entry: Entry) {
-        let now = Date()
-        if let current = notice,
-           let raisedAt = noticeRaisedAt,
-           now.timeIntervalSince(raisedAt) < Self.noticeDuration {
+        // Merged into a notice not yet dismissed, so a settlement while home
+        // is away is not overwritten by the next one.
+        if let current = notice {
             let (total, overflow) = current.total.addingReportingOverflow(entry.amount)
             notice = Notice(count: current.count + 1, total: overflow ? UInt64.max : total)
         } else {
             notice = Notice(count: 1, total: entry.amount)
         }
-        noticeRaisedAt = now
     }
 
     private func didChangeEntries() {

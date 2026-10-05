@@ -2067,7 +2067,8 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// The subset of wallet transactions whose txid (wire order) is in
     /// `txids`, `firstSeen` desc. Safe from any thread. Point lookups on the
     /// unique txid index — cost scales with `txids.count`, not with the
-    /// wallet's history size.
+    /// wallet's history size. Nil when the rows could not be read, so a
+    /// caller never takes a failed read for "these transactions are gone".
     static func fetch(txids: Set<Data>) -> SwiftDashSDKWalletTransactionSnapshot? {
         guard let (container, walletId) = hostHandles() else { return nil }
         guard !txids.isEmpty else {
@@ -2078,7 +2079,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
             predicate: #Predicate { txids.contains($0.txid) },
             sortBy: [SortDescriptor(\.firstSeen, order: .reverse)])
         descriptor.relationshipKeyPathsForPrefetching = [\.outputs, \.inputs]
-        let rows = (try? context.fetch(descriptor)) ?? []
+        guard let rows = try? context.fetch(descriptor) else { return nil }
         let transactions = rows
             .filter { isWalletMember($0, walletId: walletId) }
             .map { wrap($0, walletId: walletId) }
