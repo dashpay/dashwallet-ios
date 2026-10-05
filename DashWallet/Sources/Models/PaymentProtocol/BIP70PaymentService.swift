@@ -169,8 +169,8 @@ final class BIP70PaymentService {
     /// Told when a broadcast handed off after the merchant's acknowledgement
     /// (`awaitAcceptance: false`) ends with no answer from the network, with
     /// the display-order txid, the paid amount, the primary address and the
-    /// reason, so the app can follow the payment. The layer itself stays
-    /// SDK- and app-free.
+    /// reason, so the app can follow the payment; the layer does not know
+    /// where sends are followed.
     var onDetachedBroadcastUnknown: ((_ txHashDisplay: Data, _ amount: UInt64, _ address: String?, _ reason: String) -> Void)?
 
     init(transport: PaymentProtocolTransporting = PaymentProtocolTransport(),

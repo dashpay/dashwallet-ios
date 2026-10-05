@@ -75,14 +75,26 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     @Published private(set) var notice: Notice?
 
     /// Read by `Transaction.stateTitle`, which is not main-actor isolated.
-    /// Mirrors `entries`, written only from the main actor.
+    /// Mirrors `entries`, written only from the main actor; seeded from the
+    /// stored entries on first read, so a row titled before `shared` exists
+    /// still reads "Waiting for the network".
     private nonisolated static let waitingTxids =
-        OSAllocatedUnfairLock<Set<Data>>(initialState: [])
+        OSAllocatedUnfairLock<Set<Data>>(initialState: Set(storedEntries().map(\.txidWire)))
 
-    private static let defaultsKey = "PendingSendOutcomes.entries.v1"
+    private nonisolated static let defaultsKey = "PendingSendOutcomes.entries.v1"
     /// A row that is still missing this long after its send is taken as gone
-    /// (removed or swept) rather than not yet written by the persister.
-    private static let missingRowGrace: TimeInterval = 60 * 60
+    /// (removed or swept) rather than not yet written by the persister — long,
+    /// because on a large wallet the persister can lag by hours.
+    private static let missingRowGrace: TimeInterval = 24 * 60 * 60
+    /// A send that settles this soon after it was recorded settled while its
+    /// "Waiting for the network" notice is still being read: no second
+    /// "went through" message on top of it.
+    private static let quietSettleWindow: TimeInterval = 10
+
+    private nonisolated static func storedEntries() -> [Entry] {
+        guard let data = UserDefaults.standard.data(forKey: defaultsKey) else { return [] }
+        return (try? JSONDecoder().decode([Entry].self, from: data)) ?? []
+    }
 
     private var verdictWatch: AnyCancellable?
     private var saveWatch: AnyCancellable?
@@ -91,10 +103,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
 
     private override init() {
         super.init()
-        if let data = UserDefaults.standard.data(forKey: Self.defaultsKey),
-           let stored = try? JSONDecoder().decode([Entry].self, from: data) {
-            entries = Dictionary(stored.map { ($0.txidWire, $0) }, uniquingKeysWith: { a, _ in a })
-        }
+        let stored = Self.storedEntries()
+        entries = Dictionary(stored.map { ($0.txidWire, $0) }, uniquingKeysWith: { a, _ in a })
         publishWaitingTxids()
         updateSaveWatch()
     }
@@ -270,7 +280,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             if let row = rows[entry.txidWire] {
                 guard row.state != .processing else { continue }
                 DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(entry.txidWire)) settled on chain")
-                if entry.notifies != false {
+                if entry.notifies != false,
+                   Date().timeIntervalSince(entry.sentAt) > Self.quietSettleWindow {
                     raiseNotice(for: entry)
                 }
             } else {

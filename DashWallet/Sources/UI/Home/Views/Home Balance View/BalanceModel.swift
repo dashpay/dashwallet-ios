@@ -98,6 +98,16 @@ final class BalanceModel: ObservableObject {
             }
             .store(in: &cancellableBag)
 
+        // Another wallet's (or network's) waiting coins are not this one's:
+        // cleared until its own read lands.
+        NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
+            .merge(with: NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification))
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.awaitingConfirmationDuffs = 0
+            }
+            .store(in: &cancellableBag)
+
         reloadBalance()
         observeAppLifecycle()
     }

@@ -21,8 +21,11 @@ extension BIP70PaymentService {
         // answer is followed in the history like any send.
         service.onDetachedBroadcastUnknown = { txHashDisplay, amount, address, reason in
             DWLogger.log("💸 TXSEND :: BIP70 broadcast after acknowledgement got no answer: \(reason)")
-            WalletSendService.followUnknownOutcome(
-                txidWire: Data(txHashDisplay.reversed()), address: address, amount: amount)
+            // Called from a detached task: hop without blocking it.
+            DispatchQueue.main.async {
+                WalletSendService.followUnknownOutcome(
+                    txidWire: Data(txHashDisplay.reversed()), address: address, amount: amount)
+            }
         }
         return service
     }
