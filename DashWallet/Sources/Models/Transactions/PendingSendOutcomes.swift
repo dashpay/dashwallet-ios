@@ -142,6 +142,16 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         if changed { didChangeEntries() }
     }
 
+    /// Stop following every send: the wallet they belong to was wiped, or the
+    /// app switched network, so no row of theirs is on screen to follow.
+    @objc func forgetAll() {
+        guard !entries.isEmpty else { return }
+        DWLogger.log("💸 TXSEND :: \(entries.count) waiting send(s) no longer tracked: wallet wiped or network switched")
+        entries = [:]
+        notice = nil
+        didChangeEntries()
+    }
+
     // MARK: - Reading
 
     /// Whether `txidWire` is a send still waiting for the network.

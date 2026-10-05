@@ -77,6 +77,14 @@ public final class SendCoinsService: NSObject {
             // Preserve the swap flow's existing auth-cancel handling, which keys on
             // `DashSpendError.authenticationCancelled` rather than the send service's NSError.
             throw DashSpendError.authenticationCancelled
+        } catch {
+            // A deposit whose broadcast got no answer may still settle: it gates
+            // the next swap like a confirmed one until it is IS-locked (or the
+            // gate's timeout), so a second deposit cannot chain onto it.
+            if let unknownTxidWire = WalletSendService.unknownOutcomeTxidWire(of: error) {
+                SwapPendingGate.shared.register(txidWire: unknownTxidWire)
+            }
+            throw error
         }
 
         SwapPendingGate.shared.register(txidWire: txidWire)

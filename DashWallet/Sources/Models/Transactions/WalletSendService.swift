@@ -299,6 +299,19 @@ final class WalletSendService: NSObject {
     /// followed in the history (`unknownOutcomeError`).
     static let followedKey = "org.dashfoundation.dash.send.followed"
 
+    /// `userInfo` key, the wire-order txid (`Data`) of a `broadcastUnknown`
+    /// send whose transaction is known (`unknownOutcomeError`).
+    @objc static let unknownTxidWireKey = "org.dashfoundation.dash.send.unknownTxidWire"
+
+    /// The txid of a send whose broadcast outcome is unknown, when it is known:
+    /// a caller that books the send against its txid (an order, a swap gate)
+    /// keeps doing so, as the transaction may still settle.
+    static func unknownOutcomeTxidWire(of error: Error) -> Data? {
+        let error = error as NSError
+        guard isBroadcastUnknownError(error) else { return nil }
+        return error.userInfo[unknownTxidWireKey] as? Data
+    }
+
     /// See `RecentSendsRegistry` — the send-success screen's fallback source.
     let recentSends = RecentSendsRegistry()
     #if DASHPAY
@@ -416,7 +429,8 @@ final class WalletSendService: NSObject {
                     fromAddress: inputSelector.address,
                     to: address,
                     amount: amount,
-                    adjustAmountDownwards: adjustAmountDownwards
+                    adjustAmountDownwards: adjustAmountDownwards,
+                    holdingRouting: holdingRouting
                 )
                 // buildAndSignFromAddress broadcasts internally; txHash is
                 // display order — reverse to the wire-order registry key.
@@ -1068,25 +1082,6 @@ private extension WalletSendService {
                 comment: "DashPay Contacts"))
     }
 
-    /// A broadcast of `txidWire` that ended with no answer from the network.
-    ///
-    /// The one place a send with an unknown outcome is recorded: every route
-    /// that knows its txid — the prepared standard send (plain sends, swap
-    /// deposits, `SendCoinsService`) and the selected-input send — maps the
-    /// outcome here, and the send is followed in the history as "Waiting for
-    /// the network" (`PendingSendOutcomes`). A contact payment's unknown outcome
-    /// carries no txid from the SDK, so it is not followed.
-    static func unknownOutcomeError(txidWire: Data, address: String?, amount: UInt64, reason: String) -> NSError {
-        let followed = MainThread.sync {
-            PendingSendOutcomes.shared.recordUnknownOutcome(txidWire: txidWire, address: address, amount: amount)
-        }
-        let error = makeError(code: .broadcastUnknown, description: BroadcastOutcomeCopy.unknown, diagnostic: reason)
-        guard followed else { return error }
-        var userInfo = error.userInfo
-        userInfo[followedKey] = true
-        return NSError(domain: error.domain, code: error.code, userInfo: userInfo)
-    }
-
     /// A build the SDK refused because the coins that would fund it are not
     /// confirmed yet — change of an earlier send the network has not taken, or
     /// a fresh incoming payment — becomes this service's
@@ -1157,5 +1152,32 @@ private extension WalletSendService {
             code: code.rawValue,
             userInfo: userInfo
         )
+    }
+}
+
+extension WalletSendService {
+    /// A broadcast of `txidWire` that ended with no answer from the network.
+    ///
+    /// Where a send with an unknown outcome is recorded: every route that
+    /// knows its txid — the prepared standard send (plain sends, swap
+    /// deposits, `SendCoinsService`), the selected-input send and the
+    /// interactive BIP70 payment — maps the outcome here, and the send is
+    /// followed in the history as "Waiting for the network"
+    /// (`PendingSendOutcomes`). The error carries the txid
+    /// (`unknownTxidWireKey`) for callers that book the send against it. A
+    /// CoinJoin sweep chunk records itself (`SwiftDashSDKTransactionSender
+    /// .sweepCoinJoin`); a contact payment's unknown outcome carries no txid
+    /// from the SDK, so it is not followed.
+    static func unknownOutcomeError(txidWire: Data, address: String?, amount: UInt64, reason: String) -> NSError {
+        let followed = MainThread.sync {
+            PendingSendOutcomes.shared.recordUnknownOutcome(txidWire: txidWire, address: address, amount: amount)
+        }
+        let error = makeError(code: .broadcastUnknown, description: BroadcastOutcomeCopy.unknown, diagnostic: reason)
+        var userInfo = error.userInfo
+        userInfo[unknownTxidWireKey] = txidWire
+        if followed {
+            userInfo[followedKey] = true
+        }
+        return NSError(domain: error.domain, code: error.code, userInfo: userInfo)
     }
 }

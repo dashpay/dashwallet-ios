@@ -307,9 +307,23 @@ static NSString *DWReversedHexString(NSData *data) {
                      completion:^(DWBIP70SendResultBox *_Nullable result, NSError *_Nullable error) {
                          self.bip70Coordinator = nil;
                          [self reportBroadcastOutcome:^{
+                             if (error && [DWWalletSendService isFollowedUnknownOutcomeError:error]) {
+                                 // As the plain send: no answer is not a failure, and
+                                 // the payment waits in the history.
+                                 NSData *txidWire = error.userInfo[DWWalletSendService.unknownTxidWireKey];
+                                 if (txidWire) {
+                                     [self.delegate paymentProcessor:self didSendWithUnknownOutcomeTxidWire:txidWire];
+                                     [self reset];
+                                     return;
+                                 }
+                             }
                              if (error || result == nil) {
+                                 NSString *title = NSLocalizedString(@"Couldn't make payment", nil);
+                                 if (error && [DWWalletSendService isBroadcastUnknownError:error]) {
+                                     title = NSLocalizedString(@"Transaction status unknown", nil);
+                                 }
                                  [self failedWithError:error
-                                                 title:NSLocalizedString(@"Couldn't make payment", nil)
+                                                 title:title
                                                message:error.localizedDescription];
                                  return;
                              }

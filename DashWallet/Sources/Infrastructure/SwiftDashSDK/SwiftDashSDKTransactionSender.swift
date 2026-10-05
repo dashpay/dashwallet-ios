@@ -311,12 +311,26 @@ final class SwiftDashSDKTransactionSender: NSObject {
                     accountIndex: Self.coinJoinAccountIndex)
                 // Serialize BEFORE broadcast — broadcasting consumes the handle.
                 let txData = try tx.serializedData()
-                let outcome = try wallet.coreWallet().broadcastTransactionWithOutcome(tx)
-                _ = try Self.requireAccepted(outcome)
                 // Wire (internal) byte order to match `Transaction.txHashData` /
                 // `CoinJoinWithdrawalStore`: `computeTxHash` yields display order,
                 // so reverse it back to wire order.
-                return Data(Self.computeTxHash(from: txData).reversed())
+                let txidWire = Data(Self.computeTxHash(from: txData).reversed())
+                let outcome = try wallet.coreWallet().broadcastTransactionWithOutcome(tx)
+                do {
+                    _ = try Self.requireAccepted(outcome)
+                } catch SendError.transactionStatusUnknown(_, let reason) {
+                    // No answer is not a failure: the chunk may well have gone
+                    // out. It counts as sent (grouped with the sweep's other
+                    // transactions) and its row waits for the network like any
+                    // send's. Its address is the wallet's own, so no repeat
+                    // warning keys on it.
+                    let amount = chunk.reduce(UInt64(0)) { $0 + $1.valueDuffs }
+                    let followed = MainThread.sync {
+                        PendingSendOutcomes.shared.recordUnknownOutcome(txidWire: txidWire, address: nil, amount: amount)
+                    }
+                    DWLogger.log("💸 TXSEND :: coinjoin sweep chunk outcome unknown (\(reason)); followed=\(followed)")
+                }
+                return txidWire
             })
 
         // Log display-order hex (byte-reversed wire order) to match explorers.
@@ -404,7 +418,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
         fromAddress: String,
         to address: String,
         amount: UInt64,
-        adjustAmountDownwards: Bool
+        adjustAmountDownwards: Bool,
+        holdingRouting: Bool
     ) async throws -> (txData: Data, fee: UInt64, txHash: Data) {
         DWLogger.log("💸 TXSEND :: selected-input send — amount=\(amount) adjust=\(adjustAmountDownwards)")
 
@@ -467,9 +482,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
         let exactFee = tx.fee
         let txHash = computeTxHash(from: txData)
         do {
-            // Unheld: the selected-input send is CrowdNode's, whose sends run
-            // without the routing hold (`WalletSendService.sendWithoutRoutingHold`).
-            _ = try Self.requireAccepted(try await waitingForNetwork(holdingRouting: false) { try submit(tx, through: wallet) })
+            // CrowdNode, the only caller today, runs unheld
+            // (`WalletSendService.sendWithoutRoutingHold`).
+            _ = try Self.requireAccepted(try await waitingForNetwork(holdingRouting: holdingRouting) { try submit(tx, through: wallet) })
         } catch SendError.transactionStatusUnknown(_, let reason) {
             // Carry the app-computed hash (display order, as every other route
             // reports it) so the caller can follow the send by its txid.

@@ -238,19 +238,23 @@ extension PaymentController: DWPaymentProcessorDelegate {
                 comment: "Send: an earlier payment to the same address is still waiting for the network; %1$@ is its amount, %2$@ when it was sent"),
             waiting.amount.formattedDashAmount,
             "\(DWDateFormatter.sharedInstance.shortStringFromDate(waiting.sentAt)) \(DWDateFormatter.sharedInstance.timeOnly(from: waiting.sentAt))")
-        precondition(presentationAnchor != nil)
-        let presenter = presentationAnchor!.topController()
-        Task { @MainActor in
-            // Resumes once the dialog is gone, so the PIN prompt that follows
-            // "Send anyway" presents over a settled screen.
-            let waits = await presenter.showModalDialog(
-                style: .warning,
-                icon: .system("exclamationmark.triangle"),
-                heading: NSLocalizedString("Pay this address again?", comment: "Send: an earlier payment to the same address is still waiting for the network"),
-                textBlock1: message,
-                positiveButtonText: NSLocalizedString("Wait", comment: "Send: don't repeat a payment that is still waiting for the network"),
-                negativeButtonText: NSLocalizedString("Send anyway", comment: "Send: repeat a payment although the earlier one is still waiting for the network"))
-            completion(!waits)
+        guard let presenter = presentationAnchor?.topController() else {
+            DWLogger.log("PaymentController: no screen to ask before repeating a payment on; not sending")
+            completion(false)
+            return
+        }
+        // Answered once the dialog is gone, so the PIN prompt that follows
+        // "Send anyway" presents over a settled screen. Anything but "Send
+        // anyway" — "Wait", a teardown, a dialog that could not be shown —
+        // does not send.
+        Self.presentDialog(
+            on: presenter,
+            heading: NSLocalizedString("Pay this address again?", comment: "Send: an earlier payment to the same address is still waiting for the network"),
+            message: message,
+            positiveButtonText: NSLocalizedString("Wait", comment: "Send: don't repeat a payment that is still waiting for the network"),
+            negativeButtonText: NSLocalizedString("Send anyway", comment: "Send: repeat a payment although the earlier one is still waiting for the network"),
+            log: "the repeat-payment warning") { choice in
+            completion(choice == false)
         }
     }
 
@@ -366,38 +370,73 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
     /// The "Waiting for the network" notice for a send whose broadcast got no
     /// answer, presented on `viewController`. `onClosed` runs exactly once,
-    /// when the notice is gone: after its OK and its dismissal (so `onClosed`
-    /// can dismiss or present in turn), after any other teardown of it, or
-    /// right away when UIKit does not present it — a paying screen waiting for
-    /// it is never stranded.
+    /// when the notice is gone (see `presentDialog`) — a paying screen waiting
+    /// for it is never stranded.
     static func showUnknownOutcomeNotice(on viewController: UIViewController, onClosed: (() -> Void)? = nil) {
+        presentDialog(
+            on: viewController,
+            heading: NSLocalizedString("Waiting for the network", comment: "Sent transaction whose broadcast got no answer from the network yet"),
+            message: unknownOutcomeMessage,
+            positiveButtonText: NSLocalizedString("OK", comment: ""),
+            negativeButtonText: nil,
+            log: "the unknown-outcome notice") { _ in onClosed?() }
+    }
+
+    /// A warning dialog whose outcome is reported exactly once, from its own
+    /// host: `onClosed(true)` / `onClosed(false)` for the positive / negative
+    /// button once the dialog's dismissal has finished (so `onClosed` can
+    /// present or dismiss in turn), `onClosed(nil)` when it was torn down any
+    /// other way or UIKit did not present it at all. A flow waiting on it
+    /// always goes on.
+    static func presentDialog(
+        on viewController: UIViewController,
+        heading: String,
+        message: String,
+        positiveButtonText: String,
+        negativeButtonText: String?,
+        log: String,
+        onClosed: @escaping (Bool?) -> Void
+    ) {
+        var choice: Bool?
         var closed = false
         let close = {
             guard !closed else { return }
             closed = true
-            onClosed?()
+            onClosed(choice)
         }
-        let host = NoticeHostingController(rootView: ModalDialog(
+        let host = DialogHostingController(rootView: ModalDialog(
             style: .warning,
             icon: .system("exclamationmark.triangle"),
-            heading: NSLocalizedString("Waiting for the network", comment: "Sent transaction whose broadcast got no answer from the network yet"),
-            textBlock1: unknownOutcomeMessage,
-            positiveButtonText: NSLocalizedString("OK", comment: ""),
-            positiveButtonAction: {}))
-        host.rootView.positiveButtonAction = { [weak host] in host?.dismiss(animated: true) }
+            heading: heading,
+            textBlock1: message,
+            positiveButtonText: positiveButtonText,
+            positiveButtonAction: {},
+            negativeButtonText: negativeButtonText))
+        host.rootView.positiveButtonAction = { [weak host] in
+            guard choice == nil else { return }
+            choice = true
+            host?.dismiss(animated: true)
+        }
+        if negativeButtonText != nil {
+            host.rootView.negativeButtonAction = { [weak host] in
+                guard choice == nil else { return }
+                choice = false
+                host?.dismiss(animated: true)
+            }
+        }
         host.onDisappear = close
         host.modalPresentationStyle = .overFullScreen
         host.modalTransitionStyle = .crossDissolve
         host.view.backgroundColor = UIColor(Color.dash.backgroundOverlay)
         viewController.present(host, animated: true)
         if host.presentingViewController == nil {
-            DWLogger.log("PaymentController: the unknown-outcome notice could not be shown")
+            DWLogger.log("PaymentController: \(log) could not be shown")
             close()
         }
     }
 
-    /// The notice's host: reports when it has left the screen.
-    private final class NoticeHostingController: UIHostingController<ModalDialog> {
+    /// A dialog's host: reports when it has left the screen.
+    private final class DialogHostingController: UIHostingController<ModalDialog> {
         var onDisappear: (() -> Void)?
 
         override func viewDidDisappear(_ animated: Bool) {

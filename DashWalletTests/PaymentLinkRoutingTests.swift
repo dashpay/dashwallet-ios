@@ -614,3 +614,89 @@ final class LegacyAmountSubmissionTests: XCTestCase {
         XCTAssertNotEqual(screen.model.amount.plainAmount, before, "and edits apply again")
     }
 }
+
+/// The dialogs a payment waits on (the unknown-outcome notice, the
+/// repeat-payment warning) report their outcome exactly once, whatever
+/// happens to them, and an unknown outcome keeps its txid for the caller.
+@MainActor
+final class PaymentDialogOutcomeTests: XCTestCase {
+    private var window: UIWindow!
+    private var previousKeyWindow: UIWindow?
+
+    override func setUp() {
+        super.setUp()
+        previousKeyWindow = UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.keyWindow }.first
+        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            window = UIWindow(windowScene: scene)
+        } else {
+            window = UIWindow(frame: UIScreen.main.bounds)
+        }
+        window.rootViewController = UIViewController()
+        window.makeKeyAndVisible()
+    }
+
+    override func tearDown() {
+        window.rootViewController?.dismiss(animated: false)
+        window.isHidden = true
+        window = nil
+        previousKeyWindow?.makeKey()
+        super.tearDown()
+    }
+
+    private func spin(until condition: () -> Bool, timeout: TimeInterval = 3) {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !condition(), Date() < deadline {
+            RunLoop.main.run(until: Date().addingTimeInterval(0.01))
+        }
+    }
+
+    private func present(on presenter: UIViewController, into outcomes: @escaping (Bool?) -> Void) {
+        PaymentController.presentDialog(
+            on: presenter, heading: "Pay this address again?", message: "…",
+            positiveButtonText: "Wait", negativeButtonText: "Send anyway", log: "test dialog", onClosed: outcomes)
+    }
+
+    func testADialogThatCannotBeShownReportsAtOnce() {
+        var outcomes: [Bool?] = []
+        present(on: UIViewController()) { outcomes.append($0) }
+        XCTAssertEqual(outcomes, [nil], "a flow waiting on it goes on, without a choice")
+    }
+
+    func testAChoiceIsReportedOnceAfterTheDialogIsGone() throws {
+        let root = try XCTUnwrap(window.rootViewController)
+        var outcomes: [Bool?] = []
+        var stillPresentedWhenReported: Bool?
+        present(on: root) { choice in
+            outcomes.append(choice)
+            stillPresentedWhenReported = root.presentedViewController != nil
+        }
+        let dialog = try XCTUnwrap(root.presentedViewController as? UIHostingController<ModalDialog>)
+
+        dialog.rootView.negativeButtonAction?()
+        dialog.rootView.positiveButtonAction()
+        spin(until: { !outcomes.isEmpty })
+        spin(until: { false }, timeout: 0.3)
+        XCTAssertEqual(outcomes, [false], "the first choice, once")
+        XCTAssertEqual(stillPresentedWhenReported, false, "reported once the dialog is gone")
+    }
+
+    func testADialogTornDownWithoutAChoiceReportsNoChoice() throws {
+        let root = try XCTUnwrap(window.rootViewController)
+        var outcomes: [Bool?] = []
+        present(on: root) { outcomes.append($0) }
+        spin(until: { root.presentedViewController?.isBeingPresented == false })
+        root.dismiss(animated: false)
+        spin(until: { !outcomes.isEmpty })
+        XCTAssertEqual(outcomes, [nil])
+    }
+
+    func testAnUnknownOutcomeErrorCarriesItsTxid() {
+        let txidWire = Data(repeating: 0x7e, count: 32)
+        defer { PendingSendOutcomes.shared.forget(txidsWire: [txidWire]) }
+        let error = WalletSendService.unknownOutcomeError(txidWire: txidWire, address: nil, amount: 1, reason: "timeout")
+        XCTAssertTrue(WalletSendService.isBroadcastUnknownError(error))
+        XCTAssertEqual(WalletSendService.unknownOutcomeTxidWire(of: error), txidWire)
+        XCTAssertNil(WalletSendService.unknownOutcomeTxidWire(of: NSError(domain: "other", code: 10)))
+    }
+}

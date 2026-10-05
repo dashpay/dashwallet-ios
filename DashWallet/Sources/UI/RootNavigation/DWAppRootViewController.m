@@ -292,6 +292,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
         // The old network's sends are torn down with it.
         [DWPaymentInFlight abandonHolds];
+        [[DWPendingSendOutcomes shared] forgetAll];
 
         // reset main controller stack
         strongSelf->_mainController = nil;
@@ -370,6 +371,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (void)didWipeWallet {
     // The wiped wallet's sends are torn down with it.
     [DWPaymentInFlight abandonHolds];
+    [[DWPendingSendOutcomes shared] forgetAll];
     UIViewController *setupController = [self setupController];
     [self transitionToController:setupController
                   transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
