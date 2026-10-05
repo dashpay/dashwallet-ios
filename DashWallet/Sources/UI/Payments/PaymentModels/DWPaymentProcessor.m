@@ -55,6 +55,10 @@ static NSString *DWReversedHexString(NSData *data) {
 /// the outcome belongs to the request that was confirmed.
 @property (nonatomic, assign) BOOL broadcastInFlight;
 
+/// The confirmed send's routing hold (`DWPaymentInFlight`), from the start of
+/// its network wait through its outcome's delegate call.
+@property (nullable, nonatomic, strong) DWPaymentInFlightHold *broadcastRoutingHold;
+
 @end
 
 @implementation DWPaymentProcessor
@@ -175,35 +179,36 @@ static NSString *DWReversedHexString(NSData *data) {
         [preparedSend broadcastAndReturnError:&error];
 
         dispatch_async(dispatch_get_main_queue(), ^{
-            // Ends the in-flight state (exit holds, HUD, deferred links) on every
-            // outcome, the unknown one included.
-            [self setBroadcastInProgress:NO];
-            if (error && [DWWalletSendService isFollowedUnknownOutcomeError:error]) {
-                // No answer is not a failure: the payment may well have gone
-                // through. The send service has put it in the history as
-                // "Waiting for the network"; no error invites sending it again.
-                [self.delegate paymentProcessor:self didSendWithUnknownOutcomeTxidWire:preparedSend.txidWire];
-                [self reset];
-            }
-            else if (error) {
-                NSString *title = NSLocalizedString(@"Couldn't make payment", nil);
-                if ([DWWalletSendService isBroadcastRejectedError:error]) {
-                    title = NSLocalizedString(@"Transaction not sent", nil);
+            // Ends the in-flight state (exit holds, HUD) on every outcome, the
+            // unknown one included; the routing hold lasts through the report.
+            [self reportBroadcastOutcome:^{
+                if (error && [DWWalletSendService isFollowedUnknownOutcomeError:error]) {
+                    // No answer is not a failure: the payment may well have gone
+                    // through. The send service has put it in the history as
+                    // "Waiting for the network"; no error invites sending it again.
+                    [self.delegate paymentProcessor:self didSendWithUnknownOutcomeTxidWire:preparedSend.txidWire];
+                    [self reset];
                 }
-                else if ([DWWalletSendService isBroadcastUnknownError:error]) {
-                    // Not followed in the history: the error's own copy says
-                    // what is known, without pointing at a row that won't say it.
-                    title = NSLocalizedString(@"Transaction status unknown", nil);
+                else if (error) {
+                    NSString *title = NSLocalizedString(@"Couldn't make payment", nil);
+                    if ([DWWalletSendService isBroadcastRejectedError:error]) {
+                        title = NSLocalizedString(@"Transaction not sent", nil);
+                    }
+                    else if ([DWWalletSendService isBroadcastUnknownError:error]) {
+                        // Not followed in the history: the error's own copy says
+                        // what is known, without pointing at a row that won't say it.
+                        title = NSLocalizedString(@"Transaction status unknown", nil);
+                    }
+                    [self failedWithError:error
+                                    title:title
+                                  message:error.localizedDescription];
                 }
-                [self failedWithError:error
-                                title:title
-                              message:error.localizedDescription];
-            }
-            else {
-                [self sendCompletedToAddress:address
-                                    txidWire:preparedSend.txidWire
-                              callbackScheme:callbackScheme];
-            }
+                else {
+                    [self sendCompletedToAddress:address
+                                        txidWire:preparedSend.txidWire
+                                  callbackScheme:callbackScheme];
+                }
+            }];
         });
     });
 }
@@ -300,27 +305,27 @@ static NSString *DWReversedHexString(NSData *data) {
 
     [coordinator confirmAndSend:paymentOutput.bip70Confirmation
                      completion:^(DWBIP70SendResultBox *_Nullable result, NSError *_Nullable error) {
-                         [self setBroadcastInProgress:NO];
                          self.bip70Coordinator = nil;
+                         [self reportBroadcastOutcome:^{
+                             if (error || result == nil) {
+                                 [self failedWithError:error
+                                                 title:NSLocalizedString(@"Couldn't make payment", nil)
+                                               message:error.localizedDescription];
+                                 return;
+                             }
 
-                         if (error || result == nil) {
-                             [self failedWithError:error
-                                             title:NSLocalizedString(@"Couldn't make payment", nil)
-                                           message:error.localizedDescription];
-                             return;
-                         }
+                             if (!self.didSendRequestDelegateNotified) {
+                                 self.didSendRequestDelegateNotified = YES;
+                                 [self.delegate paymentProcessor:self
+                                             didSendWithTxidWire:result.txidWire];
+                             }
 
-                         if (!self.didSendRequestDelegateNotified) {
-                             self.didSendRequestDelegateNotified = YES;
-                             [self.delegate paymentProcessor:self
-                                         didSendWithTxidWire:result.txidWire];
-                         }
-
-                         if (result.callbackURL) {
-                             [[UIApplication sharedApplication] openURL:result.callbackURL
-                                                                options:@{}
-                                                      completionHandler:nil];
-                         }
+                             if (result.callbackURL) {
+                                 [[UIApplication sharedApplication] openURL:result.callbackURL
+                                                                    options:@{}
+                                                          completionHandler:nil];
+                             }
+                         }];
                      }];
 }
 
@@ -477,20 +482,32 @@ static NSString *DWReversedHexString(NSData *data) {
     self.amount = 0;
 }
 
-/// Brackets a confirmed send's network wait: the processor's own guard, the
-/// app-wide `DWPaymentInFlight` signal, and the delegate's progress state.
+/// Brackets a confirmed send's network wait: the processor's own guard and
+/// the delegate's progress state. Starting the wait also takes the send's
+/// routing hold (`DWPaymentInFlight`); `reportBroadcastOutcome:` ends it once
+/// the result has been reported, not this method.
 - (void)setBroadcastInProgress:(BOOL)inProgress {
     if (self.broadcastInFlight == inProgress) {
         return;
     }
     self.broadcastInFlight = inProgress;
     if (inProgress) {
-        [DWPaymentInFlight begin];
+        self.broadcastRoutingHold = [[DWPaymentInFlightHold alloc] init];
     }
     [self.delegate paymentProcessor:self broadcastInProgress:inProgress];
-    if (!inProgress) {
-        [DWPaymentInFlight end];
-    }
+}
+
+/// Ends a confirmed send's network wait and reports its result through
+/// `report`, which calls the delegate. The send's routing hold lasts through
+/// that call; the result screen the delegate goes on to present follows
+/// within `PaymentInFlight.resultGracePeriod`, and is then protected as a
+/// presented screen.
+- (void)reportBroadcastOutcome:(void(NS_NOESCAPE ^)(void))report {
+    DWPaymentInFlightHold *routingHold = self.broadcastRoutingHold;
+    self.broadcastRoutingHold = nil;
+    [self setBroadcastInProgress:NO];
+    report();
+    [routingHold end];
 }
 
 - (void)reset {

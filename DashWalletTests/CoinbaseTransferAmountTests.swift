@@ -103,6 +103,54 @@ final class CoinbaseTransferAmountTests: XCTestCase {
         walletState.clearAllState()
     }
 
+    /// A hardware Return during a pending wallet broadcast must not start a
+    /// second transfer: the window HUD blocks touches only, so the keypad's
+    /// own `inProgress` (`isProcessing`) is what turns the keyboard's input and
+    /// Return off, and the host refuses a transfer that would replace the
+    /// controller still waiting for the first one's outcome.
+    func testAWalletTransferKeepsTheKeypadOffAndRefusesASecondUntilItsOutcome() throws {
+        let viewModel = TransferAmountViewModel()
+        let host = TransferAmountHostingController(viewModel: viewModel)
+        host.loadViewIfNeeded()
+        let processor = DWPaymentProcessor()
+        // Processing an empty input does nothing: the send is driven by hand.
+        let input = DWPaymentInputBuilder().emptyPaymentInput(with: .plainAddress)
+
+        viewModel.initiatePayment(with: input)
+        let first = try XCTUnwrap(host.paymentController)
+        XCTAssertTrue(host.isWalletPaymentInFlight)
+        XCTAssertEqual(first.sendInProgressHandler?(true), false, "the window HUD still shows the wait")
+        XCTAssertTrue(viewModel.isProcessing, "keypad input and Return are off during the broadcast")
+
+        viewModel.initiatePayment(with: input)
+        XCTAssertTrue(host.paymentController === first, "a second transfer must not replace the waiting one")
+        XCTAssertTrue(viewModel.isProcessing)
+
+        _ = first.sendInProgressHandler?(false)
+        XCTAssertTrue(viewModel.isProcessing, "the wait is over, but its outcome is not shown yet")
+
+        // A failure with no error ("Not a valid Dash address", failed
+        // authentication) shows nothing, and still ends the payment.
+        first.paymentProcessor(processor, didFailWithError: nil, title: nil, message: nil)
+        XCTAssertFalse(host.isWalletPaymentInFlight)
+        XCTAssertFalse(viewModel.isProcessing, "the outcome is in: the keypad takes input again")
+
+        viewModel.initiatePayment(with: input)
+        let second = try XCTUnwrap(host.paymentController)
+        XCTAssertFalse(second === first, "the next transfer gets a fresh controller")
+        first.paymentProcessorDidCancelTransactionSigning(processor)
+        XCTAssertTrue(host.isWalletPaymentInFlight, "a late callback from the ended controller changes nothing")
+        second.paymentProcessorDidCancelTransactionSigning(processor)
+        XCTAssertFalse(host.isWalletPaymentInFlight, "a cancelled PIN prompt ends it")
+    }
+
+    func testATransferWithNoHostToHandItToEndsItsProcessing() {
+        let viewModel = TransferAmountViewModel()
+        viewModel.walletPaymentDidStart()
+        viewModel.initiatePayment(with: DWPaymentInputBuilder().emptyPaymentInput(with: .plainAddress))
+        XCTAssertFalse(viewModel.isProcessing)
+    }
+
     private func applyBalance(
         _ confirmed: UInt64,
         expecting expectedBalance: Int64,

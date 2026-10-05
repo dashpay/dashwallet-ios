@@ -701,7 +701,10 @@ struct ExternalSendAmountScreen: View {
             set: { newValue in
                 if newValue.isEmpty {
                     viewModel.amountText = "0"
-                } else {
+                // Shorter text always passes: a unit switch can leave more decimals than
+                // the new unit allows, and refusing backspace would lock the field.
+                } else if newValue.count < viewModel.amountText.count
+                    || InternalTransferViewModel.typedTextFitsPrecision(newValue, unit: viewModel.unit) {
                     viewModel.amountText = newValue
                 }
             })

@@ -1,6 +1,5 @@
-//  
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//
+//  Copyright © 2026 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,26 +14,15 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate>
+/// The single window scene's delegate (`UIApplicationSupportsMultipleScenes = NO`).
+/// It owns no state: every callback forwards to AppDelegate, which keeps the window.
+@interface SceneDelegate : UIResponder <UIWindowSceneDelegate>
 
 @property (nullable, nonatomic, strong) UIWindow *window;
-
-+ (AppDelegate *)appDelegate;
-
-- (void)registerForPushNotifications;
-
-// Called by SceneDelegate: with the scene life cycle UIKit no longer sends the
-// app delegate the window, activation, URL or user-activity callbacks.
-
-/// Creates `window` in `scene` and makes it key and visible.
-- (void)installWindowInScene:(UIWindowScene *)scene;
-- (void)handleDidBecomeActive;
-- (void)handleOpenURL:(NSURL *)url;
-- (void)handleUserActivity:(NSUserActivity *)userActivity;
 
 @end
 

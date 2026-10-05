@@ -20,6 +20,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWURLAction : NSObject
+
+/// Routing the action dismisses or replaces what is on screen. YES for paying,
+/// scanning and DashConnect; NO for an integration's sign-in callback, which
+/// only hands a URL on, and for an address request, which only asks for
+/// authorization over what is shown and answers the requesting app.
+@property (readonly, nonatomic, assign) BOOL replacesScreen;
+
 @end
 
 //

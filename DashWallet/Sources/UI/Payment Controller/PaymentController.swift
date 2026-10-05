@@ -62,7 +62,6 @@ enum WindowProgressHUD {
 
     static func show(_ message: String) {
         owners += 1
-        PaymentInFlight.begin()
         guard host == nil, let window = PinPromptPresenter.appWindows().first else { return }
         window.dw_showProgressHUD(withMessage: message)
         host = window
@@ -71,7 +70,6 @@ enum WindowProgressHUD {
     static func hide() {
         guard owners > 0 else { return }
         owners -= 1
-        PaymentInFlight.end()
         guard owners == 0 else { return }
         host?.dw_hideProgressHUD()
         host = nil
@@ -153,6 +151,17 @@ extension PaymentController {
         show(modalController: alert)
     }
 
+    /// Ends a payment that will not be sent and says so: the user may have
+    /// confirmed it already.
+    private func endWithoutSending(reason: String) {
+        DWLogger.log("PaymentController: \(reason)")
+        provideAmountViewController?.hideActivityIndicator()
+        if presentationAnchor != nil {
+            showAlert(with: NSLocalizedString("Couldn't make payment", comment: ""), message: nil)
+        }
+        delegate?.paymentControllerDidFailTransaction(self)
+    }
+
     private func show(modalController: UIViewController) {
         precondition(presentationAnchor != nil)
         presentationAnchor!.topController().present(modalController, animated: true)
@@ -164,9 +173,12 @@ extension PaymentController {
 extension PaymentController: ConfirmPaymentViewControllerDelegate {
     func confirmPaymentViewControllerDidConfirm(_ controller: ConfirmPaymentViewController) {
         controller.dismiss(animated: true) { [weak self] in
-            if let output = self?.paymentOutput {
-                self?.paymentProcessor.confirmPaymentOutput(output)
+            guard let self else { return }
+            guard let output = self.paymentOutput else {
+                self.endWithoutSending(reason: "the confirmed payment had no output left to send")
+                return
             }
+            self.paymentProcessor.confirmPaymentOutput(output)
         }
     }
 
@@ -259,6 +271,9 @@ extension PaymentController: DWPaymentProcessorDelegate {
         // The amount screen's submission ends either way, or a silent failure
         // would leave it locked.
         provideAmountViewController?.hideActivityIndicator()
+        // Told after the alert is up, silent failures included: a screen that
+        // keeps its input off until its payment ends would otherwise stay off.
+        defer { delegate?.paymentControllerDidFailTransaction(self) }
         guard let error else {
             return
         }
@@ -309,13 +324,9 @@ extension PaymentController: DWPaymentProcessorDelegate {
                   to: #selector(PaymentControllerDelegate.paymentControllerDidSubmitWithUnknownOutcome(_:txidWire:))) == true
         else {
             confirmViewController?.isSendingEnabled = false
-            presentationAnchor?.topController().showModalDialog(
-                style: .warning,
-                icon: .system("exclamationmark.triangle"),
-                heading: NSLocalizedString("Waiting for the network", comment: "Sent transaction whose broadcast got no answer from the network yet"),
-                textBlock1: Self.unknownOutcomeMessage,
-                positiveButtonText: NSLocalizedString("OK", comment: ""),
-                positiveButtonAction: nil)
+            if let top = presentationAnchor?.topController() {
+                Self.showUnknownOutcomeNotice(on: top)
+            }
             return
         }
 
@@ -329,6 +340,18 @@ extension PaymentController: DWPaymentProcessorDelegate {
             return
         }
         vc.dismiss(animated: true) { finish() }
+    }
+
+    /// The "Waiting for the network" notice for a send whose broadcast got no
+    /// answer, presented on `viewController`; `onOK` runs when it is closed.
+    static func showUnknownOutcomeNotice(on viewController: UIViewController, onOK: (() -> Void)? = nil) {
+        viewController.showModalDialog(
+            style: .warning,
+            icon: .system("exclamationmark.triangle"),
+            heading: NSLocalizedString("Waiting for the network", comment: "Sent transaction whose broadcast got no answer from the network yet"),
+            textBlock1: unknownOutcomeMessage,
+            positiveButtonText: NSLocalizedString("OK", comment: ""),
+            positiveButtonAction: onOK)
     }
 
     static let unknownOutcomeMessage = NSLocalizedString(
@@ -367,7 +390,9 @@ extension PaymentController: DWPaymentProcessorDelegate {
         // held modal and the one carrying the HUD.
         let stack = anchor.navigationController ?? anchor
         let screen = (stack as? UINavigationController)?.topViewController ?? stack
-        sendInProgressExitHold = MainActor.assumeIsolated { ExitHold(on: screen) }
+        // Routing is held by the payment processor for the wait; this hold is
+        // for the exits only.
+        sendInProgressExitHold = MainActor.assumeIsolated { ExitHold(on: screen, ownsRouting: false) }
         if !shownByScreen {
             // On the window, not the screen: a screen inside a tab leaves the
             // tab bar — and its Send button — live around a screen-sized HUD.

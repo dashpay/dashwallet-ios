@@ -50,11 +50,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 @property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
 @property (nullable, nonatomic, strong) NSURL *deferredDeeplinkToProcess;
-/// A payment URL / deep link that arrived while a payment was waiting for the
-/// network (`DWPaymentInFlight`). Routing it would dismiss or replace the
-/// screen that shows that payment's outcome, so it waits until the outcome.
-@property (nullable, nonatomic, strong) NSURL *urlDeferredForPaymentInFlight;
-@property (nullable, nonatomic, strong) NSURL *deeplinkDeferredForPaymentInFlight;
 @property (nonatomic, assign) BOOL walletWipeInProgress;
 
 - (void)beginWipeWalletWithAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
@@ -106,10 +101,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         return;
     }
 
-    if ([DWPaymentInFlight isActive]) {
-        if (self.deeplinkDeferredForPaymentInFlight == nil) {
-            self.deeplinkDeferredForPaymentInFlight = url;
-        }
+    // Routing a deep link dismisses everything presented: never over what is
+    // on screen.
+    if ([DWPaymentInFlight refusesLinkOverRoot:self]) {
         return;
     }
 
@@ -128,14 +122,16 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         return;
     }
 
-    if ([DWPaymentInFlight isActive]) {
-        if (self.urlDeferredForPaymentInFlight == nil) {
-            self.urlDeferredForPaymentInFlight = url;
-        }
+    DWURLAction *action = [DWURLParser actionForURL:url];
+
+    // A link that would dismiss or replace what is on screen is refused with
+    // a notice while a send waits or anything is presented. An integration's
+    // sign-in callback replaces nothing and must not wait (its code expires);
+    // an unsupported URL (no action) only gets an alert.
+    if (action.replacesScreen && [DWPaymentInFlight refusesLinkOverRoot:self]) {
         return;
     }
 
-    DWURLAction *action = [DWURLParser actionForURL:url];
     if (!action) {
         UIAlertController *alert = [UIAlertController
             alertControllerWithTitle:NSLocalizedString(@"Unsupported URL", nil)
@@ -282,10 +278,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
                            selector:@selector(windowDidBecomeKeyNotification:)
                                name:UIWindowDidBecomeKeyNotification
                              object:nil];
-    [notificationCenter addObserver:self
-                           selector:@selector(paymentInFlightDidEndNotification)
-                               name:DWPaymentInFlight.didEndNotification
-                             object:nil];
 
     __weak typeof(self) weakSelf = self;
     self.model.currentNetworkDidChangeBlock = ^{
@@ -293,6 +285,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         if (!strongSelf) {
             return;
         }
+
+        // The old network's sends are torn down with it.
+        [DWPaymentInFlight abandonHolds];
 
         // reset main controller stack
         strongSelf->_mainController = nil;
@@ -369,6 +364,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 #pragma mark - DWWipeDelegate
 
 - (void)didWipeWallet {
+    // The wiped wallet's sends are torn down with it.
+    [DWPaymentInFlight abandonHolds];
     UIViewController *setupController = [self setupController];
     [self transitionToController:setupController
                   transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
@@ -415,6 +412,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         return;
     }
     self.walletWipeInProgress = YES;
+    // The wiped wallet's sends are torn down with it.
+    [DWPaymentInFlight abandonHolds];
 
     UIViewController *setupController = [self setupController];
     [self transitionToController:setupController
@@ -525,27 +524,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 }
 
 #pragma mark - Notifications
-
-- (void)paymentInFlightDidEndNotification {
-    // Let the outcome's alert or success screen present first.
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if ([DWPaymentInFlight isActive]) {
-            return;
-        }
-        NSURL *url = self.urlDeferredForPaymentInFlight;
-        self.urlDeferredForPaymentInFlight = nil;
-        if (url) {
-            [self handleURL:url];
-        }
-#if DASHPAY
-        NSURL *deeplink = self.deeplinkDeferredForPaymentInFlight;
-        self.deeplinkDeferredForPaymentInFlight = nil;
-        if (deeplink) {
-            [self handleDeeplink:deeplink];
-        }
-#endif
-    });
-}
 
 - (void)applicationDidBecomeActiveNotification {
     [self showLockControllerIfNeeded];
@@ -692,6 +670,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
 
     [DWWalletLifecycleOverlayBridge setLockScreenVisible:YES];
+    // A window created without a scene is not shown; attach it to the app window's scene.
+    if (self.lockWindow.windowScene == nil) {
+        self.lockWindow.windowScene = self.view.window.windowScene
+                                          ?: [UIApplication sharedApplication].delegate.window.windowScene;
+    }
     self.lockWindow.rootViewController = navigationController;
     [self.lockWindow makeKeyAndVisible];
 

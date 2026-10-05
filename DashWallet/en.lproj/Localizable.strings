@@ -6258,7 +6258,6 @@
 "See your username" = "See your username";
 "Select nodes" = "Select nodes";
 "Several people requested this name — open it to choose between them." = "Several people requested this name — open it to choose between them.";
-"Shield" = "Shield";
 "Sign in to %@ again?" = "Sign in to %@ again?";
 "Sole Requester" = "Sole Requester";
 "Some of your CoinJoin funds were moved. Please try again to move the rest." = "Some of your CoinJoin funds were moved. Please try again to move the rest.";
@@ -6391,3 +6390,7 @@
 /* Send: an earlier payment to the same address is still waiting for the network */
 "Pay this address again?" = "Pay this address again?";
 
+/* Notice: a link was opened while a send was in progress or another screen was open; the link was ignored */
+"Finish or close the current screen first, then open the link again." = "Finish or close the current screen first, then open the link again.";
+/* Notice: the user tried to switch tabs or open a notification while a payment or its result was on screen; nothing changed */
+"Finish or close the current screen first." = "Finish or close the current screen first.";

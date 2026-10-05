@@ -7,7 +7,9 @@
 //  payment screens (`lockingExit`) and `PaymentController`. These pin the
 //  counting: overlapping owners in either release order, repeated releases,
 //  restoring an original value that was already locked, and independence of
-//  separate stacks and roots. `PaymentInFlight` follows the same holds.
+//  separate stacks and roots.
+//
+//  A held screen owns routing too (`PaymentLinkRoutingTests`).
 //
 
 import UIKit
@@ -20,10 +22,13 @@ final class ExitHoldTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        // Exit holds own routing: start and end with none left over.
+        PaymentInFlight.abandonHolds()
         window = UIWindow(frame: UIScreen.main.bounds)
     }
 
     override func tearDown() {
+        PaymentInFlight.abandonHolds()
         window.rootViewController?.dismiss(animated: false)
         window.isHidden = true
         window = nil
@@ -121,31 +126,12 @@ final class ExitHoldTests: XCTestCase {
         XCTAssertTrue(navigation.isModalInPresentation, "an originally modal root stays modal")
     }
 
-    func testPaymentInFlightFollowsTheHoldsAndAnnouncesTheEndOnce() {
+    func testAnExitHoldOwnsRoutingUntilReleased() {
         let (_, screen) = makeStack()
+        let hold = ExitHold(on: screen)
+        XCTAssertTrue(PaymentInFlight.isActive, "a screen with its exits held owns routing")
+        hold.release()
+        hold.release()
         XCTAssertFalse(PaymentInFlight.isActive)
-
-        let endings = Endings()
-        let observer = NotificationCenter.default.addObserver(
-            forName: PaymentInFlight.didEndNotification, object: nil, queue: nil) { _ in endings.count += 1 }
-        defer { NotificationCenter.default.removeObserver(observer) }
-
-        let first = ExitHold(on: screen)
-        let second = ExitHold(on: screen)
-        XCTAssertTrue(PaymentInFlight.isActive)
-
-        first.release()
-        first.release()
-        XCTAssertTrue(PaymentInFlight.isActive)
-        XCTAssertEqual(endings.count, 0)
-
-        second.release()
-        XCTAssertFalse(PaymentInFlight.isActive)
-        XCTAssertEqual(endings.count, 1)
     }
-}
-
-/// The notification is posted synchronously on the main thread.
-private final class Endings: @unchecked Sendable {
-    var count = 0
 }

@@ -18,8 +18,12 @@
 import UIKit
 
 extension BaseViewController {
-    public func showSuccessTransactionStatus(text: String) {
+    /// - Parameter holdsExitsWhileShown: the screen shows a wallet send's
+    ///   result and holds its exits while visible
+    ///   (`SuccessfulOperationStatusViewController.holdsExitsWhileShown`).
+    public func showSuccessTransactionStatus(text: String, holdsExitsWhileShown: Bool = false) {
         let vc = SuccessfulOperationStatusViewController.initiate(from: sb("OperationStatus"))
+        vc.holdsExitsWhileShown = holdsExitsWhileShown
         vc.closeHandler = { [weak self] in
             guard let wSelf = self else { return }
             let nav = wSelf.navigationController
