@@ -1137,6 +1137,18 @@ private extension WalletSendService {
 }
 
 extension WalletSendService {
+    /// Follows `txidWire`, whose broadcast got no answer, in the history as
+    /// "Waiting for the network" (`PendingSendOutcomes`). Safe from any
+    /// thread. For a route that has no error to hand back.
+    ///
+    /// - Returns: whether it could be followed (an active wallet).
+    @discardableResult
+    static func followUnknownOutcome(txidWire: Data, address: String?, amount: UInt64) -> Bool {
+        MainThread.sync {
+            PendingSendOutcomes.shared.recordUnknownOutcome(txidWire: txidWire, address: address, amount: amount)
+        }
+    }
+
     /// A broadcast of `txidWire` that ended with no answer from the network.
     ///
     /// Where a send with an unknown outcome is recorded: every route that
@@ -1150,9 +1162,7 @@ extension WalletSendService {
     /// .sweepCoinJoin`); a contact payment's unknown outcome carries no txid
     /// from the SDK, so it is not followed.
     static func unknownOutcomeError(txidWire: Data, address: String?, amount: UInt64, reason: String) -> NSError {
-        let followed = MainThread.sync {
-            PendingSendOutcomes.shared.recordUnknownOutcome(txidWire: txidWire, address: address, amount: amount)
-        }
+        let followed = followUnknownOutcome(txidWire: txidWire, address: address, amount: amount)
         let error = makeError(code: .broadcastUnknown, description: BroadcastOutcomeCopy.unknown, diagnostic: reason)
         var userInfo = error.userInfo
         userInfo[unknownTxidWireKey] = txidWire

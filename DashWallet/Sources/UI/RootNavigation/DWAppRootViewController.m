@@ -419,6 +419,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     self.walletWipeInProgress = YES;
     // The wiped wallet's sends are torn down with it.
     [DWPaymentInFlight abandonHolds];
+    [[DWPendingSendOutcomes shared] forgetAll];
 
     UIViewController *setupController = [self setupController];
     [self transitionToController:setupController

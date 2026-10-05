@@ -37,8 +37,9 @@ protocol PaymentControllerDelegate: AnyObject {
     /// The broadcast got no answer from the network; the send now waits in the
     /// history (`PendingSendOutcomes`). Called once the "Waiting for the
     /// network" notice the controller presents first is gone — closed and
-    /// dismissed, or never shown — and the legacy amount step, if any, has
-    /// been left, so the delegate can leave the paying screen too.
+    /// dismissed, or never shown. The delegate leaves the paying flow itself,
+    /// a legacy amount step included; for a delegate without this method the
+    /// controller pops that step.
     @objc optional func paymentControllerDidSubmitWithUnknownOutcome(_ controller: PaymentController, txidWire: Data)
     /// The broadcast got no answer, told at once — before the notice — for
     /// bookkeeping that must not wait for the user (and is not lost if the
@@ -434,7 +435,8 @@ extension PaymentController: DWPaymentProcessorDelegate {
         }
     }
 
-    /// A dialog's host: reports when it has left the screen.
+    /// A dialog's host: reports when it has left the screen — dismissed
+    /// itself, or freed when a controller below it was dismissed.
     private final class DialogHostingController: UIHostingController<ModalDialog> {
         var onDisappear: (() -> Void)?
 
@@ -443,6 +445,13 @@ extension PaymentController: DWPaymentProcessorDelegate {
             // Gone, not merely covered by something presented over it.
             guard isBeingDismissed || presentingViewController == nil else { return }
             onDisappear?()
+        }
+
+        deinit {
+            // `onDisappear` reports once; this catches a teardown that left no
+            // trace in `viewDidDisappear`.
+            let report = onDisappear
+            DispatchQueue.main.async { report?() }
         }
     }
 

@@ -267,9 +267,23 @@ static NSString *DWReversedHexString(NSData *data) {
 #pragma mark - App-side BIP70 (Swift orchestrator)
 
 /// Build the confirm-screen output from a verified BIP70 `Confirmation` box (no build, no spend).
+/// The delegate is asked first, as for a plain send: a payment to an address
+/// whose earlier payment still waits for the network warns before the sheet.
 - (void)confirmBIP70Output:(id)bip70Confirmation {
     DWPaymentOutput *paymentOutput = [DWBIP70PaymentOutputFactory paymentOutputFromBox:bip70Confirmation];
-    [self.delegate paymentProcessor:self confirmPaymentOutput:paymentOutput];
+    if (paymentOutput.address.length == 0) {
+        [self.delegate paymentProcessor:self confirmPaymentOutput:paymentOutput];
+        return;
+    }
+    [self.delegate paymentProcessor:self
+                   shouldPayAddress:paymentOutput.address
+                         completion:^(BOOL proceed) {
+                             if (!proceed) {
+                                 [self.delegate paymentProcessorDidCancelTransactionSigning:self];
+                                 return;
+                             }
+                             [self.delegate paymentProcessor:self confirmPaymentOutput:paymentOutput];
+                         }];
 }
 
 /// Authenticate (PIN / biometric), then build + broadcast + POST via the Swift orchestrator.

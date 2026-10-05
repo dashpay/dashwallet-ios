@@ -20,8 +20,9 @@ extension BIP70PaymentService {
         // A payment the merchant acknowledged whose broadcast then got no
         // answer is followed in the history like any send.
         service.onDetachedBroadcastUnknown = { txHashDisplay, amount, address, reason in
-            _ = WalletSendService.unknownOutcomeError(
-                txidWire: Data(txHashDisplay.reversed()), address: address, amount: amount, reason: reason)
+            DWLogger.log("💸 TXSEND :: BIP70 broadcast after acknowledgement got no answer: \(reason)")
+            WalletSendService.followUnknownOutcome(
+                txidWire: Data(txHashDisplay.reversed()), address: address, amount: amount)
         }
         return service
     }

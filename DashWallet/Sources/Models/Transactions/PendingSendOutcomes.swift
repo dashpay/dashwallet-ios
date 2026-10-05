@@ -121,17 +121,18 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     // MARK: - Recording
 
     /// The broadcast of `txidWire` ended with no answer from the network.
-    /// Called by `WalletSendService.unknownOutcomeError` (every route it maps
-    /// to `broadcastUnknown`, and the headless BIP70 broadcast handed off
-    /// after the merchant's acknowledgement), by the CoinJoin sweep for a
+    /// Called through `WalletSendService.followUnknownOutcome` (by
+    /// `unknownOutcomeError`, for every route it maps to `broadcastUnknown`,
+    /// and for the headless BIP70 broadcast handed off after the merchant's
+    /// acknowledgement), by the CoinJoin sweep for a
     /// chunk (`SwiftDashSDKTransactionSender.sweepCoinJoin`) and by the
     /// awaited headless BIP70 payment (`SendCoinsService.payWithDashUrl`).
     ///
+    /// - Parameter walletId: the sending wallet when the caller knows it (a
+    ///   sweep that may outlive a wallet switch); the active wallet otherwise.
     /// - Returns: false when the send could not be followed (no active
     ///   wallet), so its row will not say "Waiting for the network".
     @discardableResult
-    /// - Parameter walletId: the sending wallet when the caller knows it (a
-    ///   sweep that may outlive a wallet switch); the active wallet otherwise.
     func recordUnknownOutcome(
         txidWire: Data, address: String?, amount: UInt64, notifies: Bool = true, walletId: Data? = nil
     ) -> Bool {
@@ -192,9 +193,6 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
 
     // MARK: - Verdicts
 
-    /// Follow `manager`'s probe verdicts. Called for each manager the host
-    /// configures; replaces the previous watch. Also settles, once, the sends
-    /// that went through while the app was closed.
     /// A wallet removed from the device takes its waiting sends with it: they
     /// would never settle against any wallet again. Checked when a wallet's
     /// host is published, not on every save; only with the keychain readable
@@ -208,6 +206,9 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         }
     }
 
+    /// Follow `manager`'s probe verdicts. Called for each manager the host
+    /// configures; replaces the previous watch. Also settles, once, the sends
+    /// that went through while the app was closed.
     func observeVerdicts(of manager: PlatformWalletManager) {
         dropSendsOfRemovedWallets()
         reconcile()
@@ -238,8 +239,11 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             reconcileRequestedAgain = true
             return
         }
+        // Only the active wallet's sends can settle against its rows.
+        let activeWalletId = SwiftDashSDKHost.shared.wallet?.walletId
+        let pending = entries.filter { $0.value.walletId == activeWalletId }
+        guard !pending.isEmpty else { return }
         reconcileInFlight = true
-        let pending = entries
         Task.detached(priority: .utility) { [weak self] in
             let snapshot = SwiftDashSDKWalletSource.fetch(txids: Set(pending.keys))
             await MainActor.run {
@@ -279,14 +283,14 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         if changed { didChangeEntries() }
     }
 
-    // MARK: - Private
-
     /// Clear `notice` if it is still the one with `id` — a notice raised
     /// meanwhile stays.
     func dismissNotice(id: UUID) {
         guard notice?.id == id else { return }
         notice = nil
     }
+
+    // MARK: - Private
 
     private func raiseNotice(for entry: Entry) {
         // Merged into a notice not yet dismissed, so a settlement while home
