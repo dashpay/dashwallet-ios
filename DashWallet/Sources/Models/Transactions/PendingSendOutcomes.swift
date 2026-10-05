@@ -269,8 +269,13 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             let snapshot = SwiftDashSDKWalletSource.fetch(txids: Set(pending.keys))
             await MainActor.run {
                 guard let self else { return }
-                if let snapshot {
-                    self.settle(pending: pending, snapshot: snapshot)
+                if let activeWalletId {
+                    // A failed read is a nil snapshot: the policy decides
+                    // nothing for it.
+                    self.settle(
+                        pending: pending,
+                        walletId: snapshot?.walletId ?? activeWalletId,
+                        rows: snapshot.map(Self.rowStates(of:)))
                 }
                 self.reconcileInFlight = false
                 if self.reconcileRequestedAgain {
@@ -281,13 +286,16 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         }
     }
 
-    private func settle(pending: [Data: Entry], snapshot: SwiftDashSDKWalletTransactionSnapshot) {
-        let rows = Dictionary(
+    private static func rowStates(of snapshot: SwiftDashSDKWalletTransactionSnapshot) -> [Data: RowState] {
+        Dictionary(
             snapshot.transactions.map { ($0.txHashData, $0.state == .processing ? RowState.processing : .settled) },
             uniquingKeysWith: { a, _ in a })
+    }
+
+    private func settle(pending: [Data: Entry], walletId: Data, rows: [Data: RowState]?) {
         let decision = Self.settlement(
             of: pending, stillFollowed: { [entries] in entries[$0] != nil },
-            walletId: snapshot.walletId, rows: rows, now: Date())
+            walletId: walletId, rows: rows, now: Date())
         for txid in decision.expired {
             DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) still unconfirmed after a week, no longer tracked")
         }
@@ -301,9 +309,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             notice = Self.merged(notice, adding: entry.amount)
         }
         guard !decision.isEmpty else { return }
-        for txid in decision.expired + decision.settled + decision.gone {
-            entries.removeValue(forKey: txid)
-        }
+        entries = Self.applying(decision, to: entries)
         didChangeEntries()
     }
 
@@ -394,6 +400,15 @@ extension PendingSendOutcomes {
             }
         }
         return decision
+    }
+
+    /// `entries` without the sends `decision` stops following.
+    nonisolated static func applying(_ decision: SettlementDecision, to entries: [Data: Entry]) -> [Data: Entry] {
+        var remaining = entries
+        for txid in decision.expired + decision.settled + decision.gone {
+            remaining.removeValue(forKey: txid)
+        }
+        return remaining
     }
 
     /// `current` with one more payment of `amount` in it — a notice not yet

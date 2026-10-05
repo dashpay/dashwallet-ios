@@ -74,9 +74,6 @@ final class BIP70InteractiveCoordinator: NSObject {
     @objc(confirmAndSend:completion:)
     func confirmAndSend(_ box: BIP70ConfirmationBox,
                         completion: @escaping (BIP70SendResultBox?, NSError?) -> Void) {
-        // The wallet paying, read before the send: its outcome is followed
-        // under it.
-        let walletId = WalletSendService.activeWalletId()
         Task {
             do {
                 let result = try await service.confirmAndSend(box.confirmation)
@@ -90,7 +87,7 @@ final class BIP70InteractiveCoordinator: NSObject {
                     amount: result.amount,
                     fee: result.fee)
                 await MainActor.run { completion(BIP70SendResultBox(result), nil) }
-            } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let reason) {
+            } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason) {
                 // The payment may well have gone through: followed in the
                 // history as "Waiting for the network", like a plain send.
                 // On the main actor: following the send touches main-actor state.

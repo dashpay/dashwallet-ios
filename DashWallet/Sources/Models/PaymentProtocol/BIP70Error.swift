@@ -49,7 +49,8 @@ enum BIP70Error: Error, Equatable {
     /// holds a copy it can broadcast itself — so this is deliberately distinct from a
     /// rejection: it carries the app-computed display-order tx hash so callers can record the
     /// spend instead of discarding it. Never retry the same send on this error.
-    case broadcastOutcomeUnknown(txHashDisplay: Data, reason: String)
+    /// `walletId` is the wallet that built the transaction (opaque here).
+    case broadcastOutcomeUnknown(txHashDisplay: Data, walletId: Data?, reason: String)
 }
 
 extension BIP70Error: LocalizedError {

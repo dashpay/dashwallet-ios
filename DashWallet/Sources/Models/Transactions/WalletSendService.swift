@@ -23,9 +23,10 @@ final class PreparedStandardSend: NSObject {
     @objc let fee: UInt64
     @objc let address: String
     @objc let amount: UInt64
-    /// The wallet the send was built for, captured when it was prepared: an
-    /// unknown outcome is followed under it even if another wallet is active
-    /// by then. Nil when none was active (it then falls back to the active one).
+    /// The wallet that signed the send, read in the same main-actor hop as the
+    /// build: an unknown outcome is followed under it even if another wallet
+    /// is active by then. Nil only in tests (it then falls back to the active
+    /// one).
     let walletId: Data?
 
     /// Wire-order txid (`Transaction.txHashData` convention — the storage/
@@ -431,7 +432,6 @@ final class WalletSendService: NSObject {
         try Self.ensureOnline()
         if let inputSelector {
             DWLogger.log("💸 TXSEND :: routing to selected-input (SwiftDashSDK) path")
-            let walletId = Self.activeWalletId()
             try await sendAuthorizer.authorizeSend(spendAmount: amount, sessionAuthSufficient: sessionAuthSufficient)
             do {
                 let (_, fee, txHash) = try await SwiftDashSDKTransactionSender.buildAndSignFromAddress(
@@ -458,7 +458,7 @@ final class WalletSendService: NSObject {
                     description: BroadcastOutcomeCopy.rejected,
                     diagnostic: reason
                 )
-            } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(let txid, let reason) {
+            } catch SwiftDashSDKTransactionSender.SendError.sentWithUnknownOutcome(let txid, let walletId, let reason) {
                 // `txid` is the display-order hash `buildAndSignFromAddress` computed.
                 guard let txHash = Data(hex: txid), txHash.count == 32 else {
                     throw Self.makeError(
@@ -899,10 +899,9 @@ final class WalletSendService: NSObject {
     }
 
     private func buildPreparedStandardSend(address: String, amount: UInt64) throws -> PreparedStandardSend {
-        let walletId = Self.activeWalletId()
-        let (tx, txHash): (FinalizedCoreTransaction, Data)
+        let (tx, txHash, walletId): (FinalizedCoreTransaction, Data, Data)
         do {
-            (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSign(address: address, amount: amount)
+            (tx, txHash, walletId) = try SwiftDashSDKTransactionSender.buildAndSign(address: address, amount: amount)
         } catch {
             throw Self.sendBuildError(from: error)
         }
@@ -919,10 +918,9 @@ final class WalletSendService: NSObject {
     }
 
     private func buildPreparedSwapDeposit(vaultAddress: String, amount: UInt64, memo: String) throws -> PreparedStandardSend {
-        let walletId = Self.activeWalletId()
-        let (tx, txHash): (FinalizedCoreTransaction, Data)
+        let (tx, txHash, walletId): (FinalizedCoreTransaction, Data, Data)
         do {
-            (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSignSwapDeposit(
+            (tx, txHash, walletId) = try SwiftDashSDKTransactionSender.buildAndSignSwapDeposit(
                 vaultAddress: vaultAddress,
                 amountDuffs: amount,
                 memo: memo
@@ -1171,11 +1169,6 @@ extension WalletSendService {
         }
     }
 
-    /// The active wallet's id, read where a send is prepared so its outcome
-    /// is followed under the wallet that sent it. Safe from any thread.
-    static func activeWalletId() -> Data? {
-        MainThread.sync { SwiftDashSDKHost.shared.wallet?.walletId }
-    }
 
     /// A broadcast of `txidWire` that ended with no answer from the network.
     ///

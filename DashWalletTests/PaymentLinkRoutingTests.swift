@@ -762,13 +762,21 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
 
     func testALockedOrMinedRowSettlesTheSendAndNotifiesOnce() {
         let sent = entry(1, age: 60, amount: 2_500)
-        let decision = decide([sent], rows: [sent.txidWire: .settled])
+        let followed = [sent.txidWire: sent]
+        let decision = Policy.settlement(
+            of: followed, stillFollowed: { followed[$0] != nil },
+            walletId: walletA, rows: [sent.txidWire: .settled], now: now)
         XCTAssertEqual(decision.settled, [sent.txidWire])
         XCTAssertEqual(decision.notifying, [sent])
 
-        // Settled and no longer followed: a second read changes nothing.
-        let after = decide([sent], rows: [sent.txidWire: .settled], followed: [])
-        XCTAssertTrue(after.isEmpty)
+        // Applied, the send is no longer followed, so the next read of the
+        // same rows neither settles it again nor notifies again.
+        let remaining = Policy.applying(decision, to: followed)
+        XCTAssertTrue(remaining.isEmpty)
+        let again = Policy.settlement(
+            of: followed, stillFollowed: { remaining[$0] != nil },
+            walletId: walletA, rows: [sent.txidWire: .settled], now: now)
+        XCTAssertTrue(again.isEmpty)
     }
 
     func testASendForgottenWhileTheRowsWereReadNeitherSettlesNorNotifies() {
@@ -842,6 +850,8 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
 /// detached CTX broadcast's case.
 @MainActor
 final class UnknownOutcomeWalletTests: XCTestCase {
+    /// The test host has no active wallet: this pins that the given wallet is
+    /// used rather than the active one (or none).
     func testAnOutcomeIsFollowedUnderTheWalletThatSentItNotTheActiveOne() throws {
         let sentFrom = Data(repeating: 0x5c, count: 32)
         let txidWire = Data(repeating: 0x6d, count: 32)
@@ -853,6 +863,22 @@ final class UnknownOutcomeWalletTests: XCTestCase {
 
         XCTAssertTrue(followed)
         XCTAssertEqual(PendingSendOutcomes.shared.entries[txidWire]?.walletId, sentFrom)
+    }
+
+    /// The plain-send route: the prepared send carries the signing wallet,
+    /// and its unknown outcome is booked under it.
+    func testAPreparedSendsUnknownOutcomeIsBookedUnderItsSigningWallet() {
+        let signedBy = Data(repeating: 0x7a, count: 32)
+        let send = PreparedStandardSend(
+            txData: Data([0x01]), txHash: Data(repeating: 0x8b, count: 32), fee: 226,
+            address: "yAddress", amount: 1_000, walletId: signedBy,
+            broadcastAction: { .unknown(txid: String(repeating: "8b", count: 32), reason: "no answer") })
+        defer { PendingSendOutcomes.shared.forget(txidsWire: [send.txidWire], reason: "test send") }
+
+        XCTAssertThrowsError(try send.broadcast()) { error in
+            XCTAssertTrue(WalletSendService.isBroadcastUnknownError(error as NSError))
+        }
+        XCTAssertEqual(PendingSendOutcomes.shared.entries[send.txidWire]?.walletId, signedBy)
     }
 
     func testADetachedBroadcastWithNoAnswerReportsTheWalletThatBuiltIt() async throws {
@@ -887,7 +913,8 @@ private final class DetachedUnknownWallet: WalletSending {
     }
     func buildSignedTransaction(recipients: [(address: String, amountDuffs: UInt64)]) async throws -> PreparedSend { prepared }
     func broadcast(_ prepared: PreparedSend) async throws -> String {
-        throw BIP70Error.broadcastOutcomeUnknown(txHashDisplay: prepared.txHashDisplay, reason: "no answer")
+        throw BIP70Error.broadcastOutcomeUnknown(
+            txHashDisplay: prepared.txHashDisplay, walletId: prepared.walletId, reason: "no answer")
     }
 }
 

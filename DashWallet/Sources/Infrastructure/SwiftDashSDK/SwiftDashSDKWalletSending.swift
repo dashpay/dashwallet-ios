@@ -19,10 +19,9 @@ import SwiftDashSDK
 final class SwiftDashSDKWalletSending: WalletSending {
 
     func buildSignedTransaction(recipients: [(address: String, amountDuffs: UInt64)]) async throws -> PreparedSend {
-        let walletId = WalletSendService.activeWalletId()
-        let (tx, txHash): (FinalizedCoreTransaction, Data)
+        let (tx, txHash, walletId): (FinalizedCoreTransaction, Data, Data)
         do {
-            (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSign(recipients: recipients)
+            (tx, txHash, walletId) = try SwiftDashSDKTransactionSender.buildAndSign(recipients: recipients)
         } catch {
             // Coins still waiting for the network: the same copy as every other route.
             throw WalletSendService.sendBuildError(from: error)
@@ -52,7 +51,8 @@ final class SwiftDashSDKWalletSending: WalletSending {
             // time. Carry the app-computed tx hash out with the error so the caller can
             // record the spend it just made instead of losing it. Rejections keep throwing
             // `SendError.transactionRejected` unchanged.
-            throw BIP70Error.broadcastOutcomeUnknown(txHashDisplay: prepared.txHashDisplay, reason: reason)
+            throw BIP70Error.broadcastOutcomeUnknown(
+                txHashDisplay: prepared.txHashDisplay, walletId: prepared.walletId, reason: reason)
         }
         // Return contract is the display-order txid hex; keep the deterministic
         // app-computed value (the sender logs the SDK-reported txid alongside).
