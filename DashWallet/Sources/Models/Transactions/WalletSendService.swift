@@ -78,7 +78,7 @@ final class PreparedStandardSend: NSObject {
         self.amount = amount
         self.walletId = walletId
         self.broadcastAction = {
-            try SwiftDashSDKTransactionSender.broadcast(coreTransaction, signedBy: walletId)
+            try SwiftDashSDKTransactionSender.broadcast(coreTransaction)
         }
         self.ensureOnlineAction = {
             try WalletSendService.ensureOnline()

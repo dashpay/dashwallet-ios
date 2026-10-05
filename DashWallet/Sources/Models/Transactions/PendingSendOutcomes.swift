@@ -158,16 +158,6 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             DWLogger.log("💸 TXSEND :: unknown outcome not tracked, no active wallet")
             return false
         }
-        // An outcome that arrives after its wallet was wiped or removed (a
-        // detached broadcast can take a minute) would never settle. Checked
-        // only when it is not the active wallet and the keychain is readable
-        // and lists wallets (an empty list is not proof, as in
-        // `dropSendsOfRemovedWallets`).
-        if walletId != SwiftDashSDKHost.shared.wallet?.walletId, UIApplication.shared.isProtectedDataAvailable,
-           let stored = try? SwiftDashSDKHost.persistedWalletIds(), !stored.isEmpty, !stored.contains(walletId) {
-            DWLogger.log("💸 TXSEND :: unknown outcome not tracked, its wallet is gone")
-            return false
-        }
         entries[txidWire] = Entry(
             txidWire: txidWire,
             walletId: walletId,

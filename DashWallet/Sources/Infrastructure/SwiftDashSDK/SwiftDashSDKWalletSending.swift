@@ -41,7 +41,7 @@ final class SwiftDashSDKWalletSending: WalletSending {
         // purchase (`DashSpendPayViewModel.purchaseGiftCardAndPay`). A
         // broadcast left running detached after the merchant's acknowledgement
         // has nothing on screen waiting for it.
-        let outcome = try await SwiftDashSDKTransactionSender.broadcastWithoutRoutingHold(tx, signedBy: prepared.walletId)
+        let outcome = try await SwiftDashSDKTransactionSender.broadcastWithoutRoutingHold(tx)
         do {
             _ = try SwiftDashSDKTransactionSender.requireAccepted(outcome)
         } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(_, let reason, _) {

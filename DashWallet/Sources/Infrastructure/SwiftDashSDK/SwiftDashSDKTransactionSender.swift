@@ -619,19 +619,13 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// Blocks until the network answers — up to about a minute when no peer
     /// does — so it must not run on the main thread. From the main actor, use
     /// the `async` overload.
-    /// - Parameter signedBy: the wallet that signed `tx`, when known: the
-    ///   broadcast is refused (nothing leaves) if another wallet is active by
-    ///   now, rather than submitted through it.
     @discardableResult
-    static func broadcast(_ tx: FinalizedCoreTransaction, signedBy walletId: Data? = nil) throws -> CoreTransactionBroadcastOutcome {
+    static func broadcast(_ tx: FinalizedCoreTransaction) throws -> CoreTransactionBroadcastOutcome {
         assert(!Thread.isMainThread, "broadcast waits for network acceptance; use the async overload")
         // Only the wallet lookup needs the main actor; the submit runs here.
         let wallet = try MainThread.sync { () throws -> ManagedPlatformWallet in
             guard let wallet = SwiftDashSDKHost.shared.wallet else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
-            }
-            if let walletId, wallet.walletId != walletId {
-                throw SendError.walletNotReady("the wallet that signed this payment is no longer the active one")
             }
             return wallet
         }
@@ -669,9 +663,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// The async `broadcast(_:)` without the routing hold, for a broadcast
     /// whose payment already holds it or that runs with no payment on screen.
     static func broadcastWithoutRoutingHold(
-        _ tx: FinalizedCoreTransaction, signedBy walletId: Data? = nil
+        _ tx: FinalizedCoreTransaction
     ) async throws -> CoreTransactionBroadcastOutcome {
-        try await waitingForNetwork(holdingRouting: false) { try broadcast(tx, signedBy: walletId) }
+        try await waitingForNetwork(holdingRouting: false) { try broadcast(tx) }
     }
 
     /// Run blocking work that waits for the network (a broadcast, a sweep) on
