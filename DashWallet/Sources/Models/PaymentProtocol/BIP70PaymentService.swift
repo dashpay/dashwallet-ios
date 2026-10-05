@@ -358,9 +358,9 @@ final class BIP70PaymentService {
             Task.detached(priority: .userInitiated) {
                 do {
                     _ = try await wallet.broadcast(prepared)
-                } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, _, let reason) {
+                } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason) {
                     DWLogger.log("BIP70: background broadcast of \(txidHexDisplay) got no answer from the network: \(reason)")
-                    onUnknown?(txHashDisplay, amount, address, prepared.walletId, reason)
+                    onUnknown?(txHashDisplay, amount, address, walletId, reason)
                 } catch {
                     DWLogger.log("BIP70: background broadcast of \(txidHexDisplay) ended without acceptance: \(error)")
                 }

@@ -78,7 +78,7 @@ final class PreparedStandardSend: NSObject {
         self.amount = amount
         self.walletId = walletId
         self.broadcastAction = {
-            try SwiftDashSDKTransactionSender.broadcast(coreTransaction)
+            try SwiftDashSDKTransactionSender.broadcast(coreTransaction, signedBy: walletId)
         }
         self.ensureOnlineAction = {
             try WalletSendService.ensureOnline()
@@ -458,7 +458,7 @@ final class WalletSendService: NSObject {
                     description: BroadcastOutcomeCopy.rejected,
                     diagnostic: reason
                 )
-            } catch SwiftDashSDKTransactionSender.SendError.sentWithUnknownOutcome(let txid, let walletId, let reason) {
+            } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(let txid, let reason, let walletId) {
                 // `txid` is the display-order hash `buildAndSignFromAddress` computed.
                 guard let txHash = Data(hex: txid), txHash.count == 32 else {
                     throw Self.makeError(

@@ -321,7 +321,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
                 let outcome = try wallet.coreWallet().broadcastTransactionWithOutcome(tx)
                 do {
                     _ = try Self.requireAccepted(outcome)
-                } catch SendError.transactionStatusUnknown(_, let reason) {
+                } catch SendError.transactionStatusUnknown(_, let reason, _) {
                     // No answer is not a failure: the chunk may well have gone
                     // out. It counts as sent (grouped with the sweep's other
                     // transactions) and its row reads "Waiting for the network"
@@ -490,12 +490,12 @@ final class SwiftDashSDKTransactionSender: NSObject {
             // CrowdNode, the only caller today, runs unheld
             // (`WalletSendService.sendWithoutRoutingHold`).
             _ = try Self.requireAccepted(try await waitingForNetwork(holdingRouting: holdingRouting) { try submit(tx, through: wallet) })
-        } catch SendError.transactionStatusUnknown(_, let reason) {
+        } catch SendError.transactionStatusUnknown(_, let reason, _) {
             // Carry the app-computed hash (display order, as every other route
             // reports it) and the wallet that signed, so the caller can follow
             // the send by its txid under that wallet.
-            throw SendError.sentWithUnknownOutcome(
-                txid: txHash.map { String(format: "%02x", $0) }.joined(), walletId: wallet.walletId, reason: reason)
+            throw SendError.transactionStatusUnknown(
+                txid: txHash.map { String(format: "%02x", $0) }.joined(), reason: reason, walletId: wallet.walletId)
         }
 
         DWLogger.log("💸 TXSEND :: selected-input send broadcast — txHash=\(txHash.map { String(format: "%02x", $0) }.joined()) fee=\(exactFee) adjusted=\(adjusted) inputs=\(utxos.count)")
@@ -619,13 +619,19 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// Blocks until the network answers — up to about a minute when no peer
     /// does — so it must not run on the main thread. From the main actor, use
     /// the `async` overload.
+    /// - Parameter signedBy: the wallet that signed `tx`, when known: the
+    ///   broadcast is refused (nothing leaves) if another wallet is active by
+    ///   now, rather than submitted through it.
     @discardableResult
-    static func broadcast(_ tx: FinalizedCoreTransaction) throws -> CoreTransactionBroadcastOutcome {
+    static func broadcast(_ tx: FinalizedCoreTransaction, signedBy walletId: Data? = nil) throws -> CoreTransactionBroadcastOutcome {
         assert(!Thread.isMainThread, "broadcast waits for network acceptance; use the async overload")
         // Only the wallet lookup needs the main actor; the submit runs here.
         let wallet = try MainThread.sync { () throws -> ManagedPlatformWallet in
             guard let wallet = SwiftDashSDKHost.shared.wallet else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
+            }
+            if let walletId, wallet.walletId != walletId {
+                throw SendError.walletNotReady("the wallet that signed this payment is no longer the active one")
             }
             return wallet
         }
@@ -663,9 +669,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// The async `broadcast(_:)` without the routing hold, for a broadcast
     /// whose payment already holds it or that runs with no payment on screen.
     static func broadcastWithoutRoutingHold(
-        _ tx: FinalizedCoreTransaction
+        _ tx: FinalizedCoreTransaction, signedBy walletId: Data? = nil
     ) async throws -> CoreTransactionBroadcastOutcome {
-        try await waitingForNetwork(holdingRouting: false) { try broadcast(tx) }
+        try await waitingForNetwork(holdingRouting: false) { try broadcast(tx, signedBy: walletId) }
     }
 
     /// Run blocking work that waits for the network (a broadcast, a sweep) on
@@ -808,10 +814,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
         case walletNotReady(String)
         case insufficientSelectedFunds(selected: UInt64, amount: UInt64, fee: UInt64)
         case transactionRejected(txid: String, reason: String)
-        case transactionStatusUnknown(txid: String, reason: String)
-        /// The selected-input send's unknown outcome, with the wallet that
-        /// signed it.
-        case sentWithUnknownOutcome(txid: String, walletId: Data, reason: String)
+        /// `walletId`: the wallet that signed, when the thrower knows it (the
+        /// selected-input send).
+        case transactionStatusUnknown(txid: String, reason: String, walletId: Data? = nil)
 
         var errorDescription: String? {
             switch self {
@@ -825,7 +830,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
                 return "Not enough funds. Selected: \(selected), Amount: \(amount), Fee: \(fee)"
             case .transactionRejected(_, let reason):
                 return "The transaction wasn't sent. You can try again. \(reason)"
-            case .transactionStatusUnknown(_, let reason), .sentWithUnknownOutcome(_, _, let reason):
+            case .transactionStatusUnknown(_, let reason, _):
                 return "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)"
             }
         }

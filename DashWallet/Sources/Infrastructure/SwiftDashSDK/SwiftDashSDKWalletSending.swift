@@ -41,10 +41,10 @@ final class SwiftDashSDKWalletSending: WalletSending {
         // purchase (`DashSpendPayViewModel.purchaseGiftCardAndPay`). A
         // broadcast left running detached after the merchant's acknowledgement
         // has nothing on screen waiting for it.
-        let outcome = try await SwiftDashSDKTransactionSender.broadcastWithoutRoutingHold(tx)
+        let outcome = try await SwiftDashSDKTransactionSender.broadcastWithoutRoutingHold(tx, signedBy: prepared.walletId)
         do {
             _ = try SwiftDashSDKTransactionSender.requireAccepted(outcome)
-        } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(_, let reason) {
+        } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(_, let reason, _) {
             // "Unknown" is not "failed": the SDK's acceptance detector only watches for a
             // relay-back from the withheld peer, so a transaction that is already in the
             // mempool (and even InstantLocked) lands here whenever no peer echoes it back in
