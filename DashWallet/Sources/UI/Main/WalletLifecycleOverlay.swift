@@ -132,9 +132,15 @@ final class WalletLifecycleOverlayPresenter {
         // or a failure reported while `didFinishLaunching` is still running)
         // is never shown; attach it once a scene exists.
         if let overlayWindow, overlayWindow.windowScene == nil {
-            overlayWindow.windowScene = OverlayWindow.currentWindowScene()
+            overlayWindow.windowScene = Self.currentWindowScene()
         }
         overlayWindow?.isHidden = blockedByLock || authenticationPromptVisible || !applicationActive
+    }
+
+    /// The foreground scene, or the first connected one.
+    static func currentWindowScene() -> UIWindowScene? {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        return scenes.first { $0.activationState == .foregroundActive } ?? scenes.first
     }
 
     private func presentIfNeeded() {
@@ -142,30 +148,13 @@ final class WalletLifecycleOverlayPresenter {
         defer { updateVisibility() }
         guard overlayWindow == nil else { return }
         // Without a scene yet, `updateVisibility()` attaches the window later.
-        let window = OverlayWindow.make(UIWindow.self)
+        let window = Self.currentWindowScene().map { UIWindow(windowScene: $0) } ?? UIWindow(frame: UIScreen.main.bounds)
+        window.windowLevel = .alert + 1
         window.rootViewController = UIHostingController(rootView: WalletLifecycleOverlayView())
         window.rootViewController?.view.backgroundColor = .clear
         window.rootViewController?.view.accessibilityViewIsModal = true
         window.backgroundColor = .clear
         overlayWindow = window
-    }
-}
-
-/// A window above the app's, for an overlay: in the foreground scene (or the
-/// first connected one), or — on a launch with no connected scene — over the
-/// whole screen. Shared by the lifecycle overlay and the refused-link notice.
-@MainActor
-enum OverlayWindow {
-    static func make<Window: UIWindow>(_ type: Window.Type) -> Window {
-        let window = currentWindowScene().map { Window(windowScene: $0) } ?? Window(frame: UIScreen.main.bounds)
-        window.windowLevel = .alert + 1
-        return window
-    }
-
-    /// The foreground scene, or the first connected one.
-    static func currentWindowScene() -> UIWindowScene? {
-        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
-        return scenes.first { $0.activationState == .foregroundActive } ?? scenes.first
     }
 }
 

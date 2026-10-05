@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
 
 extension View {
@@ -143,6 +144,13 @@ final class PaymentInFlight: NSObject {
         return true
     }
 
+    /// Starts what the refusal notice needs to know before its first use:
+    /// where the keyboard is.
+    @MainActor
+    @objc static func prepareRefusalNotices() {
+        RefusalNotice.observeKeyboard()
+    }
+
     /// `refuses(.link, over:)`, for the root's URL and deep-link routing.
     @MainActor
     @objc(refusesLinkOverRoot:)
@@ -179,12 +187,19 @@ final class PaymentInFlight: NSObject {
 }
 
 /// The notice for a refused link, notification tap or tab change
-/// (`PaymentInFlight`): the app's
-/// toast (`showToast`) in a window of its own above the app's, so it shows
-/// over an alert or a success screen — also one presented after it. The
-/// window is a strip just below the status bar, where an open keyboard does
-/// not hide it; it never becomes key and takes no touches, so it leaves the
-/// status bar, the key window and the screens under it alone.
+/// (`PaymentInFlight`): the app's standard toast — `DashUIKit.Toast` in the
+/// `.info` style, with `presentDashUIKitToast`'s geometry and timing (20 pt
+/// sides, 16 pt above the bottom safe area, 3.5 s) — at the standard bottom
+/// position, or 16 pt above the app's docked keyboard.
+///
+/// It is drawn in a window of its own rather than on the top screen: a screen
+/// presented after the refusal — the send's success screen — or an alert
+/// would cover it there, and a presented navigation controller would take the
+/// toast's host as one of its screens. The window is a strip at the bottom of
+/// the scene, sized to the toast before it is shown, so it never covers the
+/// status bar. It sits below the lifecycle overlay (`.alert + 1`), never
+/// becomes key, takes no touches and is hidden from VoiceOver, which gets the
+/// notice as an announcement. A rotation or resize ends it early.
 @MainActor
 private enum RefusalNotice {
     static func text(for refusal: PaymentInFlight.Refusal) -> String {
@@ -199,54 +214,173 @@ private enum RefusalNotice {
                 comment: "Notice: the user tried to switch tabs or open a notification while a payment or its result was on screen; nothing changed")
         }
     }
-    private static let duration: TimeInterval = 3
+    /// `presentDashUIKitToast`'s geometry and timing.
+    private static let sideInset: CGFloat = 20
+    private static let bottomGap: CGFloat = 16
+    private static let duration: TimeInterval = 3.5
+    private static let fade: TimeInterval = 0.3
+
     private static var window: NoticeWindow?
-    private static var hideWork: DispatchWorkItem?
+    /// Tells a superseded toast's fade-out not to hide the window.
+    private static var generation = 0
+    /// A refusal made while the app is not active yet waits for it this long.
+    private static let activationWait: TimeInterval = 3
+    private static var activationObserver: NSObjectProtocol?
+    /// The last frame the app's own keyboard reported, in screen
+    /// coordinates; nil while it is hidden or belongs to another app.
+    /// `layOut` uses it only when it is docked at the scene's bottom.
+    private static var keyboardFrame: CGRect?
+    private static var keyboardObservers: [NSObjectProtocol] = []
 
     private final class NoticeWindow: UIWindow {
         override var canBecomeKey: Bool { false }
     }
 
+    private final class NoticeRoot: UIViewController {
+        override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+            super.viewWillTransition(to: size, with: coordinator)
+            view.window?.isHidden = true
+        }
+    }
+
     static func show(_ refusal: PaymentInFlight.Refusal) {
         let text = text(for: refusal)
-        // After the app has become active: VoiceOver drops an announcement
-        // made while the screen changes under it.
+        activationObserver.map(NotificationCenter.default.removeObserver)
+        activationObserver = nil
+        // A link that opened the app is refused while the app is still coming
+        // to the foreground: shown once it is active, if that is soon.
+        guard UIApplication.shared.applicationState == .active else {
+            let observer = NotificationCenter.default.addObserver(
+                forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main
+            ) { _ in
+                MainActor.assumeIsolated {
+                    activationObserver.map(NotificationCenter.default.removeObserver)
+                    activationObserver = nil
+                    present(text)
+                }
+            }
+            activationObserver = observer
+            DispatchQueue.main.asyncAfter(deadline: .now() + activationWait) {
+                guard let current = activationObserver, current === observer else { return }
+                NotificationCenter.default.removeObserver(current)
+                activationObserver = nil
+            }
+            return
+        }
+        present(text)
+    }
+
+    private static func present(_ text: String) {
+        // A second later: VoiceOver drops an announcement made while the
+        // screen changes under it.
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             UIAccessibility.post(notification: .announcement, argument: text)
         }
-        let appWindow = PinPromptPresenter.appWindows().first
-        let screenBounds = appWindow?.bounds ?? UIScreen.main.bounds
+        guard let scene = PinPromptPresenter.appWindows().first?.windowScene
+            ?? WalletLifecycleOverlayPresenter.currentWindowScene()
+        else { return }
 
-        // Reused while it is in the app window's scene; a reconnected scene
-        // gets a new one.
-        let window = Self.window.flatMap { $0.windowScene === appWindow?.windowScene ? $0 : nil }
-            ?? OverlayWindow.make(NoticeWindow.self)
+        // Reused while it is in the scene; a reconnected scene gets a new one.
+        if let old = Self.window, old.windowScene !== scene {
+            old.isHidden = true
+            Self.window = nil
+        }
+        let window = Self.window ?? NoticeWindow(windowScene: scene)
+        window.windowLevel = .alert
         window.isUserInteractionEnabled = false
-        let root = window.rootViewController ?? UIViewController()
+        let root = (window.rootViewController as? NoticeRoot) ?? NoticeRoot()
         root.view.backgroundColor = .clear
-        root.view.subviews.forEach { $0.removeFromSuperview() }
+        root.view.accessibilityElementsHidden = true
+        // One notice at a time: a new one replaces what is still showing.
+        root.children.forEach { child in
+            child.willMove(toParent: nil)
+            child.view.removeFromSuperview()
+            child.removeFromParent()
+        }
         window.rootViewController = root
         Self.window = window
 
-        // Starts below the status bar, so it has no say over it; the toast
-        // sits on the strip's bottom edge, and the strip is as tall as the
-        // toast is at the current text size.
-        let width = screenBounds.width
-        let top = appWindow?.safeAreaInsets.top ?? 0
-        window.frame = CGRect(x: 0, y: top, width: width, height: screenBounds.height - top)
+        let host = UIHostingController(rootView: DashUIKit.Toast(style: .info, message: text))
+        host.view.backgroundColor = .clear
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+        root.addChild(host)
+        root.view.addSubview(host.view)
+        NSLayoutConstraint.activate([
+            host.view.leadingAnchor.constraint(equalTo: root.view.leadingAnchor, constant: sideInset),
+            host.view.trailingAnchor.constraint(equalTo: root.view.trailingAnchor, constant: -sideInset),
+            host.view.topAnchor.constraint(equalTo: root.view.topAnchor),
+        ])
+        host.didMove(toParent: root)
+        layOut()
         window.isHidden = false
-        let toast = root.showToast(text: text, duration: duration)
-        root.view.layoutIfNeeded()
-        let inset = UIViewController.toastEdgeInset
-        window.frame = CGRect(x: 0, y: top, width: width, height: max(toast.bounds.height, 44) + 2 * inset)
 
-        // The toast's own fade-out ends a second after `duration`.
-        hideWork?.cancel()
-        let hide = DispatchWorkItem {
-            Self.window?.isHidden = true
+        generation += 1
+        let shown = generation
+        host.view.alpha = 0
+        UIView.animate(withDuration: fade) { host.view.alpha = 1 }
+        UIView.animate(withDuration: fade, delay: duration, options: .curveEaseOut) {
+            host.view.alpha = 0
+        } completion: { _ in
+            host.willMove(toParent: nil)
+            host.view.removeFromSuperview()
+            host.removeFromParent()
+            if shown == generation {
+                Self.window?.isHidden = true
+            }
         }
-        hideWork = hide
-        DispatchQueue.main.asyncAfter(deadline: .now() + duration + 1.5, execute: hide)
+    }
+
+    /// Sizes the strip to the toast and puts it at the scene's bottom, above
+    /// the home indicator, or on the top edge of the app's docked keyboard.
+    private static func layOut() {
+        guard let window, let scene = window.windowScene,
+              let toast = window.rootViewController?.children.last as? UIHostingController<DashUIKit.Toast>
+        else { return }
+        let bounds = scene.coordinateSpace.bounds
+        var bottom = bounds.maxY
+        var safeBottom = PinPromptPresenter.appWindows().first?.safeAreaInsets.bottom ?? 0
+        if let keyboardFrame {
+            let keyboard = scene.coordinateSpace.convert(keyboardFrame, from: scene.screen.coordinateSpace)
+            // Docked: reaching the scene's bottom. A floating keyboard is left alone.
+            if keyboard.maxY >= bounds.maxY - 1, keyboard.minY < bounds.maxY {
+                bottom = keyboard.minY
+                safeBottom = 0
+            }
+        }
+        let toastHeight = toast.sizeThatFits(in: CGSize(width: bounds.width - 2 * sideInset, height: .greatestFiniteMagnitude)).height
+        let height = toastHeight + bottomGap + safeBottom
+        UIView.performWithoutAnimation {
+            window.frame = CGRect(x: 0, y: bottom - height, width: bounds.width, height: height)
+            window.layoutIfNeeded()
+        }
+    }
+
+    static func observeKeyboard() {
+        guard keyboardObservers.isEmpty else { return }
+        func isLocal(_ notification: Notification) -> Bool {
+            (notification.userInfo?[UIResponder.keyboardIsLocalUserInfoKey] as? Bool) ?? true
+        }
+        keyboardObservers = [
+            NotificationCenter.default.addObserver(
+                forName: UIResponder.keyboardWillChangeFrameNotification, object: nil, queue: .main
+            ) { notification in
+                let frame = isLocal(notification)
+                    ? notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
+                    : nil
+                MainActor.assumeIsolated {
+                    keyboardFrame = frame
+                    if window?.isHidden == false { layOut() }
+                }
+            },
+            NotificationCenter.default.addObserver(
+                forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main
+            ) { _ in
+                MainActor.assumeIsolated {
+                    keyboardFrame = nil
+                    if window?.isHidden == false { layOut() }
+                }
+            },
+        ]
     }
 }
 
