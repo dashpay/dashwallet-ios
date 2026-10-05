@@ -69,4 +69,26 @@ final class WalletPreparationFailureTests: XCTestCase {
         XCTAssertTrue(report.contains("KeyMigrator:timedOut"))
         XCTAssertEqual(WalletPreparationFailure(legacyMigration: .unreadableKeychain).codes, ["KeyMigrator:unreadableKeychain"])
     }
+
+    /// The unreadable-inventory failure carries one fixed code and the
+    /// generic "could not be opened" copy — nothing is lost and nothing is
+    /// being moved, so neither the migration nor the storage wording fits —
+    /// and its report names its own category.
+    func testUnreadableWalletInventoryFailureIsGenericAndCarriesItsCode() {
+        let failure = WalletPreparationFailure(unreadableWallet: (), now: Date(timeIntervalSince1970: 0))
+        XCTAssertEqual(failure.kind, .keychain)
+        XCTAssertEqual(failure.codes, ["Keychain:unreadableWalletInventory"])
+
+        let generic = WalletPreparationFailure(error: NSError(domain: NSPOSIXErrorDomain, code: 1))
+        XCTAssertEqual(failure.title, generic.title)
+        XCTAssertEqual(failure.message, generic.message)
+        XCTAssertNotEqual(failure.title, WalletPreparationFailure(legacyMigration: .failed).title)
+        XCTAssertFalse(failure.message.contains("space"))
+
+        let report = failure.diagnosticReport(appVersion: "1.2 (3)", systemVersion: "iOS 26")
+        XCTAssertTrue(report.contains("Category: keychain"))
+        XCTAssertTrue(report.contains("Keychain:unreadableWalletInventory"))
+        XCTAssertTrue(report.contains("1970-01-01T00:00:00Z"))
+        XCTAssertTrue(report.contains("1.2 (3)"))
+    }
 }

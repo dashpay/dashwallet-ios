@@ -322,8 +322,17 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
     struct Dependencies {
         /// The migrator reached a terminal state for this launch.
         var isSettled: () -> Bool
-        /// An SDK wallet this build can select is persisted.
-        var hasWallet: () -> Bool
+        /// Whether an SDK wallet this build can select is persisted — one
+        /// keychain read, one answer. Every verdict below derives from a
+        /// single snapshot of it: `.present` presents the wallet, only a
+        /// definite `.absent` may go on to ask about legacy material and
+        /// reach setup, and `.unknown` — the inventory could not be read
+        /// although the app is active and the device unlocked, a keychain
+        /// failure that is not the lock — is a failure to show: the card,
+        /// whose Try Again re-reads and whose late-success watcher completes
+        /// the launch once a read works. Never setup over a wallet the read
+        /// missed.
+        var walletPresence: () -> WalletEnvironment.WalletPresence
         /// DashSync material still in the keychain and not marked migrated,
         /// confirmed absent, or unreadable.
         var legacyMaterial: () -> LegacyMaterialState
@@ -337,6 +346,14 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
         var startMigration: () -> Void
         /// Subscribe the overlay window presenter before the first phase.
         var activateOverlay: () -> Void
+        /// The hold delivered the wallet. Wired to an idempotent runtime
+        /// start: a launch whose start saw an unreadable inventory left the
+        /// runtime stopped, and neither Try Again (the migrator returns at
+        /// its done sentinel without a material change) nor the late-success
+        /// watcher would start it otherwise. Foreground-owned by
+        /// construction — both run under the card, and the launch decision
+        /// has been taken by then.
+        var walletDelivered: () -> Void = {}
         /// Fires whenever persisted wallet material changed (the migrator
         /// reports its success through it); the failure card re-checks
         /// `hasWallet` on each element instead of polling the keychain.
@@ -401,7 +418,7 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
                 // A wallet that landed releases the hold before the migrator
                 // settles: with several DashSync wallets the first import can
                 // be open and running while a later one is still wedged.
-                if self.dependencies.hasWallet() {
+                if self.dependencies.walletPresence() == .present {
                     self.deliver(hasWallet: true)
                     return
                 }
@@ -419,25 +436,35 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
     }
 
     private func evaluate(timedOut: Bool) {
-        if dependencies.hasWallet() {
+        // One snapshot for the whole verdict.
+        let failure: WalletPreparationFailure
+        switch dependencies.walletPresence() {
+        case .present:
             deliver(hasWallet: true)
             return
-        }
-        let reason: WalletPreparationFailure.LegacyMigrationReason
-        switch dependencies.legacyMaterial() {
+        case .unknown:
+            // Only a definite "no SDK wallet" may go on to ask about legacy
+            // material; an unreadable inventory is a failure to show, never
+            // setup over a wallet the read missed.
+            failure = WalletPreparationFailure(unreadableWallet: ())
         case .absent:
-            deliver(hasWallet: false)
-            return
-        case .unreadable:
-            reason = .unreadableKeychain
-        case .pending:
-            reason = timedOut ? .timedOut : dependencies.deferralReason()
+            let reason: WalletPreparationFailure.LegacyMigrationReason
+            switch dependencies.legacyMaterial() {
+            case .absent:
+                deliver(hasWallet: false)
+                return
+            case .unreadable:
+                reason = .unreadableKeychain
+            case .pending:
+                reason = timedOut ? .timedOut : dependencies.deferralReason()
+            }
+            failure = WalletPreparationFailure(legacyMigration: reason)
         }
         if state.phase == .idle, !state.tryBegin(.migratingLegacyWallet) {
             DWLogger.log("🚦 LIFECYCLE legacy-migration hold could not take the window for its verdict")
         }
-        state.failLegacyMigration(WalletPreparationFailure(legacyMigration: reason))
-        DWLogger.log("🚦 LIFECYCLE legacy migration did not deliver a wallet (\(reason.rawValue)); holding on the failure card")
+        state.failLegacyMigration(failure)
+        DWLogger.log("🚦 LIFECYCLE launch hold did not deliver a wallet (\(failure.codes.joined(separator: ","))); holding on the failure card")
         watchForLateSuccess()
     }
 
@@ -474,7 +501,7 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
 
     @discardableResult
     private func deliverIfWalletPresent() -> Bool {
-        guard completion != nil, dependencies.hasWallet() else { return false }
+        guard completion != nil, dependencies.walletPresence() == .present else { return false }
         deliver(hasWallet: true)
         return true
     }
@@ -495,6 +522,10 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
         let completion = self.completion
         self.completion = nil
         completion?(hasWallet)
+        if hasWallet {
+            // After the root has its controller and the window is released.
+            dependencies.walletDelivered()
+        }
     }
 }
 

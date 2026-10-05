@@ -18,12 +18,21 @@
 #import <Foundation/Foundation.h>
 
 #import "DWHomeProtocol.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWRootProtocol <NSObject>
 
 @property (readonly, nonatomic, assign) BOOL hasAWallet;
+
+/**
+ The tri-state behind `hasAWallet`, read once per launch decision. `Unknown`
+ while the wallet inventory cannot be read: `hasAWallet` is NO then, but it
+ must not be acted on — the launch is handed to the hold, whose card offers
+ Try Again.
+ */
+@property (readonly, nonatomic, assign) DWWalletPresence walletPresence;
 
 @property (readonly, nonatomic, strong) id<DWHomeProtocol> homeModel;
 
