@@ -340,13 +340,18 @@ extension PaymentController: DWPaymentProcessorDelegate {
         let showNotice = {
             let closed = { [weak self] in
                 guard let self else { return }
-                // As after a sent payment: the amount step is done.
-                if let amountScreen = self.presentationAnchor?.navigationController?.topViewController as? AmountProviding {
+                if let delegate = self.delegate,
+                   (delegate as? NSObject)?.responds(
+                       to: #selector(PaymentControllerDelegate.paymentControllerDidSubmitWithUnknownOutcome(_:txidWire:))) == true {
+                    // The paying screen leaves the whole flow itself (one
+                    // navigation change, not a pop racing its own).
+                    delegate.paymentControllerDidSubmitWithUnknownOutcome?(self, txidWire: txidWire)
+                } else if let amountScreen = self.presentationAnchor?.navigationController?.topViewController as? AmountProviding {
+                    // As after a sent payment: the amount step is done.
                     amountScreen.navigationController?.popViewController(animated: true)
                 } else {
                     self.provideAmountViewController?.hideActivityIndicator()
                 }
-                _ = self.delegate?.paymentControllerDidSubmitWithUnknownOutcome?(self, txidWire: txidWire)
             }
             guard let top = self.presentationAnchor?.topController() else {
                 DWLogger.log("PaymentController: no screen to show the unknown-outcome notice on")

@@ -74,13 +74,16 @@ final class BalanceModel: ObservableObject {
             .merge(with: coinSaves)
             .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
             .map { _ in
-                Future<UInt64, Never> { promise in
+                Future<UInt64?, Never> { promise in
                     DispatchQueue.global(qos: .utility).async {
-                        promise(.success(SwiftDashSDKWalletSource.awaitingConfirmationDuffs() ?? 0))
+                        promise(.success(SwiftDashSDKWalletSource.awaitingConfirmationDuffs()))
                     }
                 }
             }
             .switchToLatest()
+            // A read that failed (host unbound, fetch error) keeps the last
+            // known value rather than claiming nothing is waiting.
+            .compactMap { $0 }
             .receive(on: DispatchQueue.main)
             .removeDuplicates()
             .sink { [weak self] duffs in

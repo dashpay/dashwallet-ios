@@ -597,7 +597,17 @@ class Transaction: TransactionDataItem, Identifiable {
         _shortTimeString
     }
 
+    /// "Waiting for the network" for an unconfirmed send whose broadcast had
+    /// no answer (`PendingSendOutcomes`), whatever kind of send it is; nil
+    /// otherwise. Takes precedence over a merchant or Coinbase title, which
+    /// would otherwise read like a settled payment.
+    var waitingForNetworkTitle: String? {
+        guard state == .processing, PendingSendOutcomes.isWaiting(txidWire: snapshot.txid) else { return nil }
+        return NSLocalizedString("Waiting for the network", comment: "Sent transaction whose broadcast got no answer from the network yet")
+    }
+
     var stateTitle: String {
+        if let waitingForNetworkTitle { return waitingForNetworkTitle }
         // Identity funding locks name their purpose — they buy identity
         // credits rather than moving between the wallet's balances.
         if let identityType = identityFundingLockInfo?.fundingTypeRaw {
@@ -634,11 +644,6 @@ class Transaction: TransactionDataItem, Identifiable {
             switch direction {
             case .sent:
                 if state == .processing {
-                    // A send whose broadcast had no answer is followed by
-                    // `PendingSendOutcomes` until its row is locked or mined.
-                    if PendingSendOutcomes.isWaiting(txidWire: snapshot.txid) {
-                        return NSLocalizedString("Waiting for the network", comment: "Sent transaction whose broadcast got no answer from the network yet")
-                    }
                     return NSLocalizedString("Sending", comment: "")
                 } else if state == .invalid {
                     return NSLocalizedString("Invalid", comment: "")

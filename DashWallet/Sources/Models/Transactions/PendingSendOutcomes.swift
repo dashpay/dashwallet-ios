@@ -96,11 +96,20 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             entries = Dictionary(stored.map { ($0.txidWire, $0) }, uniquingKeysWith: { a, _ in a })
         }
         publishWaitingTxids()
-        // A save that touched the wallet's transactions may have locked or
-        // mined a waiting send; the bookkeeping saves are skipped with the
-        // home feed's filter (inspected on the posting thread, before the
-        // hop). Throttled: during sync the persister saves several times a
-        // second.
+        updateSaveWatch()
+    }
+
+    /// Watches saves only while a send is waiting. A save that touched the
+    /// wallet's transactions may have locked or mined one; the bookkeeping
+    /// saves are skipped with the home feed's filter (inspected on the
+    /// posting thread, before the hop). Throttled: during sync the persister
+    /// saves several times a second.
+    private func updateSaveWatch() {
+        guard !entries.isEmpty else {
+            saveWatch = nil
+            return
+        }
+        guard saveWatch == nil else { return }
         saveWatch = NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
             .filter { HomeViewModel.saveTouchesFeedRows($0) }
             .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
@@ -120,8 +129,12 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// - Returns: false when the send could not be followed (no active
     ///   wallet), so its row will not say "Waiting for the network".
     @discardableResult
-    func recordUnknownOutcome(txidWire: Data, address: String?, amount: UInt64, notifies: Bool = true) -> Bool {
-        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
+    /// - Parameter walletId: the sending wallet when the caller knows it (a
+    ///   sweep that may outlive a wallet switch); the active wallet otherwise.
+    func recordUnknownOutcome(
+        txidWire: Data, address: String?, amount: UInt64, notifies: Bool = true, walletId: Data? = nil
+    ) -> Bool {
+        guard let walletId = walletId ?? SwiftDashSDKHost.shared.wallet?.walletId else {
             DWLogger.log("💸 TXSEND :: unknown outcome not tracked, no active wallet")
             return false
         }
@@ -140,11 +153,11 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
 
     /// Stop following `txidsWire` — their rows were removed by the user
     /// (`UnconfirmedTransactionRemover`).
-    func forget(txidsWire: [Data]) {
+    func forget(txidsWire: [Data], reason: String = "removed") {
         var changed = false
         for txid in txidsWire where entries.removeValue(forKey: txid) != nil {
             changed = true
-            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) removed, no longer tracked")
+            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) \(reason), no longer tracked")
         }
         if changed { didChangeEntries() }
     }
@@ -213,6 +226,14 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         reconcileInFlight = true
         let pending = entries
         Task.detached(priority: .utility) { [weak self] in
+            // A wallet removed from the device takes its waiting sends with
+            // it: they would never settle against any wallet again.
+            if let stored = try? SwiftDashSDKHost.persistedWalletIds() {
+                let orphans = pending.values.filter { !stored.contains($0.walletId) }.map(\.txidWire)
+                if !orphans.isEmpty {
+                    await MainActor.run { self?.forget(txidsWire: orphans, reason: "its wallet was removed") }
+                }
+            }
             let snapshot = SwiftDashSDKWalletSource.fetch(txids: Set(pending.keys))
             await MainActor.run {
                 guard let self else { return }
@@ -275,6 +296,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
 
     private func didChangeEntries() {
         publishWaitingTxids()
+        updateSaveWatch()
         NotificationCenter.default.post(name: Self.didChangeNotification, object: nil)
         if let data = try? JSONEncoder().encode(Array(entries.values)) {
             UserDefaults.standard.set(data, forKey: Self.defaultsKey)

@@ -828,7 +828,7 @@ struct HomeViewContent<Content: View>: View {
                     // moves into the corner badge instead of being dropped —
                     // matching Android and the tx-detail header.
                     ?? (contactAvatar == nil ? nil : icons.primary.dashIconSource),
-                title: metadata?.title ?? txItem.stateTitle,
+                title: txItem.waitingForNetworkTitle ?? metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
                 details: txItem.isPendingShieldedTransfer
                     ? NSLocalizedString("Pending — tap to finish", comment: "InternalTransfer recovery")
@@ -1155,14 +1155,10 @@ private struct PendingSendToastModifier: ViewModifier {
             .animation(.easeInOut(duration: 0.3), value: outcomes.notice)
             .task(id: outcomes.notice?.id) {
                 guard let id = outcomes.notice?.id else { return }
-                // A notice raised while home was away keeps only what is left
-                // of its window, like the internal-transfer notice.
-                let age = outcomes.noticeRaisedAt.map { Date().timeIntervalSince($0) } ?? 0
-                let duration = PendingSendOutcomes.noticeDuration
-                if age < duration {
-                    try? await Task.sleep(for: .seconds(duration - age))
-                    guard !Task.isCancelled else { return }
-                }
+                // Its full window from when home shows it: a send that settled
+                // while the app was locked or home was away is still told.
+                try? await Task.sleep(for: .seconds(PendingSendOutcomes.noticeDuration))
+                guard !Task.isCancelled else { return }
                 outcomes.dismissNotice(id: id)
             }
     }
