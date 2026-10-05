@@ -32,6 +32,8 @@ final class BalanceModel: ObservableObject {
     /// it (`SwiftDashSDKWalletSource.awaitingConfirmationDuffs()`); 0 when
     /// none or unreadable.
     @Published private(set) var awaitingConfirmationDuffs: UInt64 = 0
+    /// Bumped on every wallet or network switch (main queue only).
+    private var walletGeneration = 0
     /// Badge text for the home header while the wallet runs on a test
     /// network ("TESTNET"/"DEVNET"), so test funds can't be mistaken for
     /// real Dash; nil on mainnet.
@@ -74,26 +76,36 @@ final class BalanceModel: ObservableObject {
         // flight for the old wallet is dropped by `switchToLatest`.
         let walletChanges = NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
             .merge(with: NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification))
+            .receive(on: DispatchQueue.main)
+            // Bumped before any subscriber sees the switch, so the read it
+            // starts carries the new generation.
+            .handleEvents(receiveOutput: { [weak self] _ in self?.walletGeneration += 1 })
             .map { _ in () }
             .share()
         let reads = SwiftDashSDKWalletState.shared.$balance
             .map { _ in () }
             .merge(with: coinSaves, walletChanges)
             .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
-            .map { _ in
-                Future<UInt64?, Never> { promise in
+            .map { [weak self] _ in
+                // Tagged with the wallet generation it was started for: a read
+                // that lands after a switch is the old wallet's.
+                let generation = self?.walletGeneration ?? 0
+                return Future<(Int, UInt64?), Never> { promise in
                     DispatchQueue.global(qos: .utility).async {
-                        promise(.success(SwiftDashSDKWalletSource.awaitingConfirmationDuffs()))
+                        promise(.success((generation, SwiftDashSDKWalletSource.awaitingConfirmationDuffs())))
                     }
                 }
             }
             .switchToLatest()
-            // A read that failed (host unbound, fetch error) keeps the last
-            // known value rather than claiming nothing is waiting.
-            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .compactMap { [weak self] generation, duffs -> UInt64? in
+                // A read that failed (host unbound, fetch error) keeps the last
+                // known value rather than claiming nothing is waiting.
+                guard generation == self?.walletGeneration else { return nil }
+                return duffs
+            }
         reads
             .merge(with: walletChanges.map { UInt64(0) })
-            .receive(on: DispatchQueue.main)
             .removeDuplicates()
             .sink { [weak self] duffs in
                 self?.awaitingConfirmationDuffs = duffs
