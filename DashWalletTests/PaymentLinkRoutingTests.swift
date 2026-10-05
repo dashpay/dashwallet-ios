@@ -829,37 +829,39 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
         XCTAssertEqual(decision.expired, [past.txidWire], "still unconfirmed after a week: no longer followed")
     }
 
-    /// Wallet A's send settles after the switch to B: the notice is A's, and
-    /// B's Home shows nothing.
-    func testASettlementForAnotherWalletShowsNothingOnTheActiveOne() {
+    /// Wallet A's send settles after the switch to B (its read finished
+    /// late): B's Home tells nothing.
+    func testASettlementForAnotherWalletShowsNothingOnTheShownOne() {
         let sentFromA = entry(1, wallet: walletA, age: 60)
         let decision = decide([sentFromA], rows: [sentFromA.txidWire: .settled], wallet: walletA)
-        let notices = Policy.mergedNotices([:], adding: decision.notifying)
-        XCTAssertNil(Policy.notice(in: notices, for: walletB), "no toast on B's Home")
-        XCTAssertEqual(Policy.notice(in: notices, for: walletA)?.count, 1, "A's own Home tells it")
-        XCTAssertNil(Policy.notice(in: notices, for: nil))
+        XCTAssertEqual(decision.notifying, [sentFromA], "A's send settled")
+        XCTAssertTrue(Policy.notifiable(decision.notifying, shownWalletId: walletB).isEmpty, "no toast on B's Home")
+        XCTAssertTrue(Policy.notifiable(decision.notifying, shownWalletId: nil).isEmpty, "none during a switch")
+        XCTAssertEqual(Policy.notifiable(decision.notifying, shownWalletId: walletA), [sentFromA])
     }
 
-    /// A notice raised before a switch stays with its wallet: hidden while
-    /// another wallet is shown, told when its own is shown again.
-    func testANoticeRaisedBeforeASwitchStaysWithItsWallet() {
-        let notices = Policy.mergedNotices([:], adding: [entry(1, wallet: walletA, age: 60)])
-        let shownOnA = Policy.notice(in: notices, for: walletA)
-        XCTAssertNotNil(shownOnA)
-        XCTAssertNil(Policy.notice(in: notices, for: walletB), "switched to B: not shown")
-        XCTAssertEqual(Policy.notice(in: notices, for: walletA), shownOnA, "back on A: the same notice")
+    /// A notice is the shown wallet's: the host stopping (a switch) clears it.
+    func testASwitchClearsTheShownNotice() async {
+        await MainActor.run {
+            let outcomes = PendingSendOutcomes.shared
+            outcomes.hostDidStop()
+            XCTAssertNil(outcomes.notice)
+            XCTAssertNil(outcomes.shownWalletId)
+        }
     }
 
-    func testNoticesMergeOnlyWithinOneWallet() {
-        let notices = Policy.mergedNotices([:], adding: [
+    func testNoticesMergeOnlyWithinTheShownWallet() {
+        let settled = [
             entry(1, wallet: walletA, age: 60, amount: 1_000),
             entry(2, wallet: walletB, age: 60, amount: 5_000),
             entry(3, wallet: walletA, age: 60, amount: 2_000),
-        ])
-        XCTAssertEqual(notices[walletA]?.count, 2)
-        XCTAssertEqual(notices[walletA]?.total, 3_000)
-        XCTAssertEqual(notices[walletB]?.count, 1)
-        XCTAssertEqual(notices[walletB]?.total, 5_000, "B's payment is not added to A's total")
+        ]
+        var notice: PendingSendOutcomes.Notice?
+        for entry in Policy.notifiable(settled, shownWalletId: walletA) {
+            notice = Policy.merged(notice, adding: entry.amount)
+        }
+        XCTAssertEqual(notice?.count, 2)
+        XCTAssertEqual(notice?.total, 3_000, "B's payment is not added to A's total")
     }
 
     func testNoticesMergeAndTheTotalSaturates() {
