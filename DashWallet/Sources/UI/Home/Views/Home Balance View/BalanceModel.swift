@@ -69,9 +69,16 @@ final class BalanceModel: ObservableObject {
         let coinSaves = NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
             .filter { HomeViewModel.saveTouchesFeedRows($0) }
             .map { _ in () }
-        SwiftDashSDKWalletState.shared.$balance
+        // Another wallet's (or network's) waiting coins are not this one's:
+        // cleared at once, and a read for the new wallet starts — the one in
+        // flight for the old wallet is dropped by `switchToLatest`.
+        let walletChanges = NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
+            .merge(with: NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification))
             .map { _ in () }
-            .merge(with: coinSaves)
+            .share()
+        let reads = SwiftDashSDKWalletState.shared.$balance
+            .map { _ in () }
+            .merge(with: coinSaves, walletChanges)
             .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
             .map { _ in
                 Future<UInt64?, Never> { promise in
@@ -84,6 +91,8 @@ final class BalanceModel: ObservableObject {
             // A read that failed (host unbound, fetch error) keeps the last
             // known value rather than claiming nothing is waiting.
             .compactMap { $0 }
+        reads
+            .merge(with: walletChanges.map { UInt64(0) })
             .receive(on: DispatchQueue.main)
             .removeDuplicates()
             .sink { [weak self] duffs in
@@ -95,16 +104,6 @@ final class BalanceModel: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 self?.networkBadgeText = BalanceModel.badgeText()
-            }
-            .store(in: &cancellableBag)
-
-        // Another wallet's (or network's) waiting coins are not this one's:
-        // cleared until its own read lands.
-        NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
-            .merge(with: NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification))
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in
-                self?.awaitingConfirmationDuffs = 0
             }
             .store(in: &cancellableBag)
 

@@ -159,6 +159,12 @@ extension PayViewController: PaymentControllerDelegate, PaymentControllerPresent
         delegate?.payViewControllerDidFinishPayment(self, txidWire: txidWire)
     }
 
+    /// The notice is gone: close the payment and show its transaction, which
+    /// reads "Waiting for the network", as for a sent one.
+    func paymentControllerDidSubmitWithUnknownOutcome(_ controller: PaymentController, txidWire: Data) {
+        delegate?.payViewControllerDidFinishPayment(self, txidWire: txidWire)
+    }
+
     func paymentControllerDidCancelTransaction(_ controller: PaymentController) { }
 
     func paymentControllerDidFailTransaction(_ controller: PaymentController) { }

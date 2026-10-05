@@ -86,6 +86,12 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// (removed or swept) rather than not yet written by the persister — long,
     /// because on a large wallet the persister can lag by hours.
     private static let missingRowGrace: TimeInterval = 24 * 60 * 60
+    /// A send still unconfirmed this long after it was recorded is no longer
+    /// followed: one the network will never take (it spends coins the chain
+    /// never had) would otherwise read "Waiting for the network", and warn
+    /// on every payment to its address, for good. Its row goes back to
+    /// "Sending", where Remove if Not on Network is offered.
+    private static let maxFollowAge: TimeInterval = 7 * 24 * 60 * 60
     /// A send that settles this soon after it was recorded settled while its
     /// "Waiting for the network" notice is still being read: no second
     /// "went through" message on top of it.
@@ -100,6 +106,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     private var saveWatch: AnyCancellable?
     private var reconcileInFlight = false
     private var reconcileRequestedAgain = false
+    /// Waiting sends whose `.accepted` verdict has already been acted on.
+    private var acceptedHeard: Set<Data> = []
 
     private override init() {
         super.init()
@@ -233,10 +241,14 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// lock or block that settles it may already be there. The verdict itself
     /// changes nothing — a node that took the bytes is not a settled payment.
     private func apply(_ events: [OutgoingTransactionProbeEvent]) {
-        let heard = events.contains { event in
+        let accepted = Set(events.filter { event in
             event.verdict == .accepted && entries[event.txidWire]?.walletId == event.walletId
-        }
-        if heard { reconcile() }
+        }.map(\.txidWire))
+        // Only a newly heard acceptance re-reads the rows; the dictionary is
+        // republished on every other probe change too.
+        let new = accepted.subtracting(acceptedHeard)
+        acceptedHeard = accepted
+        if !new.isEmpty { reconcile() }
     }
 
     // MARK: - Settling against the stored rows
@@ -278,7 +290,13 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         // rows were being read neither settles nor raises a notice.
         for entry in pending.values where entry.walletId == snapshot.walletId && entries[entry.txidWire] != nil {
             if let row = rows[entry.txidWire] {
-                guard row.state != .processing else { continue }
+                if row.state == .processing {
+                    guard Date().timeIntervalSince(entry.sentAt) > Self.maxFollowAge else { continue }
+                    DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(entry.txidWire)) still unconfirmed after a week, no longer tracked")
+                    entries.removeValue(forKey: entry.txidWire)
+                    changed = true
+                    continue
+                }
                 DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(entry.txidWire)) settled on chain")
                 if entry.notifies != false,
                    Date().timeIntervalSince(entry.sentAt) > Self.quietSettleWindow {

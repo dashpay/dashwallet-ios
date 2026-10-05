@@ -438,7 +438,9 @@ extension PaymentController: DWPaymentProcessorDelegate {
     /// A dialog's host: reports when it has left the screen — dismissed
     /// itself, or freed when a controller below it was dismissed.
     private final class DialogHostingController: UIHostingController<ModalDialog> {
-        var onDisappear: (() -> Void)?
+        /// Set once on the main actor before presentation; read again only
+        /// by `deinit`, after every other reference is gone.
+        nonisolated(unsafe) var onDisappear: (() -> Void)?
 
         override func viewDidDisappear(_ animated: Bool) {
             super.viewDidDisappear(animated)

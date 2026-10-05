@@ -457,8 +457,12 @@ final class WalletSendService: NSObject {
                         description: BroadcastOutcomeCopy.unknown,
                         diagnostic: reason)
                 }
+                // The selected-input route is CrowdNode's: signal transactions
+                // and amounts that may have been lowered by the fee, so it
+                // settles without a "went through" notice.
                 throw Self.unknownOutcomeError(
-                    txidWire: Data(txHash.reversed()), address: address, amount: amount, reason: reason)
+                    txidWire: Data(txHash.reversed()), address: address, amount: amount, reason: reason,
+                    notifies: false)
             } catch {
                 throw Self.sendBuildError(from: error)
             }
@@ -1143,9 +1147,12 @@ extension WalletSendService {
     ///
     /// - Returns: whether it could be followed (an active wallet).
     @discardableResult
-    static func followUnknownOutcome(txidWire: Data, address: String?, amount: UInt64) -> Bool {
+    static func followUnknownOutcome(
+        txidWire: Data, address: String?, amount: UInt64, notifies: Bool = true
+    ) -> Bool {
         MainThread.sync {
-            PendingSendOutcomes.shared.recordUnknownOutcome(txidWire: txidWire, address: address, amount: amount)
+            PendingSendOutcomes.shared.recordUnknownOutcome(
+                txidWire: txidWire, address: address, amount: amount, notifies: notifies)
         }
     }
 
@@ -1161,8 +1168,10 @@ extension WalletSendService {
     /// CoinJoin sweep chunk records itself (`SwiftDashSDKTransactionSender
     /// .sweepCoinJoin`); a contact payment's unknown outcome carries no txid
     /// from the SDK, so it is not followed.
-    static func unknownOutcomeError(txidWire: Data, address: String?, amount: UInt64, reason: String) -> NSError {
-        let followed = followUnknownOutcome(txidWire: txidWire, address: address, amount: amount)
+    static func unknownOutcomeError(
+        txidWire: Data, address: String?, amount: UInt64, reason: String, notifies: Bool = true
+    ) -> NSError {
+        let followed = followUnknownOutcome(txidWire: txidWire, address: address, amount: amount, notifies: notifies)
         let error = makeError(code: .broadcastUnknown, description: BroadcastOutcomeCopy.unknown, diagnostic: reason)
         var userInfo = error.userInfo
         userInfo[unknownTxidWireKey] = txidWire

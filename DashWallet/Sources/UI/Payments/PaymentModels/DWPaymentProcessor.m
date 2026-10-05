@@ -187,6 +187,11 @@ static NSString *DWReversedHexString(NSData *data) {
                     // through. The send service has put it in the history as
                     // "Waiting for the network"; no error invites sending it again.
                     [self.delegate paymentProcessor:self didSendWithUnknownOutcomeTxidWire:preparedSend.txidWire];
+                    // The requesting app is told, as for a sent payment: the
+                    // payment most likely went through.
+                    [self handleCallbackSchemeIfNeeded:callbackScheme
+                                               address:address
+                                              txidWire:preparedSend.txidWire];
                     [self reset];
                 }
                 else if (error) {
