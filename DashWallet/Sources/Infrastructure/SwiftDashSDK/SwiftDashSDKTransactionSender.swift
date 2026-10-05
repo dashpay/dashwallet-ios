@@ -703,7 +703,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
         case .rejected(let txid, let reason):
             throw SendError.transactionRejected(txid: txid, reason: reason)
         case .unknown(let txid, let reason):
-            throw SendError.transactionStatusUnknown(txid: txid, reason: reason)
+            // The signing wallet is added by a caller that knows it
+            // (`buildAndSignFromAddress`).
+            throw SendError.transactionStatusUnknown(txid: txid, reason: reason, walletId: nil)
         }
     }
 
@@ -810,7 +812,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
         case transactionRejected(txid: String, reason: String)
         /// `walletId`: the wallet that signed, when the thrower knows it (the
         /// selected-input send).
-        case transactionStatusUnknown(txid: String, reason: String, walletId: Data? = nil)
+        case transactionStatusUnknown(txid: String, reason: String, walletId: Data?)
 
         var errorDescription: String? {
             switch self {
