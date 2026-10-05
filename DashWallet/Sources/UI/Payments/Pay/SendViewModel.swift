@@ -48,6 +48,17 @@ final class SendViewModel: ObservableObject {
         case shieldedToCore
         case shieldedToPlatform
         case shieldedToShielded
+
+        /// Whether executing this route builds an Orchard (Halo 2) proof.
+        var buildsOrchardProof: Bool {
+            switch self {
+            case .coreToShielded, .platformToShielded,
+                 .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
+                return true
+            case .coreToCore, .platformToPlatform, .platformToCore:
+                return false
+            }
+        }
     }
 
     @Published var addressText: String = "" {
@@ -264,6 +275,10 @@ final class SendViewModel: ObservableObject {
                 self?.refreshShieldedSpendCeiling()
             }
             .store(in: &cancellables)
+
+        // A pinned source never passes through `routeDidChange` until an
+        // address is entered.
+        warmShieldedProverIfNeeded()
     }
 
     #if DEBUG
@@ -604,6 +619,17 @@ final class SendViewModel: ObservableObject {
         refreshShieldedSpendCeiling()
         refreshWithdrawalPreflight()
         refreshShieldPreflight()
+        warmShieldedProverIfNeeded()
+    }
+
+    /// Start building the proving key while the user enters the amount, so
+    /// the proof after Confirm does not pay for it. Before a destination is
+    /// known, a Shielded source is enough: every address route out of it
+    /// proves. (A contact payment has no Shielded route, so the warm-up there
+    /// is unused work, not a wrong result.)
+    private func warmShieldedProverIfNeeded() {
+        guard route?.buildsOrchardProof ?? (source == .shielded) else { return }
+        ShieldedProverWarmup.shared.request(.shieldedRoute)
     }
 
     private func refreshWithdrawalPreflight() {

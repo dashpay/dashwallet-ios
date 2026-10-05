@@ -11,10 +11,15 @@
 		B16D9D3F361A448E8A9FEBAF /* ShieldedRecoveryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2ADF29244E649D8BE05FD93 /* ShieldedRecoveryController.swift */; };
 		E012FFCC6C3142B4B5869B72 /* ShieldedRecoveryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2ADF29244E649D8BE05FD93 /* ShieldedRecoveryController.swift */; };
 		4C9AC6D2EC13450DAC68FC90 /* ShieldedBalanceControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 930BFA9B069540D4A5CAD79A /* ShieldedBalanceControllerTests.swift */; };
+		87283E72177547A553769FDA /* ShieldedProverWarmupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD77D1E7F1D45EB93E3C227F /* ShieldedProverWarmupTests.swift */; };
 		525045ECC4BF30BBCB09E13C /* PlatformBalanceReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17921340EDF4455B62461AF8 /* PlatformBalanceReaderTests.swift */; };
 		C693C63758228F630D39F00E /* HomeBalancePresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F9884169298187E321C8804 /* HomeBalancePresentationTests.swift */; };
 		BCC98012E278206FC08FA8E3 /* PlatformBalanceControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71029F5975636F1DCFFFF85 /* PlatformBalanceControllerTests.swift */; };
 		FA87A306BF0E476385DA1C66 /* ShieldedBalanceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F5A428A4E24408592C674A0 /* ShieldedBalanceController.swift */; };
+		D8E922B4E60548327297DA55 /* ShieldedProverWarmup+SwiftDashSDK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26CC0B81B054197512A42227 /* ShieldedProverWarmup+SwiftDashSDK.swift */; };
+		24DB1F2462E4FF527CA55060 /* ShieldedProverWarmup+SwiftDashSDK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26CC0B81B054197512A42227 /* ShieldedProverWarmup+SwiftDashSDK.swift */; };
+		7870E2DB976066F3B40FF08E /* ShieldedProverWarmup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BA895A17174DA7A07142ED /* ShieldedProverWarmup.swift */; };
+		7D2DD1F562669CA99BE08EF1 /* ShieldedProverWarmup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BA895A17174DA7A07142ED /* ShieldedProverWarmup.swift */; };
 		3FB3DF46CD5AE05691411A29 /* PlatformBalanceReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0404B1EF157E90B4EF63BB /* PlatformBalanceReader.swift */; };
 		84189D0105142F3926178B6D /* HomeBalancePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691713FB42FED19292F60021 /* HomeBalancePresentation.swift */; };
 		23E8269233178A3EE4E9635F /* PlatformBalanceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43E7D434DF71B73F2B47A5E /* PlatformBalanceController.swift */; };
@@ -2165,10 +2170,13 @@
 		5798C63088F44013AEC5D85B /* ShieldedRecoveryControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedRecoveryControllerTests.swift; sourceTree = "<group>"; };
 		F2ADF29244E649D8BE05FD93 /* ShieldedRecoveryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedRecoveryController.swift; sourceTree = "<group>"; };
 		930BFA9B069540D4A5CAD79A /* ShieldedBalanceControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedBalanceControllerTests.swift; sourceTree = "<group>"; };
+		CD77D1E7F1D45EB93E3C227F /* ShieldedProverWarmupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedProverWarmupTests.swift; sourceTree = "<group>"; };
 		17921340EDF4455B62461AF8 /* PlatformBalanceReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBalanceReaderTests.swift; sourceTree = "<group>"; };
 		6F9884169298187E321C8804 /* HomeBalancePresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeBalancePresentationTests.swift; sourceTree = "<group>"; };
 		D71029F5975636F1DCFFFF85 /* PlatformBalanceControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBalanceControllerTests.swift; sourceTree = "<group>"; };
 		9F5A428A4E24408592C674A0 /* ShieldedBalanceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedBalanceController.swift; sourceTree = "<group>"; };
+		26CC0B81B054197512A42227 /* ShieldedProverWarmup+SwiftDashSDK.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ShieldedProverWarmup+SwiftDashSDK.swift"; sourceTree = "<group>"; };
+		52BA895A17174DA7A07142ED /* ShieldedProverWarmup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedProverWarmup.swift; sourceTree = "<group>"; };
 		DE0404B1EF157E90B4EF63BB /* PlatformBalanceReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBalanceReader.swift; sourceTree = "<group>"; };
 		691713FB42FED19292F60021 /* HomeBalancePresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeBalancePresentation.swift; sourceTree = "<group>"; };
 		D43E7D434DF71B73F2B47A5E /* PlatformBalanceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBalanceController.swift; sourceTree = "<group>"; };
@@ -7513,6 +7521,7 @@
 				A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */,
 				B7C072AA26C7000000000002 /* DWContestedNameStatusServiceTests.swift */,
 				930BFA9B069540D4A5CAD79A /* ShieldedBalanceControllerTests.swift */,
+				CD77D1E7F1D45EB93E3C227F /* ShieldedProverWarmupTests.swift */,
 				17921340EDF4455B62461AF8 /* PlatformBalanceReaderTests.swift */,
 				6F9884169298187E321C8804 /* HomeBalancePresentationTests.swift */,
 				D71029F5975636F1DCFFFF85 /* PlatformBalanceControllerTests.swift */,
@@ -7586,6 +7595,8 @@
 				UTR0B0002FA0000000000001 /* UnconfirmedTransactionRemover.swift */,
 				INSGT0001000000000000001 /* InsightExplorerAPI.swift */,
 				9F5A428A4E24408592C674A0 /* ShieldedBalanceController.swift */,
+				26CC0B81B054197512A42227 /* ShieldedProverWarmup+SwiftDashSDK.swift */,
+				52BA895A17174DA7A07142ED /* ShieldedProverWarmup.swift */,
 				DE0404B1EF157E90B4EF63BB /* PlatformBalanceReader.swift */,
 				691713FB42FED19292F60021 /* HomeBalancePresentation.swift */,
 				D43E7D434DF71B73F2B47A5E /* PlatformBalanceController.swift */,
@@ -10697,6 +10708,8 @@
 				51AA00082F970008005A0008 /* DashPaySyncInfoScreen.swift in Sources */,
 				51AA000B2F97000B005A000B /* ShieldedSyncInfoScreen.swift in Sources */,
 				FA87A306BF0E476385DA1C66 /* ShieldedBalanceController.swift in Sources */,
+				D8E922B4E60548327297DA55 /* ShieldedProverWarmup+SwiftDashSDK.swift in Sources */,
+				7870E2DB976066F3B40FF08E /* ShieldedProverWarmup.swift in Sources */,
 				3FB3DF46CD5AE05691411A29 /* PlatformBalanceReader.swift in Sources */,
 				84189D0105142F3926178B6D /* HomeBalancePresentation.swift in Sources */,
 				23E8269233178A3EE4E9635F /* PlatformBalanceController.swift in Sources */,
@@ -10825,6 +10838,7 @@
 				A17EED0126C7000000000001 /* WalletWipeSerialExecutorTests.swift in Sources */,
 				B7C072AA26C7000000000001 /* DWContestedNameStatusServiceTests.swift in Sources */,
 				4C9AC6D2EC13450DAC68FC90 /* ShieldedBalanceControllerTests.swift in Sources */,
+				87283E72177547A553769FDA /* ShieldedProverWarmupTests.swift in Sources */,
 				525045ECC4BF30BBCB09E13C /* PlatformBalanceReaderTests.swift in Sources */,
 				C693C63758228F630D39F00E /* HomeBalancePresentationTests.swift in Sources */,
 				BCC98012E278206FC08FA8E3 /* PlatformBalanceControllerTests.swift in Sources */,
@@ -11789,6 +11803,8 @@
 				51AA00092F970009005A0009 /* DashPaySyncInfoScreen.swift in Sources */,
 				51AA000C2F97000C005A000C /* ShieldedSyncInfoScreen.swift in Sources */,
 				06AFC7A7EE22469FB22185CE /* ShieldedBalanceController.swift in Sources */,
+				24DB1F2462E4FF527CA55060 /* ShieldedProverWarmup+SwiftDashSDK.swift in Sources */,
+				7D2DD1F562669CA99BE08EF1 /* ShieldedProverWarmup.swift in Sources */,
 				C22DB25CE1327A1A7FF180B1 /* PlatformBalanceReader.swift in Sources */,
 				8BB48CBDDB2C5830F32DBAE5 /* HomeBalancePresentation.swift in Sources */,
 				4A299EBB511451DCA1234899 /* PlatformBalanceController.swift in Sources */,
