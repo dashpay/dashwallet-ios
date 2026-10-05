@@ -2021,6 +2021,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         guard let manager = SwiftDashSDKHost.shared.manager else {
             throw CoordinatorError.noSDK
         }
+        let proofTiming = ShieldedProverWarmup.shared.beginProofOperation(.identityFromShieldedPool)
 
         let contested = DWContestedNameStatusService.isContestedLabel(username)
         let denomination = ShieldedIdentityFundingReadiness.requiredCredits(forContestedName: contested)
@@ -2055,18 +2056,20 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
 
         Self.logger.info("🪪 IDENT-COORD :: shielded create denomination=\(denomination) contested=\(contested)")
         do {
-            let identityId = try await manager.shieldedIdentityCreateFromPool(
-                walletId: walletId,
-                // Per-operation Orchard spend authority (seedless
-                // shielded bind) — same pattern as the app's other
-                // shielded spends in `ShieldedTransferCoordinator`.
-                resolver: MnemonicResolver(),
-                account: 0,
-                identityIndex: Self.pinnedIdentityIndex,
-                identityPubkeys: pubkeys,
-                denomination: denomination,
-                sendToAddressOnCreationFailure: fallbackAddressBytes,
-                identitySigner: signer)
+            let identityId = try await proofTiming.measure {
+                try await manager.shieldedIdentityCreateFromPool(
+                    walletId: walletId,
+                    // Per-operation Orchard spend authority (seedless
+                    // shielded bind) — same pattern as the app's other
+                    // shielded spends in `ShieldedTransferCoordinator`.
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    identityIndex: Self.pinnedIdentityIndex,
+                    identityPubkeys: pubkeys,
+                    denomination: denomination,
+                    sendToAddressOnCreationFailure: fallbackAddressBytes,
+                    identitySigner: signer)
+            }
             PlatformAddressSyncCoordinator.shared
                 .refreshShieldedBalanceAfterSpend(using: manager)
             return identityId

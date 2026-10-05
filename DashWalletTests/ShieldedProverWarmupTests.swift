@@ -153,4 +153,58 @@ final class ShieldedProverWarmupTests: XCTestCase {
         await drain()
         XCTAssertEqual(backend.prepareCount, 2)
     }
+
+    // MARK: - Proof timing
+
+    func testProofTimingWhenTheKeyWasWarm() async {
+        backend.isReady = true
+        let warmup = makeWarmup()
+        let timing = warmup.beginProofOperation(.shieldedToCore)
+        XCTAssertTrue(timing.readyAtConfirm)
+        clock.advance(milliseconds: 2_000)
+        let value = await timing.measure { () async -> Int in
+            clock.advance(milliseconds: 900)
+            return 7
+        }
+        XCTAssertEqual(value, 7)
+        XCTAssertEqual(backend.prepareCount, 0)
+        XCTAssertEqual(lines, [
+            "SHIELDED-PROVER op=shielded-to-core ready_at_confirm=true ready_at_call=true ready_after_call_ms=0 "
+                + "confirm_to_call_ms=2000 call_ms=900 succeeded=true",
+        ])
+    }
+
+    func testConfirmingAColdProofStartsTheBuildAndReportsTheWait() async {
+        let warmup = makeWarmup()
+        let timing = warmup.beginProofOperation(.shieldedToShielded)
+        await drain()
+        XCTAssertFalse(timing.readyAtConfirm)
+        XCTAssertEqual(backend.prepareCount, 1)
+        XCTAssertEqual(lines, ["SHIELDED-PROVER warm-up start trigger=confirmed-operation"])
+
+        clock.advance(milliseconds: 1_000)
+        do {
+            try await timing.measure {
+                clock.advance(milliseconds: 2_500)
+                backend.finish(ready: true)
+                await drain()
+                clock.advance(milliseconds: 1_200)
+                throw CancellationError()
+            }
+            XCTFail("measure must rethrow the call's error")
+        } catch {
+            XCTAssertTrue(error is CancellationError)
+        }
+
+        XCTAssertEqual(lines.last,
+            "SHIELDED-PROVER op=shielded-to-shielded ready_at_confirm=false ready_at_call=false ready_after_call_ms=2500 "
+                + "confirm_to_call_ms=1000 call_ms=3700 succeeded=false")
+    }
+
+    func testConfirmingWithoutRunningTheCallLogsNothing() {
+        backend.isReady = true
+        let warmup = makeWarmup()
+        _ = warmup.beginProofOperation(.platformToShielded)
+        XCTAssertTrue(lines.isEmpty)
+    }
 }

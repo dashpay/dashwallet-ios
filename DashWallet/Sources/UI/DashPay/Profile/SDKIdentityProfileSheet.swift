@@ -599,6 +599,11 @@ final class IdentityTopUpViewModel: ObservableObject {
             isProcessing = false
             stepLabel = nil
         }
+        // The Shielded source starts with an unshield; start the proving-key
+        // build before the PIN prompt so the two overlap.
+        let proofTiming = source == .shielded
+            ? ShieldedProverWarmup.shared.beginProofOperation(.shieldedToIdentity)
+            : nil
         do {
             try await authorizer.authorize()
         } catch {
@@ -632,7 +637,8 @@ final class IdentityTopUpViewModel: ObservableObject {
                     identityId: identityId,
                     amountDuffs: amountDuffs,
                     wallet: wallet,
-                    modelContainer: modelContainer)
+                    modelContainer: modelContainer,
+                    proofTiming: proofTiming)
             }
         } catch let error as PlatformPaymentIdentityFundingPolicy.PlanningError {
             if case .insufficient(let required, let available) = error {
@@ -656,7 +662,8 @@ final class IdentityTopUpViewModel: ObservableObject {
         identityId: Data,
         amountDuffs: UInt64,
         wallet: ManagedPlatformWallet,
-        modelContainer: ModelContainer
+        modelContainer: ModelContainer,
+        proofTiming: ShieldedProofTiming?
     ) async throws -> UInt64 {
         guard let manager = SwiftDashSDKHost.shared.manager else {
             throw SwiftDashSDKContactsService.ServiceError.noWallet
@@ -677,12 +684,19 @@ final class IdentityTopUpViewModel: ObservableObject {
         // destination when it returns; the unshield's own fee comes from
         // the shielded side on top of `credits`.
         stepLabel = NSLocalizedString("Step 1 of 2 — moving Dash out of your Shielded balance…", comment: "Identity top-up sheet — shielded route progress")
-        try await manager.shieldedUnshield(
-            walletId: wallet.walletId,
-            resolver: MnemonicResolver(),
-            account: 0,
-            toPlatformAddress: destination,
-            amount: credits)
+        let unshield = {
+            try await manager.shieldedUnshield(
+                walletId: wallet.walletId,
+                resolver: MnemonicResolver(),
+                account: 0,
+                toPlatformAddress: destination,
+                amount: credits)
+        }
+        if let proofTiming {
+            try await proofTiming.measure(unshield)
+        } else {
+            try await unshield()
+        }
         // Same post-spend refreshes the transfer coordinator schedules —
         // BLAST stays the source of truth for the persisted balances.
         PlatformAddressSyncCoordinator.shared.refreshShieldedBalanceAfterSpend(using: manager)
