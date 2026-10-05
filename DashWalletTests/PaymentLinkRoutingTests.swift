@@ -976,3 +976,40 @@ private final class StaticReceiveAddress: ReceiveAddressProviding {
 private final class NoAuth: SendAuthorizing {
     func authorize() async throws {}
 }
+
+/// The Home "… waiting for confirmation" caption's rule.
+final class AwaitingConfirmationBalanceTests: XCTestCase {
+    private typealias Txo = SwiftDashSDKWalletSource.AwaitingConfirmationTxo
+
+    private func txo(_ dash: UInt64, spender: Bool = false, spent: Bool = false, confirmed: Bool = false,
+                     locked: Bool = false, standard: Bool = true) -> Txo {
+        Txo(amount: dash * 100_000_000, isSpent: spent, hasSpender: spender, isConfirmed: confirmed,
+            isInstantLocked: locked, isStandardAccount: standard)
+    }
+
+    /// A persisted chain T1 → T2: T2 spends T1's unconfirmed 9 DASH change and
+    /// leaves 8 DASH change. The SDK keeps T1's change `isSpent == false` until
+    /// T2 is in a block, with T2 saved as its spender: 8 DASH waits, not 17.
+    func testAChainCountsOnlyTheChangeStillInTheWallet() {
+        let t1Change = txo(9, spender: true)
+        let t2Change = txo(8)
+        XCTAssertEqual(SwiftDashSDKWalletSource.awaitingConfirmationTotal(of: [t1Change, t2Change]), 8 * 100_000_000)
+    }
+
+    func testOnlyUnsettledStandardOutputsCount() {
+        let total = SwiftDashSDKWalletSource.awaitingConfirmationTotal(of: [
+            txo(1),
+            txo(2, confirmed: true),
+            txo(4, locked: true),
+            txo(8, spent: true),
+            txo(16, standard: false),
+        ])
+        XCTAssertEqual(total, 1 * 100_000_000)
+    }
+
+    func testTheTotalSaturates() {
+        let huge = Txo(amount: UInt64.max, isSpent: false, hasSpender: false, isConfirmed: false,
+                       isInstantLocked: false, isStandardAccount: true)
+        XCTAssertEqual(SwiftDashSDKWalletSource.awaitingConfirmationTotal(of: [huge, txo(1)]), UInt64.max)
+    }
+}

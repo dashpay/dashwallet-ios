@@ -2091,16 +2091,54 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// standard accounts (BIP44 and BIP32, every index) that are neither in a
     /// block nor locked — an incoming payment not locked yet, or the change of
     /// a send the network has not taken. CoinJoin and the other account types
-    /// are left out, as are outputs paid to others. One fetch of the saved
-    /// state; safe from any thread. Nil when it could not be read.
+    /// are left out, as are outputs paid to others, and outputs with a saved
+    /// spender (see `awaitingConfirmationTotal`). One fetch of the saved state;
+    /// safe from any thread. Nil when it could not be read.
     static func awaitingConfirmationDuffs() -> UInt64? {
         guard let (container, walletId) = hostHandles() else { return nil }
-        let descriptor = FetchDescriptor<PersistentTxo>(predicate: #Predicate {
-            $0.walletId == walletId && !$0.isSpent && !$0.isConfirmed && !$0.isInstantLocked
+        // A pre-filter on cheap columns only; `awaitingConfirmationTotal`
+        // applies the whole rule again and is the one that decides.
+        var descriptor = FetchDescriptor<PersistentTxo>(predicate: #Predicate {
+            $0.walletId == walletId && !$0.isConfirmed && !$0.isInstantLocked
         })
+        descriptor.relationshipKeyPathsForPrefetching = [\.spendingTransaction, \.coreAddress, \.account]
         guard let rows = try? ModelContext(container).fetch(descriptor) else { return nil }
+        return awaitingConfirmationTotal(of: rows.map { txo in
+            AwaitingConfirmationTxo(
+                amount: txo.amount,
+                isSpent: txo.isSpent,
+                hasSpender: txo.spendingTransaction != nil,
+                isConfirmed: txo.isConfirmed,
+                isInstantLocked: txo.isInstantLocked,
+                isStandardAccount: (txo.coreAddress?.account ?? txo.account)?.accountType == standardAccountType)
+        })
+    }
+
+    /// One saved output as the pending-balance rule sees it.
+    struct AwaitingConfirmationTxo: Equatable {
+        let amount: UInt64
+        let isSpent: Bool
+        /// A transaction spending it is saved (`spendingTransaction`). The SDK
+        /// links every spender it sees but sets `isSpent` only for a spender
+        /// in a block (or a sweep's stamp), so an output spent by an
+        /// unconfirmed transaction still reads unspent. The link says a spender
+        /// is saved, not that the network took it: one that never reached the
+        /// network keeps the output excluded until it is removed ("Remove if
+        /// Not on Network").
+        let hasSpender: Bool
+        let isConfirmed: Bool
+        let isInstantLocked: Bool
+        let isStandardAccount: Bool
+    }
+
+    /// The pending-balance rule: the standard-account outputs that are
+    /// unspent with no saved spender, and neither mined nor locked. In a chain
+    /// T1 → T2 where T2 spends T1's unconfirmed change, only T2's change
+    /// counts. The total saturates.
+    static func awaitingConfirmationTotal(of txos: [AwaitingConfirmationTxo]) -> UInt64 {
         var total: UInt64 = 0
-        for txo in rows where (txo.coreAddress?.account ?? txo.account)?.accountType == standardAccountType {
+        for txo in txos
+        where txo.isStandardAccount && !txo.isSpent && !txo.hasSpender && !txo.isConfirmed && !txo.isInstantLocked {
             let (sum, overflow) = total.addingReportingOverflow(txo.amount)
             total = overflow ? UInt64.max : sum
         }
