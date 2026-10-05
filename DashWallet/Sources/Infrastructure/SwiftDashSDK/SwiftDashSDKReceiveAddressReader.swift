@@ -62,8 +62,19 @@ final class SwiftDashSDKReceiveAddressReader: NSObject {
     /// The receive address and wallet id captured from the same host-bound
     /// wallet. Swift callers that retain work across wallet switches use this
     /// to keep the destination tied to its originating wallet.
+    ///
+    /// Only the wallet reference is main-bound. The read itself takes the
+    /// wallet-manager write lock, which SPV block processing or a persister
+    /// commit can hold for seconds, so it runs on the calling thread: a
+    /// background caller (`DWReceiveModel`'s queue, the Apple Watch context
+    /// builder) waits there instead of parking the main thread. A main-thread
+    /// caller reads inline, as before.
     static func receiveDestination() -> (address: String, walletId: Data)? {
-        onMain { readDestinationOnMain() }
+        guard let wallet = onMain({ SwiftDashSDKHost.shared.wallet }) else {
+            Self.logger.warning("📬 RECVADDR :: host has no wallet yet")
+            return nil
+        }
+        return readDestination(from: wallet)
     }
 
     // MARK: Request-amount receive detection (DWReceiveModel)
@@ -127,12 +138,10 @@ final class SwiftDashSDKReceiveAddressReader: NSObject {
         }
     }
 
-    @MainActor
-    private static func readDestinationOnMain() -> (address: String, walletId: Data)? {
-        guard let wallet = SwiftDashSDKHost.shared.wallet else {
-            Self.logger.warning("📬 RECVADDR :: host has no wallet yet")
-            return nil
-        }
+    /// Runs on the caller's thread. `ManagedPlatformWallet` is Sendable (an
+    /// immutable handle and wallet id), and the `ManagedCoreWallet` made here is
+    /// created and released on this same thread.
+    private static func readDestination(from wallet: ManagedPlatformWallet) -> (address: String, walletId: Data)? {
         do {
             let address = try wallet.coreWallet().nextReceiveAddress(accountIndex: 0)
             return (address, wallet.walletId)
