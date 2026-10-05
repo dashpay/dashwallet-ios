@@ -1082,25 +1082,6 @@ private extension WalletSendService {
                 comment: "DashPay Contacts"))
     }
 
-    /// A build the SDK refused because the coins that would fund it are not
-    /// confirmed yet — change of an earlier send the network has not taken, or
-    /// a fresh incoming payment — becomes this service's
-    /// `fundsAwaitingNetwork` with copy a user can act on. The SDK's own text
-    /// (amounts in duffs, internal wording) goes to the diagnostic only. Every
-    /// other error is returned untouched.
-    static func sendBuildError(from error: Error) -> Error {
-        guard case .coreFundsAwaitingNetwork(let detail) = error as? PlatformWalletError else {
-            return error
-        }
-        DWLogger.log("💸 TXSEND :: build refused, funds await network confirmation: \(detail)")
-        return makeError(
-            code: .fundsAwaitingNetwork,
-            description: NSLocalizedString(
-                "Some of your funds are waiting for the network to confirm an earlier payment. Try again in a moment.",
-                comment: "Send blocked until unconfirmed coins are confirmed"),
-            diagnostic: detail)
-    }
-
     /// The two broadcast outcomes a user can be shown, in one place.
     ///
     /// Every send route ends in one of these, and there is more than one route
@@ -1179,5 +1160,24 @@ extension WalletSendService {
             userInfo[followedKey] = true
         }
         return NSError(domain: error.domain, code: error.code, userInfo: userInfo)
+    }
+
+    /// A build the SDK refused because the coins that would fund it are not
+    /// confirmed yet — change of an earlier send the network has not taken, or
+    /// a fresh incoming payment — becomes this service's
+    /// `fundsAwaitingNetwork` with copy a user can act on. The SDK's own text
+    /// (amounts in duffs, internal wording) goes to the diagnostic only. Every
+    /// other error is returned untouched.
+    static func sendBuildError(from error: Error) -> Error {
+        guard case .coreFundsAwaitingNetwork(let detail) = error as? PlatformWalletError else {
+            return error
+        }
+        DWLogger.log("💸 TXSEND :: build refused, funds await network confirmation: \(detail)")
+        return makeError(
+            code: .fundsAwaitingNetwork,
+            description: NSLocalizedString(
+                "Some of your funds are waiting for the network to confirm an earlier payment. Try again in a moment.",
+                comment: "Send blocked until unconfirmed coins are confirmed"),
+            diagnostic: detail)
     }
 }

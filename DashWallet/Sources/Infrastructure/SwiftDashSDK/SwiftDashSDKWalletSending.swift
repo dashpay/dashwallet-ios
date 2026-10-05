@@ -19,7 +19,13 @@ import SwiftDashSDK
 final class SwiftDashSDKWalletSending: WalletSending {
 
     func buildSignedTransaction(recipients: [(address: String, amountDuffs: UInt64)]) async throws -> PreparedSend {
-        let (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSign(recipients: recipients)
+        let (tx, txHash): (FinalizedCoreTransaction, Data)
+        do {
+            (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSign(recipients: recipients)
+        } catch {
+            // Coins still waiting for the network: the same copy as every other route.
+            throw WalletSendService.sendBuildError(from: error)
+        }
         return PreparedSend(
             txData: try tx.serializedData(), fee: tx.fee, txHashDisplay: txHash, sdkTransaction: tx)
     }

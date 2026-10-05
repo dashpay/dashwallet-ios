@@ -52,6 +52,10 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         let address: String?
         let amount: UInt64
         let sentAt: Date
+        /// False for a send that is not a payment to someone (a CoinJoin sweep
+        /// chunk) or whose amount is not known here: it settles without the
+        /// "went through" notice. Nil in entries stored before it existed.
+        var notifies: Bool? = nil
     }
 
     /// Sends that went through after all: one, or several that settled while
@@ -108,13 +112,15 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     // MARK: - Recording
 
     /// The broadcast of `txidWire` ended with no answer from the network.
-    /// Called by `WalletSendService` wherever it maps a broadcast to
-    /// `broadcastUnknown`, and from nowhere else.
+    /// Called by `WalletSendService.unknownOutcomeError` (every route it maps
+    /// to `broadcastUnknown`), by the CoinJoin sweep for a chunk
+    /// (`SwiftDashSDKTransactionSender.sweepCoinJoin`) and by the headless
+    /// BIP70 payment (`SendCoinsService.payWithDashUrl`).
     ///
     /// - Returns: false when the send could not be followed (no active
     ///   wallet), so its row will not say "Waiting for the network".
     @discardableResult
-    func recordUnknownOutcome(txidWire: Data, address: String?, amount: UInt64) -> Bool {
+    func recordUnknownOutcome(txidWire: Data, address: String?, amount: UInt64, notifies: Bool = true) -> Bool {
         guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
             DWLogger.log("💸 TXSEND :: unknown outcome not tracked, no active wallet")
             return false
@@ -124,7 +130,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             walletId: walletId,
             address: address,
             amount: amount,
-            sentAt: Date())
+            sentAt: Date(),
+            notifies: notifies)
         DWLogger.log("💸 TXSEND :: waiting for the network on \(Transaction.displayHex(txidWire))")
         didChangeEntries()
         reconcile()
@@ -142,11 +149,12 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         if changed { didChangeEntries() }
     }
 
-    /// Stop following every send: the wallet they belong to was wiped, or the
-    /// app switched network, so no row of theirs is on screen to follow.
+    /// Stop following every send: the wallet they belong to was wiped. (A
+    /// network switch keeps them: entries are per wallet, and the other
+    /// network's sends are settled once its wallet runs again.)
     @objc func forgetAll() {
         guard !entries.isEmpty else { return }
-        DWLogger.log("💸 TXSEND :: \(entries.count) waiting send(s) no longer tracked: wallet wiped or network switched")
+        DWLogger.log("💸 TXSEND :: \(entries.count) waiting send(s) no longer tracked: wallet wiped")
         entries = [:]
         notice = nil
         didChangeEntries()
@@ -224,11 +232,15 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         let rows = Dictionary(snapshot.transactions.map { ($0.txHashData, $0) },
                               uniquingKeysWith: { a, _ in a })
         var changed = false
-        for entry in pending.values where entry.walletId == snapshot.walletId {
+        // Only sends still followed: one forgotten (removed, wiped) while the
+        // rows were being read neither settles nor raises a notice.
+        for entry in pending.values where entry.walletId == snapshot.walletId && entries[entry.txidWire] != nil {
             if let row = rows[entry.txidWire] {
                 guard row.state != .processing else { continue }
                 DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(entry.txidWire)) settled on chain")
-                raiseNotice(for: entry)
+                if entry.notifies != false {
+                    raiseNotice(for: entry)
+                }
             } else {
                 guard Date().timeIntervalSince(entry.sentAt) > Self.missingRowGrace else { continue }
                 DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(entry.txidWire)) left the wallet, no longer tracked")

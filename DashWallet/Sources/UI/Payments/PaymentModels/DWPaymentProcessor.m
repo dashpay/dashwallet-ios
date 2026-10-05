@@ -322,6 +322,9 @@ static NSString *DWReversedHexString(NSData *data) {
                                  if (error && [DWWalletSendService isBroadcastUnknownError:error]) {
                                      title = NSLocalizedString(@"Transaction status unknown", nil);
                                  }
+                                 else if (error && [DWWalletSendService isFundsAwaitingNetworkError:error]) {
+                                     title = DWWalletSendService.fundsAwaitingNetworkTitle;
+                                 }
                                  [self failedWithError:error
                                                  title:title
                                                message:error.localizedDescription];

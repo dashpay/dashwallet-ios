@@ -376,10 +376,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                     address: giftCardInfo.paymentAddress,
                     amount: dashAmountInSatoshis
                 )
-            } catch let error where WalletSendService.unknownOutcomeTxidWire(of: error) != nil {
+            } catch {
+                guard let unconfirmedTxIdWire = WalletSendService.unknownOutcomeTxidWire(of: error) else {
+                    throw error
+                }
                 // The payment may still settle: record the order against its txid,
                 // as the CTX branch does, so the card is not lost.
-                let unconfirmedTxIdWire = WalletSendService.unknownOutcomeTxidWire(of: error)!
                 let reason = ((error as NSError).userInfo[WalletSendService.diagnosticKey] as? String)
                     ?? error.localizedDescription
                 DWLogger.log("Gift card payment status unknown, recording the order anyway: \(reason)")

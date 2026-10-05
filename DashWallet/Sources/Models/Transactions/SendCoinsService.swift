@@ -124,8 +124,14 @@ public final class SendCoinsService: NSObject {
             // The coins are gone as far as the merchant is concerned — it already holds the
             // signed bytes and can broadcast them itself. Hand the caller the txid so the
             // purchase is recorded rather than dropped; the caller decides how to present it.
-            throw DashSpendError.paymentStatusUnknown(
-                txIdWire: Data(txHashDisplay.reversed()), reason: reason)
+            // Its row waits for the network like any send's; the amount is not known here,
+            // so it settles without the "went through" notice.
+            let txIdWire = Data(txHashDisplay.reversed())
+            await MainActor.run {
+                _ = PendingSendOutcomes.shared.recordUnknownOutcome(
+                    txidWire: txIdWire, address: uri.address, amount: 0, notifies: false)
+            }
+            throw DashSpendError.paymentStatusUnknown(txIdWire: txIdWire, reason: reason)
         }
 
         let txidWire = Data(result.txHashDisplay.reversed())

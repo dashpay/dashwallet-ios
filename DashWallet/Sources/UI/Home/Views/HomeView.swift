@@ -233,7 +233,7 @@ struct HomeViewContent<Content: View>: View {
     /// confirm sheet closes the moment it begins — so its outcome is
     /// announced here, where the user lands.
     @ObservedObject private var internalTransfers = InternalTransferRunner.shared
-    @ObservedObject private var pendingSends = PendingSendOutcomes.shared
+    private let pendingSends = PendingSendOutcomes.shared
     /// Balance whose explainer sheet is up (tap on a breakdown row's body).
     @State private var balanceInfoNetwork: ChainNetwork? = nil
 

@@ -292,7 +292,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
         // The old network's sends are torn down with it.
         [DWPaymentInFlight abandonHolds];
-        [[DWPendingSendOutcomes shared] forgetAll];
 
         // reset main controller stack
         strongSelf->_mainController = nil;

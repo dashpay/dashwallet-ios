@@ -37,10 +37,8 @@ protocol PaymentControllerDelegate: AnyObject {
     /// The broadcast got no answer from the network; the send now waits in the
     /// history (`PendingSendOutcomes`). Called once the "Waiting for the
     /// network" notice the controller presents first is gone — closed and
-    /// dismissed, or never shown — so the delegate can leave the paying
-    /// screen. A
-    /// delegate that does not implement this keeps the paying screen, with the
-    /// notice over it.
+    /// dismissed, or never shown — and the legacy amount step, if any, has
+    /// been left, so the delegate can leave the paying screen too.
     @objc optional func paymentControllerDidSubmitWithUnknownOutcome(_ controller: PaymentController, txidWire: Data)
     /// The broadcast got no answer, told at once — before the notice — for
     /// bookkeeping that must not wait for the user (and is not lost if the
@@ -331,28 +329,24 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
     func paymentProcessor(_ processor: DWPaymentProcessor, didSendWithUnknownOutcomeTxidWire txidWire: Data) {
         presentationAnchor?.topController().view.dw_hideProgressHUD()
-        provideAmountViewController?.hideActivityIndicator()
         delegate?.paymentControllerDidReceiveUnknownOutcome?(self, txidWire: txidWire)
 
-        guard let delegate,
-              (delegate as? NSObject)?.responds(
-                  to: #selector(PaymentControllerDelegate.paymentControllerDidSubmitWithUnknownOutcome(_:txidWire:))) == true
-        else {
-            confirmViewController?.isSendingEnabled = false
-            if let top = presentationAnchor?.topController() {
-                Self.showUnknownOutcomeNotice(on: top)
-            }
-            return
-        }
-
-        // The notice first; the delegate is told once it is gone. Presented in
-        // the same turn as the outcome's report when no confirm sheet is up,
+        // The notice first; the paying screen goes on once it is gone. Presented
+        // in the same turn as the outcome's report when no confirm sheet is up,
         // so the router sees a presented modal from the routing hold's end on;
-        // after a confirm sheet, once that sheet is gone.
+        // after a confirm sheet, once that sheet is gone. The legacy amount
+        // screen keeps its input off until then: a hardware keyboard under the
+        // notice would otherwise still edit it.
         let showNotice = {
-            let closed = { [weak self, weak delegate] in
+            let closed = { [weak self] in
                 guard let self else { return }
-                _ = delegate?.paymentControllerDidSubmitWithUnknownOutcome?(self, txidWire: txidWire)
+                // As after a sent payment: the amount step is done.
+                if let amountScreen = self.presentationAnchor?.navigationController?.topViewController as? AmountProviding {
+                    amountScreen.navigationController?.popViewController(animated: true)
+                } else {
+                    self.provideAmountViewController?.hideActivityIndicator()
+                }
+                _ = self.delegate?.paymentControllerDidSubmitWithUnknownOutcome?(self, txidWire: txidWire)
             }
             guard let top = self.presentationAnchor?.topController() else {
                 DWLogger.log("PaymentController: no screen to show the unknown-outcome notice on")

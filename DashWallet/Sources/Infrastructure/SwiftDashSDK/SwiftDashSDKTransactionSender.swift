@@ -322,11 +322,13 @@ final class SwiftDashSDKTransactionSender: NSObject {
                     // No answer is not a failure: the chunk may well have gone
                     // out. It counts as sent (grouped with the sweep's other
                     // transactions) and its row waits for the network like any
-                    // send's. Its address is the wallet's own, so no repeat
-                    // warning keys on it.
+                    // send's. It is a move within the wallet, not a payment:
+                    // no repeat warning keys on it and it settles without the
+                    // "went through" notice.
                     let amount = chunk.reduce(UInt64(0)) { $0 + $1.valueDuffs }
                     let followed = MainThread.sync {
-                        PendingSendOutcomes.shared.recordUnknownOutcome(txidWire: txidWire, address: nil, amount: amount)
+                        PendingSendOutcomes.shared.recordUnknownOutcome(
+                            txidWire: txidWire, address: nil, amount: amount, notifies: false)
                     }
                     DWLogger.log("💸 TXSEND :: coinjoin sweep chunk outcome unknown (\(reason)); followed=\(followed)")
                 }
