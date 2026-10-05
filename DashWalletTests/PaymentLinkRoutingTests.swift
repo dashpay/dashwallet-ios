@@ -429,6 +429,30 @@ final class PaymentLinkRoutingTests: XCTestCase {
         return (root, navigation, status)
     }
 
+    /// A send whose broadcast got no answer shows the "Waiting for the
+    /// network" notice on the paying screen, and its delegate — which leaves
+    /// that screen (the SwiftUI Send sheet closes to Home) — is told only once
+    /// the notice has been closed and is gone. Until then the notice, a
+    /// presented modal, keeps links refused.
+    func testAnUnknownSendOutcomeShowsItsNoticeBeforeTheDelegateLeaves() throws {
+        let (root, tabScreen) = showMainScreen()
+        let delegate = UnknownOutcomeDelegate(anchor: tabScreen)
+        let controller = PaymentController()
+        controller.delegate = delegate
+        controller.presentationContextProvider = delegate
+
+        controller.paymentProcessor(DWPaymentProcessor(), didSendWithUnknownOutcomeTxidWire: Data(repeating: 0xab, count: 32))
+        spin(until: { root.presentedViewController != nil })
+
+        let notice = try XCTUnwrap(root.presentedViewController as? UIHostingController<ModalDialog>, "the notice is up")
+        XCTAssertEqual(delegate.acknowledgements, [], "the delegate is told only once the notice is closed")
+        XCTAssertTrue(PaymentInFlight.refusesLink(over: root), "the notice is a presented modal the router sees")
+
+        notice.rootView.positiveButtonAction()
+        spin(until: { !delegate.acknowledgements.isEmpty })
+        XCTAssertEqual(delegate.acknowledgements, [false], "told once, with the notice already gone")
+    }
+
     func testOnlyLinksThatReplaceTheScreenAreSubjectToTheRule() throws {
         func replacesScreen(_ className: String) throws -> Bool {
             let type = try XCTUnwrap(NSClassFromString(className) as? NSObject.Type, className)
@@ -497,5 +521,25 @@ private final class FailingDeposit: SwapDepositSending {
     func sendSwapKitSwap(depositAddress: String, dashAmount: UInt64, memo: String?) async throws -> Data {
         attempts += 1
         throw error
+    }
+}
+
+/// A paying screen that leaves once its unknown outcome was acknowledged.
+private final class UnknownOutcomeDelegate: NSObject, PaymentControllerDelegate, PaymentControllerPresentationContextProviding {
+    let anchor: UIViewController
+    /// One entry per acknowledgement: whether anything was still presented.
+    private(set) var acknowledgements: [Bool] = []
+
+    init(anchor: UIViewController) { self.anchor = anchor }
+
+    func paymentControllerDidFinishTransaction(_ controller: PaymentController, txidWire: Data) {}
+    func paymentControllerDidCancelTransaction(_ controller: PaymentController) {}
+    func paymentControllerDidFailTransaction(_ controller: PaymentController) {}
+    func paymentControllerDidSubmitWithUnknownOutcome(_ controller: PaymentController, txidWire: Data) {
+        acknowledgements.append(anchor.view.window?.rootViewController?.presentedViewController != nil)
+    }
+
+    func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor {
+        anchor
     }
 }

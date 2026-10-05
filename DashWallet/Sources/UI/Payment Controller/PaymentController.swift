@@ -33,8 +33,11 @@ protocol PaymentControllerDelegate: AnyObject {
     func paymentControllerDidCancelTransaction(_ controller: PaymentController)
     func paymentControllerDidFailTransaction(_ controller: PaymentController)
     /// The broadcast got no answer from the network; the send now waits in the
-    /// history (`PendingSendOutcomes`). A delegate that does not implement this
-    /// shows the outcome as an alert on the paying screen instead.
+    /// history (`PendingSendOutcomes`). Called once the "Waiting for the
+    /// network" notice the controller presents first has been closed and its
+    /// dismissal has finished, so the delegate can leave the paying screen. A
+    /// delegate that does not implement this keeps the paying screen, with the
+    /// notice over it.
     @objc optional func paymentControllerDidSubmitWithUnknownOutcome(_ controller: PaymentController, txidWire: Data)
 }
 
@@ -330,28 +333,38 @@ extension PaymentController: DWPaymentProcessorDelegate {
             return
         }
 
-        let finish = {
-            DispatchQueue.main.async {
-                delegate.paymentControllerDidSubmitWithUnknownOutcome?(self, txidWire: txidWire)
+        // The notice first: presented within the routing grace that follows
+        // the send's hold, so the router sees a presented modal from then on.
+        // The delegate is told once it has been read and has closed.
+        let showNotice = {
+            let acknowledged = { _ = delegate.paymentControllerDidSubmitWithUnknownOutcome?(self, txidWire: txidWire) }
+            guard let top = self.presentationAnchor?.topController() else {
+                acknowledged()
+                return
             }
+            Self.showUnknownOutcomeNotice(on: top, onOK: acknowledged)
         }
         guard let vc = confirmViewController else {
-            finish()
+            showNotice()
             return
         }
-        vc.dismiss(animated: true) { finish() }
+        vc.dismiss(animated: true) { showNotice() }
     }
 
     /// The "Waiting for the network" notice for a send whose broadcast got no
-    /// answer, presented on `viewController`; `onOK` runs when it is closed.
+    /// answer, presented on `viewController`; `onOK` runs once it has been
+    /// closed and its dismissal has finished, so `onOK` can dismiss or
+    /// present in turn.
     static func showUnknownOutcomeNotice(on viewController: UIViewController, onOK: (() -> Void)? = nil) {
-        viewController.showModalDialog(
-            style: .warning,
-            icon: .system("exclamationmark.triangle"),
-            heading: NSLocalizedString("Waiting for the network", comment: "Sent transaction whose broadcast got no answer from the network yet"),
-            textBlock1: unknownOutcomeMessage,
-            positiveButtonText: NSLocalizedString("OK", comment: ""),
-            positiveButtonAction: onOK)
+        Task { @MainActor in
+            await viewController.showModalDialog(
+                style: .warning,
+                icon: .system("exclamationmark.triangle"),
+                heading: NSLocalizedString("Waiting for the network", comment: "Sent transaction whose broadcast got no answer from the network yet"),
+                textBlock1: unknownOutcomeMessage,
+                positiveButtonText: NSLocalizedString("OK", comment: ""))
+            onOK?()
+        }
     }
 
     static let unknownOutcomeMessage = NSLocalizedString(

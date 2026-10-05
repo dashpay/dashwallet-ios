@@ -203,17 +203,12 @@ extension TransferAmountHostingController: PaymentControllerDelegate {
         showSuccessTransactionStatus(text: Self.transferSuccessText, holdsExitsWhileShown: true)
     }
 
-    /// The network gave no answer: the transfer waits in the history as
-    /// "Waiting for the network". The payment has ended here, but the keypad
-    /// stays off until the notice (which says not to send it again) is closed:
-    /// a hardware Return under it would start the same transfer again.
+    /// The network gave no answer, and the user has closed the "Waiting for
+    /// the network" notice (`PaymentController` presents it first): the
+    /// transfer waits in the history, and the keypad takes input again.
     func paymentControllerDidSubmitWithUnknownOutcome(_ controller: PaymentController, txidWire: Data) {
         CoinbaseTransactionMetadataTagger.shared.track(sentTransactionTxidWire: txidWire)
-        walletPaymentDidEnd(controller, keypadBack: false)
-        PaymentController.showUnknownOutcomeNotice(on: topController()) { [weak self] in
-            guard let self, !self.isWalletPaymentInFlight else { return }
-            self.viewModel.walletPaymentDidEnd()
-        }
+        walletPaymentDidEnd(controller)
     }
 
     func paymentControllerDidCancelTransaction(_ controller: PaymentController) {

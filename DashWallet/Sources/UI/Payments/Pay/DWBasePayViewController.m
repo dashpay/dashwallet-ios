@@ -250,8 +250,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)paymentControllerDidSubmitWithUnknownOutcome:(PaymentController *)controller txidWire:(NSData *)txidWire {
-    // The network gave no answer: the payment waits in the history, which
-    // says so on its row and tells when it goes through.
+    // The network gave no answer, and the user has closed the notice saying
+    // so: the payment waits in the history, which says so on its row and tells
+    // when it goes through.
     [self finishSendFlow];
 }
 
