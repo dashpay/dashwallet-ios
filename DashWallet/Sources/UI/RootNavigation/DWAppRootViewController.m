@@ -198,6 +198,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    // The refusal notice sits above the keyboard, so it follows the keyboard
+    // from launch.
+    [DWPaymentInFlight prepareRefusalNotices];
+
     self.view.backgroundColor = [UIColor dw_backgroundColor];
 
     const CGRect screenBounds = [UIScreen mainScreen].bounds;
