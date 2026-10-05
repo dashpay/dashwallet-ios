@@ -2096,12 +2096,13 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// safe from any thread. Nil when it could not be read.
     static func awaitingConfirmationDuffs() -> UInt64? {
         guard let (container, walletId) = hostHandles() else { return nil }
-        // A pre-filter on cheap columns only; `awaitingConfirmationTotal`
-        // applies the whole rule again and is the one that decides.
+        // A pre-filter on the row's own columns; `awaitingConfirmationTotal`
+        // applies the whole rule again and is the one that decides. The
+        // spender check is a nil test on the link, which needs no prefetch.
         var descriptor = FetchDescriptor<PersistentTxo>(predicate: #Predicate {
-            $0.walletId == walletId && !$0.isConfirmed && !$0.isInstantLocked
+            $0.walletId == walletId && !$0.isSpent && !$0.isConfirmed && !$0.isInstantLocked
         })
-        descriptor.relationshipKeyPathsForPrefetching = [\.spendingTransaction, \.coreAddress, \.account]
+        descriptor.relationshipKeyPathsForPrefetching = [\.coreAddress, \.account]
         guard let rows = try? ModelContext(container).fetch(descriptor) else { return nil }
         return awaitingConfirmationTotal(of: rows.map { txo in
             AwaitingConfirmationTxo(
@@ -2115,16 +2116,18 @@ class SwiftDashSDKWalletSource: TransactionSource {
     }
 
     /// One saved output as the pending-balance rule sees it.
-    struct AwaitingConfirmationTxo: Equatable {
+    struct AwaitingConfirmationTxo {
         let amount: UInt64
         let isSpent: Bool
         /// A transaction spending it is saved (`spendingTransaction`). The SDK
-        /// links every spender it sees but sets `isSpent` only for a spender
-        /// in a block (or a sweep's stamp), so an output spent by an
-        /// unconfirmed transaction still reads unspent. The link says a spender
-        /// is saved, not that the network took it: one that never reached the
-        /// network keeps the output excluded until it is removed ("Remove if
-        /// Not on Network").
+        /// links a spender once it has resolved both rows, but sets `isSpent`
+        /// only for a spender in a block (or a sweep's stamp), so an output
+        /// spent by an unconfirmed transaction still reads unspent. The link is
+        /// what is saved, not a network verdict: a spender that never reached
+        /// the network keeps the output excluded until it is removed ("Remove
+        /// if Not on Network"); a link the SDK has not written yet, or one it
+        /// keeps after handing the coin back as unspent, makes the caption
+        /// briefly count, or miss, that output.
         let hasSpender: Bool
         let isConfirmed: Bool
         let isInstantLocked: Bool
