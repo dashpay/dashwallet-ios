@@ -445,12 +445,28 @@ final class PaymentLinkRoutingTests: XCTestCase {
         spin(until: { root.presentedViewController != nil })
 
         let notice = try XCTUnwrap(root.presentedViewController as? UIHostingController<ModalDialog>, "the notice is up")
-        XCTAssertEqual(delegate.acknowledgements, [], "the delegate is told only once the notice is closed")
+        XCTAssertEqual(delegate.receivedCount, 1, "bookkeeping is told at once, before the notice is read")
+        XCTAssertEqual(delegate.acknowledgements, [], "the delegate leaves only once the notice is closed")
         XCTAssertTrue(PaymentInFlight.refusesLink(over: root), "the notice is a presented modal the router sees")
 
         notice.rootView.positiveButtonAction()
         spin(until: { !delegate.acknowledgements.isEmpty })
         XCTAssertEqual(delegate.acknowledgements, [false], "told once, with the notice already gone")
+    }
+
+    /// A notice UIKit does not present — here its screen is not in a window —
+    /// still lets the paying screen go on: it is told at once.
+    func testAnUnknownSendOutcomeWhoseNoticeCannotShowStillTellsTheDelegate() {
+        let offScreen = UIViewController()
+        let delegate = UnknownOutcomeDelegate(anchor: offScreen)
+        let controller = PaymentController()
+        controller.delegate = delegate
+        controller.presentationContextProvider = delegate
+
+        controller.paymentProcessor(DWPaymentProcessor(), didSendWithUnknownOutcomeTxidWire: Data(repeating: 0xcd, count: 32))
+
+        XCTAssertEqual(delegate.receivedCount, 1)
+        XCTAssertEqual(delegate.acknowledgements.count, 1, "never stranded waiting for a notice that is not there")
     }
 
     func testOnlyLinksThatReplaceTheScreenAreSubjectToTheRule() throws {
@@ -529,14 +545,19 @@ private final class UnknownOutcomeDelegate: NSObject, PaymentControllerDelegate,
     let anchor: UIViewController
     /// One entry per acknowledgement: whether anything was still presented.
     private(set) var acknowledgements: [Bool] = []
+    private(set) var receivedCount = 0
 
     init(anchor: UIViewController) { self.anchor = anchor }
 
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, txidWire: Data) {}
     func paymentControllerDidCancelTransaction(_ controller: PaymentController) {}
     func paymentControllerDidFailTransaction(_ controller: PaymentController) {}
+    func paymentControllerDidReceiveUnknownOutcome(_ controller: PaymentController, txidWire: Data) {
+        receivedCount += 1
+    }
+
     func paymentControllerDidSubmitWithUnknownOutcome(_ controller: PaymentController, txidWire: Data) {
-        acknowledgements.append(anchor.view.window?.rootViewController?.presentedViewController != nil)
+        acknowledgements.append(anchor.viewIfLoaded?.window?.rootViewController?.presentedViewController != nil)
     }
 
     func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor {

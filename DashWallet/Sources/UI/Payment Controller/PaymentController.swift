@@ -15,6 +15,8 @@
 //  limitations under the License.
 //
 
+import DashUIKit
+import SwiftUI
 import UIKit
 
 typealias PaymentControllerPresentationAnchor = UIViewController
@@ -34,11 +36,16 @@ protocol PaymentControllerDelegate: AnyObject {
     func paymentControllerDidFailTransaction(_ controller: PaymentController)
     /// The broadcast got no answer from the network; the send now waits in the
     /// history (`PendingSendOutcomes`). Called once the "Waiting for the
-    /// network" notice the controller presents first has been closed and its
-    /// dismissal has finished, so the delegate can leave the paying screen. A
+    /// network" notice the controller presents first is gone — closed and
+    /// dismissed, or never shown — so the delegate can leave the paying
+    /// screen. A
     /// delegate that does not implement this keeps the paying screen, with the
     /// notice over it.
     @objc optional func paymentControllerDidSubmitWithUnknownOutcome(_ controller: PaymentController, txidWire: Data)
+    /// The broadcast got no answer, told at once — before the notice — for
+    /// bookkeeping that must not wait for the user (and is not lost if the
+    /// app is killed while the notice is up).
+    @objc optional func paymentControllerDidReceiveUnknownOutcome(_ controller: PaymentController, txidWire: Data)
 }
 
 // MARK: - PaymentControllerPresentationContextProviding
@@ -321,6 +328,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
     func paymentProcessor(_ processor: DWPaymentProcessor, didSendWithUnknownOutcomeTxidWire txidWire: Data) {
         presentationAnchor?.topController().view.dw_hideProgressHUD()
         provideAmountViewController?.hideActivityIndicator()
+        delegate?.paymentControllerDidReceiveUnknownOutcome?(self, txidWire: txidWire)
 
         guard let delegate,
               (delegate as? NSObject)?.responds(
@@ -333,16 +341,21 @@ extension PaymentController: DWPaymentProcessorDelegate {
             return
         }
 
-        // The notice first: presented within the routing grace that follows
-        // the send's hold, so the router sees a presented modal from then on.
-        // The delegate is told once it has been read and has closed.
+        // The notice first; the delegate is told once it is gone. Presented in
+        // the same turn as the outcome's report when no confirm sheet is up,
+        // so the router sees a presented modal from the routing hold's end on;
+        // after a confirm sheet, once that sheet is gone.
         let showNotice = {
-            let acknowledged = { _ = delegate.paymentControllerDidSubmitWithUnknownOutcome?(self, txidWire: txidWire) }
+            let closed = { [weak self, weak delegate] in
+                guard let self else { return }
+                _ = delegate?.paymentControllerDidSubmitWithUnknownOutcome?(self, txidWire: txidWire)
+            }
             guard let top = self.presentationAnchor?.topController() else {
-                acknowledged()
+                DWLogger.log("PaymentController: no screen to show the unknown-outcome notice on")
+                closed()
                 return
             }
-            Self.showUnknownOutcomeNotice(on: top, onOK: acknowledged)
+            Self.showUnknownOutcomeNotice(on: top, onClosed: closed)
         }
         guard let vc = confirmViewController else {
             showNotice()
@@ -352,18 +365,46 @@ extension PaymentController: DWPaymentProcessorDelegate {
     }
 
     /// The "Waiting for the network" notice for a send whose broadcast got no
-    /// answer, presented on `viewController`; `onOK` runs once it has been
-    /// closed and its dismissal has finished, so `onOK` can dismiss or
-    /// present in turn.
-    static func showUnknownOutcomeNotice(on viewController: UIViewController, onOK: (() -> Void)? = nil) {
-        Task { @MainActor in
-            await viewController.showModalDialog(
-                style: .warning,
-                icon: .system("exclamationmark.triangle"),
-                heading: NSLocalizedString("Waiting for the network", comment: "Sent transaction whose broadcast got no answer from the network yet"),
-                textBlock1: unknownOutcomeMessage,
-                positiveButtonText: NSLocalizedString("OK", comment: ""))
-            onOK?()
+    /// answer, presented on `viewController`. `onClosed` runs exactly once,
+    /// when the notice is gone: after its OK and its dismissal (so `onClosed`
+    /// can dismiss or present in turn), after any other teardown of it, or
+    /// right away when UIKit does not present it — a paying screen waiting for
+    /// it is never stranded.
+    static func showUnknownOutcomeNotice(on viewController: UIViewController, onClosed: (() -> Void)? = nil) {
+        var closed = false
+        let close = {
+            guard !closed else { return }
+            closed = true
+            onClosed?()
+        }
+        let host = NoticeHostingController(rootView: ModalDialog(
+            style: .warning,
+            icon: .system("exclamationmark.triangle"),
+            heading: NSLocalizedString("Waiting for the network", comment: "Sent transaction whose broadcast got no answer from the network yet"),
+            textBlock1: unknownOutcomeMessage,
+            positiveButtonText: NSLocalizedString("OK", comment: ""),
+            positiveButtonAction: {}))
+        host.rootView.positiveButtonAction = { [weak host] in host?.dismiss(animated: true) }
+        host.onDisappear = close
+        host.modalPresentationStyle = .overFullScreen
+        host.modalTransitionStyle = .crossDissolve
+        host.view.backgroundColor = UIColor(Color.dash.backgroundOverlay)
+        viewController.present(host, animated: true)
+        if host.presentingViewController == nil {
+            DWLogger.log("PaymentController: the unknown-outcome notice could not be shown")
+            close()
+        }
+    }
+
+    /// The notice's host: reports when it has left the screen.
+    private final class NoticeHostingController: UIHostingController<ModalDialog> {
+        var onDisappear: (() -> Void)?
+
+        override func viewDidDisappear(_ animated: Bool) {
+            super.viewDidDisappear(animated)
+            // Gone, not merely covered by something presented over it.
+            guard isBeingDismissed || presentingViewController == nil else { return }
+            onDisappear?()
         }
     }
 
