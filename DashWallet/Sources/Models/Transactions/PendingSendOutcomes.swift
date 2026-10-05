@@ -72,7 +72,14 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     static let noticeDuration: TimeInterval = 3
 
     @Published private(set) var entries: [Data: Entry] = [:]
+    /// The "went through" notice of the wallet on screen (`notices` of the
+    /// active wallet), the only one Home shows and dismisses.
     @Published private(set) var notice: Notice?
+    /// Notices by wallet: a settlement is told only on its own wallet's Home.
+    /// One raised for a wallet not on screen is kept until that wallet is
+    /// shown again, and dropped with the wallet (wipe, removal).
+    private(set) var notices: [Data: Notice] = [:]
+    private var walletSwitchWatch: AnyCancellable?
 
     /// Read by `Transaction.stateTitle`, which is not main-actor isolated.
     /// Mirrors `entries`, written only from the main actor; seeded from the
@@ -115,6 +122,18 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         entries = Dictionary(stored.map { ($0.txidWire, $0) }, uniquingKeysWith: { a, _ in a })
         publishWaitingTxids()
         updateSaveWatch()
+        walletSwitchWatch = NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
+            .merge(with: NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange))
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                MainActor.assumeIsolated { self?.showActiveWalletsNotice() }
+            }
+    }
+
+    /// Publishes the active wallet's notice (nil when it has none).
+    private func showActiveWalletsNotice() {
+        let shown = Self.notice(in: notices, for: SwiftDashSDKHost.shared.wallet?.walletId)
+        if shown != notice { notice = shown }
     }
 
     /// Watches saves only while a send is waiting. A save that touched the
@@ -186,12 +205,12 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// network switch keeps them: entries are per wallet, and the other
     /// network's sends are settled once its wallet runs again.)
     @objc func forgetAll() {
-        // A raised notice not yet shown goes too: it is the wiped wallet's.
-        notice = nil
+        // Raised notices not yet shown go too: they are the wiped wallets'.
+        notices = [:]
+        showActiveWalletsNotice()
         guard !entries.isEmpty else { return }
         DWLogger.log("💸 TXSEND :: \(entries.count) waiting send(s) no longer tracked: wallet wiped")
         entries = [:]
-        notice = nil
         didChangeEntries()
     }
 
@@ -218,8 +237,13 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// host is published, not on every save; only with the keychain readable
     /// (a locked device lists no wallets) and a non-empty list.
     func dropSendsOfRemovedWallets() {
-        guard !entries.isEmpty, UIApplication.shared.isProtectedDataAvailable,
+        guard !entries.isEmpty || !notices.isEmpty, UIApplication.shared.isProtectedDataAvailable,
               let stored = try? SwiftDashSDKHost.persistedWalletIds(), !stored.isEmpty else { return }
+        let removedNotices = notices.keys.filter { !stored.contains($0) }
+        if !removedNotices.isEmpty {
+            removedNotices.forEach { notices.removeValue(forKey: $0) }
+            showActiveWalletsNotice()
+        }
         let orphans = entries.values.filter { !stored.contains($0.walletId) }.map(\.txidWire)
         if !orphans.isEmpty {
             forget(txidsWire: orphans, reason: "its wallet was removed")
@@ -230,6 +254,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// configures; replaces the previous watch. Also settles, once, the sends
     /// that went through while the app was closed.
     func observeVerdicts(of manager: PlatformWalletManager) {
+        // The wallet is published by now: its own notice, if one is waiting.
+        showActiveWalletsNotice()
         dropSendsOfRemovedWallets()
         reconcile()
         verdictWatch = manager.$outgoingTransactionVerdicts
@@ -303,19 +329,21 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         for txid in decision.gone {
             DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) left the wallet, no longer tracked")
         }
-        for entry in decision.notifying {
-            notice = Self.merged(notice, adding: entry.amount)
+        if !decision.notifying.isEmpty {
+            notices = Self.mergedNotices(notices, adding: decision.notifying)
+            showActiveWalletsNotice()
         }
         guard !decision.isEmpty else { return }
         entries = Self.applying(decision, to: entries)
         didChangeEntries()
     }
 
-    /// Clear `notice` if it is still the one with `id` — a notice raised
-    /// meanwhile stays.
+    /// Clear the notice with `id` (the one Home showed) — a notice raised
+    /// meanwhile stays, and other wallets' notices are not touched.
     func dismissNotice(id: UUID) {
-        guard notice?.id == id else { return }
-        notice = nil
+        guard let walletId = notices.first(where: { $0.value.id == id })?.key else { return }
+        notices.removeValue(forKey: walletId)
+        showActiveWalletsNotice()
     }
 
     // MARK: - Private
@@ -407,6 +435,21 @@ extension PendingSendOutcomes {
             remaining.removeValue(forKey: txid)
         }
         return remaining
+    }
+
+    /// `notices` with each settled payment merged into its own wallet's
+    /// notice; other wallets' notices are untouched.
+    nonisolated static func mergedNotices(_ notices: [Data: Notice], adding settled: [Entry]) -> [Data: Notice] {
+        var result = notices
+        for entry in settled {
+            result[entry.walletId] = merged(result[entry.walletId], adding: entry.amount)
+        }
+        return result
+    }
+
+    /// The notice to show for the wallet on screen: only its own.
+    nonisolated static func notice(in notices: [Data: Notice], for activeWalletId: Data?) -> Notice? {
+        activeWalletId.flatMap { notices[$0] }
     }
 
     /// `current` with one more payment of `amount` in it — a notice not yet

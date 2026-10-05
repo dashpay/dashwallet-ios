@@ -829,6 +829,39 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
         XCTAssertEqual(decision.expired, [past.txidWire], "still unconfirmed after a week: no longer followed")
     }
 
+    /// Wallet A's send settles after the switch to B: the notice is A's, and
+    /// B's Home shows nothing.
+    func testASettlementForAnotherWalletShowsNothingOnTheActiveOne() {
+        let sentFromA = entry(1, wallet: walletA, age: 60)
+        let decision = decide([sentFromA], rows: [sentFromA.txidWire: .settled], wallet: walletA)
+        let notices = Policy.mergedNotices([:], adding: decision.notifying)
+        XCTAssertNil(Policy.notice(in: notices, for: walletB), "no toast on B's Home")
+        XCTAssertEqual(Policy.notice(in: notices, for: walletA)?.count, 1, "A's own Home tells it")
+        XCTAssertNil(Policy.notice(in: notices, for: nil))
+    }
+
+    /// A notice raised before a switch stays with its wallet: hidden while
+    /// another wallet is shown, told when its own is shown again.
+    func testANoticeRaisedBeforeASwitchStaysWithItsWallet() {
+        let notices = Policy.mergedNotices([:], adding: [entry(1, wallet: walletA, age: 60)])
+        let shownOnA = Policy.notice(in: notices, for: walletA)
+        XCTAssertNotNil(shownOnA)
+        XCTAssertNil(Policy.notice(in: notices, for: walletB), "switched to B: not shown")
+        XCTAssertEqual(Policy.notice(in: notices, for: walletA), shownOnA, "back on A: the same notice")
+    }
+
+    func testNoticesMergeOnlyWithinOneWallet() {
+        let notices = Policy.mergedNotices([:], adding: [
+            entry(1, wallet: walletA, age: 60, amount: 1_000),
+            entry(2, wallet: walletB, age: 60, amount: 5_000),
+            entry(3, wallet: walletA, age: 60, amount: 2_000),
+        ])
+        XCTAssertEqual(notices[walletA]?.count, 2)
+        XCTAssertEqual(notices[walletA]?.total, 3_000)
+        XCTAssertEqual(notices[walletB]?.count, 1)
+        XCTAssertEqual(notices[walletB]?.total, 5_000, "B's payment is not added to A's total")
+    }
+
     func testNoticesMergeAndTheTotalSaturates() {
         let first = Policy.merged(nil, adding: 1_000)
         XCTAssertEqual(first.count, 1)
