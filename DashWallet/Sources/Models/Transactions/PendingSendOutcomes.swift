@@ -186,6 +186,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// network switch keeps them: entries are per wallet, and the other
     /// network's sends are settled once its wallet runs again.)
     @objc func forgetAll() {
+        // A raised notice not yet shown goes too: it is the wiped wallet's.
+        notice = nil
         guard !entries.isEmpty else { return }
         DWLogger.log("💸 TXSEND :: \(entries.count) waiting send(s) no longer tracked: wallet wiped")
         entries = [:]

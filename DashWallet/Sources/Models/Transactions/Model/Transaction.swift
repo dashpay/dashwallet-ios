@@ -602,7 +602,10 @@ class Transaction: TransactionDataItem, Identifiable {
     /// otherwise. Takes precedence over a merchant or Coinbase title, which
     /// would otherwise read like a settled payment.
     var waitingForNetworkTitle: String? {
-        guard state == .processing, PendingSendOutcomes.isWaiting(txidWire: snapshot.txid) else { return nil }
+        // The waiting set spans wallets: another wallet's incoming row for the
+        // same transaction is not a send.
+        guard state == .processing, direction != .received,
+              PendingSendOutcomes.isWaiting(txidWire: snapshot.txid) else { return nil }
         return NSLocalizedString("Waiting for the network", comment: "Sent transaction whose broadcast got no answer from the network yet")
     }
 

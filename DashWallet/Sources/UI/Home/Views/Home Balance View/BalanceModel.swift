@@ -29,9 +29,11 @@ final class BalanceModel: ObservableObject {
     /// other Home balance rows.
     @Published private(set) var value: UInt64?
     /// Part of `value` that a payment cannot use until the network confirms
-    /// it (`SwiftDashSDKWalletSource.awaitingConfirmationDuffs()`); 0 when
-    /// none or unreadable.
-    @Published private(set) var awaitingConfirmationDuffs: UInt64 = 0
+    /// it (`SwiftDashSDKWalletSource.awaitingConfirmationDuffs()`); nil while
+    /// not known — before the first read and after a wallet or network
+    /// switch until the new wallet's read lands; a failed read keeps the last
+    /// known value.
+    @Published private(set) var awaitingConfirmationDuffs: UInt64?
     /// Bumped on every wallet or network switch (main queue only).
     private var walletGeneration = 0
     /// Badge text for the home header while the wallet runs on a test
@@ -105,7 +107,8 @@ final class BalanceModel: ObservableObject {
                 return duffs
             }
         reads
-            .merge(with: walletChanges.map { UInt64(0) })
+            .map { Optional($0) }
+            .merge(with: walletChanges.map { UInt64?.none })
             .removeDuplicates()
             .sink { [weak self] duffs in
                 self?.awaitingConfirmationDuffs = duffs
