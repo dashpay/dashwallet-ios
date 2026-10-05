@@ -146,10 +146,10 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// chunk (`SwiftDashSDKTransactionSender.sweepCoinJoin`) and by the
     /// awaited headless BIP70 payment (`SendCoinsService.payWithDashUrl`).
     ///
-    /// - Parameter walletId: the sending wallet when the caller knows it (a
-    ///   sweep that may outlive a wallet switch); the active wallet otherwise.
-    /// - Returns: false when the send could not be followed (no active
-    ///   wallet), so its row will not say "Waiting for the network".
+    /// - Parameter walletId: the wallet that signed the send (every route
+    ///   passes it); nil falls back to the active wallet.
+    /// - Returns: false when the send could not be followed (no wallet given
+    ///   and none active), so its row will not say "Waiting for the network".
     @discardableResult
     func recordUnknownOutcome(
         txidWire: Data, address: String?, amount: UInt64, notifies: Bool = true, walletId: Data? = nil
@@ -269,14 +269,12 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             let snapshot = SwiftDashSDKWalletSource.fetch(txids: Set(pending.keys))
             await MainActor.run {
                 guard let self else { return }
-                if let activeWalletId {
-                    // A failed read is a nil snapshot: the policy decides
-                    // nothing for it.
-                    self.settle(
-                        pending: pending,
-                        walletId: snapshot?.walletId ?? activeWalletId,
-                        rows: snapshot.map(Self.rowStates(of:)))
-                }
+                // A failed read is a nil snapshot (nil rows): the policy
+                // decides nothing for it.
+                self.settle(
+                    pending: pending,
+                    walletId: snapshot?.walletId,
+                    rows: snapshot.map(Self.rowStates(of:)))
                 self.reconcileInFlight = false
                 if self.reconcileRequestedAgain {
                     self.reconcileRequestedAgain = false
@@ -292,7 +290,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             uniquingKeysWith: { a, _ in a })
     }
 
-    private func settle(pending: [Data: Entry], walletId: Data, rows: [Data: RowState]?) {
+    private func settle(pending: [Data: Entry], walletId: Data?, rows: [Data: RowState]?) {
         let decision = Self.settlement(
             of: pending, stillFollowed: { [entries] in entries[$0] != nil },
             walletId: walletId, rows: rows, now: Date())
@@ -370,18 +368,18 @@ extension PendingSendOutcomes {
     ///   - stillFollowed: whether a send is still followed now; one forgotten
     ///     (removed, wiped) while the rows were being read is left alone.
     ///   - walletId: the wallet whose rows were read; other wallets' sends are
-    ///     left alone.
+    ///     left alone. Nil, with nil `rows`, when the read failed.
     ///   - rows: the rows found, by wire-order txid; nil when the read failed,
     ///     which decides nothing (a failed read is not "the row is gone").
     nonisolated static func settlement(
         of pending: [Data: Entry],
         stillFollowed: (Data) -> Bool,
-        walletId: Data,
+        walletId: Data?,
         rows: [Data: RowState]?,
         now: Date
     ) -> SettlementDecision {
         var decision = SettlementDecision()
-        guard let rows else { return decision }
+        guard let rows, let walletId else { return decision }
         for entry in pending.values.sorted(by: { $0.sentAt < $1.sentAt })
         where entry.walletId == walletId && stillFollowed(entry.txidWire) {
             let age = now.timeIntervalSince(entry.sentAt)

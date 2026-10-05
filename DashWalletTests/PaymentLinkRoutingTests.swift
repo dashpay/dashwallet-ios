@@ -858,11 +858,11 @@ final class UnknownOutcomeWalletTests: XCTestCase {
         defer { PendingSendOutcomes.shared.forget(txidsWire: [txidWire], reason: "test send") }
         XCTAssertNotEqual(SwiftDashSDKHost.shared.wallet?.walletId, sentFrom, "another wallet (or none) is active")
 
-        let followed = WalletSendService.followUnknownOutcome(
+        let shownNow = WalletSendService.followUnknownOutcome(
             txidWire: txidWire, address: "yAddress", amount: 1_000, walletId: sentFrom)
 
-        XCTAssertTrue(followed)
-        XCTAssertEqual(PendingSendOutcomes.shared.entries[txidWire]?.walletId, sentFrom)
+        XCTAssertEqual(PendingSendOutcomes.shared.entries[txidWire]?.walletId, sentFrom, "followed under its wallet")
+        XCTAssertFalse(shownNow, "not the active wallet: no row on screen to point the user at")
     }
 
     /// The plain-send route: the prepared send carries the signing wallet,
@@ -877,6 +877,8 @@ final class UnknownOutcomeWalletTests: XCTestCase {
 
         XCTAssertThrowsError(try send.broadcast()) { error in
             XCTAssertTrue(WalletSendService.isBroadcastUnknownError(error as NSError))
+            XCTAssertFalse(WalletSendService.isFollowedUnknownOutcomeError(error as NSError),
+                           "its wallet is not on screen: told with the error's own copy")
         }
         XCTAssertEqual(PendingSendOutcomes.shared.entries[send.txidWire]?.walletId, signedBy)
     }

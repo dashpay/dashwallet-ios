@@ -841,9 +841,10 @@ final class WalletSendService: NSObject {
         error.domain == errorDomain && error.code == ErrorCode.broadcastUnknown.rawValue
     }
 
-    /// A `broadcastUnknown` error whose send is in the history as "Waiting for
-    /// the network". Without it (no active wallet to follow it in) the outcome
-    /// is told with the error's own copy, and nothing points at the history.
+    /// A `broadcastUnknown` error whose send is in the history on screen as
+    /// "Waiting for the network". Without it (no active wallet, or the send's
+    /// wallet is no longer the active one) the outcome is told with the
+    /// error's own copy, and nothing points at the history.
     @objc(isFollowedUnknownOutcomeError:)
     static func isFollowedUnknownOutcomeError(_ error: NSError) -> Bool {
         isBroadcastUnknownError(error) && (error.userInfo[followedKey] as? Bool) == true
@@ -1156,19 +1157,23 @@ extension WalletSendService {
     /// "Waiting for the network" (`PendingSendOutcomes`). Safe from any
     /// thread. For a route that has no error to hand back.
     ///
-    /// - Returns: whether it could be followed (an active wallet).
-    /// - Parameter walletId: the wallet the send was prepared for; nil falls
-    ///   back to the active one.
+    /// - Parameter walletId: the wallet that signed the send; nil (tests only)
+    ///   falls back to the active one.
+    /// - Returns: whether its row is in the history on screen now — followed
+    ///   under the active wallet. A send followed under another wallet (one
+    ///   switched away from, or wiped, during the network wait) returns false:
+    ///   nothing on screen would show it waiting.
     @discardableResult
     static func followUnknownOutcome(
         txidWire: Data, address: String?, amount: UInt64, notifies: Bool = true, walletId: Data?
     ) -> Bool {
         MainThread.sync {
-            PendingSendOutcomes.shared.recordUnknownOutcome(
+            let recorded = PendingSendOutcomes.shared.recordUnknownOutcome(
                 txidWire: txidWire, address: address, amount: amount, notifies: notifies, walletId: walletId)
+            let active = SwiftDashSDKHost.shared.wallet?.walletId
+            return recorded && active != nil && (walletId == nil || walletId == active)
         }
     }
-
 
     /// A broadcast of `txidWire` that ended with no answer from the network.
     ///
