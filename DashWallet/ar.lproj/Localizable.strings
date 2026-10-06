@@ -6622,22 +6622,17 @@
 /* Home balance: the part a payment can't use until the network confirms it; %@ is the amount */
 "%@ waiting for confirmation" = "%@ waiting for confirmation";
 
-/* Send: an earlier payment to the same address is still waiting for the network; %1$@ is its amount, %2$@ when it was sent */
-"Your previous payment to this address (%1$@, %2$@) hasn't been confirmed by the network yet. If you send again, the recipient may get both." = "Your previous payment to this address (%1$@, %2$@) hasn't been confirmed by the network yet. If you send again, the recipient may get both.";
-
-/* Send: don't repeat a payment that is still waiting for the network */
-"Wait" = "Wait";
-
-/* Send: repeat a payment although the earlier one is still waiting for the network */
-"Send anyway" = "Send anyway";
-
 /* Several payments that had been waiting for the network were confirmed; %1$ld is how many, %2$@ their total amount */
 "%1$ld payments went through, %2$@ in total" = "%1$ld payments went through, %2$@ in total";
-
-/* Send: an earlier payment to the same address is still waiting for the network */
-"Pay this address again?" = "Pay this address again?";
 
 /* Notice: a link was opened while a send was in progress or another screen was open; the link was ignored */
 "Finish or close the current screen first, then open the link again." = "Finish or close the current screen first, then open the link again.";
 /* Notice: the user tried to switch tabs or open a notification while a payment or its result was on screen; nothing changed */
 "Finish or close the current screen first." = "Finish or close the current screen first.";
+
+/* Send: a payment to an address whose earlier payment is still waiting for the network is not made */
+"Previous payment still in progress" = "Previous payment still in progress";
+
+/* Send: a payment to an address whose earlier payment is still waiting for the network is not made; %1$@ is the earlier payment's amount, %2$@ when it was sent */
+"Your previous payment to this address (%1$@, %2$@) is still being processed by the network. Wait until it is confirmed before paying this address again." = "Your previous payment to this address (%1$@, %2$@) is still being processed by the network. Wait until it is confirmed before paying this address again.";
+

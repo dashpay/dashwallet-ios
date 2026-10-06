@@ -651,44 +651,72 @@ final class PaymentDialogOutcomeTests: XCTestCase {
         }
     }
 
-    private func present(on presenter: UIViewController, into outcomes: @escaping (Bool?) -> Void) {
+    private func present(on presenter: UIViewController, closed: @escaping () -> Void) {
         PaymentController.presentDialog(
-            on: presenter, heading: "Pay this address again?", message: "…",
-            positiveButtonText: "Wait", negativeButtonText: "Send anyway", log: "test dialog", onClosed: outcomes)
+            on: presenter, heading: "Previous payment still in progress", message: "…",
+            buttonText: "OK", log: "test dialog", onClosed: closed)
     }
 
     func testADialogThatCannotBeShownReportsAtOnce() {
-        var outcomes: [Bool?] = []
-        present(on: UIViewController()) { outcomes.append($0) }
-        XCTAssertEqual(outcomes, [nil], "a flow waiting on it goes on, without a choice")
+        var closes = 0
+        present(on: UIViewController()) { closes += 1 }
+        XCTAssertEqual(closes, 1, "a flow waiting on it goes on")
     }
 
-    func testAChoiceIsReportedOnceAfterTheDialogIsGone() throws {
+    func testOKIsReportedOnceAfterTheDialogIsGone() throws {
         let root = try XCTUnwrap(window.rootViewController)
-        var outcomes: [Bool?] = []
+        var closes = 0
         var stillPresentedWhenReported: Bool?
-        present(on: root) { choice in
-            outcomes.append(choice)
+        present(on: root) {
+            closes += 1
             stillPresentedWhenReported = root.presentedViewController != nil
         }
         let dialog = try XCTUnwrap(root.presentedViewController as? UIHostingController<ModalDialog>)
 
-        dialog.rootView.negativeButtonAction?()
         dialog.rootView.positiveButtonAction()
-        spin(until: { !outcomes.isEmpty })
+        dialog.rootView.positiveButtonAction()
+        spin(until: { closes > 0 })
         spin(until: { false }, timeout: 0.3)
-        XCTAssertEqual(outcomes, [false], "the first choice, once")
+        XCTAssertEqual(closes, 1, "once, however often OK is tapped")
         XCTAssertEqual(stillPresentedWhenReported, false, "reported once the dialog is gone")
     }
 
-    func testADialogTornDownWithoutAChoiceReportsNoChoice() throws {
+    func testADialogTornDownIsReported() throws {
         let root = try XCTUnwrap(window.rootViewController)
-        var outcomes: [Bool?] = []
-        present(on: root) { outcomes.append($0) }
+        var closes = 0
+        present(on: root) { closes += 1 }
         spin(until: { root.presentedViewController?.isBeingPresented == false })
         root.dismiss(animated: false)
-        spin(until: { !outcomes.isEmpty })
-        XCTAssertEqual(outcomes, [nil])
+        spin(until: { closes > 0 })
+        XCTAssertEqual(closes, 1)
+    }
+
+    /// Paying an address whose previous payment is still waiting for the
+    /// network is refused: the notice is shown, nothing goes on to the PIN
+    /// prompt or the build, and OK returns to the paying screen.
+    func testARepeatPaymentIsRefusedWithANoticeAndOKReturns() throws {
+        let root = try XCTUnwrap(window.rootViewController)
+        let anchor = AnchorProvider(anchor: root)
+        let controller = PaymentController()
+        controller.presentationContextProvider = anchor
+        let waiting = PendingSendOutcomes.Entry(
+            txidWire: Data(repeating: 0x9c, count: 32), walletId: Data(repeating: 0x1d, count: 32),
+            address: "yAddress", amount: 100_000, sentAt: Date())
+        controller.waitingPayment = { $0 == "yAddress" ? waiting : nil }
+
+        var answers: [Bool] = []
+        controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "yAddress") { answers.append($0) }
+        let notice = try XCTUnwrap(root.presentedViewController as? UIHostingController<ModalDialog>, "the notice is up")
+        XCTAssertEqual(answers, [], "nothing goes on while it is up")
+        XCTAssertNil(notice.rootView.negativeButtonText, "a single OK, no way to send anyway")
+
+        notice.rootView.positiveButtonAction()
+        spin(until: { !answers.isEmpty })
+        XCTAssertEqual(answers, [false], "OK returns without paying")
+
+        var other: [Bool] = []
+        controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "yOtherAddress") { other.append($0) }
+        XCTAssertEqual(other, [true], "another address is not interrupted")
     }
 
     func testAnUnknownOutcomeErrorCarriesItsTxid() {
@@ -1012,4 +1040,10 @@ final class AwaitingConfirmationBalanceTests: XCTestCase {
                        isInstantLocked: false, isStandardAccount: true)
         XCTAssertEqual(SwiftDashSDKWalletSource.awaitingConfirmationTotal(of: [huge, txo(1)]), UInt64.max)
     }
+}
+
+private final class AnchorProvider: NSObject, PaymentControllerPresentationContextProviding {
+    let anchor: UIViewController
+    init(anchor: UIViewController) { self.anchor = anchor }
+    func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor { anchor }
 }

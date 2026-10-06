@@ -103,6 +103,11 @@ final class PaymentController: NSObject {
     /// screen shows that progress itself; when it does not (or no handler is
     /// set), a "Sending" HUD covers the window for the wait.
     @objc var sendInProgressHandler: ((Bool) -> Bool)?
+    /// The active wallet's payment to an address still waiting for the
+    /// network (`PendingSendOutcomes.waitingPayment(to:)`); tests replace it.
+    var waitingPayment: @MainActor (String) -> PendingSendOutcomes.Entry? = {
+        PendingSendOutcomes.shared.waitingPayment(to: $0)
+    }
 
     private var paymentProcessor: DWPaymentProcessor
     private var fiatCurrency: String = App.fiatCurrency
@@ -212,17 +217,19 @@ extension PaymentController: DWPaymentProcessorDelegate {
         provideAmountViewController = vc
     }
 
-    /// A payment to an address that still has one waiting for the network
-    /// asks first: the earlier one may yet arrive, and the recipient would get
-    /// both. Asked before the PIN prompt and the build, and not again while
-    /// the confirm sheet is up; other addresses are not interrupted.
+    /// A payment to an address that still has one waiting for the network is
+    /// not made: the earlier one may yet arrive, and the recipient would get
+    /// both. The user is told to wait, and OK returns to the paying screen —
+    /// before the PIN prompt and the build, nothing is built or signed. Not
+    /// asked again while the confirm sheet is up; other addresses are not
+    /// interrupted.
     func paymentProcessor(_ processor: DWPaymentProcessor, shouldPayAddress address: String, completion: @escaping (Bool) -> Void) {
         guard confirmViewController == nil,
-              let waiting = MainActor.assumeIsolated({ PendingSendOutcomes.shared.waitingPayment(to: address) }) else {
+              let waiting = MainActor.assumeIsolated({ waitingPayment(address) }) else {
             completion(true)
             return
         }
-        askBeforeRepeating(waiting, completion: completion)
+        refuseRepeating(waiting) { completion(false) }
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
@@ -230,31 +237,27 @@ extension PaymentController: DWPaymentProcessorDelegate {
         presentConfirm(for: paymentOutput)
     }
 
-    private func askBeforeRepeating(_ waiting: PendingSendOutcomes.Entry, completion: @escaping (Bool) -> Void) {
+    /// Tells the user the previous payment to this address must be confirmed
+    /// first; `done` runs once the notice is gone (or could not be shown).
+    private func refuseRepeating(_ waiting: PendingSendOutcomes.Entry, done: @escaping () -> Void) {
         let message = String(
             format: NSLocalizedString(
-                "Your previous payment to this address (%1$@, %2$@) hasn't been confirmed by the network yet. If you send again, the recipient may get both.",
-                comment: "Send: an earlier payment to the same address is still waiting for the network; %1$@ is its amount, %2$@ when it was sent"),
+                "Your previous payment to this address (%1$@, %2$@) is still being processed by the network. Wait until it is confirmed before paying this address again.",
+                comment: "Send: a payment to an address whose earlier payment is still waiting for the network is not made; %1$@ is the earlier payment's amount, %2$@ when it was sent"),
             waiting.amount.formattedDashAmount,
             "\(DWDateFormatter.sharedInstance.shortStringFromDate(waiting.sentAt)) \(DWDateFormatter.sharedInstance.timeOnly(from: waiting.sentAt))")
         guard let presenter = presentationAnchor?.topController() else {
-            DWLogger.log("PaymentController: no screen to ask before repeating a payment on; not sending")
-            completion(false)
+            DWLogger.log("PaymentController: no screen to show the repeat-payment notice on; not sending")
+            done()
             return
         }
-        // Answered once the dialog is gone, so the PIN prompt that follows
-        // "Send anyway" presents over a settled screen. Anything but "Send
-        // anyway" — "Wait", a teardown, a dialog that could not be shown —
-        // does not send.
         Self.presentDialog(
             on: presenter,
-            heading: NSLocalizedString("Pay this address again?", comment: "Send: an earlier payment to the same address is still waiting for the network"),
+            heading: NSLocalizedString("Previous payment still in progress", comment: "Send: a payment to an address whose earlier payment is still waiting for the network is not made"),
             message: message,
-            positiveButtonText: NSLocalizedString("Wait", comment: "Send: don't repeat a payment that is still waiting for the network"),
-            negativeButtonText: NSLocalizedString("Send anyway", comment: "Send: repeat a payment although the earlier one is still waiting for the network"),
-            log: "the repeat-payment warning") { choice in
-            completion(choice == false)
-        }
+            buttonText: NSLocalizedString("OK", comment: ""),
+            log: "the repeat-payment notice",
+            onClosed: done)
     }
 
     private func presentConfirm(for paymentOutput: DWPaymentOutput) {
@@ -377,53 +380,37 @@ extension PaymentController: DWPaymentProcessorDelegate {
             on: viewController,
             heading: NSLocalizedString("Waiting for the network", comment: "Sent transaction whose broadcast got no answer from the network yet"),
             message: unknownOutcomeMessage,
-            positiveButtonText: NSLocalizedString("OK", comment: ""),
-            negativeButtonText: nil,
-            log: "the unknown-outcome notice") { _ in onClosed?() }
+            buttonText: NSLocalizedString("OK", comment: ""),
+            log: "the unknown-outcome notice") { onClosed?() }
     }
 
-    /// A warning dialog whose outcome is reported exactly once, from its own
-    /// host: `onClosed(true)` / `onClosed(false)` for the positive / negative
-    /// button once the dialog's dismissal has finished (so `onClosed` can
-    /// present or dismiss in turn), `onClosed(nil)` when it was torn down any
-    /// other way or UIKit did not present it at all. A flow waiting on it
-    /// always goes on.
+    /// A warning dialog with one button whose close is reported exactly once,
+    /// from its own host: `onClosed` runs once the dialog's dismissal has
+    /// finished (so it can present or dismiss in turn), when it was torn down
+    /// any other way, or right away when UIKit did not present it at all. A
+    /// flow waiting on it always goes on.
     static func presentDialog(
         on viewController: UIViewController,
         heading: String,
         message: String,
-        positiveButtonText: String,
-        negativeButtonText: String?,
+        buttonText: String,
         log: String,
-        onClosed: @escaping (Bool?) -> Void
+        onClosed: @escaping () -> Void
     ) {
-        var choice: Bool?
         var closed = false
         let close = {
             guard !closed else { return }
             closed = true
-            onClosed(choice)
+            onClosed()
         }
         let host = DialogHostingController(rootView: ModalDialog(
             style: .warning,
             icon: .system("exclamationmark.triangle"),
             heading: heading,
             textBlock1: message,
-            positiveButtonText: positiveButtonText,
-            positiveButtonAction: {},
-            negativeButtonText: negativeButtonText))
-        host.rootView.positiveButtonAction = { [weak host] in
-            guard choice == nil else { return }
-            choice = true
-            host?.dismiss(animated: true)
-        }
-        if negativeButtonText != nil {
-            host.rootView.negativeButtonAction = { [weak host] in
-                guard choice == nil else { return }
-                choice = false
-                host?.dismiss(animated: true)
-            }
-        }
+            positiveButtonText: buttonText,
+            positiveButtonAction: {}))
+        host.rootView.positiveButtonAction = { [weak host] in host?.dismiss(animated: true) }
         host.onDisappear = close
         host.modalPresentationStyle = .overFullScreen
         host.modalTransitionStyle = .crossDissolve
