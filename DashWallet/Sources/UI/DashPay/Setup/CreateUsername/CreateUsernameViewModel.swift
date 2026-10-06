@@ -469,9 +469,11 @@ class CreateUsernameViewModel: ObservableObject {
     }
 
     /// Whether `source` can pay for registering the typed name as `nameCount`
-    /// names — the form's viability flags judge one name, and the companion
-    /// can add a top-up they did not count. An existing identity's shortfall
-    /// is topped up from Core or Platform; Shielded has no top-up route.
+    /// names. For an existing identity the companion can add a top-up the
+    /// form's one-name flags did not count; its shortfall is topped up from
+    /// Core or Platform, and Shielded has no top-up route. A new identity is
+    /// funded with the same amount for one name or two, so the one-name
+    /// flags decide there.
     func canPay(from source: DWIdentityFundingSource, nameCount: UInt64) -> Bool {
         guard let topUp = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount) else {
             switch source {
@@ -489,6 +491,11 @@ class CreateUsernameViewModel: ObservableObject {
         case .shielded, .invitation: return false
         @unknown default: return false
         }
+    }
+
+    /// The first of `candidates` that can pay for `nameCount` names.
+    func firstPayableSource(of candidates: [DWIdentityFundingSource], nameCount: UInt64) -> DWIdentityFundingSource? {
+        candidates.first { canPay(from: $0, nameCount: nameCount) }
     }
 
     /// Whether a registration of `nameCount` names must name its funding

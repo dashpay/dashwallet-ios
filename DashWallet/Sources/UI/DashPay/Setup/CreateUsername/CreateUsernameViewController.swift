@@ -1282,9 +1282,7 @@ struct CreateUsernameView: View {
             // The alert's Confirm answers the source question, so it names
             // the source that question would.
             guard let source = sourceToName(nameCount: 1) else {
-                registrationErrorMessage = NSLocalizedString(
-                    "None of your balances can pay for this request right now.",
-                    comment: "Usernames: confirm the funding source")
+                refuseSubmission(Self.noPayableSourceMessage)
                 return
             }
             pendingPlainTopUp = PlainTopUp(duffs: topUp, source: source)
@@ -1337,12 +1335,27 @@ struct CreateUsernameView: View {
         }
     }
 
-    /// The source the source question names for `nameCount` names: the
-    /// form's pick, else the first viable source in privacy order, that can
-    /// pay for them — the auto-pick judges one name. nil when none can.
+    /// The source a question or the amount alert names for `nameCount`
+    /// names. A privacy-page pick stands — `performSubmit` refuses it if it
+    /// cannot pay, rather than switch away from it. Otherwise the form's pick,
+    /// else the first viable source in privacy order, that can pay for them:
+    /// the auto-pick judges one name. nil when none can.
     private func sourceToName(nameCount: UInt64) -> DWIdentityFundingSource? {
-        ([payingSource(agreed: nil)] + viableFundingSources)
-            .first { viewModel.canPay(from: $0, nameCount: nameCount) }
+        if didUserPickFundingSource { return payingSource(agreed: nil) }
+        return viewModel.firstPayableSource(
+            of: [payingSource(agreed: nil)] + viableFundingSources, nameCount: nameCount)
+    }
+
+    private static var noPayableSourceMessage: String {
+        NSLocalizedString(
+            "None of your balances can pay for this request right now.",
+            comment: "Usernames: confirm the funding source")
+    }
+
+    /// Stops a submission before anything is sent and says why.
+    private func refuseSubmission(_ message: String) {
+        abandonSubmission()
+        registrationErrorMessage = message
     }
 
     /// Runs `action` once the alert whose button called it has gone. What
@@ -1405,10 +1418,7 @@ struct CreateUsernameView: View {
             // The auto-pick judges one name; ask about a source that can pay
             // for the names actually submitted, in the same privacy order.
             guard let payable = sourceToName(nameCount: nameCount) else {
-                abandonSubmission()
-                registrationErrorMessage = NSLocalizedString(
-                    "None of your balances can pay for this request right now.",
-                    comment: "Usernames: confirm the funding source")
+                refuseSubmission(Self.noPayableSourceMessage)
                 return
             }
             sourceQuestion = SourceQuestion(source: payable, temporaryUsername: temporaryUsername)
@@ -1421,10 +1431,9 @@ struct CreateUsernameView: View {
         // would fail after the PIN. A resumed Core lock is already paid.
         if !viewModel.isInvitationMode, viewModel.registrationRecovery != .pendingCoreAssetLock,
            !viewModel.canPay(from: payingSource, nameCount: nameCount) {
-            abandonSubmission()
-            registrationErrorMessage = NSLocalizedString(
+            refuseSubmission(NSLocalizedString(
                 "The chosen balance can't pay for this request. Check your balances and try again.",
-                comment: "Usernames: confirm the funding source")
+                comment: "Usernames: confirm the funding source"))
             return
         }
         // The two-name top-up can need Core where the one-name one did not:

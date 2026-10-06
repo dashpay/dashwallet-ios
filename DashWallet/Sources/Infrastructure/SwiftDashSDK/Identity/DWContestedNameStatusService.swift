@@ -186,8 +186,6 @@ public final class DWContestedNameStatusService: NSObject {
             submittedAt: submittedAt,
             network: network)
         var entries = Self.entries(for: network, walletId: walletId)
-        // Its own entry, never merged into another spelling's: that one may
-        // carry another identity's contest.
         let canonical = Self.canonicalLabel(label)
         if var existing = entries[canonical] {
             existing[Self.endField] = existing[Self.endField] ?? fallbackEnd.timeIntervalSince1970
@@ -223,7 +221,7 @@ public final class DWContestedNameStatusService: NSObject {
     func recordVotingEndTime(_ endTime: Date, label: String, network: Network, walletId: Data? = nil) {
         guard let key = Self.entriesKey(for: network, walletId: walletId) else { return }
         var entries = Self.entries(for: network, walletId: walletId)
-        let canonical = Self.bookmarkKey(for: label, in: entries)
+        let canonical = Self.canonicalLabel(label)
         guard var entry = entries[canonical] else { return }
         entry[Self.endField] = endTime.timeIntervalSince1970
         entries[canonical] = entry
@@ -240,8 +238,7 @@ public final class DWContestedNameStatusService: NSObject {
     func clearPending(label: String, for network: Network, walletId: Data? = nil) {
         guard let key = Self.entriesKey(for: network, walletId: walletId) else { return }
         var entries = Self.entries(for: network, walletId: walletId)
-        // Every spelling of the name: an older store can hold two.
-        entries = entries.filter { !Self.labelsMatch($0.key, label) }
+        entries.removeValue(forKey: Self.canonicalLabel(label))
         if entries.isEmpty {
             UserDefaults.standard.removeObject(forKey: key)
         } else {
@@ -276,18 +273,24 @@ public final class DWContestedNameStatusService: NSObject {
         Self.logger.info("🪪 CONTEST-SVC :: clearPending ALL network=\(network.rawValue, privacy: .public)")
     }
 
-    /// Compare DPNS labels the way the protocol does. The registration form
+    /// Compare DPNS labels in their canonical form. The registration form
     /// preserves the user's capitalization while Platform can return the
-    /// normalized label ("alice" comes back as "a11ce"), and some reads
-    /// append `.dash`.
+    /// normalized lowercase label, and some reads append `.dash`.
     public nonisolated static func labelsMatch(_ lhs: String, _ rhs: String) -> Bool {
+        canonicalLabel(lhs) == canonicalLabel(rhs)
+    }
+
+    /// Whether two labels are one name to DPNS (`dpnsKey`): "alice" and the
+    /// normalized "a11ce" are. For the rejected-name records, which must find
+    /// a purchased or Platform-returned spelling of the name they hide.
+    public nonisolated static func isSameDpnsName(_ lhs: String, _ rhs: String) -> Bool {
         dpnsKey(lhs) == dpnsKey(rhs)
     }
 
     /// The label as DPNS identifies a name: canonical form, then the
     /// protocol's homograph folding (o→0, i and l→1). Two labels with the same
-    /// key are one name to the network, so records that must find each other
-    /// across spellings — rejected labels — use this, as does `labelsMatch`.
+    /// key are one name to the network, so the rejected-name records, which
+    /// must find each other across spellings, use this (`isSameDpnsName`).
     ///
     /// For matching labels the app already holds, only — while the SDK may
     /// not be running yet. Anything sent to Platform or indexed there is
@@ -306,17 +309,6 @@ public final class DWContestedNameStatusService: NSObject {
     /// True when ANY in-flight contested submission matches `label`.
     public func isPendingLabel(_ label: String) -> Bool {
         pendingLabels.contains { Self.labelsMatch(label, $0) }
-    }
-
-    /// The key `label`'s bookmark is read and written under: the canonical
-    /// label when an entry has it, else an existing entry for the same DPNS
-    /// name (`labelsMatch`) — Platform can hand back "a11ce" for a bookmark
-    /// written as "alice" — else the canonical label. Deterministic when a
-    /// store written before matching was folded holds both spellings.
-    private nonisolated static func bookmarkKey<Value>(for label: String, in entries: [String: Value]) -> String {
-        let canonical = canonicalLabel(label)
-        if entries[canonical] != nil { return canonical }
-        return entries.keys.filter { labelsMatch($0, label) }.min() ?? canonical
     }
 
     private nonisolated static func canonicalLabel(_ label: String) -> String {
@@ -344,8 +336,7 @@ public final class DWContestedNameStatusService: NSObject {
     func finalizeWon(username: String, network: Network, identityId: Data? = nil, walletId: Data? = nil) {
         clearRejected(label: username, for: network, identityId: identityId, walletId: walletId)
         // Read before `clearPending` drops the entry.
-        let bookmarks = Self.entries(for: network, walletId: walletId)
-        let promote = bookmarks[Self.bookmarkKey(for: username, in: bookmarks)]?[Self.promoteOnWinField] as? Bool == true
+        let promote = Self.entries(for: network, walletId: walletId)[Self.canonicalLabel(username)]?[Self.promoteOnWinField] as? Bool == true
         // Only the WON label's bookmark clears — other contests stay in flight.
         // Cleared before the promotion below, which must no longer see the
         // label as pending.
@@ -489,8 +480,7 @@ public final class DWContestedNameStatusService: NSObject {
     /// label has no bookmark.
     @nonobjc
     func pendingVotingEndTime(label: String, for network: Network, walletId: Data? = nil) -> Date? {
-        let bookmarks = Self.entries(for: network, walletId: walletId)
-        guard let timestamp = bookmarks[Self.bookmarkKey(for: label, in: bookmarks)]?[Self.endField] as? Double,
+        guard let timestamp = Self.entries(for: network, walletId: walletId)[Self.canonicalLabel(label)]?[Self.endField] as? Double,
               timestamp > 0 else { return nil }
         return Date(timeIntervalSince1970: timestamp)
     }
@@ -628,7 +618,7 @@ public final class DWContestedNameStatusService: NSObject {
         // One entry per identity and name: drop one an earlier key format
         // left under the plain label.
         let prefix = identityId.hexEncodedString() + "/"
-        entries = entries.filter { !($0.key.hasPrefix(prefix) && Self.labelsMatch($0.value, canonical)) }
+        entries = entries.filter { !($0.key.hasPrefix(prefix) && Self.isSameDpnsName($0.value, canonical)) }
         entries[Self.rejectedEntryKey(label: canonical, identityId: identityId)] = canonical
         UserDefaults.standard.set(entries, forKey: key)
         Self.logger.info("🪪 CONTEST-SVC :: recordRejected label=\(canonical, privacy: .public)")

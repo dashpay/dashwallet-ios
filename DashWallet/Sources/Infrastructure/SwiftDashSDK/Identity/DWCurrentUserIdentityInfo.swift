@@ -396,8 +396,10 @@ public final class DWCurrentUserIdentityInfo: NSObject {
                         let pending = service.pendingLabels(for: network, identityId: recoveredIdentityId, walletId: walletId)
                             + service.provisionalLabels(for: network, identityId: recoveredIdentityId, walletId: walletId)
                             + service.unattributedLabels(for: network, walletId: walletId)
-                            + service.rejectedLabels(for: network, identityId: recoveredIdentityId, walletId: walletId)
+                        let rejected = service.rejectedLabels(
+                            for: network, identityId: recoveredIdentityId, walletId: walletId)
                         return !pending.contains { DWContestedNameStatusService.labelsMatch(candidate, $0) }
+                            && !rejected.contains { DWContestedNameStatusService.isSameDpnsName(candidate, $0) }
                     })
             }
         }
@@ -693,8 +695,9 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         let rejected = DWContestedNameStatusService.shared.rejectedLabels(
             for: network, identityId: identityId, walletId: walletId)
         let isPending: (String) -> Bool = { name in
-            (pendingContested + provisional + unattributed + rejected)
+            (pendingContested + provisional + unattributed)
                 .contains { DWContestedNameStatusService.labelsMatch(name, $0) }
+                || rejected.contains { DWContestedNameStatusService.isSameDpnsName(name, $0) }
         }
 
         if let managed = try? wallet.managedIdentity(identityId: identityId) {

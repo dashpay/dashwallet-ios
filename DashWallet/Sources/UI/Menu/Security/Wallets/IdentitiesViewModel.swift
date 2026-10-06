@@ -340,7 +340,7 @@ final class IdentitiesViewModel: ObservableObject {
                 for: $0, identityId: identity.identityId, walletId: identity.wallet?.walletId)
         } ?? []
         let allNames = identity.dpnsNames.filter(\.isOwned).map(\.label)
-            .filter { name in !rejected.contains { DWContestedNameStatusService.labelsMatch($0, name) } }
+            .filter { name in !rejected.contains { DWContestedNameStatusService.isSameDpnsName($0, name) } }
         let departedLabels = identity.dpnsNames.filter { !$0.isOwned }.map(\.label)
         let isSoldAway: (String?) -> Bool = { candidate in
             guard let candidate else { return false }
