@@ -137,11 +137,12 @@ struct CreateUsernameView: View {
     /// that skip that page (invitation, recovery, a retry from the Home row)
     /// `syncFundingSourceToViableSource()` pins the first viable source in
     /// privacy-descending order (Shielded → Platform → Core; without advanced
-    /// mode, Shielded → Core → Platform), and Continue names it and asks
-    /// right before a registration pays from it
-    /// (`CreateUsernameViewModel.fundingSourceNeedsConfirmation`). Written into
-    /// `DWIdentityRegistrationBridge.shared.preferredFundingSource` by
-    /// `performSubmit`, right before the submit call.
+    /// mode, Shielded → Core → Platform). It is the form's pick, not always
+    /// the source that pays: right before paying, `performSubmit` asks about a
+    /// source that can cover the names submitted (`sourceToName`, gated by
+    /// `CreateUsernameViewModel.fundingSourceNeedsConfirmation`), and writes
+    /// `payingSource(agreed:)` into
+    /// `DWIdentityRegistrationBridge.shared.preferredFundingSource`.
     @State private var fundingSource: DWIdentityFundingSource = .core
     /// The top-up a plain name needs from an existing identity, waiting on the
     /// user's answer to the amount alert. nil when no alert is up.
@@ -525,7 +526,8 @@ struct CreateUsernameView: View {
             isPresented: $showPurchaseConfirmation
         ) {
             Button(NSLocalizedString("Buy", comment: "")) {
-                performPurchase()
+                // The purchase asks for the PIN; see `afterAlertDismissal`.
+                afterAlertDismissal { performPurchase() }
             }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
         } message: {

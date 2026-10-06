@@ -396,10 +396,11 @@ public final class DWCurrentUserIdentityInfo: NSObject {
                         let pending = service.pendingLabels(for: network, identityId: recoveredIdentityId, walletId: walletId)
                             + service.provisionalLabels(for: network, identityId: recoveredIdentityId, walletId: walletId)
                             + service.unattributedLabels(for: network, walletId: walletId)
-                        let rejected = service.rejectedLabels(
+                        let rejected = Set(service.rejectedLabels(
                             for: network, identityId: recoveredIdentityId, walletId: walletId)
+                            .map(DWContestedNameStatusService.dpnsKey))
                         return !pending.contains { DWContestedNameStatusService.labelsMatch(candidate, $0) }
-                            && !rejected.contains { DWContestedNameStatusService.isSameDpnsName(candidate, $0) }
+                            && !rejected.contains(DWContestedNameStatusService.dpnsKey(candidate))
                     })
             }
         }
@@ -692,12 +693,13 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             for: network, identityId: identityId, walletId: walletId)
         // A lost or locked contest: the SDK keeps the label among the
         // identity's names, but it is someone else's or nobody's.
-        let rejected = DWContestedNameStatusService.shared.rejectedLabels(
+        let rejected = Set(DWContestedNameStatusService.shared.rejectedLabels(
             for: network, identityId: identityId, walletId: walletId)
+            .map(DWContestedNameStatusService.dpnsKey))
         let isPending: (String) -> Bool = { name in
             (pendingContested + provisional + unattributed)
                 .contains { DWContestedNameStatusService.labelsMatch(name, $0) }
-                || rejected.contains { DWContestedNameStatusService.isSameDpnsName(name, $0) }
+                || rejected.contains(DWContestedNameStatusService.dpnsKey(name))
         }
 
         if let managed = try? wallet.managedIdentity(identityId: identityId) {

@@ -336,11 +336,12 @@ final class IdentitiesViewModel: ObservableObject {
         // it is not this identity's.
         let rejected = WalletEnvironment.network.map {
             // The identity's own wallet: Identities lists other wallets' too.
-            DWContestedNameStatusService.shared.rejectedLabels(
+            Set(DWContestedNameStatusService.shared.rejectedLabels(
                 for: $0, identityId: identity.identityId, walletId: identity.wallet?.walletId)
+                .map(DWContestedNameStatusService.dpnsKey))
         } ?? []
         let allNames = identity.dpnsNames.filter(\.isOwned).map(\.label)
-            .filter { name in !rejected.contains { DWContestedNameStatusService.isSameDpnsName($0, name) } }
+            .filter { !rejected.contains(DWContestedNameStatusService.dpnsKey($0)) }
         let departedLabels = identity.dpnsNames.filter { !$0.isOwned }.map(\.label)
         let isSoldAway: (String?) -> Bool = { candidate in
             guard let candidate else { return false }
@@ -359,7 +360,7 @@ final class IdentitiesViewModel: ObservableObject {
         // they double as the hydration fallback.)
         let isRejected: (String?) -> Bool = { candidate in
             guard let candidate else { return false }
-            return rejected.contains { DWContestedNameStatusService.labelsMatch($0, candidate) }
+            return rejected.contains(DWContestedNameStatusService.dpnsKey(candidate))
         }
         let mainName = isPending(identity.mainDpnsName) || isSoldAway(identity.mainDpnsName)
             || isRejected(identity.mainDpnsName)
