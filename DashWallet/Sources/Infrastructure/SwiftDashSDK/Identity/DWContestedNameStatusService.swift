@@ -285,8 +285,11 @@ public final class DWContestedNameStatusService: NSObject {
     /// The label as DPNS identifies a name: canonical form, then the
     /// protocol's homograph folding (o→0, i and l→1). Two labels with the same
     /// key are one name to the network, so records that must find each other
-    /// across spellings — rejected labels — use this, as does `labelsMatch`. The folding is a consensus rule, not a lookup, so it is done
-    /// here rather than through the SDK, which may not be running yet.
+    /// across spellings — rejected labels — use this, as does `labelsMatch`.
+    ///
+    /// For matching labels the app already holds, only — while the SDK may
+    /// not be running yet. Anything sent to Platform or indexed there is
+    /// normalized through the SDK (`dpnsNormalizeLabel`), never with this.
     nonisolated static func dpnsKey(_ label: String) -> String {
         String(canonicalLabel(label).map { character -> Character in
             switch character {

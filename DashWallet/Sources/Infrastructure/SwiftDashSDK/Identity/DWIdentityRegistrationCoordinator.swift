@@ -1627,6 +1627,23 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// writes (a purchase never writes a contested bookmark, so the
     /// deferral branch in `handlePhaseChange` cannot trigger).
     @discardableResult
+    /// Credits a buyer identity must hold: the sale price plus the same
+    /// 0.03-DASH headroom a fresh registration funds itself with, covering the
+    /// purchase transition fee (and Core-side asset-lock conversion losses).
+    static func purchaseRequiredCredits(priceCredits: UInt64) -> UInt64 {
+        priceCredits + UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME) * 1_000
+    }
+
+    /// The Core top-up a purchase sends to an existing identity holding
+    /// `heldCredits`; 0 when it already holds enough. Rust rejects Core
+    /// top-ups below `minimumCoreTopUpDuffs`, and a near-covered identity can
+    /// fall short by less, so a needed top-up is at least that.
+    static func purchaseTopUpDuffs(priceCredits: UInt64, heldCredits: UInt64) -> UInt64 {
+        let required = purchaseRequiredCredits(priceCredits: priceCredits)
+        guard heldCredits < required else { return 0 }
+        return max((required - heldCredits + 999) / 1_000, UInt64(minimumCoreTopUpDuffs))
+    }
+
     func startPurchaseUsername(name: String, priceCredits: UInt64) async throws -> Identifier {
         Self.logger.info("🪪 IDENT-COORD :: startPurchaseUsername name=\(name) priceCredits=\(priceCredits)")
 
@@ -1684,12 +1701,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             throw error
         }
 
-        // Credits the buyer identity must hold: the sale price plus the
-        // same 0.03-DASH headroom a fresh registration funds itself with,
-        // covering the purchase transition fee (and Core-side asset-lock
-        // conversion losses).
-        let headroomDuffs = DWDP_MIN_BALANCE_TO_CREATE_USERNAME
-        let requiredCredits = priceCredits + headroomDuffs * 1_000
+        let requiredCredits = Self.purchaseRequiredCredits(priceCredits: priceCredits)
         let signer = KeychainSigner(modelContainer: modelContainer)
 
         let identityId: Identifier
@@ -1703,12 +1715,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 let heldCredits = UsernameMarketplaceService.identityBalanceCredits(
                     identityId: existingId,
                     container: modelContainer)
-                if heldCredits < requiredCredits {
-                    // Rust rejects Core top-ups below `minimumCoreTopUpDuffs`,
-                    // and a near-covered identity can shortfall under it.
-                    let shortfallDuffs = max(
-                        (requiredCredits - heldCredits + 999) / 1_000,
-                        Self.minimumCoreTopUpDuffs)
+                let shortfallDuffs = Self.purchaseTopUpDuffs(priceCredits: priceCredits, heldCredits: heldCredits)
+                if shortfallDuffs > 0 {
                     Self.logger.info("🪪 IDENT-COORD :: purchase top-up shortfallDuffs=\(shortfallDuffs)")
                     _ = try await wallet.topUpIdentityWithFunding(
                         identityId: existingId,
@@ -1754,8 +1762,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // index keys on the normalized label.
         do {
             try validatePurchaseContext(walletId: wallet.walletId, network: network, identityId: selectedIdentityId)
-            let normalized = (try? SwiftDashSDKHost.shared.sdk?.dpnsNormalizeLabel(name))
-                .flatMap { $0 } ?? DWContestedNameStatusService.dpnsKey(name)
+            // The trade index keys on the protocol's normalization, which only
+            // the SDK applies; without it the purchase stops rather than guess.
+            guard let sdk = SwiftDashSDKHost.shared.sdk else { throw CoordinatorError.noSDK }
+            let normalized = try sdk.dpnsNormalizeLabel(name)
             _ = try await wallet.purchaseDpnsName(
                 purchaserIdentityId: identityId,
                 name: normalized,

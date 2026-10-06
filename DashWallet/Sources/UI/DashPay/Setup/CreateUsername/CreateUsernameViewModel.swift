@@ -424,14 +424,15 @@ class CreateUsernameViewModel: ObservableObject {
         else { return false }
         if isPurchase {
             // A purchase tops up from Core whatever the registration pick
-            // says, but only an identity that exists and holds less than the
-            // price plus headroom — the coordinator's own test, on the same
-            // persisted balance it reads. Without an identity it registers a
-            // fresh one; with enough credits nothing is topped up.
+            // says, but only an identity that exists and falls short — the
+            // coordinator's own test, on the same persisted balance it reads.
+            // Without an identity it registers a fresh one.
             guard let identityId = DWCurrentUserIdentityInfo.shared.identityId,
                   let price = takenNameSalePriceCredits,
-                  UsernameMarketplaceService.identityBalanceCredits(identityId: identityId, container: container)
-                    < price + UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME) * 1_000
+                  DWIdentityRegistrationCoordinator.purchaseTopUpDuffs(
+                    priceCredits: price,
+                    heldCredits: UsernameMarketplaceService.identityBalanceCredits(
+                        identityId: identityId, container: container)) > 0
             else { return false }
         } else {
             guard let needed = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount),
@@ -464,6 +465,47 @@ class CreateUsernameViewModel: ObservableObject {
         guard let topUp = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount)
         else { return true }
         return topUp > 0
+    }
+
+    /// Whether `source` can pay for registering the typed name as `nameCount`
+    /// names — the form's viability flags judge one name, and the companion
+    /// can add a top-up they did not count. An existing identity's shortfall
+    /// is topped up from Core or Platform; Shielded has no top-up route.
+    func canPay(from source: DWIdentityFundingSource, nameCount: UInt64) -> Bool {
+        guard let topUp = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount)
+        else {
+            switch source {
+            case .shielded: return shieldedReadiness?.state == .ready
+            case .platformPayment: return hasMinimumRequiredPlatformBalance
+            case .core: return hasMinimumRequiredCoreBalance
+            case .invitation: return isInvitationMode
+            @unknown default: return false
+            }
+        }
+        guard topUp > 0 else { return true }
+        switch source {
+        case .core: return coreSpendableDuffs >= topUp
+        case .platformPayment: return canFundFromPlatform(topUp)
+        case .shielded, .invitation: return false
+        @unknown default: return false
+        }
+    }
+
+    /// Whether a registration of `nameCount` names must name its funding
+    /// source and ask first. A form that did not pass the privacy page this
+    /// visit (`sourcePickedByUser` false) — a retry from Home or More, a
+    /// recovery — picked the source by itself, and the contested confirmations
+    /// state amounts, not the balance they come from: a request that went out
+    /// from Shielded must not quietly move to transparent Core on its retry.
+    /// Asked only when money can leave that source; not for an invitation (the
+    /// voucher pays), a purchase (always Core, its confirmation says so), or a
+    /// paid Core lock being resumed.
+    func fundingSourceNeedsConfirmation(nameCount: UInt64, sourcePickedByUser: Bool) -> Bool {
+        !sourcePickedByUser
+            && !isInvitationMode
+            && !canPurchaseListedNameDirectly
+            && registrationRecovery != .pendingCoreAssetLock
+            && registrationMovesFunds(nameCount: nameCount)
     }
 
     /// What the chosen source sends to top up the existing identity so it can

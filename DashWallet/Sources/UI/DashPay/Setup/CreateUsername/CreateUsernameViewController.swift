@@ -136,13 +136,21 @@ struct CreateUsernameView: View {
     /// `syncFundingSourceToViableSource()` pins the first viable source in
     /// privacy-descending order (Shielded → Platform → Core; without advanced
     /// mode, Shielded → Core → Platform), and Continue names it and asks
-    /// right before a registration pays from it (`needsSourceConfirmation`). Written into
-    /// `DWIdentityRegistrationBridge.shared.preferredFundingSource` in the
-    /// Continue handler right before the submit call.
+    /// right before a registration pays from it
+    /// (`CreateUsernameViewModel.fundingSourceNeedsConfirmation`). Written into
+    /// `DWIdentityRegistrationBridge.shared.preferredFundingSource` by
+    /// `performSubmit`, right before the submit call.
     @State private var fundingSource: DWIdentityFundingSource = .core
     /// The top-up a plain name needs from an existing identity, waiting on the
     /// user's answer to the amount alert. nil when no alert is up.
-    @State private var pendingPlainTopUpDuffs: UInt64?
+    @State private var pendingPlainTopUp: PlainTopUp?
+
+    /// The amount alert's figure and the source it names, captured when it is
+    /// shown so Confirm agrees to what the user read.
+    private struct PlainTopUp {
+        let duffs: UInt64
+        let source: DWIdentityFundingSource
+    }
     @State private var showPlainTopUp = false
     /// An earlier Core top-up is unfinished: the warning is up, holding what
     /// to run if the user goes ahead anyway.
@@ -151,7 +159,7 @@ struct CreateUsernameView: View {
     /// `acknowledgedUnfinishedTopUp` lets the submission past the warning once
     /// the user has chosen to continue.
     @State private var acknowledgedUnfinishedTopUp = false
-    /// The funding-source question (`needsSourceConfirmation`): the source
+    /// The funding-source question (`fundingSourceNeedsConfirmation`): the source
     /// it names and the submission it gates. Kept after dismissal so the alert
     /// keeps its title while it animates out.
     @State private var sourceQuestion: SourceQuestion?
@@ -583,16 +591,17 @@ struct CreateUsernameView: View {
         .alert(
             NSLocalizedString("Top up your identity", comment: "Usernames: plain name on an existing identity"),
             isPresented: $showPlainTopUp,
-            presenting: pendingPlainTopUpDuffs
+            presenting: pendingPlainTopUp
         ) { topUp in
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
-                pendingPlainTopUpDuffs = nil
+                pendingPlainTopUp = nil
             }
             Button(NSLocalizedString("Confirm", comment: "")) {
-                viewModel.captureConfirmedTopUp(shownDuffs: topUp, isCompanionPass: false)
-                pendingPlainTopUpDuffs = nil
-                // The alert named the source; agreeing to it is the consent.
-                performSubmit(agreedSource: topUpSource)
+                viewModel.captureConfirmedTopUp(shownDuffs: topUp.duffs, isCompanionPass: false)
+                pendingPlainTopUp = nil
+                // The alert named the source; agreeing to it is the answer to
+                // the source question, for the source it showed.
+                answerFundingSource(SourceQuestion(source: topUp.source, temporaryUsername: nil))
             }
         } message: { topUp in
             Text(String.localizedStringWithFormat(
@@ -600,8 +609,8 @@ struct CreateUsernameView: View {
                     "Registering “%1$@” first moves %2$@ DASH from your %3$@ to your identity’s credits.",
                     comment: "Usernames: plain name on an existing identity"),
                 viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines),
-                topUp.dashAmount.formattedDashAmountWithoutCurrencySymbol,
-                fundingSourceName))
+                topUp.duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol,
+                Self.sourceName(topUp.source)))
         }
         .alert(
             NSLocalizedString("A top-up hasn't finished", comment: "Usernames: unfinished identity top-up"),
@@ -1259,7 +1268,7 @@ struct CreateUsernameView: View {
             ? nil
             : viewModel.existingIdentityTopUpDuffs(isContested: false, nameCount: 1)
         if let topUp, topUp > 0 {
-            pendingPlainTopUpDuffs = topUp
+            pendingPlainTopUp = PlainTopUp(duffs: topUp, source: topUpSource)
             showPlainTopUp = true
             return
         }
@@ -1280,10 +1289,9 @@ struct CreateUsernameView: View {
         viewModel.registrationRecovery == .pendingCoreAssetLock ? .core : fundingSource
     }
 
-    /// The source the amount alert names, as the privacy page names it.
-    private var fundingSourceName: String {
-        // The source the top-up will actually come from.
-        switch topUpSource {
+    /// A source as the privacy page names it.
+    private static func sourceName(_ source: DWIdentityFundingSource) -> String {
+        switch source {
         case .core: return NSLocalizedString("Dash balance", comment: "Usernames")
         case .platformPayment: return NSLocalizedString("Platform balance", comment: "Usernames")
         case .shielded: return NSLocalizedString("Shielded balance", comment: "Usernames")
@@ -1292,7 +1300,8 @@ struct CreateUsernameView: View {
         }
     }
 
-    /// Continue's routing, once the funding source is settled.
+    /// Continue's routing. The paying source is settled later, in
+    /// `performSubmit` (asked there when the form picked it itself).
     private func beginContinue() {
         if viewModel.hasUnfinishedCoreTopUp(
             source: topUpSource, nameCount: 1,
@@ -1314,29 +1323,13 @@ struct CreateUsernameView: View {
         }
     }
 
-    /// Whether a submission of `nameCount` names must name the funding source
-    /// and ask first. A form that did not pass the privacy page this visit —
-    /// a retry from Home or More, a recovery — picked the source by itself,
-    /// and the contested confirmations state amounts, not the balance they
-    /// come from: a request that went out from Shielded must not quietly move
-    /// to transparent Core on its retry. Asked only when money can leave that
-    /// source; not after the plain-name amount alert, which names it; not for
-    /// an invitation (the voucher pays), a purchase (always Core, its
-    /// confirmation says so), or a paid Core lock being resumed.
-    private func needsSourceConfirmation(nameCount: UInt64) -> Bool {
-        !didUserPickFundingSource
-            && !viewModel.isInvitationMode
-            && !viewModel.canPurchaseListedNameDirectly
-            && viewModel.registrationRecovery != .pendingCoreAssetLock
-            && viewModel.registrationMovesFunds(nameCount: nameCount)
-    }
-
     /// Continue on the source question: the submission goes out from the
     /// source the alert named, carried into it rather than read back from the
     /// auto-pick, which may have moved while the alert was up. If that source
     /// can no longer pay, nothing is sent and the user starts again.
     private func answerFundingSource(_ question: SourceQuestion) {
-        guard viableFundingSources.contains(question.source) else {
+        guard viewModel.canPay(
+            from: question.source, nameCount: question.temporaryUsername == nil ? 1 : 2) else {
             abandonSubmission()
             registrationErrorMessage = NSLocalizedString(
                 "That balance can no longer pay for this request. Check your balances and try again.",
@@ -1368,13 +1361,13 @@ struct CreateUsernameView: View {
         // — the funding source, top-up ceiling and companion it was given.
         if DWIdentityRegistrationCoordinator.shared.isAttemptActive {
             registrationErrorMessage = DWIdentityRegistrationCoordinator.CoordinatorError.alreadyInFlight.localizedDescription
-            acknowledgedUnfinishedTopUp = false
-            viewModel.discardConfirmedTopUp()
+            abandonSubmission()
             return
         }
         let nameCount: UInt64 = temporaryUsername == nil ? 1 : 2
         // Asked here, right before paying, so it names the source that pays.
-        if agreedSource == nil, needsSourceConfirmation(nameCount: nameCount) {
+        if agreedSource == nil,
+           viewModel.fundingSourceNeedsConfirmation(nameCount: nameCount, sourcePickedByUser: didUserPickFundingSource) {
             sourceQuestion = SourceQuestion(source: fundingSource, temporaryUsername: temporaryUsername)
             showSourceQuestion = true
             return
