@@ -417,20 +417,23 @@ class CreateUsernameViewModel: ObservableObject {
     /// shortfall and almost always needs a top-up, so the registration figure
     /// is not consulted.
     func hasUnfinishedCoreTopUp(source: DWIdentityFundingSource, nameCount: UInt64, isPurchase: Bool = false) -> Bool {
-        // A purchase tops up from Core whatever the registration pick says,
-        // but only an identity that exists and holds less than the price plus
-        // headroom (the coordinator's own test): without one it registers a
-        // fresh identity, and with enough credits nothing is topped up.
-        if isPurchase {
-            guard let held = existingIdentityCredits, let price = takenNameSalePriceCredits,
-                  held < price + UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME) * 1_000 else { return false }
-        }
         guard !isInvitationMode,
               isPurchase || source == .core,
               let wallet = SwiftDashSDKHost.shared.wallet,
               let container = SwiftDashSDKHost.shared.modelContainer
         else { return false }
-        if !isPurchase {
+        if isPurchase {
+            // A purchase tops up from Core whatever the registration pick
+            // says, but only an identity that exists and holds less than the
+            // price plus headroom — the coordinator's own test, on the same
+            // persisted balance it reads. Without an identity it registers a
+            // fresh one; with enough credits nothing is topped up.
+            guard let identityId = DWCurrentUserIdentityInfo.shared.identityId,
+                  let price = takenNameSalePriceCredits,
+                  UsernameMarketplaceService.identityBalanceCredits(identityId: identityId, container: container)
+                    < price + UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME) * 1_000
+            else { return false }
+        } else {
             guard let needed = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount),
                   needed > 0 else { return false }
         }

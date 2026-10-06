@@ -136,7 +136,7 @@ struct CreateUsernameView: View {
     /// `syncFundingSourceToViableSource()` pins the first viable source in
     /// privacy-descending order (Shielded → Platform → Core; without advanced
     /// mode, Shielded → Core → Platform), and Continue names it and asks
-    /// before a registration pays from it (`needsSourceConfirmation`). Written into
+    /// right before a registration pays from it (`needsSourceConfirmation`). Written into
     /// `DWIdentityRegistrationBridge.shared.preferredFundingSource` in the
     /// Continue handler right before the submit call.
     @State private var fundingSource: DWIdentityFundingSource = .core
@@ -152,23 +152,19 @@ struct CreateUsernameView: View {
     /// the user has chosen to continue.
     @State private var acknowledgedUnfinishedTopUp = false
     /// The funding-source question (`needsSourceConfirmation`): the source
-    /// it names and what runs once the user agrees. Kept after dismissal so
-    /// the alert keeps its title while it animates out.
+    /// it names and the submission it gates. Kept after dismissal so the alert
+    /// keeps its title while it animates out.
     @State private var sourceQuestion: SourceQuestion?
     @State private var showSourceQuestion = false
-    /// The source the user agreed to for the submission in progress. The
-    /// auto-pick keeps it while it can pay; released when the submission ends
-    /// or is abandoned, so a later one is judged afresh.
-    @State private var heldFundingSource: DWIdentityFundingSource?
 
     private struct SourceQuestion {
-        enum Then { case beginContinue, submit(temporaryUsername: String?) }
         let source: DWIdentityFundingSource
-        let then: Then
+        let temporaryUsername: String?
     }
 
     private enum UnfinishedTopUpContinuation {
-        case purchase, contested, plain, submit(temporaryUsername: String?)
+        case purchase, contested, plain
+        case submit(temporaryUsername: String?, agreedSource: DWIdentityFundingSource?)
     }
     /// True once a choice made by the user has been adopted; auto-pinning
     /// then leaves the selection alone, even once it can no longer pay.
@@ -336,12 +332,7 @@ struct CreateUsernameView: View {
                             // voting wait and the locked Dash. Non-contested names
                             // submit directly.
                             acknowledgedUnfinishedTopUp = false
-                            heldFundingSource = nil
-                            if needsSourceConfirmation(nameCount: 1) {
-                                askFundingSource(then: .beginContinue)
-                            } else {
-                                beginContinue()
-                            }
+                            beginContinue()
                         }
                         .padding(.top, 20)
                     }
@@ -600,7 +591,8 @@ struct CreateUsernameView: View {
             Button(NSLocalizedString("Confirm", comment: "")) {
                 viewModel.captureConfirmedTopUp(shownDuffs: topUp, isCompanionPass: false)
                 pendingPlainTopUpDuffs = nil
-                performSubmit()
+                // The alert named the source; agreeing to it is the consent.
+                performSubmit(agreedSource: topUpSource)
             }
         } message: { topUp in
             Text(String.localizedStringWithFormat(
@@ -625,7 +617,8 @@ struct CreateUsernameView: View {
                 case .purchase: showPurchaseConfirmation = true
                 case .contested: showVerifyOffer = true
                 case .plain: submitPlainName()
-                case .submit(let temporaryUsername): performSubmit(temporaryUsername: temporaryUsername)
+                case let .submit(temporaryUsername, agreedSource):
+                    performSubmit(temporaryUsername: temporaryUsername, agreedSource: agreedSource)
                 }
             }
         } message: { _ in
@@ -907,7 +900,6 @@ struct CreateUsernameView: View {
     /// refused: nothing it confirmed on the way — the top-up amount, the proof
     /// link, the answers to the warnings — carries over to the next one.
     private func abandonSubmission() {
-        heldFundingSource = nil
         acknowledgedUnfinishedTopUp = false
         viewModel.discardConfirmedTopUp()
         clearPendingVerification()
@@ -1325,41 +1317,33 @@ struct CreateUsernameView: View {
     /// Whether a submission of `nameCount` names must name the funding source
     /// and ask first. A form that did not pass the privacy page this visit —
     /// a retry from Home or More, a recovery — picked the source by itself,
-    /// and the later confirmations state amounts, not the balance they come
-    /// from: a request that went out from Shielded must not quietly move to
-    /// transparent Core on its retry. Asked only when money can leave that
-    /// source, and not again for the source already agreed to; not for an
-    /// invitation (the voucher pays), a purchase (always Core, its
+    /// and the contested confirmations state amounts, not the balance they
+    /// come from: a request that went out from Shielded must not quietly move
+    /// to transparent Core on its retry. Asked only when money can leave that
+    /// source; not after the plain-name amount alert, which names it; not for
+    /// an invitation (the voucher pays), a purchase (always Core, its
     /// confirmation says so), or a paid Core lock being resumed.
     private func needsSourceConfirmation(nameCount: UInt64) -> Bool {
         !didUserPickFundingSource
-            && heldFundingSource != fundingSource
             && !viewModel.isInvitationMode
             && !viewModel.canPurchaseListedNameDirectly
             && viewModel.registrationRecovery != .pendingCoreAssetLock
             && viewModel.registrationMovesFunds(nameCount: nameCount)
     }
 
-    private func askFundingSource(then: SourceQuestion.Then) {
-        sourceQuestion = SourceQuestion(source: fundingSource, then: then)
-        showSourceQuestion = true
-    }
-
-    /// Continue on the source question. The auto-pick may have moved while
-    /// the alert was up; the agreed source is used only if it can still pay,
-    /// otherwise the question is asked again for the one that can.
+    /// Continue on the source question: the submission goes out from the
+    /// source the alert named, carried into it rather than read back from the
+    /// auto-pick, which may have moved while the alert was up. If that source
+    /// can no longer pay, nothing is sent and the user starts again.
     private func answerFundingSource(_ question: SourceQuestion) {
         guard viableFundingSources.contains(question.source) else {
-            // After this alert has gone: one cannot replace itself mid-dismissal.
-            DispatchQueue.main.async { askFundingSource(then: question.then) }
+            abandonSubmission()
+            registrationErrorMessage = NSLocalizedString(
+                "That balance can no longer pay for this request. Check your balances and try again.",
+                comment: "Usernames: confirm the funding source")
             return
         }
-        fundingSource = question.source
-        heldFundingSource = question.source
-        switch question.then {
-        case .beginContinue: beginContinue()
-        case .submit(let temporaryUsername): performSubmit(temporaryUsername: temporaryUsername)
-        }
+        performSubmit(temporaryUsername: question.temporaryUsername, agreedSource: question.source)
     }
 
     private static func sourceQuestionTitle(_ source: DWIdentityFundingSource) -> String {
@@ -1376,26 +1360,32 @@ struct CreateUsernameView: View {
     /// submit. The bridge resets to `.core` on every terminal phase, so
     /// a stale picker value can't leak into a future attempt; this
     /// single write is the only synchronization needed.
-    private func performSubmit(temporaryUsername: String? = nil) {
+    /// `agreedSource` is the source the user agreed to at the source question;
+    /// nil until it was asked, or when it need not be.
+    private func performSubmit(temporaryUsername: String? = nil, agreedSource: DWIdentityFundingSource? = nil) {
         // Another registration is running (started from Identities or an
         // invitation): refuse before touching the bridge state it still reads
         // — the funding source, top-up ceiling and companion it was given.
         if DWIdentityRegistrationCoordinator.shared.isAttemptActive {
             registrationErrorMessage = DWIdentityRegistrationCoordinator.CoordinatorError.alreadyInFlight.localizedDescription
-            abandonSubmission()
+            acknowledgedUnfinishedTopUp = false
+            viewModel.discardConfirmedTopUp()
             return
         }
-        // The companion's top-up can move money where the single name's did
-        // not, and the auto-pick can have moved since Continue's question.
-        if needsSourceConfirmation(nameCount: temporaryUsername == nil ? 1 : 2) {
-            askFundingSource(then: .submit(temporaryUsername: temporaryUsername))
+        let nameCount: UInt64 = temporaryUsername == nil ? 1 : 2
+        // Asked here, right before paying, so it names the source that pays.
+        if agreedSource == nil, needsSourceConfirmation(nameCount: nameCount) {
+            sourceQuestion = SourceQuestion(source: fundingSource, temporaryUsername: temporaryUsername)
+            showSourceQuestion = true
             return
         }
+        let payingSource = viewModel.registrationRecovery == .pendingCoreAssetLock
+            ? .core : (agreedSource ?? fundingSource)
         // The two-name top-up can need Core where the one-name one did not:
         // warn here too unless the user already chose to go ahead.
         if !acknowledgedUnfinishedTopUp,
-           viewModel.hasUnfinishedCoreTopUp(source: topUpSource, nameCount: temporaryUsername == nil ? 1 : 2) {
-            unfinishedTopUpContinuation = .submit(temporaryUsername: temporaryUsername)
+           viewModel.hasUnfinishedCoreTopUp(source: payingSource, nameCount: nameCount) {
+            unfinishedTopUpContinuation = .submit(temporaryUsername: temporaryUsername, agreedSource: agreedSource)
             showUnfinishedTopUp = true
             return
         }
@@ -1404,8 +1394,7 @@ struct CreateUsernameView: View {
             // An identity that already exists — resumed or not — is topped up
             // from this source when it holds less than the name needs, so the
             // pick matters on that path too.
-            DWIdentityRegistrationBridge.shared.preferredFundingSource =
-                viewModel.registrationRecovery == .pendingCoreAssetLock ? .core : fundingSource
+            DWIdentityRegistrationBridge.shared.preferredFundingSource = payingSource
             // The top-up the user confirmed — on the contested sheets or the
             // plain name's amount alert — is the most the coordinator may move
             // without asking again; captured on Confirm, not recalculated here.
@@ -1470,9 +1459,8 @@ struct CreateUsernameView: View {
                 showVotingSubmitted = true
             case .cancelled:
                 screenLockedAfterAuth = false
-                heldFundingSource = nil // user backed out of the PIN — stay on screen, allow retry
+                break // user backed out of the PIN — stay on screen, allow retry
             case .failure(let message):
-                heldFundingSource = nil
                 viewModel.refreshRegistrationRecoveryState()
                 registrationErrorMessage = message
             }
@@ -1567,11 +1555,6 @@ struct CreateUsernameView: View {
         // it is the user's move, back on the privacy page, which asks for the
         // transparent balance too rather than picking one.
         if didUserPickFundingSource { return }
-        // The source agreed to for the submission in progress, while it can pay.
-        if let held = heldFundingSource, viable.contains(held) {
-            fundingSource = held
-            return
-        }
         fundingSource = preferred
     }
 

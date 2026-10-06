@@ -1755,7 +1755,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         do {
             try validatePurchaseContext(walletId: wallet.walletId, network: network, identityId: selectedIdentityId)
             let normalized = (try? SwiftDashSDKHost.shared.sdk?.dpnsNormalizeLabel(name))
-                .flatMap { $0 } ?? name.lowercased()
+                .flatMap { $0 } ?? DWContestedNameStatusService.dpnsKey(name)
             _ = try await wallet.purchaseDpnsName(
                 purchaserIdentityId: identityId,
                 name: normalized,
