@@ -186,7 +186,9 @@ public final class DWContestedNameStatusService: NSObject {
             submittedAt: submittedAt,
             network: network)
         var entries = Self.entries(for: network, walletId: walletId)
-        let canonical = Self.bookmarkKey(for: label, in: entries)
+        // Its own entry, never merged into another spelling's: that one may
+        // carry another identity's contest.
+        let canonical = Self.canonicalLabel(label)
         if var existing = entries[canonical] {
             existing[Self.endField] = existing[Self.endField] ?? fallbackEnd.timeIntervalSince1970
             if !provisional {

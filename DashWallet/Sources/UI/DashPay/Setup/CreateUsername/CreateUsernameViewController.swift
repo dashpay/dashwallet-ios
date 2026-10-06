@@ -583,7 +583,11 @@ struct CreateUsernameView: View {
                 abandonSubmission()
             }
             Button(NSLocalizedString("Continue", comment: "")) {
-                afterAlertDismissal { answerFundingSource(question) }
+                afterAlertDismissal {
+                    // The source the alert named, not the auto-pick, which may
+                    // have moved while it was up; performSubmit checks it can pay.
+                    performSubmit(temporaryUsername: question.temporaryUsername, agreedSource: question.source)
+                }
             }
         } message: { _ in
             Text(NSLocalizedString(
@@ -599,15 +603,14 @@ struct CreateUsernameView: View {
         ) { topUp in
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
                 pendingPlainTopUp = nil
+                abandonSubmission()
             }
             Button(NSLocalizedString("Confirm", comment: "")) {
                 viewModel.captureConfirmedTopUp(shownDuffs: topUp.duffs, isCompanionPass: false)
                 pendingPlainTopUp = nil
                 // The alert named the source; agreeing to it is the answer to
                 // the source question, for the source it showed.
-                afterAlertDismissal {
-                    answerFundingSource(SourceQuestion(source: topUp.source, temporaryUsername: nil))
-                }
+                afterAlertDismissal { performSubmit(agreedSource: topUp.source) }
             }
         } message: { topUp in
             Text(String.localizedStringWithFormat(
@@ -1276,7 +1279,15 @@ struct CreateUsernameView: View {
             ? nil
             : viewModel.existingIdentityTopUpDuffs(isContested: false, nameCount: 1)
         if let topUp, topUp > 0 {
-            pendingPlainTopUp = PlainTopUp(duffs: topUp, source: payingSource(agreed: nil))
+            // The alert's Confirm answers the source question, so it names
+            // the source that question would.
+            guard let source = sourceToName(nameCount: 1) else {
+                registrationErrorMessage = NSLocalizedString(
+                    "None of your balances can pay for this request right now.",
+                    comment: "Usernames: confirm the funding source")
+                return
+            }
+            pendingPlainTopUp = PlainTopUp(duffs: topUp, source: source)
             showPlainTopUp = true
             return
         }
@@ -1326,12 +1337,12 @@ struct CreateUsernameView: View {
         }
     }
 
-    /// Continue on the source question: the submission goes out from the
-    /// source the alert named, carried into it rather than read back from the
-    /// auto-pick, which may have moved while the alert was up. `performSubmit`
-    /// still checks that it can pay.
-    private func answerFundingSource(_ question: SourceQuestion) {
-        performSubmit(temporaryUsername: question.temporaryUsername, agreedSource: question.source)
+    /// The source the source question names for `nameCount` names: the
+    /// form's pick, else the first viable source in privacy order, that can
+    /// pay for them — the auto-pick judges one name. nil when none can.
+    private func sourceToName(nameCount: UInt64) -> DWIdentityFundingSource? {
+        ([payingSource(agreed: nil)] + viableFundingSources)
+            .first { viewModel.canPay(from: $0, nameCount: nameCount) }
     }
 
     /// Runs `action` once the alert whose button called it has gone. What
@@ -1346,7 +1357,12 @@ struct CreateUsernameView: View {
         inProgress = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
             inProgress = false
-            guard isOnScreen else { return }
+            // The screen left meanwhile: what the step would have submitted
+            // is abandoned, not left for the next visit to pick up.
+            guard isOnScreen else {
+                abandonSubmission()
+                return
+            }
             action()
         }
     }
@@ -1388,8 +1404,7 @@ struct CreateUsernameView: View {
            viewModel.fundingSourceNeedsConfirmation(nameCount: nameCount, sourcePickedByUser: didUserPickFundingSource) {
             // The auto-pick judges one name; ask about a source that can pay
             // for the names actually submitted, in the same privacy order.
-            guard let payable = ([fundingSource] + viableFundingSources)
-                .first(where: { viewModel.canPay(from: $0, nameCount: nameCount) }) else {
+            guard let payable = sourceToName(nameCount: nameCount) else {
                 abandonSubmission()
                 registrationErrorMessage = NSLocalizedString(
                     "None of your balances can pay for this request right now.",
@@ -1408,7 +1423,7 @@ struct CreateUsernameView: View {
            !viewModel.canPay(from: payingSource, nameCount: nameCount) {
             abandonSubmission()
             registrationErrorMessage = NSLocalizedString(
-                "That balance can no longer pay for this request. Check your balances and try again.",
+                "The chosen balance can't pay for this request. Check your balances and try again.",
                 comment: "Usernames: confirm the funding source")
             return
         }

@@ -424,7 +424,7 @@ class CreateUsernameViewModel: ObservableObject {
         else { return false }
         // One read of the identity for both questions below, as the
         // coordinator reads it once when it decides.
-        let identityId = DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId
+        let identityId = DWCurrentUserIdentityInfo.shared.snapshotForReading.identityId
         if isPurchase {
             // A purchase tops up from Core whatever the registration pick
             // says, but only an identity that exists and falls short — the
@@ -465,12 +465,7 @@ class CreateUsernameViewModel: ObservableObject {
     /// from the funding source: a new identity is funded from it, and an
     /// existing one is topped up from it when its credits fall short.
     func registrationMovesFunds(nameCount: UInt64) -> Bool {
-        registrationTopUpDuffs(nameCount: nameCount).map { $0 > 0 } ?? true
-    }
-
-    /// The typed name's top-up for `nameCount` names; nil with no identity.
-    private func registrationTopUpDuffs(nameCount: UInt64) -> UInt64? {
-        existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount)
+        existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount).map { $0 > 0 } ?? true
     }
 
     /// Whether `source` can pay for registering the typed name as `nameCount`
@@ -478,7 +473,7 @@ class CreateUsernameViewModel: ObservableObject {
     /// can add a top-up they did not count. An existing identity's shortfall
     /// is topped up from Core or Platform; Shielded has no top-up route.
     func canPay(from source: DWIdentityFundingSource, nameCount: UInt64) -> Bool {
-        guard let topUp = registrationTopUpDuffs(nameCount: nameCount) else {
+        guard let topUp = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount) else {
             switch source {
             case .shielded: return shieldedReadiness?.state == .ready
             case .platformPayment: return hasMinimumRequiredPlatformBalance

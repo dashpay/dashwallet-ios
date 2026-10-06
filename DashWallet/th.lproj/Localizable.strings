@@ -6717,7 +6717,7 @@
 "Any Dash this request needs comes from this balance." = "Any Dash this request needs comes from this balance.";
 
 /* Usernames: confirm the funding source */
-"That balance can no longer pay for this request. Check your balances and try again." = "That balance can no longer pay for this request. Check your balances and try again.";
+"The chosen balance can't pay for this request. Check your balances and try again." = "The chosen balance can't pay for this request. Check your balances and try again.";
 
 /* Usernames: confirm the funding source */
 "None of your balances can pay for this request right now." = "None of your balances can pay for this request right now.";
