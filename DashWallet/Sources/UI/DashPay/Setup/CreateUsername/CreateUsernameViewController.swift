@@ -131,12 +131,12 @@ struct CreateUsernameView: View {
     /// Funding source for the SwiftDashSDK identity registration.
     ///
     /// Chosen a screen earlier, on the Join DashPay sheet's privacy page, and
-    /// adopted on appear. This screen does not ask again — it used to carry a
-    /// segmented picker, which asked the same question twice. For the paths
+    /// adopted on appear; this screen has no picker of its own. For the paths
     /// that skip that page (invitation, recovery, a retry from the Home row)
     /// `syncFundingSourceToViableSource()` pins the first viable source in
     /// privacy-descending order (Shielded → Platform → Core; without advanced
-    /// mode, Shielded → Core → Platform). Written into
+    /// mode, Shielded → Core → Platform), and Continue names it and asks
+    /// before a registration pays from it (`needsSourceConfirmation`). Written into
     /// `DWIdentityRegistrationBridge.shared.preferredFundingSource` in the
     /// Continue handler right before the submit call.
     @State private var fundingSource: DWIdentityFundingSource = .core
@@ -151,17 +151,10 @@ struct CreateUsernameView: View {
     /// `acknowledgedUnfinishedTopUp` lets the submission past the warning once
     /// the user has chosen to continue.
     @State private var acknowledgedUnfinishedTopUp = false
-    /// The form picked the source by itself (no privacy-page choice this
-    /// visit): what to submit once the user agrees to pay from it.
-    @State private var pendingSourceConfirmation: PendingSourceConfirmation?
-    @State private var showSourceConfirmation = false
-    /// The user agreed to the source for this submission — at that question,
-    /// or on an amount alert that named it.
-    @State private var acknowledgedFundingSource = false
-
-    private struct PendingSourceConfirmation {
-        let temporaryUsername: String?
-    }
+    /// The source the form picked by itself, named to the user on Continue
+    /// before anything else (`needsSourceConfirmation`). nil when no question
+    /// is up.
+    @State private var pendingSourceConfirmation: DWIdentityFundingSource?
 
     private enum UnfinishedTopUpContinuation {
         case purchase, contested, plain, submit(temporaryUsername: String?)
@@ -332,24 +325,10 @@ struct CreateUsernameView: View {
                             // voting wait and the locked Dash. Non-contested names
                             // submit directly.
                             acknowledgedUnfinishedTopUp = false
-                            acknowledgedFundingSource = false
-                            if viewModel.hasUnfinishedCoreTopUp(
-                                source: topUpSource, nameCount: 1,
-                                isPurchase: viewModel.canPurchaseListedNameDirectly) {
-                                unfinishedTopUpContinuation = viewModel.canPurchaseListedNameDirectly
-                                    ? .purchase
-                                    : (viewModel.isContestedCandidate ? .contested : .plain)
-                                showUnfinishedTopUp = true
-                            } else if viewModel.canPurchaseListedNameDirectly {
-                                showPurchaseConfirmation = true
-                            } else if viewModel.isContestedCandidate {
-                                // The verification offer comes first, as on
-                                // Android: a link published with the request is
-                                // what masternode owners weigh, and after the
-                                // submission that window is already narrower.
-                                showVerifyOffer = true
+                            if needsSourceConfirmation {
+                                pendingSourceConfirmation = fundingSource
                             } else {
-                                submitPlainName()
+                                beginContinue()
                             }
                         }
                         .padding(.top, 20)
@@ -581,27 +560,24 @@ struct CreateUsernameView: View {
             }
         }
         .alert(
-            String.localizedStringWithFormat(
-                NSLocalizedString("Pay from your %@?", comment: "Usernames: confirm the funding source"),
-                fundingSourceName),
-            isPresented: $showSourceConfirmation,
+            pendingSourceConfirmation.map(Self.sourceConfirmationTitle) ?? "",
+            isPresented: Binding(
+                get: { pendingSourceConfirmation != nil },
+                set: { if !$0 { pendingSourceConfirmation = nil } }),
             presenting: pendingSourceConfirmation
-        ) { pending in
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
-                pendingSourceConfirmation = nil
-                abandonSubmission()
-            }
+        ) { source in
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
             Button(NSLocalizedString("Continue", comment: "")) {
-                pendingSourceConfirmation = nil
-                acknowledgedFundingSource = true
-                performSubmit(temporaryUsername: pending.temporaryUsername)
+                // Pinned as the user's pick: a balance refresh can no longer
+                // move the request to another source behind this answer.
+                fundingSource = source
+                didUserPickFundingSource = true
+                beginContinue()
             }
         } message: { _ in
-            Text(String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "This request is paid from your %@.",
-                    comment: "Usernames: confirm the funding source"),
-                fundingSourceName))
+            Text(NSLocalizedString(
+                "Registering this username moves Dash from this balance to your identity.",
+                comment: "Usernames: confirm the funding source"))
         }
         // `presenting:` hands the amount to the buttons and the message as a
         // value, so dismissal clearing the state cannot lose what was shown.
@@ -616,8 +592,6 @@ struct CreateUsernameView: View {
             Button(NSLocalizedString("Confirm", comment: "")) {
                 viewModel.captureConfirmedTopUp(shownDuffs: topUp, isCompanionPass: false)
                 pendingPlainTopUpDuffs = nil
-                // The alert named the source; agreeing to it is the consent.
-                acknowledgedFundingSource = true
                 performSubmit()
             }
         } message: { topUp in
@@ -925,7 +899,6 @@ struct CreateUsernameView: View {
     /// refused: nothing it confirmed on the way — the top-up amount, the proof
     /// link, the answers to the warnings — carries over to the next one.
     private func abandonSubmission() {
-        acknowledgedFundingSource = false
         acknowledgedUnfinishedTopUp = false
         viewModel.discardConfirmedTopUp()
         clearPendingVerification()
@@ -1309,16 +1282,58 @@ struct CreateUsernameView: View {
     /// The source the amount alert names, as the privacy page names it.
     private var fundingSourceName: String {
         // The source the top-up will actually come from.
-        Self.sourceName(topUpSource)
-    }
-
-    private static func sourceName(_ source: DWIdentityFundingSource) -> String {
-        switch source {
+        switch topUpSource {
         case .core: return NSLocalizedString("Dash balance", comment: "Usernames")
         case .platformPayment: return NSLocalizedString("Platform balance", comment: "Usernames")
         case .shielded: return NSLocalizedString("Shielded balance", comment: "Usernames")
         case .invitation: return NSLocalizedString("Dash balance", comment: "Usernames")
         @unknown default: return NSLocalizedString("Dash balance", comment: "Usernames")
+        }
+    }
+
+    /// Continue's routing, once the funding source is settled.
+    private func beginContinue() {
+        if viewModel.hasUnfinishedCoreTopUp(
+            source: topUpSource, nameCount: 1,
+            isPurchase: viewModel.canPurchaseListedNameDirectly) {
+            unfinishedTopUpContinuation = viewModel.canPurchaseListedNameDirectly
+                ? .purchase
+                : (viewModel.isContestedCandidate ? .contested : .plain)
+            showUnfinishedTopUp = true
+        } else if viewModel.canPurchaseListedNameDirectly {
+            showPurchaseConfirmation = true
+        } else if viewModel.isContestedCandidate {
+            // The verification offer comes first, as on
+            // Android: a link published with the request is
+            // what masternode owners weigh, and after the
+            // submission that window is already narrower.
+            showVerifyOffer = true
+        } else {
+            submitPlainName()
+        }
+    }
+
+    /// Whether Continue names the funding source and asks first. A form that
+    /// did not pass the privacy page this visit — a retry from Home or More, a
+    /// recovery — picked the source by itself, and the later confirmations
+    /// state amounts, not the balance they come from: a request that went out
+    /// from Shielded must not quietly move to transparent Core on its retry.
+    /// Asked only when money leaves that source; not for an invitation (the
+    /// voucher pays), a purchase (always Core, its confirmation says so), or
+    /// a paid Core lock being resumed.
+    private var needsSourceConfirmation: Bool {
+        !didUserPickFundingSource
+            && !viewModel.isInvitationMode
+            && !viewModel.canPurchaseListedNameDirectly
+            && viewModel.registrationRecovery != .pendingCoreAssetLock
+            && viewModel.registrationMovesFundsFromSource
+    }
+
+    private static func sourceConfirmationTitle(_ source: DWIdentityFundingSource) -> String {
+        switch source {
+        case .platformPayment: return NSLocalizedString("Pay from your Platform balance?", comment: "Usernames: confirm the funding source")
+        case .shielded: return NSLocalizedString("Pay from your Shielded balance?", comment: "Usernames: confirm the funding source")
+        default: return NSLocalizedString("Pay from your Dash balance?", comment: "Usernames: confirm the funding source")
         }
     }
 
@@ -1337,18 +1352,6 @@ struct CreateUsernameView: View {
             abandonSubmission()
             return
         }
-        // A form that did not pass the privacy page this visit — a retry
-        // from Home or More, a recovery — picks a viable source by itself.
-        // The confirmations show the amount, not the balance it comes from, so
-        // name it and ask before paying: a request that went out from Shielded
-        // must not quietly move to transparent Core on its retry. Resuming a
-        // paid Core lock moves no new money and is not asked about.
-        if !acknowledgedFundingSource, !didUserPickFundingSource, !viewModel.isInvitationMode,
-           viewModel.registrationRecovery != .pendingCoreAssetLock {
-            pendingSourceConfirmation = PendingSourceConfirmation(temporaryUsername: temporaryUsername)
-            showSourceConfirmation = true
-            return
-        }
         // The two-name top-up can need Core where the one-name one did not:
         // warn here too unless the user already chose to go ahead.
         if !acknowledgedUnfinishedTopUp,
@@ -1357,7 +1360,6 @@ struct CreateUsernameView: View {
             showUnfinishedTopUp = true
             return
         }
-        acknowledgedFundingSource = false
         acknowledgedUnfinishedTopUp = false
         if !viewModel.isInvitationMode {
             // An identity that already exists — resumed or not — is topped up
@@ -1516,9 +1518,10 @@ struct CreateUsernameView: View {
             return
         }
 
-        // An explicit pick stands, affordable or not. The form has no picker
-        // and the confirmation does not name the source, so a quiet switch is
-        // invisible: a user who chose Shielded and then typed a contested name
+        // An explicit pick stands, affordable or not — a privacy-page choice,
+        // or a source agreed to at Continue's question. The form has no picker
+        // and asks only for a pick it made itself, so a quiet switch away from
+        // the user's pick would go unannounced: a user who chose Shielded and then typed a contested name
         // its pool cannot cover would be funded from Core, linking the
         // identity to transparent funds they declined. Holding the pick lets
         // the cost rule fail against it and keeps Continue disabled; changing

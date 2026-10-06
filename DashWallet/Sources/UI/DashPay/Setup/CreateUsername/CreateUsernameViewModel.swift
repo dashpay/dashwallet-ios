@@ -418,10 +418,15 @@ class CreateUsernameViewModel: ObservableObject {
     /// is not consulted.
     func hasUnfinishedCoreTopUp(source: DWIdentityFundingSource, nameCount: UInt64, isPurchase: Bool = false) -> Bool {
         // A purchase tops up from Core whatever the registration pick says,
-        // but only an identity that exists: without one it registers a fresh
-        // identity, and an unrelated lock in the wallet is not its concern.
+        // but only an identity that exists and holds less than the price plus
+        // headroom (the coordinator's own test): without one it registers a
+        // fresh identity, and with enough credits nothing is topped up.
+        if isPurchase {
+            guard let held = existingIdentityCredits, let price = takenNameSalePriceCredits,
+                  held < price + UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME) * 1_000 else { return false }
+        }
         guard !isInvitationMode,
-              isPurchase ? DWCurrentUserIdentityInfo.shared.identityId != nil : source == .core,
+              isPurchase || source == .core,
               let wallet = SwiftDashSDKHost.shared.wallet,
               let container = SwiftDashSDKHost.shared.modelContainer
         else { return false }
@@ -454,6 +459,16 @@ class CreateUsernameViewModel: ObservableObject {
     /// persisted balance), or nil when there is no existing identity to top
     /// up. The confirmation sheet shows this figure and the submission carries
     /// it as the ceiling the coordinator may spend without asking again.
+    /// Whether a registration of the typed name moves money from the funding
+    /// source: a new identity is funded from it, and an existing one is
+    /// topped up from it when its credits fall short. Judged for the larger
+    /// two-name contested request, which the companion may still add.
+    var registrationMovesFundsFromSource: Bool {
+        guard let topUp = existingIdentityTopUpDuffs(
+            isContested: isContestedCandidate, nameCount: isContestedCandidate ? 2 : 1) else { return true }
+        return topUp > 0
+    }
+
     func existingIdentityTopUpDuffs(isContested: Bool, nameCount: UInt64) -> UInt64? {
         existingIdentityCredits.map { held in
             DWIdentityRegistrationCoordinator.identityTopUpDuffs(

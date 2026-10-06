@@ -186,7 +186,7 @@ public final class DWContestedNameStatusService: NSObject {
             submittedAt: submittedAt,
             network: network)
         var entries = Self.entries(for: network, walletId: walletId)
-        let canonical = Self.canonicalLabel(label)
+        let canonical = Self.bookmarkKey(for: label, in: entries)
         if var existing = entries[canonical] {
             existing[Self.endField] = existing[Self.endField] ?? fallbackEnd.timeIntervalSince1970
             if !provisional {
@@ -221,7 +221,7 @@ public final class DWContestedNameStatusService: NSObject {
     func recordVotingEndTime(_ endTime: Date, label: String, network: Network, walletId: Data? = nil) {
         guard let key = Self.entriesKey(for: network, walletId: walletId) else { return }
         var entries = Self.entries(for: network, walletId: walletId)
-        let canonical = Self.canonicalLabel(label)
+        let canonical = Self.bookmarkKey(for: label, in: entries)
         guard var entry = entries[canonical] else { return }
         entry[Self.endField] = endTime.timeIntervalSince1970
         entries[canonical] = entry
@@ -238,7 +238,7 @@ public final class DWContestedNameStatusService: NSObject {
     func clearPending(label: String, for network: Network, walletId: Data? = nil) {
         guard let key = Self.entriesKey(for: network, walletId: walletId) else { return }
         var entries = Self.entries(for: network, walletId: walletId)
-        entries.removeValue(forKey: Self.canonicalLabel(label))
+        entries.removeValue(forKey: Self.bookmarkKey(for: label, in: entries))
         if entries.isEmpty {
             UserDefaults.standard.removeObject(forKey: key)
         } else {
@@ -302,6 +302,13 @@ public final class DWContestedNameStatusService: NSObject {
         pendingLabels.contains { Self.labelsMatch(label, $0) }
     }
 
+    /// The key `label`'s bookmark is stored under: an existing entry for the
+    /// same DPNS name (`labelsMatch`) — Platform can hand back "a11ce" for a
+    /// bookmark written as "alice" — or else the canonical label.
+    private nonisolated static func bookmarkKey<Value>(for label: String, in entries: [String: Value]) -> String {
+        entries.keys.first { labelsMatch($0, label) } ?? canonicalLabel(label)
+    }
+
     private nonisolated static func canonicalLabel(_ label: String) -> String {
         let normalized = label.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         return normalized.hasSuffix(".dash")
@@ -327,7 +334,8 @@ public final class DWContestedNameStatusService: NSObject {
     func finalizeWon(username: String, network: Network, identityId: Data? = nil, walletId: Data? = nil) {
         clearRejected(label: username, for: network, identityId: identityId, walletId: walletId)
         // Read before `clearPending` drops the entry.
-        let promote = Self.entries(for: network, walletId: walletId)[Self.canonicalLabel(username)]?[Self.promoteOnWinField] as? Bool == true
+        let bookmarks = Self.entries(for: network, walletId: walletId)
+        let promote = bookmarks[Self.bookmarkKey(for: username, in: bookmarks)]?[Self.promoteOnWinField] as? Bool == true
         // Only the WON label's bookmark clears — other contests stay in flight.
         // Cleared before the promotion below, which must no longer see the
         // label as pending.
@@ -471,7 +479,8 @@ public final class DWContestedNameStatusService: NSObject {
     /// label has no bookmark.
     @nonobjc
     func pendingVotingEndTime(label: String, for network: Network, walletId: Data? = nil) -> Date? {
-        guard let timestamp = Self.entries(for: network, walletId: walletId)[Self.canonicalLabel(label)]?[Self.endField] as? Double,
+        let bookmarks = Self.entries(for: network, walletId: walletId)
+        guard let timestamp = bookmarks[Self.bookmarkKey(for: label, in: bookmarks)]?[Self.endField] as? Double,
               timestamp > 0 else { return nil }
         return Date(timeIntervalSince1970: timestamp)
     }

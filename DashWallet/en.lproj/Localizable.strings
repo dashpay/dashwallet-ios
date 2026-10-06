@@ -6466,7 +6466,13 @@
 "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners." = "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners.";
 
 /* Usernames: confirm the funding source */
-"Pay from your %@?" = "Pay from your %@?";
+"Pay from your Dash balance?" = "Pay from your Dash balance?";
 
 /* Usernames: confirm the funding source */
-"This request is paid from your %@." = "This request is paid from your %@.";
+"Pay from your Platform balance?" = "Pay from your Platform balance?";
+
+/* Usernames: confirm the funding source */
+"Pay from your Shielded balance?" = "Pay from your Shielded balance?";
+
+/* Usernames: confirm the funding source */
+"Registering this username moves Dash from this balance to your identity." = "Registering this username moves Dash from this balance to your identity.";
