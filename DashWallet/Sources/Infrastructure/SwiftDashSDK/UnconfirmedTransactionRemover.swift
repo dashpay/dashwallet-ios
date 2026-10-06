@@ -282,7 +282,7 @@ struct UnconfirmedTransactionRemover {
             }
         }
         // A removed send no longer waits for the network: no row to title,
-        // no repeat warning, and no "went through" notice if a rescan brings
+        // no repeat-payment refusal, and no "went through" notice if a rescan brings
         // it back mined.
         await MainActor.run { PendingSendOutcomes.shared.forget(txidsWire: txidsWire) }
 

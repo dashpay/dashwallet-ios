@@ -280,6 +280,7 @@ static NSString *DWReversedHexString(NSData *data) {
     }
     [self.delegate paymentProcessor:self
                    shouldPayAddress:paymentOutput.address
+                            isBIP70:YES
                          completion:^(BOOL proceed) {
                              if (!proceed) {
                                  [self.delegate paymentProcessorDidCancelTransactionSigning:self];
@@ -412,6 +413,7 @@ static NSString *DWReversedHexString(NSData *data) {
                            localCurrency:(nullable NSString *)localCurrency {
     [self.delegate paymentProcessor:self
                    shouldPayAddress:address
+                            isBIP70:NO
                          completion:^(BOOL proceed) {
                              if (!proceed) {
                                  [self.delegate paymentProcessorDidCancelTransactionSigning:self];

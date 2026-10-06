@@ -326,7 +326,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
                     // out. It counts as sent (grouped with the sweep's other
                     // transactions) and its row reads "Waiting for the network"
                     // until it is locked or mined. It is a move within the wallet, not a payment:
-                    // no repeat warning keys on it and it settles without the
+                    // no repeat-payment refusal keys on it and it settles without the
                     // "went through" notice.
                     let amount = chunk.reduce(UInt64(0)) { $0 + $1.valueDuffs }
                     let followed = MainThread.sync {

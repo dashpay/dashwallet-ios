@@ -108,6 +108,9 @@ final class PaymentController: NSObject {
     var waitingPayment: @MainActor (String) -> PendingSendOutcomes.Entry? = {
         PendingSendOutcomes.shared.waitingPayment(to: $0)
     }
+    /// The TXSEND log line sink (`DWLogger`, so it reaches exported logs);
+    /// tests replace it.
+    var log: (String) -> Void = { DWLogger.log($0) }
 
     private var paymentProcessor: DWPaymentProcessor
     private var fiatCurrency: String = App.fiatCurrency
@@ -223,13 +226,32 @@ extension PaymentController: DWPaymentProcessorDelegate {
     /// before the PIN prompt and the build, nothing is built or signed. Not
     /// asked again while the confirm sheet is up; other addresses are not
     /// interrupted.
-    func paymentProcessor(_ processor: DWPaymentProcessor, shouldPayAddress address: String, completion: @escaping (Bool) -> Void) {
-        guard confirmViewController == nil,
+    func paymentProcessor(_ processor: DWPaymentProcessor, shouldPayAddress address: String, isBIP70: Bool, completion: @escaping (Bool) -> Void) {
+        // A confirm sheet on screen was already checked when it opened.
+        guard confirmViewController?.presentingViewController == nil,
               let waiting = MainActor.assumeIsolated({ waitingPayment(address) }) else {
             completion(true)
             return
         }
-        refuseRepeating(waiting) { completion(false) }
+        let route = paymentRoute(isBIP70: isBIP70)
+        let age = Int(Date().timeIntervalSince(waiting.sentAt))
+        log("💸 TXSEND :: repeat payment refused — route=\(route) to=\(PendingSendOutcomes.masked(address)) pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire)) age=\(age)s wallet=\(waiting.walletId.prefix(4).map { String(format: "%02x", $0) }.joined()) reason=not locked or mined yet, within the 7-day follow window")
+        refuseRepeating(waiting) { [weak self] in
+            self?.log("💸 TXSEND :: repeat payment cancelled on OK — route=\(route) pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire)); no PIN, nothing built")
+            completion(false)
+        }
+    }
+
+    /// Which flow is paying, for logs.
+    private func paymentRoute(isBIP70: Bool) -> String {
+        if isBIP70 { return "BIP70" }
+        if provideAmountViewController != nil { return "legacy amount screen" }
+        switch delegate {
+        case is TransferAmountHostingController: return "Coinbase transfer"
+        case is PayViewController: return "Pay tab"
+        case .some(let delegate): return "standard (\(type(of: delegate)))"
+        case .none: return "standard"
+        }
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
@@ -240,12 +262,22 @@ extension PaymentController: DWPaymentProcessorDelegate {
     /// Tells the user the previous payment to this address must be confirmed
     /// first; `done` runs once the notice is gone (or could not be shown).
     private func refuseRepeating(_ waiting: PendingSendOutcomes.Entry, done: @escaping () -> Void) {
-        let message = String(
-            format: NSLocalizedString(
-                "Your previous payment to this address (%1$@, %2$@) is still being processed by the network. Wait until it is confirmed before paying this address again.",
-                comment: "Send: a payment to an address whose earlier payment is still waiting for the network is not made; %1$@ is the earlier payment's amount, %2$@ when it was sent"),
-            waiting.amount.formattedDashAmount,
-            "\(DWDateFormatter.sharedInstance.shortStringFromDate(waiting.sentAt)) \(DWDateFormatter.sharedInstance.timeOnly(from: waiting.sentAt))")
+        let sentAt = "\(DWDateFormatter.sharedInstance.shortStringFromDate(waiting.sentAt)) \(DWDateFormatter.sharedInstance.timeOnly(from: waiting.sentAt))"
+        // A route that does not know the amount records 0: the time alone then.
+        let message = waiting.amount > 0
+            ? String(
+                format: NSLocalizedString(
+                    "Your previous payment to this address (%1$@, %2$@) is still being processed by the network. Wait until it is confirmed before paying this address again.",
+                    comment: "Send: a payment to an address whose earlier payment is still waiting for the network is not made; %1$@ is the earlier payment's amount, %2$@ when it was sent"),
+                waiting.amount.formattedDashAmount, sentAt)
+            : String(
+                format: NSLocalizedString(
+                    "Your previous payment to this address (%@) is still being processed by the network. Wait until it is confirmed before paying this address again.",
+                    comment: "Send: a payment to an address whose earlier payment is still waiting for the network is not made; %@ is when the earlier payment was sent"),
+                sentAt)
+        let removeHint = NSLocalizedString(
+            "If it never arrives, you can remove it from your history.",
+            comment: "Send: refused repeat payment; the pending payment can be removed from the history if it never reaches the network")
         guard let presenter = presentationAnchor?.topController() else {
             DWLogger.log("PaymentController: no screen to show the repeat-payment notice on; not sending")
             done()
@@ -255,6 +287,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
             on: presenter,
             heading: NSLocalizedString("Previous payment still in progress", comment: "Send: a payment to an address whose earlier payment is still waiting for the network is not made"),
             message: message,
+            note: removeHint,
             buttonText: NSLocalizedString("OK", comment: ""),
             log: "the repeat-payment notice",
             onClosed: done)
@@ -393,6 +426,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
         on viewController: UIViewController,
         heading: String,
         message: String,
+        note: String? = nil,
         buttonText: String,
         log: String,
         onClosed: @escaping () -> Void
@@ -408,6 +442,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
             icon: .system("exclamationmark.triangle"),
             heading: heading,
             textBlock1: message,
+            textBlock2: note,
             positiveButtonText: buttonText,
             positiveButtonAction: {}))
         var tapped = false

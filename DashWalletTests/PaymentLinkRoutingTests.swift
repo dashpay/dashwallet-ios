@@ -701,22 +701,34 @@ final class PaymentDialogOutcomeTests: XCTestCase {
         controller.presentationContextProvider = anchor
         let waiting = PendingSendOutcomes.Entry(
             txidWire: Data(repeating: 0x9c, count: 32), walletId: Data(repeating: 0x1d, count: 32),
-            address: "yAddress", amount: 100_000, sentAt: Date())
-        controller.waitingPayment = { $0 == "yAddress" ? waiting : nil }
+            address: "yAddressForTests", amount: 100_000, sentAt: Date())
+        controller.waitingPayment = { $0 == "yAddressForTests" ? waiting : nil }
+        var logged: [String] = []
+        controller.log = { logged.append($0) }
 
         var answers: [Bool] = []
-        controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "yAddress") { answers.append($0) }
+        controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "yAddressForTests", isBIP70: true) { answers.append($0) }
         let notice = try XCTUnwrap(root.presentedViewController as? UIHostingController<ModalDialog>, "the notice is up")
         XCTAssertEqual(answers, [], "nothing goes on while it is up")
         XCTAssertNil(notice.rootView.negativeButtonText, "a single OK, no way to send anyway")
+        XCTAssertNotNil(notice.rootView.textBlock2, "says how to get past a payment that never arrives")
+        XCTAssertEqual(logged.count, 1)
+        let shown = try XCTUnwrap(logged.first)
+        XCTAssertTrue(shown.contains("TXSEND") && shown.contains("route=BIP70"), shown)
+        XCTAssertTrue(shown.contains("pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire))"), shown)
+        XCTAssertTrue(shown.contains("wallet=1d1d1d1d"), shown)
+        XCTAssertFalse(shown.contains("yAddressForTests"), "never the full address")
 
         notice.rootView.positiveButtonAction()
         spin(until: { !answers.isEmpty })
         XCTAssertEqual(answers, [false], "OK returns without paying")
+        XCTAssertEqual(logged.count, 2)
+        XCTAssertTrue(logged.last?.contains("cancelled on OK") == true, logged.last ?? "")
 
         var other: [Bool] = []
-        controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "yOtherAddress") { other.append($0) }
+        controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "yOtherAddress", isBIP70: false) { other.append($0) }
         XCTAssertEqual(other, [true], "another address is not interrupted")
+        XCTAssertEqual(logged.count, 2, "nothing pending: no log")
     }
 
     func testAnUnknownOutcomeErrorCarriesItsTxid() {

@@ -184,9 +184,10 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// (`UnconfirmedTransactionRemover`).
     func forget(txidsWire: [Data], reason: String = "removed") {
         var changed = false
-        for txid in txidsWire where entries.removeValue(forKey: txid) != nil {
+        for txid in txidsWire {
+            guard let entry = entries.removeValue(forKey: txid) else { continue }
             changed = true
-            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) \(reason), no longer tracked")
+            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) \(reason), no longer tracked; payments to \(Self.masked(entry.address)) no longer refused")
         }
         if changed { didChangeEntries() }
     }
@@ -197,7 +198,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     @objc func forgetAll() {
         notice = nil
         guard !entries.isEmpty else { return }
-        DWLogger.log("💸 TXSEND :: \(entries.count) waiting send(s) no longer tracked: wallet wiped")
+        DWLogger.log("💸 TXSEND :: \(entries.count) waiting send(s) no longer tracked: wallet wiped; their addresses (\(entries.values.map { Self.masked($0.address) }.joined(separator: ", "))) no longer refused")
         entries = [:]
         didChangeEntries()
     }
@@ -211,15 +212,36 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
 
     /// The newest send to `address` that the network has not confirmed yet,
     /// in the active wallet.
-    /// One past `maxFollowAge` no longer counts, even before a reconcile has
-    /// dropped it: the address is not refused past the follow window.
+    ///
+    /// Checked against the stored row first, since it refuses a payment: one
+    /// already locked or mined is settled here (not left to the next save's
+    /// reconcile), and one past `maxFollowAge` stops being followed — its row
+    /// goes back to "Sending" at the same moment the address can be paid.
     func waitingPayment(to address: String) -> Entry? {
         let walletId = SwiftDashSDKHost.shared.wallet?.walletId
+        let candidates = entries.values.filter { $0.address == address && $0.walletId == walletId }
+        guard !candidates.isEmpty, let walletId else { return nil }
+        let rows = SwiftDashSDKWalletSource.fetch(txids: Set(candidates.map(\.txidWire)))
+        settle(
+            pending: Dictionary(uniqueKeysWithValues: candidates.map { ($0.txidWire, $0) }),
+            walletId: rows?.walletId ?? walletId,
+            rows: rows.map(Self.rowStates(of:)))
         let now = Date()
         return entries.values
             .filter { $0.address == address && $0.walletId == walletId
                 && now.timeIntervalSince($0.sentAt) <= Self.maxFollowAge }
             .max { $0.sentAt < $1.sentAt }
+    }
+
+    /// `address` shortened for logs: never the full address.
+    nonisolated static func masked(_ address: String?) -> String {
+        guard let address, address.count > 8 else { return address == nil ? "none" : "…" }
+        return "\(address.prefix(4))…\(address.suffix(4))"
+    }
+
+    /// A txid shortened for logs (display order, first 12 hex digits).
+    nonisolated static func shortTxid(_ txidWire: Data) -> String {
+        String(Transaction.displayHex(txidWire).prefix(12))
     }
 
     // MARK: - Verdicts
@@ -308,14 +330,15 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         let decision = Self.settlement(
             of: pending, stillFollowed: { [entries] in entries[$0] != nil },
             walletId: walletId, rows: rows, now: Date())
+        func address(_ txid: Data) -> String { Self.masked(pending[txid]?.address) }
         for txid in decision.expired {
-            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) still unconfirmed after a week, no longer tracked")
+            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) still unconfirmed after 7 days, no longer tracked; payments to \(address(txid)) no longer refused")
         }
         for txid in decision.settled {
-            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) settled on chain")
+            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) settled on chain (locked or mined); payments to \(address(txid)) no longer refused")
         }
         for txid in decision.gone {
-            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) left the wallet, no longer tracked")
+            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) row missing for over 24 h (removed, swept or replaced), no longer tracked; payments to \(address(txid)) no longer refused")
         }
         for entry in Self.notifiable(decision.notifying, shownWalletId: shownWalletId) {
             notice = Self.merged(notice, adding: entry.amount)

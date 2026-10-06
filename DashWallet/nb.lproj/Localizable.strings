@@ -6636,3 +6636,9 @@
 /* Send: a payment to an address whose earlier payment is still waiting for the network is not made; %1$@ is the earlier payment's amount, %2$@ when it was sent */
 "Your previous payment to this address (%1$@, %2$@) is still being processed by the network. Wait until it is confirmed before paying this address again." = "Your previous payment to this address (%1$@, %2$@) is still being processed by the network. Wait until it is confirmed before paying this address again.";
 
+/* Send: a payment to an address whose earlier payment is still waiting for the network is not made; %@ is when the earlier payment was sent */
+"Your previous payment to this address (%@) is still being processed by the network. Wait until it is confirmed before paying this address again." = "Your previous payment to this address (%@) is still being processed by the network. Wait until it is confirmed before paying this address again.";
+
+/* Send: refused repeat payment; the pending payment can be removed from the history if it never reaches the network */
+"If it never arrives, you can remove it from your history." = "If it never arrives, you can remove it from your history.";
+
