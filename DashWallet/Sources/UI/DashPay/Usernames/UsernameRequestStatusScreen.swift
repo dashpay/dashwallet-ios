@@ -58,6 +58,17 @@ final class UsernameRequestStatusViewModel: ObservableObject {
 
     /// The submitted label, as recorded at submission time.
     let label: String
+
+    /// The instant username that failed next to this request, while the
+    /// identity still has no name of its own to use during the vote. Read when
+    /// the screen draws: the record is written by the coordinator after the
+    /// form has already handed off, and cleared once a name is registered.
+    var failedCompanion: UsernamePrefs.FailedCompanion? {
+        guard let failed = UsernamePrefs.shared.failedCompanion,
+              failed.contestedLabel == label,
+              DWCurrentUserIdentityInfo.shared.username == nil else { return nil }
+        return failed
+    }
     private let contestsService: ContestedNamesService
     private let identityVerify = IdentityVerifyService.shared
 
@@ -191,6 +202,9 @@ struct UsernameRequestStatusScreen: View {
     @State private var showVotingInfo = false
     /// The proof-of-identity screen: copy the post text, paste the link back.
     @State private var showVerifyIdentity = false
+    /// Registers a failed instant username again: the host opens the create
+    /// form prefilled with it. nil hides the retry.
+    var onRetryCompanion: ((String) -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -218,6 +232,10 @@ struct UsernameRequestStatusScreen: View {
                         .padding(.horizontal, 20)
 
                     detailsCard
+
+                    if let failed = viewModel.failedCompanion {
+                        failedCompanionSection(failed)
+                    }
 
                     if let loadError = viewModel.loadError {
                         VotingBanner(text: loadError, tone: .error)
@@ -287,6 +305,33 @@ struct UsernameRequestStatusScreen: View {
         } message: {
             Text(viewModel.verificationError ?? "")
         }
+    }
+
+    /// The instant username asked for with this request did not register, so
+    /// the user has no name to use while the vote runs. Says so, with the
+    /// reason, and offers to register it again on its own.
+    private func failedCompanionSection(_ failed: UsernamePrefs.FailedCompanion) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            VotingBanner(
+                text: String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "The instant username “%@” could not be registered, so you have no username to use while the vote runs.",
+                        comment: "Usernames: request details, failed instant username"),
+                    failed.username),
+                tone: .error)
+            if !failed.reason.isEmpty {
+                caption(failed.reason)
+            }
+            if let onRetryCompanion {
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Try again", comment: ""),
+                    fillsWidth: true,
+                    size: .medium,
+                    style: .tintedBlue,
+                    action: { onRetryCompanion(failed.username) })
+            }
+        }
+        .padding(.horizontal, 20)
     }
 
     /// Describes only what Platform actually reported. A contest that is not

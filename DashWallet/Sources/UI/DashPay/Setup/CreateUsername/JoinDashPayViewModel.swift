@@ -155,6 +155,17 @@ class JoinDashPayViewModel: ObservableObject {
     /// not contested and so cannot be told apart by inspecting the label.
     /// Without this gate the user would get a Home report and a blocking
     /// screen for one operation.
+    /// Takes back a handoff whose registration was cancelled before it ran,
+    /// so the row does not report an interruption for an attempt that never
+    /// started. Only the record for `username` is cleared.
+    @MainActor
+    static func withdrawRegistrationHandOff(username: String) {
+        let trimmed = username.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, UsernamePrefs.shared.inFlightRegistrationUsername == trimmed else { return }
+        UsernamePrefs.shared.inFlightRegistrationUsername = nil
+        NotificationCenter.default.post(name: .DWUsernameRegistrationReportChanged, object: nil)
+    }
+
     @MainActor
     static func markRegistrationHandedOff(username: String) {
         let trimmed = username.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -167,6 +178,8 @@ class JoinDashPayViewModel: ObservableObject {
         // rejection for one name reported over a request for another.
         UsernamePrefs.shared.lostContestUsername = nil
         UsernamePrefs.shared.lostContestWasBlocked = false
+        // Likewise an earlier request's missing instant name.
+        UsernamePrefs.shared.failedCompanion = nil
         // Without this the row would wait for the registration's next phase
         // change to notice the record, leaving Home showing the call to action
         // for an attempt that is already running.

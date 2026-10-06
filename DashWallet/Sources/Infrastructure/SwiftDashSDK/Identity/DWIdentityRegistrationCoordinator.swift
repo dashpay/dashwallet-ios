@@ -403,8 +403,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     private var contestTimerTask: Task<Void, Never>?
     /// Single-flight for the restore-time bookmark recovery.
     private var contestRecoveryTask: Task<Void, Never>?
-    /// Wallet+network scopes already asked about this launch, so a Home appear
-    /// does not turn into a Platform query every time.
+    /// Network+identity scopes already asked about this launch, so a Home
+    /// appear does not turn into a Platform query every time.
     private static var attemptedContestRecoveries: Set<String> = []
 
     private let authorizer = DWIdentityAuthorizer()
@@ -1438,6 +1438,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 DWCurrentUserIdentityInfo.persistConfirmedUsername(
                     temporaryUsername, identityId: identityId, walletId: wallet.walletId, container: registrationContainer)
                 registeredTemporaryUsername = temporaryUsername
+                UsernamePrefs.shared.failedCompanion = nil
                 Self.logger.info("🪪 IDENT-COORD :: temporary DPNS name registered: \(temporaryUsername)")
                 // Push the new label into the identity read model right
                 // away (same post-registration refresh the marketplace's
@@ -1447,6 +1448,17 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             } catch {
                 temporaryUsernameError = error.localizedDescription
                 Self.logger.error("🪪 IDENT-COORD :: temporary DPNS registration failed: \(String(describing: error))")
+                // Kept past this attempt: the form has usually handed off to
+                // the status row by now, so Request details is where the user
+                // learns the instant name is missing and can try it again.
+                // Written only while the registration's wallet and network are
+                // still the active ones, which is the scope the record uses.
+                if (try? validateRegistrationContext(walletId: wallet.walletId, network: network)) != nil {
+                    UsernamePrefs.shared.failedCompanion = .init(
+                        username: temporaryUsername,
+                        contestedLabel: username,
+                        reason: error.localizedDescription)
+                }
             }
         }
 
@@ -2163,6 +2175,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         switch outcome {
         case .won:
             Self.logger.info("🪪 IDENT-COORD :: contest WON for \(label) — finalizing")
+            if UsernamePrefs.shared.failedCompanion?.contestedLabel == label {
+                UsernamePrefs.shared.failedCompanion = nil
+            }
             DWContestedNameStatusService.shared.finalizeWon(
                 username: label,
                 network: expectedNetwork,
@@ -2179,6 +2194,11 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             // and its Try again, and is cleared when they act on it.
             UsernamePrefs.shared.lostContestUsername = label
             UsernamePrefs.shared.lostContestWasBlocked = (outcome == .blocked)
+            // The vote is over; a missing instant name for it is no longer
+            // what the user needs to hear about.
+            if UsernamePrefs.shared.failedCompanion?.contestedLabel == label {
+                UsernamePrefs.shared.failedCompanion = nil
+            }
             // Same announcement `finalizeWon` makes. Without it the rejection
             // sat in UserDefaults until something else happened to refresh the
             // row — the tile only appeared after leaving the screen and coming

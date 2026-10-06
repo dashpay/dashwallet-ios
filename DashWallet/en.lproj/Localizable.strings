@@ -6443,3 +6443,6 @@
 
 /* Log export progress */
 "Preparing logs…" = "Preparing logs…";
+
+/* Usernames: request details, failed instant username */
+"The instant username “%@” could not be registered, so you have no username to use while the vote runs." = "The instant username “%@” could not be registered, so you have no username to use while the vote runs.";

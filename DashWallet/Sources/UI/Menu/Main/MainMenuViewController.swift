@@ -422,7 +422,8 @@ struct MainMenuScreen: View {
             // `MainMenuScreen` is a struct and `vc` is the stack it lives in,
             // so the pop is captured directly — there is no reference cycle
             // for a `weak self` to break here.
-            onBack: { vc.popViewController(animated: true) })
+            onBack: { vc.popViewController(animated: true) },
+            onRetryCompanion: { name in openCreateUsernameForRecovery(username: name) })
         let controller = UIHostingController(rootView: screen)
         controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)

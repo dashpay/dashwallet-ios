@@ -648,7 +648,8 @@ extension HomeViewController: HomeViewDelegate {
 
         let screen = UsernameRequestStatusScreen(
             viewModel: UsernameRequestStatusViewModel(label: label),
-            onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) })
+            onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) },
+            onRetryCompanion: { [weak self] name in self?.showCreateUsernameForRecovery(definedUsername: name) })
         let controller = UIHostingController(rootView: screen)
         controller.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(controller, animated: true)

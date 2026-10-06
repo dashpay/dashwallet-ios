@@ -26,6 +26,9 @@ private let kInFlightRegistrationUsername = "inFlightRegistrationUsername"
 private let kLostContestUsername = "lostContestUsername"
 private let kLostContestWasBlocked = "lostContestWasBlocked"
 private let kCompletedTileUsername = "usernameRegistrationCompletedTile"
+private let kFailedCompanionUsername = "failedCompanionUsername"
+private let kFailedCompanionForLabel = "failedCompanionForLabel"
+private let kFailedCompanionReason = "failedCompanionReason"
 
 /// Keeps the Upgrade-to-DashPay banner dismissal attached to the wallet and
 /// network where the user made that choice. A global flag leaks between
@@ -203,6 +206,54 @@ class UsernamePrefs {
     private var completedTileUsernameKey: String {
         JoinDashPayDismissalScope.scopedKey(
             kCompletedTileUsername,
+            networkRawValue: WalletEnvironment.networkKind.rawValue,
+            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+    }
+
+    // MARK: - Instant (companion) username failure
+
+    /// The instant username that failed to register next to a contested
+    /// request, the contested label it was asked for with, and why.
+    ///
+    /// The contested request still goes in when its companion fails, and the
+    /// form hands the outcome to the status row before it is known, so this
+    /// record is what lets Request details tell the user and offer a retry.
+    /// Scoped to the wallet and network like the other registration records;
+    /// cleared when a new request starts, when the contest resolves, or when
+    /// the retry registers a name.
+    struct FailedCompanion: Equatable {
+        let username: String
+        let contestedLabel: String
+        let reason: String
+    }
+
+    var failedCompanion: FailedCompanion? {
+        get {
+            let defaults = UserDefaults.standard
+            guard let username = defaults.string(forKey: scoped(kFailedCompanionUsername)),
+                  let label = defaults.string(forKey: scoped(kFailedCompanionForLabel)) else { return nil }
+            return FailedCompanion(
+                username: username,
+                contestedLabel: label,
+                reason: defaults.string(forKey: scoped(kFailedCompanionReason)) ?? "")
+        }
+        set(value) {
+            let defaults = UserDefaults.standard
+            if let value {
+                defaults.set(value.username, forKey: scoped(kFailedCompanionUsername))
+                defaults.set(value.contestedLabel, forKey: scoped(kFailedCompanionForLabel))
+                defaults.set(value.reason, forKey: scoped(kFailedCompanionReason))
+            } else {
+                for key in [kFailedCompanionUsername, kFailedCompanionForLabel, kFailedCompanionReason] {
+                    defaults.removeObject(forKey: scoped(key))
+                }
+            }
+        }
+    }
+
+    private func scoped(_ base: String) -> String {
+        JoinDashPayDismissalScope.scopedKey(
+            base,
             networkRawValue: WalletEnvironment.networkKind.rawValue,
             walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
     }
