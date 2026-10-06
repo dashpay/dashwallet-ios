@@ -97,8 +97,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     nonisolated static let missingRowGrace: TimeInterval = 24 * 60 * 60
     /// A send still unconfirmed this long after it was recorded is no longer
     /// followed: one the network will never take (it spends coins the chain
-    /// never had) would otherwise read "Waiting for the network", and warn
-    /// on every payment to its address, for good. Its row goes back to
+    /// never had) would otherwise read "Waiting for the network", and refuse
+    /// every payment to its address, for good. Its row goes back to
     /// "Sending", where Remove if Not on Network is offered.
     nonisolated static let maxFollowAge: TimeInterval = 7 * 24 * 60 * 60
     /// A send that settles this soon after it was recorded settled while its
@@ -211,10 +211,14 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
 
     /// The newest send to `address` that the network has not confirmed yet,
     /// in the active wallet.
+    /// One past `maxFollowAge` no longer counts, even before a reconcile has
+    /// dropped it: the address is not refused past the follow window.
     func waitingPayment(to address: String) -> Entry? {
         let walletId = SwiftDashSDKHost.shared.wallet?.walletId
+        let now = Date()
         return entries.values
-            .filter { $0.address == address && $0.walletId == walletId }
+            .filter { $0.address == address && $0.walletId == walletId
+                && now.timeIntervalSince($0.sentAt) <= Self.maxFollowAge }
             .max { $0.sentAt < $1.sentAt }
     }
 

@@ -410,7 +410,13 @@ extension PaymentController: DWPaymentProcessorDelegate {
             textBlock1: message,
             positiveButtonText: buttonText,
             positiveButtonAction: {}))
-        host.rootView.positiveButtonAction = { [weak host] in host?.dismiss(animated: true) }
+        var tapped = false
+        host.rootView.positiveButtonAction = { [weak host] in
+            // A second tap during the dismissal would reach the presenter.
+            guard !tapped else { return }
+            tapped = true
+            host?.dismiss(animated: true)
+        }
         host.onDisappear = close
         host.modalPresentationStyle = .overFullScreen
         host.modalTransitionStyle = .crossDissolve

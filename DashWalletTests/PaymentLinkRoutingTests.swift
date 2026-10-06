@@ -616,8 +616,8 @@ final class LegacyAmountSubmissionTests: XCTestCase {
 }
 
 /// The dialogs a payment waits on (the unknown-outcome notice, the
-/// repeat-payment warning) report their outcome exactly once, whatever
-/// happens to them, and an unknown outcome keeps its txid for the caller.
+/// repeat-payment refusal) report their close exactly once, whatever happens
+/// to them, and an unknown outcome keeps its txid for the caller.
 @MainActor
 final class PaymentDialogOutcomeTests: XCTestCase {
     private var window: UIWindow!

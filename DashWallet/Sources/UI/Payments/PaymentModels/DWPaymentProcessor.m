@@ -270,7 +270,8 @@ static NSString *DWReversedHexString(NSData *data) {
 
 /// Build the confirm-screen output from a verified BIP70 `Confirmation` box (no build, no spend).
 /// The delegate is asked first, as for a plain send: a payment to an address
-/// whose earlier payment still waits for the network warns before the sheet.
+/// whose earlier payment still waits for the network is refused before the
+/// sheet.
 - (void)confirmBIP70Output:(id)bip70Confirmation {
     DWPaymentOutput *paymentOutput = [DWBIP70PaymentOutputFactory paymentOutputFromBox:bip70Confirmation];
     if (paymentOutput.address.length == 0) {
