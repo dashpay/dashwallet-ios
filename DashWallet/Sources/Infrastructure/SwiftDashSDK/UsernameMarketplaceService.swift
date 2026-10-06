@@ -354,6 +354,11 @@ struct UsernameMarketplaceService {
             expectedPriceCredits: expectedPriceCredits,
             signer: KeychainSigner(modelContainer: container))
         Self.logger.info("🏷️ MARKET :: purchased \(name, privacy: .public) for \(expectedPriceCredits, privacy: .public) credits")
+        // Bought now: an earlier lost contest for it no longer hides it.
+        if let network = SwiftDashSDKHost.shared.runningNetwork {
+            DWContestedNameStatusService.shared.clearRejected(
+                label: name, for: network, identityId: buyerId, walletId: wallet.walletId)
+        }
         // The name now points at the buyer's identity; refresh the
         // snapshots the rest of the app renders usernames from.
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()

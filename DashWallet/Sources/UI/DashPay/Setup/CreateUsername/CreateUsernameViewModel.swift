@@ -413,15 +413,22 @@ class CreateUsernameViewModel: ObservableObject {
     /// Whether a Core top-up of the identity is already paid and waiting to
     /// reach Platform, so another one for this submission may pay again.
     /// Only a Core top-up builds an asset lock, so other sources never ask.
-    func hasUnfinishedCoreTopUp(source: DWIdentityFundingSource, nameCount: UInt64) -> Bool {
+    /// `isPurchase`: a listed name's price is far above a registration's
+    /// shortfall and almost always needs a top-up, so the registration figure
+    /// is not consulted.
+    func hasUnfinishedCoreTopUp(source: DWIdentityFundingSource, nameCount: UInt64, isPurchase: Bool = false) -> Bool {
         guard !isInvitationMode, source == .core,
-              let needed = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount),
-              needed > 0,
               let wallet = SwiftDashSDKHost.shared.wallet,
               let container = SwiftDashSDKHost.shared.modelContainer
         else { return false }
+        if !isPurchase {
+            guard let needed = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount),
+                  needed > 0 else { return false }
+        }
         return DWIdentityRegistrationCoordinator.hasUnfinishedIdentityTopUp(
-            walletId: wallet.walletId, modelContainer: container)
+            walletId: wallet.walletId,
+            identityId: DWCurrentUserIdentityInfo.shared.identityId,
+            modelContainer: container)
     }
 
     /// What the chosen source has to cover for a name: the shortfall of an

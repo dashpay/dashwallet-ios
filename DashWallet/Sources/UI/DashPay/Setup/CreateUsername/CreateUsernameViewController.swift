@@ -321,7 +321,9 @@ struct CreateUsernameView: View {
                             // voting wait and the locked Dash. Non-contested names
                             // submit directly.
                             acknowledgedUnfinishedTopUp = false
-                            if viewModel.hasUnfinishedCoreTopUp(source: topUpSource, nameCount: 1) {
+                            if viewModel.hasUnfinishedCoreTopUp(
+                                source: topUpSource, nameCount: 1,
+                                isPurchase: viewModel.canPurchaseListedNameDirectly) {
                                 unfinishedTopUpContinuation = viewModel.canPurchaseListedNameDirectly
                                     ? .purchase
                                     : (viewModel.isContestedCandidate ? .contested : .plain)
@@ -1257,7 +1259,8 @@ struct CreateUsernameView: View {
 
     /// The source the amount alert names, as the privacy page names it.
     private var fundingSourceName: String {
-        switch fundingSource {
+        // The source the top-up will actually come from.
+        switch topUpSource {
         case .core: return NSLocalizedString("Dash balance", comment: "Usernames")
         case .platformPayment: return NSLocalizedString("Platform balance", comment: "Usernames")
         case .shielded: return NSLocalizedString("Shielded balance", comment: "Usernames")

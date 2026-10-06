@@ -396,6 +396,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
                         let pending = service.pendingLabels(for: network, identityId: recoveredIdentityId, walletId: walletId)
                             + service.provisionalLabels(for: network, identityId: recoveredIdentityId, walletId: walletId)
                             + service.unattributedLabels(for: network, walletId: walletId)
+                            + service.rejectedLabels(for: network, identityId: recoveredIdentityId, walletId: walletId)
                         return !pending.contains { DWContestedNameStatusService.labelsMatch(candidate, $0) }
                     })
             }

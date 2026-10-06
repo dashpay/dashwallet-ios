@@ -2400,7 +2400,11 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             // single-flight and context guards. Not after a failure: a
             // timed-out DPNS write may still land, and judging its marker now
             // could drop a request that is about to be indexed.
-            if case .completed = newPhase {
+            // Only after a contested request: a plain name or a purchase has
+            // nothing to resolve, and the check would otherwise fall through
+            // to a Platform-wide contest recovery query.
+            if case .completed = newPhase, let username = currentUsername,
+               DWContestedNameStatusService.isContestedLabel(username) {
                 Task { @MainActor [weak self] in self?.checkPendingContestResolution() }
             }
         default:
@@ -2498,21 +2502,32 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
 
     /// Whether this wallet holds an identity top-up asset lock that was paid
     /// on Core and is waiting to reach Platform: Broadcast, InstantSend- or
-    /// ChainLocked (1…3), for the pinned identity. Built (0) never left the
+    /// ChainLocked (1…3), for `identityId` (any identity when unknown). Built (0) never left the
     /// device, and RecoveredFromChain (5) is what a restore rebuilds every old,
     /// long consumed lock as. The form only warns on this — a lock stuck in
     /// 1…3 cannot always be finished, so it must not block for good; the
     /// tx-detail action resumes these (`AssetLockRecoveryService`).
-    static func hasUnfinishedIdentityTopUp(walletId: Data, modelContainer: ModelContainer) -> Bool {
-        // The identity this flow registers for, not every identity's top-ups.
-        let pinnedIndex = Int32(bitPattern: pinnedIdentityIndex)
+    static func hasUnfinishedIdentityTopUp(
+        walletId: Data, identityId: Data?, modelContainer: ModelContainer
+    ) -> Bool {
+        let context = modelContainer.mainContext
+        // The lock records the topped-up identity's own HD index; an unbound
+        // top-up (type 2) is tied to none, so it counts for any identity.
+        var identityIndex: Int32?
+        if let identityId {
+            let identityDescriptor = FetchDescriptor<PersistentIdentity>(
+                predicate: #Predicate { $0.identityId == identityId })
+            identityIndex = (try? context.fetch(identityDescriptor))?.first.map { Int32(bitPattern: $0.identityIndex) }
+        }
         let descriptor = FetchDescriptor<PersistentAssetLock>(
             predicate: #Predicate { row in
                 row.walletId == walletId && (row.fundingTypeRaw == 1 || row.fundingTypeRaw == 2)
-                    && row.identityIndexRaw == pinnedIndex
                     && row.statusRaw >= 1 && row.statusRaw <= 3
             })
-        return ((try? modelContainer.mainContext.fetchCount(descriptor)) ?? 0) > 0
+        guard let rows = try? context.fetch(descriptor) else { return false }
+        return rows.contains { row in
+            row.fundingTypeRaw == 2 || identityIndex == nil || row.identityIndexRaw == identityIndex
+        }
     }
 
     /// Oldest unfinished IdentityRegistration lock for the pinned slot.
