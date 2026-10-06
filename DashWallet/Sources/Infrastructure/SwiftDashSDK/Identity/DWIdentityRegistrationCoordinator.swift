@@ -2376,6 +2376,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 DWCurrentUserIdentityInfo.shared.promoteToMainName(
                     username, identityId: completedIdentityId, walletId: walletId, network: network)
             }
+            // The request went through; a later one for this label is a new
+            // request with a fresh choice of source.
+            UsernamePrefs.shared.clearAcceptedFundingSource(forLabel: username)
         }
 
         // The registering wallet now owns an identity: drop its

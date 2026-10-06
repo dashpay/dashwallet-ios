@@ -417,8 +417,11 @@ class CreateUsernameViewModel: ObservableObject {
     /// shortfall and almost always needs a top-up, so the registration figure
     /// is not consulted.
     func hasUnfinishedCoreTopUp(source: DWIdentityFundingSource, nameCount: UInt64, isPurchase: Bool = false) -> Bool {
-        // A purchase tops up from Core whatever the registration pick says.
-        guard !isInvitationMode, isPurchase || source == .core,
+        // A purchase tops up from Core whatever the registration pick says,
+        // but only an identity that exists: without one it registers a fresh
+        // identity, and an unrelated lock in the wallet is not its concern.
+        guard !isInvitationMode,
+              isPurchase ? DWCurrentUserIdentityInfo.shared.identityId != nil : source == .core,
               let wallet = SwiftDashSDKHost.shared.wallet,
               let container = SwiftDashSDKHost.shared.modelContainer
         else { return false }

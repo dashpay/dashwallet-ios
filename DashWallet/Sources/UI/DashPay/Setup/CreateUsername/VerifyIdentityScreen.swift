@@ -46,7 +46,7 @@ public struct VerifyIdentityScreen: View {
               
                 // What publishing actually does: the link goes into a public
                 // Platform document tied to this identity and name.
-                Text(NSLocalizedString("The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners. You can skip this step.", comment: "Usernames: proof-of-identity link visibility"))
+                Text(NSLocalizedString("The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners.", comment: "Usernames: proof-of-identity link visibility"))
                     .font(.subhead)
                     .multilineTextAlignment(.leading)
                     .lineSpacing(3)

@@ -6701,11 +6701,11 @@
 /* Usernames: unfinished identity top-up */
 "An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first." = "An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first.";
 
-/* Usernames: proof-of-identity link visibility */
-"The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners. You can skip this step." = "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners. You can skip this step.";
-
 /* Usernames: retry funding source changed */
 "Pay from another balance?" = "Pay from another balance?";
 
 /* Usernames: retry funding source changed */
 "You chose to pay for this request from your %1$@, which can't pay for it now. Continuing pays from your %2$@ instead." = "You chose to pay for this request from your %1$@, which can't pay for it now. Continuing pays from your %2$@ instead.";
+
+/* Usernames: proof-of-identity link visibility */
+"The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners." = "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners.";

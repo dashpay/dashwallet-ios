@@ -269,18 +269,40 @@ class UsernamePrefs {
 
     // MARK: - Accepted funding source
 
-    /// The funding source the user accepted for a request, kept per label so
-    /// a retry from a fresh form (which picks a viable source on its own) can
-    /// tell that it is about to pay from a different balance and ask first.
+    /// The funding source a request went out with, kept per label from the
+    /// moment it is authorized until it completes. A retry opens a fresh form,
+    /// which has no memory of the privacy-page pick: it reuses this source
+    /// while the source can pay, and asks before paying from another one.
     func acceptedFundingSourceRaw(forLabel label: String) -> Int? {
-        guard let entries = UserDefaults.standard.dictionary(forKey: scoped(kAcceptedFundingSource)) as? [String: Int]
-        else { return nil }
-        return entries[DWContestedNameStatusService.homographSafe(label.trimmingCharacters(in: .whitespacesAndNewlines))]
+        acceptedFundingSources[DWContestedNameStatusService.dpnsKey(label)]
     }
 
     func recordAcceptedFundingSourceRaw(_ raw: Int, forLabel label: String) {
-        var entries = (UserDefaults.standard.dictionary(forKey: scoped(kAcceptedFundingSource)) as? [String: Int]) ?? [:]
-        entries[DWContestedNameStatusService.homographSafe(label.trimmingCharacters(in: .whitespacesAndNewlines))] = raw
+        var entries = acceptedFundingSources
+        entries[DWContestedNameStatusService.dpnsKey(label)] = raw
         UserDefaults.standard.set(entries, forKey: scoped(kAcceptedFundingSource))
+    }
+
+    func clearAcceptedFundingSource(forLabel label: String) {
+        var entries = acceptedFundingSources
+        guard entries.removeValue(forKey: DWContestedNameStatusService.dpnsKey(label)) != nil else { return }
+        if entries.isEmpty {
+            UserDefaults.standard.removeObject(forKey: scoped(kAcceptedFundingSource))
+        } else {
+            UserDefaults.standard.set(entries, forKey: scoped(kAcceptedFundingSource))
+        }
+    }
+
+    private var acceptedFundingSources: [String: Int] {
+        (UserDefaults.standard.dictionary(forKey: scoped(kAcceptedFundingSource)) as? [String: Int]) ?? [:]
+    }
+
+    /// Every wallet's and network's record: a restore of the same seed gets
+    /// the same wallet id, and must not inherit a pick from before the wipe.
+    static func resetAcceptedFundingSourcesForWipe() {
+        let defaults = UserDefaults.standard
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(kAcceptedFundingSource) {
+            defaults.removeObject(forKey: key)
+        }
     }
 }

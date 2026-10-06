@@ -273,11 +273,27 @@ public final class DWContestedNameStatusService: NSObject {
         Self.logger.info("🪪 CONTEST-SVC :: clearPending ALL network=\(network.rawValue, privacy: .public)")
     }
 
-    /// Compare DPNS labels in their canonical form. The registration form
+    /// Compare DPNS labels the way the protocol does. The registration form
     /// preserves the user's capitalization while Platform can return the
-    /// normalized lowercase label, and some reads append `.dash`.
+    /// normalized label ("alice" comes back as "a11ce"), and some reads
+    /// append `.dash`.
     public nonisolated static func labelsMatch(_ lhs: String, _ rhs: String) -> Bool {
-        canonicalLabel(lhs) == canonicalLabel(rhs)
+        dpnsKey(lhs) == dpnsKey(rhs)
+    }
+
+    /// The label as DPNS identifies a name: canonical form, then the
+    /// protocol's homograph folding (o→0, i and l→1). Two labels with the same
+    /// key are one name to the network, so every store keyed by label uses
+    /// this. The folding is a consensus rule, not a lookup, so it is done
+    /// here rather than through the SDK, which may not be running yet.
+    nonisolated static func dpnsKey(_ label: String) -> String {
+        String(canonicalLabel(label).map { character -> Character in
+            switch character {
+            case "o": return "0"
+            case "i", "l": return "1"
+            default: return character
+            }
+        })
     }
 
     /// Objective-C-friendly check used by the legacy DashPay state bridge.
@@ -610,12 +626,13 @@ public final class DWContestedNameStatusService: NSObject {
     func clearRejected(label: String, for network: Network, identityId: Data?, walletId: Data? = nil) {
         guard let key = Self.rejectedKey(for: network, walletId: walletId),
               var entries = UserDefaults.standard.dictionary(forKey: key) as? [String: String] else { return }
-        let normalized = Self.homographSafe(Self.canonicalLabel(label))
+        let labelKey = Self.dpnsKey(label)
+        let prefix = identityId.map { $0.hexEncodedString() + "/" }
         let before = entries.count
-        if let identityId {
-            entries.removeValue(forKey: Self.rejectedEntryKey(label: label, identityId: identityId))
-        } else {
-            entries = entries.filter { Self.homographSafe($0.value) != normalized }
+        // Matched on the stored value, not the entry key: entries written
+        // before the key was folded are keyed by the plain label.
+        entries = entries.filter { entry in
+            !(prefix.map { entry.key.hasPrefix($0) } ?? true) || Self.dpnsKey(entry.value) != labelKey
         }
         guard entries.count != before else { return }
         if entries.isEmpty {
@@ -625,21 +642,10 @@ public final class DWContestedNameStatusService: NSObject {
         }
     }
 
-    /// Keyed by the DPNS-normalized label (o→0, i/l→1, as `normalizedLabel`
-    /// is), so a request for "alice" and the purchased document "a11ce" — the
-    /// same name to the protocol — find the same entry.
+    /// Keyed by `dpnsKey`, so a request for "alice" and the purchased
+    /// document "a11ce" — the same name to the protocol — find the same entry.
     private nonisolated static func rejectedEntryKey(label: String, identityId: Data) -> String {
-        identityId.hexEncodedString() + "/" + homographSafe(canonicalLabel(label))
-    }
-
-    nonisolated static func homographSafe(_ label: String) -> String {
-        String(label.lowercased().map { character -> Character in
-            switch character {
-            case "o": return "0"
-            case "i", "l": return "1"
-            default: return character
-            }
-        })
+        identityId.hexEncodedString() + "/" + dpnsKey(label)
     }
 
     private nonisolated static func rejectedKey(for network: Network, walletId: Data? = nil) -> String? {

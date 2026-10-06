@@ -331,6 +331,7 @@ struct CreateUsernameView: View {
                             // voting wait and the locked Dash. Non-contested names
                             // submit directly.
                             acknowledgedUnfinishedTopUp = false
+                            acknowledgedSourceSwitch = false
                             if viewModel.hasUnfinishedCoreTopUp(
                                 source: topUpSource, nameCount: 1,
                                 isPurchase: viewModel.canPurchaseListedNameDirectly) {
@@ -585,6 +586,7 @@ struct CreateUsernameView: View {
         ) { pending in
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
                 pendingSourceSwitch = nil
+                abandonSubmission()
             }
             Button(NSLocalizedString("Continue", comment: "")) {
                 pendingSourceSwitch = nil
@@ -628,7 +630,9 @@ struct CreateUsernameView: View {
             isPresented: $showUnfinishedTopUp,
             presenting: unfinishedTopUpContinuation
         ) { continuation in
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+                abandonSubmission()
+            }
             Button(NSLocalizedString("Continue anyway", comment: "Usernames: unfinished identity top-up")) {
                 acknowledgedUnfinishedTopUp = true
                 switch continuation {
@@ -911,6 +915,16 @@ struct CreateUsernameView: View {
         DWIdentityRegistrationBridge.shared.setPendingVerificationURL(
             nil,
             forLabel: viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    /// A submission the user stopped at one of its questions, or that was
+    /// refused: nothing it confirmed on the way — the top-up amount, the proof
+    /// link, the answers to the warnings — carries over to the next one.
+    private func abandonSubmission() {
+        acknowledgedSourceSwitch = false
+        acknowledgedUnfinishedTopUp = false
+        viewModel.discardConfirmedTopUp()
+        clearPendingVerification()
     }
 
     /// Naming the instant companion, on the same screen Android returns to for
@@ -1316,7 +1330,22 @@ struct CreateUsernameView: View {
         // — the funding source, top-up ceiling and companion it was given.
         if DWIdentityRegistrationCoordinator.shared.isAttemptActive {
             registrationErrorMessage = DWIdentityRegistrationCoordinator.CoordinatorError.alreadyInFlight.localizedDescription
-            viewModel.discardConfirmedTopUp()
+            abandonSubmission()
+            return
+        }
+        // A form opened for a retry keeps the source the request went out
+        // with while it can pay (`syncFundingSourceToViableSource`). When it
+        // cannot — e.g. Shielded no longer ready, Core picked instead — ask
+        // before paying from a balance the user did not choose. A pick made on
+        // the privacy page this visit is the user's own and needs no second
+        // question; resuming a paid Core lock moves no new money.
+        if !acknowledgedSourceSwitch, !didUserPickFundingSource, !viewModel.isInvitationMode,
+           viewModel.registrationRecovery != .pendingCoreAssetLock,
+           let acceptedRaw = UsernamePrefs.shared.acceptedFundingSourceRaw(forLabel: viewModel.username),
+           let accepted = DWIdentityFundingSource(rawValue: acceptedRaw),
+           accepted != fundingSource, !viableFundingSources.contains(accepted) {
+            pendingSourceSwitch = PendingSourceSwitch(accepted: accepted, temporaryUsername: temporaryUsername)
+            showSourceSwitch = true
             return
         }
         // The two-name top-up can need Core where the one-name one did not:
@@ -1327,25 +1356,8 @@ struct CreateUsernameView: View {
             showUnfinishedTopUp = true
             return
         }
+        acknowledgedSourceSwitch = false
         acknowledgedUnfinishedTopUp = false
-        if !viewModel.isInvitationMode {
-            // A form opened for a retry picks a viable source by itself. When
-            // that is not the source the user accepted for this request — e.g.
-            // Shielded no longer ready, Core picked instead — ask before paying
-            // from a balance they did not choose. A pick made on the privacy
-            // page this visit is the user's own and needs no second question.
-            let label = viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !acknowledgedSourceSwitch, !didUserPickFundingSource,
-               let acceptedRaw = UsernamePrefs.shared.acceptedFundingSourceRaw(forLabel: label),
-               let accepted = DWIdentityFundingSource(rawValue: acceptedRaw),
-               accepted != topUpSource {
-                pendingSourceSwitch = PendingSourceSwitch(accepted: accepted, temporaryUsername: temporaryUsername)
-                showSourceSwitch = true
-                return
-            }
-            acknowledgedSourceSwitch = false
-            UsernamePrefs.shared.recordAcceptedFundingSourceRaw(topUpSource.rawValue, forLabel: label)
-        }
         if !viewModel.isInvitationMode {
             // An identity that already exists — resumed or not — is topped up
             // from this source when it holds less than the name needs, so the
@@ -1368,6 +1380,11 @@ struct CreateUsernameView: View {
         // it carries the inviter contact request afterwards, which has nowhere
         // else to go.
         let handsOffToStatusRow = !viewModel.isInvitationMode
+        // Remembered once the request is authorized, for a retry to reuse; a
+        // resumed Core lock is not a choice of source.
+        let acceptedSource: DWIdentityFundingSource? = viewModel.isInvitationMode
+            || viewModel.registrationRecovery == .pendingCoreAssetLock ? nil : fundingSource
+        let requestLabel = viewModel.username
         Task {
             // `inProgress` keeps the Continue spinner up across the PIN gate.
             // Where the screen hands off, that is all it still does; otherwise
@@ -1384,6 +1401,9 @@ struct CreateUsernameView: View {
                     // the PIN prompt was answered. The work itself lives in
                     // the app-scoped coordinator and outlives this screen.
                     didHandOff = true
+                    if let acceptedSource {
+                        UsernamePrefs.shared.recordAcceptedFundingSourceRaw(acceptedSource.rawValue, forLabel: requestLabel)
+                    }
                     // The label the registration actually went out under, not
                     // a second normalization of the field: the two must name
                     // the same attempt or the row reports an interruption for
@@ -1512,6 +1532,15 @@ struct CreateUsernameView: View {
         // it is the user's move, back on the privacy page, which asks for the
         // transparent balance too rather than picking one.
         if didUserPickFundingSource { return }
+        // A retry keeps paying from the source its request went out with
+        // while that source can still pay; `performSubmit` asks before any
+        // other one is used.
+        if let acceptedRaw = UsernamePrefs.shared.acceptedFundingSourceRaw(forLabel: viewModel.username),
+           let accepted = DWIdentityFundingSource(rawValue: acceptedRaw),
+           viable.contains(accepted) {
+            fundingSource = accepted
+            return
+        }
         fundingSource = preferred
     }
 
