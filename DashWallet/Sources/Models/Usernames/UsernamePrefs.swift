@@ -237,12 +237,14 @@ class UsernamePrefs {
         }
     }
 
-    /// Clears the record when it is for an instant name other than
-    /// `username` — a new attempt for another name retires it, a retry of the
-    /// same name must not.
+    /// Clears the record when `username` belongs to another request — neither
+    /// the instant name it reports (its retry) nor the contested name it was
+    /// asked with (that request driven again). A request for anything else
+    /// retires it.
     func clearFailedCompanion(unlessUsername username: String) {
         if let failed = failedCompanion,
-           !DWContestedNameStatusService.labelsMatch(failed.username, username) {
+           !DWContestedNameStatusService.labelsMatch(failed.username, username),
+           !DWContestedNameStatusService.labelsMatch(failed.contestedLabel, username) {
             failedCompanion = nil
         }
     }

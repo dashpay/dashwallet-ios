@@ -223,12 +223,19 @@ class CreateUsernameViewModel: ObservableObject {
     /// appear and disappear with the switch rather than on the next launch.
     @Published private(set) var isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
 
-    /// Whether the Platform balance may fund this registration. The
-    /// advanced-mode rule is already in `hasMinimumRequiredPlatformBalance`;
-    /// this names the question the Join DashPay sheet, the privacy page and
-    /// the form ask.
+    /// Whether the Join DashPay entry offers the Platform balance: it covers
+    /// the minimum and advanced mode — the only place that balance is visible —
+    /// is on. Asked by the Join DashPay sheet and the privacy page, the two
+    /// screens that offer a source. The form itself keeps accepting Platform
+    /// regardless, so a retry or recovery of a Platform-funded attempt can
+    /// still finish from it.
     var canOfferPlatformFunding: Bool {
-        hasMinimumRequiredPlatformBalance
+        isAdvancedMode && hasMinimumRequiredPlatformBalance
+    }
+
+    /// Covers `duffs` from Platform only where the entry offers Platform.
+    private func canOfferPlatformFunding(_ duffs: UInt64) -> Bool {
+        isAdvancedMode && canFundFromPlatform(duffs)
     }
 
     // MARK: - Confirmed top-up ceiling
@@ -237,6 +244,10 @@ class CreateUsernameViewModel: ObservableObject {
     /// total so the companion sheet's amount does not move when its own
     /// Confirm updates that total.
     private(set) var requestedTopUpCeilingDuffs: UInt64?
+    /// Whether the requested pass's sheet showed a top-up figure at all. When
+    /// it did not (credits still loading), the companion sheet states only
+    /// what its own name adds, never the requested name's shortfall as well.
+    private(set) var requestedPassShowedTopUp = false
     /// The most the coordinator may move to top up the identity without a new
     /// confirmation: what the sheets showed, captured on Confirm, so a balance
     /// refresh before submit cannot raise it.
@@ -255,6 +266,7 @@ class CreateUsernameViewModel: ObservableObject {
             confirmedTopUpCeilingDuffs = (requestedTopUpCeilingDuffs ?? 0) + figure
         } else {
             requestedTopUpCeilingDuffs = figure
+            requestedPassShowedTopUp = isTopUpFigure
             confirmedTopUpCeilingDuffs = figure
         }
     }
@@ -267,6 +279,7 @@ class CreateUsernameViewModel: ObservableObject {
 
     func discardConfirmedTopUp() {
         requestedTopUpCeilingDuffs = nil
+        requestedPassShowedTopUp = false
         confirmedTopUpCeilingDuffs = nil
     }
 
@@ -1272,9 +1285,6 @@ class CreateUsernameViewModel: ObservableObject {
         coreEligible: Bool,
         platformEligible: Bool
     ) {
-        // Platform is offered only in advanced mode, the one place its balance
-        // is visible. Folded in here so every reader of the flag gets the rule.
-        let platformEligible = platformEligible && isAdvancedMode
         if hasMinimumRequiredCoreBalance != coreEligible {
             hasMinimumRequiredCoreBalance = coreEligible
         }
@@ -1306,9 +1316,7 @@ class CreateUsernameViewModel: ObservableObject {
         // Platform counts only where it can be offered (advanced mode), the
         // same rule as `canOfferPlatformFunding`.
         hasRecommendedBalance = balance >= DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
-            || (isAdvancedMode && PlatformPaymentIdentityFundingPolicy.canFund(
-                candidates: platformFundingCandidates,
-                fundingDuffs: UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME)))
+            || canOfferPlatformFunding(UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME))
     }
 }
 

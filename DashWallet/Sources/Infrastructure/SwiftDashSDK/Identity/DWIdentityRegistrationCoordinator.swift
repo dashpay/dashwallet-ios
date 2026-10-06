@@ -397,10 +397,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     private var controller: DWIdentityRegistrationController?
 
     /// An attempt is running: either the published phase or the controller's
-    /// own says so. The registration entry points, `cancel()`, the create form
-    /// and Request details all ask this, so the two are never consulted apart.
-    /// (The purchase path keeps its own switch: it also tells the phases apart
-    /// for its log line.)
+    /// own says so. The registration and purchase entry points, `cancel()`, the
+    /// create form and Request details all ask this, so the two are never
+    /// consulted apart.
     var isAttemptActive: Bool {
         phase.isActive || controller?.phase.isActive == true
     }
@@ -1632,14 +1631,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // Single-flight — same rationale as `startCreateUsername`: the
         // funding FFI calls race to their terminal even if we stop
         // observing, and two funding attempts must never overlap.
-        if controller?.phase.isActive == true { throw CoordinatorError.alreadyInFlight }
-        let currentPhase = phase
-        switch currentPhase {
-        case .preparingKeys, .inFlight:
-            Self.logger.warning("🪪 IDENT-COORD :: rejecting concurrent purchase; phase=\(String(describing: currentPhase))")
+        guard !isAttemptActive else {
+            Self.logger.warning("🪪 IDENT-COORD :: rejecting concurrent purchase; phase=\(String(describing: phase))")
             throw CoordinatorError.alreadyInFlight
-        case .idle, .completed, .failed:
-            break
         }
         resetState()
         currentUsername = name

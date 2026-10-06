@@ -68,16 +68,9 @@ final class UsernameRequestStatusViewModel: ObservableObject {
     @Published private(set) var failedCompanion: UsernamePrefs.FailedCompanion?
 
     func refreshFailedCompanion() {
+        // No record is the usual case: answered without touching the identity.
         guard let failed = UsernamePrefs.shared.failedCompanion,
-              DWContestedNameStatusService.labelsMatch(failed.contestedLabel, label),
-              // A record outliving its request has nothing left to report on.
-              // The bookmark answers nothing while the identity is unresolved,
-              // so the identity's own pending name counts too — the same
-              // fallback the hosts open this screen through.
-              DWContestedNameStatusService.shared.isPendingLabel(label)
-                || DWCurrentUserIdentityInfo.shared.refreshedSnapshot().pendingContestedName
-                    .map { DWContestedNameStatusService.labelsMatch($0, label) } == true
-        else {
+              DWContestedNameStatusService.labelsMatch(failed.contestedLabel, label) else {
             failedCompanion = nil
             return
         }
@@ -88,14 +81,26 @@ final class UsernameRequestStatusViewModel: ObservableObject {
             failedCompanion = nil
             return
         }
-        let identity = DWCurrentUserIdentityInfo.shared
-        if identity.usernames.contains(where: { DWContestedNameStatusService.labelsMatch($0, failed.username) }) {
+        // Rebuilt once here, only when a record exists: a retry that just
+        // registered the name must be seen, not a cached snapshot from before.
+        let snapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        // A record outliving its request has nothing left to report on. The
+        // bookmark answers nothing while the identity is unresolved, so the
+        // identity's own pending name counts too — the same fallback the hosts
+        // open this screen through.
+        let isPending = DWContestedNameStatusService.shared.isPendingLabel(label)
+            || snapshot.pendingContestedName.map { DWContestedNameStatusService.labelsMatch($0, label) } == true
+        guard isPending else {
+            failedCompanion = nil
+            return
+        }
+        if snapshot.usernames.contains(where: { DWContestedNameStatusService.labelsMatch($0, failed.username) }) {
             // The retry registered it: nothing is missing any more.
             UsernamePrefs.shared.clearFailedCompanion(forUsername: failed.username)
             failedCompanion = nil
             return
         }
-        failedCompanion = identity.username == nil ? failed : nil
+        failedCompanion = snapshot.username == nil ? failed : nil
     }
     private let contestsService: ContestedNamesService
     private let identityVerify = IdentityVerifyService.shared

@@ -145,9 +145,10 @@ public struct JoinDashPayScreen: View {
     /// the balance was short.
     ///
     /// The balances counted are the ones the privacy page will offer: Platform
-    /// only in advanced mode. `hasMinimumRequiredBalance` counts Platform
-    /// regardless, which let a short-Core wallet with advanced mode off through
-    /// to a form whose Continue it could never enable.
+    /// only in advanced mode (`canOfferPlatformFunding`). The source-agnostic
+    /// `hasMinimumRequiredBalance` counts Platform in either mode, which let a
+    /// short-Core wallet with advanced mode off through to a privacy page with
+    /// nothing it could pick.
     private var canProceed: Bool {
         viewModel.hasMinimumRequiredCoreBalance
             || viewModel.canOfferPlatformFunding

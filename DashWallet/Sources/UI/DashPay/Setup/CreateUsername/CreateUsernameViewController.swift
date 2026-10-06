@@ -1132,8 +1132,13 @@ struct CreateUsernameView: View {
             // not to a fresh one-name figure: the two sheets then add up to the
             // two-name top-up as it stands now.
             let total = existingIdentityTopUpDuffs(nameCount: 2) ?? single
-            let confirmed = viewModel.requestedTopUpCeilingDuffs ?? 0
-            return total > confirmed ? total - confirmed : 0
+            // Relative to the requested pass's confirmed figure when it showed
+            // one; otherwise to the one-name figure, so this sheet states only
+            // what the instant name adds.
+            let base = viewModel.requestedPassShowedTopUp
+                ? (viewModel.requestedTopUpCeilingDuffs ?? single)
+                : single
+            return total > base ? total - base : 0
         }
         if isNamingInstantUsername { return 0 }
         if DWCurrentUserIdentityInfo.shared.hasIdentity {
@@ -1309,7 +1314,9 @@ struct CreateUsernameView: View {
         if viewModel.hasReadyShieldedFunding {
             sources.append(.shielded)
         }
-        if viewModel.canOfferPlatformFunding {
+        // Not gated on advanced mode: the entry decides what is offered, and a
+        // retry or recovery of a Platform-funded attempt must still finish here.
+        if viewModel.hasMinimumRequiredPlatformBalance {
             sources.append(.platformPayment)
         }
         if viewModel.hasMinimumRequiredCoreBalance {
