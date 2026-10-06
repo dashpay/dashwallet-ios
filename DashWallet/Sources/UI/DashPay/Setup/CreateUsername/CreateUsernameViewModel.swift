@@ -406,6 +406,13 @@ class CreateUsernameViewModel: ObservableObject {
     /// What the chosen source has to cover for a name: the shortfall of an
     /// existing identity (the coordinator tops it up), or a new identity's full
     /// funding. Updates `identityTopUpDuffs` for the label being judged.
+    /// What a new identity is funded with for one name — the figure the form's
+    /// cost rule states. Also the ceiling for an identity the create path
+    /// reuses instead of funding.
+    func newIdentityFundingDuffs(isContested: Bool) -> UInt64 {
+        UInt64(isContested ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME : DWDP_MIN_BALANCE_TO_CREATE_USERNAME)
+    }
+
     private func requiredFundingDuffs(isContested: Bool) -> UInt64 {
         // One name: the companion is chosen only after this verdict, and the
         // confirmation sheet states what it adds.

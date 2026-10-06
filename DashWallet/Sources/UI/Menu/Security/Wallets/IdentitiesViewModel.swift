@@ -335,7 +335,9 @@ final class IdentitiesViewModel: ObservableObject {
         // A lost or locked contest leaves its label among the cached names;
         // it is not this identity's.
         let rejected = WalletEnvironment.network.map {
-            DWContestedNameStatusService.shared.rejectedLabels(for: $0, identityId: identity.identityId)
+            // The identity's own wallet: Identities lists other wallets' too.
+            DWContestedNameStatusService.shared.rejectedLabels(
+                for: $0, identityId: identity.identityId, walletId: identity.wallet?.walletId)
         } ?? []
         let allNames = identity.dpnsNames.filter(\.isOwned).map(\.label)
             .filter { name in !rejected.contains { DWContestedNameStatusService.labelsMatch($0, name) } }

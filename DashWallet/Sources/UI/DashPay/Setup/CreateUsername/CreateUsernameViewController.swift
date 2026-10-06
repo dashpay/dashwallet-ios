@@ -143,6 +143,7 @@ struct CreateUsernameView: View {
     /// The top-up a plain name needs from an existing identity, waiting on the
     /// user's answer to the amount alert. nil when no alert is up.
     @State private var pendingPlainTopUpDuffs: UInt64?
+    @State private var showPlainTopUp = false
     /// An earlier identity top-up is unfinished; a new one would pay again.
     @State private var showUnfinishedTopUp = false
     /// True once a choice made by the user has been adopted; auto-pinning
@@ -552,29 +553,25 @@ struct CreateUsernameView: View {
                     viewModel.username))
             }
         }
+        // `presenting:` hands the amount to the buttons and the message as a
+        // value, so dismissal clearing the state cannot lose what was shown.
         .alert(
             NSLocalizedString("Top up your identity", comment: "Usernames: plain name on an existing identity"),
-            isPresented: Binding(
-                get: { pendingPlainTopUpDuffs != nil },
-                set: { if !$0 { pendingPlainTopUpDuffs = nil } })
-        ) {
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
-                pendingPlainTopUpDuffs = nil
-            }
+            isPresented: $showPlainTopUp,
+            presenting: pendingPlainTopUpDuffs
+        ) { topUp in
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
             Button(NSLocalizedString("Confirm", comment: "")) {
-                if let topUp = pendingPlainTopUpDuffs {
-                    viewModel.captureConfirmedTopUp(shownDuffs: topUp, isCompanionPass: false)
-                }
-                pendingPlainTopUpDuffs = nil
+                viewModel.captureConfirmedTopUp(shownDuffs: topUp, isCompanionPass: false)
                 performSubmit()
             }
-        } message: {
+        } message: { topUp in
             Text(String.localizedStringWithFormat(
                 NSLocalizedString(
                     "Registering “%1$@” first moves %2$@ DASH from your %3$@ to your identity’s credits.",
                     comment: "Usernames: plain name on an existing identity"),
                 viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines),
-                (pendingPlainTopUpDuffs ?? 0).dashAmount.formattedDashAmountWithoutCurrencySymbol,
+                topUp.dashAmount.formattedDashAmountWithoutCurrencySymbol,
                 fundingSourceName))
         }
         .alert(
@@ -1202,12 +1199,6 @@ struct CreateUsernameView: View {
         performSubmit(temporaryUsername: temporaryUsername)
     }
 
-    /// Encapsulates the submit-to-bridge dance so the direct Continue
-    /// path and the contested sheet's confirmation can share the code.
-    /// Writes the funding-source pick into the bridge right before
-    /// submit. The bridge resets to `.core` on every terminal phase, so
-    /// a stale picker value can't leak into a future attempt; this
-    /// single write is the only synchronization needed.
     /// A plain name on an existing identity that needs a top-up asks for the
     /// amount and source first; otherwise it submits straight away.
     private func submitPlainName() {
@@ -1216,16 +1207,29 @@ struct CreateUsernameView: View {
             : viewModel.existingIdentityTopUpDuffs(isContested: false, nameCount: 1)
         if let topUp, topUp > 0 {
             pendingPlainTopUpDuffs = topUp
-        } else {
-            performSubmit()
+            showPlainTopUp = true
+            return
         }
+        // No alert, but still a ceiling, so the coordinator never runs a top-up
+        // nobody saw: none needed (0), or — with no identity known — the new
+        // identity's funding the cost rule states, which also caps an identity
+        // the create path turns out to reuse.
+        if !viewModel.isInvitationMode {
+            viewModel.captureConfirmedTopUp(
+                shownDuffs: topUp ?? viewModel.newIdentityFundingDuffs(isContested: false),
+                isCompanionPass: false)
+        }
+        performSubmit()
     }
 
     /// The submission would top up the identity while an earlier top-up is
     /// still unfinished — the coordinator would refuse it after the PIN, so
     /// the form says so first.
     private func isBlockedByUnfinishedTopUp(nameCount: UInt64) -> Bool {
+        // Only a Core top-up builds an asset lock that could pay twice.
+        let source = viewModel.registrationRecovery == .pendingCoreAssetLock ? .core : fundingSource
         guard !viewModel.isInvitationMode,
+              source == .core,
               let needed = viewModel.existingIdentityTopUpDuffs(
                 isContested: viewModel.isContestedCandidate, nameCount: nameCount),
               needed > 0,
@@ -1247,6 +1251,12 @@ struct CreateUsernameView: View {
         }
     }
 
+    /// Encapsulates the submit-to-bridge dance so the direct Continue
+    /// path and the contested sheet's confirmation can share the code.
+    /// Writes the funding-source pick into the bridge right before
+    /// submit. The bridge resets to `.core` on every terminal phase, so
+    /// a stale picker value can't leak into a future attempt; this
+    /// single write is the only synchronization needed.
     private func performSubmit(temporaryUsername: String? = nil) {
         // Another registration is running (started from Identities or an
         // invitation): refuse before touching the bridge state it still reads

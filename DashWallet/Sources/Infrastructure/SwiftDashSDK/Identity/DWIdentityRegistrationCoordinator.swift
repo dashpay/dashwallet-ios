@@ -1244,9 +1244,11 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         let topUpDuffs = Self.identityTopUpDuffs(requiredCredits: requiredCredits, heldCredits: heldCredits)
         Self.logger.info("🪪 IDENT-COORD :: existing identity requiredCredits=\(requiredCredits) heldCredits=\(heldCredits) topUpDuffs=\(topUpDuffs) authorized=\(plan.authorizedDuffs.map(String.init) ?? "none") source=\(plan.source.logLabel)")
         guard topUpDuffs > 0 else { return }
-        // A top-up already paid on Core and never consumed: a new one would
-        // spend again. Stop and send the user to finish that one.
-        if Self.hasUnfinishedIdentityTopUp(walletId: wallet.walletId, modelContainer: plan.modelContainer) {
+        // A Core top-up already paid and never consumed: another Core top-up
+        // would pay again. Stop and send the user to finish that one. Other
+        // sources build no asset lock, so they cannot double-pay it.
+        if plan.source == .core,
+           Self.hasUnfinishedIdentityTopUp(walletId: wallet.walletId, modelContainer: plan.modelContainer) {
             throw CoordinatorError.identityTopUp(CoordinatorError.unfinishedIdentityTopUp)
         }
         // No confirmed amount authorizes no top-up, not an unlimited one.
@@ -1769,6 +1771,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 expectedPriceCredits: priceCredits,
                 signer: signer)
             Self.logger.info("🪪 IDENT-COORD :: purchased \(name) for \(priceCredits) credits")
+            // Bought now: an earlier lost contest for it no longer hides it.
+            DWContestedNameStatusService.shared.clearRejected(
+                label: normalized, for: network, identityId: identityId, walletId: wallet.walletId)
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: purchase failed: \(String(describing: error))")
             failedAtPhase = .registrationUsername
@@ -2496,23 +2501,26 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             .first(where: { $0.identityIndex == Self.pinnedIdentityIndex })?.identityId
     }
 
-    /// Oldest unfinished IdentityRegistration lock for the pinned slot.
-    /// Choosing the original payment is deliberate: a wallet already
-    /// affected by BUG-2 may contain two rows, and retrying the newer one
-    /// would leave the first payment stranded yet again.
     /// Whether this wallet holds an identity top-up asset lock that was paid
-    /// but has not been shown to reach Platform (Built…ChainLocked, or
-    /// RecoveredFromChain). The tx-detail Retry resumes these
-    /// (`AssetLockRecoveryService`); the registration flow does not.
+    /// on Core and is waiting to reach Platform: Broadcast, InstantSend- or
+    /// ChainLocked (1…3). Built (0) never left the device, and
+    /// RecoveredFromChain (5) is what a restore rebuilds every old, long
+    /// consumed lock as — counting it would block every restored wallet. The
+    /// tx-detail action resumes these (`AssetLockRecoveryService`); the
+    /// registration flow does not.
     static func hasUnfinishedIdentityTopUp(walletId: Data, modelContainer: ModelContainer) -> Bool {
         let descriptor = FetchDescriptor<PersistentAssetLock>(
             predicate: #Predicate { row in
                 row.walletId == walletId && (row.fundingTypeRaw == 1 || row.fundingTypeRaw == 2)
+                    && row.statusRaw >= 1 && row.statusRaw <= 3
             })
-        guard let rows = try? modelContainer.mainContext.fetch(descriptor) else { return false }
-        return rows.contains { AssetLockRecoveryService.statusAllowsRetry($0.statusRaw) }
+        return ((try? modelContainer.mainContext.fetchCount(descriptor)) ?? 0) > 0
     }
 
+    /// Oldest unfinished IdentityRegistration lock for the pinned slot.
+    /// Choosing the original payment is deliberate: a wallet already
+    /// affected by BUG-2 may contain two rows, and retrying the newer one
+    /// would leave the first payment stranded yet again.
     private func lookupRegistrationRecoveryLock(
         walletId: Data,
         modelContainer: ModelContainer
