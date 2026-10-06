@@ -149,6 +149,12 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         return snapshot
     }
 
+    /// The current snapshot without forcing a rebuild: recomputed only if the
+    /// revision moved since the last read. For readers that re-check often.
+    @nonobjc var snapshotForReading: Snapshot {
+        snapshot
+    }
+
     static func cachedBalanceCredits(_ credits: UInt64?) -> UInt64? {
         guard let credits, credits > 0 else { return nil }
         return credits

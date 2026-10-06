@@ -1068,14 +1068,11 @@ struct CreateUsernameView: View {
     ///   (`hasSecondaryName()`).
     private func confirmRequestAccepted() {
         // What the sheet showed, before a later balance refresh can move it.
-        // An existing identity's shortfall and a new identity's funding (the
-        // ceiling for an identity the create path reuses) are top-up figures;
-        // the contest fund shown while credits are still loading is not.
+        // For a new identity it is the funding, which also caps an identity
+        // the create path ends up reusing.
         viewModel.captureConfirmedTopUp(
             shownDuffs: confirmationAmountDuffs,
-            isCompanionPass: isNamingInstantUsername,
-            isTopUpFigure: existingIdentityTopUpDuffs(nameCount: 1) != nil
-                || !DWCurrentUserIdentityInfo.shared.hasIdentity)
+            isCompanionPass: isNamingInstantUsername)
         if isNamingInstantUsername {
             sheetFollowUp = .submit(temporaryUsername: viewModel.temporaryField.trimmedText)
         } else if identityOwnsUsername {
@@ -1128,16 +1125,11 @@ struct CreateUsernameView: View {
     private var confirmationAmountDuffs: UInt64 {
         if let single = existingIdentityTopUpDuffs(nameCount: 1) {
             guard isNamingInstantUsername else { return single }
-            // Relative to the figure already confirmed for the requested name,
-            // not to a fresh one-name figure: the two sheets then add up to the
-            // two-name top-up as it stands now.
+            // What the second name adds over the figure confirmed for the
+            // requested one, so the two sheets sum to the two-name top-up as it
+            // stands now.
             let total = existingIdentityTopUpDuffs(nameCount: 2) ?? single
-            // Relative to the requested pass's confirmed figure when it showed
-            // one; otherwise to the one-name figure, so this sheet states only
-            // what the instant name adds.
-            let base = viewModel.requestedPassShowedTopUp
-                ? (viewModel.requestedTopUpCeilingDuffs ?? single)
-                : single
+            let base = viewModel.requestedTopUpCeilingDuffs ?? single
             return total > base ? total - base : 0
         }
         if isNamingInstantUsername { return 0 }
@@ -1314,13 +1306,18 @@ struct CreateUsernameView: View {
         if viewModel.hasReadyShieldedFunding {
             sources.append(.shielded)
         }
-        // Not gated on advanced mode: the entry decides what is offered, and a
-        // retry or recovery of a Platform-funded attempt must still finish here.
-        if viewModel.hasMinimumRequiredPlatformBalance {
-            sources.append(.platformPayment)
-        }
-        if viewModel.hasMinimumRequiredCoreBalance {
-            sources.append(.core)
+        // Not gated on advanced mode: a retry or recovery of a Platform-funded
+        // attempt must still finish here. Without advanced mode, though, the
+        // balance the user can see comes first, so a form opened with no pick
+        // (a retry from Request details) is not paid from one they cannot.
+        let platform = viewModel.hasMinimumRequiredPlatformBalance
+        let core = viewModel.hasMinimumRequiredCoreBalance
+        if viewModel.isAdvancedMode {
+            if platform { sources.append(.platformPayment) }
+            if core { sources.append(.core) }
+        } else {
+            if core { sources.append(.core) }
+            if platform { sources.append(.platformPayment) }
         }
         return sources
     }

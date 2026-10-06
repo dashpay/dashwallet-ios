@@ -244,30 +244,19 @@ class CreateUsernameViewModel: ObservableObject {
     /// total so the companion sheet's amount does not move when its own
     /// Confirm updates that total.
     private(set) var requestedTopUpCeilingDuffs: UInt64?
-    /// Whether the requested pass's sheet showed a top-up figure at all. When
-    /// it did not (credits still loading), the companion sheet states only
-    /// what its own name adds, never the requested name's shortfall as well.
-    private(set) var requestedPassShowedTopUp = false
     /// The most the coordinator may move to top up the identity without a new
     /// confirmation: what the sheets showed, captured on Confirm, so a balance
     /// refresh before submit cannot raise it.
     private var confirmedTopUpCeilingDuffs: UInt64?
 
-    /// Records what a confirmation sheet just showed.
-    ///
-    /// `isTopUpFigure` is false when the sheet showed the contest fund for an
-    /// identity whose credits are not loaded yet — not a top-up. The ceiling is
-    /// then 0: nothing was confirmed for a top-up, so one that turns out to be
-    /// needed stops with `topUpExceedsConfirmed` and asks again, rather than
-    /// running uncapped.
-    func captureConfirmedTopUp(shownDuffs: UInt64, isCompanionPass: Bool, isTopUpFigure: Bool) {
-        let figure = isTopUpFigure ? shownDuffs : 0
+    /// Records what a confirmation sheet just showed: the requested pass
+    /// starts the ceiling, the companion pass adds what it showed.
+    func captureConfirmedTopUp(shownDuffs: UInt64, isCompanionPass: Bool) {
         if isCompanionPass {
-            confirmedTopUpCeilingDuffs = (requestedTopUpCeilingDuffs ?? 0) + figure
+            confirmedTopUpCeilingDuffs = (requestedTopUpCeilingDuffs ?? 0) + shownDuffs
         } else {
-            requestedTopUpCeilingDuffs = figure
-            requestedPassShowedTopUp = isTopUpFigure
-            confirmedTopUpCeilingDuffs = figure
+            requestedTopUpCeilingDuffs = shownDuffs
+            confirmedTopUpCeilingDuffs = shownDuffs
         }
     }
 
@@ -279,7 +268,6 @@ class CreateUsernameViewModel: ObservableObject {
 
     func discardConfirmedTopUp() {
         requestedTopUpCeilingDuffs = nil
-        requestedPassShowedTopUp = false
         confirmedTopUpCeilingDuffs = nil
     }
 

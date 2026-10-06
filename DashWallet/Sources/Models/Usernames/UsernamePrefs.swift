@@ -205,8 +205,13 @@ class UsernamePrefs {
     /// form hands the outcome to the status row before it is known, so this
     /// record is what lets Request details tell the user and offer a retry.
     /// Scoped to the wallet and network like the other registration records;
-    /// cleared when a request for another name is handed off, when the
-    /// contest resolves, or when Request details finds the name owned.
+    /// cleared once a request for another name is written to Platform, when
+    /// the instant name itself registers, when the contest resolves, or when
+    /// Request details finds the name owned. `reason` is the raw error, worded
+    /// when shown.
+    /// Posted when the coordinator records a failed instant username.
+    static let failedCompanionDidChange = Notification.Name("DWFailedCompanionUsernameDidChange")
+
     struct FailedCompanion: Equatable, Codable {
         let username: String
         let contestedLabel: String

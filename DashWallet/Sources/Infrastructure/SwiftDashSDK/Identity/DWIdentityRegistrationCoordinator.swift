@@ -1486,12 +1486,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     UsernamePrefs.shared.failedCompanion = .init(
                         username: temporaryUsername,
                         contestedLabel: username,
-                        reason: UsernameRegistrationFailureWording.message(
-                            forRaw: error.localizedDescription, username: temporaryUsername))
-                    // Not the registration-status announcement: that one is the
-                    // bridge's, after it mirrors the phase, and this attempt is
-                    // still in flight. The record has its own reader.
-                    NotificationCenter.default.post(name: .DWUsernameRegistrationReportChanged, object: nil)
+                        // Raw, worded when shown: the wording follows the
+                        // app's language at display time.
+                        reason: error.localizedDescription)
+                    // Its own signal, read only by Request details: the
+                    // registration-status announcement is the bridge's, after it
+                    // mirrors the phase, and this attempt is still in flight.
+                    NotificationCenter.default.post(name: UsernamePrefs.failedCompanionDidChange, object: nil)
                 } else {
                     Self.logger.warning("🪪 IDENT-COORD :: failed instant username not recorded — the active wallet or network changed")
                 }

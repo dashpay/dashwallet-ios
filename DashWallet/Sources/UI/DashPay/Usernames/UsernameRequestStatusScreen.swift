@@ -67,7 +67,10 @@ final class UsernameRequestStatusViewModel: ObservableObject {
     /// screen is up.
     @Published private(set) var failedCompanion: UsernamePrefs.FailedCompanion?
 
-    func refreshFailedCompanion() {
+    /// `rebuildSnapshot` rebuilds the identity snapshot (on appear, where a
+    /// retry may just have registered the name); notifications read the cached
+    /// one, so a burst of them does not rebuild it each time.
+    func refreshFailedCompanion(rebuildSnapshot: Bool = false) {
         // No record is the usual case: answered without touching the identity.
         guard let failed = UsernamePrefs.shared.failedCompanion,
               DWContestedNameStatusService.labelsMatch(failed.contestedLabel, label) else {
@@ -81,9 +84,15 @@ final class UsernameRequestStatusViewModel: ObservableObject {
             failedCompanion = nil
             return
         }
-        // Rebuilt once here, only when a record exists: a retry that just
-        // registered the name must be seen, not a cached snapshot from before.
-        let snapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        let snapshot = rebuildSnapshot
+            ? DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+            : DWCurrentUserIdentityInfo.shared.snapshotForReading
+        // Names still loading: an empty list proves nothing about the
+        // instant name, so nothing is claimed either way.
+        guard !snapshot.isLoading, snapshot.namesAreLoaded else {
+            failedCompanion = nil
+            return
+        }
         // A record outliving its request has nothing left to report on. The
         // bookmark answers nothing while the identity is unresolved, so the
         // identity's own pending name counts too — the same fallback the hosts
@@ -307,14 +316,14 @@ struct UsernameRequestStatusScreen: View {
             }
         }
         .task {
-            viewModel.refreshFailedCompanion()
+            viewModel.refreshFailedCompanion(rebuildSnapshot: true)
             await viewModel.refresh()
             await viewModel.refreshVerificationURL()
         }
         .onReceive(NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)) { _ in
             viewModel.refreshFailedCompanion()
         }
-        .onReceive(NotificationCenter.default.publisher(for: .DWUsernameRegistrationReportChanged)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: UsernamePrefs.failedCompanionDidChange)) { _ in
             viewModel.refreshFailedCompanion()
         }
 
@@ -363,8 +372,11 @@ struct UsernameRequestStatusScreen: View {
                     failed.username),
                 tone: .error)
                 .padding(.horizontal, 20)
-            if !failed.reason.isEmpty {
-                caption(failed.reason)
+            // Only a recognised cause is worth a line; an unrecognised one
+            // comes back unchanged as Platform's debug text.
+            let worded = UsernameRegistrationFailureWording.message(forRaw: failed.reason, username: failed.username)
+            if !failed.reason.isEmpty, worded != failed.reason {
+                caption(worded)
             }
             if let onRetryCompanion {
                 DashUIKit.DashButton(
