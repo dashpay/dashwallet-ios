@@ -1190,10 +1190,10 @@ struct CreateUsernameView: View {
             let outcome = await viewModel.submitUsernameRequest(temporaryUsername: temporaryUsername) {
                 isTextInputFocused = false
                 if handsOffToStatusRow {
-                    // Fires once the registration is actually running — after
-                    // the PIN gate, which `startCreateUsername` passes before
-                    // any phase change. The work itself lives in the
-                    // app-scoped coordinator and outlives this screen.
+                    // Fires once the registration is actually running: on the
+                    // coordinator's `.inFlight`, which is reached only after
+                    // the PIN prompt was answered. The work itself lives in
+                    // the app-scoped coordinator and outlives this screen.
                     didHandOff = true
                     // The label the registration actually went out under, not
                     // a second normalization of the field: the two must name

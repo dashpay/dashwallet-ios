@@ -724,11 +724,14 @@ class CreateUsernameViewModel: ObservableObject {
         }
 
         switch phase {
-        case .preparingKeys, .inFlight:
+        case .inFlight:
+            // Not `.preparingKeys`: both coordinator paths enter it before the
+            // PIN prompt, so it would announce a registration the user may
+            // still cancel. `.inFlight` is only reached once authorized.
             guard !didNotifyRegistrationStarted else { return }
             didNotifyRegistrationStarted = true
             onRegistrationStarted?()
-        case .idle, .completed, .failed:
+        case .idle, .preparingKeys, .completed, .failed:
             break
         }
     }

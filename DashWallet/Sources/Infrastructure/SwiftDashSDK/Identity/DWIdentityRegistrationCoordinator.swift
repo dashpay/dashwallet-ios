@@ -610,6 +610,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         authorizedTopUpDuffs: UInt64? = nil
     ) async throws -> Identifier {
         Self.logger.info("🪪 IDENT-COORD :: startCreateUsername username=\(username) funding=\(fundingSource.logLabel) temporary=\(temporaryUsername ?? "none")")
+        // An overlapping start is rejected before it touches the attempt's
+        // state: the proof link belongs to the request already running, and
+        // overwriting it would publish another URL under that request's
+        // identity, or drop the one it accepted.
+        guard !phase.isActive, controller?.phase.isActive != true else {
+            throw CoordinatorError.alreadyInFlight
+        }
         pendingVerificationURL = verificationURL
 
         // A companion label only makes sense next to a contested main
