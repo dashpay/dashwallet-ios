@@ -4846,9 +4846,6 @@
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "당신이 선택한 이미지는 Imgur에 익명으로 업로드됩니다.";
 
-/* Usernames */
-"The link you send will be visible only to the network owners" = "당신이 전송한 링크는 대시 네트워크 소유자들만 볼 수 있게 됩니다.";
-
 /* Identities */
 "The main identity can only be chosen from the active wallet" = "기본 아이덴티티는 활성 지갑에서만 선택할 수 있습니다";
 
@@ -6703,3 +6700,12 @@
 
 /* Usernames: unfinished identity top-up */
 "An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first." = "An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first.";
+
+/* Usernames: proof-of-identity link visibility */
+"The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners. You can skip this step." = "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners. You can skip this step.";
+
+/* Usernames: retry funding source changed */
+"Pay from another balance?" = "Pay from another balance?";
+
+/* Usernames: retry funding source changed */
+"You chose to pay for this request from your %1$@, which can't pay for it now. Continuing pays from your %2$@ instead." = "You chose to pay for this request from your %1$@, which can't pay for it now. Continuing pays from your %2$@ instead.";

@@ -610,12 +610,12 @@ public final class DWContestedNameStatusService: NSObject {
     func clearRejected(label: String, for network: Network, identityId: Data?, walletId: Data? = nil) {
         guard let key = Self.rejectedKey(for: network, walletId: walletId),
               var entries = UserDefaults.standard.dictionary(forKey: key) as? [String: String] else { return }
-        let canonical = Self.canonicalLabel(label)
+        let normalized = Self.homographSafe(Self.canonicalLabel(label))
         let before = entries.count
         if let identityId {
-            entries.removeValue(forKey: Self.rejectedEntryKey(label: canonical, identityId: identityId))
+            entries.removeValue(forKey: Self.rejectedEntryKey(label: label, identityId: identityId))
         } else {
-            entries = entries.filter { $0.value != canonical }
+            entries = entries.filter { Self.homographSafe($0.value) != normalized }
         }
         guard entries.count != before else { return }
         if entries.isEmpty {
@@ -625,8 +625,21 @@ public final class DWContestedNameStatusService: NSObject {
         }
     }
 
+    /// Keyed by the DPNS-normalized label (o→0, i/l→1, as `normalizedLabel`
+    /// is), so a request for "alice" and the purchased document "a11ce" — the
+    /// same name to the protocol — find the same entry.
     private nonisolated static func rejectedEntryKey(label: String, identityId: Data) -> String {
-        identityId.hexEncodedString() + "/" + label
+        identityId.hexEncodedString() + "/" + homographSafe(canonicalLabel(label))
+    }
+
+    nonisolated static func homographSafe(_ label: String) -> String {
+        String(label.lowercased().map { character -> Character in
+            switch character {
+            case "o": return "0"
+            case "i", "l": return "1"
+            default: return character
+            }
+        })
     }
 
     private nonisolated static func rejectedKey(for network: Network, walletId: Data? = nil) -> String? {

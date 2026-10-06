@@ -27,6 +27,7 @@ private let kLostContestUsername = "lostContestUsername"
 private let kLostContestWasBlocked = "lostContestWasBlocked"
 private let kCompletedTileUsername = "usernameRegistrationCompletedTile"
 private let kFailedCompanion = "failedCompanionUsernameRecord"
+private let kAcceptedFundingSource = "usernameAcceptedFundingSource"
 
 /// Keeps the Upgrade-to-DashPay banner dismissal attached to the wallet and
 /// network where the user made that choice. A global flag leaks between
@@ -264,5 +265,22 @@ class UsernamePrefs {
             base,
             networkRawValue: WalletEnvironment.networkKind.rawValue,
             walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+    }
+
+    // MARK: - Accepted funding source
+
+    /// The funding source the user accepted for a request, kept per label so
+    /// a retry from a fresh form (which picks a viable source on its own) can
+    /// tell that it is about to pay from a different balance and ask first.
+    func acceptedFundingSourceRaw(forLabel label: String) -> Int? {
+        guard let entries = UserDefaults.standard.dictionary(forKey: scoped(kAcceptedFundingSource)) as? [String: Int]
+        else { return nil }
+        return entries[DWContestedNameStatusService.homographSafe(label.trimmingCharacters(in: .whitespacesAndNewlines))]
+    }
+
+    func recordAcceptedFundingSourceRaw(_ raw: Int, forLabel label: String) {
+        var entries = (UserDefaults.standard.dictionary(forKey: scoped(kAcceptedFundingSource)) as? [String: Int]) ?? [:]
+        entries[DWContestedNameStatusService.homographSafe(label.trimmingCharacters(in: .whitespacesAndNewlines))] = raw
+        UserDefaults.standard.set(entries, forKey: scoped(kAcceptedFundingSource))
     }
 }

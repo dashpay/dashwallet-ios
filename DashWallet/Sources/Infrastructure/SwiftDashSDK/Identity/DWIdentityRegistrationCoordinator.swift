@@ -1763,8 +1763,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 signer: signer)
             Self.logger.info("🪪 IDENT-COORD :: purchased \(name) for \(priceCredits) credits")
             // Bought now: an earlier lost contest for it no longer hides it.
+            // The label as asked for; the store matches DPNS-normalized forms.
             DWContestedNameStatusService.shared.clearRejected(
-                label: normalized, for: network, identityId: identityId, walletId: wallet.walletId)
+                label: name, for: network, identityId: identityId, walletId: wallet.walletId)
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: purchase failed: \(String(describing: error))")
             failedAtPhase = .registrationUsername

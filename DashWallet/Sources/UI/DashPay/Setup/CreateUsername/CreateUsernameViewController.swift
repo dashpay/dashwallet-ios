@@ -151,6 +151,16 @@ struct CreateUsernameView: View {
     /// `acknowledgedUnfinishedTopUp` lets the submission past the warning once
     /// the user has chosen to continue.
     @State private var acknowledgedUnfinishedTopUp = false
+    /// A retry is about to pay from a different source than the one accepted
+    /// for this request: what to submit if the user agrees.
+    @State private var pendingSourceSwitch: PendingSourceSwitch?
+    @State private var showSourceSwitch = false
+    @State private var acknowledgedSourceSwitch = false
+
+    private struct PendingSourceSwitch {
+        let accepted: DWIdentityFundingSource
+        let temporaryUsername: String?
+    }
 
     private enum UnfinishedTopUpContinuation {
         case purchase, contested, plain, submit(temporaryUsername: String?)
@@ -567,6 +577,27 @@ struct CreateUsernameView: View {
                     NSLocalizedString("“%@” has been registered.", comment: "Usernames"),
                     viewModel.username))
             }
+        }
+        .alert(
+            NSLocalizedString("Pay from another balance?", comment: "Usernames: retry funding source changed"),
+            isPresented: $showSourceSwitch,
+            presenting: pendingSourceSwitch
+        ) { pending in
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+                pendingSourceSwitch = nil
+            }
+            Button(NSLocalizedString("Continue", comment: "")) {
+                pendingSourceSwitch = nil
+                acknowledgedSourceSwitch = true
+                performSubmit(temporaryUsername: pending.temporaryUsername)
+            }
+        } message: { pending in
+            Text(String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "You chose to pay for this request from your %1$@, which can't pay for it now. Continuing pays from your %2$@ instead.",
+                    comment: "Usernames: retry funding source changed"),
+                Self.sourceName(pending.accepted),
+                fundingSourceName))
         }
         // `presenting:` hands the amount to the buttons and the message as a
         // value, so dismissal clearing the state cannot lose what was shown.
@@ -1260,7 +1291,11 @@ struct CreateUsernameView: View {
     /// The source the amount alert names, as the privacy page names it.
     private var fundingSourceName: String {
         // The source the top-up will actually come from.
-        switch topUpSource {
+        Self.sourceName(topUpSource)
+    }
+
+    private static func sourceName(_ source: DWIdentityFundingSource) -> String {
+        switch source {
         case .core: return NSLocalizedString("Dash balance", comment: "Usernames")
         case .platformPayment: return NSLocalizedString("Platform balance", comment: "Usernames")
         case .shielded: return NSLocalizedString("Shielded balance", comment: "Usernames")
@@ -1293,6 +1328,24 @@ struct CreateUsernameView: View {
             return
         }
         acknowledgedUnfinishedTopUp = false
+        if !viewModel.isInvitationMode {
+            // A form opened for a retry picks a viable source by itself. When
+            // that is not the source the user accepted for this request — e.g.
+            // Shielded no longer ready, Core picked instead — ask before paying
+            // from a balance they did not choose. A pick made on the privacy
+            // page this visit is the user's own and needs no second question.
+            let label = viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !acknowledgedSourceSwitch, !didUserPickFundingSource,
+               let acceptedRaw = UsernamePrefs.shared.acceptedFundingSourceRaw(forLabel: label),
+               let accepted = DWIdentityFundingSource(rawValue: acceptedRaw),
+               accepted != topUpSource {
+                pendingSourceSwitch = PendingSourceSwitch(accepted: accepted, temporaryUsername: temporaryUsername)
+                showSourceSwitch = true
+                return
+            }
+            acknowledgedSourceSwitch = false
+            UsernamePrefs.shared.recordAcceptedFundingSourceRaw(topUpSource.rawValue, forLabel: label)
+        }
         if !viewModel.isInvitationMode {
             // An identity that already exists — resumed or not — is topped up
             // from this source when it holds less than the name needs, so the
