@@ -105,8 +105,8 @@ final class PaymentController: NSObject {
     @objc var sendInProgressHandler: ((Bool) -> Bool)?
     /// The active wallet's payment to an address still waiting for the
     /// network (`PendingSendOutcomes.waitingPayment(to:)`); tests replace it.
-    var waitingPayment: @MainActor (String) -> PendingSendOutcomes.Entry? = {
-        PendingSendOutcomes.shared.waitingPayment(to: $0)
+    var waitingPayment: @MainActor (String) async -> PendingSendOutcomes.WaitingPayment? = {
+        await PendingSendOutcomes.shared.waitingPayment(to: $0)
     }
     /// The TXSEND log line sink (`DWLogger`, so it reaches exported logs);
     /// tests replace it.
@@ -225,27 +225,47 @@ extension PaymentController: DWPaymentProcessorDelegate {
     /// both. The user is told to wait, and OK returns to the paying screen —
     /// before the PIN prompt and the build, nothing is built or signed. Not
     /// asked again while the confirm sheet is up; other addresses are not
-    /// interrupted.
+    /// interrupted. The answer comes after the stored row is read (off the
+    /// main thread), so it is always asynchronous.
     func paymentProcessor(_ processor: DWPaymentProcessor, shouldPayAddress address: String, isBIP70: Bool, completion: @escaping (Bool) -> Void) {
-        // A confirm sheet on screen was already checked when it opened.
-        guard confirmViewController?.presentingViewController == nil,
-              let waiting = MainActor.assumeIsolated({ waitingPayment(address) }) else {
+        // A sheet no longer on screen is not the one this payment will use:
+        // `presentConfirm` opens a new one.
+        if let vc = confirmViewController, vc.presentingViewController == nil {
+            confirmViewController = nil
+        }
+        // The sheet on screen for this address was checked when it opened.
+        if confirmViewController != nil, paymentOutput?.address == address {
             completion(true)
             return
         }
         let route = paymentRoute(isBIP70: isBIP70)
-        let age = Int(Date().timeIntervalSince(waiting.sentAt))
-        log("💸 TXSEND :: repeat payment refused — route=\(route) to=\(PendingSendOutcomes.masked(address)) pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire)) age=\(age)s wallet=\(waiting.walletId.prefix(4).map { String(format: "%02x", $0) }.joined()) reason=not locked or mined yet, within the 7-day follow window")
-        refuseRepeating(waiting) { [weak self] in
-            self?.log("💸 TXSEND :: repeat payment cancelled on OK — route=\(route) pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire)); no PIN, nothing built")
-            completion(false)
+        Task { @MainActor [weak self] in
+            guard let self else {
+                completion(false)
+                return
+            }
+            guard let waiting = await self.waitingPayment(address) else {
+                completion(true)
+                return
+            }
+            let entry = waiting.entry
+            let age = Int(Date().timeIntervalSince(entry.sentAt))
+            self.log("💸 TXSEND :: repeat payment refused — route=\(route) to=\(PendingSendOutcomes.masked(address)) pending=\(PendingSendOutcomes.shortTxid(entry.txidWire)) age=\(age)s wallet=\(PendingSendOutcomes.walletTag(entry.walletId)) reason=still followed, within the 7-day window (\(waiting.rowFinding))")
+            self.refuseRepeating(entry) { [weak self] in
+                self?.log("💸 TXSEND :: repeat payment cancelled on OK — route=\(route) pending=\(PendingSendOutcomes.shortTxid(entry.txidWire)); no PIN, nothing built")
+                completion(false)
+            }
         }
     }
 
     /// Which flow is paying, for logs.
     private func paymentRoute(isBIP70: Bool) -> String {
         if isBIP70 { return "BIP70" }
-        if provideAmountViewController != nil { return "legacy amount screen" }
+        // Only while it is on screen: the weak reference outlives a screen
+        // left in a navigation stack.
+        if (provideAmountViewController as? UIViewController)?.viewIfLoaded?.window != nil {
+            return "legacy amount screen"
+        }
         switch delegate {
         case is TransferAmountHostingController: return "Coinbase transfer"
         case is PayViewController: return "Pay tab"

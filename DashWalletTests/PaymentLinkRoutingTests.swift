@@ -696,18 +696,23 @@ final class PaymentDialogOutcomeTests: XCTestCase {
     /// prompt or the build, and OK returns to the paying screen.
     func testARepeatPaymentIsRefusedWithANoticeAndOKReturns() throws {
         let root = try XCTUnwrap(window.rootViewController)
+        // Held to the end: the controller keeps its anchor weakly.
         let anchor = AnchorProvider(anchor: root)
+        defer { withExtendedLifetime(anchor) { } }
         let controller = PaymentController()
         controller.presentationContextProvider = anchor
         let waiting = PendingSendOutcomes.Entry(
             txidWire: Data(repeating: 0x9c, count: 32), walletId: Data(repeating: 0x1d, count: 32),
             address: "yAddressForTests", amount: 100_000, sentAt: Date())
-        controller.waitingPayment = { $0 == "yAddressForTests" ? waiting : nil }
+        controller.waitingPayment = {
+            $0 == "yAddressForTests" ? .init(entry: waiting, rowFinding: "row not locked or mined yet") : nil
+        }
         var logged: [String] = []
         controller.log = { logged.append($0) }
 
         var answers: [Bool] = []
         controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "yAddressForTests", isBIP70: true) { answers.append($0) }
+        spin(until: { root.presentedViewController != nil })
         let notice = try XCTUnwrap(root.presentedViewController as? UIHostingController<ModalDialog>, "the notice is up")
         XCTAssertEqual(answers, [], "nothing goes on while it is up")
         XCTAssertNil(notice.rootView.negativeButtonText, "a single OK, no way to send anyway")
@@ -717,6 +722,7 @@ final class PaymentDialogOutcomeTests: XCTestCase {
         XCTAssertTrue(shown.contains("TXSEND") && shown.contains("route=BIP70"), shown)
         XCTAssertTrue(shown.contains("pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire))"), shown)
         XCTAssertTrue(shown.contains("wallet=1d1d1d1d"), shown)
+        XCTAssertTrue(shown.contains("row not locked or mined yet"), "says what the row read found: \(shown)")
         XCTAssertFalse(shown.contains("yAddressForTests"), "never the full address")
 
         notice.rootView.positiveButtonAction()
@@ -727,6 +733,7 @@ final class PaymentDialogOutcomeTests: XCTestCase {
 
         var other: [Bool] = []
         controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "yOtherAddress", isBIP70: false) { other.append($0) }
+        spin(until: { !other.isEmpty })
         XCTAssertEqual(other, [true], "another address is not interrupted")
         XCTAssertEqual(logged.count, 2, "nothing pending: no log")
     }
@@ -798,6 +805,14 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
     func testAFailedReadDecidesNothing() {
         let old = entry(1, age: Policy.missingRowGrace + 3600)
         XCTAssertTrue(decide([old], rows: nil).isEmpty, "a failed read is not \"the row is gone\"")
+    }
+
+    func testAFailedReadStillEndsAFollowPastItsAge() {
+        let young = entry(1, age: 60)
+        let stale = entry(2, age: Policy.maxFollowAge + 60)
+        let decision = decide([young, stale], rows: nil)
+        XCTAssertEqual(decision.expired, [stale.txidWire], "age alone ends the follow, read or not")
+        XCTAssertTrue(decision.settled.isEmpty && decision.gone.isEmpty)
     }
 
     func testALockedOrMinedRowSettlesTheSendAndNotifiesOnce() {

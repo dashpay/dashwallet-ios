@@ -187,7 +187,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         for txid in txidsWire {
             guard let entry = entries.removeValue(forKey: txid) else { continue }
             changed = true
-            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) \(reason), no longer tracked; payments to \(Self.masked(entry.address)) no longer refused")
+            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) \(reason), no longer tracked\(Self.refusalLifted(for: entry.address))")
         }
         if changed { didChangeEntries() }
     }
@@ -198,7 +198,9 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     @objc func forgetAll() {
         notice = nil
         guard !entries.isEmpty else { return }
-        DWLogger.log("💸 TXSEND :: \(entries.count) waiting send(s) no longer tracked: wallet wiped; their addresses (\(entries.values.map { Self.masked($0.address) }.joined(separator: ", "))) no longer refused")
+        let addresses = entries.values.compactMap(\.address).map(Self.masked)
+        DWLogger.log("💸 TXSEND :: \(entries.count) waiting send(s) no longer tracked: wallet wiped"
+            + (addresses.isEmpty ? "" : "; payments to \(addresses.joined(separator: ", ")) no longer refused"))
         entries = [:]
         didChangeEntries()
     }
@@ -210,33 +212,66 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         waitingTxids.withLock { $0.contains(txidWire) }
     }
 
+    /// A send that refuses a payment, and what the read of its stored row
+    /// found (for the log: the refusal does not depend on it).
+    struct WaitingPayment {
+        let entry: Entry
+        let rowFinding: String
+    }
+
     /// The newest send to `address` that the network has not confirmed yet,
     /// in the active wallet.
     ///
     /// Checked against the stored row first, since it refuses a payment: one
     /// already locked or mined is settled here (not left to the next save's
     /// reconcile), and one past `maxFollowAge` stops being followed — its row
-    /// goes back to "Sending" at the same moment the address can be paid.
-    func waitingPayment(to address: String) -> Entry? {
+    /// goes back to "Sending" at the same moment the address can be paid,
+    /// even when the read fails. The read runs off the main thread, as
+    /// `reconcile`'s does; with nothing pending for `address` there is none.
+    func waitingPayment(to address: String) async -> WaitingPayment? {
         let walletId = SwiftDashSDKHost.shared.wallet?.walletId
         let candidates = entries.values.filter { $0.address == address && $0.walletId == walletId }
         guard !candidates.isEmpty, let walletId else { return nil }
-        let rows = SwiftDashSDKWalletSource.fetch(txids: Set(candidates.map(\.txidWire)))
+        let txids = Set(candidates.map(\.txidWire))
+        let snapshot = await Task.detached(priority: .userInitiated) {
+            SwiftDashSDKWalletSource.fetch(txids: txids)
+        }.value
+        let rows = snapshot.map(Self.rowStates(of:))
         settle(
             pending: Dictionary(uniqueKeysWithValues: candidates.map { ($0.txidWire, $0) }),
-            walletId: rows?.walletId ?? walletId,
-            rows: rows.map(Self.rowStates(of:)))
+            walletId: snapshot?.walletId ?? walletId,
+            rows: rows)
         let now = Date()
-        return entries.values
-            .filter { $0.address == address && $0.walletId == walletId
-                && now.timeIntervalSince($0.sentAt) <= Self.maxFollowAge }
-            .max { $0.sentAt < $1.sentAt }
+        guard let entry = entries.values
+            .filter({ $0.address == address && $0.walletId == walletId
+                && now.timeIntervalSince($0.sentAt) <= Self.maxFollowAge })
+            .max(by: { $0.sentAt < $1.sentAt }) else { return nil }
+        let finding: String
+        switch rows.map({ $0[entry.txidWire] }) {
+        case .none: finding = "row read failed"
+        case .some(.none): finding = "row not stored yet"
+        case .some(.some(.processing)): finding = "row not locked or mined yet"
+        case .some(.some(.settled)): finding = "row settled"  // not reached: settled above
+        }
+        return WaitingPayment(entry: entry, rowFinding: finding)
     }
 
     /// `address` shortened for logs: never the full address.
     nonisolated static func masked(_ address: String?) -> String {
         guard let address, address.count > 8 else { return address == nil ? "none" : "…" }
         return "\(address.prefix(4))…\(address.suffix(4))"
+    }
+
+    /// The tail of a "no longer tracked" line: which address payments are no
+    /// longer refused to. Empty for a send that never refused any (no
+    /// address: a CoinJoin sweep chunk, a route that does not know it).
+    nonisolated static func refusalLifted(for address: String?) -> String {
+        address == nil ? "" : "; payments to \(masked(address)) no longer refused"
+    }
+
+    /// A wallet id shortened for logs (first 4 bytes, hex).
+    nonisolated static func walletTag(_ walletId: Data) -> String {
+        Data(walletId.prefix(4)).hexEncodedString()
     }
 
     /// A txid shortened for logs (display order, first 12 hex digits).
@@ -306,10 +341,10 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             await MainActor.run {
                 guard let self else { return }
                 // A failed read is a nil snapshot (nil rows): the policy
-                // decides nothing for it.
+                // decides nothing from the rows, only what age alone ends.
                 self.settle(
                     pending: pending,
-                    walletId: snapshot?.walletId,
+                    walletId: snapshot?.walletId ?? activeWalletId,
                     rows: snapshot.map(Self.rowStates(of:)))
                 self.reconcileInFlight = false
                 if self.reconcileRequestedAgain {
@@ -330,15 +365,15 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         let decision = Self.settlement(
             of: pending, stillFollowed: { [entries] in entries[$0] != nil },
             walletId: walletId, rows: rows, now: Date())
-        func address(_ txid: Data) -> String { Self.masked(pending[txid]?.address) }
+        func lifted(_ txid: Data) -> String { Self.refusalLifted(for: pending[txid]?.address) }
         for txid in decision.expired {
-            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) still unconfirmed after 7 days, no longer tracked; payments to \(address(txid)) no longer refused")
+            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) still unconfirmed after 7 days, no longer tracked\(lifted(txid))")
         }
         for txid in decision.settled {
-            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) settled on chain (locked or mined); payments to \(address(txid)) no longer refused")
+            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) settled on chain (locked or mined)\(lifted(txid))")
         }
         for txid in decision.gone {
-            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) row missing for over 24 h (removed, swept or replaced), no longer tracked; payments to \(address(txid)) no longer refused")
+            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) row missing for over 24 h (removed, swept or replaced), no longer tracked\(lifted(txid))")
         }
         for entry in Self.notifiable(decision.notifying, shownWalletId: shownWalletId) {
             notice = Self.merged(notice, adding: entry.amount)
@@ -404,10 +439,12 @@ extension PendingSendOutcomes {
     /// - Parameters:
     ///   - stillFollowed: whether a send is still followed now; one forgotten
     ///     (removed, wiped) while the rows were being read is left alone.
-    ///   - walletId: the wallet whose rows were read; other wallets' sends are
-    ///     left alone. Nil, with nil `rows`, when the read failed.
+    ///   - walletId: the wallet whose rows were read (or would have been);
+    ///     other wallets' sends are left alone.
     ///   - rows: the rows found, by wire-order txid; nil when the read failed,
-    ///     which decides nothing (a failed read is not "the row is gone").
+    ///     which decides nothing from the rows (a failed read is not "the row
+    ///     is gone"). A send past `maxFollowAge` expires either way: age
+    ///     alone ends the follow.
     nonisolated static func settlement(
         of pending: [Data: Entry],
         stillFollowed: (Data) -> Bool,
@@ -416,10 +453,14 @@ extension PendingSendOutcomes {
         now: Date
     ) -> SettlementDecision {
         var decision = SettlementDecision()
-        guard let rows, let walletId else { return decision }
+        guard let walletId else { return decision }
         for entry in pending.values.sorted(by: { $0.sentAt < $1.sentAt })
         where entry.walletId == walletId && stillFollowed(entry.txidWire) {
             let age = now.timeIntervalSince(entry.sentAt)
+            guard let rows else {
+                if age > maxFollowAge { decision.expired.append(entry.txidWire) }
+                continue
+            }
             switch rows[entry.txidWire] {
             case .processing:
                 if age > maxFollowAge { decision.expired.append(entry.txidWire) }
