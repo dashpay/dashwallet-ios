@@ -1466,7 +1466,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     temporaryUsername, identityId: identityId, walletId: wallet.walletId, container: registrationContainer)
                 registeredTemporaryUsername = temporaryUsername
                 if isRecordScopeCurrent(walletId: wallet.walletId, network: network) {
-                    UsernamePrefs.shared.clearFailedCompanion(forUsername: temporaryUsername)
+                    // This request now has its instant name, whichever one
+                    // failed before.
+                    UsernamePrefs.shared.clearFailedCompanion(forContestedLabel: username)
                 }
                 Self.logger.info("🪪 IDENT-COORD :: temporary DPNS name registered: \(temporaryUsername)")
                 // Push the new label into the identity read model right
@@ -1489,10 +1491,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                         // Raw, worded when shown: the wording follows the
                         // app's language at display time.
                         reason: error.localizedDescription)
-                    // Its own signal, read only by Request details: the
-                    // registration-status announcement is the bridge's, after it
-                    // mirrors the phase, and this attempt is still in flight.
-                    NotificationCenter.default.post(name: UsernamePrefs.failedCompanionDidChange, object: nil)
                 } else {
                     Self.logger.warning("🪪 IDENT-COORD :: failed instant username not recorded — the active wallet or network changed")
                 }

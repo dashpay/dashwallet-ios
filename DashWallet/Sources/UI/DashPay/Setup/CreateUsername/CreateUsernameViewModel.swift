@@ -234,7 +234,7 @@ class CreateUsernameViewModel: ObservableObject {
     }
 
     /// Covers `duffs` from Platform only where the entry offers Platform.
-    private func canOfferPlatformFunding(_ duffs: UInt64) -> Bool {
+    private func offersPlatform(covering duffs: UInt64) -> Bool {
         isAdvancedMode && canFundFromPlatform(duffs)
     }
 
@@ -1300,11 +1300,11 @@ class CreateUsernameViewModel: ObservableObject {
             platformEligible: canFundFromPlatform(requiredDuffs))
         // `hasMinimumRequiredBalance` stays as the legacy OR view —
         // any pre-PR-5 consumer (banner gate, etc.) keeps seeing
-        // "user has enough to register" without caring about source.
-        // Platform counts only where it can be offered (advanced mode), the
-        // same rule as `canOfferPlatformFunding`.
+        // "user has enough to register" without caring about source, Platform
+        // included in either mode. The contested-cost caption below counts
+        // Platform only where the entry offers it (advanced mode).
         hasRecommendedBalance = balance >= DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
-            || canOfferPlatformFunding(UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME))
+            || offersPlatform(covering: UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME))
     }
 }
 

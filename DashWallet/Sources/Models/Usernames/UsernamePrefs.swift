@@ -209,9 +209,6 @@ class UsernamePrefs {
     /// the instant name itself registers, when the contest resolves, or when
     /// Request details finds the name owned. `reason` is the raw error, worded
     /// when shown.
-    /// Posted when the coordinator records a failed instant username.
-    static let failedCompanionDidChange = Notification.Name("DWFailedCompanionUsernameDidChange")
-
     struct FailedCompanion: Equatable, Codable {
         let username: String
         let contestedLabel: String

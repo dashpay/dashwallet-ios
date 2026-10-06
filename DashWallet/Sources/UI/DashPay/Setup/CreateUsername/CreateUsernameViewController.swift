@@ -135,7 +135,8 @@ struct CreateUsernameView: View {
     /// segmented picker, which asked the same question twice. For the paths
     /// that skip that page (invitation, recovery, a retry from the Home row)
     /// `syncFundingSourceToViableSource()` pins the first viable source in
-    /// privacy-descending order (Shielded → Platform → Core). Written into
+    /// privacy-descending order (Shielded → Platform → Core; without advanced
+    /// mode, Shielded → Core → Platform). Written into
     /// `DWIdentityRegistrationBridge.shared.preferredFundingSource` in the
     /// Continue handler right before the submit call.
     @State private var fundingSource: DWIdentityFundingSource = .core
@@ -1189,7 +1190,8 @@ struct CreateUsernameView: View {
             DWIdentityRegistrationBridge.shared.authorizedTopUpDuffs = viewModel.isContestedCandidate
                 ? viewModel.takeConfirmedTopUpCeiling()
                 : nil
-            viewModel.discardConfirmedTopUp()
+            // A non-contested submission confirmed nothing; drop any capture.
+            if !viewModel.isContestedCandidate { viewModel.discardConfirmedTopUp() }
         }
         // Every submission except an invitation claim reports its progress on
         // the More row and this screen steps aside straight after the PIN.
@@ -1324,7 +1326,7 @@ struct CreateUsernameView: View {
 
     /// Keep `fundingSource` pointing at a viable source. With no choice
     /// carried in from the privacy page, pin to the highest-priority viable
-    /// source (Shielded → Platform → Core); with one, never override it.
+    /// source (`viableFundingSources`' order); with one, never override it.
     private func syncFundingSourceToViableSource() {
         defer { viewModel.setActiveFundingSource(fundingSource) }
 

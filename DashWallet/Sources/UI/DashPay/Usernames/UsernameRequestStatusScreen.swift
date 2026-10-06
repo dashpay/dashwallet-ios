@@ -323,9 +323,6 @@ struct UsernameRequestStatusScreen: View {
         .onReceive(NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)) { _ in
             viewModel.refreshFailedCompanion()
         }
-        .onReceive(NotificationCenter.default.publisher(for: UsernamePrefs.failedCompanionDidChange)) { _ in
-            viewModel.refreshFailedCompanion()
-        }
 
         .sheet(isPresented: $showVerifyIdentity) {
             // The library's sheet, not a `NavigationView` with a Cancel item:
