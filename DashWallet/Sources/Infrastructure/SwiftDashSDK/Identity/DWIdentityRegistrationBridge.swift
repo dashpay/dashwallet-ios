@@ -231,7 +231,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
 
     /// Labels compare the way DPNS treats them: trimmed and case-folded.
     private static func verificationKey(_ label: String) -> String {
-        DWContestedNameStatusService.dpnsKey(label)
+        label.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 
     // MARK: - Subscriptions

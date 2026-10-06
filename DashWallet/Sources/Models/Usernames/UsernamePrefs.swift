@@ -27,7 +27,7 @@ private let kLostContestUsername = "lostContestUsername"
 private let kLostContestWasBlocked = "lostContestWasBlocked"
 private let kCompletedTileUsername = "usernameRegistrationCompletedTile"
 private let kFailedCompanion = "failedCompanionUsernameRecord"
-private let kAcceptedFundingSource = "usernameAcceptedFundingSource"
+private let kAcceptedFundingSource = "usernameAcceptedFundingSource.v3"
 
 /// Keeps the Upgrade-to-DashPay banner dismissal attached to the wallet and
 /// network where the user made that choice. A global flag leaks between
@@ -270,63 +270,61 @@ class UsernamePrefs {
     // MARK: - Accepted funding source
 
     /// The funding source a request went out with, kept per label from the
-    /// moment it is submitted until it completes. A retry opens a fresh form,
+    /// moment it is authorized until it completes. A retry opens a fresh form,
     /// which has no memory of the privacy-page pick: it reuses this source
     /// while the source can pay, and asks before paying from another one.
+    ///
+    /// Keyed by wallet id alone: each network gives a seed its own id, so the
+    /// id already names the network.
     func acceptedFundingSourceRaw(forLabel label: String) -> Int? {
-        acceptedFundingSources[DWContestedNameStatusService.dpnsKey(label)]
+        guard let walletIdHex = WalletEnvironment.activeWalletIdHex as String?, !walletIdHex.isEmpty else { return nil }
+        return Self.acceptedFundingSources(walletIdHex: walletIdHex)[DWContestedNameStatusService.dpnsKey(label)]
     }
 
-    func recordAcceptedFundingSourceRaw(_ raw: Int, forLabel label: String) {
-        var entries = acceptedFundingSources
-        entries[DWContestedNameStatusService.dpnsKey(label)] = raw
-        UserDefaults.standard.set(entries, forKey: scoped(kAcceptedFundingSource))
-    }
-
-    func clearAcceptedFundingSource(forLabel label: String) {
-        var entries = acceptedFundingSources
-        guard entries.removeValue(forKey: DWContestedNameStatusService.dpnsKey(label)) != nil else { return }
-        if entries.isEmpty {
-            UserDefaults.standard.removeObject(forKey: scoped(kAcceptedFundingSource))
-        } else {
-            UserDefaults.standard.set(entries, forKey: scoped(kAcceptedFundingSource))
+    static func recordAcceptedFundingSourceRaw(_ raw: Int, forLabel label: String, walletId: Data) {
+        updateAcceptedFundingSources(walletIdHex: walletId.hexEncodedString()) {
+            $0[DWContestedNameStatusService.dpnsKey(label)] = raw
         }
     }
 
-    private var acceptedFundingSources: [String: Int] {
-        (UserDefaults.standard.dictionary(forKey: scoped(kAcceptedFundingSource)) as? [String: Int]) ?? [:]
-    }
-
-    /// Drops `label`'s record for `walletId` on every network, whichever
-    /// wallet is active: a request completes for the wallet that made it.
     static func clearAcceptedFundingSource(forLabel label: String, walletId: Data) {
-        let defaults = UserDefaults.standard
-        let labelKey = DWContestedNameStatusService.dpnsKey(label)
-        for key in acceptedFundingSourceKeys(walletId: walletId) {
-            guard var entries = defaults.dictionary(forKey: key) as? [String: Int],
-                  entries.removeValue(forKey: labelKey) != nil else { continue }
-            if entries.isEmpty {
-                defaults.removeObject(forKey: key)
-            } else {
-                defaults.set(entries, forKey: key)
-            }
+        updateAcceptedFundingSources(walletIdHex: walletId.hexEncodedString()) {
+            $0[DWContestedNameStatusService.dpnsKey(label)] = nil
         }
     }
 
-    /// Every record of `walletId` (every wallet's when nil): re-adding the
-    /// same seed gets the same wallet id, and must not inherit a pick from
-    /// before the wallet was removed or the device wiped.
-    static func resetAcceptedFundingSources(walletId: Data? = nil) {
+    /// Every record of these wallets: re-adding a removed seed gets the same
+    /// ids back, and must not inherit a pick from before the removal.
+    static func resetAcceptedFundingSources<S: Sequence>(walletIds: S) where S.Element == Data {
+        for walletId in walletIds {
+            UserDefaults.standard.removeObject(forKey: acceptedFundingSourceKey(walletIdHex: walletId.hexEncodedString()))
+        }
+    }
+
+    /// Every wallet's records, for the full wipe.
+    static func resetAllAcceptedFundingSources() {
         let defaults = UserDefaults.standard
-        for key in acceptedFundingSourceKeys(walletId: walletId) {
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(kAcceptedFundingSource + ".") {
             defaults.removeObject(forKey: key)
         }
     }
 
-    private static func acceptedFundingSourceKeys(walletId: Data?) -> [String] {
-        let suffix = walletId.map { "." + $0.hexEncodedString() }
-        return UserDefaults.standard.dictionaryRepresentation().keys.filter { key in
-            key.hasPrefix(kAcceptedFundingSource) && (suffix.map { key.hasSuffix($0) } ?? true)
+    private static func acceptedFundingSourceKey(walletIdHex: String) -> String {
+        "\(kAcceptedFundingSource).\(walletIdHex)"
+    }
+
+    private static func acceptedFundingSources(walletIdHex: String) -> [String: Int] {
+        (UserDefaults.standard.dictionary(forKey: acceptedFundingSourceKey(walletIdHex: walletIdHex)) as? [String: Int]) ?? [:]
+    }
+
+    private static func updateAcceptedFundingSources(walletIdHex: String, _ change: (inout [String: Int]) -> Void) {
+        var entries = acceptedFundingSources(walletIdHex: walletIdHex)
+        change(&entries)
+        let key = acceptedFundingSourceKey(walletIdHex: walletIdHex)
+        if entries.isEmpty {
+            UserDefaults.standard.removeObject(forKey: key)
+        } else {
+            UserDefaults.standard.set(entries, forKey: key)
         }
     }
 }

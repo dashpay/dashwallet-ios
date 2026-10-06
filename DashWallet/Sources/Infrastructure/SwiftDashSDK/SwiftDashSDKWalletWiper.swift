@@ -314,7 +314,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // reset mid-vote, create a new wallet, and the new wallet reported the
         // old one's name as still in voting.
         DWContestedNameStatusService.resetForWipe()
-        UsernamePrefs.resetAcceptedFundingSources()
+        UsernamePrefs.resetAllAcceptedFundingSources()
         DWCurrentUserIdentityInfo.resetPendingMainNamesForWipe()
 
         // Clear every network-scoped active-wallet registry entry only after
@@ -872,6 +872,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
         guard walletIds.values.allSatisfy({ !remaining.contains($0) }) else {
             throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
         }
+        // Every network's id of the seed: re-adding it gets the same ids.
+        UsernamePrefs.resetAcceptedFundingSources(walletIds: walletIds.values)
     }
 
     /// Full per-wallet SwiftDashSDK deletion of a single wallet: the Rust

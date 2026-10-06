@@ -759,6 +759,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             newController.enterFailed(lastErrorMessage ?? "")
             throw CoordinatorError.authFailed
         }
+        // A resumed Core lock is not a choice of source.
+        if recoveryLock == nil {
+            recordAcceptedSource(fundingSource, label: username, walletId: wallet.walletId)
+        }
 
         do {
             try validateRegistrationContext(walletId: wallet.walletId, network: network)
@@ -1078,6 +1082,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             lastErrorMessage = CoordinatorError.authFailed.localizedDescription
             newController.enterFailed(lastErrorMessage ?? "")
             throw CoordinatorError.authFailed
+        }
+        if let topUpSource {
+            recordAcceptedSource(topUpSource, label: username, walletId: wallet.walletId)
         }
         do {
             try validateRegistrationContext(walletId: wallet.walletId, network: network)
@@ -2330,6 +2337,16 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             .sink { [weak self] newPhase in
                 self?.handlePhaseChange(newPhase)
             }
+    }
+
+    /// Remembers the source an authorized request pays from, for a retry of
+    /// it to reuse (`UsernamePrefs.acceptedFundingSourceRaw`). Recorded here,
+    /// past the PIN, so a request refused or cancelled before it leaves no
+    /// record, and one that fails afterwards keeps it. An invitation pays
+    /// from the voucher, not from a balance the user picks.
+    private func recordAcceptedSource(_ source: DWIdentityFundingSource, label: String, walletId: Data) {
+        guard source != .invitation else { return }
+        UsernamePrefs.recordAcceptedFundingSourceRaw(source.rawValue, forLabel: label, walletId: walletId)
     }
 
     private func handlePhaseChange(_ newPhase: DWIdentityRegistrationController.Phase) {

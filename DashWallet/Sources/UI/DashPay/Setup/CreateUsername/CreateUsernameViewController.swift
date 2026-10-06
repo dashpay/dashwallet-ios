@@ -1385,15 +1385,6 @@ struct CreateUsernameView: View {
         // it carries the inviter contact request afterwards, which has nowhere
         // else to go.
         let handsOffToStatusRow = !viewModel.isInvitationMode
-        // Remembered for a retry to reuse, from here: a failure after the PIN
-        // but before the registration runs is still a retry of this request.
-        // A PIN cancellation puts the previous record back. A resumed Core
-        // lock is not a choice of source.
-        let requestLabel = viewModel.username
-        let previousAcceptedRaw = UsernamePrefs.shared.acceptedFundingSourceRaw(forLabel: requestLabel)
-        if !viewModel.isInvitationMode, viewModel.registrationRecovery != .pendingCoreAssetLock {
-            UsernamePrefs.shared.recordAcceptedFundingSourceRaw(fundingSource.rawValue, forLabel: requestLabel)
-        }
         Task {
             // `inProgress` keeps the Continue spinner up across the PIN gate.
             // Where the screen hands off, that is all it still does; otherwise
@@ -1442,11 +1433,6 @@ struct CreateUsernameView: View {
                 showVotingSubmitted = true
             case .cancelled:
                 screenLockedAfterAuth = false
-                if let previousAcceptedRaw {
-                    UsernamePrefs.shared.recordAcceptedFundingSourceRaw(previousAcceptedRaw, forLabel: requestLabel)
-                } else {
-                    UsernamePrefs.shared.clearAcceptedFundingSource(forLabel: requestLabel)
-                }
                 break // user backed out of the PIN — stay on screen, allow retry
             case .failure(let message):
                 viewModel.refreshRegistrationRecoveryState()
