@@ -1257,10 +1257,12 @@ class CreateUsernameViewModel: ObservableObject {
         // `hasMinimumRequiredBalance` stays as the legacy OR view —
         // any pre-PR-5 consumer (banner gate, etc.) keeps seeing
         // "user has enough to register" without caring about source.
+        // Platform counts only where it can be offered (advanced mode), the
+        // same rule as `canOfferPlatformFunding`.
         hasRecommendedBalance = balance >= DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
-            || PlatformPaymentIdentityFundingPolicy.canFund(
+            || (isAdvancedMode && PlatformPaymentIdentityFundingPolicy.canFund(
                 candidates: platformFundingCandidates,
-                fundingDuffs: UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME))
+                fundingDuffs: UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME)))
     }
 }
 

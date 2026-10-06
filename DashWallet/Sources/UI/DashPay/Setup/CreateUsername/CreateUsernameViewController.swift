@@ -1073,16 +1073,13 @@ struct CreateUsernameView: View {
     ///   companion from that round. Android skips it the same way
     ///   (`hasSecondaryName()`).
     private func confirmRequestAccepted() {
-        // What the sheet just showed, before any later balance refresh can
-        // move it. The requested pass starts the figure; the companion pass
-        // adds what it showed for the second name.
-        if existingIdentityTopUpDuffs(nameCount: 1) != nil {
-            confirmedTopUpDuffs = isNamingInstantUsername
-                ? (confirmedTopUpDuffs ?? 0) + confirmationAmountDuffs
-                : confirmationAmountDuffs
-        } else {
-            confirmedTopUpDuffs = nil
-        }
+        // What the sheets showed, before any later balance refresh can move
+        // it. The requested pass starts the figure; the companion pass shows
+        // what its name adds on top of that captured figure, so the two always
+        // sum to what was on screen. A new identity's figure is the ceiling for
+        // an identity the create path ends up reusing instead.
+        let alreadyConfirmed = isNamingInstantUsername ? (confirmedTopUpDuffs ?? 0) : 0
+        confirmedTopUpDuffs = alreadyConfirmed + confirmationAmountDuffs
         if isNamingInstantUsername {
             sheetFollowUp = .submit(temporaryUsername: viewModel.temporaryField.trimmedText)
         } else if identityOwnsUsername {
@@ -1135,7 +1132,12 @@ struct CreateUsernameView: View {
     private var confirmationAmountDuffs: UInt64 {
         if let single = existingIdentityTopUpDuffs(nameCount: 1) {
             guard isNamingInstantUsername else { return single }
-            return (existingIdentityTopUpDuffs(nameCount: 2) ?? single) - single
+            // Relative to the figure already confirmed for the requested name,
+            // not to a fresh one-name figure: the two sheets then add up to the
+            // two-name top-up as it stands now.
+            let total = existingIdentityTopUpDuffs(nameCount: 2) ?? single
+            let confirmed = confirmedTopUpDuffs ?? single
+            return total > confirmed ? total - confirmed : 0
         }
         if isNamingInstantUsername { return 0 }
         if DWCurrentUserIdentityInfo.shared.hasIdentity {
@@ -1173,6 +1175,14 @@ struct CreateUsernameView: View {
     /// a stale picker value can't leak into a future attempt; this
     /// single write is the only synchronization needed.
     private func performSubmit(temporaryUsername: String? = nil) {
+        // Another registration is running (started from Identities or an
+        // invitation): refuse before touching the bridge state it still reads
+        // — the funding source, top-up ceiling and companion it was given.
+        if DWIdentityRegistrationCoordinator.shared.phase.isActive {
+            registrationErrorMessage = DWIdentityRegistrationCoordinator.CoordinatorError.alreadyInFlight.localizedDescription
+            confirmedTopUpDuffs = nil
+            return
+        }
         if !viewModel.isInvitationMode {
             // An identity that already exists — resumed or not — is topped up
             // from this source when it holds less than the name needs, so the

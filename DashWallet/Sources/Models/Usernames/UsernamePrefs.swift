@@ -124,10 +124,7 @@ class UsernamePrefs {
     }
 
     private var inFlightRegistrationUsernameKey: String {
-        JoinDashPayDismissalScope.scopedKey(
-            kInFlightRegistrationUsername,
-            networkRawValue: WalletEnvironment.networkKind.rawValue,
-            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+        scoped(kInFlightRegistrationUsername)
     }
 
     /// The username whose registration finished and whose success tile the user
@@ -190,24 +187,15 @@ class UsernamePrefs {
     }
 
     private var lostContestWasBlockedKey: String {
-        JoinDashPayDismissalScope.scopedKey(
-            kLostContestWasBlocked,
-            networkRawValue: WalletEnvironment.networkKind.rawValue,
-            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+        scoped(kLostContestWasBlocked)
     }
 
     private var lostContestUsernameKey: String {
-        JoinDashPayDismissalScope.scopedKey(
-            kLostContestUsername,
-            networkRawValue: WalletEnvironment.networkKind.rawValue,
-            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+        scoped(kLostContestUsername)
     }
 
     private var completedTileUsernameKey: String {
-        JoinDashPayDismissalScope.scopedKey(
-            kCompletedTileUsername,
-            networkRawValue: WalletEnvironment.networkKind.rawValue,
-            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+        scoped(kCompletedTileUsername)
     }
 
     // MARK: - Instant (companion) username failure

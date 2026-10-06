@@ -665,14 +665,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 try await self.createIdentityAndUsername(
                     username, fundingSource: fundingSource, invitationURI: invitationURI,
                     temporaryUsername: temporaryUsername, wallet: wallet,
-                    network: network, modelContainer: modelContainer)
+                    network: network, modelContainer: modelContainer,
+                    authorizedTopUpDuffs: authorizedTopUpDuffs)
             })
     }
 
     private func createIdentityAndUsername(
         _ username: String, fundingSource: DWIdentityFundingSource,
         invitationURI: String?, temporaryUsername: String?, wallet: ManagedPlatformWallet,
-        network: Network, modelContainer: ModelContainer
+        network: Network, modelContainer: ModelContainer, authorizedTopUpDuffs: UInt64? = nil
     ) async throws -> Identifier {
         let recoveryLock = lookupRegistrationRecoveryLock(
             walletId: wallet.walletId,
@@ -819,7 +820,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // An invitation voucher cannot top up, so that path never tries.
         let topUp: IdentityTopUpPlan? = fundedNow || currentFundingSource == .invitation
             ? nil
-            : IdentityTopUpPlan(source: currentFundingSource, modelContainer: modelContainer)
+            // Capped at what the user confirmed, as on the resume path.
+            : IdentityTopUpPlan(
+                source: currentFundingSource, modelContainer: modelContainer,
+                authorizedDuffs: authorizedTopUpDuffs)
         return try await finishUsernameRegistration(
             identityId: identityId, username: username, temporaryUsername: temporaryUsername,
             wallet: wallet, network: network, signer: signer, newController: newController,
@@ -1081,6 +1085,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             topUp: topUpSource.map {
                 IdentityTopUpPlan(source: $0, modelContainer: container, authorizedDuffs: authorizedTopUpDuffs)
             })
+    }
+
+    /// Whether the wallet+network scope the UsernamePrefs registration records
+    /// key off is still this registration's. Narrower than
+    /// `validateRegistrationContext`: a record only needs the scope, not an
+    /// identity snapshot that may be mid-refresh.
+    private func isRecordScopeCurrent(walletId: Data, network: Network) -> Bool {
+        WalletEnvironment.network == network
+            && (WalletEnvironment.activeWalletIdHex as String?) == walletId.hexEncodedString()
     }
 
     private func validateRegistrationContext(walletId: Data, network: Network) throws {
@@ -1438,7 +1451,11 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 DWCurrentUserIdentityInfo.persistConfirmedUsername(
                     temporaryUsername, identityId: identityId, walletId: wallet.walletId, container: registrationContainer)
                 registeredTemporaryUsername = temporaryUsername
-                UsernamePrefs.shared.failedCompanion = nil
+                if isRecordScopeCurrent(walletId: wallet.walletId, network: network),
+                   let failed = UsernamePrefs.shared.failedCompanion,
+                   DWContestedNameStatusService.labelsMatch(failed.username, temporaryUsername) {
+                    UsernamePrefs.shared.failedCompanion = nil
+                }
                 Self.logger.info("🪪 IDENT-COORD :: temporary DPNS name registered: \(temporaryUsername)")
                 // Push the new label into the identity read model right
                 // away (same post-registration refresh the marketplace's
@@ -1453,13 +1470,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 // learns the instant name is missing and can try it again.
                 // Written only while the registration's wallet and network are
                 // still the active ones, which is the scope the record uses.
-                if (try? validateRegistrationContext(walletId: wallet.walletId, network: network)) != nil {
+                if isRecordScopeCurrent(walletId: wallet.walletId, network: network) {
                     UsernamePrefs.shared.failedCompanion = .init(
                         username: temporaryUsername,
                         contestedLabel: username,
                         reason: UsernameRegistrationFailureWording.message(
                             forRaw: error.localizedDescription, username: temporaryUsername))
                     NotificationCenter.default.post(name: .DWDashPayRegistrationStatusUpdated, object: nil)
+                } else {
+                    Self.logger.warning("🪪 IDENT-COORD :: failed instant username not recorded — the active wallet or network changed")
                 }
             }
         }

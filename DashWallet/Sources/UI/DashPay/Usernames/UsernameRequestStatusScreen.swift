@@ -77,6 +77,15 @@ final class UsernameRequestStatusViewModel: ObservableObject {
             failedCompanion = nil
             return
         }
+        // A retry of that name is running: no "could not be registered" and no
+        // second Try again while it is still being decided.
+        let coordinator = DWIdentityRegistrationCoordinator.shared
+        if coordinator.phase.isActive,
+           let running = coordinator.currentUsername,
+           DWContestedNameStatusService.labelsMatch(running, failed.username) {
+            failedCompanion = nil
+            return
+        }
         let identity = DWCurrentUserIdentityInfo.shared
         if identity.usernames.contains(where: { DWContestedNameStatusService.labelsMatch($0, failed.username) }) {
             // The retry registered it: nothing is missing any more.
@@ -301,7 +310,7 @@ struct UsernameRequestStatusScreen: View {
         .onReceive(NotificationCenter.default.publisher(for: .DWUsernameRegistrationReportChanged)) { _ in
             viewModel.refreshFailedCompanion()
         }
-        .onAppear { viewModel.refreshFailedCompanion() }
+
         .sheet(isPresented: $showVerifyIdentity) {
             // The library's sheet, not a `NavigationView` with a Cancel item:
             // its close control is the way out, and the screen carries its own
