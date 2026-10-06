@@ -184,8 +184,9 @@ public final class DWIdentityRegistrationBridge: NSObject {
 
     /// Whether `preferredFundingSource` is the user's own pick, so the
     /// coordinator may remember it for a retry. Set by the SwiftUI form on
-    /// each submit, and consumed by the next start or retry — a later caller
-    /// that never sets it reads false, not a previous attempt's answer.
+    /// each submit. Same lifecycle as `preferredFundingSource`: kept across
+    /// `.failed`, so a retry through `retry`/`createUsername:` that pays from
+    /// the preserved source also remembers it; reset on `.completed`.
     var isFundingSourceUserChoice = false
 
     /// Non-contested companion ("temporary") username to register in the
@@ -268,7 +269,6 @@ public final class DWIdentityRegistrationBridge: NSObject {
     ) {
         let source = preferredFundingSource
         let remembersSource = isFundingSourceUserChoice
-        isFundingSourceUserChoice = false
         let temporaryUsername = sanitizedTemporaryUsername(for: username)
         let verificationURL = sanitizedVerificationURL(for: username)
         let authorizedTopUpDuffs = authorizedTopUpDuffs
@@ -298,7 +298,6 @@ public final class DWIdentityRegistrationBridge: NSObject {
     ) {
         let source = preferredFundingSource
         let remembersSource = isFundingSourceUserChoice
-        isFundingSourceUserChoice = false
         let temporaryUsername = sanitizedTemporaryUsername(for: username)
         let authorizedTopUpDuffs = authorizedTopUpDuffs
         Self.logger.info("🪪 IDENT-BRIDGE :: retry username=\(username, privacy: .public) funding=\(source.logLabel, privacy: .public)")
@@ -473,6 +472,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         // strand a PP-only wallet on a path that has no Core balance.
         if case .completed = phase {
             preferredFundingSource = .core
+            isFundingSourceUserChoice = false
             pendingTemporaryUsername = nil
             authorizedTopUpDuffs = nil
             pendingVerification = nil

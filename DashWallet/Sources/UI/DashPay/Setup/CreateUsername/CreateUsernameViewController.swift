@@ -1344,9 +1344,10 @@ struct CreateUsernameView: View {
         // before paying from a balance the user did not choose. A pick made on
         // the privacy page this visit is the user's own and needs no second
         // question; resuming a paid Core lock moves no new money.
+        let acceptedRaw = UsernamePrefs.shared.acceptedFundingSourceRaw(forLabel: viewModel.username)
         if !acknowledgedSourceSwitch, !didUserPickFundingSource, !viewModel.isInvitationMode,
            viewModel.registrationRecovery != .pendingCoreAssetLock,
-           let acceptedRaw = UsernamePrefs.shared.acceptedFundingSourceRaw(forLabel: viewModel.username),
+           let acceptedRaw,
            let accepted = DWIdentityFundingSource(rawValue: acceptedRaw),
            accepted != fundingSource, !viableFundingSources.contains(accepted) {
             pendingSourceSwitch = PendingSourceSwitch(accepted: accepted, temporaryUsername: temporaryUsername)
@@ -1374,7 +1375,6 @@ struct CreateUsernameView: View {
             // the privacy page, agreed to at the switch question, or the one
             // they accepted before. A source the form chose by itself, or the
             // Core a paid lock forces, is not.
-            let acceptedRaw = UsernamePrefs.shared.acceptedFundingSourceRaw(forLabel: viewModel.username)
             DWIdentityRegistrationBridge.shared.isFundingSourceUserChoice =
                 viewModel.registrationRecovery != .pendingCoreAssetLock
                     && (didUserPickFundingSource || consentedToSourceSwitch || acceptedRaw == fundingSource.rawValue)

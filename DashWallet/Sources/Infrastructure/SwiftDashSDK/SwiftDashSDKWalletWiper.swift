@@ -856,6 +856,12 @@ final class SwiftDashSDKWalletWiper: NSObject {
                             walletId,
                             preservingSharedSecrets: deletion.preservesSharedSecrets)
                     })
+                // This leg's wallet is gone even if a later leg fails. A
+                // sweep leg shares the authoritative devnet leg's id and runs
+                // first, so it leaves the record to that leg.
+                if !deletion.preservesSharedSecrets {
+                    UsernamePrefs.resetAcceptedFundingSources(walletIds: [deletion.walletId])
+                }
 
                 let kind = WalletEnvironment.networkKind(for: deletion.network)
                 if WalletEnvironment.activeWalletId(for: kind) == deletion.walletId {
