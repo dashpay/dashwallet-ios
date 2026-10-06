@@ -491,6 +491,7 @@ final class WalletsViewModel: ObservableObject {
             reload()
             return
         }
+        UsernamePrefs.resetAcceptedFundingSources(walletId: walletId)
         state.finish()
         let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
         DWLogger.log("🔁 WALLETOP [\(opID)] remove done in \(ms)ms")

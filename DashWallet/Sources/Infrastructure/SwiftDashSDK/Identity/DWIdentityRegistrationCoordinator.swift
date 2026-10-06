@@ -2376,9 +2376,12 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 DWCurrentUserIdentityInfo.shared.promoteToMainName(
                     username, identityId: completedIdentityId, walletId: walletId, network: network)
             }
-            // The request went through; a later one for this label is a new
-            // request with a fresh choice of source.
-            UsernamePrefs.shared.clearAcceptedFundingSource(forLabel: username)
+        }
+        // The request went through; a later one for this label is a new
+        // request with a fresh choice of source. Keyed by the wallet that
+        // made it, which a switch may have made inactive meanwhile.
+        if case .completed = newPhase, let username = currentUsername, let walletId = registrationWalletId {
+            UsernamePrefs.clearAcceptedFundingSource(forLabel: username, walletId: walletId)
         }
 
         // The registering wallet now owns an identity: drop its

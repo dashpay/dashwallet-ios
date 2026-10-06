@@ -314,7 +314,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // reset mid-vote, create a new wallet, and the new wallet reported the
         // old one's name as still in voting.
         DWContestedNameStatusService.resetForWipe()
-        UsernamePrefs.resetAcceptedFundingSourcesForWipe()
+        UsernamePrefs.resetAcceptedFundingSources()
         DWCurrentUserIdentityInfo.resetPendingMainNamesForWipe()
 
         // Clear every network-scoped active-wallet registry entry only after

@@ -283,8 +283,8 @@ public final class DWContestedNameStatusService: NSObject {
 
     /// The label as DPNS identifies a name: canonical form, then the
     /// protocol's homograph folding (o→0, i and l→1). Two labels with the same
-    /// key are one name to the network, so every store keyed by label uses
-    /// this. The folding is a consensus rule, not a lookup, so it is done
+    /// key are one name to the network, so the label-keyed records — rejected
+    /// labels, accepted funding sources, the pending proof link — use this. The folding is a consensus rule, not a lookup, so it is done
     /// here rather than through the SDK, which may not be running yet.
     nonisolated static func dpnsKey(_ label: String) -> String {
         String(canonicalLabel(label).map { character -> Character in
@@ -632,7 +632,8 @@ public final class DWContestedNameStatusService: NSObject {
         // Matched on the stored value, not the entry key: entries written
         // before the key was folded are keyed by the plain label.
         entries = entries.filter { entry in
-            !(prefix.map { entry.key.hasPrefix($0) } ?? true) || Self.dpnsKey(entry.value) != labelKey
+            if let prefix, !entry.key.hasPrefix(prefix) { return true }
+            return Self.dpnsKey(entry.value) != labelKey
         }
         guard entries.count != before else { return }
         if entries.isEmpty {

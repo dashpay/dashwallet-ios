@@ -270,7 +270,7 @@ class UsernamePrefs {
     // MARK: - Accepted funding source
 
     /// The funding source a request went out with, kept per label from the
-    /// moment it is authorized until it completes. A retry opens a fresh form,
+    /// moment it is submitted until it completes. A retry opens a fresh form,
     /// which has no memory of the privacy-page pick: it reuses this source
     /// while the source can pay, and asks before paying from another one.
     func acceptedFundingSourceRaw(forLabel label: String) -> Int? {
@@ -297,12 +297,36 @@ class UsernamePrefs {
         (UserDefaults.standard.dictionary(forKey: scoped(kAcceptedFundingSource)) as? [String: Int]) ?? [:]
     }
 
-    /// Every wallet's and network's record: a restore of the same seed gets
-    /// the same wallet id, and must not inherit a pick from before the wipe.
-    static func resetAcceptedFundingSourcesForWipe() {
+    /// Drops `label`'s record for `walletId` on every network, whichever
+    /// wallet is active: a request completes for the wallet that made it.
+    static func clearAcceptedFundingSource(forLabel label: String, walletId: Data) {
         let defaults = UserDefaults.standard
-        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(kAcceptedFundingSource) {
+        let labelKey = DWContestedNameStatusService.dpnsKey(label)
+        for key in acceptedFundingSourceKeys(walletId: walletId) {
+            guard var entries = defaults.dictionary(forKey: key) as? [String: Int],
+                  entries.removeValue(forKey: labelKey) != nil else { continue }
+            if entries.isEmpty {
+                defaults.removeObject(forKey: key)
+            } else {
+                defaults.set(entries, forKey: key)
+            }
+        }
+    }
+
+    /// Every record of `walletId` (every wallet's when nil): re-adding the
+    /// same seed gets the same wallet id, and must not inherit a pick from
+    /// before the wallet was removed or the device wiped.
+    static func resetAcceptedFundingSources(walletId: Data? = nil) {
+        let defaults = UserDefaults.standard
+        for key in acceptedFundingSourceKeys(walletId: walletId) {
             defaults.removeObject(forKey: key)
+        }
+    }
+
+    private static func acceptedFundingSourceKeys(walletId: Data?) -> [String] {
+        let suffix = walletId.map { "." + $0.hexEncodedString() }
+        return UserDefaults.standard.dictionaryRepresentation().keys.filter { key in
+            key.hasPrefix(kAcceptedFundingSource) && (suffix.map { key.hasSuffix($0) } ?? true)
         }
     }
 }

@@ -429,6 +429,11 @@ struct CreateUsernameView: View {
         .onChange(of: viewModel.hasPendingRegistrationRecovery) { _ in
             syncFundingSourceToViableSource()
         }
+        // The accepted source is per label: a retry form whose label is
+        // edited to another request's must pick that request's source.
+        .onChange(of: viewModel.username) { _ in
+            syncFundingSourceToViableSource()
+        }
         .onChange(of: viewModel.identityTopUpDuffs) { _ in
             // Whether Shielded can pay turns on the existing identity's
             // shortfall, which moves without the readiness snapshot changing.
@@ -1380,11 +1385,15 @@ struct CreateUsernameView: View {
         // it carries the inviter contact request afterwards, which has nowhere
         // else to go.
         let handsOffToStatusRow = !viewModel.isInvitationMode
-        // Remembered once the request is authorized, for a retry to reuse; a
-        // resumed Core lock is not a choice of source.
-        let acceptedSource: DWIdentityFundingSource? = viewModel.isInvitationMode
-            || viewModel.registrationRecovery == .pendingCoreAssetLock ? nil : fundingSource
+        // Remembered for a retry to reuse, from here: a failure after the PIN
+        // but before the registration runs is still a retry of this request.
+        // A PIN cancellation puts the previous record back. A resumed Core
+        // lock is not a choice of source.
         let requestLabel = viewModel.username
+        let previousAcceptedRaw = UsernamePrefs.shared.acceptedFundingSourceRaw(forLabel: requestLabel)
+        if !viewModel.isInvitationMode, viewModel.registrationRecovery != .pendingCoreAssetLock {
+            UsernamePrefs.shared.recordAcceptedFundingSourceRaw(fundingSource.rawValue, forLabel: requestLabel)
+        }
         Task {
             // `inProgress` keeps the Continue spinner up across the PIN gate.
             // Where the screen hands off, that is all it still does; otherwise
@@ -1401,9 +1410,6 @@ struct CreateUsernameView: View {
                     // the PIN prompt was answered. The work itself lives in
                     // the app-scoped coordinator and outlives this screen.
                     didHandOff = true
-                    if let acceptedSource {
-                        UsernamePrefs.shared.recordAcceptedFundingSourceRaw(acceptedSource.rawValue, forLabel: requestLabel)
-                    }
                     // The label the registration actually went out under, not
                     // a second normalization of the field: the two must name
                     // the same attempt or the row reports an interruption for
@@ -1436,6 +1442,11 @@ struct CreateUsernameView: View {
                 showVotingSubmitted = true
             case .cancelled:
                 screenLockedAfterAuth = false
+                if let previousAcceptedRaw {
+                    UsernamePrefs.shared.recordAcceptedFundingSourceRaw(previousAcceptedRaw, forLabel: requestLabel)
+                } else {
+                    UsernamePrefs.shared.clearAcceptedFundingSource(forLabel: requestLabel)
+                }
                 break // user backed out of the PIN — stay on screen, allow retry
             case .failure(let message):
                 viewModel.refreshRegistrationRecoveryState()
