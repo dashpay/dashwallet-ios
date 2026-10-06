@@ -454,21 +454,20 @@ class CreateUsernameViewModel: ObservableObject {
         return newIdentityFundingDuffs(isContested: isContested)
     }
 
+    /// Whether registering the typed name as `nameCount` names moves money
+    /// from the funding source: a new identity is funded from it, and an
+    /// existing one is topped up from it when its credits fall short.
+    func registrationMovesFunds(nameCount: UInt64) -> Bool {
+        guard let topUp = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount)
+        else { return true }
+        return topUp > 0
+    }
+
     /// What the chosen source sends to top up the existing identity so it can
     /// register `nameCount` names (the coordinator's own formula, from the
     /// persisted balance), or nil when there is no existing identity to top
     /// up. The confirmation sheet shows this figure and the submission carries
     /// it as the ceiling the coordinator may spend without asking again.
-    /// Whether a registration of the typed name moves money from the funding
-    /// source: a new identity is funded from it, and an existing one is
-    /// topped up from it when its credits fall short. Judged for the larger
-    /// two-name contested request, which the companion may still add.
-    var registrationMovesFundsFromSource: Bool {
-        guard let topUp = existingIdentityTopUpDuffs(
-            isContested: isContestedCandidate, nameCount: isContestedCandidate ? 2 : 1) else { return true }
-        return topUp > 0
-    }
-
     func existingIdentityTopUpDuffs(isContested: Bool, nameCount: UInt64) -> UInt64? {
         existingIdentityCredits.map { held in
             DWIdentityRegistrationCoordinator.identityTopUpDuffs(

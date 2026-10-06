@@ -238,7 +238,8 @@ public final class DWContestedNameStatusService: NSObject {
     func clearPending(label: String, for network: Network, walletId: Data? = nil) {
         guard let key = Self.entriesKey(for: network, walletId: walletId) else { return }
         var entries = Self.entries(for: network, walletId: walletId)
-        entries.removeValue(forKey: Self.bookmarkKey(for: label, in: entries))
+        // Every spelling of the name: an older store can hold two.
+        entries = entries.filter { !Self.labelsMatch($0.key, label) }
         if entries.isEmpty {
             UserDefaults.standard.removeObject(forKey: key)
         } else {
@@ -302,11 +303,15 @@ public final class DWContestedNameStatusService: NSObject {
         pendingLabels.contains { Self.labelsMatch(label, $0) }
     }
 
-    /// The key `label`'s bookmark is stored under: an existing entry for the
-    /// same DPNS name (`labelsMatch`) — Platform can hand back "a11ce" for a
-    /// bookmark written as "alice" — or else the canonical label.
+    /// The key `label`'s bookmark is read and written under: the canonical
+    /// label when an entry has it, else an existing entry for the same DPNS
+    /// name (`labelsMatch`) — Platform can hand back "a11ce" for a bookmark
+    /// written as "alice" — else the canonical label. Deterministic when a
+    /// store written before matching was folded holds both spellings.
     private nonisolated static func bookmarkKey<Value>(for label: String, in entries: [String: Value]) -> String {
-        entries.keys.first { labelsMatch($0, label) } ?? canonicalLabel(label)
+        let canonical = canonicalLabel(label)
+        if entries[canonical] != nil { return canonical }
+        return entries.keys.filter { labelsMatch($0, label) }.min() ?? canonical
     }
 
     private nonisolated static func canonicalLabel(_ label: String) -> String {
