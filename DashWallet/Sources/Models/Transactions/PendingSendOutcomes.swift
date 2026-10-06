@@ -101,6 +101,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// every payment to its address, for good. Its row goes back to
     /// "Sending", where Remove if Not on Network is offered.
     nonisolated static let maxFollowAge: TimeInterval = 7 * 24 * 60 * 60
+    /// `maxFollowAge` in whole days, for logs.
+    nonisolated static var maxFollowDays: Int { Int(maxFollowAge / (24 * 60 * 60)) }
     /// A send that settles this soon after it was recorded settled while its
     /// "Waiting for the network" notice is still being read: no second
     /// "went through" message on top of it.
@@ -218,17 +220,17 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// Decided from memory, at once: no row is read on the payment's path.
     /// With any send followed to `address` (refusing or aged out), the rows
     /// are re-read in the background (`reconcile`), so one that settled or
-    /// aged out since the last read is classified from its row and stops
-    /// refusing for the next try, its history row leaving "Waiting for the
-    /// network" at the same moment.
+    /// aged out since the last read is classified from its row and its
+    /// history row leaves "Waiting for the network". A send past
+    /// `maxFollowAge` stops refusing at once, read or not.
     func waitingPayment(to address: String) -> Entry? {
-        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
-              entries.values.contains(where: { $0.address == address && $0.walletId == walletId }) else { return nil }
+        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId else { return nil }
+        let followed = entries.values.filter { $0.address == address && $0.walletId == walletId }
+        guard !followed.isEmpty else { return nil }
         reconcile()
         let now = Date()
-        return entries.values
-            .filter { $0.address == address && $0.walletId == walletId
-                && now.timeIntervalSince($0.sentAt) <= Self.maxFollowAge }
+        return followed
+            .filter { now.timeIntervalSince($0.sentAt) <= Self.maxFollowAge }
             .max { $0.sentAt < $1.sentAt }
     }
 
@@ -247,7 +249,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
 
     /// The same for several sends: each address once.
     nonisolated static func refusalLifted(for addresses: [String]) -> String {
-        let shown = Set(Set(addresses).map(masked)).sorted()
+        // Distinct addresses, each listed even when two mask alike.
+        let shown = Set(addresses).sorted().map(masked)
         return shown.isEmpty ? "" : "; payments to \(shown.joined(separator: ", ")) no longer refused"
     }
 
@@ -323,10 +326,10 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             await MainActor.run {
                 guard let self else { return }
                 // A failed read is a nil snapshot (nil rows): the policy
-                // decides nothing from the rows, only what age alone ends.
+                // decides nothing for it.
                 self.settle(
                     pending: pending,
-                    walletId: snapshot?.walletId ?? activeWalletId,
+                    walletId: snapshot?.walletId,
                     rows: snapshot.map(Self.rowStates(of:)))
                 self.reconcileInFlight = false
                 if self.reconcileRequestedAgain {
@@ -349,8 +352,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             walletId: walletId, rows: rows, now: Date())
         func lifted(_ txid: Data) -> String { Self.refusalLifted(for: pending[txid]?.address) }
         for txid in decision.expired {
-            let state = rows == nil ? "followed for 7 days (its row could not be read)" : "still unconfirmed after 7 days"
-            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) \(state), no longer tracked\(lifted(txid))")
+            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) still unconfirmed after \(Self.maxFollowDays) days, no longer tracked\(lifted(txid))")
         }
         for txid in decision.settled {
             DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) settled on chain (locked or mined)\(lifted(txid))")
@@ -422,12 +424,11 @@ extension PendingSendOutcomes {
     /// - Parameters:
     ///   - stillFollowed: whether a send is still followed now; one forgotten
     ///     (removed, wiped) while the rows were being read is left alone.
-    ///   - walletId: the wallet whose rows were read (or would have been);
-    ///     other wallets' sends are left alone.
+    ///   - walletId: the wallet whose rows were read; other wallets' sends are
+    ///     left alone. Nil, with nil `rows`, when the read failed.
     ///   - rows: the rows found, by wire-order txid; nil when the read failed,
-    ///     which decides nothing from the rows (a failed read is not "the row
-    ///     is gone"). A send past `maxFollowAge` expires either way: age
-    ///     alone ends the follow.
+    ///     which decides nothing (a failed read is not "the row is gone", and
+    ///     a send past `maxFollowAge` may have settled: the next read tells).
     nonisolated static func settlement(
         of pending: [Data: Entry],
         stillFollowed: (Data) -> Bool,
@@ -436,14 +437,10 @@ extension PendingSendOutcomes {
         now: Date
     ) -> SettlementDecision {
         var decision = SettlementDecision()
-        guard let walletId else { return decision }
+        guard let rows, let walletId else { return decision }
         for entry in pending.values.sorted(by: { $0.sentAt < $1.sentAt })
         where entry.walletId == walletId && stillFollowed(entry.txidWire) {
             let age = now.timeIntervalSince(entry.sentAt)
-            guard let rows else {
-                if age > maxFollowAge { decision.expired.append(entry.txidWire) }
-                continue
-            }
             switch rows[entry.txidWire] {
             case .processing:
                 if age > maxFollowAge { decision.expired.append(entry.txidWire) }

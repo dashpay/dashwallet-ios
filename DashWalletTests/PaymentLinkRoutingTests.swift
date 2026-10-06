@@ -801,14 +801,8 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
     func testAFailedReadDecidesNothing() {
         let old = entry(1, age: Policy.missingRowGrace + 3600)
         XCTAssertTrue(decide([old], rows: nil).isEmpty, "a failed read is not \"the row is gone\"")
-    }
-
-    func testAFailedReadStillEndsAFollowPastItsAge() {
-        let young = entry(1, age: 60)
-        let stale = entry(2, age: Policy.maxFollowAge + 60)
-        let decision = decide([young, stale], rows: nil)
-        XCTAssertEqual(decision.expired, [stale.txidWire], "age alone ends the follow, read or not")
-        XCTAssertTrue(decision.settled.isEmpty && decision.gone.isEmpty)
+        let stale = entry(2, age: Policy.maxFollowAge + 3600)
+        XCTAssertTrue(decide([stale], rows: nil).isEmpty, "nor \"unconfirmed\": it may have settled, the next read tells")
     }
 
     func testALockedOrMinedRowSettlesTheSendAndNotifiesOnce() {

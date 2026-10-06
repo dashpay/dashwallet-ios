@@ -224,22 +224,22 @@ extension PaymentController: DWPaymentProcessorDelegate {
     /// not made: the earlier one may yet arrive, and the recipient would get
     /// both. The user is told to wait, and OK returns to the paying screen —
     /// before the PIN prompt and the build, nothing is built or signed. Not
-    /// asked again for the address of the confirm sheet on screen (checked
-    /// when it opened); any other address is checked. Other addresses are
-    /// not interrupted.
+    /// asked while a confirm sheet is on screen (it was checked when it
+    /// opened); a sheet no longer on screen is forgotten first. Other
+    /// addresses are not interrupted.
     ///
     /// Decided from memory, before the call returns: no row is read on the
     /// payment's path (`PendingSendOutcomes.waitingPayment(to:)`).
     func paymentProcessor(_ processor: DWPaymentProcessor, shouldPayAddress address: String, isBIP70: Bool, completion: @escaping (Bool) -> Void) {
         dropOffScreenConfirm()
-        guard !(confirmViewController != nil && paymentOutput?.address == address),
+        guard confirmViewController == nil,
               let waiting = MainActor.assumeIsolated({ waitingPayment(address) }) else {
             completion(true)
             return
         }
         let route = paymentRoute(isBIP70: isBIP70)
         let age = Int(Date().timeIntervalSince(waiting.sentAt))
-        log("💸 TXSEND :: repeat payment refused — route=\(route) to=\(PendingSendOutcomes.masked(address)) pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire)) age=\(age)s wallet=\(PendingSendOutcomes.walletTag(waiting.walletId)) reason=still followed: no lock or block seen on its row yet, within the 7-day window; rows re-read in the background")
+        log("💸 TXSEND :: repeat payment refused — route=\(route) to=\(PendingSendOutcomes.masked(address)) pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire)) age=\(age)s wallet=\(PendingSendOutcomes.walletTag(waiting.walletId)) reason=still followed: no lock or block seen on its row yet, within the \(PendingSendOutcomes.maxFollowDays)-day window; rows re-read in the background")
         refuseRepeating(waiting) { [weak self] in
             self?.log("💸 TXSEND :: repeat payment cancelled on OK — route=\(route) pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire)); no PIN, nothing built")
             completion(false)
