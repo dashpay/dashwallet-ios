@@ -211,14 +211,11 @@ public final class DWIdentityRegistrationBridge: NSObject {
     /// user had declined to create for it.
     private var pendingVerification: (label: String, url: URL)?
 
-    /// Records `url` as the link for `label`, or, when `url` is nil, clears
-    /// the pending link if it is `label`'s — a link held for another label is
-    /// that label's to drop.
+    /// Records `url` as the link for `label`, or clears the pending link when
+    /// `url` is nil.
     @objc public func setPendingVerificationURL(_ url: URL?, forLabel label: String) {
         guard let url else {
-            if pendingVerification?.label == Self.verificationKey(label) {
-                pendingVerification = nil
-            }
+            pendingVerification = nil
             return
         }
         pendingVerification = (Self.verificationKey(label), url)

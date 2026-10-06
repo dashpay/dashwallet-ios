@@ -1613,6 +1613,19 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             verificationURL: verificationURL)
     }
 
+    /// Credits a buyer identity must hold: the sale price plus the same
+    /// 0.03-DASH headroom a fresh registration funds itself with, covering the
+    /// purchase transition fee (and Core-side asset-lock conversion losses).
+    static func purchaseRequiredCredits(priceCredits: UInt64) -> UInt64 {
+        priceCredits + UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME) * 1_000
+    }
+
+    /// The Core top-up a purchase sends to an existing identity holding
+    /// `heldCredits`; 0 when it already holds enough.
+    static func purchaseTopUpDuffs(priceCredits: UInt64, heldCredits: UInt64) -> UInt64 {
+        identityTopUpDuffs(requiredCredits: purchaseRequiredCredits(priceCredits: priceCredits), heldCredits: heldCredits)
+    }
+
     /// Direct purchase of a marketplace-listed name from the
     /// create-username flow: ensure this wallet's identity exists and
     /// holds enough credits — creating it Core-funded, or topping it up
@@ -1627,23 +1640,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// writes (a purchase never writes a contested bookmark, so the
     /// deferral branch in `handlePhaseChange` cannot trigger).
     @discardableResult
-    /// Credits a buyer identity must hold: the sale price plus the same
-    /// 0.03-DASH headroom a fresh registration funds itself with, covering the
-    /// purchase transition fee (and Core-side asset-lock conversion losses).
-    static func purchaseRequiredCredits(priceCredits: UInt64) -> UInt64 {
-        priceCredits + UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME) * 1_000
-    }
-
-    /// The Core top-up a purchase sends to an existing identity holding
-    /// `heldCredits`; 0 when it already holds enough. Rust rejects Core
-    /// top-ups below `minimumCoreTopUpDuffs`, and a near-covered identity can
-    /// fall short by less, so a needed top-up is at least that.
-    static func purchaseTopUpDuffs(priceCredits: UInt64, heldCredits: UInt64) -> UInt64 {
-        let required = purchaseRequiredCredits(priceCredits: priceCredits)
-        guard heldCredits < required else { return 0 }
-        return max((required - heldCredits + 999) / 1_000, UInt64(minimumCoreTopUpDuffs))
-    }
-
     func startPurchaseUsername(name: String, priceCredits: UInt64) async throws -> Identifier {
         Self.logger.info("🪪 IDENT-COORD :: startPurchaseUsername name=\(name) priceCredits=\(priceCredits)")
 
@@ -1655,6 +1651,16 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         }
         guard let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
             throw CoordinatorError.noModelContainer
+        }
+        // The trade index keys on the protocol's normalization, which only
+        // the SDK applies. Resolved before anything is paid, so a missing SDK
+        // stops the purchase instead of leaving a funded identity without it.
+        guard let sdk = SwiftDashSDKHost.shared.sdk else { throw CoordinatorError.noSDK }
+        let normalizedName: String
+        do {
+            normalizedName = try sdk.dpnsNormalizeLabel(name)
+        } catch {
+            throw CoordinatorError.purchase(error)
         }
 
         let identitySnapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
@@ -1762,10 +1768,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // index keys on the normalized label.
         do {
             try validatePurchaseContext(walletId: wallet.walletId, network: network, identityId: selectedIdentityId)
-            // The trade index keys on the protocol's normalization, which only
-            // the SDK applies; without it the purchase stops rather than guess.
-            guard let sdk = SwiftDashSDKHost.shared.sdk else { throw CoordinatorError.noSDK }
-            let normalized = try sdk.dpnsNormalizeLabel(name)
+            let normalized = normalizedName
             _ = try await wallet.purchaseDpnsName(
                 purchaserIdentityId: identityId,
                 name: normalized,

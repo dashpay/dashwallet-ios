@@ -427,7 +427,7 @@ class CreateUsernameViewModel: ObservableObject {
             // says, but only an identity that exists and falls short — the
             // coordinator's own test, on the same persisted balance it reads.
             // Without an identity it registers a fresh one.
-            guard let identityId = DWCurrentUserIdentityInfo.shared.identityId,
+            guard let identityId = DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId,
                   let price = takenNameSalePriceCredits,
                   DWIdentityRegistrationCoordinator.purchaseTopUpDuffs(
                     priceCredits: price,
@@ -462,9 +462,12 @@ class CreateUsernameViewModel: ObservableObject {
     /// from the funding source: a new identity is funded from it, and an
     /// existing one is topped up from it when its credits fall short.
     func registrationMovesFunds(nameCount: UInt64) -> Bool {
-        guard let topUp = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount)
-        else { return true }
-        return topUp > 0
+        registrationTopUpDuffs(nameCount: nameCount).map { $0 > 0 } ?? true
+    }
+
+    /// The typed name's top-up for `nameCount` names; nil with no identity.
+    private func registrationTopUpDuffs(nameCount: UInt64) -> UInt64? {
+        existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount)
     }
 
     /// Whether `source` can pay for registering the typed name as `nameCount`
@@ -472,8 +475,7 @@ class CreateUsernameViewModel: ObservableObject {
     /// can add a top-up they did not count. An existing identity's shortfall
     /// is topped up from Core or Platform; Shielded has no top-up route.
     func canPay(from source: DWIdentityFundingSource, nameCount: UInt64) -> Bool {
-        guard let topUp = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount)
-        else {
+        guard let topUp = registrationTopUpDuffs(nameCount: nameCount) else {
             switch source {
             case .shielded: return shieldedReadiness?.state == .ready
             case .platformPayment: return hasMinimumRequiredPlatformBalance
@@ -498,12 +500,11 @@ class CreateUsernameViewModel: ObservableObject {
     /// state amounts, not the balance they come from: a request that went out
     /// from Shielded must not quietly move to transparent Core on its retry.
     /// Asked only when money can leave that source; not for an invitation (the
-    /// voucher pays), a purchase (always Core, its confirmation says so), or a
-    /// paid Core lock being resumed.
+    /// voucher pays) or a paid Core lock being resumed. A purchase never comes
+    /// here: it pays from Core, and its own confirmation says so.
     func fundingSourceNeedsConfirmation(nameCount: UInt64, sourcePickedByUser: Bool) -> Bool {
         !sourcePickedByUser
             && !isInvitationMode
-            && !canPurchaseListedNameDirectly
             && registrationRecovery != .pendingCoreAssetLock
             && registrationMovesFunds(nameCount: nameCount)
     }

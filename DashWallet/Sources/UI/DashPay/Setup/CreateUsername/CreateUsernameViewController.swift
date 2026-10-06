@@ -579,7 +579,7 @@ struct CreateUsernameView: View {
                 abandonSubmission()
             }
             Button(NSLocalizedString("Continue", comment: "")) {
-                answerFundingSource(question)
+                afterAlertDismissal { answerFundingSource(question) }
             }
         } message: { _ in
             Text(NSLocalizedString(
@@ -601,7 +601,9 @@ struct CreateUsernameView: View {
                 pendingPlainTopUp = nil
                 // The alert named the source; agreeing to it is the answer to
                 // the source question, for the source it showed.
-                answerFundingSource(SourceQuestion(source: topUp.source, temporaryUsername: nil))
+                afterAlertDismissal {
+                    answerFundingSource(SourceQuestion(source: topUp.source, temporaryUsername: nil))
+                }
             }
         } message: { topUp in
             Text(String.localizedStringWithFormat(
@@ -1339,6 +1341,14 @@ struct CreateUsernameView: View {
         performSubmit(temporaryUsername: question.temporaryUsername, agreedSource: question.source)
     }
 
+    /// Runs `action` once the alert whose button called it has gone. What
+    /// follows can present something itself — the error alert, the unfinished
+    /// top-up warning, the PIN host — and a presentation requested while an
+    /// alert is still animating out is dropped. `.alert` has no `onDismiss`.
+    private func afterAlertDismissal(_ action: @escaping () -> Void) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: action)
+    }
+
     private static func sourceQuestionTitle(_ source: DWIdentityFundingSource) -> String {
         switch source {
         case .platformPayment: return NSLocalizedString("Pay from your Platform balance?", comment: "Usernames: confirm the funding source")
@@ -1372,8 +1382,9 @@ struct CreateUsernameView: View {
             showSourceQuestion = true
             return
         }
+        // A paid Core lock being resumed pays from Core whatever was agreed.
         let payingSource = viewModel.registrationRecovery == .pendingCoreAssetLock
-            ? .core : (agreedSource ?? fundingSource)
+            ? topUpSource : (agreedSource ?? topUpSource)
         // The two-name top-up can need Core where the one-name one did not:
         // warn here too unless the user already chose to go ahead.
         if !acknowledgedUnfinishedTopUp,
