@@ -1415,11 +1415,11 @@ struct CreateUsernameView: View {
         // invitation): refuse before touching the bridge state it still reads
         // — the funding source, top-up ceiling and companion it was given.
         if DWIdentityRegistrationCoordinator.shared.isAttemptActive {
-            registrationErrorMessage = DWIdentityRegistrationCoordinator.CoordinatorError.alreadyInFlight.localizedDescription
-            abandonSubmission()
+            refuseSubmission(DWIdentityRegistrationCoordinator.CoordinatorError.alreadyInFlight.localizedDescription)
             return
         }
         let nameCount: UInt64 = temporaryUsername == nil ? 1 : 2
+        viewModel.refreshCoreSpendable()
         // Asked here, right before paying, so it names the source that pays.
         if agreedSource == nil,
            viewModel.fundingSourceNeedsConfirmation(nameCount: nameCount, sourcePickedByUser: didUserPickFundingSource) {

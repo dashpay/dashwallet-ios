@@ -438,10 +438,13 @@ class CreateUsernameViewModel: ObservableObject {
                 walletId: wallet.walletId, identityId: identityId, modelContainer: container)
         }
         guard let needed = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount),
-              needed > 0 else { return false }
+              needed > 0,
+              // The identity the cached credits above belong to.
+              let identityId = DWCurrentUserIdentityInfo.shared.snapshotForReading.identityId
+        else { return false }
         return DWIdentityRegistrationCoordinator.hasUnfinishedIdentityTopUp(
             walletId: wallet.walletId,
-            identityId: DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId,
+            identityId: identityId,
             modelContainer: container)
     }
 
@@ -477,25 +480,32 @@ class CreateUsernameViewModel: ObservableObject {
             switch source {
             case .shielded: return hasReadyShieldedFunding
             case .platformPayment: return hasMinimumRequiredPlatformBalance
-            case .core: return hasMinimumRequiredCoreBalance
+            case .core: return coreSpendableDuffs >= newIdentityFundingDuffs(isContested: isContestedCandidate)
             case .invitation: return isInvitationMode
             @unknown default: return false
             }
         }
         guard topUp > 0 else { return true }
         switch source {
-        // Live, as the submission re-derives it: the fee reserve moves with
-        // the UTXO count while the cached figure can lag.
-        case .core: return SwiftDashSDKWalletState.shared.feeAwareMaxSendable() >= topUp
+        // On the figure `refreshCoreSpendable()` re-derived for this submission.
+        case .core: return coreSpendableDuffs >= topUp
         case .platformPayment: return canFundFromPlatform(topUp)
         case .shielded, .invitation: return false
         @unknown default: return false
         }
     }
 
+    /// Re-derives the Core spendable figure from the live UTXO set — the fee
+    /// reserve moves with the UTXO count while the cached figure can lag.
+    /// One FFI walk; called once per submission, before `canPay` judges Core.
+    func refreshCoreSpendable() {
+        coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
+    }
+
     /// The first of `candidates` that can pay for `nameCount` names.
     func firstPayableSource(of candidates: [DWIdentityFundingSource], nameCount: UInt64) -> DWIdentityFundingSource? {
-        candidates.first { canPay(from: $0, nameCount: nameCount) }
+        var seen = Set<DWIdentityFundingSource>()
+        return candidates.first { seen.insert($0).inserted && canPay(from: $0, nameCount: nameCount) }
     }
 
     /// Whether a registration of `nameCount` names must name its funding
