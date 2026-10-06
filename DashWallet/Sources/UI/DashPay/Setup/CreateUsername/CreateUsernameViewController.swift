@@ -127,6 +127,8 @@ struct CreateUsernameView: View {
     /// sheet or the PIN prompt.
     @State private var isTextInputFocused: Bool = false
     @State private var inProgress: Bool = false
+    /// False once the screen has left, so a deferred step does not run on it.
+    @State private var isOnScreen = false
     @State private var screenLockedAfterAuth: Bool = false
     /// Funding source for the SwiftDashSDK identity registration.
     ///
@@ -353,7 +355,9 @@ struct CreateUsernameView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .onDisappear { isOnScreen = false }
         .onAppear {
+            isOnScreen = true
             isTextInputFocused = true
             // Restores an interrupted registration's draft and clears the
             // per-visit availability cache. Its only other caller waits on
@@ -624,12 +628,14 @@ struct CreateUsernameView: View {
             }
             Button(NSLocalizedString("Continue anyway", comment: "Usernames: unfinished identity top-up")) {
                 acknowledgedUnfinishedTopUp = true
-                switch continuation {
-                case .purchase: showPurchaseConfirmation = true
-                case .contested: showVerifyOffer = true
-                case .plain: submitPlainName()
-                case let .submit(temporaryUsername, agreedSource):
-                    performSubmit(temporaryUsername: temporaryUsername, agreedSource: agreedSource)
+                afterAlertDismissal {
+                    switch continuation {
+                    case .purchase: showPurchaseConfirmation = true
+                    case .contested: showVerifyOffer = true
+                    case .plain: submitPlainName()
+                    case let .submit(temporaryUsername, agreedSource):
+                        performSubmit(temporaryUsername: temporaryUsername, agreedSource: agreedSource)
+                    }
                 }
             }
         } message: { _ in
@@ -1270,7 +1276,7 @@ struct CreateUsernameView: View {
             ? nil
             : viewModel.existingIdentityTopUpDuffs(isContested: false, nameCount: 1)
         if let topUp, topUp > 0 {
-            pendingPlainTopUp = PlainTopUp(duffs: topUp, source: topUpSource)
+            pendingPlainTopUp = PlainTopUp(duffs: topUp, source: payingSource(agreed: nil))
             showPlainTopUp = true
             return
         }
@@ -1284,11 +1290,6 @@ struct CreateUsernameView: View {
                 isCompanionPass: false)
         }
         performSubmit()
-    }
-
-    /// The source this submission would top up from.
-    private var topUpSource: DWIdentityFundingSource {
-        viewModel.registrationRecovery == .pendingCoreAssetLock ? .core : fundingSource
     }
 
     /// A source as the privacy page names it.
@@ -1306,7 +1307,7 @@ struct CreateUsernameView: View {
     /// `performSubmit` (asked there when the form picked it itself).
     private func beginContinue() {
         if viewModel.hasUnfinishedCoreTopUp(
-            source: topUpSource, nameCount: 1,
+            source: payingSource(agreed: nil), nameCount: 1,
             isPurchase: viewModel.canPurchaseListedNameDirectly) {
             unfinishedTopUpContinuation = viewModel.canPurchaseListedNameDirectly
                 ? .purchase
@@ -1327,17 +1328,9 @@ struct CreateUsernameView: View {
 
     /// Continue on the source question: the submission goes out from the
     /// source the alert named, carried into it rather than read back from the
-    /// auto-pick, which may have moved while the alert was up. If that source
-    /// can no longer pay, nothing is sent and the user starts again.
+    /// auto-pick, which may have moved while the alert was up. `performSubmit`
+    /// still checks that it can pay.
     private func answerFundingSource(_ question: SourceQuestion) {
-        guard viewModel.canPay(
-            from: question.source, nameCount: question.temporaryUsername == nil ? 1 : 2) else {
-            abandonSubmission()
-            registrationErrorMessage = NSLocalizedString(
-                "That balance can no longer pay for this request. Check your balances and try again.",
-                comment: "Usernames: confirm the funding source")
-            return
-        }
         performSubmit(temporaryUsername: question.temporaryUsername, agreedSource: question.source)
     }
 
@@ -1345,8 +1338,23 @@ struct CreateUsernameView: View {
     /// follows can present something itself — the error alert, the unfinished
     /// top-up warning, the PIN host — and a presentation requested while an
     /// alert is still animating out is dropped. `.alert` has no `onDismiss`.
+    ///
+    /// The wait is a fixed delay — the alert's dismissal animation, with
+    /// margin. The spinner holds Continue off meanwhile, so a second tap
+    /// cannot start a parallel chain, and nothing runs once the screen is gone.
     private func afterAlertDismissal(_ action: @escaping () -> Void) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: action)
+        inProgress = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            inProgress = false
+            guard isOnScreen else { return }
+            action()
+        }
+    }
+
+    /// The source that pays for a submission: Core while a paid Core lock is
+    /// resumed, else the source the user agreed to, else the form's pick.
+    private func payingSource(agreed agreedSource: DWIdentityFundingSource?) -> DWIdentityFundingSource {
+        viewModel.registrationRecovery == .pendingCoreAssetLock ? .core : (agreedSource ?? fundingSource)
     }
 
     private static func sourceQuestionTitle(_ source: DWIdentityFundingSource) -> String {
@@ -1378,13 +1386,32 @@ struct CreateUsernameView: View {
         // Asked here, right before paying, so it names the source that pays.
         if agreedSource == nil,
            viewModel.fundingSourceNeedsConfirmation(nameCount: nameCount, sourcePickedByUser: didUserPickFundingSource) {
-            sourceQuestion = SourceQuestion(source: fundingSource, temporaryUsername: temporaryUsername)
+            // The auto-pick judges one name; ask about a source that can pay
+            // for the names actually submitted, in the same privacy order.
+            guard let payable = ([fundingSource] + viableFundingSources)
+                .first(where: { viewModel.canPay(from: $0, nameCount: nameCount) }) else {
+                abandonSubmission()
+                registrationErrorMessage = NSLocalizedString(
+                    "None of your balances can pay for this request right now.",
+                    comment: "Usernames: confirm the funding source")
+                return
+            }
+            sourceQuestion = SourceQuestion(source: payable, temporaryUsername: temporaryUsername)
             showSourceQuestion = true
             return
         }
-        // A paid Core lock being resumed pays from Core whatever was agreed.
-        let payingSource = viewModel.registrationRecovery == .pendingCoreAssetLock
-            ? topUpSource : (agreedSource ?? topUpSource)
+        let payingSource = payingSource(agreed: agreedSource)
+        // Whatever chose it — the privacy page, the question, the amount
+        // alert — the source must still cover these names, or the request
+        // would fail after the PIN. A resumed Core lock is already paid.
+        if !viewModel.isInvitationMode, viewModel.registrationRecovery != .pendingCoreAssetLock,
+           !viewModel.canPay(from: payingSource, nameCount: nameCount) {
+            abandonSubmission()
+            registrationErrorMessage = NSLocalizedString(
+                "That balance can no longer pay for this request. Check your balances and try again.",
+                comment: "Usernames: confirm the funding source")
+            return
+        }
         // The two-name top-up can need Core where the one-name one did not:
         // warn here too unless the user already chose to go ahead.
         if !acknowledgedUnfinishedTopUp,

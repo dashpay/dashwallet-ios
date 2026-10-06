@@ -623,6 +623,10 @@ public final class DWContestedNameStatusService: NSObject {
         guard let key = Self.rejectedKey(for: network, walletId: walletId) else { return }
         var entries = (UserDefaults.standard.dictionary(forKey: key) as? [String: String]) ?? [:]
         let canonical = Self.canonicalLabel(label)
+        // One entry per identity and name: drop one an earlier key format
+        // left under the plain label.
+        let prefix = identityId.hexEncodedString() + "/"
+        entries = entries.filter { !($0.key.hasPrefix(prefix) && Self.labelsMatch($0.value, canonical)) }
         entries[Self.rejectedEntryKey(label: canonical, identityId: identityId)] = canonical
         UserDefaults.standard.set(entries, forKey: key)
         Self.logger.info("🪪 CONTEST-SVC :: recordRejected label=\(canonical, privacy: .public)")
@@ -634,7 +638,7 @@ public final class DWContestedNameStatusService: NSObject {
               let entries = UserDefaults.standard.dictionary(forKey: key) as? [String: String] else { return [] }
         guard let identityId else { return Array(Set(entries.values)) }
         let prefix = identityId.hexEncodedString() + "/"
-        return entries.compactMap { $0.key.hasPrefix(prefix) ? $0.value : nil }
+        return Array(Set(entries.compactMap { $0.key.hasPrefix(prefix) ? $0.value : nil }))
     }
 
     /// Drops the rejection of `label` for `identityId` (for every identity

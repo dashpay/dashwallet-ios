@@ -422,12 +422,15 @@ class CreateUsernameViewModel: ObservableObject {
               let wallet = SwiftDashSDKHost.shared.wallet,
               let container = SwiftDashSDKHost.shared.modelContainer
         else { return false }
+        // One read of the identity for both questions below, as the
+        // coordinator reads it once when it decides.
+        let identityId = DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId
         if isPurchase {
             // A purchase tops up from Core whatever the registration pick
             // says, but only an identity that exists and falls short — the
             // coordinator's own test, on the same persisted balance it reads.
             // Without an identity it registers a fresh one.
-            guard let identityId = DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId,
+            guard let identityId,
                   let price = takenNameSalePriceCredits,
                   DWIdentityRegistrationCoordinator.purchaseTopUpDuffs(
                     priceCredits: price,
@@ -440,7 +443,7 @@ class CreateUsernameViewModel: ObservableObject {
         }
         return DWIdentityRegistrationCoordinator.hasUnfinishedIdentityTopUp(
             walletId: wallet.walletId,
-            identityId: DWCurrentUserIdentityInfo.shared.identityId,
+            identityId: identityId,
             modelContainer: container)
     }
 
@@ -501,7 +504,8 @@ class CreateUsernameViewModel: ObservableObject {
     /// from Shielded must not quietly move to transparent Core on its retry.
     /// Asked only when money can leave that source; not for an invitation (the
     /// voucher pays) or a paid Core lock being resumed. A purchase never comes
-    /// here: it pays from Core, and its own confirmation says so.
+    /// here: it always pays from the wallet's Core balance, which its own
+    /// confirmation names as the wallet balance.
     func fundingSourceNeedsConfirmation(nameCount: UInt64, sourcePickedByUser: Bool) -> Bool {
         !sourcePickedByUser
             && !isInvitationMode

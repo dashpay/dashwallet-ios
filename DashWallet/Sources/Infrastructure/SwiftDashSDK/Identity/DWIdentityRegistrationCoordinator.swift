@@ -1768,10 +1768,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // index keys on the normalized label.
         do {
             try validatePurchaseContext(walletId: wallet.walletId, network: network, identityId: selectedIdentityId)
-            let normalized = normalizedName
             _ = try await wallet.purchaseDpnsName(
                 purchaserIdentityId: identityId,
-                name: normalized,
+                name: normalizedName,
                 expectedPriceCredits: priceCredits,
                 signer: signer)
             Self.logger.info("🪪 IDENT-COORD :: purchased \(name) for \(priceCredits) credits")
