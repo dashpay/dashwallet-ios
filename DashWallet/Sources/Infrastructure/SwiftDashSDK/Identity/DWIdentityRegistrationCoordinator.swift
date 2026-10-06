@@ -1457,7 +1457,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     UsernamePrefs.shared.failedCompanion = .init(
                         username: temporaryUsername,
                         contestedLabel: username,
-                        reason: error.localizedDescription)
+                        reason: UsernameRegistrationFailureWording.message(
+                            forRaw: error.localizedDescription, username: temporaryUsername))
+                    NotificationCenter.default.post(name: .DWDashPayRegistrationStatusUpdated, object: nil)
                 }
             }
         }
@@ -2175,7 +2177,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         switch outcome {
         case .won:
             Self.logger.info("🪪 IDENT-COORD :: contest WON for \(label) — finalizing")
-            if UsernamePrefs.shared.failedCompanion?.contestedLabel == label {
+            if let failed = UsernamePrefs.shared.failedCompanion,
+               DWContestedNameStatusService.labelsMatch(failed.contestedLabel, label) {
                 UsernamePrefs.shared.failedCompanion = nil
             }
             DWContestedNameStatusService.shared.finalizeWon(
@@ -2196,7 +2199,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             UsernamePrefs.shared.lostContestWasBlocked = (outcome == .blocked)
             // The vote is over; a missing instant name for it is no longer
             // what the user needs to hear about.
-            if UsernamePrefs.shared.failedCompanion?.contestedLabel == label {
+            if let failed = UsernamePrefs.shared.failedCompanion,
+               DWContestedNameStatusService.labelsMatch(failed.contestedLabel, label) {
                 UsernamePrefs.shared.failedCompanion = nil
             }
             // Same announcement `finalizeWon` makes. Without it the rejection

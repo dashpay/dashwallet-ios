@@ -60,14 +60,31 @@ final class UsernameRequestStatusViewModel: ObservableObject {
     let label: String
 
     /// The instant username that failed next to this request, while the
-    /// identity still has no name of its own to use during the vote. Read when
-    /// the screen draws: the record is written by the coordinator after the
-    /// form has already handed off, and cleared once a name is registered.
-    var failedCompanion: UsernamePrefs.FailedCompanion? {
+    /// identity still has no name of its own to use during the vote.
+    /// Published and re-read on appear and on registration-status
+    /// notifications: the coordinator writes the record after the form has
+    /// already handed off, and a retry can register the name while this
+    /// screen is up.
+    @Published private(set) var failedCompanion: UsernamePrefs.FailedCompanion?
+
+    func refreshFailedCompanion() {
         guard let failed = UsernamePrefs.shared.failedCompanion,
-              failed.contestedLabel == label,
-              DWCurrentUserIdentityInfo.shared.username == nil else { return nil }
-        return failed
+              DWContestedNameStatusService.labelsMatch(failed.contestedLabel, label),
+              // A record outliving its request (the bookmark was dropped on a
+              // path that did not clear it) has nothing left to report on.
+              DWContestedNameStatusService.shared.isPendingLabel(label)
+        else {
+            failedCompanion = nil
+            return
+        }
+        let identity = DWCurrentUserIdentityInfo.shared
+        if identity.usernames.contains(where: { DWContestedNameStatusService.labelsMatch($0, failed.username) }) {
+            // The retry registered it: nothing is missing any more.
+            UsernamePrefs.shared.failedCompanion = nil
+            failedCompanion = nil
+            return
+        }
+        failedCompanion = identity.username == nil ? failed : nil
     }
     private let contestsService: ContestedNamesService
     private let identityVerify = IdentityVerifyService.shared
@@ -274,9 +291,17 @@ struct UsernameRequestStatusScreen: View {
             }
         }
         .task {
+            viewModel.refreshFailedCompanion()
             await viewModel.refresh()
             await viewModel.refreshVerificationURL()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)) { _ in
+            viewModel.refreshFailedCompanion()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .DWUsernameRegistrationReportChanged)) { _ in
+            viewModel.refreshFailedCompanion()
+        }
+        .onAppear { viewModel.refreshFailedCompanion() }
         .sheet(isPresented: $showVerifyIdentity) {
             // The library's sheet, not a `NavigationView` with a Cancel item:
             // its close control is the way out, and the screen carries its own
@@ -311,6 +336,8 @@ struct UsernameRequestStatusScreen: View {
     /// the user has no name to use while the vote runs. Says so, with the
     /// reason, and offers to register it again on its own.
     private func failedCompanionSection(_ failed: UsernamePrefs.FailedCompanion) -> some View {
+        // `caption` carries its own 20 pt inset, so the other two take theirs
+        // individually rather than from the stack.
         VStack(alignment: .leading, spacing: 12) {
             VotingBanner(
                 text: String.localizedStringWithFormat(
@@ -319,6 +346,7 @@ struct UsernameRequestStatusScreen: View {
                         comment: "Usernames: request details, failed instant username"),
                     failed.username),
                 tone: .error)
+                .padding(.horizontal, 20)
             if !failed.reason.isEmpty {
                 caption(failed.reason)
             }
@@ -329,9 +357,9 @@ struct UsernameRequestStatusScreen: View {
                     size: .medium,
                     style: .tintedBlue,
                     action: { onRetryCompanion(failed.username) })
+                    .padding(.horizontal, 20)
             }
         }
-        .padding(.horizontal, 20)
     }
 
     /// Describes only what Platform actually reported. A contest that is not

@@ -223,6 +223,13 @@ class CreateUsernameViewModel: ObservableObject {
     /// appear and disappear with the switch rather than on the next launch.
     @Published private(set) var isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
 
+    /// Whether the Platform balance may fund this registration: it covers the
+    /// minimum and advanced mode — the only place that balance is visible — is
+    /// on. One rule for the Join DashPay sheet, the privacy page and the form.
+    var canOfferPlatformFunding: Bool {
+        isAdvancedMode && hasMinimumRequiredPlatformBalance
+    }
+
     /// Which balance the user chose on the Join DashPay sheet's privacy page.
     ///
     /// The create form used to ask the same question a second time, with its
@@ -483,6 +490,9 @@ class CreateUsernameViewModel: ObservableObject {
         self.isPreviewInstance = true
         self.balance = previewBalance
         self.hasMinimumRequiredBalance = hasMinimumRequiredBalance
+        // The Join DashPay sheet reads the per-source flag; a preview's
+        // "enough" is a Core balance.
+        self.hasMinimumRequiredCoreBalance = hasMinimumRequiredBalance
         self.hasRecommendedBalance = hasRecommendedBalance
         self.shieldedReadiness = shieldedReadiness
     }

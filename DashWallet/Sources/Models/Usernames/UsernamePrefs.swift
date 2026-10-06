@@ -219,8 +219,8 @@ class UsernamePrefs {
     /// form hands the outcome to the status row before it is known, so this
     /// record is what lets Request details tell the user and offer a retry.
     /// Scoped to the wallet and network like the other registration records;
-    /// cleared when a new request starts, when the contest resolves, or when
-    /// the retry registers a name.
+    /// cleared when a request for another name is handed off, when the
+    /// contest resolves, or when Request details finds the name owned.
     struct FailedCompanion: Equatable {
         let username: String
         let contestedLabel: String

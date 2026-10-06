@@ -150,7 +150,7 @@ public struct JoinDashPayScreen: View {
     /// to a form whose Continue it could never enable.
     private var canProceed: Bool {
         viewModel.hasMinimumRequiredCoreBalance
-            || (viewModel.isAdvancedMode && viewModel.hasMinimumRequiredPlatformBalance)
+            || viewModel.canOfferPlatformFunding
             || viewModel.hasReadyShieldedFunding
     }
 

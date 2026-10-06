@@ -1205,7 +1205,6 @@ struct CreateUsernameView: View {
             inProgress = true
             screenLockedAfterAuth = false
             var didHandOff = false
-            var handedOffUsername: String?
             let outcome = await viewModel.submitUsernameRequest(temporaryUsername: temporaryUsername) {
                 isTextInputFocused = false
                 if handsOffToStatusRow {
@@ -1218,10 +1217,9 @@ struct CreateUsernameView: View {
                     // a second normalization of the field: the two must name
                     // the same attempt or the row reports an interruption for
                     // a registration that is running.
-                    let handedOff = viewModel.submittedRegistrationUsername
-                        ?? viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines)
-                    handedOffUsername = handedOff
-                    JoinDashPayViewModel.markRegistrationHandedOff(username: handedOff)
+                    JoinDashPayViewModel.markRegistrationHandedOff(
+                        username: viewModel.submittedRegistrationUsername
+                            ?? viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines))
                     handOffToStatusRow()
                 } else {
                     screenLockedAfterAuth = true
@@ -1230,15 +1228,10 @@ struct CreateUsernameView: View {
             inProgress = false
 
             // The Home row owns the outcome now; alerts from a dismissed screen
-            // would either be invisible or land on top of Home. A cancellation
-            // that still arrives after the handoff takes the record back, so
-            // the row never reports an attempt that did not run.
-            if didHandOff {
-                if case .cancelled = outcome, let handedOffUsername {
-                    JoinDashPayViewModel.withdrawRegistrationHandOff(username: handedOffUsername)
-                }
-                return
-            }
+            // would either be invisible or land on top of Home. A PIN
+            // cancellation cannot follow the handoff: it fires on `.inFlight`,
+            // which both paths reach only after authorization.
+            guard !didHandOff else { return }
 
             switch outcome {
             case .success:
@@ -1310,7 +1303,7 @@ struct CreateUsernameView: View {
         if viewModel.hasReadyShieldedFunding {
             sources.append(.shielded)
         }
-        if viewModel.hasMinimumRequiredPlatformBalance {
+        if viewModel.canOfferPlatformFunding {
             sources.append(.platformPayment)
         }
         if viewModel.hasMinimumRequiredCoreBalance {
