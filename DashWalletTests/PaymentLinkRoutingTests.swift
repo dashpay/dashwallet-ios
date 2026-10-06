@@ -704,6 +704,7 @@ final class PaymentDialogOutcomeTests: XCTestCase {
         let waiting = PendingSendOutcomes.Entry(
             txidWire: Data(repeating: 0x9c, count: 32), walletId: Data(repeating: 0x1d, count: 32),
             address: "yAddressForTests", amount: 100_000, sentAt: Date())
+        controller.mayBeWaiting = { $0 == "yAddressForTests" }
         controller.waitingPayment = {
             $0 == "yAddressForTests" ? .init(entry: waiting, rowFinding: "row not locked or mined yet") : nil
         }
@@ -733,9 +734,42 @@ final class PaymentDialogOutcomeTests: XCTestCase {
 
         var other: [Bool] = []
         controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "yOtherAddress", isBIP70: false) { other.append($0) }
-        spin(until: { !other.isEmpty })
-        XCTAssertEqual(other, [true], "another address is not interrupted")
+        XCTAssertEqual(other, [true], "another address is not interrupted, nor waited on")
         XCTAssertEqual(logged.count, 2, "nothing pending: no log")
+    }
+
+    /// A check still reading rows when a newer payment starts does not go on
+    /// to the PIN prompt: its answer is a cancel.
+    func testARepeatCheckOvertakenByANewerPaymentIsDropped() throws {
+        let root = try XCTUnwrap(window.rootViewController)
+        let anchor = AnchorProvider(anchor: root)
+        defer { withExtendedLifetime(anchor) { } }
+        let controller = PaymentController()
+        controller.presentationContextProvider = anchor
+        controller.mayBeWaiting = { _ in true }
+        var resume: CheckedContinuation<Void, Never>?
+        var reads = 0
+        controller.waitingPayment = { _ in
+            reads += 1
+            if reads == 1 { await withCheckedContinuation { resume = $0 } }
+            return nil
+        }
+        var logged: [String] = []
+        controller.log = { logged.append($0) }
+
+        var first: [Bool] = []
+        var second: [Bool] = []
+        controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "yFirstAddress", isBIP70: false) { first.append($0) }
+        spin(until: { resume != nil })
+        controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "ySecondAddress", isBIP70: false) { second.append($0) }
+        spin(until: { !second.isEmpty })
+        XCTAssertEqual(second, [true])
+        XCTAssertEqual(first, [], "the first check is still reading")
+
+        resume?.resume()
+        spin(until: { !first.isEmpty })
+        XCTAssertEqual(first, [false], "the overtaken check does not go on")
+        XCTAssertTrue(logged.contains { $0.contains("check dropped") && !$0.contains("yFirstAddress") }, "\(logged)")
     }
 
     func testAnUnknownOutcomeErrorCarriesItsTxid() {

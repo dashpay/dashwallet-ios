@@ -198,9 +198,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     @objc func forgetAll() {
         notice = nil
         guard !entries.isEmpty else { return }
-        let addresses = entries.values.compactMap(\.address).map(Self.masked)
         DWLogger.log("💸 TXSEND :: \(entries.count) waiting send(s) no longer tracked: wallet wiped"
-            + (addresses.isEmpty ? "" : "; payments to \(addresses.joined(separator: ", ")) no longer refused"))
+            + Self.refusalLifted(for: entries.values.compactMap(\.address)))
         entries = [:]
         didChangeEntries()
     }
@@ -236,10 +235,16 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         let snapshot = await Task.detached(priority: .userInitiated) {
             SwiftDashSDKWalletSource.fetch(txids: txids)
         }.value
+        // The wallet changed during the read: the payment is now the other
+        // wallet's, checked against its own sends.
+        guard SwiftDashSDKHost.shared.wallet?.walletId == walletId,
+              snapshot.map({ $0.walletId == walletId }) ?? true else {
+            return await waitingPayment(to: address)
+        }
         let rows = snapshot.map(Self.rowStates(of:))
         settle(
             pending: Dictionary(uniqueKeysWithValues: candidates.map { ($0.txidWire, $0) }),
-            walletId: snapshot?.walletId ?? walletId,
+            walletId: walletId,
             rows: rows)
         let now = Date()
         guard let entry = entries.values
@@ -251,9 +256,17 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         case .none: finding = "row read failed"
         case .some(.none): finding = "row not stored yet"
         case .some(.some(.processing)): finding = "row not locked or mined yet"
-        case .some(.some(.settled)): finding = "row settled"  // not reached: settled above
+        // Settled rows of this wallet were dropped by `settle` above.
+        case .some(.some(.settled)): finding = "row settled"
         }
         return WaitingPayment(entry: entry, rowFinding: finding)
+    }
+
+    /// Whether the active wallet follows any send to `address` (no row read):
+    /// false means a payment to it is not refused.
+    func followsPayment(to address: String) -> Bool {
+        let walletId = SwiftDashSDKHost.shared.wallet?.walletId
+        return walletId != nil && entries.values.contains { $0.address == address && $0.walletId == walletId }
     }
 
     /// `address` shortened for logs: never the full address.
@@ -266,12 +279,18 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// longer refused to. Empty for a send that never refused any (no
     /// address: a CoinJoin sweep chunk, a route that does not know it).
     nonisolated static func refusalLifted(for address: String?) -> String {
-        address == nil ? "" : "; payments to \(masked(address)) no longer refused"
+        refusalLifted(for: address.map { [$0] } ?? [])
+    }
+
+    /// The same for several sends: each address once.
+    nonisolated static func refusalLifted(for addresses: [String]) -> String {
+        let shown = Array(Set(addresses.map(masked))).sorted()
+        return shown.isEmpty ? "" : "; payments to \(shown.joined(separator: ", ")) no longer refused"
     }
 
     /// A wallet id shortened for logs (first 4 bytes, hex).
     nonisolated static func walletTag(_ walletId: Data) -> String {
-        Data(walletId.prefix(4)).hexEncodedString()
+        walletId.prefix(4).hexEncodedString()
     }
 
     /// A txid shortened for logs (display order, first 12 hex digits).

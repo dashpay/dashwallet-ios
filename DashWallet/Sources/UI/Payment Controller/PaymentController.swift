@@ -108,6 +108,14 @@ final class PaymentController: NSObject {
     var waitingPayment: @MainActor (String) async -> PendingSendOutcomes.WaitingPayment? = {
         await PendingSendOutcomes.shared.waitingPayment(to: $0)
     }
+    /// Whether the active wallet follows any send to an address, without
+    /// reading rows: false lets a payment through at once; tests replace it.
+    var mayBeWaiting: @MainActor (String) -> Bool = {
+        PendingSendOutcomes.shared.followsPayment(to: $0)
+    }
+    /// Bumped by each repeat-payment check: an answer that arrives after a
+    /// newer check started is not given.
+    private var repeatCheckGeneration = 0
     /// The TXSEND log line sink (`DWLogger`, so it reaches exported logs);
     /// tests replace it.
     var log: (String) -> Void = { DWLogger.log($0) }
@@ -224,27 +232,40 @@ extension PaymentController: DWPaymentProcessorDelegate {
     /// not made: the earlier one may yet arrive, and the recipient would get
     /// both. The user is told to wait, and OK returns to the paying screen —
     /// before the PIN prompt and the build, nothing is built or signed. Not
-    /// asked again while the confirm sheet is up; other addresses are not
-    /// interrupted. The answer comes after the stored row is read (off the
-    /// main thread), so it is always asynchronous.
+    /// asked again for the address of the confirm sheet on screen (checked
+    /// when it opened); any other address is checked. Other addresses are
+    /// not interrupted.
+    ///
+    /// With nothing followed for the address the answer is given at once.
+    /// Otherwise it comes after the stored row is read off the main thread,
+    /// and is dropped (as a cancel) when the paying screen left meanwhile or
+    /// a newer check started.
     func paymentProcessor(_ processor: DWPaymentProcessor, shouldPayAddress address: String, isBIP70: Bool, completion: @escaping (Bool) -> Void) {
-        // A sheet no longer on screen is not the one this payment will use:
-        // `presentConfirm` opens a new one.
-        if let vc = confirmViewController, vc.presentingViewController == nil {
-            confirmViewController = nil
-        }
-        // The sheet on screen for this address was checked when it opened.
+        repeatCheckGeneration += 1
+        dropOffScreenConfirm()
         if confirmViewController != nil, paymentOutput?.address == address {
             completion(true)
             return
         }
+        guard MainActor.assumeIsolated({ mayBeWaiting(address) }) else {
+            completion(true)
+            return
+        }
         let route = paymentRoute(isBIP70: isBIP70)
+        let generation = repeatCheckGeneration
+        weak var screen = presentationAnchor
         Task { @MainActor [weak self] in
             guard let self else {
                 completion(false)
                 return
             }
-            guard let waiting = await self.waitingPayment(address) else {
+            let waiting = await self.waitingPayment(address)
+            guard generation == self.repeatCheckGeneration, screen?.viewIfLoaded?.window != nil else {
+                self.log("💸 TXSEND :: repeat-payment check dropped — route=\(route) to=\(PendingSendOutcomes.masked(address)): the paying screen left or a newer payment started; nothing built")
+                completion(false)
+                return
+            }
+            guard let waiting else {
                 completion(true)
                 return
             }
@@ -263,7 +284,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
         if isBIP70 { return "BIP70" }
         // Only while it is on screen: the weak reference outlives a screen
         // left in a navigation stack.
-        if (provideAmountViewController as? UIViewController)?.viewIfLoaded?.window != nil {
+        if provideAmountViewController?.viewIfLoaded?.window != nil {
             return "legacy amount screen"
         }
         switch delegate {
@@ -313,7 +334,16 @@ extension PaymentController: DWPaymentProcessorDelegate {
             onClosed: done)
     }
 
+    /// A confirm sheet no longer on screen is not the one a payment uses:
+    /// forgotten, so a new one opens.
+    private func dropOffScreenConfirm() {
+        if let vc = confirmViewController, vc.presentingViewController == nil {
+            confirmViewController = nil
+        }
+    }
+
     private func presentConfirm(for paymentOutput: DWPaymentOutput) {
+        dropOffScreenConfirm()
         if let vc = confirmViewController {
             vc.update(with: paymentOutput)
         } else {
