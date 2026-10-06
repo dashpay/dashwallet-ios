@@ -223,11 +223,51 @@ class CreateUsernameViewModel: ObservableObject {
     /// appear and disappear with the switch rather than on the next launch.
     @Published private(set) var isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
 
-    /// Whether the Platform balance may fund this registration: it covers the
-    /// minimum and advanced mode — the only place that balance is visible — is
-    /// on. One rule for the Join DashPay sheet, the privacy page and the form.
+    /// Whether the Platform balance may fund this registration. The
+    /// advanced-mode rule is already in `hasMinimumRequiredPlatformBalance`;
+    /// this names the question the Join DashPay sheet, the privacy page and
+    /// the form ask.
     var canOfferPlatformFunding: Bool {
-        isAdvancedMode && hasMinimumRequiredPlatformBalance
+        hasMinimumRequiredPlatformBalance
+    }
+
+    // MARK: - Confirmed top-up ceiling
+
+    /// The requested pass's figure as confirmed. Kept apart from the running
+    /// total so the companion sheet's amount does not move when its own
+    /// Confirm updates that total.
+    private(set) var requestedTopUpCeilingDuffs: UInt64?
+    /// The most the coordinator may move to top up the identity without a new
+    /// confirmation: what the sheets showed, captured on Confirm, so a balance
+    /// refresh before submit cannot raise it.
+    private var confirmedTopUpCeilingDuffs: UInt64?
+
+    /// Records what a confirmation sheet just showed.
+    ///
+    /// `isTopUpFigure` is false when the sheet showed the contest fund for an
+    /// identity whose credits are not loaded yet — not a top-up. The ceiling is
+    /// then 0: nothing was confirmed for a top-up, so one that turns out to be
+    /// needed stops with `topUpExceedsConfirmed` and asks again, rather than
+    /// running uncapped.
+    func captureConfirmedTopUp(shownDuffs: UInt64, isCompanionPass: Bool, isTopUpFigure: Bool) {
+        let figure = isTopUpFigure ? shownDuffs : 0
+        if isCompanionPass {
+            confirmedTopUpCeilingDuffs = (requestedTopUpCeilingDuffs ?? 0) + figure
+        } else {
+            requestedTopUpCeilingDuffs = figure
+            confirmedTopUpCeilingDuffs = figure
+        }
+    }
+
+    /// The ceiling for the submission about to go out; clears the capture.
+    func takeConfirmedTopUpCeiling() -> UInt64? {
+        defer { discardConfirmedTopUp() }
+        return confirmedTopUpCeilingDuffs
+    }
+
+    func discardConfirmedTopUp() {
+        requestedTopUpCeilingDuffs = nil
+        confirmedTopUpCeilingDuffs = nil
     }
 
     /// Which balance the user chose on the Join DashPay sheet's privacy page.
@@ -1232,6 +1272,9 @@ class CreateUsernameViewModel: ObservableObject {
         coreEligible: Bool,
         platformEligible: Bool
     ) {
+        // Platform is offered only in advanced mode, the one place its balance
+        // is visible. Folded in here so every reader of the flag gets the rule.
+        let platformEligible = platformEligible && isAdvancedMode
         if hasMinimumRequiredCoreBalance != coreEligible {
             hasMinimumRequiredCoreBalance = coreEligible
         }

@@ -174,15 +174,6 @@ struct CreateUsernameView: View {
     /// (`🔐 PINPROMPT :: presentation rejected`). Presenting the next sheet
     /// straight from the previous one's button races the same animation.
     @State private var sheetFollowUp: SheetFollowUp?
-    /// The existing-identity top-up the user confirmed, captured on Confirm:
-    /// the requested pass's figure, plus what the companion pass showed if one
-    /// follows. Submission hands this — not a fresh calculation — to the
-    /// coordinator as the most it may move, so a balance refresh between
-    /// Confirm and submit cannot raise the ceiling. nil when no top-up applies.
-    @State private var confirmedTopUpDuffs: UInt64?
-    /// The requested pass's own figure, kept apart from the running total so
-    /// the companion sheet's amount does not move when its Confirm updates it.
-    @State private var requestedTopUpDuffs: UInt64?
 
     /// The three things a sheet in this flow can hand back.
     private enum SheetFollowUp: Equatable {
@@ -395,10 +386,6 @@ struct CreateUsernameView: View {
             syncFundingSourceToViableSource()
         }
         .onChange(of: viewModel.hasMinimumRequiredPlatformBalance) { _ in
-            syncFundingSourceToViableSource()
-        }
-        .onChange(of: viewModel.isAdvancedMode) { _ in
-            // Platform is offered only in advanced mode.
             syncFundingSourceToViableSource()
         }
         .onChange(of: viewModel.shieldedReadiness) { _ in
@@ -1080,24 +1067,15 @@ struct CreateUsernameView: View {
     ///   companion from that round. Android skips it the same way
     ///   (`hasSecondaryName()`).
     private func confirmRequestAccepted() {
-        // What the sheets showed, before any later balance refresh can move
-        // it. The requested pass starts the figure; the companion pass shows
-        // what its name adds on top of that captured figure, so the two always
-        // sum to what was on screen. A new identity's figure is the ceiling for
-        // an identity the create path ends up reusing instead.
-        // Only figures that are a top-up ceiling are captured: an existing
-        // identity's shortfall, or a new identity's funding (the ceiling for
-        // an identity the create path reuses). An identity whose credits are
-        // not known yet shows the contest fund, which is not a top-up — no cap,
-        // as before.
-        let isCeiling = existingIdentityTopUpDuffs(nameCount: 1) != nil
-            || !DWCurrentUserIdentityInfo.shared.hasIdentity
-        if isNamingInstantUsername {
-            confirmedTopUpDuffs = isCeiling ? (requestedTopUpDuffs ?? 0) + confirmationAmountDuffs : nil
-        } else {
-            requestedTopUpDuffs = isCeiling ? confirmationAmountDuffs : nil
-            confirmedTopUpDuffs = requestedTopUpDuffs
-        }
+        // What the sheet showed, before a later balance refresh can move it.
+        // An existing identity's shortfall and a new identity's funding (the
+        // ceiling for an identity the create path reuses) are top-up figures;
+        // the contest fund shown while credits are still loading is not.
+        viewModel.captureConfirmedTopUp(
+            shownDuffs: confirmationAmountDuffs,
+            isCompanionPass: isNamingInstantUsername,
+            isTopUpFigure: existingIdentityTopUpDuffs(nameCount: 1) != nil
+                || !DWCurrentUserIdentityInfo.shared.hasIdentity)
         if isNamingInstantUsername {
             sheetFollowUp = .submit(temporaryUsername: viewModel.temporaryField.trimmedText)
         } else if identityOwnsUsername {
@@ -1154,7 +1132,7 @@ struct CreateUsernameView: View {
             // not to a fresh one-name figure: the two sheets then add up to the
             // two-name top-up as it stands now.
             let total = existingIdentityTopUpDuffs(nameCount: 2) ?? single
-            let confirmed = requestedTopUpDuffs ?? single
+            let confirmed = viewModel.requestedTopUpCeilingDuffs ?? 0
             return total > confirmed ? total - confirmed : 0
         }
         if isNamingInstantUsername { return 0 }
@@ -1198,8 +1176,7 @@ struct CreateUsernameView: View {
         // — the funding source, top-up ceiling and companion it was given.
         if DWIdentityRegistrationCoordinator.shared.isAttemptActive {
             registrationErrorMessage = DWIdentityRegistrationCoordinator.CoordinatorError.alreadyInFlight.localizedDescription
-            confirmedTopUpDuffs = nil
-            requestedTopUpDuffs = nil
+            viewModel.discardConfirmedTopUp()
             return
         }
         if !viewModel.isInvitationMode {
@@ -1213,10 +1190,9 @@ struct CreateUsernameView: View {
             // here, so a balance refresh in between cannot raise it. Only the
             // contested sheet confirms an amount; other submissions carry none.
             DWIdentityRegistrationBridge.shared.authorizedTopUpDuffs = viewModel.isContestedCandidate
-                ? confirmedTopUpDuffs
+                ? viewModel.takeConfirmedTopUpCeiling()
                 : nil
-            confirmedTopUpDuffs = nil
-            requestedTopUpDuffs = nil
+            viewModel.discardConfirmedTopUp()
         }
         // Every submission except an invitation claim reports its progress on
         // the More row and this screen steps aside straight after the PIN.

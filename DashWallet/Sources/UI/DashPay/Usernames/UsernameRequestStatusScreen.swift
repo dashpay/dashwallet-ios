@@ -81,12 +81,10 @@ final class UsernameRequestStatusViewModel: ObservableObject {
             failedCompanion = nil
             return
         }
-        // A retry of that name is running: no "could not be registered" and no
-        // second Try again while it is still being decided.
-        let coordinator = DWIdentityRegistrationCoordinator.shared
-        if coordinator.isAttemptActive,
-           let running = coordinator.currentUsername,
-           DWContestedNameStatusService.labelsMatch(running, failed.username) {
+        // Any registration still running — the retry of that name, or the
+        // request itself finishing its later steps — would refuse a Try again,
+        // and may yet change the answer: nothing is offered until it settles.
+        if DWIdentityRegistrationCoordinator.shared.isAttemptActive {
             failedCompanion = nil
             return
         }

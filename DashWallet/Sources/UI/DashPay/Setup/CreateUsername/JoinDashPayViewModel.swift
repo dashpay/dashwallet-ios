@@ -167,11 +167,6 @@ class JoinDashPayViewModel: ObservableObject {
         // rejection for one name reported over a request for another.
         UsernamePrefs.shared.lostContestUsername = nil
         UsernamePrefs.shared.lostContestWasBlocked = false
-        // Likewise an earlier request's missing instant name — unless this is
-        // the retry of that very name, whose record must outlive the attempt
-        // in case it fails too. Its success hides the record (the identity
-        // then owns a name), and the contest's resolution clears it.
-        UsernamePrefs.shared.clearFailedCompanion(unlessUsername: trimmed)
         // Without this the row would wait for the registration's next phase
         // change to notice the record, leaving Home showing the call to action
         // for an attempt that is already running.

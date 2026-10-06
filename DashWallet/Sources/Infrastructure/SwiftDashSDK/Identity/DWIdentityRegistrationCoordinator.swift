@@ -397,8 +397,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     private var controller: DWIdentityRegistrationController?
 
     /// An attempt is running: either the published phase or the controller's
-    /// own says so. The one check every entry point and caller uses, so the
-    /// two cannot be consulted apart.
+    /// own says so. The registration entry points, `cancel()`, the create form
+    /// and Request details all ask this, so the two are never consulted apart.
+    /// (The purchase path keeps its own switch: it also tells the phases apart
+    /// for its log line.)
     var isAttemptActive: Bool {
         phase.isActive || controller?.phase.isActive == true
     }
@@ -625,14 +627,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             throw CoordinatorError.alreadyInFlight
         }
         pendingVerificationURL = verificationURL
-        // A new request retires an earlier one's missing instant name — every
-        // entry point passes here, the invitation claim included, which does
-        // not hand off to the status row. A retry of that same name keeps it.
-        if let wallet = SwiftDashSDKHost.shared.wallet,
-           let network = SwiftDashSDKHost.shared.runningNetwork,
-           isRecordScopeCurrent(walletId: wallet.walletId, network: network) {
-            UsernamePrefs.shared.clearFailedCompanion(unlessUsername: username)
-        }
 
         // A companion label only makes sense next to a contested main
         // label, and must itself be non-contested — registering a second
@@ -706,8 +700,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // identity index and tear up the DWGlobalOptions mirror on
         // whichever completion fires last. Reject overlapping starts
         // and let the existing attempt finish or fail terminally.
-        if controller?.phase.isActive == true { throw CoordinatorError.alreadyInFlight }
-        guard !phase.isActive else { throw CoordinatorError.alreadyInFlight }
+        guard !isAttemptActive else { throw CoordinatorError.alreadyInFlight }
 
         // Tear down any prior terminal controller / subscription
         // before creating a fresh attempt. Safe even if no prior
@@ -1036,7 +1029,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         topUpSource: DWIdentityFundingSource? = nil,
         authorizedTopUpDuffs: UInt64? = nil
     ) async throws -> Identifier {
-        guard !phase.isActive, controller?.phase.isActive != true else {
+        guard !isAttemptActive else {
             throw CoordinatorError.alreadyInFlight
         }
         guard let wallet = SwiftDashSDKHost.shared.wallet,
@@ -1114,8 +1107,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     private func validateRegistrationContext(walletId: Data, network: Network) throws {
         guard SwiftDashSDKHost.shared.wallet?.walletId == walletId,
               SwiftDashSDKHost.shared.runningNetwork == network,
-              WalletEnvironment.network == network,
-              (WalletEnvironment.activeWalletIdHex as String?) == walletId.hexEncodedString() else {
+              isRecordScopeCurrent(walletId: walletId, network: network) else {
             throw CoordinatorError.contextChanged
         }
         if let resumedIdentityId {
@@ -1368,6 +1360,14 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                         identityId: identityId, name: username, signer: signer)
                 })
             Self.logger.info("🪪 IDENT-COORD :: DPNS name registered: \(username)")
+            // A request for another name is now on Platform: an earlier one's
+            // missing instant name is no longer what to report. Settled here,
+            // after authorization and the write, so a cancelled or refused
+            // attempt — on any entry point, the invitation claim included —
+            // leaves it in place; a retry of that same name keeps it too.
+            if isRecordScopeCurrent(walletId: wallet.walletId, network: network) {
+                UsernamePrefs.shared.clearFailedCompanion(unlessUsername: username)
+            }
         } catch DWIdentityAuthorizer.AuthError.cancelled {
             withdrawPrematureBookmark(
                 username, isContested: isContestedSubmission, network: network, wallet: wallet)
@@ -1846,7 +1846,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// retain its single-flight guard until it actually completes.
     func cancel() {
         Self.logger.info("🪪 IDENT-COORD :: cancel")
-        guard !phase.isActive, controller?.phase.isActive != true else { return }
+        guard !isAttemptActive else { return }
         resetState()
     }
 
@@ -2212,10 +2212,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         switch outcome {
         case .won:
             Self.logger.info("🪪 IDENT-COORD :: contest WON for \(label) — finalizing")
-            if let failed = UsernamePrefs.shared.failedCompanion,
-               DWContestedNameStatusService.labelsMatch(failed.contestedLabel, label) {
-                UsernamePrefs.shared.failedCompanion = nil
-            }
+            UsernamePrefs.shared.clearFailedCompanion(forContestedLabel: label)
             DWContestedNameStatusService.shared.finalizeWon(
                 username: label,
                 network: expectedNetwork,
@@ -2234,10 +2231,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             UsernamePrefs.shared.lostContestWasBlocked = (outcome == .blocked)
             // The vote is over; a missing instant name for it is no longer
             // what the user needs to hear about.
-            if let failed = UsernamePrefs.shared.failedCompanion,
-               DWContestedNameStatusService.labelsMatch(failed.contestedLabel, label) {
-                UsernamePrefs.shared.failedCompanion = nil
-            }
+            UsernamePrefs.shared.clearFailedCompanion(forContestedLabel: label)
             // Same announcement `finalizeWon` makes. Without it the rejection
             // sat in UserDefaults until something else happened to refresh the
             // row — the tile only appeared after leaving the screen and coming
