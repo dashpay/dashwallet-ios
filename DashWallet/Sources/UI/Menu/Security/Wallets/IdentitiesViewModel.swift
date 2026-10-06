@@ -336,9 +336,8 @@ final class IdentitiesViewModel: ObservableObject {
         // it is not this identity's.
         let rejected = WalletEnvironment.network.map {
             // The identity's own wallet: Identities lists other wallets' too.
-            Set(DWContestedNameStatusService.shared.rejectedLabels(
+            DWContestedNameStatusService.shared.rejectedNameKeys(
                 for: $0, identityId: identity.identityId, walletId: identity.wallet?.walletId)
-                .map(DWContestedNameStatusService.dpnsKey))
         } ?? []
         let allNames = identity.dpnsNames.filter(\.isOwned).map(\.label)
             .filter { !rejected.contains(DWContestedNameStatusService.dpnsKey($0)) }

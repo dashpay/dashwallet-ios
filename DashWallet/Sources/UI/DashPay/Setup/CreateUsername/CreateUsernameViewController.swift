@@ -254,6 +254,9 @@ struct CreateUsernameView: View {
     /// human-readable failure message. OK clears it and keeps the
     /// screen up so the user can edit or retry.
     @State private var registrationErrorMessage: String? = nil
+    /// Set for a submission stopped before anything was sent, whose alert
+    /// must not read "Registration failed".
+    @State private var registrationRefusalTitle: String? = nil
     /// Post-claim contact-request failure. The username IS registered
     /// at this point — the alert reports the failed request and its OK
     /// finishes the flow (the request is re-sendable from Contacts).
@@ -671,12 +674,13 @@ struct CreateUsernameView: View {
             Text(inviterContactErrorMessage ?? "")
         }
         .alert(
-            NSLocalizedString("Registration failed", comment: "Usernames"),
+            registrationRefusalTitle ?? NSLocalizedString("Registration failed", comment: "Usernames"),
             isPresented: Binding(
                 get: { registrationErrorMessage != nil },
                 set: { newValue in
                     if !newValue {
                         registrationErrorMessage = nil
+                        registrationRefusalTitle = nil
                         screenLockedAfterAuth = false
                     }
                 }
@@ -684,6 +688,7 @@ struct CreateUsernameView: View {
         ) {
             Button(NSLocalizedString("OK", comment: "")) {
                 registrationErrorMessage = nil
+                registrationRefusalTitle = nil
                 screenLockedAfterAuth = false
             }
         } message: {
@@ -1357,6 +1362,7 @@ struct CreateUsernameView: View {
     /// Stops a submission before anything is sent and says why.
     private func refuseSubmission(_ message: String) {
         abandonSubmission()
+        registrationRefusalTitle = NSLocalizedString("Nothing was sent", comment: "Usernames: confirm the funding source")
         registrationErrorMessage = message
     }
 

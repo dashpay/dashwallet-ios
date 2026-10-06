@@ -6723,3 +6723,6 @@
 
 /* Usernames: confirm the funding source */
 "None of your balances can pay for this request right now." = "None of your balances can pay for this request right now.";
+
+/* Usernames: confirm the funding source */
+"Nothing was sent" = "Nothing was sent";

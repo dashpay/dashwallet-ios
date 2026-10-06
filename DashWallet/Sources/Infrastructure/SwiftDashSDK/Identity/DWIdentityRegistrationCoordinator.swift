@@ -1655,13 +1655,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // The trade index keys on the protocol's normalization, which only
         // the SDK applies. Resolved before anything is paid, so a missing SDK
         // stops the purchase instead of leaving a funded identity without it.
-        guard let sdk = SwiftDashSDKHost.shared.sdk else { throw CoordinatorError.noSDK }
-        let normalizedName: String
-        do {
-            normalizedName = try sdk.dpnsNormalizeLabel(name)
-        } catch {
-            throw CoordinatorError.purchase(error)
-        }
+        // `requireNormalizedLabel` tells "Platform not connected" from "label
+        // not normalizable".
+        let normalizedName = try ContestedNamesService().requireNormalizedLabel(for: name)
 
         let identitySnapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
         guard !identitySnapshot.isLoading else { throw CoordinatorError.noWallet }

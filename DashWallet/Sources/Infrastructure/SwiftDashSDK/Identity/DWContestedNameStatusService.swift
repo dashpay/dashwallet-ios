@@ -624,6 +624,13 @@ public final class DWContestedNameStatusService: NSObject {
         Self.logger.info("🪪 CONTEST-SVC :: recordRejected label=\(canonical, privacy: .public)")
     }
 
+    /// The rejected names for `identityId` as `dpnsKey`s, for testing a
+    /// label with `contains(dpnsKey(label))`: a Platform-returned or
+    /// purchased spelling ("a11ce") finds the rejection of "alice".
+    func rejectedNameKeys(for network: Network, identityId: Data?, walletId: Data? = nil) -> Set<String> {
+        Set(rejectedLabels(for: network, identityId: identityId, walletId: walletId).map(Self.dpnsKey))
+    }
+
     /// The rejected labels for `identityId` (every identity's when nil).
     func rejectedLabels(for network: Network, identityId: Data?, walletId: Data? = nil) -> [String] {
         guard let key = Self.rejectedKey(for: network, walletId: walletId),

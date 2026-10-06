@@ -415,35 +415,33 @@ class CreateUsernameViewModel: ObservableObject {
     /// Only a Core top-up builds an asset lock, so a registration asks only
     /// for Core. A purchase (`isPurchase`) always tops up from Core, whatever
     /// `source` is, and is judged by its own shortfall, not the registration's.
-
     func hasUnfinishedCoreTopUp(source: DWIdentityFundingSource, nameCount: UInt64, isPurchase: Bool = false) -> Bool {
         guard !isInvitationMode,
               isPurchase || source == .core,
               let wallet = SwiftDashSDKHost.shared.wallet,
               let container = SwiftDashSDKHost.shared.modelContainer
         else { return false }
-        // One read of the identity for both questions below, refreshed as the
-        // coordinator's own read is when it decides.
-        let identityId = DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId
         if isPurchase {
             // A purchase tops up from Core whatever the registration pick
             // says, but only an identity that exists and falls short — the
             // coordinator's own test, on the same persisted balance it reads.
-            // Without an identity it registers a fresh one.
-            guard let identityId,
+            // Without an identity it registers a fresh one. Read refreshed, as
+            // the coordinator reads it when it decides.
+            guard let identityId = DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId,
                   let price = takenNameSalePriceCredits,
                   DWIdentityRegistrationCoordinator.purchaseTopUpDuffs(
                     priceCredits: price,
                     heldCredits: UsernameMarketplaceService.identityBalanceCredits(
                         identityId: identityId, container: container)) > 0
             else { return false }
-        } else {
-            guard let needed = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount),
-                  needed > 0 else { return false }
+            return DWIdentityRegistrationCoordinator.hasUnfinishedIdentityTopUp(
+                walletId: wallet.walletId, identityId: identityId, modelContainer: container)
         }
+        guard let needed = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount),
+              needed > 0 else { return false }
         return DWIdentityRegistrationCoordinator.hasUnfinishedIdentityTopUp(
             walletId: wallet.walletId,
-            identityId: identityId,
+            identityId: DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId,
             modelContainer: container)
     }
 
@@ -477,7 +475,7 @@ class CreateUsernameViewModel: ObservableObject {
     func canPay(from source: DWIdentityFundingSource, nameCount: UInt64) -> Bool {
         guard let topUp = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount) else {
             switch source {
-            case .shielded: return shieldedReadiness?.state == .ready
+            case .shielded: return hasReadyShieldedFunding
             case .platformPayment: return hasMinimumRequiredPlatformBalance
             case .core: return hasMinimumRequiredCoreBalance
             case .invitation: return isInvitationMode
@@ -486,7 +484,9 @@ class CreateUsernameViewModel: ObservableObject {
         }
         guard topUp > 0 else { return true }
         switch source {
-        case .core: return coreSpendableDuffs >= topUp
+        // Live, as the submission re-derives it: the fee reserve moves with
+        // the UTXO count while the cached figure can lag.
+        case .core: return SwiftDashSDKWalletState.shared.feeAwareMaxSendable() >= topUp
         case .platformPayment: return canFundFromPlatform(topUp)
         case .shielded, .invitation: return false
         @unknown default: return false
