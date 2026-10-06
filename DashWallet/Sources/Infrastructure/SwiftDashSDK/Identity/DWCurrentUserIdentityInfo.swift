@@ -1016,6 +1016,9 @@ enum SameSeedIdentityRecoveryPipeline {
                 identityIds = discoveredIds
             }
         }
+        // A cancelled run stops before the name refresh: its owner is tearing
+        // the wallet down (`PlatformAddressSyncCoordinator.performStop`).
+        try Task.checkCancellation()
 
         guard !identityIds.isEmpty else {
             return Outcome(
@@ -1256,6 +1259,9 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         // An in-flight run for this context keeps its verdict untouched: the
         // call that started it settles or returns it.
         guard !activeContexts.contains(contextKey) else { return }
+        // Cancelled before it started (its start is being torn down): leave
+        // the verdict for the start that follows.
+        guard !Task.isCancelled else { return }
 
         // Consumed here. A branch that settles the context keeps it
         // consumed; every branch that returns without settling — the memo
@@ -1311,6 +1317,12 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         activeContexts.insert(contextKey)
         defer { activeContexts.remove(contextKey) }
 
+        // DWLogger, unlike `Self.logger`, reaches the diagnostic log export.
+        let logTag = "🪪 IDENT-RECOVERY [\(walletHex.prefix(8))]"
+        let started = CFAbsoluteTimeGetCurrent()
+        func elapsedMs() -> Int { Int((CFAbsoluteTimeGetCurrent() - started) * 1000) }
+        DWLogger.log("\(logTag) start network=\(network.networkName)")
+
         do {
             let outcome = try await SameSeedIdentityRecoveryPipeline.run(
                 knownIdentityIds: verdict?.identityId.map { [$0] } ?? [],
@@ -1325,6 +1337,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                 },
                 refreshNames: { identityIds in
                     for identityId in identityIds {
+                        try Task.checkCancellation()
                         try await DWCurrentUserIdentityInfo.shared.refreshNames(
                             wallet: wallet, network: network, container: modelContainer, identityId: identityId)
                     }
@@ -1378,6 +1391,8 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                 persisted=\(outcome.identitiesPersisted, privacy: .public) \
                 adopted=\(outcome.adopted, privacy: .public)
                 """)
+            DWLogger.log(
+                "\(logTag) complete in \(elapsedMs())ms identities=\(outcome.identityCount) persisted=\(outcome.identitiesPersisted)")
         } catch {
             restoreVerdict()
             Self.logger.warning(
@@ -1385,6 +1400,11 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                 🪪 IDENT-RECOVERY :: failed; will retry after next runtime start: \
                 \(String(describing: error), privacy: .public)
                 """)
+            if error is CancellationError {
+                DWLogger.log("\(logTag) cancelled after \(elapsedMs())ms")
+            } else {
+                DWLogger.log("\(logTag) failed after \(elapsedMs())ms: \(String(describing: error))")
+            }
         }
     }
 

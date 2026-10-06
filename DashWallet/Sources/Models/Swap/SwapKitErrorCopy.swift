@@ -20,20 +20,56 @@
 import Foundation
 
 /// Maps raw SwapKit error code strings to user-facing messages.
-/// Mirrors Android's `SwapKitErrors.messageResFor`.
+/// Mirrors Android's `SwapKitErrors`.
+///
+/// SwapKit reports a failure in one of two places, and the code is the only stable identifier in
+/// either: the top-level `error` field (`noRoutesFound`, `validation_error`, …) on a non-2xx body,
+/// or `providerErrors[].errorCode` on a 200 that carries no routes. Provider-level failures reach
+/// this type through `providerErrorMessage(_:)`, which puts the code back in front of the prose so
+/// a single `"<code>: <detail>"` shape covers both — matching on the prose instead would drop
+/// `sellAssetAmountTooSmall` into the generic copy, which is exactly the case where the user needs
+/// to be told to raise the amount.
 enum SwapKitErrorCopy {
     static let mayaMemoTooLongErrorCode = "mayaMemoTooLong"
+    /// Top-level code for "no provider can carry this pair/amount", lowercased for matching.
+    static let noRoutesFoundCode = "noroutesfound"
+
+    /// A provider-level failure rendered in the same `"<code>: <detail>"` shape the top-level
+    /// `error` field uses, so both reach `message(for:coin:)` through one path.
+    /// Nil when the provider reported neither a code nor prose.
+    static func providerErrorMessage(_ error: SwapKitProviderError?) -> String? {
+        let code = error?.errorCode?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let detail = error?.message?.trimmingCharacters(in: .whitespacesAndNewlines)
+        switch (code?.isEmpty == false ? code : nil, detail?.isEmpty == false ? detail : nil) {
+        case let (code?, detail?):
+            return "\(code): \(detail)"
+        case let (code?, nil):
+            return code
+        case let (nil, detail?):
+            return detail
+        case (nil, nil):
+            return nil
+        }
+    }
 
     static func message(for rawError: String?, coin: SwapCryptoCurrency) -> String {
-        let code = rawError?
-            .components(separatedBy: ":")
-            .first?
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .lowercased()
-            ?? ""
+        let code = code(of: rawError)
+
+        // Per-provider below-minimum codes are family-matched rather than enumerated: SwapKit does
+        // not document the per-provider vocabulary, and the prefix names whichever side was too
+        // small (`sellAssetAmountTooSmall` today). Both forms carry "amount", so an unrelated
+        // below-threshold code — a too-low fee, say — stays out.
+        if isBelowMinimumCode(code) {
+            return NSLocalizedString(
+                "This amount is below the minimum for this swap. Please enter a larger amount.",
+                comment: "Dash DEX / dex_error_amount_too_small"
+            )
+        }
 
         switch code {
-        case "mayamemotoolong":
+        // `memoTooLongForSourceChain` is SwapKit's own name for what the wallet also detects
+        // locally before broadcasting; both mean the OP_RETURN will not fit.
+        case "mayamemotoolong", "memotoolongforsourcechain":
             // Two things drive the memo past the 80-byte OP_RETURN limit: the destination
             // address, and the amount-dependent streaming-limit field. Measured on 2026-08-04,
             // one ARB.YUM route to a fixed address ran 79 / 80 / 79 / 79 bytes at 0.1 / 1 / 10 /
@@ -43,12 +79,12 @@ enum SwapKitErrorCopy {
                 "This swap's Maya instruction doesn't fit in a Dash transaction. Try a different amount, or a shorter %@ address.",
                 comment: "Dash DEX / dex_error_maya_memo_too_long"
             ), chainLabel)
-        case "noroutesfound":
+        case noRoutesFoundCode:
             return NSLocalizedString(
                 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.",
                 comment: "Dash DEX / dex_error_no_route"
             )
-        case "blacklistasset":
+        case "blacklistasset", "invalidasset":
             return String(format: NSLocalizedString(
                 "%@ can't be swapped at the moment.",
                 comment: "Dash DEX / dex_error_blacklisted"
@@ -58,7 +94,9 @@ enum SwapKitErrorCopy {
                 "We couldn't set up your swap. Please check the amount and address, then try again.",
                 comment: "Dash DEX / dex_error_validation"
             )
-        case "apikeyinvalid", "unauthorized":
+        // `apiRequestFailed` is SwapKit failing to reach the provider it quotes through — an
+        // upstream outage from the user's side, same as an unavailable swap desk.
+        case "apikeyinvalid", "unauthorized", "apirequestfailed":
             return NSLocalizedString(
                 "Swaps are temporarily unavailable. Please try again later.",
                 comment: "Dash DEX / dex_error_unavailable"
@@ -83,7 +121,9 @@ enum SwapKitErrorCopy {
                 "This token needs approval before it can be swapped.",
                 comment: "Dash DEX / dex_error_allowance"
             )
-        case "unabletobuildtransaction":
+        // `invalidRoute` is a quoted route SwapKit then refuses to execute — nothing the user can
+        // correct, and retrying re-quotes, so it takes the same copy as a failed build.
+        case "unabletobuildtransaction", "invalidroute":
             return NSLocalizedString(
                 "We couldn't prepare this swap. Please try again.",
                 comment: "Dash DEX / dex_error_build_failed"
@@ -114,5 +154,41 @@ enum SwapKitErrorCopy {
                 comment: "Dash DEX / dex_error_generic"
             )
         }
+    }
+
+    /// True when the failure is the "no provider can carry this pair/amount" code — reported
+    /// top-level and, per provider, inside `providerErrors[]`.
+    ///
+    /// Only the per-provider form is conclusive. SwapKit answers top-level `noRoutesFound` for an
+    /// amount far below a route's floor as well as for a pair it cannot carry: measured
+    /// 2026-08-28, DASH → BTC returned it at 0.01 DASH, `sellAssetAmountTooSmall` (min 0.175) at
+    /// 0.05, and a route at 0.3. Callers must not read the top-level form as "this cannot be
+    /// swapped at all" — hence the neutral copy, and `routability(from:)` ignoring it.
+    static func isNoRoute(_ rawError: String?) -> Bool {
+        code(of: rawError) == noRoutesFoundCode
+    }
+
+    /// True when the failure is specifically "under this route's minimum" — the unambiguous
+    /// counterpart to [isNoRoute]. Routability probing needs both: a provider-level
+    /// `noRoutesFound` does mean the provider can't carry the asset, whereas a below-minimum
+    /// reply only says the probe amount was too small.
+    static func isBelowMinimum(_ rawError: String?) -> Bool {
+        isBelowMinimumCode(code(of: rawError))
+    }
+
+    private static func isBelowMinimumCode(_ code: String) -> Bool {
+        code.hasSuffix("amounttoosmall") || code.hasSuffix("amounttoolow")
+    }
+
+    /// The SwapKit code carried by a raw error: the leading token before an optional
+    /// `": <detail>"`, lowercased, so a bare `validation_error` and `validation_error: <detail>`
+    /// both match.
+    private static func code(of rawError: String?) -> String {
+        rawError?
+            .components(separatedBy: ":")
+            .first?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            ?? ""
     }
 }

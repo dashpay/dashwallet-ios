@@ -4852,9 +4852,6 @@
 /* Identities */
 "The main identity can only be chosen from the active wallet" = "Ana kimlik yalnızca etkin cüzdandan seçilebilir";
 
-/* Dash DEX */
-"The maximum transaction amount is %@" = "The maximum transaction amount is %@";
-
 /* Coinbase */
 "The minimum amount you can send is %@" = "Gönderebileceğiniz minimum miktar %@";
 
@@ -5002,8 +4999,11 @@
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
-/* Dash DEX / dex_enter_amount_invalid */
-"This amount can't be swapped right now. Try a different amount, or try again shortly." = "This amount can't be swapped right now. Try a different amount, or try again shortly.";
+/* Dash DEX / dex_error_amount_too_small */
+"This amount is below the minimum for this swap. Please enter a larger amount." = "This amount is below the minimum for this swap. Please enter a larger amount.";
+
+/* Dash DEX / maya_max_amount_error */
+"Max %@" = "Max %@";
 
 "This applies one choice to all %d selected usernames." = "Bu, seçili %d kullanıcı adının tümüne tek bir seçimi uygular.";
 
@@ -6061,6 +6061,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Geçmişiniz, düzenli";
 
+/* Identity withdrawal — Platform refused the amount as more than the balance can cover */
+"Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again." = "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again.";
+
 /* Username marketplace */
 "Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Kimlik bakiyeniz bu satın almayı karşılamıyor: %1$@ DASH gerekli (ücret payı dahil), %2$@ DASH mevcut. Kimlik bakiyenizi yükleyip yeniden deneyin.";
 
@@ -6504,7 +6507,6 @@
 "Send to Dash address" = "Send to Dash address";
 "Send to username" = "Send to username";
 "Several people requested this name — open it to choose between them." = "Several people requested this name — open it to choose between them.";
-"Shield" = "Shield";
 "Shield your funds first" = "Shield your funds first";
 "Shielded balance is unavailable. Try again after syncing." = "Shielded balance is unavailable. Try again after syncing.";
 "Show balance" = "Show balance";
