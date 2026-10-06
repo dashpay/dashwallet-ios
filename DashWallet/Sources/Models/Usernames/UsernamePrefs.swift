@@ -16,7 +16,6 @@
 //
 
 import Foundation
-import SwiftDashSDK
 
 private let kCoinJoinMixDashShown = "coinJoinMixDashShownKey"
 private let kJoinDashPayInfoShown = "joinDashPayInfoShownKey"
@@ -28,8 +27,6 @@ private let kLostContestUsername = "lostContestUsername"
 private let kLostContestWasBlocked = "lostContestWasBlocked"
 private let kCompletedTileUsername = "usernameRegistrationCompletedTile"
 private let kFailedCompanion = "failedCompanionUsernameRecord"
-private let kAcceptedFundingSourceBase = "usernameAcceptedFundingSource"
-private let kAcceptedFundingSource = kAcceptedFundingSourceBase + ".v3"
 
 /// Keeps the Upgrade-to-DashPay banner dismissal attached to the wallet and
 /// network where the user made that choice. A global flag leaks between
@@ -267,75 +264,5 @@ class UsernamePrefs {
             base,
             networkRawValue: WalletEnvironment.networkKind.rawValue,
             walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
-    }
-
-    // MARK: - Accepted funding source
-
-    /// The funding source a request went out with, kept per label from the
-    /// moment it is authorized until it completes. A retry opens a fresh form,
-    /// which has no memory of the privacy-page pick: it reuses this source
-    /// while the source can pay, and asks before paying from another one.
-    ///
-    /// One record per wallet id, its entries keyed by network scope and
-    /// label: devnets share a seed's id, so the id alone does not name the
-    /// network, while every entry of a removed wallet still goes in one step.
-    func acceptedFundingSourceRaw(forLabel label: String) -> Int? {
-        guard let walletIdHex = WalletEnvironment.activeWalletIdHex as String?, !walletIdHex.isEmpty,
-              let network = WalletEnvironment.network else { return nil }
-        return Self.acceptedFundingSources(walletIdHex: walletIdHex)[
-            Self.acceptedEntryKey(label: label, networkScope: network.persistenceScope)]
-    }
-
-    /// `networkScope` is `Network.persistenceScope`, as read for the request.
-    static func recordAcceptedFundingSourceRaw(_ raw: Int, forLabel label: String, walletId: Data, networkScope: String) {
-        updateAcceptedFundingSources(walletIdHex: walletId.hexEncodedString()) {
-            $0[acceptedEntryKey(label: label, networkScope: networkScope)] = raw
-        }
-    }
-
-    static func clearAcceptedFundingSource(forLabel label: String, walletId: Data, networkScope: String) {
-        updateAcceptedFundingSources(walletIdHex: walletId.hexEncodedString()) {
-            $0[acceptedEntryKey(label: label, networkScope: networkScope)] = nil
-        }
-    }
-
-    /// Every record of these wallets: re-adding a removed seed gets the same
-    /// ids back, and must not inherit a pick from before the removal.
-    static func resetAcceptedFundingSources<S: Sequence>(walletIds: S) where S.Element == Data {
-        for walletId in walletIds {
-            UserDefaults.standard.removeObject(forKey: acceptedFundingSourceKey(walletIdHex: walletId.hexEncodedString()))
-        }
-    }
-
-    /// Every wallet's records, for the full wipe — including those an earlier
-    /// key format left behind, which share the base prefix.
-    static func resetAllAcceptedFundingSources() {
-        let defaults = UserDefaults.standard
-        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(kAcceptedFundingSourceBase + ".") {
-            defaults.removeObject(forKey: key)
-        }
-    }
-
-    private static func acceptedFundingSourceKey(walletIdHex: String) -> String {
-        "\(kAcceptedFundingSource).\(walletIdHex)"
-    }
-
-    private static func acceptedEntryKey(label: String, networkScope: String) -> String {
-        "\(networkScope)/\(DWContestedNameStatusService.dpnsKey(label))"
-    }
-
-    private static func acceptedFundingSources(walletIdHex: String) -> [String: Int] {
-        (UserDefaults.standard.dictionary(forKey: acceptedFundingSourceKey(walletIdHex: walletIdHex)) as? [String: Int]) ?? [:]
-    }
-
-    private static func updateAcceptedFundingSources(walletIdHex: String, _ change: (inout [String: Int]) -> Void) {
-        var entries = acceptedFundingSources(walletIdHex: walletIdHex)
-        change(&entries)
-        let key = acceptedFundingSourceKey(walletIdHex: walletIdHex)
-        if entries.isEmpty {
-            UserDefaults.standard.removeObject(forKey: key)
-        } else {
-            UserDefaults.standard.set(entries, forKey: key)
-        }
     }
 }

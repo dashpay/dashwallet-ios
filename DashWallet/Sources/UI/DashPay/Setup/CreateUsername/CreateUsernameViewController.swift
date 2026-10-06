@@ -151,14 +151,15 @@ struct CreateUsernameView: View {
     /// `acknowledgedUnfinishedTopUp` lets the submission past the warning once
     /// the user has chosen to continue.
     @State private var acknowledgedUnfinishedTopUp = false
-    /// A retry is about to pay from a different source than the one accepted
-    /// for this request: what to submit if the user agrees.
-    @State private var pendingSourceSwitch: PendingSourceSwitch?
-    @State private var showSourceSwitch = false
-    @State private var acknowledgedSourceSwitch = false
+    /// The form picked the source by itself (no privacy-page choice this
+    /// visit): what to submit once the user agrees to pay from it.
+    @State private var pendingSourceConfirmation: PendingSourceConfirmation?
+    @State private var showSourceConfirmation = false
+    /// The user agreed to the source for this submission — at that question,
+    /// or on an amount alert that named it.
+    @State private var acknowledgedFundingSource = false
 
-    private struct PendingSourceSwitch {
-        let accepted: DWIdentityFundingSource
+    private struct PendingSourceConfirmation {
         let temporaryUsername: String?
     }
 
@@ -331,7 +332,7 @@ struct CreateUsernameView: View {
                             // voting wait and the locked Dash. Non-contested names
                             // submit directly.
                             acknowledgedUnfinishedTopUp = false
-                            acknowledgedSourceSwitch = false
+                            acknowledgedFundingSource = false
                             if viewModel.hasUnfinishedCoreTopUp(
                                 source: topUpSource, nameCount: 1,
                                 isPurchase: viewModel.canPurchaseListedNameDirectly) {
@@ -427,11 +428,6 @@ struct CreateUsernameView: View {
             syncFundingSourceToViableSource()
         }
         .onChange(of: viewModel.hasPendingRegistrationRecovery) { _ in
-            syncFundingSourceToViableSource()
-        }
-        // The accepted source is per label: a retry form whose label is
-        // edited to another request's must pick that request's source.
-        .onChange(of: viewModel.username) { _ in
             syncFundingSourceToViableSource()
         }
         .onChange(of: viewModel.identityTopUpDuffs) { _ in
@@ -585,25 +581,26 @@ struct CreateUsernameView: View {
             }
         }
         .alert(
-            NSLocalizedString("Pay from another balance?", comment: "Usernames: retry funding source changed"),
-            isPresented: $showSourceSwitch,
-            presenting: pendingSourceSwitch
+            String.localizedStringWithFormat(
+                NSLocalizedString("Pay from your %@?", comment: "Usernames: confirm the funding source"),
+                fundingSourceName),
+            isPresented: $showSourceConfirmation,
+            presenting: pendingSourceConfirmation
         ) { pending in
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
-                pendingSourceSwitch = nil
+                pendingSourceConfirmation = nil
                 abandonSubmission()
             }
             Button(NSLocalizedString("Continue", comment: "")) {
-                pendingSourceSwitch = nil
-                acknowledgedSourceSwitch = true
+                pendingSourceConfirmation = nil
+                acknowledgedFundingSource = true
                 performSubmit(temporaryUsername: pending.temporaryUsername)
             }
-        } message: { pending in
+        } message: { _ in
             Text(String.localizedStringWithFormat(
                 NSLocalizedString(
-                    "You chose to pay for this request from your %1$@, which can't pay for it now. Continuing pays from your %2$@ instead.",
-                    comment: "Usernames: retry funding source changed"),
-                Self.sourceName(pending.accepted),
+                    "This request is paid from your %@.",
+                    comment: "Usernames: confirm the funding source"),
                 fundingSourceName))
         }
         // `presenting:` hands the amount to the buttons and the message as a
@@ -619,6 +616,8 @@ struct CreateUsernameView: View {
             Button(NSLocalizedString("Confirm", comment: "")) {
                 viewModel.captureConfirmedTopUp(shownDuffs: topUp, isCompanionPass: false)
                 pendingPlainTopUpDuffs = nil
+                // The alert named the source; agreeing to it is the consent.
+                acknowledgedFundingSource = true
                 performSubmit()
             }
         } message: { topUp in
@@ -926,7 +925,7 @@ struct CreateUsernameView: View {
     /// refused: nothing it confirmed on the way — the top-up amount, the proof
     /// link, the answers to the warnings — carries over to the next one.
     private func abandonSubmission() {
-        acknowledgedSourceSwitch = false
+        acknowledgedFundingSource = false
         acknowledgedUnfinishedTopUp = false
         viewModel.discardConfirmedTopUp()
         clearPendingVerification()
@@ -1338,20 +1337,16 @@ struct CreateUsernameView: View {
             abandonSubmission()
             return
         }
-        // A form opened for a retry keeps the source the request went out
-        // with while it can pay (`syncFundingSourceToViableSource`). When it
-        // cannot — e.g. Shielded no longer ready, Core picked instead — ask
-        // before paying from a balance the user did not choose. A pick made on
-        // the privacy page this visit is the user's own and needs no second
-        // question; resuming a paid Core lock moves no new money.
-        let acceptedRaw = UsernamePrefs.shared.acceptedFundingSourceRaw(forLabel: viewModel.username)
-        if !acknowledgedSourceSwitch, !didUserPickFundingSource, !viewModel.isInvitationMode,
-           viewModel.registrationRecovery != .pendingCoreAssetLock,
-           let acceptedRaw,
-           let accepted = DWIdentityFundingSource(rawValue: acceptedRaw),
-           accepted != fundingSource, !viableFundingSources.contains(accepted) {
-            pendingSourceSwitch = PendingSourceSwitch(accepted: accepted, temporaryUsername: temporaryUsername)
-            showSourceSwitch = true
+        // A form that did not pass the privacy page this visit — a retry
+        // from Home or More, a recovery — picks a viable source by itself.
+        // The confirmations show the amount, not the balance it comes from, so
+        // name it and ask before paying: a request that went out from Shielded
+        // must not quietly move to transparent Core on its retry. Resuming a
+        // paid Core lock moves no new money and is not asked about.
+        if !acknowledgedFundingSource, !didUserPickFundingSource, !viewModel.isInvitationMode,
+           viewModel.registrationRecovery != .pendingCoreAssetLock {
+            pendingSourceConfirmation = PendingSourceConfirmation(temporaryUsername: temporaryUsername)
+            showSourceConfirmation = true
             return
         }
         // The two-name top-up can need Core where the one-name one did not:
@@ -1362,8 +1357,7 @@ struct CreateUsernameView: View {
             showUnfinishedTopUp = true
             return
         }
-        let consentedToSourceSwitch = acknowledgedSourceSwitch
-        acknowledgedSourceSwitch = false
+        acknowledgedFundingSource = false
         acknowledgedUnfinishedTopUp = false
         if !viewModel.isInvitationMode {
             // An identity that already exists — resumed or not — is topped up
@@ -1371,13 +1365,6 @@ struct CreateUsernameView: View {
             // pick matters on that path too.
             DWIdentityRegistrationBridge.shared.preferredFundingSource =
                 viewModel.registrationRecovery == .pendingCoreAssetLock ? .core : fundingSource
-            // The user's own choice of source, for a retry to reuse: picked on
-            // the privacy page, agreed to at the switch question, or the one
-            // they accepted before. A source the form chose by itself, or the
-            // Core a paid lock forces, is not.
-            DWIdentityRegistrationBridge.shared.isFundingSourceUserChoice =
-                viewModel.registrationRecovery != .pendingCoreAssetLock
-                    && (didUserPickFundingSource || consentedToSourceSwitch || acceptedRaw == fundingSource.rawValue)
             // The top-up the user confirmed — on the contested sheets or the
             // plain name's amount alert — is the most the coordinator may move
             // without asking again; captured on Confirm, not recalculated here.
@@ -1538,15 +1525,6 @@ struct CreateUsernameView: View {
         // it is the user's move, back on the privacy page, which asks for the
         // transparent balance too rather than picking one.
         if didUserPickFundingSource { return }
-        // A retry keeps paying from the source its request went out with
-        // while that source can still pay; `performSubmit` asks before any
-        // other one is used.
-        if let acceptedRaw = UsernamePrefs.shared.acceptedFundingSourceRaw(forLabel: viewModel.username),
-           let accepted = DWIdentityFundingSource(rawValue: acceptedRaw),
-           viable.contains(accepted) {
-            fundingSource = accepted
-            return
-        }
         fundingSource = preferred
     }
 
