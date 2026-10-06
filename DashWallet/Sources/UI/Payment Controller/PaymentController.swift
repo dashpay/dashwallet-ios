@@ -105,17 +105,9 @@ final class PaymentController: NSObject {
     @objc var sendInProgressHandler: ((Bool) -> Bool)?
     /// The active wallet's payment to an address still waiting for the
     /// network (`PendingSendOutcomes.waitingPayment(to:)`); tests replace it.
-    var waitingPayment: @MainActor (String) async -> PendingSendOutcomes.WaitingPayment? = {
-        await PendingSendOutcomes.shared.waitingPayment(to: $0)
+    var waitingPayment: @MainActor (String) -> PendingSendOutcomes.Entry? = {
+        PendingSendOutcomes.shared.waitingPayment(to: $0)
     }
-    /// Whether the active wallet follows any send to an address, without
-    /// reading rows: false lets a payment through at once; tests replace it.
-    var mayBeWaiting: @MainActor (String) -> Bool = {
-        PendingSendOutcomes.shared.followsPayment(to: $0)
-    }
-    /// Bumped by each repeat-payment check: an answer that arrives after a
-    /// newer check started is not given.
-    private var repeatCheckGeneration = 0
     /// The TXSEND log line sink (`DWLogger`, so it reaches exported logs);
     /// tests replace it.
     var log: (String) -> Void = { DWLogger.log($0) }
@@ -159,7 +151,6 @@ final class PaymentController: NSObject {
 
     @objc
     public func performPayment(with input: DWPaymentInput) {
-        repeatCheckGeneration += 1
         paymentProcessor.reset()
         paymentProcessor.processPaymentInput(input)
     }
@@ -237,50 +228,21 @@ extension PaymentController: DWPaymentProcessorDelegate {
     /// when it opened); any other address is checked. Other addresses are
     /// not interrupted.
     ///
-    /// With nothing followed for the address the answer is given at once.
-    /// Otherwise it comes after the stored row is read off the main thread;
-    /// when a newer check or payment started meanwhile, the late answer is
-    /// not given at all (logged), so nothing of the newer payment is touched.
+    /// Decided from memory, before the call returns: no row is read on the
+    /// payment's path (`PendingSendOutcomes.waitingPayment(to:)`).
     func paymentProcessor(_ processor: DWPaymentProcessor, shouldPayAddress address: String, isBIP70: Bool, completion: @escaping (Bool) -> Void) {
-        guard Thread.isMainThread else {
-            DispatchQueue.main.async {
-                self.paymentProcessor(processor, shouldPayAddress: address, isBIP70: isBIP70, completion: completion)
-            }
-            return
-        }
-        repeatCheckGeneration += 1
         dropOffScreenConfirm()
-        if confirmViewController != nil, paymentOutput?.address == address {
-            completion(true)
-            return
-        }
-        guard MainActor.assumeIsolated({ mayBeWaiting(address) }) else {
+        guard !(confirmViewController != nil && paymentOutput?.address == address),
+              let waiting = MainActor.assumeIsolated({ waitingPayment(address) }) else {
             completion(true)
             return
         }
         let route = paymentRoute(isBIP70: isBIP70)
-        let generation = repeatCheckGeneration
-        Task { @MainActor [weak self] in
-            guard let self else {
-                completion(false)
-                return
-            }
-            let waiting = await self.waitingPayment(address)
-            guard generation == self.repeatCheckGeneration else {
-                self.log("💸 TXSEND :: repeat-payment check dropped — route=\(route) to=\(PendingSendOutcomes.masked(address)): a newer payment started; nothing built")
-                return
-            }
-            guard let waiting else {
-                completion(true)
-                return
-            }
-            let entry = waiting.entry
-            let age = Int(Date().timeIntervalSince(entry.sentAt))
-            self.log("💸 TXSEND :: repeat payment refused — route=\(route) to=\(PendingSendOutcomes.masked(address)) pending=\(PendingSendOutcomes.shortTxid(entry.txidWire)) age=\(age)s wallet=\(PendingSendOutcomes.walletTag(entry.walletId)) reason=still followed, within the 7-day window (\(waiting.rowFinding))")
-            self.refuseRepeating(entry) { [weak self] in
-                self?.log("💸 TXSEND :: repeat payment cancelled on OK — route=\(route) pending=\(PendingSendOutcomes.shortTxid(entry.txidWire)); no PIN, nothing built")
-                completion(false)
-            }
+        let age = Int(Date().timeIntervalSince(waiting.sentAt))
+        log("💸 TXSEND :: repeat payment refused — route=\(route) to=\(PendingSendOutcomes.masked(address)) pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire)) age=\(age)s wallet=\(PendingSendOutcomes.walletTag(waiting.walletId)) reason=still followed: no lock or block seen on its row yet, within the 7-day window; rows re-read in the background")
+        refuseRepeating(waiting) { [weak self] in
+            self?.log("💸 TXSEND :: repeat payment cancelled on OK — route=\(route) pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire)); no PIN, nothing built")
+            completion(false)
         }
     }
 

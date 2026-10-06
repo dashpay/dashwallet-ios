@@ -704,16 +704,12 @@ final class PaymentDialogOutcomeTests: XCTestCase {
         let waiting = PendingSendOutcomes.Entry(
             txidWire: Data(repeating: 0x9c, count: 32), walletId: Data(repeating: 0x1d, count: 32),
             address: "yAddressForTests", amount: 100_000, sentAt: Date())
-        controller.mayBeWaiting = { $0 == "yAddressForTests" }
-        controller.waitingPayment = {
-            $0 == "yAddressForTests" ? .init(entry: waiting, rowFinding: "row not locked or mined yet") : nil
-        }
+        controller.waitingPayment = { $0 == "yAddressForTests" ? waiting : nil }
         var logged: [String] = []
         controller.log = { logged.append($0) }
 
         var answers: [Bool] = []
         controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "yAddressForTests", isBIP70: true) { answers.append($0) }
-        spin(until: { root.presentedViewController != nil })
         let notice = try XCTUnwrap(root.presentedViewController as? UIHostingController<ModalDialog>, "the notice is up")
         XCTAssertEqual(answers, [], "nothing goes on while it is up")
         XCTAssertNil(notice.rootView.negativeButtonText, "a single OK, no way to send anyway")
@@ -723,7 +719,7 @@ final class PaymentDialogOutcomeTests: XCTestCase {
         XCTAssertTrue(shown.contains("TXSEND") && shown.contains("route=BIP70"), shown)
         XCTAssertTrue(shown.contains("pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire))"), shown)
         XCTAssertTrue(shown.contains("wallet=1d1d1d1d"), shown)
-        XCTAssertTrue(shown.contains("row not locked or mined yet"), "says what the row read found: \(shown)")
+        XCTAssertTrue(shown.contains("reason="), shown)
         XCTAssertFalse(shown.contains("yAddressForTests"), "never the full address")
 
         notice.rootView.positiveButtonAction()
@@ -736,40 +732,6 @@ final class PaymentDialogOutcomeTests: XCTestCase {
         controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "yOtherAddress", isBIP70: false) { other.append($0) }
         XCTAssertEqual(other, [true], "another address is not interrupted, nor waited on")
         XCTAssertEqual(logged.count, 2, "nothing pending: no log")
-    }
-
-    /// A check still reading rows when a newer payment starts does not go on
-    /// to the PIN prompt, and does not cancel the newer payment either.
-    func testARepeatCheckOvertakenByANewerPaymentIsDropped() throws {
-        let root = try XCTUnwrap(window.rootViewController)
-        let anchor = AnchorProvider(anchor: root)
-        defer { withExtendedLifetime(anchor) { } }
-        let controller = PaymentController()
-        controller.presentationContextProvider = anchor
-        controller.mayBeWaiting = { _ in true }
-        var resume: CheckedContinuation<Void, Never>?
-        var reads = 0
-        controller.waitingPayment = { _ in
-            reads += 1
-            if reads == 1 { await withCheckedContinuation { resume = $0 } }
-            return nil
-        }
-        var logged: [String] = []
-        controller.log = { logged.append($0) }
-
-        var first: [Bool] = []
-        var second: [Bool] = []
-        controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "yFirstAddress", isBIP70: false) { first.append($0) }
-        spin(until: { resume != nil })
-        controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "ySecondAddress", isBIP70: false) { second.append($0) }
-        spin(until: { !second.isEmpty })
-        XCTAssertEqual(second, [true])
-        XCTAssertEqual(first, [], "the first check is still reading")
-
-        resume?.resume()
-        spin(until: { logged.contains { $0.contains("check dropped") } })
-        XCTAssertEqual(first, [], "the overtaken check gives no answer: no PIN, and no cancel for the newer payment")
-        XCTAssertTrue(logged.contains { $0.contains("check dropped") && !$0.contains("yFirstAddress") }, "\(logged)")
     }
 
     func testAnUnknownOutcomeErrorCarriesItsTxid() {
