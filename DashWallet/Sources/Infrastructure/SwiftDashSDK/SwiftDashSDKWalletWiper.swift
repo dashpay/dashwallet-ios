@@ -330,6 +330,14 @@ final class SwiftDashSDKWalletWiper: NSObject {
         }
 
         resetUserDefaultsStoresForWipe()
+        // Logged rather than failing the wipe: past the commit point the
+        // wallets are gone, and the per-wallet deletion already cleared each
+        // one's journal.
+        do {
+            try DashPayWithdrawalStore.shared.resetForWipe()
+        } catch {
+            logger.error("failed to clear DashPay withdrawal history: \(String(describing: error), privacy: .public)")
+        }
         // Marker files behind their own lock; safe on this queue too.
         SPVChainStoreRebuild.clearAll()
         // Without this a contested submission outlived the wallet that made it:
@@ -1041,6 +1049,17 @@ final class SwiftDashSDKWalletWiper: NSObject {
             // only the rebuild pending on the scope whose rows were just
             // deleted is dropped; the wallet's other scopes keep theirs.
             SPVChainStoreRebuild.finish(walletIds: [walletId], scope: scope)
+            // The payment journal is keyed by wallet, not devnet scope, so it
+            // goes only with the wallet itself. Logged rather than thrown: the
+            // wallet is already deleted, and throwing here would skip the
+            // identity bookkeeping below.
+            if !keepsWalletOnAnotherScope {
+                do {
+                    try DashPayWithdrawalStore.shared.clearForWallet(walletId: walletId)
+                } catch {
+                    logger.error("failed to clear DashPay withdrawal history: \(String(describing: error), privacy: .public)")
+                }
+            }
         }
 
         // Per-wallet identity bookkeeping, not app-state cleanup: it runs on

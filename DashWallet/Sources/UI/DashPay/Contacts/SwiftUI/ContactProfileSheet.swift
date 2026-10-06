@@ -670,12 +670,17 @@ struct ContactProfileSheet: View {
                 ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
                 .foregroundColor(payment.direction == .sent ? .dash.blue : .dashGreen)
             VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: "\(payment.direction == .sent ? "-" : "+")"
+                Text(verbatim: "\(payment.amountIsEstimate ? "≈ " : "")\(payment.direction == .sent ? "-" : "+")"
                     + "\(Self.dashString(duffs: payment.amountDuffs)) DASH")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.dash.primaryText)
                 if let fiat = payment.fiatString {
                     Text(fiat)
+                        .font(.system(size: 12))
+                        .foregroundColor(.dash.secondaryText)
+                }
+                if let status = payment.withdrawalStatus {
+                    Text(status)
                         .font(.system(size: 12))
                         .foregroundColor(.dash.secondaryText)
                 }
