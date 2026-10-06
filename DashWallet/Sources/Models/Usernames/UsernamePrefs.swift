@@ -282,25 +282,29 @@ class UsernamePrefs {
     func acceptedFundingSourceRaw(forLabel label: String) -> Int? {
         guard let walletIdHex = WalletEnvironment.activeWalletIdHex as String?, !walletIdHex.isEmpty,
               let network = WalletEnvironment.network else { return nil }
-        return Self.acceptedFundingSources(walletIdHex: walletIdHex)[Self.acceptedEntryKey(label: label, network: network)]
+        return Self.acceptedFundingSources(walletIdHex: walletIdHex)[
+            Self.acceptedEntryKey(label: label, networkScope: network.persistenceScope)]
     }
 
-    static func recordAcceptedFundingSourceRaw(_ raw: Int, forLabel label: String, walletId: Data, network: Network) {
+    /// `networkScope` is `Network.persistenceScope`, as read for the request.
+    static func recordAcceptedFundingSourceRaw(_ raw: Int, forLabel label: String, walletId: Data, networkScope: String) {
         updateAcceptedFundingSources(walletIdHex: walletId.hexEncodedString()) {
-            $0[acceptedEntryKey(label: label, network: network)] = raw
+            $0[acceptedEntryKey(label: label, networkScope: networkScope)] = raw
         }
     }
 
-    static func clearAcceptedFundingSource(forLabel label: String, walletId: Data, network: Network) {
+    static func clearAcceptedFundingSource(forLabel label: String, walletId: Data, networkScope: String) {
         updateAcceptedFundingSources(walletIdHex: walletId.hexEncodedString()) {
-            $0[acceptedEntryKey(label: label, network: network)] = nil
+            $0[acceptedEntryKey(label: label, networkScope: networkScope)] = nil
         }
     }
 
-    /// Every record of `walletId`: re-adding a removed seed gets the same id
-    /// back, and must not inherit a pick from before the removal.
-    static func resetAcceptedFundingSources(walletId: Data) {
-        UserDefaults.standard.removeObject(forKey: acceptedFundingSourceKey(walletIdHex: walletId.hexEncodedString()))
+    /// Every record of these wallets: re-adding a removed seed gets the same
+    /// ids back, and must not inherit a pick from before the removal.
+    static func resetAcceptedFundingSources<S: Sequence>(walletIds: S) where S.Element == Data {
+        for walletId in walletIds {
+            UserDefaults.standard.removeObject(forKey: acceptedFundingSourceKey(walletIdHex: walletId.hexEncodedString()))
+        }
     }
 
     /// Every wallet's records, for the full wipe — including those an earlier
@@ -316,8 +320,8 @@ class UsernamePrefs {
         "\(kAcceptedFundingSource).\(walletIdHex)"
     }
 
-    private static func acceptedEntryKey(label: String, network: Network) -> String {
-        "\(network.persistenceScope)/\(DWContestedNameStatusService.dpnsKey(label))"
+    private static func acceptedEntryKey(label: String, networkScope: String) -> String {
+        "\(networkScope)/\(DWContestedNameStatusService.dpnsKey(label))"
     }
 
     private static func acceptedFundingSources(walletIdHex: String) -> [String: Int] {

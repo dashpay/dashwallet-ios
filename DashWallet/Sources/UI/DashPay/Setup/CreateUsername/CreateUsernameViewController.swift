@@ -1361,6 +1361,7 @@ struct CreateUsernameView: View {
             showUnfinishedTopUp = true
             return
         }
+        let consentedToSourceSwitch = acknowledgedSourceSwitch
         acknowledgedSourceSwitch = false
         acknowledgedUnfinishedTopUp = false
         if !viewModel.isInvitationMode {
@@ -1369,7 +1370,14 @@ struct CreateUsernameView: View {
             // pick matters on that path too.
             DWIdentityRegistrationBridge.shared.preferredFundingSource =
                 viewModel.registrationRecovery == .pendingCoreAssetLock ? .core : fundingSource
-            DWIdentityRegistrationBridge.shared.isFundingSourceUserChoice = true
+            // The user's own choice of source, for a retry to reuse: picked on
+            // the privacy page, agreed to at the switch question, or the one
+            // they accepted before. A source the form chose by itself, or the
+            // Core a paid lock forces, is not.
+            let acceptedRaw = UsernamePrefs.shared.acceptedFundingSourceRaw(forLabel: viewModel.username)
+            DWIdentityRegistrationBridge.shared.isFundingSourceUserChoice =
+                viewModel.registrationRecovery != .pendingCoreAssetLock
+                    && (didUserPickFundingSource || consentedToSourceSwitch || acceptedRaw == fundingSource.rawValue)
             // The top-up the user confirmed — on the contested sheets or the
             // plain name's amount alert — is the most the coordinator may move
             // without asking again; captured on Confirm, not recalculated here.

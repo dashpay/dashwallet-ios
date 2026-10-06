@@ -363,6 +363,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// which a wallet switch can rebind `SwiftDashSDKHost.shared.wallet`.
     private var registrationWalletId: Data?
     private var registrationNetwork: Network?
+    /// `registrationNetwork`'s persistence scope, read when the attempt
+    /// starts: a devnet's scope follows the configured devnet, which can
+    /// change before the attempt completes.
+    private var registrationNetworkScope: String?
     private var resumedIdentityId: Data?
     private(set) var isRegisteringUsername = false
     /// An existing identity is being topped up before its name is
@@ -680,7 +684,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     identityId: identityId, username: username, temporaryUsername: temporaryUsername,
                     topUpSource: fundingSource == .invitation ? nil : fundingSource,
                     authorizedTopUpDuffs: authorizedTopUpDuffs,
-                    remembersTopUpSource: remembersFundingSource)
+                    remembersFundingSource: remembersFundingSource)
             },
             create: {
                 try await self.createIdentityAndUsername(
@@ -724,6 +728,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         currentUsername = username
         registrationWalletId = wallet.walletId
         registrationNetwork = network
+        registrationNetworkScope = network.persistenceScope
         // A persisted identity-registration lock always wins over the
         // newly-selected funding source. The original Core payment has
         // already happened; presenting PP / shielded progress here would
@@ -772,10 +777,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         } catch {
             newController.enterFailed(error.localizedDescription)
             throw error
-        }
-        // A resumed Core lock is not a choice of source.
-        if remembersFundingSource, recoveryLock == nil {
-            recordAcceptedSource(fundingSource, label: username, walletId: wallet.walletId, network: network)
         }
 
         // Step 1: pre-derive identity public keys + persist privates
@@ -832,7 +833,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 IdentityCreationContext(wallet: wallet, network: network, modelContainer: modelContainer,
                                         signer: signer, pubkeys: pubkeys, fundingSource: fundingSource,
                                         username: username, invitationURI: invitationURI,
-                                        requiredIdentityFundingDuffs: UInt64(requiredIdentityFundingDuffs)),
+                                        requiredIdentityFundingDuffs: UInt64(requiredIdentityFundingDuffs),
+                                        remembersFundingSource: remembersFundingSource),
                 recoveryLock: recoveryLock)
             Self.logger.info("🪪 IDENT-COORD :: identity created, id=\(identityId.map { String(format: "%02x", $0) }.joined().prefix(8))…")
         } catch {
@@ -867,10 +869,17 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         let username: String
         let invitationURI: String?
         let requiredIdentityFundingDuffs: UInt64
+        /// The user picked `fundingSource` (see `recordAcceptedSource`).
+        var remembersFundingSource = false
     }
 
     /// Submit only the selected funding route when no paid lock or identity exists.
     private func createFundedIdentity(_ context: IdentityCreationContext) async throws -> Identifier {
+        // The request reaches the user's chosen route here — not when a paid
+        // lock or an earlier identity is reused instead.
+        if context.remembersFundingSource {
+            recordAcceptedSource(context.fundingSource, label: context.username, walletId: context.wallet.walletId)
+        }
         let wallet = context.wallet
         let modelContainer = context.modelContainer
         let signer = context.signer
@@ -1046,7 +1055,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         temporaryUsername: String? = nil,
         topUpSource: DWIdentityFundingSource? = nil,
         authorizedTopUpDuffs: UInt64? = nil,
-        remembersTopUpSource: Bool = false
+        remembersFundingSource: Bool = false
     ) async throws -> Identifier {
         guard !isAttemptActive else {
             throw CoordinatorError.alreadyInFlight
@@ -1071,6 +1080,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         currentUsername = username
         registrationWalletId = wallet.walletId
         registrationNetwork = network
+        registrationNetworkScope = network.persistenceScope
         resumedIdentityId = identityId
         isRegisteringUsername = true
         // What the row reports if the top-up runs: the payment step is judged
@@ -1112,7 +1122,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             topUp: topUpSource.map {
                 IdentityTopUpPlan(
                     source: $0, modelContainer: container, authorizedDuffs: authorizedTopUpDuffs,
-                    remembersSource: remembersTopUpSource)
+                    remembersFundingSource: remembersFundingSource)
             })
     }
 
@@ -1191,8 +1201,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         let modelContainer: ModelContainer
         /// The top-up the user confirmed; nil when no amount was shown.
         var authorizedDuffs: UInt64? = nil
-        /// The user picked `source`; a top-up that runs records it for a retry.
-        var remembersSource = false
+        /// The user picked `source` (see `recordAcceptedSource`).
+        var remembersFundingSource = false
     }
 
     private func finishUsernameRegistration(
@@ -1276,16 +1286,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         newController.enterInFlight()
         do {
             try validateRegistrationContext(walletId: wallet.walletId, network: network)
-            // Money is about to move from this source; a retry should reuse it.
-            if plan.remembersSource {
-                recordAcceptedSource(plan.source, label: username, walletId: wallet.walletId, network: network)
-            }
             switch plan.source {
             case .core:
                 let spendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
                 guard spendableDuffs >= topUpDuffs else {
                     throw CoordinatorError.insufficientCoreBalanceForTopUp(
                         neededDuffs: topUpDuffs, availableDuffs: spendableDuffs)
+                }
+                if plan.remembersFundingSource {
+                    recordAcceptedSource(plan.source, label: username, walletId: wallet.walletId)
                 }
                 _ = try await wallet.topUpIdentityWithFunding(
                     identityId: identityId,
@@ -1296,6 +1305,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     walletId: wallet.walletId,
                     modelContainer: plan.modelContainer,
                     targetCredits: topUpDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff)
+                if plan.remembersFundingSource {
+                    recordAcceptedSource(plan.source, label: username, walletId: wallet.walletId)
+                }
                 _ = try await wallet.topUpFromAddresses(
                     identityId: identityId,
                     inputs: inputs,
@@ -1675,6 +1687,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         currentUsername = name
         registrationWalletId = wallet.walletId
         registrationNetwork = network
+        registrationNetworkScope = network.persistenceScope
         currentFundingSource = .core
 
         let newController = DWIdentityRegistrationController()
@@ -2354,19 +2367,17 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             }
     }
 
-    /// Remembers the source a request the user funded pays from, for a retry
-    /// of it to reuse (`UsernamePrefs.acceptedFundingSourceRaw`). Called past
-    /// the PIN and the context check, where money is committed to move: a
-    /// new identity's funding, or an existing identity's top-up that runs. A
-    /// request refused before that leaves no record; one that fails after it
-    /// keeps it. An invitation pays from the voucher, not from a balance the
-    /// user picks.
-    private func recordAcceptedSource(
-        _ source: DWIdentityFundingSource, label: String, walletId: Data, network: Network
-    ) {
-        guard source != .invitation else { return }
+    /// Remembers the source the user picked for a request, for a retry of it
+    /// to reuse (`UsernamePrefs.acceptedFundingSourceRaw`). Called where the
+    /// request starts paying from that source: a new identity's funding route
+    /// (whose own pre-checks may still refuse it), or an existing identity's
+    /// Core or Platform top-up once its checks passed. A request stopped
+    /// before that leaves no record; one that fails after it keeps it. An
+    /// invitation pays from the voucher, not from a balance the user picks.
+    private func recordAcceptedSource(_ source: DWIdentityFundingSource, label: String, walletId: Data) {
+        guard source != .invitation, let networkScope = registrationNetworkScope else { return }
         UsernamePrefs.recordAcceptedFundingSourceRaw(
-            source.rawValue, forLabel: label, walletId: walletId, network: network)
+            source.rawValue, forLabel: label, walletId: walletId, networkScope: networkScope)
     }
 
     private func handlePhaseChange(_ newPhase: DWIdentityRegistrationController.Phase) {
@@ -2418,8 +2429,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // request with a fresh choice of source. Keyed by the wallet that
         // made it, which a switch may have made inactive meanwhile.
         if case .completed = newPhase, let username = currentUsername,
-           let walletId = registrationWalletId, let network = registrationNetwork {
-            UsernamePrefs.clearAcceptedFundingSource(forLabel: username, walletId: walletId, network: network)
+           let walletId = registrationWalletId, let networkScope = registrationNetworkScope {
+            UsernamePrefs.clearAcceptedFundingSource(forLabel: username, walletId: walletId, networkScope: networkScope)
         }
 
         // The registering wallet now owns an identity: drop its
@@ -2514,6 +2525,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         currentUsername = nil
         registrationWalletId = nil
         registrationNetwork = nil
+        registrationNetworkScope = nil
         resumedIdentityId = nil
         isRegisteringUsername = false
         isFundingExistingIdentity = false
