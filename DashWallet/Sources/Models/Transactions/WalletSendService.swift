@@ -227,7 +227,41 @@ final class RecentSendsRegistry {
     }
 }
 
+/// The contact a payment is for, together with the wallet, DashPay identity
+/// and network it was opened from. Captured when the contact is chosen and
+/// checked again around every await of a Platform- or Shielded-funded contact
+/// payment: a wallet or identity switch while the flow is open must void the
+/// payment, not fund it from whichever wallet is active by then.
+///
+/// Plain data, declared in every target because the shared withdrawal
+/// coordinator takes it as a parameter; only the DashPay target creates one.
+struct ContactPaymentRecipient: Equatable {
+    let identityId: Data
+    let displayName: String
+    let walletId: Data
+    let ownerIdentityId: Data
+    let network: WalletEnvironment.NetworkKind
+}
+
 #if DASHPAY
+extension ContactPaymentRecipient {
+    /// The context for paying `contact` from the wallet and identity active
+    /// right now; nil when either is not ready.
+    @MainActor
+    static func current(for contact: ContactItem) -> ContactPaymentRecipient? {
+        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+              let ownerIdentityId = DWCurrentUserIdentityInfo.shared.identityId else {
+            return nil
+        }
+        return ContactPaymentRecipient(
+            identityId: contact.contactIdentityId,
+            displayName: contact.displayTitle,
+            walletId: walletId,
+            ownerIdentityId: ownerIdentityId,
+            network: WalletEnvironment.networkKind)
+    }
+}
+
 /// Contacts whose last payment came back with an unknown broadcast outcome.
 ///
 /// The transaction may already be on the network with only the response lost,
@@ -520,13 +554,7 @@ final class WalletSendService: NSObject {
         memo: String? = nil
     ) async throws -> (txid: Data, feeDuffs: UInt64) {
         Self.logger.info("💸 TXSEND :: pay-to-contact starting — \(amount, privacy: .public) duffs")
-        // Refused before the PIN prompt: see `UnknownContactPaymentOutcomes`.
-        if unknownContactPaymentOutcomes.contains(contactIdentityId: contactIdentityId) {
-            throw Self.makeError(
-                code: .broadcastUnknown,
-                description: "A previous payment to this contact could not be confirmed. Don't send it again; wait for wallet synchronization."
-            )
-        }
+        try rejectIfContactPaymentOutcomeUnknown(contactIdentityId)
         try Self.ensureInitialRestoreSyncCompleted()
         // spendAmount engages the biometric spending limit (C7.4) —
         // without it the gate is non-monetary and Face ID alone would
@@ -570,6 +598,101 @@ final class WalletSendService: NSObject {
         // derived inside Rust and never crosses the FFI boundary.
         recentSends.record(txidWire: txid, address: nil, amount: amount, fee: feeDuffs)
         return (txid: txid, feeDuffs: feeDuffs)
+    }
+
+    /// How long an unresolved withdrawal to a contact keeps payments to that
+    /// contact locked across launches. Nothing reconciles a withdrawal's
+    /// outcome (TODO(dashpay-withdrawal-reconcile)), so unlike the session
+    /// lock this one cannot wait for a sync to clear it; a day is far longer
+    /// than a payout takes to land, and leaves the user time to check.
+    private static let unresolvedContactWithdrawalLockWindow: TimeInterval = 24 * 60 * 60
+
+    /// True when `contactIdentityId` must not be paid again yet: a payment to
+    /// it this session had an unknown outcome
+    /// (`UnknownContactPaymentOutcomes`), or — given the wallet context — a
+    /// withdrawal to it from the last day is still unresolved, which survives
+    /// a relaunch.
+    func contactPaymentOutcomeIsUnknown(
+        contactIdentityId: Data,
+        recipient: ContactPaymentRecipient?
+    ) -> Bool {
+        if unknownContactPaymentOutcomes.contains(contactIdentityId: contactIdentityId) { return true }
+        guard let recipient else { return false }
+        do {
+            return try DashPayWithdrawalStore.shared.hasUnresolvedEntry(
+                scope: .init(
+                    networkRaw: recipient.network.rawValue,
+                    walletId: recipient.walletId,
+                    ownerIdentityId: recipient.ownerIdentityId),
+                contactIdentityId: contactIdentityId,
+                since: Date().addingTimeInterval(-Self.unresolvedContactWithdrawalLockWindow))
+        } catch {
+            Self.logger.error("💸 TXSEND :: DashPay withdrawal history unreadable: \(String(describing: error), privacy: .public)")
+            return false
+        }
+    }
+
+    /// Refused before the payment is built: see `contactPaymentOutcomeIsUnknown`.
+    private func rejectIfContactPaymentOutcomeUnknown(
+        _ contactIdentityId: Data,
+        recipient: ContactPaymentRecipient? = nil
+    ) throws {
+        guard contactPaymentOutcomeIsUnknown(contactIdentityId: contactIdentityId, recipient: recipient) else { return }
+        throw Self.makeError(
+            code: .broadcastUnknown,
+            description: "A previous payment to this contact could not be confirmed. Don't send it again; wait for wallet synchronization."
+        )
+    }
+
+    /// Throws unless `recipient` still describes the active wallet, DashPay
+    /// identity and network.
+    @MainActor
+    static func validateContactRecipient(_ recipient: ContactPaymentRecipient) throws {
+        guard recipient.identityId.count == 32,
+              recipient.ownerIdentityId.count == 32,
+              recipient.network == WalletEnvironment.networkKind,
+              recipient.walletId == SwiftDashSDKHost.shared.wallet?.walletId,
+              recipient.walletId == WalletEnvironment.activeWalletId(for: recipient.network),
+              SwiftDashSDKHost.shared.runningNetwork != nil,
+              SwiftDashSDKHost.shared.runningNetwork == WalletEnvironment.network,
+              recipient.ownerIdentityId == DWCurrentUserIdentityInfo.shared.identityId
+        else {
+            throw makeError(
+                code: .dashPayPaymentUnavailable,
+                description: NSLocalizedString(
+                    "Your wallet or DashPay identity changed. Reopen the payment and try again.",
+                    comment: "DashPay: the wallet or identity changed while a contact payment was open"))
+        }
+    }
+
+    /// Reserve a fresh DIP-15 address of the contact's for a Platform- or
+    /// Shielded-funded payment, which pays it through a withdrawal.
+    ///
+    /// Call only after the user confirmed the payment and authorized it: the
+    /// SDK marks the address used before returning it, and it stays used if
+    /// the withdrawal is then cancelled, rejected or never confirmed.
+    @MainActor
+    func reserveContactPaymentAddress(for recipient: ContactPaymentRecipient) async throws -> String {
+        // At the boundary rather than on the screen: one opened before the
+        // lock was taken must not be able to start a second payment.
+        try rejectIfContactPaymentOutcomeUnknown(recipient.identityId, recipient: recipient)
+        try Self.validateContactRecipient(recipient)
+        try Self.ensureOnline()
+        guard let wallet = SwiftDashSDKHost.shared.wallet else {
+            throw Self.makeError(
+                code: .dashPayPaymentUnavailable,
+                description: "Wallet or DashPay identity is not ready")
+        }
+        let address: String
+        do {
+            address = try await wallet.reserveDashPayPaymentAddress(
+                fromIdentityId: recipient.ownerIdentityId,
+                toContactIdentityId: recipient.identityId)
+        } catch {
+            throw Self.contactPaymentError(from: error)
+        }
+        try Self.validateContactRecipient(recipient)
+        return address
     }
 #endif
 

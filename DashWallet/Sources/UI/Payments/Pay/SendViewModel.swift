@@ -54,6 +54,16 @@ final class SendViewModel: ObservableObject {
         didSet { destinationDidChange() }
     }
     @Published private(set) var destination: DestinationKind? = nil
+    /// The wallet and DashPay identity the contact was chosen from,
+    /// captured with it. A Platform- or Shielded-funded payment is checked
+    /// against it before and after every await; nil when either was not
+    /// ready, which leaves only the Transparent balance on offer. Plain data,
+    /// so declared in every target; only `setContactRecipient` sets either.
+    private(set) var contactPaymentRecipient: ContactPaymentRecipient?
+    /// True when more than one balance could fund this contact payment at
+    /// the time the contact was chosen, so the flow asks which one (the
+    /// From step) instead of going straight to the amount.
+    private(set) var contactOffersSourceChoice = false
     #if DASHPAY
     /// The DashPay contact this send pays, when the flow was opened from the
     /// contact picker instead of the address field.
@@ -438,40 +448,54 @@ final class SendViewModel: ObservableObject {
 
     #if DASHPAY
     /// Open this send on a DashPay contact instead of an address. Called by
-    /// the contact picker before the amount step is pushed; the address step
-    /// and the From step are both skipped, because neither has anything left
-    /// to ask.
+    /// the contact picker before the next step is pushed; the address step is
+    /// skipped, because there is no address to type.
     ///
-    /// The destination is assigned rather than parsed — there is no text to
-    /// parse — and the source is put on Core, the only balance
-    /// `contactValidSources` admits.
+    /// The destination is assigned rather than parsed — a contact receives at
+    /// a DIP-15 Core address — so a contact can be paid from any balance a
+    /// Core address can. The source starts on the first of those with funds.
     func setContactRecipient(_ contact: ContactItem) {
         contactRecipient = contact
+        contactPaymentRecipient = ContactPaymentRecipient.current(for: contact)
         // A fresh amount step for a contact whose last payment has an unknown
         // outcome opens already locked — otherwise Back and reselecting the
         // contact would hand back the Send button the lock exists to withhold.
-        contactSendOutcomeIsUnknown = WalletSendService.shared.unknownContactPaymentOutcomes
-            .contains(contactIdentityId: contact.contactIdentityId)
+        contactSendOutcomeIsUnknown = WalletSendService.shared.contactPaymentOutcomeIsUnknown(
+            contactIdentityId: contact.contactIdentityId,
+            recipient: contactPaymentRecipient)
         destination = .core
-        // Not the user's pick: it is the only legal source, and recording it
-        // as a pick would let it survive a later destination change.
-        setSourceWithoutClaimingUserIntent(.core)
+        let funded = validSources.filter { balanceDuffs(of: $0) > 0 }
+        contactOffersSourceChoice = funded.count > 1
+        // Not the user's pick, so the From step still reads as a suggestion.
+        // The assignment refreshes the route-dependent preflights.
+        setSourceWithoutClaimingUserIntent(funded.first ?? .core)
     }
 
-    /// A contact payment can only be funded from the transparent balance.
-    ///
-    /// Not a property of DashPay but of the SDK seam as it stands:
-    /// `sendDashPayPayment` derives the contact's DIP-15 receive address
-    /// inside Rust and builds, signs and broadcasts the L1 transaction there —
-    /// the address itself never crosses the FFI boundary. `platformToCore` and
-    /// `shieldedToCore` both need a Core address to pay to, so there is
-    /// nothing to hand them.
-    ///
-    /// TODO(dashpay-contact-address): when the SDK exposes the derived
-    /// address, a contact becomes an ordinary Core destination — this list
-    /// then matches the one `.core` addresses already get in `validSources`,
-    /// and `route` stops needing its own contact branch.
-    static let contactValidSources: [ChainNetwork] = [.core]
+    /// Which balances can pay a contact. Transparent pays through
+    /// `sendDashPayPayment`, which derives the contact's address and sends in
+    /// one SDK call. Platform and Shielded pay through a withdrawal to an
+    /// address reserved with `reserveContactPaymentAddress` once the payment
+    /// is confirmed; without the captured wallet context there is nothing to
+    /// check that reservation against, so only Transparent remains.
+    private var contactValidSources: [ChainNetwork] {
+        contactPaymentRecipient == nil ? [.core] : [.core, .platform, .shielded]
+    }
+
+    /// What the contact intro offers as the balance to spend: the envelope
+    /// the Send button is gated on for the selected source, not its raw
+    /// balance, so typing the number shown never comes back as insufficient.
+    var contactSpendableDuffs: UInt64 {
+        switch source {
+        case .core:
+            return coreToCoreSpendableDuffs
+        case .platform:
+            return platformWithdrawableDuffs ?? 0
+        case .shielded:
+            // Without the note-priced ceiling, `canContinue` falls back to
+            // the balance less the worst-case reserve; so does this.
+            return (shieldedSpendCeilingCredits ?? creditsMinusFeeReserve(shieldedBalance)) / 1000
+        }
+    }
 
     /// The SDK gave up permanently on this contact's DIP-15 payment channel
     /// (`ContactItem.paymentChannelBroken`), so no amount can be sent on it.
@@ -499,14 +523,15 @@ final class SendViewModel: ObservableObject {
         "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.",
         comment: "Send to contact: the broadcast outcome is unknown")
 
-    /// Execute the pay-to-contact spend.
+    /// Execute the Transparent-funded pay-to-contact spend.
     ///
     /// There is no prepare/confirm split on this path —
     /// `WalletSendService.sendToContact` runs the spend-auth gate and the
     /// SDK's single-shot build+sign+broadcast — so the Send tap on the amount
     /// step is the confirmation, and this is the only route the amount step
     /// executes itself rather than handing on to the L1 payment processor or
-    /// `SendConfirmSheet`.
+    /// `SendConfirmSheet`. A Platform- or Shielded-funded contact payment is a
+    /// withdrawal, which `SendConfirmSheet` executes like any other.
     ///
     /// - Returns: the broadcast transaction's wire-order txid on success;
     ///   `nil` when it failed or the user cancelled the PIN prompt. A
@@ -514,6 +539,7 @@ final class SendViewModel: ObservableObject {
     ///   prompt is not an error.
     func sendToContact() async -> Data? {
         guard let contact = contactRecipient,
+              route == .coreToCore,
               canContinue,
               // Re-asked here rather than trusting the gate: this is the value
               // that gets spent.
@@ -563,7 +589,7 @@ final class SendViewModel: ObservableObject {
     /// Platform credits (`shieldedShieldToRecipient`).
     var validSources: [ChainNetwork] {
         #if DASHPAY
-        if contactRecipient != nil { return Self.contactValidSources }
+        if contactRecipient != nil { return contactValidSources }
         #endif
         switch destination {
         case .core: return [.core, .platform, .shielded]
@@ -575,12 +601,9 @@ final class SendViewModel: ObservableObject {
 
     var route: Route? {
         #if DASHPAY
-        if contactRecipient != nil {
-            // A contact payment is a transparent L1 spend; `contactValidSources`
-            // admits nothing else, so any other source is not a route this flow
-            // can execute.
-            return source == .core ? .coreToCore : nil
-        }
+        // A source `contactValidSources` withholds is not a route this flow
+        // can execute; the rest map like any Core destination.
+        if contactRecipient != nil, !validSources.contains(source) { return nil }
         #endif
         guard let destination else { return nil }
         switch (source, destination) {

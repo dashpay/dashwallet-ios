@@ -223,6 +223,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     @Published private(set) var phase: Phase = .idle
 
+    /// True when `.submittedUnconfirmed` came from a DashPay contact
+    /// withdrawal whose outcome could not be established, rather than from a
+    /// shielded spend the relay accepted. Cleared on `reset()`.
+    @Published private(set) var contactWithdrawalOutcomeUnknown = false
+
     /// The typed error behind the current `.failed(_)` phase. `Phase`
     /// carries only display text (that's what the confirm sheets render), so
     /// programmatic callers that must branch on the *kind* of failure —
@@ -872,10 +877,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// transfer); an external Send passes the recipient's address. The
     /// withdrawal-store tag (which classifies the incoming L1 tx as
     /// "Shielded received") only applies to the own-wallet payout.
+    /// `contactRecipient` pays a DashPay contact instead: a fresh address of
+    /// theirs is reserved once the user has authorized the payment.
     func performWithdraw(
         amountCredits: UInt64,
         sweepAll: Bool = false,
-        toCoreAddress destinationOverride: String? = nil
+        toCoreAddress destinationOverride: String? = nil,
+        contactRecipient: ContactPaymentRecipient? = nil
     ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: withdraw route amount=\(amountCredits) credits external=\(destinationOverride != nil)")
@@ -910,9 +918,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // the phase — same ordering as `resolveEnvironment()`. The reader is
         // main-actor-safe and we're already on @MainActor, so call it
         // directly (no GCD hop).
-        let coreAddress: String
+        var coreAddress: String
         let paysOwnWallet: Bool
-        if let destinationOverride, !destinationOverride.isEmpty {
+        if contactRecipient != nil {
+            // Reserved after authorization, below.
+            coreAddress = ""
+            paysOwnWallet = false
+        } else if let destinationOverride, !destinationOverride.isEmpty {
             coreAddress = destinationOverride
             paysOwnWallet = false
         } else {
@@ -925,12 +937,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
             paysOwnWallet = true
         }
 
+        let contactWithdrawal: ContactWithdrawal?
         do {
             try await authorize()
+            contactWithdrawal = try await reserveContactWithdrawal(
+                contactRecipient,
+                amountDuffs: submittedAmount / 1000,
+                amountIsEstimate: false,
+                source: .shielded)
         } catch {
             handleFailure(error)
             return
         }
+        if let contactWithdrawal { coreAddress = contactWithdrawal.address }
 
         phase = .proving
 
@@ -945,6 +964,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 toCoreAddress: coreAddress,
                 amount: submittedAmount)
         } catch {
+            if concludeUncertainContactWithdrawal(contactWithdrawal, error: error) {
+                scheduleShieldedResync(manager: env.manager)
+                return
+            }
             // shieldedSpendUnconfirmed means the spend may already be on
             // chain (non-retryable), so its payout can still arrive — tag
             // the destination so the incoming tx classifies as a shielded
@@ -962,6 +985,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         if paysOwnWallet {
             ShieldedWithdrawalStore.shared.record(address: coreAddress)
         }
+        markContactWithdrawalSubmitted(contactWithdrawal)
 
         Self.logger.info("🛡️ SHIELD-TX :: withdraw route completed")
         phase = .broadcasting
@@ -1204,11 +1228,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
     ///
     /// `toCoreAddress` nil = the wallet's own receive address (the internal
     /// transfer); an external Send passes the recipient's L1 address.
+    /// `contactRecipient` pays a DashPay contact instead, as in
+    /// `performWithdraw`.
     func performPlatformWithdraw(
         amountCredits: UInt64,
         fullBalance: Bool,
         feeHeadroomCredits: UInt64?,
-        toCoreAddress destinationOverride: String? = nil
+        toCoreAddress destinationOverride: String? = nil,
+        contactRecipient: ContactPaymentRecipient? = nil
     ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: platform→core withdraw route full=\(fullBalance) amount=\(amountCredits) external=\(destinationOverride != nil)")
@@ -1216,8 +1243,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // Destination Core (BIP44, Base58Check) address — for the internal
         // transfer, the wallet's own receive address (same resolution as the
         // shielded withdraw route).
-        let coreAddress: String
-        if let destinationOverride, !destinationOverride.isEmpty {
+        var coreAddress: String
+        if contactRecipient != nil {
+            // Reserved after authorization, below.
+            coreAddress = ""
+        } else if let destinationOverride, !destinationOverride.isEmpty {
             coreAddress = destinationOverride
         } else {
             guard let ownAddress = SwiftDashSDKReceiveAddressReader.receiveAddress(),
@@ -1228,12 +1258,22 @@ final class ShieldedTransferCoordinator: ObservableObject {
             coreAddress = ownAddress
         }
 
+        let contactWithdrawal: ContactWithdrawal?
         do {
             try await authorize()
+            contactWithdrawal = try await reserveContactWithdrawal(
+                contactRecipient,
+                amountDuffs: amountCredits / 1000,
+                // A full-balance withdrawal pays out the balance less a fee
+                // only known once Platform charges it: the amount is the
+                // preflighted estimate.
+                amountIsEstimate: fullBalance,
+                source: .platform)
         } catch {
             handleFailure(error)
             return
         }
+        if let contactWithdrawal { coreAddress = contactWithdrawal.address }
 
         phase = .broadcasting
 
@@ -1247,10 +1287,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
                     feeHeadroomCredits: feeHeadroomCredits)
             }
         } catch {
+            if concludeUncertainContactWithdrawal(contactWithdrawal, error: error) {
+                schedulePlatformResync()
+                return
+            }
             handleFailure(CoordinatorError.transferFailed(error))
             return
         }
 
+        markContactWithdrawalSubmitted(contactWithdrawal)
         Self.logger.info("🛡️ SHIELD-TX :: platform→core withdraw completed")
         phase = .success
         schedulePlatformResync()
@@ -1357,6 +1402,98 @@ final class ShieldedTransferCoordinator: ObservableObject {
         schedulePlatformResync()
     }
 
+    // MARK: - DashPay contact withdrawals
+
+    private typealias ContactWithdrawal = DashPayWithdrawalStore.Entry
+
+    /// Reserve a fresh address of the contact's and record the withdrawal to
+    /// it. Call after `authorize()` and right before submitting: the SDK marks
+    /// the address used, and the record — the only trace the sender keeps,
+    /// since the SDK returns no Core transaction — must exist before anything
+    /// is sent, so a failed write stops the payment. Nil for every withdrawal
+    /// that does not pay a contact.
+    private func reserveContactWithdrawal(
+        _ recipient: ContactPaymentRecipient?,
+        amountDuffs: UInt64,
+        amountIsEstimate: Bool,
+        source: DashPayWithdrawalStore.Source
+    ) async throws -> ContactWithdrawal? {
+        guard let recipient else { return nil }
+        #if DASHPAY
+        let address = try await WalletSendService.shared.reserveContactPaymentAddress(for: recipient)
+        try WalletSendService.validateContactRecipient(recipient)
+        return try DashPayWithdrawalStore.shared.begin(
+            scope: .init(
+                networkRaw: recipient.network.rawValue,
+                walletId: recipient.walletId,
+                ownerIdentityId: recipient.ownerIdentityId),
+            contactIdentityId: recipient.identityId,
+            address: address,
+            amountDuffs: amountDuffs,
+            amountIsEstimate: amountIsEstimate,
+            source: source)
+        #else
+        // Only the DashPay target creates a `ContactPaymentRecipient`.
+        throw CoordinatorError.noWallet
+        #endif
+    }
+
+    /// Errors that prove a withdrawal never executed: the app's own guards
+    /// in front of the Platform withdrawal, and the shielded failures the
+    /// SDK documents as not broadcast (or definitively rejected) with every
+    /// note released.
+    private static func provesWithdrawalNotSubmitted(_ error: Error) -> Bool {
+        switch error {
+        case PlatformAddressSyncCoordinator.SendError.coordinatorNotReady,
+             PlatformAddressSyncCoordinator.SendError.noFundedAddress,
+             PlatformWalletError.shieldedNoRecordedAnchor,
+             PlatformWalletError.shieldedBroadcastFailed,
+             PlatformWalletError.shieldedInsufficientBalance:
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// True when `error` left a contact withdrawal's outcome unknown: the
+    /// record is marked `.unconfirmed`, the contact is locked and the sheet
+    /// ends on `.submittedUnconfirmed`, so the caller only schedules its
+    /// resync. Platform may have accepted the withdrawal with only the
+    /// response lost, so it is never offered for retry — a second attempt
+    /// would reserve another address and could pay the contact twice.
+    ///
+    /// False for a withdrawal that does not pay a contact, and for one the
+    /// error proves never executed (its record is dropped): the caller fails
+    /// it as retryable like any other.
+    private func concludeUncertainContactWithdrawal(_ withdrawal: ContactWithdrawal?, error: Error) -> Bool {
+        guard let withdrawal else { return false }
+        if Self.provesWithdrawalNotSubmitted(error) {
+            // A leftover record would show as an unknown payment that never left.
+            try? DashPayWithdrawalStore.shared.remove(withdrawal)
+            return false
+        }
+        Self.logger.error("🛡️ SHIELD-TX :: contact withdrawal outcome unknown \(String(describing: error), privacy: .public)")
+        // The `.submitting` record already on disk reads as unknown too, so a
+        // failure of this write loses nothing.
+        try? DashPayWithdrawalStore.shared.update(withdrawal, status: .unconfirmed)
+        #if DASHPAY
+        // The same per-contact lock an unknown Transparent contact payment
+        // takes, so reopening the contact cannot start a duplicate.
+        WalletSendService.shared.unknownContactPaymentOutcomes
+            .record(contactIdentityId: withdrawal.contactIdentityId)
+        #endif
+        contactWithdrawalOutcomeUnknown = true
+        phase = .submittedUnconfirmed
+        return true
+    }
+
+    private func markContactWithdrawalSubmitted(_ withdrawal: ContactWithdrawal?) {
+        guard let withdrawal else { return }
+        // Never turn an accepted withdrawal into an error because this write
+        // failed: the record then stays `.submitting`, shown as unknown.
+        try? DashPayWithdrawalStore.shared.update(withdrawal, status: .submitted)
+    }
+
     /// Reset to `.idle` so the user can retry from a `.failed` state.
     /// Keeps no in-flight observers — the FFI calls themselves are
     /// uncancellable, so this just resets UI state.
@@ -1365,6 +1502,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         lastAssetLockOutPoint = nil
         lastFailure = nil
         lastResumeReport = nil
+        contactWithdrawalOutcomeUnknown = false
         phase = .idle
     }
 

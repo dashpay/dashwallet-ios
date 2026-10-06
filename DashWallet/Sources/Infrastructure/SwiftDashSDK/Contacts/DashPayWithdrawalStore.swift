@@ -134,6 +134,13 @@ final class DashPayWithdrawalStore {
             .sorted { $0.createdAt > $1.createdAt }
     }
 
+    /// True when a withdrawal to this contact recorded since `date` was never
+    /// confirmed as submitted (`.submitting` or `.unconfirmed`).
+    func hasUnresolvedEntry(scope: Scope, contactIdentityId: Data, since date: Date) throws -> Bool {
+        try entries(scope: scope, contactIdentityId: contactIdentityId)
+            .contains { $0.status != .submitted && $0.createdAt >= date }
+    }
+
     func clearForWallet(walletId: Data) throws {
         lock.lock()
         defer { lock.unlock() }
