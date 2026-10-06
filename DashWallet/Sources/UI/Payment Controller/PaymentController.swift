@@ -159,6 +159,7 @@ final class PaymentController: NSObject {
 
     @objc
     public func performPayment(with input: DWPaymentInput) {
+        repeatCheckGeneration += 1
         paymentProcessor.reset()
         paymentProcessor.processPaymentInput(input)
     }
@@ -237,10 +238,16 @@ extension PaymentController: DWPaymentProcessorDelegate {
     /// not interrupted.
     ///
     /// With nothing followed for the address the answer is given at once.
-    /// Otherwise it comes after the stored row is read off the main thread,
-    /// and is dropped (as a cancel) when the paying screen left meanwhile or
-    /// a newer check started.
+    /// Otherwise it comes after the stored row is read off the main thread;
+    /// when a newer check or payment started meanwhile, the late answer is
+    /// not given at all (logged), so nothing of the newer payment is touched.
     func paymentProcessor(_ processor: DWPaymentProcessor, shouldPayAddress address: String, isBIP70: Bool, completion: @escaping (Bool) -> Void) {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async {
+                self.paymentProcessor(processor, shouldPayAddress: address, isBIP70: isBIP70, completion: completion)
+            }
+            return
+        }
         repeatCheckGeneration += 1
         dropOffScreenConfirm()
         if confirmViewController != nil, paymentOutput?.address == address {
@@ -253,16 +260,14 @@ extension PaymentController: DWPaymentProcessorDelegate {
         }
         let route = paymentRoute(isBIP70: isBIP70)
         let generation = repeatCheckGeneration
-        weak var screen = presentationAnchor
         Task { @MainActor [weak self] in
             guard let self else {
                 completion(false)
                 return
             }
             let waiting = await self.waitingPayment(address)
-            guard generation == self.repeatCheckGeneration, screen?.viewIfLoaded?.window != nil else {
-                self.log("💸 TXSEND :: repeat-payment check dropped — route=\(route) to=\(PendingSendOutcomes.masked(address)): the paying screen left or a newer payment started; nothing built")
-                completion(false)
+            guard generation == self.repeatCheckGeneration else {
+                self.log("💸 TXSEND :: repeat-payment check dropped — route=\(route) to=\(PendingSendOutcomes.masked(address)): a newer payment started; nothing built")
                 return
             }
             guard let waiting else {

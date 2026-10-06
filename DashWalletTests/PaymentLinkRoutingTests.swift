@@ -739,7 +739,7 @@ final class PaymentDialogOutcomeTests: XCTestCase {
     }
 
     /// A check still reading rows when a newer payment starts does not go on
-    /// to the PIN prompt: its answer is a cancel.
+    /// to the PIN prompt, and does not cancel the newer payment either.
     func testARepeatCheckOvertakenByANewerPaymentIsDropped() throws {
         let root = try XCTUnwrap(window.rootViewController)
         let anchor = AnchorProvider(anchor: root)
@@ -767,8 +767,8 @@ final class PaymentDialogOutcomeTests: XCTestCase {
         XCTAssertEqual(first, [], "the first check is still reading")
 
         resume?.resume()
-        spin(until: { !first.isEmpty })
-        XCTAssertEqual(first, [false], "the overtaken check does not go on")
+        spin(until: { logged.contains { $0.contains("check dropped") } })
+        XCTAssertEqual(first, [], "the overtaken check gives no answer: no PIN, and no cancel for the newer payment")
         XCTAssertTrue(logged.contains { $0.contains("check dropped") && !$0.contains("yFirstAddress") }, "\(logged)")
     }
 

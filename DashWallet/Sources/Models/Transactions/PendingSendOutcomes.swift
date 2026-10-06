@@ -228,28 +228,26 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// even when the read fails. The read runs off the main thread, as
     /// `reconcile`'s does; with nothing pending for `address` there is none.
     func waitingPayment(to address: String) async -> WaitingPayment? {
-        let walletId = SwiftDashSDKHost.shared.wallet?.walletId
+        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId else { return nil }
         let candidates = entries.values.filter { $0.address == address && $0.walletId == walletId }
-        guard !candidates.isEmpty, let walletId else { return nil }
+        guard !candidates.isEmpty else { return nil }
         let txids = Set(candidates.map(\.txidWire))
         let snapshot = await Task.detached(priority: .userInitiated) {
             SwiftDashSDKWalletSource.fetch(txids: txids)
         }.value
-        // The wallet changed during the read: the payment is now the other
-        // wallet's, checked against its own sends.
-        guard SwiftDashSDKHost.shared.wallet?.walletId == walletId,
-              snapshot.map({ $0.walletId == walletId }) ?? true else {
+        // Another wallet came up during the read: the payment is now that
+        // wallet's, checked against its own sends. No wallet at all (a stop
+        // or rebuild) is not "nothing pending": the read decides, or a
+        // failed one refuses.
+        if let now = SwiftDashSDKHost.shared.wallet?.walletId, now != walletId {
             return await waitingPayment(to: address)
         }
-        let rows = snapshot.map(Self.rowStates(of:))
+        let rows = snapshot.flatMap { $0.walletId == walletId ? Self.rowStates(of: $0) : nil }
         settle(
             pending: Dictionary(uniqueKeysWithValues: candidates.map { ($0.txidWire, $0) }),
             walletId: walletId,
             rows: rows)
-        let now = Date()
-        guard let entry = entries.values
-            .filter({ $0.address == address && $0.walletId == walletId
-                && now.timeIntervalSince($0.sentAt) <= Self.maxFollowAge })
+        guard let entry = followed(to: address, walletId: walletId, now: Date())
             .max(by: { $0.sentAt < $1.sentAt }) else { return nil }
         let finding: String
         switch rows.map({ $0[entry.txidWire] }) {
@@ -262,11 +260,30 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         return WaitingPayment(entry: entry, rowFinding: finding)
     }
 
-    /// Whether the active wallet follows any send to `address` (no row read):
-    /// false means a payment to it is not refused.
+    /// Whether the active wallet follows a send to `address` that can still
+    /// refuse a payment (no row read): false means a payment to it is not
+    /// refused. Sends to it past `maxFollowAge` stop being followed here —
+    /// age alone decides that — so their rows leave "Waiting for the
+    /// network" as the address becomes payable.
     func followsPayment(to address: String) -> Bool {
-        let walletId = SwiftDashSDKHost.shared.wallet?.walletId
-        return walletId != nil && entries.values.contains { $0.address == address && $0.walletId == walletId }
+        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId else { return false }
+        let now = Date()
+        let stale = entries.values.filter {
+            $0.address == address && $0.walletId == walletId && now.timeIntervalSince($0.sentAt) > Self.maxFollowAge
+        }
+        if !stale.isEmpty {
+            settle(pending: Dictionary(uniqueKeysWithValues: stale.map { ($0.txidWire, $0) }), walletId: walletId, rows: nil)
+        }
+        return !followed(to: address, walletId: walletId, now: now).isEmpty
+    }
+
+    /// `walletId`'s sends to `address` that can still refuse a payment:
+    /// within `maxFollowAge`.
+    private func followed(to address: String, walletId: Data, now: Date) -> [Entry] {
+        entries.values.filter {
+            $0.address == address && $0.walletId == walletId
+                && now.timeIntervalSince($0.sentAt) <= Self.maxFollowAge
+        }
     }
 
     /// `address` shortened for logs: never the full address.
@@ -284,7 +301,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
 
     /// The same for several sends: each address once.
     nonisolated static func refusalLifted(for addresses: [String]) -> String {
-        let shown = Array(Set(addresses.map(masked))).sorted()
+        let shown = Set(addresses).map(masked).sorted()
         return shown.isEmpty ? "" : "; payments to \(shown.joined(separator: ", ")) no longer refused"
     }
 
