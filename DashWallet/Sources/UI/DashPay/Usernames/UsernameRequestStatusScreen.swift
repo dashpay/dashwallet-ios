@@ -70,9 +70,13 @@ final class UsernameRequestStatusViewModel: ObservableObject {
     func refreshFailedCompanion() {
         guard let failed = UsernamePrefs.shared.failedCompanion,
               DWContestedNameStatusService.labelsMatch(failed.contestedLabel, label),
-              // A record outliving its request (the bookmark was dropped on a
-              // path that did not clear it) has nothing left to report on.
+              // A record outliving its request has nothing left to report on.
+              // The bookmark answers nothing while the identity is unresolved,
+              // so the identity's own pending name counts too — the same
+              // fallback the hosts open this screen through.
               DWContestedNameStatusService.shared.isPendingLabel(label)
+                || DWCurrentUserIdentityInfo.shared.refreshedSnapshot().pendingContestedName
+                    .map { DWContestedNameStatusService.labelsMatch($0, label) } == true
         else {
             failedCompanion = nil
             return
@@ -80,7 +84,7 @@ final class UsernameRequestStatusViewModel: ObservableObject {
         // A retry of that name is running: no "could not be registered" and no
         // second Try again while it is still being decided.
         let coordinator = DWIdentityRegistrationCoordinator.shared
-        if coordinator.phase.isActive,
+        if coordinator.isAttemptActive,
            let running = coordinator.currentUsername,
            DWContestedNameStatusService.labelsMatch(running, failed.username) {
             failedCompanion = nil
@@ -89,7 +93,7 @@ final class UsernameRequestStatusViewModel: ObservableObject {
         let identity = DWCurrentUserIdentityInfo.shared
         if identity.usernames.contains(where: { DWContestedNameStatusService.labelsMatch($0, failed.username) }) {
             // The retry registered it: nothing is missing any more.
-            UsernamePrefs.shared.failedCompanion = nil
+            UsernamePrefs.shared.clearFailedCompanion(forUsername: failed.username)
             failedCompanion = nil
             return
         }

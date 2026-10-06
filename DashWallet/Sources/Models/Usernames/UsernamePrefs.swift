@@ -26,9 +26,7 @@ private let kInFlightRegistrationUsername = "inFlightRegistrationUsername"
 private let kLostContestUsername = "lostContestUsername"
 private let kLostContestWasBlocked = "lostContestWasBlocked"
 private let kCompletedTileUsername = "usernameRegistrationCompletedTile"
-private let kFailedCompanionUsername = "failedCompanionUsername"
-private let kFailedCompanionForLabel = "failedCompanionForLabel"
-private let kFailedCompanionReason = "failedCompanionReason"
+private let kFailedCompanion = "failedCompanionUsernameRecord"
 
 /// Keeps the Upgrade-to-DashPay banner dismissal attached to the wallet and
 /// network where the user made that choice. A global flag leaks between
@@ -209,33 +207,51 @@ class UsernamePrefs {
     /// Scoped to the wallet and network like the other registration records;
     /// cleared when a request for another name is handed off, when the
     /// contest resolves, or when Request details finds the name owned.
-    struct FailedCompanion: Equatable {
+    struct FailedCompanion: Equatable, Codable {
         let username: String
         let contestedLabel: String
         let reason: String
     }
 
+    /// One scoped key holding the whole record, so it is written and cleared
+    /// as a unit.
     var failedCompanion: FailedCompanion? {
         get {
-            let defaults = UserDefaults.standard
-            guard let username = defaults.string(forKey: scoped(kFailedCompanionUsername)),
-                  let label = defaults.string(forKey: scoped(kFailedCompanionForLabel)) else { return nil }
-            return FailedCompanion(
-                username: username,
-                contestedLabel: label,
-                reason: defaults.string(forKey: scoped(kFailedCompanionReason)) ?? "")
+            guard let data = UserDefaults.standard.data(forKey: scoped(kFailedCompanion)) else { return nil }
+            return try? JSONDecoder().decode(FailedCompanion.self, from: data)
         }
         set(value) {
-            let defaults = UserDefaults.standard
-            if let value {
-                defaults.set(value.username, forKey: scoped(kFailedCompanionUsername))
-                defaults.set(value.contestedLabel, forKey: scoped(kFailedCompanionForLabel))
-                defaults.set(value.reason, forKey: scoped(kFailedCompanionReason))
+            if let value, let data = try? JSONEncoder().encode(value) {
+                UserDefaults.standard.set(data, forKey: scoped(kFailedCompanion))
             } else {
-                for key in [kFailedCompanionUsername, kFailedCompanionForLabel, kFailedCompanionReason] {
-                    defaults.removeObject(forKey: scoped(key))
-                }
+                UserDefaults.standard.removeObject(forKey: scoped(kFailedCompanion))
             }
+        }
+    }
+
+    /// Clears the record when it belongs to the request for `contestedLabel`.
+    func clearFailedCompanion(forContestedLabel contestedLabel: String) {
+        if let failed = failedCompanion,
+           DWContestedNameStatusService.labelsMatch(failed.contestedLabel, contestedLabel) {
+            failedCompanion = nil
+        }
+    }
+
+    /// Clears the record when it is for an instant name other than
+    /// `username` — a new attempt for another name retires it, a retry of the
+    /// same name must not.
+    func clearFailedCompanion(unlessUsername username: String) {
+        if let failed = failedCompanion,
+           !DWContestedNameStatusService.labelsMatch(failed.username, username) {
+            failedCompanion = nil
+        }
+    }
+
+    /// Clears the record when it is for the instant name `username`.
+    func clearFailedCompanion(forUsername username: String) {
+        if let failed = failedCompanion,
+           DWContestedNameStatusService.labelsMatch(failed.username, username) {
+            failedCompanion = nil
         }
     }
 

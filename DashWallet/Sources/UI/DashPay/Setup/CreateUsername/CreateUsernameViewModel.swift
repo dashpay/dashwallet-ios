@@ -1115,6 +1115,9 @@ class CreateUsernameViewModel: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 self?.isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+                // The contested-balance caption counts Platform only in
+                // advanced mode.
+                self?.checkBalance()
             }
             .store(in: &cancellableBag)
         // Shielded readiness changes (a note maturing, a shielded sync

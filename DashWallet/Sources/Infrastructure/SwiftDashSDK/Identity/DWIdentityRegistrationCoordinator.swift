@@ -395,6 +395,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     // MARK: - Internal state
 
     private var controller: DWIdentityRegistrationController?
+
+    /// An attempt is running: either the published phase or the controller's
+    /// own says so. The one check every entry point and caller uses, so the
+    /// two cannot be consulted apart.
+    var isAttemptActive: Bool {
+        phase.isActive || controller?.phase.isActive == true
+    }
     private var phaseSubscription: AnyCancellable?
     private var assetLockPollingTask: Task<Void, Never>?
     /// Single-flight handle for `checkPendingContestResolution()`.
@@ -614,10 +621,18 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // state: the proof link belongs to the request already running, and
         // overwriting it would publish another URL under that request's
         // identity, or drop the one it accepted.
-        guard !phase.isActive, controller?.phase.isActive != true else {
+        guard !isAttemptActive else {
             throw CoordinatorError.alreadyInFlight
         }
         pendingVerificationURL = verificationURL
+        // A new request retires an earlier one's missing instant name — every
+        // entry point passes here, the invitation claim included, which does
+        // not hand off to the status row. A retry of that same name keeps it.
+        if let wallet = SwiftDashSDKHost.shared.wallet,
+           let network = SwiftDashSDKHost.shared.runningNetwork,
+           isRecordScopeCurrent(walletId: wallet.walletId, network: network) {
+            UsernamePrefs.shared.clearFailedCompanion(unlessUsername: username)
+        }
 
         // A companion label only makes sense next to a contested main
         // label, and must itself be non-contested — registering a second
@@ -1451,10 +1466,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 DWCurrentUserIdentityInfo.persistConfirmedUsername(
                     temporaryUsername, identityId: identityId, walletId: wallet.walletId, container: registrationContainer)
                 registeredTemporaryUsername = temporaryUsername
-                if isRecordScopeCurrent(walletId: wallet.walletId, network: network),
-                   let failed = UsernamePrefs.shared.failedCompanion,
-                   DWContestedNameStatusService.labelsMatch(failed.username, temporaryUsername) {
-                    UsernamePrefs.shared.failedCompanion = nil
+                if isRecordScopeCurrent(walletId: wallet.walletId, network: network) {
+                    UsernamePrefs.shared.clearFailedCompanion(forUsername: temporaryUsername)
                 }
                 Self.logger.info("🪪 IDENT-COORD :: temporary DPNS name registered: \(temporaryUsername)")
                 // Push the new label into the identity read model right
@@ -1476,7 +1489,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                         contestedLabel: username,
                         reason: UsernameRegistrationFailureWording.message(
                             forRaw: error.localizedDescription, username: temporaryUsername))
-                    NotificationCenter.default.post(name: .DWDashPayRegistrationStatusUpdated, object: nil)
+                    // Not the registration-status announcement: that one is the
+                    // bridge's, after it mirrors the phase, and this attempt is
+                    // still in flight. The record has its own reader.
+                    NotificationCenter.default.post(name: .DWUsernameRegistrationReportChanged, object: nil)
                 } else {
                     Self.logger.warning("🪪 IDENT-COORD :: failed instant username not recorded — the active wallet or network changed")
                 }

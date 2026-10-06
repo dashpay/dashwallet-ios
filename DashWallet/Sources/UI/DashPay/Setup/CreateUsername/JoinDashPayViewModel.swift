@@ -171,10 +171,7 @@ class JoinDashPayViewModel: ObservableObject {
         // the retry of that very name, whose record must outlive the attempt
         // in case it fails too. Its success hides the record (the identity
         // then owns a name), and the contest's resolution clears it.
-        if let failed = UsernamePrefs.shared.failedCompanion,
-           !DWContestedNameStatusService.labelsMatch(failed.username, trimmed) {
-            UsernamePrefs.shared.failedCompanion = nil
-        }
+        UsernamePrefs.shared.clearFailedCompanion(unlessUsername: trimmed)
         // Without this the row would wait for the registration's next phase
         // change to notice the record, leaving Home showing the call to action
         // for an attempt that is already running.
