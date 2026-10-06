@@ -357,10 +357,16 @@ final class IdentitiesViewModel: ObservableObject {
         // a KNOWN-departed label falls through to the next candidate.
         // (Scalars are still trusted while the label cache is empty —
         // they double as the hydration fallback.)
+        let isRejected: (String?) -> Bool = { candidate in
+            guard let candidate else { return false }
+            return rejected.contains { DWContestedNameStatusService.labelsMatch($0, candidate) }
+        }
         let mainName = isPending(identity.mainDpnsName) || isSoldAway(identity.mainDpnsName)
+            || isRejected(identity.mainDpnsName)
             ? nil
             : identity.mainDpnsName?.nonEmptyString
         let preferredName = isPending(identity.dpnsName) || isSoldAway(identity.dpnsName)
+            || isRejected(identity.dpnsName)
             ? nil
             : identity.dpnsName?.nonEmptyString
         let displayedName = mainName ?? preferredName ?? ownedNames.first

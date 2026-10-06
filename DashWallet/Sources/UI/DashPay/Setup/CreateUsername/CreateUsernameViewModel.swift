@@ -403,9 +403,6 @@ class CreateUsernameViewModel: ObservableObject {
         return shieldedReadiness?.state == .ready
     }
 
-    /// What the chosen source has to cover for a name: the shortfall of an
-    /// existing identity (the coordinator tops it up), or a new identity's full
-    /// funding. Updates `identityTopUpDuffs` for the label being judged.
     /// What a new identity is funded with for one name — the figure the form's
     /// cost rule states. Also the ceiling for an identity the create path
     /// reuses instead of funding.
@@ -413,6 +410,23 @@ class CreateUsernameViewModel: ObservableObject {
         UInt64(isContested ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME : DWDP_MIN_BALANCE_TO_CREATE_USERNAME)
     }
 
+    /// Whether a Core top-up of the identity is already paid and waiting to
+    /// reach Platform, so another one for this submission may pay again.
+    /// Only a Core top-up builds an asset lock, so other sources never ask.
+    func hasUnfinishedCoreTopUp(source: DWIdentityFundingSource, nameCount: UInt64) -> Bool {
+        guard !isInvitationMode, source == .core,
+              let needed = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount),
+              needed > 0,
+              let wallet = SwiftDashSDKHost.shared.wallet,
+              let container = SwiftDashSDKHost.shared.modelContainer
+        else { return false }
+        return DWIdentityRegistrationCoordinator.hasUnfinishedIdentityTopUp(
+            walletId: wallet.walletId, modelContainer: container)
+    }
+
+    /// What the chosen source has to cover for a name: the shortfall of an
+    /// existing identity (the coordinator tops it up), or a new identity's full
+    /// funding. Updates `identityTopUpDuffs` for the label being judged.
     private func requiredFundingDuffs(isContested: Bool) -> UInt64 {
         // One name: the companion is chosen only after this verdict, and the
         // confirmation sheet states what it adds.
@@ -421,7 +435,7 @@ class CreateUsernameViewModel: ObservableObject {
             identityTopUpDuffs = topUp
         }
         if let topUp { return topUp }
-        return UInt64(isContested ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME : DWDP_MIN_BALANCE_TO_CREATE_USERNAME)
+        return newIdentityFundingDuffs(isContested: isContested)
     }
 
     /// What the chosen source sends to top up the existing identity so it can

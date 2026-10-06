@@ -463,9 +463,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         case topUpExceedsConfirmed(neededDuffs: UInt64, confirmedDuffs: UInt64)
         /// The identity needs a top-up, but no amount was confirmed for it.
         case topUpNotConfirmed(neededDuffs: UInt64)
-        /// An earlier top-up of this identity was paid on Core but never
-        /// reached Platform; a new one would pay again.
-        case unfinishedIdentityTopUp
 
         var isCompletedPurchase: Bool {
             if case .purchaseCompletedInOriginalContext = self { return true }
@@ -566,10 +563,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                         "Registering this name needs %@ DASH from your wallet to top up your identity, and that amount was not confirmed. Nothing was sent. Try again to confirm it.",
                         comment: "DashPay: existing identity top-up before a username"),
                     neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
-            case .unfinishedIdentityTopUp:
-                return NSLocalizedString(
-                    "An earlier top-up of your identity hasn't finished, so nothing was sent. Open it in your transaction history, complete the transfer there, then try again.",
-                    comment: "DashPay: existing identity top-up before a username")
             case .topUpExceedsConfirmed(let neededDuffs, let confirmedDuffs):
                 return String.localizedStringWithFormat(
                     NSLocalizedString(
@@ -1244,13 +1237,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         let topUpDuffs = Self.identityTopUpDuffs(requiredCredits: requiredCredits, heldCredits: heldCredits)
         Self.logger.info("🪪 IDENT-COORD :: existing identity requiredCredits=\(requiredCredits) heldCredits=\(heldCredits) topUpDuffs=\(topUpDuffs) authorized=\(plan.authorizedDuffs.map(String.init) ?? "none") source=\(plan.source.logLabel)")
         guard topUpDuffs > 0 else { return }
-        // A Core top-up already paid and never consumed: another Core top-up
-        // would pay again. Stop and send the user to finish that one. Other
-        // sources build no asset lock, so they cannot double-pay it.
-        if plan.source == .core,
-           Self.hasUnfinishedIdentityTopUp(walletId: wallet.walletId, modelContainer: plan.modelContainer) {
-            throw CoordinatorError.identityTopUp(CoordinatorError.unfinishedIdentityTopUp)
-        }
         // No confirmed amount authorizes no top-up, not an unlimited one.
         guard let authorized = plan.authorizedDuffs else {
             throw CoordinatorError.identityTopUp(CoordinatorError.topUpNotConfirmed(neededDuffs: topUpDuffs))
@@ -1258,6 +1244,11 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // The confirmation showed a top-up from the persisted balance; the
         // live one can be higher. Never move more than the user confirmed —
         // stop before any spend and let them confirm the new amount.
+        if authorized == 0 {
+            // Nothing was shown because nothing looked needed; say that rather
+            // than "more than the 0 DASH you confirmed".
+            throw CoordinatorError.identityTopUp(CoordinatorError.topUpNotConfirmed(neededDuffs: topUpDuffs))
+        }
         if topUpDuffs > authorized {
             throw CoordinatorError.identityTopUp(
                 CoordinatorError.topUpExceedsConfirmed(neededDuffs: topUpDuffs, confirmedDuffs: authorized))
@@ -2404,10 +2395,14 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             assetLockPollingTask = nil
             // The contest check refuses to run mid-registration, and the form
             // hands off on `.inFlight`, so a More appearance during the attempt
-            // armed nothing. Start it now the attempt is over — on the next
-            // turn, once this phase is published; it keeps its own
-            // single-flight and context guards.
-            Task { @MainActor [weak self] in self?.checkPendingContestResolution() }
+            // armed nothing. Start it once a request has completed — on the
+            // next turn, once this phase is published; it keeps its own
+            // single-flight and context guards. Not after a failure: a
+            // timed-out DPNS write may still land, and judging its marker now
+            // could drop a request that is about to be indexed.
+            if case .completed = newPhase {
+                Task { @MainActor [weak self] in self?.checkPendingContestResolution() }
+            }
         default:
             break
         }
@@ -2503,15 +2498,18 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
 
     /// Whether this wallet holds an identity top-up asset lock that was paid
     /// on Core and is waiting to reach Platform: Broadcast, InstantSend- or
-    /// ChainLocked (1…3). Built (0) never left the device, and
-    /// RecoveredFromChain (5) is what a restore rebuilds every old, long
-    /// consumed lock as — counting it would block every restored wallet. The
-    /// tx-detail action resumes these (`AssetLockRecoveryService`); the
-    /// registration flow does not.
+    /// ChainLocked (1…3), for the pinned identity. Built (0) never left the
+    /// device, and RecoveredFromChain (5) is what a restore rebuilds every old,
+    /// long consumed lock as. The form only warns on this — a lock stuck in
+    /// 1…3 cannot always be finished, so it must not block for good; the
+    /// tx-detail action resumes these (`AssetLockRecoveryService`).
     static func hasUnfinishedIdentityTopUp(walletId: Data, modelContainer: ModelContainer) -> Bool {
+        // The identity this flow registers for, not every identity's top-ups.
+        let pinnedIndex = Int32(bitPattern: pinnedIdentityIndex)
         let descriptor = FetchDescriptor<PersistentAssetLock>(
             predicate: #Predicate { row in
                 row.walletId == walletId && (row.fundingTypeRaw == 1 || row.fundingTypeRaw == 2)
+                    && row.identityIndexRaw == pinnedIndex
                     && row.statusRaw >= 1 && row.statusRaw <= 3
             })
         return ((try? modelContainer.mainContext.fetchCount(descriptor)) ?? 0) > 0

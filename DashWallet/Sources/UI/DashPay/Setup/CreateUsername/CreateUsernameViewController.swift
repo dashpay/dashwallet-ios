@@ -144,8 +144,17 @@ struct CreateUsernameView: View {
     /// user's answer to the amount alert. nil when no alert is up.
     @State private var pendingPlainTopUpDuffs: UInt64?
     @State private var showPlainTopUp = false
-    /// An earlier identity top-up is unfinished; a new one would pay again.
+    /// An earlier Core top-up is unfinished: the warning is up, holding what
+    /// to run if the user goes ahead anyway.
+    @State private var unfinishedTopUpContinuation: UnfinishedTopUpContinuation?
     @State private var showUnfinishedTopUp = false
+    /// `acknowledgedUnfinishedTopUp` lets the submission past the warning once
+    /// the user has chosen to continue.
+    @State private var acknowledgedUnfinishedTopUp = false
+
+    private enum UnfinishedTopUpContinuation {
+        case purchase, contested, plain, submit(temporaryUsername: String?)
+    }
     /// True once a choice made by the user has been adopted; auto-pinning
     /// then leaves the selection alone, even once it can no longer pay.
     @State private var didUserPickFundingSource: Bool = false
@@ -311,10 +320,14 @@ struct CreateUsernameView: View {
                             // sheet first so the user explicitly acknowledges the
                             // voting wait and the locked Dash. Non-contested names
                             // submit directly.
-                            if viewModel.canPurchaseListedNameDirectly {
-                                showPurchaseConfirmation = true
-                            } else if isBlockedByUnfinishedTopUp(nameCount: 1) {
+                            acknowledgedUnfinishedTopUp = false
+                            if viewModel.hasUnfinishedCoreTopUp(source: topUpSource, nameCount: 1) {
+                                unfinishedTopUpContinuation = viewModel.canPurchaseListedNameDirectly
+                                    ? .purchase
+                                    : (viewModel.isContestedCandidate ? .contested : .plain)
                                 showUnfinishedTopUp = true
+                            } else if viewModel.canPurchaseListedNameDirectly {
+                                showPurchaseConfirmation = true
                             } else if viewModel.isContestedCandidate {
                                 // The verification offer comes first, as on
                                 // Android: a link published with the request is
@@ -560,9 +573,12 @@ struct CreateUsernameView: View {
             isPresented: $showPlainTopUp,
             presenting: pendingPlainTopUpDuffs
         ) { topUp in
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+                pendingPlainTopUpDuffs = nil
+            }
             Button(NSLocalizedString("Confirm", comment: "")) {
                 viewModel.captureConfirmedTopUp(shownDuffs: topUp, isCompanionPass: false)
+                pendingPlainTopUpDuffs = nil
                 performSubmit()
             }
         } message: { topUp in
@@ -576,11 +592,23 @@ struct CreateUsernameView: View {
         }
         .alert(
             NSLocalizedString("A top-up hasn't finished", comment: "Usernames: unfinished identity top-up"),
-            isPresented: $showUnfinishedTopUp
-        ) {
-            Button(NSLocalizedString("OK", comment: "")) { }
-        } message: {
-            Text(DWIdentityRegistrationCoordinator.CoordinatorError.unfinishedIdentityTopUp.localizedDescription)
+            isPresented: $showUnfinishedTopUp,
+            presenting: unfinishedTopUpContinuation
+        ) { continuation in
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+            Button(NSLocalizedString("Continue anyway", comment: "Usernames: unfinished identity top-up")) {
+                acknowledgedUnfinishedTopUp = true
+                switch continuation {
+                case .purchase: showPurchaseConfirmation = true
+                case .contested: showVerifyOffer = true
+                case .plain: submitPlainName()
+                case .submit(let temporaryUsername): performSubmit(temporaryUsername: temporaryUsername)
+                }
+            }
+        } message: { _ in
+            Text(NSLocalizedString(
+                "An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first.",
+                comment: "Usernames: unfinished identity top-up"))
         }
         .alert(
             NSLocalizedString("Username submitted", comment: "Usernames"),
@@ -1222,22 +1250,9 @@ struct CreateUsernameView: View {
         performSubmit()
     }
 
-    /// The submission would top up the identity while an earlier top-up is
-    /// still unfinished — the coordinator would refuse it after the PIN, so
-    /// the form says so first.
-    private func isBlockedByUnfinishedTopUp(nameCount: UInt64) -> Bool {
-        // Only a Core top-up builds an asset lock that could pay twice.
-        let source = viewModel.registrationRecovery == .pendingCoreAssetLock ? .core : fundingSource
-        guard !viewModel.isInvitationMode,
-              source == .core,
-              let needed = viewModel.existingIdentityTopUpDuffs(
-                isContested: viewModel.isContestedCandidate, nameCount: nameCount),
-              needed > 0,
-              let wallet = SwiftDashSDKHost.shared.wallet,
-              let container = SwiftDashSDKHost.shared.modelContainer
-        else { return false }
-        return DWIdentityRegistrationCoordinator.hasUnfinishedIdentityTopUp(
-            walletId: wallet.walletId, modelContainer: container)
+    /// The source this submission would top up from.
+    private var topUpSource: DWIdentityFundingSource {
+        viewModel.registrationRecovery == .pendingCoreAssetLock ? .core : fundingSource
     }
 
     /// The source the amount alert names, as the privacy page names it.
@@ -1266,11 +1281,15 @@ struct CreateUsernameView: View {
             viewModel.discardConfirmedTopUp()
             return
         }
-        if isBlockedByUnfinishedTopUp(nameCount: temporaryUsername == nil ? 1 : 2) {
-            viewModel.discardConfirmedTopUp()
+        // The two-name top-up can need Core where the one-name one did not:
+        // warn here too unless the user already chose to go ahead.
+        if !acknowledgedUnfinishedTopUp,
+           viewModel.hasUnfinishedCoreTopUp(source: topUpSource, nameCount: temporaryUsername == nil ? 1 : 2) {
+            unfinishedTopUpContinuation = .submit(temporaryUsername: temporaryUsername)
             showUnfinishedTopUp = true
             return
         }
+        acknowledgedUnfinishedTopUp = false
         if !viewModel.isInvitationMode {
             // An identity that already exists — resumed or not — is topped up
             // from this source when it holds less than the name needs, so the

@@ -6700,5 +6700,8 @@
 /* DashPay: existing identity top-up before a username */
 "Registering this name needs %@ DASH from your wallet to top up your identity, and that amount was not confirmed. Nothing was sent. Try again to confirm it." = "Registering this name needs %@ DASH from your wallet to top up your identity, and that amount was not confirmed. Nothing was sent. Try again to confirm it.";
 
-/* DashPay: existing identity top-up before a username */
-"An earlier top-up of your identity hasn't finished, so nothing was sent. Open it in your transaction history, complete the transfer there, then try again." = "An earlier top-up of your identity hasn't finished, so nothing was sent. Open it in your transaction history, complete the transfer there, then try again.";
+/* Usernames: unfinished identity top-up */
+"Continue anyway" = "Continue anyway";
+
+/* Usernames: unfinished identity top-up */
+"An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first." = "An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first.";
