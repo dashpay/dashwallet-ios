@@ -174,6 +174,12 @@ struct CreateUsernameView: View {
     /// (`🔐 PINPROMPT :: presentation rejected`). Presenting the next sheet
     /// straight from the previous one's button races the same animation.
     @State private var sheetFollowUp: SheetFollowUp?
+    /// The existing-identity top-up the user confirmed, captured on Confirm:
+    /// the requested pass's figure, plus what the companion pass showed if one
+    /// follows. Submission hands this — not a fresh calculation — to the
+    /// coordinator as the most it may move, so a balance refresh between
+    /// Confirm and submit cannot raise the ceiling. nil when no top-up applies.
+    @State private var confirmedTopUpDuffs: UInt64?
 
     /// The three things a sheet in this flow can hand back.
     private enum SheetFollowUp: Equatable {
@@ -1067,6 +1073,16 @@ struct CreateUsernameView: View {
     ///   companion from that round. Android skips it the same way
     ///   (`hasSecondaryName()`).
     private func confirmRequestAccepted() {
+        // What the sheet just showed, before any later balance refresh can
+        // move it. The requested pass starts the figure; the companion pass
+        // adds what it showed for the second name.
+        if existingIdentityTopUpDuffs(nameCount: 1) != nil {
+            confirmedTopUpDuffs = isNamingInstantUsername
+                ? (confirmedTopUpDuffs ?? 0) + confirmationAmountDuffs
+                : confirmationAmountDuffs
+        } else {
+            confirmedTopUpDuffs = nil
+        }
         if isNamingInstantUsername {
             sheetFollowUp = .submit(temporaryUsername: viewModel.temporaryField.trimmedText)
         } else if identityOwnsUsername {
@@ -1163,12 +1179,14 @@ struct CreateUsernameView: View {
             // pick matters on that path too.
             DWIdentityRegistrationBridge.shared.preferredFundingSource =
                 viewModel.registrationRecovery == .pendingCoreAssetLock ? .core : fundingSource
-            // The top-up the confirmation showed for the final name count is
-            // the most the coordinator may move without asking again. Only the
+            // The top-up the user confirmed is the most the coordinator may move
+            // without asking again — captured on Confirm, not recalculated
+            // here, so a balance refresh in between cannot raise it. Only the
             // contested sheet confirms an amount; other submissions carry none.
             DWIdentityRegistrationBridge.shared.authorizedTopUpDuffs = viewModel.isContestedCandidate
-                ? existingIdentityTopUpDuffs(nameCount: temporaryUsername == nil ? 1 : 2)
+                ? confirmedTopUpDuffs
                 : nil
+            confirmedTopUpDuffs = nil
         }
         // Every submission except an invitation claim reports its progress on
         // the More row and this screen steps aside straight after the PIN.
