@@ -872,8 +872,6 @@ final class SwiftDashSDKWalletWiper: NSObject {
         guard walletIds.values.allSatisfy({ !remaining.contains($0) }) else {
             throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
         }
-        // Every network's id of the seed: re-adding it gets the same ids.
-        UsernamePrefs.resetAcceptedFundingSources(walletIds: walletIds.values)
     }
 
     /// Full per-wallet SwiftDashSDK deletion of a single wallet: the Rust
@@ -933,6 +931,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // wallet's settled identity-recovery context (a backstop that never
         // runs).
         GeneratedWalletIdentityMarker.clear(walletId: walletId)
+        // Nor the funding source a failed username request was paid from.
+        UsernamePrefs.resetAcceptedFundingSources(walletId: walletId)
 #if DASHPAY
         DWSameSeedIdentityRecoveryCoordinator.shared.forgetWallet(walletId: walletId)
 #endif

@@ -16,6 +16,7 @@
 //
 
 import Foundation
+import SwiftDashSDK
 
 private let kCoinJoinMixDashShown = "coinJoinMixDashShownKey"
 private let kJoinDashPayInfoShown = "joinDashPayInfoShownKey"
@@ -27,7 +28,8 @@ private let kLostContestUsername = "lostContestUsername"
 private let kLostContestWasBlocked = "lostContestWasBlocked"
 private let kCompletedTileUsername = "usernameRegistrationCompletedTile"
 private let kFailedCompanion = "failedCompanionUsernameRecord"
-private let kAcceptedFundingSource = "usernameAcceptedFundingSource.v3"
+private let kAcceptedFundingSourceBase = "usernameAcceptedFundingSource"
+private let kAcceptedFundingSource = kAcceptedFundingSourceBase + ".v3"
 
 /// Keeps the Upgrade-to-DashPay banner dismissal attached to the wallet and
 /// network where the user made that choice. A global flag leaks between
@@ -274,43 +276,48 @@ class UsernamePrefs {
     /// which has no memory of the privacy-page pick: it reuses this source
     /// while the source can pay, and asks before paying from another one.
     ///
-    /// Keyed by wallet id alone: each network gives a seed its own id, so the
-    /// id already names the network.
+    /// One record per wallet id, its entries keyed by network scope and
+    /// label: devnets share a seed's id, so the id alone does not name the
+    /// network, while every entry of a removed wallet still goes in one step.
     func acceptedFundingSourceRaw(forLabel label: String) -> Int? {
-        guard let walletIdHex = WalletEnvironment.activeWalletIdHex as String?, !walletIdHex.isEmpty else { return nil }
-        return Self.acceptedFundingSources(walletIdHex: walletIdHex)[DWContestedNameStatusService.dpnsKey(label)]
+        guard let walletIdHex = WalletEnvironment.activeWalletIdHex as String?, !walletIdHex.isEmpty,
+              let network = WalletEnvironment.network else { return nil }
+        return Self.acceptedFundingSources(walletIdHex: walletIdHex)[Self.acceptedEntryKey(label: label, network: network)]
     }
 
-    static func recordAcceptedFundingSourceRaw(_ raw: Int, forLabel label: String, walletId: Data) {
+    static func recordAcceptedFundingSourceRaw(_ raw: Int, forLabel label: String, walletId: Data, network: Network) {
         updateAcceptedFundingSources(walletIdHex: walletId.hexEncodedString()) {
-            $0[DWContestedNameStatusService.dpnsKey(label)] = raw
+            $0[acceptedEntryKey(label: label, network: network)] = raw
         }
     }
 
-    static func clearAcceptedFundingSource(forLabel label: String, walletId: Data) {
+    static func clearAcceptedFundingSource(forLabel label: String, walletId: Data, network: Network) {
         updateAcceptedFundingSources(walletIdHex: walletId.hexEncodedString()) {
-            $0[DWContestedNameStatusService.dpnsKey(label)] = nil
+            $0[acceptedEntryKey(label: label, network: network)] = nil
         }
     }
 
-    /// Every record of these wallets: re-adding a removed seed gets the same
-    /// ids back, and must not inherit a pick from before the removal.
-    static func resetAcceptedFundingSources<S: Sequence>(walletIds: S) where S.Element == Data {
-        for walletId in walletIds {
-            UserDefaults.standard.removeObject(forKey: acceptedFundingSourceKey(walletIdHex: walletId.hexEncodedString()))
-        }
+    /// Every record of `walletId`: re-adding a removed seed gets the same id
+    /// back, and must not inherit a pick from before the removal.
+    static func resetAcceptedFundingSources(walletId: Data) {
+        UserDefaults.standard.removeObject(forKey: acceptedFundingSourceKey(walletIdHex: walletId.hexEncodedString()))
     }
 
-    /// Every wallet's records, for the full wipe.
+    /// Every wallet's records, for the full wipe — including those an earlier
+    /// key format left behind, which share the base prefix.
     static func resetAllAcceptedFundingSources() {
         let defaults = UserDefaults.standard
-        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(kAcceptedFundingSource + ".") {
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(kAcceptedFundingSourceBase + ".") {
             defaults.removeObject(forKey: key)
         }
     }
 
     private static func acceptedFundingSourceKey(walletIdHex: String) -> String {
         "\(kAcceptedFundingSource).\(walletIdHex)"
+    }
+
+    private static func acceptedEntryKey(label: String, network: Network) -> String {
+        "\(network.persistenceScope)/\(DWContestedNameStatusService.dpnsKey(label))"
     }
 
     private static func acceptedFundingSources(walletIdHex: String) -> [String: Int] {

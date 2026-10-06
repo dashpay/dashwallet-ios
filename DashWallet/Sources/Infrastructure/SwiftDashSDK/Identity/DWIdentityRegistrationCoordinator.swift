@@ -623,7 +623,11 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         verificationURL: URL? = nil,
         /// The most an existing identity's top-up may move without a new
         /// confirmation: what the confirmation sheet showed. nil = none shown.
-        authorizedTopUpDuffs: UInt64? = nil
+        authorizedTopUpDuffs: UInt64? = nil,
+        /// The user picked `fundingSource` for this request, so a retry of it
+        /// should reuse it (`recordAcceptedSource`). False for callers that
+        /// pass the default.
+        remembersFundingSource: Bool = false
     ) async throws -> Identifier {
         Self.logger.info("🪪 IDENT-COORD :: startCreateUsername username=\(username) funding=\(fundingSource.logLabel) temporary=\(temporaryUsername ?? "none")")
         // An overlapping start is rejected before it touches the attempt's
@@ -675,21 +679,24 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 try await self.resumeUsernameRegistration(
                     identityId: identityId, username: username, temporaryUsername: temporaryUsername,
                     topUpSource: fundingSource == .invitation ? nil : fundingSource,
-                    authorizedTopUpDuffs: authorizedTopUpDuffs)
+                    authorizedTopUpDuffs: authorizedTopUpDuffs,
+                    remembersTopUpSource: remembersFundingSource)
             },
             create: {
                 try await self.createIdentityAndUsername(
                     username, fundingSource: fundingSource, invitationURI: invitationURI,
                     temporaryUsername: temporaryUsername, wallet: wallet,
                     network: network, modelContainer: modelContainer,
-                    authorizedTopUpDuffs: authorizedTopUpDuffs)
+                    authorizedTopUpDuffs: authorizedTopUpDuffs,
+                    remembersFundingSource: remembersFundingSource)
             })
     }
 
     private func createIdentityAndUsername(
         _ username: String, fundingSource: DWIdentityFundingSource,
         invitationURI: String?, temporaryUsername: String?, wallet: ManagedPlatformWallet,
-        network: Network, modelContainer: ModelContainer, authorizedTopUpDuffs: UInt64? = nil
+        network: Network, modelContainer: ModelContainer, authorizedTopUpDuffs: UInt64? = nil,
+        remembersFundingSource: Bool = false
     ) async throws -> Identifier {
         let recoveryLock = lookupRegistrationRecoveryLock(
             walletId: wallet.walletId,
@@ -759,16 +766,16 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             newController.enterFailed(lastErrorMessage ?? "")
             throw CoordinatorError.authFailed
         }
-        // A resumed Core lock is not a choice of source.
-        if recoveryLock == nil {
-            recordAcceptedSource(fundingSource, label: username, walletId: wallet.walletId)
-        }
 
         do {
             try validateRegistrationContext(walletId: wallet.walletId, network: network)
         } catch {
             newController.enterFailed(error.localizedDescription)
             throw error
+        }
+        // A resumed Core lock is not a choice of source.
+        if remembersFundingSource, recoveryLock == nil {
+            recordAcceptedSource(fundingSource, label: username, walletId: wallet.walletId, network: network)
         }
 
         // Step 1: pre-derive identity public keys + persist privates
@@ -1038,7 +1045,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         username: String,
         temporaryUsername: String? = nil,
         topUpSource: DWIdentityFundingSource? = nil,
-        authorizedTopUpDuffs: UInt64? = nil
+        authorizedTopUpDuffs: UInt64? = nil,
+        remembersTopUpSource: Bool = false
     ) async throws -> Identifier {
         guard !isAttemptActive else {
             throw CoordinatorError.alreadyInFlight
@@ -1083,9 +1091,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             newController.enterFailed(lastErrorMessage ?? "")
             throw CoordinatorError.authFailed
         }
-        if let topUpSource {
-            recordAcceptedSource(topUpSource, label: username, walletId: wallet.walletId)
-        }
         do {
             try validateRegistrationContext(walletId: wallet.walletId, network: network)
             // Restore signing material after seed recovery. Use this identity's
@@ -1105,7 +1110,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             wallet: wallet, network: network, signer: KeychainSigner(modelContainer: container),
             newController: newController,
             topUp: topUpSource.map {
-                IdentityTopUpPlan(source: $0, modelContainer: container, authorizedDuffs: authorizedTopUpDuffs)
+                IdentityTopUpPlan(
+                    source: $0, modelContainer: container, authorizedDuffs: authorizedTopUpDuffs,
+                    remembersSource: remembersTopUpSource)
             })
     }
 
@@ -1184,6 +1191,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         let modelContainer: ModelContainer
         /// The top-up the user confirmed; nil when no amount was shown.
         var authorizedDuffs: UInt64? = nil
+        /// The user picked `source`; a top-up that runs records it for a retry.
+        var remembersSource = false
     }
 
     private func finishUsernameRegistration(
@@ -1267,6 +1276,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         newController.enterInFlight()
         do {
             try validateRegistrationContext(walletId: wallet.walletId, network: network)
+            // Money is about to move from this source; a retry should reuse it.
+            if plan.remembersSource {
+                recordAcceptedSource(plan.source, label: username, walletId: wallet.walletId, network: network)
+            }
             switch plan.source {
             case .core:
                 let spendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
@@ -1853,14 +1866,16 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         _ username: String,
         fundingSource: DWIdentityFundingSource = .core,
         temporaryUsername: String? = nil,
-        authorizedTopUpDuffs: UInt64? = nil
+        authorizedTopUpDuffs: UInt64? = nil,
+        remembersFundingSource: Bool = false
     ) async throws -> Identifier {
         Self.logger.info("🪪 IDENT-COORD :: retry username=\(username) funding=\(fundingSource.logLabel)")
         return try await startCreateUsername(
             username,
             fundingSource: fundingSource,
             temporaryUsername: temporaryUsername,
-            authorizedTopUpDuffs: authorizedTopUpDuffs)
+            authorizedTopUpDuffs: authorizedTopUpDuffs,
+            remembersFundingSource: remembersFundingSource)
     }
 
     /// Clear terminal state. An active FFI operation cannot be cancelled, so
@@ -2339,14 +2354,19 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             }
     }
 
-    /// Remembers the source an authorized request pays from, for a retry of
-    /// it to reuse (`UsernamePrefs.acceptedFundingSourceRaw`). Recorded here,
-    /// past the PIN, so a request refused or cancelled before it leaves no
-    /// record, and one that fails afterwards keeps it. An invitation pays
-    /// from the voucher, not from a balance the user picks.
-    private func recordAcceptedSource(_ source: DWIdentityFundingSource, label: String, walletId: Data) {
+    /// Remembers the source a request the user funded pays from, for a retry
+    /// of it to reuse (`UsernamePrefs.acceptedFundingSourceRaw`). Called past
+    /// the PIN and the context check, where money is committed to move: a
+    /// new identity's funding, or an existing identity's top-up that runs. A
+    /// request refused before that leaves no record; one that fails after it
+    /// keeps it. An invitation pays from the voucher, not from a balance the
+    /// user picks.
+    private func recordAcceptedSource(
+        _ source: DWIdentityFundingSource, label: String, walletId: Data, network: Network
+    ) {
         guard source != .invitation else { return }
-        UsernamePrefs.recordAcceptedFundingSourceRaw(source.rawValue, forLabel: label, walletId: walletId)
+        UsernamePrefs.recordAcceptedFundingSourceRaw(
+            source.rawValue, forLabel: label, walletId: walletId, network: network)
     }
 
     private func handlePhaseChange(_ newPhase: DWIdentityRegistrationController.Phase) {
@@ -2397,8 +2417,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // The request went through; a later one for this label is a new
         // request with a fresh choice of source. Keyed by the wallet that
         // made it, which a switch may have made inactive meanwhile.
-        if case .completed = newPhase, let username = currentUsername, let walletId = registrationWalletId {
-            UsernamePrefs.clearAcceptedFundingSource(forLabel: username, walletId: walletId)
+        if case .completed = newPhase, let username = currentUsername,
+           let walletId = registrationWalletId, let network = registrationNetwork {
+            UsernamePrefs.clearAcceptedFundingSource(forLabel: username, walletId: walletId, network: network)
         }
 
         // The registering wallet now owns an identity: drop its

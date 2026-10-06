@@ -182,6 +182,12 @@ public final class DWIdentityRegistrationBridge: NSObject {
     /// surface for what is effectively SwiftDashSDK-path-only state.
     @objc public var preferredFundingSource: DWIdentityFundingSource = .core
 
+    /// True when `preferredFundingSource` is the user's own pick (the SwiftUI
+    /// form sets both), so the coordinator may remember it for a retry. A
+    /// caller that leaves the `.core` default leaves this false. Same
+    /// lifecycle as `preferredFundingSource`.
+    var isFundingSourceUserChoice = false
+
     /// Non-contested companion ("temporary") username to register in the
     /// same flow as a contested submission — see
     /// `DWIdentityRegistrationCoordinator.startCreateUsername`'s
@@ -229,7 +235,8 @@ public final class DWIdentityRegistrationBridge: NSObject {
         sanitizedVerificationURL(for: username)
     }
 
-    /// Labels compare the way DPNS treats them: trimmed and case-folded.
+    /// Labels compare as spelled, trimmed and case-folded — not homograph-
+    /// folded: a link is a claim about the spelling the user gave it for.
     private static func verificationKey(_ label: String) -> String {
         label.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
@@ -260,6 +267,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         completion: @escaping (String?, NSError?) -> Void
     ) {
         let source = preferredFundingSource
+        let remembersSource = isFundingSourceUserChoice
         let temporaryUsername = sanitizedTemporaryUsername(for: username)
         let verificationURL = sanitizedVerificationURL(for: username)
         let authorizedTopUpDuffs = authorizedTopUpDuffs
@@ -271,7 +279,8 @@ public final class DWIdentityRegistrationBridge: NSObject {
                     fundingSource: source,
                     temporaryUsername: temporaryUsername,
                     verificationURL: verificationURL,
-                    authorizedTopUpDuffs: authorizedTopUpDuffs)
+                    authorizedTopUpDuffs: authorizedTopUpDuffs,
+                    remembersFundingSource: remembersSource)
                 let hex = identityId.map { String(format: "%02x", $0) }.joined()
                 completion(hex, nil)
             } catch {
@@ -287,6 +296,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         completion: @escaping (String?, NSError?) -> Void
     ) {
         let source = preferredFundingSource
+        let remembersSource = isFundingSourceUserChoice
         let temporaryUsername = sanitizedTemporaryUsername(for: username)
         let authorizedTopUpDuffs = authorizedTopUpDuffs
         Self.logger.info("🪪 IDENT-BRIDGE :: retry username=\(username, privacy: .public) funding=\(source.logLabel, privacy: .public)")
@@ -296,7 +306,8 @@ public final class DWIdentityRegistrationBridge: NSObject {
                     username,
                     fundingSource: source,
                     temporaryUsername: temporaryUsername,
-                    authorizedTopUpDuffs: authorizedTopUpDuffs)
+                    authorizedTopUpDuffs: authorizedTopUpDuffs,
+                    remembersFundingSource: remembersSource)
                 let hex = identityId.map { String(format: "%02x", $0) }.joined()
                 completion(hex, nil)
             } catch {
@@ -460,6 +471,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         // strand a PP-only wallet on a path that has no Core balance.
         if case .completed = phase {
             preferredFundingSource = .core
+            isFundingSourceUserChoice = false
             pendingTemporaryUsername = nil
             authorizedTopUpDuffs = nil
             pendingVerification = nil

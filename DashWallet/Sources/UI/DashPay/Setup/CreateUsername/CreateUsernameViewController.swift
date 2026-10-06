@@ -1369,6 +1369,7 @@ struct CreateUsernameView: View {
             // pick matters on that path too.
             DWIdentityRegistrationBridge.shared.preferredFundingSource =
                 viewModel.registrationRecovery == .pendingCoreAssetLock ? .core : fundingSource
+            DWIdentityRegistrationBridge.shared.isFundingSourceUserChoice = true
             // The top-up the user confirmed — on the contested sheets or the
             // plain name's amount alert — is the most the coordinator may move
             // without asking again; captured on Confirm, not recalculated here.
