@@ -1158,10 +1158,10 @@ struct SendConfirmSheet: View {
             case .submittedUnconfirmed:
                 if coordinator.contactWithdrawalOutcomeUnknown {
                     ShieldedSubmittedUnconfirmedView(
-                        title: NSLocalizedString("Payment status unknown", comment: "DashPay withdrawal"),
+                        title: NSLocalizedString("Payment status unknown", comment: "DashPay contact payment"),
                         message: NSLocalizedString(
-                            "We couldn't confirm whether your withdrawal was accepted. Don't send it again — check your balance and this contact's payment history first.",
-                            comment: "DashPay withdrawal"),
+                            "We couldn't confirm whether this payment went through. Don't send it again — check your balance and this contact's activity first.",
+                            comment: "DashPay contact payment"),
                         onDone: onCompleted)
                 } else {
                     ShieldedSubmittedUnconfirmedView(onDone: onCompleted)
@@ -1273,18 +1273,17 @@ struct SendConfirmSheet: View {
     private var successBody: some View {
         VStack(spacing: 16) {
             PaymentSuccessHeader(
-                title: contactRecipient == nil
-                    ? NSLocalizedString("Sent", comment: "Send confirm sheet")
-                    : NSLocalizedString("Withdrawal submitted", comment: "DashPay withdrawal"),
+                title: NSLocalizedString("Sent", comment: "Send confirm sheet"),
                 amountDuffs: dashDuffs,
                 fiatText: fiatText)
 
-            // A withdrawal is accepted now and paid out later: say which.
+            // Paid from Platform or Shielded, the payment is sent now and
+            // lands a few minutes later: say so.
             if let contactRecipient {
                 Text(String.localizedStringWithFormat(
                     NSLocalizedString(
-                        "%@ will receive the payment after the network processes the withdrawal.",
-                        comment: "DashPay withdrawal submitted"),
+                        "%@ will receive it in a few minutes, once the network processes the payment.",
+                        comment: "DashPay contact payment sent from Platform or Shielded"),
                     contactRecipient.displayName))
                     .font(.callout)
                     .foregroundColor(.dash.secondaryText)
@@ -1486,6 +1485,21 @@ struct SendConfirmSheet: View {
     }
 
     private var infoBody: String {
+        // A contact is paid by name, so say who receives it and when, not
+        // how the payment reaches their address.
+        if let contactRecipient {
+            return isFullPlatformWithdrawal
+                ? String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "This sends your entire Platform balance. %@ receives it once the network processes the payment — this can take up to 10 minutes.",
+                        comment: "Send confirm sheet: full-balance DashPay contact payment"),
+                    contactRecipient.displayName)
+                : String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "%@ receives it once the network processes the payment — this can take up to 10 minutes.",
+                        comment: "Send confirm sheet: DashPay contact payment from Platform or Shielded"),
+                    contactRecipient.displayName)
+        }
         switch route {
         case .shieldedToCore:
             return NSLocalizedString(

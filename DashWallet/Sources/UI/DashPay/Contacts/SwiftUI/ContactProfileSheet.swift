@@ -643,7 +643,7 @@ struct ContactProfileSheet: View {
                         .font(.system(size: 12))
                         .foregroundColor(.dash.secondaryText)
                 }
-                if let status = payment.withdrawalStatus {
+                if let status = payment.statusNote {
                     Text(status)
                         .font(.system(size: 12))
                         .foregroundColor(.dash.secondaryText)
