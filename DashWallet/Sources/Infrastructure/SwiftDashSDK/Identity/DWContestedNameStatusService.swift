@@ -66,6 +66,7 @@ public final class DWContestedNameStatusService: NSObject {
     /// {submitted, end}); the label/endTime prefixes are the two retired
     /// single-slot layouts, kept only for one-time migration.
     private static let entriesKeyPrefix = "DWPendingContestedDPNSEntries"
+    private static let rejectedKeyPrefix = "DWRejectedContestedDPNSLabels"
     private static let pendingLabelKeyPrefix = "DWPendingContestedDPNSLabel"
     private static let pendingVotingEndTimeKeyPrefix = "DWPendingContestedDPNSVotingEndTime"
 
@@ -308,6 +309,7 @@ public final class DWContestedNameStatusService: NSObject {
 
     @nonobjc
     func finalizeWon(username: String, network: Network, identityId: Data? = nil, walletId: Data? = nil) {
+        clearRejected(label: username, for: network, walletId: walletId)
         // Read before `clearPending` drops the entry.
         let promote = Self.entries(for: network, walletId: walletId)[Self.canonicalLabel(username)]?[Self.promoteOnWinField] as? Bool == true
         // Only the WON label's bookmark clears — other contests stay in flight.
@@ -577,10 +579,57 @@ public final class DWContestedNameStatusService: NSObject {
     /// Drop every contested bookmark this device holds — both wallet-scoped and
     /// legacy, across networks. Called from the wallet wiper alongside the other
     /// UserDefaults-backed stores.
+    // MARK: - Rejected labels
+
+    /// Contested labels this wallet's identity asked for and did not get —
+    /// another identity won, or the network locked the name.
+    ///
+    /// The SDK adds a contested label to the identity's own names when the
+    /// request is submitted, and nothing prunes it on a loss; while the vote
+    /// ran the pending bookmark hid it. Once the bookmark is cleared this
+    /// record keeps hiding it, across dismissing the outcome and restarting.
+    /// Scoped like the bookmarks (network + wallet) and keyed to the identity.
+    func recordRejected(label: String, network: Network, identityId: Data, walletId: Data? = nil) {
+        guard let key = Self.rejectedKey(for: network, walletId: walletId) else { return }
+        var entries = (UserDefaults.standard.dictionary(forKey: key) as? [String: String]) ?? [:]
+        entries[Self.canonicalLabel(label)] = identityId.map { String(format: "%02x", $0) }.joined()
+        UserDefaults.standard.set(entries, forKey: key)
+        Self.logger.info("🪪 CONTEST-SVC :: recordRejected label=\(Self.canonicalLabel(label), privacy: .public)")
+    }
+
+    /// The rejected labels for `identityId` (all identities when nil).
+    func rejectedLabels(for network: Network, identityId: Data?, walletId: Data? = nil) -> [String] {
+        guard let key = Self.rejectedKey(for: network, walletId: walletId),
+              let entries = UserDefaults.standard.dictionary(forKey: key) as? [String: String] else { return [] }
+        let identityHex = identityId.map { $0.map { String(format: "%02x", $0) }.joined() }
+        return entries.compactMap { label, owner in
+            identityHex == nil || owner == identityHex ? label : nil
+        }
+    }
+
+    /// Drops the rejection for `label`: the identity has since come to own it
+    /// (won a later request, or bought it).
+    func clearRejected(label: String, for network: Network, walletId: Data? = nil) {
+        guard let key = Self.rejectedKey(for: network, walletId: walletId),
+              var entries = UserDefaults.standard.dictionary(forKey: key) as? [String: String],
+              entries.removeValue(forKey: Self.canonicalLabel(label)) != nil else { return }
+        if entries.isEmpty {
+            UserDefaults.standard.removeObject(forKey: key)
+        } else {
+            UserDefaults.standard.set(entries, forKey: key)
+        }
+    }
+
+    private nonisolated static func rejectedKey(for network: Network, walletId: Data? = nil) -> String? {
+        let walletScope = walletId.map { $0.map { String(format: "%02x", $0) }.joined() } ?? scope()
+        return walletScope.map { "\(rejectedKeyPrefix).\(networkKey(network)).\($0)" }
+    }
+
     nonisolated static func resetForWipe() {
         let defaults = UserDefaults.standard
         for key in defaults.dictionaryRepresentation().keys
         where key.hasPrefix(entriesKeyPrefix)
+            || key.hasPrefix(rejectedKeyPrefix)
             || key.hasPrefix(pendingLabelKeyPrefix)
             || key.hasPrefix(pendingVotingEndTimeKeyPrefix) {
             defaults.removeObject(forKey: key)

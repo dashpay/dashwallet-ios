@@ -687,8 +687,13 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         // the coordinator reconciles it.
         let provisional = DWContestedNameStatusService.shared.provisionalLabels(
             for: network, identityId: identityId, walletId: walletId)
+        // A lost or locked contest: the SDK keeps the label among the
+        // identity's names, but it is someone else's or nobody's.
+        let rejected = DWContestedNameStatusService.shared.rejectedLabels(
+            for: network, identityId: identityId, walletId: walletId)
         let isPending: (String) -> Bool = { name in
-            (pendingContested + provisional + unattributed).contains { DWContestedNameStatusService.labelsMatch(name, $0) }
+            (pendingContested + provisional + unattributed + rejected)
+                .contains { DWContestedNameStatusService.labelsMatch(name, $0) }
         }
 
         if let managed = try? wallet.managedIdentity(identityId: identityId) {

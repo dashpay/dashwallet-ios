@@ -332,7 +332,13 @@ final class IdentitiesViewModel: ObservableObject {
         // `isOwned == false` (their trade history remains browsable) —
         // they are no longer this identity's names and must not appear
         // in the picker or count toward "has a name".
+        // A lost or locked contest leaves its label among the cached names;
+        // it is not this identity's.
+        let rejected = WalletEnvironment.network.map {
+            DWContestedNameStatusService.shared.rejectedLabels(for: $0, identityId: identity.identityId)
+        } ?? []
         let allNames = identity.dpnsNames.filter(\.isOwned).map(\.label)
+            .filter { name in !rejected.contains { DWContestedNameStatusService.labelsMatch($0, name) } }
         let departedLabels = identity.dpnsNames.filter { !$0.isOwned }.map(\.label)
         let isSoldAway: (String?) -> Bool = { candidate in
             guard let candidate else { return false }

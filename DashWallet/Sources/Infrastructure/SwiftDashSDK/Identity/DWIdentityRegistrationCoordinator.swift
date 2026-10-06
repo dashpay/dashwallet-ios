@@ -461,6 +461,11 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         case insufficientCoreBalanceForTopUp(neededDuffs: UInt64, availableDuffs: UInt64)
         case shieldedTopUpUnavailable(neededDuffs: UInt64)
         case topUpExceedsConfirmed(neededDuffs: UInt64, confirmedDuffs: UInt64)
+        /// The identity needs a top-up, but no amount was confirmed for it.
+        case topUpNotConfirmed(neededDuffs: UInt64)
+        /// An earlier top-up of this identity was paid on Core but never
+        /// reached Platform; a new one would pay again.
+        case unfinishedIdentityTopUp
 
         var isCompletedPurchase: Bool {
             if case .purchaseCompletedInOriginalContext = self { return true }
@@ -555,6 +560,16 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                         "Your identity needs %@ DASH more to register this name, and it can’t be added from your Shielded balance here. Use Top Up in My Profile, then try again.",
                         comment: "DashPay: existing identity top-up before a username"),
                     neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
+            case .topUpNotConfirmed(let neededDuffs):
+                return String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "Registering this name needs %@ DASH from your wallet to top up your identity, and that amount was not confirmed. Nothing was sent. Try again to confirm it.",
+                        comment: "DashPay: existing identity top-up before a username"),
+                    neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
+            case .unfinishedIdentityTopUp:
+                return NSLocalizedString(
+                    "An earlier top-up of your identity hasn't finished, so nothing was sent. Open it in your transaction history, complete the transfer there, then try again.",
+                    comment: "DashPay: existing identity top-up before a username")
             case .topUpExceedsConfirmed(let neededDuffs, let confirmedDuffs):
                 return String.localizedStringWithFormat(
                     NSLocalizedString(
@@ -1229,10 +1244,19 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         let topUpDuffs = Self.identityTopUpDuffs(requiredCredits: requiredCredits, heldCredits: heldCredits)
         Self.logger.info("🪪 IDENT-COORD :: existing identity requiredCredits=\(requiredCredits) heldCredits=\(heldCredits) topUpDuffs=\(topUpDuffs) authorized=\(plan.authorizedDuffs.map(String.init) ?? "none") source=\(plan.source.logLabel)")
         guard topUpDuffs > 0 else { return }
+        // A top-up already paid on Core and never consumed: a new one would
+        // spend again. Stop and send the user to finish that one.
+        if Self.hasUnfinishedIdentityTopUp(walletId: wallet.walletId, modelContainer: plan.modelContainer) {
+            throw CoordinatorError.identityTopUp(CoordinatorError.unfinishedIdentityTopUp)
+        }
+        // No confirmed amount authorizes no top-up, not an unlimited one.
+        guard let authorized = plan.authorizedDuffs else {
+            throw CoordinatorError.identityTopUp(CoordinatorError.topUpNotConfirmed(neededDuffs: topUpDuffs))
+        }
         // The confirmation showed a top-up from the persisted balance; the
         // live one can be higher. Never move more than the user confirmed —
         // stop before any spend and let them confirm the new amount.
-        if let authorized = plan.authorizedDuffs, topUpDuffs > authorized {
+        if topUpDuffs > authorized {
             throw CoordinatorError.identityTopUp(
                 CoordinatorError.topUpExceedsConfirmed(neededDuffs: topUpDuffs, confirmedDuffs: authorized))
         }
@@ -2049,6 +2073,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
 
         // Every voting surface reads the bookmark on this notification.
         NotificationCenter.default.post(name: .DWDashPayRegistrationStatusUpdated, object: nil)
+        // The restored bookmarks need the same monitoring a fresh submission
+        // gets: resolution now, then the deadline timer.
+        checkPendingContestResolution()
     }
 
     /// The three ways a contest ends for us. `lostVote` and `blocked` are
@@ -2214,6 +2241,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         case .lostVote, .blocked:
             let reason = (outcome == .blocked) ? "blocked by the network" : "won by another identity"
             Self.logger.info("🪪 IDENT-COORD :: contest for \(label) \(reason) — clearing its bookmark; a new registration attempt is viable")
+            // Kept out of the identity's names before the bookmark that hid it
+            // goes: the SDK still lists the label as the identity's.
+            DWContestedNameStatusService.shared.recordRejected(
+                label: label, network: expectedNetwork, identityId: identityId, walletId: wallet.walletId)
             DWContestedNameStatusService.shared.clearPending(label: label, for: expectedNetwork)
             // Remember the outcome. Clearing the bookmark alone sent the row
             // straight back to "Join DashPay — request your username", so a
@@ -2366,6 +2397,12 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         case .completed, .failed:
             assetLockPollingTask?.cancel()
             assetLockPollingTask = nil
+            // The contest check refuses to run mid-registration, and the form
+            // hands off on `.inFlight`, so a More appearance during the attempt
+            // armed nothing. Start it now the attempt is over — on the next
+            // turn, once this phase is published; it keeps its own
+            // single-flight and context guards.
+            Task { @MainActor [weak self] in self?.checkPendingContestResolution() }
         default:
             break
         }
@@ -2463,6 +2500,19 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// Choosing the original payment is deliberate: a wallet already
     /// affected by BUG-2 may contain two rows, and retrying the newer one
     /// would leave the first payment stranded yet again.
+    /// Whether this wallet holds an identity top-up asset lock that was paid
+    /// but has not been shown to reach Platform (Built…ChainLocked, or
+    /// RecoveredFromChain). The tx-detail Retry resumes these
+    /// (`AssetLockRecoveryService`); the registration flow does not.
+    static func hasUnfinishedIdentityTopUp(walletId: Data, modelContainer: ModelContainer) -> Bool {
+        let descriptor = FetchDescriptor<PersistentAssetLock>(
+            predicate: #Predicate { row in
+                row.walletId == walletId && (row.fundingTypeRaw == 1 || row.fundingTypeRaw == 2)
+            })
+        guard let rows = try? modelContainer.mainContext.fetch(descriptor) else { return false }
+        return rows.contains { AssetLockRecoveryService.statusAllowsRetry($0.statusRaw) }
+    }
+
     private func lookupRegistrationRecoveryLock(
         walletId: Data,
         modelContainer: ModelContainer

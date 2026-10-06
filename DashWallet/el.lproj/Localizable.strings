@@ -6685,3 +6685,18 @@
 
 /* Usernames: request details, failed instant username */
 "The instant username “%@” could not be registered, so you have no username to use while the vote runs." = "The instant username “%@” could not be registered, so you have no username to use while the vote runs.";
+
+/* Usernames: plain name on an existing identity */
+"Top up your identity" = "Top up your identity";
+
+/* Usernames: plain name on an existing identity */
+"Registering “%1$@” first moves %2$@ DASH from your %3$@ to your identity’s credits." = "Registering “%1$@” first moves %2$@ DASH from your %3$@ to your identity’s credits.";
+
+/* Usernames: unfinished identity top-up */
+"A top-up hasn't finished" = "A top-up hasn't finished";
+
+/* DashPay: existing identity top-up before a username */
+"Registering this name needs %@ DASH from your wallet to top up your identity, and that amount was not confirmed. Nothing was sent. Try again to confirm it." = "Registering this name needs %@ DASH from your wallet to top up your identity, and that amount was not confirmed. Nothing was sent. Try again to confirm it.";
+
+/* DashPay: existing identity top-up before a username */
+"An earlier top-up of your identity hasn't finished, so nothing was sent. Open it in your transaction history, complete the transfer there, then try again." = "An earlier top-up of your identity hasn't finished, so nothing was sent. Open it in your transaction history, complete the transfer there, then try again.";

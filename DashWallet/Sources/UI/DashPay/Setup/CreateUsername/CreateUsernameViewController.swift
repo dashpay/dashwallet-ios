@@ -140,6 +140,11 @@ struct CreateUsernameView: View {
     /// `DWIdentityRegistrationBridge.shared.preferredFundingSource` in the
     /// Continue handler right before the submit call.
     @State private var fundingSource: DWIdentityFundingSource = .core
+    /// The top-up a plain name needs from an existing identity, waiting on the
+    /// user's answer to the amount alert. nil when no alert is up.
+    @State private var pendingPlainTopUpDuffs: UInt64?
+    /// An earlier identity top-up is unfinished; a new one would pay again.
+    @State private var showUnfinishedTopUp = false
     /// True once a choice made by the user has been adopted; auto-pinning
     /// then leaves the selection alone, even once it can no longer pay.
     @State private var didUserPickFundingSource: Bool = false
@@ -307,6 +312,8 @@ struct CreateUsernameView: View {
                             // submit directly.
                             if viewModel.canPurchaseListedNameDirectly {
                                 showPurchaseConfirmation = true
+                            } else if isBlockedByUnfinishedTopUp(nameCount: 1) {
+                                showUnfinishedTopUp = true
                             } else if viewModel.isContestedCandidate {
                                 // The verification offer comes first, as on
                                 // Android: a link published with the request is
@@ -314,7 +321,7 @@ struct CreateUsernameView: View {
                                 // submission that window is already narrower.
                                 showVerifyOffer = true
                             } else {
-                                performSubmit()
+                                submitPlainName()
                             }
                         }
                         .padding(.top, 20)
@@ -544,6 +551,39 @@ struct CreateUsernameView: View {
                     NSLocalizedString("“%@” has been registered.", comment: "Usernames"),
                     viewModel.username))
             }
+        }
+        .alert(
+            NSLocalizedString("Top up your identity", comment: "Usernames: plain name on an existing identity"),
+            isPresented: Binding(
+                get: { pendingPlainTopUpDuffs != nil },
+                set: { if !$0 { pendingPlainTopUpDuffs = nil } })
+        ) {
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+                pendingPlainTopUpDuffs = nil
+            }
+            Button(NSLocalizedString("Confirm", comment: "")) {
+                if let topUp = pendingPlainTopUpDuffs {
+                    viewModel.captureConfirmedTopUp(shownDuffs: topUp, isCompanionPass: false)
+                }
+                pendingPlainTopUpDuffs = nil
+                performSubmit()
+            }
+        } message: {
+            Text(String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "Registering “%1$@” first moves %2$@ DASH from your %3$@ to your identity’s credits.",
+                    comment: "Usernames: plain name on an existing identity"),
+                viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines),
+                (pendingPlainTopUpDuffs ?? 0).dashAmount.formattedDashAmountWithoutCurrencySymbol,
+                fundingSourceName))
+        }
+        .alert(
+            NSLocalizedString("A top-up hasn't finished", comment: "Usernames: unfinished identity top-up"),
+            isPresented: $showUnfinishedTopUp
+        ) {
+            Button(NSLocalizedString("OK", comment: "")) { }
+        } message: {
+            Text(DWIdentityRegistrationCoordinator.CoordinatorError.unfinishedIdentityTopUp.localizedDescription)
         }
         .alert(
             NSLocalizedString("Username submitted", comment: "Usernames"),
@@ -1168,6 +1208,45 @@ struct CreateUsernameView: View {
     /// submit. The bridge resets to `.core` on every terminal phase, so
     /// a stale picker value can't leak into a future attempt; this
     /// single write is the only synchronization needed.
+    /// A plain name on an existing identity that needs a top-up asks for the
+    /// amount and source first; otherwise it submits straight away.
+    private func submitPlainName() {
+        let topUp = viewModel.isInvitationMode
+            ? nil
+            : viewModel.existingIdentityTopUpDuffs(isContested: false, nameCount: 1)
+        if let topUp, topUp > 0 {
+            pendingPlainTopUpDuffs = topUp
+        } else {
+            performSubmit()
+        }
+    }
+
+    /// The submission would top up the identity while an earlier top-up is
+    /// still unfinished — the coordinator would refuse it after the PIN, so
+    /// the form says so first.
+    private func isBlockedByUnfinishedTopUp(nameCount: UInt64) -> Bool {
+        guard !viewModel.isInvitationMode,
+              let needed = viewModel.existingIdentityTopUpDuffs(
+                isContested: viewModel.isContestedCandidate, nameCount: nameCount),
+              needed > 0,
+              let wallet = SwiftDashSDKHost.shared.wallet,
+              let container = SwiftDashSDKHost.shared.modelContainer
+        else { return false }
+        return DWIdentityRegistrationCoordinator.hasUnfinishedIdentityTopUp(
+            walletId: wallet.walletId, modelContainer: container)
+    }
+
+    /// The source the amount alert names, as the privacy page names it.
+    private var fundingSourceName: String {
+        switch fundingSource {
+        case .core: return NSLocalizedString("Dash balance", comment: "Usernames")
+        case .platformPayment: return NSLocalizedString("Platform balance", comment: "Usernames")
+        case .shielded: return NSLocalizedString("Shielded balance", comment: "Usernames")
+        case .invitation: return NSLocalizedString("Dash balance", comment: "Usernames")
+        @unknown default: return NSLocalizedString("Dash balance", comment: "Usernames")
+        }
+    }
+
     private func performSubmit(temporaryUsername: String? = nil) {
         // Another registration is running (started from Identities or an
         // invitation): refuse before touching the bridge state it still reads
@@ -1177,21 +1256,23 @@ struct CreateUsernameView: View {
             viewModel.discardConfirmedTopUp()
             return
         }
+        if isBlockedByUnfinishedTopUp(nameCount: temporaryUsername == nil ? 1 : 2) {
+            viewModel.discardConfirmedTopUp()
+            showUnfinishedTopUp = true
+            return
+        }
         if !viewModel.isInvitationMode {
             // An identity that already exists — resumed or not — is topped up
             // from this source when it holds less than the name needs, so the
             // pick matters on that path too.
             DWIdentityRegistrationBridge.shared.preferredFundingSource =
                 viewModel.registrationRecovery == .pendingCoreAssetLock ? .core : fundingSource
-            // The top-up the user confirmed is the most the coordinator may move
-            // without asking again — captured on Confirm, not recalculated
-            // here, so a balance refresh in between cannot raise it. Only the
-            // contested sheet confirms an amount; other submissions carry none.
-            DWIdentityRegistrationBridge.shared.authorizedTopUpDuffs = viewModel.isContestedCandidate
-                ? viewModel.takeConfirmedTopUpCeiling()
-                : nil
-            // A non-contested submission confirmed nothing; drop any capture.
-            if !viewModel.isContestedCandidate { viewModel.discardConfirmedTopUp() }
+            // The top-up the user confirmed — on the contested sheets or the
+            // plain name's amount alert — is the most the coordinator may move
+            // without asking again; captured on Confirm, not recalculated here.
+            // None confirmed means none allowed: the coordinator refuses a
+            // top-up it was not given an amount for.
+            DWIdentityRegistrationBridge.shared.authorizedTopUpDuffs = viewModel.takeConfirmedTopUpCeiling()
         }
         // Every submission except an invitation claim reports its progress on
         // the More row and this screen steps aside straight after the PIN.
