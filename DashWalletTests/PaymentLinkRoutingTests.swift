@@ -719,7 +719,7 @@ final class PaymentDialogOutcomeTests: XCTestCase {
         XCTAssertTrue(shown.contains("TXSEND") && shown.contains("route=BIP70"), shown)
         XCTAssertTrue(shown.contains("pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire))"), shown)
         XCTAssertTrue(shown.contains("wallet=1d1d1d1d"), shown)
-        XCTAssertTrue(shown.contains("reason="), shown)
+        XCTAssertTrue(shown.contains("within the \(PendingSendOutcomes.maxFollowDays)-day window"), shown)
         XCTAssertFalse(shown.contains("yAddressForTests"), "never the full address")
 
         notice.rootView.positiveButtonAction()
@@ -730,7 +730,7 @@ final class PaymentDialogOutcomeTests: XCTestCase {
 
         var other: [Bool] = []
         controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "yOtherAddress", isBIP70: false) { other.append($0) }
-        XCTAssertEqual(other, [true], "another address is not interrupted, nor waited on")
+        XCTAssertEqual(other, [true], "another address is not interrupted")
         XCTAssertEqual(logged.count, 2, "nothing pending: no log")
     }
 

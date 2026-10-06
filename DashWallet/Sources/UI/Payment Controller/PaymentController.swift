@@ -239,7 +239,11 @@ extension PaymentController: DWPaymentProcessorDelegate {
         }
         let route = paymentRoute(isBIP70: isBIP70)
         let age = Int(Date().timeIntervalSince(waiting.sentAt))
-        log("💸 TXSEND :: repeat payment refused — route=\(route) to=\(PendingSendOutcomes.masked(address)) pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire)) age=\(age)s wallet=\(PendingSendOutcomes.walletTag(waiting.walletId)) reason=still followed: no lock or block seen on its row yet, within the \(PendingSendOutcomes.maxFollowDays)-day window; rows re-read in the background")
+        log("💸 TXSEND :: repeat payment refused — route=\(route) to=\(PendingSendOutcomes.masked(address))"
+            + " pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire)) age=\(age)s"
+            + " wallet=\(PendingSendOutcomes.walletTag(waiting.walletId))"
+            + " reason=still followed: no lock or block seen on its row yet,"
+            + " within the \(PendingSendOutcomes.maxFollowDays)-day window; rows re-read in the background")
         refuseRepeating(waiting) { [weak self] in
             self?.log("💸 TXSEND :: repeat payment cancelled on OK — route=\(route) pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire)); no PIN, nothing built")
             completion(false)
@@ -301,10 +305,11 @@ extension PaymentController: DWPaymentProcessorDelegate {
             onClosed: done)
     }
 
-    /// A confirm sheet no longer on screen is not the one a payment uses:
+    /// A confirm sheet no longer on screen (or on its way out) is not the one
+    /// a payment uses:
     /// forgotten, so a new one opens.
     private func dropOffScreenConfirm() {
-        if let vc = confirmViewController, vc.presentingViewController == nil {
+        if let vc = confirmViewController, vc.presentingViewController == nil || vc.isBeingDismissed {
             confirmViewController = nil
         }
     }

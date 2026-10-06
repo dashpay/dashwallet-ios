@@ -102,7 +102,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// "Sending", where Remove if Not on Network is offered.
     nonisolated static let maxFollowAge: TimeInterval = 7 * 24 * 60 * 60
     /// `maxFollowAge` in whole days, for logs.
-    nonisolated static var maxFollowDays: Int { Int(maxFollowAge / (24 * 60 * 60)) }
+    nonisolated static let maxFollowDays = Int((maxFollowAge / (24 * 60 * 60)).rounded())
     /// A send that settles this soon after it was recorded settled while its
     /// "Waiting for the network" notice is still being read: no second
     /// "went through" message on top of it.
@@ -244,13 +244,14 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// longer refused to. Empty for a send that never refused any (no
     /// address: a CoinJoin sweep chunk, a route that does not know it).
     nonisolated static func refusalLifted(for address: String?) -> String {
-        refusalLifted(for: address.map { [$0] } ?? [])
+        refusalLifted(for: [address].compactMap { $0 })
     }
 
-    /// The same for several sends: each address once.
+    /// The same for several sends: each address once. Empty addresses (a
+    /// route that recorded none) are left out like missing ones.
     nonisolated static func refusalLifted(for addresses: [String]) -> String {
         // Distinct addresses, each listed even when two mask alike.
-        let shown = Set(addresses).sorted().map(masked)
+        let shown = Set(addresses.filter { !$0.isEmpty }).sorted().map(masked)
         return shown.isEmpty ? "" : "; payments to \(shown.joined(separator: ", ")) no longer refused"
     }
 
