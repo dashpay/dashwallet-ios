@@ -939,7 +939,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         let contactWithdrawal: ContactWithdrawal?
         do {
-            try await authorize()
+            try await authorize(contactSpendDuffs: contactRecipient == nil ? nil : submittedAmount / 1000)
             contactWithdrawal = try await reserveContactWithdrawal(
                 contactRecipient,
                 amountDuffs: submittedAmount / 1000,
@@ -1259,8 +1259,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
 
         let contactWithdrawal: ContactWithdrawal?
+        // A full-balance withdrawal can pay out more than its preflighted
+        // estimate if the fee comes in lower: authorize the whole balance.
+        let contactSpendCredits = fullBalance
+            ? max(amountCredits, PlatformAddressSyncCoordinator.shared.platformBalanceState.credits ?? 0)
+            : amountCredits
         do {
-            try await authorize()
+            try await authorize(contactSpendDuffs: contactRecipient == nil ? nil : contactSpendCredits / 1000)
             contactWithdrawal = try await reserveContactWithdrawal(
                 contactRecipient,
                 amountDuffs: amountCredits / 1000,
@@ -1586,7 +1591,28 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// PIN/biometric gate. `phase` is already `.signing` (set synchronously
     /// by `beginTransfer()`); this just awaits user authorization and maps
     /// the cancel/fail outcomes onto coordinator errors.
-    private func authorize() async throws {
+    ///
+    /// `contactSpendDuffs` is set for a payment to a DashPay contact, which
+    /// authorizes like the Transparent contact send: the amount engages the
+    /// biometric spending limit (an amount over the remaining allowance needs
+    /// the PIN) and is deducted from it. Every other route keeps the
+    /// identity gate.
+    private func authorize(contactSpendDuffs: UInt64? = nil) async throws {
+        if let contactSpendDuffs {
+            #if DASHPAY
+            do {
+                try await WalletSendService.shared.authorizeContactPayment(amountDuffs: contactSpendDuffs)
+            } catch {
+                throw WalletSendService.isAuthenticationCancelledError(error as NSError)
+                    ? CoordinatorError.authCancelled
+                    : CoordinatorError.authFailed
+            }
+            return
+            #else
+            // Only the DashPay target pays contacts.
+            throw CoordinatorError.authFailed
+            #endif
+        }
         do {
             try await authorizer.authorize()
         } catch DWIdentityAuthorizer.AuthError.cancelled {

@@ -690,6 +690,14 @@ final class WalletSendService: NSObject {
     /// Call only after the user confirmed the payment and authorized it: the
     /// SDK marks the address used before returning it, and it stays used if
     /// the withdrawal is then cancelled, rejected or never confirmed.
+    /// The spend gate a Platform- or Shielded-funded contact payment passes
+    /// before its address is reserved — the same one `sendToContact` uses, so
+    /// the biometric spending limit applies whichever balance pays.
+    @MainActor
+    func authorizeContactPayment(amountDuffs: UInt64) async throws {
+        try await sendAuthorizer.authorizeSend(spendAmount: amountDuffs)
+    }
+
     @MainActor
     func reserveContactPaymentAddress(for recipient: ContactPaymentRecipient) async throws -> String {
         // At the boundary rather than on the screen: one opened before the

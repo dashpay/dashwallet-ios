@@ -216,3 +216,49 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         }
     }
 }
+
+/// Which balance a DashPay contact payment opens on, and when the From step
+/// is offered.
+final class ContactPaymentSourceTests: XCTestCase {
+    private func plan(
+        hasWalletContext: Bool = true,
+        _ balances: [ChainNetwork: UInt64]
+    ) -> (initialSource: ChainNetwork, offersChoice: Bool) {
+        SendViewModel.contactSourcePlan(
+            validSources: SendViewModel.contactValidSources(hasWalletContext: hasWalletContext),
+            balanceDuffs: { balances[$0] ?? 0 })
+    }
+
+    func testOnlyPlatformFundedOpensOnPlatformWithoutChoice() {
+        let result = plan([.platform: 2_000_000])
+        XCTAssertEqual(result.initialSource, .platform)
+        XCTAssertFalse(result.offersChoice)
+    }
+
+    func testOnlyShieldedFundedOpensOnShieldedWithoutChoice() {
+        let result = plan([.shielded: 2_000_000])
+        XCTAssertEqual(result.initialSource, .shielded)
+        XCTAssertFalse(result.offersChoice)
+    }
+
+    func testSeveralFundedBalancesOfferChoiceStartingWithTransparent() {
+        let result = plan([.core: 1, .platform: 2_000_000, .shielded: 3_000_000])
+        XCTAssertEqual(result.initialSource, .core)
+        XCTAssertTrue(result.offersChoice)
+    }
+
+    func testNothingFundedFallsBackToTransparent() {
+        let result = plan([:])
+        XCTAssertEqual(result.initialSource, .core)
+        XCTAssertFalse(result.offersChoice)
+    }
+
+    /// Without a wallet context there is nothing to check a reservation
+    /// against, so only the Transparent send is offered.
+    func testMissingWalletContextLeavesOnlyTransparent() {
+        XCTAssertEqual(SendViewModel.contactValidSources(hasWalletContext: false), [.core])
+        let result = plan(hasWalletContext: false, [.platform: 2_000_000, .shielded: 3_000_000])
+        XCTAssertEqual(result.initialSource, .core)
+        XCTAssertFalse(result.offersChoice)
+    }
+}

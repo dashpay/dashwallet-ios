@@ -464,11 +464,23 @@ final class SendViewModel: ObservableObject {
             contactIdentityId: contact.contactIdentityId,
             recipient: contactPaymentRecipient)
         destination = .core
-        let funded = validSources.filter { balanceDuffs(of: $0) > 0 }
-        contactOffersSourceChoice = funded.count > 1
+        let plan = Self.contactSourcePlan(
+            validSources: validSources, balanceDuffs: { self.balanceDuffs(of: $0) })
+        contactOffersSourceChoice = plan.offersChoice
         // Not the user's pick, so the From step still reads as a suggestion.
         // The assignment refreshes the route-dependent preflights.
-        setSourceWithoutClaimingUserIntent(funded.first ?? .core)
+        setSourceWithoutClaimingUserIntent(plan.initialSource)
+    }
+
+    /// Which source a contact payment opens on, and whether the From step is
+    /// shown: the first funded valid source (Transparent when none is), with
+    /// a choice offered only when more than one is funded.
+    static func contactSourcePlan(
+        validSources: [ChainNetwork],
+        balanceDuffs: (ChainNetwork) -> UInt64
+    ) -> (initialSource: ChainNetwork, offersChoice: Bool) {
+        let funded = validSources.filter { balanceDuffs($0) > 0 }
+        return (funded.first ?? .core, funded.count > 1)
     }
 
     /// Which balances can pay a contact. Transparent pays through
@@ -478,7 +490,11 @@ final class SendViewModel: ObservableObject {
     /// is confirmed; without the captured wallet context there is nothing to
     /// check that reservation against, so only Transparent remains.
     private var contactValidSources: [ChainNetwork] {
-        contactPaymentRecipient == nil ? [.core] : [.core, .platform, .shielded]
+        Self.contactValidSources(hasWalletContext: contactPaymentRecipient != nil)
+    }
+
+    static func contactValidSources(hasWalletContext: Bool) -> [ChainNetwork] {
+        hasWalletContext ? [.core, .platform, .shielded] : [.core]
     }
 
     /// What the contact intro offers as the balance to spend: the envelope
