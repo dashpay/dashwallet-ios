@@ -776,27 +776,6 @@ final class PaymentDialogOutcomeTests: XCTestCase {
         XCTAssertEqual(answers, [false])
     }
 
-    /// A BIP72 URI's own address is what a plain send falls back to when the
-    /// request cannot be fetched: it is checked, and followed, with the
-    /// request's recipients.
-    func testTheURIsFallbackAddressIsCheckedWithTheRecipients() {
-        XCTAssertEqual(
-            BIP70ConfirmationBox.repeatCheckAddresses(recipients: ["yM", "yN", "yM"], fallback: "yX"),
-            ["yM", "yN", "yX"])
-        XCTAssertEqual(BIP70ConfirmationBox.repeatCheckAddresses(recipients: ["yM"], fallback: "yM"), ["yM"])
-        XCTAssertEqual(BIP70ConfirmationBox.repeatCheckAddresses(recipients: ["yM"], fallback: nil), ["yM"])
-
-        // Followed under [M, X]: the fallback plain send to X is refused.
-        let wallet = Data(repeating: 0x1d, count: 32)
-        let followed = PendingSendOutcomes.Entry(
-            txidWire: Data(repeating: 0x9e, count: 32), walletId: wallet, address: "yM",
-            otherAddresses: PendingSendOutcomes.distinctOthers(["yM", "yX"], primary: "yM"),
-            amount: 1_000, sentAt: Date())
-        XCTAssertEqual(
-            PendingSendOutcomes.refusing(["yX"], walletId: wallet, in: [followed.txidWire: followed], now: Date()),
-            followed)
-    }
-
     func testAnUnknownOutcomeErrorCarriesItsTxid() {
         let txidWire = Data(repeating: 0x7e, count: 32)
         defer { PendingSendOutcomes.shared.forget(txidsWire: [txidWire]) }
@@ -1117,25 +1096,28 @@ final class UnknownOutcomeWalletTests: XCTestCase {
             txidWire, "a plain payment to the second recipient is refused")
     }
 
-    /// The BIP70 layer hands every recipient out with an unknown outcome,
-    /// awaited or handed off, so the app can follow the payment under all of
-    /// them.
-    func testABIP70UnknownOutcomeCarriesEveryRecipient() async throws {
+    /// The BIP70 layer hands the payment's addresses out with an unknown
+    /// outcome, awaited or handed off: every recipient, then the address of
+    /// the URI the request came from (what a plain send falls back to when
+    /// the request cannot be fetched), each once.
+    func testABIP70UnknownOutcomeCarriesEveryRecipientAndTheURIsAddress() async throws {
         let wallet = DetachedUnknownWallet(walletId: Data(repeating: 0x3e, count: 32))
-        let transport = AcknowledgingTransport(extraOutputs: 1)
         let service = BIP70PaymentService(
-            transport: transport, wallet: wallet, receiveAddress: StaticReceiveAddress(), auth: NoAuth())
+            transport: AcknowledgingTransport(extraOutputs: 1), wallet: wallet,
+            receiveAddress: StaticReceiveAddress(), auth: NoAuth())
+        let url = URL(string: "http://merchant/pr")!
         let confirmation = try await service.prepareForConfirmation(
-            from: URL(string: "http://merchant/pr")!, scheme: "dash", network: .testnet)
-        let recipients = confirmation.recipientAddresses
+            from: url, scheme: "dash", network: .testnet, fallbackAddress: "yUriOwnAddress")
+        let recipients = confirmation.recipients.map(\.address)
         XCTAssertEqual(recipients.count, 2)
-        XCTAssertEqual(recipients.first, confirmation.primaryAddress)
+        let addresses = confirmation.repeatCheckAddresses
+        XCTAssertEqual(addresses, recipients + ["yUriOwnAddress"], "what the repeat-payment check is asked about")
 
         do {
             _ = try await service.confirmAndSend(confirmation)
             XCTFail("the broadcast got no answer")
         } catch BIP70Error.broadcastOutcomeUnknown(_, _, _, let carried) {
-            XCTAssertEqual(carried, recipients, "the awaited broadcast")
+            XCTAssertEqual(carried, addresses, "the awaited broadcast")
         }
 
         let reported = expectation(description: "the handed-off broadcast reports")
@@ -1145,10 +1127,31 @@ final class UnknownOutcomeWalletTests: XCTestCase {
             reported.fulfill()
         }
         let again = try await service.prepareForConfirmation(
-            from: URL(string: "http://merchant/pr")!, scheme: "dash", network: .testnet)
+            from: url, scheme: "dash", network: .testnet, fallbackAddress: "yUriOwnAddress")
         _ = try await service.confirmAndSend(again, awaitAcceptance: false)
         await fulfillment(of: [reported], timeout: 3)
-        XCTAssertEqual(detached, recipients, "the handed-off broadcast")
+        XCTAssertEqual(detached, addresses, "the handed-off broadcast")
+
+        // The URI's address repeated among the recipients, or absent: each once.
+        let same = try await service.prepareForConfirmation(
+            from: url, scheme: "dash", network: .testnet, fallbackAddress: recipients[0])
+        XCTAssertEqual(same.repeatCheckAddresses, recipients)
+        let none = try await service.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        XCTAssertEqual(none.repeatCheckAddresses, recipients)
+    }
+
+    /// A payment followed under its recipient M and its URI's address X
+    /// refuses the plain send to X that a failed request fetch falls back to.
+    func testAFallbackPlainSendToTheURIsAddressIsRefused() {
+        let wallet = Data(repeating: 0x1d, count: 32)
+        let txidWire = Data(repeating: 0x9e, count: 32)
+        defer { PendingSendOutcomes.shared.forget(txidsWire: [txidWire], reason: "test send") }
+        WalletSendService.followUnknownOutcome(
+            txidWire: txidWire, address: "yM", otherAddresses: ["yM", "yX"], amount: 1_000, walletId: wallet)
+        XCTAssertEqual(
+            PendingSendOutcomes.refusing(
+                ["yX"], walletId: wallet, in: PendingSendOutcomes.shared.entries, now: Date())?.txidWire,
+            txidWire)
     }
 
     func testADetachedBroadcastWithNoAnswerReportsTheWalletThatBuiltIt() async throws {

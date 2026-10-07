@@ -138,11 +138,20 @@ struct Confirmation {
     /// Default-initialized: a reference shared by every value copy of this `Confirmation`.
     let sendGuard = BIP70SendGuard()
 
+    /// The address of the payment URI the request came from (BIP72), if it
+    /// had one: what a plain send falls back to when the request cannot be
+    /// fetched. The transaction itself may not pay it.
+    var fallbackAddress: String? = nil
+
     var primaryAddress: String? { recipients.first?.address }
-    /// Every address the payment pays, in request order, without repeats.
-    var recipientAddresses: [String] {
+    /// Every address a repeat of this payment could go to: the recipients in
+    /// request order, then `fallbackAddress`, each once. What the
+    /// repeat-payment check is asked about, and what an unknown outcome is
+    /// followed under, on every route.
+    var repeatCheckAddresses: [String] {
         var seen = Set<String>()
-        return recipients.map(\.address).filter { seen.insert($0).inserted }
+        return (recipients.map(\.address) + [fallbackAddress].compactMap { $0 })
+            .filter { !$0.isEmpty && seen.insert($0).inserted }
     }
 }
 
@@ -179,8 +188,8 @@ final class BIP70PaymentService {
     private let allowUntrustedUnsigned: Bool
     /// Told when a broadcast handed off after the merchant's acknowledgement
     /// (`awaitAcceptance: false`) ends with no answer from the network, with
-    /// the display-order txid, the paid amount, every recipient address
-    /// (`Confirmation.recipientAddresses`), the wallet the transaction was
+    /// the display-order txid, the paid amount, the payment's addresses
+    /// (`Confirmation.repeatCheckAddresses`), the wallet the transaction was
     /// built for and the reason, so the app can follow the payment; the layer
     /// does not know where sends are followed.
     var onDetachedBroadcastUnknown: ((_ txHashDisplay: Data, _ amount: UInt64, _ addresses: [String], _ walletId: Data?, _ reason: String) -> Void)?
@@ -207,6 +216,7 @@ final class BIP70PaymentService {
                                 scheme: String,
                                 network: PaymentNetwork,
                                 callbackScheme: String? = nil,
+                                fallbackAddress: String? = nil,
                                 now: Date = Date()) async throws -> Confirmation {
 
         // 1. Fetch (L3).
@@ -266,7 +276,8 @@ final class BIP70PaymentService {
             merchantData: details.merchantData,
             memo: details.memo,
             callbackScheme: callbackScheme,
-            request: request)
+            request: request,
+            fallbackAddress: fallbackAddress)
     }
 
     // MARK: Send (the only spend point)
@@ -352,11 +363,11 @@ final class BIP70PaymentService {
             do {
                 txidHexDisplay = try await wallet.broadcast(prepared)
             } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason, _) {
-                // With every recipient: the caller follows the payment, and a
+                // With the payment's addresses: the caller follows it, and a
                 // later payment to any of them is refused while it waits.
                 throw BIP70Error.broadcastOutcomeUnknown(
                     txHashDisplay: txHashDisplay, walletId: walletId, reason: reason,
-                    recipientAddresses: confirmation.recipientAddresses)
+                    repeatCheckAddresses: confirmation.repeatCheckAddresses)
             }
         } else {
             // The merchant already acknowledged the signed bytes, so the spend is committed
@@ -367,7 +378,7 @@ final class BIP70PaymentService {
             let wallet = self.wallet
             let onUnknown = onDetachedBroadcastUnknown
             let amount = confirmation.amount
-            let addresses = confirmation.recipientAddresses
+            let addresses = confirmation.repeatCheckAddresses
             Task.detached(priority: .userInitiated) {
                 do {
                     _ = try await wallet.broadcast(prepared)
@@ -397,11 +408,13 @@ final class BIP70PaymentService {
                                 scheme: String,
                                 network: PaymentNetwork,
                                 callbackScheme: String? = nil,
+                                fallbackAddress: String? = nil,
                                 now: Date = Date(),
                                 awaitAcceptance: Bool = true) async throws -> SendResult {
         try await auth.authorize()
         let confirmation = try await prepareForConfirmation(from: requestURL, scheme: scheme,
-                                                            network: network, callbackScheme: callbackScheme, now: now)
+                                                            network: network, callbackScheme: callbackScheme,
+                                                            fallbackAddress: fallbackAddress, now: now)
         return try await confirmAndSend(confirmation, now: now, awaitAcceptance: awaitAcceptance)
     }
 

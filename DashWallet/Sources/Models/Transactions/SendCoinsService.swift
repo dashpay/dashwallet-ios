@@ -114,13 +114,14 @@ public final class SendCoinsService: NSObject {
         do {
             result = try await service.confirmAndSendHeadless(
                 from: requestURL, scheme: uri.scheme, network: network,
-                callbackScheme: uri.callbackScheme, awaitAcceptance: awaitAcceptance)
+                callbackScheme: uri.callbackScheme, fallbackAddress: uri.address,
+                awaitAcceptance: awaitAcceptance)
         } catch BIP70Error.paymentNotAcknowledged(let txHashDisplay, let reason) {
             // The merchant may already hold the signed bytes; hand the caller the txid so the
             // order is recorded rather than dropped on the floor.
             throw DashSpendError.paymentNotAcknowledged(
                 txIdWire: Data(txHashDisplay.reversed()), reason: reason)
-        } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason, let recipients) {
+        } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason, let payees) {
             // The coins are gone as far as the merchant is concerned — it already holds the
             // signed bytes and can broadcast them itself. Hand the caller the txid so the
             // purchase is recorded rather than dropped; the caller decides how to present it.
@@ -128,10 +129,10 @@ public final class SendCoinsService: NSObject {
             // so it settles without the "went through" notice.
             let txIdWire = Data(txHashDisplay.reversed())
             await MainActor.run {
-                // Under every address the request paid, then the URI's own
-                // (its plain-send fallback), as the interactive route does.
-                let addresses = BIP70ConfirmationBox.repeatCheckAddresses(
-                    recipients: recipients ?? [], fallback: uri.address)
+                // Under the payment's addresses (its recipients, then the
+                // URI's own). Not known only if the error did not come
+                // through the service: the URI's address alone then.
+                let addresses = payees ?? [uri.address].compactMap { $0 }
                 _ = PendingSendOutcomes.shared.recordUnknownOutcome(
                     txidWire: txIdWire, address: addresses.first, otherAddresses: addresses,
                     amount: 0, notifies: false, walletId: walletId)

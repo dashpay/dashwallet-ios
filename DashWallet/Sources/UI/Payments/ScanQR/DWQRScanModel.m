@@ -208,6 +208,7 @@ NS_ASSUME_NONNULL_END
             [coordinator fetchAndVerifyWithRequestURL:parsed.rURL
                                                scheme:parsed.scheme
                                        callbackScheme:parsed.callbackScheme
+                                      fallbackAddress:parsed.address
                                            completion:^(DWBIP70ConfirmationBox *_Nullable box, NSError *_Nullable error) {
                                                // The coordinator delivers on the main thread.
                                                (void)coordinator; // retain until completion
@@ -268,6 +269,7 @@ NS_ASSUME_NONNULL_END
         [coordinator fetchAndVerifyWithRequestURL:parsed.rURL
                                            scheme:parsed.scheme
                                    callbackScheme:parsed.callbackScheme
+                                  fallbackAddress:parsed.address
                                        completion:^(DWBIP70ConfirmationBox *_Nullable box, NSError *_Nullable error) {
                                            (void)coordinator; // retain until completion
                                            __strong __typeof__(weakSelf) strongSelf = weakSelf;

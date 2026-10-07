@@ -23,22 +23,9 @@ final class BIP70ConfirmationBox: NSObject {
     @objc var amount: UInt64 { confirmation.amount }
     @objc var estimatedFee: UInt64 { confirmation.estimatedFee }
     @objc var primaryAddress: String? { confirmation.primaryAddress }
-    /// The address of the payment URI the request came from (BIP72), when it
-    /// is payable on this network: what a plain send falls back to when the
-    /// request cannot be fetched. Set by `DWPaymentProcessor`.
-    @objc var fallbackAddress: String?
-    /// Every address a repeat of this payment could go to: the request's
-    /// recipients in request order, then `fallbackAddress`, each once. What
-    /// the repeat-payment check is asked about, and what an unknown outcome
-    /// is followed under.
-    @objc var repeatCheckAddresses: [String] {
-        Self.repeatCheckAddresses(recipients: confirmation.recipientAddresses, fallback: fallbackAddress)
-    }
-
-    static func repeatCheckAddresses(recipients: [String], fallback: String?) -> [String] {
-        var seen = Set<String>()
-        return (recipients + [fallback].compactMap { $0 }).filter { !$0.isEmpty && seen.insert($0).inserted }
-    }
+    /// The request's recipients, then the address of the URI it came from,
+    /// each once (`Confirmation.repeatCheckAddresses`).
+    @objc var repeatCheckAddresses: [String] { confirmation.repeatCheckAddresses }
     @objc var memo: String? { confirmation.memo }
 }
 
@@ -67,17 +54,23 @@ final class BIP70InteractiveCoordinator: NSObject {
     }
 
     /// Fetch + verify a BIP70 request (no build, no spend). Completion fires on the main thread.
-    @objc(fetchAndVerifyWithRequestURL:scheme:callbackScheme:completion:)
+    ///
+    /// - Parameter fallbackAddress: the address of the payment URI the
+    ///   request URL came from, if it had one (BIP72): kept on the
+    ///   confirmation, for the repeat-payment check.
+    @objc(fetchAndVerifyWithRequestURL:scheme:callbackScheme:fallbackAddress:completion:)
     func fetchAndVerify(requestURL: URL,
                         scheme: String,
                         callbackScheme: String?,
+                        fallbackAddress: String?,
                         completion: @escaping (BIP70ConfirmationBox?, NSError?) -> Void) {
         let normalizedScheme = Self.normalize(scheme)
         Task {
             do {
                 let network = try PaymentNetworkResolver.current()
                 let confirmation = try await service.prepareForConfirmation(
-                    from: requestURL, scheme: normalizedScheme, network: network, callbackScheme: callbackScheme)
+                    from: requestURL, scheme: normalizedScheme, network: network, callbackScheme: callbackScheme,
+                    fallbackAddress: fallbackAddress)
                 await MainActor.run { completion(BIP70ConfirmationBox(confirmation), nil) }
             } catch {
                 await MainActor.run { completion(nil, Self.nsError(error)) }
@@ -103,15 +96,13 @@ final class BIP70InteractiveCoordinator: NSObject {
                     amount: result.amount,
                     fee: result.fee)
                 await MainActor.run { completion(BIP70SendResultBox(result), nil) }
-            } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason, let recipients) {
+            } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason, _) {
                 // The payment may well have gone through: followed in the
                 // history as "Waiting for the network", like a plain send —
-                // one send, under every recipient it pays.
+                // one send, under every address of the payment.
                 // On the main actor: following the send touches main-actor state.
                 await MainActor.run {
-                    let addresses = BIP70ConfirmationBox.repeatCheckAddresses(
-                        recipients: recipients ?? box.confirmation.recipientAddresses,
-                        fallback: box.fallbackAddress)
+                    let addresses = box.confirmation.repeatCheckAddresses
                     let error = WalletSendService.unknownOutcomeError(
                         txidWire: Data(txHashDisplay.reversed()),
                         address: addresses.first,

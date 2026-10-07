@@ -233,10 +233,9 @@ final class PendingBalanceFollower {
     private var shownScope: Scope?
     /// The last balance event was a known amount (main queue only).
     private var isBalanceKnown = false
-    /// A read is running; `readAgain` when an event came during it (main
-    /// queue only).
-    private var isReading = false
-    private var readAgain = false
+    /// One read at a time, with one re-run for events that come during it
+    /// (main queue only).
+    private var readSlot = PooledReadSlot()
     private let boundScope: () -> Scope?
     private let read: () -> Reading?
     private var cancellables = Set<AnyCancellable>()
@@ -280,23 +279,14 @@ final class PendingBalanceFollower {
     /// one more when it lands, so the last event is always read for.
     private func startRead() {
         // Nothing to read for while the balance is not known.
-        guard isBalanceKnown else { return }
-        guard !isReading else {
-            readAgain = true
-            return
-        }
-        isReading = true
+        guard isBalanceKnown, let claim = readSlot.begin() else { return }
         let read = self.read
         DispatchQueue.global(qos: .utility).async { [weak self] in
             let reading = read()
             DispatchQueue.main.async {
                 guard let self else { return }
-                self.isReading = false
                 self.apply(reading)
-                if self.readAgain {
-                    self.readAgain = false
-                    self.startRead()
-                }
+                if self.readSlot.finish(claim) { self.startRead() }
             }
         }
     }

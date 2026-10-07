@@ -228,8 +228,9 @@ extension PaymentController: DWPaymentProcessorDelegate {
     /// opened); a sheet no longer on screen is forgotten first. Other
     /// addresses are not interrupted.
     ///
-    /// `addresses` are all the payment's recipients (one for a plain send,
-    /// every output of a BIP70 request): one of them waiting is enough.
+    /// `addresses` are all the payment's addresses (one for a plain send;
+    /// every recipient of a BIP70 request and the address of the URI it came
+    /// from): one of them waiting is enough.
     ///
     /// Decided from memory, before the call returns: no row is read on the
     /// payment's path (`PendingSendOutcomes.waitingPayment(toAnyOf:)`).

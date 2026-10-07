@@ -240,6 +240,7 @@ static NSString *DWReversedHexString(NSData *data) {
         [coordinator fetchAndVerifyWithRequestURL:parsed.rURL
                                            scheme:parsed.scheme
                                    callbackScheme:parsed.callbackScheme
+                                  fallbackAddress:parsed.address
                                        completion:^(DWBIP70ConfirmationBox *_Nullable box, NSError *_Nullable error) {
                                            __strong typeof(weakSelf) strongSelf = weakSelf;
                                            if (!strongSelf) {
@@ -248,9 +249,6 @@ static NSString *DWReversedHexString(NSData *data) {
                                            strongSelf.bip70Coordinator = nil;
 
                                            if (box) {
-                                               // The URI's own address is what a plain send falls back to
-                                               // when the fetch fails: a payment to it is this payment too.
-                                               box.fallbackAddress = parsed.isAddressValidForCurrentNetwork ? parsed.address : nil;
                                                [strongSelf confirmBIP70Output:box];
                                            }
                                            else if (parsed.isAddressValidForCurrentNetwork) {

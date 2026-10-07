@@ -68,6 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
             [coordinator fetchAndVerifyWithRequestURL:parsed.rURL
                                                scheme:parsed.scheme
                                        callbackScheme:parsed.callbackScheme
+                                      fallbackAddress:parsed.address
                                            completion:^(DWBIP70ConfirmationBox *_Nullable box, NSError *_Nullable error) {
                                                (void)coordinator;         // retain until completion
                                                if (error || box == nil) { // don't try any more BIP73 urls

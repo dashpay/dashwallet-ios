@@ -50,10 +50,10 @@ enum BIP70Error: Error, Equatable {
     /// rejection: it carries the app-computed display-order tx hash so callers can record the
     /// spend instead of discarding it. Never retry the same send on this error.
     /// `walletId` is the wallet that built the transaction (opaque here).
-    /// `recipientAddresses` are the addresses the transaction pays, in request
-    /// order without repeats; nil as raised by the wallet adapter, which does
-    /// not know them, and filled in by `BIP70PaymentService`.
-    case broadcastOutcomeUnknown(txHashDisplay: Data, walletId: Data?, reason: String, recipientAddresses: [String]? = nil)
+    /// `repeatCheckAddresses` is `Confirmation.repeatCheckAddresses` of the
+    /// payment; nil as raised by the wallet adapter, which does not know it,
+    /// and filled in by `BIP70PaymentService.confirmAndSend`.
+    case broadcastOutcomeUnknown(txHashDisplay: Data, walletId: Data?, reason: String, repeatCheckAddresses: [String]? = nil)
 }
 
 extension BIP70Error: LocalizedError {
