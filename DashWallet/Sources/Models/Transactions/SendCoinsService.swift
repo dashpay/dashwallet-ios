@@ -120,7 +120,7 @@ public final class SendCoinsService: NSObject {
             // order is recorded rather than dropped on the floor.
             throw DashSpendError.paymentNotAcknowledged(
                 txIdWire: Data(txHashDisplay.reversed()), reason: reason)
-        } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason) {
+        } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason, let recipients) {
             // The coins are gone as far as the merchant is concerned — it already holds the
             // signed bytes and can broadcast them itself. Hand the caller the txid so the
             // purchase is recorded rather than dropped; the caller decides how to present it.
@@ -128,8 +128,12 @@ public final class SendCoinsService: NSObject {
             // so it settles without the "went through" notice.
             let txIdWire = Data(txHashDisplay.reversed())
             await MainActor.run {
+                // Under every address the request paid (the URI's own, if
+                // any, may not be among them).
+                let addresses = ([uri.address].compactMap { $0 } + recipients)
                 _ = PendingSendOutcomes.shared.recordUnknownOutcome(
-                    txidWire: txIdWire, address: uri.address, amount: 0, notifies: false, walletId: walletId)
+                    txidWire: txIdWire, address: addresses.first, otherAddresses: Array(addresses.dropFirst()),
+                    amount: 0, notifies: false, walletId: walletId)
             }
             throw DashSpendError.paymentStatusUnknown(txIdWire: txIdWire, reason: reason)
         }

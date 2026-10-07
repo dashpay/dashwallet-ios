@@ -139,6 +139,11 @@ struct Confirmation {
     let sendGuard = BIP70SendGuard()
 
     var primaryAddress: String? { recipients.first?.address }
+    /// Every address the payment pays, in request order, without repeats.
+    var recipientAddresses: [String] {
+        var seen = Set<String>()
+        return recipients.map(\.address).filter { seen.insert($0).inserted }
+    }
 }
 
 /// Outcome of a completed send: the tx was broadcast; the merchant round-trip was attempted.
@@ -174,11 +179,11 @@ final class BIP70PaymentService {
     private let allowUntrustedUnsigned: Bool
     /// Told when a broadcast handed off after the merchant's acknowledgement
     /// (`awaitAcceptance: false`) ends with no answer from the network, with
-    /// the display-order txid, the paid amount, the primary address, the
-    /// wallet the transaction was built for and the reason, so the app can
-    /// follow the payment; the layer does not know
-    /// where sends are followed.
-    var onDetachedBroadcastUnknown: ((_ txHashDisplay: Data, _ amount: UInt64, _ address: String?, _ walletId: Data?, _ reason: String) -> Void)?
+    /// the display-order txid, the paid amount, every recipient address
+    /// (`Confirmation.recipientAddresses`), the wallet the transaction was
+    /// built for and the reason, so the app can follow the payment; the layer
+    /// does not know where sends are followed.
+    var onDetachedBroadcastUnknown: ((_ txHashDisplay: Data, _ amount: UInt64, _ addresses: [String], _ walletId: Data?, _ reason: String) -> Void)?
 
     init(transport: PaymentProtocolTransporting = PaymentProtocolTransport(),
          verifier: PaymentRequestVerifier = PaymentRequestVerifier(),
@@ -344,7 +349,15 @@ final class BIP70PaymentService {
 
         let txidHexDisplay: String
         if awaitAcceptance || !acknowledged {
-            txidHexDisplay = try await wallet.broadcast(prepared)
+            do {
+                txidHexDisplay = try await wallet.broadcast(prepared)
+            } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason, _) {
+                // With every recipient: the caller follows the payment, and a
+                // later payment to any of them is refused while it waits.
+                throw BIP70Error.broadcastOutcomeUnknown(
+                    txHashDisplay: txHashDisplay, walletId: walletId, reason: reason,
+                    recipientAddresses: confirmation.recipientAddresses)
+            }
         } else {
             // The merchant already acknowledged the signed bytes, so the spend is committed
             // whatever the network verdict turns out to be. Hand the broadcast off and report
@@ -354,13 +367,13 @@ final class BIP70PaymentService {
             let wallet = self.wallet
             let onUnknown = onDetachedBroadcastUnknown
             let amount = confirmation.amount
-            let address = confirmation.primaryAddress
+            let addresses = confirmation.recipientAddresses
             Task.detached(priority: .userInitiated) {
                 do {
                     _ = try await wallet.broadcast(prepared)
-                } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason) {
+                } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason, _) {
                     DWLogger.log("BIP70: background broadcast of \(txidHexDisplay) got no answer from the network: \(reason)")
-                    onUnknown?(txHashDisplay, amount, address, walletId, reason)
+                    onUnknown?(txHashDisplay, amount, addresses, walletId, reason)
                 } catch {
                     DWLogger.log("BIP70: background broadcast of \(txidHexDisplay) ended without acceptance: \(error)")
                 }

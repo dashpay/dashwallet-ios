@@ -51,12 +51,23 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         let walletId: Data
         /// Nil for a route that does not know the recipient's address.
         let address: String?
+        /// The other addresses the same transaction pays (a BIP70 request
+        /// with several recipients), without `address`. Nil for one
+        /// recipient, and in entries stored before it existed. The send is
+        /// still one entry: one notice, one row, one settlement.
+        var otherAddresses: [String]? = nil
         let amount: UInt64
         let sentAt: Date
         /// False for a send that is not a payment to someone (a CoinJoin sweep
         /// chunk) or whose amount is not known here: it settles without the
         /// "went through" notice. Nil in entries stored before it existed.
         var notifies: Bool? = nil
+
+        /// Every address this send pays, the primary one first: a payment to
+        /// any of them is refused while it waits.
+        var addresses: [String] {
+            ([address].compactMap { $0 } + (otherAddresses ?? [])).filter { !$0.isEmpty }
+        }
     }
 
     /// Sends that went through after all: one, or several that settled while
@@ -157,13 +168,19 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// chunk (`SwiftDashSDKTransactionSender.sweepCoinJoin`) and by the
     /// awaited headless BIP70 payment (`SendCoinsService.payWithDashUrl`).
     ///
-    /// - Parameter walletId: the wallet that signed the send (every route
-    ///   passes it); nil falls back to the active wallet.
+    /// - Parameters:
+    ///   - address: the recipient, or the first of several.
+    ///   - otherAddresses: the other recipients of the same transaction (a
+    ///     BIP70 request with several outputs); repeats and `address` itself
+    ///     are dropped.
+    ///   - walletId: the wallet that signed the send (every route passes
+    ///     it); nil falls back to the active wallet.
     /// - Returns: false when the send could not be followed (no wallet given
     ///   and none active), so its row will not say "Waiting for the network".
     @discardableResult
     func recordUnknownOutcome(
-        txidWire: Data, address: String?, amount: UInt64, notifies: Bool = true, walletId: Data? = nil
+        txidWire: Data, address: String?, otherAddresses: [String] = [], amount: UInt64, notifies: Bool = true,
+        walletId: Data? = nil
     ) -> Bool {
         guard let walletId = walletId ?? SwiftDashSDKHost.shared.wallet?.walletId else {
             DWLogger.log("💸 TXSEND :: unknown outcome not tracked, no active wallet")
@@ -173,6 +190,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             txidWire: txidWire,
             walletId: walletId,
             address: address,
+            otherAddresses: Self.distinctOthers(otherAddresses, primary: address),
             amount: amount,
             sentAt: Date(),
             notifies: notifies)
@@ -189,7 +207,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         for txid in txidsWire {
             guard let entry = entries.removeValue(forKey: txid) else { continue }
             changed = true
-            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) \(reason), no longer tracked\(Self.refusalLifted(for: entry.address))")
+            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) \(reason), no longer tracked\(Self.refusalLifted(for: entry.addresses))")
         }
         if changed { didChangeEntries() }
     }
@@ -201,7 +219,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         notice = nil
         guard !entries.isEmpty else { return }
         DWLogger.log("💸 TXSEND :: \(entries.count) waiting send(s) no longer tracked: wallet wiped"
-            + Self.refusalLifted(for: entries.values.compactMap(\.address)))
+            + Self.refusalLifted(for: entries.values.flatMap(\.addresses)))
         entries = [:]
         didChangeEntries()
     }
@@ -213,25 +231,45 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         waitingTxids.withLock { $0.contains(txidWire) }
     }
 
-    /// The newest send to `address` that can still refuse a payment, in the
-    /// active wallet: followed (not seen locked or mined at the last row
-    /// read) and within `maxFollowAge`.
+    /// The newest send that can still refuse a payment to any of
+    /// `addresses`, in the active wallet: followed (no lock or block seen on
+    /// its row yet), within `maxFollowAge`, and paying one of them — as its
+    /// only recipient or as any output of a several-recipient payment.
     ///
     /// Decided from memory, at once: no row is read on the payment's path.
-    /// With any send followed to `address` (refusing or aged out), the rows
-    /// are re-read in the background (`reconcile`), so one that settled or
-    /// aged out since the last read is classified from its row and its
-    /// history row leaves "Waiting for the network". A send past
+    /// With any send followed to one of `addresses` (refusing or aged out),
+    /// the rows are re-read in the background (`reconcile`), so one that
+    /// settled or aged out since the last read is classified from its row
+    /// and its history row leaves "Waiting for the network". A send past
     /// `maxFollowAge` stops refusing at once, read or not.
-    func waitingPayment(to address: String) -> Entry? {
+    func waitingPayment(toAnyOf addresses: [String]) -> Entry? {
         guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId else { return nil }
-        let followed = entries.values.filter { $0.address == address && $0.walletId == walletId }
-        guard !followed.isEmpty else { return nil }
+        let wanted = Set(addresses)
+        guard entries.values.contains(where: { $0.walletId == walletId && !wanted.isDisjoint(with: $0.addresses) })
+        else { return nil }
         reconcile()
-        let now = Date()
-        return followed
-            .filter { now.timeIntervalSince($0.sentAt) <= Self.maxFollowAge }
+        return Self.refusing(addresses, walletId: walletId, in: entries, now: Date())
+    }
+
+    /// The rule of `waitingPayment(toAnyOf:)`, on its own (no host, no
+    /// clock): the newest of `walletId`'s `entries` within `maxFollowAge`
+    /// that pays any of `addresses`.
+    nonisolated static func refusing(
+        _ addresses: [String], walletId: Data, in entries: [Data: Entry], now: Date
+    ) -> Entry? {
+        let wanted = Set(addresses)
+        return entries.values
+            .filter { $0.walletId == walletId && !wanted.isDisjoint(with: $0.addresses)
+                && now.timeIntervalSince($0.sentAt) <= maxFollowAge }
             .max { $0.sentAt < $1.sentAt }
+    }
+
+    /// `others` as stored in an entry: in order, without repeats, empty
+    /// strings and `primary`; nil when nothing is left.
+    nonisolated static func distinctOthers(_ others: [String], primary: String?) -> [String]? {
+        var seen: Set<String> = primary.map { [$0] } ?? []
+        let kept = others.filter { !$0.isEmpty && seen.insert($0).inserted }
+        return kept.isEmpty ? nil : kept
     }
 
     /// `address` shortened for logs: never the full address.
@@ -240,15 +278,11 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         return "\(address.prefix(4))…\(address.suffix(4))"
     }
 
-    /// The tail of a "no longer tracked" line: which address payments are no
-    /// longer refused to. Empty for a send that never refused any (no
-    /// address: a CoinJoin sweep chunk, a route that does not know it).
-    nonisolated static func refusalLifted(for address: String?) -> String {
-        refusalLifted(for: [address].compactMap { $0 })
-    }
-
-    /// The same for several sends: each address once. Empty addresses (a
-    /// route that recorded none) are left out like missing ones.
+    /// The tail of a "no longer tracked" line: which addresses payments are
+    /// no longer refused to — every recipient of the send(s), each once.
+    /// Empty for a send that never refused any (no address: a CoinJoin sweep
+    /// chunk, a route that does not know it); empty addresses are left out
+    /// like missing ones.
     nonisolated static func refusalLifted(for addresses: [String]) -> String {
         // Distinct addresses, each listed even when two mask alike.
         let shown = Set(addresses.filter { !$0.isEmpty }).sorted().map(masked)
@@ -351,7 +385,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         let decision = Self.settlement(
             of: pending, stillFollowed: { [entries] in entries[$0] != nil },
             walletId: walletId, rows: rows, now: Date())
-        func lifted(_ txid: Data) -> String { Self.refusalLifted(for: pending[txid]?.address) }
+        func lifted(_ txid: Data) -> String { Self.refusalLifted(for: pending[txid]?.addresses ?? []) }
         for txid in decision.expired {
             DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) still unconfirmed after \(Self.maxFollowDays) days, no longer tracked\(lifted(txid))")
         }

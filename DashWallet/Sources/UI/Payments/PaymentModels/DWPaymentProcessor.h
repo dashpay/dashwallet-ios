@@ -35,13 +35,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Confirmation
 
-// Asked before a payment to `address` is authorized and built (a plain send),
-// or before its confirmation sheet (BIP70). The delegate
+// Asked before a payment to `addresses` is authorized and built (a plain send:
+// its one address), or before its confirmation sheet (BIP70: every recipient
+// of the request, each once). The delegate
 // calls `completion` once, on the main queue: YES goes on, NO ends the send
 // through `paymentProcessorDidCancelTransactionSigning:`. `isBIP70` says which
 // of the two it is, for the delegate's logs.
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
-        shouldPayAddress:(NSString *)address
+      shouldPayAddresses:(NSArray<NSString *> *)addresses
                  isBIP70:(BOOL)isBIP70
               completion:(void (^)(BOOL proceed))completion;
 

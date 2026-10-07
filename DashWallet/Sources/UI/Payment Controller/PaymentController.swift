@@ -104,9 +104,9 @@ final class PaymentController: NSObject {
     /// set), a "Sending" HUD covers the window for the wait.
     @objc var sendInProgressHandler: ((Bool) -> Bool)?
     /// The active wallet's payment to an address still waiting for the
-    /// network (`PendingSendOutcomes.waitingPayment(to:)`); tests replace it.
-    var waitingPayment: @MainActor (String) -> PendingSendOutcomes.Entry? = {
-        PendingSendOutcomes.shared.waitingPayment(to: $0)
+    /// network (`PendingSendOutcomes.waitingPayment(toAnyOf:)`); tests replace it.
+    var waitingPayment: @MainActor ([String]) -> PendingSendOutcomes.Entry? = {
+        PendingSendOutcomes.shared.waitingPayment(toAnyOf: $0)
     }
     /// The TXSEND log line sink (`DWLogger`, so it reaches exported logs);
     /// tests replace it.
@@ -228,15 +228,21 @@ extension PaymentController: DWPaymentProcessorDelegate {
     /// opened); a sheet no longer on screen is forgotten first. Other
     /// addresses are not interrupted.
     ///
+    /// `addresses` are all the payment's recipients (one for a plain send,
+    /// every output of a BIP70 request): one of them waiting is enough.
+    ///
     /// Decided from memory, before the call returns: no row is read on the
-    /// payment's path (`PendingSendOutcomes.waitingPayment(to:)`).
-    func paymentProcessor(_ processor: DWPaymentProcessor, shouldPayAddress address: String, isBIP70: Bool, completion: @escaping (Bool) -> Void) {
+    /// payment's path (`PendingSendOutcomes.waitingPayment(toAnyOf:)`).
+    func paymentProcessor(_ processor: DWPaymentProcessor, shouldPayAddresses addresses: [String], isBIP70: Bool, completion: @escaping (Bool) -> Void) {
         dropOffScreenConfirm()
         guard confirmViewController == nil,
-              let waiting = MainActor.assumeIsolated({ waitingPayment(address) }) else {
+              let waiting = MainActor.assumeIsolated({ waitingPayment(addresses) }) else {
             completion(true)
             return
         }
+        // The recipient the waiting payment also paid (any output of a
+        // several-recipient request), for the log.
+        let address = addresses.first(where: waiting.addresses.contains) ?? addresses.first
         let route = paymentRoute(isBIP70: isBIP70)
         let age = Int(Date().timeIntervalSince(waiting.sentAt))
         log("💸 TXSEND :: repeat payment refused — route=\(route) to=\(PendingSendOutcomes.masked(address))"

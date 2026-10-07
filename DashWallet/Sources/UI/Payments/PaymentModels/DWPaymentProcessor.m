@@ -269,17 +269,19 @@ static NSString *DWReversedHexString(NSData *data) {
 #pragma mark - App-side BIP70 (Swift orchestrator)
 
 /// Build the confirm-screen output from a verified BIP70 `Confirmation` box (no build, no spend).
-/// The delegate is asked first, as for a plain send: a payment to an address
+/// The delegate is asked first, as for a plain send, with every recipient of
+/// the request (the sheet shows only the first): a payment to any address
 /// whose earlier payment still waits for the network is refused before the
 /// sheet.
 - (void)confirmBIP70Output:(id)bip70Confirmation {
     DWPaymentOutput *paymentOutput = [DWBIP70PaymentOutputFactory paymentOutputFromBox:bip70Confirmation];
-    if (paymentOutput.address.length == 0) {
+    NSArray<NSString *> *recipients = [(DWBIP70ConfirmationBox *)bip70Confirmation recipientAddresses];
+    if (recipients.count == 0) {
         [self.delegate paymentProcessor:self confirmPaymentOutput:paymentOutput];
         return;
     }
     [self.delegate paymentProcessor:self
-                   shouldPayAddress:paymentOutput.address
+                 shouldPayAddresses:recipients
                             isBIP70:YES
                          completion:^(BOOL proceed) {
                              if (!proceed) {
@@ -412,7 +414,7 @@ static NSString *DWReversedHexString(NSData *data) {
                                     memo:(nullable NSString *)memo
                            localCurrency:(nullable NSString *)localCurrency {
     [self.delegate paymentProcessor:self
-                   shouldPayAddress:address
+                 shouldPayAddresses:@[ address ]
                             isBIP70:NO
                          completion:^(BOOL proceed) {
                              if (!proceed) {

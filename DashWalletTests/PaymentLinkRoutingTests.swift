@@ -11,6 +11,7 @@
 //
 
 import Combine
+import os
 import SwiftUI
 import UIKit
 import XCTest
@@ -704,12 +705,12 @@ final class PaymentDialogOutcomeTests: XCTestCase {
         let waiting = PendingSendOutcomes.Entry(
             txidWire: Data(repeating: 0x9c, count: 32), walletId: Data(repeating: 0x1d, count: 32),
             address: "yAddressForTests", amount: 100_000, sentAt: Date())
-        controller.waitingPayment = { $0 == "yAddressForTests" ? waiting : nil }
+        controller.waitingPayment = { $0.contains("yAddressForTests") ? waiting : nil }
         var logged: [String] = []
         controller.log = { logged.append($0) }
 
         var answers: [Bool] = []
-        controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "yAddressForTests", isBIP70: true) { answers.append($0) }
+        controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddresses: ["yAddressForTests"], isBIP70: true) { answers.append($0) }
         let notice = try XCTUnwrap(root.presentedViewController as? UIHostingController<ModalDialog>, "the notice is up")
         XCTAssertEqual(answers, [], "nothing goes on while it is up")
         XCTAssertNil(notice.rootView.negativeButtonText, "a single OK, no way to send anyway")
@@ -729,9 +730,46 @@ final class PaymentDialogOutcomeTests: XCTestCase {
         XCTAssertTrue(logged.last?.contains("cancelled on OK") == true, logged.last ?? "")
 
         var other: [Bool] = []
-        controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddress: "yOtherAddress", isBIP70: false) { other.append($0) }
+        controller.paymentProcessor(DWPaymentProcessor(), shouldPayAddresses: ["yOtherAddress"], isBIP70: false) { other.append($0) }
         XCTAssertEqual(other, [true], "another address is not interrupted")
         XCTAssertEqual(logged.count, 2, "nothing pending: no log")
+    }
+
+    /// A BIP70 request is asked about with every recipient: one whose earlier
+    /// payment waits in a non-first output refuses the whole request, and the
+    /// log names that recipient (shortened), not the first one.
+    func testARequestIsRefusedForAPendingRecipientThatIsNotItsFirst() throws {
+        let root = try XCTUnwrap(window.rootViewController)
+        let anchor = AnchorProvider(anchor: root)
+        defer { withExtendedLifetime(anchor) { } }
+        let controller = PaymentController()
+        controller.presentationContextProvider = anchor
+        let pending = "yPendingRecipientAddressForTests"
+        let waiting = PendingSendOutcomes.Entry(
+            txidWire: Data(repeating: 0x9d, count: 32), walletId: Data(repeating: 0x1d, count: 32),
+            address: pending, amount: 100_000, sentAt: Date())
+        var asked: [[String]] = []
+        controller.waitingPayment = { addresses in
+            asked.append(addresses)
+            return addresses.contains(pending) ? waiting : nil
+        }
+        var logged: [String] = []
+        controller.log = { logged.append($0) }
+
+        var answers: [Bool] = []
+        controller.paymentProcessor(
+            DWPaymentProcessor(), shouldPayAddresses: ["yFirstRecipientAddressForTests", pending], isBIP70: true
+        ) { answers.append($0) }
+
+        XCTAssertEqual(asked, [["yFirstRecipientAddressForTests", pending]], "every recipient is checked")
+        let notice = try XCTUnwrap(root.presentedViewController as? UIHostingController<ModalDialog>, "refused")
+        XCTAssertEqual(answers, [])
+        let shown = try XCTUnwrap(logged.first)
+        XCTAssertTrue(shown.contains("to=\(PendingSendOutcomes.masked(pending))"), shown)
+        XCTAssertFalse(shown.contains(pending), "never the full address")
+        notice.rootView.positiveButtonAction()
+        spin(until: { !answers.isEmpty })
+        XCTAssertEqual(answers, [false])
     }
 
     func testAnUnknownOutcomeErrorCarriesItsTxid() {
@@ -908,6 +946,75 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
         XCTAssertEqual(notice?.total, 3_000, "B's payment is not added to A's total")
     }
 
+    // MARK: Several recipients (BIP70)
+
+    private func multi(_ byte: UInt8, _ primary: String, others: [String], wallet: Data? = nil, age: TimeInterval = 60)
+        -> PendingSendOutcomes.Entry {
+        PendingSendOutcomes.Entry(
+            txidWire: Data(repeating: byte, count: 32), walletId: wallet ?? walletA, address: primary,
+            otherAddresses: Policy.distinctOthers(others, primary: primary),
+            amount: 5_000, sentAt: now.addingTimeInterval(-age))
+    }
+
+    /// A followed payment to [B, A] refuses a later plain payment to A, its
+    /// second recipient, as well as one to B.
+    func testAPlainPaymentToAFollowedNonFirstRecipientIsRefused() {
+        let sent = multi(1, "yB", others: ["yA"])
+        let entries = [sent.txidWire: sent]
+        XCTAssertEqual(Policy.refusing(["yA"], walletId: walletA, in: entries, now: now), sent)
+        XCTAssertEqual(Policy.refusing(["yB"], walletId: walletA, in: entries, now: now), sent)
+        XCTAssertNil(Policy.refusing(["yC"], walletId: walletA, in: entries, now: now))
+        XCTAssertNil(Policy.refusing(["yA"], walletId: walletB, in: entries, now: now), "another wallet's send")
+    }
+
+    /// A request paying [B, A] is refused while a payment to A is followed:
+    /// the pending address need not be the request's first output.
+    func testARequestWithThePendingAddressInANonFirstOutputIsRefused() {
+        let sent = entry(1, age: 60)  // a plain payment to "yAddress"
+        let entries = [sent.txidWire: sent]
+        XCTAssertEqual(Policy.refusing(["yB", "yAddress"], walletId: walletA, in: entries, now: now), sent)
+        XCTAssertNil(Policy.refusing(["yB", "yC"], walletId: walletA, in: entries, now: now))
+    }
+
+    func testASeveralRecipientSendStopsRefusingEveryRecipientByAge() {
+        let stale = multi(1, "yB", others: ["yA"], age: Policy.maxFollowAge + 60)
+        XCTAssertNil(Policy.refusing(["yA"], walletId: walletA, in: [stale.txidWire: stale], now: now))
+        XCTAssertNil(Policy.refusing(["yB"], walletId: walletA, in: [stale.txidWire: stale], now: now))
+    }
+
+    /// One transaction is one followed send however many addresses it pays:
+    /// it settles once, raises one notice of its whole amount, and its log
+    /// line lists each address once.
+    func testASeveralRecipientSendCountsOnce() {
+        let sent = multi(1, "yRecipientB00000", others: ["yRecipientA00000", "yRecipientB00000", "", "yRecipientA00000"])
+        XCTAssertEqual(sent.otherAddresses, ["yRecipientA00000"], "no repeats, no primary, no empty address")
+        XCTAssertEqual(sent.addresses, ["yRecipientB00000", "yRecipientA00000"])
+
+        let decision = decide([sent], rows: [sent.txidWire: .settled])
+        XCTAssertEqual(decision.settled, [sent.txidWire])
+        XCTAssertEqual(decision.notifying, [sent])
+        let notice = Policy.merged(nil, adding: sent.amount)
+        XCTAssertEqual(notice.count, 1)
+        XCTAssertEqual(notice.total, 5_000)
+
+        let lifted = Policy.refusalLifted(for: sent.addresses)
+        XCTAssertEqual(lifted.components(separatedBy: "yRec…").count - 1, 2, lifted)
+        XCTAssertFalse(lifted.contains("yRecipientA00000"), "never a full address")
+    }
+
+    /// An entry stored before several recipients were kept still decodes,
+    /// and pays its one address.
+    func testAnEntryStoredWithoutOtherAddressesStillDecodes() throws {
+        let old = entry(1, age: 60)
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(old)) as? [String: Any])
+        json.removeValue(forKey: "otherAddresses")
+        json.removeValue(forKey: "notifies")
+        let decoded = try JSONDecoder().decode(
+            PendingSendOutcomes.Entry.self, from: JSONSerialization.data(withJSONObject: json))
+        XCTAssertNil(decoded.otherAddresses)
+        XCTAssertEqual(decoded.addresses, ["yAddress"])
+    }
+
     func testNoticesMergeAndTheTotalSaturates() {
         let first = Policy.merged(nil, adding: 1_000)
         XCTAssertEqual(first.count, 1)
@@ -962,6 +1069,63 @@ final class UnknownOutcomeWalletTests: XCTestCase {
         XCTAssertEqual(PendingSendOutcomes.shared.entries[send.txidWire]?.walletId, signedBy)
     }
 
+    /// A several-recipient payment whose outcome is unknown is one followed
+    /// send that keeps every address it paid.
+    func testAnUnknownOutcomeKeepsEveryRecipientUnderOneSend() {
+        let sentFrom = Data(repeating: 0x5c, count: 32)
+        let txidWire = Data(repeating: 0x6e, count: 32)
+        defer { PendingSendOutcomes.shared.forget(txidsWire: [txidWire], reason: "test send") }
+        let before = PendingSendOutcomes.shared.entries.count
+
+        let error = WalletSendService.unknownOutcomeError(
+            txidWire: txidWire, address: "yFirst", otherAddresses: ["ySecond", "yFirst"], amount: 3_000,
+            reason: "no answer", walletId: sentFrom)
+
+        XCTAssertTrue(WalletSendService.isBroadcastUnknownError(error))
+        XCTAssertEqual(PendingSendOutcomes.shared.entries.count, before + 1, "one send, not one per address")
+        let followed = PendingSendOutcomes.shared.entries[txidWire]
+        XCTAssertEqual(followed?.addresses, ["yFirst", "ySecond"])
+        XCTAssertEqual(followed?.amount, 3_000)
+        XCTAssertEqual(
+            PendingSendOutcomes.refusing(
+                ["ySecond"], walletId: sentFrom, in: PendingSendOutcomes.shared.entries, now: Date())?.txidWire,
+            txidWire, "a plain payment to the second recipient is refused")
+    }
+
+    /// The BIP70 layer hands every recipient out with an unknown outcome,
+    /// awaited or handed off, so the app can follow the payment under all of
+    /// them.
+    func testABIP70UnknownOutcomeCarriesEveryRecipient() async throws {
+        let wallet = DetachedUnknownWallet(walletId: Data(repeating: 0x3e, count: 32))
+        let transport = AcknowledgingTransport(extraOutputs: 1)
+        let service = BIP70PaymentService(
+            transport: transport, wallet: wallet, receiveAddress: StaticReceiveAddress(), auth: NoAuth())
+        let confirmation = try await service.prepareForConfirmation(
+            from: URL(string: "http://merchant/pr")!, scheme: "dash", network: .testnet)
+        let recipients = confirmation.recipientAddresses
+        XCTAssertEqual(recipients.count, 2)
+        XCTAssertEqual(recipients.first, confirmation.primaryAddress)
+
+        do {
+            _ = try await service.confirmAndSend(confirmation)
+            XCTFail("the broadcast got no answer")
+        } catch BIP70Error.broadcastOutcomeUnknown(_, _, _, let carried) {
+            XCTAssertEqual(carried, recipients, "the awaited broadcast")
+        }
+
+        let reported = expectation(description: "the handed-off broadcast reports")
+        var detached: [String] = []
+        service.onDetachedBroadcastUnknown = { _, _, addresses, _, _ in
+            detached = addresses
+            reported.fulfill()
+        }
+        let again = try await service.prepareForConfirmation(
+            from: URL(string: "http://merchant/pr")!, scheme: "dash", network: .testnet)
+        _ = try await service.confirmAndSend(again, awaitAcceptance: false)
+        await fulfillment(of: [reported], timeout: 3)
+        XCTAssertEqual(detached, recipients, "the handed-off broadcast")
+    }
+
     func testADetachedBroadcastWithNoAnswerReportsTheWalletThatBuiltIt() async throws {
         let builtFor = Data(repeating: 0x3e, count: 32)
         let wallet = DetachedUnknownWallet(walletId: builtFor)
@@ -1001,10 +1165,19 @@ private final class DetachedUnknownWallet: WalletSending {
 
 /// An unsigned testnet request with a payment URL, acknowledged on post.
 private final class AcknowledgingTransport: PaymentProtocolTransporting {
+    /// Further P2PKH outputs after the first, each to its own key hash.
+    private let extraOutputs: UInt8
+    init(extraOutputs: UInt8 = 0) { self.extraOutputs = extraOutputs }
+
     func fetchRequest(from url: URL, scheme: String) async throws -> PaymentRequest {
         let script = ScriptAddressCodec.scriptPubKey(forAddress: "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr", network: .testnet)!
+        let extra = (0..<extraOutputs).map { index in
+            PaymentOutput(
+                amount: 50_000,
+                script: Data([0x76, 0xa9, 0x14] + [UInt8](repeating: 0x11 + index, count: 20) + [0x88, 0xac]))
+        }
         let details = PaymentDetails(
-            network: "test", outputs: [PaymentOutput(amount: 100_000, script: script)],
+            network: "test", outputs: [PaymentOutput(amount: 100_000, script: script)] + extra,
             expires: UInt64(Date().timeIntervalSince1970) + 3600, memo: "memo",
             paymentURL: "http://merchant/pay", merchantData: Data([0x01]))
         return PaymentRequest(pkiType: "none", serializedDetails: details.encoded())
@@ -1063,4 +1236,118 @@ private final class AnchorProvider: NSObject, PaymentControllerPresentationConte
     let anchor: UIViewController
     init(anchor: UIViewController) { self.anchor = anchor }
     func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor { anchor }
+}
+
+/// The Home pending caption across a wallet or network switch
+/// (`PendingBalanceFollower`).
+final class PendingBalanceFollowerTests: XCTestCase {
+    private let balanceEvents = PassthroughSubject<Bool, Never>()
+    private let coinSaves = PassthroughSubject<Void, Never>()
+    private let networkWillChange = PassthroughSubject<Void, Never>()
+    private let walletDidBind = PassthroughSubject<Void, Never>()
+    /// What a read returns now: the bound wallet's waiting duffs.
+    private let stored = OSAllocatedUnfairLock<UInt64?>(initialState: nil)
+    private let readCount = OSAllocatedUnfairLock(initialState: 0)
+
+    private func makeFollower() -> PendingBalanceFollower {
+        PendingBalanceFollower(
+            signals: .init(
+                balanceEvents: balanceEvents.eraseToAnyPublisher(),
+                coinSaves: coinSaves.eraseToAnyPublisher(),
+                networkWillChange: networkWillChange.eraseToAnyPublisher(),
+                walletDidBind: walletDidBind.eraseToAnyPublisher()),
+            interval: .milliseconds(100),
+            read: { [stored, readCount] in
+                readCount.withLock { $0 += 1 }
+                return stored.withLock { $0 }
+            })
+    }
+
+    private func spin(until condition: () -> Bool, timeout: TimeInterval = 3) {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !condition(), Date() < deadline {
+            RunLoop.main.run(until: Date().addingTimeInterval(0.01))
+        }
+    }
+
+    private func settle(_ seconds: TimeInterval = 0.4) {
+        RunLoop.main.run(until: Date().addingTimeInterval(seconds))
+    }
+
+    /// The runtime publishes the destination wallet's balance first and
+    /// posts the active-wallet notification after it. On an idle or offline
+    /// switch nothing else follows: the caption still appears.
+    func testACaptionAppearsWhenTheBalanceEventPrecedesTheWalletNotificationAndNothingFollows() {
+        let follower = makeFollower()
+        stored.withLock { $0 = 7_000 }
+        balanceEvents.send(true)
+        spin(until: { follower.duffs == 7_000 })
+        XCTAssertEqual(follower.duffs, 7_000, "the first wallet's caption")
+
+        // Switch: teardown clears the balance, the destination's is published,
+        // and only then the notification. The destination has 9 000 waiting.
+        balanceEvents.send(false)
+        stored.withLock { $0 = 9_000 }
+        balanceEvents.send(true)
+        walletDidBind.send()
+        let readsAtBind = readCount.withLock { $0 }
+
+        spin(until: { follower.duffs == 9_000 })
+        XCTAssertEqual(follower.duffs, 9_000, "the destination wallet's caption, with no further event")
+        XCTAssertGreaterThan(readCount.withLock { $0 }, readsAtBind, "the notification itself scheduled the read")
+        settle()
+        XCTAssertEqual(follower.duffs, 9_000, "and it stays")
+    }
+
+    /// The old wallet's value is not shown under the new wallet, even for a
+    /// read that was in flight when the wallet changed.
+    func testAWalletBindClearsTheOldWalletsValueAtOnce() {
+        let follower = makeFollower()
+        stored.withLock { $0 = 7_000 }
+        balanceEvents.send(true)
+        spin(until: { follower.duffs == 7_000 })
+
+        stored.withLock { $0 = nil }  // the destination's read fails for now
+        walletDidBind.send()
+        spin(until: { follower.duffs == nil })
+        XCTAssertNil(follower.duffs, "cleared: not known for the new wallet yet")
+        settle()
+        XCTAssertNil(follower.duffs, "a failed read does not bring the old wallet's value back")
+    }
+
+    /// A network switch is announced before the old wallet is torn down: no
+    /// read counts until the next wallet is up.
+    func testNoReadCountsBetweenANetworkSwitchAndTheNextWallet() {
+        let follower = makeFollower()
+        stored.withLock { $0 = 7_000 }
+        balanceEvents.send(true)
+        spin(until: { follower.duffs == 7_000 })
+
+        networkWillChange.send()
+        spin(until: { follower.duffs == nil })
+        coinSaves.send()  // the old wallet's persister is still writing
+        settle()
+        XCTAssertNil(follower.duffs, "the old wallet's coins are not the next wallet's")
+
+        stored.withLock { $0 = 2_000 }
+        balanceEvents.send(false)  // teardown
+        balanceEvents.send(true)   // the destination's seed
+        walletDidBind.send()
+        spin(until: { follower.duffs == 2_000 })
+        XCTAssertEqual(follower.duffs, 2_000)
+    }
+
+    /// A rebuild that posts no bind notification (a plain restart) is up at
+    /// its first known balance.
+    func testAKnownBalanceEndsTheWaitWhenNoBindNotificationComes() {
+        let follower = makeFollower()
+        networkWillChange.send()
+        stored.withLock { $0 = 4_000 }
+        balanceEvents.send(false)
+        settle()
+        XCTAssertNil(follower.duffs, "a cleared balance is not a wallet")
+        balanceEvents.send(true)
+        spin(until: { follower.duffs == 4_000 })
+        XCTAssertEqual(follower.duffs, 4_000)
+    }
 }

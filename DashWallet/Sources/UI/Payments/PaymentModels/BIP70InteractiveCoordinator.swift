@@ -23,6 +23,8 @@ final class BIP70ConfirmationBox: NSObject {
     @objc var amount: UInt64 { confirmation.amount }
     @objc var estimatedFee: UInt64 { confirmation.estimatedFee }
     @objc var primaryAddress: String? { confirmation.primaryAddress }
+    /// Every address the request pays, in request order, without repeats.
+    @objc var recipientAddresses: [String] { confirmation.recipientAddresses }
     @objc var memo: String? { confirmation.memo }
 }
 
@@ -87,14 +89,17 @@ final class BIP70InteractiveCoordinator: NSObject {
                     amount: result.amount,
                     fee: result.fee)
                 await MainActor.run { completion(BIP70SendResultBox(result), nil) }
-            } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason) {
+            } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason, _) {
                 // The payment may well have gone through: followed in the
-                // history as "Waiting for the network", like a plain send.
+                // history as "Waiting for the network", like a plain send —
+                // one send, under every recipient it pays.
                 // On the main actor: following the send touches main-actor state.
                 await MainActor.run {
+                    let addresses = box.confirmation.recipientAddresses
                     let error = WalletSendService.unknownOutcomeError(
                         txidWire: Data(txHashDisplay.reversed()),
-                        address: box.confirmation.primaryAddress,
+                        address: addresses.first,
+                        otherAddresses: Array(addresses.dropFirst()),
                         amount: box.confirmation.amount,
                         reason: reason,
                         walletId: walletId)
