@@ -245,6 +245,42 @@ extension UsernameRegistrationRecoveryTests {
         XCTAssertFalse(snapshot.hasKnownZeroBalance)
     }
 
+    /// A recovered paid lock funds the identity and nothing more: when the
+    /// name asked for costs more than the lock left, the run stops before any
+    /// funding call; a lock that covers the name completes without one; and
+    /// the retry — no longer a recovery — honours the amount it confirmed.
+    func testRecoveredLockNeverAuthorizesANewTopUp() {
+        typealias Coordinator = DWIdentityRegistrationCoordinator
+        let confirmed: UInt64 = 25_000_000
+        let plainLockCredits: UInt64 = 2_800_000_000
+
+        // A 0.03 lock recovered, then a contested name: short, and not authorized.
+        let contestedNeed = Coordinator.identityTopUpDuffs(
+            requiredCredits: Coordinator.requiredRegistrationCredits(isContested: true, nameCount: 1),
+            heldCredits: plainLockCredits)
+        XCTAssertGreaterThan(contestedNeed, 0)
+        let recovered = Coordinator.topUpAuthorization(confirmedDuffs: confirmed, recoveredPaidLock: true)
+        XCTAssertNil(recovered)
+        XCTAssertEqual(Coordinator.topUpDecision(neededDuffs: contestedNeed, authorizedDuffs: recovered), .notConfirmed)
+
+        // The same lock for the plain name it was paid for: nothing to top up.
+        let plainNeed = Coordinator.identityTopUpDuffs(
+            requiredCredits: Coordinator.requiredRegistrationCredits(isContested: false, nameCount: 1),
+            heldCredits: plainLockCredits)
+        XCTAssertEqual(plainNeed, 0)
+        XCTAssertEqual(Coordinator.topUpDecision(neededDuffs: plainNeed, authorizedDuffs: recovered), .notNeeded)
+
+        // The retry, with the shortfall confirmed: within the ceiling it runs,
+        // above it it stops, and an unconfirmed (0) amount authorizes nothing.
+        let retry = Coordinator.topUpAuthorization(confirmedDuffs: confirmed, recoveredPaidLock: false)
+        XCTAssertEqual(retry, confirmed)
+        XCTAssertEqual(Coordinator.topUpDecision(neededDuffs: contestedNeed, authorizedDuffs: retry), .proceed)
+        XCTAssertEqual(
+            Coordinator.topUpDecision(neededDuffs: confirmed + 1, authorizedDuffs: retry),
+            .exceedsConfirmed(confirmedDuffs: confirmed))
+        XCTAssertEqual(Coordinator.topUpDecision(neededDuffs: contestedNeed, authorizedDuffs: 0), .notConfirmed)
+    }
+
     func testConfirmedNameDoesNotOfferRegistrationRecovery() {
         let snapshot = DWCurrentUserIdentityInfo.Snapshot(
             balanceCredits: 0, identityId: Data([1]), identityIdHex: "01",

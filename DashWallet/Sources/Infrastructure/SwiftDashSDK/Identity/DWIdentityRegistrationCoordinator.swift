@@ -335,6 +335,36 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         return max(shortfallDuffs, minimumCoreTopUpDuffs)
     }
 
+    /// The top-up a run is allowed after it obtained an identity it did not
+    /// fund for this request: the amount the user confirmed — but none when
+    /// the identity came from a recovered paid lock. That lock was paid for an
+    /// earlier request and forces Core whatever the user picked; a top-up
+    /// behind it would be new transparent money nobody was asked about.
+    nonisolated static func topUpAuthorization(confirmedDuffs: UInt64?, recoveredPaidLock: Bool) -> UInt64? {
+        recoveredPaidLock ? nil : confirmedDuffs
+    }
+
+    /// Whether an existing identity's top-up of `neededDuffs` may run.
+    enum TopUpDecision: Equatable {
+        /// The identity already holds enough.
+        case notNeeded
+        /// No amount was confirmed for it: nil authorizes no top-up, not an
+        /// unlimited one, and 0 means nothing was shown because nothing
+        /// looked needed.
+        case notConfirmed
+        /// It needs more than the confirmed amount (the confirmation showed
+        /// the persisted balance; the live one can differ).
+        case exceedsConfirmed(confirmedDuffs: UInt64)
+        case proceed
+    }
+
+    /// Decided before any spend, so a refusal moves nothing.
+    nonisolated static func topUpDecision(neededDuffs: UInt64, authorizedDuffs: UInt64?) -> TopUpDecision {
+        guard neededDuffs > 0 else { return .notNeeded }
+        guard let authorizedDuffs, authorizedDuffs > 0 else { return .notConfirmed }
+        return neededDuffs > authorizedDuffs ? .exceedsConfirmed(confirmedDuffs: authorizedDuffs) : .proceed
+    }
+
     // MARK: - Published surface
 
     /// Current phase, mirrored from the active controller.
@@ -846,7 +876,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             // top-up of an existing identity.
             : IdentityTopUpPlan(
                 source: currentFundingSource, modelContainer: modelContainer,
-                authorizedDuffs: recoveryLock == nil ? authorizedTopUpDuffs : nil)
+                authorizedDuffs: Self.topUpAuthorization(
+                    confirmedDuffs: authorizedTopUpDuffs, recoveredPaidLock: recoveryLock != nil))
         return try await finishUsernameRegistration(
             identityId: identityId, username: username, temporaryUsername: temporaryUsername,
             wallet: wallet, network: network, signer: signer, newController: newController,
@@ -1244,22 +1275,16 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         }
         let topUpDuffs = Self.identityTopUpDuffs(requiredCredits: requiredCredits, heldCredits: heldCredits)
         Self.logger.info("🪪 IDENT-COORD :: existing identity requiredCredits=\(requiredCredits) heldCredits=\(heldCredits) topUpDuffs=\(topUpDuffs) authorized=\(plan.authorizedDuffs.map(String.init) ?? "none") source=\(plan.source.logLabel)")
-        guard topUpDuffs > 0 else { return }
-        // No confirmed amount authorizes no top-up, not an unlimited one.
-        guard let authorized = plan.authorizedDuffs else {
+        switch Self.topUpDecision(neededDuffs: topUpDuffs, authorizedDuffs: plan.authorizedDuffs) {
+        case .notNeeded:
+            return
+        case .notConfirmed:
             throw CoordinatorError.identityTopUp(CoordinatorError.topUpNotConfirmed(neededDuffs: topUpDuffs))
-        }
-        // The confirmation showed a top-up from the persisted balance; the
-        // live one can be higher. Never move more than the user confirmed —
-        // stop before any spend and let them confirm the new amount.
-        if authorized == 0 {
-            // Nothing was shown because nothing looked needed; say that rather
-            // than "more than the 0 DASH you confirmed".
-            throw CoordinatorError.identityTopUp(CoordinatorError.topUpNotConfirmed(neededDuffs: topUpDuffs))
-        }
-        if topUpDuffs > authorized {
+        case .exceedsConfirmed(let confirmedDuffs):
             throw CoordinatorError.identityTopUp(
-                CoordinatorError.topUpExceedsConfirmed(neededDuffs: topUpDuffs, confirmedDuffs: authorized))
+                CoordinatorError.topUpExceedsConfirmed(neededDuffs: topUpDuffs, confirmedDuffs: confirmedDuffs))
+        case .proceed:
+            break
         }
 
         // Re-emitting `.inFlight` is what makes the bridge re-read the step:
@@ -1950,7 +1975,16 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         guard contestResolutionTask == nil else { return } // single-flight
         switch phase {
         case .preparingKeys, .inFlight:
-            return // don't reconcile mid-registration
+            // Don't reconcile mid-registration — but keep watching. The timer
+            // fires once, and a registration running when it does (a retry of
+            // the instant companion, say) used to end the monitoring: nothing
+            // restarts it after a plain name or a failure. Re-armed here, it
+            // comes back until the coordinator is free. Re-arming only
+            // schedules another look: what a bookmark means — confirmed, or a
+            // marker from a submission that failed ambiguously — is still
+            // decided by the check itself.
+            scheduleNextContestCheck()
+            return
         case .idle, .completed, .failed:
             break
         }
@@ -2246,6 +2280,14 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         case .won:
             Self.logger.info("🪪 IDENT-COORD :: contest WON for \(label) — finalizing")
             UsernamePrefs.shared.clearFailedCompanion(forContestedLabel: label)
+            // The approved ending needs a record of its own. The row reached
+            // Voting by clearing both the in-flight and the completed record,
+            // and once `finalizeWon` makes the name owned its visibility rules
+            // hide a row that has nothing to report — the win would go unsaid,
+            // also after a restart. Written before `finalizeWon` announces the
+            // resolution, in the wallet + network scope the guard above just
+            // verified is the active one.
+            UsernamePrefs.shared.completedTileUsername = label
             DWContestedNameStatusService.shared.finalizeWon(
                 username: label,
                 network: expectedNetwork,
