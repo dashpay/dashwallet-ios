@@ -236,8 +236,9 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
 
     /// The newest send that can still refuse a payment to any of
     /// `addresses`, in the active wallet: followed (no lock or block seen on
-    /// its row yet), within `maxFollowAge`, and paying one of them — as its
-    /// only recipient or as any output of a several-recipient payment.
+    /// its row yet), within `maxFollowAge`, and followed under one of them
+    /// (`Entry.addresses`: a recipient, or the address of the BIP72 URI the
+    /// payment came from, which its transaction may not pay).
     ///
     /// Decided from memory, at once: no row is read on the payment's path.
     /// With any send followed to one of `addresses` (refusing or aged out),
@@ -253,7 +254,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         return Self.newestWithinFollowAge(followed, now: Date())
     }
 
-    /// `walletId`'s `entries` that pay any of `addresses`, whatever their age.
+    /// `walletId`'s `entries` followed under any of `addresses`
+    /// (`Entry.addresses`), whatever their age.
     private nonisolated static func followed(paying addresses: [String], walletId: Data, in entries: [Data: Entry]) -> [Entry] {
         let wanted = Set(addresses)
         return entries.values.filter { $0.walletId == walletId && !wanted.isDisjoint(with: $0.addresses) }
@@ -267,7 +269,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
 
     /// The rule of `waitingPayment(toAnyOf:)`, on its own (no host, no
     /// clock): the newest of `walletId`'s `entries` within `maxFollowAge`
-    /// that pays any of `addresses`.
+    /// that is followed under any of `addresses` (`Entry.addresses`).
     nonisolated static func refusing(
         _ addresses: [String], walletId: Data, in entries: [Data: Entry], now: Date
     ) -> Entry? {

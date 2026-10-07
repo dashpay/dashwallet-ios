@@ -37,7 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Asked before a payment to `addresses` is authorized and built (a plain send:
 // its one address), or before its confirmation sheet (BIP70: every recipient
-// of the request, then the address of the URI it came from, each once). The delegate
+// of the request, then the address of the URI it came from when that is
+// payable on this network, each once). The delegate
 // calls `completion` once, on the main queue: YES goes on, NO ends the send
 // through `paymentProcessorDidCancelTransactionSigning:`. `isBIP70` says which
 // of the two it is, for the delegate's logs.

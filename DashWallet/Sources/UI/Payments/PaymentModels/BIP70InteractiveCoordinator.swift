@@ -23,8 +23,9 @@ final class BIP70ConfirmationBox: NSObject {
     @objc var amount: UInt64 { confirmation.amount }
     @objc var estimatedFee: UInt64 { confirmation.estimatedFee }
     @objc var primaryAddress: String? { confirmation.primaryAddress }
-    /// The request's recipients, then the address of the URI it came from,
-    /// each once (`Confirmation.repeatCheckAddresses`).
+    /// The request's recipients, then the address of the URI it came from
+    /// when that is payable on the request's network, each once
+    /// (`Confirmation.repeatCheckAddresses`).
     @objc var repeatCheckAddresses: [String] { confirmation.repeatCheckAddresses }
     @objc var memo: String? { confirmation.memo }
 }
@@ -57,7 +58,8 @@ final class BIP70InteractiveCoordinator: NSObject {
     ///
     /// - Parameter fallbackAddress: the address of the payment URI the
     ///   request URL came from, if it had one (BIP72): kept on the
-    ///   confirmation, for the repeat-payment check.
+    ///   confirmation for the repeat-payment check when it is payable on the
+    ///   request's network, dropped otherwise.
     @objc(fetchAndVerifyWithRequestURL:scheme:callbackScheme:fallbackAddress:completion:)
     func fetchAndVerify(requestURL: URL,
                         scheme: String,

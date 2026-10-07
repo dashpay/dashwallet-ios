@@ -229,8 +229,9 @@ extension PaymentController: DWPaymentProcessorDelegate {
     /// addresses are not interrupted.
     ///
     /// `addresses` are all the payment's addresses (one for a plain send;
-    /// every recipient of a BIP70 request and the address of the URI it came
-    /// from): one of them waiting is enough.
+    /// every recipient of a BIP70 request and, when payable on this
+    /// network, the address of the URI it came from): one of them waiting
+    /// is enough.
     ///
     /// Decided from memory, before the call returns: no row is read on the
     /// payment's path (`PendingSendOutcomes.waitingPayment(toAnyOf:)`).
