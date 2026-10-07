@@ -975,13 +975,17 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
         XCTAssertEqual(decide([sentOnA], rows: [:], chain: "devnet-a").gone, [sentOnA.txidWire],
                        "its own store's missing row still does")
 
-        // Nor is it aged out, or settled, by anything read on B.
+        // Nor does a read of B's store expire or settle it, whatever its age
+        // (a send past the follow window is let go by age alone, apart from
+        // any read: `outlivedElsewhere`, tested below).
         let old = entry(2, chain: "devnet-a", age: Policy.maxFollowAge + 3600)
         XCTAssertTrue(decide([old], rows: [:], chain: "devnet-b").isEmpty)
         XCTAssertTrue(decide([old], rows: [old.txidWire: .settled], chain: "devnet-b").isEmpty)
-        XCTAssertEqual(Policy.applying(decide([sentOnA, old], rows: [:], chain: "devnet-b"),
-                                       to: [sentOnA.txidWire: sentOnA, old.txidWire: old]).count, 2,
-                       "back on A, both are still followed")
+        XCTAssertEqual(Policy.applying(decide([sentOnA], rows: [:], chain: "devnet-b"),
+                                       to: [sentOnA.txidWire: sentOnA]).count, 1,
+                       "back on A within the follow window, it is still followed")
+        XCTAssertTrue(Policy.outlivedElsewhere(
+            [sentOnA.txidWire: sentOnA], bound: WalletChainScope(walletId: walletA, chain: "devnet-b"), now: now).isEmpty)
     }
 
     /// A send waiting on one chain refuses nothing on another chain of the

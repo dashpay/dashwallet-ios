@@ -261,7 +261,7 @@ final class UnknownContactPaymentOutcomes {
 #endif
 
 /// Single-flight admission for CoinJoin sweeps (`WalletSendService.sweepCoinJoin`),
-/// keyed by what a sweep is bound to — its wallet and network. A call for the
+/// keyed by what a sweep is bound to — its wallet and chain. A call for the
 /// key that is running joins that sweep and gets its result; a call for
 /// another key waits for it to end, whatever its outcome, then starts its own.
 /// The slot frees when the running sweep ends, failures included.
@@ -560,13 +560,15 @@ final class WalletSendService: NSObject {
                 description: "Could not resolve a destination address for the CoinJoin sweep"
             )
         }
-        return try await sweepAdmission.run(CoinJoinSweepKey(walletId: target.walletId, network: target.network)) {
+        return try await sweepAdmission.run(CoinJoinSweepKey(scope: target.scope, network: target.network)) {
             [self] in try await performCoinJoinSweep(target, onNetworkWait: onNetworkWait)
         }
     }
 
+    /// What a later call joins on: the same wallet on the same chain (two
+    /// devnets share the wallet id and the `Network`).
     private struct CoinJoinSweepKey: Equatable {
-        let walletId: Data
+        let scope: WalletChainScope
         let network: Network
     }
 
@@ -579,10 +581,12 @@ final class WalletSendService: NSObject {
         var walletId: Data { scope.walletId }
 
         /// The user's persisted selection still names this wallet on this
-        /// network. Stays true through a restart of the same wallet.
+        /// chain (the configured devnet included). Stays true through a
+        /// restart of the same wallet.
         var isSelected: Bool {
             WalletEnvironment.networkKind == WalletEnvironment.networkKind(for: network)
                 && WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) == walletId
+                && network.persistenceScope == scope.chain
         }
 
         /// The host runs this wallet on this chain right now.

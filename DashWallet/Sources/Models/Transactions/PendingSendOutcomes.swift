@@ -111,8 +111,9 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
 
         /// Whether this send is `scope`'s to settle, refuse with and tell:
         /// the same wallet on the same chain. An entry with no stored chain
-        /// (left only on a devnet, where the wallet id is every named
-        /// devnet's) counts for every chain of its wallet — it may be this
+        /// (one `placingUnchained` could not place: its wallet's id is not
+        /// one chain's, as on a devnet, or its wallet has not been bound
+        /// since) counts for every chain of its wallet — it may be this
         /// one's — and the settlement policy never takes a row missing here
         /// as proof that it is gone.
         func isFollowed(on scope: WalletChainScope) -> Bool {
@@ -273,8 +274,10 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     }
 
     /// Stop following every send: the wallet they belong to was wiped. (A
-    /// network switch keeps them: entries are per wallet and chain, and the
-    /// other chain's sends are settled once its wallet runs there again.)
+    /// network switch keeps them while they are within the follow window:
+    /// entries are per wallet and chain, and the other chain's sends are
+    /// settled once its wallet runs there again. Past the window they are
+    /// let go, `outlivedElsewhere`.)
     @objc func forgetAll() {
         notice = nil
         guard !entries.isEmpty else { return }
