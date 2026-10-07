@@ -248,6 +248,9 @@ static NSString *DWReversedHexString(NSData *data) {
                                            strongSelf.bip70Coordinator = nil;
 
                                            if (box) {
+                                               // The URI's own address is what a plain send falls back to
+                                               // when the fetch fails: a payment to it is this payment too.
+                                               box.fallbackAddress = parsed.isAddressValidForCurrentNetwork ? parsed.address : nil;
                                                [strongSelf confirmBIP70Output:box];
                                            }
                                            else if (parsed.isAddressValidForCurrentNetwork) {
@@ -270,12 +273,12 @@ static NSString *DWReversedHexString(NSData *data) {
 
 /// Build the confirm-screen output from a verified BIP70 `Confirmation` box (no build, no spend).
 /// The delegate is asked first, as for a plain send, with every recipient of
-/// the request (the sheet shows only the first): a payment to any address
-/// whose earlier payment still waits for the network is refused before the
-/// sheet.
+/// the request (the sheet shows only the first) and the URI's fallback
+/// address: a payment to any address whose earlier payment still waits for
+/// the network is refused before the sheet.
 - (void)confirmBIP70Output:(id)bip70Confirmation {
     DWPaymentOutput *paymentOutput = [DWBIP70PaymentOutputFactory paymentOutputFromBox:bip70Confirmation];
-    NSArray<NSString *> *recipients = [(DWBIP70ConfirmationBox *)bip70Confirmation recipientAddresses];
+    NSArray<NSString *> *recipients = [(DWBIP70ConfirmationBox *)bip70Confirmation repeatCheckAddresses];
     if (recipients.count == 0) {
         [self.delegate paymentProcessor:self confirmPaymentOutput:paymentOutput];
         return;

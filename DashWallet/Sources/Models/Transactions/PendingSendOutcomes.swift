@@ -51,10 +51,12 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         let walletId: Data
         /// Nil for a route that does not know the recipient's address.
         let address: String?
-        /// The other addresses the same transaction pays (a BIP70 request
-        /// with several recipients), without `address`. Nil for one
-        /// recipient, and in entries stored before it existed. The send is
-        /// still one entry: one notice, one row, one settlement.
+        /// The other addresses a repeat of this payment could go to, without
+        /// `address`: the further recipients of a BIP70 request, and the
+        /// fallback address of the URI it came from (which the transaction
+        /// itself may not pay). Nil when there is none, and in entries
+        /// stored before it existed. The send is still one entry: one
+        /// notice, one row, one settlement.
         var otherAddresses: [String]? = nil
         let amount: UInt64
         let sentAt: Date
@@ -63,8 +65,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         /// "went through" notice. Nil in entries stored before it existed.
         var notifies: Bool? = nil
 
-        /// Every address this send pays, the primary one first: a payment to
-        /// any of them is refused while it waits.
+        /// `address` and `otherAddresses`, the primary one first: a payment
+        /// to any of them is refused while this send waits.
         var addresses: [String] {
             ([address].compactMap { $0 } + (otherAddresses ?? [])).filter { !$0.isEmpty }
         }

@@ -776,6 +776,27 @@ final class PaymentDialogOutcomeTests: XCTestCase {
         XCTAssertEqual(answers, [false])
     }
 
+    /// A BIP72 URI's own address is what a plain send falls back to when the
+    /// request cannot be fetched: it is checked, and followed, with the
+    /// request's recipients.
+    func testTheURIsFallbackAddressIsCheckedWithTheRecipients() {
+        XCTAssertEqual(
+            BIP70ConfirmationBox.repeatCheckAddresses(recipients: ["yM", "yN", "yM"], fallback: "yX"),
+            ["yM", "yN", "yX"])
+        XCTAssertEqual(BIP70ConfirmationBox.repeatCheckAddresses(recipients: ["yM"], fallback: "yM"), ["yM"])
+        XCTAssertEqual(BIP70ConfirmationBox.repeatCheckAddresses(recipients: ["yM"], fallback: nil), ["yM"])
+
+        // Followed under [M, X]: the fallback plain send to X is refused.
+        let wallet = Data(repeating: 0x1d, count: 32)
+        let followed = PendingSendOutcomes.Entry(
+            txidWire: Data(repeating: 0x9e, count: 32), walletId: wallet, address: "yM",
+            otherAddresses: PendingSendOutcomes.distinctOthers(["yM", "yX"], primary: "yM"),
+            amount: 1_000, sentAt: Date())
+        XCTAssertEqual(
+            PendingSendOutcomes.refusing(["yX"], walletId: wallet, in: [followed.txidWire: followed], now: Date()),
+            followed)
+    }
+
     func testAnUnknownOutcomeErrorCarriesItsTxid() {
         let txidWire = Data(repeating: 0x7e, count: 32)
         defer { PendingSendOutcomes.shared.forget(txidsWire: [txidWire]) }
@@ -1247,19 +1268,19 @@ private final class AnchorProvider: NSObject, PaymentControllerPresentationConte
 final class PendingBalanceFollowerTests: XCTestCase {
     private typealias Scope = PendingBalanceFollower.Scope
 
-    private final class Store {}
-    private let storeA = Store()
-    private let storeB = Store()
-    private var walletA: Scope { Scope(store: ObjectIdentifier(storeA), walletId: Data(repeating: 0xa1, count: 32)) }
-    private var walletB: Scope { Scope(store: ObjectIdentifier(storeB), walletId: Data(repeating: 0xb2, count: 32)) }
+    private let walletA = Scope(network: "testnet", walletId: Data(repeating: 0xa1, count: 32))
+    private let walletB = Scope(network: "testnet", walletId: Data(repeating: 0xb2, count: 32))
 
     private let balanceEvents = PassthroughSubject<Bool, Never>()
     private let coinSaves = PassthroughSubject<Void, Never>()
     private let walletDidChange = PassthroughSubject<Void, Never>()
     /// What the host has bound (read on the main queue and by reads).
     private let bound = OSAllocatedUnfairLock<Scope?>(initialState: nil)
-    /// The waiting duffs saved per wallet; a wallet not listed fails to read.
-    private let saved = OSAllocatedUnfairLock<[Data: UInt64]>(initialState: [:])
+    /// The waiting duffs saved per wallet and network; one not listed fails
+    /// to read.
+    private let saved = OSAllocatedUnfairLock<[String: UInt64]>(initialState: [:])
+    /// Held by a test to keep a read from finishing.
+    private let readGate = NSLock()
     private let readCount = OSAllocatedUnfairLock(initialState: 0)
 
     private func makeFollower() -> PendingBalanceFollower {
@@ -1270,16 +1291,19 @@ final class PendingBalanceFollowerTests: XCTestCase {
                 walletDidChange: walletDidChange.eraseToAnyPublisher()),
             interval: .milliseconds(100),
             boundScope: { [bound] in bound.withLock { $0 } },
-            read: { [bound, saved, readCount] in
+            read: { [bound, saved, readCount, readGate] in
                 readCount.withLock { $0 += 1 }
-                guard let scope = bound.withLock({ $0 }),
-                      let duffs = saved.withLock({ $0[scope.walletId] }) else { return nil }
+                let scope = bound.withLock { $0 }
+                readGate.lock()
+                readGate.unlock()
+                guard let scope, let duffs = saved.withLock({ $0[Self.key(scope)] }) else { return nil }
                 return .init(scope: scope, duffs: duffs)
             })
     }
 
     private func bind(_ scope: Scope?) { bound.withLock { $0 = scope } }
-    private func save(_ duffs: UInt64?, for scope: Scope) { saved.withLock { $0[scope.walletId] = duffs } }
+    private static func key(_ scope: Scope) -> String { scope.network + scope.walletId.hexEncodedString() }
+    private func save(_ duffs: UInt64?, for scope: Scope) { saved.withLock { $0[Self.key(scope)] = duffs } }
     private var reads: Int { readCount.withLock { $0 } }
 
     private func spin(until condition: () -> Bool, timeout: TimeInterval = 3) {
@@ -1395,12 +1419,55 @@ final class PendingBalanceFollowerTests: XCTestCase {
         balanceEvents.send(false)
         bind(nil)
         spin(until: { follower.duffs == nil })
+        XCTAssertNil(follower.duffs)
 
-        let rebuilt = Scope(store: ObjectIdentifier(storeB), walletId: walletA.walletId)
-        bind(rebuilt)
+        bind(walletA)
         balanceEvents.send(true)
         spin(until: { follower.duffs == 7_000 })
         XCTAssertEqual(follower.duffs, 7_000)
+    }
+
+    /// The same wallet id on another network is another wallet: its value is
+    /// read for that network, and a read that started on the old one is not
+    /// shown.
+    func testTheSameWalletOnAnotherNetworkIsAnotherScope() {
+        let follower = followerShowingWalletA()
+        let onMainnet = Scope(network: "mainnet", walletId: walletA.walletId)
+        save(3_000, for: onMainnet)
+
+        readGate.lock()            // a testnet read is held in flight
+        let before = reads
+        coinSaves.send()
+        spin(until: { self.reads > before })
+        bind(onMainnet)            // the switch lands meanwhile
+        walletDidChange.send()
+        spin(until: { follower.duffs == nil })
+        readGate.unlock()
+
+        spin(until: { follower.duffs == 3_000 })
+        XCTAssertEqual(follower.duffs, 3_000, "mainnet's value, never testnet's 7 000 again")
+    }
+
+    /// One read at a time: events during a slow read start exactly one more
+    /// when it lands, so reads do not pile up and the last event is read for.
+    func testEventsDuringASlowReadStartOneMoreRead() {
+        let follower = followerShowingWalletA()
+        readGate.lock()
+        let before = reads
+        coinSaves.send()
+        spin(until: { self.reads > before })
+        save(8_000, for: walletA)
+        for _ in 0..<5 {
+            coinSaves.send()
+            settle(0.12)
+        }
+        XCTAssertEqual(reads, before + 1, "nothing starts while one is running")
+        readGate.unlock()
+
+        spin(until: { follower.duffs == 8_000 })
+        settle()
+        XCTAssertEqual(follower.duffs, 8_000)
+        XCTAssertEqual(reads, before + 2, "one more, for the events that came meanwhile")
     }
 
     /// A failed read keeps the last known value of the same wallet.

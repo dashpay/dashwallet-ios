@@ -128,9 +128,10 @@ public final class SendCoinsService: NSObject {
             // so it settles without the "went through" notice.
             let txIdWire = Data(txHashDisplay.reversed())
             await MainActor.run {
-                // Under every address the request paid (the URI's own, if
-                // any, may not be among them).
-                let addresses = [uri.address].compactMap { $0 } + (recipients ?? [])
+                // Under every address the request paid, then the URI's own
+                // (its plain-send fallback), as the interactive route does.
+                let addresses = BIP70ConfirmationBox.repeatCheckAddresses(
+                    recipients: recipients ?? [], fallback: uri.address)
                 _ = PendingSendOutcomes.shared.recordUnknownOutcome(
                     txidWire: txIdWire, address: addresses.first, otherAddresses: addresses,
                     amount: 0, notifies: false, walletId: walletId)

@@ -2094,18 +2094,29 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// are left out, as are outputs paid to others, and outputs with a saved
     /// spender (see `awaitingConfirmationTotal`). One fetch of the saved state;
     /// safe from any thread. Nil when it could not be read. Comes with the
-    /// wallet and store it was read from, so a caller can tell a value read
+    /// wallet and network it was read for, so a caller can tell a value read
     /// before a wallet or network switch from the bound wallet's.
     static func awaitingConfirmation() -> PendingBalanceFollower.Reading? {
-        guard let (container, walletId) = hostHandles() else { return nil }
-        guard let duffs = awaitingConfirmationDuffs(in: container, walletId: walletId) else { return nil }
-        return .init(scope: .init(store: ObjectIdentifier(container), walletId: walletId), duffs: duffs)
+        let handles: (container: ModelContainer, scope: PendingBalanceFollower.Scope)? = MainThread.sync {
+            guard let container = SwiftDashSDKHost.shared.modelContainer,
+                  let scope = boundPendingBalanceScope() else { return nil }
+            return (container, scope)
+        }
+        guard let handles,
+              let duffs = awaitingConfirmationDuffs(in: handles.container, walletId: handles.scope.walletId)
+        else { return nil }
+        return .init(scope: handles.scope, duffs: duffs)
     }
 
-    /// The wallet and store the host has bound now: what
-    /// `awaitingConfirmation()` would read. Nil when nothing is bound.
+    /// The wallet and network the host has bound now: what
+    /// `awaitingConfirmation()` would read. Nil when nothing is bound. Safe
+    /// from any thread.
     static func boundPendingBalanceScope() -> PendingBalanceFollower.Scope? {
-        hostHandles().map { .init(store: ObjectIdentifier($0.container), walletId: $0.walletId) }
+        MainThread.sync {
+            guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+                  let network = SwiftDashSDKHost.shared.runningNetwork else { return nil }
+            return .init(network: String(describing: network), walletId: walletId)
+        }
     }
 
     private static func awaitingConfirmationDuffs(in container: ModelContainer, walletId: Data) -> UInt64? {

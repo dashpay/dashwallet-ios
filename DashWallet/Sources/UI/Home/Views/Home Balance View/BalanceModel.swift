@@ -179,8 +179,9 @@ extension BalanceModel {
 /// value is tied to the wallet it was read for, not to the order of the
 /// switch notifications:
 /// - every read comes back with the `Scope` it read (the bound wallet and
-///   its store), and counts only if that is still what is bound when it
-///   lands;
+///   its network), and counts only if that is still what is bound when it
+///   lands. One read runs at a time; events during it start one more when
+///   it lands;
 /// - while the balance itself is not known (a teardown clears it), the part
 ///   of it that waits is not known either: cleared, and no read is made;
 /// - `walletDidChange` (`activeWalletDidChangeNotification`: posted once a
@@ -190,10 +191,10 @@ extension BalanceModel {
 ///   notification and nothing follows it, so this read is the one that
 ///   brings the caption up if the earlier one did not.
 final class PendingBalanceFollower {
-    /// What a value was read for: a wallet in the store the host had bound.
-    /// A network switch or a rebuild binds another store.
+    /// What a value was read for: a wallet on a network (the same wallet id
+    /// exists on each network, with its own coins).
     struct Scope: Equatable {
-        let store: ObjectIdentifier
+        let network: String
         let walletId: Data
     }
 
@@ -232,6 +233,12 @@ final class PendingBalanceFollower {
     private var shownScope: Scope?
     /// The last balance event was a known amount (main queue only).
     private var isBalanceKnown = false
+    /// A read is running; `readAgain` when an event came during it (main
+    /// queue only).
+    private var isReading = false
+    private var readAgain = false
+    private let boundScope: () -> Scope?
+    private let read: () -> Reading?
     private var cancellables = Set<AnyCancellable>()
 
     /// - Parameters:
@@ -246,6 +253,8 @@ final class PendingBalanceFollower {
         boundScope: @escaping () -> Scope?,
         read: @escaping () -> Reading?
     ) {
+        self.boundScope = boundScope
+        self.read = read
         let main = DispatchQueue.main
         let balanceEvents = signals.balanceEvents
             .receive(on: main)
@@ -263,26 +272,42 @@ final class PendingBalanceFollower {
         balanceEvents
             .merge(with: signals.coinSaves, walletChanges)
             .throttle(for: interval, scheduler: main, latest: true)
-            .map { [weak self] _ -> AnyPublisher<Reading?, Never> in
-                // Nothing to read for while the balance is not known.
-                guard self?.isBalanceKnown == true else { return Empty<Reading?, Never>().eraseToAnyPublisher() }
-                return Future<Reading?, Never> { promise in
-                    DispatchQueue.global(qos: .utility).async { promise(.success(read())) }
-                }
-                .eraseToAnyPublisher()
-            }
-            .switchToLatest()
-            .receive(on: main)
-            .sink { [weak self] reading in
-                // A read that failed (host unbound, fetch error) keeps the last
-                // known value rather than claiming nothing is waiting. One
-                // that lands after a switch or a teardown is not this
-                // wallet's.
-                guard let self, let reading, self.isBalanceKnown, reading.scope == boundScope() else { return }
-                self.shownScope = reading.scope
-                if self.duffs != reading.duffs { self.duffs = reading.duffs }
-            }
+            .sink { [weak self] _ in self?.startRead() }
             .store(in: &cancellables)
+    }
+
+    /// One read at a time, off the main thread; an event during it starts
+    /// one more when it lands, so the last event is always read for.
+    private func startRead() {
+        // Nothing to read for while the balance is not known.
+        guard isBalanceKnown else { return }
+        guard !isReading else {
+            readAgain = true
+            return
+        }
+        isReading = true
+        let read = self.read
+        DispatchQueue.global(qos: .utility).async { [weak self] in
+            let reading = read()
+            DispatchQueue.main.async {
+                guard let self else { return }
+                self.isReading = false
+                self.apply(reading)
+                if self.readAgain {
+                    self.readAgain = false
+                    self.startRead()
+                }
+            }
+        }
+    }
+
+    private func apply(_ reading: Reading?) {
+        // A read that failed (host unbound, fetch error) keeps the last known
+        // value rather than claiming nothing is waiting. One that lands
+        // after a switch or a teardown is not this wallet's.
+        guard let reading, isBalanceKnown, reading.scope == boundScope() else { return }
+        shownScope = reading.scope
+        if duffs != reading.duffs { duffs = reading.duffs }
     }
 
     private func clear() {

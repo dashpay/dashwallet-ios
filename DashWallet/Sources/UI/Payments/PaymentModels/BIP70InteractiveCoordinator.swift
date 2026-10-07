@@ -23,8 +23,22 @@ final class BIP70ConfirmationBox: NSObject {
     @objc var amount: UInt64 { confirmation.amount }
     @objc var estimatedFee: UInt64 { confirmation.estimatedFee }
     @objc var primaryAddress: String? { confirmation.primaryAddress }
-    /// Every address the request pays, in request order, without repeats.
-    @objc var recipientAddresses: [String] { confirmation.recipientAddresses }
+    /// The address of the payment URI the request came from (BIP72), when it
+    /// is payable on this network: what a plain send falls back to when the
+    /// request cannot be fetched. Set by `DWPaymentProcessor`.
+    @objc var fallbackAddress: String?
+    /// Every address a repeat of this payment could go to: the request's
+    /// recipients in request order, then `fallbackAddress`, each once. What
+    /// the repeat-payment check is asked about, and what an unknown outcome
+    /// is followed under.
+    @objc var repeatCheckAddresses: [String] {
+        Self.repeatCheckAddresses(recipients: confirmation.recipientAddresses, fallback: fallbackAddress)
+    }
+
+    static func repeatCheckAddresses(recipients: [String], fallback: String?) -> [String] {
+        var seen = Set<String>()
+        return (recipients + [fallback].compactMap { $0 }).filter { !$0.isEmpty && seen.insert($0).inserted }
+    }
     @objc var memo: String? { confirmation.memo }
 }
 
@@ -95,7 +109,9 @@ final class BIP70InteractiveCoordinator: NSObject {
                 // one send, under every recipient it pays.
                 // On the main actor: following the send touches main-actor state.
                 await MainActor.run {
-                    let addresses = recipients ?? box.confirmation.recipientAddresses
+                    let addresses = BIP70ConfirmationBox.repeatCheckAddresses(
+                        recipients: recipients ?? box.confirmation.recipientAddresses,
+                        fallback: box.fallbackAddress)
                     let error = WalletSendService.unknownOutcomeError(
                         txidWire: Data(txHashDisplay.reversed()),
                         address: addresses.first,
