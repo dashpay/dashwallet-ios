@@ -1,4 +1,5 @@
 import Foundation
+import SwiftDashSDK
 import XCTest
 @testable import dashwallet
 
@@ -115,5 +116,88 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         try store.remove(aborted)
         XCTAssertEqual(try store.entries(scope: scope, contactIdentityId: contact), [survivor])
         XCTAssertThrowsError(try store.update(aborted, status: .submitted))
+    }
+
+    // MARK: - Restart-proof contact lock
+
+    private var lockWindowStart: Date { Date().addingTimeInterval(-24 * 60 * 60) }
+
+    /// The `.unconfirmed` update after an ambiguous failure is best-effort:
+    /// the `.submitting` record written before submission must lock on its own.
+    func testSubmittingRecordAloneLocksAfterRestart() throws {
+        _ = try begin()
+        let reopened = DashPayWithdrawalStore(directory: directory)
+        XCTAssertTrue(try reopened.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: lockWindowStart))
+    }
+
+    func testUnconfirmedRecordLocks() throws {
+        try store.update(try begin(), status: .unconfirmed)
+        XCTAssertTrue(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: lockWindowStart))
+    }
+
+    func testSubmittedRecordDoesNotLock() throws {
+        try store.update(try begin(), status: .submitted)
+        XCTAssertFalse(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: lockWindowStart))
+    }
+
+    /// A definite non-submission drops its record, so the retry is not locked.
+    func testRemovedRecordDoesNotLock() throws {
+        try store.remove(try begin())
+        XCTAssertFalse(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: lockWindowStart))
+    }
+
+    func testUnresolvedRecordOutsideWindowDoesNotLock() throws {
+        _ = try begin()
+        XCTAssertFalse(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: Date().addingTimeInterval(60)))
+    }
+
+    func testUnresolvedRecordLocksOnlyItsContact() throws {
+        _ = try begin()
+        XCTAssertFalse(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: Data(repeating: 9, count: 32), since: lockWindowStart))
+    }
+
+    /// Callers treat a throw as locked (fail closed), so it must not read as empty.
+    func testUnreadableJournalThrowsRatherThanReportingNoLock() throws {
+        _ = try begin()
+        let file = try XCTUnwrap(FileManager.default
+            .contentsOfDirectory(at: directory, includingPropertiesForKeys: nil).first)
+        try Data("not json".utf8).write(to: file)
+        XCTAssertThrowsError(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: lockWindowStart))
+    }
+
+    // MARK: - Which failures prove a withdrawal never left
+
+    @MainActor
+    func testDefiniteFailuresAllowRetry() {
+        let definite: [Error] = [
+            PlatformAddressSyncCoordinator.SendError.coordinatorNotReady,
+            PlatformAddressSyncCoordinator.SendError.noFundedAddress,
+            PlatformWalletError.shieldedNoRecordedAnchor("mid-block"),
+            PlatformWalletError.shieldedBroadcastFailed("rejected"),
+            PlatformWalletError.shieldedInsufficientBalance("short"),
+        ]
+        for error in definite {
+            XCTAssertTrue(ShieldedTransferCoordinator.provesWithdrawalNotSubmitted(error), "\(error)")
+        }
+    }
+
+    @MainActor
+    func testAmbiguousFailuresStayUnknown() {
+        let ambiguous: [Error] = [
+            PlatformWalletError.shieldedSpendUnconfirmed("timeout"),
+            PlatformWalletError.transactionBroadcastUnconfirmed("timeout"),
+            PlatformWalletError.walletOperation("unexpected"),
+            URLError(.timedOut),
+        ]
+        for error in ambiguous {
+            XCTAssertFalse(ShieldedTransferCoordinator.provesWithdrawalNotSubmitted(error), "\(error)")
+        }
     }
 }

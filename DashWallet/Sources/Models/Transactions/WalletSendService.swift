@@ -249,13 +249,18 @@ extension ContactPaymentRecipient {
     /// right now; nil when either is not ready.
     @MainActor
     static func current(for contact: ContactItem) -> ContactPaymentRecipient? {
+        current(contactIdentityId: contact.contactIdentityId, displayName: contact.displayTitle)
+    }
+
+    @MainActor
+    static func current(contactIdentityId: Data, displayName: String) -> ContactPaymentRecipient? {
         guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
               let ownerIdentityId = DWCurrentUserIdentityInfo.shared.identityId else {
             return nil
         }
         return ContactPaymentRecipient(
-            identityId: contact.contactIdentityId,
-            displayName: contact.displayTitle,
+            identityId: contactIdentityId,
+            displayName: displayName,
             walletId: walletId,
             ownerIdentityId: ownerIdentityId,
             network: WalletEnvironment.networkKind)
@@ -554,7 +559,19 @@ final class WalletSendService: NSObject {
         memo: String? = nil
     ) async throws -> (txid: Data, feeDuffs: UInt64) {
         Self.logger.info("💸 TXSEND :: pay-to-contact starting — \(amount, privacy: .public) duffs")
-        try rejectIfContactPaymentOutcomeUnknown(contactIdentityId)
+        // Resolved here rather than taken from the caller: the contact profile
+        // pays through this method directly, and the journal of unresolved
+        // withdrawals can only be read for a wallet and identity.
+        let recipient = await MainActor.run {
+            ContactPaymentRecipient.current(contactIdentityId: contactIdentityId, displayName: "")
+        }
+        guard let recipient else {
+            throw Self.makeError(
+                code: .dashPayPaymentUnavailable,
+                description: "Wallet or DashPay identity is not ready"
+            )
+        }
+        try rejectIfContactPaymentOutcomeUnknown(contactIdentityId, recipient: recipient)
         try Self.ensureInitialRestoreSyncCompleted()
         // spendAmount engages the biometric spending limit (C7.4) —
         // without it the gate is non-monetary and Face ID alone would
@@ -637,7 +654,7 @@ final class WalletSendService: NSObject {
     /// Refused before the payment is built: see `contactPaymentOutcomeIsUnknown`.
     private func rejectIfContactPaymentOutcomeUnknown(
         _ contactIdentityId: Data,
-        recipient: ContactPaymentRecipient? = nil
+        recipient: ContactPaymentRecipient
     ) throws {
         guard contactPaymentOutcomeIsUnknown(contactIdentityId: contactIdentityId, recipient: recipient) else { return }
         throw Self.makeError(

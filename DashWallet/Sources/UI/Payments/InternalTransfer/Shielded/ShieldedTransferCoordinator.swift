@@ -1442,7 +1442,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// in front of the Platform withdrawal, and the shielded failures the
     /// SDK documents as not broadcast (or definitively rejected) with every
     /// note released.
-    private static func provesWithdrawalNotSubmitted(_ error: Error) -> Bool {
+    static func provesWithdrawalNotSubmitted(_ error: Error) -> Bool {
         switch error {
         case PlatformAddressSyncCoordinator.SendError.coordinatorNotReady,
              PlatformAddressSyncCoordinator.SendError.noFundedAddress,
