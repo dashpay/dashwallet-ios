@@ -172,9 +172,10 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     ///
     /// - Parameters:
     ///   - address: the recipient, or the first of several.
-    ///   - otherAddresses: the other recipients of the same transaction (a
-    ///     BIP70 request with several outputs). The whole recipient list may
-    ///     be passed: repeats and `address` itself are dropped.
+    ///   - otherAddresses: the other addresses a repeat of the payment
+    ///     could go to (`Entry.otherAddresses`: a BIP70 request's further
+    ///     recipients and its URI's address). The whole list may be passed:
+    ///     repeats and `address` itself are dropped.
     ///   - walletId: the wallet that signed the send (every route passes
     ///     it); nil falls back to the active wallet.
     /// - Returns: false when the send could not be followed (no wallet given
@@ -288,7 +289,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     }
 
     /// The tail of a "no longer tracked" line: which addresses payments are
-    /// no longer refused to — every recipient of the send(s), each once.
+    /// no longer refused to — every address of the send(s), each once.
     /// Empty for a send that never refused any (no address: a CoinJoin sweep
     /// chunk, a route that does not know it); empty addresses are left out
     /// like missing ones.

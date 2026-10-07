@@ -139,8 +139,9 @@ struct Confirmation {
     let sendGuard = BIP70SendGuard()
 
     /// The address of the payment URI the request came from (BIP72), if it
-    /// had one: what a plain send falls back to when the request cannot be
-    /// fetched. The transaction itself may not pay it.
+    /// had one that is payable on `network`: what a plain send falls back to
+    /// when the request cannot be fetched. The transaction itself may not
+    /// pay it.
     var fallbackAddress: String? = nil
 
     var primaryAddress: String? { recipients.first?.address }
@@ -277,7 +278,10 @@ final class BIP70PaymentService {
             memo: details.memo,
             callbackScheme: callbackScheme,
             request: request,
-            fallbackAddress: fallbackAddress)
+            // Only an address payable on this network can be fallen back to.
+            fallbackAddress: fallbackAddress.flatMap {
+                ScriptAddressCodec.scriptPubKey(forAddress: $0, network: network) != nil ? $0 : nil
+            })
     }
 
     // MARK: Send (the only spend point)

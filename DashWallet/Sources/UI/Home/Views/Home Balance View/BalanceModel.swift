@@ -29,15 +29,15 @@ final class BalanceModel: ObservableObject {
     /// other Home balance rows.
     @Published private(set) var value: UInt64?
     /// Part of `value` that a payment cannot use until the network confirms
-    /// it (`SwiftDashSDKWalletSource.awaitingConfirmation()`); nil while
+    /// it (`SwiftDashSDKWalletSource.prepareAwaitingConfirmationRead()`); nil while
     /// not known — before the first read and after a wallet or network
     /// switch until the new wallet's read lands; a failed read keeps the last
     /// known value (`PendingBalanceFollower`).
     @Published private(set) var awaitingConfirmationDuffs: UInt64?
     private let pendingBalance = PendingBalanceFollower(
         signals: .live,
-        boundScope: { SwiftDashSDKWalletSource.boundPendingBalanceScope() },
-        read: { SwiftDashSDKWalletSource.awaitingConfirmation() })
+        boundScope: { MainActor.assumeIsolated { SwiftDashSDKWalletSource.boundPendingBalanceScope() } },
+        prepareRead: { MainActor.assumeIsolated { SwiftDashSDKWalletSource.prepareAwaitingConfirmationRead() } })
     /// Badge text for the home header while the wallet runs on a test
     /// network ("TESTNET"/"DEVNET"), so test funds can't be mistaken for
     /// real Dash; nil on mainnet.
@@ -194,6 +194,7 @@ final class PendingBalanceFollower {
     /// What a value was read for: a wallet on a network (the same wallet id
     /// exists on each network, with its own coins).
     struct Scope: Equatable {
+        /// `Network.persistenceScope`: each devnet is its own.
         let network: String
         let walletId: Data
     }
@@ -237,23 +238,24 @@ final class PendingBalanceFollower {
     /// (main queue only).
     private var readSlot = PooledReadSlot()
     private let boundScope: () -> Scope?
-    private let read: () -> Reading?
+    private let prepareRead: () -> (() -> Reading?)?
     private var cancellables = Set<AnyCancellable>()
 
     /// - Parameters:
     ///   - boundScope: what the host has bound now, nil when nothing is;
     ///     called on the main queue.
-    ///   - read: the waiting duffs of what is bound when it runs, with its
-    ///     scope; nil when they could not be read. Called off the main
-    ///     thread.
+    ///   - prepareRead: called on the main queue; takes what is bound now
+    ///     and returns the read of its waiting duffs (nil when nothing is
+    ///     bound). The read runs off the main thread and comes back with the
+    ///     scope it was prepared for, or nil when it failed.
     init(
         signals: Signals,
         interval: DispatchQueue.SchedulerTimeType.Stride = .seconds(1),
         boundScope: @escaping () -> Scope?,
-        read: @escaping () -> Reading?
+        prepareRead: @escaping () -> (() -> Reading?)?
     ) {
         self.boundScope = boundScope
-        self.read = read
+        self.prepareRead = prepareRead
         let main = DispatchQueue.main
         let balanceEvents = signals.balanceEvents
             .receive(on: main)
@@ -279,8 +281,7 @@ final class PendingBalanceFollower {
     /// one more when it lands, so the last event is always read for.
     private func startRead() {
         // Nothing to read for while the balance is not known.
-        guard isBalanceKnown, let claim = readSlot.begin() else { return }
-        let read = self.read
+        guard isBalanceKnown, let read = prepareRead(), let claim = readSlot.begin() else { return }
         DispatchQueue.global(qos: .utility).async { [weak self] in
             let reading = read()
             DispatchQueue.main.async {

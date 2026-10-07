@@ -2093,30 +2093,32 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// a send the network has not taken. CoinJoin and the other account types
     /// are left out, as are outputs paid to others, and outputs with a saved
     /// spender (see `awaitingConfirmationTotal`). One fetch of the saved state;
-    /// safe from any thread. Nil when it could not be read. Comes with the
-    /// wallet and network it was read for, so a caller can tell a value read
-    /// before a wallet or network switch from the bound wallet's.
-    static func awaitingConfirmation() -> PendingBalanceFollower.Reading? {
-        let handles: (container: ModelContainer, scope: PendingBalanceFollower.Scope)? = MainThread.sync {
-            guard let container = SwiftDashSDKHost.shared.modelContainer,
-                  let scope = boundPendingBalanceScope() else { return nil }
-            return (container, scope)
+    /// Nil when it could not be read.
+    ///
+    /// In two steps, so the worker never hops back to the main thread: this
+    /// call, on the main actor, takes the bound wallet's handles and returns
+    /// the read (nil when nothing is bound); the read runs anywhere and
+    /// comes back with the wallet and network it was for, so a caller can
+    /// tell a value read before a wallet or network switch from the bound
+    /// wallet's.
+    @MainActor
+    static func prepareAwaitingConfirmationRead() -> (() -> PendingBalanceFollower.Reading?)? {
+        guard let container = SwiftDashSDKHost.shared.modelContainer,
+              let scope = boundPendingBalanceScope() else { return nil }
+        return {
+            awaitingConfirmationDuffs(in: container, walletId: scope.walletId)
+                .map { .init(scope: scope, duffs: $0) }
         }
-        guard let handles,
-              let duffs = awaitingConfirmationDuffs(in: handles.container, walletId: handles.scope.walletId)
-        else { return nil }
-        return .init(scope: handles.scope, duffs: duffs)
     }
 
-    /// The wallet and network the host has bound now: what
-    /// `awaitingConfirmation()` would read. Nil when nothing is bound. Safe
-    /// from any thread.
+    /// The wallet and network the host has bound now: what a read prepared
+    /// now would be for. Nil when nothing is bound. The network is its
+    /// `persistenceScope`, which tells two devnets apart.
+    @MainActor
     static func boundPendingBalanceScope() -> PendingBalanceFollower.Scope? {
-        MainThread.sync {
-            guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
-                  let network = SwiftDashSDKHost.shared.runningNetwork else { return nil }
-            return .init(network: String(describing: network), walletId: walletId)
-        }
+        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+              let network = SwiftDashSDKHost.shared.runningNetwork else { return nil }
+        return .init(network: network.persistenceScope, walletId: walletId)
     }
 
     private static func awaitingConfirmationDuffs(in container: ModelContainer, walletId: Data) -> UInt64? {

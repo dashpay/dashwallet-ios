@@ -241,8 +241,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
             completion(true)
             return
         }
-        // The recipient the waiting payment also paid (any output of a
-        // several-recipient request), for the log.
+        // The address this payment shares with the waiting one, for the log.
         let address = addresses.first(where: waiting.addresses.contains) ?? addresses.first
         let route = paymentRoute(isBIP70: isBIP70)
         let age = Int(Date().timeIntervalSince(waiting.sentAt))
@@ -283,8 +282,10 @@ extension PaymentController: DWPaymentProcessorDelegate {
     private func refuseRepeating(_ waiting: PendingSendOutcomes.Entry, done: @escaping () -> Void) {
         let sentAt = "\(DWDateFormatter.sharedInstance.shortStringFromDate(waiting.sentAt)) \(DWDateFormatter.sharedInstance.timeOnly(from: waiting.sentAt))"
         // A route that does not know the amount records 0: the time alone
-        // then. So too for a payment to several recipients, whose amount is
-        // the whole payment's, not what this address was paid.
+        // then. So too for a waiting payment followed under several
+        // addresses: its amount is the whole payment's, which need not be
+        // what this address was paid (or it was not paid at all: a BIP72
+        // URI's own address).
         let message = waiting.amount > 0 && waiting.otherAddresses == nil
             ? String(
                 format: NSLocalizedString(

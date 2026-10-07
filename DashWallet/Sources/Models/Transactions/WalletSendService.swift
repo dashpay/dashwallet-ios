@@ -1158,8 +1158,9 @@ extension WalletSendService {
     /// thread. For a route that has no error to hand back.
     ///
     /// - Parameters:
-    ///   - otherAddresses: the other recipients of a several-recipient
-    ///     payment (BIP70): one followed send, refusing a payment to any.
+    ///   - otherAddresses: the other addresses of a BIP70 payment (its
+    ///     further recipients, its URI's address): one followed send,
+    ///     refusing a payment to any.
     ///   - walletId: the wallet that signed the send; nil (tests only) falls
     ///     back to the active one.
     /// - Returns: whether its row is in the history on screen now — followed

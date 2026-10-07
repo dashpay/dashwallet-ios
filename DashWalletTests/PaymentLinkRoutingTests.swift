@@ -1106,12 +1106,16 @@ final class UnknownOutcomeWalletTests: XCTestCase {
             transport: AcknowledgingTransport(extraOutputs: 1), wallet: wallet,
             receiveAddress: StaticReceiveAddress(), auth: NoAuth())
         let url = URL(string: "http://merchant/pr")!
+        // A payable testnet address none of the request's outputs pays.
+        let uriAddress = try XCTUnwrap(ScriptAddressCodec.resolveOutputs(
+            [PaymentOutput(amount: 1, script: Data([0x76, 0xa9, 0x14] + [UInt8](repeating: 0x77, count: 20) + [0x88, 0xac]))],
+            network: .testnet).first?.address)
         let confirmation = try await service.prepareForConfirmation(
-            from: url, scheme: "dash", network: .testnet, fallbackAddress: "yUriOwnAddress")
+            from: url, scheme: "dash", network: .testnet, fallbackAddress: uriAddress)
         let recipients = confirmation.recipients.map(\.address)
         XCTAssertEqual(recipients.count, 2)
         let addresses = confirmation.repeatCheckAddresses
-        XCTAssertEqual(addresses, recipients + ["yUriOwnAddress"], "what the repeat-payment check is asked about")
+        XCTAssertEqual(addresses, recipients + [uriAddress], "what the repeat-payment check is asked about")
 
         do {
             _ = try await service.confirmAndSend(confirmation)
@@ -1127,7 +1131,7 @@ final class UnknownOutcomeWalletTests: XCTestCase {
             reported.fulfill()
         }
         let again = try await service.prepareForConfirmation(
-            from: url, scheme: "dash", network: .testnet, fallbackAddress: "yUriOwnAddress")
+            from: url, scheme: "dash", network: .testnet, fallbackAddress: uriAddress)
         _ = try await service.confirmAndSend(again, awaitAcceptance: false)
         await fulfillment(of: [reported], timeout: 3)
         XCTAssertEqual(detached, addresses, "the handed-off broadcast")
@@ -1138,6 +1142,10 @@ final class UnknownOutcomeWalletTests: XCTestCase {
         XCTAssertEqual(same.repeatCheckAddresses, recipients)
         let none = try await service.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
         XCTAssertEqual(none.repeatCheckAddresses, recipients)
+        // One that is not payable on this network can never be fallen back to.
+        let unpayable = try await service.prepareForConfirmation(
+            from: url, scheme: "dash", network: .testnet, fallbackAddress: "not an address")
+        XCTAssertEqual(unpayable.repeatCheckAddresses, recipients)
     }
 
     /// A payment followed under its recipient M and its URI's address X
@@ -1294,13 +1302,14 @@ final class PendingBalanceFollowerTests: XCTestCase {
                 walletDidChange: walletDidChange.eraseToAnyPublisher()),
             interval: .milliseconds(100),
             boundScope: { [bound] in bound.withLock { $0 } },
-            read: { [bound, saved, readCount, readGate] in
-                readCount.withLock { $0 += 1 }
-                let scope = bound.withLock { $0 }
-                readGate.lock()
-                readGate.unlock()
-                guard let scope, let duffs = saved.withLock({ $0[Self.key(scope)] }) else { return nil }
-                return .init(scope: scope, duffs: duffs)
+            prepareRead: { [bound, saved, readCount, readGate] in
+                guard let scope = bound.withLock({ $0 }) else { return nil }
+                return {
+                    readCount.withLock { $0 += 1 }
+                    readGate.lock()
+                    readGate.unlock()
+                    return saved.withLock { $0[Self.key(scope)] }.map { .init(scope: scope, duffs: $0) }
+                }
             })
     }
 
