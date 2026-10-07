@@ -578,12 +578,12 @@ final class WalletSendService: NSObject {
         // authorize a contact payment of any size.
         try await sendAuthorizer.authorizeSend(spendAmount: amount)
 
-        let context: (wallet: ManagedPlatformWallet, ourId: Data)? = await MainActor.run {
-            guard let wallet = SwiftDashSDKHost.shared.wallet,
-                  let ourId = DWCurrentUserIdentityInfo.shared.identityId else {
-                return nil
-            }
-            return (wallet, ourId)
+        // The journal was checked for the context captured above: pay from
+        // that same wallet and identity, or not at all.
+        let context: (wallet: ManagedPlatformWallet, ourId: Data)? = try await MainActor.run {
+            try Self.validateContactRecipient(recipient)
+            guard let wallet = SwiftDashSDKHost.shared.wallet else { return nil }
+            return (wallet, recipient.ownerIdentityId)
         }
         guard let context else {
             throw Self.makeError(

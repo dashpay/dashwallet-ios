@@ -1119,7 +1119,7 @@
 "Pay from" = "Pay from";
 
 /* DashPay FAQ */
-"Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.";
+"Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. You can pay from your Transparent, Platform, or Shielded balance. However you pay, your contact receives it as a regular transparent-chain payment, so the payment itself is public. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. You can pay from your Transparent, Platform, or Shielded balance. However you pay, your contact receives it as a regular transparent-chain payment, so the payment itself is public. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.";
 
 /* Username marketplace: price placeholder */
 "Price in DASH" = "Price in DASH";
@@ -2879,7 +2879,7 @@
 "Private contact requests, Shielded DashPay, and paying people who aren't contacts yet." = "Private contact requests, Shielded DashPay, and paying people who aren't contacts yet.";
 
 /* DashPay FAQ */
-"Private contact requests (so who you connect with stays private), Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are all coming soon." = "Private contact requests (so who you connect with stays private), Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are all coming soon.";
+"Private contact requests (so who you connect with stays private), payments that remain Shielded for the recipient, and paying users who aren't in your contacts yet are all coming soon." = "Private contact requests (so who you connect with stays private), payments that remain Shielded for the recipient, and paying users who aren't in your contacts yet are all coming soon.";
 
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "Send your first contact request";
@@ -6359,3 +6359,33 @@
 
 /* Log export progress */
 "Preparing logs…" = "Preparing logs…";
+
+/* DashPay: the payment record could not be written, so nothing was sent */
+"Unable to save this DashPay payment." = "Unable to save this DashPay payment.";
+
+/* DashPay: the payment record to update is missing */
+"The DashPay payment record is unavailable." = "The DashPay payment record is unavailable.";
+
+/* DashPay payment history: outcome not confirmed */
+"Status unknown" = "Status unknown";
+
+/* DashPay: the wallet or identity changed while a contact payment was open */
+"Your wallet or DashPay identity changed. Reopen the payment and try again." = "Your wallet or DashPay identity changed. Reopen the payment and try again.";
+
+/* DashPay contact payment */
+"Payment status unknown" = "Payment status unknown";
+
+/* DashPay contact payment */
+"We couldn't confirm whether this payment went through. Don't send it again — check your balance and this contact's activity first." = "We couldn't confirm whether this payment went through. Don't send it again — check your balance and this contact's activity first.";
+
+/* DashPay contact payment sent from Platform or Shielded */
+"%@ will receive it in a few minutes, once the network processes the payment." = "%@ will receive it in a few minutes, once the network processes the payment.";
+
+/* DashPay maximum withdrawal */
+"The amount shown is an estimate. The final payout depends on the network fee." = "The amount shown is an estimate. The final payout depends on the network fee.";
+
+/* Send confirm sheet: full-balance DashPay contact payment */
+"This sends your entire Platform balance. %@ receives it once the network processes the payment — this can take up to 10 minutes." = "This sends your entire Platform balance. %@ receives it once the network processes the payment — this can take up to 10 minutes.";
+
+/* Send confirm sheet: DashPay contact payment from Platform or Shielded */
+"%@ receives it once the network processes the payment — this can take up to 10 minutes." = "%@ receives it once the network processes the payment — this can take up to 10 minutes.";

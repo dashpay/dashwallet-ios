@@ -172,6 +172,21 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
             scope: scope, contactIdentityId: contact, since: lockWindowStart))
     }
 
+    func testInaccessibleJournalDirectoryThrowsRatherThanReportingNoLock() throws {
+        _ = try begin()
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: directory.path)
+        defer {
+            try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: directory.path)
+        }
+        XCTAssertThrowsError(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: lockWindowStart))
+    }
+
+    func testMissingJournalReportsNoLock() throws {
+        XCTAssertFalse(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: lockWindowStart))
+    }
+
     // MARK: - Which failures prove a withdrawal never left
 
     @MainActor

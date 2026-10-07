@@ -62,9 +62,9 @@ final class DashPayWithdrawalStore {
         var errorDescription: String? {
             switch self {
             case .invalidPayment:
-                return NSLocalizedString("Unable to save this DashPay withdrawal.", comment: "")
+                return NSLocalizedString("Unable to save this DashPay payment.", comment: "DashPay: the payment record could not be written, so nothing was sent")
             case .missingEntry:
-                return NSLocalizedString("The DashPay withdrawal record is unavailable.", comment: "")
+                return NSLocalizedString("The DashPay payment record is unavailable.", comment: "DashPay: the payment record to update is missing")
             }
         }
     }
@@ -169,10 +169,17 @@ final class DashPayWithdrawalStore {
     }
 
     private func load(scope: Scope) throws -> [Entry] {
-        let url = fileURL(scope: scope)
-        guard FileManager.default.fileExists(atPath: url.path) else { return [] }
-        // Do not overwrite corrupt/unreadable history with an empty journal.
-        return try JSONDecoder().decode([Entry].self, from: Data(contentsOf: url))
+        let data: Data
+        do {
+            data = try Data(contentsOf: fileURL(scope: scope))
+        } catch CocoaError.fileReadNoSuchFile {
+            return []
+        }
+        // Anything but a missing file throws: `fileExists` also answers false
+        // when existence can't be determined, and an unreadable journal must
+        // lock contact payments rather than read as empty. Nor is corrupt
+        // history overwritten with an empty one.
+        return try JSONDecoder().decode([Entry].self, from: data)
     }
 
     private func save(_ entries: [Entry], scope: Scope) throws {
