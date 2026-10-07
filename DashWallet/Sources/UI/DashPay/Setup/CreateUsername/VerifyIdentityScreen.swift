@@ -130,6 +130,7 @@ public struct VerifyIdentityScreen: View {
                     instructions
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .scrollIndicators(.hidden)
                 .scrollBounceBehavior(.basedOnSize)
                 .scrollDismissesKeyboard(.interactively)
 
