@@ -21,6 +21,43 @@ import os
 import SwiftDashSDK
 import UIKit
 
+/// A wallet on one chain: the wallet id and the chain's persistence scope
+/// (`Network.persistenceScope`: "mainnet", "testnet", or "devnet-<name>").
+///
+/// A seed's wallet id differs between mainnet, testnet and devnet
+/// (key-wallet folds the network into it), but it is the same on every
+/// named devnet, while each devnet has its own transaction store. So on a
+/// devnet the wallet id alone does not say whose rows, sends or coins
+/// something is; the chain does.
+///
+/// What a send is signed under (read in the same main-actor hop as its
+/// build), what a followed send is kept under, and what the Home pending
+/// caption is read for.
+struct WalletChainScope: Equatable, Hashable {
+    let walletId: Data
+    /// `Network.persistenceScope` of the chain.
+    let chain: String
+
+    /// The wallet the host has bound and the scope its store was opened
+    /// for (`SwiftDashSDKHost.runningPersistenceScope`, a stored fact of the
+    /// running host, not the devnet configuration of the moment); nil when
+    /// nothing is bound.
+    @MainActor
+    static var bound: WalletChainScope? {
+        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+              let chain = SwiftDashSDKHost.shared.runningPersistenceScope else { return nil }
+        return WalletChainScope(walletId: walletId, chain: chain)
+    }
+
+    /// Whether a wallet id on the host's bound network belongs to that one
+    /// chain only: true on mainnet and testnet, false on a devnet (every
+    /// named devnet shares the id). Nil when nothing is bound.
+    @MainActor
+    static var boundWalletIdIsOfOneChain: Bool? {
+        SwiftDashSDKHost.shared.runningNetwork.map { $0 != .devnet }
+    }
+}
+
 /// Sends whose broadcast ended without a word from the network ("status
 /// unknown"), followed until the network answers.
 ///
@@ -35,29 +72,6 @@ import UIKit
 /// screen that made it and be read by the history rows, the home notice and a
 /// later send to the same address. It is persisted, so a relaunch keeps a send
 /// waiting rather than turning it back into "Sending".
-/// A wallet on one chain: the wallet id and the chain's persistence scope
-/// (`Network.persistenceScope`: "mainnet", "testnet", or a devnet's own
-/// name). The same seed has the same wallet id on every chain — every devnet
-/// included — while each chain has its own transaction store, so the wallet
-/// id alone does not say whose rows, sends or coins something is.
-///
-/// What a send is signed under (read in the same main-actor hop as its
-/// build), what a followed send is kept under, and what the Home pending
-/// caption is read for.
-struct WalletChainScope: Equatable, Hashable {
-    let walletId: Data
-    /// `Network.persistenceScope` of the chain.
-    let chain: String
-
-    /// The wallet and chain the host has bound now; nil when nothing is.
-    @MainActor
-    static var bound: WalletChainScope? {
-        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
-              let network = SwiftDashSDKHost.shared.runningNetwork else { return nil }
-        return WalletChainScope(walletId: walletId, chain: network.persistenceScope)
-    }
-}
-
 @objc(DWPendingSendOutcomes)
 @MainActor
 final class PendingSendOutcomes: NSObject, ObservableObject {
@@ -89,14 +103,16 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         var notifies: Bool? = nil
         /// The chain the send was signed on (`WalletChainScope.chain`). Nil
         /// only in an entry stored before it was kept: its chain is not
-        /// known, and is not guessed (`isFollowed(on:)`).
+        /// known, and is not guessed (`isFollowed(on:)`); it is filled in
+        /// where it follows from the wallet id (`placingUnchained`).
         var chainScope: String? = nil
 
         /// Whether this send is `scope`'s to settle, refuse with and tell:
         /// the same wallet on the same chain. An entry with no stored chain
-        /// counts for every chain of its wallet — it may be this one's — and
-        /// the settlement policy never takes a row missing here as proof
-        /// that it is gone.
+        /// (left only on a devnet, where the wallet id is every named
+        /// devnet's) counts for every chain of its wallet — it may be this
+        /// one's — and the settlement policy never takes a row missing here
+        /// as proof that it is gone.
         func isFollowed(on scope: WalletChainScope) -> Bool {
             walletId == scope.walletId && (chainScope == nil || chainScope == scope.chain)
         }
@@ -255,8 +271,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     }
 
     /// Stop following every send: the wallet they belong to was wiped. (A
-    /// network switch keeps them: entries are per wallet, and the other
-    /// network's sends are settled once its wallet runs again.)
+    /// network switch keeps them: entries are per wallet and chain, and the
+    /// other chain's sends are settled once its wallet runs there again.)
     @objc func forgetAll() {
         notice = nil
         guard !entries.isEmpty else { return }
@@ -390,7 +406,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     private func apply(_ events: [OutgoingTransactionProbeEvent]) {
         let heard = Self.acceptances(
             in: events.map { (txidWire: $0.txidWire, walletId: $0.walletId, accepted: $0.verdict == .accepted) },
-            following: entries, alreadyHeard: acceptedHeard)
+            from: WalletChainScope.bound, following: entries, alreadyHeard: acceptedHeard)
         acceptedHeard = heard.accepted
         if heard.isNew { reconcile() }
     }
@@ -406,9 +422,18 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             return
         }
         // Only the bound wallet's sends on the bound chain can settle
-        // against its rows: the same wallet id has another store on every
-        // other chain, where these sends' rows will never be.
+        // against its rows: on another devnet the same wallet id has another
+        // store, where these sends' rows will never be.
         guard let scope = WalletChainScope.bound else { return }
+        // An entry stored without its chain is this chain's for certain when
+        // the wallet id exists on no other (mainnet, testnet): it is given
+        // its chain, and the ordinary rules then apply to it.
+        let placed = Self.placingUnchained(
+            entries, on: scope, walletIdIsOfOneChain: WalletChainScope.boundWalletIdIsOfOneChain == true)
+        if placed != entries {
+            entries = placed
+            didChangeEntries()
+        }
         let pending = entries.filter { $0.value.isFollowed(on: scope) }
         guard !pending.isEmpty else { return }
         reconcileInFlight = true
@@ -454,7 +479,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) row missing for over 24 h (removed, swept or replaced), no longer tracked\(lifted(txid))")
         }
         for txid in decision.unplaced {
-            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) stored without its chain and not found on \(scope.chain) for \(Self.maxFollowDays) days, no longer tracked\(lifted(txid))")
+            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) stored without its chain and not found on"
+                + " \(scope.chain) for \(Self.maxFollowDays) days, no longer tracked\(lifted(txid))")
         }
         for entry in Self.notifiable(decision.notifying, shown: shownScope) {
             notice = Self.merged(notice, adding: entry.amount)
@@ -567,6 +593,23 @@ extension PendingSendOutcomes {
         return decision
     }
 
+    /// `entries` with the chain filled in for those stored without one that
+    /// can only be `scope`'s: the same wallet id, on a network where a wallet
+    /// id belongs to one chain (`walletIdIsOfOneChain`: mainnet, testnet). On
+    /// a devnet nothing is filled in — the id is every named devnet's, and
+    /// the entry stays without a chain (`Entry.isFollowed(on:)`).
+    nonisolated static func placingUnchained(
+        _ entries: [Data: Entry], on scope: WalletChainScope, walletIdIsOfOneChain: Bool
+    ) -> [Data: Entry] {
+        guard walletIdIsOfOneChain else { return entries }
+        return entries.mapValues { entry in
+            guard entry.chainScope == nil, entry.walletId == scope.walletId else { return entry }
+            var placed = entry
+            placed.chainScope = scope.chain
+            return placed
+        }
+    }
+
     /// `entries` without the sends `decision` stops following.
     nonisolated static func applying(_ decision: SettlementDecision, to entries: [Data: Entry]) -> [Data: Entry] {
         var remaining = entries
@@ -602,16 +645,22 @@ extension PendingSendOutcomes {
         return Notice(count: current.count + 1, total: overflow ? UInt64.max : total)
     }
 
-    /// The followed sends with an `.accepted` verdict from their own wallet,
-    /// and whether any of them was not heard before (only then are the rows
-    /// read again: the verdicts are republished on every probe change).
+    /// The followed sends with an `.accepted` verdict from their own wallet
+    /// on their own chain, and whether any of them was not heard before (only
+    /// then are the rows read again: the verdicts are republished on every
+    /// probe change).
+    ///
+    /// - Parameter scope: the wallet and chain of the manager the verdicts
+    ///   came from (what is bound); nil hears nothing.
     nonisolated static func acceptances(
         in verdicts: [(txidWire: Data, walletId: Data, accepted: Bool)],
+        from scope: WalletChainScope?,
         following entries: [Data: Entry],
         alreadyHeard: Set<Data>
     ) -> (accepted: Set<Data>, isNew: Bool) {
         let accepted = Set(verdicts.filter { verdict in
-            verdict.accepted && entries[verdict.txidWire]?.walletId == verdict.walletId
+            guard verdict.accepted, let scope, verdict.walletId == scope.walletId else { return false }
+            return entries[verdict.txidWire]?.isFollowed(on: scope) == true
         }.map(\.txidWire))
         return (accepted, !accepted.subtracting(alreadyHeard).isEmpty)
     }

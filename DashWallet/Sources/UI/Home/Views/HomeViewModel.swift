@@ -2121,7 +2121,6 @@ class SwiftDashSDKWalletSource: TransactionSource {
         }
     }
 
-
     private static func awaitingConfirmationDuffs(in container: ModelContainer, walletId: Data) -> UInt64? {
         // A pre-filter on the row's own columns; `awaitingConfirmationTotal`
         // applies the whole rule again and is the one that decides. The

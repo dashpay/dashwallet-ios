@@ -830,7 +830,7 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
         let sent = entry(1, age: 60)
         let heard = Policy.acceptances(
             in: [(txidWire: sent.txidWire, walletId: walletA, accepted: true)],
-            following: [sent.txidWire: sent], alreadyHeard: [])
+            from: scopeA, following: [sent.txidWire: sent], alreadyHeard: [])
         XCTAssertEqual(heard.accepted, [sent.txidWire])
         XCTAssertTrue(heard.isNew, "the rows are read again")
 
@@ -842,12 +842,12 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
         let sent = entry(1, age: 60)
         let again = Policy.acceptances(
             in: [(txidWire: sent.txidWire, walletId: walletA, accepted: true)],
-            following: [sent.txidWire: sent], alreadyHeard: [sent.txidWire])
+            from: scopeA, following: [sent.txidWire: sent], alreadyHeard: [sent.txidWire])
         XCTAssertFalse(again.isNew, "republished, not new")
 
         let otherWallet = Policy.acceptances(
             in: [(txidWire: sent.txidWire, walletId: walletB, accepted: true)],
-            following: [sent.txidWire: sent], alreadyHeard: [])
+            from: scopeB, following: [sent.txidWire: sent], alreadyHeard: [])
         XCTAssertTrue(otherWallet.accepted.isEmpty)
         XCTAssertFalse(otherWallet.isNew)
     }
@@ -985,8 +985,10 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
     }
 
     /// A send waiting on one chain refuses nothing on another chain of the
-    /// same wallet, and its settlement is not told there: two devnets (which
-    /// share an address format), and testnet against mainnet.
+    /// same wallet id, and its settlement is not told there. Two devnets are
+    /// the real case (one wallet id, one address format). A seed's testnet
+    /// and mainnet ids differ in practice, so those are different wallets
+    /// already; the pairs are here to show the rule does not lean on that.
     func testASendWaitingOnOneChainRefusesAndTellsNothingOnAnother() {
         for (signedOn, other) in [("devnet-a", "devnet-b"), ("testnet", "mainnet"), ("testnet", "devnet-a")] {
             let sent = entry(1, chain: signedOn, age: 60, amount: 2_500)
@@ -1048,6 +1050,41 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
         let decoded = try JSONDecoder().decode(
             PendingSendOutcomes.Entry.self, from: JSONSerialization.data(withJSONObject: json))
         XCTAssertNil(decoded.chainScope)
+    }
+
+    /// On mainnet and testnet a wallet id belongs to that one chain, so an
+    /// entry stored without its chain is that chain's: it is given it, and
+    /// the ordinary rules apply (a row missing for a day drops it). On a
+    /// devnet nothing is filled in.
+    func testAnUnchainedEntryIsPlacedOnlyWhereItsWalletIdIsOfOneChain() {
+        let legacy = entry(1, chain: .some(nil), age: Policy.missingRowGrace + 3600)
+        let others = entry(2, wallet: walletB, chain: .some(nil), age: 60)
+        let entries = [legacy.txidWire: legacy, others.txidWire: others]
+        let testnet = WalletChainScope(walletId: walletA, chain: "testnet")
+
+        let placed = Policy.placingUnchained(entries, on: testnet, walletIdIsOfOneChain: true)
+        XCTAssertEqual(placed[legacy.txidWire]?.chainScope, "testnet")
+        XCTAssertNil(placed[others.txidWire]?.chainScope, "another wallet's entry is not this chain's")
+        let decision = Policy.settlement(
+            of: placed, stillFollowed: { _ in true }, readFrom: testnet, rows: [:], now: now)
+        XCTAssertEqual(decision.gone, [legacy.txidWire], "placed, it follows the ordinary missing-row rule")
+
+        let devnet = WalletChainScope(walletId: walletA, chain: "devnet-a")
+        XCTAssertEqual(Policy.placingUnchained(entries, on: devnet, walletIdIsOfOneChain: false), entries,
+                       "on a devnet the id is every devnet's: nothing is filled in")
+    }
+
+    func testAVerdictFromAnotherChainsManagerIsNotHeard() {
+        let sentOnA = entry(1, chain: "devnet-a", age: 60)
+        let verdict = [(txidWire: sentOnA.txidWire, walletId: walletA, accepted: true)]
+        let onB = Policy.acceptances(
+            in: verdict, from: WalletChainScope(walletId: walletA, chain: "devnet-b"),
+            following: [sentOnA.txidWire: sentOnA], alreadyHeard: [])
+        XCTAssertTrue(onB.accepted.isEmpty)
+        let onA = Policy.acceptances(
+            in: verdict, from: WalletChainScope(walletId: walletA, chain: "devnet-a"),
+            following: [sentOnA.txidWire: sentOnA], alreadyHeard: [])
+        XCTAssertEqual(onA.accepted, [sentOnA.txidWire])
     }
 
     // MARK: Several recipients (BIP70)
