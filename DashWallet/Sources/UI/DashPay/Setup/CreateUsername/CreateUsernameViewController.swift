@@ -1797,7 +1797,10 @@ private struct InstantUsernameForm: View {
             .padding(.bottom, 20)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .scrollBounceBehavior(.basedOnSize)
+        // Always draggable, not only when the content overflows: this screen
+        // is short enough to fit above the keyboard, and a scroll view that
+        // cannot move gives no way to drag the keyboard away.
+        .scrollBounceBehavior(.always)
         .scrollDismissesKeyboard(.interactively)
     }
 }
