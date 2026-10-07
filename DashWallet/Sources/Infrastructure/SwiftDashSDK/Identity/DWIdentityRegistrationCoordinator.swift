@@ -835,10 +835,18 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // An invitation voucher cannot top up, so that path never tries.
         let topUp: IdentityTopUpPlan? = fundedNow || currentFundingSource == .invitation
             ? nil
-            // Capped at what the user confirmed, as on the resume path.
+            // Capped at what the user confirmed, as on the resume path — but
+            // nothing at all when this run recovered a paid lock. That lock
+            // was paid for some earlier request and forces Core here whatever
+            // the user picked; if this name costs more than it left (a
+            // contested name after a plain one), a top-up would be new
+            // transparent money nobody was asked about. The attempt stops with
+            // `topUpNotConfirmed` instead: the identity now exists, and the
+            // retry confirms the shortfall and its balance like any other
+            // top-up of an existing identity.
             : IdentityTopUpPlan(
                 source: currentFundingSource, modelContainer: modelContainer,
-                authorizedDuffs: authorizedTopUpDuffs)
+                authorizedDuffs: recoveryLock == nil ? authorizedTopUpDuffs : nil)
         return try await finishUsernameRegistration(
             identityId: identityId, username: username, temporaryUsername: temporaryUsername,
             wallet: wallet, network: network, signer: signer, newController: newController,
