@@ -63,6 +63,9 @@ struct UsernameMarketplaceService {
 
     enum ServiceError: LocalizedError {
         case noIdentity
+        /// The wallet runtime has no network bound — it is being torn down or
+        /// switched.
+        case noNetwork
         case contestedName
         case invalidRecipient
         case invalidPrice
@@ -73,6 +76,8 @@ struct UsernameMarketplaceService {
             switch self {
             case .noIdentity:
                 return NSLocalizedString("No DashPay identity is registered", comment: "DashPay")
+            case .noNetwork:
+                return NSLocalizedString("Network is not configured", comment: "DashPay")
             case .contestedName:
                 return NSLocalizedString("Short names are decided by a network vote — use Request Username instead.", comment: "Username marketplace")
             case .invalidRecipient:
@@ -351,7 +356,7 @@ struct UsernameMarketplaceService {
         // runtime can be torn down or rebound while the purchase is out, and
         // the rejection it clears belongs to the network it was made on.
         guard let network = SwiftDashSDKHost.shared.runningNetwork else {
-            throw ServiceError.noIdentity
+            throw ServiceError.noNetwork
         }
         try await authorize()
         _ = try await wallet.purchaseDpnsName(
@@ -410,7 +415,7 @@ struct UsernameMarketplaceService {
         // newly-selected network (the network-explicit overload exists
         // for exactly this).
         guard let network = WalletEnvironment.network else {
-            throw ServiceError.noIdentity
+            throw ServiceError.noNetwork
         }
         try await authorize()
         _ = try await wallet.registerDpnsName(

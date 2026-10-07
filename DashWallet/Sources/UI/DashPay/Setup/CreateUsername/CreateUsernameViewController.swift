@@ -1439,9 +1439,20 @@ struct CreateUsernameView: View {
         // would fail after the PIN. A resumed Core lock is already paid.
         if !viewModel.isInvitationMode, viewModel.registrationRecovery != .pendingCoreAssetLock,
            !viewModel.canPay(from: payingSource, nameCount: nameCount) {
-            refuseSubmission(NSLocalizedString(
-                "The chosen balance can't pay for this request. Check your balances and try again.",
-                comment: "Usernames: confirm the funding source"))
+            // Shielded picked and the identity needs a top-up: the balance may
+            // well hold enough — this flow has no Shielded top-up route. Say
+            // that, with the way out, in the coordinator's own words.
+            if payingSource == .shielded,
+               let neededDuffs = viewModel.existingIdentityTopUpDuffs(
+                   isContested: viewModel.isContestedCandidate, nameCount: nameCount),
+               neededDuffs > 0 {
+                refuseSubmission(DWIdentityRegistrationCoordinator.CoordinatorError
+                    .shieldedTopUpUnavailable(neededDuffs: neededDuffs).localizedDescription)
+            } else {
+                refuseSubmission(NSLocalizedString(
+                    "The chosen balance can't pay for this request. Check your balances and try again.",
+                    comment: "Usernames: confirm the funding source"))
+            }
             return
         }
         // The two-name top-up can need Core where the one-name one did not:
