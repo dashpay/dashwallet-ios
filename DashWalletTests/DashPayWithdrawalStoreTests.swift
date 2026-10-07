@@ -219,6 +219,7 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
 
 /// Which balance a DashPay contact payment opens on, and when the From step
 /// is offered.
+@MainActor
 final class ContactPaymentSourceTests: XCTestCase {
     private func plan(
         hasWalletContext: Bool = true,

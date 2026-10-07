@@ -1264,13 +1264,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
 
         let contactWithdrawal: ContactWithdrawal?
-        // A full-balance withdrawal can pay out more than its preflighted
-        // estimate if the fee comes in lower: authorize the whole balance.
-        let contactSpendCredits = fullBalance
-            ? max(amountCredits, PlatformAddressSyncCoordinator.shared.platformBalanceState.credits ?? 0)
-            : amountCredits
+        // The AUTO full-balance withdrawal pays whatever the balances are when
+        // it runs, so it can't be bounded by the authorized amount: a contact
+        // is only ever paid an exact amount (`SendViewModel` never offers it).
+        if contactRecipient != nil, fullBalance {
+            handleFailure(CoordinatorError.platformBalanceChanged)
+            return
+        }
         do {
-            try await authorize(contactSpendDuffs: contactRecipient == nil ? nil : contactSpendCredits / 1000)
+            try await authorize(contactSpendDuffs: contactRecipient == nil ? nil : amountCredits / 1000)
             contactWithdrawal = try await reserveContactWithdrawal(
                 contactRecipient,
                 amountDuffs: amountCredits / 1000,
@@ -1284,18 +1286,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
         if let contactWithdrawal { coreAddress = contactWithdrawal.address }
-
-        // A full-balance withdrawal sends whatever the balance is when it is
-        // submitted. A contact payment was authorized for the balance seen
-        // before the prompt, so one that has grown since (or can't be read)
-        // must not go out: nothing has been sent, so its record is dropped.
-        if let contactWithdrawal, fullBalance,
-           PlatformAddressSyncCoordinator.shared.platformBalanceState.credits
-               .map({ $0 > contactSpendCredits }) ?? true {
-            try? DashPayWithdrawalStore.shared.remove(contactWithdrawal)
-            handleFailure(CoordinatorError.platformBalanceChanged)
-            return
-        }
 
         phase = .broadcasting
 

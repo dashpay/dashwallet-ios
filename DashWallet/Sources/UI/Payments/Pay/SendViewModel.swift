@@ -508,7 +508,7 @@ final class SendViewModel: ObservableObject {
         case .core:
             return coreToCoreSpendableDuffs
         case .platform:
-            return platformWithdrawableDuffs ?? 0
+            return partialWithdrawCapCredits / 1000
         case .shielded:
             // Without the note-priced ceiling, `canContinue` falls back to
             // the balance less the worst-case reserve; so does this.
@@ -990,10 +990,24 @@ final class SendViewModel: ObservableObject {
 
     /// True when the typed amount is exactly the full-balance net payout —
     /// confirm then runs the AUTO (all-addresses) withdrawal.
+    ///
+    /// Never for a contact: the AUTO withdrawal pays out whatever the
+    /// balances are when it runs, so it can't be held to the amount the user
+    /// authorized. A contact is paid the exact amount, up to
+    /// `partialWithdrawCapCredits`.
     var isFullPlatformWithdrawal: Bool {
         route == .platformToCore
+            && !paysContact
             && platformWithdrawableDuffs != nil
             && dashDuffsUnsigned == platformWithdrawableDuffs
+    }
+
+    private var paysContact: Bool {
+        #if DASHPAY
+        return contactRecipient != nil
+        #else
+        return false
+        #endif
     }
 
     /// Only Core-funded routes during a restored wallet's first sync block.
@@ -1175,6 +1189,13 @@ final class SendViewModel: ObservableObject {
 
             let formattedCap =
                 "\((partialWithdrawCapCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH"
+            if paysContact, let fullDuffs = platformWithdrawableDuffs, dashDuffsUnsigned <= fullDuffs {
+                return String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "You can send up to %@ to a contact from your Platform balance in one payment.",
+                        comment: "DashPay contact payment from Platform: single-payment cap"),
+                    formattedCap)
+            }
             if let fullDuffs = platformWithdrawableDuffs, dashDuffsUnsigned <= fullDuffs {
                 return String.localizedStringWithFormat(
                     NSLocalizedString(
@@ -1332,7 +1353,9 @@ final class SendViewModel: ObservableObject {
                     InternalTransferViewModel.platformShieldHeadroomUnavailableMessage
             }
         case .platformToCore:
-            sourceDuffs = platformWithdrawableDuffs ?? 0
+            sourceDuffs = paysContact
+                ? partialWithdrawCapCredits / 1000
+                : platformWithdrawableDuffs ?? 0
         case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
             // All three spend the pool, so all three plan Max against the real
             // note set. A flat reserve here would price a full-size bundle and

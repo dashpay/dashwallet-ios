@@ -6381,14 +6381,13 @@
 /* DashPay contact payment sent from Platform or Shielded */
 "%@ will receive it in a few minutes, once the network processes the payment." = "%@ will receive it in a few minutes, once the network processes the payment.";
 
-/* DashPay maximum withdrawal */
-"The amount shown is an estimate. The final payout depends on the network fee." = "The amount shown is an estimate. The final payout depends on the network fee.";
 
-/* Send confirm sheet: full-balance DashPay contact payment */
-"This sends your entire Platform balance. %@ receives it once the network processes the payment — this can take up to 10 minutes." = "This sends your entire Platform balance. %@ receives it once the network processes the payment — this can take up to 10 minutes.";
 
 /* Send confirm sheet: DashPay contact payment from Platform or Shielded */
 "%@ receives it once the network processes the payment — this can take up to 10 minutes." = "%@ receives it once the network processes the payment — this can take up to 10 minutes.";
 
 /* Full-balance Platform payment: the balance grew after it was authorized */
 "Your Platform balance changed. Close this confirmation and tap Max again." = "Your Platform balance changed. Close this confirmation and tap Max again.";
+
+/* DashPay contact payment from Platform: single-payment cap */
+"You can send up to %@ to a contact from your Platform balance in one payment." = "You can send up to %@ to a contact from your Platform balance in one payment.";

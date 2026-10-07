@@ -1289,15 +1289,6 @@ struct SendConfirmSheet: View {
                     .foregroundColor(.dash.secondaryText)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
-                if isFullPlatformWithdrawal {
-                    Text(NSLocalizedString(
-                        "The amount shown is an estimate. The final payout depends on the network fee.",
-                        comment: "DashPay maximum withdrawal"))
-                        .font(.caption)
-                        .foregroundColor(.dash.secondaryText)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 24)
-                }
             }
 
             Spacer(minLength: 12)
@@ -1488,17 +1479,11 @@ struct SendConfirmSheet: View {
         // A contact is paid by name, so say who receives it and when, not
         // how the payment reaches their address.
         if let contactRecipient {
-            return isFullPlatformWithdrawal
-                ? String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "This sends your entire Platform balance. %@ receives it once the network processes the payment — this can take up to 10 minutes.",
-                        comment: "Send confirm sheet: full-balance DashPay contact payment"),
-                    contactRecipient.displayName)
-                : String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "%@ receives it once the network processes the payment — this can take up to 10 minutes.",
-                        comment: "Send confirm sheet: DashPay contact payment from Platform or Shielded"),
-                    contactRecipient.displayName)
+            return String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "%@ receives it once the network processes the payment — this can take up to 10 minutes.",
+                    comment: "Send confirm sheet: DashPay contact payment from Platform or Shielded"),
+                contactRecipient.displayName)
         }
         switch route {
         case .shieldedToCore:
