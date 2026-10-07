@@ -23,11 +23,11 @@ final class PreparedStandardSend: NSObject {
     @objc let fee: UInt64
     @objc let address: String
     @objc let amount: UInt64
-    /// The wallet that signed the send, read in the same main-actor hop as the
-    /// build: an unknown outcome is followed under it even if another wallet
-    /// is active by then. Nil only in tests (it then falls back to the active
-    /// one).
-    let walletId: Data?
+    /// The wallet that signed the send and the chain it signed on, read in
+    /// the same main-actor hop as the build: an unknown outcome is followed
+    /// under them even if another wallet or chain is bound by then. Nil only
+    /// in tests (it then falls back to what is bound).
+    let origin: WalletChainScope?
 
     /// Wire-order txid (`Transaction.txHashData` convention — the storage/
     /// metadata key order). `txHash` stays DISPLAY order (see `buildAndSign`);
@@ -68,7 +68,7 @@ final class PreparedStandardSend: NSObject {
         fee: UInt64,
         address: String,
         amount: UInt64,
-        walletId: Data?,
+        origin: WalletChainScope?,
         coreTransaction: FinalizedCoreTransaction
     ) {
         self.txData = txData
@@ -76,7 +76,7 @@ final class PreparedStandardSend: NSObject {
         self.fee = fee
         self.address = address
         self.amount = amount
-        self.walletId = walletId
+        self.origin = origin
         self.broadcastAction = {
             try SwiftDashSDKTransactionSender.broadcast(coreTransaction)
         }
@@ -94,7 +94,7 @@ final class PreparedStandardSend: NSObject {
         fee: UInt64,
         address: String,
         amount: UInt64,
-        walletId: Data? = nil,
+        origin: WalletChainScope? = nil,
         ensureOnlineAction: @escaping () throws -> Void = {},
         broadcastAction: @escaping () throws -> CoreTransactionBroadcastOutcome
     ) {
@@ -103,7 +103,7 @@ final class PreparedStandardSend: NSObject {
         self.fee = fee
         self.address = address
         self.amount = amount
-        self.walletId = walletId
+        self.origin = origin
         self.ensureOnlineAction = ensureOnlineAction
         self.broadcastAction = broadcastAction
         super.init()
@@ -181,7 +181,7 @@ final class PreparedStandardSend: NSObject {
             // not in the SDK this builds against. See
             // `BroadcastOutcomeCopy.unknown` for when that qualifier can go.
             let error = WalletSendService.unknownOutcomeError(
-                txidWire: txidWire, address: address, amount: amount, reason: reason, walletId: walletId)
+                txidWire: txidWire, address: address, amount: amount, reason: reason, origin: origin)
             claimLock.lock()
             broadcastState = .unknown(error)
             claimLock.unlock()
@@ -458,7 +458,7 @@ final class WalletSendService: NSObject {
                     description: BroadcastOutcomeCopy.rejected,
                     diagnostic: reason
                 )
-            } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(let txid, let reason, let walletId) {
+            } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(let txid, let reason, let origin) {
                 // `txid` is the display-order hash `buildAndSignFromAddress` computed.
                 guard let txHash = Data(hex: txid), txHash.count == 32 else {
                     throw Self.makeError(
@@ -471,7 +471,7 @@ final class WalletSendService: NSObject {
                 // settles without a "went through" notice.
                 throw Self.unknownOutcomeError(
                     txidWire: Data(txHash.reversed()), address: address, amount: amount, reason: reason,
-                    notifies: false, walletId: walletId)
+                    notifies: false, origin: origin)
             } catch {
                 throw Self.sendBuildError(from: error)
             }
@@ -900,9 +900,9 @@ final class WalletSendService: NSObject {
     }
 
     private func buildPreparedStandardSend(address: String, amount: UInt64) throws -> PreparedStandardSend {
-        let (tx, txHash, walletId): (FinalizedCoreTransaction, Data, Data)
+        let (tx, txHash, origin): (FinalizedCoreTransaction, Data, WalletChainScope)
         do {
-            (tx, txHash, walletId) = try SwiftDashSDKTransactionSender.buildAndSign(address: address, amount: amount)
+            (tx, txHash, origin) = try SwiftDashSDKTransactionSender.buildAndSign(address: address, amount: amount)
         } catch {
             throw Self.sendBuildError(from: error)
         }
@@ -913,15 +913,15 @@ final class WalletSendService: NSObject {
             fee: tx.fee,
             address: address,
             amount: amount,
-            walletId: walletId,
+            origin: origin,
             coreTransaction: tx
         )
     }
 
     private func buildPreparedSwapDeposit(vaultAddress: String, amount: UInt64, memo: String) throws -> PreparedStandardSend {
-        let (tx, txHash, walletId): (FinalizedCoreTransaction, Data, Data)
+        let (tx, txHash, origin): (FinalizedCoreTransaction, Data, WalletChainScope)
         do {
-            (tx, txHash, walletId) = try SwiftDashSDKTransactionSender.buildAndSignSwapDeposit(
+            (tx, txHash, origin) = try SwiftDashSDKTransactionSender.buildAndSignSwapDeposit(
                 vaultAddress: vaultAddress,
                 amountDuffs: amount,
                 memo: memo
@@ -936,7 +936,7 @@ final class WalletSendService: NSObject {
             fee: tx.fee,
             address: vaultAddress,
             amount: amount,
-            walletId: walletId,
+            origin: origin,
             coreTransaction: tx
         )
     }
@@ -1161,23 +1161,25 @@ extension WalletSendService {
     ///   - otherAddresses: the other addresses of a BIP70 payment (its
     ///     further recipients, its URI's address): one followed send,
     ///     refusing a payment to any.
-    ///   - walletId: the wallet that signed the send; nil (tests only) falls
-    ///     back to the active one.
+    ///   - origin: the wallet and chain that signed the send, together, so
+    ///     a route cannot name one without the other; nil (tests only) falls
+    ///     back to what is bound now.
     /// - Returns: whether its row is in the history on screen now — followed
-    ///   under the active wallet. A send followed under another wallet (one
-    ///   switched away from, or wiped, during the network wait) returns false:
-    ///   nothing on screen would show it waiting.
+    ///   under the bound wallet on the bound chain. A send followed under
+    ///   another wallet or chain (one switched away from, or wiped, during
+    ///   the network wait) returns false: nothing on screen would show it
+    ///   waiting.
     @discardableResult
     static func followUnknownOutcome(
         txidWire: Data, address: String?, otherAddresses: [String] = [], amount: UInt64, notifies: Bool = true,
-        walletId: Data?
+        origin: WalletChainScope?
     ) -> Bool {
         MainThread.sync {
             let recorded = PendingSendOutcomes.shared.recordUnknownOutcome(
                 txidWire: txidWire, address: address, otherAddresses: otherAddresses, amount: amount,
-                notifies: notifies, walletId: walletId)
-            let active = SwiftDashSDKHost.shared.wallet?.walletId
-            return recorded && active != nil && (walletId == nil || walletId == active)
+                notifies: notifies, origin: origin)
+            let bound = WalletChainScope.bound
+            return recorded && bound != nil && (origin == nil || origin == bound)
         }
     }
 
@@ -1195,11 +1197,11 @@ extension WalletSendService {
     /// from the SDK, so it is not followed.
     static func unknownOutcomeError(
         txidWire: Data, address: String?, otherAddresses: [String] = [], amount: UInt64, reason: String,
-        notifies: Bool = true, walletId: Data?
+        notifies: Bool = true, origin: WalletChainScope?
     ) -> NSError {
         let followed = followUnknownOutcome(
             txidWire: txidWire, address: address, otherAddresses: otherAddresses, amount: amount,
-            notifies: notifies, walletId: walletId)
+            notifies: notifies, origin: origin)
         let error = makeError(code: .broadcastUnknown, description: BroadcastOutcomeCopy.unknown, diagnostic: reason)
         var userInfo = error.userInfo
         userInfo[unknownTxidWireKey] = txidWire

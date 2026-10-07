@@ -89,18 +89,18 @@ struct PreparedSend: Equatable {
     /// L6 adapter can broadcast the exact built tx. Kept as `AnyObject` so this module stays
     /// Foundation-only. nil in test fakes. Excluded from equality.
     let sdkTransaction: AnyObject?
-    /// The wallet the transaction was built for (opaque bytes to this layer),
-    /// so a broadcast outcome reported later is booked under it even if
-    /// another wallet is active by then. nil in test fakes. Excluded from
-    /// equality.
-    let walletId: Data?
+    /// The wallet the transaction was built for and the chain it was built
+    /// on (opaque to this layer), so a broadcast outcome reported later is
+    /// booked under them even if another wallet or chain is bound by then.
+    /// nil in test fakes. Excluded from equality.
+    let origin: WalletChainScope?
 
-    init(txData: Data, fee: UInt64, txHashDisplay: Data, sdkTransaction: AnyObject? = nil, walletId: Data? = nil) {
+    init(txData: Data, fee: UInt64, txHashDisplay: Data, sdkTransaction: AnyObject? = nil, origin: WalletChainScope? = nil) {
         self.txData = txData
         self.fee = fee
         self.txHashDisplay = txHashDisplay
         self.sdkTransaction = sdkTransaction
-        self.walletId = walletId
+        self.origin = origin
     }
 
     static func == (lhs: Self, rhs: Self) -> Bool {
@@ -190,10 +190,10 @@ final class BIP70PaymentService {
     /// Told when a broadcast handed off after the merchant's acknowledgement
     /// (`awaitAcceptance: false`) ends with no answer from the network, with
     /// the display-order txid, the paid amount, the payment's addresses
-    /// (`Confirmation.repeatCheckAddresses`), the wallet the transaction was
-    /// built for and the reason, so the app can follow the payment; the layer
-    /// does not know where sends are followed.
-    var onDetachedBroadcastUnknown: ((_ txHashDisplay: Data, _ amount: UInt64, _ addresses: [String], _ walletId: Data?, _ reason: String) -> Void)?
+    /// (`Confirmation.repeatCheckAddresses`), the wallet and chain the
+    /// transaction was built for and the reason, so the app can follow the
+    /// payment; the layer does not know where sends are followed.
+    var onDetachedBroadcastUnknown: ((_ txHashDisplay: Data, _ amount: UInt64, _ addresses: [String], _ origin: WalletChainScope?, _ reason: String) -> Void)?
 
     init(transport: PaymentProtocolTransporting = PaymentProtocolTransport(),
          verifier: PaymentRequestVerifier = PaymentRequestVerifier(),
@@ -370,11 +370,11 @@ final class BIP70PaymentService {
         if awaitAcceptance || !acknowledged {
             do {
                 txidHexDisplay = try await wallet.broadcast(prepared)
-            } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason, _) {
+            } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let origin, let reason, _) {
                 // With the payment's addresses: the caller follows it, and a
                 // later payment to any of them is refused while it waits.
                 throw BIP70Error.broadcastOutcomeUnknown(
-                    txHashDisplay: txHashDisplay, walletId: walletId, reason: reason,
+                    txHashDisplay: txHashDisplay, origin: origin, reason: reason,
                     repeatCheckAddresses: confirmation.repeatCheckAddresses)
             }
         } else {
@@ -390,9 +390,9 @@ final class BIP70PaymentService {
             Task.detached(priority: .userInitiated) {
                 do {
                     _ = try await wallet.broadcast(prepared)
-                } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason, _) {
+                } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let origin, let reason, _) {
                     DWLogger.log("BIP70: background broadcast of \(txidHexDisplay) got no answer from the network: \(reason)")
-                    onUnknown?(txHashDisplay, amount, addresses, walletId, reason)
+                    onUnknown?(txHashDisplay, amount, addresses, origin, reason)
                 } catch {
                     DWLogger.log("BIP70: background broadcast of \(txidHexDisplay) ended without acceptance: \(error)")
                 }

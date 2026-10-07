@@ -2069,8 +2069,18 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// unique txid index — cost scales with `txids.count`, not with the
     /// wallet's history size. Nil when the rows could not be read, so a
     /// caller never takes a failed read for "these transactions are gone".
-    static func fetch(txids: Set<Data>) -> SwiftDashSDKWalletTransactionSnapshot? {
-        guard let (container, walletId) = hostHandles() else { return nil }
+    ///
+    /// - Parameter scope: when given, the read counts only if it is this
+    ///   wallet and chain the host has bound at the moment the store is
+    ///   taken (nil otherwise): the same wallet id has another store on
+    ///   every other chain.
+    static func fetch(txids: Set<Data>, from scope: WalletChainScope? = nil) -> SwiftDashSDKWalletTransactionSnapshot? {
+        let handles: (container: ModelContainer, walletId: Data)? = MainThread.sync {
+            guard let handles = hostHandles() else { return nil }
+            if let scope, WalletChainScope.bound != scope { return nil }
+            return handles
+        }
+        guard let (container, walletId) = handles else { return nil }
         guard !txids.isEmpty else {
             return SwiftDashSDKWalletTransactionSnapshot(walletId: walletId, transactions: [])
         }
@@ -2104,22 +2114,13 @@ class SwiftDashSDKWalletSource: TransactionSource {
     @MainActor
     static func prepareAwaitingConfirmationRead() -> (() -> PendingBalanceFollower.Reading?)? {
         guard let container = SwiftDashSDKHost.shared.modelContainer,
-              let scope = boundPendingBalanceScope() else { return nil }
+              let scope = WalletChainScope.bound else { return nil }
         return {
             awaitingConfirmationDuffs(in: container, walletId: scope.walletId)
                 .map { .init(scope: scope, duffs: $0) }
         }
     }
 
-    /// The wallet and network the host has bound now: what a read prepared
-    /// now would be for. Nil when nothing is bound. The network is its
-    /// `persistenceScope`, which tells two devnets apart.
-    @MainActor
-    static func boundPendingBalanceScope() -> PendingBalanceFollower.Scope? {
-        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
-              let network = SwiftDashSDKHost.shared.runningNetwork else { return nil }
-        return .init(network: network.persistenceScope, walletId: walletId)
-    }
 
     private static func awaitingConfirmationDuffs(in container: ModelContainer, walletId: Data) -> UInt64? {
         // A pre-filter on the row's own columns; `awaitingConfirmationTotal`

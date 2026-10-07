@@ -248,7 +248,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
         let age = Int(Date().timeIntervalSince(waiting.sentAt))
         log("💸 TXSEND :: repeat payment refused — route=\(route) to=\(PendingSendOutcomes.masked(address))"
             + " pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire)) age=\(age)s"
-            + " wallet=\(PendingSendOutcomes.walletTag(waiting.walletId))"
+            + " wallet=\(PendingSendOutcomes.walletTag(waiting.walletId)) chain=\(waiting.chainScope ?? "not stored")"
             + " reason=still followed: no lock or block seen on its row yet,"
             + " within the \(PendingSendOutcomes.maxFollowDays)-day window; rows re-read in the background")
         refuseRepeating(waiting) { [weak self] in

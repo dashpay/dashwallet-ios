@@ -35,6 +35,29 @@ import UIKit
 /// screen that made it and be read by the history rows, the home notice and a
 /// later send to the same address. It is persisted, so a relaunch keeps a send
 /// waiting rather than turning it back into "Sending".
+/// A wallet on one chain: the wallet id and the chain's persistence scope
+/// (`Network.persistenceScope`: "mainnet", "testnet", or a devnet's own
+/// name). The same seed has the same wallet id on every chain — every devnet
+/// included — while each chain has its own transaction store, so the wallet
+/// id alone does not say whose rows, sends or coins something is.
+///
+/// What a send is signed under (read in the same main-actor hop as its
+/// build), what a followed send is kept under, and what the Home pending
+/// caption is read for.
+struct WalletChainScope: Equatable, Hashable {
+    let walletId: Data
+    /// `Network.persistenceScope` of the chain.
+    let chain: String
+
+    /// The wallet and chain the host has bound now; nil when nothing is.
+    @MainActor
+    static var bound: WalletChainScope? {
+        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+              let network = SwiftDashSDKHost.shared.runningNetwork else { return nil }
+        return WalletChainScope(walletId: walletId, chain: network.persistenceScope)
+    }
+}
+
 @objc(DWPendingSendOutcomes)
 @MainActor
 final class PendingSendOutcomes: NSObject, ObservableObject {
@@ -64,6 +87,19 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         /// chunk) or whose amount is not known here: it settles without the
         /// "went through" notice. Nil in entries stored before it existed.
         var notifies: Bool? = nil
+        /// The chain the send was signed on (`WalletChainScope.chain`). Nil
+        /// only in an entry stored before it was kept: its chain is not
+        /// known, and is not guessed (`isFollowed(on:)`).
+        var chainScope: String? = nil
+
+        /// Whether this send is `scope`'s to settle, refuse with and tell:
+        /// the same wallet on the same chain. An entry with no stored chain
+        /// counts for every chain of its wallet — it may be this one's — and
+        /// the settlement policy never takes a row missing here as proof
+        /// that it is gone.
+        func isFollowed(on scope: WalletChainScope) -> Bool {
+            walletId == scope.walletId && (chainScope == nil || chainScope == scope.chain)
+        }
 
         /// `address` and `otherAddresses`, the primary one first: a payment
         /// to any of them is refused while this send waits.
@@ -91,10 +127,11 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// send that settles while its wallet is not the shown one raises none;
     /// its row reads "Sent" when that wallet is shown again.
     @Published private(set) var notice: Notice?
-    /// The wallet the host last published (`observeVerdicts`). Kept through
-    /// a rebuild of the same wallet (the host stops and starts it again), so
-    /// a settlement read during the rebuild is still told.
-    private(set) var shownWalletId: Data?
+    /// The wallet and chain the host last published (`observeVerdicts`). Kept
+    /// through a rebuild of the same wallet on the same chain (the host
+    /// stops and starts it again), so a settlement read during the rebuild
+    /// is still told.
+    private(set) var shownScope: WalletChainScope?
 
     /// Read by `Transaction.stateTitle`, which is not main-actor isolated.
     /// Mirrors `entries`, written only from the main actor; seeded from the
@@ -176,28 +213,30 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     ///     could go to (`Entry.otherAddresses`: a BIP70 request's further
     ///     recipients and its URI's address). The whole list may be passed:
     ///     repeats and `address` itself are dropped.
-    ///   - walletId: the wallet that signed the send (every route passes
-    ///     it); nil falls back to the active wallet.
-    /// - Returns: false when the send could not be followed (no wallet given
-    ///   and none active), so its row will not say "Waiting for the network".
+    ///   - origin: the wallet and chain that signed the send (every route
+    ///     passes it); nil (tests only) falls back to what is bound now.
+    /// - Returns: false when the send could not be followed (no origin given
+    ///   and nothing bound), so its row will not say "Waiting for the
+    ///   network".
     @discardableResult
     func recordUnknownOutcome(
         txidWire: Data, address: String?, otherAddresses: [String] = [], amount: UInt64, notifies: Bool = true,
-        walletId: Data? = nil
+        origin: WalletChainScope? = nil
     ) -> Bool {
-        guard let walletId = walletId ?? SwiftDashSDKHost.shared.wallet?.walletId else {
+        guard let origin = origin ?? WalletChainScope.bound else {
             DWLogger.log("💸 TXSEND :: unknown outcome not tracked, no active wallet")
             return false
         }
         entries[txidWire] = Entry(
             txidWire: txidWire,
-            walletId: walletId,
+            walletId: origin.walletId,
             address: address,
             otherAddresses: Self.distinctOthers(otherAddresses, primary: address),
             amount: amount,
             sentAt: Date(),
-            notifies: notifies)
-        DWLogger.log("💸 TXSEND :: waiting for the network on \(Transaction.displayHex(txidWire))")
+            notifies: notifies,
+            chainScope: origin.chain)
+        DWLogger.log("💸 TXSEND :: waiting for the network on \(Transaction.displayHex(txidWire)) wallet=\(Self.walletTag(origin.walletId)) chain=\(origin.chain)")
         didChangeEntries()
         reconcile()
         return true
@@ -247,18 +286,20 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// and its history row leaves "Waiting for the network". A send past
     /// `maxFollowAge` stops refusing at once, read or not.
     func waitingPayment(toAnyOf addresses: [String]) -> Entry? {
-        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId else { return nil }
-        let followed = Self.followed(paying: addresses, walletId: walletId, in: entries)
+        guard let scope = WalletChainScope.bound else { return nil }
+        let followed = Self.followed(paying: addresses, on: scope, in: entries)
         guard !followed.isEmpty else { return nil }
         reconcile()
         return Self.newestWithinFollowAge(followed, now: Date())
     }
 
-    /// `walletId`'s `entries` followed under any of `addresses`
-    /// (`Entry.addresses`), whatever their age.
-    private nonisolated static func followed(paying addresses: [String], walletId: Data, in entries: [Data: Entry]) -> [Entry] {
+    /// `scope`'s `entries` (`Entry.isFollowed(on:)`) followed under any of
+    /// `addresses` (`Entry.addresses`), whatever their age.
+    private nonisolated static func followed(
+        paying addresses: [String], on scope: WalletChainScope, in entries: [Data: Entry]
+    ) -> [Entry] {
         let wanted = Set(addresses)
-        return entries.values.filter { $0.walletId == walletId && !wanted.isDisjoint(with: $0.addresses) }
+        return entries.values.filter { $0.isFollowed(on: scope) && !wanted.isDisjoint(with: $0.addresses) }
     }
 
     private nonisolated static func newestWithinFollowAge(_ entries: [Entry], now: Date) -> Entry? {
@@ -268,12 +309,13 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     }
 
     /// The rule of `waitingPayment(toAnyOf:)`, on its own (no host, no
-    /// clock): the newest of `walletId`'s `entries` within `maxFollowAge`
-    /// that is followed under any of `addresses` (`Entry.addresses`).
+    /// clock): the newest of `scope`'s `entries` within `maxFollowAge` that
+    /// is followed under any of `addresses` (`Entry.addresses`). A send
+    /// waiting on another chain of the same wallet refuses nothing here.
     nonisolated static func refusing(
-        _ addresses: [String], walletId: Data, in entries: [Data: Entry], now: Date
+        _ addresses: [String], on scope: WalletChainScope, in entries: [Data: Entry], now: Date
     ) -> Entry? {
-        newestWithinFollowAge(followed(paying: addresses, walletId: walletId, in: entries), now: now)
+        newestWithinFollowAge(followed(paying: addresses, on: scope, in: entries), now: now)
     }
 
     /// `others` as stored in an entry: in order, without repeats, empty
@@ -330,9 +372,9 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// configures; replaces the previous watch. Also settles, once, the sends
     /// that went through while the app was closed.
     func observeVerdicts(of manager: PlatformWalletManager) {
-        let published = SwiftDashSDKHost.shared.wallet?.walletId
-        notice = Self.noticeKept(notice, shownWalletId: shownWalletId, published: published)
-        shownWalletId = published
+        let published = WalletChainScope.bound
+        notice = Self.noticeKept(notice, shown: shownScope, published: published)
+        shownScope = published
         dropSendsOfRemovedWallets()
         reconcile()
         verdictWatch = manager.$outgoingTransactionVerdicts
@@ -363,20 +405,24 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             reconcileRequestedAgain = true
             return
         }
-        // Only the active wallet's sends can settle against its rows.
-        let activeWalletId = SwiftDashSDKHost.shared.wallet?.walletId
-        let pending = entries.filter { $0.value.walletId == activeWalletId }
+        // Only the bound wallet's sends on the bound chain can settle
+        // against its rows: the same wallet id has another store on every
+        // other chain, where these sends' rows will never be.
+        guard let scope = WalletChainScope.bound else { return }
+        let pending = entries.filter { $0.value.isFollowed(on: scope) }
         guard !pending.isEmpty else { return }
         reconcileInFlight = true
         Task.detached(priority: .utility) { [weak self] in
-            let snapshot = SwiftDashSDKWalletSource.fetch(txids: Set(pending.keys))
+            // Nil unless the rows were read from `scope`'s own store (a
+            // switch may land between here and the read).
+            let snapshot = SwiftDashSDKWalletSource.fetch(txids: Set(pending.keys), from: scope)
             await MainActor.run {
                 guard let self else { return }
                 // A failed read is a nil snapshot (nil rows): the policy
                 // decides nothing for it.
                 self.settle(
                     pending: pending,
-                    walletId: snapshot?.walletId,
+                    readFrom: scope,
                     rows: snapshot.map(Self.rowStates(of:)))
                 self.reconcileInFlight = false
                 if self.reconcileRequestedAgain {
@@ -393,10 +439,10 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             uniquingKeysWith: { a, _ in a })
     }
 
-    private func settle(pending: [Data: Entry], walletId: Data?, rows: [Data: RowState]?) {
+    private func settle(pending: [Data: Entry], readFrom scope: WalletChainScope, rows: [Data: RowState]?) {
         let decision = Self.settlement(
             of: pending, stillFollowed: { [entries] in entries[$0] != nil },
-            walletId: walletId, rows: rows, now: Date())
+            readFrom: scope, rows: rows, now: Date())
         func lifted(_ txid: Data) -> String { Self.refusalLifted(for: pending[txid]?.addresses ?? []) }
         for txid in decision.expired {
             DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) still unconfirmed after \(Self.maxFollowDays) days, no longer tracked\(lifted(txid))")
@@ -407,7 +453,10 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         for txid in decision.gone {
             DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) row missing for over 24 h (removed, swept or replaced), no longer tracked\(lifted(txid))")
         }
-        for entry in Self.notifiable(decision.notifying, shownWalletId: shownWalletId) {
+        for txid in decision.unplaced {
+            DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) stored without its chain and not found on \(scope.chain) for \(Self.maxFollowDays) days, no longer tracked\(lifted(txid))")
+        }
+        for entry in Self.notifiable(decision.notifying, shown: shownScope) {
             notice = Self.merged(notice, adding: entry.amount)
         }
         guard !decision.isEmpty else { return }
@@ -462,8 +511,12 @@ extension PendingSendOutcomes {
         var expired: [Data] = []
         /// Missing from the rows after `missingRowGrace`: no longer followed.
         var gone: [Data] = []
+        /// Stored without its chain, with no row on the chain read, after
+        /// `maxFollowAge`: no longer followed. (Its chain was never known, so
+        /// the missing row says nothing; age alone ends the follow.)
+        var unplaced: [Data] = []
 
-        var isEmpty: Bool { settled.isEmpty && expired.isEmpty && gone.isEmpty }
+        var isEmpty: Bool { settled.isEmpty && expired.isEmpty && gone.isEmpty && unplaced.isEmpty }
     }
 
     /// What a read of the stored rows decides for `pending`.
@@ -471,22 +524,25 @@ extension PendingSendOutcomes {
     /// - Parameters:
     ///   - stillFollowed: whether a send is still followed now; one forgotten
     ///     (removed, wiped) while the rows were being read is left alone.
-    ///   - walletId: the wallet whose rows were read; other wallets' sends are
-    ///     left alone. Nil, with nil `rows`, when the read failed.
+    ///   - scope: the wallet and chain whose store was read. A send of
+    ///     another wallet, or of the same wallet on another chain, is left
+    ///     alone: its row is in another store, so a row missing from this
+    ///     one says nothing about it. A send stored without its chain is
+    ///     settled or kept by a row found here, and never dropped as gone.
     ///   - rows: the rows found, by wire-order txid; nil when the read failed,
     ///     which decides nothing (a failed read is not "the row is gone", and
     ///     a send past `maxFollowAge` may have settled: the next read tells).
     nonisolated static func settlement(
         of pending: [Data: Entry],
         stillFollowed: (Data) -> Bool,
-        walletId: Data?,
+        readFrom scope: WalletChainScope,
         rows: [Data: RowState]?,
         now: Date
     ) -> SettlementDecision {
         var decision = SettlementDecision()
-        guard let rows, let walletId else { return decision }
+        guard let rows else { return decision }
         for entry in pending.values.sorted(by: { $0.sentAt < $1.sentAt })
-        where entry.walletId == walletId && stillFollowed(entry.txidWire) {
+        where entry.isFollowed(on: scope) && stillFollowed(entry.txidWire) {
             let age = now.timeIntervalSince(entry.sentAt)
             switch rows[entry.txidWire] {
             case .processing:
@@ -499,7 +555,13 @@ extension PendingSendOutcomes {
                     decision.notifying.append(entry)
                 }
             case nil:
-                if age > missingRowGrace { decision.gone.append(entry.txidWire) }
+                if entry.chainScope == nil {
+                    // Its chain is not known: it may be waiting on another
+                    // one, where its row is. Not gone; it ages out instead.
+                    if age > maxFollowAge { decision.unplaced.append(entry.txidWire) }
+                } else if age > missingRowGrace {
+                    decision.gone.append(entry.txidWire)
+                }
             }
         }
         return decision
@@ -508,24 +570,27 @@ extension PendingSendOutcomes {
     /// `entries` without the sends `decision` stops following.
     nonisolated static func applying(_ decision: SettlementDecision, to entries: [Data: Entry]) -> [Data: Entry] {
         var remaining = entries
-        for txid in decision.expired + decision.settled + decision.gone {
+        for txid in decision.expired + decision.settled + decision.gone + decision.unplaced {
             remaining.removeValue(forKey: txid)
         }
         return remaining
     }
 
-    /// The notice once `published` is the host's wallet: kept for the same
-    /// wallet (a rebuild), dropped for another one.
-    nonisolated static func noticeKept(_ notice: Notice?, shownWalletId: Data?, published: Data?) -> Notice? {
-        published != nil && published == shownWalletId ? notice : nil
+    /// The notice once `published` is what the host has bound: kept for the
+    /// same wallet on the same chain (a rebuild), dropped for another wallet
+    /// or another chain.
+    nonisolated static func noticeKept(
+        _ notice: Notice?, shown: WalletChainScope?, published: WalletChainScope?
+    ) -> Notice? {
+        published != nil && published == shown ? notice : nil
     }
 
-    /// The settled payments to tell: only the shown wallet's. Another
-    /// wallet's settlement (a read that finished after a switch) is not told
-    /// on this wallet's Home, nor merged into its notice.
-    nonisolated static func notifiable(_ settled: [Entry], shownWalletId: Data?) -> [Entry] {
-        guard let shownWalletId else { return [] }
-        return settled.filter { $0.walletId == shownWalletId }
+    /// The settled payments to tell: only the shown wallet's on the shown
+    /// chain. Another wallet's or chain's settlement (a read that finished
+    /// after a switch) is not told on this Home, nor merged into its notice.
+    nonisolated static func notifiable(_ settled: [Entry], shown: WalletChainScope?) -> [Entry] {
+        guard let shown else { return [] }
+        return settled.filter { $0.isFollowed(on: shown) }
     }
 
     /// `current` with one more payment of `amount` in it — a notice not yet

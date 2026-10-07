@@ -779,7 +779,7 @@ final class PaymentDialogOutcomeTests: XCTestCase {
     func testAnUnknownOutcomeErrorCarriesItsTxid() {
         let txidWire = Data(repeating: 0x7e, count: 32)
         defer { PendingSendOutcomes.shared.forget(txidsWire: [txidWire]) }
-        let error = WalletSendService.unknownOutcomeError(txidWire: txidWire, address: nil, amount: 1, reason: "timeout", walletId: nil)
+        let error = WalletSendService.unknownOutcomeError(txidWire: txidWire, address: nil, amount: 1, reason: "timeout", origin: nil)
         XCTAssertTrue(WalletSendService.isBroadcastUnknownError(error))
         XCTAssertEqual(WalletSendService.unknownOutcomeTxidWire(of: error), txidWire)
         XCTAssertNil(WalletSendService.unknownOutcomeTxidWire(of: NSError(domain: "other", code: 10)))
@@ -794,24 +794,36 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
     private let walletA = Data(repeating: 0xa1, count: 32)
     private let walletB = Data(repeating: 0xb2, count: 32)
     private let now = Date(timeIntervalSince1970: 1_800_000_000)
+    /// The chain the entries and reads of these tests are on unless they say
+    /// otherwise.
+    private let chain = "testnet"
+    private var scopeA: WalletChainScope { WalletChainScope(walletId: walletA, chain: chain) }
+    private var scopeB: WalletChainScope { WalletChainScope(walletId: walletB, chain: chain) }
 
-    private func entry(_ byte: UInt8, wallet: Data? = nil, age: TimeInterval, amount: UInt64 = 1_000, notifies: Bool? = nil) -> PendingSendOutcomes.Entry {
+    /// - Parameter chain: the chain the send was signed on; `.some(nil)` is
+    ///   an entry stored before the chain was kept.
+    private func entry(
+        _ byte: UInt8, wallet: Data? = nil, chain: String?? = nil, age: TimeInterval, amount: UInt64 = 1_000,
+        notifies: Bool? = nil
+    ) -> PendingSendOutcomes.Entry {
         PendingSendOutcomes.Entry(
             txidWire: Data(repeating: byte, count: 32), walletId: wallet ?? walletA, address: "yAddress",
-            amount: amount, sentAt: now.addingTimeInterval(-age), notifies: notifies)
+            amount: amount, sentAt: now.addingTimeInterval(-age), notifies: notifies,
+            chainScope: chain ?? self.chain)
     }
 
     private func decide(
         _ entries: [PendingSendOutcomes.Entry],
         rows: [Data: Policy.RowState]?,
         wallet: Data? = nil,
+        chain: String? = nil,
         followed: Set<Data>? = nil
     ) -> Policy.SettlementDecision {
         let pending = Dictionary(uniqueKeysWithValues: entries.map { ($0.txidWire, $0) })
         let followedNow = followed ?? Set(pending.keys)
         return Policy.settlement(
             of: pending, stillFollowed: { followedNow.contains($0) },
-            walletId: wallet ?? walletA, rows: rows, now: now)
+            readFrom: WalletChainScope(walletId: wallet ?? walletA, chain: chain ?? self.chain), rows: rows, now: now)
     }
 
     func testAnAcceptedVerdictRereadsButAProcessingRowKeepsTheSendWaiting() {
@@ -852,7 +864,7 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
         let followed = [sent.txidWire: sent]
         let decision = Policy.settlement(
             of: followed, stillFollowed: { followed[$0] != nil },
-            walletId: walletA, rows: [sent.txidWire: .settled], now: now)
+            readFrom: scopeA, rows: [sent.txidWire: .settled], now: now)
         XCTAssertEqual(decision.settled, [sent.txidWire])
         XCTAssertEqual(decision.notifying, [sent])
 
@@ -862,7 +874,7 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
         XCTAssertTrue(remaining.isEmpty)
         let again = Policy.settlement(
             of: followed, stillFollowed: { remaining[$0] != nil },
-            walletId: walletA, rows: [sent.txidWire: .settled], now: now)
+            readFrom: scopeA, rows: [sent.txidWire: .settled], now: now)
         XCTAssertTrue(again.isEmpty)
     }
 
@@ -922,18 +934,18 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
         let sentFromA = entry(1, wallet: walletA, age: 60)
         let decision = decide([sentFromA], rows: [sentFromA.txidWire: .settled], wallet: walletA)
         XCTAssertEqual(decision.notifying, [sentFromA], "A's send settled")
-        XCTAssertTrue(Policy.notifiable(decision.notifying, shownWalletId: walletB).isEmpty, "no toast on B's Home")
-        XCTAssertTrue(Policy.notifiable(decision.notifying, shownWalletId: nil).isEmpty, "none during a switch")
-        XCTAssertEqual(Policy.notifiable(decision.notifying, shownWalletId: walletA), [sentFromA])
+        XCTAssertTrue(Policy.notifiable(decision.notifying, shown: scopeB).isEmpty, "no toast on B's Home")
+        XCTAssertTrue(Policy.notifiable(decision.notifying, shown: nil).isEmpty, "none during a switch")
+        XCTAssertEqual(Policy.notifiable(decision.notifying, shown: scopeA), [sentFromA])
     }
 
     /// A notice is the shown wallet's: publishing another wallet drops it, a
     /// rebuild of the same wallet keeps it.
     func testASwitchDropsTheShownNoticeAndARebuildKeepsIt() {
         let notice = Policy.merged(nil, adding: 1_000)
-        XCTAssertNil(Policy.noticeKept(notice, shownWalletId: walletA, published: walletB), "switched to B")
-        XCTAssertNil(Policy.noticeKept(notice, shownWalletId: walletA, published: nil))
-        XCTAssertEqual(Policy.noticeKept(notice, shownWalletId: walletA, published: walletA), notice, "A rebuilt")
+        XCTAssertNil(Policy.noticeKept(notice, shown: scopeA, published: scopeB), "switched to B")
+        XCTAssertNil(Policy.noticeKept(notice, shown: scopeA, published: nil))
+        XCTAssertEqual(Policy.noticeKept(notice, shown: scopeA, published: scopeA), notice, "A rebuilt")
     }
 
     func testNoticesMergeOnlyWithinTheShownWallet() {
@@ -943,11 +955,99 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
             entry(3, wallet: walletA, age: 60, amount: 2_000),
         ]
         var notice: PendingSendOutcomes.Notice?
-        for entry in Policy.notifiable(settled, shownWalletId: walletA) {
+        for entry in Policy.notifiable(settled, shown: scopeA) {
             notice = Policy.merged(notice, adding: entry.amount)
         }
         XCTAssertEqual(notice?.count, 2)
         XCTAssertEqual(notice?.total, 3_000, "B's payment is not added to A's total")
+    }
+
+    // MARK: One wallet id, several chains
+
+    /// The same seed has the same wallet id on every devnet, and each devnet
+    /// has its own transaction store. A send followed on devnet A has no row
+    /// in devnet B's store, ever: a read of B's store, with the send over a
+    /// day old, must not drop it as gone.
+    func testAMissingRowOnAnotherDevnetCannotRemoveAFollowedSend() {
+        let sentOnA = entry(1, chain: "devnet-a", age: Policy.missingRowGrace + 3600)
+        XCTAssertTrue(decide([sentOnA], rows: [:], chain: "devnet-b").isEmpty,
+                      "devnet B's store says nothing about a devnet A send")
+        XCTAssertEqual(decide([sentOnA], rows: [:], chain: "devnet-a").gone, [sentOnA.txidWire],
+                       "its own store's missing row still does")
+
+        // Nor is it aged out, or settled, by anything read on B.
+        let old = entry(2, chain: "devnet-a", age: Policy.maxFollowAge + 3600)
+        XCTAssertTrue(decide([old], rows: [:], chain: "devnet-b").isEmpty)
+        XCTAssertTrue(decide([old], rows: [old.txidWire: .settled], chain: "devnet-b").isEmpty)
+        XCTAssertEqual(Policy.applying(decide([sentOnA, old], rows: [:], chain: "devnet-b"),
+                                       to: [sentOnA.txidWire: sentOnA, old.txidWire: old]).count, 2,
+                       "back on A, both are still followed")
+    }
+
+    /// A send waiting on one chain refuses nothing on another chain of the
+    /// same wallet, and its settlement is not told there: two devnets (which
+    /// share an address format), and testnet against mainnet.
+    func testASendWaitingOnOneChainRefusesAndTellsNothingOnAnother() {
+        for (signedOn, other) in [("devnet-a", "devnet-b"), ("testnet", "mainnet"), ("testnet", "devnet-a")] {
+            let sent = entry(1, chain: signedOn, age: 60, amount: 2_500)
+            let entries = [sent.txidWire: sent]
+            let here = WalletChainScope(walletId: walletA, chain: signedOn)
+            let there = WalletChainScope(walletId: walletA, chain: other)
+
+            XCTAssertEqual(Policy.refusing(["yAddress"], on: here, in: entries, now: now), sent, signedOn)
+            XCTAssertNil(Policy.refusing(["yAddress"], on: there, in: entries, now: now),
+                         "\(signedOn) send refusing on \(other)")
+
+            let settled = Policy.settlement(
+                of: entries, stillFollowed: { _ in true }, readFrom: here, rows: [sent.txidWire: .settled], now: now)
+            XCTAssertEqual(settled.notifying, [sent])
+            XCTAssertEqual(Policy.notifiable(settled.notifying, shown: here), [sent])
+            XCTAssertTrue(Policy.notifiable(settled.notifying, shown: there).isEmpty,
+                          "\(signedOn) settlement told on \(other)")
+
+            let notice = Policy.merged(nil, adding: sent.amount)
+            XCTAssertNil(Policy.noticeKept(notice, shown: here, published: there),
+                         "a notice does not follow the wallet to \(other)")
+            XCTAssertEqual(Policy.noticeKept(notice, shown: here, published: here), notice)
+        }
+    }
+
+    /// An entry stored before the chain was kept has no chain, and none is
+    /// made up for it. A row found for it settles (or keeps, or expires) it —
+    /// a row found here is on this chain. A missing row never drops it as
+    /// gone, since it may be waiting on another chain; it ages out instead.
+    /// Until then it refuses on every chain of its wallet.
+    func testAnEntryStoredWithoutItsChainIsNeverDroppedByAMissingRow() throws {
+        let legacy = entry(1, chain: .some(nil), age: Policy.missingRowGrace + 3600, amount: 4_000)
+        XCTAssertNil(legacy.chainScope)
+        for chain in ["devnet-a", "devnet-b", "mainnet"] {
+            XCTAssertTrue(decide([legacy], rows: [:], chain: chain).isEmpty, "not gone on \(chain)")
+            XCTAssertEqual(
+                Policy.refusing(["yAddress"], on: WalletChainScope(walletId: walletA, chain: chain),
+                                in: [legacy.txidWire: legacy], now: now),
+                legacy, "refuses on \(chain): it may be this chain's")
+        }
+        XCTAssertNil(Policy.refusing(["yAddress"], on: scopeB, in: [legacy.txidWire: legacy], now: now),
+                     "another wallet's")
+
+        let found = decide([legacy], rows: [legacy.txidWire: .settled], chain: "devnet-a")
+        XCTAssertEqual(found.settled, [legacy.txidWire])
+        XCTAssertEqual(found.notifying, [legacy], "told where its row was found")
+
+        let aged = entry(2, chain: .some(nil), age: Policy.maxFollowAge + 3600)
+        let agedOut = decide([aged], rows: [:], chain: "devnet-b")
+        XCTAssertEqual(agedOut.unplaced, [aged.txidWire], "ages out, read or not found")
+        XCTAssertTrue(agedOut.gone.isEmpty && agedOut.expired.isEmpty && agedOut.notifying.isEmpty)
+        XCTAssertNil(Policy.applying(agedOut, to: [aged.txidWire: aged])[aged.txidWire])
+        XCTAssertEqual(decide([aged], rows: [aged.txidWire: .processing], chain: "devnet-b").expired, [aged.txidWire])
+
+        // What such an entry looks like on disk: no chain key.
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(entry(3, age: 60))) as? [String: Any])
+        XCTAssertEqual(json["chainScope"] as? String, chain, "new entries store their chain")
+        json.removeValue(forKey: "chainScope")
+        let decoded = try JSONDecoder().decode(
+            PendingSendOutcomes.Entry.self, from: JSONSerialization.data(withJSONObject: json))
+        XCTAssertNil(decoded.chainScope)
     }
 
     // MARK: Several recipients (BIP70)
@@ -957,7 +1057,7 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
         PendingSendOutcomes.Entry(
             txidWire: Data(repeating: byte, count: 32), walletId: wallet ?? walletA, address: primary,
             otherAddresses: Policy.distinctOthers(others, primary: primary),
-            amount: 5_000, sentAt: now.addingTimeInterval(-age))
+            amount: 5_000, sentAt: now.addingTimeInterval(-age), chainScope: chain)
     }
 
     /// A followed payment to [B, A] refuses a later plain payment to A, its
@@ -965,10 +1065,10 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
     func testAPlainPaymentToAFollowedNonFirstRecipientIsRefused() {
         let sent = multi(1, "yB", others: ["yA"])
         let entries = [sent.txidWire: sent]
-        XCTAssertEqual(Policy.refusing(["yA"], walletId: walletA, in: entries, now: now), sent)
-        XCTAssertEqual(Policy.refusing(["yB"], walletId: walletA, in: entries, now: now), sent)
-        XCTAssertNil(Policy.refusing(["yC"], walletId: walletA, in: entries, now: now))
-        XCTAssertNil(Policy.refusing(["yA"], walletId: walletB, in: entries, now: now), "another wallet's send")
+        XCTAssertEqual(Policy.refusing(["yA"], on: scopeA, in: entries, now: now), sent)
+        XCTAssertEqual(Policy.refusing(["yB"], on: scopeA, in: entries, now: now), sent)
+        XCTAssertNil(Policy.refusing(["yC"], on: scopeA, in: entries, now: now))
+        XCTAssertNil(Policy.refusing(["yA"], on: scopeB, in: entries, now: now), "another wallet's send")
     }
 
     /// A request paying [B, A] is refused while a payment to A is followed:
@@ -976,14 +1076,14 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
     func testARequestWithThePendingAddressInANonFirstOutputIsRefused() {
         let sent = entry(1, age: 60)  // a plain payment to "yAddress"
         let entries = [sent.txidWire: sent]
-        XCTAssertEqual(Policy.refusing(["yB", "yAddress"], walletId: walletA, in: entries, now: now), sent)
-        XCTAssertNil(Policy.refusing(["yB", "yC"], walletId: walletA, in: entries, now: now))
+        XCTAssertEqual(Policy.refusing(["yB", "yAddress"], on: scopeA, in: entries, now: now), sent)
+        XCTAssertNil(Policy.refusing(["yB", "yC"], on: scopeA, in: entries, now: now))
     }
 
     func testASeveralRecipientSendStopsRefusingEveryRecipientByAge() {
         let stale = multi(1, "yB", others: ["yA"], age: Policy.maxFollowAge + 60)
-        XCTAssertNil(Policy.refusing(["yA"], walletId: walletA, in: [stale.txidWire: stale], now: now))
-        XCTAssertNil(Policy.refusing(["yB"], walletId: walletA, in: [stale.txidWire: stale], now: now))
+        XCTAssertNil(Policy.refusing(["yA"], on: scopeA, in: [stale.txidWire: stale], now: now))
+        XCTAssertNil(Policy.refusing(["yB"], on: scopeA, in: [stale.txidWire: stale], now: now))
     }
 
     /// One transaction is one followed send however many addresses it pays:
@@ -1049,10 +1149,32 @@ final class UnknownOutcomeWalletTests: XCTestCase {
         XCTAssertNotEqual(SwiftDashSDKHost.shared.wallet?.walletId, sentFrom, "another wallet (or none) is active")
 
         let shownNow = WalletSendService.followUnknownOutcome(
-            txidWire: txidWire, address: "yAddress", amount: 1_000, walletId: sentFrom)
+            txidWire: txidWire, address: "yAddress", amount: 1_000,
+            origin: WalletChainScope(walletId: sentFrom, chain: "devnet-a"))
 
         XCTAssertEqual(PendingSendOutcomes.shared.entries[txidWire]?.walletId, sentFrom, "followed under its wallet")
+        XCTAssertEqual(PendingSendOutcomes.shared.entries[txidWire]?.chainScope, "devnet-a", "and its chain")
         XCTAssertFalse(shownNow, "not the active wallet: no row on screen to point the user at")
+    }
+
+    /// An outcome names its wallet and chain together; one signed on another
+    /// chain of a wallet is not "on screen" for that wallet's other chains.
+    func testAnOutcomeIsFollowedUnderTheChainThatSignedIt() {
+        let wallet = Data(repeating: 0x5d, count: 32)
+        let txidWire = Data(repeating: 0x6f, count: 32)
+        defer { PendingSendOutcomes.shared.forget(txidsWire: [txidWire], reason: "test send") }
+
+        WalletSendService.followUnknownOutcome(
+            txidWire: txidWire, address: "yAddress", amount: 1_000,
+            origin: WalletChainScope(walletId: wallet, chain: "devnet-a"))
+
+        let entries = PendingSendOutcomes.shared.entries
+        XCTAssertEqual(
+            PendingSendOutcomes.refusing(
+                ["yAddress"], on: WalletChainScope(walletId: wallet, chain: "devnet-a"), in: entries, now: Date())?.txidWire,
+            txidWire)
+        XCTAssertNil(PendingSendOutcomes.refusing(
+            ["yAddress"], on: WalletChainScope(walletId: wallet, chain: "devnet-b"), in: entries, now: Date()))
     }
 
     /// The plain-send route: the prepared send carries the signing wallet,
@@ -1061,7 +1183,7 @@ final class UnknownOutcomeWalletTests: XCTestCase {
         let signedBy = Data(repeating: 0x7a, count: 32)
         let send = PreparedStandardSend(
             txData: Data([0x01]), txHash: Data(repeating: 0x8b, count: 32), fee: 226,
-            address: "yAddress", amount: 1_000, walletId: signedBy,
+            address: "yAddress", amount: 1_000, origin: WalletChainScope(walletId: signedBy, chain: "devnet-a"),
             broadcastAction: { .unknown(txid: String(repeating: "8b", count: 32), reason: "no answer") })
         defer { PendingSendOutcomes.shared.forget(txidsWire: [send.txidWire], reason: "test send") }
 
@@ -1071,6 +1193,7 @@ final class UnknownOutcomeWalletTests: XCTestCase {
                            "its wallet is not on screen: told with the error's own copy")
         }
         XCTAssertEqual(PendingSendOutcomes.shared.entries[send.txidWire]?.walletId, signedBy)
+        XCTAssertEqual(PendingSendOutcomes.shared.entries[send.txidWire]?.chainScope, "devnet-a")
     }
 
     /// A several-recipient payment whose outcome is unknown is one followed
@@ -1083,7 +1206,7 @@ final class UnknownOutcomeWalletTests: XCTestCase {
 
         let error = WalletSendService.unknownOutcomeError(
             txidWire: txidWire, address: "yFirst", otherAddresses: ["yFirst", "ySecond", "yFirst"], amount: 3_000,
-            reason: "no answer", walletId: sentFrom)
+            reason: "no answer", origin: WalletChainScope(walletId: sentFrom, chain: "testnet"))
 
         XCTAssertTrue(WalletSendService.isBroadcastUnknownError(error))
         XCTAssertEqual(PendingSendOutcomes.shared.entries.count, before + 1, "one send, not one per address")
@@ -1092,7 +1215,8 @@ final class UnknownOutcomeWalletTests: XCTestCase {
         XCTAssertEqual(followed?.amount, 3_000)
         XCTAssertEqual(
             PendingSendOutcomes.refusing(
-                ["ySecond"], walletId: sentFrom, in: PendingSendOutcomes.shared.entries, now: Date())?.txidWire,
+                ["ySecond"], on: WalletChainScope(walletId: sentFrom, chain: "testnet"),
+                in: PendingSendOutcomes.shared.entries, now: Date())?.txidWire,
             txidWire, "a plain payment to the second recipient is refused")
     }
 
@@ -1204,10 +1328,12 @@ final class UnknownOutcomeWalletTests: XCTestCase {
         let txidWire = Data(repeating: 0x9e, count: 32)
         defer { PendingSendOutcomes.shared.forget(txidsWire: [txidWire], reason: "test send") }
         WalletSendService.followUnknownOutcome(
-            txidWire: txidWire, address: "yM", otherAddresses: ["yM", "yX"], amount: 1_000, walletId: wallet)
+            txidWire: txidWire, address: "yM", otherAddresses: ["yM", "yX"], amount: 1_000,
+            origin: WalletChainScope(walletId: wallet, chain: "testnet"))
         XCTAssertEqual(
             PendingSendOutcomes.refusing(
-                ["yX"], walletId: wallet, in: PendingSendOutcomes.shared.entries, now: Date())?.txidWire,
+                ["yX"], on: WalletChainScope(walletId: wallet, chain: "testnet"),
+                in: PendingSendOutcomes.shared.entries, now: Date())?.txidWire,
             txidWire)
     }
 
@@ -1220,9 +1346,9 @@ final class UnknownOutcomeWalletTests: XCTestCase {
             receiveAddress: StaticReceiveAddress(),
             auth: NoAuth())
         let reported = expectation(description: "the unknown outcome is reported")
-        var reportedWallet: Data?
-        service.onDetachedBroadcastUnknown = { _, _, _, walletId, _ in
-            reportedWallet = walletId
+        var reportedOrigin: WalletChainScope?
+        service.onDetachedBroadcastUnknown = { _, _, _, origin, _ in
+            reportedOrigin = origin
             reported.fulfill()
         }
 
@@ -1231,7 +1357,9 @@ final class UnknownOutcomeWalletTests: XCTestCase {
         _ = try await service.confirmAndSend(confirmation, awaitAcceptance: false)
         await fulfillment(of: [reported], timeout: 3)
 
-        XCTAssertEqual(reportedWallet, builtFor, "booked under the wallet that built it, whatever is active now")
+        XCTAssertEqual(
+            reportedOrigin, WalletChainScope(walletId: builtFor, chain: "devnet-a"),
+            "booked under the wallet and chain that built it, whatever is bound now")
     }
 }
 
@@ -1239,12 +1367,13 @@ private final class DetachedUnknownWallet: WalletSending {
     let prepared: PreparedSend
     init(walletId: Data) {
         prepared = PreparedSend(
-            txData: Data([0xde, 0xad]), fee: 226, txHashDisplay: Data(repeating: 0x42, count: 32), walletId: walletId)
+            txData: Data([0xde, 0xad]), fee: 226, txHashDisplay: Data(repeating: 0x42, count: 32),
+            origin: WalletChainScope(walletId: walletId, chain: "devnet-a"))
     }
     func buildSignedTransaction(recipients: [(address: String, amountDuffs: UInt64)]) async throws -> PreparedSend { prepared }
     func broadcast(_ prepared: PreparedSend) async throws -> String {
         throw BIP70Error.broadcastOutcomeUnknown(
-            txHashDisplay: prepared.txHashDisplay, walletId: prepared.walletId, reason: "no answer")
+            txHashDisplay: prepared.txHashDisplay, origin: prepared.origin, reason: "no answer")
     }
 }
 
@@ -1328,8 +1457,8 @@ private final class AnchorProvider: NSObject, PaymentControllerPresentationConte
 final class PendingBalanceFollowerTests: XCTestCase {
     private typealias Scope = PendingBalanceFollower.Scope
 
-    private let walletA = Scope(network: "testnet", walletId: Data(repeating: 0xa1, count: 32))
-    private let walletB = Scope(network: "testnet", walletId: Data(repeating: 0xb2, count: 32))
+    private let walletA = Scope(walletId: Data(repeating: 0xa1, count: 32), chain: "testnet")
+    private let walletB = Scope(walletId: Data(repeating: 0xb2, count: 32), chain: "testnet")
 
     private let balanceEvents = PassthroughSubject<Bool, Never>()
     private let coinSaves = PassthroughSubject<Void, Never>()
@@ -1363,7 +1492,7 @@ final class PendingBalanceFollowerTests: XCTestCase {
     }
 
     private func bind(_ scope: Scope?) { bound.withLock { $0 = scope } }
-    private static func key(_ scope: Scope) -> String { scope.network + scope.walletId.hexEncodedString() }
+    private static func key(_ scope: Scope) -> String { scope.chain + scope.walletId.hexEncodedString() }
     private func save(_ duffs: UInt64?, for scope: Scope) { saved.withLock { $0[Self.key(scope)] = duffs } }
     private var reads: Int { readCount.withLock { $0 } }
 
@@ -1493,7 +1622,7 @@ final class PendingBalanceFollowerTests: XCTestCase {
     /// shown.
     func testTheSameWalletOnAnotherNetworkIsAnotherScope() {
         let follower = followerShowingWalletA()
-        let onMainnet = Scope(network: "mainnet", walletId: walletA.walletId)
+        let onMainnet = Scope(walletId: walletA.walletId, chain: "mainnet")
         save(3_000, for: onMainnet)
 
         readGate.lock()            // a testnet read is held in flight

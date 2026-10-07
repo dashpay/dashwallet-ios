@@ -49,11 +49,12 @@ enum BIP70Error: Error, Equatable {
     /// holds a copy it can broadcast itself — so this is deliberately distinct from a
     /// rejection: it carries the app-computed display-order tx hash so callers can record the
     /// spend instead of discarding it. Never retry the same send on this error.
-    /// `walletId` is the wallet that built the transaction (opaque here).
+    /// `origin` is the wallet that built the transaction and the chain it was
+    /// built on (opaque here).
     /// `repeatCheckAddresses` is `Confirmation.repeatCheckAddresses` of the
     /// payment; nil as raised by the wallet adapter, which does not know it,
     /// and filled in by `BIP70PaymentService.confirmAndSend`.
-    case broadcastOutcomeUnknown(txHashDisplay: Data, walletId: Data?, reason: String, repeatCheckAddresses: [String]? = nil)
+    case broadcastOutcomeUnknown(txHashDisplay: Data, origin: WalletChainScope?, reason: String, repeatCheckAddresses: [String]? = nil)
 }
 
 extension BIP70Error: LocalizedError {

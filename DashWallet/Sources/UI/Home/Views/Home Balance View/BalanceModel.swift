@@ -36,7 +36,7 @@ final class BalanceModel: ObservableObject {
     @Published private(set) var awaitingConfirmationDuffs: UInt64?
     private let pendingBalance = PendingBalanceFollower(
         signals: .live,
-        boundScope: { MainActor.assumeIsolated { SwiftDashSDKWalletSource.boundPendingBalanceScope() } },
+        boundScope: { MainActor.assumeIsolated { WalletChainScope.bound } },
         prepareRead: { MainActor.assumeIsolated { SwiftDashSDKWalletSource.prepareAwaitingConfirmationRead() } })
     /// Badge text for the home header while the wallet runs on a test
     /// network ("TESTNET"/"DEVNET"), so test funds can't be mistaken for
@@ -191,13 +191,9 @@ extension BalanceModel {
 ///   notification and nothing follows it, so this read is the one that
 ///   brings the caption up if the earlier one did not.
 final class PendingBalanceFollower {
-    /// What a value was read for: a wallet on a network (the same wallet id
-    /// exists on each network, with its own coins).
-    struct Scope: Equatable {
-        /// `Network.persistenceScope`: each devnet is its own.
-        let network: String
-        let walletId: Data
-    }
+    /// What a value was read for: the wallet and chain, by the rule the
+    /// followed sends use.
+    typealias Scope = WalletChainScope
 
     struct Reading {
         let scope: Scope

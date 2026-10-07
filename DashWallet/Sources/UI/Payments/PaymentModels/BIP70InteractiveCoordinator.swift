@@ -98,7 +98,7 @@ final class BIP70InteractiveCoordinator: NSObject {
                     amount: result.amount,
                     fee: result.fee)
                 await MainActor.run { completion(BIP70SendResultBox(result), nil) }
-            } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason, _) {
+            } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let origin, let reason, _) {
                 // The payment may well have gone through: followed in the
                 // history as "Waiting for the network", like a plain send —
                 // one send, under every address of the payment.
@@ -111,7 +111,7 @@ final class BIP70InteractiveCoordinator: NSObject {
                         otherAddresses: addresses,
                         amount: box.confirmation.amount,
                         reason: reason,
-                        walletId: walletId)
+                        origin: origin)
                     completion(nil, error)
                 }
             } catch {
