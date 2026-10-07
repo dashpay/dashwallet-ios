@@ -113,6 +113,8 @@ final class SendViewModel: ObservableObject {
     /// its display representation and must not be converted back for sending.
     private var maxAmountDuffs: UInt64?
     private var shieldedSweepAmountCredits: UInt64?
+    /// Fee of the planned Max sweep — exact, unlike the two-action estimate.
+    private(set) var shieldedSweepFeeCredits: UInt64?
     @Published var unit: InternalTransferUnit = .dash {
         didSet {
             guard oldValue != unit else { return }
@@ -1367,6 +1369,7 @@ final class SendViewModel: ObservableObject {
                 // under the amount carries errors only.
                 isFullShieldedSweep = true
                 shieldedSweepAmountCredits = plan.amountCredits
+                shieldedSweepFeeCredits = plan.feeCredits
                 sourceDuffs = plan.amountCredits / 1000
             case .waitingForConfirmation(let credits):
                 shieldedMaxNotice = Self.shieldedConfirmingMessage(credits)
@@ -1412,6 +1415,7 @@ final class SendViewModel: ObservableObject {
         maxAmountDuffs = nil
         isFullShieldedSweep = false
         shieldedSweepAmountCredits = nil
+        shieldedSweepFeeCredits = nil
         shieldedMaxNotice = nil
     }
 

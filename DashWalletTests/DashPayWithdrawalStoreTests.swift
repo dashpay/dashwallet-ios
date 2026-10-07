@@ -1,7 +1,7 @@
 import Foundation
 import SwiftDashSDK
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 final class DashPayWithdrawalStoreTests: XCTestCase {
     private var directory: URL!
@@ -269,5 +269,21 @@ final class ContactPaymentSourceTests: XCTestCase {
         let result = plan(hasWalletContext: false, [.platform: 2_000_000, .shielded: 3_000_000])
         XCTAssertEqual(result.initialSource, .core)
         XCTAssertFalse(result.offersChoice)
+    }
+}
+
+/// The Total a contact payment from Platform or Shielded confirms.
+final class ContactWithdrawalTotalTests: XCTestCase {
+    func testTotalAddsTheFee() {
+        // 0.02 DASH plus a 0.0001 DASH fee (1e7 credits).
+        XCTAssertEqual(SendConfirmSheet.withdrawalDebitDuffs(amountDuffs: 2_000_000, feeCredits: 10_000_000), 2_010_000)
+    }
+
+    func testPartialDuffOfFeeRoundsUp() {
+        XCTAssertEqual(SendConfirmSheet.withdrawalDebitDuffs(amountDuffs: 100, feeCredits: 1_001), 102)
+    }
+
+    func testOverflowIsUnavailable() {
+        XCTAssertNil(SendConfirmSheet.withdrawalDebitDuffs(amountDuffs: .max, feeCredits: 1_000))
     }
 }

@@ -511,6 +511,7 @@ struct ExternalSendAmountScreen: View {
                     withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
                     isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
                     isFullShieldedSweep: viewModel.isFullShieldedSweep,
+                    shieldedSweepFeeCredits: viewModel.shieldedSweepFeeCredits,
                     contactRecipient: viewModel.contactPaymentRecipient,
                     onCancel: { showConfirm = false },
                     onCompleted: {
@@ -1131,6 +1132,8 @@ struct SendConfirmSheet: View {
     var withdrawalFeeCredits: UInt64? = nil
     var isFullPlatformWithdrawal: Bool = false
     var isFullShieldedSweep: Bool = false
+    /// The planned fee of a Shielded Max sweep, when that is what's confirmed.
+    var shieldedSweepFeeCredits: UInt64? = nil
     /// A DashPay contact paid through `.platformToCore` / `.shieldedToCore`.
     /// There is no `destinationAddress` then: the coordinator reserves one of
     /// the contact's addresses after the user confirms and authorizes.
@@ -1393,6 +1396,7 @@ struct SendConfirmSheet: View {
             // side reserves on input 0.
             return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .transfer, numActions: 2)
         case .shieldedToCore:
+            if isFullShieldedSweep, let shieldedSweepFeeCredits { return shieldedSweepFeeCredits }
             return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .withdrawal, numActions: 2)
         case .shieldedToPlatform:
             return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .unshield, numActions: 2)
@@ -1416,6 +1420,18 @@ struct SendConfirmSheet: View {
     /// unavailable — `canContinue` fails closed before that can be confirmed,
     /// but the row must never show the un-inflated number.
     private var totalString: String {
+        // A contact paid from Platform or Shielded loses the amount plus the
+        // withdrawal fee from that balance; say so, approximately unless the
+        // fee is a planned sweep's exact one.
+        if contactRecipient != nil, route == .platformToCore || route == .shieldedToCore {
+            guard let amountDuffs = UInt64(exactly: dashDuffs),
+                  let feeCredits = networkFeeCredits,
+                  let totalDuffs = Self.withdrawalDebitDuffs(amountDuffs: amountDuffs, feeCredits: feeCredits),
+                  let signedTotal = Int64(exactly: totalDuffs)
+            else { return "—" }
+            let isExact = route == .shieldedToCore && isFullShieldedSweep && shieldedSweepFeeCredits != nil
+            return (isExact ? "" : "~ ") + signedTotal.formattedDashAmount
+        }
         guard route == .coreToShielded else {
             return dashDuffs.formattedDashAmount
         }
@@ -1427,6 +1443,14 @@ struct SendConfirmSheet: View {
               let signedLockDuffs = Int64(exactly: lockDuffs)
         else { return "—" }
         return signedLockDuffs.formattedDashAmount
+    }
+
+    /// What a withdrawal takes from its funding balance: the amount plus the
+    /// fee, rounded up to a whole duff. Nil on overflow.
+    nonisolated static func withdrawalDebitDuffs(amountDuffs: UInt64, feeCredits: UInt64) -> UInt64? {
+        let feeDuffs = feeCredits / 1000 + (feeCredits % 1000 == 0 ? 0 : 1)
+        let (total, overflow) = amountDuffs.addingReportingOverflow(feeDuffs)
+        return overflow ? nil : total
     }
 
     // MARK: - Info card
