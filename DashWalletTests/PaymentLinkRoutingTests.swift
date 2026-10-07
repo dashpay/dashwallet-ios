@@ -1074,6 +1074,21 @@ final class PendingSendSettlementPolicyTests: XCTestCase {
                        "on a devnet the id is every devnet's: nothing is filled in")
     }
 
+    /// A send whose chain is never bound again (a retired devnet) is not
+    /// kept for good: past the follow window, when it refuses nothing any
+    /// more, it is let go — by age, not by a row missing on another chain.
+    func testASendOfAChainNotBoundAgainIsLetGoOnlyPastTheFollowWindow() {
+        let recent = entry(1, chain: "devnet-a", age: Policy.missingRowGrace + 3600)
+        let old = entry(2, chain: "devnet-a", age: Policy.maxFollowAge + 3600)
+        let here = entry(3, chain: "devnet-b", age: Policy.maxFollowAge + 3600)
+        let otherWallet = entry(4, wallet: walletB, chain: "devnet-b", age: Policy.maxFollowAge + 3600)
+        let entries = Dictionary(uniqueKeysWithValues: [recent, old, here, otherWallet].map { ($0.txidWire, $0) })
+        let bound = WalletChainScope(walletId: walletA, chain: "devnet-b")
+        XCTAssertEqual(Set(Policy.outlivedElsewhere(entries, bound: bound, now: now)),
+                       [old.txidWire, otherWallet.txidWire],
+                       "the bound chain's own send is settled from its rows, a younger one elsewhere is kept")
+    }
+
     func testAVerdictFromAnotherChainsManagerIsNotHeard() {
         let sentOnA = entry(1, chain: "devnet-a", age: 60)
         let verdict = [(txidWire: sentOnA.txidWire, walletId: walletA, accepted: true)]

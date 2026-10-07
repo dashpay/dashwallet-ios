@@ -545,13 +545,14 @@ final class WalletSendService: NSObject {
     /// (`SwiftDashSDKTransactionSender.waitingForNetwork`).
     @discardableResult
     func sweepCoinJoin(onNetworkWait: (@MainActor (Bool) -> Void)? = nil) async throws -> UInt64 {
-        // Read once, here: the destination, its wallet and its network are what
-        // the sweep is bound to, and what a later call joins on.
+        // Read once, here, in one hop: the destination, its wallet, its
+        // network and its chain are what the sweep is bound to, and what a
+        // later call joins on.
         let target = await MainActor.run { () -> CoinJoinSweepTarget? in
             guard let destination = SwiftDashSDKReceiveAddressReader.receiveDestination(),
-                  let network = SwiftDashSDKHost.shared.runningNetwork else { return nil }
-            return CoinJoinSweepTarget(
-                address: destination.address, walletId: destination.walletId, network: network)
+                  let network = SwiftDashSDKHost.shared.runningNetwork,
+                  let scope = WalletChainScope.bound, scope.walletId == destination.walletId else { return nil }
+            return CoinJoinSweepTarget(address: destination.address, scope: scope, network: network)
         }
         guard let target else {
             throw Self.makeError(
@@ -571,8 +572,11 @@ final class WalletSendService: NSObject {
 
     private struct CoinJoinSweepTarget {
         let address: String
-        let walletId: Data
+        /// The wallet `address` was read from and the chain it was read on.
+        /// The network alone does not tell two devnets apart.
+        let scope: WalletChainScope
         let network: Network
+        var walletId: Data { scope.walletId }
 
         /// The user's persisted selection still names this wallet on this
         /// network. Stays true through a restart of the same wallet.
@@ -581,10 +585,9 @@ final class WalletSendService: NSObject {
                 && WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) == walletId
         }
 
-        /// The host runs this wallet on this network right now.
+        /// The host runs this wallet on this chain right now.
         @MainActor var isRunning: Bool {
-            SwiftDashSDKHost.shared.runningNetwork == network
-                && SwiftDashSDKHost.shared.wallet?.walletId == walletId
+            WalletChainScope.bound == scope
         }
     }
 
@@ -684,7 +687,7 @@ final class WalletSendService: NSObject {
         do {
             outcome = try await SwiftDashSDKTransactionSender.waitingForNetwork(holdingRouting: true) {
                 try SwiftDashSDKTransactionSender.sweepCoinJoin(
-                    to: target.address, ofWallet: target.walletId, on: target.network)
+                    to: target.address, under: target.scope, on: target.network)
             }
         } catch {
             await MainActor.run { onNetworkWait?(false) }

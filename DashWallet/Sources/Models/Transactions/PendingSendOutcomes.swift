@@ -50,11 +50,13 @@ struct WalletChainScope: Equatable, Hashable {
     }
 
     /// Whether a wallet id on the host's bound network belongs to that one
-    /// chain only: true on mainnet and testnet, false on a devnet (every
-    /// named devnet shares the id). Nil when nothing is bound.
+    /// chain only: true on mainnet and testnet; false on a devnet (every
+    /// named devnet shares the id), on anything else, and when nothing is
+    /// bound.
     @MainActor
-    static var boundWalletIdIsOfOneChain: Bool? {
-        SwiftDashSDKHost.shared.runningNetwork.map { $0 != .devnet }
+    static var boundWalletIdIsOfOneChain: Bool {
+        let network = SwiftDashSDKHost.shared.runningNetwork
+        return network == .mainnet || network == .testnet
     }
 }
 
@@ -428,10 +430,24 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
         // An entry stored without its chain is this chain's for certain when
         // the wallet id exists on no other (mainnet, testnet): it is given
         // its chain, and the ordinary rules then apply to it.
-        let placed = Self.placingUnchained(
-            entries, on: scope, walletIdIsOfOneChain: WalletChainScope.boundWalletIdIsOfOneChain == true)
-        if placed != entries {
-            entries = placed
+        if entries.values.contains(where: { $0.chainScope == nil }) {
+            let placed = Self.placingUnchained(
+                entries, on: scope, walletIdIsOfOneChain: WalletChainScope.boundWalletIdIsOfOneChain)
+            if placed != entries {
+                entries = placed
+                didChangeEntries()
+            }
+        }
+        // A send of another wallet or chain cannot be read for here. Past the
+        // follow window it refuses nothing any more and would otherwise be
+        // kept for as long as its chain is not bound again (a retired
+        // devnet: for good); its row tells its own state when it is shown.
+        let outlived = Self.outlivedElsewhere(entries, bound: scope, now: Date())
+        if !outlived.isEmpty {
+            DWLogger.log("💸 TXSEND :: \(outlived.count) send(s) of another wallet or chain followed for over"
+                + " \(Self.maxFollowDays) days, no longer tracked"
+                + Self.refusalLifted(for: outlived.flatMap { entries[$0]?.addresses ?? [] }))
+            for txid in outlived { entries.removeValue(forKey: txid) }
             didChangeEntries()
         }
         let pending = entries.filter { $0.value.isFollowed(on: scope) }
@@ -482,7 +498,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
             DWLogger.log("💸 TXSEND :: \(Transaction.displayHex(txid)) stored without its chain and not found on"
                 + " \(scope.chain) for \(Self.maxFollowDays) days, no longer tracked\(lifted(txid))")
         }
-        for entry in Self.notifiable(decision.notifying, shown: shownScope) {
+        // Told only if the store that was read is still the one on screen.
+        for entry in Self.notifiable(decision.notifying, shown: scope == shownScope ? shownScope : nil) {
             notice = Self.merged(notice, adding: entry.amount)
         }
         guard !decision.isEmpty else { return }
@@ -608,6 +625,17 @@ extension PendingSendOutcomes {
             placed.chainScope = scope.chain
             return placed
         }
+    }
+
+    /// The sends that are not `bound`'s to settle (another wallet's, or the
+    /// same wallet's on another chain) and are past `maxFollowAge`: nothing
+    /// read here can decide them, and they refuse nothing any more.
+    nonisolated static func outlivedElsewhere(
+        _ entries: [Data: Entry], bound: WalletChainScope, now: Date
+    ) -> [Data] {
+        entries.values
+            .filter { !$0.isFollowed(on: bound) && now.timeIntervalSince($0.sentAt) > maxFollowAge }
+            .map(\.txidWire)
     }
 
     /// `entries` without the sends `decision` stops following.

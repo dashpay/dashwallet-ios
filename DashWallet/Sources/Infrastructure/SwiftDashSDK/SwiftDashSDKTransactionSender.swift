@@ -237,31 +237,30 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// - Parameters:
     ///   - address: Destination Dash address (the user's own BIP44 receive
     ///     address, from `SwiftDashSDKReceiveAddressReader.receiveDestination()`).
-    ///   - walletId: The wallet `address` was read from.
-    ///   - network: The network `address` belongs to. The sweep refuses to
-    ///     start on any other wallet or network, so its coins never go to
-    ///     another wallet's address.
+    ///   - origin: The wallet `address` was read from and the chain it was
+    ///     read on. The sweep refuses to start, and each chunk to go out,
+    ///     under any other wallet or chain, so its coins never go to another
+    ///     wallet's address; its chunks are followed under it.
+    ///   - network: The network of that chain, for the builder.
     /// - Returns: A `CoinJoinSweepOutcome` carrying the broadcast chunks' txids,
     ///   any chunk failure, and the chunks a wallet change left unattempted.
     ///   Throws when the wallet or network no longer matches before the first
     ///   chunk, or when every attempted chunk failed and none was left
     ///   unattempted.
     static func sweepCoinJoin(
-        to address: String, ofWallet walletId: Data, on network: Network
+        to address: String, under origin: WalletChainScope, on network: Network
     ) throws -> CoinJoinSweepOutcome {
         assert(!Thread.isMainThread, "sweepCoinJoin waits for network acceptance of every chunk")
         DWLogger.log("💸 TXSEND :: sweeping CoinJoin account → spendable balance")
 
         // The host, the manager and its account reads are main-actor state, so
         // the snapshot is taken there. Everything after it stays on this thread.
-        // With them, the wallet and chain the sweep starts on: every chunk
-        // runs, and is followed, under exactly that scope.
-        let (utxos, origin) = try MainThread.sync { () throws -> ([PlatformWalletManager.AccountUtxo], WalletChainScope) in
+        let utxos = try MainThread.sync { () throws -> [PlatformWalletManager.AccountUtxo] in
             let host = SwiftDashSDKHost.shared
-            guard let wallet = host.wallet, let manager = host.manager, let origin = WalletChainScope.bound else {
+            guard let wallet = host.wallet, let manager = host.manager else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
             }
-            guard wallet.walletId == walletId, host.runningNetwork == network else {
+            guard WalletChainScope.bound == origin, host.runningNetwork == network else {
                 throw SendError.walletNotReady("the destination address belongs to another wallet or network")
             }
 
@@ -271,12 +270,12 @@ final class SwiftDashSDKTransactionSender: NSObject {
             guard let cjBalance = manager.accountBalances(for: wallet.walletId).first(where: {
                 $0.typeTag == Self.coinJoinTypeTag && $0.index == Self.coinJoinAccountIndex
             }) else {
-                return ([], origin)
+                return []
             }
 
             // Snapshot the account's spendable UTXOs (after the recovery scan has
             // materialized deep `/0/` + `/1/` addresses).
-            return (manager.accountUtxos(for: wallet.walletId, balance: cjBalance), origin)
+            return manager.accountUtxos(for: wallet.walletId, balance: cjBalance)
         }
 
         // Drain each balanced ≤500-input chunk to `address`. `useOnlyAddedInputs`
@@ -335,8 +334,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
                     // no repeat-payment refusal keys on it and it settles without the
                     // "went through" notice.
                     let amount = chunk.reduce(UInt64(0)) { $0 + $1.valueDuffs }
-                    // Under the wallet and chain the sweep started on:
-                    // `runningWallet` let this chunk through only on them.
+                    // Under the wallet and chain the destination was read
+                    // on: `runningWallet` let this chunk through only on them.
                     let followed = MainThread.sync {
                         PendingSendOutcomes.shared.recordUnknownOutcome(
                             txidWire: txidWire, address: nil, amount: amount, notifies: false, origin: origin)
