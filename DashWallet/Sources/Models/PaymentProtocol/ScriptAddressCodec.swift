@@ -78,10 +78,21 @@ enum ScriptAddressCodec {
 
     // MARK: - Address → script (refund_to)
 
+    /// The longest string that can be an address: Base58 of the 25 bytes an
+    /// address encodes (version + 20-byte hash + 4-byte checksum) is at most
+    /// 35 characters (25 × log 256 / log 58 = 34.2, rounded up). Dash's own
+    /// version bytes give 34; 35 is the ceiling of the format on any network.
+    static let maxAddressLength = 35
+
     /// Base58Check address → P2PKH or P2SH scriptPubKey, chosen by the decoded version byte.
     /// Returns `nil` if the address can't be decoded or its version doesn't belong to `network`.
+    ///
+    /// A string longer than `maxAddressLength` is refused before decoding:
+    /// `base58Decode` costs time quadratic in its input, and an address can
+    /// come from outside (a payment URI).
     static func scriptPubKey(forAddress address: String, network: PaymentNetwork) -> Data? {
-        guard let decoded = base58CheckDecode(address), decoded.count == 21 else { return nil }
+        guard address.utf8.count <= maxAddressLength,
+              let decoded = base58CheckDecode(address), decoded.count == 21 else { return nil }
         let version = decoded[decoded.startIndex]
         let hash160 = Array(decoded[decoded.index(after: decoded.startIndex)...]) // 20 bytes
 

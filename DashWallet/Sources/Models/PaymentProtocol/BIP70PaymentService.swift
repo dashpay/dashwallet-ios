@@ -279,8 +279,12 @@ final class BIP70PaymentService {
             callbackScheme: callbackScheme,
             request: request,
             // Only an address payable on this network can be fallen back to.
+            // It comes from the URI unvalidated and of any length: one too
+            // long to be an address is dropped here without decoding (the
+            // codec refuses it too).
             fallbackAddress: fallbackAddress.flatMap {
-                ScriptAddressCodec.scriptPubKey(forAddress: $0, network: network) != nil ? $0 : nil
+                guard $0.utf8.count <= ScriptAddressCodec.maxAddressLength else { return nil }
+                return ScriptAddressCodec.scriptPubKey(forAddress: $0, network: network) != nil ? $0 : nil
             })
     }
 

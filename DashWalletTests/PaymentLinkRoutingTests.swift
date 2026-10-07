@@ -1148,6 +1148,48 @@ final class UnknownOutcomeWalletTests: XCTestCase {
         XCTAssertEqual(unpayable.repeatCheckAddresses, recipients)
     }
 
+    /// A URI address too long to be an address is dropped before any
+    /// decoding (Base58 decoding costs time quadratic in its input), and the
+    /// request still prepares.
+    func testAnOversizedURIAddressIsDroppedWithoutDecoding() async throws {
+        let service = BIP70PaymentService(
+            transport: AcknowledgingTransport(), wallet: DetachedUnknownWallet(walletId: Data(repeating: 0x3e, count: 32)),
+            receiveAddress: StaticReceiveAddress(), auth: NoAuth())
+        // 200 000 valid Base58 characters: decoding them would take the
+        // quadratic path for minutes; refused by length, this returns at once.
+        let oversized = String(repeating: "y", count: 200_000)
+        let started = Date()
+        let confirmation = try await service.prepareForConfirmation(
+            from: URL(string: "http://merchant/pr")!, scheme: "dash", network: .testnet, fallbackAddress: oversized)
+        XCTAssertLessThan(Date().timeIntervalSince(started), 2, "not decoded")
+        XCTAssertNil(confirmation.fallbackAddress)
+        XCTAssertEqual(confirmation.repeatCheckAddresses, confirmation.recipients.map(\.address))
+    }
+
+    /// The codec itself refuses a string longer than any address, whoever
+    /// calls it, and still takes every valid address.
+    func testTheAddressCodecRefusesAnOversizedStringAndTakesValidAddresses() throws {
+        let started = Date()
+        XCTAssertNil(ScriptAddressCodec.scriptPubKey(
+            forAddress: String(repeating: "y", count: 200_000), network: .testnet))
+        XCTAssertNil(ScriptAddressCodec.scriptPubKey(
+            forAddress: String(repeating: "y", count: ScriptAddressCodec.maxAddressLength + 1), network: .testnet))
+        XCTAssertLessThan(Date().timeIntervalSince(started), 2, "not decoded")
+
+        // Every hash and both address kinds on every network round-trip
+        // within the bound, the extremes of the hash range included.
+        for network in [PaymentNetwork.mainnet, .testnet, .devnet] {
+            for byte in [UInt8(0x00), 0x11, 0x80, 0xff] {
+                let hash = [UInt8](repeating: byte, count: 20)
+                for script in [Data([0x76, 0xa9, 0x14] + hash + [0x88, 0xac]), Data([0xa9, 0x14] + hash + [0x87])] {
+                    let address = try XCTUnwrap(ScriptAddressCodec.address(forScript: script, network: network))
+                    XCTAssertLessThanOrEqual(address.utf8.count, ScriptAddressCodec.maxAddressLength, address)
+                    XCTAssertEqual(ScriptAddressCodec.scriptPubKey(forAddress: address, network: network), script, address)
+                }
+            }
+        }
+    }
+
     /// A payment followed under its recipient M and its URI's address X
     /// refuses the plain send to X that a failed request fetch falls back to.
     func testAFallbackPlainSendToTheURIsAddressIsRefused() {
