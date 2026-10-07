@@ -628,7 +628,9 @@ final class WalletSendService: NSObject {
                 since: Date().addingTimeInterval(-Self.unresolvedContactWithdrawalLockWindow))
         } catch {
             Self.logger.error("💸 TXSEND :: DashPay withdrawal history unreadable: \(String(describing: error), privacy: .public)")
-            return false
+            // Fail closed: after a relaunch the journal is the only record of
+            // an unresolved withdrawal, and a duplicate payment can't be undone.
+            return true
         }
     }
 
