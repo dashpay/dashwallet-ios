@@ -464,8 +464,11 @@ final class SendViewModel: ObservableObject {
             contactIdentityId: contact.contactIdentityId,
             recipient: contactPaymentRecipient)
         destination = .core
+        // Transparent counts by what it can actually send: dust that can't
+        // cover the fee would open the payment on a balance that pays nothing.
         let plan = Self.contactSourcePlan(
-            validSources: validSources, balanceDuffs: { self.balanceDuffs(of: $0) })
+            validSources: validSources,
+            balanceDuffs: { $0 == .core ? self.coreToCoreSpendableDuffs : self.balanceDuffs(of: $0) })
         contactOffersSourceChoice = plan.offersChoice
         // Not the user's pick, so the From step still reads as a suggestion.
         // The assignment refreshes the route-dependent preflights.

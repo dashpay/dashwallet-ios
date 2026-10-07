@@ -247,6 +247,14 @@ final class ContactPaymentSourceTests: XCTestCase {
         XCTAssertTrue(result.offersChoice)
     }
 
+    /// The caller passes Transparent's fee-aware spendable amount, which is
+    /// zero for dust: Platform is then the only usable balance.
+    func testUnspendableTransparentDustDefersToPlatform() {
+        let result = plan([.core: 0, .platform: 2_000_000])
+        XCTAssertEqual(result.initialSource, .platform)
+        XCTAssertFalse(result.offersChoice)
+    }
+
     func testNothingFundedFallsBackToTransparent() {
         let result = plan([:])
         XCTAssertEqual(result.initialSource, .core)

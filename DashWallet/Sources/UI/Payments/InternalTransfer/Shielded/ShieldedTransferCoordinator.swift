@@ -301,6 +301,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case platformShieldCapacityChanged(maxShieldableCredits: UInt64?)
         case shieldedSweepWaiting(UInt64)
         case shieldedSweepChanged
+        case platformBalanceChanged
         case shieldedAmountExceedsBundle(UInt64)
         case coinJoinDrainRequiresSync
         case transferFailed(Error)
@@ -359,6 +360,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString(
                     "Your Shielded balance changed. Close this confirmation and tap Max again.",
                     comment: "Shielded sweep changed before submit")
+            case .platformBalanceChanged:
+                return NSLocalizedString(
+                    "Your Platform balance changed. Close this confirmation and tap Max again.",
+                    comment: "Full-balance Platform payment: the balance grew after it was authorized")
             case .shieldedAmountExceedsBundle(let ceiling):
                 let formatted = (ceiling / 1000).formattedDashAmountWithoutCurrencySymbol
                 return String.localizedStringWithFormat(
@@ -1279,6 +1284,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
         if let contactWithdrawal { coreAddress = contactWithdrawal.address }
+
+        // A full-balance withdrawal sends whatever the balance is when it is
+        // submitted. A contact payment was authorized for the balance seen
+        // before the prompt, so one that has grown since (or can't be read)
+        // must not go out: nothing has been sent, so its record is dropped.
+        if let contactWithdrawal, fullBalance,
+           PlatformAddressSyncCoordinator.shared.platformBalanceState.credits
+               .map({ $0 > contactSpendCredits }) ?? true {
+            try? DashPayWithdrawalStore.shared.remove(contactWithdrawal)
+            handleFailure(CoordinatorError.platformBalanceChanged)
+            return
+        }
 
         phase = .broadcasting
 
