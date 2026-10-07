@@ -302,6 +302,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case shieldedSweepWaiting(UInt64)
         case shieldedSweepChanged
         case platformBalanceChanged
+        case belowWithdrawalMinimum
         case shieldedAmountExceedsBundle(UInt64)
         case coinJoinDrainRequiresSync
         case transferFailed(Error)
@@ -360,6 +361,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString(
                     "Your Shielded balance changed. Close this confirmation and tap Max again.",
                     comment: "Shielded sweep changed before submit")
+            case .belowWithdrawalMinimum:
+                return String.localizedStringWithFormat(
+                    NSLocalizedString("Enter at least %@ DASH", comment: "Identity top-up sheet — custom amount below the floor"),
+                    (ShieldedTransferCoordinator.contactWithdrawalMinimumCredits / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol)
             case .platformBalanceChanged:
                 return NSLocalizedString(
                     "Your Platform balance changed. Close this confirmation and tap Max again.",
@@ -942,6 +947,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
             paysOwnWallet = true
         }
 
+        if contactRecipient != nil, submittedAmount < Self.contactWithdrawalMinimumCredits {
+            handleFailure(CoordinatorError.belowWithdrawalMinimum)
+            return
+        }
+
         let contactWithdrawal: ContactWithdrawal?
         do {
             try await authorize(contactSpendDuffs: contactRecipient == nil ? nil : submittedAmount / 1000)
@@ -1263,6 +1273,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
             coreAddress = ownAddress
         }
 
+        if contactRecipient != nil, amountCredits < Self.contactWithdrawalMinimumCredits {
+            handleFailure(CoordinatorError.belowWithdrawalMinimum)
+            return
+        }
+
         let contactWithdrawal: ContactWithdrawal?
         // The AUTO full-balance withdrawal pays whatever the balances are when
         // it runs, so it can't be bounded by the authorized amount: a contact
@@ -1415,6 +1430,16 @@ final class ShieldedTransferCoordinator: ObservableObject {
     }
 
     // MARK: - DashPay contact withdrawals
+
+    /// The smallest contact payment a Platform or Shielded withdrawal can
+    /// carry: the consensus floor (`system_limits.min_withdrawal_amount`,
+    /// 1000 duffs since protocol v12) plus, from v14, the Core fee of the
+    /// asset unlock carved out of it (190 bytes at the 1 duff/byte these
+    /// withdrawals use). Below it Platform rejects the transition, and that
+    /// rejection is not one `provesWithdrawalNotSubmitted` can tell apart from
+    /// an unknown outcome, so it is refused before anything is reserved.
+    nonisolated static let contactWithdrawalMinimumCredits: UInt64 = 1_000_000 + 190_000
+
 
     private typealias ContactWithdrawal = DashPayWithdrawalStore.Entry
 

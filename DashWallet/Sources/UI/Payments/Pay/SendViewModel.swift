@@ -1004,6 +1004,14 @@ final class SendViewModel: ObservableObject {
             && dashDuffsUnsigned == platformWithdrawableDuffs
     }
 
+    /// A contact paid from Platform or Shielded below the withdrawal floor
+    /// (`ShieldedTransferCoordinator.contactWithdrawalMinimumCredits`).
+    private var isBelowContactWithdrawalMinimum: Bool {
+        paysContact
+            && (route == .platformToCore || route == .shieldedToCore)
+            && creditsPreview < ShieldedTransferCoordinator.contactWithdrawalMinimumCredits
+    }
+
     private var paysContact: Bool {
         #if DASHPAY
         return contactRecipient != nil
@@ -1054,6 +1062,12 @@ final class SendViewModel: ObservableObject {
             return NSLocalizedString("The amount is too large to transfer.", comment: "InternalTransfer")
         }
         guard dashDuffsUnsigned > 0, let route else { return nil }
+        if isBelowContactWithdrawalMinimum {
+            return String.localizedStringWithFormat(
+                NSLocalizedString("Enter at least %@ DASH", comment: "Identity top-up sheet — custom amount below the floor"),
+                (ShieldedTransferCoordinator.contactWithdrawalMinimumCredits / 1000).dashAmount
+                    .formattedDashAmountWithoutCurrencySymbol)
+        }
         if hasUnavailableSourceBalance {
             return NSLocalizedString("Balance unavailable", comment: "Selected source balance not restored")
         }
@@ -1258,6 +1272,7 @@ final class SendViewModel: ObservableObject {
         #endif
         if hasUnavailableSourceBalance { return false }
         guard dashDuffsUnsigned > 0, let route, !isBlockedBySync else { return false }
+        if isBelowContactWithdrawalMinimum { return false }
         switch route {
         case .coreToCore:
             return dashDuffsUnsigned <= coreToCoreSpendableDuffs
