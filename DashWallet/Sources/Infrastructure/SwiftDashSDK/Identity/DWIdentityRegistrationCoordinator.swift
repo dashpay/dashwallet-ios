@@ -2288,6 +2288,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             // resolution, in the wallet + network scope the guard above just
             // verified is the active one.
             UsernamePrefs.shared.completedTileUsername = label
+            UsernamePrefs.shared.retireInFlightRegistration(matching: label)
             DWContestedNameStatusService.shared.finalizeWon(
                 username: label,
                 network: expectedNetwork,
@@ -2308,6 +2309,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             // and its Try again, and is cleared when they act on it.
             UsernamePrefs.shared.lostContestUsername = label
             UsernamePrefs.shared.lostContestWasBlocked = (outcome == .blocked)
+            // The request has its outcome, so its handoff record has nothing
+            // left to report. A restart can leave that record unconsumed —
+            // the bookmark is confirmed before the flow's later steps finish —
+            // and the row reads it before the rejection: with the bookmark
+            // gone it then said "interrupted" and kept offering a recovery for
+            // a request that is over. Another request's record is not touched.
+            UsernamePrefs.shared.retireInFlightRegistration(matching: label)
             // The vote is over; a missing instant name for it is no longer
             // what the user needs to hear about.
             UsernamePrefs.shared.clearFailedCompanion(forContestedLabel: label)

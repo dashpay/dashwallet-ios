@@ -121,6 +121,15 @@ class UsernamePrefs {
         }
     }
 
+    /// Drops the in-flight record when it is `label`'s — the request reached
+    /// an outcome that is reported from its own record (a contest won or
+    /// lost). A record for any other name stays: it is another request's.
+    func retireInFlightRegistration(matching label: String) {
+        guard let inFlight = inFlightRegistrationUsername,
+              DWContestedNameStatusService.labelsMatch(inFlight, label) else { return }
+        inFlightRegistrationUsername = nil
+    }
+
     private var inFlightRegistrationUsernameKey: String {
         scoped(kInFlightRegistrationUsername)
     }

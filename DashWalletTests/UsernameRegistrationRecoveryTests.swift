@@ -281,6 +281,25 @@ extension UsernameRegistrationRecoveryTests {
         XCTAssertEqual(Coordinator.topUpDecision(neededDuffs: contestedNeed, authorizedDuffs: 0), .notConfirmed)
     }
 
+    /// A resolved contest retires the handoff record of that request and no
+    /// other: left behind after a restart, a matching record made the row say
+    /// "interrupted" for a request whose outcome was already known.
+    func testResolvedContestRetiresOnlyItsOwnHandoffRecord() {
+        let prefs = UsernamePrefs.shared
+        let saved = prefs.inFlightRegistrationUsername
+        defer { prefs.inFlightRegistrationUsername = saved }
+
+        // Confirmed bookmark resolved, handoff marker for the same name unconsumed.
+        prefs.inFlightRegistrationUsername = "Alice"
+        prefs.retireInFlightRegistration(matching: "alice.dash")
+        XCTAssertNil(prefs.inFlightRegistrationUsername)
+
+        // Another request is in flight when the contest resolves.
+        prefs.inFlightRegistrationUsername = "bob"
+        prefs.retireInFlightRegistration(matching: "alice")
+        XCTAssertEqual(prefs.inFlightRegistrationUsername, "bob")
+    }
+
     func testConfirmedNameDoesNotOfferRegistrationRecovery() {
         let snapshot = DWCurrentUserIdentityInfo.Snapshot(
             balanceCredits: 0, identityId: Data([1]), identityIdHex: "01",
