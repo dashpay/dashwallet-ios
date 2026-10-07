@@ -133,6 +133,7 @@ public final class SendCoinsService: NSObject {
                 // URI's own). Not known only if the error did not come
                 // through the service: the URI's address alone then.
                 let addresses = payees ?? [uri.address].compactMap { $0 }
+                    .filter { $0.utf8.count <= ScriptAddressCodec.maxAddressLength }
                 _ = PendingSendOutcomes.shared.recordUnknownOutcome(
                     txidWire: txIdWire, address: addresses.first, otherAddresses: addresses,
                     amount: 0, notifies: false, walletId: walletId)
