@@ -35,89 +35,104 @@ public struct VerifyIdentityScreen: View {
     let username: String
     var onConfirmed: (URL?) -> Void
     
+    /// Everything above the button: the explanation, the text to post and
+    /// the link field.
+    private var instructions: some View {
+        VStack(alignment: .leading) {
+            Text(NSLocalizedString("Verify your identity", comment: "Usernames"))
+                .font(.title1)
+                .multilineTextAlignment(.leading)
+                .lineSpacing(3)
+                .foregroundColor(.dash.primaryText)
+
+            // What publishing actually does: the link goes into a public
+            // Platform document tied to this identity and name.
+            Text(NSLocalizedString(
+                "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners.",
+                comment: "Usernames: proof-of-identity link visibility"))
+                .font(.subhead)
+                .multilineTextAlignment(.leading)
+                .lineSpacing(3)
+                .foregroundColor(.dash.secondaryText)
+
+            HStack(spacing: 0) {
+                let text = String.localizedStringWithFormat(NSLocalizedString("Please vote to approve my requested Dash username - %@", comment: "Usernames"), username)
+
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(NSLocalizedString("Copy text", comment: ""))
+                        .font(.footnote)
+                        .foregroundStyle(Color.dash.secondaryText)
+
+                    Text(text)
+                        .font(.subhead)
+                        .padding(.top, 2)
+                }
+                .padding(14)
+
+                Spacer()
+
+                Button(action: {
+                    UIPasteboard.general.string = text
+                    showCopiedToast = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                        showCopiedToast = false
+                    }
+                }) {
+                    Image("icon_copy_outline")
+                        .foregroundStyle(Color.dash.primaryText)
+                        .frame(width: 40, height: 40)
+                        .scaledToFit()
+                }
+                .padding(.trailing, 10)
+            }
+            .frame(maxWidth: .infinity)
+            .background(Color.dash.gray400.opacity(0.13))
+            .cornerRadius(10)
+            .padding(.vertical, 20)
+
+            Text(NSLocalizedString("Prove your identity", comment: "Usernames"))
+                .font(.calloutMedium)
+                .multilineTextAlignment(.leading)
+                .lineSpacing(3)
+                .foregroundColor(.dash.primaryText)
+                .padding(.top, 8)
+
+            Text(NSLocalizedString(
+                "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link below",
+                comment: "Usernames"))
+                .font(.subhead)
+                .multilineTextAlignment(.leading)
+                .lineSpacing(3)
+                .foregroundColor(.dash.secondaryText)
+                .padding(.top, 1)
+
+            TextInput(
+                label: NSLocalizedString("Paste link here", comment: "Usernames"),
+                text: $link,
+                isError: isInputError
+            ).padding(.top, 7)
+
+            if isInputError {
+                Text(errorText)
+                    .font(.footnote)
+                    .foregroundColor(.dash.red)
+                    .padding(.leading, 4)
+            }
+        }
+    }
+
     public var body: some View {
         ZStack(alignment: .bottom) {
-            VStack(alignment: .leading) {
-                Text(NSLocalizedString("Verify your identity", comment: "Usernames"))
-                    .font(.title1)
-                    .multilineTextAlignment(.leading)
-                    .lineSpacing(3)
-                    .foregroundColor(.dash.primaryText)
-              
-                // What publishing actually does: the link goes into a public
-                // Platform document tied to this identity and name.
-                Text(NSLocalizedString(
-                    "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners.",
-                    comment: "Usernames: proof-of-identity link visibility"))
-                    .font(.subhead)
-                    .multilineTextAlignment(.leading)
-                    .lineSpacing(3)
-                    .foregroundColor(.dash.secondaryText)
+            // The text scrolls and the button stays put, so with the keyboard
+            // up the link field and Verify are both reachable.
+            VStack(alignment: .leading, spacing: 0) {
+                ScrollView {
+                    instructions
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .scrollBounceBehavior(.basedOnSize)
+                .scrollDismissesKeyboard(.interactively)
 
-                HStack(spacing: 0) {
-                    let text = String.localizedStringWithFormat(NSLocalizedString("Please vote to approve my requested Dash username - %@", comment: "Usernames"), username)
-                    
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(NSLocalizedString("Copy text", comment: ""))
-                            .font(.footnote)
-                            .foregroundStyle(Color.dash.secondaryText)
-                        
-                        Text(text)
-                            .font(.subhead)
-                            .padding(.top, 2)
-                    }
-                    .padding(14)
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        UIPasteboard.general.string = text
-                        showCopiedToast = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                            showCopiedToast = false
-                        }
-                    }) {
-                        Image("icon_copy_outline")
-                            .foregroundStyle(Color.dash.primaryText)
-                            .frame(width: 40, height: 40)
-                            .scaledToFit()
-                    }
-                    .padding(.trailing, 10)
-                }
-                .frame(maxWidth: .infinity)
-                .background(Color.dash.gray400.opacity(0.13))
-                .cornerRadius(10)
-                .padding(.vertical, 20)
-                
-                Text(NSLocalizedString("Prove your identity", comment: "Usernames"))
-                    .font(.calloutMedium)
-                    .multilineTextAlignment(.leading)
-                    .lineSpacing(3)
-                    .foregroundColor(.dash.primaryText)
-                    .padding(.top, 8)
-              
-                Text(NSLocalizedString("Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow", comment: "Usernames"))
-                    .font(.subhead)
-                    .multilineTextAlignment(.leading)
-                    .lineSpacing(3)
-                    .foregroundColor(.dash.secondaryText)
-                    .padding(.top, 1)
-                
-                TextInput(
-                    label: NSLocalizedString("Paste link here", comment: "Usernames"),
-                    text: $link,
-                    isError: isInputError
-                ).padding(.top, 7)
-                
-                if isInputError {
-                    Text(errorText)
-                        .font(.footnote)
-                        .foregroundColor(.dash.red)
-                        .padding(.leading, 4)
-                }
-                
-                Spacer()
-                
                 DashButton(
                     text: NSLocalizedString("Verify", comment: ""),
                     isEnabled: canContinue
@@ -136,6 +151,7 @@ public struct VerifyIdentityScreen: View {
                         errorText = NSLocalizedString("Enter a link starting with http:// or https://", comment: "Usernames")
                     }
                 }
+                .padding(.top, 12)
             }
             
             if showCopiedToast {

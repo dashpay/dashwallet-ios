@@ -2399,7 +2399,7 @@
 "Mainnet" = "Mainnet";
 
 /* Usernames */
-"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "یک پست با متن بالا در یک شبکه اجتماعی سرشناس و یا یک پلتفرم پیام‌رسان منتشر کنید تا مشخص شود شما مالک اصلی نام کاربری درخواست شده هستید و لینک زیر را در آن بچسبانید";
+"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link below" = "یک پست با متن بالا در یک شبکه اجتماعی سرشناس و یا یک پلتفرم پیام‌رسان منتشر کنید تا مشخص شود شما مالک اصلی نام کاربری درخواست شده هستید و لینک زیر را در آن بچسبانید";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "اجازه استفاده از جی‌پی‌اس";

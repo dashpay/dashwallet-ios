@@ -2399,7 +2399,7 @@
 "Mainnet" = "Mainnet";
 
 /* Usernames */
-"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "Κάντε μια ανάρτηση με το παραπάνω κείμενο σε ένα γνωστό μέσο κοινωνικής δικτύωσης ή σε μια πλατφόρμα ανταλλαγής μηνυμάτων για να επαληθεύσετε ότι είστε ο αρχικός κάτοχος του ζητούμενου ονόματος χρήστη και επικολλήστε τον παρακάτω σύνδεσμο";
+"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link below" = "Κάντε μια ανάρτηση με το παραπάνω κείμενο σε ένα γνωστό μέσο κοινωνικής δικτύωσης ή σε μια πλατφόρμα ανταλλαγής μηνυμάτων για να επαληθεύσετε ότι είστε ο αρχικός κάτοχος του ζητούμενου ονόματος χρήστη και επικολλήστε τον παρακάτω σύνδεσμο";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "Διαχείριση άδειας GPS";

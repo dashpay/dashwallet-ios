@@ -2399,7 +2399,7 @@
 "Mainnet" = "Основная сеть";
 
 /* Usernames */
-"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "Опубликуйте сообщение с таким же текстом, как в примере выше, в известной социальной сети или мессенджере, чтобы подтвердить, что вы действительно являетесь владельцем запрашиваемого имени пользователя. Вставьте ссылку на этот пост в поле ниже.";
+"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link below" = "Опубликуйте сообщение с таким же текстом, как в примере выше, в известной социальной сети или мессенджере, чтобы подтвердить, что вы действительно являетесь владельцем запрашиваемого имени пользователя. Вставьте ссылку на этот пост в поле ниже.";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "Изменить разрешения GPS";

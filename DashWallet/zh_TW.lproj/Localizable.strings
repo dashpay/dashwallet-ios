@@ -2399,7 +2399,7 @@
 "Mainnet" = "主網";
 
 /* Usernames */
-"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "在知名社交媒體或訊息平台上發布包含上述文字的帖子，以驗證您是所請求用戶名的原始所有者，並貼上下面的鏈接";
+"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link below" = "在知名社交媒體或訊息平台上發布包含上述文字的帖子，以驗證您是所請求用戶名的原始所有者，並貼上下面的鏈接";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "管理 GPS 權限";

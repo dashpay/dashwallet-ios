@@ -329,10 +329,10 @@ struct UsernameRequestStatusScreen: View {
             // its close control is the way out, and the screen carries its own
             // heading — a navigation title on top of it was the same words
             // twice.
-            DashUIKit.BottomSheet.selfSizing(
-                showBackButton: .constant(false),
-                fallback: 600
-            ) {
+            // Full height, not self-sizing: the screen has a text field, and a
+            // self-sizing sheet lays its content out at a fixed ideal height, so
+            // nothing can scroll out from under the keyboard.
+            DashUIKit.BottomSheet(showBackButton: .constant(false)) {
                 VerifyIdentityScreen(
                     username: viewModel.label,
                     onConfirmed: { url in

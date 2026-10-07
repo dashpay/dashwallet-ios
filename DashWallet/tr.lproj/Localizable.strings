@@ -2399,7 +2399,7 @@
 "Mainnet" = "Ananet";
 
 /* Usernames */
-"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "İstenen kullanıcı adının orijinal sahibi olduğunuzu doğrulamak için yukarıdaki metni bilinen bir sosyal medya platformunda paylaşın ve aşağıdaki bağlantıyı yapıştırın";
+"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link below" = "İstenen kullanıcı adının orijinal sahibi olduğunuzu doğrulamak için yukarıdaki metni bilinen bir sosyal medya platformunda paylaşın ve aşağıdaki bağlantıyı yapıştırın";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "GPS İznini Yönet";

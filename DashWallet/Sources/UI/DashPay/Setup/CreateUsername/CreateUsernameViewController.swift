@@ -465,10 +465,10 @@ struct CreateUsernameView: View {
             }
         }
         .sheet(isPresented: $showVerifyIdentity, onDismiss: runSheetFollowUp) {
-            DashUIKit.BottomSheet.selfSizing(
-                showBackButton: .constant(false),
-                fallback: 600
-            ) {
+            // Full height, not self-sizing: the screen has a text field, and a
+            // self-sizing sheet lays its content out at a fixed ideal height, so
+            // nothing can scroll out from under the keyboard.
+            DashUIKit.BottomSheet(showBackButton: .constant(false)) {
                 VerifyIdentityScreen(
                     username: viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines),
                     onConfirmed: { url in
