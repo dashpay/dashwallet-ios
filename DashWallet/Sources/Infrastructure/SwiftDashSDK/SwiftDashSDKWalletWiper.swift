@@ -309,6 +309,14 @@ final class SwiftDashSDKWalletWiper: NSObject {
         CoinJoinWithdrawalStore.shared.resetForWipe()
         ShieldedWithdrawalStore.shared.resetForWipe()
         AssetLockProbeStore.shared.resetForWipe()
+        // Logged rather than failing the wipe: past the commit point the
+        // wallets are gone, and the per-wallet deletion already cleared each
+        // one's journal.
+        do {
+            try DashPayWithdrawalStore.shared.resetForWipe()
+        } catch {
+            logger.error("failed to clear DashPay withdrawal history: \(String(describing: error), privacy: .public)")
+        }
         SPVChainResyncMarker.resetForWipe()
         // Without this a contested submission outlived the wallet that made it:
         // reset mid-vote, create a new wallet, and the new wallet reported the
@@ -919,6 +927,13 @@ final class SwiftDashSDKWalletWiper: NSObject {
             CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletIdHex)
+            // Logged rather than thrown: the wallet is already deleted, and
+            // throwing here would skip the identity bookkeeping below.
+            do {
+                try DashPayWithdrawalStore.shared.clearForWallet(walletId: walletId)
+            } catch {
+                logger.error("failed to clear DashPay withdrawal history: \(String(describing: error), privacy: .public)")
+            }
         }
 
         // Per-wallet identity bookkeeping, not app-state cleanup: it runs on

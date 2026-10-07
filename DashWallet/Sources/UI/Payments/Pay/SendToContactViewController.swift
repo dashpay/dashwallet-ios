@@ -28,7 +28,7 @@ final class SendToContactPickerViewController: DWBasePayViewController, Navigati
         let screen = SendToContactPickerScreen(
             viewModel: viewModel,
             onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) },
-            onSelect: { [weak self] contact in self?.pushAmountStep(for: contact) })
+            onSelect: { [weak self] contact in self?.pushPaymentSteps(for: contact) })
         return UIHostingController(rootView: screen)
     }()
 
@@ -63,15 +63,18 @@ final class SendToContactPickerViewController: DWBasePayViewController, Navigati
         viewModel.refresh()
     }
 
-    /// Straight to the amount step: the contact IS the destination, and Core is
-    /// the only balance that can fund it, so the address step and the From step
-    /// have nothing left to ask. Back from there returns here.
-    private func pushAmountStep(for contact: ContactItem) {
+    /// The contact IS the destination, so the address step has nothing to ask.
+    /// The From step asks only when more than one balance can pay; otherwise
+    /// the flow goes straight to the amount. Back from either returns here.
+    private func pushPaymentSteps(for contact: ContactItem) {
         let sendViewModel = SendViewModel()
         sendViewModel.setContactRecipient(contact)
-        pushExternalSendAmount(
-            viewModel: sendViewModel,
-            onSendCompleted: { [weak self] in self?.finishSendFlow() })
+        let onSendCompleted: () -> Void = { [weak self] in self?.finishSendFlow() }
+        if sendViewModel.contactOffersSourceChoice {
+            pushExternalSendSource(viewModel: sendViewModel, onSendCompleted: onSendCompleted)
+        } else {
+            pushExternalSendAmount(viewModel: sendViewModel, onSendCompleted: onSendCompleted)
+        }
     }
 }
 

@@ -208,14 +208,14 @@ extension DWBasePayViewController {
     }
 
     /// Push the external-send AMOUNT step (final). Core → Core rides
-    /// `continueCore` (the L1 payment processor); a DashPay contact rides
-    /// `continueContactPayment`; every other route confirms in
-    /// `SendConfirmSheet`.
+    /// `continueCore` (the L1 payment processor); a Transparent-funded
+    /// DashPay contact payment rides `continueContactPayment`; every other
+    /// route, a Platform- or Shielded-funded contact payment included,
+    /// confirms in `SendConfirmSheet`.
     ///
-    /// Also the contact flow's SECOND and last step: the picker sets the
-    /// recipient on the view model and calls this directly, skipping the
-    /// address step (there is no address) and the From step (Core is the only
-    /// source a contact payment can have).
+    /// Also the contact flow's last step. The picker sets the recipient on the
+    /// view model and skips the address step (there is no address); it goes
+    /// through the From step only when more than one balance can pay.
     func pushExternalSendAmount(viewModel: SendViewModel,
                                 onSendCompleted: @escaping () -> Void) {
         let screen = ExternalSendAmountScreen(
