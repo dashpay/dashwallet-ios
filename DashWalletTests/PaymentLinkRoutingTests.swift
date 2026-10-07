@@ -745,9 +745,10 @@ final class PaymentDialogOutcomeTests: XCTestCase {
         let controller = PaymentController()
         controller.presentationContextProvider = anchor
         let pending = "yPendingRecipientAddressForTests"
+        // The waiting payment itself paid two recipients, `pending` second.
         let waiting = PendingSendOutcomes.Entry(
             txidWire: Data(repeating: 0x9d, count: 32), walletId: Data(repeating: 0x1d, count: 32),
-            address: pending, amount: 100_000, sentAt: Date())
+            address: "yEarlierFirstRecipientForTests", otherAddresses: [pending], amount: 123_400_000, sentAt: Date())
         var asked: [[String]] = []
         controller.waitingPayment = { addresses in
             asked.append(addresses)
@@ -764,6 +765,9 @@ final class PaymentDialogOutcomeTests: XCTestCase {
         XCTAssertEqual(asked, [["yFirstRecipientAddressForTests", pending]], "every recipient is checked")
         let notice = try XCTUnwrap(root.presentedViewController as? UIHostingController<ModalDialog>, "refused")
         XCTAssertEqual(answers, [])
+        let text = try XCTUnwrap(notice.rootView.textBlock1)
+        XCTAssertFalse(text.contains(waiting.amount.formattedDashAmount),
+                       "the whole payment's amount is not what this address was paid: \(text)")
         let shown = try XCTUnwrap(logged.first)
         XCTAssertTrue(shown.contains("to=\(PendingSendOutcomes.masked(pending))"), shown)
         XCTAssertFalse(shown.contains(pending), "never the full address")
@@ -1078,7 +1082,7 @@ final class UnknownOutcomeWalletTests: XCTestCase {
         let before = PendingSendOutcomes.shared.entries.count
 
         let error = WalletSendService.unknownOutcomeError(
-            txidWire: txidWire, address: "yFirst", otherAddresses: ["ySecond", "yFirst"], amount: 3_000,
+            txidWire: txidWire, address: "yFirst", otherAddresses: ["yFirst", "ySecond", "yFirst"], amount: 3_000,
             reason: "no answer", walletId: sentFrom)
 
         XCTAssertTrue(WalletSendService.isBroadcastUnknownError(error))
@@ -1241,12 +1245,21 @@ private final class AnchorProvider: NSObject, PaymentControllerPresentationConte
 /// The Home pending caption across a wallet or network switch
 /// (`PendingBalanceFollower`).
 final class PendingBalanceFollowerTests: XCTestCase {
+    private typealias Scope = PendingBalanceFollower.Scope
+
+    private final class Store {}
+    private let storeA = Store()
+    private let storeB = Store()
+    private var walletA: Scope { Scope(store: ObjectIdentifier(storeA), walletId: Data(repeating: 0xa1, count: 32)) }
+    private var walletB: Scope { Scope(store: ObjectIdentifier(storeB), walletId: Data(repeating: 0xb2, count: 32)) }
+
     private let balanceEvents = PassthroughSubject<Bool, Never>()
     private let coinSaves = PassthroughSubject<Void, Never>()
-    private let networkWillChange = PassthroughSubject<Void, Never>()
-    private let walletDidBind = PassthroughSubject<Void, Never>()
-    /// What a read returns now: the bound wallet's waiting duffs.
-    private let stored = OSAllocatedUnfairLock<UInt64?>(initialState: nil)
+    private let walletDidChange = PassthroughSubject<Void, Never>()
+    /// What the host has bound (read on the main queue and by reads).
+    private let bound = OSAllocatedUnfairLock<Scope?>(initialState: nil)
+    /// The waiting duffs saved per wallet; a wallet not listed fails to read.
+    private let saved = OSAllocatedUnfairLock<[Data: UInt64]>(initialState: [:])
     private let readCount = OSAllocatedUnfairLock(initialState: 0)
 
     private func makeFollower() -> PendingBalanceFollower {
@@ -1254,14 +1267,20 @@ final class PendingBalanceFollowerTests: XCTestCase {
             signals: .init(
                 balanceEvents: balanceEvents.eraseToAnyPublisher(),
                 coinSaves: coinSaves.eraseToAnyPublisher(),
-                networkWillChange: networkWillChange.eraseToAnyPublisher(),
-                walletDidBind: walletDidBind.eraseToAnyPublisher()),
+                walletDidChange: walletDidChange.eraseToAnyPublisher()),
             interval: .milliseconds(100),
-            read: { [stored, readCount] in
+            boundScope: { [bound] in bound.withLock { $0 } },
+            read: { [bound, saved, readCount] in
                 readCount.withLock { $0 += 1 }
-                return stored.withLock { $0 }
+                guard let scope = bound.withLock({ $0 }),
+                      let duffs = saved.withLock({ $0[scope.walletId] }) else { return nil }
+                return .init(scope: scope, duffs: duffs)
             })
     }
+
+    private func bind(_ scope: Scope?) { bound.withLock { $0 = scope } }
+    private func save(_ duffs: UInt64?, for scope: Scope) { saved.withLock { $0[scope.walletId] = duffs } }
+    private var reads: Int { readCount.withLock { $0 } }
 
     private func spin(until condition: () -> Bool, timeout: TimeInterval = 3) {
         let deadline = Date().addingTimeInterval(timeout)
@@ -1274,80 +1293,124 @@ final class PendingBalanceFollowerTests: XCTestCase {
         RunLoop.main.run(until: Date().addingTimeInterval(seconds))
     }
 
-    /// The runtime publishes the destination wallet's balance first and
-    /// posts the active-wallet notification after it. On an idle or offline
-    /// switch nothing else follows: the caption still appears.
-    func testACaptionAppearsWhenTheBalanceEventPrecedesTheWalletNotificationAndNothingFollows() {
+    /// Wallet A on screen with 7 000 waiting.
+    private func followerShowingWalletA() -> PendingBalanceFollower {
         let follower = makeFollower()
-        stored.withLock { $0 = 7_000 }
+        bind(walletA)
+        save(7_000, for: walletA)
         balanceEvents.send(true)
         spin(until: { follower.duffs == 7_000 })
-        XCTAssertEqual(follower.duffs, 7_000, "the first wallet's caption")
+        XCTAssertEqual(follower.duffs, 7_000, "wallet A's caption")
+        return follower
+    }
 
-        // Switch: teardown clears the balance, the destination's is published,
-        // and only then the notification. The destination has 9 000 waiting.
-        balanceEvents.send(false)
-        stored.withLock { $0 = 9_000 }
-        balanceEvents.send(true)
-        walletDidBind.send()
-        let readsAtBind = readCount.withLock { $0 }
+    /// The runtime publishes the destination wallet's balance and only then
+    /// posts the active-wallet notification; on an idle or offline switch
+    /// nothing follows it. The read the balance event started found nothing
+    /// (its coins were not readable yet), so the notification's own read is
+    /// the one that brings the caption up.
+    func testTheWalletNotificationReadsWhenTheBalanceEventCameFirstAndNothingFollows() {
+        let follower = followerShowingWalletA()
 
+        balanceEvents.send(false)  // teardown
+        spin(until: { follower.duffs == nil })
+        XCTAssertNil(follower.duffs, "not known while the balance is not")
+        bind(walletB)
+        let readsBeforeSeed = reads
+        balanceEvents.send(true)   // the destination's balance, published first
+        spin(until: { self.reads > readsBeforeSeed })
+        settle()
+        XCTAssertNil(follower.duffs, "the read the balance event started found nothing")
+
+        save(9_000, for: walletB)
+        let readsBeforeNotification = reads
+        walletDidChange.send()     // the notification, and no event after it
         spin(until: { follower.duffs == 9_000 })
-        XCTAssertEqual(follower.duffs, 9_000, "the destination wallet's caption, with no further event")
-        XCTAssertGreaterThan(readCount.withLock { $0 }, readsAtBind, "the notification itself scheduled the read")
+        XCTAssertEqual(follower.duffs, 9_000, "wallet B's caption, from the notification alone")
+        XCTAssertEqual(reads, readsBeforeNotification + 1, "one read, started by the notification")
         settle()
         XCTAssertEqual(follower.duffs, 9_000, "and it stays")
     }
 
-    /// The old wallet's value is not shown under the new wallet, even for a
-    /// read that was in flight when the wallet changed.
-    func testAWalletBindClearsTheOldWalletsValueAtOnce() {
-        let follower = makeFollower()
-        stored.withLock { $0 = 7_000 }
-        balanceEvents.send(true)
-        spin(until: { follower.duffs == 7_000 })
+    /// The same order with the first read succeeding: the caption is up
+    /// before the notification, which does not take it away.
+    func testACaptionReadBeforeTheWalletNotificationSurvivesIt() {
+        let follower = followerShowingWalletA()
+        var seen: [UInt64?] = []
+        let watch = follower.$duffs.dropFirst().sink { seen.append($0) }
+        defer { watch.cancel() }
 
-        stored.withLock { $0 = nil }  // the destination's read fails for now
-        walletDidBind.send()
-        spin(until: { follower.duffs == nil })
-        XCTAssertNil(follower.duffs, "cleared: not known for the new wallet yet")
-        settle()
-        XCTAssertNil(follower.duffs, "a failed read does not bring the old wallet's value back")
-    }
-
-    /// A network switch is announced before the old wallet is torn down: no
-    /// read counts until the next wallet is up.
-    func testNoReadCountsBetweenANetworkSwitchAndTheNextWallet() {
-        let follower = makeFollower()
-        stored.withLock { $0 = 7_000 }
-        balanceEvents.send(true)
-        spin(until: { follower.duffs == 7_000 })
-
-        networkWillChange.send()
-        spin(until: { follower.duffs == nil })
-        coinSaves.send()  // the old wallet's persister is still writing
-        settle()
-        XCTAssertNil(follower.duffs, "the old wallet's coins are not the next wallet's")
-
-        stored.withLock { $0 = 2_000 }
-        balanceEvents.send(false)  // teardown
-        balanceEvents.send(true)   // the destination's seed
-        walletDidBind.send()
-        spin(until: { follower.duffs == 2_000 })
-        XCTAssertEqual(follower.duffs, 2_000)
-    }
-
-    /// A rebuild that posts no bind notification (a plain restart) is up at
-    /// its first known balance.
-    func testAKnownBalanceEndsTheWaitWhenNoBindNotificationComes() {
-        let follower = makeFollower()
-        networkWillChange.send()
-        stored.withLock { $0 = 4_000 }
         balanceEvents.send(false)
-        settle()
-        XCTAssertNil(follower.duffs, "a cleared balance is not a wallet")
+        bind(walletB)
+        save(9_000, for: walletB)
         balanceEvents.send(true)
-        spin(until: { follower.duffs == 4_000 })
-        XCTAssertEqual(follower.duffs, 4_000)
+        spin(until: { follower.duffs == 9_000 })
+        walletDidChange.send()
+        settle()
+
+        XCTAssertEqual(follower.duffs, 9_000)
+        XCTAssertEqual(seen, [nil, 9_000], "cleared once for the teardown; the notification clears nothing")
+    }
+
+    /// A value is its wallet's: a read that lands after another wallet is
+    /// bound is dropped, and the notification clears what was shown.
+    func testAnotherWalletsValueIsNeverShown() {
+        let follower = followerShowingWalletA()
+
+        // A switch with no teardown event in between (the worst case): wallet
+        // B is bound, its coins not readable yet.
+        bind(walletB)
+        walletDidChange.send()
+        spin(until: { follower.duffs == nil })
+        XCTAssertNil(follower.duffs, "wallet A's value is not wallet B's")
+        coinSaves.send()
+        settle()
+        XCTAssertNil(follower.duffs, "a failed read brings nothing back")
+
+        save(1_000, for: walletB)
+        coinSaves.send()
+        spin(until: { follower.duffs == 1_000 })
+        XCTAssertEqual(follower.duffs, 1_000)
+    }
+
+    /// While the balance is not known (teardown, nothing bound, or the old
+    /// wallet still bound under a new Home), nothing is read or shown.
+    func testNothingIsReadOrShownWhileTheBalanceIsNotKnown() {
+        let follower = followerShowingWalletA()
+        balanceEvents.send(false)
+        spin(until: { follower.duffs == nil })
+        let readsAfterTeardown = reads
+
+        coinSaves.send()  // the old wallet's persister is still writing
+        walletDidChange.send()
+        settle()
+        XCTAssertNil(follower.duffs, "the old wallet is still bound, but its balance is not shown")
+        XCTAssertEqual(reads, readsAfterTeardown, "and nothing is read for it")
+    }
+
+    /// A rebuild that posts no notification (a plain restart) shows its
+    /// caption at its first known balance.
+    func testARestartWithNoNotificationShowsItsCaption() {
+        let follower = followerShowingWalletA()
+        balanceEvents.send(false)
+        bind(nil)
+        spin(until: { follower.duffs == nil })
+
+        let rebuilt = Scope(store: ObjectIdentifier(storeB), walletId: walletA.walletId)
+        bind(rebuilt)
+        balanceEvents.send(true)
+        spin(until: { follower.duffs == 7_000 })
+        XCTAssertEqual(follower.duffs, 7_000)
+    }
+
+    /// A failed read keeps the last known value of the same wallet.
+    func testAFailedReadKeepsTheLastValue() {
+        let follower = followerShowingWalletA()
+        save(nil, for: walletA)
+        let before = reads
+        coinSaves.send()
+        spin(until: { self.reads > before })
+        settle()
+        XCTAssertEqual(follower.duffs, 7_000)
     }
 }

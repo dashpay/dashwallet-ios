@@ -29,13 +29,15 @@ final class BalanceModel: ObservableObject {
     /// other Home balance rows.
     @Published private(set) var value: UInt64?
     /// Part of `value` that a payment cannot use until the network confirms
-    /// it (`SwiftDashSDKWalletSource.awaitingConfirmationDuffs()`); nil while
+    /// it (`SwiftDashSDKWalletSource.awaitingConfirmation()`); nil while
     /// not known — before the first read and after a wallet or network
     /// switch until the new wallet's read lands; a failed read keeps the last
     /// known value (`PendingBalanceFollower`).
     @Published private(set) var awaitingConfirmationDuffs: UInt64?
     private let pendingBalance = PendingBalanceFollower(
-        signals: .live, read: { SwiftDashSDKWalletSource.awaitingConfirmationDuffs() })
+        signals: .live,
+        boundScope: { SwiftDashSDKWalletSource.boundPendingBalanceScope() },
+        read: { SwiftDashSDKWalletSource.awaitingConfirmation() })
     /// Badge text for the home header while the wallet runs on a test
     /// network ("TESTNET"/"DEVNET"), so test funds can't be mistaken for
     /// real Dash; nil on mainnet.
@@ -173,26 +175,39 @@ extension BalanceModel {
 /// or a save that touched them (the coins are saved a moment after the
 /// balance moves), at most once per `interval`. The newest read wins.
 ///
-/// Another wallet's (or network's) waiting coins are not this one's. Two
-/// signals bound a switch, and they are not the same moment:
-/// - `networkWillChange` comes before the runtime tears the old wallet down:
-///   the value is cleared, and no read counts until the next wallet is up.
-/// - `walletDidBind` comes after the destination wallet is bound and its
-///   balance already published (`SwiftDashSDKWalletRuntime` posts
-///   `activeWalletDidChangeNotification` after the refresh): the value is
-///   cleared and a read for that wallet is scheduled — on an idle or offline
-///   switch no later balance event or save would start one.
-///
-/// A rebuild that posts no `walletDidBind` (a plain restart after a failed
-/// switch) is taken as up at its first known balance.
+/// Another wallet's (or network's) waiting coins are not this one's, so a
+/// value is tied to the wallet it was read for, not to the order of the
+/// switch notifications:
+/// - every read comes back with the `Scope` it read (the bound wallet and
+///   its store), and counts only if that is still what is bound when it
+///   lands;
+/// - while the balance itself is not known (a teardown clears it), the part
+///   of it that waits is not known either: cleared, and no read is made;
+/// - `walletDidChange` (`activeWalletDidChangeNotification`: posted once a
+///   switch has bound its wallet, and after a wallet is removed) clears a
+///   value that is not the bound wallet's and starts a read. On an idle or
+///   offline switch the destination's balance is published before that
+///   notification and nothing follows it, so this read is the one that
+///   brings the caption up if the earlier one did not.
 final class PendingBalanceFollower {
+    /// What a value was read for: a wallet in the store the host had bound.
+    /// A network switch or a rebuild binds another store.
+    struct Scope: Equatable {
+        let store: ObjectIdentifier
+        let walletId: Data
+    }
+
+    struct Reading {
+        let scope: Scope
+        let duffs: UInt64
+    }
+
     struct Signals {
         /// A balance was published; true when it is a known amount (false
         /// for the cleared, not-known state of a teardown).
         let balanceEvents: AnyPublisher<Bool, Never>
         let coinSaves: AnyPublisher<Void, Never>
-        let networkWillChange: AnyPublisher<Void, Never>
-        let walletDidBind: AnyPublisher<Void, Never>
+        let walletDidChange: AnyPublisher<Void, Never>
 
         static var live: Signals {
             let center = NotificationCenter.default
@@ -202,80 +217,77 @@ final class PendingBalanceFollower {
                     .filter { HomeViewModel.saveTouchesFeedRows($0) }
                     .map { _ in () }
                     .eraseToAnyPublisher(),
-                networkWillChange: center.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
-                    .map { _ in () }
-                    .eraseToAnyPublisher(),
-                walletDidBind: center.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
+                walletDidChange: center.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
                     .map { _ in () }
                     .eraseToAnyPublisher())
         }
     }
 
-    /// Nil while not known: before the first read, and from a switch until
-    /// the new wallet's read lands. A failed read keeps the last value.
+    /// Nil while not known: before the first read, while the balance is not
+    /// known, and from a switch until the new wallet's read lands. A failed
+    /// read keeps the last value.
     @Published private(set) var duffs: UInt64?
 
-    /// Bumped on every switch signal; a read started for an earlier one is
-    /// another wallet's (main queue only).
-    private var generation = 0
-    /// Between `networkWillChange` and the next wallet being up, the host may
-    /// still serve the old wallet: no read counts (main queue only).
-    private var awaitingWallet = false
+    /// What `duffs` was read for (main queue only).
+    private var shownScope: Scope?
+    /// The last balance event was a known amount (main queue only).
+    private var isBalanceKnown = false
     private var cancellables = Set<AnyCancellable>()
 
-    /// - Parameter read: the waiting duffs of the wallet bound now, nil when
-    ///   they could not be read; called off the main thread.
-    init(signals: Signals, interval: DispatchQueue.SchedulerTimeType.Stride = .seconds(1), read: @escaping () -> UInt64?) {
+    /// - Parameters:
+    ///   - boundScope: what the host has bound now, nil when nothing is;
+    ///     called on the main queue.
+    ///   - read: the waiting duffs of what is bound when it runs, with its
+    ///     scope; nil when they could not be read. Called off the main
+    ///     thread.
+    init(
+        signals: Signals,
+        interval: DispatchQueue.SchedulerTimeType.Stride = .seconds(1),
+        boundScope: @escaping () -> Scope?,
+        read: @escaping () -> Reading?
+    ) {
         let main = DispatchQueue.main
-        let willChange = signals.networkWillChange
-            .receive(on: main)
-            .handleEvents(receiveOutput: { [weak self] _ in
-                self?.generation += 1
-                self?.awaitingWallet = true
-            })
-            .share()
-        let didBind = signals.walletDidBind
-            .receive(on: main)
-            .handleEvents(receiveOutput: { [weak self] _ in
-                self?.generation += 1
-                self?.awaitingWallet = false
-            })
-            .share()
         let balanceEvents = signals.balanceEvents
             .receive(on: main)
             .handleEvents(receiveOutput: { [weak self] isKnown in
-                if isKnown { self?.awaitingWallet = false }
+                self?.isBalanceKnown = isKnown
+                if !isKnown { self?.clear() }
             })
             .map { _ in () }
-        let reads = balanceEvents
-            .merge(with: signals.coinSaves, didBind)
+        let walletChanges = signals.walletDidChange
+            .receive(on: main)
+            .handleEvents(receiveOutput: { [weak self] _ in
+                guard let self, self.shownScope != boundScope() else { return }
+                self.clear()
+            })
+        balanceEvents
+            .merge(with: signals.coinSaves, walletChanges)
             .throttle(for: interval, scheduler: main, latest: true)
-            .map { [weak self] _ in
-                // Tagged with the generation it was started for: a read that
-                // lands after a switch is the old wallet's.
-                let generation = (self?.awaitingWallet ?? true) ? -1 : (self?.generation ?? 0)
-                return Future<(Int, UInt64?), Never> { promise in
-                    DispatchQueue.global(qos: .utility).async {
-                        promise(.success((generation, read())))
-                    }
+            .map { [weak self] _ -> AnyPublisher<Reading?, Never> in
+                // Nothing to read for while the balance is not known.
+                guard self?.isBalanceKnown == true else { return Empty<Reading?, Never>().eraseToAnyPublisher() }
+                return Future<Reading?, Never> { promise in
+                    DispatchQueue.global(qos: .utility).async { promise(.success(read())) }
                 }
+                .eraseToAnyPublisher()
             }
             .switchToLatest()
             .receive(on: main)
-            .compactMap { [weak self] generation, duffs -> UInt64? in
+            .sink { [weak self] reading in
                 // A read that failed (host unbound, fetch error) keeps the last
-                // known value rather than claiming nothing is waiting.
-                guard generation == self?.generation else { return nil }
-                return duffs
-            }
-        reads
-            .map { Optional($0) }
-            .merge(with: willChange.map { _ in UInt64?.none }, didBind.map { _ in UInt64?.none })
-            .removeDuplicates()
-            .sink { [weak self] duffs in
-                self?.duffs = duffs
+                // known value rather than claiming nothing is waiting. One
+                // that lands after a switch or a teardown is not this
+                // wallet's.
+                guard let self, let reading, self.isBalanceKnown, reading.scope == boundScope() else { return }
+                self.shownScope = reading.scope
+                if self.duffs != reading.duffs { self.duffs = reading.duffs }
             }
             .store(in: &cancellables)
+    }
+
+    private func clear() {
+        shownScope = nil
+        if duffs != nil { duffs = nil }
     }
 }
 

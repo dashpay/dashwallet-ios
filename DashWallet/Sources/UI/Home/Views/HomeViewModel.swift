@@ -2093,9 +2093,22 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// a send the network has not taken. CoinJoin and the other account types
     /// are left out, as are outputs paid to others, and outputs with a saved
     /// spender (see `awaitingConfirmationTotal`). One fetch of the saved state;
-    /// safe from any thread. Nil when it could not be read.
-    static func awaitingConfirmationDuffs() -> UInt64? {
+    /// safe from any thread. Nil when it could not be read. Comes with the
+    /// wallet and store it was read from, so a caller can tell a value read
+    /// before a wallet or network switch from the bound wallet's.
+    static func awaitingConfirmation() -> PendingBalanceFollower.Reading? {
         guard let (container, walletId) = hostHandles() else { return nil }
+        guard let duffs = awaitingConfirmationDuffs(in: container, walletId: walletId) else { return nil }
+        return .init(scope: .init(store: ObjectIdentifier(container), walletId: walletId), duffs: duffs)
+    }
+
+    /// The wallet and store the host has bound now: what
+    /// `awaitingConfirmation()` would read. Nil when nothing is bound.
+    static func boundPendingBalanceScope() -> PendingBalanceFollower.Scope? {
+        hostHandles().map { .init(store: ObjectIdentifier($0.container), walletId: $0.walletId) }
+    }
+
+    private static func awaitingConfirmationDuffs(in container: ModelContainer, walletId: Data) -> UInt64? {
         // A pre-filter on the row's own columns; `awaitingConfirmationTotal`
         // applies the whole rule again and is the one that decides. The
         // spender check is a nil test on the link, which needs no prefetch.

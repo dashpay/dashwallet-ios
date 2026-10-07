@@ -26,7 +26,7 @@ extension BIP70PaymentService {
                 // Under the wallet that built it: another may be active by now.
                 WalletSendService.followUnknownOutcome(
                     txidWire: Data(txHashDisplay.reversed()), address: addresses.first,
-                    otherAddresses: Array(addresses.dropFirst()), amount: amount, walletId: walletId)
+                    otherAddresses: addresses, amount: amount, walletId: walletId)
             }
         }
         return service

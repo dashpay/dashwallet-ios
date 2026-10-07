@@ -171,8 +171,8 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// - Parameters:
     ///   - address: the recipient, or the first of several.
     ///   - otherAddresses: the other recipients of the same transaction (a
-    ///     BIP70 request with several outputs); repeats and `address` itself
-    ///     are dropped.
+    ///     BIP70 request with several outputs). The whole recipient list may
+    ///     be passed: repeats and `address` itself are dropped.
     ///   - walletId: the wallet that signed the send (every route passes
     ///     it); nil falls back to the active wallet.
     /// - Returns: false when the send could not be followed (no wallet given
@@ -244,11 +244,22 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     /// `maxFollowAge` stops refusing at once, read or not.
     func waitingPayment(toAnyOf addresses: [String]) -> Entry? {
         guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId else { return nil }
-        let wanted = Set(addresses)
-        guard entries.values.contains(where: { $0.walletId == walletId && !wanted.isDisjoint(with: $0.addresses) })
-        else { return nil }
+        let followed = Self.followed(paying: addresses, walletId: walletId, in: entries)
+        guard !followed.isEmpty else { return nil }
         reconcile()
-        return Self.refusing(addresses, walletId: walletId, in: entries, now: Date())
+        return Self.newestWithinFollowAge(followed, now: Date())
+    }
+
+    /// `walletId`'s `entries` that pay any of `addresses`, whatever their age.
+    private nonisolated static func followed(paying addresses: [String], walletId: Data, in entries: [Data: Entry]) -> [Entry] {
+        let wanted = Set(addresses)
+        return entries.values.filter { $0.walletId == walletId && !wanted.isDisjoint(with: $0.addresses) }
+    }
+
+    private nonisolated static func newestWithinFollowAge(_ entries: [Entry], now: Date) -> Entry? {
+        entries
+            .filter { now.timeIntervalSince($0.sentAt) <= maxFollowAge }
+            .max { $0.sentAt < $1.sentAt }
     }
 
     /// The rule of `waitingPayment(toAnyOf:)`, on its own (no host, no
@@ -257,11 +268,7 @@ final class PendingSendOutcomes: NSObject, ObservableObject {
     nonisolated static func refusing(
         _ addresses: [String], walletId: Data, in entries: [Data: Entry], now: Date
     ) -> Entry? {
-        let wanted = Set(addresses)
-        return entries.values
-            .filter { $0.walletId == walletId && !wanted.isDisjoint(with: $0.addresses)
-                && now.timeIntervalSince($0.sentAt) <= maxFollowAge }
-            .max { $0.sentAt < $1.sentAt }
+        newestWithinFollowAge(followed(paying: addresses, walletId: walletId, in: entries), now: now)
     }
 
     /// `others` as stored in an entry: in order, without repeats, empty

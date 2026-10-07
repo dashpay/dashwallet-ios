@@ -51,9 +51,9 @@ enum BIP70Error: Error, Equatable {
     /// spend instead of discarding it. Never retry the same send on this error.
     /// `walletId` is the wallet that built the transaction (opaque here).
     /// `recipientAddresses` are the addresses the transaction pays, in request
-    /// order without repeats; filled in by `BIP70PaymentService` (the wallet
-    /// adapter that raises the error does not know them).
-    case broadcastOutcomeUnknown(txHashDisplay: Data, walletId: Data?, reason: String, recipientAddresses: [String] = [])
+    /// order without repeats; nil as raised by the wallet adapter, which does
+    /// not know them, and filled in by `BIP70PaymentService`.
+    case broadcastOutcomeUnknown(txHashDisplay: Data, walletId: Data?, reason: String, recipientAddresses: [String]? = nil)
 }
 
 extension BIP70Error: LocalizedError {

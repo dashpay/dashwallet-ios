@@ -281,8 +281,10 @@ extension PaymentController: DWPaymentProcessorDelegate {
     /// first; `done` runs once the notice is gone (or could not be shown).
     private func refuseRepeating(_ waiting: PendingSendOutcomes.Entry, done: @escaping () -> Void) {
         let sentAt = "\(DWDateFormatter.sharedInstance.shortStringFromDate(waiting.sentAt)) \(DWDateFormatter.sharedInstance.timeOnly(from: waiting.sentAt))"
-        // A route that does not know the amount records 0: the time alone then.
-        let message = waiting.amount > 0
+        // A route that does not know the amount records 0: the time alone
+        // then. So too for a payment to several recipients, whose amount is
+        // the whole payment's, not what this address was paid.
+        let message = waiting.amount > 0 && waiting.otherAddresses == nil
             ? String(
                 format: NSLocalizedString(
                     "Your previous payment to this address (%1$@, %2$@) is still being processed by the network. Wait until it is confirmed before paying this address again.",

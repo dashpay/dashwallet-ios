@@ -89,17 +89,17 @@ final class BIP70InteractiveCoordinator: NSObject {
                     amount: result.amount,
                     fee: result.fee)
                 await MainActor.run { completion(BIP70SendResultBox(result), nil) }
-            } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason, _) {
+            } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let walletId, let reason, let recipients) {
                 // The payment may well have gone through: followed in the
                 // history as "Waiting for the network", like a plain send —
                 // one send, under every recipient it pays.
                 // On the main actor: following the send touches main-actor state.
                 await MainActor.run {
-                    let addresses = box.confirmation.recipientAddresses
+                    let addresses = recipients ?? box.confirmation.recipientAddresses
                     let error = WalletSendService.unknownOutcomeError(
                         txidWire: Data(txHashDisplay.reversed()),
                         address: addresses.first,
-                        otherAddresses: Array(addresses.dropFirst()),
+                        otherAddresses: addresses,
                         amount: box.confirmation.amount,
                         reason: reason,
                         walletId: walletId)

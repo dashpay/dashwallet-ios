@@ -130,9 +130,9 @@ public final class SendCoinsService: NSObject {
             await MainActor.run {
                 // Under every address the request paid (the URI's own, if
                 // any, may not be among them).
-                let addresses = ([uri.address].compactMap { $0 } + recipients)
+                let addresses = [uri.address].compactMap { $0 } + (recipients ?? [])
                 _ = PendingSendOutcomes.shared.recordUnknownOutcome(
-                    txidWire: txIdWire, address: addresses.first, otherAddresses: Array(addresses.dropFirst()),
+                    txidWire: txIdWire, address: addresses.first, otherAddresses: addresses,
                     amount: 0, notifies: false, walletId: walletId)
             }
             throw DashSpendError.paymentStatusUnknown(txIdWire: txIdWire, reason: reason)
