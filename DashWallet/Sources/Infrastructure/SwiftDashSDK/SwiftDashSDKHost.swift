@@ -559,6 +559,13 @@ final class SwiftDashSDKHost {
             // every-stored-phrase fallback (devnet rows + devnet-scoped
             // mnemonic entries only; mainnet/testnet are untouched).
             DWLogger.log("HOST wallet recovery required for \(network.rawValue); restoring missing keychain wallets")
+            // The rows being recreated carried this network's persisted deep
+            // CoinJoin UTXOs. Re-arm the one-time wide scan here, where the
+            // loss is observed, rather than where the store was deleted: a
+            // reset interrupted after the unlink, a kill before UserDefaults
+            // reached disk, or any other way to an empty store all pass
+            // through this branch.
+            CoinJoinRecovery.shared.resetRecoveryFlag(scope: network.persistenceScope)
             do {
                 var recovered = try recoverPersistedWallet(handles: handles)
                 if recovered == nil, network == .devnet {

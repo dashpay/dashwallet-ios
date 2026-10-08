@@ -81,8 +81,8 @@ enum WalletLocalStoreResetError: Error, Equatable {
     case enumerationFailed(root: String, code: String)
     /// `removeItem` failed at `root/scope`. Entries before it are gone;
     /// nothing after it was touched. The failed entry itself may be partly
-    /// removed — directory removal is not atomic — which is why
-    /// `willRemove` runs before the attempt. `code` is `domain:code` only —
+    /// removed — directory removal is not atomic — so a store file can be
+    /// missing from a directory that still exists. `code` is `domain:code` only —
     /// Cocoa file errors carry paths in their userInfo, and those never reach
     /// the diagnostic logs.
     case removalFailed(root: String, scope: String, code: String)
@@ -160,21 +160,7 @@ protocol WalletLocalStoreResetting: Sendable {
     /// main thread. Stops at the first failure and throws
     /// `WalletLocalStoreResetError`; a re-run after a failure continues where
     /// it stopped because removed entries no longer exist.
-    ///
-    /// `willRemove` runs on the deleting thread right before each entry's
-    /// removal is attempted. A directory removal is not atomic and the process
-    /// can die at any point, so state that must not outlive the entry's files
-    /// (a "scan already done" flag) is dropped there: whichever way the
-    /// attempt ends, the files never exist without that state already gone.
-    func resetAllScopes(
-        willRemove: @escaping @Sendable (WalletLocalStoreResetReport.Removed) -> Void
-    ) async throws -> WalletLocalStoreResetReport
-}
-
-extension WalletLocalStoreResetting {
-    func resetAllScopes() async throws -> WalletLocalStoreResetReport {
-        try await resetAllScopes(willRemove: { _ in })
-    }
+    func resetAllScopes() async throws -> WalletLocalStoreResetReport
 }
 
 /// Deletes the children of the three store roots — every network and devnet
@@ -194,14 +180,11 @@ struct WalletLocalStoreResetter: WalletLocalStoreResetting {
         self.makeFileManager = makeFileManager
     }
 
-    func resetAllScopes(
-        willRemove: @escaping @Sendable (WalletLocalStoreResetReport.Removed) -> Void
-    ) async throws -> WalletLocalStoreResetReport {
+    func resetAllScopes() async throws -> WalletLocalStoreResetReport {
         let roots = self.roots
         let makeFileManager = self.makeFileManager
         return try await Task.detached(priority: .userInitiated) {
-            try Self.removeEveryScope(
-                under: roots, fileManager: makeFileManager(), willRemove: willRemove)
+            try Self.removeEveryScope(under: roots, fileManager: makeFileManager())
         }.value
     }
 
@@ -209,8 +192,7 @@ struct WalletLocalStoreResetter: WalletLocalStoreResetting {
     /// are testable without the detached task.
     static func removeEveryScope(
         under roots: WalletLocalStoreRoots,
-        fileManager: FileManager,
-        willRemove: (WalletLocalStoreResetReport.Removed) -> Void = { _ in }
+        fileManager: FileManager
     ) throws -> WalletLocalStoreResetReport {
         let ordered = roots.orderedForDeletion
         var scopes = Set<String>()
@@ -228,8 +210,6 @@ struct WalletLocalStoreResetter: WalletLocalStoreResetting {
         for scope in scopes.sorted() {
             for (label, root) in ordered {
                 let url = root.appendingPathComponent(scope)
-                let entry = WalletLocalStoreResetReport.Removed(root: label, scope: scope)
-                willRemove(entry)
                 do {
                     try fileManager.removeItem(at: url)
                 } catch let error as NSError where error.domain == NSCocoaErrorDomain
@@ -240,7 +220,7 @@ struct WalletLocalStoreResetter: WalletLocalStoreResetting {
                     DWLogger.log("🧹 STORE-RESET FAILED at \(label)/\(scope) code=\(code) removedBefore=\(removed.count)")
                     throw WalletLocalStoreResetError.removalFailed(root: label, scope: scope, code: code)
                 }
-                removed.append(entry)
+                removed.append(.init(root: label, scope: scope))
                 DWLogger.log("🧹 STORE-RESET removed \(label)/\(scope)")
             }
         }

@@ -84,8 +84,15 @@ import OSLog
 enum Network: String {
     case mainnet, testnet, devnet, regtest
     var networkName: String { rawValue }
+    var persistenceScope: String { rawValue }
 }
 struct ManagedPlatformWallet { let walletId: Data }
+final class CoinJoinRecovery {
+    static let shared = CoinJoinRecovery()
+    /// Scopes whose wide-scan flag the host re-armed, in order.
+    var resetScopes: [String] = []
+    func resetRecoveryFlag(scope: String) { resetScopes.append(scope) }
+}
 extension WalletEnvironment {
     static var active: [NetworkKind: Data] = [:]
     static func activeWalletId(for kind: NetworkKind) -> Data? { active[kind] }
@@ -163,9 +170,30 @@ import XCTest
         PlatformWalletManager.createAttempts = []
         PlatformWalletManager.shutdowns = 0
         WalletEnvironment.active = [:]
+        CoinJoinRecovery.shared.resetScopes = []
     }
     override func tearDown() async throws {
         try FileManager.default.removeItem(at: HostRecoveryHarness.directory)
+    }
+    func testRecreatingWalletRowsReArmsTheWideCoinJoinScanForTheNetwork() async throws {
+        // An empty store, however it came to be empty (interrupted reset, a
+        // flag write that never reached disk, a reinstall), recreates rows
+        // from the keychain and must re-arm the one-time wide scan.
+        _ = try await HostRecoveryHarness().start(network: .mainnet)
+        XCTAssertEqual(CoinJoinRecovery.shared.resetScopes, ["mainnet"])
+        // A resumed partial recovery passes through the same branch.
+        PlatformWalletManager.rows = [:]
+        PlatformWalletManager.failingMnemonic = "wallet-b"
+        do { _ = try await HostRecoveryHarness().start(network: .mainnet) } catch {}
+        PlatformWalletManager.failingMnemonic = nil
+        _ = try await HostRecoveryHarness().start(network: .mainnet)
+        XCTAssertEqual(CoinJoinRecovery.shared.resetScopes, ["mainnet", "mainnet", "mainnet"])
+    }
+    func testHealthyStoreKeepsTheCompletedWideScanFlag() async throws {
+        let id = Data("wallet-a".utf8)
+        PlatformWalletManager.rows[id] = .init(walletId: id)
+        _ = try await HostRecoveryHarness().start(network: .mainnet)
+        XCTAssertEqual(CoinJoinRecovery.shared.resetScopes, [])
     }
     func testPartialRecoveryFailsThenNextLaunchCreatesOnlyMissingWallet() async throws {
         PlatformWalletManager.failingMnemonic = "wallet-b"
@@ -325,12 +353,6 @@ import XCTest
         + "\n@MainActor enum BackgroundRefreshCoordinator {\n"
         + declaration(background, "    static func defaultRuntimeStart(") + "\n}\n"
         + '''
-final class ScopeList: @unchecked Sendable {
-    private let lock = NSLock()
-    private var scopes: [String] = []
-    func append(_ scope: String) { lock.lock(); defer { lock.unlock() }; scopes.append(scope) }
-    func drain() -> [String] { lock.lock(); defer { lock.unlock() }; let s = scopes; scopes = []; return s }
-}
 @MainActor final class SwiftDashSDKWalletRuntime {
     static let shared = SwiftDashSDKWalletRuntime()
     let lifecycleQueue = SerialAsyncLifecycleQueue()
@@ -356,12 +378,6 @@ final class ScopeList: @unchecked Sendable {
     func fullReset(lastError: String?, forWipe: Bool) async { events.append("fullReset") }
     func dropLocalStoreDerivedState() { events.append("drop") }
     func clearLocalStoreMaintenanceFlags() { events.append("flags") }
-    /// Scopes whose CoinJoin flag the resetter's hook cleared, in order; the
-    /// hook runs on the deleting thread, so this is not main-actor state.
-    nonisolated static let scopeFlagClears = ScopeList()
-    nonisolated static func resetCoinJoinRecoveryFlag(scope: String) {
-        scopeFlagClears.append(scope)
-    }
     func selectSolePersistedNetworkIfNeeded(currentNetwork: WalletEnvironment.NetworkKind) -> Bool {
         events.append("soleNetwork")
         return false
@@ -376,28 +392,19 @@ import XCTest
 /// runtime's event order and throws on request.
 final class FakeResetter: WalletLocalStoreResetting, @unchecked Sendable {
     var error: WalletLocalStoreResetError?
-    /// Entries whose removal a real run attempted before stopping — each is
-    /// announced through `willRemove`, the failing one included.
-    var attempted: [WalletLocalStoreResetReport.Removed] = [.init(root: "Platform", scope: "testnet")]
-    var removed: [WalletLocalStoreResetReport.Removed] = [.init(root: "Platform", scope: "testnet")]
     var calls = 0
-    func resetAllScopes(
-        willRemove: @escaping @Sendable (WalletLocalStoreResetReport.Removed) -> Void
-    ) async throws -> WalletLocalStoreResetReport {
+    func resetAllScopes() async throws -> WalletLocalStoreResetReport {
         calls += 1
         await MainActor.run { SwiftDashSDKWalletRuntime.shared.events.append("delete") }
-        for entry in attempted { willRemove(entry) }
         if let error { throw error }
-        return WalletLocalStoreResetReport(removed: removed)
+        return WalletLocalStoreResetReport(removed: [.init(root: "Platform", scope: "testnet")])
     }
 }
 
 actor SuspendingResetter: WalletLocalStoreResetting {
     var started = false
     var continuation: CheckedContinuation<Void, Never>?
-    func resetAllScopes(
-        willRemove: @escaping @Sendable (WalletLocalStoreResetReport.Removed) -> Void
-    ) async throws -> WalletLocalStoreResetReport {
+    func resetAllScopes() async throws -> WalletLocalStoreResetReport {
         started = true
         await withCheckedContinuation { continuation = $0 }
         return WalletLocalStoreResetReport(removed: [])
@@ -414,7 +421,6 @@ actor SuspendingResetter: WalletLocalStoreResetting {
         runtime.refreshCalls = 0
         runtime.refreshFailure = nil
         runtime.events = []
-        _ = SwiftDashSDKWalletRuntime.scopeFlagClears.drain()
         SwiftDashSDKHost.shared.validationError = nil
         SwiftDashSDKHost.shared.releaseError = nil
         SwiftDashSDKSPVCoordinator.shared.preparations = 0
@@ -513,7 +519,6 @@ actor SuspendingResetter: WalletLocalStoreResetting {
         let outcome = try await runtime.resetLocalStoresAndRetry(resetter: FakeResetter())
         XCTAssertEqual(outcome, .reset)
         XCTAssertEqual(runtime.events, ["fullReset", "drop", "delete", "flags", "soleNetwork", "refresh", "publish"])
-        XCTAssertEqual(SwiftDashSDKWalletRuntime.scopeFlagClears.drain(), ["testnet"])
         XCTAssertEqual(state.phase, .idle)
         XCTAssertNil(state.preparationFailure)
     }
@@ -535,7 +540,6 @@ actor SuspendingResetter: WalletLocalStoreResetting {
     func testEnumerationFailureKeepsEveryMaintenanceFlag() async throws {
         await failOpen()
         let resetter = FakeResetter()
-        resetter.attempted = []
         resetter.error = .enumerationFailed(root: "SPV", code: "NSCocoaErrorDomain:257")
         do {
             _ = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
@@ -546,18 +550,13 @@ actor SuspendingResetter: WalletLocalStoreResetting {
         // No store was touched, so the next launch still applies every
         // armed resync marker and wide-scan flag to the surviving stores.
         XCTAssertEqual(runtime.events, ["fullReset", "drop", "delete"])
-        XCTAssertEqual(SwiftDashSDKWalletRuntime.scopeFlagClears.drain(), [])
     }
-    func testEarlyRemovalFailureClearsFlagsOnlyForScopesWhosePlatformRemovalBegan() async throws {
+    func testRemovalFailureKeepsEveryMaintenanceFlag() async throws {
         await failOpen()
         let resetter = FakeResetter()
-        // mainnet is fully removed; testnet stops at its SPV headers before
-        // its wallet rows were touched; zz is never reached. The resync
-        // markers (the "flags" step) stay for every surviving header store.
-        resetter.attempted = [
-            .init(root: "SPV", scope: "mainnet"), .init(root: "Platform", scope: "mainnet"),
-            .init(root: "Shielded", scope: "mainnet"), .init(root: "SPV", scope: "testnet"),
-        ]
+        // Whatever was removed before the failure is rebuilt by the host,
+        // which re-arms the CoinJoin scan as it recreates rows; the resync
+        // markers stay for every surviving header store.
         resetter.error = .removalFailed(root: "SPV", scope: "testnet", code: "NSCocoaErrorDomain:513")
         do {
             _ = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
@@ -565,30 +564,8 @@ actor SuspendingResetter: WalletLocalStoreResetting {
         } catch let error as WalletLocalStoreResetError {
             XCTAssertEqual(error, resetter.error)
         }
-        XCTAssertFalse(runtime.events.contains("flags"))
-        XCTAssertEqual(SwiftDashSDKWalletRuntime.scopeFlagClears.drain(), ["mainnet"])
+        XCTAssertEqual(runtime.events, ["fullReset", "drop", "delete"])
         guard case .failedWalletOpen = state.phase else { return XCTFail("The card must stay") }
-    }
-    func testInterruptedPlatformRemovalHasAlreadyClearedThatScopesWideScanFlag() async throws {
-        await failOpen()
-        let resetter = FakeResetter()
-        // Platform/testnet removal is attempted and fails part-way: its SQLite
-        // file may be gone while the directory remains, and an ordinary Try
-        // Again recreates the rows. The flag was cleared before the attempt.
-        resetter.attempted = [
-            .init(root: "SPV", scope: "mainnet"), .init(root: "Platform", scope: "mainnet"),
-            .init(root: "Shielded", scope: "mainnet"), .init(root: "SPV", scope: "testnet"),
-            .init(root: "Platform", scope: "testnet"),
-        ]
-        resetter.error = .removalFailed(root: "Platform", scope: "testnet", code: "NSCocoaErrorDomain:513")
-        do {
-            _ = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
-            XCTFail("Expected the removal error")
-        } catch let error as WalletLocalStoreResetError {
-            XCTAssertEqual(error, resetter.error)
-        }
-        XCTAssertFalse(runtime.events.contains("flags"))
-        XCTAssertEqual(SwiftDashSDKWalletRuntime.scopeFlagClears.drain(), ["mainnet", "testnet"])
     }
     func testNativeRuntimeRequiresRelaunchWithoutDeletingOrClearingFlags() async throws {
         await failOpen()

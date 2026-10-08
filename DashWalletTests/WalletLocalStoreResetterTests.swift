@@ -168,37 +168,7 @@ final class WalletLocalStoreResetterTests: XCTestCase {
         XCTAssertTrue(exists(roots.platform, "zz-devnet-last"))
     }
 
-    func testAnnouncesEachEntryBeforeItsRemovalAndNoneAfterTheFailure() async throws {
-        for scope in ["mainnet", "testnet", "zz-devnet-last"] {
-            try plant(roots.platform, scope, files: ["DashModel.sqlite"])
-            try plant(roots.shielded, scope, files: ["commitment-tree.sqlite"])
-            try plant(roots.spv, scope, files: ["headers.dat"])
-        }
-        let resetter = WalletLocalStoreResetter(roots: roots) {
-            FailingFileManager(failingLastPathComponent: "testnet", underRoot: "Shielded")
-        }
-        let announced = AnnouncedEntries()
-        let ordered = roots.orderedForDeletion
-
-        do {
-            _ = try await resetter.resetAllScopes { entry in
-                // Each entry is announced while its files still exist.
-                let url = ordered.first { $0.label == entry.root }!.url.appendingPathComponent(entry.scope)
-                announced.append(entry, present: FileManager.default.fileExists(atPath: url.path))
-            }
-            XCTFail("Expected the injected removal failure")
-        } catch let error as WalletLocalStoreResetError {
-            XCTAssertEqual(error, .removalFailed(root: "Shielded", scope: "testnet", code: "NSCocoaErrorDomain:513"))
-        }
-
-        // The failing entry is announced too: its removal may be partial.
-        XCTAssertEqual(announced.entries.map { "\($0.root)/\($0.scope)" }, [
-            "SPV/mainnet", "Platform/mainnet", "Shielded/mainnet", "SPV/testnet", "Platform/testnet", "Shielded/testnet",
-        ])
-        XCTAssertEqual(announced.presentWhenAnnounced, Array(repeating: true, count: 6))
-    }
-
-    func testPartialPlatformRemovalWasAnnouncedBeforeTheStoreFileDisappeared() async throws {
+    func testPartialPlatformRemovalLeavesADirectoryWithoutItsStoreFile() async throws {
         try plant(roots.platform, "testnet", files: ["DashModel.sqlite", "DashModel.sqlite-wal"])
         try plant(roots.shielded, "testnet", files: ["commitment-tree.sqlite"])
         try plant(roots.spv, "testnet", files: ["headers.dat"])
@@ -206,26 +176,22 @@ final class WalletLocalStoreResetterTests: XCTestCase {
             PartiallyRemovingFileManager(failingLastPathComponent: "testnet", underRoot: "Platform",
                                          removedChildBeforeFailing: "DashModel.sqlite")
         }
-        let announced = AnnouncedEntries()
         let store = roots.platform.appendingPathComponent("testnet/DashModel.sqlite")
 
         do {
-            _ = try await resetter.resetAllScopes { entry in
-                announced.append(entry, present: FileManager.default.fileExists(atPath: store.path))
-            }
+            _ = try await resetter.resetAllScopes()
             XCTFail("Expected the injected removal failure")
         } catch let error as WalletLocalStoreResetError {
             XCTAssertEqual(error, .removalFailed(root: "Platform", scope: "testnet", code: "NSCocoaErrorDomain:513"))
         }
 
-        // What an ordinary reopen now finds: the scope directory without its
-        // store file, which SwiftData recreates empty — and the wide-scan flag
-        // for this scope was cleared at the announcement, while the store
-        // still existed.
+        // What an ordinary reopen then finds: the scope directory without its
+        // store file. SwiftData recreates the store empty and the host's
+        // keychain recovery recreates the rows — the state the host treats as
+        // "deep CoinJoin UTXOs lost", re-arming the wide scan.
         XCTAssertTrue(exists(roots.platform, "testnet"))
         XCTAssertFalse(FileManager.default.fileExists(atPath: store.path))
-        XCTAssertEqual(announced.entries.map { "\($0.root)/\($0.scope)" }, ["SPV/testnet", "Platform/testnet"])
-        XCTAssertEqual(announced.presentWhenAnnounced, [true, true])
+        XCTAssertFalse(exists(roots.spv, "testnet"))
     }
 
     func testRerunAfterPartialFailureCompletes() async throws {
@@ -300,19 +266,6 @@ final class WalletLocalStoreResetterTests: XCTestCase {
 
     private func exists(_ root: URL, _ scope: String) -> Bool {
         FileManager.default.fileExists(atPath: root.appendingPathComponent(scope).path)
-    }
-}
-
-/// Collects the resetter's per-entry announcements from its deleting thread.
-private final class AnnouncedEntries: @unchecked Sendable {
-    private let lock = NSLock()
-    private(set) var entries: [WalletLocalStoreResetReport.Removed] = []
-    private(set) var presentWhenAnnounced: [Bool] = []
-
-    func append(_ entry: WalletLocalStoreResetReport.Removed, present: Bool) {
-        lock.lock(); defer { lock.unlock() }
-        entries.append(entry)
-        presentWhenAnnounced.append(present)
     }
 }
 

@@ -759,18 +759,21 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     // MARK: - CoinJoin recovery (one-time wide gap)
 
     /// Widen the CoinJoin address gap limit for the one-time recovery scan —
-    /// applied on the first launch per network for every wallet, until the
-    /// recovery flag is set (see `CoinJoinRecovery`). Must run BEFORE `startSpv`
-    /// so the initial filter covers the wide window. No-op once recovered.
-    /// Best-effort: a failure is logged and leaves the flag unset to retry next
-    /// launch.
+    /// applied on the first launch per network, until the recovery flag is set
+    /// (see `CoinJoinRecovery`). Must run BEFORE `startSpv` so the initial
+    /// filter covers the wide window. The flag is per network and one SPV
+    /// start syncs every wallet the manager holds, so every wallet is widened:
+    /// after a local-store reset all of them lost their persisted deep UTXOs,
+    /// and the flag set at the end of the scan must not leave an inactive
+    /// wallet unscanned. No-op once recovered. Best-effort: a failure is logged
+    /// and leaves the flag unset to retry next launch.
     @MainActor
     private func applyCoinJoinRecoveryGapIfNeeded(for network: Network) {
         coinJoinRecoveryWidenedNetwork = nil
         guard CoinJoinRecovery.shared.needsWideRecoveryGap(for: network) else { return }
 
-        guard let wallet = SwiftDashSDKHost.shared.wallet else {
-            Self.logger.warning("🛰️ SPVCOORD :: coinjoin recovery: wallet not bound — skipping gap widen")
+        guard let manager = SwiftDashSDKHost.shared.manager, !manager.wallets.isEmpty else {
+            Self.logger.warning("🛰️ SPVCOORD :: coinjoin recovery: no wallets bound — skipping gap widen")
             return
         }
 
@@ -778,14 +781,18 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             // Widen the CoinJoin account's gap limit so the SPV scan re-discovers
             // mixed coins scattered beyond the default gap on BOTH the external
             // `/0/` and internal `/1/` pools. Core clamps to [1, MAX_GAP_LIMIT].
-            try wallet.coreWallet().setGapLimit(
-                accountType: .coinJoin,
-                accountIndex: 0,
-                gapLimit: CoinJoinRecovery.recoveryGapLimit)
+            for wallet in manager.wallets.values {
+                try wallet.coreWallet().setGapLimit(
+                    accountType: .coinJoin,
+                    accountIndex: 0,
+                    gapLimit: CoinJoinRecovery.recoveryGapLimit)
+            }
             coinJoinRecoveryWidenedNetwork = network
             Self.logger.info(
-                "🛰️ SPVCOORD :: coinjoin recovery gap widened on \(network.rawValue, privacy: .public) to \(CoinJoinRecovery.recoveryGapLimit, privacy: .public)")
+                "🛰️ SPVCOORD :: coinjoin recovery gap widened on \(network.rawValue, privacy: .public) to \(CoinJoinRecovery.recoveryGapLimit, privacy: .public) for \(manager.wallets.count, privacy: .public) wallet(s)")
         } catch {
+            // Partial widening is not recorded: the flag stays unset and the
+            // next launch widens every wallet again.
             Self.logger.error(
                 "🛰️ SPVCOORD :: coinjoin recovery widen failed: \(String(describing: error), privacy: .public)")
         }
