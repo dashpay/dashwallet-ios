@@ -286,10 +286,19 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 await self.fullReset(lastError: nil, forWipe: false)
                 self.dropLocalStoreDerivedState()
                 try await host.waitForLocalStoreRelease()
-                self.clearLocalStoreMaintenanceFlags()
                 let activeResetter: any WalletLocalStoreResetting =
                     try resetter ?? WalletLocalStoreResetter(roots: .inDocuments())
-                report = try await activeResetter.resetAllScopes()
+                report = try await activeResetter.resetAllScopes(onEntryRemoved: { entry in
+                    // A scope's flags describe its SPV headers and wallet rows.
+                    // Platform is removed after SPV, so both are gone once this
+                    // entry is reported: drop the scope's flags now, so a later
+                    // removal failure cannot leave them over a rebuilt store.
+                    guard entry.root == WalletLocalStoreRoots.platformLabel else { return }
+                    Self.clearLocalStoreMaintenanceFlags(scope: entry.scope)
+                })
+                // Every store is gone, including scopes without a Platform
+                // directory and devnet markers armed for scopes not on disk.
+                self.clearLocalStoreMaintenanceFlags()
             } catch {
                 state.restoreAfterLocalStoreReset(phase: originalPhase, failure: failure)
                 throw error
@@ -336,10 +345,22 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     }
 
     /// The one-time CoinJoin wide-gap scan flag and any pending birth-height
-    /// resync marker both describe the store being deleted.
+    /// resync marker both describe the store being deleted. Cleared only after
+    /// that store is gone: a marker that outlives a failed deletion still
+    /// repairs the surviving headers on the next launch, and a flag cleared
+    /// with its scope still re-runs the wide scan for a store rebuilt after
+    /// an interrupted reset.
     private func clearLocalStoreMaintenanceFlags() {
         CoinJoinRecovery.shared.resetRecoveryFlags()
         SPVChainResyncMarker.clearAll()
+    }
+
+    /// Per-scope counterpart, called from the resetter's detached task as each
+    /// scope's SPV and Platform directories disappear. Both flag stores are
+    /// UserDefaults-backed and thread-safe.
+    nonisolated private static func clearLocalStoreMaintenanceFlags(scope: String) {
+        CoinJoinRecovery.shared.resetRecoveryFlag(scope: scope)
+        SPVChainResyncMarker.clear(scope: scope)
     }
 
     /// Connectivity-return recovery, used by `SyncingActivityMonitor` when the

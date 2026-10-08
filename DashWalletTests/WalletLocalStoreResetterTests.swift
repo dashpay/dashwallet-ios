@@ -168,6 +168,35 @@ final class WalletLocalStoreResetterTests: XCTestCase {
         XCTAssertTrue(exists(roots.platform, "zz-devnet-last"))
     }
 
+    func testReportsEachEntryAsItIsRemovedAndNoneAfterTheFailure() async throws {
+        for scope in ["mainnet", "testnet", "zz-devnet-last"] {
+            try plant(roots.platform, scope, files: ["DashModel.sqlite"])
+            try plant(roots.shielded, scope, files: ["commitment-tree.sqlite"])
+            try plant(roots.spv, scope, files: ["headers.dat"])
+        }
+        let resetter = WalletLocalStoreResetter(roots: roots) {
+            FailingFileManager(failingLastPathComponent: "testnet", underRoot: "Shielded")
+        }
+        let reported = RemovedEntries()
+        let ordered = roots.orderedForDeletion
+
+        do {
+            _ = try await resetter.resetAllScopes { entry in
+                // Each entry is reported once its own removal is done.
+                let url = ordered.first { $0.label == entry.root }!.url.appendingPathComponent(entry.scope)
+                reported.append(entry, gone: !FileManager.default.fileExists(atPath: url.path))
+            }
+            XCTFail("Expected the injected removal failure")
+        } catch let error as WalletLocalStoreResetError {
+            XCTAssertEqual(error, .removalFailed(root: "Shielded", scope: "testnet", code: "NSCocoaErrorDomain:513"))
+        }
+
+        XCTAssertEqual(reported.entries.map { "\($0.root)/\($0.scope)" }, [
+            "SPV/mainnet", "Platform/mainnet", "Shielded/mainnet", "SPV/testnet", "Platform/testnet",
+        ])
+        XCTAssertEqual(reported.goneWhenReported, Array(repeating: true, count: 5))
+    }
+
     func testRerunAfterPartialFailureCompletes() async throws {
         try plant(roots.platform, "testnet", files: ["DashModel.sqlite"])
         try plant(roots.shielded, "testnet", files: ["commitment-tree.sqlite"])
@@ -240,6 +269,19 @@ final class WalletLocalStoreResetterTests: XCTestCase {
 
     private func exists(_ root: URL, _ scope: String) -> Bool {
         FileManager.default.fileExists(atPath: root.appendingPathComponent(scope).path)
+    }
+}
+
+/// Collects the resetter's per-entry reports from its deleting thread.
+private final class RemovedEntries: @unchecked Sendable {
+    private let lock = NSLock()
+    private(set) var entries: [WalletLocalStoreResetReport.Removed] = []
+    private(set) var goneWhenReported: [Bool] = []
+
+    func append(_ entry: WalletLocalStoreResetReport.Removed, gone: Bool) {
+        lock.lock(); defer { lock.unlock() }
+        entries.append(entry)
+        goneWhenReported.append(gone)
     }
 }
 

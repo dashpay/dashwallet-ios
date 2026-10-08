@@ -325,6 +325,12 @@ import XCTest
         + "\n@MainActor enum BackgroundRefreshCoordinator {\n"
         + declaration(background, "    static func defaultRuntimeStart(") + "\n}\n"
         + '''
+final class ScopeList: @unchecked Sendable {
+    private let lock = NSLock()
+    private var scopes: [String] = []
+    func append(_ scope: String) { lock.lock(); defer { lock.unlock() }; scopes.append(scope) }
+    func drain() -> [String] { lock.lock(); defer { lock.unlock() }; let s = scopes; scopes = []; return s }
+}
 @MainActor final class SwiftDashSDKWalletRuntime {
     static let shared = SwiftDashSDKWalletRuntime()
     let lifecycleQueue = SerialAsyncLifecycleQueue()
@@ -350,6 +356,12 @@ import XCTest
     func fullReset(lastError: String?, forWipe: Bool) async { events.append("fullReset") }
     func dropLocalStoreDerivedState() { events.append("drop") }
     func clearLocalStoreMaintenanceFlags() { events.append("flags") }
+    /// Scopes whose flags the resetter's hook cleared, in order; the hook
+    /// runs on the deleting thread, so this is not main-actor state.
+    nonisolated static let scopeFlagClears = ScopeList()
+    nonisolated static func clearLocalStoreMaintenanceFlags(scope: String) {
+        scopeFlagClears.append(scope)
+    }
     func selectSolePersistedNetworkIfNeeded(currentNetwork: WalletEnvironment.NetworkKind) -> Bool {
         events.append("soleNetwork")
         return false
@@ -364,19 +376,27 @@ import XCTest
 /// runtime's event order and throws on request.
 final class FakeResetter: WalletLocalStoreResetting, @unchecked Sendable {
     var error: WalletLocalStoreResetError?
+    /// Reported through the hook, in order, before `error` is thrown or the
+    /// report is returned — the entries a real run removed before stopping.
+    var removed: [WalletLocalStoreResetReport.Removed] = [.init(root: "Platform", scope: "testnet")]
     var calls = 0
-    func resetAllScopes() async throws -> WalletLocalStoreResetReport {
+    func resetAllScopes(
+        onEntryRemoved: @escaping @Sendable (WalletLocalStoreResetReport.Removed) -> Void
+    ) async throws -> WalletLocalStoreResetReport {
         calls += 1
         await MainActor.run { SwiftDashSDKWalletRuntime.shared.events.append("delete") }
+        for entry in removed { onEntryRemoved(entry) }
         if let error { throw error }
-        return WalletLocalStoreResetReport(removed: [.init(root: "Platform", scope: "testnet")])
+        return WalletLocalStoreResetReport(removed: removed)
     }
 }
 
 actor SuspendingResetter: WalletLocalStoreResetting {
     var started = false
     var continuation: CheckedContinuation<Void, Never>?
-    func resetAllScopes() async throws -> WalletLocalStoreResetReport {
+    func resetAllScopes(
+        onEntryRemoved: @escaping @Sendable (WalletLocalStoreResetReport.Removed) -> Void
+    ) async throws -> WalletLocalStoreResetReport {
         started = true
         await withCheckedContinuation { continuation = $0 }
         return WalletLocalStoreResetReport(removed: [])
@@ -393,6 +413,7 @@ actor SuspendingResetter: WalletLocalStoreResetting {
         runtime.refreshCalls = 0
         runtime.refreshFailure = nil
         runtime.events = []
+        _ = SwiftDashSDKWalletRuntime.scopeFlagClears.drain()
         SwiftDashSDKHost.shared.validationError = nil
         SwiftDashSDKHost.shared.releaseError = nil
         SwiftDashSDKSPVCoordinator.shared.preparations = 0
@@ -485,12 +506,13 @@ actor SuspendingResetter: WalletLocalStoreResetting {
         XCTAssertEqual(resetter.calls, 0)
         guard case .failedWalletOpen = state.phase else { return XCTFail("The card must stay") }
     }
-    func testResetOrdersTeardownDropFlagsDeleteRefreshThenPublish() async throws {
+    func testResetOrdersTeardownDropDeleteFlagsRefreshThenPublish() async throws {
         await failOpen()
         runtime.events = []
         let outcome = try await runtime.resetLocalStoresAndRetry(resetter: FakeResetter())
         XCTAssertEqual(outcome, .reset)
-        XCTAssertEqual(runtime.events, ["fullReset", "drop", "flags", "delete", "soleNetwork", "refresh", "publish"])
+        XCTAssertEqual(runtime.events, ["fullReset", "drop", "delete", "flags", "soleNetwork", "refresh", "publish"])
+        XCTAssertEqual(SwiftDashSDKWalletRuntime.scopeFlagClears.drain(), ["testnet"])
         XCTAssertEqual(state.phase, .idle)
         XCTAssertNil(state.preparationFailure)
     }
@@ -507,6 +529,42 @@ actor SuspendingResetter: WalletLocalStoreResetting {
         }
         XCTAssertEqual(runtime.refreshCalls, 0)
         XCTAssertEqual(state.preparationFailure, failure)
+        guard case .failedWalletOpen = state.phase else { return XCTFail("The card must stay") }
+    }
+    func testEnumerationFailureKeepsEveryMaintenanceFlag() async throws {
+        await failOpen()
+        let resetter = FakeResetter()
+        resetter.removed = []
+        resetter.error = .enumerationFailed(root: "SPV", code: "NSCocoaErrorDomain:257")
+        do {
+            _ = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
+            XCTFail("Expected the enumeration error")
+        } catch let error as WalletLocalStoreResetError {
+            XCTAssertEqual(error, resetter.error)
+        }
+        // No store was touched, so the next launch still applies every
+        // armed resync marker and wide-scan flag to the surviving stores.
+        XCTAssertEqual(runtime.events, ["fullReset", "drop", "delete"])
+        XCTAssertEqual(SwiftDashSDKWalletRuntime.scopeFlagClears.drain(), [])
+    }
+    func testEarlyRemovalFailureClearsFlagsOnlyForScopesWhoseStoresAreGone() async throws {
+        await failOpen()
+        let resetter = FakeResetter()
+        // mainnet is fully removed; testnet stops at its SPV headers, which
+        // survive together with their pending repair; zz is never reached.
+        resetter.removed = [
+            .init(root: "SPV", scope: "mainnet"), .init(root: "Platform", scope: "mainnet"),
+            .init(root: "Shielded", scope: "mainnet"),
+        ]
+        resetter.error = .removalFailed(root: "SPV", scope: "testnet", code: "NSCocoaErrorDomain:513")
+        do {
+            _ = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
+            XCTFail("Expected the removal error")
+        } catch let error as WalletLocalStoreResetError {
+            XCTAssertEqual(error, resetter.error)
+        }
+        XCTAssertFalse(runtime.events.contains("flags"))
+        XCTAssertEqual(SwiftDashSDKWalletRuntime.scopeFlagClears.drain(), ["mainnet"])
         guard case .failedWalletOpen = state.phase else { return XCTFail("The card must stay") }
     }
     func testNativeRuntimeRequiresRelaunchWithoutDeletingOrClearingFlags() async throws {

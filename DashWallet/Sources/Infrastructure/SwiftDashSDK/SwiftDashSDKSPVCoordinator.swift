@@ -1226,7 +1226,15 @@ enum SPVChainResyncMarker {
     }
 
     static func clear(for network: Network) {
-        UserDefaults.standard.removeObject(forKey: key(for: network))
+        clear(scope: network.persistenceScope)
+    }
+
+    /// Drop the marker for one `Network.persistenceScope`. The local-store
+    /// reset calls this per scope as that scope's SPV headers and wallet rows
+    /// are removed, so an interrupted reset leaves no marker over a store it
+    /// already deleted and keeps every marker for a store it did not reach.
+    static func clear(scope: String) {
+        UserDefaults.standard.removeObject(forKey: key(scope: scope))
     }
 
     /// Clear every pending marker: the rows and chain data they reference are
@@ -1239,7 +1247,7 @@ enum SPVChainResyncMarker {
         clear(for: .devnet)
         // Markers armed on devnets other than the one configured now.
         for scope in DevnetConfiguration.persistedDevnetScopes() {
-            UserDefaults.standard.removeObject(forKey: key(scope: scope))
+            clear(scope: scope)
         }
     }
 
