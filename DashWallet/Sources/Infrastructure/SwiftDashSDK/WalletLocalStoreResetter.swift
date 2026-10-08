@@ -66,6 +66,12 @@ struct WalletLocalStoreResetReport: Equatable, Sendable {
 }
 
 enum WalletLocalStoreResetError: Error, Equatable {
+    /// Native storage workers can outlive shutdown, including workers that
+    /// do not retain a SwiftData container. A fresh process is required.
+    case restartRequired
+    /// A stopped SDK worker or another reader still owns a store. Nothing
+    /// may be unlinked until those owners release their containers.
+    case storesStillInUse
     /// Listing a root failed before any directory was removed.
     case enumerationFailed(root: String, code: String)
     /// `removeItem` failed at `root/scope`. Entries removed before it are
@@ -73,6 +79,71 @@ enum WalletLocalStoreResetError: Error, Equatable {
     /// Cocoa file errors carry paths in their userInfo, and those never reach
     /// the diagnostic logs.
     case removalFailed(root: String, scope: String, code: String)
+}
+
+/// Rust retains its Swift persistence callback context until its last worker
+/// exits, even when `shutdown()` has already returned success. That context
+/// strongly owns the ModelContainer. Track every container weakly, including
+/// opens later rejected by cache invalidation, so reset can prove those
+/// owners are gone without extending their lifetime itself.
+@MainActor
+final class WalletLocalStoreLifetimeBarrier {
+    private final class Entry {
+        weak var value: AnyObject?
+        init(_ value: AnyObject) { self.value = value }
+    }
+
+    private var entries: [ObjectIdentifier: Entry] = [:]
+
+    func track(_ container: AnyObject) {
+        entries = entries.filter { $0.value.value != nil }
+        entries[ObjectIdentifier(container)] = Entry(container)
+    }
+
+    /// Admission must remain suspended for the entire wait and deletion.
+    /// If a worker cannot stop, keep the files and let the user relaunch.
+    func waitForRelease(timeout: Duration = .seconds(5)) async throws {
+        let clock = ContinuousClock()
+        let deadline = clock.now.advanced(by: timeout)
+        while entries.values.contains(where: { $0.value != nil }) {
+            try Task.checkCancellation()
+            guard clock.now < deadline else { throw WalletLocalStoreResetError.storesStillInUse }
+            try await clock.sleep(until: min(deadline, clock.now.advanced(by: .milliseconds(50))))
+        }
+        entries.removeAll()
+    }
+}
+
+/// A partially recreated store already contains wallet rows, so the ordinary
+/// "no wallets" fallback alone cannot resume recovery. Keep a per-store
+/// marker until every eligible keychain wallet has been recreated. This also
+/// covers an app termination between creating the first and last wallet.
+/// The atomic marker lives beside the SQLite store; unlike UserDefaults it
+/// is written before the first wallet creation rather than flushed later.
+struct WalletLocalStoreRecovery {
+    let directory: URL
+    private var marker: URL { directory.appendingPathComponent("wallet-recovery.pending") }
+
+    func isPending() throws -> Bool {
+        do {
+            _ = try Data(contentsOf: marker)
+            return true
+        } catch let error as NSError where error.domain == NSCocoaErrorDomain
+            && error.code == NSFileReadNoSuchFileError {
+            return false
+        }
+    }
+
+    func begin() throws { try Data().write(to: marker, options: .atomic) }
+
+    func finish() throws {
+        do {
+            try FileManager.default.removeItem(at: marker)
+        } catch let error as NSError where error.domain == NSCocoaErrorDomain
+            && [NSFileNoSuchFileError, NSFileReadNoSuchFileError].contains(error.code) {
+            return
+        }
+    }
 }
 
 /// Seam for the runtime's reset-and-rescan operation: production deletes the

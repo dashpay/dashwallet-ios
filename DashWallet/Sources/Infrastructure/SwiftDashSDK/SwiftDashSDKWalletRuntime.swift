@@ -276,14 +276,16 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             let started = CFAbsoluteTimeGetCurrent()
             DWLogger.log("🧹 STORE-RESET begin codes=\(failure.codes.joined(separator: ","))")
             let host = SwiftDashSDKHost.shared
-            await host.suspendModelContainerOpens()
             // Every exit releases admission; until then no off-queue caller
             // may open a container over a directory being removed.
             defer { host.resumeModelContainerOpens() }
             let report: WalletLocalStoreResetReport
             do {
+                try host.validateLocalStoreReset()
+                await host.suspendModelContainerOpens()
                 await self.fullReset(lastError: nil, forWipe: false)
                 self.dropLocalStoreDerivedState()
+                try await host.waitForLocalStoreRelease()
                 self.clearLocalStoreMaintenanceFlags()
                 let activeResetter: any WalletLocalStoreResetting =
                     try resetter ?? WalletLocalStoreResetter(roots: .inDocuments())

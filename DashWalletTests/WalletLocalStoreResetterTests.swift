@@ -7,6 +7,8 @@ import XCTest
 @testable import WalletPreparationHarness
 #endif
 
+private final class StoreLifetimeTestObject: @unchecked Sendable {}
+
 final class WalletLocalStoreResetterTests: XCTestCase {
     private var documents: URL!
     private var roots: WalletLocalStoreRoots!
@@ -26,6 +28,73 @@ final class WalletLocalStoreResetterTests: XCTestCase {
         XCTAssertEqual(roots.shielded.path, documents.appendingPathComponent("SwiftDashSDK/Shielded").path)
         XCTAssertEqual(roots.spv.path, documents.appendingPathComponent("SPV").path)
         XCTAssertEqual(roots.orderedForDeletion.map(\.label), ["SPV", "Platform", "Shielded"])
+    }
+
+    @MainActor
+    func testRetainedContainerBlocksDeletionUntilItsLastOwnerReleasesIt() async throws {
+        let barrier = WalletLocalStoreLifetimeBarrier()
+        var owner: StoreLifetimeTestObject? = StoreLifetimeTestObject()
+        barrier.track(owner!)
+        do {
+            try await barrier.waitForRelease(timeout: .zero)
+            XCTFail("A stopped worker can still retain its persistence context")
+        } catch let error as WalletLocalStoreResetError {
+            XCTAssertEqual(error, .storesStillInUse)
+        }
+        owner = nil
+        try await barrier.waitForRelease(timeout: .seconds(1))
+    }
+
+    @MainActor
+    func testContainerFromInvalidatedOpenRemainsTracked() async throws {
+        let barrier = WalletLocalStoreLifetimeBarrier()
+        let cache = ProcessNetworkValueCache<StoreLifetimeTestObject>()
+        var release: CheckedContinuation<Void, Never>?
+        var retainedByWorker: StoreLifetimeTestObject?
+        let open = Task {
+            try await cache.valueAsync(for: "mainnet") {
+                await withCheckedContinuation { release = $0 }
+                let container = StoreLifetimeTestObject()
+                barrier.track(container)
+                retainedByWorker = container
+                return container
+            }
+        }
+        while release == nil { await Task.yield() }
+        var suspending = false
+        let drain = Task {
+            suspending = true
+            await cache.suspendAndInvalidate()
+        }
+        while !suspending { await Task.yield() }
+        release?.resume()
+        await drain.value
+        do {
+            _ = try await open.value
+            XCTFail("The old generation must not escape to its caller")
+        } catch {}
+        do {
+            try await barrier.waitForRelease(timeout: .zero)
+            XCTFail("Invalidation must not forget a successfully opened container")
+        } catch let error as WalletLocalStoreResetError {
+            XCTAssertEqual(error, .storesStillInUse)
+        }
+        XCTAssertNotNil(retainedByWorker)
+        retainedByWorker = nil
+        try await barrier.waitForRelease(timeout: .seconds(1))
+        cache.resumeOpens()
+    }
+
+    func testRecoveryMarkerSurvivesNewOwnerAndRemainsScopedToItsStore() throws {
+        let first = documents.appendingPathComponent("first")
+        let second = documents.appendingPathComponent("second")
+        try FileManager.default.createDirectory(at: first, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: second, withIntermediateDirectories: true)
+        try WalletLocalStoreRecovery(directory: first).begin()
+        XCTAssertTrue(try WalletLocalStoreRecovery(directory: first).isPending())
+        XCTAssertFalse(try WalletLocalStoreRecovery(directory: second).isPending())
+        try WalletLocalStoreRecovery(directory: first).finish()
+        XCTAssertFalse(try WalletLocalStoreRecovery(directory: first).isPending())
     }
 
     func testRemovesEveryScopeUnderAllThreeRoots() async throws {

@@ -421,6 +421,12 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
                 if case let .failed(failure) = result {
                     self.actionFailure = ActionFailure(title: title, message: failure.message)
                 }
+            } catch WalletLocalStoreResetError.restartRequired, WalletLocalStoreResetError.storesStillInUse {
+                self.actionFailure = ActionFailure(
+                    title: title,
+                    message: NSLocalizedString(
+                        "Close and reopen the app, then try resetting wallet data again. This session may still have background tasks using the wallet files. No wallet data was deleted.",
+                        comment: "Wallet preparation: reset requires a fresh process"))
             } catch {
                 // Deletion stopped at an item; nothing was reopened and the
                 // card is unchanged, so Reset and Try Again stay available.
