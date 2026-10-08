@@ -42,3 +42,20 @@ struct AddSwapOrdersTable: Migration {
         })
     }
 }
+
+/// Buy orders: what the user was asked to send, the provider's deposit deadline, the memo
+/// the deposit must carry, when the deposit was first known to exist, when the provider
+/// denied seeing it, and which wallet and network the order was made in.
+struct AddBuyTrackingColumnsToSwapOrders: Migration {
+    var version: Int64 = 20261006100000
+
+    func migrateDatabase(_ db: Connection) throws {
+        try db.run(SwapOrder.table.addColumn(SwapOrder.colFromAmount))
+        try db.run(SwapOrder.table.addColumn(SwapOrder.colDepositDeadline))
+        try db.run(SwapOrder.table.addColumn(SwapOrder.colDepositSeenAt))
+        try db.run(SwapOrder.table.addColumn(SwapOrder.colProviderDeniedAt))
+        try db.run(SwapOrder.table.addColumn(SwapOrder.colDepositMemo))
+        try db.run(SwapOrder.table.addColumn(SwapOrder.colOwnerWalletId))
+        try db.run(SwapOrder.table.addColumn(SwapOrder.colOwnerNetwork))
+    }
+}

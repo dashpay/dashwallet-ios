@@ -219,6 +219,12 @@ class TXDetailViewController: BaseTxDetailsViewController {
         model.resolveExplorerFee { [weak self] in
             self?.reloadDataSource()
         }
+
+        // A swap order shown before its Dash transaction exists changes status while the
+        // screen is up.
+        model.observeSwapOrderPlaceholder { [weak self] in
+            self?.reloadDataSource()
+        }
     }
 }
 
@@ -539,9 +545,21 @@ extension TXDetailViewController {
         let date = model.date
         let taxCategory = model.taxCategory
 
+        // A swap order shown before its Dash transaction exists has nothing to categorise for
+        // tax, no raw transaction to inspect and nothing to look up on a block explorer, so
+        // those sections are left out.
+        let hasTransaction = model.swapOrderPlaceholder == nil
+
         currentSnapshot = NSDiffableDataSourceSnapshot<Section, Item>()
-        currentSnapshot.appendSections([.header, .info, .taxCategory, .rawTransaction, .explorer])
+        currentSnapshot.appendSections(hasTransaction
+            ? [.header, .info, .taxCategory, .rawTransaction, .explorer]
+            : [.header, .info])
         currentSnapshot.appendItems([.header], toSection: .header)
+        if !hasTransaction {
+            // The header item's identity never changes, so a rebuilt snapshot alone leaves
+            // the cell as it was; an order's title follows its status, so redraw it.
+            currentSnapshot.reconfigureItems([.header])
+        }
 
         // Shielded transfers lead with their balance route + lock status.
         for item in model.shieldedInfo() {
@@ -599,7 +617,9 @@ extension TXDetailViewController {
         }
 
         currentSnapshot.appendItems([.date(date)], toSection: .info)
-        currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
+        if hasTransaction {
+            currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
+        }
         // A funding asset lock parked mid-transfer gets a retry action.
         // The section is inserted (not pre-appended) so the empty state
         // adds no phantom section spacing.
@@ -617,8 +637,10 @@ extension TXDetailViewController {
             currentSnapshot.insertSections([.recovery], afterSection: .taxCategory)
             currentSnapshot.appendItems([.removeUnconfirmed], toSection: .recovery)
         }
-        currentSnapshot.appendItems([.viewTransaction, .copyRawTransaction], toSection: .rawTransaction)
-        currentSnapshot.appendItems([.explorer], toSection: .explorer)
+        if hasTransaction {
+            currentSnapshot.appendItems([.viewTransaction, .copyRawTransaction], toSection: .rawTransaction)
+            currentSnapshot.appendItems([.explorer], toSection: .explorer)
+        }
         if let swapLink = model.swapExplorerLink {
             currentSnapshot.appendSections([.swapExplorer])
             currentSnapshot.appendItems([.swapExplorer(swapLink.title)], toSection: .swapExplorer)
@@ -726,14 +748,25 @@ class SuccessTxDetailViewController: TXDetailViewController, NavigationBarDispla
 struct TXDetailVCWrapper: UIViewControllerRepresentable {
     @Environment(\.presentationMode) private var presentationMode
     
-    let tx: Transaction
+    private enum Source {
+        case transaction(Transaction)
+        /// A Buy swap order without a Dash transaction.
+        case swapOrder(BuySwapOrderItem)
+    }
+
+    private let source: Source
     @Binding var navigateBack: Bool
     var onDismissed: (() -> Void)? = nil
     
     init(tx: Transaction, navigateBack: Binding<Bool>, onDismissed: (() -> Void)? = nil) {
-        self.tx = tx
+        self.source = .transaction(tx)
         self._navigateBack = navigateBack
         self.onDismissed = onDismissed
+    }
+
+    init(swapOrder: BuySwapOrderItem, navigateBack: Binding<Bool>) {
+        self.source = .swapOrder(swapOrder)
+        self._navigateBack = navigateBack
     }
 
     func makeCoordinator() -> Coordinator {
@@ -741,7 +774,12 @@ struct TXDetailVCWrapper: UIViewControllerRepresentable {
     }
 
     func makeUIViewController(context: Context) -> some UIViewController {
-        let vc = TXDetailViewController(model: .init(transaction: tx))
+        let model: TxDetailModel
+        switch source {
+        case .transaction(let tx): model = TxDetailModel(transaction: tx)
+        case .swapOrder(let item): model = TxDetailModel(swapOrder: item)
+        }
+        let vc = TXDetailViewController(model: model)
         return vc
     }
 

@@ -312,12 +312,15 @@ final class SwapKitSwapProvider: SwapProvider {
         }
 
         let expectedDashAmount = Decimal(string: swapResponse.expectedBuyAmount ?? route.expectedBuyAmount) ?? 0
+        let depositDeadline = swapResponse.meta?.depositDeadline()
+        DWLogger.log("SwapKit: buy order deposit=\(depositAddress) deadline=\(depositDeadline.map { "\(Int($0.timeIntervalSince1970))" } ?? "none")")
         return BuyOrder(
             depositAddress: depositAddress,
             memo: swapResponse.memo,
             expectedDashAmount: expectedDashAmount,
             sellAsset: sellAsset,
-            sellAmount: sellAmount
+            sellAmount: sellAmount,
+            depositDeadline: depositDeadline
         )
     }
 
@@ -456,9 +459,10 @@ final class SwapKitSwapProvider: SwapProvider {
             let response = try await SwapKitAPIService.shared.track(request)
             return mapTrackResponse(response)
         } catch {
-            // Non-fatal; return not-yet-observed so polling continues.
+            // Non-fatal; return not-yet-observed so polling continues — flagged, so a caller
+            // that draws conclusions from "not observed" can tell it from a real answer.
             DWLogger.log("SwapKit: track request failed (deposit=\(depositAddress ?? "nil")): \(error)")
-            return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil)
+            return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil, requestFailed: true)
         }
     }
 
@@ -932,7 +936,12 @@ final class SwapKitSwapProvider: SwapProvider {
 
     private func mapTrackResponse(_ response: SwapKitTrackResponse) -> SwapStatusResult {
         switch response.status?.lowercased() {
-        case "not_started", nil:
+        case nil:
+            // A body without a status carries no information — not the provider saying
+            // "not started". Keep polling, flagged like a failed request.
+            return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil, requestFailed: true)
+
+        case "not_started":
             // SwapKit hasn't seen the inbound DASH tx yet — keep polling.
             return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil)
 

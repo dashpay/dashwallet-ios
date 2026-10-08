@@ -1031,6 +1031,29 @@ class HomeViewModel: ObservableObject {
             else { continue }
             items.append(.platformActivity(platform))
         }
+
+        // Buy swap orders made in this wallet whose deposit is on record but whose Dash is
+        // not in the wallet: there is no transaction to hang a row on yet. Once the payout is
+        // here, that transaction is the row (`SwapOrderMetadataProvider` labels it — and its
+        // order-to-transaction assignment is the one read here) and the order's own row goes.
+        let now = Date()
+        let walletId = SwapOrder.currentOwnerWalletId
+        let network = SwapOrder.currentOwnerNetwork
+        let payouts = SwapOrderMetadataProvider.shared
+        for order in SwapOrdersDAOImpl.shared.currentOrders
+            where order.isBuyHistoryRow(now: now)
+                && order.isOwned(byWalletId: walletId, network: network)
+                && !payouts.hasWalletTransaction(forOrderID: order.id) {
+            let swapItem = BuySwapOrderItem(order: order)
+            guard windowCovers(date: swapItem.date) else { continue }
+            guard self.passesCategoryFilter(
+                categories: [.received],
+                selected: selectedFilters,
+                hasRewards: hasRewards,
+                hasMasternodes: hasMasternodes)
+            else { continue }
+            items.append(.swapOrder(swapItem))
+        }
     }
 
     /// Publish a rebuilt group array and the paging/gate state to the main
@@ -1426,6 +1449,21 @@ extension HomeViewModel {
                 }
                 .store(in: &cancellableBag)
         }
+
+        // Buy order rows have no transaction behind them, so no per-tx metadata update can
+        // reach them: any order change rebuilds the feed. Debounced — a poll can write
+        // several orders back to back.
+        SwapOrdersDAOImpl.shared.observeAll()
+            .dropFirst()
+            .map { _ in () }
+            // …and so does an order's payout turning up in the wallet, which takes the
+            // order's own row away.
+            .merge(with: swapOrderMetadata.assignmentsChanged)
+            .debounce(for: .milliseconds(300), scheduler: self.queue)
+            .sink { [weak self] _ in
+                self?.reloadTxDataSource()
+            }
+            .store(in: &cancellableBag)
     }
     
     private func resolveMetadata(for txId: Data) -> TxRowMetadata? {

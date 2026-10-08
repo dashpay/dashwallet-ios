@@ -15,6 +15,8 @@
 //  limitations under the License.
 //
 
+import Combine
+import DashUIKit
 import Foundation
 
 // MARK: - TxDetailModel
@@ -34,7 +36,21 @@ class TxDetailModel: NSObject {
     /// landed one. Nil while unresolved and when the explorer had no answer.
     fileprivate(set) var explorerFeeDuffs: UInt64?
 
+    /// The Buy swap order this screen was opened for, when its Dash transaction does not exist
+    /// yet. The model then runs on a placeholder `transaction`: what the order knows (where the
+    /// Dash will arrive, when, its status) is shown, everything only a real transaction has
+    /// reads as `missingValue`, and what acts on a transaction — tax category, raw
+    /// transaction, block explorer — is not offered.
+    private(set) var swapOrderPlaceholder: BuySwapOrderItem?
+    private var swapOrderObservation: AnyCancellable?
+
+    /// Stands in for a value that does not exist yet.
+    static let missingValue = "—"
+
     var title: String {
+        if let swapOrderPlaceholder {
+            return swapOrderPlaceholder.title
+        }
         // Identity fundings and balance transfers carry their own identity —
         // the generic direction titles ("Moved to Address") hide what
         // actually happened. Identity fundings name their purpose (matching
@@ -56,7 +72,9 @@ class TxDetailModel: NSObject {
     /// The DashPay counterparty of this transaction, when it is a recorded
     /// contact payment. Drives the header avatar and the contact row that
     /// stands in for the counterparty's raw address.
-    lazy var contactParty: ContactParty? = ContactParty(payment: transaction.dashPayPayment)
+    lazy var contactParty: ContactParty? = swapOrderPlaceholder == nil
+        ? ContactParty(payment: transaction.dashPayPayment)
+        : nil
 
     /// Display model for the contact on the other end of a DashPay payment.
     struct ContactParty: Hashable {
@@ -95,11 +113,11 @@ class TxDetailModel: NSObject {
     }
 
     var dashAmountString: String {
-        transaction.formattedDashAmountWithDirectionalSymbol
+        swapOrderPlaceholder == nil ? transaction.formattedDashAmountWithDirectionalSymbol : Self.missingValue
     }
 
     var fiatAmountString: String {
-        transaction.fiatAmount
+        swapOrderPlaceholder == nil ? transaction.fiatAmount : Self.missingValue
     }
 
     /// Send-success resolver: the delegate chain hands over the broadcast
@@ -144,7 +162,42 @@ class TxDetailModel: NSObject {
         txTaxCategory = Taxes.shared.taxCategory(for: transaction)
     }
 
+    /// The standard screen for a Buy swap order that has no Dash transaction yet.
+    init(swapOrder item: BuySwapOrderItem) {
+        // An incoming, amount-less placeholder dated like the order row. Its all-zero txid is
+        // never shown, sent anywhere, or written under.
+        transaction = Transaction(
+            syntheticTxid: Data(repeating: 0, count: 32),
+            directionRaw: 0,
+            netAmount: 0,
+            fee: nil,
+            contextRaw: 0,
+            date: item.date)
+        transactionId = ""
+        txTaxCategory = .unknown
+        swapOrderPlaceholder = item
+        super.init()
+        swapExplorerLink = Self.link(for: item.order, dashTxId: "")
+    }
+
+    /// Keeps a placeholder screen current while it is open: the tracker moves the order on
+    /// (the provider picks the deposit up, denies it, refunds it) with no transaction event
+    /// to rebuild the rows. No-op for a real transaction.
+    func observeSwapOrderPlaceholder(onChange: @escaping () -> Void) {
+        guard let orderID = swapOrderPlaceholder?.order.id else { return }
+        // No `dropFirst`: the order may have moved on between the Home rebuild that built
+        // the row and the tap that opened this screen, and the current value corrects that.
+        swapOrderObservation = SwapOrdersDAOImpl.shared.observeAll()
+            .compactMap { orders in orders.first { $0.id == orderID } }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] order in
+                self?.swapOrderPlaceholder = BuySwapOrderItem(order: order)
+                onChange()
+            }
+    }
+
     func toggleTaxCategoryOnCurrentTransaction() {
+        guard swapOrderPlaceholder == nil else { return }
         if txTaxCategory == .unknown {
             txTaxCategory = transaction.defaultTaxCategory
         }
@@ -184,6 +237,7 @@ class TxDetailModel: NSObject {
     }
 
     func copyTransactionIdToPasteboard() -> Bool {
+        guard swapOrderPlaceholder == nil else { return false }
         UIPasteboard.general.string = transactionId
         return true
     }
@@ -204,6 +258,8 @@ class TxDetailModel: NSObject {
     /// builds the provider explorer link. Runs off the main actor (DAO reads), then calls
     /// `completion` on the main actor so the caller can rebuild its rows.
     func resolveSwapExplorerLink(completion: @escaping () -> Void) {
+        // A placeholder carries its order's link from init; there is no transaction to match.
+        guard swapOrderPlaceholder == nil else { return }
         let transaction = self.transaction
         let transactionId = self.transactionId
         Task {
@@ -223,12 +279,10 @@ class TxDetailModel: NSObject {
             return link(for: order, dashTxId: transactionId)
         }
 
-        // Buy: the incoming Dash tx is matched to a buy order by address + amount + time.
-        let orders = await dao.all()
-        if let order = orders.first(where: { candidate in
-            candidate.direction == "buy"
-                && SwapBuyTransactionMatcher.matchedTransaction(for: candidate, in: [transaction]) != nil
-        }) {
+        // Buy: the incoming Dash tx belongs to the order the row label assigned it to —
+        // the same assignment, so the link opens the order the row shows.
+        if let orderID = SwapOrderMetadataProvider.shared.orderID(forTxHashData: transaction.txHashData),
+           let order = await dao.get(byId: orderID), order.direction == "buy" {
             return link(for: order, dashTxId: transactionId)
         }
 
@@ -256,12 +310,16 @@ class TxDetailModel: NSObject {
 
 extension TxDetailModel {
     func dashAmountString(with font: UIFont) -> NSAttributedString {
-        NSAttributedString.dashAttributedString(for: transaction.formattedDashAmountWithDirectionalSymbol,
-                                                tintColor: transaction.dashAmountTintColor,
-                                                font: font)
+        if swapOrderPlaceholder != nil {
+            return NSAttributedString(string: Self.missingValue, attributes: [.font: font])
+        }
+        return NSAttributedString.dashAttributedString(for: transaction.formattedDashAmountWithDirectionalSymbol,
+                                                       tintColor: transaction.dashAmountTintColor,
+                                                       font: font)
     }
 
     func getExplorerURL(explorer: BlockExplorer) -> URL? {
+        guard swapOrderPlaceholder == nil else { return nil }
         switch explorer {
         case .insight:
             if WalletEnvironment.isTestnet {
@@ -413,6 +471,15 @@ extension TxDetailModel {
     }
 
     func outputAddresses(with font: UIFont) -> [DWTitleDetailItem] {
+        if let swapOrderPlaceholder {
+            // The order knows where the Dash is going even though nothing has arrived.
+            let address = swapOrderPlaceholder.order.toAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !address.isEmpty else { return [] }
+            let detail = NSAttributedString.dashAddressAttributedString(address, with: font, showingLogo: false)
+            return [DWTitleDetailCellModel(style: .truncatedSingleLine,
+                                           title: NSLocalizedString("Received at", comment: ""),
+                                           attributedDetail: detail, copyableData: address)]
+        }
         if !shouldDisplayOutputAddresses {
             return []
         }
@@ -465,8 +532,14 @@ extension TxDetailModel {
 
     /// Extra rows for shielded transfers: the balance-to-balance route and,
     /// for a Core → Shielded funding, the live on-chain asset-lock status.
-    /// Empty for every other transaction.
+    /// For a swap-order placeholder: the order's status. Empty otherwise.
     func shieldedInfo() -> [DWTitleDetailItem] {
+        if let swapOrderPlaceholder {
+            return [DWTitleDetailCellModel(
+                style: .default,
+                title: NSLocalizedString("Status", comment: "Transaction details"),
+                plainDetail: swapOrderPlaceholder.statusText)]
+        }
         let transparent = NSLocalizedString("Transparent balance", comment: "The transparent (Core) balance of the Dash Wallet")
         let shielded = NSLocalizedString("Shielded balance", comment: "")
         if transaction.isShieldedTransfer {
@@ -625,7 +698,8 @@ extension TxDetailModel {
     /// `UnconfirmedTransactionRemover` re-verifies the local state and
     /// checks a block explorer before touching anything.
     var supportsUnconfirmedRemoval: Bool {
-        transaction.state == .processing
+        guard swapOrderPlaceholder == nil else { return false }
+        return transaction.state == .processing
     }
 
     /// Non-nil when this transaction is a funding asset lock whose transfer
@@ -643,6 +717,7 @@ extension TxDetailModel {
     ///
     /// Only 4 (consumed) never qualifies — that one is done.
     var stuckAssetLockRetry: StuckAssetLockRetry? {
+        guard swapOrderPlaceholder == nil else { return nil }
         let info = transaction.identityFundingLockInfo
             ?? transaction.platformFundingLockInfo
             ?? ShieldedTxLookup.shared.info(forTxidHex: transactionId)
@@ -678,6 +753,9 @@ extension TxDetailModel {
 
     func fee(with font: UIFont, tintColor: UIColor) -> DWTitleDetailItem {
         let title = NSLocalizedString("Network fee", comment: "")
+        if swapOrderPlaceholder != nil {
+            return DWTitleDetailCellModel(style: .default, title: title, plainDetail: Self.missingValue)
+        }
         let feeValue = localFeeDuffs ?? explorerFeeDuffs
 
         // Nothing local and nothing from the explorer (yet, or at all): the
@@ -709,7 +787,7 @@ extension TxDetailModel {
     /// second call. `completion` runs only when a fee actually arrived, so a
     /// failed lookup rebuilds nothing.
     func resolveExplorerFee(completion: @escaping () -> Void) {
-        guard direction == .received, localFeeDuffs == nil, explorerFeeDuffs == nil,
+        guard swapOrderPlaceholder == nil, direction == .received, localFeeDuffs == nil, explorerFeeDuffs == nil,
               let network = WalletEnvironment.network else { return }
         let displayTxid = transactionId
         Task {
@@ -770,11 +848,23 @@ extension TxDetailModel {
 
 extension TxDetailModel: TxDetailHeaderCellDataProvider {
     var fiatAmount: String {
-        transaction.fiatAmount
+        swapOrderPlaceholder == nil ? transaction.fiatAmount : Self.missingValue
     }
 
     var icon: UIImage {
-        transaction.direction.icon
+        // Nothing has been received yet, so not the "received" arrow: the swap glyph the
+        // order's history row carries.
+        let directionIcon = transaction.direction.icon
+        if swapOrderPlaceholder != nil,
+           let convert = UIImage(named: DashIcon.Transaction.convert.assetName, in: .dashUIKit, compatibleWith: nil) {
+            // The header draws its icon at natural size; the row glyph is smaller than the
+            // direction icons, so bring it up to theirs.
+            let size = directionIcon.size
+            return UIGraphicsImageRenderer(size: size).image { _ in
+                convert.draw(in: CGRect(origin: .zero, size: size))
+            }
+        }
+        return directionIcon
     }
 
     var tintColor: UIColor {

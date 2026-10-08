@@ -46,6 +46,10 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
 
     private init() {}
 
+    /// The last published snapshot, for synchronous readers (the Home timeline rebuild runs
+    /// off the main actor and cannot await). Empty until the first read hydrates the cache.
+    nonisolated var currentOrders: [SwapOrder] { allOrdersSubject.value }
+
     // MARK: - Protocol
 
     func create(dto: SwapOrder) async {
@@ -75,7 +79,14 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
             SwapOrder.colOutboundTxHash <- dto.outboundTxHash,
             SwapOrder.colTimestamp <- dto.timestamp,
             SwapOrder.colFinalisedAt <- dto.finalisedAt,
-            SwapOrder.colLastChecked <- dto.lastChecked
+            SwapOrder.colLastChecked <- dto.lastChecked,
+            SwapOrder.colFromAmount <- dto.fromAmount,
+            SwapOrder.colDepositDeadline <- dto.depositDeadline,
+            SwapOrder.colDepositSeenAt <- dto.depositSeenAt,
+            SwapOrder.colProviderDeniedAt <- dto.providerDeniedAt,
+            SwapOrder.colDepositMemo <- dto.depositMemo,
+            SwapOrder.colOwnerWalletId <- dto.ownerWalletId,
+            SwapOrder.colOwnerNetwork <- dto.ownerNetwork
         )
         try execute(insert)
         cache[dto.id] = dto

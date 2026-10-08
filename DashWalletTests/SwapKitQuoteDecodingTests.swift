@@ -290,3 +290,246 @@ final class SwapKitQuoteBoundaryTests: XCTestCase {
         XCTAssertNil(SwapKitSwapProvider.routability(from: upstream))
     }
 }
+
+// MARK: - Buy swap orders before their Dash transaction exists
+
+final class BuySwapOrderTests: XCTestCase {
+    private let now = Date(timeIntervalSince1970: 1_800_000_000)
+
+    private func buyOrder(
+        id: String = "0xdeposit",
+        status: SwapOrderStatus = .notStarted,
+        depositSeenSecondsAgo: Int64? = nil,
+        providerDenied: Bool = false,
+        memo: String? = "",
+        expected: String? = "2.51",
+        fromAsset: String = "ARB.USDT-0XFD086BC7",
+        finalisedSecondsAgo: Int64? = nil
+    ) -> SwapOrder {
+        let nowSeconds = Int64(now.timeIntervalSince1970)
+        return SwapOrder(
+            id: id,
+            direction: "buy",
+            service: "swapkit",
+            fromAsset: fromAsset,
+            toAsset: "DASH",
+            toAddress: "XdestinationAddress",
+            depositAddress: id,
+            expectedToAmount: expected,
+            status: status,
+            timestamp: (nowSeconds - 3_600) * 1000,
+            finalisedAt: finalisedSecondsAgo.map { nowSeconds - $0 } ?? -1,
+            fromAmount: "150",
+            depositSeenAt: depositSeenSecondsAgo.map { nowSeconds - $0 },
+            providerDeniedAt: providerDenied ? nowSeconds : nil,
+            depositMemo: memo,
+            ownerWalletId: "aa11",
+            ownerNetwork: "0"
+        )
+    }
+
+    // MARK: Phase
+
+    func testUnpaidOrderIsAwaitingPaymentAndHasNoRow() {
+        let order = buyOrder()
+        XCTAssertEqual(order.buyPhase, .awaitingPayment)
+        XCTAssertFalse(order.hasDepositOnRecord)
+        XCTAssertFalse(order.isBuyHistoryRow(now: now))
+    }
+
+    func testDepositOnChainWaitsForTheProviderUntilTheProviderDeniesIt() {
+        // However long ago the deposit appeared, time alone does not make it stuck: with the
+        // app in the background nobody asked the provider.
+        let waiting = buyOrder(depositSeenSecondsAgo: 86_400)
+        XCTAssertEqual(waiting.buyPhase, .waitingForProvider)
+        XCTAssertTrue(waiting.isBuyHistoryRow(now: now))
+        XCTAssertFalse(BuySwapOrderItem(order: waiting).showsErrorBadge)
+
+        let denied = buyOrder(depositSeenSecondsAgo: 86_400, providerDenied: true)
+        XCTAssertEqual(denied.buyPhase, .stuck)
+        XCTAssertTrue(denied.isBuyHistoryRow(now: now))
+        XCTAssertTrue(BuySwapOrderItem(order: denied).showsErrorBadge)
+    }
+
+    func testSlowChainsGetLongerBeforeTheProvidersDenialCounts() {
+        XCTAssertEqual(SwapOrder.stuckAfterSeconds(forAsset: "ARB.USDT-0XFD086BC7"), 600)
+        XCTAssertEqual(SwapOrder.stuckAfterSeconds(forAsset: "ETH.ETH"), 600)
+        XCTAssertEqual(SwapOrder.stuckAfterSeconds(forAsset: "BTC.BTC"), 5_400)
+        XCTAssertEqual(SwapOrder.stuckAfterSeconds(forAsset: "bch.BCH"), 5_400)
+        XCTAssertEqual(SwapOrder.stuckAfterSeconds(forAsset: "LTC.LTC"), 2_700)
+        XCTAssertEqual(buyOrder(fromAsset: "DOGE.DOGE").stuckAfterSeconds, 2_700)
+    }
+
+    func testProviderProgressWinsOverADenial() {
+        for status in [SwapOrderStatus.pending, .swapping, .unknown] {
+            let order = buyOrder(status: status, depositSeenSecondsAgo: 86_400, providerDenied: true)
+            XCTAssertEqual(order.buyPhase, .processing, "\(status)")
+            XCTAssertTrue(order.isBuyHistoryRow(now: now), "\(status)")
+        }
+    }
+
+    func testProviderProgressAloneIsDepositEvidence() {
+        // The provider saw the deposit before the address lookup did: no `depositSeenAt` yet.
+        let order = buyOrder(status: .pending)
+        XCTAssertTrue(order.hasDepositOnRecord)
+        XCTAssertTrue(order.isBuyHistoryRow(now: now))
+    }
+
+    func testCompletedOrderKeepsARowOnlyWhileThePayoutMayStillBeArriving() {
+        let justDone = buyOrder(status: .completed, finalisedSecondsAgo: SwapOrder.completedRowSeconds)
+        XCTAssertEqual(justDone.buyPhase, .completed)
+        XCTAssertTrue(justDone.isBuyHistoryRow(now: now))
+
+        XCTAssertFalse(buyOrder(status: .completed, finalisedSecondsAgo: SwapOrder.completedRowSeconds + 1).isBuyHistoryRow(now: now))
+        // Completion time unknown: nothing to bound the row with, so no row.
+        XCTAssertFalse(buyOrder(status: .completed).isBuyHistoryRow(now: now))
+    }
+
+    func testAnOrderThatEndedIsARowOnlyWhenItsDepositWasOnRecord() {
+        // Refunded and failed are the provider's words about a deposit it saw.
+        XCTAssertTrue(buyOrder(status: .refunded).isBuyHistoryRow(now: now))
+        XCTAssertTrue(buyOrder(status: .failed).isBuyHistoryRow(now: now))
+        // Expired is ours — we stopped asking — and says nothing about a deposit.
+        XCTAssertFalse(buyOrder(status: .expired).isBuyHistoryRow(now: now))
+        XCTAssertTrue(buyOrder(status: .expired, depositSeenSecondsAgo: 86_400).isBuyHistoryRow(now: now))
+    }
+
+    func testOnlyProviderStatusesAboutASeenDepositImplyOne() {
+        XCTAssertEqual(
+            [SwapOrderStatus.pending, .swapping, .unknown, .completed, .refunded, .failed].map(\.impliesDeposit),
+            Array(repeating: true, count: 6))
+        XCTAssertFalse(SwapOrderStatus.notStarted.impliesDeposit)
+        XCTAssertFalse(SwapOrderStatus.expired.impliesDeposit)
+        XCTAssertEqual(
+            [SwapOrderStatus.pending, .swapping, .unknown].map(\.isProviderProgress), [true, true, true])
+        XCTAssertFalse(SwapOrderStatus.completed.isProviderProgress)
+        XCTAssertFalse(SwapOrderStatus.refunded.isProviderProgress)
+    }
+
+    func testSellOrderIsNeverABuyRow() {
+        var order = buyOrder(status: .pending)
+        order.direction = "sell"
+        XCTAssertFalse(order.isBuyHistoryRow(now: now))
+        XCTAssertFalse(order.canWatchDepositAddress)
+    }
+
+    // MARK: Ownership and payouts
+
+    func testOrderBelongsOnlyToTheWalletAndNetworkThatMadeIt() {
+        let order = buyOrder()
+        XCTAssertTrue(order.isOwned(byWalletId: "aa11", network: "0"))
+        XCTAssertFalse(order.isOwned(byWalletId: "bb22", network: "0"))
+        XCTAssertFalse(order.isOwned(byWalletId: "aa11", network: "1"))
+        XCTAssertFalse(order.isOwned(byWalletId: nil, network: "0"))
+
+        var unknown = order
+        unknown.ownerWalletId = nil
+        XCTAssertFalse(unknown.isOwned(byWalletId: "aa11", network: "0"))
+    }
+
+    func testOnlyOrdersTheProviderHasNotEndedCanStillBePaidOut() {
+        for status in [SwapOrderStatus.notStarted, .pending, .swapping, .unknown, .completed] {
+            XCTAssertTrue(buyOrder(status: status).mayStillBePaidOut, "\(status)")
+        }
+        XCTAssertFalse(buyOrder(status: .refunded).mayStillBePaidOut)
+        XCTAssertFalse(buyOrder(status: .failed).mayStillBePaidOut)
+        // Expired is us no longer asking; a late payout still belongs to the order.
+        XCTAssertTrue(buyOrder(status: .expired).mayStillBePaidOut)
+    }
+
+    func testNoTransactionsMeansNoPayouts() {
+        XCTAssertTrue(SwapBuyTransactionMatcher.payoutAssignments(among: [buyOrder(status: .pending)], in: []).isEmpty)
+        XCTAssertTrue(SwapBuyTransactionMatcher.matchingTransactions(for: buyOrder(status: .pending), in: []).isEmpty)
+    }
+
+    func testOrderRowWordsProviderProgressLikeTheFinishedSwapRow() {
+        XCTAssertEqual(BuySwapOrderItem(order: buyOrder(status: .pending)).statusText,
+                       SwapOrderMetadataProvider.statusLabel(for: .pending))
+        XCTAssertEqual(BuySwapOrderItem(order: buyOrder(status: .swapping)).statusText,
+                       SwapOrderMetadataProvider.statusLabel(for: .swapping))
+        XCTAssertEqual(BuySwapOrderItem(order: buyOrder()).pair, "USDT/DASH")
+    }
+
+    // MARK: Deposit address watching
+
+    func testMemoDepositCannotBeRecognisedByItsAddress() {
+        XCTAssertTrue(buyOrder(memo: "").canWatchDepositAddress)
+        XCTAssertTrue(buyOrder(memo: "  ").canWatchDepositAddress)
+        XCTAssertFalse(buyOrder(memo: "123456").canWatchDepositAddress)
+        // Saved before the memo was recorded: unknown, so not watched.
+        XCTAssertFalse(buyOrder(memo: nil).canWatchDepositAddress)
+    }
+
+    func testHoldsAssetMatchesTheIdentifierWhateverItsCase() {
+        let asset = "ARB.USDT-0XFD086BC7"
+        let held = [
+            SwapKitBalanceItem(identifier: "ARB.ETH", value: "0"),
+            SwapKitBalanceItem(identifier: "ARB.USDT-0xFd086bC7", value: "150"),
+        ]
+        XCTAssertTrue(SwapTrackingService.holdsAsset(asset, in: held))
+    }
+
+    func testHoldsAssetIgnoresZeroOtherAssetsAndGarbage() {
+        let asset = "ARB.USDT-0XFD086BC7"
+        XCTAssertFalse(SwapTrackingService.holdsAsset(asset, in: []))
+        XCTAssertFalse(SwapTrackingService.holdsAsset(asset, in: [
+            SwapKitBalanceItem(identifier: "ARB.USDT-0xFd086bC7", value: "0"),
+            SwapKitBalanceItem(identifier: "ARB.USDC-0xaf88d065", value: "9"),
+            SwapKitBalanceItem(identifier: "ARB.ETH", value: "1.5"),
+            SwapKitBalanceItem(identifier: nil, value: "7"),
+            SwapKitBalanceItem(identifier: "ARB.USDT-0xFd086bC7", value: "n/a"),
+        ]))
+    }
+
+    // MARK: Row
+
+    func testRowShowsTheExpectedAmountOnlyWhileAPayoutIsStillPossible() {
+        XCTAssertEqual(BuySwapOrderItem(order: buyOrder(depositSeenSecondsAgo: 60)).expectedDuffs, 251_000_000)
+        XCTAssertEqual(BuySwapOrderItem(order: buyOrder(status: .completed, finalisedSecondsAgo: 60)).expectedDuffs, 251_000_000)
+        XCTAssertEqual(BuySwapOrderItem(order: buyOrder(status: .refunded)).expectedDuffs, 0)
+        XCTAssertEqual(BuySwapOrderItem(order: buyOrder(status: .failed)).expectedDuffs, 0)
+        XCTAssertEqual(BuySwapOrderItem(order: buyOrder(expected: nil)).expectedDuffs, 0)
+        XCTAssertEqual(BuySwapOrderItem(order: buyOrder(expected: "0.017580064")).expectedDuffs, 1_758_006)
+        XCTAssertEqual(BuySwapOrderItem(order: buyOrder(expected: "99999999999999999999999999")).expectedDuffs, 0)
+    }
+
+    func testRowIsDatedByTheDepositNotTheOrder() {
+        let seen = BuySwapOrderItem(order: buyOrder(depositSeenSecondsAgo: 120))
+        XCTAssertEqual(seen.date, now.addingTimeInterval(-120))
+        let unseen = BuySwapOrderItem(order: buyOrder(status: .pending))
+        XCTAssertEqual(unseen.date, now.addingTimeInterval(-3_600))
+    }
+
+    // MARK: /v3/swap meta
+
+    private func decodeSwap(meta: String) throws -> SwapKitSwapResponse {
+        let json = #"{"inboundAddress":"0xdeposit","expectedBuyAmount":"2.51","meta":"# + meta + "}"
+        return try JSONDecoder().decode(SwapKitSwapResponse.self, from: Data(json.utf8))
+    }
+
+    func testDepositDeadlineDecodesFromANumberOrAString() throws {
+        XCTAssertEqual(try decodeSwap(meta: #"{"depositChannelExpiration":1800003600}"#).meta?.depositChannelExpiration, 1_800_003_600)
+        XCTAssertEqual(try decodeSwap(meta: #"{"depositChannelExpiration":"1800003600"}"#).meta?.depositChannelExpiration, 1_800_003_600)
+        XCTAssertEqual(
+            try decodeSwap(meta: #"{"depositChannelExpiration":1800003600}"#).meta?.depositDeadline(now: now),
+            now.addingTimeInterval(3_600))
+    }
+
+    func testImplausibleDepositDeadlineReadsAsNone() throws {
+        // Already past, milliseconds instead of seconds, absurdly large, not a finite number.
+        for raw in ["1799999999", "1800003600000", "1e30", #""inf""#, #""nan""#] {
+            let meta = try decodeSwap(meta: "{\"depositChannelExpiration\":\(raw)}").meta
+            XCTAssertNil(meta?.depositDeadline(now: now), raw)
+        }
+        let edge = now.addingTimeInterval(SwapKitSwapMeta.maxDepositWindow).timeIntervalSince1970
+        XCTAssertNotNil(try decodeSwap(meta: "{\"depositChannelExpiration\":\(Int(edge))}").meta?.depositDeadline(now: now))
+    }
+
+    func testUnexpectedMetaNeverFailsTheSwapResponse() throws {
+        for meta in [#"{"depositChannelExpiration":{"at":1}}"#, #"{"other":true}"#, #""free text""#, "[1,2]", "null"] {
+            let response = try decodeSwap(meta: meta)
+            XCTAssertEqual(response.inboundAddress, "0xdeposit", meta)
+            XCTAssertNil(response.meta?.depositChannelExpiration, meta)
+        }
+    }
+}

@@ -196,7 +196,12 @@ final class RefundAddressViewModel: ObservableObject {
             toAddress: dashDestination,
             depositAddress: order.depositAddress,
             expectedToAmount: "\(order.expectedDashAmount)",
-            status: .notStarted
+            status: .notStarted,
+            fromAmount: order.sellAmount,
+            depositDeadline: order.depositDeadline.map { Int64($0.timeIntervalSince1970) },
+            depositMemo: order.memo ?? "",
+            ownerWalletId: SwapOrder.currentOwnerWalletId,
+            ownerNetwork: SwapOrder.currentOwnerNetwork
         )
         try await swapOrdersDAO.save(dto: swapOrder)
     }

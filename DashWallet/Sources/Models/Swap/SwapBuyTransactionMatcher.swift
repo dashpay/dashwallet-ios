@@ -60,15 +60,7 @@ enum SwapBuyTransactionMatcher {
             return nil
         }
 
-        let minimumTimestamp = TimeInterval(order.timestamp) / 1000.0
-        let candidates = transactions.filter { tx in
-            matches(
-                tx,
-                receiveAddress: receiveAddress,
-                minimumTimestamp: minimumTimestamp,
-                expectedDashAmount: expectedDashAmount
-            )
-        }
+        let candidates = matchingTransactions(for: order, in: transactions)
 
         return candidates.min(by: { lhs, rhs in
             let lhsTimestamp = lhs.date.timeIntervalSince1970
@@ -96,18 +88,91 @@ enum SwapBuyTransactionMatcher {
         })
     }
 
-    static func walletTxHashData(
-        for order: SwapOrder,
-        in transactions: [Transaction]
-    ) -> Data? {
-        matchedTransaction(for: order, in: transactions)?.txHashData
+    /// Every transaction that could be `order`'s payout: received at its address, not before
+    /// it (within `timestampSlack`), for about its expected amount.
+    static func matchingTransactions(for order: SwapOrder, in transactions: [Transaction]) -> [Transaction] {
+        guard order.direction == "buy" else { return [] }
+        let receiveAddress = order.toAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !receiveAddress.isEmpty,
+              let expectedDashAmount = expectedDashAmount(for: order), expectedDashAmount > 0
+        else { return [] }
+        let minimumTimestamp = TimeInterval(order.timestamp) / 1000.0
+        return transactions.filter { tx in
+            matches(
+                tx,
+                receiveAddress: receiveAddress,
+                minimumTimestamp: minimumTimestamp,
+                expectedDashAmount: expectedDashAmount
+            )
+        }
     }
 
-    static func walletTxHashHexString(
-        for order: SwapOrder,
+    /// Which transaction pays out which Buy order: order id → transaction.
+    ///
+    /// `matchedTransaction(for:in:)` looks at one order alone, so two orders for the same
+    /// amount to the same receive address both match the one payout that arrived. Here each
+    /// transaction goes to at most one order, settled tier by tier:
+    /// 1. the order that already names it as its payout (`outboundTxHash`);
+    /// 2. orders the provider reports as completed, oldest first — it paid them out, and
+    ///    payouts arrive in the order the swaps were made;
+    /// 3. orders still in flight with a deposit on record;
+    /// 4. orders with no deposit on record — they only take what is left, so an order
+    ///    nobody paid cannot take a funded order's payout.
+    /// In tiers 3 and 4, orders that fit the same transactions are settled together: with
+    /// at least as many payouts as orders they pair up in time order; with fewer, none is
+    /// assigned — which of two in-flight attempts a single payout answers is the provider's
+    /// to say, and a wrong guess would finalise the other attempt as paid. Orders that ended
+    /// without a payout claim nothing.
+    static func payoutAssignments(
+        among orders: [SwapOrder],
         in transactions: [Transaction]
-    ) -> String? {
-        matchedTransaction(for: order, in: transactions)?.txHashHexString
+    ) -> [String: Transaction] {
+        guard !transactions.isEmpty else { return [:] }
+        let claimants = orders.filter { $0.direction == "buy" && $0.mayStillBePaidOut }
+        guard !claimants.isEmpty else { return [:] }
+
+        var free: [(id: String, tx: Transaction)] = transactions.map { ($0.txHashHexString.lowercased(), $0) }
+        var assigned: [String: Transaction] = [:]
+
+        func take(_ txId: String, for order: SwapOrder) {
+            guard let index = free.firstIndex(where: { $0.id == txId }) else { return }
+            assigned[order.id] = free[index].tx
+            free.remove(at: index)
+        }
+
+        for claimant in claimants {
+            guard let recorded = claimant.outboundTxHash?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
+                  !recorded.isEmpty else { continue }
+            take(recorded, for: claimant)
+        }
+
+        let completed = claimants
+            .filter { $0.status == .completed && assigned[$0.id] == nil }
+            .sorted { $0.timestamp < $1.timestamp }
+        for claimant in completed {
+            guard let match = matchedTransaction(for: claimant, in: free.map(\.tx)) else { continue }
+            take(match.txHashHexString.lowercased(), for: claimant)
+        }
+
+        let inFlight = claimants.filter { $0.status != .completed && assigned[$0.id] == nil }
+        for tier in [inFlight.filter(\.hasDepositOnRecord), inFlight.filter { !$0.hasDepositOnRecord }] {
+            // Orders grouped by the exact set of free transactions they fit.
+            var groups: [[String]: [SwapOrder]] = [:]
+            let freeTxs = free.map(\.tx)
+            for claimant in tier {
+                let fitting = matchingTransactions(for: claimant, in: freeTxs)
+                    .sorted { $0.date < $1.date }
+                    .map { $0.txHashHexString.lowercased() }
+                guard !fitting.isEmpty else { continue }
+                groups[fitting, default: []].append(claimant)
+            }
+            for (txIds, group) in groups where txIds.count >= group.count {
+                for (order, txId) in zip(group.sorted { $0.timestamp < $1.timestamp }, txIds) {
+                    take(txId, for: order)
+                }
+            }
+        }
+        return assigned
     }
 
     private static func matches(
@@ -127,7 +192,7 @@ enum SwapBuyTransactionMatcher {
         )
     }
 
-    private static func expectedDashAmount(for order: SwapOrder) -> Decimal? {
+    static func expectedDashAmount(for order: SwapOrder) -> Decimal? {
         guard let raw = order.expectedToAmount?.trimmingCharacters(in: .whitespacesAndNewlines),
               !raw.isEmpty else {
             return nil

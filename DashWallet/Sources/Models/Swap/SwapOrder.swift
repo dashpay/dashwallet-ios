@@ -42,6 +42,24 @@ enum SwapOrderStatus: String, Equatable {
 
     var isActive: Bool { !isTerminal }
 
+    /// True for every status the provider only reports about a deposit it has seen —
+    /// in progress, paid out, or sent back. `notStarted` says nothing was seen, and
+    /// `expired` is ours (we stopped asking), so neither implies one.
+    var impliesDeposit: Bool {
+        switch self {
+        case .pending, .swapping, .unknown, .completed, .refunded, .failed: return true
+        case .notStarted, .expired: return false
+        }
+    }
+
+    /// The in-progress subset of `impliesDeposit`.
+    var isProviderProgress: Bool {
+        switch self {
+        case .pending, .swapping, .unknown: return true
+        case .notStarted, .completed, .refunded, .failed, .expired: return false
+        }
+    }
+
     /// Maps a normalised track-status string + observed flag to a `SwapOrderStatus`.
     /// `isObserved = false` means the provider hasn't seen the inbound tx yet.
     static func from(trackStatus: String?, isObserved: Bool) -> SwapOrderStatus {
@@ -81,6 +99,16 @@ struct SwapOrder: RowDecodable {
     var timestamp: Int64         // unix ms — order creation time
     var finalisedAt: Int64       // unix s; -1 = unknown / not yet finalised
     var lastChecked: Int64       // unix s — last time /track was polled
+    var fromAmount: String?      // Buy: human-unit amount of `fromAsset` the user was asked to send
+    var depositDeadline: Int64?  // Buy: unix s — the provider's own deadline for the deposit address
+    var depositSeenAt: Int64?    // Buy: unix s — when the deposit was first known to exist: seen on
+                                 // the source chain, or reported by the provider
+    var providerDeniedAt: Int64? // Buy: unix s — the provider answered "no deposit" this long
+                                 // after `depositSeenAt` that the order counts as stuck
+    var depositMemo: String?     // Buy: memo the deposit must carry ("" = none, the address is
+                                 // this order's alone; nil = unknown, saved before this field)
+    var ownerWalletId: String?   // Buy: hex id of the wallet the order was made in (nil = unknown)
+    var ownerNetwork: String?    // Buy: network that wallet was on (nil = unknown)
 
     // MARK: - SQLite schema
 
@@ -100,6 +128,13 @@ struct SwapOrder: RowDecodable {
     static let colTimestamp = Expression<Int64>("timestamp")
     static let colFinalisedAt = Expression<Int64>("finalisedAt")
     static let colLastChecked = Expression<Int64>("lastChecked")
+    static let colFromAmount = Expression<String?>("fromAmount")
+    static let colDepositDeadline = Expression<Int64?>("depositDeadline")
+    static let colDepositSeenAt = Expression<Int64?>("depositSeenAt")
+    static let colProviderDeniedAt = Expression<Int64?>("providerDeniedAt")
+    static let colDepositMemo = Expression<String?>("depositMemo")
+    static let colOwnerWalletId = Expression<String?>("ownerWalletId")
+    static let colOwnerNetwork = Expression<String?>("ownerNetwork")
 
     // MARK: - RowDecodable
 
@@ -119,6 +154,16 @@ struct SwapOrder: RowDecodable {
         timestamp = row[SwapOrder.colTimestamp]
         finalisedAt = row[SwapOrder.colFinalisedAt]
         lastChecked = row[SwapOrder.colLastChecked]
+        // `try?`, not the trapping subscript: these columns come from a later migration, and
+        // a launch whose migration failed must not crash reading the orders it has. (Writes
+        // still name these columns, so in that state they fail and are logged by the DAO.)
+        fromAmount = (try? row.get(SwapOrder.colFromAmount)) ?? nil
+        depositDeadline = (try? row.get(SwapOrder.colDepositDeadline)) ?? nil
+        depositSeenAt = (try? row.get(SwapOrder.colDepositSeenAt)) ?? nil
+        providerDeniedAt = (try? row.get(SwapOrder.colProviderDeniedAt)) ?? nil
+        depositMemo = (try? row.get(SwapOrder.colDepositMemo)) ?? nil
+        ownerWalletId = (try? row.get(SwapOrder.colOwnerWalletId)) ?? nil
+        ownerNetwork = (try? row.get(SwapOrder.colOwnerNetwork)) ?? nil
     }
 
     // MARK: - Memberwise init
@@ -138,7 +183,14 @@ struct SwapOrder: RowDecodable {
         outboundTxHash: String? = nil,
         timestamp: Int64 = Int64(Date().timeIntervalSince1970 * 1000),
         finalisedAt: Int64 = -1,
-        lastChecked: Int64 = Int64(Date().timeIntervalSince1970)
+        lastChecked: Int64 = Int64(Date().timeIntervalSince1970),
+        fromAmount: String? = nil,
+        depositDeadline: Int64? = nil,
+        depositSeenAt: Int64? = nil,
+        providerDeniedAt: Int64? = nil,
+        depositMemo: String? = nil,
+        ownerWalletId: String? = nil,
+        ownerNetwork: String? = nil
     ) {
         self.id = id
         self.direction = direction
@@ -155,5 +207,129 @@ struct SwapOrder: RowDecodable {
         self.timestamp = timestamp
         self.finalisedAt = finalisedAt
         self.lastChecked = lastChecked
+        self.fromAmount = fromAmount
+        self.depositDeadline = depositDeadline
+        self.depositSeenAt = depositSeenAt
+        self.providerDeniedAt = providerDeniedAt
+        self.depositMemo = depositMemo
+        self.ownerWalletId = ownerWalletId
+        self.ownerNetwork = ownerNetwork
+    }
+}
+
+// MARK: - BuySwapPhase
+
+/// What a Buy order looks like to the user. Derived from the stored fields, never stored
+/// itself. The provider cannot tell "nothing was sent" from "sent, but not noticed", so the
+/// second signal is the source chain itself — the deposit address holding the coin.
+enum BuySwapPhase: Equatable {
+    /// Order exists; no deposit on the source chain, none reported by the provider.
+    case awaitingPayment
+    /// The deposit is on the source chain; the provider has not picked it up yet, within the
+    /// normal wait.
+    case waitingForProvider
+    /// The provider has seen the deposit and is working on it.
+    case processing
+    /// The deposit is on the source chain and the provider, asked more than
+    /// `stuckAfterSeconds` later, answered that it does not see it.
+    case stuck
+    case completed
+    case refunded
+    case failed
+    case expired
+}
+
+extension SwapOrder {
+    /// How long a completed order keeps its own row while the Dash payout has not shown up in
+    /// the wallet yet.
+    static let completedRowSeconds: Int64 = 60 * 60
+
+
+    /// How long a deposit may sit on the source chain unseen by the provider before the order
+    /// is called stuck. Per source chain: the deposit address shows a balance as soon as the
+    /// transfer is broadcast or mined, while the provider waits for confirmations — minutes
+    /// on most chains, up to an hour and more on the slow proof-of-work ones.
+    static func stuckAfterSeconds(forAsset asset: String) -> Int64 {
+        switch asset.split(separator: ".").first.map({ $0.uppercased() }) {
+        case "BTC", "BCH": return 90 * 60
+        case "LTC", "DOGE", "ZEC": return 45 * 60
+        default: return 10 * 60
+        }
+    }
+
+    var stuckAfterSeconds: Int64 { SwapOrder.stuckAfterSeconds(forAsset: fromAsset) }
+
+    var isBuy: Bool { direction == "buy" }
+
+    /// Whether the deposit can be recognised by the deposit address's balance: only when the
+    /// order is known to carry no memo. With a memo the address is shared between orders and
+    /// its balance says nothing about this one; an order saved before the memo was recorded
+    /// is unknown, and unknown is not watched.
+    var canWatchDepositAddress: Bool {
+        guard isBuy, let depositMemo else { return false }
+        return depositMemo.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// Whether anything says this order's deposit exists: it was seen on the source chain, or
+    /// the provider reported it (which also stamps `depositSeenAt`).
+    var hasDepositOnRecord: Bool {
+        depositSeenAt != nil || status.impliesDeposit
+    }
+
+    var buyPhase: BuySwapPhase {
+        switch status {
+        case .completed: return .completed
+        case .refunded: return .refunded
+        case .failed: return .failed
+        case .expired: return .expired
+        case .pending, .swapping, .unknown: return .processing
+        case .notStarted:
+            guard depositSeenAt != nil else { return .awaitingPayment }
+            // Stuck is the provider's answer, stamped by the tracker — not elapsed time: with
+            // the app in the background or offline nobody asked, and an order that completed
+            // meanwhile must not read as stuck until the next poll.
+            return providerDeniedAt != nil ? .stuck : .waitingForProvider
+        }
+    }
+
+    /// The active wallet's id, as orders record it.
+    static var currentOwnerWalletId: String? { WalletEnvironment.activeWalletIdHex as String? }
+
+    /// The active network, as orders record it.
+    static var currentOwnerNetwork: String? { String(WalletEnvironment.networkKind.rawValue) }
+
+    /// Whether the order belongs to the given wallet on the given network. An order saved
+    /// before the owner was recorded is unknown and belongs to nobody.
+    func isOwned(byWalletId walletId: String?, network: String?) -> Bool {
+        guard let ownerWalletId, let ownerNetwork, let walletId, let network else { return false }
+        return ownerWalletId == walletId && ownerNetwork == network
+    }
+
+    /// Whether a Dash payout for this order can still turn up: not once the provider has
+    /// ended it without one. An expired order still can — expiry is us no longer asking,
+    /// and a deposit handed to the provider later is paid out all the same.
+    var mayStillBePaidOut: Bool {
+        switch status {
+        case .refunded, .failed: return false
+        case .notStarted, .pending, .swapping, .unknown, .completed, .expired: return true
+        }
+    }
+
+    /// Whether the order may be a history row of its own: only an order whose deposit is on
+    /// record. An unpaid one is shown nowhere — whatever status it ends in.
+    ///
+    /// This is the order's side only. Home shows the row just while the Dash payout is not in
+    /// the wallet — once that transaction is there it is the row, labelled by
+    /// `SwapOrderMetadataProvider`. A completed order therefore keeps a row only briefly,
+    /// covering the gap between the provider reporting the payout and the wallet seeing it.
+    func isBuyHistoryRow(now: Date = Date()) -> Bool {
+        guard isBuy, hasDepositOnRecord else { return false }
+        switch buyPhase {
+        case .waitingForProvider, .processing, .stuck, .refunded, .failed, .expired: return true
+        case .completed:
+            guard finalisedAt > 0 else { return false }
+            return Int64(now.timeIntervalSince1970) - finalisedAt <= SwapOrder.completedRowSeconds
+        case .awaitingPayment: return false
+        }
     }
 }

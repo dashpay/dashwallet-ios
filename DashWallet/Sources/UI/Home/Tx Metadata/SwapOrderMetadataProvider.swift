@@ -44,6 +44,22 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     }
     let metadataUpdated = PassthroughSubject<Data, Never>()
 
+    /// Wire-order txid → id of the swap order that transaction belongs to. The one
+    /// assignment the row label, the details screen and Home all read, so they cannot
+    /// disagree about which order a payout is.
+    private var _orderIdByTx: [Data: String] = [:]
+    /// Fires after the assignment changed.
+    let assignmentsChanged = PassthroughSubject<Void, Never>()
+
+    func orderID(forTxHashData txHashData: Data) -> String? {
+        metadataQueue.sync { _orderIdByTx[txHashData] }
+    }
+
+    /// Whether the order's Dash transaction is in the wallet.
+    func hasWalletTransaction(forOrderID orderID: String) -> Bool {
+        metadataQueue.sync { _orderIdByTx.values.contains(orderID) }
+    }
+
     private init() {
         dao.observeAll()
             .receive(on: DispatchQueue.main)
@@ -69,10 +85,15 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         // the address+time buy matcher (the previous shape walked the ENTIRE
         // wallet once per order, on every balance tick).
         let matcherTransactions = buyMatcherTransactions(for: orders)
+        // One payout, one order: decided across all orders, so a transaction is labelled by
+        // the order it belongs to and not by another one for the same amount.
+        let payouts = SwapBuyTransactionMatcher.payoutAssignments(among: orders, in: matcherTransactions)
         var current: [Data: TxRowMetadata] = [:]
+        var owners: [Data: String] = [:]
         for order in orders {
-            if let key = metadataKey(for: order, matcherTransactions: matcherTransactions) {
+            if let key = metadataKey(for: order, payouts: payouts) {
                 current[key] = makeMetadata(for: order)
+                owners[key] = order.id
             }
         }
 
@@ -81,15 +102,18 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
             let staleKeys = Set(self._availableMetadata.keys).subtracting(current.keys)
             let changedKeys = Set(current.keys).union(staleKeys)
             self._availableMetadata = current
+            let ownersChanged = self._orderIdByTx != owners
+            self._orderIdByTx = owners
             DispatchQueue.main.async {
                 for key in changedKeys {
                     self.metadataUpdated.send(key)
                 }
+                if ownersChanged { self.assignmentsChanged.send() }
             }
         }
     }
 
-    private func metadataKey(for order: SwapOrder, matcherTransactions: [Transaction]) -> Data? {
+    private func metadataKey(for order: SwapOrder, payouts: [String: Transaction]) -> Data? {
         if order.direction == "sell" {
             return Data(hex: order.id).map { Data($0.reversed()) }
         } else {
@@ -104,7 +128,7 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
                 return Data(txHashData.reversed())
             }
 
-            return SwapBuyTransactionMatcher.walletTxHashData(for: order, in: matcherTransactions)
+            return payouts[order.id]?.txHashData
         }
     }
 
@@ -128,14 +152,13 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     }
 
     private func makeMetadata(for order: SwapOrder) -> TxRowMetadata {
-        let pair = "\(Self.shortSymbol(from: order.fromAsset))/\(Self.shortSymbol(from: order.toAsset))"
         let title = String(
             format: NSLocalizedString("Converted · %@", comment: "Dash DEX / tx history row title"),
-            pair
+            Self.pairLabel(for: order)
         )
         return TxRowMetadata(
             title: title,
-            details: statusLabel(for: order.status),
+            details: Self.statusLabel(for: order.status),
             iconName: .custom(DashIcon.Transaction.convert.assetName, bundle: .dashUIKit),
             secondaryIcon: secondaryIcon(for: order.status)
         )
@@ -154,6 +177,11 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         }
     }
 
+    /// "USDT/DASH" — the order's pair in short tickers.
+    static func pairLabel(for order: SwapOrder) -> String {
+        "\(shortSymbol(from: order.fromAsset))/\(shortSymbol(from: order.toAsset))"
+    }
+
     /// Extracts the short ticker symbol from a full THORChain asset path.
     /// "ARB.USDC-0X-AF88D065E77C8C-C2239327C5ED-B3A432268E5831" → "USDC"
     /// "DASH" → "DASH"
@@ -165,7 +193,9 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
 
     /// Text badge — shown only for the **Processing** states. Success and Failed carry no label
     /// (Success shows nothing; Failed is conveyed by the error corner badge).
-    private func statusLabel(for status: SwapOrderStatus) -> String? {
+    /// Internal static: the order's own row (`BuySwapOrderItem`) words the same states the
+    /// same way.
+    static func statusLabel(for status: SwapOrderStatus) -> String? {
         switch status {
         case .notStarted, .pending:
             return NSLocalizedString("Pending", comment: "Dash DEX")
@@ -175,6 +205,91 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
             return NSLocalizedString("In progress", comment: "Dash DEX")
         case .completed, .refunded, .failed, .expired:
             return nil
+        }
+    }
+}
+
+// MARK: - BuySwapOrderItem
+
+/// A Buy order as a Home history row, before its Dash transaction exists. It appears once its
+/// deposit is on record — seen on the source chain, or reported by the provider.
+struct BuySwapOrderItem: Identifiable {
+    let order: SwapOrder
+
+    var id: String { "swap-order-\(order.id)" }
+
+    /// When the order entered the history: the moment its deposit was first on record,
+    /// otherwise its creation.
+    var date: Date {
+        Date(timeIntervalSince1970: TimeInterval(order.depositSeenAt ?? order.timestamp / 1000))
+    }
+
+    var fromSymbol: String { SwapOrderMetadataProvider.shortSymbol(from: order.fromAsset) }
+    var pair: String { SwapOrderMetadataProvider.pairLabel(for: order) }
+
+    /// Row title, in the voice of the finished swap's "Converted · USDT/DASH".
+    var title: String {
+        let format: String
+        switch order.status {
+        case .refunded, .failed, .expired:
+            format = NSLocalizedString("Not converted · %@", comment: "Dash DEX / tx history row title")
+        case .completed:
+            format = NSLocalizedString("Converted · %@", comment: "Dash DEX / tx history row title")
+        case .notStarted, .pending, .swapping, .unknown:
+            format = NSLocalizedString("Converting · %@", comment: "Dash DEX / tx history row title")
+        }
+        return String(format: format, pair)
+    }
+
+    /// Whether the row carries the error corner badge: the ended-without-payout states the
+    /// finished-swap rows already badge, plus a stuck deposit.
+    var showsErrorBadge: Bool {
+        switch order.buyPhase {
+        case .stuck, .refunded, .failed, .expired: return true
+        case .awaitingPayment, .waitingForProvider, .processing, .completed: return false
+        }
+    }
+
+    /// "150 USDT" — what the user was asked to send.
+    var sendAmountText: String? {
+        guard let amount = order.fromAmount?.trimmingCharacters(in: .whitespacesAndNewlines), !amount.isEmpty else {
+            return nil
+        }
+        return "\(amount) \(fromSymbol)"
+    }
+
+    /// Expected DASH, in duffs, for the row's amount column. Zero once the order has ended
+    /// without a payout — a refunded row must not read as Dash received.
+    var expectedDuffs: Int64 {
+        switch order.status {
+        case .refunded, .failed, .expired: return 0
+        case .notStarted, .pending, .swapping, .unknown, .completed: break
+        }
+        // Bounded by the Dash supply: beyond it the value is not an amount, and the duff
+        // conversion below is only defined inside 64 bits.
+        guard let dash = SwapBuyTransactionMatcher.expectedDashAmount(for: order),
+              dash > 0, dash <= Decimal(21_000_000) else { return 0 }
+        return Int64(dash.plainDashAmount)
+    }
+
+    var shortTimeString: String {
+        DWDateFormatter.sharedInstance.timeOnly(from: date)
+    }
+
+    var statusText: String {
+        switch order.buyPhase {
+        // Never shown: an unpaid order has no row. Present only to keep the switch total.
+        case .awaitingPayment: return NSLocalizedString("Pending", comment: "Dash DEX")
+        case .waitingForProvider: return NSLocalizedString("Waiting for the provider", comment: "Dash DEX")
+        // The provider's own in-progress states, worded as on the finished swap's row.
+        case .processing:
+            return SwapOrderMetadataProvider.statusLabel(for: order.status)
+                ?? NSLocalizedString("In progress", comment: "Dash DEX")
+        case .stuck: return NSLocalizedString("Stuck", comment: "Dash DEX")
+        case .completed: return NSLocalizedString("Completed", comment: "Dash DEX")
+        case .refunded: return NSLocalizedString("Refunded", comment: "Dash DEX")
+        case .failed: return NSLocalizedString("Failed", comment: "Dash DEX")
+        case .expired: return NSLocalizedString("Not confirmed", comment: "Dash DEX")
         }
     }
 }

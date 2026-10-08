@@ -53,19 +53,24 @@ struct SwapStatusResult {
     let outHashes: [String]?
     /// Actual amount received at the destination (from /track `toAmount`), if available.
     let actualToAmount: String?
+    /// True when the status request itself failed, so this result says nothing about the
+    /// swap: "not observed" here means "could not ask", not "the provider does not see it".
+    let requestFailed: Bool
 
     init(
         error: String?,
         isObserved: Bool,
         observedStatus: String?,
         outHashes: [String]?,
-        actualToAmount: String? = nil
+        actualToAmount: String? = nil,
+        requestFailed: Bool = false
     ) {
         self.error = error
         self.isObserved = isObserved
         self.observedStatus = observedStatus
         self.outHashes = outHashes
         self.actualToAmount = actualToAmount
+        self.requestFailed = requestFailed
     }
 }
 

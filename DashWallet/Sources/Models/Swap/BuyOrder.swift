@@ -25,4 +25,6 @@ struct BuyOrder {
     let expectedDashAmount: Decimal
     let sellAsset: String
     let sellAmount: String
+    /// The provider's deadline for the deposit address, when the swap response carries one.
+    var depositDeadline: Date? = nil
 }
