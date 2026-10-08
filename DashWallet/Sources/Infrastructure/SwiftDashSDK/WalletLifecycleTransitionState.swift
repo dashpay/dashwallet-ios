@@ -138,8 +138,10 @@ final class WalletLifecycleTransitionState: ObservableObject {
     /// failure card, and the runtime's wallet open may take the window over
     /// from either legacy-migration phase once the imported wallet exists;
     /// an independently authorized wipe may begin from any failure phase.
-    /// Admission does not imply a reset button on a failure card: a
-    /// database-open failure offers Retry and Help, preserving data.
+    /// The database-open card's "Reset wallet data and rescan" needs no
+    /// admission of its own: the runtime deletes the stores behind the card
+    /// and re-enters through `prepareWallet`, the same `.openingWallet`
+    /// transition Try Again uses.
     /// Every other combination is rejected and the caller surfaces or logs it.
     func tryBegin(_ next: Phase) -> Bool {
         if next == .migratingLegacyWallet { deferredLegacyFailure = nil }

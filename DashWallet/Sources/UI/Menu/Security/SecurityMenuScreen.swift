@@ -141,21 +141,7 @@ struct SecurityMenuScreen: View {
         } message: {
             Text("Deletes all SDK wallets without asking for their recovery phrases. Legacy DashSync seed fixtures are preserved.")
         }
-        .alert(
-            recoveryPhraseFlow.alertState?.title ?? "",
-            isPresented: Binding(
-                get: { recoveryPhraseFlow.alertState != nil },
-                set: { if !$0 { recoveryPhraseFlow.dismissAlert() } })
-        ) {
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
-                recoveryPhraseFlow.dismissAlert()
-            }
-            Button(NSLocalizedString("Retry", comment: "")) {
-                recoveryPhraseFlow.retry()
-            }
-        } message: {
-            Text(recoveryPhraseFlow.alertState?.message ?? "")
-        }
+        .recoveryPhraseFlowAlert(recoveryPhraseFlow)
     }
     
     private func handleNavigation(_ destination: SecurityMenuNavigationDestination?) {

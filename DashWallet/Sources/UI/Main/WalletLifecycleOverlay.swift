@@ -39,10 +39,12 @@ final class WalletLifecycleOverlayPresenter {
     private var openingDelay: Task<Void, Never>?
     private var lockScreenVisible = false
     private var applicationActive = false
-    /// The migration card's Export Logs authenticates first. The PIN prompt
-    /// presents from a `.normal`-level window, below this overlay's
-    /// `.alert + 1`, so the overlay hides for the prompt's duration exactly
-    /// as it does behind the lock screen; the card and its state survive.
+    /// Set around every PIN gate a card runs (the migration card's Export
+    /// Logs, the wallet-open card's Backup recovery phrase and Reset). The
+    /// PIN prompt presents from a `.normal`-level window, below this
+    /// overlay's `.alert + 1`, so the overlay hides for the prompt's duration
+    /// exactly as it does behind the lock screen; the card and its state
+    /// survive.
     private var authenticationPromptVisible = false
 
     private init() {}
@@ -195,32 +197,105 @@ final class WalletLifecycleOverlayBridge: NSObject {
 /// and its services started.
 @MainActor
 final class WalletLifecycleOverlayViewModel: ObservableObject {
+    /// A refused or failed card action: the action as title, the reason as
+    /// message.
+    struct ActionFailure: Identifiable {
+        let id = UUID()
+        let title: String
+        let message: String
+    }
+
     @Published private(set) var phase: WalletLifecycleTransitionState.Phase
     @Published private(set) var preparationFailure: WalletPreparationFailure?
     @Published var supportFailure: WalletPreparationFailure?
     @Published private(set) var retryPending = false
     @Published private(set) var isExportingLogs = false
     @Published var exportedLogsURL: URL?
-    @Published var logExportErrorMessage: String?
+    /// One alert for every gated action's refusal: no PIN on record,
+    /// authentication failed, export or reset error.
+    @Published var actionFailure: ActionFailure?
+    /// Reset is offered only for a database failure with an SDK wallet still
+    /// in the keychain. Captured on each phase change: `hasSDKWallet` is a
+    /// keychain read, not something to evaluate per body render.
+    @Published private(set) var canResetWalletData = false
+    @Published var isConfirmingReset = false
+    @Published private(set) var resetPending = false
+    /// True while the overlay window is hidden behind the PIN prompt.
+    @Published private(set) var isAuthenticating = false
 
+    /// One operation at a time on a failure card: the share sheet, the PIN
+    /// prompt, Try Again and Reset each own the window's presentation stack.
+    var isBusy: Bool { retryPending || resetPending || isExportingLogs || isAuthenticating }
+
+    /// The Security menu's recovery-phrase flow with this overlay's PIN gate
+    /// injected.
+    private(set) lazy var recoveryPhraseFlow = RecoveryPhraseFlowViewModel(authenticate: { [weak self] in
+        await self?.authenticateBehindOverlay(biometric: false) ?? .cancelled
+    })
+    private let recoveryPhraseModal = RecoveryPhraseModalPresenter()
     private var cancellables = Set<AnyCancellable>()
 
     init() {
         let transitionState = WalletLifecycleTransitionState.shared
         phase = transitionState.phase
         preparationFailure = transitionState.preparationFailure
+        apply(transitionState.phase)
         transitionState.$phase
-            .sink { [weak self] phase in
-                self?.phase = phase
-            }
+            .sink { [weak self] phase in self?.apply(phase) }
             .store(in: &cancellables)
         transitionState.$preparationFailure
             .sink { [weak self] failure in self?.preparationFailure = failure }
             .store(in: &cancellables)
+        recoveryPhraseFlow.$navigationEvent
+            .compactMap { $0 }
+            .sink { [weak self] event in self?.presentRecoveryPhrase(event) }
+            .store(in: &cancellables)
+        NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)
+            .sink { [weak self] _ in
+                // The phrase screen pops itself on resign, which as a modal
+                // root has nothing to pop from; the host takes the modal down.
+                self?.recoveryPhraseModal.dismiss(animated: false)
+            }
+            .store(in: &cancellables)
+    }
+
+    private func apply(_ phase: WalletLifecycleTransitionState.Phase) {
+        self.phase = phase
+        if case let .failedWalletOpen(failure) = phase {
+            canResetWalletData = failure.canResetLocalData && WalletEnvironment.hasSDKWallet
+        } else {
+            canResetWalletData = false
+            isConfirmingReset = false
+            // The window may be dropped next (idle); nothing may stay
+            // presented from it.
+            recoveryPhraseModal.dismiss(animated: false)
+        }
+    }
+
+    /// The overlay's PIN gate. The prompt anchors on a `.normal`-level
+    /// window, below this overlay, so the window hides for the prompt's
+    /// duration and the card's actions stay disabled meanwhile.
+    private func authenticateBehindOverlay(biometric: Bool) async -> AuthenticationGate.Outcome {
+        isAuthenticating = true
+        WalletLifecycleOverlayPresenter.shared.setAuthenticationPromptVisible(true)
+        let outcome = await AuthenticationGate.authenticate(biometric: biometric)
+        WalletLifecycleOverlayPresenter.shared.setAuthenticationPromptVisible(false)
+        isAuthenticating = false
+        return outcome
+    }
+
+    /// Fails closed when no PIN is on record: `AuthenticationService` would
+    /// otherwise pass without a prompt.
+    private func requirePin(for actionTitle: String, message: String) -> Bool {
+        guard AuthenticationService.shared.hasPin() else {
+            actionFailure = ActionFailure(title: actionTitle, message: message)
+            return false
+        }
+        return true
     }
 
     func retryWalletOpen() {
-        guard !retryPending else { return }
+        guard !isBusy else { return }
         retryPending = true
         // A Core-only Restart requires an already-open wallet and cannot
         // recover a database failure. Re-enter the complete serialized start.
@@ -236,41 +311,109 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     /// upgrading user's PIN is read in place by `PinStore`, so it gates the
     /// export; with no PIN on record the export fails closed.
     func exportDiagnosticLogs(authenticated: Bool = false) {
-        guard !isExportingLogs, !retryPending else { return }
-        if authenticated, !AuthenticationService.shared.hasPin() {
-            logExportErrorMessage = NSLocalizedString(
-                "Unlock with your wallet PIN to export logs.", comment: "Log export")
+        guard !isBusy else { return }
+        let title = NSLocalizedString("Export Logs", comment: "Log export")
+        if authenticated,
+           !requirePin(for: title, message: NSLocalizedString(
+               "Unlock with your wallet PIN to export logs.", comment: "Log export")) {
             return
         }
         isExportingLogs = true
         Task { [weak self] in
+            guard let self else { return }
             if authenticated {
-                WalletLifecycleOverlayPresenter.shared.setAuthenticationPromptVisible(true)
-                let outcome = await AuthenticationGate.authenticate(biometric: true)
-                WalletLifecycleOverlayPresenter.shared.setAuthenticationPromptVisible(false)
-                guard let self else { return }
+                let outcome = await self.authenticateBehindOverlay(biometric: true)
                 guard outcome == .ok else {
                     self.isExportingLogs = false
                     if outcome != .cancelled {
-                        self.logExportErrorMessage = NSLocalizedString("Authentication failed", comment: "")
+                        self.actionFailure = ActionFailure(
+                            title: title, message: NSLocalizedString("Authentication failed", comment: ""))
                     }
                     return
                 }
             }
             let result = await DiagnosticLogExporter.exportArchive()
-            guard let self else { return }
             self.isExportingLogs = false
             switch result {
             case .success(let url):
                 self.exportedLogsURL = url
             case .failure(let error):
-                self.logExportErrorMessage = error.localizedDescription
+                self.actionFailure = ActionFailure(title: title, message: error.localizedDescription)
             }
         }
     }
 
     func showPreparationHelp() {
         supportFailure = preparationFailure
+    }
+
+    /// Backup recovery phrase on the wallet-open failure card: the Security
+    /// menu's flow (PIN, then one phrase or a wallet picker), hosted modally
+    /// in the overlay window because the card has no navigation stack.
+    func backupRecoveryPhrase() {
+        guard !isBusy,
+              requirePin(
+                  for: NSLocalizedString("Backup recovery phrase", comment: "Wallet preparation"),
+                  message: NSLocalizedString("Unlock with your wallet PIN to continue.", comment: "Wallet preparation"))
+        else { return }
+        recoveryPhraseFlow.beginGlobal()
+    }
+
+    private func presentRecoveryPhrase(_ event: RecoveryPhraseFlowViewModel.NavigationEvent) {
+        // @Published emits before the assignment; consume once it has
+        // settled, as the Security menu and Wallets hosts do.
+        defer {
+            Task { @MainActor [recoveryPhraseFlow] in
+                recoveryPhraseFlow.consumeNavigationEvent(id: event.id)
+            }
+        }
+        guard case .failedWalletOpen = phase,
+              let anchor = WalletLifecycleOverlayPresenter.shared.overlayWindow?.rootViewController
+        else { return }
+        recoveryPhraseModal.show(event.destination, from: anchor, flowModel: recoveryPhraseFlow)
+    }
+
+    /// Reset starts with the confirmation alert; the PIN comes after Confirm,
+    /// so a user who backs out never sees a prompt.
+    func requestResetWalletData() {
+        guard !isBusy, canResetWalletData else { return }
+        isConfirmingReset = true
+    }
+
+    /// Confirm on the alert: PIN gate, then the runtime's delete-and-reopen.
+    /// The phase moves on its own from there (`.openingWallet`, then `.idle`
+    /// or back to this card with the new failure).
+    func resetWalletData() {
+        guard !isBusy, canResetWalletData else { return }
+        let title = NSLocalizedString("Reset wallet data and rescan", comment: "Wallet preparation")
+        guard requirePin(
+            for: title,
+            message: NSLocalizedString("Unlock with your wallet PIN to continue.", comment: "Wallet preparation"))
+        else { return }
+        Task { [weak self] in
+            guard let self else { return }
+            let outcome = await self.authenticateBehindOverlay(biometric: false)
+            guard outcome == .ok else {
+                if outcome != .cancelled {
+                    self.actionFailure = ActionFailure(
+                        title: title, message: NSLocalizedString("Authentication failed", comment: ""))
+                }
+                return
+            }
+            self.resetPending = true
+            do {
+                _ = try await SwiftDashSDKWalletRuntime.shared.resetLocalStoresAndRetry()
+            } catch {
+                // Deletion stopped at an item; nothing was reopened and the
+                // card is unchanged, so Reset and Try Again stay available.
+                self.actionFailure = ActionFailure(
+                    title: title,
+                    message: NSLocalizedString(
+                        "The wallet data on this device could not be reset. Try again or contact support for help.",
+                        comment: "Wallet preparation"))
+            }
+            self.resetPending = false
+        }
     }
 
     /// Try Again on the legacy-migration failure card: the launch hold
@@ -345,7 +488,25 @@ struct WalletLifecycleOverlayView: View {
                     actionButton(NSLocalizedString("Try Again", comment: ""), prominent: true) {
                         viewModel.retryWalletOpen()
                     }
-                    .disabled(viewModel.retryPending || viewModel.isExportingLogs)
+                    .disabled(viewModel.isBusy)
+                    actionButton(NSLocalizedString("Backup recovery phrase", comment: "Wallet preparation"), prominent: false) {
+                        viewModel.backupRecoveryPhrase()
+                    }
+                    .disabled(viewModel.isBusy)
+                    if viewModel.canResetWalletData {
+                        if viewModel.resetPending {
+                            SwiftUI.ProgressView(NSLocalizedString("Resetting wallet data…", comment: "Wallet preparation"))
+                        } else {
+                            actionButton(
+                                NSLocalizedString("Reset wallet data and rescan", comment: "Wallet preparation"),
+                                prominent: false,
+                                role: .destructive
+                            ) {
+                                viewModel.requestResetWalletData()
+                            }
+                            .disabled(viewModel.isBusy)
+                        }
+                    }
                     preparationHelp
                 }
             case let .failedLegacyMigration(failure):
@@ -449,14 +610,28 @@ struct WalletLifecycleOverlayView: View {
                 ActivityView(activityItems: [url])
             }
         }
-        .alert(NSLocalizedString("Export Logs", comment: "Log export"), isPresented: Binding(
-            get: { viewModel.logExportErrorMessage != nil },
-            set: { if !$0 { viewModel.logExportErrorMessage = nil } }
+        .alert(viewModel.actionFailure?.title ?? "", isPresented: Binding(
+            get: { viewModel.actionFailure != nil },
+            set: { if !$0 { viewModel.actionFailure = nil } }
         )) {
-            Button(NSLocalizedString("OK", comment: "")) { viewModel.logExportErrorMessage = nil }
+            Button(NSLocalizedString("OK", comment: "")) { viewModel.actionFailure = nil }
         } message: {
-            Text(viewModel.logExportErrorMessage ?? "")
+            Text(viewModel.actionFailure?.message ?? "")
         }
+        .alert(
+            NSLocalizedString("Reset wallet data and rescan?", comment: "Wallet preparation"),
+            isPresented: $viewModel.isConfirmingReset
+        ) {
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
+            Button(NSLocalizedString("Reset and Rescan", comment: "Wallet preparation"), role: .destructive) {
+                viewModel.resetWalletData()
+            }
+        } message: {
+            Text(NSLocalizedString(
+                "Deletes the wallet data stored on this device and downloads it again from the network with a full rescan, which can take a while. Your wallet keys stay in this device's keychain.",
+                comment: "Wallet preparation"))
+        }
+        .recoveryPhraseFlowAlert(viewModel.recoveryPhraseFlow)
     }
 
     private var preparationHelp: some View {
@@ -474,12 +649,12 @@ struct WalletLifecycleOverlayView: View {
                 actionButton(NSLocalizedString("Export Logs", comment: "Log export"), prominent: false) {
                     viewModel.exportDiagnosticLogs(authenticated: authenticatedExport)
                 }
-                .disabled(viewModel.retryPending)
+                .disabled(viewModel.isBusy)
             }
             actionButton(NSLocalizedString("Help", comment: ""), prominent: false) {
                 viewModel.showPreparationHelp()
             }
-            .disabled(viewModel.retryPending || viewModel.isExportingLogs)
+            .disabled(viewModel.isBusy)
         }
     }
 
@@ -527,12 +702,18 @@ struct WalletLifecycleOverlayView: View {
         }
     }
 
-    private func actionButton(_ title: String, prominent: Bool, action: @escaping () -> Void) -> some View {
+    /// `role: .destructive` renders red under `.bordered`; no tint needed.
+    private func actionButton(
+        _ title: String,
+        prominent: Bool,
+        role: ButtonRole? = nil,
+        action: @escaping () -> Void
+    ) -> some View {
         let label = Text(title)
             .font(.headline)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
-        let button = Button(action: action) { label }
+        let button = Button(role: role, action: action) { label }
         return Group {
             if prominent {
                 button.buttonStyle(.borderedProminent)

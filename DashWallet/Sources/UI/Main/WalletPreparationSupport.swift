@@ -42,7 +42,7 @@ final class WalletPreparationSupportViewModel: ObservableObject {
                 comment: "Wallet preparation help")
         }
         return NSLocalizedString(
-            "Do not delete the app. Try opening your wallet again, or contact support if the problem continues.",
+            "Your wallet keys are still stored safely on this device. Try opening your wallet again, or contact support if the problem continues.",
             comment: "Wallet preparation help")
     }
 
