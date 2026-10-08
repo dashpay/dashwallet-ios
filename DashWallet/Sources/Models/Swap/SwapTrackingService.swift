@@ -207,7 +207,11 @@ final class SwapTrackingService {
             // expired ones whose payout may still turn up. The latter are only looked for
             // at the idle pace: nothing about them changes fast, and each look reads the
             // wallet on the main actor.
-            let lateDue = nowSeconds - lastLatePayoutCheck >= Constants.unpaidIdlePollIntervalSeconds
+            // The wallet has to be synced for its transactions to mean anything: before
+            // that a payout may simply not be visible yet.
+            let walletSynced = await walletIsSynced()
+            let lateDue = walletSynced
+                && nowSeconds - lastLatePayoutCheck >= Constants.unpaidIdlePollIntervalSeconds
             let lateCandidates = !lateDue ? [] : orders.filter {
                 $0.isBuy && !$0.isLegacyRecord && $0.status == .expired && $0.mayStillBePaidOut(now: Date())
             }
@@ -218,7 +222,9 @@ final class SwapTrackingService {
             await withTaskGroup(of: Void.self) { group in
                 for order in due {
                     let payoutTxHash = payouts[order.id]
-                    group.addTask { await self.pollOrder(order, payoutTxHash: payoutTxHash) }
+                    group.addTask {
+                        await self.pollOrder(order, payoutTxHash: payoutTxHash, walletSynced: walletSynced)
+                    }
                 }
             }
 
@@ -226,7 +232,7 @@ final class SwapTrackingService {
         }
     }
 
-    private func pollOrder(_ order: SwapOrder, payoutTxHash: String?) async {
+    private func pollOrder(_ order: SwapOrder, payoutTxHash: String?, walletSynced: Bool) async {
         let nowSeconds = Int64(Date().timeIntervalSince1970)
 
         // Always ask the API FIRST. The 24 h age-out must never pre-empt a real status:
@@ -352,12 +358,18 @@ final class SwapTrackingService {
         // Decide the final status: prefer the API result; only fall back to the age-out when
         // the order is STILL non-terminal. Age-out lands on the neutral `.expired` (not
         // `.failed`) — funds may have arrived; we simply stopped tracking.
+        // A deposit put on record in this very cycle — found on chain, or proven by the
+        // provider — starts its grace now, so an order first heard about after a long gap
+        // is not expired in the same breath.
         var agingOrder = order
-        if depositSeenNow { agingOrder.depositSeenAt = nowSeconds }
+        if order.depositSeenAt == nil, depositSeenNow || depositProven { agingOrder.depositSeenAt = nowSeconds }
         if finalStatus.isActive, hasAgedOut(agingOrder, nowSeconds: nowSeconds, finalStatus: finalStatus) {
             // Expiry is terminal and, for an order with no deposit on record, removes it from
             // sight for good — so a Buy order is let go only on answers, never on silence:
             // - never in a cycle where the provider was not reached (`apiStatus == nil`);
+            // - never before the wallet has synced: until then its payout may be in the
+            //   wallet without being visible yet, and an expired unpaid order cannot claim
+            //   it afterwards;
             // - an unpaid order not before `settleSeconds` past its deadline — a transfer
             //   sent in the last minutes still has to show up, at the provider or on chain;
             // - an order whose deposit address we watch also needs that lookup to have
@@ -378,7 +390,8 @@ final class SwapTrackingService {
             } else {
                 settled = !watchesDeposit || lookup == .absent || sinceAgedOut > Constants.ageOutSeconds
             }
-            if order.isBuy, apiStatus == nil || !settled, sinceAgedOut <= SwapOrder.fundedGraceSeconds {
+            if order.isBuy, apiStatus == nil || !walletSynced || !settled,
+               sinceAgedOut <= SwapOrder.fundedGraceSeconds {
                 DWLogger.log("SwapTrackingService: order \(order.id) is past its window, waiting for an answer")
             } else {
                 DWLogger.log("SwapTrackingService: order \(order.id) unresolved past its tracking window → expired")
@@ -432,6 +445,11 @@ final class SwapTrackingService {
 
         DWLogger.log("SwapTrackingService: order \(order.id) → \(finalStatus.rawValue)")
         await dao.update(dto: updated)
+    }
+
+    @MainActor
+    private func walletIsSynced() -> Bool {
+        SyncingActivityMonitor.shared.state == .syncDone
     }
 
     // MARK: - Private: Late payouts
@@ -572,11 +590,17 @@ final class SwapTrackingService {
     @MainActor
     private func walletPayouts(for wanted: [SwapOrder], among orders: [SwapOrder]) -> [String: String] {
         let activeBuys = wanted.filter(\.isBuy)
-        guard let cutoff = activeBuys.map(SwapBuyTransactionMatcher.fetchCutoff(for:)).min() else { return [:] }
+        guard !activeBuys.isEmpty else { return [:] }
+        // The pool has to reach back to the oldest order that can still take a transaction
+        // from these — every active Buy order, not only the wanted ones: the assignment is
+        // made across all of them, and a truncated pool would settle it differently from
+        // the row labeller.
+        let contenders = orders.filter { $0.isBuy && $0.status.isActive } + activeBuys
+        guard let cutoff = contenders.map(SwapBuyTransactionMatcher.fetchCutoff(for:)).min() else { return [:] }
         // Read the wallet's transactions from SwiftDashSDK; DashSync's allTransactions is frozen
         // (empty) post-migration, so a buy's incoming DASH would never match.
         // The matcher only considers rows around an order's own time, so range the fetch by
-        // `firstSeen` (from the oldest active Buy order) instead of walking the wallet.
+        // `firstSeen` instead of walking the wallet.
         let transactions = SwiftDashSDKWalletSource.fetchRecent(firstSeenSince: cutoff)?.transactions ?? []
         let assignments = SwapBuyTransactionMatcher.payoutAssignments(among: orders, in: transactions)
         var result: [String: String] = [:]

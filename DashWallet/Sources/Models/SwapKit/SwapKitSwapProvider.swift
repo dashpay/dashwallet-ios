@@ -947,7 +947,8 @@ final class SwapKitSwapProvider: SwapProvider {
 
     // MARK: - Private: Track Status Mapping
 
-    private func mapTrackResponse(_ response: SwapKitTrackResponse) -> SwapStatusResult {
+    /// Internal for tests: what each `/track` answer means to the tracker.
+    func mapTrackResponse(_ response: SwapKitTrackResponse) -> SwapStatusResult {
         switch response.status?.lowercased() {
         case nil:
             // A body without a status carries no information — not the provider saying

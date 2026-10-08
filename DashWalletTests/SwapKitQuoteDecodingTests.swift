@@ -391,11 +391,41 @@ final class BuySwapOrderTests: XCTestCase {
         XCTAssertFalse(buyOrder(status: .completed, depositSeenSecondsAgo: 7_200).isBuyHistoryRow(now: now))
     }
 
-    func testProviderStatusMappingSaysWhetherTheDepositIsProven() {
-        XCTAssertTrue(SwapStatusResult(error: nil, isObserved: true, observedStatus: "pending", outHashes: nil, depositProven: true).depositProven)
-        // The default: a result built without saying so proves nothing.
-        XCTAssertFalse(SwapStatusResult(error: nil, isObserved: true, observedStatus: "refunded", outHashes: nil).depositProven)
-        XCTAssertFalse(SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil).requestFailed)
+    @MainActor
+    private func track(_ json: String) throws -> SwapStatusResult {
+        let response = try JSONDecoder().decode(SwapKitTrackResponse.self, from: Data(json.utf8))
+        return SwapKitSwapProvider().mapTrackResponse(response)
+    }
+
+    @MainActor
+    func testTrackStatusesThatProveADeposit() throws {
+        for status in ["pending", "swapping", "completed", "refunded"] {
+            let result = try track(#"{"status":"\#(status)"}"#)
+            XCTAssertTrue(result.depositProven, status)
+            XCTAssertTrue(result.isObserved, status)
+            XCTAssertFalse(result.requestFailed, status)
+            XCTAssertNil(result.providerStatus, status)
+        }
+    }
+
+    @MainActor
+    func testTrackStatusesThatProveNothing() throws {
+        let notStarted = try track(#"{"status":"not_started"}"#)
+        XCTAssertFalse(notStarted.isObserved)
+        XCTAssertFalse(notStarted.requestFailed)
+        XCTAssertFalse(notStarted.depositProven)
+
+        // No status at all is not an answer.
+        XCTAssertTrue(try track("{}").requestFailed)
+
+        // Folded into refunded / pending for the sell flow, but the real word is kept and
+        // no deposit is claimed on its strength.
+        for (status, folded) in [("failed", "refunded"), ("unknown", "refunded"), ("Expired", "pending")] {
+            let result = try track(#"{"status":"\#(status)"}"#)
+            XCTAssertEqual(result.observedStatus, folded, status)
+            XCTAssertEqual(result.providerStatus, status.lowercased(), status)
+            XCTAssertFalse(result.depositProven, status)
+        }
     }
 
     func testSourceChainComesFromTheAssetIdentifier() {

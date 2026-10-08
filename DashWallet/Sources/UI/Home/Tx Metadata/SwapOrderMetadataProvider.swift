@@ -146,7 +146,7 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
             title: title,
             details: Self.statusLabel(for: order.status),
             iconName: .custom(DashIcon.Transaction.convert.assetName, bundle: .dashUIKit),
-            secondaryIcon: secondaryIcon(for: order.status)
+            secondaryIcon: Self.secondaryIcon(for: order.status)
         )
     }
 
@@ -154,7 +154,7 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     /// - **Processing** (not started / pending / swapping / unknown): text label, no corner badge.
     /// - **Success** (completed): nothing extra — the convert icon alone reads as done.
     /// - **Failed** (refunded / failed / expired): error corner badge, no text label.
-    private func secondaryIcon(for status: SwapOrderStatus) -> IconName? {
+    static func secondaryIcon(for status: SwapOrderStatus) -> IconName? {
         switch status {
         case .refunded, .failed, .expired:
             return .custom(DashIcon.AdditionalInfo.error.assetName, bundle: .dashUIKit)
@@ -234,13 +234,10 @@ struct BuySwapOrderItem: Identifiable {
         }
     }
 
-    /// Whether the row carries the error corner badge: the ended-without-payout states the
-    /// finished-swap rows already badge, plus a stuck deposit.
+    /// Whether the row carries the error corner badge: for the statuses the finished-swap
+    /// row badges (one rule, `secondaryIcon(for:)`), plus a stuck deposit.
     var showsErrorBadge: Bool {
-        switch order.buyPhase {
-        case .stuck, .refunded, .failed, .expired: return true
-        case .awaitingPayment, .waitingForProvider, .processing, .completed: return false
-        }
+        order.buyPhase == .stuck || SwapOrderMetadataProvider.secondaryIcon(for: order.status) != nil
     }
 
     /// "150 USDT" — what the user was asked to send.

@@ -77,8 +77,13 @@ enum SwapBuyTransactionMatcher {
     ///    payouts arrive in the order the swaps were made. A completed order only takes a
     ///    transaction from before it was finalised (plus `timestampSlack`): its payout
     ///    exists by then, so a later one is somebody else's;
-    /// 3. orders still in flight. One that is alone on its transactions takes the earliest.
-    ///    Orders that share any transaction are settled together and only when it is
+    /// 3. orders still in flight (an active status), then
+    /// 4. orders that have ended but may still be paid out (expired with a deposit on
+    ///    record, and any order saved before deposits were recorded) — these only take what
+    ///    the in-flight ones left, so an attempt that is over cannot stand between a live
+    ///    order and its payout.
+    ///    Within tier 3 and within tier 4: one that is alone on its transactions takes the
+    ///    earliest. Orders that share any transaction are settled together and only when it is
     ///    unambiguous: they fit exactly the same transactions and there are at least as
     ///    many as orders — then they pair up in time order. Otherwise none of them is
     ///    assigned: which of two attempts a payout answers is the provider's to say (it
@@ -125,25 +130,32 @@ enum SwapBuyTransactionMatcher {
             if let txId = fitting(claimant, before: limit).first { take(txId, for: claimant) }
         }
 
-        // Fitting sets are taken before anything in the tier is assigned, and orders that
-        // share a transaction are settled as one group — so the outcome does not depend on
-        // the order in which the tier is walked.
-        let inFlight = claimants.filter { $0.status != .completed && assigned[$0.id] == nil }
-        let fits = inFlight.map { (order: $0, txIds: fitting($0)) }.filter { !$0.txIds.isEmpty }
-        var groups: [[(order: SwapOrder, txIds: [String])]] = []
-        for entry in fits {
-            let touching = groups.indices.filter { index in
-                groups[index].contains { !Set($0.txIds).isDisjoint(with: entry.txIds) }
+        let open = claimants.filter { $0.status != .completed && assigned[$0.id] == nil }
+        for tier in [open.filter(\.status.isActive), open.filter { !$0.status.isActive }] {
+            // Fitting sets are taken before anything in the tier is assigned, and orders
+            // that share a transaction are settled as one group — so the outcome does not
+            // depend on the order in which the tier is walked.
+            let fits = tier.map { (order: $0, txIds: fitting($0)) }.filter { !$0.txIds.isEmpty }
+            var groups: [[(order: SwapOrder, txIds: [String])]] = []
+            for entry in fits {
+                let touching = groups.indices.filter { index in
+                    groups[index].contains { !Set($0.txIds).isDisjoint(with: entry.txIds) }
+                }
+                var merged = [entry]
+                for index in touching.reversed() { merged += groups.remove(at: index) }
+                groups.append(merged)
             }
-            var merged = [entry]
-            for index in touching.reversed() { merged += groups.remove(at: index) }
-            groups.append(merged)
-        }
-        for group in groups {
-            let first = group[0].txIds
-            guard group.allSatisfy({ $0.txIds == first }), first.count >= group.count else { continue }
-            for (entry, txId) in zip(group.sorted { $0.order.timestamp < $1.order.timestamp }, first) {
-                take(txId, for: entry.order)
+            for group in groups {
+                let first = group[0].txIds
+                guard group.allSatisfy({ $0.txIds == first }), first.count >= group.count else {
+                    // Unsettled between live orders: the transaction is one of theirs, so
+                    // it is not left for an ended order to take.
+                    for txId in Set(group.flatMap(\.txIds)) { free.removeValue(forKey: txId) }
+                    continue
+                }
+                for (entry, txId) in zip(group.sorted { $0.order.timestamp < $1.order.timestamp }, first) {
+                    take(txId, for: entry.order)
+                }
             }
         }
         return assigned
