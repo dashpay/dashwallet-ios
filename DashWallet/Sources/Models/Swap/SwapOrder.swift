@@ -42,17 +42,7 @@ enum SwapOrderStatus: String, Equatable {
 
     var isActive: Bool { !isTerminal }
 
-    /// True for every status the provider only reports about a deposit it has seen —
-    /// in progress, paid out, or sent back. `notStarted` says nothing was seen, and
-    /// `expired` is ours (we stopped asking), so neither implies one.
-    var impliesDeposit: Bool {
-        switch self {
-        case .pending, .swapping, .unknown, .completed, .refunded, .failed: return true
-        case .notStarted, .expired: return false
-        }
-    }
-
-    /// The in-progress subset of `impliesDeposit`.
+    /// The provider's in-progress statuses.
     var isProviderProgress: Bool {
         switch self {
         case .pending, .swapping, .unknown: return true
@@ -102,7 +92,7 @@ struct SwapOrder: RowDecodable {
     var fromAmount: String?      // Buy: human-unit amount of `fromAsset` the user was asked to send
     var depositDeadline: Int64?  // Buy: unix s — the provider's own deadline for the deposit address
     var depositSeenAt: Int64?    // Buy: unix s — when the deposit was first known to exist: seen on
-                                 // the source chain, or reported by the provider
+                                 // the source chain, proven by the provider's status, or paid out
     var providerDeniedAt: Int64? // Buy: unix s — the provider answered "no deposit" this long
                                  // after `depositSeenAt` that the order counts as stuck
     var depositMemo: String?     // Buy: memo the deposit must carry ("" = none, the address is
@@ -270,11 +260,11 @@ extension SwapOrder {
         return depositMemo.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    /// Whether anything says this order's deposit exists: it was seen on the source chain, or
-    /// the provider reported it (which also stamps `depositSeenAt`).
-    var hasDepositOnRecord: Bool {
-        depositSeenAt != nil || status.impliesDeposit
-    }
+    /// Whether the order's deposit is known to exist. The tracker stamps `depositSeenAt`
+    /// when the coin is on the deposit address, when the provider's own status proves it has
+    /// the deposit, or when the payout is in the wallet. A status alone does not count:
+    /// some provider answers are only mapped onto "refunded" or "pending".
+    var hasDepositOnRecord: Bool { depositSeenAt != nil }
 
     var buyPhase: BuySwapPhase {
         switch status {

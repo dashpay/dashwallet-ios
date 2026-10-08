@@ -161,6 +161,11 @@ final class RefundAddressViewModel: ObservableObject {
             return nil
         }
 
+        // Captured together with the destination, before the network round-trip: the order
+        // belongs to the wallet whose address it pays out to, whatever is active afterwards.
+        let ownerWalletId = SwapOrder.currentOwnerWalletId
+        let ownerNetwork = SwapOrder.currentOwnerNetwork
+
         isSubmitting = true
         orderError = nil
         defer { isSubmitting = false }
@@ -172,7 +177,11 @@ final class RefundAddressViewModel: ObservableObject {
                 destination: destination,
                 refundAddress: candidate
             )
-            try await persistBuyOrder(order, dashDestination: destination)
+            try await persistBuyOrder(
+                order,
+                dashDestination: destination,
+                ownerWalletId: ownerWalletId,
+                ownerNetwork: ownerNetwork)
             return order
         } catch {
             let raw = (error as NSError).localizedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -185,7 +194,12 @@ final class RefundAddressViewModel: ObservableObject {
 
     // MARK: - Private: Order persistence
 
-    private func persistBuyOrder(_ order: BuyOrder, dashDestination: String) async throws {
+    private func persistBuyOrder(
+        _ order: BuyOrder,
+        dashDestination: String,
+        ownerWalletId: String?,
+        ownerNetwork: String?
+    ) async throws {
         // Buy orders always use SwapKit (Maya doesn't support Buy).
         let swapOrder = SwapOrder(
             id: order.depositAddress,
@@ -199,9 +213,11 @@ final class RefundAddressViewModel: ObservableObject {
             status: .notStarted,
             fromAmount: order.sellAmount,
             depositDeadline: order.depositDeadline.map { Int64($0.timeIntervalSince1970) },
-            depositMemo: order.memo ?? "",
-            ownerWalletId: SwapOrder.currentOwnerWalletId,
-            ownerNetwork: SwapOrder.currentOwnerNetwork
+            // "" (known: no memo) only when the provider opened a deposit channel; with
+            // no channel the address may be shared, so a missing memo stays unknown.
+            depositMemo: order.memo ?? (order.hasDepositChannel ? "" : nil),
+            ownerWalletId: ownerWalletId,
+            ownerNetwork: ownerNetwork
         )
         try await swapOrdersDAO.save(dto: swapOrder)
     }

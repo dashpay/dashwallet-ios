@@ -27,4 +27,7 @@ struct BuyOrder {
     let sellAmount: String
     /// The provider's deadline for the deposit address, when the swap response carries one.
     var depositDeadline: Date? = nil
+    /// Whether the provider opened a deposit channel for this order, i.e. the deposit
+    /// address is this order's alone.
+    var hasDepositChannel: Bool = false
 }

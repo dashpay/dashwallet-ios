@@ -56,6 +56,11 @@ struct SwapStatusResult {
     /// True when the status request itself failed, so this result says nothing about the
     /// swap: "not observed" here means "could not ask", not "the provider does not see it".
     let requestFailed: Bool
+    /// True when the provider's own status says it has the deposit: in progress, paid out
+    /// or sent back. False for the statuses that are only mapped onto one of those for want
+    /// of a better place ("unknown", "failed", anything unrecognised) — they do not say a
+    /// deposit was ever seen.
+    let depositProven: Bool
 
     init(
         error: String?,
@@ -63,7 +68,8 @@ struct SwapStatusResult {
         observedStatus: String?,
         outHashes: [String]?,
         actualToAmount: String? = nil,
-        requestFailed: Bool = false
+        requestFailed: Bool = false,
+        depositProven: Bool = false
     ) {
         self.error = error
         self.isObserved = isObserved
@@ -71,6 +77,7 @@ struct SwapStatusResult {
         self.outHashes = outHashes
         self.actualToAmount = actualToAmount
         self.requestFailed = requestFailed
+        self.depositProven = depositProven
     }
 }
 

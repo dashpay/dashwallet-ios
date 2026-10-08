@@ -313,6 +313,9 @@ final class SwapKitSwapProvider: SwapProvider {
 
         let expectedDashAmount = Decimal(string: swapResponse.expectedBuyAmount ?? route.expectedBuyAmount) ?? 0
         let depositDeadline = swapResponse.meta?.depositDeadline()
+        // A response that describes a deposit channel gives this order an address of its
+        // own. Without one the address may be a shared router or vault.
+        let hasDepositChannel = swapResponse.meta?.depositChannelExpiration != nil
         DWLogger.log("SwapKit: buy order deposit=\(depositAddress) deadline=\(depositDeadline.map { "\(Int($0.timeIntervalSince1970))" } ?? "none")")
         return BuyOrder(
             depositAddress: depositAddress,
@@ -320,7 +323,8 @@ final class SwapKitSwapProvider: SwapProvider {
             expectedDashAmount: expectedDashAmount,
             sellAsset: sellAsset,
             sellAmount: sellAmount,
-            depositDeadline: depositDeadline
+            depositDeadline: depositDeadline,
+            hasDepositChannel: hasDepositChannel
         )
     }
 
@@ -946,18 +950,18 @@ final class SwapKitSwapProvider: SwapProvider {
             return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil)
 
         case "pending":
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "pending", outHashes: nil)
+            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "pending", outHashes: nil, depositProven: true)
 
         case "swapping":
             // SwapKit is actively routing the swap; surface as "swapping" for per-order status tracking.
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "swapping", outHashes: nil)
+            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "swapping", outHashes: nil, depositProven: true)
 
         case "completed":
             let outHashes = extractOutHashes(from: response)
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "done", outHashes: outHashes)
+            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "done", outHashes: outHashes, depositProven: true)
 
         case "refunded":
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "refunded", outHashes: nil)
+            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "refunded", outHashes: nil, depositProven: true)
 
         case "failed", "unknown":
             // Map to "refunded" so the polling loop drives swapStatus = .failed(reason:)

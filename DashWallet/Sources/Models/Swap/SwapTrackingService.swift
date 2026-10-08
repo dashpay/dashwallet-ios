@@ -46,14 +46,17 @@ final class SwapTrackingService {
         /// How long a Buy order with funds possibly in flight keeps being tracked past its
         /// deadline. The provider may still refund or complete it days later.
         static let fundedBuyGraceSeconds: Int64 = 7 * 86_400
-        /// Gap between two source-chain looks at one unpaid order's deposit address while
-        /// the order is young — the window in which a deposit is actually expected.
-        static let depositCheckIntervalSeconds: Int64 = 60
-        /// How long an order counts as young.
-        static let depositCheckEagerSeconds: Int64 = 2 * 3_600
-        /// The gap after that. An order nobody paid within two hours is most likely
-        /// abandoned; it is still looked at until its deadline, just rarely.
-        static let depositCheckIdleIntervalSeconds: Int64 = 600
+        /// How often an unpaid Buy order is polled (provider status + deposit address) while
+        /// a deposit is actually expected: when it is young, and for a while right after its
+        /// deadline, when the answers decide whether it can be let go.
+        static let unpaidPollIntervalSeconds: Int64 = 60
+        /// How long an unpaid order counts as young.
+        static let unpaidEagerSeconds: Int64 = 2 * 3_600
+        /// How long past its deadline it is polled at the eager pace again.
+        static let unpaidSettleSeconds: Int64 = 3_600
+        /// The pace otherwise. An order nobody paid within two hours is most likely
+        /// abandoned; it is still looked at until it is let go, just rarely.
+        static let unpaidIdlePollIntervalSeconds: Int64 = 600
     }
 
     /// What one look at an order's deposit address established.
@@ -62,7 +65,7 @@ final class SwapTrackingService {
         case seen
         /// The lookup answered and the coin is not there.
         case absent
-        /// No answer this time: not due yet, or the request failed.
+        /// No answer this time: not asked, or the request failed.
         case unknown
     }
 
@@ -90,16 +93,11 @@ final class SwapTrackingService {
     /// disappear would mark a still-visible replacement as gone.
     private var visibleStatusOrderIDs: [String: Int] = [:]
 
-    /// When each unpaid Buy order's deposit address was last looked up on its source chain
-    /// (unix s). In memory only — a relaunch simply looks again. Read and written from the
-    /// poll loop's child tasks under `depositCheckLock`; an entry is dropped once its order
-    /// no longer needs the lookup.
-    private var lastDepositCheck: [String: Int64] = [:]
-    private let depositCheckLock = NSLock()
-
-    /// When each idle unpaid Buy order was last polled at all (unix s); see `isDueForPoll`.
-    private var lastIdlePoll: [String: Int64] = [:]
-    private let idlePollLock = NSLock()
+    /// When each unpaid Buy order was last polled (unix s); see `isDueForPoll`. In memory
+    /// only — a relaunch simply polls again. An entry is dropped once its order has a
+    /// deposit on record or has ended.
+    private var lastUnpaidPoll: [String: Int64] = [:]
+    private let unpaidPollLock = NSLock()
 
     private init() {}
 
@@ -230,12 +228,16 @@ final class SwapTrackingService {
         var apiStatus: SwapOrderStatus?
         var firstOutHash: String?
         var newActualAmount: String?
+        // Whether this cycle proved the Buy order's deposit exists other than by finding it
+        // on chain: the payout is in the wallet, or the provider's own status says so.
+        var depositProven = false
 
         do {
             if order.direction == "buy" {
                 if let walletTxHash = payoutTxHash {
                     apiStatus = .completed
                     firstOutHash = walletTxHash
+                    depositProven = true
                 } else {
                     // Buy orders use the deposit address as the tracking key until the Dash tx
                     // lands in the wallet; the source-chain address must never be treated as a hash.
@@ -255,6 +257,7 @@ final class SwapTrackingService {
                         )
                         firstOutHash = result.outHashes?.first
                         newActualAmount = result.actualToAmount
+                        depositProven = result.depositProven
                     }
                 }
             } else {
@@ -313,7 +316,7 @@ final class SwapTrackingService {
         var lookup = DepositLookup.unknown
         let watchesDeposit = finalStatus == .notStarted && order.depositSeenAt == nil && order.canWatchDepositAddress
         if watchesDeposit {
-            lookup = await lookUpDeposit(order, nowSeconds: nowSeconds)
+            lookup = await lookUpDeposit(order)
             if lookup == .seen {
                 DWLogger.log("SwapTrackingService: order \(order.id) deposit seen on the source chain")
             }
@@ -333,12 +336,16 @@ final class SwapTrackingService {
             //   lookup to have answered "nothing there";
             // - a day past the window the provider's answer alone is enough, so a lookup
             //   that never answers cannot keep the order alive;
-            // - and silence has a limit too: `fundedBuyGraceSeconds` past the point where it
-            //   would otherwise have gone, the order goes without an answer, so a provider
-            //   that never answers again cannot keep it polled for the life of the install.
+            // - and silence has a limit too: `fundedBuyGraceSeconds` after the order aged
+            //   out, it goes without an answer, so a provider that never answers again
+            //   cannot keep it polled for the life of the install.
             let windowEnd = order.depositDeadline ?? (order.timestamp / 1000 + Constants.ageOutSeconds)
             let lookupSettled = !watchesDeposit || lookup == .absent || nowSeconds - windowEnd > Constants.ageOutSeconds
-            let silenceLimit = max(windowEnd, order.depositSeenAt ?? 0) + 2 * Constants.fundedBuyGraceSeconds
+            let fundsInFlight = agingOrder.depositSeenAt != nil || finalStatus != .notStarted
+            let agedOutAt = fundsInFlight
+                ? max(windowEnd, agingOrder.depositSeenAt ?? 0) + Constants.fundedBuyGraceSeconds
+                : windowEnd
+            let silenceLimit = agedOutAt + Constants.fundedBuyGraceSeconds
             if order.isBuy, apiStatus == nil || !lookupSettled, nowSeconds <= silenceLimit {
                 DWLogger.log("SwapTrackingService: order \(order.id) is past its window, waiting for an answer")
             } else {
@@ -347,10 +354,12 @@ final class SwapTrackingService {
             }
         }
 
-        // The provider reporting progress is deposit evidence too. Without recording it, an
-        // order the provider acknowledged first (the usual case) would count as never paid
-        // once it ended, and its row would vanish with the funds still at the provider.
-        let providerReportedDeposit = order.isBuy && order.depositSeenAt == nil && finalStatus.impliesDeposit
+        // The provider's status proving the deposit (or the payout arriving) is deposit
+        // evidence too. Without recording it, an order the provider acknowledged first (the
+        // usual case) would count as never paid once it ended, and its row would vanish with
+        // the funds still at the provider. Only a proving status counts — "unknown" and
+        // "failed" are merely mapped onto refunded and say nothing about a deposit.
+        let providerReportedDeposit = order.isBuy && order.depositSeenAt == nil && depositProven
 
         // The provider has just answered that it sees no deposit, more than the stuck
         // threshold after the deposit appeared on chain: that answer is what makes the order
@@ -383,7 +392,7 @@ final class SwapTrackingService {
         if let newActualAmount { updated.actualToAmount = newActualAmount }
         updated.lastChecked = nowSeconds
         if finalStatus.isTerminal { updated.finalisedAt = nowSeconds }
-        if finalStatus != .notStarted || updated.depositSeenAt != nil { forgetPacing(for: order.id) }
+        if finalStatus != .notStarted || updated.depositSeenAt != nil { forgetUnpaidPacing(for: order.id) }
 
         DWLogger.log("SwapTrackingService: order \(order.id) → \(finalStatus.rawValue)")
         await dao.update(dto: updated)
@@ -417,80 +426,53 @@ final class SwapTrackingService {
 
     // MARK: - Private: Poll pacing
 
-    /// Whether the order is asked about this cycle. Every active order is, each cycle —
-    /// except a Buy order with no deposit on record that is past the eager window: most
-    /// likely abandoned, it is asked about every `depositCheckIdleIntervalSeconds` until its
-    /// deadline, when the eager pace returns to settle whether it can be let go.
+    /// Whether the order is polled this cycle. Every active order is, each cycle — except a
+    /// Buy order nobody has paid yet, which has the one pace described at `Constants`: every
+    /// `unpaidPollIntervalSeconds` while young and again right after its deadline, every
+    /// `unpaidIdlePollIntervalSeconds` otherwise. The deposit-address lookup rides on the
+    /// poll, so it has no pace of its own.
     private func isDueForPoll(_ order: SwapOrder, nowSeconds: Int64) -> Bool {
-        guard order.isBuy, !order.hasDepositOnRecord else { return true }
-        let ageSeconds = nowSeconds - order.timestamp / 1000
-        let pastDeadline = order.depositDeadline.map { nowSeconds > $0 } ?? false
-        guard ageSeconds > Constants.depositCheckEagerSeconds, !pastDeadline else { return true }
+        guard order.isBuy, order.status == .notStarted, order.depositSeenAt == nil else { return true }
 
-        idlePollLock.lock()
-        defer { idlePollLock.unlock() }
-        guard nowSeconds - (lastIdlePoll[order.id] ?? 0) >= Constants.depositCheckIdleIntervalSeconds else { return false }
-        lastIdlePoll[order.id] = nowSeconds
+        let ageSeconds = nowSeconds - order.timestamp / 1000
+        let sinceDeadline = order.depositDeadline.map { nowSeconds - $0 }
+        let settling = sinceDeadline.map { $0 > 0 && $0 <= Constants.unpaidSettleSeconds } ?? false
+        let interval = ageSeconds <= Constants.unpaidEagerSeconds || settling
+            ? Constants.unpaidPollIntervalSeconds
+            : Constants.unpaidIdlePollIntervalSeconds
+
+        unpaidPollLock.lock()
+        defer { unpaidPollLock.unlock() }
+        guard nowSeconds - (lastUnpaidPoll[order.id] ?? 0) >= interval else { return false }
+        lastUnpaidPoll[order.id] = nowSeconds
         return true
+    }
+
+    /// Drops the pacing entry of an order that has a deposit on record or has ended: from
+    /// then on it is polled every cycle, or not at all.
+    private func forgetUnpaidPacing(for orderID: String) {
+        unpaidPollLock.lock()
+        defer { unpaidPollLock.unlock() }
+        lastUnpaidPoll.removeValue(forKey: orderID)
     }
 
     // MARK: - Private: Source-chain deposit check
 
-    /// Looks at the order's deposit address for the coin the user was asked to send.
-    ///
-    /// Throttled per order: every `depositCheckIntervalSeconds` while the order is young,
-    /// every `depositCheckIdleIntervalSeconds` afterwards — except past the deadline, where
-    /// the answer decides whether the order is let go and is asked for at the eager pace.
-    private func lookUpDeposit(_ order: SwapOrder, nowSeconds: Int64) async -> DepositLookup {
+    /// Looks at the order's deposit address for the coin the user was asked to send. Runs
+    /// whenever an unpaid, address-watched order is polled; `isDueForPoll` sets the pace.
+    private func lookUpDeposit(_ order: SwapOrder) async -> DepositLookup {
         guard let address = order.depositAddress?.trimmingCharacters(in: .whitespacesAndNewlines),
               !address.isEmpty,
               let chain = order.fromAsset.split(separator: ".").first.map(String.init), !chain.isEmpty
         else { return .unknown }
-
-        let ageSeconds = nowSeconds - order.timestamp / 1000
-        let pastDeadline = order.depositDeadline.map { nowSeconds > $0 } ?? false
-        let interval = ageSeconds <= Constants.depositCheckEagerSeconds || pastDeadline
-            ? Constants.depositCheckIntervalSeconds
-            : Constants.depositCheckIdleIntervalSeconds
-
-        guard claimDepositLookup(for: order.id, nowSeconds: nowSeconds, interval: interval) else { return .unknown }
 
         do {
             let balances = try await SwapKitAPIService.shared.balance(chain: chain, address: address)
             return Self.holdsAsset(order.fromAsset, in: balances) ? .seen : .absent
         } catch {
             DWLogger.log("SwapTrackingService: deposit lookup failed for \(order.id): \(error)")
-            // A failed look is retried at the eager pace, not after a full idle interval.
-            setLastDepositLookup(for: order.id, to: nowSeconds - interval + Constants.depositCheckIntervalSeconds)
             return .unknown
         }
-    }
-
-    /// True when a lookup for the order is due, stamping it as started. Synchronous on
-    /// purpose: `NSLock` must not be held across a suspension point.
-    private func claimDepositLookup(for orderID: String, nowSeconds: Int64, interval: Int64) -> Bool {
-        depositCheckLock.lock()
-        defer { depositCheckLock.unlock() }
-        guard nowSeconds - (lastDepositCheck[orderID] ?? 0) >= interval else { return false }
-        lastDepositCheck[orderID] = nowSeconds
-        return true
-    }
-
-    private func setLastDepositLookup(for orderID: String, to seconds: Int64) {
-        depositCheckLock.lock()
-        defer { depositCheckLock.unlock() }
-        lastDepositCheck[orderID] = seconds
-    }
-
-    /// Drops the pacing entries of an order that has a deposit on record or has ended: it no
-    /// longer needs its address looked up and is polled every cycle.
-    private func forgetPacing(for orderID: String) {
-        depositCheckLock.lock()
-        lastDepositCheck.removeValue(forKey: orderID)
-        depositCheckLock.unlock()
-        idlePollLock.lock()
-        lastIdlePoll.removeValue(forKey: orderID)
-        idlePollLock.unlock()
     }
 
     /// True when `balances` carries a positive amount of `asset`. Identifiers are compared

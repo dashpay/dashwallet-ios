@@ -112,63 +112,78 @@ enum SwapBuyTransactionMatcher {
     /// `matchedTransaction(for:in:)` looks at one order alone, so two orders for the same
     /// amount to the same receive address both match the one payout that arrived. Here each
     /// transaction goes to at most one order, settled tier by tier:
-    /// 1. the order that already names it as its payout (`outboundTxHash`);
+    /// 1. the order that already names it as its payout (`outboundTxHash`), provided the
+    ///    transaction also fits the order;
     /// 2. orders the provider reports as completed, oldest first — it paid them out, and
-    ///    payouts arrive in the order the swaps were made;
+    ///    payouts arrive in the order the swaps were made. A completed order only takes a
+    ///    transaction from before it was finalised (plus `timestampSlack`): its payout
+    ///    exists by then, so a later one is somebody else's;
     /// 3. orders still in flight with a deposit on record;
     /// 4. orders with no deposit on record — they only take what is left, so an order
     ///    nobody paid cannot take a funded order's payout.
-    /// In tiers 3 and 4, orders that fit the same transactions are settled together: with
-    /// at least as many payouts as orders they pair up in time order; with fewer, none is
-    /// assigned — which of two in-flight attempts a single payout answers is the provider's
-    /// to say, and a wrong guess would finalise the other attempt as paid. Orders that ended
-    /// without a payout claim nothing.
+    /// In tiers 3 and 4 an order alone on its transactions takes the earliest. Orders that
+    /// share any transaction are settled together and only when it is unambiguous: they fit
+    /// exactly the same transactions and there are at least as many as orders — then they
+    /// pair up in time order. Otherwise none of them is assigned: which of two in-flight
+    /// attempts a payout answers is the provider's to say, and a wrong guess would finalise
+    /// the other attempt as paid. Orders that ended without a payout claim nothing.
     static func payoutAssignments(
         among orders: [SwapOrder],
         in transactions: [Transaction]
     ) -> [String: Transaction] {
         guard !transactions.isEmpty else { return [:] }
-        let claimants = orders.filter { $0.direction == "buy" && $0.mayStillBePaidOut }
+        let claimants = orders
+            .filter { $0.direction == "buy" && $0.mayStillBePaidOut }
+            .sorted { $0.timestamp < $1.timestamp }
         guard !claimants.isEmpty else { return [:] }
 
-        var free: [(id: String, tx: Transaction)] = transactions.map { ($0.txHashHexString.lowercased(), $0) }
+        var free: [String: Transaction] = [:]
+        for tx in transactions { free[tx.txHashHexString.lowercased()] = tx }
         var assigned: [String: Transaction] = [:]
 
         func take(_ txId: String, for order: SwapOrder) {
-            guard let index = free.firstIndex(where: { $0.id == txId }) else { return }
-            assigned[order.id] = free[index].tx
-            free.remove(at: index)
+            guard let tx = free.removeValue(forKey: txId) else { return }
+            assigned[order.id] = tx
+        }
+        /// Ids of the free transactions `order` fits, earliest first.
+        func fitting(_ order: SwapOrder, before limit: TimeInterval? = nil) -> [String] {
+            matchingTransactions(for: order, in: Array(free.values))
+                .filter { limit == nil || $0.date.timeIntervalSince1970 <= limit! }
+                .sorted { ($0.date, $0.txHashHexString) < ($1.date, $1.txHashHexString) }
+                .map { $0.txHashHexString.lowercased() }
         }
 
         for claimant in claimants {
             guard let recorded = claimant.outboundTxHash?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
-                  !recorded.isEmpty else { continue }
+                  !recorded.isEmpty, fitting(claimant).contains(recorded) else { continue }
             take(recorded, for: claimant)
         }
 
-        let completed = claimants
-            .filter { $0.status == .completed && assigned[$0.id] == nil }
-            .sorted { $0.timestamp < $1.timestamp }
-        for claimant in completed {
-            guard let match = matchedTransaction(for: claimant, in: free.map(\.tx)) else { continue }
-            take(match.txHashHexString.lowercased(), for: claimant)
+        for claimant in claimants where claimant.status == .completed && assigned[claimant.id] == nil {
+            let limit = claimant.finalisedAt > 0 ? TimeInterval(claimant.finalisedAt) + timestampSlack : nil
+            if let txId = fitting(claimant, before: limit).first { take(txId, for: claimant) }
         }
 
         let inFlight = claimants.filter { $0.status != .completed && assigned[$0.id] == nil }
         for tier in [inFlight.filter(\.hasDepositOnRecord), inFlight.filter { !$0.hasDepositOnRecord }] {
-            // Orders grouped by the exact set of free transactions they fit.
-            var groups: [[String]: [SwapOrder]] = [:]
-            let freeTxs = free.map(\.tx)
-            for claimant in tier {
-                let fitting = matchingTransactions(for: claimant, in: freeTxs)
-                    .sorted { $0.date < $1.date }
-                    .map { $0.txHashHexString.lowercased() }
-                guard !fitting.isEmpty else { continue }
-                groups[fitting, default: []].append(claimant)
+            // Fitting sets are taken before anything in the tier is assigned, and orders that
+            // share a transaction are settled as one group — so the outcome does not depend
+            // on the order in which the tier is walked.
+            let fits = tier.map { (order: $0, txIds: fitting($0)) }.filter { !$0.txIds.isEmpty }
+            var groups: [[(order: SwapOrder, txIds: [String])]] = []
+            for entry in fits {
+                let touching = groups.indices.filter { index in
+                    groups[index].contains { !Set($0.txIds).isDisjoint(with: entry.txIds) }
+                }
+                var merged = [entry]
+                for index in touching.reversed() { merged += groups.remove(at: index) }
+                groups.append(merged)
             }
-            for (txIds, group) in groups where txIds.count >= group.count {
-                for (order, txId) in zip(group.sorted { $0.timestamp < $1.timestamp }, txIds) {
-                    take(txId, for: order)
+            for group in groups {
+                let first = group[0].txIds
+                guard group.allSatisfy({ $0.txIds == first }), first.count >= group.count else { continue }
+                for (entry, txId) in zip(group.sorted { $0.order.timestamp < $1.order.timestamp }, first) {
+                    take(txId, for: entry.order)
                 }
             }
         }

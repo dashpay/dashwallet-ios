@@ -25,12 +25,12 @@ import DashUIKit
 /// - **Sell**: `order.id` is `tx.txHashHexString` (reversed-byte Bitcoin display form).
 ///   `tx.txHashData` (the metadata dict key) equals the byte-reversed form of that hex.
 ///   Convert: `Data(hex: order.id).map { Data($0.reversed()) }`.
-/// - **Buy**: prefer `order.outboundTxHash` once tracking has resolved it, but re-validate
-///   that hash against the precise buy matcher before trusting it. Otherwise walk
-///   `SwiftDashSDKWalletSource.fetchAll()` and match the incoming Dash tx by address + time
-///   + approximate amount. Return that tx's `txHashData`. Re-resolves on
-///   `SwiftDashSDKWalletState.balanceDidChangeNotification` so a buy that lands after the
-///   order is stored still gets labelled.
+/// - **Buy**: the incoming Dash tx assigned to the order by
+///   `SwapBuyTransactionMatcher.payoutAssignments` — the tx the order names as its payout
+///   (`outboundTxHash`) when that tx fits it, otherwise a match by address + time +
+///   approximate amount, one order per transaction. Return that tx's `txHashData`.
+///   Re-resolves on `SwiftDashSDKWalletState.balanceDidChangeNotification` so a buy that
+///   lands after the order is stored still gets labelled.
 class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     static let shared = SwapOrderMetadataProvider()
 
@@ -117,17 +117,6 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         if order.direction == "sell" {
             return Data(hex: order.id).map { Data($0.reversed()) }
         } else {
-            // `outboundTxHash` is display-order hex; the row lives under its
-            // wire-order reversal — a point lookup on the txid index (the
-            // previous shape scanned the whole wallet for the hex match).
-            if let outboundTxHash = order.outboundTxHash?.trimmingCharacters(in: .whitespacesAndNewlines),
-               !outboundTxHash.isEmpty,
-               let txHashData = Data(hex: outboundTxHash),
-               let matchingTx = SwiftDashSDKWalletSource.fetch(txid: Data(txHashData.reversed())),
-               SwapBuyTransactionMatcher.matchedTransaction(for: order, in: [matchingTx]) != nil {
-                return Data(txHashData.reversed())
-            }
-
             return payouts[order.id]?.txHashData
         }
     }

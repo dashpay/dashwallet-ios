@@ -368,46 +368,46 @@ final class BuySwapOrderTests: XCTestCase {
         }
     }
 
-    func testProviderProgressAloneIsDepositEvidence() {
-        // The provider saw the deposit before the address lookup did: no `depositSeenAt` yet.
-        let order = buyOrder(status: .pending)
-        XCTAssertTrue(order.hasDepositOnRecord)
-        XCTAssertTrue(order.isBuyHistoryRow(now: now))
+    func testAStatusAloneIsNotDepositEvidence() {
+        // Some provider answers are only mapped onto a status; the tracker stamps
+        // `depositSeenAt` when the deposit is actually proven, and only that counts.
+        for status in [SwapOrderStatus.pending, .refunded, .failed, .expired] {
+            XCTAssertFalse(buyOrder(status: status).hasDepositOnRecord, "\(status)")
+            XCTAssertFalse(buyOrder(status: status).isBuyHistoryRow(now: now), "\(status)")
+            XCTAssertTrue(buyOrder(status: status, depositSeenSecondsAgo: 60).isBuyHistoryRow(now: now), "\(status)")
+        }
     }
 
     func testCompletedOrderKeepsARowOnlyWhileThePayoutMayStillBeArriving() {
-        let justDone = buyOrder(status: .completed, finalisedSecondsAgo: SwapOrder.completedRowSeconds)
+        let justDone = buyOrder(
+            status: .completed, depositSeenSecondsAgo: 7_200, finalisedSecondsAgo: SwapOrder.completedRowSeconds)
         XCTAssertEqual(justDone.buyPhase, .completed)
         XCTAssertTrue(justDone.isBuyHistoryRow(now: now))
 
-        XCTAssertFalse(buyOrder(status: .completed, finalisedSecondsAgo: SwapOrder.completedRowSeconds + 1).isBuyHistoryRow(now: now))
+        XCTAssertFalse(buyOrder(
+            status: .completed, depositSeenSecondsAgo: 7_200, finalisedSecondsAgo: SwapOrder.completedRowSeconds + 1
+        ).isBuyHistoryRow(now: now))
         // Completion time unknown: nothing to bound the row with, so no row.
-        XCTAssertFalse(buyOrder(status: .completed).isBuyHistoryRow(now: now))
+        XCTAssertFalse(buyOrder(status: .completed, depositSeenSecondsAgo: 7_200).isBuyHistoryRow(now: now))
     }
 
-    func testAnOrderThatEndedIsARowOnlyWhenItsDepositWasOnRecord() {
-        // Refunded and failed are the provider's words about a deposit it saw.
-        XCTAssertTrue(buyOrder(status: .refunded).isBuyHistoryRow(now: now))
-        XCTAssertTrue(buyOrder(status: .failed).isBuyHistoryRow(now: now))
-        // Expired is ours — we stopped asking — and says nothing about a deposit.
-        XCTAssertFalse(buyOrder(status: .expired).isBuyHistoryRow(now: now))
-        XCTAssertTrue(buyOrder(status: .expired, depositSeenSecondsAgo: 86_400).isBuyHistoryRow(now: now))
+    func testProviderStatusMappingSaysWhetherTheDepositIsProven() {
+        XCTAssertTrue(SwapStatusResult(error: nil, isObserved: true, observedStatus: "pending", outHashes: nil, depositProven: true).depositProven)
+        // The default: a result built without saying so proves nothing.
+        XCTAssertFalse(SwapStatusResult(error: nil, isObserved: true, observedStatus: "refunded", outHashes: nil).depositProven)
+        XCTAssertFalse(SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil).requestFailed)
     }
 
-    func testOnlyProviderStatusesAboutASeenDepositImplyOne() {
-        XCTAssertEqual(
-            [SwapOrderStatus.pending, .swapping, .unknown, .completed, .refunded, .failed].map(\.impliesDeposit),
-            Array(repeating: true, count: 6))
-        XCTAssertFalse(SwapOrderStatus.notStarted.impliesDeposit)
-        XCTAssertFalse(SwapOrderStatus.expired.impliesDeposit)
+    func testOnlyInProgressStatusesAreProviderProgress() {
         XCTAssertEqual(
             [SwapOrderStatus.pending, .swapping, .unknown].map(\.isProviderProgress), [true, true, true])
-        XCTAssertFalse(SwapOrderStatus.completed.isProviderProgress)
-        XCTAssertFalse(SwapOrderStatus.refunded.isProviderProgress)
+        for status in [SwapOrderStatus.notStarted, .completed, .refunded, .failed, .expired] {
+            XCTAssertFalse(status.isProviderProgress, "\(status)")
+        }
     }
 
     func testSellOrderIsNeverABuyRow() {
-        var order = buyOrder(status: .pending)
+        var order = buyOrder(status: .pending, depositSeenSecondsAgo: 60)
         order.direction = "sell"
         XCTAssertFalse(order.isBuyHistoryRow(now: now))
         XCTAssertFalse(order.canWatchDepositAddress)

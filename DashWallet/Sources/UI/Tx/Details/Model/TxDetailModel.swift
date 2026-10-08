@@ -44,6 +44,20 @@ class TxDetailModel: NSObject {
     private(set) var swapOrderPlaceholder: BuySwapOrderItem?
     private var swapOrderObservation: AnyCancellable?
 
+    /// Header icon of a placeholder screen. Nothing has been received yet, so not the
+    /// "received" arrow: the swap glyph the order's history row carries, drawn once at the
+    /// size of the direction icons (the header shows its icon at natural size, and the row
+    /// glyph is smaller).
+    private lazy var placeholderIcon: UIImage? = {
+        guard swapOrderPlaceholder != nil,
+              let convert = UIImage(named: DashIcon.Transaction.convert.assetName, in: .dashUIKit, compatibleWith: nil)
+        else { return nil }
+        let size = transaction.direction.icon.size
+        return UIGraphicsImageRenderer(size: size).image { _ in
+            convert.draw(in: CGRect(origin: .zero, size: size))
+        }
+    }()
+
     /// Stands in for a value that does not exist yet.
     static let missingValue = "—"
 
@@ -164,20 +178,24 @@ class TxDetailModel: NSObject {
 
     /// The standard screen for a Buy swap order that has no Dash transaction yet.
     init(swapOrder item: BuySwapOrderItem) {
-        // An incoming, amount-less placeholder dated like the order row. Its all-zero txid is
-        // never shown, sent anywhere, or written under.
-        transaction = Transaction(
+        transaction = Self.placeholderTransaction(for: item)
+        transactionId = ""
+        txTaxCategory = .unknown
+        swapOrderPlaceholder = item
+        super.init()
+        swapExplorerLink = Self.link(for: item.order, dashTxId: "")
+    }
+
+    /// An incoming, amount-less placeholder dated like the order row. Its all-zero txid is
+    /// never shown, sent anywhere, or written under.
+    private static func placeholderTransaction(for item: BuySwapOrderItem) -> Transaction {
+        Transaction(
             syntheticTxid: Data(repeating: 0, count: 32),
             directionRaw: 0,
             netAmount: 0,
             fee: nil,
             contextRaw: 0,
             date: item.date)
-        transactionId = ""
-        txTaxCategory = .unknown
-        swapOrderPlaceholder = item
-        super.init()
-        swapExplorerLink = Self.link(for: item.order, dashTxId: "")
     }
 
     /// Keeps a placeholder screen current while it is open: the tracker moves the order on
@@ -191,7 +209,11 @@ class TxDetailModel: NSObject {
             .compactMap { orders in orders.first { $0.id == orderID } }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] order in
-                self?.swapOrderPlaceholder = BuySwapOrderItem(order: order)
+                guard let self else { return }
+                let item = BuySwapOrderItem(order: order)
+                self.swapOrderPlaceholder = item
+                // The row's date moves when the deposit is first put on record.
+                self.transaction = Self.placeholderTransaction(for: item)
                 onChange()
             }
     }
@@ -852,19 +874,7 @@ extension TxDetailModel: TxDetailHeaderCellDataProvider {
     }
 
     var icon: UIImage {
-        // Nothing has been received yet, so not the "received" arrow: the swap glyph the
-        // order's history row carries.
-        let directionIcon = transaction.direction.icon
-        if swapOrderPlaceholder != nil,
-           let convert = UIImage(named: DashIcon.Transaction.convert.assetName, in: .dashUIKit, compatibleWith: nil) {
-            // The header draws its icon at natural size; the row glyph is smaller than the
-            // direction icons, so bring it up to theirs.
-            let size = directionIcon.size
-            return UIGraphicsImageRenderer(size: size).image { _ in
-                convert.draw(in: CGRect(origin: .zero, size: size))
-            }
-        }
-        return directionIcon
+        placeholderIcon ?? transaction.direction.icon
     }
 
     var tintColor: UIColor {
