@@ -44,17 +44,12 @@ final class SwapTrackingService {
     private enum Constants {
         static let pollIntervalNs: UInt64 = 30_000_000_000  // 30 s
         static let ageOutSeconds: Int64 = 86_400             // 24 h
-        /// How long a Buy order with funds possibly in flight keeps being tracked past its
-        /// deadline. The provider may still refund or complete it days later.
-        static let fundedBuyGraceSeconds: Int64 = 7 * 86_400
         /// How often an unpaid Buy order is polled (provider status + deposit address) while
-        /// a deposit is actually expected: when it is young, and for a while right after its
-        /// deadline, when the answers decide whether it can be let go.
+        /// a deposit is actually expected: when it is young, and for `settleSeconds` right
+        /// after its deadline, when the answers decide whether it can be let go.
         static let unpaidPollIntervalSeconds: Int64 = 60
         /// How long an unpaid order counts as young.
         static let unpaidEagerSeconds: Int64 = 2 * 3_600
-        /// How long past its deadline it is polled at the eager pace again.
-        static let unpaidSettleSeconds: Int64 = 3_600
         /// The pace otherwise. An order nobody paid within two hours is most likely
         /// abandoned; it is still looked at until it is let go, just rarely.
         static let unpaidIdlePollIntervalSeconds: Int64 = 600
@@ -99,6 +94,10 @@ final class SwapTrackingService {
     /// deposit on record or has ended.
     private var lastUnpaidPoll: [String: Int64] = [:]
     private let unpaidPollLock = NSLock()
+
+    /// When expired orders were last checked for a late payout (unix s). Read and written
+    /// only by the poll loop itself, between cycles.
+    private var lastLatePayoutCheck: Int64 = 0
 
     private init() {}
 
@@ -205,10 +204,14 @@ final class SwapTrackingService {
             let nowSeconds = Int64(Date().timeIntervalSince1970)
             let due = active.filter { isDueForPoll($0, nowSeconds: nowSeconds) }
             // One wallet read per cycle serves both the orders being polled and the
-            // expired ones whose payout may still turn up.
-            let lateCandidates = orders.filter {
-                $0.isBuy && $0.status == .expired && $0.mayStillBePaidOut(now: Date())
+            // expired ones whose payout may still turn up. The latter are only looked for
+            // at the idle pace: nothing about them changes fast, and each look reads the
+            // wallet on the main actor.
+            let lateDue = nowSeconds - lastLatePayoutCheck >= Constants.unpaidIdlePollIntervalSeconds
+            let lateCandidates = !lateDue ? [] : orders.filter {
+                $0.isBuy && !$0.isLegacyRecord && $0.status == .expired && $0.mayStillBePaidOut(now: Date())
             }
+            if lateDue { lastLatePayoutCheck = nowSeconds }
             let payouts = await walletPayouts(for: due + lateCandidates, among: orders)
             await completeExpiredOrders(lateCandidates, paidOutBy: payouts)
 
@@ -355,22 +358,27 @@ final class SwapTrackingService {
             // Expiry is terminal and, for an order with no deposit on record, removes it from
             // sight for good — so a Buy order is let go only on answers, never on silence:
             // - never in a cycle where the provider was not reached (`apiStatus == nil`);
+            // - an unpaid order not before `settleSeconds` past its deadline — a transfer
+            //   sent in the last minutes still has to show up, at the provider or on chain;
             // - an order whose deposit address we watch also needs that lookup to have
-            //   answered "nothing there", and not before a settle time past its deadline —
-            //   a transfer sent in the last minutes still gets found, with twice the
-            //   chain's stuck wait allowed for it to show up on a slow chain;
+            //   answered "nothing there";
             // - a day past the window the provider's answer alone is enough, so a lookup
             //   that never answers cannot keep the order alive;
-            // - and silence has a limit too: `fundedBuyGraceSeconds` after the order aged
-            //   out, it goes without an answer, so a provider that never answers again
-            //   cannot keep it polled for the life of the install.
+            // - and silence has a limit too: `SwapOrder.fundedGraceSeconds` after the order
+            //   aged out, it goes without an answer, so a provider that never answers
+            //   again cannot keep it polled for the life of the install.
             let agedOutAt = agedOutAt(agingOrder, finalStatus: finalStatus)
             let sinceAgedOut = nowSeconds - agedOutAt
-            let settleSeconds = max(Constants.unpaidSettleSeconds, 2 * order.stuckAfterSeconds)
-            let lookupSettled = !watchesDeposit
-                || (lookup == .absent && sinceAgedOut > settleSeconds)
-                || sinceAgedOut > Constants.ageOutSeconds
-            if order.isBuy, apiStatus == nil || !lookupSettled, sinceAgedOut <= Constants.fundedBuyGraceSeconds {
+            let fundsInFlight = agingOrder.depositSeenAt != nil || finalStatus != .notStarted
+            let settled: Bool
+            if fundsInFlight {
+                settled = true                                   // already had its grace
+            } else if sinceAgedOut <= order.settleSeconds {
+                settled = false                                  // a late transfer may still land
+            } else {
+                settled = !watchesDeposit || lookup == .absent || sinceAgedOut > Constants.ageOutSeconds
+            }
+            if order.isBuy, apiStatus == nil || !settled, sinceAgedOut <= SwapOrder.fundedGraceSeconds {
                 DWLogger.log("SwapTrackingService: order \(order.id) is past its window, waiting for an answer")
             } else {
                 DWLogger.log("SwapTrackingService: order \(order.id) unresolved past its tracking window → expired")
@@ -454,7 +462,7 @@ final class SwapTrackingService {
     /// Sell orders keep the flat 24 h. A Buy order is tied to the provider's deposit deadline:
     /// - no deposit anywhere → the deadline (24 h after creation when none is known);
     /// - the deposit is on record, or the provider reports the order in progress → funds
-    ///   are in flight, so `fundedBuyGraceSeconds` past the deadline (or past the moment the
+    ///   are in flight, so `SwapOrder.fundedGraceSeconds` past the deadline (or past the moment the
     ///   deposit was put on record, if later). Dropping it at 24 h is how an order could go
     ///   dark two days before the provider's own cutoff.
     private func agedOutAt(_ order: SwapOrder, finalStatus: SwapOrderStatus) -> Int64 {
@@ -464,7 +472,7 @@ final class SwapTrackingService {
         let windowEnd = order.depositDeadline ?? (createdSeconds + Constants.ageOutSeconds)
         let fundsInFlight = order.depositSeenAt != nil || finalStatus != .notStarted
         guard fundsInFlight else { return windowEnd }
-        return max(windowEnd, order.depositSeenAt ?? 0) + Constants.fundedBuyGraceSeconds
+        return max(windowEnd, order.depositSeenAt ?? 0) + SwapOrder.fundedGraceSeconds
     }
 
     private func hasAgedOut(_ order: SwapOrder, nowSeconds: Int64, finalStatus: SwapOrderStatus) -> Bool {
@@ -485,8 +493,7 @@ final class SwapTrackingService {
 
         let ageSeconds = nowSeconds - order.timestamp / 1000
         let sinceDeadline = order.depositDeadline.map { nowSeconds - $0 }
-        let settleSeconds = max(Constants.unpaidSettleSeconds, 2 * order.stuckAfterSeconds)
-        let settling = sinceDeadline.map { $0 > 0 && $0 <= settleSeconds } ?? false
+        let settling = sinceDeadline.map { $0 > 0 && $0 <= order.settleSeconds } ?? false
         let interval = ageSeconds <= Constants.unpaidEagerSeconds || settling
             ? Constants.unpaidPollIntervalSeconds
             : Constants.unpaidIdlePollIntervalSeconds

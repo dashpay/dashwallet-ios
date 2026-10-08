@@ -141,10 +141,7 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     }
 
     private func makeMetadata(for order: SwapOrder) -> TxRowMetadata {
-        let title = String(
-            format: NSLocalizedString("Converted · %@", comment: "Dash DEX / tx history row title"),
-            Self.pairLabel(for: order)
-        )
+        let title = Self.convertedTitle(for: order)
         return TxRowMetadata(
             title: title,
             details: Self.statusLabel(for: order.status),
@@ -164,6 +161,13 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         case .notStarted, .pending, .swapping, .unknown, .completed:
             return nil
         }
+    }
+
+    /// "Converted · USDT/DASH" — the row title of a swap whose Dash transaction exists.
+    static func convertedTitle(for order: SwapOrder) -> String {
+        String(
+            format: NSLocalizedString("Converted · %@", comment: "Dash DEX / tx history row title"),
+            pairLabel(for: order))
     }
 
     /// "USDT/DASH" — the order's pair in short tickers.
@@ -218,16 +222,16 @@ struct BuySwapOrderItem: Identifiable {
 
     /// Row title, in the voice of the finished swap's "Converted · USDT/DASH".
     var title: String {
-        let format: String
         switch order.status {
-        case .refunded, .failed, .expired:
-            format = NSLocalizedString("Not converted · %@", comment: "Dash DEX / tx history row title")
         case .completed:
-            format = NSLocalizedString("Converted · %@", comment: "Dash DEX / tx history row title")
+            return SwapOrderMetadataProvider.convertedTitle(for: order)
+        case .refunded, .failed, .expired:
+            return String(
+                format: NSLocalizedString("Not converted · %@", comment: "Dash DEX / tx history row title"), pair)
         case .notStarted, .pending, .swapping, .unknown:
-            format = NSLocalizedString("Converting · %@", comment: "Dash DEX / tx history row title")
+            return String(
+                format: NSLocalizedString("Converting · %@", comment: "Dash DEX / tx history row title"), pair)
         }
-        return String(format: format, pair)
     }
 
     /// Whether the row carries the error corner badge: the ended-without-payout states the

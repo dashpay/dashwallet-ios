@@ -450,6 +450,24 @@ final class BuySwapOrderTests: XCTestCase {
         XCTAssertFalse(buyOrder(status: .expired, finalisedSecondsAgo: 60).mayStillBePaidOut(now: now))
     }
 
+    func testOrdersSavedBeforeDepositsWereRecordedKeepTheirOldMatching() {
+        for status in [SwapOrderStatus.expired, .refunded, .failed] {
+            var legacy = buyOrder(status: status)
+            legacy.fromAmount = nil
+            XCTAssertTrue(legacy.isLegacyRecord)
+            XCTAssertTrue(legacy.mayStillBePaidOut(now: now), "\(status)")
+            // …but it is still no row of its own: no deposit on record, no owner.
+            XCTAssertFalse(legacy.isBuyHistoryRow(now: now), "\(status)")
+        }
+        XCTAssertFalse(buyOrder().isLegacyRecord)
+    }
+
+    func testSettleWaitScalesWithTheChain() {
+        XCTAssertEqual(buyOrder().settleSeconds, 3_600)
+        XCTAssertEqual(buyOrder(fromAsset: "BTC.BTC").settleSeconds, 10_800)
+        XCTAssertEqual(buyOrder(fromAsset: "LTC.LTC").settleSeconds, 5_400)
+    }
+
     func testNoTransactionsMeansNoPayouts() {
         XCTAssertTrue(SwapBuyTransactionMatcher.payoutAssignments(among: [buyOrder(status: .pending)], in: [], now: now).isEmpty)
         XCTAssertTrue(SwapBuyTransactionMatcher.matchingTransactions(for: buyOrder(status: .pending), in: []).isEmpty)

@@ -238,6 +238,10 @@ extension SwapOrder {
     /// for, and the order completed when it arrives.
     static let latePayoutSeconds: Int64 = 7 * 24 * 60 * 60
 
+    /// How long past its window an order with funds in flight keeps being tracked. The same
+    /// span as `latePayoutSeconds`: the provider may still refund or complete it days later.
+    static let fundedGraceSeconds: Int64 = latePayoutSeconds
+
 
     /// How long a deposit may sit on the source chain unseen by the provider before the order
     /// is called stuck. Per source chain: the deposit address shows a balance as soon as the
@@ -262,6 +266,15 @@ extension SwapOrder {
     var fromChain: String? { SwapOrder.chain(ofAsset: fromAsset) }
 
     var isBuy: Bool { direction == "buy" }
+
+    /// True for a Buy order saved before this version started recording the amount to send,
+    /// the deposit and the owner with every order.
+    var isLegacyRecord: Bool { isBuy && fromAmount == nil }
+
+    /// How long past its deadline an unpaid order is still given before it is let go: a
+    /// transfer sent in the last minutes has to show up first, and on a slow chain that
+    /// takes a while — twice the chain's stuck wait, an hour at least.
+    var settleSeconds: Int64 { max(60 * 60, 2 * stuckAfterSeconds) }
 
     /// Whether the deposit can be recognised by the deposit address's balance: only when the
     /// order is known to carry no memo. With a memo the address is shared between orders and
@@ -314,6 +327,10 @@ extension SwapOrder {
     /// is. An expired order nobody paid can not, and must not claim an unrelated receive of
     /// a similar amount.
     func mayStillBePaidOut(now: Date = Date()) -> Bool {
+        // An order saved before deposits were recorded has no such record to judge by. It
+        // keeps what it had: any of them could be matched to its payout, whatever its status
+        // — otherwise payouts already labelled "Converted" would lose the label on upgrade.
+        guard !isLegacyRecord else { return true }
         switch status {
         case .refunded, .failed: return false
         case .expired:
